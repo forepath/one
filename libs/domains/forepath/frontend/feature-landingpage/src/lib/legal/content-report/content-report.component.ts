@@ -22,13 +22,30 @@ import {
   type ContentReportType,
   ContentReportFacade,
 } from '@forepath/shared/frontend/data-access-communication';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { NgxTurnstileComponent, NgxTurnstileModule } from 'ngx-turnstile';
 
 @Component({
   selector: 'framework-forepath-legal-content-report',
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, NgxTurnstileModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ReactiveFormsModule,
+    NgxTurnstileModule,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcFormCheckComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+  ],
   styleUrls: ['./content-report.component.scss'],
   templateUrl: './content-report.component.html',
   standalone: true,
@@ -179,9 +196,8 @@ export class ForepathLegalContentReportComponent implements OnInit {
     this.turnstileToken.set(response);
   }
 
-  onPdfSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0] ?? null;
+  onPdfFilesChange(files: FileList | null): void {
+    const file = files?.[0] ?? null;
 
     this.selectedPdfError.set(null);
 
@@ -193,14 +209,12 @@ export class ForepathLegalContentReportComponent implements OnInit {
     if (file.type !== 'application/pdf' || !file.name.toLowerCase().endsWith('.pdf')) {
       this.selectedPdfError.set('Only PDF files are allowed.');
       this.clearPdf();
-      input.value = '';
       return;
     }
 
     if (file.size <= 0 || file.size > CONTENT_REPORT_PDF_MAX_BYTES) {
       this.selectedPdfError.set('PDF must be at most 10 MiB.');
       this.clearPdf();
-      input.value = '';
       return;
     }
 

@@ -1,0 +1,13 @@
+:host {
+  display: block;
+}
+
+.fpc-accordion-item__button {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.fpc-accordion-item__heading:empty {
+  display: none;
+}

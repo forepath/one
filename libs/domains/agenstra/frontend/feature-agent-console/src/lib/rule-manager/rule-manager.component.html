@@ -1,108 +1,106 @@
-<div class="rule-manager-container border-top d-flex flex-column h-100">
-  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
-    <h5 class="mb-0 fw-semibold" i18n="@@featureRuleManager-title">Filters</h5>
-    <button
-      type="button"
-      class="btn btn-sm btn-primary"
-      (click)="onAdd()"
+<div class="rule-manager-container border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="pageTitle">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="primary"
+      size="sm"
+      iconOnly
       [disabled]="(saving$ | async) === true"
-      i18n-title="@@featureRuleManager-addButtonTitle"
-      title="Add filter rule"
-      i18n-aria-label="@@featureRuleManager-addButtonTitle"
-      aria-label="Add filter rule"
+      [ariaLabel]="addButtonTitle"
+      [title]="addButtonTitle"
+      (clicked)="onAdd()"
     >
       <i class="bi bi-plus" aria-hidden="true"></i>
-    </button>
-  </div>
-  <div class="input-group search-input-container border-bottom">
-    <i class="bi bi-search"></i>
-    <input
-      type="text"
-      class="form-control border-0 search-input"
-      name="search"
-      [ngModel]="searchQuery()"
-      (ngModelChange)="searchQuery.set($event)"
-      i18n-placeholder="@@featureRuleManager-searchPlaceholder"
-      placeholder="Search rules"
-    />
-  </div>
-  <div #scrollRoot class="flex-grow-1 overflow-auto">
+    </fpc-button>
+  </fpc-page-header>
+  <fpc-search-field
+    class="border-bottom flex-shrink-0"
+    name="search"
+    [bordered]="false"
+    [placeholder]="searchPlaceholder"
+    [ariaLabel]="searchPlaceholder"
+    [(value)]="searchQuery"
+  />
+  <div #scrollRoot class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
     @if (loading$ | async) {
       <div class="d-flex justify-content-center p-4">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden" i18n="@@featureRuleManager-loading">Loading…</span>
-        </div>
+        <fpc-spinner variant="primary" [label]="loadingLabel" />
       </div>
     } @else {
       @if (error$ | async; as err) {
-        <div class="alert alert-danger m-3" role="alert">{{ err }}</div>
+        <fpc-alert class="m-3" variant="danger" [message]="err" />
       }
       @if (rules().length === 0) {
-        <div class="text-center text-muted p-4" i18n="@@featureRuleManager-empty">No filter rules yet.</div>
+        @if (searchQuery().trim()) {
+          <fpc-empty-state
+            icon="search"
+            message="No search results"
+            i18n-message="@@featureRuleManager-noSearchResults"
+          />
+        } @else {
+          <fpc-empty-state [message]="emptyMessage" />
+        }
       } @else {
-        <div class="list-group list-group-flush">
+        <fpc-list [flush]="true">
           @for (rule of rules(); track rule.id) {
-            <div class="list-group-item border-bottom">
-              <div class="d-flex justify-content-between align-items-center gap-2">
-                <div class="flex-grow-1">
-                  <div class="fw-semibold font-monospace mb-2">
-                    <span class="text-muted">/</span>{{ rule.pattern
-                    }}<span class="text-muted">/{{ rule.regexFlags }}</span>
-                  </div>
-                  <div class="small text-muted d-flex flex-wrap gap-2">
-                    <span class="badge bg-secondary" [attr.title]="rule.direction">{{
-                      directionLabel(rule.direction)
-                    }}</span>
-                    <span class="badge bg-info text-dark" [attr.title]="rule.filterType">{{
-                      filterTypeLabel(rule.filterType)
-                    }}</span>
-                    <span
-                      class="badge"
-                      [class.bg-secondary]="statusLabel(rule) === 'inactive'"
-                      [class.bg-warning]="statusLabel(rule) === 'active'"
-                      [class.bg-success]="statusLabel(rule) === 'synced'"
-                    >
-                      @if (statusLabel(rule) === 'inactive') {
-                        <ng-container i18n="@@featureRuleManager-statusInactive">Inactive</ng-container>
-                      } @else if (statusLabel(rule) === 'active') {
-                        <ng-container i18n="@@featureRuleManager-statusActive">Active</ng-container>
-                      } @else {
-                        <ng-container i18n="@@featureRuleManager-statusSynced">Synced</ng-container>
-                      }
-                    </span>
-                  </div>
-                </div>
-                <div class="btn-group btn-group-sm">
-                  <button
-                    type="button"
-                    class="btn btn-outline-secondary"
-                    (click)="onTest(rule)"
-                    i18n-title="@@featureRuleManager-test"
-                    title="Test"
-                  >
-                    <i class="bi bi-flask"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-warning"
-                    (click)="onEdit(rule)"
-                    i18n-title="@@featureRuleManager-edit"
-                    title="Edit"
-                  >
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-danger"
-                    (click)="onDelete(rule)"
-                    i18n-title="@@featureRuleManager-delete"
-                    title="Delete"
-                  >
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
+            <fpc-list-item>
+              <div fpcListItemTitle class="fw-semibold font-monospace">
+                <span class="text-muted">/</span>{{ rule.pattern
+                }}<span class="text-muted">/{{ rule.regexFlags }}</span>
               </div>
-              <div class="d-flex flex-wrap column-gap-1 row-gap-1 mt-3 border rounded px-3 py-2 align-items-center">
+              <div fpcListItemMeta class="small d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+                <span class="me-2" [ngClass]="statusTextClass(rule)">
+                  @if (statusLabel(rule) === 'inactive') {
+                    <i class="bi bi-pause-circle me-1" aria-hidden="true"></i>
+                    <ng-container i18n="@@featureRuleManager-statusInactive">Inactive</ng-container>
+                  } @else if (statusLabel(rule) === 'active') {
+                    <i class="bi bi-exclamation-circle me-1" aria-hidden="true"></i>
+                    <ng-container i18n="@@featureRuleManager-statusActive">Active</ng-container>
+                  } @else {
+                    <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+                    <ng-container i18n="@@featureRuleManager-statusSynced">Synced</ng-container>
+                  }
+                </span>
+                <span class="me-2" [attr.title]="rule.direction">
+                  <i class="bi bi-arrow-left-right me-1" aria-hidden="true"></i>{{ directionLabel(rule.direction) }}
+                </span>
+                <span class="me-2" [attr.title]="rule.filterType">
+                  <i class="bi bi-funnel me-1" aria-hidden="true"></i>{{ filterTypeLabel(rule.filterType) }}
+                </span>
+              </div>
+              <fpc-button-group fpcListItemActions size="sm">
+                <fpc-button
+                  variant="dark"
+                  size="sm"
+                  [iconOnly]="true"
+                  (clicked)="onTest(rule)"
+                  i18n-title="@@featureRuleManager-test"
+                  title="Test"
+                >
+                  <i class="bi bi-flask"></i>
+                </fpc-button>
+                <fpc-button
+                  variant="warning"
+                  size="sm"
+                  [iconOnly]="true"
+                  (clicked)="onEdit(rule)"
+                  i18n-title="@@featureRuleManager-edit"
+                  title="Edit"
+                >
+                  <i class="bi bi-pencil"></i>
+                </fpc-button>
+                <fpc-button
+                  variant="danger"
+                  size="sm"
+                  [iconOnly]="true"
+                  (clicked)="onDelete(rule)"
+                  i18n-title="@@featureRuleManager-delete"
+                  title="Delete"
+                >
+                  <i class="bi bi-trash"></i>
+                </fpc-button>
+              </fpc-button-group>
+              <div class="d-flex flex-wrap column-gap-1 row-gap-1 mt-2 border rounded px-3 py-2 align-items-center">
                 @if (rule.isGlobal) {
                   <span class="small text-muted me-3 lh-1" i18n="@@featureRuleManager-allWorkspaces"
                     >All workspaces</span
@@ -110,319 +108,305 @@
                 }
                 @if (rule.isGlobal) {
                   @for (row of sortedWorkspaceSync(rule); track row.clientId) {
-                    <span
-                      class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded d-inline-flex align-items-center gap-1"
-                    >
+                    <fpc-badge variant="info" color="secondary">
                       <i [class]="syncWorkspaceIconClass(row)" [attr.title]="workspaceSyncTitle(row)"></i>
                       <span>{{ clientName(row.clientId) }}</span>
-                    </span>
+                    </fpc-badge>
                   }
                 } @else {
                   @for (wid of rule.workspaceIds; track wid) {
                     @let row = workspaceSyncRow(rule, wid);
-                    <span
-                      class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded d-inline-flex align-items-center gap-1"
-                    >
+                    <fpc-badge variant="info" color="secondary">
                       <i [class]="syncWorkspaceIconClass(row)" [attr.title]="workspaceSyncTitle(row)"></i>
                       <span>{{ clientName(wid) }}</span>
-                    </span>
+                    </fpc-badge>
                   }
                 }
               </div>
-            </div>
+            </fpc-list-item>
           }
-        </div>
+        </fpc-list>
+        @if ((appendLoading$ | async) || (appendError$ | async)) {
+          <fpc-list-append-footer
+            [loading]="!!(appendLoading$ | async)"
+            [error]="!!(appendError$ | async)"
+            (retry)="onLoadMoreRules()"
+          />
+        }
+        <div
+          fpcInfiniteScroll
+          [root]="scrollRoot"
+          [paused]="!!(appendError$ | async)"
+          [disabled]="!(hasMore$ | async) || !!(appendLoading$ | async) || !!(loading$ | async)"
+          (reachedEnd)="onLoadMoreRules()"
+          aria-hidden="true"
+          style="height: 1px; width: 100%; flex-shrink: 0"
+        ></div>
       }
-      @if ((appendLoading$ | async) || (appendError$ | async)) {
-        <shared-list-append-footer
-          [loading]="!!(appendLoading$ | async)"
-          [error]="!!(appendError$ | async)"
-          (retry)="onLoadMoreRules()"
-        />
-      }
-      <div
-        sharedInfiniteScroll
-        [root]="scrollRoot"
-        [paused]="!!(appendError$ | async)"
-        [disabled]="!(hasMore$ | async) || !!(appendLoading$ | async) || !!(loading$ | async)"
-        (reachedEnd)="onLoadMoreRules()"
-        aria-hidden="true"
-        style="height: 1px; width: 100%; flex-shrink: 0"
-      ></div>
     }
   </div>
 </div>
 
-<!-- Create -->
-<div class="modal fade" tabindex="-1" #createModal>
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureRuleManager-createTitle">Add filter rule</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="cancelCreate()"></button>
+<fpc-modal [(open)]="createModalOpen" i18n-title="@@featureRuleManager-createTitle" title="Add filter rule" size="lg">
+  <fpc-form-field forId="cpat" i18n-label="@@featureRuleManager-pattern" label="Pattern">
+    <fpc-form-control
+      controlId="cpat"
+      controlClass="font-monospace"
+      [(ngModel)]="createForm.pattern"
+      name="cpat"
+      i18n-placeholder="@@featureRuleManager-patternPlaceholder"
+      placeholder="[a-zA-Z0-9]+"
+    />
+  </fpc-form-field>
+  <div class="row g-2">
+    <div class="col-md-4">
+      <fpc-form-field forId="cflags" i18n-label="@@featureRuleManager-flags" label="Flags">
+        <fpc-form-control controlId="cflags" [(ngModel)]="createForm.regexFlags" name="cflags" />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-4">
+      <fpc-form-field forId="cdir" i18n-label="@@featureRuleManager-direction" label="Direction">
+        <fpc-form-control controlType="select" controlId="cdir" [(ngModel)]="createForm.direction" name="cdir">
+          <option value="incoming">{{ directionLabel('incoming') }}</option>
+          <option value="outgoing">{{ directionLabel('outgoing') }}</option>
+          <option value="bidirectional">{{ directionLabel('bidirectional') }}</option>
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+    <div class="col-md-4">
+      <fpc-form-field forId="ctype" i18n-label="@@featureRuleManager-filterType" label="Filter type">
+        <fpc-form-control controlType="select" controlId="ctype" [(ngModel)]="createForm.filterType" name="ctype">
+          <option value="none">{{ filterTypeLabel('none') }}</option>
+          <option value="filter">{{ filterTypeLabel('filter') }}</option>
+          <option value="drop">{{ filterTypeLabel('drop') }}</option>
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+  </div>
+  @if (createForm.filterType === 'filter') {
+    <fpc-form-field forId="crepl" i18n-label="@@featureRuleManager-replace" label="Replace template">
+      <fpc-form-control
+        controlType="textarea"
+        controlId="crepl"
+        controlClass="font-monospace"
+        [rows]="2"
+        [(ngModel)]="createForm.replaceContent"
+        name="crepl"
+      />
+    </fpc-form-field>
+  }
+  <div class="row g-2">
+    <div class="col-md-4">
+      <fpc-form-field forId="cprio" i18n-label="@@featureRuleManager-priority" label="Priority">
+        <fpc-form-control
+          controlId="cprio"
+          inputType="number"
+          [ngModel]="createForm.priority"
+          (ngModelChange)="createForm.priority = +$event"
+          name="cprio"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-4 d-flex align-items-end pb-3">
+      <fpc-form-switch
+        switchId="cen"
+        i18n-label="@@featureRuleManager-enabled"
+        label="Enabled"
+        [(ngModel)]="createForm.enabled"
+        name="cen"
+      />
+    </div>
+    <div class="col-md-4 d-flex align-items-end pb-3">
+      <fpc-form-switch
+        switchId="cgl"
+        i18n-label="@@featureRuleManager-global"
+        label="Global (all workspaces)"
+        [(ngModel)]="createForm.isGlobal"
+        name="cgl"
+      />
+    </div>
+  </div>
+  @if (!createForm.isGlobal) {
+    <div class="mt-3 border rounded p-2" style="max-height: 200px; overflow: auto">
+      <div class="small text-muted mb-2" i18n="@@featureRuleManager-pickWorkspaces">Workspaces</div>
+      @for (c of clients(); track c.id) {
+        <fpc-form-check
+          [checkId]="'cw-' + c.id"
+          [label]="c.name"
+          [checked]="createWorkspaceSelection[c.id]"
+          (checkedChange)="toggleCreateWorkspace(c.id)"
+        />
+      }
+    </div>
+  }
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      [loading]="(saving$ | async) === true"
+      [disabled]="(saving$ | async) === true"
+      (clicked)="submitCreate()"
+      i18n="@@featureRuleManager-create"
+    >
+      Create
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal [(open)]="editModalOpen" i18n-title="@@featureRuleManager-editTitle" title="Edit filter rule" size="lg">
+  @if (editRule) {
+    <fpc-form-field forId="epat" i18n-label="@@featureRuleManager-pattern" label="Pattern">
+      <fpc-form-control
+        controlId="epat"
+        controlClass="font-monospace"
+        [(ngModel)]="editForm.pattern"
+        name="epat"
+        i18n-placeholder="@@featureRuleManager-patternPlaceholder"
+        placeholder="[a-zA-Z0-9]+"
+      />
+    </fpc-form-field>
+    <div class="row g-2">
+      <div class="col-md-4">
+        <fpc-form-field forId="eflags" i18n-label="@@featureRuleManager-flags" label="Flags">
+          <fpc-form-control controlId="eflags" [(ngModel)]="editForm.regexFlags" name="eflags" />
+        </fpc-form-field>
       </div>
-      <div class="modal-body">
-        <div class="mb-2">
-          <label class="form-label" i18n="@@featureRuleManager-pattern">Pattern</label>
-          <input
-            class="form-control font-monospace"
-            [(ngModel)]="createForm.pattern"
-            name="cpat"
-            i18n-placeholder="@@featureRuleManager-patternPlaceholder"
-            placeholder="[a-zA-Z0-9]+"
+      <div class="col-md-4">
+        <fpc-form-field forId="edir" i18n-label="@@featureRuleManager-direction" label="Direction">
+          <fpc-form-control controlType="select" controlId="edir" [(ngModel)]="editForm.direction" name="edir">
+            <option value="incoming">{{ directionLabel('incoming') }}</option>
+            <option value="outgoing">{{ directionLabel('outgoing') }}</option>
+            <option value="bidirectional">{{ directionLabel('bidirectional') }}</option>
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+      <div class="col-md-4">
+        <fpc-form-field forId="etype" i18n-label="@@featureRuleManager-filterType" label="Filter type">
+          <fpc-form-control controlType="select" controlId="etype" [(ngModel)]="editForm.filterType" name="etype">
+            <option value="none">{{ filterTypeLabel('none') }}</option>
+            <option value="filter">{{ filterTypeLabel('filter') }}</option>
+            <option value="drop">{{ filterTypeLabel('drop') }}</option>
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+    </div>
+    @if (editForm.filterType === 'filter') {
+      <fpc-form-field forId="erepl" i18n-label="@@featureRuleManager-replace" label="Replace template">
+        <fpc-form-control
+          controlType="textarea"
+          controlId="erepl"
+          controlClass="font-monospace"
+          [rows]="2"
+          [(ngModel)]="editForm.replaceContent"
+          name="erepl"
+        />
+      </fpc-form-field>
+    }
+    <div class="row g-2">
+      <div class="col-md-4">
+        <fpc-form-field forId="eprio" i18n-label="@@featureRuleManager-priority" label="Priority">
+          <fpc-form-control
+            controlId="eprio"
+            inputType="number"
+            [ngModel]="editForm.priority"
+            (ngModelChange)="editForm.priority = +$event"
+            name="eprio"
           />
-        </div>
-        <div class="row g-2">
-          <div class="col-md-4">
-            <label class="form-label" i18n="@@featureRuleManager-flags">Flags</label>
-            <input class="form-control" [(ngModel)]="createForm.regexFlags" name="cflags" />
-          </div>
-          <div class="col-md-4">
-            <label class="form-label" i18n="@@featureRuleManager-direction">Direction</label>
-            <select class="form-select" [(ngModel)]="createForm.direction" name="cdir">
-              <option value="incoming">{{ directionLabel('incoming') }}</option>
-              <option value="outgoing">{{ directionLabel('outgoing') }}</option>
-              <option value="bidirectional">{{ directionLabel('bidirectional') }}</option>
-            </select>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label" i18n="@@featureRuleManager-filterType">Filter type</label>
-            <select class="form-select" [(ngModel)]="createForm.filterType" name="ctype">
-              <option value="none">{{ filterTypeLabel('none') }}</option>
-              <option value="filter">{{ filterTypeLabel('filter') }}</option>
-              <option value="drop">{{ filterTypeLabel('drop') }}</option>
-            </select>
-          </div>
-        </div>
-        @if (createForm.filterType === 'filter') {
-          <div class="mt-2">
-            <label class="form-label" i18n="@@featureRuleManager-replace">Replace template</label>
-            <textarea
-              class="form-control font-monospace"
-              rows="2"
-              [(ngModel)]="createForm.replaceContent"
-              name="crepl"
-            ></textarea>
-          </div>
-        }
-        <div class="row g-2 mt-2">
-          <div class="col-md-4">
-            <label class="form-label" i18n="@@featureRuleManager-priority">Priority</label>
-            <input type="number" class="form-control" [(ngModel)]="createForm.priority" name="cprio" />
-          </div>
-          <div class="col-md-4 d-flex align-items-end">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" [(ngModel)]="createForm.enabled" id="cen" name="cen" />
-              <label class="form-check-label" for="cen" i18n="@@featureRuleManager-enabled">Enabled</label>
-            </div>
-          </div>
-          <div class="col-md-4 d-flex align-items-end">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" [(ngModel)]="createForm.isGlobal" id="cgl" name="cgl" />
-              <label class="form-check-label" for="cgl" i18n="@@featureRuleManager-global"
-                >Global (all workspaces)</label
-              >
-            </div>
-          </div>
-        </div>
-        @if (!createForm.isGlobal) {
-          <div class="mt-3 border rounded p-2" style="max-height: 200px; overflow: auto">
-            <div class="small text-muted mb-2" i18n="@@featureRuleManager-pickWorkspaces">Workspaces</div>
-            @for (c of clients(); track c.id) {
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  [id]="'cw-' + c.id"
-                  [checked]="createWorkspaceSelection[c.id]"
-                  (change)="toggleCreateWorkspace(c.id)"
-                />
-                <label class="form-check-label" [for]="'cw-' + c.id">{{ c.name }}</label>
-              </div>
-            }
-          </div>
+        </fpc-form-field>
+      </div>
+      <div class="col-md-4 d-flex align-items-end pb-3">
+        <fpc-form-switch
+          switchId="een"
+          i18n-label="@@featureRuleManager-enabled"
+          label="Enabled"
+          [(ngModel)]="editForm.enabled"
+          name="een"
+        />
+      </div>
+      <div class="col-md-4 d-flex align-items-end pb-3">
+        <fpc-form-switch
+          switchId="egl"
+          i18n-label="@@featureRuleManager-global"
+          label="Global (all workspaces)"
+          [(ngModel)]="editForm.isGlobal"
+          name="egl"
+        />
+      </div>
+    </div>
+    @if (editForm.isGlobal === false) {
+      <div class="mt-3 border rounded p-2" style="max-height: 200px; overflow: auto">
+        <div class="small text-muted mb-2" i18n="@@featureRuleManager-pickWorkspaces">Workspaces</div>
+        @for (c of clients(); track c.id) {
+          <fpc-form-check
+            [checkId]="'ew-' + c.id"
+            [label]="c.name"
+            [checked]="editForm.workspaceIdsSelected[c.id]"
+            (checkedChange)="toggleEditWorkspace(c.id)"
+          />
         }
       </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="submitCreate()"
-          [disabled]="(saving$ | async) === true"
-          i18n="@@featureRuleManager-create"
-        >
-          Create
-        </button>
-      </div>
-    </div>
+    }
+  }
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      [loading]="(saving$ | async) === true"
+      [disabled]="(saving$ | async) === true"
+      (clicked)="submitEdit()"
+      i18n="@@featureRuleManager-save"
+    >
+      Save
+    </fpc-button>
   </div>
-</div>
+</fpc-modal>
 
-<!-- Edit -->
-<div class="modal fade" tabindex="-1" #editModal>
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureRuleManager-editTitle">Edit filter rule</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="cancelEdit()"></button>
-      </div>
-      @if (editRule) {
-        <div class="modal-body">
-          <div class="mb-2">
-            <label class="form-label" i18n="@@featureRuleManager-pattern">Pattern</label>
-            <input
-              class="form-control font-monospace"
-              [(ngModel)]="editForm.pattern"
-              name="epat"
-              i18n-placeholder="@@featureRuleManager-patternPlaceholder"
-              placeholder="[a-zA-Z0-9]+"
-            />
-          </div>
-          <div class="row g-2">
-            <div class="col-md-4">
-              <label class="form-label" i18n="@@featureRuleManager-flags">Flags</label>
-              <input class="form-control" [(ngModel)]="editForm.regexFlags" name="eflags" />
-            </div>
-            <div class="col-md-4">
-              <label class="form-label" i18n="@@featureRuleManager-direction">Direction</label>
-              <select class="form-select" [(ngModel)]="editForm.direction" name="edir">
-                <option value="incoming">{{ directionLabel('incoming') }}</option>
-                <option value="outgoing">{{ directionLabel('outgoing') }}</option>
-                <option value="bidirectional">{{ directionLabel('bidirectional') }}</option>
-              </select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label" i18n="@@featureRuleManager-filterType">Filter type</label>
-              <select class="form-select" [(ngModel)]="editForm.filterType" name="etype">
-                <option value="none">{{ filterTypeLabel('none') }}</option>
-                <option value="filter">{{ filterTypeLabel('filter') }}</option>
-                <option value="drop">{{ filterTypeLabel('drop') }}</option>
-              </select>
-            </div>
-          </div>
-          @if (editForm.filterType === 'filter') {
-            <div class="mt-2">
-              <label class="form-label" i18n="@@featureRuleManager-replace">Replace template</label>
-              <textarea
-                class="form-control font-monospace"
-                rows="2"
-                [(ngModel)]="editForm.replaceContent"
-                name="erepl"
-              ></textarea>
-            </div>
-          }
-          <div class="row g-2 mt-2">
-            <div class="col-md-4">
-              <label class="form-label" i18n="@@featureRuleManager-priority">Priority</label>
-              <input type="number" class="form-control" [(ngModel)]="editForm.priority" name="eprio" />
-            </div>
-            <div class="col-md-4 d-flex align-items-end">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" [(ngModel)]="editForm.enabled" id="een" name="een" />
-                <label class="form-check-label" for="een" i18n="@@featureRuleManager-enabled">Enabled</label>
-              </div>
-            </div>
-            <div class="col-md-4 d-flex align-items-end">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" [(ngModel)]="editForm.isGlobal" id="egl" name="egl" />
-                <label class="form-check-label" for="egl" i18n="@@featureRuleManager-global"
-                  >Global (all workspaces)</label
-                >
-              </div>
-            </div>
-          </div>
-          @if (editForm.isGlobal === false) {
-            <div class="mt-3 border rounded p-2" style="max-height: 200px; overflow: auto">
-              <div class="small text-muted mb-2" i18n="@@featureRuleManager-pickWorkspaces">Workspaces</div>
-              @for (c of clients(); track c.id) {
-                <div class="form-check">
-                  <input
-                    class="form-check-input"
-                    type="checkbox"
-                    [id]="'ew-' + c.id"
-                    [checked]="editForm.workspaceIdsSelected[c.id]"
-                    (change)="toggleEditWorkspace(c.id)"
-                  />
-                  <label class="form-check-label" [for]="'ew-' + c.id">{{ c.name }}</label>
-                </div>
-              }
-            </div>
-          }
-        </div>
-      }
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="submitEdit()"
-          [disabled]="(saving$ | async) === true"
-          i18n="@@featureRuleManager-save"
-        >
-          Save
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+<fpc-confirm-dialog
+  [(open)]="deleteModalOpen"
+  i18n-title="@@featureRuleManager-deleteTitle"
+  title="Delete rule"
+  i18n-confirmLabel="@@featureRuleManager-delete"
+  confirmLabel="Delete"
+  [danger]="true"
+  [busy]="(deleting$ | async) === true"
+  (confirmed)="confirmDelete()"
+  (cancelled)="cancelDelete()"
+>
+  @if (ruleToDelete; as rd) {
+    <p i18n="@@featureRuleManager-deleteConfirm">Delete this rule? Remote copies will be removed where possible.</p>
+    <p class="font-monospace small">{{ rd.pattern }}</p>
+    <p class="text-danger mb-0">
+      <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+      <span i18n="@@featureRuleManager-cannotUndo">This action cannot be undone.</span>
+    </p>
+  }
+</fpc-confirm-dialog>
 
-<!-- Delete -->
-<div class="modal fade" tabindex="-1" #deleteModal>
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureRuleManager-deleteTitle">Delete rule</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="cancelDelete()"></button>
+<fpc-modal
+  [(open)]="testerModalOpen"
+  i18n-title="@@featureRuleManager-testerTitle"
+  title="Test rule"
+  size="lg"
+  (closed)="cancelTest()"
+>
+  @if (ruleToTest; as rt) {
+    <p class="small text-muted font-monospace">{{ rt.pattern }} / {{ rt.regexFlags }}</p>
+    <p class="small text-muted mb-2">{{ directionLabel(rt.direction) }} · {{ filterTypeLabel(rt.filterType) }}</p>
+    <fpc-form-field forId="tinp" i18n-label="@@featureRuleManager-sample" label="Sample text">
+      <fpc-form-control
+        controlType="textarea"
+        controlId="tinp"
+        controlClass="font-monospace"
+        [rows]="5"
+        [(ngModel)]="testerInput"
+        name="tinp"
+      />
+    </fpc-form-field>
+    <fpc-button variant="primary" class="mt-2" (clicked)="runTester()" i18n="@@featureRuleManager-runTest">
+      Run test
+    </fpc-button>
+    @if (testerResult) {
+      <div class="mt-3" [class.text-danger]="!testerResult.ok" [class.text-success]="testerResult.ok">
+        <pre class="small mb-0" style="white-space: pre-wrap">{{ testerResult.message }}</pre>
       </div>
-      @if (ruleToDelete; as rd) {
-        <div class="modal-body">
-          <p i18n="@@featureRuleManager-deleteConfirm">
-            Delete this rule? Remote copies will be removed where possible.
-          </p>
-          <p class="font-monospace small">{{ rd.pattern }}</p>
-          <p class="text-danger mb-0">
-            <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
-            <span i18n="@@featureRuleManager-cannotUndo">This action cannot be undone.</span>
-          </p>
-        </div>
-      }
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="confirmDelete()"
-          [disabled]="(deleting$ | async) === true"
-        >
-          <span i18n="@@featureRuleManager-delete">Delete</span>
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Tester -->
-<div class="modal fade" tabindex="-1" #testerModal>
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureRuleManager-testerTitle">Test rule</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="cancelTest()"></button>
-      </div>
-      @if (ruleToTest; as rt) {
-        <div class="modal-body">
-          <p class="small text-muted font-monospace">{{ rt.pattern }} / {{ rt.regexFlags }}</p>
-          <p class="small text-muted mb-2">{{ directionLabel(rt.direction) }} · {{ filterTypeLabel(rt.filterType) }}</p>
-          <label class="form-label" i18n="@@featureRuleManager-sample">Sample text</label>
-          <textarea class="form-control font-monospace" rows="5" [(ngModel)]="testerInput" name="tinp"></textarea>
-          <button type="button" class="btn btn-primary mt-2" (click)="runTester()" i18n="@@featureRuleManager-runTest">
-            Run test
-          </button>
-          @if (testerResult) {
-            <div class="mt-3" [class.text-danger]="!testerResult.ok" [class.text-success]="testerResult.ok">
-              <pre class="small mb-0" style="white-space: pre-wrap">{{ testerResult.message }}</pre>
-            </div>
-          }
-        </div>
-      }
-    </div>
-  </div>
-</div>
+    }
+  }
+</fpc-modal>

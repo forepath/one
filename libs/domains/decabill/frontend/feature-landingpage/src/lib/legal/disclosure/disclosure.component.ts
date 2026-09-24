@@ -2,12 +2,13 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnInit } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
+import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@forepath/shared/frontend/util-meta';
 
 @Component({
   selector: 'framework-portal-legal-disclosure',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FpcButtonComponent],
   styleUrls: ['./disclosure.component.scss'],
   templateUrl: './disclosure.component.html',
   standalone: true,

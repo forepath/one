@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -48,6 +48,25 @@ import {
   type UpdateServicePlanDto,
   isNoneServiceTypeId,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcConfirmDialogComponent,
+  FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormCheckGroupComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcFormSwitchComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import {
   formatProvisioningLocationLabel,
   providerLocationCatalogFromList,
@@ -98,14 +117,40 @@ interface ServerTypeProviderGroup {
 @Component({
   selector: 'framework-billing-service-plans-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcConfirmDialogComponent,
+    FpcEmptyStateComponent,
+    FpcFormCheckComponent,
+    FpcFormCheckGroupComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcFormSwitchComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './service-plans-page.component.html',
   styleUrls: ['./service-plans-page.component.scss'],
 })
 export class ServicePlansPageComponent implements OnInit {
-  @ViewChild('createModal', { static: false }) private createModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('editModal', { static: false }) private editModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('deleteConfirmModal', { static: false }) private deleteConfirmModal!: ElementRef<HTMLDivElement>;
+  readonly createModalOpen = signal(false);
+  readonly editModalOpen = signal(false);
+  readonly deleteConfirmModalOpen = signal(false);
+
+  readonly pageTitle = $localize`:@@featureServicePlans-title:Service Plans`;
+  readonly addServicePlanAriaLabel = $localize`:@@featureServicePlans-add:Add service plan`;
+  readonly searchPlaceholder = $localize`:@@featureServicePlans-searchPlaceholder:Search plans`;
+  /** Native multi-selects keep Bootstrap `form-select` (ngValue + compareWith). */
+  readonly formSelectClass = 'form-select';
 
   private readonly plansFacade = inject(ServicePlansFacade);
   private readonly typesFacade = inject(ServiceTypesFacade);
@@ -2406,7 +2451,7 @@ export class ServicePlansPageComponent implements OnInit {
     this.providerLocationCatalog = new Map();
     this.providerLocationsLoading = false;
     this.resetProductDefaultsCollapse('create');
-    showBillingModal(this.createModal);
+    showBillingModal(this.createModalOpen);
   }
 
   openEditModal(plan: ServicePlanResponse): void {
@@ -2478,12 +2523,12 @@ export class ServicePlansPageComponent implements OnInit {
         this.refreshPlanProviderDependentUi('edit', serviceTypes, providerDetails);
       });
     this.resetProductDefaultsCollapse('edit');
-    showBillingModal(this.editModal);
+    showBillingModal(this.editModalOpen);
   }
 
   openDeleteConfirm(plan: ServicePlanResponse): void {
     this.planToDelete = plan;
-    showBillingModal(this.deleteConfirmModal);
+    showBillingModal(this.deleteConfirmModalOpen);
   }
 
   onSubmitCreate(): void {
@@ -2802,7 +2847,7 @@ export class ServicePlansPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.creating$,
       error$: this.error$,
-      modal: () => this.createModal,
+      open: this.createModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         const pendingMeters = [...this.createAttachedMeters];
@@ -2813,14 +2858,14 @@ export class ServicePlansPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.updating$,
       error$: this.error$,
-      modal: () => this.editModal,
+      open: this.editModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => this.resetEditForm(),
     });
     watchBillingMutationModalClose({
       loading$: this.deleting$,
       error$: this.error$,
-      modal: () => this.deleteConfirmModal,
+      open: this.deleteConfirmModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.planToDelete = null;

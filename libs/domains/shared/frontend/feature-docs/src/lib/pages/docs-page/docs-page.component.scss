@@ -1,3 +1,24 @@
+// Routed host fill comes from global `styles/_section-outlet.scss` under `fpc-section-container`.
+
+.docs-content-area-container {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  overflow: auto;
+}
+
+// Centered article column (padding + max-width) inside the scrollport.
+.docs-content-area {
+  padding: 2rem;
+  max-width: 1200px;
+  margin-inline: auto;
+  width: 100%;
+
+  @media (max-width: 767.98px) {
+    padding: 1rem;
+  }
+}
+
 .docs-page {
   .row {
     --bs-gutter-x: 2rem;

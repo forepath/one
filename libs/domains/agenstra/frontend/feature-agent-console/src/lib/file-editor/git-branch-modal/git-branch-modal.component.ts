@@ -1,24 +1,40 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  computed,
-  DestroyRef,
-  effect,
-  ElementRef,
-  inject,
-  input,
-  output,
-  signal,
-  ViewChild,
-} from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, input, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { VcsFacade, type GitBranch } from '@forepath/agenstra/frontend/data-access-agent-console';
+import {
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcInputGroupComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcModalComponent,
+  FpcSpinnerComponent,
+  FpcBadgeComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { combineLatest, filter, map, Observable } from 'rxjs';
 
 @Component({
   selector: 'framework-git-branch-modal',
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcFormCheckComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcInputGroupComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcModalComponent,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './git-branch-modal.component.html',
   styleUrls: ['./git-branch-modal.component.scss'],
   standalone: true,
@@ -27,18 +43,14 @@ export class GitBranchModalComponent {
   private readonly vcsFacade = inject(VcsFacade);
   private readonly destroyRef = inject(DestroyRef);
 
-  @ViewChild('branchModal', { static: false })
-  private branchModal!: ElementRef<HTMLDivElement>;
-
-  // Inputs
   clientId = input.required<string>();
   agentId = input.required<string>();
   isOpen = input<boolean>(false);
 
-  // Outputs
   closed = output<void>();
 
-  // Internal state
+  readonly modalOpen = signal(false);
+
   selectedBranch = signal<string>('');
   newBranchName = signal<string>('');
   useConventionalPrefix = signal<boolean>(true);
@@ -52,7 +64,6 @@ export class GitBranchModalComponent {
   private wasCreatingBranch = false;
   private wasSwitchingBranch = false;
 
-  // Observables
   readonly branches$: Observable<GitBranch[]> = this.vcsFacade.branches$;
   readonly currentBranch$: Observable<string | undefined> = this.vcsFacade.currentBranch$;
   readonly loadingBranches$ = this.vcsFacade.loadingBranches$;
@@ -60,7 +71,6 @@ export class GitBranchModalComponent {
   readonly deletingBranch$ = this.vcsFacade.deletingBranch$;
   readonly switchingBranch$ = this.vcsFacade.switchingBranch$;
 
-  // Computed
   readonly localBranches$ = this.branches$.pipe(
     map((branches) => branches.filter((b) => !b.isRemote).sort((a, b) => a.name.localeCompare(b.name))),
   );
@@ -81,42 +91,35 @@ export class GitBranchModalComponent {
   });
 
   constructor() {
-    // Watch for modal open/close
     effect(() => {
       const open = this.isOpen();
 
+      this.modalOpen.set(open);
+
       if (open) {
         this.loadBranches();
-        setTimeout(() => this.showModal(), 100);
-      } else {
-        this.hideModal();
       }
     });
 
-    // Watch for successful operations to reload branches and close modal
     combineLatest([this.vcsFacade.creatingBranch$, this.vcsFacade.deletingBranch$, this.vcsFacade.switchingBranch$])
       .pipe(
         filter(([creating, deleting, switching]) => !creating && !deleting && !switching),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
-        // Close modal if we just created or switched to a branch
         if (this.wasCreatingBranch || this.wasSwitchingBranch) {
           this.onClose();
         }
 
-        // Reset flags
         this.wasCreatingBranch = false;
         this.wasSwitchingBranch = false;
 
-        // Small delay to ensure backend has processed the change
         setTimeout(() => {
           this.loadBranches();
           this.loadStatus();
         }, 500);
       });
 
-    // Track when operations start
     this.vcsFacade.creatingBranch$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((creating) => {
       if (creating) {
         this.wasCreatingBranch = true;
@@ -148,7 +151,6 @@ export class GitBranchModalComponent {
 
     this.switchingBranch.set(branch.name);
 
-    // For remote branches, use the format "remote/branch-name" to create a local tracking branch
     if (branch.isRemote && branch.remote) {
       const remoteBranchRef = `${branch.remote}/${branch.name}`;
 
@@ -185,7 +187,6 @@ export class GitBranchModalComponent {
       conventionalType: this.conventionalType(),
     });
 
-    // Reset form
     this.customBranchName.set('');
     this.useConventionalPrefix.set(true);
     this.conventionalType.set('feat');
@@ -201,36 +202,7 @@ export class GitBranchModalComponent {
   }
 
   onClose(): void {
-    this.hideModal();
+    this.modalOpen.set(false);
     this.closed.emit();
-  }
-
-  private showModal(): void {
-    if (this.branchModal?.nativeElement) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const modal = (window as any).bootstrap?.Modal?.getOrCreateInstance(this.branchModal.nativeElement);
-
-      if (modal) {
-        modal.show();
-      } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const Modal = (window as any).bootstrap?.Modal;
-
-        if (Modal) {
-          new Modal(this.branchModal.nativeElement).show();
-        }
-      }
-    }
-  }
-
-  private hideModal(): void {
-    if (this.branchModal?.nativeElement) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const modal = (window as any).bootstrap?.Modal?.getInstance(this.branchModal.nativeElement);
-
-      if (modal) {
-        modal.hide();
-      }
-    }
   }
 }

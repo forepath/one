@@ -1,0 +1,64 @@
+:host {
+  display: block;
+  position: relative;
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+  background: var(--bs-body-bg);
+}
+
+// Collapsed: separator without layout border.
+:host:not(.fpc-collapsible-filter-panel--open) {
+  border-bottom: none;
+  box-shadow: inset 0 calc(-1 * var(--bs-border-width)) 0 0 var(--bs-border-color);
+}
+
+.fpc-collapsible-filter-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-inline: 0.5rem;
+}
+
+// Open: draw the header/body rule inside the header so it does not add 1px vs `fpc-search-field`.
+:host(.fpc-collapsible-filter-panel--open) .fpc-collapsible-filter-panel__header {
+  box-shadow: inset 0 calc(-1 * var(--bs-border-width)) 0 0 var(--bs-border-color);
+}
+
+.fpc-collapsible-filter-panel__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--bs-body-color);
+  // Match `fpc-search-field` strip height (open and collapsed).
+  padding-top: calc(var(--bs-btn-padding-y) - 1px);
+  // Filters + icons + chevron sit on the trailing edge.
+  order: 1;
+  margin-inline-start: auto;
+}
+
+.fpc-collapsible-filter-panel__clear {
+  text-decoration: none;
+  flex: 0 0 auto;
+  order: 0;
+}
+
+// Overlay content below the header strip. `max-height` is set in the component from the exact
+// remaining viewport space under the host so the panel scrolls instead of overflowing the page.
+.fpc-collapsible-filter-panel__body {
+  position: absolute;
+  z-index: 1025;
+  inset-inline: 0;
+  top: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+  background: var(--bs-body-bg);
+  box-shadow: var(--bs-box-shadow);
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}

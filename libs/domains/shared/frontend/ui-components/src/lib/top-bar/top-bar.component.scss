@@ -1,0 +1,114 @@
+:host {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  position: relative;
+  isolation: isolate;
+  background-color: var(--bs-dark);
+  color: var(--bs-white);
+  flex-shrink: 0;
+}
+
+// Soft grayscale shade between the dark fill and chrome (bar stays `--bs-dark`
+// in both app themes).
+:host::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(65deg, color-mix(in srgb, var(--bs-black) 28%, transparent) 0%, transparent 55%);
+}
+
+:host(.fpc-top-bar--compact) {
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 0.5rem;
+}
+
+.fpc-top-bar__brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+
+:host(.fpc-top-bar--compact) .fpc-top-bar__brand {
+  display: none;
+}
+
+.fpc-top-bar__brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  margin-inline-end: 0.5rem;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.fpc-top-bar__brand-icon {
+  height: 40px;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bs-white);
+}
+
+.fpc-top-bar__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-inline-end: 0.5rem;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+
+@media (min-width: 768px) {
+  .fpc-top-bar__actions {
+    gap: 1rem;
+    padding-inline-end: 1rem;
+  }
+}
+
+:host(.fpc-top-bar--compact) .fpc-top-bar__actions {
+  padding-inline-end: 0;
+}
+
+// Meta chips on the dark bar (e.g. customer number): transparent fill, muted white label.
+// Prefer `fpc-badge size="sm"` for btn-sm height parity with language switcher.
+:host ::ng-deep .fpc-top-bar__chip {
+  color: rgba(var(--bs-white-rgb), 0.5) !important;
+  background-color: transparent !important;
+  border-color: rgba(var(--bs-secondary-rgb), 0.5) !important;
+}
+
+// Icon / link actions on the dark bar (e.g. security settings). Lock light chrome so
+// theme switches do not restyle `btn-link` into body/link colors that vanish on `--bs-dark`.
+:host ::ng-deep .fpc-top-bar__action .fpc-button__btn {
+  --bs-btn-color: rgba(var(--bs-white-rgb), 0.5);
+  --bs-btn-hover-color: rgba(var(--bs-white-rgb), 0.75);
+  --bs-btn-active-color: var(--bs-white);
+  --bs-btn-disabled-color: rgba(var(--bs-white-rgb), 0.35);
+  color: rgba(var(--bs-white-rgb), 0.5);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    color: rgba(var(--bs-white-rgb), 0.75);
+    text-decoration: none;
+  }
+
+  &:active {
+    color: var(--bs-white);
+  }
+}
+
+:host ::ng-deep .fpc-top-bar__action.active .fpc-button__btn {
+  color: var(--bs-white);
+}

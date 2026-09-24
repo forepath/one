@@ -15,6 +15,7 @@ import { RouterModule } from '@angular/router';
 import { ForepathOneTeaserComponent } from '../forepath-one-teaser/forepath-one-teaser.component';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
+import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
 interface VendorLogo {
   id: string;
@@ -68,7 +69,7 @@ const VENDOR_LOGO_SLOTS: readonly (readonly VendorLogo[])[] = [
 
 @Component({
   selector: 'framework-forepath-it-systems',
-  imports: [CommonModule, RouterModule, ForepathOneTeaserComponent],
+  imports: [FpcButtonComponent, CommonModule, RouterModule, ForepathOneTeaserComponent],
   styleUrls: ['./it-systems.component.scss'],
   templateUrl: './it-systems.component.html',
   standalone: true,

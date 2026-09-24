@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -27,6 +27,28 @@ import {
   type UpdateAtlassianSiteConnectionDto,
   type UpdateExternalImportConfigDto,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcConfirmDialogComponent,
+  FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcFormSwitchComponent,
+  FpcLaneHeaderComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+  FpcTabComponent,
+  FpcTabGroupComponent,
+  FpcTypeaheadSelectComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { Actions, ofType } from '@ngrx/effects';
 import { debounceTime, distinctUntilChanged, skip } from 'rxjs';
 
@@ -44,31 +66,42 @@ export type AtlassianImportAdminLane = 'connections' | 'configs';
 @Component({
   selector: 'framework-atlassian-import-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcConfirmDialogComponent,
+    FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcFormSwitchComponent,
+    FpcLaneHeaderComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+    FpcTabComponent,
+    FpcTabGroupComponent,
+    FpcTypeaheadSelectComponent,
+  ],
   templateUrl: './atlassian-import-admin.component.html',
   styleUrl: './atlassian-import-admin.component.scss',
 })
 export class AtlassianImportAdminComponent implements OnInit {
-  @ViewChild('editConnectionModal', { static: false })
-  private editConnectionModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('editConfigModal', { static: false })
-  private editConfigModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('deleteConnectionModal', { static: false })
-  private deleteConnectionModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('deleteConfigModal', { static: false })
-  private deleteConfigModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('clearMarkersModal', { static: false })
-  private clearMarkersModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('createConnectionModal', { static: false })
-  private createConnectionModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('createConfigModal', { static: false })
-  private createConfigModal!: ElementRef<HTMLDivElement>;
+  readonly createConnectionModalOpen = signal(false);
+  readonly createConfigModalOpen = signal(false);
+  readonly editConnectionModalOpen = signal(false);
+  readonly editConfigModalOpen = signal(false);
+  readonly deleteConnectionModalOpen = signal(false);
+  readonly deleteConfigModalOpen = signal(false);
+  readonly clearMarkersModalOpen = signal(false);
 
   private readonly facade = inject(AtlassianContextImportFacade);
   private readonly clientsFacade = inject(ClientsFacade);
@@ -76,6 +109,16 @@ export class AtlassianImportAdminComponent implements OnInit {
   private readonly knowledgeFacade = inject(KnowledgeFacade);
   private readonly actions$ = inject(Actions);
   private readonly destroyRef = inject(DestroyRef);
+
+  readonly pageTitle = $localize`:@@featureAtlassianImportAdmin-pageTitle:Atlassian import (Jira & Confluence)`;
+  readonly refreshTitle = $localize`:@@featureAtlassianImportAdmin-refresh:Refresh`;
+  readonly dismissAriaLabel = $localize`:@@featureAtlassianImportAdmin-dismiss:Dismiss`;
+  readonly searchConnectionsLabel = $localize`:@@featureAtlassianImportAdmin-searchConnectionsLabel:Search site connections`;
+  readonly searchConnectionsPlaceholder = $localize`:@@featureAtlassianImportAdmin-searchConnectionsPlaceholder:Search connections`;
+  readonly loadingConnectionsLabel = $localize`:@@featureAtlassianImportAdmin-loadingConnections:Loading connections…`;
+  readonly searchConfigsLabel = $localize`:@@featureAtlassianImportAdmin-searchConfigsLabel:Search import configs`;
+  readonly searchConfigsPlaceholder = $localize`:@@featureAtlassianImportAdmin-searchConfigsPlaceholder:Search import configs`;
+  readonly loadingConfigsLabel = $localize`:@@featureAtlassianImportAdmin-loadingConfigs:Loading configs…`;
 
   readonly connections = toSignal(this.facade.connections$, { initialValue: [] as AtlassianSiteConnectionDto[] });
   readonly configs = toSignal(this.facade.configs$, { initialValue: [] as ExternalImportConfigDto[] });
@@ -192,10 +235,10 @@ export class AtlassianImportAdminComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
-        this.hideModal(this.createConnectionModal);
-        this.hideModal(this.createConfigModal);
-        this.hideModal(this.editConnectionModal);
-        this.hideModal(this.editConfigModal);
+        this.createConnectionModalOpen.set(false);
+        this.createConfigModalOpen.set(false);
+        this.editConnectionModalOpen.set(false);
+        this.editConfigModalOpen.set(false);
         this.resetNewConnection();
         this.resetNewConfig();
       });
@@ -206,7 +249,8 @@ export class AtlassianImportAdminComponent implements OnInit {
         this.connectionToEdit = null;
 
         if (this.connectionPendingDelete?.id === id) {
-          this.hideModal(this.deleteConnectionModal);
+          this.deleteConnectionModalOpen.set(false);
+          this.connectionPendingDelete = null;
         }
       });
 
@@ -216,7 +260,8 @@ export class AtlassianImportAdminComponent implements OnInit {
         this.configToEdit = null;
 
         if (this.configPendingDelete?.id === id) {
-          this.hideModal(this.deleteConfigModal);
+          this.deleteConfigModalOpen.set(false);
+          this.configPendingDelete = null;
         }
       });
 
@@ -224,7 +269,8 @@ export class AtlassianImportAdminComponent implements OnInit {
       .pipe(ofType(clearExternalImportMarkersSuccess), takeUntilDestroyed(this.destroyRef))
       .subscribe(({ id }) => {
         if (this.configPendingClearMarkers?.id === id) {
-          this.hideModal(this.clearMarkersModal);
+          this.clearMarkersModalOpen.set(false);
+          this.configPendingClearMarkers = null;
         }
       });
   }
@@ -240,6 +286,14 @@ export class AtlassianImportAdminComponent implements OnInit {
       case 'configs':
         return $localize`:@@featureAtlassianImportAdmin-laneConfigs:Import configs`;
     }
+  }
+
+  onSelectedLaneTabChange(lane: string | null): void {
+    if (lane !== 'connections' && lane !== 'configs') {
+      return;
+    }
+
+    this.selectedLane.set(lane);
   }
 
   unnamedConnectionLabel(): string {
@@ -289,11 +343,7 @@ export class AtlassianImportAdminComponent implements OnInit {
 
   openCreateConnectionModal(): void {
     this.resetNewConnection();
-    setTimeout(() => this.showModal(this.createConnectionModal));
-  }
-
-  onCloseCreateConnectionModal(): void {
-    this.hideModal(this.createConnectionModal);
+    this.createConnectionModalOpen.set(true);
   }
 
   onCreateConnectionModalHidden(): void {
@@ -302,11 +352,7 @@ export class AtlassianImportAdminComponent implements OnInit {
 
   openCreateConfigModal(): void {
     this.resetNewConfig();
-    setTimeout(() => this.showModal(this.createConfigModal));
-  }
-
-  onCloseCreateConfigModal(): void {
-    this.hideModal(this.createConfigModal);
+    this.createConfigModalOpen.set(true);
   }
 
   onCreateConfigModalHidden(): void {
@@ -334,7 +380,7 @@ export class AtlassianImportAdminComponent implements OnInit {
       accountEmail: c.accountEmail,
       apiToken: '',
     };
-    setTimeout(() => this.showModal(this.editConnectionModal));
+    this.editConnectionModalOpen.set(true);
   }
 
   onEditConnectionModalHidden(): void {
@@ -359,7 +405,7 @@ export class AtlassianImportAdminComponent implements OnInit {
 
   openDeleteConnectionConfirm(c: AtlassianSiteConnectionDto): void {
     this.connectionPendingDelete = c;
-    setTimeout(() => this.showModal(this.deleteConnectionModal));
+    this.deleteConnectionModalOpen.set(true);
   }
 
   onDeleteConnectionModalHidden(): void {
@@ -378,7 +424,7 @@ export class AtlassianImportAdminComponent implements OnInit {
 
   openDeleteConfigConfirm(c: ExternalImportConfigDto): void {
     this.configPendingDelete = c;
-    setTimeout(() => this.showModal(this.deleteConfigModal));
+    this.deleteConfigModalOpen.set(true);
   }
 
   onDeleteConfigModalHidden(): void {
@@ -397,7 +443,7 @@ export class AtlassianImportAdminComponent implements OnInit {
 
   openClearMarkersConfirm(c: ExternalImportConfigDto): void {
     this.configPendingClearMarkers = c;
-    setTimeout(() => this.showModal(this.clearMarkersModal));
+    this.clearMarkersModalOpen.set(true);
   }
 
   onClearMarkersModalHidden(): void {
@@ -554,68 +600,40 @@ export class AtlassianImportAdminComponent implements OnInit {
 
   onNewParentTicketInput(value: string): void {
     this.newParentTicketSearch = value;
-    this.newParentTicketSuggestOpen = true;
+    this.newParentTicketSuggestOpen = this.newParentTicketSuggestions().length > 0;
   }
 
   onEditParentTicketInput(value: string): void {
     this.editParentTicketSearch = value;
-    this.editParentTicketSuggestOpen = true;
+    this.editParentTicketSuggestOpen = this.editParentTicketSuggestions().length > 0;
   }
 
   onNewParentFolderInput(value: string): void {
     this.newParentFolderSearch = value;
-    this.newParentFolderSuggestOpen = true;
+    this.newParentFolderSuggestOpen = this.newParentFolderSuggestions().length > 0;
   }
 
   onEditParentFolderInput(value: string): void {
     this.editParentFolderSearch = value;
-    this.editParentFolderSuggestOpen = true;
+    this.editParentFolderSuggestOpen = this.editParentFolderSuggestions().length > 0;
   }
 
-  onNewParentTicketBlur(): void {
-    setTimeout(() => {
-      this.newParentTicketSuggestOpen = false;
-    }, 180);
+  onNewParentTicketSuggestOpenChange(open: boolean): void {
+    this.newParentTicketSuggestOpen = open && this.newParentTicketSuggestions().length > 0;
   }
 
-  onEditParentTicketBlur(): void {
-    setTimeout(() => {
-      this.editParentTicketSuggestOpen = false;
-    }, 180);
+  onEditParentTicketSuggestOpenChange(open: boolean): void {
+    this.editParentTicketSuggestOpen = open && this.editParentTicketSuggestions().length > 0;
   }
 
-  onNewParentFolderBlur(): void {
-    setTimeout(() => {
-      this.newParentFolderSuggestOpen = false;
-    }, 180);
+  onNewParentFolderSuggestOpenChange(open: boolean): void {
+    this.newParentFolderSuggestOpen =
+      open && (this.newParentFolderSearch.trim().length > 0 || this.newParentFolderSuggestions().length > 0);
   }
 
-  onEditParentFolderBlur(): void {
-    setTimeout(() => {
-      this.editParentFolderSuggestOpen = false;
-    }, 180);
-  }
-
-  onNewParentTicketFocus(): void {
-    if (this.newConfig.clientId && this.newParentTicketSuggestions().length > 0) {
-      this.newParentTicketSuggestOpen = true;
-    }
-  }
-
-  onEditParentTicketFocus(): void {
-    const clientId = this.editConfig.clientId ?? '';
-
-    if (clientId && this.editParentTicketSuggestions().length > 0) {
-      this.editParentTicketSuggestOpen = true;
-    }
-  }
-
-  onNewParentFolderFocus(): void {
-    this.newParentFolderSuggestOpen = true;
-  }
-
-  onEditParentFolderFocus(): void {
-    this.editParentFolderSuggestOpen = true;
+  onEditParentFolderSuggestOpenChange(open: boolean): void {
+    this.editParentFolderSuggestOpen =
+      open && (this.editParentFolderSearch.trim().length > 0 || this.editParentFolderSuggestions().length > 0);
   }
 
   private parseBoardId(text: string): number | null {
@@ -683,7 +701,7 @@ export class AtlassianImportAdminComponent implements OnInit {
     this.editParentTicketSearch = this.describeTicketPick(c.clientId, c.agenstraParentTicketId);
     this.editParentFolderSearch = this.describeFolderPick(c.agenstraParentFolderId);
     this.onWorkspaceDataLoad(c.clientId);
-    setTimeout(() => this.showModal(this.editConfigModal));
+    this.editConfigModalOpen.set(true);
   }
 
   onEditConfigModalHidden(): void {
@@ -748,37 +766,6 @@ export class AtlassianImportAdminComponent implements OnInit {
 
   runConfig(id: string): void {
     this.facade.runConfig(id);
-  }
-
-  private showModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      const modal = (
-        window as { bootstrap?: { Modal?: { getOrCreateInstance: (el: HTMLElement) => { show: () => void } } } }
-      ).bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
-
-      if (modal) {
-        modal.show();
-      } else {
-        const ModalCtor = (window as { bootstrap?: { Modal?: new (el: HTMLElement) => { show: () => void } } })
-          .bootstrap?.Modal;
-
-        if (ModalCtor) {
-          new ModalCtor(modalElement.nativeElement).show();
-        }
-      }
-    }
-  }
-
-  private hideModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      const modal = (
-        window as { bootstrap?: { Modal?: { getInstance: (el: HTMLElement) => { hide: () => void } | undefined } } }
-      ).bootstrap?.Modal?.getInstance(modalElement.nativeElement);
-
-      if (modal) {
-        modal.hide();
-      }
-    }
   }
 
   private hostnameFromBaseUrl(baseUrl: string): string {

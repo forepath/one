@@ -1,5 +1,3 @@
-@import '../../../admin-list-page.scss';
-
 :host {
   display: flex;
   flex-direction: column;
@@ -127,10 +125,6 @@
   height: 0.5rem;
 }
 
-.list-group-item.active .container-manager-tab__container-meta .text-body-secondary {
-  color: color-mix(in srgb, var(--bs-list-group-active-color, #fff) 75%, transparent) !important;
-}
-
 .container-manager-tab__stat-badges {
   display: flex;
   flex-direction: column;
@@ -150,11 +144,6 @@
   font-weight: 500;
   line-height: 1.2;
   white-space: nowrap;
-}
-
-.list-group-item.active .container-manager-tab__stat-badge {
-  background-color: color-mix(in srgb, #fff 18%, transparent) !important;
-  color: var(--bs-list-group-active-color, #fff) !important;
 }
 
 .container-manager-tab__sidebar-footer {

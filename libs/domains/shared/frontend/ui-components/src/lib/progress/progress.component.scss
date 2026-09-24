@@ -1,0 +1,13 @@
+:host {
+  display: block;
+}
+
+.progress {
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+}
+
+.fpc-progress__label {
+  font-size: 0.75rem;
+  line-height: 1;
+  padding-inline: 0.25rem;
+}

@@ -17,15 +17,37 @@ import {
   isAuthMarketingPanelVisible,
   resetPasswordSuccess,
 } from '@forepath/identity/frontend';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcInputGroupComponent,
+  FpcOtpInputComponent,
+  FpcSectionColumnComponent,
+  FpcSectionRowComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
 
-import { IdentityOtpInputComponent } from '../otp-input/otp-input.component';
-
 @Component({
   selector: 'identity-auth-request-password-reset-confirmation',
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, IdentityOtpInputComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcInputGroupComponent,
+    FpcOtpInputComponent,
+    FpcSectionRowComponent,
+    FpcSectionColumnComponent,
+    FpcSpinnerComponent,
+  ],
   styleUrls: ['./request-password-reset-confirmation.component.scss'],
   templateUrl: './request-password-reset-confirmation.component.html',
   standalone: true,
@@ -52,6 +74,9 @@ export class IdentityRequestPasswordResetConfirmationComponent implements OnInit
   }
 
   ngOnInit(): void {
+    // Clear errors from other auth screens; keep success from the reset-request redirect.
+    this.authFacade.clearError();
+
     const emailFromQuery = this.route.snapshot.queryParamMap.get('email') ?? '';
 
     this.form = this.fb.group(

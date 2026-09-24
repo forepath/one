@@ -1,0 +1,31 @@
+// Storybook ForePath brand overlay — shared palette, scoped CSS vars for the Color set toolbar.
+@import 'bootstrap/scss/functions';
+@import '../../styles/brands/forepath/palette';
+@import '../../styles/brands/chrome';
+
+@import 'bootstrap/scss/variables';
+@import 'bootstrap/scss/variables-dark';
+@import 'bootstrap/scss/maps';
+@import 'bootstrap/scss/mixins/color-mode';
+@import 'bootstrap/scss/vendor/rfs';
+@import 'emit-root';
+
+html[data-fpc-brand='forepath'] {
+  @include fpc-brand-light-vars;
+  @include fpc-brand-badge-tint;
+  @include fpc-brand-theme-components;
+
+  --bs-primary-dark: color-mix(in srgb, var(--bs-primary) 92%, black);
+  --bs-success-dark: color-mix(in srgb, var(--bs-success) 80%, black);
+  --bs-body-bg-alt: #faf9fd;
+  --bs-dark-alt: #262828;
+  --fpc-btn-hero-dark-bg: color-mix(in srgb, var(--bs-tertiary-bg) 72%, #000);
+  --fpc-btn-hero-dark-hover: color-mix(in srgb, var(--bs-tertiary-bg) 62%, #000);
+  --fpc-btn-hero-dark-active: color-mix(in srgb, var(--bs-tertiary-bg) 54%, #000);
+
+  &[data-bs-theme='dark'] {
+    @include fpc-brand-dark-vars;
+  }
+}
+
+@import '../../styles/brands/extras';

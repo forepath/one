@@ -1,110 +1,106 @@
 <div class="section__content-wrapper d-flex flex-column border-top">
-  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center flex-wrap gap-2">
-    <div class="d-flex align-items-center flex-wrap gap-2 min-width-0">
-      <h5 class="mb-0 fw-semibold" i18n="@@featureTicketsBoard-title">Tickets</h5>
+  <fpc-page-header>
+    <div fpcPageHeaderTitle class="d-flex align-items-center flex-wrap gap-3 min-width-0">
+      <h1 class="fpc-page-header__title h5 mb-0 fw-semibold">{{ pageTitle }}</h1>
       @if (effectiveWorkspace(); as ew) {
-        <button
-          type="button"
-          class="btn btn-link text-decoration-none p-0 border-0 text-body tickets-board__workspace-badge-btn"
-          (click)="openWorkspaceSwitchModal()"
-          i18n-title="@@featureTicketsBoard-workspaceBadgeSwitchTitle"
-          title="Switch workspace"
+        <fpc-button
+          variant="link"
+          btnClass="text-decoration-none text-body"
+          class="tickets-board__workspace-badge-btn"
+          (clicked)="openWorkspaceSwitchModal()"
+          [title]="workspaceBadgeSwitchTitle"
         >
-          <small class="info-badge text-muted mt-0 bg-body-secondary py-1 px-2 rounded">
-            <i class="bi bi-building me-1" aria-hidden="true"></i>
+          <fpc-badge variant="info" color="secondary">
+            <i class="bi bi-building" aria-hidden="true"></i>
             <span class="text-truncate tickets-board__workspace-badge-label">{{ effectiveWorkspaceTitle(ew) }}</span>
-          </small>
-        </button>
+          </fpc-badge>
+        </fpc-button>
       }
     </div>
     @if (effectiveClientId() !== null) {
-      <div class="d-flex align-items-center gap-2">
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-secondary"
-          (click)="openGlobalSearchModal()"
-          i18n-title="@@featureTicketsBoard-globalSearchOpenTitle"
-          title="Search tickets (Ctrl+F)"
-          i18n-aria-label="@@featureTicketsBoard-globalSearchOpenAria"
-          aria-label="Search tickets"
-        >
-          <i class="bi bi-search" aria-hidden="true"></i>
-        </button>
-        <button
-          type="button"
-          class="btn btn-sm btn-primary"
-          (click)="showCreateTicketModal()"
-          i18n-title="@@featureTicketsBoard-newTicket"
-          title="Add"
-          i18n-aria-label="@@featureTicketsBoard-newTicket"
-          aria-label="Add"
-        >
-          <i class="bi bi-plus" aria-hidden="true"></i>
-        </button>
-      </div>
-    }
-  </div>
-
-  <div class="d-flex align-items-center gap-0 d-md-none border-bottom btn-group-options">
-    @for (status of lanes; track status) {
-      <button
-        type="button"
-        class="btn btn-sm btn-options"
-        [class.btn-outline-secondary]="selectedLane() !== status"
-        [class.btn-primary]="selectedLane() === status"
-        (click)="selectedLane.set(status)"
+      <fpc-button
+        fpcPageHeaderActions
+        variant="dark"
+        size="sm"
+        iconOnly
+        [ariaLabel]="globalSearchAriaLabel"
+        [title]="globalSearchTitle"
+        (clicked)="openGlobalSearchModal()"
       >
-        {{ laneLabel(status) }}
-      </button>
+        <i class="bi bi-search" aria-hidden="true"></i>
+      </fpc-button>
     }
-  </div>
+    @if (effectiveClientId() !== null) {
+      <fpc-button
+        fpcPageHeaderActions
+        variant="primary"
+        size="sm"
+        iconOnly
+        [ariaLabel]="newTicketAriaLabel"
+        [title]="newTicketAriaLabel"
+        (clicked)="showCreateTicketModal()"
+      >
+        <i class="bi bi-plus" aria-hidden="true"></i>
+      </fpc-button>
+    }
+  </fpc-page-header>
+
+  <fpc-tab-group
+    class="d-md-none flex-shrink-0"
+    [activeId]="selectedLane()"
+    (activeIdChange)="onSelectedLaneTabChange($event)"
+  >
+    @for (status of lanes; track status) {
+      <fpc-tab [id]="status" [label]="laneLabel(status)" />
+    }
+  </fpc-tab-group>
 
   @if (effectiveClientId() === null) {
-    @if (clientsLoading$ | async) {
-      <div class="alert alert-info d-flex align-items-center gap-2" role="status">
-        <span class="spinner-border spinner-border-sm text-primary" aria-hidden="true"></span>
-        <span i18n="@@featureTicketsBoard-workspaceSwitcherLoading">Loading workspaces…</span>
-      </div>
-    } @else {
-      @if (clients$ | async; as bannerClients) {
-        @if (bannerClients.length === 0) {
-          <div class="alert alert-warning" role="status">
-            <p class="mb-2" i18n="@@featureTicketsBoard-workspaceSwitcherEmpty">You don't have any workspaces yet.</p>
-            <p class="small text-muted mb-3 mb-md-2" i18n="@@featureTicketsBoard-workspaceSwitcherEmptyHint">
-              Create one from Spaces, or open Spaces if a workspace was shared with you.
-            </p>
-            <a routerLink="/clients" class="btn btn-primary btn-sm" i18n="@@featureTicketsBoard-goToSpaces"
-              >Go to Spaces</a
-            >
-          </div>
-        } @else {
-          <div class="alert alert-primary" role="status">
-            <span i18n="@@featureTicketsBoard-selectSpacePrefix">Select a space from</span>&nbsp;
-            <a routerLink="/clients" i18n="@@featureTicketsBoard-selectSpaceLink">Spaces</a>&nbsp;
-            <span i18n="@@featureTicketsBoard-selectSpaceSuffix">to load tickets.</span>
-            <div class="mt-2">
-              <button type="button" class="btn btn-outline-primary btn-sm" (click)="openWorkspaceSwitchModal()">
-                <span i18n="@@featureTicketsBoard-chooseWorkspaceButton">Choose workspace…</span>
-              </button>
-            </div>
-          </div>
-        }
+    @if (clients$ | async; as bannerClients) {
+      @if (bannerClients.length === 0) {
+        <fpc-empty-state
+          class="flex-grow-1"
+          message="No workspaces yet"
+          i18n-message="@@featureTicketsBoard-workspaceSwitcherEmpty"
+        >
+          <fpc-button
+            fpcEmptyStateActions
+            variant="primary"
+            size="sm"
+            routerLink="/clients"
+            i18n="@@featureTicketsBoard-goToSpaces"
+          >
+            Go to Spaces
+          </fpc-button>
+        </fpc-empty-state>
+      } @else {
+        <fpc-empty-state
+          class="flex-grow-1"
+          message="No workspace selected yet"
+          i18n-message="@@featureTicketsBoard-noWorkspaceSelected"
+        >
+          <fpc-button
+            fpcEmptyStateActions
+            variant="primary"
+            size="sm"
+            (clicked)="openWorkspaceSwitchModal()"
+            i18n="@@featureTicketsBoard-chooseWorkspaceButton"
+          >
+            Choose workspace…
+          </fpc-button>
+        </fpc-empty-state>
       }
     }
   } @else {
     @if (listError$ | async; as err) {
-      <div class="alert alert-danger" role="alert">{{ err }}</div>
+      <fpc-alert variant="danger" [flush]="true" [message]="err" />
     }
 
     @if (loadingList$ | async) {
       <div class="d-flex justify-content-center py-5">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden" i18n="@@featureTicketsBoard-loading">Loading tickets…</span>
-        </div>
+        <fpc-spinner variant="primary" [label]="loadingLabel" />
       </div>
-    }
-
-    @if (ticketsBoardRowsByStatus$ | async; as byStatus) {
+    } @else if (ticketsBoardRowsByStatus$ | async; as byStatus) {
       <section class="section__row flex-grow-1 min-h-0">
         @for (status of lanes; track status) {
           @let laneRows = filteredLaneRows(status, byStatus[status]);
@@ -112,31 +108,20 @@
             class="section__column d-md-flex flex-column border-end min-h-0"
             [class.d-none]="selectedLane() !== status"
           >
-            <div class="tickets-board__lane card h-100 border-0">
-              <div class="card-header py-2 small fw-semibold d-none d-md-block">{{ laneLabel(status) }}</div>
-              <form class="tickets-board__lane-search">
-                <label
-                  [attr.for]="'tickets-lane-search-' + status"
-                  class="visually-hidden"
-                  i18n="@@featureTicketsBoard-searchLaneLabel"
-                  >Search tickets</label
-                >
-                <div class="input-group search-input-container border-bottom">
-                  <i class="bi bi-search" aria-hidden="true"></i>
-                  <input
-                    [id]="'tickets-lane-search-' + status"
-                    type="search"
-                    class="form-control border-0 search-input"
-                    placeholder="Search tickets"
-                    i18n-placeholder="@@featureTicketsBoard-searchLanePlaceholder"
-                    [name]="'lane-search-' + status"
-                    [ngModel]="laneSearchQueries()[status]"
-                    (ngModelChange)="setLaneSearchQuery(status, $event)"
-                  />
-                </div>
-              </form>
+            <fpc-board-lane class="h-100" [scrollBody]="false" [ariaLabel]="laneLabel(status)">
+              <fpc-lane-header fpcBoardLaneHeader flush visibility="md-up" [title]="laneLabel(status)" />
+              <fpc-search-field
+                fpcBoardLaneSearch
+                [inputId]="'tickets-lane-search-' + status"
+                [name]="'lane-search-' + status"
+                [bordered]="false"
+                [placeholder]="laneSearchPlaceholder"
+                [ariaLabel]="laneSearchAriaLabel"
+                [value]="laneSearchQueries()[status]"
+                (valueChange)="setLaneSearchQuery(status, $event)"
+              />
               <div
-                class="tickets-board__lane-dropzone list-group list-group-flush tickets-board__list"
+                class="tickets-board__lane-dropzone list-group list-group-flush flex-grow-1 min-h-0 d-flex flex-column"
                 [class.tickets-board__lane-dropzone--over]="isLaneDragHighlight(status)"
                 (dragover)="onLaneDragOver($event, status)"
                 (dragenter)="onLaneDragEnter($event, status)"
@@ -144,19 +129,21 @@
                 (drop)="onLaneDrop($event, status)"
               >
                 @if (byStatus[status].length === 0) {
-                  <div
-                    class="list-group-item text-muted small py-3 text-center tickets-board__empty-lane"
-                    i18n="@@featureTicketsBoard-dropHere"
-                  >
-                    Drop tickets here
-                  </div>
+                  <fpc-empty-state
+                    class="tickets-board__empty-lane"
+                    size="sm"
+                    icon="arrow-down-circle"
+                    message="Drop tickets here"
+                    i18n-message="@@featureTicketsBoard-dropHere"
+                  />
                 } @else if (laneRows.length === 0) {
-                  <div
-                    class="list-group-item text-muted small py-3 text-center tickets-board__empty-lane"
-                    i18n="@@featureTicketsBoard-noMatchingTickets"
-                  >
-                    No matching tickets
-                  </div>
+                  <fpc-empty-state
+                    class="tickets-board__empty-lane"
+                    size="sm"
+                    icon="search"
+                    message="No search results"
+                    i18n-message="@@featureTicketsBoard-noMatchingTickets"
+                  />
                 } @else {
                   <cdk-virtual-scroll-viewport
                     class="tickets-board__viewport"
@@ -197,25 +184,28 @@
                           }
                         </div>
                         <div class="tickets-board__meta-chips d-flex flex-wrap align-items-center gap-1 mt-1">
-                          <small
-                            class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
+                          <fpc-badge
+                            variant="info"
+                            color="secondary"
                             [ngClass]="ticketPriorityBadgeClass(row.ticket.priority)"
                             [attr.title]="row.ticket.priority"
-                            >{{ priorityLabel(row.ticket.priority) }}</small
+                            >{{ priorityLabel(row.ticket.priority) }}</fpc-badge
                           >
-                          <small
-                            class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
+                          <fpc-badge
+                            variant="info"
+                            color="secondary"
                             [ngClass]="ticketStatusBadgeClass(row.ticket.status)"
                             [attr.title]="row.ticket.status"
-                            >{{ laneLabel(row.ticket.status) }}</small
+                            >{{ laneLabel(row.ticket.status) }}</fpc-badge
                           >
                           @if (row.ticket.subtaskCounts; as sc) {
                             @if (sc.open + sc.done > 0) {
-                              <small
-                                class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
+                              <fpc-badge
+                                variant="info"
+                                color="secondary"
                                 i18n-title="@@featureTicketsBoard-subtaskCountTitle"
                                 title="Direct subtasks (done / total)"
-                                >{{ sc.done }}/{{ sc.open + sc.done }}</small
+                                >{{ sc.done }}/{{ sc.open + sc.done }}</fpc-badge
                               >
                             }
                           }
@@ -225,7 +215,7 @@
                   </cdk-virtual-scroll-viewport>
                 }
               </div>
-            </div>
+            </fpc-board-lane>
           </div>
         }
       </section>
@@ -233,421 +223,428 @@
   }
 </div>
 
-<!-- Ticket detail (modal-xl) -->
-<div
-  class="modal fade"
-  id="ticketDetailModal"
-  tabindex="-1"
-  aria-hidden="true"
-  #ticketDetailModal
-  data-bs-backdrop="static"
+<fpc-modal
+  class="tickets-board__ticket-detail-modal"
+  [(open)]="ticketDetailModalOpen"
+  size="xl"
+  [scrollable]="true"
+  [centered]="false"
+  [closeOnBackdrop]="false"
+  (closed)="onCloseModal()"
 >
-  <div class="modal-dialog modal-xl modal-ticket-detail modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header flex-column align-items-stretch gap-0 pb-2">
-        <div class="d-flex w-100 align-items-center justify-content-between">
-          <h2
-            class="modal-title h5 mb-0 d-flex align-items-center gap-2 min-width-0 flex-grow-1"
-            id="ticketDetailModalLabel"
-          >
-            @if (detail(); as det) {
-              @if (det.shas.short) {
-                <small class="text-muted small flex-shrink-0">{{ det.shas.short }}</small>
-              }
-              @if (detailTitleEditing()) {
-                <input
-                  #detailTitleInput
-                  type="text"
-                  class="form-control form-control-sm flex-grow-1 min-width-0"
-                  [ngModel]="detailTitleDraft()"
-                  (ngModelChange)="detailTitleDraft.set($event)"
-                  [disabled]="ticketsSaving()"
-                  (blur)="onDetailTitleBlur()"
-                />
-              } @else {
-                <span
-                  class="text-truncate min-width-0 tickets-board__detail-title-clickable"
-                  role="button"
-                  tabindex="0"
-                  [attr.title]="det.title"
-                  (click)="onDetailTitleClick(det)"
-                  (keydown.enter)="onDetailTitleClick(det)"
-                  (keydown.space)="$event.preventDefault(); onDetailTitleClick(det)"
-                  >{{ det.title }}</span
-                >
-              }
-              @if (det.automationEligible) {
-                <small class="flex-shrink-0">
-                  <i
-                    class="bi bi-lightning-charge-fill d-flex align-items-center justify-content-center text-bg-primary status-badge"
-                    i18n-title="@@featureTicketsBoard-automationEligibleTitle"
-                    title="Autonomous prototyping enabled"
-                  ></i>
-                </small>
-              }
-            } @else {
-              <span i18n="@@featureTicketsBoard-modalLoadingTitle">Ticket</span>
-            }
-          </h2>
-          <button
-            type="button"
-            class="btn-close"
-            aria-label="Close"
-            i18n-aria-label="@@featureTicketsBoard-modalCloseAria"
-            (click)="onCloseModal()"
-          ></button>
-        </div>
-        @if (detail(); as d) {
-          <div class="d-flex w-100 flex-wrap align-items-center gap-2 my-2 min-width-0">
-            <nav
-              class="info-badge text-muted bg-body-tertiary py-1 px-3 rounded tickets-hierarchy-badge flex-grow-1 min-width-0"
-              [ngClass]="ticketStatusBadgeClass(d.status)"
-              aria-label="Ticket hierarchy"
-              i18n-aria-label="@@featureTicketsBoard-breadcrumbNavAria"
-            >
-              <ol class="breadcrumb tickets-board__breadcrumb mb-0 py-1 small">
-                @for (crumb of detailBreadcrumb$ | async; track crumb.id) {
-                  <li class="breadcrumb-item" [class.active]="crumb.id === d.id">
-                    @if (crumb.id === d.id) {
-                      <span
-                        class="text-truncate d-inline-block tickets-board__breadcrumb-current"
-                        [title]="crumb.title"
-                        >{{ crumb.title }}</span
-                      >
-                    } @else {
-                      <button
-                        type="button"
-                        class="btn btn-link p-0 text-start text-truncate tickets-board__breadcrumb-link"
-                        [title]="crumb.title"
-                        (click)="onBreadcrumbNavigate(crumb.id)"
-                      >
-                        {{ crumb.title }}
-                      </button>
-                    }
-                  </li>
-                }
-              </ol>
-            </nav>
-            <div class="d-flex align-items-center gap-1 flex-shrink-0 align-self-center">
-              <button
-                type="button"
-                class="btn btn-outline-primary btn-sm py-1 px-3"
-                (click)="onPrototypeInChat()"
-                [disabled]="bodyGenInProgress()"
-                i18n="@@featureTicketsBoard-prototypeButton"
-              >
-                Open prototype in chat
-              </button>
-              @if (effectiveWorkspace()?.client?.canManageWorkspaceConfiguration) {
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary btn-sm py-1 px-2"
-                  (click)="openTicketMigrationModal()"
-                  [disabled]="ticketsSaving()"
-                  i18n-title="@@featureTicketsBoard-migrateWorkspaceTitle"
-                  title="Move ticket to another workspace"
-                >
-                  <i class="bi bi-folder-symlink" aria-hidden="true"></i>
-                </button>
-              }
-            </div>
-          </div>
+  <div fpcModalTitle class="d-flex w-100 align-items-center min-width-0">
+    <div class="d-flex align-items-center gap-2 min-width-0 flex-grow-1 mb-0">
+      @if (detail(); as det) {
+        @if (det.shas.short) {
+          <small class="text-muted small flex-shrink-0">{{ det.shas.short }}</small>
         }
-      </div>
-      <div class="modal-body p-0 d-flex overflow-hidden">
-        @if (detailLoading$ | async) {
-          <div class="d-flex justify-content-center py-4">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden" i18n="@@featureTicketsBoard-detailLoading">Loading ticket…</span>
-            </div>
-          </div>
+        @if (detailTitleEditing()) {
+          <fpc-form-control
+            #detailTitleInput
+            size="sm"
+            controlClass="flex-grow-1 min-width-0"
+            [ngModel]="detailTitleDraft()"
+            (ngModelChange)="detailTitleDraft.set($event)"
+            [disabled]="ticketsSaving()"
+            (focusout)="onDetailTitleBlur()"
+          />
         } @else {
-          @if (detail(); as d) {
-            <div class="row g-0 w-100 overflow-hidden">
-              <div class="col-lg-7 h-100 overflow-hidden overflow-y-auto p-3">
-                <dl class="row small mb-2 align-items-center">
-                  @if (d.shas.short || d.shas.long) {
-                    <dt class="col-sm-3 mb-2" i18n="@@featureTicketsBoard-fieldShas">SHAs</dt>
-                    <dd class="col-sm-9 mb-2 d-flex align-items-center gap-2">
-                      @if (d.shas.short) {
-                        <small
-                          class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded tickets-board__chip--activity-muted"
-                          >{{ d.shas.short }}</small
-                        >
-                      }
-                      @if (d.shas.long) {
-                        <small
-                          class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded tickets-board__chip--activity-muted"
-                          >{{ d.shas.long }}</small
-                        >
-                      }
-                    </dd>
-                  }
-                  <dt class="col-sm-3" i18n="@@featureTicketsBoard-fieldStatus">Status</dt>
-                  <dd class="col-sm-9 mb-0">
-                    <select
-                      class="form-select form-select-sm"
-                      [ngModel]="d.status"
-                      (ngModelChange)="onDetailStatusModelChange(d.id, $event)"
-                    >
-                      @for (s of statusOptions; track s) {
-                        <option [ngValue]="s">{{ laneLabel(s) }}</option>
-                      }
-                    </select>
+          <span
+            class="text-truncate min-width-0 tickets-board__detail-title-clickable"
+            role="button"
+            tabindex="0"
+            [attr.title]="det.title"
+            (click)="onDetailTitleClick(det)"
+            (keydown.enter)="onDetailTitleClick(det)"
+            (keydown.space)="$event.preventDefault(); onDetailTitleClick(det)"
+            >{{ det.title }}</span
+          >
+        }
+        @if (det.automationEligible) {
+          <small class="flex-shrink-0">
+            <i
+              class="bi bi-lightning-charge-fill d-flex align-items-center justify-content-center text-bg-primary status-badge"
+              i18n-title="@@featureTicketsBoard-automationEligibleTitle"
+              title="Autonomous prototyping enabled"
+            ></i>
+          </small>
+        }
+      } @else {
+        <span i18n="@@featureTicketsBoard-modalLoadingTitle">Ticket</span>
+      }
+    </div>
+  </div>
+  <div class="tickets-board__ticket-detail-layout d-flex flex-column flex-grow-1 min-h-0 overflow-hidden w-100">
+    @if (detail(); as d) {
+      <div
+        class="tickets-board__ticket-detail-toolbar d-flex w-100 flex-wrap align-items-center gap-2 px-3 pt-2 pb-2 flex-shrink-0 min-width-0"
+      >
+        <div class="tickets-board__hierarchy-box flex-grow-1 min-width-0 border rounded px-3">
+          <fpc-breadcrumbs
+            size="sm"
+            divider="›"
+            i18n-ariaLabel="@@featureTicketsBoard-breadcrumbNavAria"
+            ariaLabel="Ticket hierarchy"
+          >
+            @for (crumb of detailBreadcrumb$ | async; track crumb.id) {
+              @if (crumb.id === d.id) {
+                <fpc-breadcrumb-item [label]="crumb.title" [title]="crumb.title" [active]="true" />
+              } @else {
+                <fpc-breadcrumb-item
+                  [label]="crumb.title"
+                  [title]="crumb.title"
+                  href="#"
+                  (selected)="onHierarchyBreadcrumbSelected($event, crumb.id)"
+                />
+              }
+            }
+          </fpc-breadcrumbs>
+        </div>
+        <div class="d-flex align-items-center gap-1 flex-shrink-0 align-self-center">
+          <fpc-button
+            variant="primary"
+            size="sm"
+            (clicked)="onPrototypeInChat()"
+            [disabled]="bodyGenInProgress()"
+            i18n="@@featureTicketsBoard-prototypeButton"
+          >
+            Open prototype in chat
+          </fpc-button>
+          @if (effectiveWorkspace()?.client?.canManageWorkspaceConfiguration && migrationTargetChoices().length > 0) {
+            <fpc-button
+              variant="dark"
+              size="sm"
+              [iconOnly]="true"
+              (clicked)="openTicketMigrationModal()"
+              [disabled]="ticketsSaving()"
+              i18n-title="@@featureTicketsBoard-migrateWorkspaceTitle"
+              title="Move ticket to another workspace"
+            >
+              <i class="bi bi-folder-symlink" aria-hidden="true"></i>
+            </fpc-button>
+          }
+        </div>
+      </div>
+    }
+    <div class="tickets-board__ticket-detail-body d-flex overflow-hidden w-100 flex-grow-1 min-h-0">
+      @if (detailLoading$ | async) {
+        <div class="d-flex justify-content-center py-4">
+          <fpc-spinner variant="primary" i18n-label="@@featureTicketsBoard-detailLoading" label="Loading ticket…" />
+        </div>
+      } @else {
+        @if (detail(); as d) {
+          <div class="row g-0 w-100 overflow-hidden">
+            <div class="col-lg-7 h-100 overflow-hidden overflow-y-auto p-3">
+              <dl class="row small mb-3 align-items-center">
+                @if (d.shas.short || d.shas.long) {
+                  <dt class="col-sm-3 mb-2" i18n="@@featureTicketsBoard-fieldShas">SHAs</dt>
+                  <dd class="col-sm-9 mb-2 d-flex align-items-center gap-2">
+                    @if (d.shas.short) {
+                      <fpc-badge variant="info" color="secondary" class="tickets-board__chip--activity-muted">{{
+                        d.shas.short
+                      }}</fpc-badge>
+                    }
+                    @if (d.shas.long) {
+                      <fpc-badge variant="info" color="secondary" class="tickets-board__chip--activity-muted">{{
+                        d.shas.long
+                      }}</fpc-badge>
+                    }
                   </dd>
-                  <dt class="col-sm-3 mt-2" i18n="@@featureTicketsBoard-fieldPriority">Priority</dt>
-                  <dd class="col-sm-9 mt-2 mb-0">
-                    <select
-                      class="form-select form-select-sm"
-                      [ngModel]="d.priority"
-                      (ngModelChange)="onDetailPriorityModelChange(d.id, $event)"
+                }
+                <dt class="col-sm-3" i18n="@@featureTicketsBoard-fieldStatus">Status</dt>
+                <dd class="col-sm-9 mb-0">
+                  <fpc-form-control
+                    controlType="select"
+                    size="sm"
+                    [ngModel]="d.status"
+                    (ngModelChange)="onDetailStatusModelChange(d.id, $event)"
+                  >
+                    @for (s of statusOptions; track s) {
+                      <option [value]="s">{{ laneLabel(s) }}</option>
+                    }
+                  </fpc-form-control>
+                </dd>
+                <dt class="col-sm-3 mt-2" i18n="@@featureTicketsBoard-fieldPriority">Priority</dt>
+                <dd class="col-sm-9 mt-2 mb-0">
+                  <fpc-form-control
+                    controlType="select"
+                    size="sm"
+                    [ngModel]="d.priority"
+                    (ngModelChange)="onDetailPriorityModelChange(d.id, $event)"
+                  >
+                    @for (p of priorityOptions; track p) {
+                      <option [value]="p">{{ priorityLabel(p) }}</option>
+                    }
+                  </fpc-form-control>
+                </dd>
+                <dt class="col-sm-3 mt-2" id="ticketAgentSelectLabel" i18n="@@featureTicketsBoard-agentLabel">
+                  Agent for chat / AI
+                </dt>
+                <dd class="col-sm-9 mt-2 mb-0">
+                  <framework-agent-select
+                    inputId="ticketAgentSelect"
+                    size="sm"
+                    [clientId]="effectiveClientId() ?? ''"
+                    [agents]="automationAgentChoices()"
+                    [selectedAgentId]="selectedAgentForAi()"
+                    (selectedAgentIdChange)="onPreferredChatAgentChange(d, $event)"
+                    i18n-placeholder="@@featureTicketsBoard-agentPlaceholder"
+                    placeholder="Select agent…"
+                  />
+                </dd>
+                @let total = d.tasks.open + d.tasks.children.open + d.tasks.done + d.tasks.children.done;
+                @if (total > 0) {
+                  <dt class="col-sm-3 mt-2" id="ticketAcceptanceLabel" i18n="@@featureTicketsBoard-acceptanceLabel">
+                    Acceptance
+                    @let percentage = ((d.tasks.done + d.tasks.children.done) / total) * 100;
+                    <span class="text-muted small d-block fw-normal" [attr.aria-label]="percentage + '%'"
+                      >{{ percentage | number: '1.0-0' }}%</span
                     >
-                      @for (p of priorityOptions; track p) {
-                        <option [ngValue]="p">{{ priorityLabel(p) }}</option>
-                      }
-                    </select>
-                  </dd>
-                  <dt class="col-sm-3 mt-2" id="ticketAgentSelectLabel" i18n="@@featureTicketsBoard-agentLabel">
-                    Agent for chat / AI
                   </dt>
-                  <dd class="col-sm-9 mt-2 mb-0">
-                    <select
-                      id="ticketAgentSelect"
-                      class="form-select form-select-sm"
-                      aria-labelledby="ticketAgentSelectLabel"
-                      [ngModel]="selectedAgentForAi() ?? ''"
-                      (ngModelChange)="onPreferredChatAgentChange(d, $event)"
+                  <dd class="col-sm-9 mt-2 mb-0 d-flex align-items-center gap-2">
+                    <div
+                      class="progress w-100 rounded-pill"
+                      role="progressbar"
+                      aria-labelledby="ticketAcceptanceLabel"
+                      [attr.aria-valuenow]="percentage"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
                     >
-                      <option value="" i18n="@@featureTicketsBoard-agentPlaceholder">Select agent…</option>
-                      @for (a of chatCapableAgents$ | async; track a.id) {
-                        <option [value]="a.id">{{ a.name }}</option>
-                      }
-                    </select>
+                      <div class="progress-bar" [style.width]="percentage + '%'"></div>
+                    </div>
                   </dd>
-                  @let total = d.tasks.open + d.tasks.children.open + d.tasks.done + d.tasks.children.done;
-                  @if (total > 0) {
-                    <dt class="col-sm-3 mt-2" id="ticketAcceptanceLabel" i18n="@@featureTicketsBoard-acceptanceLabel">
-                      Acceptance
-                      @let percentage = ((d.tasks.done + d.tasks.children.done) / total) * 100;
-                      <span class="text-muted small d-block fw-normal" [attr.aria-label]="percentage + '%'"
-                        >{{ percentage | number: '1.0-0' }}%</span
+                }
+                @if (d.subtaskCounts; as st) {
+                  @let stTotal = st.open + st.done;
+                  @if (stTotal > 0) {
+                    @let stPct = (st.done / stTotal) * 100;
+                    <dt
+                      class="col-sm-3 mt-2"
+                      id="ticketSubtaskProgressLabel"
+                      i18n="@@featureTicketsBoard-subtaskProgressLabel"
+                    >
+                      Subtasks
+                      <span class="text-muted small d-block fw-normal" [attr.aria-label]="stPct + '%'"
+                        >{{ stPct | number: '1.0-0' }}%</span
                       >
                     </dt>
                     <dd class="col-sm-9 mt-2 mb-0 d-flex align-items-center gap-2">
                       <div
                         class="progress w-100 rounded-pill"
                         role="progressbar"
-                        aria-labelledby="ticketAcceptanceLabel"
-                        [attr.aria-valuenow]="percentage"
+                        aria-label="Subtask progress"
+                        i18n-aria-label="@@featureTicketsBoard-subtaskProgressAria"
+                        [attr.aria-valuenow]="stPct"
                         aria-valuemin="0"
                         aria-valuemax="100"
                       >
-                        <div class="progress-bar" [style.width]="percentage + '%'"></div>
+                        <div class="progress-bar bg-secondary" [style.width]="stPct + '%'"></div>
                       </div>
                     </dd>
                   }
-                  @if (d.subtaskCounts; as st) {
-                    @let stTotal = st.open + st.done;
-                    @if (stTotal > 0) {
-                      @let stPct = (st.done / stTotal) * 100;
-                      <dt
-                        class="col-sm-3 mt-2"
-                        id="ticketSubtaskProgressLabel"
-                        i18n="@@featureTicketsBoard-subtaskProgressLabel"
-                      >
-                        Subtasks
-                        <span class="text-muted small d-block fw-normal" [attr.aria-label]="stPct + '%'"
-                          >{{ stPct | number: '1.0-0' }}%</span
-                        >
-                      </dt>
-                      <dd class="col-sm-9 mt-2 mb-0 d-flex align-items-center gap-2">
-                        <div
-                          class="progress w-100 rounded-pill"
-                          role="progressbar"
-                          aria-label="Subtask progress"
-                          i18n-aria-label="@@featureTicketsBoard-subtaskProgressAria"
-                          [attr.aria-valuenow]="stPct"
-                          aria-valuemin="0"
-                          aria-valuemax="100"
-                        >
-                          <div class="progress-bar bg-secondary" [style.width]="stPct + '%'"></div>
-                        </div>
-                      </dd>
-                    }
-                  }
-                </dl>
+                }
+              </dl>
 
-                <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-2">
-                  <h3 class="h6 mb-0" i18n="@@featureTicketsBoard-descriptionHeading">Description</h3>
-                  <button
-                    type="button"
-                    class="btn btn-outline-secondary btn-sm"
-                    (click)="onGenerateBody()"
-                    [disabled]="bodyGenInProgress()"
-                    i18n-title="@@featureTicketsBoard-generateBodyTitle"
-                    title="Generate description with AI (uses selected agent)"
-                    i18n-aria-label="@@featureTicketsBoard-generateBodyTitle"
-                    aria-label="Generate description with AI (uses selected agent)"
-                  >
-                    @if (bodyGenInProgress()) {
-                      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                    } @else {
+              <div class="d-flex flex-column gap-3">
+                <div>
+                  <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-2">
+                    <h3 class="h6 mb-0" i18n="@@featureTicketsBoard-descriptionHeading">Description</h3>
+                    <fpc-button
+                      variant="dark"
+                      size="sm"
+                      [iconOnly]="true"
+                      [loading]="bodyGenInProgress()"
+                      (clicked)="onGenerateBody()"
+                      [disabled]="bodyGenInProgress()"
+                      i18n-title="@@featureTicketsBoard-generateBodyTitle"
+                      title="Generate description with AI (uses selected agent)"
+                      i18n-ariaLabel="@@featureTicketsBoard-generateBodyTitle"
+                      ariaLabel="Generate description with AI (uses selected agent)"
+                    >
                       <i class="bi bi-magic" aria-hidden="true"></i>
-                    }
-                  </button>
-                </div>
-                <label
-                  class="visually-hidden"
-                  for="ticketDescriptionEditor"
-                  i18n="@@featureTicketsBoard-descriptionLabel"
-                  >Ticket description</label
-                >
-                <framework-ticket-editor
-                  [markdown]="descriptionDraft()"
-                  (markdownChange)="descriptionDraft.set($event)"
-                  (blurred)="onDescriptionDraftCommit()"
-                  i18n-placeholder="@@featureTicketsBoard-descriptionPlaceholder"
-                  placeholder="Describe the ticket. Changes save when you leave this field."
-                ></framework-ticket-editor>
-
-                <div class="d-flex flex-wrap align-items-center gap-2 my-3">
-                  <button
-                    type="button"
-                    class="btn btn-outline-secondary btn-sm"
-                    (click)="showCreateSubtaskModal()"
-                    [disabled]="saving$ | async"
-                    i18n-title="@@featureTicketsBoard-addSubtask"
-                    title="Add subtask"
-                    i18n-aria-label="@@featureTicketsBoard-addSubtask"
-                    aria-label="Add subtask"
-                  >
-                    <i class="bi bi-plus" aria-hidden="true"></i>
-                  </button>
-                </div>
-
-                @if (detailSubtaskRows().length > 0) {
-                  <h3 class="h6 mt-1 mb-2" i18n="@@featureTicketsBoard-subtasksHeading">Subtasks</h3>
-                  <ul
-                    class="list-group list-group-flush tickets-board__detail-subtasks border rounded small mb-3"
-                    role="list"
-                  >
-                    @for (row of detailSubtaskRows(); track row.ticket.id) {
-                      <li
-                        class="list-group-item tickets-board__detail-subtask-row py-2 px-3 position-relative"
-                        [class.tickets-board__detail-subtask--nested]="row.depth > 0"
-                        [style.--tickets-board-nest-depth]="row.depth"
-                        role="listitem"
-                      >
-                        <button
-                          type="button"
-                          class="btn btn-link p-0 text-start text-decoration-none tickets-board__detail-subtask-btn"
-                          (click)="openTicketDetailFlow(row.ticket.id)"
-                          i18n-title="@@featureTicketsBoard-openSubtaskTitle"
-                          title="Open subtask"
-                        >
-                          <span class="d-flex align-items-center gap-2 w-100 min-width-0">
-                            @if (row.ticket.shas.short) {
-                              <small class="text-muted flex-shrink-0 small fw-medium">{{
-                                row.ticket.shas.short
-                              }}</small>
-                            }
-                            <span class="fw-medium text-break flex-grow-1 min-width-0">{{ row.ticket.title }}</span>
-                            @if (row.ticket.automationEligible) {
-                              <small class="flex-shrink-0">
-                                <i
-                                  class="bi bi-lightning-charge-fill d-flex align-items-center justify-content-center text-bg-primary status-badge"
-                                  i18n-title="@@featureTicketsBoard-automationEligibleTitle"
-                                  title="Autonomous prototyping enabled"
-                                ></i>
-                              </small>
-                            }
-                          </span>
-                        </button>
-                        <div class="tickets-board__meta-chips d-flex flex-wrap align-items-center gap-1 mt-1">
-                          <small
-                            class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
-                            [ngClass]="ticketPriorityBadgeClass(row.ticket.priority)"
-                            [attr.title]="row.ticket.priority"
-                            >{{ priorityLabel(row.ticket.priority) }}</small
-                          >
-                          <small
-                            class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
-                            [ngClass]="ticketStatusBadgeClass(row.ticket.status)"
-                            [attr.title]="row.ticket.status"
-                            >{{ laneLabel(row.ticket.status) }}</small
-                          >
-                        </div>
-                      </li>
-                    }
-                  </ul>
-                }
-
-                <div class="d-flex align-items-center justify-content-between gap-2 mb-2 mt-3">
-                  <button
-                    type="button"
-                    class="btn btn-outline-secondary btn-sm"
-                    (click)="openTicketRelationsModal()"
-                    i18n="@@featureTicketsBoard-addRelations"
-                  >
-                    Add relations
-                  </button>
-                </div>
-                @if (ticketRelationsLoading()) {
-                  <p class="text-muted small mb-0" i18n="@@featureTicketsBoard-loadingRelations">
-                    Loading relations...
-                  </p>
-                } @else if (ticketRelations().length > 0) {
-                  <div class="list-group list-group-flush border rounded small mb-3">
-                    @for (relation of ticketRelations(); track relation.id) {
-                      @let relationNode = ticketRelationNodeById(relation.targetNodeId);
-                      <div
-                        class="list-group-item d-flex justify-content-between align-items-center gap-2 cursor-pointer"
-                        role="button"
-                        tabindex="0"
-                        (click)="onTicketRelationClick(relation)"
-                        (keydown.enter)="onTicketRelationClick(relation)"
-                        (keydown.space)="$event.preventDefault(); onTicketRelationClick(relation)"
-                      >
-                        <div class="d-flex flex-column min-width-0">
-                          <div class="d-flex align-items-center gap-2 min-width-0">
-                            <span class="badge text-bg-light">{{
-                              relation.targetType === 'folder'
-                                ? 'Folder'
-                                : relation.targetType === 'page'
-                                  ? 'Page'
-                                  : 'Ticket'
-                            }}</span>
-                            <span>
-                              @if (relation.targetType === 'ticket') {
-                                <small class="text-muted small fw-medium me-1">{{
-                                  ticketRelationTicketShortSha(relation.targetTicketLongSha)
-                                }}</small>
-                              } @else if (relationNode?.shas?.short) {
-                                <small class="text-muted small fw-medium me-1">{{ relationNode?.shas?.short }}</small>
-                              }
-                              <span class="fw-medium text-truncate">{{
-                                relation.targetType === 'ticket'
-                                  ? ticketRelationTicketTitle(relation.targetTicketLongSha)
-                                  : relationKnowledgeTitle(relationNode?.title)
-                              }}</span>
-                            </span>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          class="btn btn-sm btn-outline-danger flex-shrink-0"
-                          (click)="$event.stopPropagation(); onRemoveTicketRelation(relation)"
-                          i18n-title="@@featureTicketsBoard-removeRelationTitle"
-                          title="Remove relation"
-                        >
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </div>
-                    }
+                    </fpc-button>
                   </div>
-                }
+                  <label
+                    class="visually-hidden"
+                    for="ticketDescriptionEditor"
+                    i18n="@@featureTicketsBoard-descriptionLabel"
+                    >Ticket description</label
+                  >
+                  <framework-ticket-editor
+                    [markdown]="descriptionDraft()"
+                    (markdownChange)="descriptionDraft.set($event)"
+                    (blurred)="onDescriptionDraftCommit()"
+                    i18n-placeholder="@@featureTicketsBoard-descriptionPlaceholder"
+                    placeholder="Describe the ticket. Changes save when you leave this field."
+                  ></framework-ticket-editor>
+                </div>
 
-                <div class="accordion mb-3 mt-2" id="ticketAutomationAccordion">
+                <div>
+                  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                    <h3 class="h6 mb-0" i18n="@@featureTicketsBoard-subtasksHeading">Subtasks</h3>
+                    <fpc-button
+                      variant="dark"
+                      size="sm"
+                      [iconOnly]="true"
+                      (clicked)="showCreateSubtaskModal()"
+                      [disabled]="!!(saving$ | async)"
+                      i18n-title="@@featureTicketsBoard-addSubtask"
+                      title="Add subtask"
+                      i18n-ariaLabel="@@featureTicketsBoard-addSubtask"
+                      ariaLabel="Add subtask"
+                    >
+                      <i class="bi bi-plus" aria-hidden="true"></i>
+                    </fpc-button>
+                  </div>
+                  @if (detailSubtaskRows().length === 0) {
+                    <p class="text-muted small mb-0" i18n="@@featureTicketsBoard-subtasksEmpty">No subtasks yet.</p>
+                  } @else {
+                    <ul
+                      class="list-group list-group-flush tickets-board__detail-subtasks border rounded small mb-0"
+                      role="list"
+                    >
+                      @for (row of detailSubtaskRows(); track row.ticket.id) {
+                        <li
+                          class="list-group-item tickets-board__detail-subtask-row py-2 px-3 position-relative"
+                          [class.tickets-board__detail-subtask--nested]="row.depth > 0"
+                          [style.--tickets-board-nest-depth]="row.depth"
+                          role="listitem"
+                        >
+                          <fpc-button
+                            variant="link"
+                            [block]="true"
+                            btnClass="p-0 text-start text-decoration-none justify-content-start"
+                            class="tickets-board__detail-subtask-btn"
+                            (clicked)="openTicketDetailFlow(row.ticket.id)"
+                            i18n-title="@@featureTicketsBoard-openSubtaskTitle"
+                            title="Open subtask"
+                          >
+                            <span class="d-flex align-items-center gap-2 w-100 min-width-0">
+                              @if (row.ticket.shas.short) {
+                                <small class="text-muted flex-shrink-0 small fw-medium">{{
+                                  row.ticket.shas.short
+                                }}</small>
+                              }
+                              <span class="fw-medium text-break flex-grow-1 min-width-0">{{ row.ticket.title }}</span>
+                              @if (row.ticket.automationEligible) {
+                                <small class="flex-shrink-0">
+                                  <i
+                                    class="bi bi-lightning-charge-fill d-flex align-items-center justify-content-center text-bg-primary status-badge"
+                                    i18n-title="@@featureTicketsBoard-automationEligibleTitle"
+                                    title="Autonomous prototyping enabled"
+                                  ></i>
+                                </small>
+                              }
+                            </span>
+                          </fpc-button>
+                          <div class="tickets-board__meta-chips d-flex flex-wrap align-items-center gap-1 mt-1">
+                            <fpc-badge
+                              variant="info"
+                              color="secondary"
+                              [ngClass]="ticketPriorityBadgeClass(row.ticket.priority)"
+                              [attr.title]="row.ticket.priority"
+                              >{{ priorityLabel(row.ticket.priority) }}</fpc-badge
+                            >
+                            <fpc-badge
+                              variant="info"
+                              color="secondary"
+                              [ngClass]="ticketStatusBadgeClass(row.ticket.status)"
+                              [attr.title]="row.ticket.status"
+                              >{{ laneLabel(row.ticket.status) }}</fpc-badge
+                            >
+                          </div>
+                        </li>
+                      }
+                    </ul>
+                  }
+                </div>
+
+                <div>
+                  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                    <h3 class="h6 mb-0" i18n="@@featureTicketsBoard-relationsHeading">Relations</h3>
+                    <fpc-button
+                      variant="dark"
+                      size="sm"
+                      [iconOnly]="true"
+                      (clicked)="openTicketRelationsModal()"
+                      [disabled]="!!(saving$ | async)"
+                      i18n-title="@@featureTicketsBoard-addRelations"
+                      title="Add relations"
+                      i18n-ariaLabel="@@featureTicketsBoard-addRelations"
+                      ariaLabel="Add relations"
+                    >
+                      <i class="bi bi-plus" aria-hidden="true"></i>
+                    </fpc-button>
+                  </div>
+                  @if (ticketRelationsLoading()) {
+                    <p class="text-muted small mb-0" i18n="@@featureTicketsBoard-loadingRelations">
+                      Loading relations...
+                    </p>
+                  } @else if (ticketRelations().length === 0) {
+                    <p class="text-muted small mb-0" i18n="@@featureTicketsBoard-relationsEmpty">No relations yet.</p>
+                  } @else {
+                    <ul
+                      class="list-group list-group-flush tickets-board__detail-relations border rounded small mb-0"
+                      role="list"
+                    >
+                      @for (relation of ticketRelations(); track relation.id) {
+                        @let relationNode = ticketRelationNodeById(relation.targetNodeId);
+                        <li class="list-group-item tickets-board__detail-relation-row py-2 px-3" role="listitem">
+                          <div class="d-flex align-items-center gap-2 min-width-0">
+                            <fpc-button
+                              variant="link"
+                              [block]="true"
+                              btnClass="p-0 text-start text-decoration-none justify-content-start"
+                              class="tickets-board__detail-relation-btn flex-grow-1 min-width-0"
+                              (clicked)="onTicketRelationClick(relation)"
+                              i18n-title="@@featureTicketsBoard-openRelationTitle"
+                              title="Open relation"
+                            >
+                              <span class="d-flex align-items-center gap-2 w-100 min-width-0">
+                                <fpc-badge variant="info" color="secondary" class="flex-shrink-0">{{
+                                  relation.targetType === 'folder'
+                                    ? 'Folder'
+                                    : relation.targetType === 'page'
+                                      ? 'Page'
+                                      : 'Ticket'
+                                }}</fpc-badge>
+                                @if (relation.targetType === 'ticket') {
+                                  <small class="text-muted flex-shrink-0 small fw-medium">{{
+                                    ticketRelationTicketShortSha(relation.targetTicketLongSha)
+                                  }}</small>
+                                } @else if (relationNode?.shas?.short) {
+                                  <small class="text-muted flex-shrink-0 small fw-medium">{{
+                                    relationNode?.shas?.short
+                                  }}</small>
+                                }
+                                <span class="fw-medium text-break flex-grow-1 min-width-0">{{
+                                  relation.targetType === 'ticket'
+                                    ? ticketRelationTicketTitle(relation.targetTicketLongSha)
+                                    : relationKnowledgeTitle(relationNode?.title)
+                                }}</span>
+                              </span>
+                            </fpc-button>
+                            <fpc-button
+                              variant="danger"
+                              size="sm"
+                              class="flex-shrink-0"
+                              [iconOnly]="true"
+                              (clicked)="onRemoveTicketRelation(relation)"
+                              i18n-title="@@featureTicketsBoard-removeRelationTitle"
+                              title="Remove relation"
+                              i18n-ariaLabel="@@featureTicketsBoard-removeRelationTitle"
+                              ariaLabel="Remove relation"
+                            >
+                              <i class="bi bi-trash" aria-hidden="true"></i>
+                            </fpc-button>
+                          </div>
+                        </li>
+                      }
+                    </ul>
+                  }
+                </div>
+
+                <div class="accordion mb-0" id="ticketAutomationAccordion">
                   <div class="accordion-item">
                     <h3 class="accordion-header">
                       <button
@@ -661,10 +658,12 @@
                         <span class="d-inline-flex align-items-center gap-2 flex-wrap">
                           <span i18n="@@featureTicketsBoard-automationAccordionTitle">Autonomous prototyping</span>
                           @if (ticketAutomationBranchBadge(); as automationBranch) {
-                            <span
-                              class="badge rounded-pill text-bg-secondary text-truncate tickets-board__automation-branch-badge"
+                            <fpc-badge
+                              color="secondary"
+                              [pill]="true"
+                              class="text-truncate tickets-board__automation-branch-badge"
                               [attr.title]="automationBranch"
-                              >{{ automationBranch }}</span
+                              >{{ automationBranch }}</fpc-badge
                             >
                           }
                         </span>
@@ -677,86 +676,63 @@
                     >
                       <div class="accordion-body small">
                         @if (ticketAutomationError(); as ae) {
-                          <div
-                            class="alert alert-danger d-flex flex-wrap justify-content-between align-items-center gap-2 py-2"
-                            role="alert"
-                          >
-                            <span>{{ ae }}</span>
-                            <button
-                              type="button"
-                              class="btn btn-sm btn-outline-danger"
-                              (click)="onDismissTicketAutomationError()"
-                              i18n="@@featureTicketsBoard-automationDismissError"
-                            >
-                              Dismiss
-                            </button>
-                          </div>
+                          <fpc-alert variant="danger" class="py-2">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                              <span>{{ ae }}</span>
+                              <fpc-button
+                                variant="danger"
+                                size="sm"
+                                (clicked)="onDismissTicketAutomationError()"
+                                i18n="@@featureTicketsBoard-automationDismissError"
+                              >
+                                Dismiss
+                              </fpc-button>
+                            </div>
+                          </fpc-alert>
                         }
                         @if (ticketAutomationLoadingConfig()) {
                           <div class="d-flex align-items-center gap-2 text-muted py-2">
-                            <span
-                              class="spinner-border spinner-border-sm text-primary"
-                              role="status"
-                              aria-hidden="true"
-                            ></span>
+                            <fpc-spinner size="sm" variant="primary" />
                             <span i18n="@@featureTicketsBoard-automationLoadingConfig"
                               >Loading automation settings…</span
                             >
                           </div>
                         } @else if (ticketAutomationConfig(); as acfg) {
-                          <div class="form-check form-switch mb-2">
-                            <input
-                              class="form-check-input"
-                              type="checkbox"
-                              role="switch"
-                              id="ticketAutomationEligible"
-                              [ngModel]="automationDraftEligible()"
-                              (ngModelChange)="automationDraftEligible.set($event)"
-                            />
-                            <label
-                              class="form-check-label"
-                              for="ticketAutomationEligible"
-                              i18n="@@featureTicketsBoard-automationEligible"
-                              >Eligible for automated runs</label
-                            >
-                          </div>
-                          <div class="form-check form-switch mb-3">
-                            <input
-                              class="form-check-input"
-                              type="checkbox"
-                              role="switch"
-                              id="ticketAutomationRequiresApproval"
-                              [ngModel]="automationDraftRequiresApproval()"
-                              (ngModelChange)="automationDraftRequiresApproval.set($event)"
-                            />
-                            <label
-                              class="form-check-label"
-                              for="ticketAutomationRequiresApproval"
-                              i18n="@@featureTicketsBoard-automationRequiresApproval"
-                              >Require approval before running</label
-                            >
-                          </div>
+                          <fpc-form-switch
+                            class="mb-2"
+                            switchId="ticketAutomationEligible"
+                            i18n-label="@@featureTicketsBoard-automationEligible"
+                            label="Eligible for automated runs"
+                            [checked]="automationDraftEligible()"
+                            (checkedChange)="automationDraftEligible.set($event)"
+                          />
+                          <fpc-form-switch
+                            class="mb-3"
+                            switchId="ticketAutomationRequiresApproval"
+                            i18n-label="@@featureTicketsBoard-automationRequiresApproval"
+                            label="Require approval before running"
+                            [checked]="automationDraftRequiresApproval()"
+                            (checkedChange)="automationDraftRequiresApproval.set($event)"
+                          />
                           @if (acfg.requiresApproval) {
                             @if (acfg.approvedAt) {
-                              <div class="alert alert-success py-2 mb-3" role="status">
+                              <fpc-alert variant="success" class="mb-3">
                                 <div class="fw-semibold mb-1" i18n="@@featureTicketsBoard-automationApprovedHeading">
                                   Approved for automation
                                 </div>
                                 <div class="text-break">{{ acfg.approvedAt | date: activityOccurredAtFormat }}</div>
-                              </div>
+                              </fpc-alert>
                             } @else {
-                              <div
-                                class="alert alert-warning py-2 mb-3"
-                                role="status"
-                                i18n="@@featureTicketsBoard-automationNeedsApproval"
-                              >
-                                Configuration changes may require approval before runs execute.
-                              </div>
+                              <fpc-alert variant="warning" class="mb-3">
+                                <span i18n="@@featureTicketsBoard-automationNeedsApproval"
+                                  >Configuration changes may require approval before runs execute.</span
+                                >
+                              </fpc-alert>
                             }
                           }
                           <div class="mb-3">
                             <span
-                              class="form-label d-block mb-1"
+                              class="fw-semibold d-block mb-1"
                               id="ticketAutomationAgentsLabel"
                               i18n="@@featureTicketsBoard-automationAllowedAgents"
                               >Allowed agents</span
@@ -772,11 +748,7 @@
                               automationTicketAutomationAgentChoices().length === 0
                             ) {
                               <div class="text-muted d-flex align-items-center gap-2 py-1">
-                                <span
-                                  class="spinner-border spinner-border-sm text-primary"
-                                  role="status"
-                                  aria-hidden="true"
-                                ></span>
+                                <fpc-spinner size="sm" variant="primary" />
                                 <span i18n="@@featureTicketsBoard-automationLoadingAgents">Loading agents…</span>
                               </div>
                             } @else if (automationAgentChoices().length === 0) {
@@ -800,31 +772,32 @@
                               >
                                 @for (a of automationTicketAutomationAgentChoices(); track a.id) {
                                   <li class="list-group-item py-2">
-                                    <div class="form-check mb-0 mh-0">
-                                      <input
-                                        class="form-check-input"
-                                        type="checkbox"
-                                        [id]="'ticketAutomationAgent' + a.id"
+                                    <div
+                                      [attr.title]="
+                                        isAutomationAllowedAgentLockedToChat(a.id)
+                                          ? ticketAutomationChatAgentLockTitle
+                                          : null
+                                      "
+                                    >
+                                      <fpc-form-check
+                                        class="mb-0 mh-0"
+                                        [checkId]="'ticketAutomationAgent' + a.id"
                                         [checked]="isAutomationAgentAllowed(a.id)"
                                         [disabled]="isAutomationAllowedAgentLockedToChat(a.id)"
-                                        [attr.title]="
-                                          isAutomationAllowedAgentLockedToChat(a.id)
-                                            ? ticketAutomationChatAgentLockTitle
-                                            : null
-                                        "
-                                        (change)="onAutomationAllowedAgentToggle(a.id, $any($event.target).checked)"
-                                      />
-                                      <label class="form-check-label w-100" [for]="'ticketAutomationAgent' + a.id">
-                                        <span class="fw-medium">{{ a.name }}</span>
-                                        <small class="text-muted small ms-1">({{ a.agentType }})</small>
-                                      </label>
+                                        (checkedChange)="onAutomationAllowedAgentToggle(a.id, $event)"
+                                      >
+                                        <label class="form-check-label w-100" [for]="'ticketAutomationAgent' + a.id">
+                                          <span class="fw-medium">{{ a.name }}</span>
+                                          <small class="text-muted small ms-1">({{ a.agentType }})</small>
+                                        </label>
+                                      </fpc-form-check>
                                     </div>
                                   </li>
                                 }
                               </ul>
                             }
                             @if (automationOrphanAllowedAgentIds().length > 0) {
-                              <div class="alert alert-warning py-2 mt-2 mb-0 small" role="status">
+                              <fpc-alert variant="warning" class="mt-2 small">
                                 <div
                                   class="fw-semibold mb-2"
                                   i18n="@@featureTicketsBoard-automationOrphanAgentsHeading"
@@ -832,64 +805,54 @@
                                   Allowed agents not listed above—uncheck to remove (e.g. autonomy off or agent removed)
                                 </div>
                                 @for (oid of automationOrphanAllowedAgentIds(); track oid) {
-                                  <div class="form-check mb-1">
-                                    <input
-                                      class="form-check-input font-monospace"
-                                      type="checkbox"
-                                      [id]="'ticketAutomationAgentOrphan' + oid"
+                                  <div
+                                    class="mb-1"
+                                    [attr.title]="
+                                      isAutomationAllowedAgentLockedToChat(oid)
+                                        ? ticketAutomationChatAgentLockTitle
+                                        : null
+                                    "
+                                  >
+                                    <fpc-form-check
+                                      [checkId]="'ticketAutomationAgentOrphan' + oid"
+                                      [inputClass]="'font-monospace'"
                                       [checked]="isAutomationAgentAllowed(oid)"
                                       [disabled]="isAutomationAllowedAgentLockedToChat(oid)"
-                                      [attr.title]="
-                                        isAutomationAllowedAgentLockedToChat(oid)
-                                          ? ticketAutomationChatAgentLockTitle
-                                          : null
-                                      "
-                                      (change)="onAutomationAllowedAgentToggle(oid, $any($event.target).checked)"
-                                    />
-                                    <label
-                                      class="form-check-label font-monospace text-break"
-                                      [for]="'ticketAutomationAgentOrphan' + oid"
-                                      >{{ oid }}</label
+                                      (checkedChange)="onAutomationAllowedAgentToggle(oid, $event)"
                                     >
+                                      <label
+                                        class="form-check-label font-monospace text-break"
+                                        [for]="'ticketAutomationAgentOrphan' + oid"
+                                        >{{ oid }}</label
+                                      >
+                                    </fpc-form-check>
                                   </div>
                                 }
-                              </div>
+                              </fpc-alert>
                             }
                           </div>
                           <div class="mb-3">
-                            <span class="form-label d-block mb-1" i18n="@@featureTicketsBoard-automationContextHeading">
+                            <span
+                              class="fw-semibold d-block mb-1"
+                              i18n="@@featureTicketsBoard-automationContextHeading"
+                            >
                               Context enrichment
                             </span>
-                            <div class="form-check form-switch mb-2">
-                              <input
-                                class="form-check-input"
-                                type="checkbox"
-                                role="switch"
-                                id="ticketAutomationIncludeWorkspaceContext"
-                                [ngModel]="automationDraftIncludeWorkspaceContext()"
-                                (ngModelChange)="automationDraftIncludeWorkspaceContext.set($event)"
-                              />
-                              <label
-                                class="form-check-label"
-                                for="ticketAutomationIncludeWorkspaceContext"
-                                i18n="@@featureTicketsBoard-automationIncludeWorkspaceContext"
-                              >
-                                Include workspace context
-                              </label>
-                            </div>
-                            <div class="form-check form-switch mb-2">
-                              <input
-                                class="form-check-input"
-                                type="checkbox"
-                                role="switch"
-                                id="ticketAutomationAutoEnrichmentEnabled"
-                                [ngModel]="automationDraftAutoEnrichmentEnabled()"
-                                (ngModelChange)="automationDraftAutoEnrichmentEnabled.set($event)"
-                              />
-                              <label class="form-check-label" for="ticketAutomationAutoEnrichmentEnabled">
-                                Auto-enrich context
-                              </label>
-                            </div>
+                            <fpc-form-switch
+                              class="mb-2"
+                              switchId="ticketAutomationIncludeWorkspaceContext"
+                              i18n-label="@@featureTicketsBoard-automationIncludeWorkspaceContext"
+                              label="Include workspace context"
+                              [checked]="automationDraftIncludeWorkspaceContext()"
+                              (checkedChange)="automationDraftIncludeWorkspaceContext.set($event)"
+                            />
+                            <fpc-form-switch
+                              class="mb-2"
+                              switchId="ticketAutomationAutoEnrichmentEnabled"
+                              label="Auto-enrich context"
+                              [checked]="automationDraftAutoEnrichmentEnabled()"
+                              (checkedChange)="automationDraftAutoEnrichmentEnabled.set($event)"
+                            />
                             <p class="text-muted small mb-2" i18n="@@featureTicketsBoard-automationContextHint">
                               Select additional environments to enrich context more specifically. The active run
                               environment is included automatically.
@@ -906,67 +869,62 @@
                               <ul class="list-group list-group-flush border rounded small mb-0">
                                 @for (a of automationAgentChoices(); track a.id) {
                                   <li class="list-group-item py-2">
-                                    <div class="form-check mb-0 mh-0">
-                                      <input
-                                        class="form-check-input"
-                                        type="checkbox"
-                                        [id]="'ticketAutomationContextEnvironment' + a.id"
+                                    <div
+                                      [attr.title]="
+                                        isAutomationContextEnvironmentLockedToChat(a.id)
+                                          ? ticketAutomationChatAgentLockTitle
+                                          : null
+                                      "
+                                    >
+                                      <fpc-form-check
+                                        class="mb-0 mh-0"
+                                        [checkId]="'ticketAutomationContextEnvironment' + a.id"
                                         [checked]="isAutomationContextEnvironmentSelected(a.id)"
                                         [disabled]="isAutomationContextEnvironmentLockedToChat(a.id)"
-                                        [attr.title]="
-                                          isAutomationContextEnvironmentLockedToChat(a.id)
-                                            ? ticketAutomationChatAgentLockTitle
-                                            : null
-                                        "
-                                        (change)="
-                                          onAutomationContextEnvironmentToggle(a.id, $any($event.target).checked)
-                                        "
-                                      />
-                                      <label
-                                        class="form-check-label w-100"
-                                        [for]="'ticketAutomationContextEnvironment' + a.id"
+                                        (checkedChange)="onAutomationContextEnvironmentToggle(a.id, $event)"
                                       >
-                                        <span class="fw-medium">{{ a.name }}</span>
-                                        @if (isAutomationContextEnvironmentLocalRepo(a)) {
-                                          <small class="text-muted small ms-1">(Local repository)</small>
-                                        } @else if (getAutomationContextEnvironmentGitLabel(a); as repo) {
-                                          <small class="text-muted small ms-1">({{ repo }})</small>
-                                        }
-                                      </label>
+                                        <label
+                                          class="form-check-label w-100"
+                                          [for]="'ticketAutomationContextEnvironment' + a.id"
+                                        >
+                                          <span class="fw-medium">{{ a.name }}</span>
+                                          @if (isAutomationContextEnvironmentLocalRepo(a)) {
+                                            <small class="text-muted small ms-1">(Local repository)</small>
+                                          } @else if (getAutomationContextEnvironmentGitLabel(a); as repo) {
+                                            <small class="text-muted small ms-1">({{ repo }})</small>
+                                          }
+                                        </label>
+                                      </fpc-form-check>
                                     </div>
                                   </li>
                                 }
                               </ul>
                             }
                           </div>
-                          <div class="mb-3">
-                            <label
-                              class="form-label mb-1"
-                              for="ticketAutomationBranch"
-                              i18n="@@featureTicketsBoard-automationDefaultBranch"
-                              >Default branch override</label
-                            >
-                            <input
-                              id="ticketAutomationBranch"
-                              type="text"
-                              class="form-control form-control-sm font-monospace"
+                          <fpc-form-field
+                            forId="ticketAutomationBranch"
+                            i18n-label="@@featureTicketsBoard-automationDefaultBranch"
+                            label="Default branch override"
+                          >
+                            <fpc-form-control
+                              controlId="ticketAutomationBranch"
+                              size="sm"
+                              controlClass="font-monospace"
                               [ngModel]="automationDraftDefaultBranch()"
                               (ngModelChange)="automationDraftDefaultBranch.set($event)"
                               i18n-placeholder="@@featureTicketsBoard-automationDefaultBranchPh"
                               placeholder="Optional — leave empty to use repository default"
                             />
-                          </div>
-                          <div class="mb-3">
-                            <label
-                              class="form-label mb-1"
-                              id="ticketAutomationBranchStrategyLabel"
-                              i18n="@@featureTicketsBoard-automationBranchStrategyLabel"
-                              >Automation branch</label
-                            >
-                            <select
-                              id="ticketAutomationBranchStrategy"
-                              class="form-select form-select-sm"
-                              aria-labelledby="ticketAutomationBranchStrategyLabel"
+                          </fpc-form-field>
+                          <fpc-form-field
+                            forId="ticketAutomationBranchStrategy"
+                            i18n-label="@@featureTicketsBoard-automationBranchStrategyLabel"
+                            label="Automation branch"
+                          >
+                            <fpc-form-control
+                              controlId="ticketAutomationBranchStrategy"
+                              controlType="select"
+                              size="sm"
                               [ngModel]="automationDraftBranchStrategy()"
                               (ngModelChange)="onAutomationBranchStrategyChange($event)"
                             >
@@ -976,16 +934,14 @@
                               <option value="new_per_run" i18n="@@featureTicketsBoard-automationBranchNewPerRun">
                                 New branch every run
                               </option>
-                            </select>
+                            </fpc-form-control>
                             @if (automationDraftBranchStrategy() === 'reuse_per_ticket') {
-                              <div class="form-check mt-2 mb-0">
-                                <input
-                                  class="form-check-input"
-                                  type="checkbox"
-                                  id="ticketAutomationForceNewBranch"
-                                  [ngModel]="automationDraftForceNewBranchNextRun()"
-                                  (ngModelChange)="automationDraftForceNewBranchNextRun.set($event)"
-                                />
+                              <fpc-form-check
+                                class="mt-2 mb-0"
+                                checkId="ticketAutomationForceNewBranch"
+                                [ngModel]="automationDraftForceNewBranchNextRun()"
+                                (ngModelChange)="automationDraftForceNewBranchNextRun.set($event)"
+                              >
                                 <label class="form-check-label" for="ticketAutomationForceNewBranch">
                                   <span i18n="@@featureTicketsBoard-automationForceNewBranchLabel"
                                     >Force a fresh branch on the next run</span
@@ -996,68 +952,77 @@
                                     >Use when a run is stuck; the flag clears after the next run starts.</span
                                   >
                                 </label>
-                              </div>
+                              </fpc-form-check>
                             }
-                          </div>
+                          </fpc-form-field>
                           <div class="mb-2 d-flex justify-content-between align-items-center">
                             <span class="fw-semibold" i18n="@@featureTicketsBoard-automationVerifierHeading"
                               >Verifier commands</span
                             >
-                            <button
-                              type="button"
-                              class="btn btn-outline-secondary btn-sm"
-                              (click)="addAutomationVerifierRow()"
+                            <fpc-button
+                              variant="dark"
+                              size="sm"
+                              (clicked)="addAutomationVerifierRow()"
                               i18n="@@featureTicketsBoard-automationVerifierAdd"
                             >
                               Add command
-                            </button>
+                            </fpc-button>
                           </div>
                           @for (row of automationVerifierRows(); track $index) {
                             <div class="row g-2 mb-2 align-items-end">
                               <div class="col-md-6">
                                 <label
-                                  class="form-label mb-0 visually-hidden"
+                                  class="visually-hidden"
                                   [attr.for]="'automationVerifierCmd' + $index"
                                   i18n="@@featureTicketsBoard-automationVerifierCmd"
                                   >Command</label
                                 >
-                                <input
-                                  [id]="'automationVerifierCmd' + $index"
-                                  type="text"
-                                  class="form-control form-control-sm font-monospace"
+                                <fpc-form-control
+                                  [controlId]="'automationVerifierCmd' + $index"
+                                  size="sm"
+                                  controlClass="font-monospace"
                                   [ngModel]="row.cmd"
-                                  (ngModelChange)="automationVerifierRows.update((list) => list.map((r, i) => (i === $index ? { ...r, cmd: $event } : r)))"
+                                  (ngModelChange)="
+                                    automationVerifierRows.update((list) =>
+                                      list.map((r, i) => (i === $index ? { ...r, cmd: $event } : r))
+                                    )
+                                  "
                                   i18n-placeholder="@@featureTicketsBoard-automationVerifierCmdPh"
                                   placeholder="Command"
                                 />
                               </div>
                               <div class="col-md-5">
                                 <label
-                                  class="form-label mb-0 visually-hidden"
+                                  class="visually-hidden"
                                   [attr.for]="'automationVerifierCwd' + $index"
                                   i18n="@@featureTicketsBoard-automationVerifierCwd"
                                   >Working directory</label
                                 >
-                                <input
-                                  [id]="'automationVerifierCwd' + $index"
-                                  type="text"
-                                  class="form-control form-control-sm font-monospace"
+                                <fpc-form-control
+                                  [controlId]="'automationVerifierCwd' + $index"
+                                  size="sm"
+                                  controlClass="font-monospace"
                                   [ngModel]="row.cwd"
-                                  (ngModelChange)="automationVerifierRows.update((list) => list.map((r, i) => (i === $index ? { ...r, cwd: $event } : r)))"
+                                  (ngModelChange)="
+                                    automationVerifierRows.update((list) =>
+                                      list.map((r, i) => (i === $index ? { ...r, cwd: $event } : r))
+                                    )
+                                  "
                                   i18n-placeholder="@@featureTicketsBoard-automationVerifierCwdPh"
                                   placeholder="cwd (optional)"
                                 />
                               </div>
                               <div class="col-md-1 d-flex justify-content-end">
-                                <button
-                                  type="button"
-                                  class="btn btn-outline-danger btn-sm"
-                                  (click)="removeAutomationVerifierRow($index)"
+                                <fpc-button
+                                  variant="danger"
+                                  size="sm"
+                                  [iconOnly]="true"
+                                  (clicked)="removeAutomationVerifierRow($index)"
                                   i18n-title="@@featureTicketsBoard-automationVerifierRemoveTitle"
                                   title="Remove"
                                 >
                                   <i class="bi bi-trash" aria-hidden="true"></i>
-                                </button>
+                                </fpc-button>
                               </div>
                             </div>
                           }
@@ -1068,35 +1033,35 @@
                                 role="status"
                                 i18n="@@featureTicketsBoard-automationSaving"
                               >
-                                <span class="spinner-border spinner-border-sm text-primary" aria-hidden="true"></span>
+                                <fpc-spinner size="sm" variant="primary" />
                                 Saving automation settings…
                               </span>
                             }
                             @if (acfg.requiresApproval && !acfg.approvedAt) {
-                              <button
-                                type="button"
-                                class="btn btn-primary btn-sm"
-                                (click)="onApproveTicketAutomation()"
+                              <fpc-button
+                                variant="primary"
+                                size="sm"
+                                (clicked)="onApproveTicketAutomation()"
                                 [disabled]="ticketAutomationSaving()"
                                 i18n="@@featureTicketsBoard-automationApprove"
                               >
                                 Approve
-                              </button>
+                              </fpc-button>
                             }
                             @if (acfg.requiresApproval && acfg.approvedAt) {
-                              <button
-                                type="button"
-                                class="btn btn-outline-warning btn-sm"
-                                (click)="onUnapproveTicketAutomation()"
+                              <fpc-button
+                                variant="warning"
+                                size="sm"
+                                (clicked)="onUnapproveTicketAutomation()"
                                 [disabled]="ticketAutomationSaving()"
                                 i18n="@@featureTicketsBoard-automationUnapprove"
                               >
                                 Unapprove
-                              </button>
+                              </fpc-button>
                             }
                           </div>
                           @if (acfg.consecutiveFailureCount > 0 || acfg.nextRetryAt) {
-                            <div class="alert alert-secondary py-2 mb-3" role="status">
+                            <fpc-alert variant="dark" class="mb-3">
                               @if (acfg.consecutiveFailureCount > 0) {
                                 <div i18n="@@featureTicketsBoard-automationFailures">
                                   Consecutive failures: {{ acfg.consecutiveFailureCount }}
@@ -1107,24 +1072,22 @@
                                   Next retry: {{ acfg.nextRetryAt | date: activityOccurredAtFormat }}
                                 </div>
                               }
-                            </div>
+                            </fpc-alert>
                           }
                           <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
                             <h4 class="h6 mb-0" i18n="@@featureTicketsBoard-automationRunsHeading">Runs</h4>
-                            <button
-                              type="button"
-                              class="btn btn-outline-primary btn-sm"
-                              (click)="onRefreshTicketAutomationRuns()"
+                            <fpc-button
+                              variant="primary"
+                              size="sm"
+                              [iconOnly]="true"
+                              [loading]="ticketAutomationLoadingRuns()"
+                              (clicked)="onRefreshTicketAutomationRuns()"
                               [disabled]="ticketAutomationLoadingRuns()"
                               i18n-title="@@featureTicketsBoard-automationRefreshRunsTitle"
                               title="Refresh runs"
                             >
-                              @if (ticketAutomationLoadingRuns()) {
-                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                              } @else {
-                                <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
-                              }
-                            </button>
+                              <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+                            </fpc-button>
                           </div>
                           @if (automationSortedRuns().length === 0) {
                             <p class="text-muted mb-0" i18n="@@featureTicketsBoard-automationNoRuns">No runs yet.</p>
@@ -1134,16 +1097,17 @@
                                 <li class="list-group-item py-2">
                                   <div class="d-flex flex-wrap justify-content-between gap-2 align-items-start">
                                     <div class="min-width-0">
-                                      <span
-                                        class="badge me-1"
-                                        [ngClass]="ticketAutomationRunStatusBadgeClass(run.status)"
+                                      <fpc-badge
+                                        class="me-1"
+                                        [color]="ticketAutomationRunStatusBadgeColor(run.status)"
                                         [attr.title]="automationRunStatusLabel(run.status)"
-                                        >{{ automationRunStatusLabel(run.status) }}</span
+                                        >{{ automationRunStatusLabel(run.status) }}</fpc-badge
                                       >
-                                      <span
-                                        class="badge text-bg-light me-1"
+                                      <fpc-badge
+                                        color="light"
+                                        class="me-1"
                                         [attr.title]="automationRunPhaseLabel(run.phase)"
-                                        >{{ automationRunPhaseLabel(run.phase) }}</span
+                                        >{{ automationRunPhaseLabel(run.phase) }}</fpc-badge
                                       >
                                       <div class="text-muted mt-1">
                                         <span>{{ run.startedAt | date: activityOccurredAtFormat }}</span>
@@ -1153,46 +1117,44 @@
                                       </div>
                                       @if (run.verificationPassed === true) {
                                         <div class="mt-1">
-                                          <span
-                                            class="badge text-bg-success"
-                                            i18n="@@featureTicketsBoard-automationVerifyOk"
-                                            >Verify: passed</span
+                                          <fpc-badge color="success" i18n="@@featureTicketsBoard-automationVerifyOk"
+                                            >Verify: passed</fpc-badge
                                           >
                                         </div>
                                       }
                                       @if (run.verificationPassed === false) {
                                         <div class="mt-1">
-                                          <span
-                                            class="badge text-bg-warning text-dark"
-                                            i18n="@@featureTicketsBoard-automationVerifyFail"
-                                            >Verify: failed</span
+                                          <fpc-badge color="warning" i18n="@@featureTicketsBoard-automationVerifyFail"
+                                            >Verify: failed</fpc-badge
                                           >
                                         </div>
                                       }
                                     </div>
-                                    <div class="btn-group btn-group-sm flex-shrink-0">
-                                      <button
-                                        type="button"
-                                        class="btn btn-outline-secondary"
-                                        (click)="openTicketAutomationRunDetailModal(run.id)"
+                                    <fpc-button-group size="sm" class="flex-shrink-0">
+                                      <fpc-button
+                                        variant="dark"
+                                        size="sm"
+                                        [iconOnly]="true"
+                                        (clicked)="openTicketAutomationRunDetailModal(run.id)"
                                         i18n-title="@@featureTicketsBoard-automationOpenDetailTitle"
                                         title="Open details"
                                       >
                                         <i class="bi bi-arrows-fullscreen" aria-hidden="true"></i>
-                                      </button>
+                                      </fpc-button>
                                       @if (ticketAutomationRunCanCancel(run)) {
-                                        <button
-                                          type="button"
-                                          class="btn btn-outline-danger"
-                                          (click)="onCancelTicketAutomationRun(run)"
+                                        <fpc-button
+                                          variant="danger"
+                                          size="sm"
+                                          [iconOnly]="true"
+                                          (clicked)="onCancelTicketAutomationRun(run)"
                                           [disabled]="ticketAutomationSaving()"
                                           i18n-title="@@featureTicketsBoard-automationCancelRunTitle"
                                           title="Cancel run"
                                         >
                                           <i class="bi bi-stop-circle" aria-hidden="true"></i>
-                                        </button>
+                                        </fpc-button>
                                       }
-                                    </div>
+                                    </fpc-button-group>
                                   </div>
                                 </li>
                               }
@@ -1203,838 +1165,669 @@
                     </div>
                   </div>
                 </div>
-
-                @if (prototypeError(); as pe) {
-                  <div class="alert alert-warning small mt-2 py-2 mb-0" role="alert">{{ pe }}</div>
-                }
-                @if (bodyGenError(); as be) {
-                  <div class="alert alert-danger small mt-2 py-2 mb-0" role="alert">{{ be }}</div>
-                }
               </div>
-              <div class="col-lg-5 border-start-lg h-100 overflow-hidden overflow-y-auto p-3">
-                <h3 class="h6" i18n="@@featureTicketsBoard-commentsHeading">Comments</h3>
-                <div class="input-group input-group-sm mb-3">
+
+              @if (prototypeError(); as pe) {
+                <fpc-alert variant="warning" class="small mt-2 mb-0" [message]="pe" />
+              }
+              @if (bodyGenError(); as be) {
+                <fpc-alert variant="danger" class="small mt-2 mb-0" [message]="be" />
+              }
+            </div>
+            <div class="col-lg-5 border-start-lg h-100 overflow-hidden overflow-y-auto p-3">
+              <h3 class="h6" i18n="@@featureTicketsBoard-commentsHeading">Comments</h3>
+              <div class="tickets-board__comment-composer mb-3">
+                <div class="form-control form-control-sm tickets-board__comment-shell">
                   <textarea
-                    class="form-control"
-                    rows="2"
-                    [ngModel]="newCommentText()"
-                    (ngModelChange)="newCommentText.set($event)"
+                    class="tickets-board__comment-textarea"
+                    rows="3"
+                    [value]="newCommentText()"
+                    (input)="newCommentText.set($any($event.target).value)"
                     i18n-placeholder="@@featureTicketsBoard-commentPlaceholder"
                     placeholder="Add a comment…"
+                    [attr.aria-label]="commentInputAriaLabel"
                   ></textarea>
-                  <button
-                    type="button"
-                    class="btn btn-primary"
-                    (click)="onSubmitComment()"
-                    [disabled]="saving$ | async"
-                    i18n="@@featureTicketsBoard-addComment"
-                  >
-                    Add
-                  </button>
                 </div>
-                <ul class="list-unstyled small tickets-board__scroll">
-                  @for (c of comments$ | async; track c.id) {
-                    <li class="mb-2 py-2 px-3 bg-body-tertiary rounded">
-                      <div
-                        class="tickets-board__activity-line d-flex flex-wrap align-items-center column-gap-2 row-gap-1 mb-1 small"
-                      >
-                        <span class="text-body-secondary">{{ c.createdAt | date: activityOccurredAtFormat }}</span>
-                        @if (c.authorEmail) {
-                          <span class="text-body-secondary text-truncate tickets-board__activity-actor">{{
-                            c.authorEmail
-                          }}</span>
-                        } @else {
-                          <span
-                            class="text-body-secondary tickets-board__activity-actor tickets-board__comment-author-unknown"
-                            i18n-title="@@featureTicketsBoard-commentAuthorUnknownTitle"
-                            title="Author email not available"
-                            i18n="@@featureTicketsBoard-commentAuthorDash"
-                            >—</span
-                          >
-                        }
-                      </div>
-                      <div class="text-break">{{ c.body }}</div>
-                    </li>
-                  }
-                </ul>
-
-                <h3 class="h6 mt-3" i18n="@@featureTicketsBoard-activityHeading">Activity</h3>
-                <ul class="list-unstyled small tickets-board__scroll">
-                  @for (ev of activity$ | async; track ev.id) {
-                    <li class="mb-2 pb-2 border-bottom border-opacity-50">
-                      <div
-                        class="tickets-board__activity-line d-flex flex-wrap align-items-center column-gap-2 row-gap-1 small"
-                      >
-                        <small
-                          class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
-                          [ngClass]="activityActionBadgeClass(ev.actionType)"
-                          [attr.title]="ev.actionType"
-                          >{{ activityActionLabel(ev.actionType) }}</small
+                <div class="tickets-board__comment-send">
+                  <fpc-button
+                    variant="primary"
+                    size="sm"
+                    iconOnly
+                    (clicked)="onSubmitComment()"
+                    [disabled]="!!(saving$ | async) || !newCommentText().trim()"
+                    i18n-ariaLabel="@@featureTicketsBoard-addComment"
+                    ariaLabel="Add"
+                    i18n-title="@@featureTicketsBoard-addComment"
+                    title="Add"
+                  >
+                    <i class="bi bi-send" aria-hidden="true"></i>
+                  </fpc-button>
+                </div>
+              </div>
+              <ul class="list-unstyled small tickets-board__scroll">
+                @for (c of comments$ | async; track c.id) {
+                  <li class="mb-2 py-2 px-3 bg-body-tertiary rounded">
+                    <div
+                      class="tickets-board__activity-line d-flex flex-wrap align-items-center column-gap-2 row-gap-1 mb-1 small"
+                    >
+                      <span class="text-body-secondary">{{ c.createdAt | date: activityOccurredAtFormat }}</span>
+                      @if (c.authorEmail) {
+                        <span class="text-body-secondary text-truncate tickets-board__activity-actor">{{
+                          c.authorEmail
+                        }}</span>
+                      } @else {
+                        <span
+                          class="text-body-secondary tickets-board__activity-actor tickets-board__comment-author-unknown"
+                          i18n-title="@@featureTicketsBoard-commentAuthorUnknownTitle"
+                          title="Author email not available"
+                          i18n="@@featureTicketsBoard-commentAuthorDash"
+                          >—</span
                         >
-                        <span class="text-body-secondary">{{ ev.occurredAt | date: activityOccurredAtFormat }}</span>
-                        @if (ev.actorEmail) {
-                          <span class="text-body-secondary text-truncate tickets-board__activity-actor">{{
-                            ev.actorEmail
-                          }}</span>
-                        }
-                      </div>
-                    </li>
+                      }
+                    </div>
+                    <div class="text-break">{{ c.body }}</div>
+                  </li>
+                }
+              </ul>
+
+              <h3 class="h6 mt-3" i18n="@@featureTicketsBoard-activityHeading">Activity</h3>
+              <ul class="list-unstyled small tickets-board__scroll">
+                @for (ev of activity$ | async; track ev.id) {
+                  <li class="mb-2 pb-2 border-bottom border-opacity-50">
+                    <div
+                      class="tickets-board__activity-line d-flex flex-wrap align-items-center column-gap-2 row-gap-1 small"
+                    >
+                      <fpc-badge
+                        variant="info"
+                        color="secondary"
+                        [ngClass]="activityActionBadgeClass(ev.actionType)"
+                        [attr.title]="ev.actionType"
+                        >{{ activityActionLabel(ev.actionType) }}</fpc-badge
+                      >
+                      <span class="text-body-secondary">{{ ev.occurredAt | date: activityOccurredAtFormat }}</span>
+                      @if (ev.actorEmail) {
+                        <span class="text-body-secondary text-truncate tickets-board__activity-actor">{{
+                          ev.actorEmail
+                        }}</span>
+                      }
+                    </div>
+                  </li>
+                }
+              </ul>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+  <div *fpcModalFooter class="d-flex flex-wrap justify-content-between align-items-center gap-2 w-100">
+    <div>
+      @if (detail(); as del) {
+        <fpc-button
+          variant="danger"
+          iconOnly
+          (clicked)="onRequestDeleteTicket(del)"
+          [disabled]="!!(saving$ | async)"
+          i18n-title="@@featureTicketsBoard-deleteTitle"
+          title="Permanently delete this ticket"
+          i18n-ariaLabel="@@featureTicketsBoard-delete"
+          ariaLabel="Delete"
+        >
+          <i class="bi bi-trash" aria-hidden="true"></i>
+        </fpc-button>
+      }
+    </div>
+  </div>
+</fpc-modal>
+
+<fpc-modal
+  [(open)]="ticketRelationsModalOpen"
+  i18n-title="@@featureTicketsBoard-relationsModalTitle"
+  title="Add relations"
+  (closed)="onTicketRelationsModalClosed()"
+>
+  <label class="visually-hidden" for="ticketRelationsSearchInput" i18n="@@featureTicketsBoard-relationsSearchLabel">
+    Search relations
+  </label>
+  <div class="d-flex align-items-start gap-2 mb-2">
+    <fpc-typeahead-select
+      #ticketRelationsSearchInput
+      class="flex-grow-1 min-width-0"
+      inputId="ticketRelationsSearchInput"
+      listboxId="ticketRelationsSearchInput-listbox"
+      [openOnFocus]="false"
+      i18n-placeholder="@@featureTicketsBoard-relationsSearchPlaceholder"
+      placeholder="Title or short/long SHA"
+      i18n-ariaLabel="@@featureTicketsBoard-relationsSearchLabel"
+      ariaLabel="Search relations"
+      [query]="ticketRelationsSearchQuery()"
+      (queryChange)="onTicketRelationInputChange($event)"
+      [open]="ticketRelationsSuggestionsOpen()"
+      (openChange)="onTicketRelationSuggestionsOpenChange($event)"
+      (cleared)="onTicketRelationInputChange('')"
+    >
+      <div fpcTypeaheadSuggestions>
+        @for (
+          candidate of ticketRelationCandidates();
+          track candidate.kind === 'knowledge' ? candidate.node.id : candidate.ticket.id
+        ) {
+          <button
+            type="button"
+            class="dropdown-item py-2 text-start"
+            (mousedown)="onPickTicketRelationCandidate(candidate, $event)"
+          >
+            <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
+              <span class="font-monospace text-muted small flex-shrink-0">{{
+                candidate.kind === 'knowledge' ? candidate.node.shas.short : candidate.ticket.shas.short
+              }}</span>
+              <span class="text-truncate small flex-grow-1 min-width-0">
+                {{
+                  candidate.kind === 'knowledge'
+                    ? (candidate.node.nodeType === 'folder' ? 'Folder' : 'Page') + ' · ' + candidate.node.title
+                    : 'Ticket · ' + candidate.ticket.title
+                }}
+              </span>
+            </span>
+          </button>
+        }
+      </div>
+    </fpc-typeahead-select>
+    <fpc-button variant="dark" [iconOnly]="true" (clicked)="onAddTicketRelationBySearch()">
+      <i class="bi bi-plus"></i>
+    </fpc-button>
+  </div>
+  @if (ticketRelationsSearchError()) {
+    <div class="form-text text-danger mb-2">{{ ticketRelationsSearchError() }}</div>
+  }
+  @if (selectedTicketRelationTargets().length > 0) {
+    <div class="d-flex flex-wrap gap-2 mt-2">
+      @for (target of selectedTicketRelationTargets(); track ticketRelationTrackId(target)) {
+        <fpc-badge
+          variant="info"
+          color="secondary"
+          class="tickets-board__relation-chip"
+          style="max-width: min(100%, 24rem)"
+        >
+          <span class="text-truncate small">{{ ticketRelationChipDisplay(target) }}</span>
+          <button
+            type="button"
+            class="btn-close tickets-board__relation-chip-clear"
+            (click)="onRemovePendingTicketRelation(target)"
+            i18n-aria-label="@@featureTicketsBoard-removeRelationTarget"
+            aria-label="Remove relation target"
+          ></button>
+        </fpc-badge>
+      }
+    </div>
+  } @else {
+    <p class="text-muted small mb-0" i18n="@@featureTicketsBoard-relationsSearchHint">
+      Search by title or SHA and add one or more relation targets.
+    </p>
+  }
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      [disabled]="selectedTicketRelationTargets().length === 0"
+      (clicked)="onAddSelectedTicketRelations()"
+    >
+      <span i18n="@@featureTicketsBoard-relationsAdd">Add</span>
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal
+  [(open)]="ticketMigrateModalOpen"
+  i18n-title="@@featureTicketsBoard-migrateModalTitle"
+  title="Move ticket to workspace"
+  [closeOnBackdrop]="false"
+  (closed)="onTicketMigrateModalClosed()"
+>
+  <p class="small text-muted mb-3" i18n="@@featureTicketsBoard-migrateModalIntro">
+    The ticket and its subtasks in this workspace will move to the workspace you select. You must be a workspace admin
+    in both places.
+  </p>
+  @if (listError$ | async; as migErr) {
+    <fpc-alert variant="danger" class="small mb-3" [message]="migErr" />
+  }
+  <fpc-form-field
+    forId="ticketMigrateTargetSelect"
+    i18n-label="@@featureTicketsBoard-migrateTargetLabel"
+    label="Target workspace"
+  >
+    <fpc-form-control
+      controlId="ticketMigrateTargetSelect"
+      controlType="select"
+      [ngModel]="migrationTargetClientId()"
+      (ngModelChange)="migrationTargetClientId.set($event)"
+      [disabled]="ticketsSaving()"
+    >
+      @for (c of migrationTargetChoices(); track c.id) {
+        <option [value]="c.id">{{ effectiveWorkspaceTitle({ id: c.id, client: c }) }}</option>
+      }
+    </fpc-form-control>
+  </fpc-form-field>
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      (clicked)="onConfirmTicketMigration()"
+      [disabled]="ticketsSaving() || !migrationTargetClientId()"
+      i18n="@@featureTicketsBoard-move"
+    >
+      Move
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal
+  [(open)]="ticketAutomationRunModalOpen"
+  i18n-title="@@featureTicketsBoard-automationRunModalTitle"
+  title="Automation run"
+  size="lg"
+  [scrollable]="true"
+  [closeOnBackdrop]="false"
+  (closed)="onTicketAutomationRunModalClosed()"
+>
+  <div class="small">
+    @if (ticketAutomationRunDetail(); as ar) {
+      <dl class="row mb-3">
+        <dt class="col-sm-4" i18n="@@featureTicketsBoard-automationRunStatus">Status</dt>
+        <dd class="col-sm-8 mb-0">
+          <fpc-badge
+            [color]="ticketAutomationRunStatusBadgeColor(ar.status)"
+            [attr.title]="automationRunStatusLabel(ar.status)"
+            >{{ automationRunStatusLabel(ar.status) }}</fpc-badge
+          >
+        </dd>
+        <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunPhase">Phase</dt>
+        <dd class="col-sm-8 mt-2 mb-0" [attr.title]="automationRunPhaseLabel(ar.phase)">
+          {{ automationRunPhaseLabel(ar.phase) }}
+        </dd>
+        <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunBranch">Branch</dt>
+        <dd class="col-sm-8 mt-2 mb-0 text-break">{{ ar.branchName ?? '—' }}</dd>
+        <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunAgent">Agent</dt>
+        <dd class="col-sm-8 mt-2 mb-0 font-monospace text-break">{{ ar.agentId }}</dd>
+        <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunIterations">Iterations</dt>
+        <dd class="col-sm-8 mt-2 mb-0">{{ ar.iterationCount }}</dd>
+        @if (ar.failureCode) {
+          <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunFailure">Failure</dt>
+          <dd class="col-sm-8 mt-2 mb-0 text-break" [attr.title]="ar.failureCode">
+            {{ automationFailureCodeLabel(ar.failureCode) }}
+          </dd>
+        }
+        @if (ar.cancellationReason) {
+          <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunCancelReason">Cancellation</dt>
+          <dd class="col-sm-8 mt-2 mb-0 text-break" [attr.title]="ar.cancellationReason">
+            {{ automationCancellationReasonLabel(ar.cancellationReason) }}
+          </dd>
+        }
+      </dl>
+      @if (ar.summary) {
+        <h3 class="h6" i18n="@@featureTicketsBoard-automationRunSummary">Summary (JSON)</h3>
+        <pre class="small bg-body-tertiary rounded p-2 border overflow-auto" style="max-height: 12rem">{{
+          formatAutomationJson(ar.summary)
+        }}</pre>
+      }
+      <h3 class="h6 mt-3" i18n="@@featureTicketsBoard-automationRunSteps">Steps</h3>
+      @if (ticketAutomationLoadingRunDetail()) {
+        <div class="d-flex align-items-center gap-2 text-muted py-3">
+          <fpc-spinner size="sm" />
+          <span i18n="@@featureTicketsBoard-automationLoadingTrace">Loading steps…</span>
+        </div>
+      } @else if (ar.steps && ar.steps.length > 0) {
+        <div class="accordion" id="automationStepAccordion">
+          @for (step of ar.steps; track step.id) {
+            <div class="accordion-item">
+              <h4 class="accordion-header">
+                <button
+                  class="accordion-button collapsed py-2"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  [attr.data-bs-target]="'#automationStep' + step.id"
+                  [attr.aria-controls]="'automationStep' + step.id"
+                  aria-expanded="false"
+                >
+                  <fpc-badge color="light" class="me-2">#{{ step.stepIndex }}</fpc-badge>
+                  <span class="me-2" [attr.title]="automationRunPhaseLabel(step.phase)">{{
+                    automationRunPhaseLabel(step.phase)
+                  }}</span>
+                  <span class="text-muted small" [attr.title]="automationRunStepKindLabel(step.kind)">{{
+                    automationRunStepKindLabel(step.kind)
+                  }}</span>
+                </button>
+              </h4>
+              <div
+                [id]="'automationStep' + step.id"
+                class="accordion-collapse collapse"
+                data-bs-parent="#automationStepAccordion"
+              >
+                <div class="accordion-body">
+                  @if (step.excerpt) {
+                    <div class="mb-2">
+                      <span class="fw-semibold d-block mb-1" i18n="@@featureTicketsBoard-automationStepExcerpt"
+                        >Excerpt</span
+                      >
+                      <pre class="small mb-0 text-wrap font-monospace bg-body-secondary rounded p-2">{{
+                        step.excerpt
+                      }}</pre>
+                    </div>
                   }
-                </ul>
+                  <span class="fw-semibold d-block mb-1" i18n="@@featureTicketsBoard-automationStepPayload"
+                    >Payload (JSON)</span
+                  >
+                  <pre class="small mb-0 bg-body-tertiary rounded p-2 border overflow-auto" style="max-height: 16rem">{{
+                    formatAutomationJson(step.payload)
+                  }}</pre>
+                </div>
               </div>
             </div>
           }
-        }
-      </div>
-      <div class="modal-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
-        <div>
-          @if (detail(); as del) {
-            <button
-              type="button"
-              class="btn btn-primary"
-              (click)="onRequestDeleteTicket(del)"
-              [disabled]="saving$ | async"
-              i18n="@@featureTicketsBoard-delete"
-              i18n-title="@@featureTicketsBoard-deleteTitle"
-              title="Permanently delete this ticket"
-            >
-              Delete
-            </button>
-          }
         </div>
-      </div>
+      } @else {
+        <p class="text-muted mb-0" i18n="@@featureTicketsBoard-automationNoSteps">No steps recorded for this run.</p>
+      }
+    } @else {
+      <p class="text-muted mb-0" i18n="@@featureTicketsBoard-automationRunModalEmpty">
+        Open a run from the ticket detail panel.
+      </p>
+    }
+  </div>
+  <div *fpcModalFooter>
+    @if (ticketAutomationRunDetail(); as ar2) {
+      @if (ticketAutomationRunCanCancel(ar2)) {
+        <fpc-button
+          variant="primary"
+          class="me-auto"
+          (clicked)="onCancelTicketAutomationRun(ar2)"
+          [disabled]="ticketAutomationSaving()"
+          i18n="@@featureTicketsBoard-automationCancelRun"
+        >
+          Cancel run
+        </fpc-button>
+      }
+    }
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [(open)]="deleteTicketConfirmModalOpen"
+  i18n-title="@@featureTicketsBoard-deleteConfirmModalTitle"
+  title="Delete ticket"
+  i18n-confirmLabel="@@featureTicketsBoard-delete"
+  confirmLabel="Delete"
+  [danger]="true"
+  [busy]="!!(saving$ | async)"
+  (confirmed)="onConfirmDeleteTicket()"
+  (cancelled)="onCancelDeleteTicketConfirm()"
+>
+  @if (ticketPendingDelete(); as pend) {
+    <p>
+      <span i18n="@@featureTicketsBoard-deleteConfirmModalLead">Are you sure you want to delete this ticket?</span>
+      <strong class="d-block mt-1">{{ pend.title }}</strong>
+    </p>
+  }
+  <p class="text-danger mb-0">
+    <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+    <span i18n="@@featureTicketsBoard-deleteConfirmCannotUndo">This action cannot be undone.</span>
+  </p>
+  <fpc-form-check
+    class="mt-3"
+    checkId="releaseExternalSyncMarkerTicketDelete"
+    [checked]="releaseExternalSyncMarkerOnTicketDelete()"
+    (checkedChange)="releaseExternalSyncMarkerOnTicketDelete.set($event)"
+    label="Allow re-import from external integrations (clears import sync marker for this ticket)"
+  />
+</fpc-confirm-dialog>
+
+<fpc-modal
+  [(open)]="createTicketModalOpen"
+  size="xl"
+  [scrollable]="true"
+  [closeOnBackdrop]="false"
+  (closed)="onCreateTicketModalClosed()"
+>
+  <div fpcModalTitle>
+    @if (createTicketParentId()) {
+      <span i18n="@@featureTicketsBoard-createSubtaskModalTitle">New subtask</span>
+    } @else {
+      <span i18n="@@featureTicketsBoard-createModalTitle">New ticket</span>
+    }
+  </div>
+  @if (createTicketError(); as cte) {
+    <fpc-alert variant="danger" class="small" [message]="cte" />
+  }
+  <fpc-form-field forId="createTicketTitle" i18n-label="@@featureTicketsBoard-createTitleLabel" label="Title" required>
+    <fpc-form-control
+      controlId="createTicketTitle"
+      size="sm"
+      [ngModel]="createTicketTitle()"
+      (ngModelChange)="createTicketTitle.set($event)"
+      i18n-placeholder="@@featureTicketsBoard-createTitlePlaceholder"
+      placeholder="Short summary"
+      required
+    />
+  </fpc-form-field>
+  <fpc-form-field forId="createTicketContent" i18n-label="@@featureTicketsBoard-createContentLabel" label="Description">
+    <framework-ticket-editor
+      [markdown]="createTicketContent()"
+      (markdownChange)="createTicketContent.set($event)"
+      i18n-placeholder="@@featureTicketsBoard-createContentPlaceholder"
+      placeholder="Optional details"
+    ></framework-ticket-editor>
+  </fpc-form-field>
+  @if (!createTicketParentId()) {
+    <fpc-form-field
+      forId="createTicketCreationTemplate"
+      i18n-label="@@featureTicketsBoard-createTemplateLabel"
+      label="Type"
+    >
+      <fpc-form-control
+        controlId="createTicketCreationTemplate"
+        controlType="select"
+        size="sm"
+        [ngModel]="createTicketCreationTemplate()"
+        (ngModelChange)="createTicketCreationTemplate.set($event)"
+      >
+        <option value="empty" i18n="@@featureTicketsBoard-createTemplateEmpty">Empty</option>
+        <option value="specification" i18n="@@featureTicketsBoard-createTemplateSpecification">Specification</option>
+      </fpc-form-control>
+    </fpc-form-field>
+  }
+  <div class="row g-2">
+    <div class="col-sm-6">
+      <fpc-form-field forId="createTicketStatus" i18n-label="@@featureTicketsBoard-createStatusLabel" label="Status">
+        <fpc-form-control
+          controlId="createTicketStatus"
+          controlType="select"
+          size="sm"
+          [ngModel]="createTicketStatus()"
+          (ngModelChange)="createTicketStatus.set($event)"
+        >
+          @for (s of statusOptions; track s) {
+            <option [value]="s">{{ laneLabel(s) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+    <div class="col-sm-6">
+      <fpc-form-field
+        forId="createTicketPriority"
+        i18n-label="@@featureTicketsBoard-createPriorityLabel"
+        label="Priority"
+      >
+        <fpc-form-control
+          controlId="createTicketPriority"
+          controlType="select"
+          size="sm"
+          [ngModel]="createTicketPriority()"
+          (ngModelChange)="createTicketPriority.set($event)"
+        >
+          @for (p of priorityOptions; track p) {
+            <option [value]="p">{{ priorityLabel(p) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
     </div>
   </div>
-</div>
+  <div *fpcModalFooter>
+    <fpc-button variant="primary" (clicked)="onSubmitCreateTicket()" i18n="@@featureTicketsBoard-create">
+      Create
+    </fpc-button>
+  </div>
+</fpc-modal>
 
-<div
-  class="modal fade"
-  id="ticketRelationsModal"
-  tabindex="-1"
-  aria-labelledby="ticketRelationsModalLabel"
-  aria-hidden="true"
-  #ticketRelationsModal
+<fpc-modal
+  [(open)]="globalSearchModalOpen"
+  i18n-title="@@featureTicketsBoard-globalSearchTitle"
+  title="Search tickets"
+  [scrollable]="true"
+  (closed)="onCloseGlobalSearchModal()"
 >
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title h5" id="ticketRelationsModalLabel" i18n="@@featureTicketsBoard-relationsModalTitle">
-          Add relations
-        </h2>
-        <button
-          type="button"
-          class="btn-close"
-          aria-label="Close"
-          i18n-aria-label="@@featureTicketsBoard-modalCloseAria"
-          (click)="onCloseTicketRelationsModal()"
-        ></button>
-      </div>
-      <div class="modal-body">
+  <label class="visually-hidden" for="globalSearchInput" i18n="@@featureTicketsBoard-globalSearchInputLabel"
+    >Search tickets</label
+  >
+  <fpc-typeahead-select
+    #globalSearchInput
+    inputId="globalSearchInput"
+    listboxId="globalSearchInput-listbox"
+    variant="inline"
+    [openOnFocus]="false"
+    [loading]="globalSearchLoading()"
+    i18n-placeholder="@@featureTicketsBoard-globalSearchPlaceholder"
+    placeholder="Search by title, description, or id"
+    i18n-ariaLabel="@@featureTicketsBoard-globalSearchInputLabel"
+    ariaLabel="Search tickets"
+    [query]="globalSearchQuery()"
+    (queryChange)="onGlobalSearchQueryChange($event)"
+    [open]="globalSearchSuggestionsOpen()"
+    (openChange)="onGlobalSearchSuggestionsOpenChange($event)"
+    (cleared)="onGlobalSearchQueryChange('')"
+  >
+    <div fpcTypeaheadSuggestions>
+      @if (globalSearchHits().length > 0) {
+        @for (ticket of globalSearchHits(); track ticket.id) {
+          <button
+            type="button"
+            class="dropdown-item py-2 text-start"
+            (mousedown)="onGlobalSearchResultClick(ticket, $event)"
+          >
+            <span class="d-flex flex-wrap align-items-baseline gap-2 w-100 min-width-0">
+              @if (ticket.shas?.short) {
+                <span class="font-monospace text-muted small flex-shrink-0">{{ ticket.shas.short }}</span>
+              }
+              <span class="fw-medium text-break flex-grow-1 min-width-0">{{ ticket.title }}</span>
+              @if (ticket.automationEligible) {
+                <small class="flex-shrink-0">
+                  <i
+                    class="bi bi-lightning-charge-fill d-flex align-items-center justify-content-center text-bg-primary status-badge"
+                    i18n-title="@@featureTicketsBoard-automationEligibleTitle"
+                    title="Autonomous prototyping enabled"
+                  ></i>
+                </small>
+              }
+              <fpc-badge
+                variant="info"
+                color="secondary"
+                class="flex-shrink-0"
+                [ngClass]="ticketStatusBadgeClass(ticket.status)"
+                >{{ laneLabel(ticket.status) }}</fpc-badge
+              >
+            </span>
+          </button>
+        }
+      } @else if (globalSearchQuery().trim()) {
+        <span class="dropdown-item-text text-muted small" i18n="@@featureTicketsBoard-globalSearchNoResults"
+          >No matching tickets</span
+        >
+      }
+    </div>
+  </fpc-typeahead-select>
+  @if (globalSearchQuery().trim() === '') {
+    <p class="text-muted small mb-0 mt-2" i18n="@@featureTicketsBoard-globalSearchHint">
+      Type to search all tickets in this workspace, including done and closed.
+    </p>
+  }
+</fpc-modal>
+
+<fpc-modal
+  [(open)]="workspaceSwitchModalOpen"
+  i18n-title="@@featureTicketsBoard-workspaceSwitcherTitle"
+  title="Switch workspace"
+  [scrollable]="true"
+  (closed)="onCloseWorkspaceSwitchModal()"
+>
+  @if (clientsLoading$ | async) {
+    <div class="d-flex justify-content-center py-4">
+      <fpc-spinner
+        variant="primary"
+        i18n-label="@@featureTicketsBoard-workspaceSwitcherLoading"
+        label="Loading workspaces…"
+      />
+    </div>
+  } @else {
+    @if (clients$ | async; as clientList) {
+      @if (clientList.length === 0 && !workspaceSwitchSearch().trim()) {
+        <fpc-empty-state
+          size="sm"
+          message="No workspaces yet"
+          i18n-message="@@featureTicketsBoard-workspaceSwitcherEmpty"
+        >
+          <fpc-button
+            fpcEmptyStateActions
+            variant="primary"
+            size="sm"
+            i18n="@@featureTicketsBoard-goToSpaces"
+            (clicked)="goToSpaces($event)"
+          >
+            Go to Spaces
+          </fpc-button>
+        </fpc-empty-state>
+      } @else {
         <label
           class="visually-hidden"
-          for="ticketRelationsSearchInput"
-          i18n="@@featureTicketsBoard-relationsSearchLabel"
+          for="workspaceSwitchSearch"
+          i18n="@@featureTicketsBoard-workspaceSwitcherSearchLabel"
+          >Search workspaces</label
         >
-          Search relations
-        </label>
-        <div class="position-relative mb-2">
-          <div class="input-group">
-            <input
-              #ticketRelationsSearchInput
-              id="ticketRelationsSearchInput"
-              type="text"
-              class="form-control"
-              autocomplete="off"
-              [ngModel]="ticketRelationsSearchQuery()"
-              (ngModelChange)="onTicketRelationInputChange($event)"
-              (focus)="onTicketRelationInputFocus()"
-              (blur)="onTicketRelationInputBlur()"
-              i18n-placeholder="@@featureTicketsBoard-relationsSearchPlaceholder"
-              placeholder="Title or short/long SHA"
-            />
-            <button type="button" class="btn btn-outline-secondary" (click)="onAddTicketRelationBySearch()">
-              <i class="bi bi-plus"></i>
-            </button>
-          </div>
-          @if (ticketRelationsSuggestionsOpen() && ticketRelationCandidates().length > 0) {
-            <ul
-              class="dropdown-menu show position-absolute shadow-sm border mt-1 py-0 w-100"
-              style="z-index: 1070; max-height: 240px; overflow-y: auto"
-            >
-              @for (
-                candidate of ticketRelationCandidates();
-                track candidate.kind === 'knowledge' ? candidate.node.id : candidate.ticket.id
-              ) {
-                <li>
-                  <button
-                    type="button"
-                    class="dropdown-item py-2 text-start"
-                    (mousedown)="onPickTicketRelationCandidate(candidate, $event)"
-                  >
-                    <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
-                      <span class="font-monospace text-muted small flex-shrink-0">{{
-                        candidate.kind === 'knowledge' ? candidate.node.shas.short : candidate.ticket.shas.short
-                      }}</span>
-                      <span class="text-truncate small flex-grow-1 min-width-0">
-                        {{
-                          candidate.kind === 'knowledge'
-                            ? (candidate.node.nodeType === 'folder' ? 'Folder' : 'Page') + ' · ' + candidate.node.title
-                            : 'Ticket · ' + candidate.ticket.title
-                        }}
-                      </span>
-                    </span>
-                  </button>
-                </li>
-              }
-            </ul>
-          }
-        </div>
-        @if (ticketRelationsSearchError()) {
-          <div class="form-text text-danger mb-2">{{ ticketRelationsSearchError() }}</div>
-        }
-        @if (selectedTicketRelationTargets().length > 0) {
-          <div class="d-flex flex-wrap gap-2 mt-2">
-            @for (target of selectedTicketRelationTargets(); track ticketRelationTrackId(target)) {
-              <small
-                class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded d-inline-flex align-items-center gap-1"
-                style="max-width: min(100%, 24rem)"
-              >
-                <span class="text-truncate small">{{ ticketRelationChipDisplay(target) }}</span>
-                <button
-                  type="button"
-                  class="btn btn-link btn-sm p-0 ms-1 align-baseline flex-shrink-0"
-                  (click)="onRemovePendingTicketRelation(target)"
-                >
-                  <i class="bi bi-x"></i>
-                </button>
-              </small>
-            }
-          </div>
+        <fpc-search-field
+          class="mb-3"
+          inputId="workspaceSwitchSearch"
+          [value]="workspaceSwitchSearch()"
+          (valueChange)="workspaceSwitchSearch.set($event)"
+          i18n-placeholder="@@featureTicketsBoard-workspaceSwitcherSearchPlaceholder"
+          placeholder="Search workspaces"
+        />
+        @if (clientList.length === 0) {
+          <fpc-empty-state
+            size="sm"
+            icon="search"
+            message="No search results"
+            i18n-message="@@featureTicketsBoard-noSearchResults"
+          />
         } @else {
-          <p class="text-muted small mb-0" i18n="@@featureTicketsBoard-relationsSearchHint">
-            Search by title or SHA and add one or more relation targets.
-          </p>
-        }
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          [disabled]="selectedTicketRelationTargets().length === 0"
-          (click)="onAddSelectedTicketRelations()"
-        >
-          <span i18n="@@featureTicketsBoard-relationsAdd">Add</span>
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Move ticket to workspace (swaps with ticket detail while open) -->
-<div
-  class="modal fade"
-  id="ticketMigrateModal"
-  tabindex="-1"
-  aria-hidden="true"
-  #ticketMigrateModal
-  data-bs-backdrop="static"
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title h5" id="ticketMigrateModalLabel" i18n="@@featureTicketsBoard-migrateModalTitle">
-          Move ticket to workspace
-        </h2>
-        <button
-          type="button"
-          class="btn-close"
-          aria-label="Close"
-          i18n-aria-label="@@featureTicketsBoard-modalCloseAria"
-          (click)="onCancelTicketMigrationModal()"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <p class="small text-muted mb-3" i18n="@@featureTicketsBoard-migrateModalIntro">
-          The ticket and its subtasks in this workspace will move to the workspace you select. You must be a workspace
-          admin in both places.
-        </p>
-        @if (listError$ | async; as migErr) {
-          <div class="alert alert-danger py-2 small mb-3" role="alert">{{ migErr }}</div>
-        }
-        <label class="form-label" for="ticketMigrateTargetSelect" i18n="@@featureTicketsBoard-migrateTargetLabel"
-          >Target workspace</label
-        >
-        <select
-          id="ticketMigrateTargetSelect"
-          class="form-select"
-          [ngModel]="migrationTargetClientId()"
-          (ngModelChange)="migrationTargetClientId.set($event)"
-          [disabled]="ticketsSaving()"
-        >
-          @for (c of migrationTargetChoices(); track c.id) {
-            <option [ngValue]="c.id">{{ effectiveWorkspaceTitle({ id: c.id, client: c }) }}</option>
-          }
-        </select>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="onConfirmTicketMigration()"
-          [disabled]="ticketsSaving() || !migrationTargetClientId()"
-          i18n="@@featureTicketsBoard-move"
-        >
-          Move
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Automation run detail (swaps with ticket detail: ticket hides while this is open) -->
-<div
-  class="modal fade"
-  id="ticketAutomationRunModal"
-  tabindex="-1"
-  aria-hidden="true"
-  #ticketAutomationRunModal
-  data-bs-backdrop="static"
->
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2
-          class="modal-title h5"
-          id="ticketAutomationRunModalLabel"
-          i18n="@@featureTicketsBoard-automationRunModalTitle"
-        >
-          Automation run
-        </h2>
-        <button
-          type="button"
-          class="btn-close"
-          aria-label="Close"
-          i18n-aria-label="@@featureTicketsBoard-modalCloseAria"
-          (click)="onCloseTicketAutomationRunModal()"
-        ></button>
-      </div>
-      <div class="modal-body small">
-        @if (ticketAutomationRunDetail(); as ar) {
-          <dl class="row mb-3">
-            <dt class="col-sm-4" i18n="@@featureTicketsBoard-automationRunStatus">Status</dt>
-            <dd class="col-sm-8 mb-0">
-              <span
-                class="badge"
-                [ngClass]="ticketAutomationRunStatusBadgeClass(ar.status)"
-                [attr.title]="automationRunStatusLabel(ar.status)"
-                >{{ automationRunStatusLabel(ar.status) }}</span
+          <fpc-list [flush]="true" class="tickets-board__workspace-switch-list border rounded">
+            @for (c of clientList; track c.id) {
+              <fpc-list-item
+                [active]="c.id === effectiveClientId()"
+                [clickable]="true"
+                (selected)="onSelectWorkspaceForTickets(c)"
               >
-            </dd>
-            <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunPhase">Phase</dt>
-            <dd class="col-sm-8 mt-2 mb-0" [attr.title]="automationRunPhaseLabel(ar.phase)">
-              {{ automationRunPhaseLabel(ar.phase) }}
-            </dd>
-            <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunBranch">Branch</dt>
-            <dd class="col-sm-8 mt-2 mb-0 text-break">{{ ar.branchName ?? '—' }}</dd>
-            <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunAgent">Agent</dt>
-            <dd class="col-sm-8 mt-2 mb-0 font-monospace text-break">{{ ar.agentId }}</dd>
-            <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunIterations">Iterations</dt>
-            <dd class="col-sm-8 mt-2 mb-0">{{ ar.iterationCount }}</dd>
-            @if (ar.failureCode) {
-              <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunFailure">Failure</dt>
-              <dd class="col-sm-8 mt-2 mb-0 text-break" [attr.title]="ar.failureCode">
-                {{ automationFailureCodeLabel(ar.failureCode) }}
-              </dd>
-            }
-            @if (ar.cancellationReason) {
-              <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunCancelReason">Cancellation</dt>
-              <dd class="col-sm-8 mt-2 mb-0 text-break" [attr.title]="ar.cancellationReason">
-                {{ automationCancellationReasonLabel(ar.cancellationReason) }}
-              </dd>
-            }
-          </dl>
-          @if (ar.summary) {
-            <h3 class="h6" i18n="@@featureTicketsBoard-automationRunSummary">Summary (JSON)</h3>
-            <pre class="small bg-body-tertiary rounded p-2 border overflow-auto" style="max-height: 12rem">{{
-              formatAutomationJson(ar.summary)
-            }}</pre>
-          }
-          <h3 class="h6 mt-3" i18n="@@featureTicketsBoard-automationRunSteps">Steps</h3>
-          @if (ticketAutomationLoadingRunDetail()) {
-            <div class="d-flex align-items-center gap-2 text-muted py-3">
-              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              <span i18n="@@featureTicketsBoard-automationLoadingTrace">Loading steps…</span>
-            </div>
-          } @else if (ar.steps && ar.steps.length > 0) {
-            <div class="accordion" id="automationStepAccordion">
-              @for (step of ar.steps; track step.id) {
-                <div class="accordion-item">
-                  <h4 class="accordion-header">
-                    <button
-                      class="accordion-button collapsed py-2"
-                      type="button"
-                      data-bs-toggle="collapse"
-                      [attr.data-bs-target]="'#automationStep' + step.id"
-                      [attr.aria-controls]="'automationStep' + step.id"
-                      aria-expanded="false"
+                <div fpcListItemTitle class="text-truncate text-start">{{ c.name }}</div>
+                @if (c.id === effectiveClientId()) {
+                  <div fpcListItemActions>
+                    <fpc-badge
+                      color="light"
+                      [pill]="true"
+                      class="tickets-board__workspace-current-badge flex-shrink-0"
+                      i18n="@@featureTicketsBoard-workspaceSwitcherCurrent"
+                      >Current</fpc-badge
                     >
-                      <span class="me-2 badge text-bg-light">#{{ step.stepIndex }}</span>
-                      <span class="me-2" [attr.title]="automationRunPhaseLabel(step.phase)">{{
-                        automationRunPhaseLabel(step.phase)
-                      }}</span>
-                      <span class="text-muted small" [attr.title]="automationRunStepKindLabel(step.kind)">{{
-                        automationRunStepKindLabel(step.kind)
-                      }}</span>
-                    </button>
-                  </h4>
-                  <div
-                    [id]="'automationStep' + step.id"
-                    class="accordion-collapse collapse"
-                    data-bs-parent="#automationStepAccordion"
-                  >
-                    <div class="accordion-body">
-                      @if (step.excerpt) {
-                        <div class="mb-2">
-                          <span class="fw-semibold d-block mb-1" i18n="@@featureTicketsBoard-automationStepExcerpt"
-                            >Excerpt</span
-                          >
-                          <pre class="small mb-0 text-wrap font-monospace bg-body-secondary rounded p-2">{{
-                            step.excerpt
-                          }}</pre>
-                        </div>
-                      }
-                      <span class="fw-semibold d-block mb-1" i18n="@@featureTicketsBoard-automationStepPayload"
-                        >Payload (JSON)</span
-                      >
-                      <pre
-                        class="small mb-0 bg-body-tertiary rounded p-2 border overflow-auto"
-                        style="max-height: 16rem"
-                        >{{ formatAutomationJson(step.payload) }}</pre
-                      >
-                    </div>
                   </div>
-                </div>
-              }
-            </div>
-          } @else {
-            <p class="text-muted mb-0" i18n="@@featureTicketsBoard-automationNoSteps">
-              No steps recorded for this run.
-            </p>
-          }
-        } @else {
-          <p class="text-muted mb-0" i18n="@@featureTicketsBoard-automationRunModalEmpty">
-            Open a run from the ticket detail panel.
-          </p>
-        }
-      </div>
-      <div class="modal-footer">
-        @if (ticketAutomationRunDetail(); as ar2) {
-          @if (ticketAutomationRunCanCancel(ar2)) {
-            <button
-              type="button"
-              class="btn btn-primary me-auto"
-              (click)="onCancelTicketAutomationRun(ar2)"
-              [disabled]="ticketAutomationSaving()"
-              i18n="@@featureTicketsBoard-automationCancelRun"
-            >
-              Cancel run
-            </button>
-          }
-        }
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Delete ticket confirmation (swaps with ticket detail while open, like migrate / subtask / automation run) -->
-<div
-  class="modal fade"
-  id="deleteTicketConfirmModal"
-  tabindex="-1"
-  aria-labelledby="deleteTicketConfirmModalLabel"
-  aria-hidden="true"
-  #deleteTicketConfirmModal
-  data-bs-backdrop="static"
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2
-          class="modal-title h5"
-          id="deleteTicketConfirmModalLabel"
-          i18n="@@featureTicketsBoard-deleteConfirmModalTitle"
-        >
-          Delete ticket
-        </h2>
-        <button
-          type="button"
-          class="btn-close"
-          aria-label="Close"
-          i18n-aria-label="@@featureTicketsBoard-modalCloseAria"
-          [disabled]="saving$ | async"
-          (click)="onCancelDeleteTicketConfirm()"
-        ></button>
-      </div>
-      <div class="modal-body">
-        @if (ticketPendingDelete(); as pend) {
-          <p>
-            <span i18n="@@featureTicketsBoard-deleteConfirmModalLead"
-              >Are you sure you want to delete this ticket?</span
-            >
-            <strong class="d-block mt-1">{{ pend.title }}</strong>
-          </p>
-        }
-        <p class="text-danger mb-0">
-          <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
-          <span i18n="@@featureTicketsBoard-deleteConfirmCannotUndo">This action cannot be undone.</span>
-        </p>
-        <div class="form-check mt-3">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            id="releaseExternalSyncMarkerTicketDelete"
-            [checked]="releaseExternalSyncMarkerOnTicketDelete()"
-            (change)="releaseExternalSyncMarkerOnTicketDelete.set($any($event.target).checked)"
-          />
-          <label class="form-check-label" for="releaseExternalSyncMarkerTicketDelete">
-            Allow re-import from external integrations (clears import sync marker for this ticket)
-          </label>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="onConfirmDeleteTicket()"
-          [disabled]="saving$ | async"
-          i18n="@@featureTicketsBoard-delete"
-        >
-          Delete
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Create ticket -->
-<div
-  class="modal fade"
-  id="createTicketModal"
-  tabindex="-1"
-  aria-hidden="true"
-  #createTicketModal
-  data-bs-backdrop="static"
->
-  <div class="modal-dialog modal-xl modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title h5" id="createTicketModalLabel">
-          @if (createTicketParentId()) {
-            <span i18n="@@featureTicketsBoard-createSubtaskModalTitle">New subtask</span>
-          } @else {
-            <span i18n="@@featureTicketsBoard-createModalTitle">New ticket</span>
-          }
-        </h2>
-        <button
-          type="button"
-          class="btn-close"
-          aria-label="Close"
-          i18n-aria-label="@@featureTicketsBoard-modalCloseAria"
-          (click)="onCloseCreateTicketModal()"
-        ></button>
-      </div>
-      <div class="modal-body">
-        @if (createTicketError(); as cte) {
-          <div class="alert alert-danger small py-2" role="alert">{{ cte }}</div>
-        }
-        <div class="mb-2">
-          <label
-            class="form-label small fw-semibold"
-            for="createTicketTitle"
-            i18n="@@featureTicketsBoard-createTitleLabel"
-            >Title</label
-          >
-          <input
-            id="createTicketTitle"
-            type="text"
-            class="form-control form-control-sm"
-            [ngModel]="createTicketTitle()"
-            (ngModelChange)="createTicketTitle.set($event)"
-            i18n-placeholder="@@featureTicketsBoard-createTitlePlaceholder"
-            placeholder="Short summary"
-            required
-          />
-        </div>
-        <div class="mb-2">
-          <label
-            class="form-label small fw-semibold"
-            for="createTicketContent"
-            i18n="@@featureTicketsBoard-createContentLabel"
-            >Description</label
-          >
-          <framework-ticket-editor
-            [markdown]="createTicketContent()"
-            (markdownChange)="createTicketContent.set($event)"
-            i18n-placeholder="@@featureTicketsBoard-createContentPlaceholder"
-            placeholder="Optional details"
-          ></framework-ticket-editor>
-        </div>
-        @if (!createTicketParentId()) {
-          <div class="mb-2">
-            <label
-              class="form-label small fw-semibold"
-              for="createTicketCreationTemplate"
-              i18n="@@featureTicketsBoard-createTemplateLabel"
-              >Type</label
-            >
-            <select
-              id="createTicketCreationTemplate"
-              class="form-select form-select-sm"
-              [ngModel]="createTicketCreationTemplate()"
-              (ngModelChange)="createTicketCreationTemplate.set($event)"
-            >
-              <option [ngValue]="'empty'" i18n="@@featureTicketsBoard-createTemplateEmpty">Empty</option>
-              <option [ngValue]="'specification'" i18n="@@featureTicketsBoard-createTemplateSpecification">
-                Specification
-              </option>
-            </select>
-          </div>
-        }
-        <div class="row g-2">
-          <div class="col-sm-6">
-            <label
-              class="form-label small fw-semibold"
-              for="createTicketStatus"
-              i18n="@@featureTicketsBoard-createStatusLabel"
-              >Status</label
-            >
-            <select
-              id="createTicketStatus"
-              class="form-select form-select-sm"
-              [ngModel]="createTicketStatus()"
-              (ngModelChange)="createTicketStatus.set($event)"
-            >
-              @for (s of statusOptions; track s) {
-                <option [ngValue]="s">{{ laneLabel(s) }}</option>
-              }
-            </select>
-          </div>
-          <div class="col-sm-6">
-            <label
-              class="form-label small fw-semibold"
-              for="createTicketPriority"
-              i18n="@@featureTicketsBoard-createPriorityLabel"
-              >Priority</label
-            >
-            <select
-              id="createTicketPriority"
-              class="form-select form-select-sm"
-              [ngModel]="createTicketPriority()"
-              (ngModelChange)="createTicketPriority.set($event)"
-            >
-              @for (p of priorityOptions; track p) {
-                <option [ngValue]="p">{{ priorityLabel(p) }}</option>
-              }
-            </select>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="onSubmitCreateTicket()"
-          i18n="@@featureTicketsBoard-create"
-        >
-          Create
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Global ticket search (Bootstrap modal) -->
-<div
-  class="modal fade"
-  id="globalSearchModal"
-  tabindex="-1"
-  aria-labelledby="globalSearchModalLabel"
-  aria-hidden="true"
-  #globalSearchModal
->
-  <div class="modal-dialog modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title h5" id="globalSearchModalLabel" i18n="@@featureTicketsBoard-globalSearchTitle">
-          Search tickets
-        </h2>
-        <button
-          type="button"
-          class="btn-close"
-          aria-label="Close"
-          i18n-aria-label="@@featureTicketsBoard-modalCloseAria"
-          (click)="onCloseGlobalSearchModal()"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <label class="visually-hidden" for="globalSearchInput" i18n="@@featureTicketsBoard-globalSearchInputLabel"
-          >Search tickets</label
-        >
-        <div class="input-group search-input-container border rounded mb-3">
-          <i class="bi bi-search" aria-hidden="true"></i>
-          <input
-            #globalSearchInput
-            id="globalSearchInput"
-            type="search"
-            class="form-control border-0 search-input"
-            [ngModel]="globalSearchQuery()"
-            (ngModelChange)="globalSearchQuery.set($event)"
-            i18n-placeholder="@@featureTicketsBoard-globalSearchPlaceholder"
-            placeholder="Search by title, description, or id"
-          />
-        </div>
-        @if (globalSearchQuery().trim() === '') {
-          <p class="text-muted small mb-0" i18n="@@featureTicketsBoard-globalSearchHint">
-            Type to search all tickets in this workspace, including done and closed.
-          </p>
-        } @else if (globalSearchHits().length === 0) {
-          <p class="text-muted small mb-0" i18n="@@featureTicketsBoard-globalSearchNoResults">No matching tickets</p>
-        } @else {
-          <div class="list-group list-group-flush border rounded tickets-board__global-search-results">
-            @for (hit of globalSearchHits(); track hit.ticket.id) {
-              <button
-                type="button"
-                class="list-group-item list-group-item-action d-flex flex-column align-items-start gap-1 text-start"
-                (click)="onGlobalSearchResultClick(hit)"
-              >
-                <div class="d-flex flex-wrap align-items-baseline gap-2 w-100 min-width-0">
-                  @if (hit.ticket.shas?.short) {
-                    <span class="font-monospace text-muted small flex-shrink-0">{{ hit.ticket.shas.short }}</span>
-                  }
-                  <span class="fw-medium text-break flex-grow-1 min-width-0">{{ hit.ticket.title }}</span>
-                  @if (hit.ticket.automationEligible) {
-                    <small class="flex-shrink-0">
-                      <i
-                        class="bi bi-lightning-charge-fill d-flex align-items-center justify-content-center text-bg-primary status-badge"
-                        i18n-title="@@featureTicketsBoard-automationEligibleTitle"
-                        title="Autonomous prototyping enabled"
-                      ></i>
-                    </small>
-                  }
-                  <small
-                    class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded flex-shrink-0"
-                    [ngClass]="ticketStatusBadgeClass(hit.ticket.status)"
-                    >{{ laneLabel(hit.ticket.status) }}</small
-                  >
-                </div>
-                @if (globalSearchPathDisplay(hit)) {
-                  <small class="text-muted text-truncate w-100">{{ globalSearchPathDisplay(hit) }}</small>
                 }
-              </button>
+              </fpc-list-item>
             }
-          </div>
+          </fpc-list>
         }
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Switch workspace (Bootstrap modal) -->
-<div
-  class="modal fade"
-  id="workspaceSwitchModal"
-  tabindex="-1"
-  aria-labelledby="workspaceSwitchModalLabel"
-  aria-hidden="true"
-  #workspaceSwitchModal
->
-  <div class="modal-dialog modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2 class="modal-title h5" id="workspaceSwitchModalLabel" i18n="@@featureTicketsBoard-workspaceSwitcherTitle">
-          Switch workspace
-        </h2>
-        <button
-          type="button"
-          class="btn-close"
-          aria-label="Close"
-          i18n-aria-label="@@featureTicketsBoard-modalCloseAria"
-          (click)="onCloseWorkspaceSwitchModal()"
-        ></button>
-      </div>
-      <div class="modal-body">
-        @if (clientsLoading$ | async) {
-          <div class="d-flex justify-content-center py-4">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden" i18n="@@featureTicketsBoard-workspaceSwitcherLoading"
-                >Loading workspaces…</span
-              >
-            </div>
-          </div>
-        } @else {
-          @if (clients$ | async; as clientList) {
-            @if (clientList.length === 0) {
-              <p class="text-muted small mb-2 text-center" i18n="@@featureTicketsBoard-workspaceSwitcherEmpty">
-                You don't have any workspaces yet.
-              </p>
-              <p class="text-muted small mb-3 text-center" i18n="@@featureTicketsBoard-workspaceSwitcherEmptyHint">
-                Create one from Spaces, or open Spaces if a workspace was shared with you.
-              </p>
-              <a
-                routerLink="/clients"
-                class="btn btn-primary btn-sm d-block w-100"
-                i18n="@@featureTicketsBoard-goToSpaces"
-                (click)="onCloseWorkspaceSwitchModal()"
-                >Go to Spaces</a
-              >
-            } @else {
-              <label
-                class="visually-hidden"
-                for="workspaceSwitchSearch"
-                i18n="@@featureTicketsBoard-workspaceSwitcherSearchLabel"
-                >Search workspaces</label
-              >
-              <div class="input-group search-input-container border rounded mb-3">
-                <i class="bi bi-search" aria-hidden="true"></i>
-                <input
-                  id="workspaceSwitchSearch"
-                  type="search"
-                  class="form-control border-0 search-input"
-                  [ngModel]="workspaceSwitchSearch()"
-                  (ngModelChange)="workspaceSwitchSearch.set($event)"
-                  i18n-placeholder="@@featureTicketsBoard-workspaceSwitcherSearchPlaceholder"
-                  placeholder="Search workspaces"
-                />
-              </div>
-              @if (clientList.length === 0) {
-                <p class="text-muted small mb-0 text-center py-3" i18n="@@featureTicketsBoard-workspaceSwitcherNoMatch">
-                  No matching workspaces
-                </p>
-              } @else {
-                <div class="list-group list-group-flush tickets-board__workspace-switch-list border rounded">
-                  @for (c of clientList; track c.id) {
-                    <button
-                      type="button"
-                      class="list-group-item list-group-item-action d-flex justify-content-between align-items-center gap-2"
-                      [class.active]="c.id === effectiveClientId()"
-                      (click)="onSelectWorkspaceForTickets(c)"
-                    >
-                      <span class="text-truncate text-start">{{ c.name }}</span>
-                      @if (c.id === effectiveClientId()) {
-                        <span
-                          class="badge rounded-pill tickets-board__workspace-current-badge flex-shrink-0"
-                          i18n="@@featureTicketsBoard-workspaceSwitcherCurrent"
-                          >Current</span
-                        >
-                      }
-                    </button>
-                  }
-                </div>
-              }
-            }
-          }
-        }
-      </div>
-    </div>
-  </div>
-</div>
+      }
+    }
+  }
+</fpc-modal>

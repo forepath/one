@@ -1,0 +1,136 @@
+// Foundation MDX + autodocs chrome. Bootstrap specimens follow `data-bs-theme` /
+// `data-fpc-brand`. Storybook emotion chrome (arg tables, action bars) follows DocsContainer
+// `theme` — these rules cover leftovers and keep MDX tables/prose aligned with Bootstrap.
+
+// Always derive dark accents (brand overlays also set these; stock Bootstrap does not).
+:root,
+[data-bs-theme] {
+  --bs-primary-dark: color-mix(in srgb, var(--bs-primary) 92%, black);
+  --bs-success-dark: color-mix(in srgb, var(--bs-success) 80%, black);
+}
+
+body {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+}
+
+#storybook-docs,
+.sbdocs,
+.sbdocs-wrapper,
+.sbdocs-content {
+  background: var(--bs-body-bg) !important;
+  color: var(--bs-body-color) !important;
+}
+
+.sbdocs.sbdocs-content,
+.sbdocs-content {
+  font-family: var(--bs-body-font-family);
+  font-size: var(--bs-body-font-size);
+  line-height: var(--bs-body-line-height);
+}
+
+.sbdocs-content h1,
+.sbdocs-content h2,
+.sbdocs-content h3,
+.sbdocs-content h4,
+.sbdocs-content h5,
+.sbdocs-content h6,
+.sbdocs-title,
+.sbdocs-subtitle {
+  color: var(--bs-emphasis-color) !important;
+  font-family: var(--bs-body-font-family);
+}
+
+.sbdocs-content a {
+  color: var(--bs-link-color);
+}
+
+.sbdocs-content a:hover {
+  color: var(--bs-link-hover-color);
+}
+
+.sbdocs-content p,
+.sbdocs-content li,
+.sbdocs-content td,
+.sbdocs-content th {
+  color: var(--bs-body-color);
+}
+
+.sbdocs-content code,
+.sbdocs-content .docblock-source {
+  color: var(--bs-code-color);
+  background-color: var(--bs-tertiary-bg) !important;
+}
+
+.sbdocs-content pre,
+.sbdocs .docblock-source {
+  background-color: var(--bs-tertiary-bg) !important;
+  color: var(--bs-body-color) !important;
+  border-color: var(--bs-border-color) !important;
+}
+
+.sbdocs-content hr {
+  border-color: var(--bs-border-color);
+  opacity: 1;
+}
+
+.sbdocs-content table,
+.sbdocs .docblock-argstable {
+  width: 100%;
+  margin-bottom: 1rem;
+  border-collapse: collapse;
+  vertical-align: top;
+  background: var(--bs-body-bg) !important;
+  color: var(--bs-body-color) !important;
+}
+
+.sbdocs-content th,
+.sbdocs-content td,
+.sbdocs .docblock-argstable th,
+.sbdocs .docblock-argstable td {
+  padding: 0.5rem 0.75rem;
+  border-color: var(--bs-border-color) !important;
+  background: var(--bs-body-bg) !important;
+  color: var(--bs-body-color) !important;
+}
+
+.sbdocs-content thead th,
+.sbdocs .docblock-argstable-head th {
+  background-color: var(--bs-tertiary-bg) !important;
+  color: var(--bs-emphasis-color) !important;
+  font-weight: 600;
+}
+
+.sbdocs .docblock-argstable-body tr:nth-child(even) td,
+.sbdocs .docblock-argstable-body tr:nth-child(odd) td {
+  background: var(--bs-body-bg) !important;
+}
+
+.sbdocs-preview,
+.sbdocs .docs-story,
+.sbdocs .sbdocs-preview-actions,
+.sbdocs .docblock-code-toggle {
+  background: var(--bs-body-bg) !important;
+  color: var(--bs-body-color) !important;
+  border-color: var(--bs-border-color) !important;
+}
+
+.sbdocs-toc--custom,
+.sbdocs .toc-wrapper,
+.sbdocs .toc-list,
+.sbdocs .toc-list-item a {
+  background: transparent !important;
+  color: var(--bs-body-color) !important;
+}
+
+.sbdocs .toc-list-item.is-active-li > a {
+  color: var(--bs-primary) !important;
+}
+
+// Live token specimens on Foundation/Theming
+.fpc-docs-swatch {
+  min-width: 7rem;
+  padding: 0.75rem;
+  border-radius: var(--bs-border-radius);
+  border: 1px solid var(--bs-border-color);
+}

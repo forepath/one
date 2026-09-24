@@ -1,0 +1,25 @@
+:host {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 0; // Critical for flex scrolling
+  overflow: hidden; // Prevent page-level overflow
+}
+
+:host(.fpc-section-row--nowrap) {
+  flex-wrap: nowrap;
+}
+
+// Projected `fpc-section-column` hosts live in the light DOM; pierce encapsulation so the
+// marketing-hidden flag can collapse the marketing rail the same way identity section.scss did.
+:host(.section__row--marketing-hidden) {
+  ::ng-deep .section__column--marketing {
+    display: none;
+  }
+
+  ::ng-deep .section__column--form {
+    flex: 1 1 100%;
+  }
+}

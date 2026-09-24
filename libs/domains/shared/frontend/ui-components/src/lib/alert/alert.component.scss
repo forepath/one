@@ -1,0 +1,60 @@
+:host {
+  display: block;
+}
+
+// Restore Bootstrap alert offset below the banner (inner `.alert` keeps `mb-0` to avoid double margin).
+:host:has(.fpc-alert__alert) {
+  margin-bottom: var(--bs-alert-margin-bottom, 1rem);
+}
+
+.fpc-alert__alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+
+  // With a trailing action, center the row so the first content line optically matches the
+  // button label (btn padding would otherwise leave the text sitting high at flex-start).
+  &:has(.fpc-alert__actions:not(:empty)) {
+    align-items: center;
+  }
+}
+
+.fpc-alert__icon {
+  flex: 0 0 auto;
+  font-size: 1.125rem;
+  line-height: 1.2;
+}
+
+.fpc-alert__content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.fpc-alert__actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.fpc-alert__close {
+  flex: 0 0 auto;
+  // The flex layout already reserves room, so the absolute Bootstrap positioning is dropped.
+  position: static;
+  padding: 0.25rem;
+}
+
+:host(.fpc-alert--flush) {
+  margin-bottom: 0;
+
+  .fpc-alert__alert {
+    border-radius: 0;
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+  }
+}

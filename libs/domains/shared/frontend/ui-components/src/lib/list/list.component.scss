@@ -1,0 +1,16 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+:host(.fpc-list--borderless) {
+  --bs-list-group-border-width: 0;
+}
+
+// Bootstrap's `.list-group-flush` drops the last row's bottom edge; consoles need that separator
+// so the list always closes against the following chrome (footer, empty space, next section).
+:host(.list-group-flush) ::ng-deep > .list-group-item:last-child,
+:host(.list-group-flush) ::ng-deep > fpc-list-item:last-child {
+  border-bottom-width: var(--bs-list-group-border-width);
+}

@@ -1,41 +1,25 @@
 @use '../../section.scss';
 
 .docs-layout {
-  .docs-header {
-    z-index: 1020;
+  // Sticky product chrome — match portal top-bar height (brand mark padding + 40px icon).
+  .docs-layout__top-bar {
     position: sticky;
     top: 0;
-    height: 72px;
+    z-index: 1020;
+  }
 
-    .brand-icon-container {
-      height: calc(40px + 2rem);
-    }
+  // Mirror `fpc-top-bar__brand-mark` / `__brand-icon` (projected brand keeps docs encapsulation).
+  .docs-layout__brand-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
 
-    .brand-icon {
-      color: #fff;
-      height: 39px;
-      width: 39px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .menu-collapse-button {
-      height: 71px;
-      width: 71px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 0;
-      background-color: transparent;
-      border: none;
-      padding: 0;
-      background-color: rgb(0 0 0 / 0.25);
-    }
-
-    h5 {
-      margin: 0;
-    }
+  .docs-layout__brand-icon {
+    height: 40px;
+    width: 40px;
+    display: block;
   }
 
   .docs-main {
@@ -43,8 +27,9 @@
 
     .docs-sidebar {
       width: 280px;
-      background-color: var(--bs-body-bg);
-      overflow-y: auto;
+      background-color: var(--bs-tertiary-bg);
+      // Scroll lives on docs-navigation so the sidebar shade layer stays fixed.
+      overflow: hidden;
       position: relative;
       flex-shrink: 0;
       height: 100%;
@@ -76,22 +61,5 @@
         height: 100%;
       }
     }
-
-    .docs-content-area {
-      padding: 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
-      width: 100%;
-
-      @media (max-width: 767.98px) {
-        padding: 1rem;
-      }
-    }
-  }
-}
-
-#languageDropdown {
-  &:after {
-    display: none;
   }
 }

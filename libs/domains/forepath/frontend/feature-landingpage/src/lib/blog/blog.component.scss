@@ -1,24 +1,5 @@
 @import '../page.component.scss';
 
-.blog-search {
-  position: relative;
-  max-width: 32rem;
-}
-
-.blog-search__icon {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--bs-secondary-color);
-  pointer-events: none;
-}
-
-.blog-search__input {
-  padding-left: 2.75rem;
-  border-radius: 0.75rem;
-}
-
 .blog-card {
   overflow: hidden;
 }

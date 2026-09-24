@@ -1,0 +1,111 @@
+:host {
+  display: block;
+  position: relative;
+  // Standalone Storybook / usage outside `fpc-sidebar` still gets tile tint tokens.
+  --sidebar-item-hover-bg: rgb(0 0 0 / 0.05);
+  --sidebar-item-active-bg: rgb(0 0 0 / 0.05);
+}
+
+:host-context(html[data-bs-theme='dark']) {
+  --sidebar-item-hover-bg: rgb(255 255 255 / 0.075);
+  --sidebar-item-active-bg: rgb(255 255 255 / 0.075);
+}
+
+@mixin sidebar-popover-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-direction: column;
+  width: 72px;
+  height: 72px;
+  border: 0;
+  outline: 0;
+  background-color: transparent;
+  color: var(--bs-heading-color);
+  text-decoration: none;
+
+  span.small {
+    font-size: 0.65rem;
+  }
+
+  &:hover {
+    background-color: var(--sidebar-item-hover-bg);
+  }
+
+  &.active,
+  &.active:hover {
+    background-color: var(--sidebar-item-active-bg);
+  }
+}
+
+.fpc-sidebar-popover {
+  // Fixed so sidebar/workspace `overflow: hidden` does not clip the tile grid.
+  position: fixed;
+  z-index: var(--bs-popover-zindex, 1070);
+  box-sizing: border-box;
+  background-color: var(--bs-tertiary-bg);
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: 0;
+  max-width: none;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  --bs-popover-bg: var(--bs-tertiary-bg);
+  --bs-popover-border-radius: 0;
+  --bs-popover-inner-border-radius: 0;
+  --bs-popover-arrow-width: 0;
+  --bs-popover-arrow-height: 0;
+  --bs-popover-max-width: none;
+
+  &--scrollable {
+    overflow-y: auto;
+    // Absolute cap is the page height; inline `max-height` tightens to the remaining viewport.
+    max-height: 100%;
+    max-height: 100dvh;
+  }
+
+  &--flush-top {
+    border-top-width: 0;
+  }
+
+  &--flush-bottom {
+    border-bottom-width: 0;
+  }
+
+  .popover-body {
+    padding: 0;
+    background-color: var(--bs-tertiary-bg);
+  }
+}
+
+.fpc-sidebar-popover__grid {
+  display: grid;
+  grid-template-columns: repeat(var(--fpc-sidebar-popover-columns, 3), 72px);
+  background-color: var(--bs-tertiary-bg);
+}
+
+// Projected tiles (raw `.sidebar__item` or `.fpc-sidebar-popover__tile`) sit outside this
+// component's template; pierce encapsulation so Storybook / apps without local rail mixins work.
+:host ::ng-deep {
+  .fpc-sidebar-popover .sidebar__item,
+  .fpc-sidebar-popover .fpc-sidebar-popover__tile {
+    @include sidebar-popover-tile;
+  }
+
+  .fpc-sidebar-popover .sidebar__item.position-relative,
+  .fpc-sidebar-popover .fpc-sidebar-popover__tile.position-relative {
+    position: relative;
+  }
+
+  .fpc-sidebar-popover .fpc-sidebar-popover__tile-badge {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 0.25rem;
+    background-color: var(--bs-primary);
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
+  }
+}

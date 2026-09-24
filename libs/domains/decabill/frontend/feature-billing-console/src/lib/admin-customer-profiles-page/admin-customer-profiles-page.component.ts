@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -12,6 +12,23 @@ import {
   type VatIdValidationStatus,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { AuthenticationFacade, type UserResponseDto } from '@forepath/identity/frontend';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcConfirmDialogComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { debounceTime, distinctUntilChanged, skip } from 'rxjs';
 
 import { BILLING_COUNTRY_OPTIONS, DEFAULT_BILLING_COUNTRY_CODE } from '../billing-country-options';
@@ -31,18 +48,42 @@ import {
 @Component({
   selector: 'framework-admin-customer-profiles-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, BillingAdminUserSelectComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    BillingAdminUserSelectComponent,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcListItemComponent,
+    FpcConfirmDialogComponent,
+    FpcListComponent,
+    FpcEmptyStateComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+  ],
   providers: [DatePipe],
   templateUrl: './admin-customer-profiles-page.component.html',
   styleUrls: ['./admin-customer-profiles-page.component.scss'],
 })
 export class AdminCustomerProfilesPageComponent implements OnInit {
-  @ViewChild('createModal', { static: false }) private createModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('editModal', { static: false }) private editModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('deleteModal', { static: false }) private deleteModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('trustScoreModal', { static: false }) private trustScoreModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('customDataModal', { static: false }) private customDataModal!: ElementRef<HTMLDivElement>;
   @ViewChild('createUserSelect') private createUserSelect?: BillingAdminUserSelectComponent;
+
+  readonly createModalOpen = signal(false);
+  readonly editModalOpen = signal(false);
+  readonly deleteModalOpen = signal(false);
+  readonly trustScoreModalOpen = signal(false);
+  readonly customDataModalOpen = signal(false);
+
+  readonly pageTitle = $localize`:@@featureAdminProfiles-title:Billing Profiles`;
+  readonly addProfileAriaLabel = $localize`:@@featureAdminProfiles-add:Add`;
+  readonly searchPlaceholder = $localize`:@@featureAdminProfiles-searchPlaceholder:Search profiles`;
 
   private readonly facade = inject(AdminCustomerProfilesFacade);
   private readonly profilesService = inject(AdminCustomerProfilesService);
@@ -110,7 +151,7 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
 
   openCreateModal(): void {
     this.resetCreateForm();
-    showBillingModal(this.createModal);
+    showBillingModal(this.createModalOpen);
     queueMicrotask(() => this.createUserSelect?.reset());
   }
 
@@ -137,20 +178,20 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
           country: full.country ?? DEFAULT_BILLING_COUNTRY_CODE,
           phone: full.phone ?? '',
         };
-        showBillingModal(this.editModal);
+        showBillingModal(this.editModalOpen);
       },
     });
   }
 
   openDeleteModal(profile: AdminCustomerProfileListItem): void {
     this.profileToDelete = profile;
-    showBillingModal(this.deleteModal);
+    showBillingModal(this.deleteModalOpen);
   }
 
   openTrustScoreModal(profile: AdminCustomerProfileListItem): void {
     this.trustScoreProfile = profile;
     this.facade.loadTrustScore(profile.id);
-    showBillingModal(this.trustScoreModal);
+    showBillingModal(this.trustScoreModalOpen);
   }
 
   openCustomDataModal(profile: AdminCustomerProfileListItem): void {
@@ -159,7 +200,7 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
     this.customDataOriginal = {};
     this.customDataRows = [];
     this.customDataLoading.set(true);
-    showBillingModal(this.customDataModal);
+    showBillingModal(this.customDataModalOpen);
     this.profilesService.getById(profile.id).subscribe({
       next: (full) => {
         const customData = full.customData ?? {};
@@ -398,7 +439,7 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.creating$,
       error$: this.error$,
-      modal: () => this.createModal,
+      open: this.createModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.resetCreateForm();
@@ -408,7 +449,7 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.updating$,
       error$: this.error$,
-      modal: () => this.editModal,
+      open: this.editModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.resetEditForm();
@@ -418,7 +459,7 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.deleting$,
       error$: this.error$,
-      modal: () => this.deleteModal,
+      open: this.deleteModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.profileToDelete = null;
@@ -427,7 +468,7 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.customDataSaving$,
       error$: this.error$,
-      modal: () => this.customDataModal,
+      open: this.customDataModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.resetCustomDataForm();

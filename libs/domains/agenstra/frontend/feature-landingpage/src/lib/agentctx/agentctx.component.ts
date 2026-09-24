@@ -4,10 +4,11 @@ import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
+import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
 @Component({
   selector: 'framework-portal-agentctx',
-  imports: [CommonModule, RouterModule],
+  imports: [FpcButtonComponent, CommonModule, RouterModule],
   styleUrls: ['./agentctx.component.scss'],
   templateUrl: './agentctx.component.html',
   standalone: true,

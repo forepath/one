@@ -3,11 +3,31 @@ import { Component, computed, DestroyRef, effect, inject, input, output, signal 
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { DeploymentsFacade, type DeploymentRun } from '@forepath/agenstra/frontend/data-access-agent-console';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcEmptyStateComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+  type FpcBadgeColor,
+} from '@forepath/shared/frontend/ui-components';
 import { debounceTime, distinctUntilChanged, skip } from 'rxjs';
 
 @Component({
   selector: 'framework-deployment-runs-list',
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcEmptyStateComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './deployment-runs-list.component.html',
   styleUrls: ['./deployment-runs-list.component.scss'],
   standalone: true,
@@ -93,21 +113,21 @@ export class DeploymentRunsListComponent {
     }
   }
 
-  getStatusBadgeClass(status: string): string {
+  getStatusBadgeColor(status: string): FpcBadgeColor {
     switch (status.toLowerCase()) {
       case 'completed':
       case 'success':
-        return 'bg-success';
+        return 'success';
       case 'in_progress':
       case 'running':
       case 'queued':
-        return 'bg-primary';
+        return 'primary';
       case 'failed':
       case 'failure':
       case 'cancelled':
-        return 'bg-danger';
+        return 'danger';
       default:
-        return 'bg-secondary';
+        return 'secondary';
     }
   }
 

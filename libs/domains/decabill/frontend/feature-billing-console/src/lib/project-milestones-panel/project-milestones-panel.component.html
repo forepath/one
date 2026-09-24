@@ -1,214 +1,179 @@
 <div class="section__content-wrapper d-flex flex-column h-100">
-  <div class="px-3 py-2 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
-    <h5 class="mb-0 fw-semibold h6" i18n="@@featureProjectMilestones-title">Milestones</h5>
+  <fpc-page-header [title]="pageTitle" density="compact">
     @if (isAdmin) {
-      <button
-        type="button"
-        class="btn btn-sm btn-primary"
-        (click)="openCreateModal()"
-        i18n-title="@@featureProjectMilestones-add"
-        title="Add"
-        i18n-aria-label="@@featureProjectMilestones-add"
-        aria-label="Add"
+      <fpc-button
+        fpcPageHeaderActions
+        variant="primary"
+        size="sm"
+        iconOnly
+        [ariaLabel]="addTitle"
+        [title]="addTitle"
+        (clicked)="openCreateModal()"
       >
         <i class="bi bi-plus" aria-hidden="true"></i>
-      </button>
+      </fpc-button>
     }
-  </div>
+  </fpc-page-header>
 
-  <div class="flex-grow-1 overflow-auto">
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
     @if (error$ | async; as error) {
-      <div class="alert alert-danger m-3 mb-0" role="alert">{{ error }}</div>
+      <fpc-alert class="m-3 mb-0" variant="danger" [message]="error" />
     }
 
     @if (loading$ | async) {
       <div class="d-flex justify-content-center py-4">
-        <div class="spinner-border text-primary" role="status"></div>
+        <fpc-spinner variant="primary" />
       </div>
     } @else if (milestones$ | async; as milestones) {
       @if (milestones.length === 0) {
-        <p class="p-4 text-muted mb-0" i18n="@@featureProjectMilestones-empty">No milestones yet</p>
+        <fpc-empty-state message="No milestones yet" i18n-message="@@featureProjectMilestones-empty" />
       } @else {
-        <div class="list-group list-group-flush">
+        <fpc-list [flush]="true">
           @for (m of milestones; track m.id) {
-            <div class="list-group-item d-flex justify-content-between align-items-center gap-3 border-bottom">
-              <div class="min-w-0 flex-grow-1">
-                <div class="fw-semibold mb-1">{{ m.name }}</div>
-                <div class="small text-muted d-flex align-items-center gap-3 flex-wrap">
-                  <span [class]="progressTextClass(m)"
-                    ><i class="bi bi-graph-up me-1" aria-hidden="true"></i>{{ progressLabel(m) }}</span
+            <fpc-list-item>
+              <div fpcListItemTitle class="fw-semibold">{{ m.name }}</div>
+              <div fpcListItemMeta class="small d-flex align-items-center gap-3 flex-wrap">
+                <span [class]="progressTextClass(m)"
+                  ><i class="bi bi-graph-up me-1" aria-hidden="true"></i>{{ progressLabel(m) }}</span
+                >
+                <span><i class="bi bi-circle me-1" aria-hidden="true"></i>{{ openTicketsLabel(m) }}</span>
+                <span><i class="bi bi-check-circle me-1" aria-hidden="true"></i>{{ doneTicketsLabel(m) }}</span>
+                @if (m.targetDate) {
+                  <span
+                    ><i class="bi bi-calendar3 me-1" aria-hidden="true"></i
+                    >{{ m.targetDate | date: 'mediumDate' }}</span
                   >
-                  <span><i class="bi bi-circle me-1" aria-hidden="true"></i>{{ openTicketsLabel(m) }}</span>
-                  <span><i class="bi bi-check-circle me-1" aria-hidden="true"></i>{{ doneTicketsLabel(m) }}</span>
-                  @if (m.targetDate) {
-                    <span
-                      ><i class="bi bi-calendar3 me-1" aria-hidden="true"></i
-                      >{{ m.targetDate | date: 'mediumDate' }}</span
-                    >
-                  }
-                  @if (m.lockedAt) {
-                    <span class="text-secondary"
-                      ><i class="bi bi-lock me-1" aria-hidden="true"></i>{{ lockedLabel() }}</span
-                    >
-                  }
-                </div>
+                }
+                @if (m.lockedAt) {
+                  <span class="text-secondary"
+                    ><i class="bi bi-lock me-1" aria-hidden="true"></i>{{ lockedLabel() }}</span
+                  >
+                }
               </div>
               @if (isAdmin && !m.lockedAt) {
-                <div class="btn-group btn-group-sm flex-shrink-0" role="group">
-                  <button
-                    type="button"
-                    class="btn btn-outline-primary"
-                    (click)="openEditModal(m)"
+                <fpc-button-group fpcListItemActions size="sm">
+                  <fpc-button
+                    iconOnly
+                    size="sm"
+                    variant="warning"
+                    (clicked)="openEditModal(m)"
                     i18n-title="@@featureProjectMilestones-edit"
                     title="Edit"
                   >
                     <i class="bi bi-pencil" aria-hidden="true"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-secondary"
-                    (click)="lockMilestone(m.id)"
+                  </fpc-button>
+                  <fpc-button
+                    iconOnly
+                    size="sm"
+                    variant="dark"
+                    (clicked)="lockMilestone(m.id)"
                     i18n-title="@@featureProjectMilestones-lock"
                     title="Lock"
                   >
                     <i class="bi bi-lock" aria-hidden="true"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-danger"
-                    (click)="openDeleteModal(m)"
+                  </fpc-button>
+                  <fpc-button
+                    size="sm"
+                    variant="danger"
+                    iconOnly
+                    (clicked)="submitDelete()"
                     i18n-title="@@featureProjectMilestones-delete"
                     title="Delete"
                   >
                     <i class="bi bi-trash" aria-hidden="true"></i>
-                  </button>
-                </div>
+                  </fpc-button>
+                </fpc-button-group>
               }
-            </div>
+            </fpc-list-item>
           }
-        </div>
+        </fpc-list>
       }
     }
   </div>
 </div>
 
-<div #createModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureProjectMilestones-createTitle">New milestone</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <label class="form-label" for="milestoneName" i18n="@@featureProjectMilestones-nameLabel">Name</label>
-        <input
-          id="milestoneName"
-          class="form-control"
-          [(ngModel)]="createForm.name"
-          name="milestoneName"
-          placeholder="Name"
-          i18n-placeholder="@@featureProjectMilestones-namePlaceholder"
-        />
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="submitCreate()"
-          [disabled]="(saving$ | async) === true || !createForm.name.trim()"
-          i18n="@@featureProjectMilestones-create"
-        >
-          Create
-        </button>
-      </div>
-    </div>
+<fpc-modal [(open)]="createModalOpen" i18n-title="@@featureProjectMilestones-createTitle" title="New milestone">
+  <fpc-form-field forId="milestoneName" i18n-label="@@featureProjectMilestones-nameLabel" label="Name">
+    <fpc-form-control
+      controlId="milestoneName"
+      [(ngModel)]="createForm.name"
+      name="milestoneName"
+      placeholder="Name"
+      i18n-placeholder="@@featureProjectMilestones-namePlaceholder"
+    />
+  </fpc-form-field>
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      (clicked)="submitCreate()"
+      [disabled]="(saving$ | async) === true || !createForm.name.trim()"
+      i18n="@@featureProjectMilestones-create"
+    >
+      Create
+    </fpc-button>
   </div>
-</div>
+</fpc-modal>
 
-<div #editModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureProjectMilestones-editTitle">Edit milestone</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label" for="editMilestoneName" i18n="@@featureProjectMilestones-nameLabel">Name</label>
-          <input
-            id="editMilestoneName"
-            class="form-control"
-            [(ngModel)]="editForm.name"
-            name="editMilestoneName"
-            placeholder="Name"
-            i18n-placeholder="@@featureProjectMilestones-namePlaceholder"
-          />
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="editMilestoneDescription" i18n="@@featureProjectMilestones-descriptionLabel"
-            >Description</label
-          >
-          <textarea
-            id="editMilestoneDescription"
-            class="form-control"
-            rows="3"
-            [(ngModel)]="editForm.description"
-            name="editMilestoneDescription"
-          ></textarea>
-        </div>
-        <div class="mb-0">
-          <label class="form-label" for="editMilestoneTargetDate" i18n="@@featureProjectMilestones-targetDateLabel"
-            >Target date</label
-          >
-          <input
-            id="editMilestoneTargetDate"
-            type="date"
-            class="form-control"
-            [(ngModel)]="editForm.targetDate"
-            name="editMilestoneTargetDate"
-          />
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="submitEdit()"
-          [disabled]="(saving$ | async) === true || !editForm.name.trim()"
-          i18n="@@featureProjectMilestones-save"
-        >
-          Save
-        </button>
-      </div>
-    </div>
+<fpc-modal [(open)]="editModalOpen" i18n-title="@@featureProjectMilestones-editTitle" title="Edit milestone">
+  <fpc-form-field forId="editMilestoneName" i18n-label="@@featureProjectMilestones-nameLabel" label="Name">
+    <fpc-form-control
+      controlId="editMilestoneName"
+      [(ngModel)]="editForm.name"
+      name="editMilestoneName"
+      placeholder="Name"
+      i18n-placeholder="@@featureProjectMilestones-namePlaceholder"
+    />
+  </fpc-form-field>
+  <fpc-form-field
+    forId="editMilestoneDescription"
+    i18n-label="@@featureProjectMilestones-descriptionLabel"
+    label="Description"
+  >
+    <fpc-form-control
+      controlType="textarea"
+      controlId="editMilestoneDescription"
+      [rows]="3"
+      [(ngModel)]="editForm.description"
+      name="editMilestoneDescription"
+    />
+  </fpc-form-field>
+  <fpc-form-field
+    forId="editMilestoneTargetDate"
+    i18n-label="@@featureProjectMilestones-targetDateLabel"
+    label="Target date"
+  >
+    <fpc-form-control
+      controlId="editMilestoneTargetDate"
+      inputType="date"
+      [(ngModel)]="editForm.targetDate"
+      name="editMilestoneTargetDate"
+    />
+  </fpc-form-field>
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      (clicked)="submitEdit()"
+      [disabled]="(saving$ | async) === true || !editForm.name.trim()"
+      i18n="@@featureProjectMilestones-save"
+    >
+      Save
+    </fpc-button>
   </div>
-</div>
+</fpc-modal>
 
-<div #deleteModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureProjectMilestones-deleteTitle">Delete milestone</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        @if (milestoneToDelete; as milestone) {
-          <p class="mb-0" i18n="@@featureProjectMilestones-deleteConfirm">
-            Delete milestone "{{ milestone.name }}"? This cannot be undone.
-          </p>
-        }
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="submitDelete()"
-          [disabled]="(saving$ | async) === true || !milestoneToDelete"
-          i18n="@@featureProjectMilestones-delete"
-        >
-          Delete
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+<fpc-confirm-dialog
+  [(open)]="deleteModalOpen"
+  i18n-title="@@featureProjectMilestones-deleteTitle"
+  title="Delete milestone"
+  i18n-confirmLabel="@@featureProjectMilestones-delete"
+  confirmLabel="Delete"
+  [danger]="true"
+  [busy]="(saving$ | async) === true"
+  (confirmed)="submitDelete()"
+>
+  @if (milestoneToDelete; as milestone) {
+    <p class="mb-0" i18n="@@featureProjectMilestones-deleteConfirm">
+      Delete milestone "{{ milestone.name }}"? This cannot be undone.
+    </p>
+  }
+</fpc-confirm-dialog>

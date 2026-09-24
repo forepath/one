@@ -1,6 +1,10 @@
 <div class="service-detail-page border-top d-flex flex-column h-100">
-  <div class="p-3 border-bottom bg-body-tertiary">
-    <a [routerLink]="backLink()" class="small text-decoration-none d-inline-flex align-items-center mb-3">
+  <fpc-page-header>
+    <a
+      fpcPageHeaderBreadcrumbs
+      [routerLink]="backLink()"
+      class="small text-decoration-none d-inline-flex align-items-center"
+    >
       <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
       @if (backTarget() === 'subscriptions') {
         <span i18n="@@featureServiceDetail-backToSubscriptions">Back to subscriptions</span>
@@ -10,201 +14,194 @@
     </a>
 
     @if (detail(); as detailValue) {
-      <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
-        <div class="min-w-0 flex-grow-1">
-          <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-            <span
-              class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
-              [ngClass]="provisioningStatusBadgeClass(detailValue.provisioningStatus)"
+      <div fpcPageHeaderTitle class="min-w-0 flex-grow-1">
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+          <fpc-badge
+            variant="info"
+            color="secondary"
+            [ngClass]="provisioningStatusBadgeClass(detailValue.provisioningStatus)"
+          >
+            {{ provisioningStatusLabel(detailValue.provisioningStatus) }}
+          </fpc-badge>
+          @if (detailValue.serverInfo; as serverInfo) {
+            <fpc-badge variant="info" color="secondary" [ngClass]="serverStatusBadgeClass(serverInfo)">
+              <i class="bi me-1" [ngClass]="serverStatusIconClass(serverInfo)" aria-hidden="true"></i>
+              {{ serverStatusLabel(serverInfo) }}
+            </fpc-badge>
+          }
+          @if (detailValue.sshAccessGranted) {
+            <fpc-badge
+              variant="info"
+              color="secondary"
+              class="billing-admin__chip--status-warning"
+              title="SSH access granted"
+              i18n-title="@@featureOverview-sshAccessGrantedBadgeTitle"
             >
-              {{ provisioningStatusLabel(detailValue.provisioningStatus) }}
-            </span>
-            @if (detailValue.serverInfo; as serverInfo) {
-              <span
-                class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
-                [ngClass]="serverStatusBadgeClass(serverInfo)"
-              >
-                <i class="bi me-1" [ngClass]="serverStatusIconClass(serverInfo)" aria-hidden="true"></i>
-                {{ serverStatusLabel(serverInfo) }}
-              </span>
-            }
-            @if (detailValue.sshAccessGranted) {
-              <span
-                class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded billing-admin__chip--status-warning"
-                title="SSH access granted"
-                i18n-title="@@featureOverview-sshAccessGrantedBadgeTitle"
-              >
-                <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
-                <span i18n="@@featureOverview-sshAccessGrantedBadge">SSH access granted</span>
-              </span>
-            }
-          </div>
+              <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
+              <span i18n="@@featureOverview-sshAccessGrantedBadge">SSH access granted</span>
+            </fpc-badge>
+          }
+        </div>
 
-          <h1 class="h5 fw-semibold mb-0 d-flex align-items-center gap-2 min-w-0">
-            @if (titleEditing()) {
-              <input
+        <h1 class="h5 fw-semibold mb-0 d-flex align-items-center gap-2 min-w-0">
+          @if (titleEditing()) {
+            <div class="d-flex align-items-center gap-2 min-w-0 flex-grow-1" (focusout)="onTitleBlur(detailValue)">
+              <fpc-form-control
                 #titleInput
-                type="text"
-                class="form-control form-control-sm flex-grow-1 min-w-0"
+                size="sm"
+                controlClass="flex-grow-1 min-w-0"
                 [ngModel]="titleDraft()"
                 (ngModelChange)="titleDraft.set($event)"
                 [disabled]="(renaming$ | async) ?? false"
-                (blur)="onTitleBlur(detailValue)"
                 [attr.aria-label]="renameTitleAriaLabel"
               />
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-secondary flex-shrink-0"
+              <fpc-button
+                variant="danger"
+                size="sm"
+                iconOnly
+                class="flex-shrink-0"
+                [ariaLabel]="clearNameAriaLabel"
+                [title]="clearNameAriaLabel"
                 (mousedown)="$event.preventDefault()"
-                (click)="onTitleClearDraft()"
-                [attr.aria-label]="clearNameAriaLabel"
-                [attr.title]="clearNameAriaLabel"
+                (clicked)="onTitleClearDraft()"
               >
                 <i class="bi bi-trash" aria-hidden="true"></i>
-              </button>
-            } @else {
-              <span
-                class="text-truncate min-w-0 service-detail-page__title-clickable"
-                role="button"
-                tabindex="0"
-                [attr.title]="displayLabel$ | async"
-                (click)="onTitleClick(detailValue)"
-                (keydown.enter)="onTitleClick(detailValue)"
-                (keydown.space)="$event.preventDefault(); onTitleClick(detailValue)"
-              >
-                {{ displayLabel$ | async }}
-              </span>
-            }
-          </h1>
-        </div>
-
-        @if (detailValue.serverInfo; as serverInfo) {
-          <div class="d-flex align-items-center gap-2 flex-shrink-0">
-            @if (
-              (serverActionInProgressMap$ | async)?.[subscriptionId] === undefined &&
-              !isServerStatusTransitional(serverInfo)
-            ) {
-              <div
-                class="btn-group btn-group-sm"
-                role="group"
-                aria-label="Server actions"
-                i18n-aria-label="@@featureServiceDetail-serverActionsAria"
-              >
-                @if (isServerStartable(serverInfo)) {
-                  <button
-                    type="button"
-                    class="btn btn-outline-success"
-                    (click)="serverInfoFacade.startServer(subscriptionId, itemId, isAdminView())"
-                    title="Start server"
-                    i18n-title="@@featureServiceDetail-serverStartButtonTitle"
-                  >
-                    <i class="bi bi-play-fill" aria-hidden="true"></i>
-                  </button>
-                }
-                @if (isServerOnline(serverInfo)) {
-                  <button
-                    type="button"
-                    class="btn btn-outline-danger"
-                    (click)="serverInfoFacade.stopServer(subscriptionId, itemId, isAdminView())"
-                    title="Stop server"
-                    i18n-title="@@featureServiceDetail-serverStopButtonTitle"
-                  >
-                    <i class="bi bi-stop-fill" aria-hidden="true"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-warning"
-                    (click)="serverInfoFacade.restartServer(subscriptionId, itemId, isAdminView())"
-                    title="Restart server"
-                    i18n-title="@@featureServiceDetail-serverRestartButtonTitle"
-                  >
-                    <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
-                  </button>
-                }
-              </div>
-            } @else {
-              <div class="d-flex align-items-center gap-2 text-body-secondary" aria-live="polite">
-                <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
-                <span class="visually-hidden" i18n="@@featureServiceDetail-serverStatusUpdatingHint"
-                  >Server status updating…</span
-                >
-              </div>
-            }
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-secondary"
-              (click)="openSshAccessConfirm(detailValue)"
-              [disabled]="!!detailValue.sshAccessGranted"
-              [attr.title]="detailValue.sshAccessGranted ? sshAccessGrantedButtonTitle : sshAccessButtonTitle"
-              [attr.aria-label]="detailValue.sshAccessGranted ? sshAccessGrantedButtonTitle : sshAccessButtonTitle"
+              </fpc-button>
+            </div>
+          } @else {
+            <span
+              class="text-truncate min-w-0 service-detail-page__title-clickable"
+              role="button"
+              tabindex="0"
+              [attr.title]="displayLabel$ | async"
+              (click)="onTitleClick(detailValue)"
+              (keydown.enter)="onTitleClick(detailValue)"
+              (keydown.space)="$event.preventDefault(); onTitleClick(detailValue)"
             >
-              <i class="bi bi-key" aria-hidden="true"></i>
-            </button>
-            @if (showConsoleLink(detailValue)) {
-              <a
-                [href]="consoleHref(serverInfo)"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn btn-sm btn-primary"
-                title="Open console"
-                i18n-title="@@featureServiceDetail-openConsoleButtonTitle"
-              >
-                <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
-              </a>
-            }
-          </div>
-        }
+              {{ displayLabel$ | async }}
+            </span>
+          }
+        </h1>
       </div>
     } @else if (loadingDetail$ | async) {
-      <div class="d-flex align-items-center gap-2 text-body-secondary">
-        <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+      <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 text-body-secondary">
+        <fpc-spinner size="sm" />
         <span i18n="@@featureServiceDetail-loading">Loading service…</span>
       </div>
     }
-  </div>
+
+    @if (detail(); as detailValue) {
+      @if (detailValue.serverInfo; as serverInfo) {
+        <div fpcPageHeaderActions class="d-flex align-items-center gap-2 flex-shrink-0">
+          @if (
+            (serverActionInProgressMap$ | async)?.[subscriptionId] === undefined &&
+            !isServerStatusTransitional(serverInfo)
+          ) {
+            <fpc-button-group
+              size="sm"
+              ariaLabel="Server actions"
+              i18n-ariaLabel="@@featureServiceDetail-serverActionsAria"
+            >
+              @if (isServerStartable(serverInfo)) {
+                <fpc-button
+                  variant="success"
+                  size="sm"
+                  iconOnly
+                  (clicked)="serverInfoFacade.startServer(subscriptionId, itemId, isAdminView())"
+                  title="Start server"
+                  i18n-title="@@featureServiceDetail-serverStartButtonTitle"
+                >
+                  <i class="bi bi-play-fill" aria-hidden="true"></i>
+                </fpc-button>
+              }
+              @if (isServerOnline(serverInfo)) {
+                <fpc-button
+                  variant="danger"
+                  size="sm"
+                  iconOnly
+                  (clicked)="serverInfoFacade.stopServer(subscriptionId, itemId, isAdminView())"
+                  title="Stop server"
+                  i18n-title="@@featureServiceDetail-serverStopButtonTitle"
+                >
+                  <i class="bi bi-stop-fill" aria-hidden="true"></i>
+                </fpc-button>
+                <fpc-button
+                  variant="warning"
+                  size="sm"
+                  iconOnly
+                  (clicked)="serverInfoFacade.restartServer(subscriptionId, itemId, isAdminView())"
+                  title="Restart server"
+                  i18n-title="@@featureServiceDetail-serverRestartButtonTitle"
+                >
+                  <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+                </fpc-button>
+              }
+            </fpc-button-group>
+          } @else {
+            <div class="d-flex align-items-center gap-2 text-body-secondary" aria-live="polite">
+              <fpc-spinner size="sm" />
+              <span class="visually-hidden" i18n="@@featureServiceDetail-serverStatusUpdatingHint"
+                >Server status updating…</span
+              >
+            </div>
+          }
+          <fpc-button
+            variant="dark"
+            size="sm"
+            iconOnly
+            (clicked)="openSshAccessConfirm(detailValue)"
+            [disabled]="!!detailValue.sshAccessGranted"
+            [title]="detailValue.sshAccessGranted ? sshAccessGrantedButtonTitle : sshAccessButtonTitle"
+            [ariaLabel]="detailValue.sshAccessGranted ? sshAccessGrantedButtonTitle : sshAccessButtonTitle"
+          >
+            <i class="bi bi-key" aria-hidden="true"></i>
+          </fpc-button>
+          @if (showConsoleLink(detailValue)) {
+            <fpc-button
+              size="sm"
+              variant="primary"
+              iconOnly
+              [href]="consoleHref(serverInfo)"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Open console"
+              i18n-title="@@featureServiceDetail-openConsoleButtonTitle"
+            >
+              <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+            </fpc-button>
+          }
+        </div>
+      }
+    }
+  </fpc-page-header>
 
   @if (error$ | async; as err) {
-    <div class="alert alert-danger mb-0 rounded-0" role="alert">{{ err }}</div>
+    <fpc-alert [flush]="true" variant="danger" [message]="err" />
   }
 
   @if (showServiceTabs()) {
-    <div
-      class="d-flex align-items-center gap-0 border-bottom btn-group-options flex-shrink-0"
-      role="tablist"
-      aria-label="Service detail tabs"
-      i18n-aria-label="@@featureServiceDetail-tabsAria"
+    <fpc-tab-group
+      class="flex-shrink-0"
+      [activeId]="activeTabId()"
+      [ariaLabel]="tabsAriaLabel"
+      (activeIdChange)="onServiceTabChange($event)"
     >
       @for (tab of sortedTabs(); track tab.id) {
-        <button
-          type="button"
-          class="btn btn-sm btn-options"
-          role="tab"
-          [attr.aria-selected]="activeTabId() === tab.id"
-          [class.btn-primary]="activeTabId() === tab.id"
-          [class.btn-outline-secondary]="activeTabId() !== tab.id"
-          (click)="setTab(tab.id)"
-        >
-          {{ tabLabel(tab) }}
-        </button>
+        <fpc-tab [id]="tab.id" [label]="tabLabel(tab)" />
       }
-    </div>
+    </fpc-tab-group>
   }
 
   @if (isDetailsTabActive()) {
     @if (showUsageMetersSection()) {
-      <div class="d-flex align-items-center gap-0 d-md-none border-bottom btn-group-options">
-        @for (panel of mobilePanels; track panel) {
-          <button
-            type="button"
-            class="btn btn-sm btn-options"
-            [class.btn-outline-secondary]="mobilePanel() !== panel"
-            [class.btn-primary]="mobilePanel() === panel"
-            (click)="mobilePanel.set(panel)"
-          >
-            {{ mobilePanelLabel(panel) }}
-          </button>
-        }
-      </div>
+      <fpc-tab-group
+        class="d-md-none flex-shrink-0"
+        [activeId]="mobilePanel()"
+        (activeIdChange)="onMobilePanelTabChange($event)"
+      >
+        <fpc-tab id="info" [label]="mobilePanelLabel('info')" />
+        <fpc-tab id="meters" [label]="mobilePanelLabel('meters')" />
+      </fpc-tab-group>
     }
 
     <div class="service-detail-page__body flex-grow-1 min-h-0 d-flex flex-column">
@@ -246,13 +243,15 @@
                     }
                     <dt class="col-sm-3 text-muted" i18n="@@featureServiceDetail-runtimeStatus">Runtime status</dt>
                     <dd class="col-sm-9">
-                      <span
-                        class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded d-inline-flex"
+                      <fpc-badge
+                        variant="info"
+                        color="secondary"
+                        class="d-inline-flex"
                         [ngClass]="serverStatusBadgeClass(serverInfo)"
                       >
                         <i class="bi me-1" [ngClass]="serverStatusIconClass(serverInfo)" aria-hidden="true"></i>
                         {{ serverStatusLabel(serverInfo) }}
-                      </span>
+                      </fpc-badge>
                     </dd>
                     @if (serverLocationLabel(serverInfo.metadata, locationCatalog()); as locationLabel) {
                       <dt class="col-sm-3 text-muted" i18n="@@featureServiceDetail-location">Location</dt>
@@ -280,101 +279,81 @@
             [class.d-none]="mobilePanel() !== 'meters'"
           >
             <div class="card h-100 border-0 rounded-0 d-flex flex-column min-h-0">
-              <div
-                class="card-header service-detail-page__lane-header py-2 small fw-semibold d-flex justify-content-between align-items-center flex-shrink-0"
+              <fpc-lane-header flush visibility="md-up">
+                <span fpcLaneHeaderTitle i18n="@@featureServiceDetail-usageMetersTitle">Usage meters</span>
+              </fpc-lane-header>
+              <fpc-collapsible-filter-panel
+                [open]="!filtersCollapsed()"
+                (openChange)="onFiltersOpenChange($event)"
+                [title]="filtersPanelTitle"
+                [showClear]="false"
               >
-                <span class="d-none d-md-inline" i18n="@@featureServiceDetail-usageMetersTitle">Usage meters</span>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-secondary ms-auto"
-                  (click)="onToggleFilters()"
-                  [attr.aria-expanded]="!filtersCollapsed()"
-                  aria-controls="serviceDetailFilters"
-                  title="Filters"
-                  i18n-title="@@featureServiceDetail-filters"
-                  i18n-aria-label="@@featureServiceDetail-filters"
-                  aria-label="Filters"
-                >
-                  <i class="bi bi-funnel" aria-hidden="true"></i>
-                  <i
-                    class="bi ms-1"
-                    [class.bi-chevron-down]="filtersCollapsed()"
-                    [class.bi-chevron-up]="!filtersCollapsed()"
-                    aria-hidden="true"
-                  ></i>
-                </button>
-              </div>
-              <div
-                id="serviceDetailFilters"
-                class="service-detail-page__filters border-bottom collapse flex-shrink-0"
-                [class.show]="!filtersCollapsed()"
-              >
-                <div class="p-3">
-                  <div class="row g-3 mb-0">
-                    <div class="col-6">
-                      <label class="form-label small" for="serviceDetailFrom" i18n="@@featureServiceDetail-fromDate"
-                        >From</label
-                      >
-                      <input
-                        id="serviceDetailFrom"
-                        type="date"
-                        class="form-control form-control-sm"
+                <div class="row g-3 mb-0 w-100">
+                  <div class="col-6">
+                    <fpc-form-field forId="serviceDetailFrom" i18n-label="@@featureServiceDetail-fromDate" label="From">
+                      <fpc-form-control
+                        controlId="serviceDetailFrom"
+                        inputType="date"
+                        size="sm"
                         [ngModel]="fromDate()"
                         (ngModelChange)="fromDate.set($event)"
                       />
-                    </div>
-                    <div class="col-6">
-                      <label class="form-label small" for="serviceDetailTo" i18n="@@featureServiceDetail-toDate"
-                        >To</label
-                      >
-                      <input
-                        id="serviceDetailTo"
-                        type="date"
-                        class="form-control form-control-sm"
+                    </fpc-form-field>
+                  </div>
+                  <div class="col-6">
+                    <fpc-form-field forId="serviceDetailTo" i18n-label="@@featureServiceDetail-toDate" label="To">
+                      <fpc-form-control
+                        controlId="serviceDetailTo"
+                        inputType="date"
+                        size="sm"
                         [ngModel]="toDate()"
                         (ngModelChange)="toDate.set($event)"
                       />
-                    </div>
-                    <div class="col-12">
-                      <label class="form-label small" for="serviceDetailGroupBy" i18n="@@featureServiceDetail-groupBy"
-                        >Group by</label
-                      >
-                      <select
-                        id="serviceDetailGroupBy"
-                        class="form-select form-select-sm"
+                    </fpc-form-field>
+                  </div>
+                  <div class="col-12">
+                    <fpc-form-field
+                      forId="serviceDetailGroupBy"
+                      i18n-label="@@featureServiceDetail-groupBy"
+                      label="Group by"
+                    >
+                      <fpc-form-control
+                        controlType="select"
+                        controlId="serviceDetailGroupBy"
+                        size="sm"
                         [ngModel]="groupBy()"
                         (ngModelChange)="groupBy.set($event)"
                       >
                         <option value="day" i18n="@@featureServiceDetail-groupByDay">Day</option>
                         <option value="month" i18n="@@featureServiceDetail-groupByMonth">Month</option>
-                      </select>
-                    </div>
-                    <div class="col-12 d-flex gap-2">
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-primary"
-                        (click)="onApplyFilters()"
-                        i18n="@@featureServiceDetail-applyFilters"
-                      >
-                        Apply
-                      </button>
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-outline-secondary"
-                        (click)="onResetFilters()"
-                        i18n="@@featureServiceDetail-resetFilters"
-                      >
-                        Reset
-                      </button>
-                    </div>
+                      </fpc-form-control>
+                    </fpc-form-field>
+                  </div>
+                  <div class="col-12 d-flex gap-2">
+                    <fpc-button
+                      variant="primary"
+                      size="sm"
+                      (clicked)="onApplyFilters()"
+                      i18n="@@featureServiceDetail-applyFilters"
+                    >
+                      Apply
+                    </fpc-button>
+                    <fpc-button
+                      variant="dark"
+                      size="sm"
+                      (clicked)="onResetFilters()"
+                      i18n="@@featureServiceDetail-resetFilters"
+                    >
+                      Reset
+                    </fpc-button>
                   </div>
                 </div>
-              </div>
+              </fpc-collapsible-filter-panel>
 
               <div class="service-detail-page__lane-body p-3 d-flex flex-column gap-3">
                 @if (loadingHistory()) {
                   <div class="text-center py-4">
-                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                    <fpc-spinner size="sm" />
                   </div>
                 } @else {
                   @for (
@@ -423,113 +402,68 @@
   }
 </div>
 
-<div
-  class="modal fade"
-  id="serviceDetailSshAccessConfirmModal"
-  tabindex="-1"
-  aria-labelledby="serviceDetailSshAccessConfirmModalLabel"
-  aria-hidden="true"
-  #sshAccessConfirmModal
+<fpc-modal
+  [(open)]="sshAccessConfirmModalOpen"
+  i18n-title="@@featureOverview-sshAccessConfirmTitle"
+  title="Reveal SSH access key?"
 >
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5
-          class="modal-title"
-          id="serviceDetailSshAccessConfirmModalLabel"
-          i18n="@@featureOverview-sshAccessConfirmTitle"
-        >
-          Reveal SSH access key?
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p i18n="@@featureOverview-sshAccessConfirmBody">
-          Viewing the SSH access key for this service may limit technical support for that specific service. The key can
-          only be retrieved once. After you continue, this action cannot be repeated.
-        </p>
-        @if (sshRevealError(); as revealError) {
-          <div class="alert alert-danger mb-0" role="alert">{{ revealError }}</div>
-        }
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-outline-secondary"
-          data-bs-dismiss="modal"
-          i18n="@@featureOverview-sshAccessCancel"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="confirmSshAccessReveal()"
-          [disabled]="sshRevealLoading()"
-          i18n="@@featureOverview-sshAccessConfirm"
-        >
-          Reveal key
-        </button>
-      </div>
-    </div>
+  <p i18n="@@featureOverview-sshAccessConfirmBody">
+    Viewing the SSH access key for this service may limit technical support for that specific service. The key can only
+    be retrieved once. After you continue, this action cannot be repeated.
+  </p>
+  @if (sshRevealError(); as revealError) {
+    <fpc-alert variant="danger" [message]="revealError" />
+  }
+  <div *fpcModalFooter>
+    <fpc-button-group>
+      <fpc-button
+        variant="dark"
+        (clicked)="sshAccessConfirmModalOpen.set(false)"
+        i18n="@@featureOverview-sshAccessCancel"
+      >
+        Cancel
+      </fpc-button>
+      <fpc-button
+        variant="primary"
+        (clicked)="confirmSshAccessReveal()"
+        [disabled]="sshRevealLoading()"
+        i18n="@@featureOverview-sshAccessConfirm"
+      >
+        Reveal key
+      </fpc-button>
+    </fpc-button-group>
   </div>
-</div>
+</fpc-modal>
 
-<div
-  class="modal fade"
-  id="serviceDetailSshAccessDisplayModal"
-  tabindex="-1"
-  aria-labelledby="serviceDetailSshAccessDisplayModalLabel"
-  aria-hidden="true"
-  #sshAccessDisplayModal
+<fpc-modal
+  [(open)]="sshAccessDisplayModalOpen"
+  size="lg"
+  i18n-title="@@featureOverview-sshAccessDisplayTitle"
+  title="SSH access key"
 >
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5
-          class="modal-title"
-          id="serviceDetailSshAccessDisplayModalLabel"
-          i18n="@@featureOverview-sshAccessDisplayTitle"
-        >
-          SSH access key
-        </h5>
-        <button type="button" class="btn-close" (click)="closeSshAccessDisplay()" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p class="small text-muted" i18n="@@featureOverview-sshAccessDisplayHint">
-          Store this private key securely. It will not be shown again in the billing console.
-        </p>
-        <label
-          class="form-label visually-hidden"
-          for="serviceDetailSshAccessPrivateKey"
-          i18n="@@featureOverview-sshAccessKeyLabel"
-          >SSH private key</label
-        >
-        <textarea
-          id="serviceDetailSshAccessPrivateKey"
-          class="form-control font-monospace small"
-          rows="12"
-          readonly
-          [value]="revealedSshPrivateKey() ?? ''"
-        ></textarea>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" (click)="copySshPrivateKey()">
-          @if (sshAccessKeyCopied()) {
-            <span i18n="@@featureOverview-sshAccessCopied">Copied</span>
-          } @else {
-            <span i18n="@@featureOverview-sshAccessCopy">Copy</span>
-          }
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="closeSshAccessDisplay()"
-          i18n="@@featureOverview-sshAccessClose"
-        >
-          Close
-        </button>
-      </div>
-    </div>
+  <p class="small text-muted" i18n="@@featureOverview-sshAccessDisplayHint">
+    Store this private key securely. It will not be shown again in the billing console.
+  </p>
+  <fpc-form-control
+    controlType="textarea"
+    controlId="serviceDetailSshAccessPrivateKey"
+    controlClass="font-monospace small"
+    [rows]="12"
+    readOnly
+    [value]="revealedSshPrivateKey() ?? ''"
+  />
+  <div *fpcModalFooter>
+    <fpc-button-group>
+      <fpc-button variant="dark" (clicked)="copySshPrivateKey()">
+        @if (sshAccessKeyCopied()) {
+          <span i18n="@@featureOverview-sshAccessCopied">Copied</span>
+        } @else {
+          <span i18n="@@featureOverview-sshAccessCopy">Copy</span>
+        }
+      </fpc-button>
+      <fpc-button variant="primary" (clicked)="closeSshAccessDisplay()" i18n="@@featureOverview-sshAccessClose">
+        Close
+      </fpc-button>
+    </fpc-button-group>
   </div>
-</div>
+</fpc-modal>

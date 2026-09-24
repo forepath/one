@@ -1,66 +1,45 @@
 <div class="billing-admin-user-select">
   @if (selectedContract(); as contract) {
-    <small
-      class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded d-inline-flex align-items-center gap-1 billing-admin-user-select__chip"
-    >
-      <span class="text-truncate small">{{ contract.contractNumber }}</span>
+    <fpc-badge variant="info" color="secondary" class="billing-admin-user-select__chip">
+      <span class="text-truncate">{{ contract.contractNumber }}</span>
       <button
         type="button"
-        class="btn btn-link btn-sm p-0 ms-1 align-baseline flex-shrink-0"
+        class="btn-close billing-admin-user-select__clear"
         [disabled]="disabled()"
         (click)="clearSelection()"
         i18n-aria-label="@@featureBillingAdminSupplierContractSelect-clearSelectionAria"
         aria-label="Clear selected contract"
-      >
-        <i class="bi bi-x" aria-hidden="true"></i>
-      </button>
-    </small>
+      ></button>
+    </fpc-badge>
   } @else {
-    <div class="position-relative">
-      <input
-        [id]="inputId()"
-        type="text"
-        class="form-control"
-        autocomplete="off"
-        [disabled]="isInputDisabled()"
-        [ngModel]="searchQuery()"
-        (ngModelChange)="onSearchChange($event)"
-        (focus)="onSearchFocus()"
-        (blur)="onSearchBlur()"
-        [placeholder]="supplierId()?.trim() ? placeholder() : loadingPlaceholder"
-        [attr.aria-busy]="searchLoading() ? true : null"
-      />
-      @if (searchLoading()) {
-        <span
-          class="position-absolute top-50 end-0 translate-middle-y me-2 spinner-border spinner-border-sm"
-          aria-hidden="true"
-        ></span>
-      }
-      @if (suggestionsOpen() && filteredContracts().length > 0) {
-        <ul
-          class="dropdown-menu show position-absolute shadow-sm border mt-1 py-0 w-100 billing-admin-user-select__suggestions"
-        >
+    <fpc-typeahead-select
+      [inputId]="inputId()"
+      [listboxId]="inputId() + '-listbox'"
+      [placeholder]="supplierId()?.trim() ? placeholder() : loadingPlaceholder"
+      [disabled]="isInputDisabled()"
+      [loading]="searchLoading()"
+      [openOnFocus]="showSuggestionsOnFocus()"
+      [query]="searchQuery()"
+      (queryChange)="onSearchChange($event)"
+      [open]="suggestionsOpen()"
+      (openChange)="suggestionsOpen.set($event)"
+      (cleared)="reset()"
+    >
+      <div fpcTypeaheadSuggestions>
+        @if (filteredContracts().length > 0) {
           @for (contract of filteredContracts(); track contract.id) {
-            <li>
-              <button type="button" class="dropdown-item py-2 text-start" (mousedown)="pickContract(contract, $event)">
-                <span class="d-block small fw-medium text-truncate">{{ contract.contractNumber }}</span>
-              </button>
-            </li>
+            <button type="button" class="dropdown-item py-2 text-start" (mousedown)="pickContract(contract, $event)">
+              <span class="d-block small fw-medium text-truncate">{{ contract.contractNumber }}</span>
+            </button>
           }
-        </ul>
-      } @else if (suggestionsOpen() && searchQuery().trim()) {
-        <ul
-          class="dropdown-menu show position-absolute shadow-sm border mt-1 py-0 w-100 billing-admin-user-select__suggestions"
-        >
-          <li>
-            <span
-              class="dropdown-item-text text-muted small"
-              i18n="@@featureBillingAdminSupplierContractSelect-noContracts"
-              >No contracts found.</span
-            >
-          </li>
-        </ul>
-      }
-    </div>
+        } @else if (searchQuery().trim() && !searchLoading()) {
+          <span
+            class="dropdown-item-text text-muted small"
+            i18n="@@featureBillingAdminSupplierContractSelect-noContracts"
+            >No contracts found.</span
+          >
+        }
+      </div>
+    </fpc-typeahead-select>
   }
 </div>

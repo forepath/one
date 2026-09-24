@@ -1,0 +1,14 @@
+:host {
+  display: block;
+}
+
+:host(.fpc-breadcrumbs--sm) {
+  font-size: 0.875rem;
+  line-height: 1.25;
+}
+
+.fpc-breadcrumbs__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}

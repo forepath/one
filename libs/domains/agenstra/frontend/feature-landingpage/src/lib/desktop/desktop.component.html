@@ -12,22 +12,28 @@
           daily tools.
         </p>
         <div class="d-flex gap-3 flex-wrap">
-          <a
+          <fpc-button
+            variant="primary"
+            size="xl"
+            btnClass="rounded-3"
             href="https://downloads.agenstra.com/"
-            class="btn btn-primary btn-lg rounded-3 cta-btn cta-btn-primary"
             target="_blank"
             rel="noopener noreferrer"
             i18n="@@featurePortalDesktop-downloadCtaHero"
-            ><i class="bi bi-download" aria-hidden="true"></i>Download Agenstra Desktop</a
           >
-          <a
+            <i class="bi bi-download" aria-hidden="true"></i>Download Agenstra Desktop
+          </fpc-button>
+          <fpc-button
+            variant="dark"
+            size="xl"
+            btnClass="rounded-3"
             href="https://docs.agenstra.com/"
-            class="btn btn-dark btn-lg rounded-3 cta-btn cta-btn-secondary"
             target="_blank"
             rel="noopener noreferrer"
             i18n="@@featurePortalDesktop-setupGuide"
-            ><i class="bi bi-book" aria-hidden="true"></i>Read setup guide</a
           >
+            <i class="bi bi-book" aria-hidden="true"></i>Read setup guide
+          </fpc-button>
         </div>
         <p class="small text-white-50 mt-3 mb-0" i18n="@@featurePortalDesktop-platforms">
           Available for: Windows, Linux
@@ -303,20 +309,20 @@
           class="desktop-security-flow card border rounded-3 shadow-sm p-4 p-lg-5 card-capability-primary h-100 d-flex align-items-center justify-content-center"
         >
           <div class="d-flex align-items-center justify-content-center flex-wrap gap-3">
-            <span class="desktop-flow-chip rounded-pill px-3 py-2">
+            <fpc-badge variant="marketing" [pill]="true">
               <i class="bi bi-laptop me-2" aria-hidden="true"></i>
               <span i18n="@@featurePortalDesktop-flowDesktop">Desktop</span>
-            </span>
+            </fpc-badge>
             <i class="bi bi-arrow-right text-secondary" aria-hidden="true"></i>
-            <span class="desktop-flow-chip desktop-flow-chip--accent rounded-pill px-3 py-2">
+            <fpc-badge variant="marketing" color="primary" [pill]="true">
               <i class="bi bi-lock-fill me-2" aria-hidden="true"></i>
               <span i18n="@@featurePortalDesktop-flowEncrypted">Encrypted Data</span>
-            </span>
+            </fpc-badge>
             <i class="bi bi-arrow-right text-secondary" aria-hidden="true"></i>
-            <span class="desktop-flow-chip rounded-pill px-3 py-2">
+            <fpc-badge variant="marketing" [pill]="true">
               <i class="bi bi-cloud me-2" aria-hidden="true"></i>
               <span i18n="@@featurePortalDesktop-flowCloud">Cloud</span>
-            </span>
+            </fpc-badge>
           </div>
         </div>
       </div>
@@ -426,20 +432,26 @@
             access policies.
           </p>
           <div class="d-flex gap-3 justify-content-center flex-wrap">
-            <a
+            <fpc-button
+              variant="primary"
+              size="xl"
+              btnClass="rounded-3"
               href="https://downloads.agenstra.com/"
-              class="btn btn-primary btn-lg rounded-3 cta-btn cta-btn-primary"
               target="_blank"
               rel="noopener noreferrer"
               i18n="@@featurePortalDesktop-downloadCta"
-              ><i class="bi bi-download" aria-hidden="true"></i>Download Agenstra Desktop</a
             >
-            <a
+              <i class="bi bi-download" aria-hidden="true"></i>Download Agenstra Desktop
+            </fpc-button>
+            <fpc-button
+              variant="primary"
+              size="xl"
+              btnClass="rounded-3"
               routerLink="/contact"
-              class="btn btn-primary btn-lg rounded-3 cta-btn cta-btn-secondary"
               i18n="@@featurePortalDesktop-talkToTeam"
-              ><i class="bi bi-chat-dots" aria-hidden="true"></i>Talk to the team</a
             >
+              <i class="bi bi-chat-dots" aria-hidden="true"></i>Talk to the team
+            </fpc-button>
           </div>
         </div>
       </div>

@@ -62,36 +62,30 @@
                 >Pricing</a
               >
             </li>
-            <li class="nav-item dropdown portal-nav-dropdown">
-              <a
-                class="nav-link dropdown-toggle text-white portal-nav-dropdown-toggle"
-                [class.active]="comparisonDropdownActive()"
-                href="#"
-                id="comparisonNavDropdown"
-                role="button"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                <span i18n="@@featureDecabillPortal-navComparison">Comparison</span>
-                <i class="bi bi-chevron-down portal-nav-dropdown-chevron" aria-hidden="true"></i>
-              </a>
-              <ul
-                class="dropdown-menu dropdown-menu-end portal-nav-dropdown-menu portal-nav-dropdown-menu--wide"
-                aria-labelledby="comparisonNavDropdown"
-              >
+            <li class="nav-item portal-nav-dropdown portal-nav-dropdown--wide">
+              <fpc-dropdown class="w-100" alignment="end" [(open)]="comparisonNavOpen">
+                <a
+                  fpcDropdownTrigger
+                  class="nav-link dropdown-toggle text-white portal-nav-dropdown-toggle"
+                  [class.active]="comparisonDropdownActive()"
+                  href="#"
+                  id="comparisonNavDropdown"
+                  role="button"
+                  [attr.aria-expanded]="comparisonNavOpen()"
+                  (click)="$event.preventDefault()"
+                >
+                  <span i18n="@@featureDecabillPortal-navComparison">Comparison</span>
+                  <i class="bi bi-chevron-down portal-nav-dropdown-chevron" aria-hidden="true"></i>
+                </a>
                 @for (item of comparisonNavItems; track item.slug) {
-                  <li>
-                    <a
-                      class="dropdown-item portal-nav-dropdown-item"
-                      [routerLink]="item.routerLink"
-                      routerLinkActive="active"
-                      [routerLinkActiveOptions]="{ exact: true }"
-                      (click)="closeMobileMenu()"
-                      >{{ item.label }}</a
-                    >
-                  </li>
+                  <fpc-dropdown-item
+                    [routerLink]="item.routerLink"
+                    itemClass="portal-nav-dropdown-item"
+                    (selected)="closeMobileMenu()"
+                    >{{ item.label }}</fpc-dropdown-item
+                  >
                 }
-              </ul>
+              </fpc-dropdown>
             </li>
             <li class="nav-item">
               <a
@@ -108,9 +102,13 @@
               </a>
             </li>
             <li class="nav-item ms-md-3">
-              <a routerLink="/contact" class="btn btn-primary" (click)="closeMobileMenu()">
-                <span i18n="@@featureDecabillPortal-bookDemoButton">Book a Demo</span>
-              </a>
+              <fpc-button
+                routerLink="/contact"
+                variant="primary"
+                (clicked)="closeMobileMenu()"
+                i18n="@@featureDecabillPortal-bookDemoButton"
+                >Book a Demo</fpc-button
+              >
             </li>
           </ul>
           @if (mobileMenuOpen()) {
@@ -122,7 +120,7 @@
   </nav>
 </header>
 <router-outlet></router-outlet>
-<footer class="footer bg-dark text-white position-relative overflow-hidden grid-section pt-10">
+<footer class="footer bg-dark text-white position-relative grid-section grid-section--footer pt-10">
   <div class="container grid-section__container grid-section__container--footer-top">
     <div class="row">
       <div class="col-md-4 mb-3 mb-md-0">
@@ -147,32 +145,16 @@
             <i class="bi bi-github"></i>
           </a>
         </div>
-        <div class="dropdown dropup portal-nav-dropdown mt-4">
-          <button
-            class="btn btn-dark btn-sm dropdown-toggle"
-            type="button"
-            id="footerLanguageDropdown"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-            i18n-aria-label="@@featureDecabillPortal-languageSwitcherAriaLabel"
-            aria-label="Select language"
-          >
-            <i class="bi bi-globe" aria-hidden="true"></i>
-            <span i18n="@@featureDecabillPortal-language">Language</span>
-          </button>
-          <ul class="dropdown-menu portal-nav-dropdown-menu" aria-labelledby="footerLanguageDropdown">
-            @for (locale of localeService.getAvailableLocales(); track locale.code) {
-              <li>
-                <a
-                  class="dropdown-item portal-nav-dropdown-item"
-                  [class.active]="localeService.getCurrentLocale() === locale.code"
-                  [href]="localeService.getLanguageSwitchUrl(locale.code)"
-                  >{{ locale.label }}</a
-                >
-              </li>
-            }
-          </ul>
-        </div>
+        <fpc-language-switcher
+          class="portal-nav-dropdown mt-4"
+          appearance="footer"
+          [locales]="footerLocales"
+          [locale]="localeService.getCurrentLocale()"
+          i18n-ariaLabel="@@featureDecabillPortal-languageSwitcherAriaLabel"
+          ariaLabel="Select language"
+          i18n-triggerLabel="@@featureDecabillPortal-language"
+          triggerLabel="Language"
+        />
       </div>
       <div class="col-md-3 offset-md-2">
         <h6 class="fw-bold mb-3" i18n="@@featureDecabillPortal-footerProduct">Product</h6>
@@ -213,6 +195,16 @@
       <div class="col-md-3">
         <h6 class="fw-bold mb-3" i18n="@@featureDecabillPortal-footerCompany">Company</h6>
         <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <a
+              href="https://forepath.io/blog"
+              class="text-decoration-none footer-link small"
+              target="_blank"
+              rel="noopener noreferrer"
+              i18n="@@sharedFeatureLandingpageBlog-footerLink"
+              >Blog</a
+            >
+          </li>
           <li class="mb-2">
             <a
               [href]="portalUrl"

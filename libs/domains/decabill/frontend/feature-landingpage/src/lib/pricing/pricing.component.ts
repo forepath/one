@@ -17,12 +17,13 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { formatPublicOfferingPrice, ServicePlansFacade } from '@forepath/decabill/frontend/data-access-portal';
+import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@forepath/shared/frontend/util-meta';
 
 @Component({
   selector: 'framework-portal-pricing',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FpcBadgeComponent, FpcButtonComponent],
   styleUrls: ['./pricing.component.scss'],
   templateUrl: './pricing.component.html',
   standalone: true,

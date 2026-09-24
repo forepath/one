@@ -1,25 +1,22 @@
 <div class="deployment-run-details-container d-flex flex-column h-100">
   @if (loadingRunStatus() && !hasLoadedOnce()) {
     <div class="d-flex justify-content-center align-items-center p-4">
-      <div class="spinner-border spinner-border-sm text-primary" role="status">
-        <span class="visually-hidden" i18n="@@featureDeploymentRunDetails-loadingRunDetails"
-          >Loading run details...</span
-        >
-      </div>
+      <fpc-spinner
+        size="sm"
+        variant="primary"
+        i18n-label="@@featureDeploymentRunDetails-loadingRunDetails"
+        label="Loading run details..."
+      />
     </div>
   } @else if (currentRunStatus()) {
     <!-- Run Status -->
     <div class="p-3 border-bottom">
       <div class="d-flex align-items-center justify-content-between mb-2">
         <h6 class="mb-0 fw-semibold">{{ getRunDisplayName(currentRunStatus()!.runName) }}</h6>
-        <span
-          class="badge"
-          [ngClass]="getStatusBadgeClass(currentRunStatus()!.status)"
-          [title]="currentRunStatus()!.status"
-        >
+        <fpc-badge [color]="getStatusBadgeColor(currentRunStatus()!.status)" [attr.title]="currentRunStatus()!.status">
           <i class="bi" [ngClass]="getStatusIcon(currentRunStatus()!.status)"></i>
           {{ currentRunStatus()!.status }}
-        </span>
+        </fpc-badge>
       </div>
       <dl class="row mb-0 small">
         <dt class="col-sm-4" i18n="@@featureDeploymentRunDetails-branchLabel">Branch</dt>
@@ -39,19 +36,16 @@
       </dl>
       @if (canCancelRun()) {
         <div class="mt-2">
-          <button
-            type="button"
-            class="btn btn-sm btn-danger"
-            (click)="onOpenCancelRunConfirm()"
-            [disabled]="cancellingRun$ | async"
+          <fpc-button
+            variant="danger"
+            size="sm"
+            [loading]="(cancellingRun$ | async) === true"
+            [disabled]="!!(cancellingRun$ | async)"
+            (clicked)="onOpenCancelRunConfirm()"
           >
-            @if (cancellingRun$ | async) {
-              <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-            } @else {
-              <i class="bi bi-stop-circle me-1"></i>
-            }
+            <i class="bi bi-stop-circle me-1"></i>
             <span i18n="@@featureDeploymentRunDetails-cancelRunButton">Cancel Run</span>
-          </button>
+          </fpc-button>
         </div>
       }
     </div>
@@ -59,67 +53,70 @@
     <!-- Jobs List -->
     @if (!showRunLogs() && !showJobLogs()) {
       <div class="d-flex flex-column flex-grow-1" style="min-height: 0">
-        <div class="p-2 border-bottom bg-body-tertiary d-flex align-items-center justify-content-between flex-shrink-0">
-          <h6 class="mb-0 fw-semibold" i18n="@@featureDeploymentRunDetails-jobsHeader">Jobs</h6>
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-primary"
-            (click)="onLoadRunLogs()"
-            [disabled]="loadingRunLogs$ | async"
+        <fpc-lane-header flush>
+          <span fpcLaneHeaderTitle i18n="@@featureDeploymentRunDetails-jobsHeader">Jobs</span>
+          <fpc-button
+            fpcLaneHeaderActions
+            variant="primary"
+            size="sm"
+            [iconOnly]="true"
+            [loading]="(loadingRunLogs$ | async) === true"
+            [disabled]="!!(loadingRunLogs$ | async)"
+            (clicked)="onLoadRunLogs()"
             i18n-title="@@featureDeploymentRunDetails-viewRunLogsButton"
             title="View Run Logs"
-            i18n-aria-label="@@featureDeploymentRunDetails-viewRunLogsButton"
-            aria-label="View Run Logs"
+            i18n-ariaLabel="@@featureDeploymentRunDetails-viewRunLogsButton"
+            ariaLabel="View Run Logs"
           >
-            @if (loadingRunLogs$ | async) {
-              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            } @else {
-              <i class="bi bi-file-text" aria-hidden="true"></i>
-            }
-          </button>
-        </div>
+            <i class="bi bi-file-text" aria-hidden="true"></i>
+          </fpc-button>
+        </fpc-lane-header>
         <div class="flex-grow-1 overflow-auto" style="min-height: 0">
           @if (loadingRunJobs$ | async) {
             <div class="d-flex justify-content-center p-2">
-              <div class="spinner-border spinner-border-sm text-primary" role="status">
-                <span class="visually-hidden" i18n="@@featureDeploymentRunDetails-loadingJobs">Loading jobs...</span>
-              </div>
+              <fpc-spinner
+                size="sm"
+                variant="primary"
+                i18n-label="@@featureDeploymentRunDetails-loadingJobs"
+                label="Loading jobs..."
+              />
             </div>
           } @else if (runJobs().length === 0) {
             <p class="text-muted small mb-0" i18n="@@featureDeploymentRunDetails-noJobs">No jobs available</p>
           } @else {
-            <div class="list-group list-group-flush">
+            <fpc-list [flush]="true">
               @for (job of runJobs(); track job.id) {
-                <div class="list-group-item d-flex align-items-center justify-content-between">
-                  <div class="flex-grow-1">
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                      <span class="badge" [ngClass]="getJobStatusBadgeClass(job.status)" [title]="job.status">
-                        {{ job.status }}
-                      </span>
-                      <span class="fw-semibold">{{ job.name }}</span>
-                    </div>
+                <fpc-list-item>
+                  <div fpcListItemTitle class="d-flex align-items-center gap-2">
+                    <fpc-badge [color]="getJobStatusBadgeColor(job.status)" [attr.title]="job.status">
+                      {{ job.status }}
+                    </fpc-badge>
+                    <span class="fw-semibold">{{ job.name }}</span>
+                  </div>
+                  <div fpcListItemMeta class="small">
                     @if (job.startedAt) {
-                      <div class="small text-muted" i18n="@@featureDeploymentRunDetails-startedAt">
-                        Started: {{ formatDate(job.startedAt) }}
-                      </div>
+                      <div i18n="@@featureDeploymentRunDetails-startedAt">Started: {{ formatDate(job.startedAt) }}</div>
                     }
                     @if (job.completedAt) {
-                      <div class="small text-muted" i18n="@@featureDeploymentRunDetails-completedAt">
+                      <div i18n="@@featureDeploymentRunDetails-completedAt">
                         Completed: {{ formatDate(job.completedAt) }}
                       </div>
                     }
                   </div>
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-outline-primary"
-                    (click)="onLoadJobLogs(job.id)"
-                    [disabled]="loadingJobLogs$ | async"
-                  >
-                    <i class="bi bi-file-text"></i>
-                  </button>
-                </div>
+                  <div fpcListItemActions>
+                    <fpc-button
+                      variant="dark"
+                      size="sm"
+                      [iconOnly]="true"
+                      [disabled]="!!(loadingJobLogs$ | async)"
+                      (clicked)="onLoadJobLogs(job.id)"
+                    >
+                      <i class="bi bi-file-text"></i>
+                    </fpc-button>
+                  </div>
+                </fpc-list-item>
               }
-            </div>
+            </fpc-list>
           }
         </div>
       </div>
@@ -128,31 +125,37 @@
     <!-- Logs Display -->
     @if (showRunLogs() || showJobLogs()) {
       <div class="flex-grow-1 d-flex flex-column" style="min-height: 0">
-        <div class="p-2 border-bottom bg-body-tertiary d-flex align-items-center justify-content-between">
-          <h6 class="mb-0 fw-semibold">
+        <fpc-lane-header flush>
+          <span fpcLaneHeaderTitle>
             {{ getLogsHeader() }}
             @if (selectedJob()) {
               - {{ selectedJob()!.name }}
             }
-          </h6>
-          <button type="button" class="btn btn-sm btn-secondary" (click)="onCloseLogs()">
-            <i class="bi bi-x"></i>
-          </button>
-        </div>
+          </span>
+          <fpc-button fpcLaneHeaderActions variant="dark" size="sm" [iconOnly]="true" (clicked)="onCloseLogs()">
+            <i class="bi bi-x" aria-hidden="true"></i>
+          </fpc-button>
+        </fpc-lane-header>
         <div class="flex-grow-1 overflow-auto p-3" style="min-height: 0">
           @if (showRunLogs() && loadingRunLogs()) {
             <div class="d-flex justify-content-center p-4">
-              <div class="spinner-border spinner-border-sm text-primary" role="status">
-                <span class="visually-hidden" i18n="@@featureDeploymentRunDetails-loadingLogs">Loading logs...</span>
-              </div>
+              <fpc-spinner
+                size="sm"
+                variant="primary"
+                i18n-label="@@featureDeploymentRunDetails-loadingLogs"
+                label="Loading logs..."
+              />
             </div>
           } @else if (showRunLogs() && runLogs()) {
             <pre class="log-content mb-0">{{ runLogs() }}</pre>
           } @else if (showJobLogs() && loadingJobLogs()) {
             <div class="d-flex justify-content-center p-4">
-              <div class="spinner-border spinner-border-sm text-primary" role="status">
-                <span class="visually-hidden" i18n="@@featureDeploymentRunDetails-loadingLogs">Loading logs...</span>
-              </div>
+              <fpc-spinner
+                size="sm"
+                variant="primary"
+                i18n-label="@@featureDeploymentRunDetails-loadingLogs"
+                label="Loading logs..."
+              />
             </div>
           } @else if (showJobLogs() && jobLogs()) {
             <pre class="log-content mb-0">{{ jobLogs() }}</pre>
@@ -172,73 +175,26 @@
   }
 
   @if (error() && !hasLoadedOnce()) {
-    <div class="alert alert-danger m-3" role="alert">
-      <i class="bi bi-exclamation-triangle me-2"></i>
-      {{ error() }}
-    </div>
+    <fpc-alert class="m-3" variant="danger" [message]="error()" />
   }
 
-  <!-- Cancel run confirmation -->
-  <div
-    class="modal fade"
-    id="cancelRunConfirmModal"
-    tabindex="-1"
-    aria-labelledby="cancelRunConfirmModalLabel"
-    aria-hidden="true"
-    #cancelRunConfirmModal
-    data-bs-backdrop="static"
+  <fpc-confirm-dialog
+    [(open)]="cancelRunConfirmModalOpen"
+    i18n-title="@@featureDeploymentRunDetails-cancelConfirmTitle"
+    title="Cancel run"
+    i18n-confirmLabel="@@featureDeploymentRunDetails-cancelRun"
+    confirmLabel="Cancel run"
+    [danger]="true"
+    [busy]="(cancellingRun$ | async) === true"
+    (confirmed)="confirmCancelRun()"
+    (cancelled)="onCancelCancelRunConfirm()"
   >
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2
-            class="modal-title h5"
-            id="cancelRunConfirmModalLabel"
-            i18n="@@featureDeploymentRunDetails-cancelConfirmTitle"
-          >
-            Cancel run
-          </h2>
-          <button
-            type="button"
-            class="btn-close"
-            aria-label="Close"
-            i18n-aria-label="@@featureDeploymentRunDetails-cancelConfirmCloseAria"
-            [disabled]="cancellingRun$ | async"
-            (click)="onCancelCancelRunConfirm()"
-          ></button>
-        </div>
-        <div class="modal-body">
-          <p i18n="@@featureDeploymentRunDetails-cancelConfirmBody">
-            Are you sure you want to cancel this run? In-progress jobs may be stopped.
-          </p>
-          <p class="text-danger mb-0">
-            <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
-            <span i18n="@@featureDeploymentRunDetails-cancelConfirmWarning">This cannot be undone.</span>
-          </p>
-        </div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            [disabled]="cancellingRun$ | async"
-            (click)="onCancelCancelRunConfirm()"
-            i18n="@@featureDeploymentRunDetails-cancel"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            (click)="confirmCancelRun()"
-            [disabled]="cancellingRun$ | async"
-          >
-            @if (cancellingRun$ | async) {
-              <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-            }
-            <span i18n="@@featureDeploymentRunDetails-cancelRun">Cancel run</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+    <p i18n="@@featureDeploymentRunDetails-cancelConfirmBody">
+      Are you sure you want to cancel this run? In-progress jobs may be stopped.
+    </p>
+    <p class="text-danger mb-0">
+      <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+      <span i18n="@@featureDeploymentRunDetails-cancelConfirmWarning">This cannot be undone.</span>
+    </p>
+  </fpc-confirm-dialog>
 </div>

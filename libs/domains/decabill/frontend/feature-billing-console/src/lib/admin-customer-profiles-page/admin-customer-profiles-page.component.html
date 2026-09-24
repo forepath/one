@@ -1,639 +1,536 @@
-<div class="admin-profiles-container border-top d-flex flex-column h-100">
-  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
-    <h5 class="mb-0 fw-semibold" i18n="@@featureAdminProfiles-title">Billing Profiles</h5>
-    <button
-      type="button"
-      class="btn btn-sm btn-primary"
-      (click)="openCreateModal()"
+<div class="admin-profiles-container border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="pageTitle">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="primary"
+      size="sm"
+      iconOnly
       [disabled]="(creating$ | async) === true"
-      i18n-title="@@featureAdminProfiles-add"
-      title="Add"
-      i18n-aria-label="@@featureAdminProfiles-add"
-      aria-label="Add"
+      [ariaLabel]="addProfileAriaLabel"
+      [title]="addProfileAriaLabel"
+      (clicked)="openCreateModal()"
     >
       <i class="bi bi-plus" aria-hidden="true"></i>
-    </button>
-  </div>
+    </fpc-button>
+  </fpc-page-header>
 
-  <div class="input-group search-input-container border-bottom">
-    <i class="bi bi-search"></i>
-    <input
-      type="text"
-      class="form-control border-0 search-input"
-      placeholder="Search profiles"
-      i18n-placeholder="@@featureAdminProfiles-searchPlaceholder"
-      [ngModel]="searchQuery()"
-      (ngModelChange)="searchQuery.set($event)"
-      name="search"
-    />
-  </div>
+  <fpc-search-field
+    class="border-bottom"
+    name="search"
+    [bordered]="false"
+    [placeholder]="searchPlaceholder"
+    [ariaLabel]="searchPlaceholder"
+    [(value)]="searchQuery"
+  />
 
-  <div class="flex-grow-1 overflow-auto">
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
     @if (loading$ | async) {
       <div class="d-flex justify-content-center align-items-center p-4">
-        <div class="spinner-border text-primary" role="status"></div>
+        <fpc-spinner variant="primary" />
       </div>
     } @else {
       @if (error$ | async; as error) {
-        <div class="alert alert-danger m-3" role="alert">{{ error }}</div>
+        <fpc-alert class="m-3" variant="danger" [message]="error" />
       }
       @if (profiles().length === 0) {
-        <div class="d-flex justify-content-center align-items-center p-4 text-muted">
-          <p class="mb-0" i18n="@@featureAdminProfiles-empty">No billing profiles found</p>
-        </div>
+        @if (searchQuery().trim()) {
+          <fpc-empty-state
+            icon="search"
+            message="No search results"
+            i18n-message="@@featureAdminProfiles-noSearchResults"
+          />
+        } @else {
+          <fpc-empty-state message="No billing profiles yet" i18n-message="@@featureAdminProfiles-empty" />
+        }
       } @else {
-        <div class="list-group list-group-flush">
+        <fpc-list [flush]="true">
           @for (profile of profiles(); track profile.id) {
-            <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-3">
-              <div class="min-w-0 flex-grow-1">
-                <div class="fw-semibold mb-1 d-flex align-items-center flex-wrap gap-2">
-                  @if (profile.customerNumber) {
-                    <span
-                      class="info-badge text-muted bg-body-secondary py-1 px-2 rounded fw-normal"
-                      [attr.title]="profile.customerNumber"
-                    >
-                      {{ profile.customerNumber }}
+            <fpc-list-item>
+              <div fpcListItemTitle class="fw-semibold d-flex align-items-center flex-wrap gap-2">
+                @if (profile.customerNumber) {
+                  <fpc-badge variant="info" color="secondary" class="fw-normal" [attr.title]="profile.customerNumber">
+                    {{ profile.customerNumber }}
+                  </fpc-badge>
+                }
+                <span class="text-truncate">{{ profilePrimaryTitle(profile) }}</span>
+              </div>
+              <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
+                <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+                  <span
+                    class="me-2 d-inline-flex align-items-center gap-2"
+                    [attr.aria-label]="profileTrustLabel(profile.trustLevel)"
+                  >
+                    <span class="trust-traffic-light" aria-hidden="true">
+                      <span
+                        class="trust-traffic-light__light trust-traffic-light__light--green"
+                        [class.is-active]="isTrustLightActive(profile.trustLevel, 'green')"
+                      ></span>
+                      <span
+                        class="trust-traffic-light__light trust-traffic-light__light--yellow"
+                        [class.is-active]="isTrustLightActive(profile.trustLevel, 'yellow')"
+                      ></span>
+                      <span
+                        class="trust-traffic-light__light trust-traffic-light__light--red"
+                        [class.is-active]="isTrustLightActive(profile.trustLevel, 'red')"
+                      ></span>
                     </span>
-                  }
-                  <span class="text-truncate">{{ profilePrimaryTitle(profile) }}</span>
-                </div>
-                <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                  <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                    <span
-                      class="me-2 d-inline-flex align-items-center gap-2"
-                      [attr.aria-label]="profileTrustLabel(profile.trustLevel)"
-                    >
-                      <span class="trust-traffic-light" aria-hidden="true">
-                        <span
-                          class="trust-traffic-light__light trust-traffic-light__light--green"
-                          [class.is-active]="isTrustLightActive(profile.trustLevel, 'green')"
-                        ></span>
-                        <span
-                          class="trust-traffic-light__light trust-traffic-light__light--yellow"
-                          [class.is-active]="isTrustLightActive(profile.trustLevel, 'yellow')"
-                        ></span>
-                        <span
-                          class="trust-traffic-light__light trust-traffic-light__light--red"
-                          [class.is-active]="isTrustLightActive(profile.trustLevel, 'red')"
-                        ></span>
-                      </span>
-                      <span [ngClass]="profileTrustTextClass(profile.trustLevel)">
-                        <i class="bi me-1" [ngClass]="profileTrustIconClass(profile.trustLevel)" aria-hidden="true"></i>
-                        {{ profileTrustLabel(profile.trustLevel) }}
-                      </span>
+                    <span [ngClass]="profileTrustTextClass(profile.trustLevel)">
+                      <i class="bi me-1" [ngClass]="profileTrustIconClass(profile.trustLevel)" aria-hidden="true"></i>
+                      {{ profileTrustLabel(profile.trustLevel) }}
                     </span>
-                    <span class="me-2" [ngClass]="profileCompleteTextClass(profile.isComplete)">
-                      @if (profile.isComplete) {
-                        <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
-                      } @else {
-                        <i class="bi bi-clock me-1" aria-hidden="true"></i>
-                      }
-                      {{ profileCompleteLabel(profile.isComplete) }}
-                    </span>
-                    <span class="me-2">
-                      <i class="bi bi-envelope me-1" aria-hidden="true"></i>{{ profileUserLabel(profile) }}
-                    </span>
-                    <span class="me-2">
-                      <i class="bi bi-geo-alt me-1" aria-hidden="true"></i>{{ profileCountryLabel(profile.country) }}
-                    </span>
-                    @if (profileSecondaryName(profile); as contactName) {
-                      <span class="me-2"> <i class="bi bi-person me-1" aria-hidden="true"></i>{{ contactName }} </span>
+                  </span>
+                  <span class="me-2" [ngClass]="profileCompleteTextClass(profile.isComplete)">
+                    @if (profile.isComplete) {
+                      <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+                    } @else {
+                      <i class="bi bi-clock me-1" aria-hidden="true"></i>
                     }
-                    <span class="me-2">
-                      <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>{{ formatDate(profile.updatedAt) }}
-                    </span>
-                  </div>
+                    {{ profileCompleteLabel(profile.isComplete) }}
+                  </span>
+                  <span class="me-2">
+                    <i class="bi bi-envelope me-1" aria-hidden="true"></i>{{ profileUserLabel(profile) }}
+                  </span>
+                  <span class="me-2">
+                    <i class="bi bi-geo-alt me-1" aria-hidden="true"></i>{{ profileCountryLabel(profile.country) }}
+                  </span>
+                  @if (profileSecondaryName(profile); as contactName) {
+                    <span class="me-2"> <i class="bi bi-person me-1" aria-hidden="true"></i>{{ contactName }} </span>
+                  }
+                  <span class="me-2">
+                    <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>{{ formatDate(profile.updatedAt) }}
+                  </span>
                 </div>
               </div>
-              <div
-                class="btn-group btn-group-sm flex-shrink-0"
-                role="group"
-                aria-label="Profile actions"
-                i18n-aria-label="@@featureAdminProfiles-profileActionsAria"
+              <fpc-button-group
+                fpcListItemActions
+                size="sm"
+                ariaLabel="Profile actions"
+                i18n-ariaLabel="@@featureAdminProfiles-profileActionsAria"
               >
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary"
-                  (click)="openTrustScoreModal(profile)"
+                <fpc-button
+                  iconOnly
+                  size="sm"
+                  variant="dark"
+                  (clicked)="openTrustScoreModal(profile)"
                   title="View trust score"
                   i18n-title="@@featureAdminProfiles-trustButtonTitle"
                 >
                   <i class="bi bi-shield-check" aria-hidden="true"></i>
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary"
-                  (click)="openCustomDataModal(profile)"
+                </fpc-button>
+                <fpc-button
+                  iconOnly
+                  size="sm"
+                  variant="dark"
+                  (clicked)="openCustomDataModal(profile)"
                   title="Edit custom data"
                   i18n-title="@@featureAdminProfiles-customDataButtonTitle"
                 >
                   <i class="bi bi-database" aria-hidden="true"></i>
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-primary"
-                  (click)="openEditModal(profile)"
+                </fpc-button>
+                <fpc-button
+                  size="sm"
+                  variant="warning"
+                  iconOnly
+                  (clicked)="openEditModal(profile)"
                   title="Edit profile"
                   i18n-title="@@featureAdminProfiles-editButtonTitle"
                 >
                   <i class="bi bi-pencil" aria-hidden="true"></i>
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-danger"
-                  (click)="openDeleteModal(profile)"
+                </fpc-button>
+                <fpc-button
+                  size="sm"
+                  variant="danger"
+                  iconOnly
+                  (clicked)="openDeleteModal(profile)"
                   title="Delete profile"
                   i18n-title="@@featureAdminProfiles-deleteButtonTitle"
                 >
                   <i class="bi bi-trash" aria-hidden="true"></i>
-                </button>
-              </div>
-            </div>
+                </fpc-button>
+              </fpc-button-group>
+            </fpc-list-item>
           }
-        </div>
+        </fpc-list>
       }
     }
   </div>
 </div>
 
-<div #trustScoreModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureAdminProfiles-trustModalTitle">Customer trust score</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<fpc-modal
+  [(open)]="trustScoreModalOpen"
+  size="lg"
+  i18n-title="@@featureAdminProfiles-trustModalTitle"
+  title="Customer trust score"
+>
+  @if (trustScoreLoading()) {
+    <div class="d-flex justify-content-center align-items-center py-4">
+      <fpc-spinner variant="primary" />
+    </div>
+  } @else if (trustScoreDetail(); as trustDetail) {
+    <div class="trust-score-summary border rounded p-3 mb-3">
+      <div class="d-flex flex-wrap justify-content-between gap-3 align-items-start">
+        <div>
+          <div class="text-muted small" i18n="@@featureAdminProfiles-trustFor">Trust score for</div>
+          <div class="fw-semibold">{{ trustScoreProfile ? profilePrimaryTitle(trustScoreProfile) : '—' }}</div>
+        </div>
+        <div class="text-end">
+          <div class="display-6 mb-1">{{ trustDetail.score }}</div>
+          <div class="d-inline-flex align-items-center gap-2" [ngClass]="profileTrustTextClass(trustDetail.level)">
+            <span class="trust-traffic-light" aria-hidden="true">
+              <span
+                class="trust-traffic-light__light trust-traffic-light__light--green"
+                [class.is-active]="isTrustLightActive(trustDetail.level, 'green')"
+              ></span>
+              <span
+                class="trust-traffic-light__light trust-traffic-light__light--yellow"
+                [class.is-active]="isTrustLightActive(trustDetail.level, 'yellow')"
+              ></span>
+              <span
+                class="trust-traffic-light__light trust-traffic-light__light--red"
+                [class.is-active]="isTrustLightActive(trustDetail.level, 'red')"
+              ></span>
+            </span>
+            <span>
+              <i class="bi me-1" [ngClass]="profileTrustIconClass(trustDetail.level)" aria-hidden="true"></i>
+              {{ profileTrustLabel(trustDetail.level) }}
+            </span>
+          </div>
+        </div>
       </div>
-      <div class="modal-body">
-        @if (trustScoreLoading()) {
-          <div class="d-flex justify-content-center align-items-center py-4">
-            <div class="spinner-border text-primary" role="status"></div>
-          </div>
-        } @else if (trustScoreDetail(); as trustDetail) {
-          <div class="trust-score-summary border rounded p-3 mb-3">
-            <div class="d-flex flex-wrap justify-content-between gap-3 align-items-start">
-              <div>
-                <div class="text-muted small" i18n="@@featureAdminProfiles-trustFor">Trust score for</div>
-                <div class="fw-semibold">{{ trustScoreProfile ? profilePrimaryTitle(trustScoreProfile) : '—' }}</div>
-              </div>
-              <div class="text-end">
-                <div class="display-6 mb-1">{{ trustDetail.score }}</div>
-                <div
-                  class="d-inline-flex align-items-center gap-2"
-                  [ngClass]="profileTrustTextClass(trustDetail.level)"
-                >
-                  <span class="trust-traffic-light" aria-hidden="true">
-                    <span
-                      class="trust-traffic-light__light trust-traffic-light__light--green"
-                      [class.is-active]="isTrustLightActive(trustDetail.level, 'green')"
-                    ></span>
-                    <span
-                      class="trust-traffic-light__light trust-traffic-light__light--yellow"
-                      [class.is-active]="isTrustLightActive(trustDetail.level, 'yellow')"
-                    ></span>
-                    <span
-                      class="trust-traffic-light__light trust-traffic-light__light--red"
-                      [class.is-active]="isTrustLightActive(trustDetail.level, 'red')"
-                    ></span>
-                  </span>
-                  <span>
-                    <i class="bi me-1" [ngClass]="profileTrustIconClass(trustDetail.level)" aria-hidden="true"></i>
-                    {{ profileTrustLabel(trustDetail.level) }}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div class="small text-muted mt-3 d-flex flex-wrap gap-3">
-              <span>
-                <strong i18n="@@featureAdminProfiles-trustBaseScore">Base score:</strong> {{ trustDetail.baseScore }}
-              </span>
-              <span>
-                <strong i18n="@@featureAdminProfiles-trustComputedAt">Computed:</strong>
-                {{ formatDate(trustDetail.computedAt) }}
-              </span>
-            </div>
-          </div>
-
-          <div class="list-group list-group-flush border rounded">
-            @for (factor of trustDetail.factors; track factor.id) {
-              <div class="list-group-item d-flex justify-content-between align-items-start gap-3">
-                <div>
-                  <div class="fw-semibold">{{ factor.label }}</div>
-                  <div class="small text-muted">{{ factor.description }}</div>
-                </div>
-                <div class="fw-semibold text-nowrap" [ngClass]="trustScorePointsClass(factor.points)">
-                  {{ factor.points > 0 ? '+' : '' }}{{ factor.points }}
-                </div>
-              </div>
-            }
-          </div>
-        } @else {
-          <div class="alert alert-secondary mb-0" role="alert" i18n="@@featureAdminProfiles-trustUnavailable">
-            Trust details are currently unavailable.
-          </div>
-        }
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-outline-primary"
-          (click)="recomputeTrustScore()"
-          [disabled]="trustScoreRefreshing()"
-          i18n="@@featureAdminProfiles-trustRecompute"
-        >
-          Recompute
-        </button>
+      <div class="small text-muted mt-3 d-flex flex-wrap gap-3">
+        <span>
+          <strong i18n="@@featureAdminProfiles-trustBaseScore">Base score:</strong> {{ trustDetail.baseScore }}
+        </span>
+        <span>
+          <strong i18n="@@featureAdminProfiles-trustComputedAt">Computed:</strong>
+          {{ formatDate(trustDetail.computedAt) }}
+        </span>
       </div>
     </div>
-  </div>
-</div>
 
-<div #createModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureAdminProfiles-createTitle">Create billing profile</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="list-group list-group-flush border rounded">
+      @for (factor of trustDetail.factors; track factor.id) {
+        <div class="list-group-item d-flex justify-content-between align-items-start gap-3">
+          <div>
+            <div class="fw-semibold">{{ factor.label }}</div>
+            <div class="small text-muted">{{ factor.description }}</div>
+          </div>
+          <div class="fw-semibold text-nowrap" [ngClass]="trustScorePointsClass(factor.points)">
+            {{ factor.points > 0 ? '+' : '' }}{{ factor.points }}
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <fpc-alert class="mb-0" variant="dark">Trust details are currently unavailable.</fpc-alert>
+  }
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      (clicked)="recomputeTrustScore()"
+      [disabled]="trustScoreRefreshing()"
+      i18n="@@featureAdminProfiles-trustRecompute"
+    >
+      Recompute
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal
+  [(open)]="createModalOpen"
+  size="lg"
+  i18n-title="@@featureAdminProfiles-createTitle"
+  title="Create billing profile"
+>
+  <fpc-form-field forId="createProfileUser" i18n-label="@@featureAdminInvoices-user" label="Customer">
+    <framework-billing-admin-user-select
+      #createUserSelect
+      inputId="createProfileUser"
+      [users]="usersWithoutProfile()"
+      [(selectedUserId)]="createForm.userId"
+      [required]="true"
+    />
+  </fpc-form-field>
+  <ng-container *ngTemplateOutlet="profileFields; context: { form: createForm, prefix: 'create' }"></ng-container>
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      (clicked)="submitCreate()"
+      [disabled]="(creating$ | async) === true"
+      i18n="@@featureAdminProfiles-create"
+    >
+      Create
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal
+  [(open)]="editModalOpen"
+  size="lg"
+  i18n-title="@@featureAdminProfiles-editTitle"
+  title="Edit billing profile"
+>
+  <div class="row">
+    <div class="col-md-6">
+      <fpc-form-field
+        forId="editCustomerNumber"
+        i18n-label="@@featureAdminProfiles-customerNumber"
+        label="Customer number"
+      >
+        <fpc-form-control controlId="editCustomerNumber" [value]="editForm.customerNumber || ''" readOnly disabled />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-6">
+      <fpc-form-field
+        forId="editDatevDebtorNumber"
+        i18n-label="@@featureAdminProfiles-datevDebtorNumber"
+        label="DATEV debtor number"
+      >
+        <fpc-form-control
+          controlId="editDatevDebtorNumber"
+          [value]="datevDebtorNumberDisplay(editForm.datevDebtorNumber)"
+          readOnly
+          disabled
+        />
+      </fpc-form-field>
+    </div>
+  </div>
+  <ng-container *ngTemplateOutlet="profileFields; context: { form: editForm, prefix: 'edit' }"></ng-container>
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      (clicked)="submitEdit()"
+      [disabled]="(updating$ | async) === true"
+      i18n="@@featureAdminProfiles-save"
+    >
+      Save
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [(open)]="deleteModalOpen"
+  i18n-title="@@featureAdminProfiles-deleteTitle"
+  title="Delete profile"
+  i18n-confirmLabel="@@featureAdminProfiles-delete"
+  confirmLabel="Delete"
+  [danger]="true"
+  [busy]="(deleting$ | async) === true"
+  (confirmed)="confirmDelete()"
+>
+  <p i18n="@@featureAdminProfiles-deleteConfirm">Delete this billing profile?</p>
+  <p class="text-danger mb-0">
+    <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+    <span i18n="@@featureAdminProfiles-cannotUndo">This action cannot be undone.</span>
+  </p>
+</fpc-confirm-dialog>
+
+<fpc-modal
+  [(open)]="customDataModalOpen"
+  size="lg"
+  i18n-title="@@featureAdminProfiles-customDataTitle"
+  title="Custom data"
+>
+  <p class="text-muted small mb-3" i18n="@@featureAdminProfiles-customDataHelp">
+    Admin-only key/value pairs for linking this customer to external systems. Values are stored encrypted.
+  </p>
+  @if (customDataProfile) {
+    <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+      <div>
+        <div class="text-muted small" i18n="@@featureAdminProfiles-customDataFor">Custom data for</div>
+        <div class="fw-semibold">{{ profilePrimaryTitle(customDataProfile) }}</div>
       </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label" for="createProfileUser" i18n="@@featureAdminInvoices-user">Customer</label>
-          <framework-billing-admin-user-select
-            #createUserSelect
-            inputId="createProfileUser"
-            [users]="usersWithoutProfile()"
-            [(selectedUserId)]="createForm.userId"
-            [required]="true"
+      <fpc-button
+        variant="primary"
+        size="sm"
+        iconOnly
+        (clicked)="addCustomDataRow()"
+        [disabled]="customDataLoading() || customDataSaving()"
+        title="Add line"
+        i18n-title="@@featureAdminProfiles-customDataAdd"
+        ariaLabel="Add line"
+        i18n-ariaLabel="@@featureAdminProfiles-customDataAdd"
+      >
+        <i class="bi bi-plus" aria-hidden="true"></i>
+      </fpc-button>
+    </div>
+  }
+  @if (customDataLoading()) {
+    <div class="d-flex justify-content-center align-items-center py-4">
+      <fpc-spinner variant="primary" />
+    </div>
+  } @else {
+    @if (customDataRows.length === 0) {
+      <p class="text-muted mb-3" i18n="@@featureAdminProfiles-customDataEmpty">No custom data entries yet.</p>
+    }
+    @for (row of customDataRows; track $index; let i = $index) {
+      <div class="row g-2 align-items-center mb-2">
+        <div class="col-md-4">
+          <fpc-form-control
+            [controlId]="'customDataKey' + i"
+            [(ngModel)]="row.key"
+            [name]="'customDataKey' + i"
+            [readOnly]="row.existingKey"
+            placeholder="Key"
+            i18n-placeholder="@@featureAdminProfiles-customDataKeyPlaceholder"
           />
         </div>
-        <ng-container *ngTemplateOutlet="profileFields; context: { form: createForm, prefix: 'create' }"></ng-container>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="submitCreate()"
-          [disabled]="(creating$ | async) === true"
-          i18n="@@featureAdminProfiles-create"
-        >
-          Create
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div #editModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureAdminProfiles-editTitle">Edit billing profile</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label class="form-label" for="editCustomerNumber" i18n="@@featureAdminProfiles-customerNumber"
-              >Customer number</label
-            >
-            <input
-              id="editCustomerNumber"
-              class="form-control"
-              [value]="editForm.customerNumber || ''"
-              readonly
-              disabled
-              aria-readonly="true"
-            />
-          </div>
-          <div class="col-md-6 mb-3">
-            <label class="form-label" for="editDatevDebtorNumber" i18n="@@featureAdminProfiles-datevDebtorNumber"
-              >DATEV debtor number</label
-            >
-            <input
-              id="editDatevDebtorNumber"
-              class="form-control"
-              [value]="datevDebtorNumberDisplay(editForm.datevDebtorNumber)"
-              readonly
-              disabled
-              aria-readonly="true"
-            />
-          </div>
+        <div class="col">
+          <fpc-form-control
+            [controlId]="'customDataValue' + i"
+            [(ngModel)]="row.value"
+            [name]="'customDataValue' + i"
+            placeholder="Value"
+            i18n-placeholder="@@featureAdminProfiles-customDataValuePlaceholder"
+          />
         </div>
-        <ng-container *ngTemplateOutlet="profileFields; context: { form: editForm, prefix: 'edit' }"></ng-container>
+        <div class="col-auto">
+          <fpc-button
+            variant="danger"
+            size="sm"
+            iconOnly
+            (clicked)="removeCustomDataRow(i)"
+            title="Remove entry"
+            i18n-title="@@featureAdminProfiles-customDataRemove"
+            i18n-ariaLabel="@@featureAdminProfiles-customDataRemove"
+            ariaLabel="Remove entry"
+          >
+            <i class="bi bi-trash" aria-hidden="true"></i>
+          </fpc-button>
+        </div>
       </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="submitEdit()"
-          [disabled]="(updating$ | async) === true"
-          i18n="@@featureAdminProfiles-save"
-        >
-          Save
-        </button>
-      </div>
-    </div>
+    }
+  }
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      (clicked)="submitCustomData()"
+      [disabled]="customDataLoading() || customDataSaving()"
+      i18n="@@featureAdminProfiles-customDataSave"
+    >
+      Save
+    </fpc-button>
   </div>
-</div>
-
-<div #deleteModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureAdminProfiles-deleteTitle">Delete profile</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p i18n="@@featureAdminProfiles-deleteConfirm">Delete this billing profile?</p>
-        <p class="text-danger mb-0">
-          <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
-          <span i18n="@@featureAdminProfiles-cannotUndo">This action cannot be undone.</span>
-        </p>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="confirmDelete()"
-          [disabled]="(deleting$ | async) === true"
-          i18n="@@featureAdminProfiles-delete"
-        >
-          Delete
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div #customDataModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureAdminProfiles-customDataTitle">Custom data</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p class="text-muted small mb-3" i18n="@@featureAdminProfiles-customDataHelp">
-          Admin-only key/value pairs for linking this customer to external systems. Values are stored encrypted.
-        </p>
-        @if (customDataProfile) {
-          <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
-            <div>
-              <div class="text-muted small" i18n="@@featureAdminProfiles-customDataFor">Custom data for</div>
-              <div class="fw-semibold">{{ profilePrimaryTitle(customDataProfile) }}</div>
-            </div>
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-primary"
-              (click)="addCustomDataRow()"
-              [disabled]="customDataLoading() || customDataSaving()"
-              title="Add line"
-              i18n-title="@@featureAdminProfiles-customDataAdd"
-              aria-label="Add line"
-              i18n-aria-label="@@featureAdminProfiles-customDataAdd"
-            >
-              <i class="bi bi-plus" aria-hidden="true"></i>
-            </button>
-          </div>
-        }
-        @if (customDataLoading()) {
-          <div class="d-flex justify-content-center align-items-center py-4">
-            <div class="spinner-border text-primary" role="status"></div>
-          </div>
-        } @else {
-          @if (customDataRows.length === 0) {
-            <p class="text-muted mb-3" i18n="@@featureAdminProfiles-customDataEmpty">No custom data entries yet.</p>
-          }
-          @for (row of customDataRows; track $index; let i = $index) {
-            <div class="row g-2 align-items-center mb-2">
-              <div class="col-md-4">
-                <label
-                  class="visually-hidden"
-                  [attr.for]="'customDataKey' + i"
-                  i18n="@@featureAdminProfiles-customDataKey"
-                  >Key</label
-                >
-                <input
-                  class="form-control"
-                  [id]="'customDataKey' + i"
-                  [(ngModel)]="row.key"
-                  [name]="'customDataKey' + i"
-                  [readonly]="row.existingKey"
-                  [attr.aria-readonly]="row.existingKey ? true : null"
-                  placeholder="Key"
-                  i18n-placeholder="@@featureAdminProfiles-customDataKeyPlaceholder"
-                />
-              </div>
-              <div class="col">
-                <label
-                  class="visually-hidden"
-                  [attr.for]="'customDataValue' + i"
-                  i18n="@@featureAdminProfiles-customDataValue"
-                  >Value</label
-                >
-                <input
-                  class="form-control"
-                  [id]="'customDataValue' + i"
-                  [(ngModel)]="row.value"
-                  [name]="'customDataValue' + i"
-                  placeholder="Value"
-                  i18n-placeholder="@@featureAdminProfiles-customDataValuePlaceholder"
-                />
-              </div>
-              <div class="col-auto">
-                <button
-                  type="button"
-                  class="btn btn-outline-danger btn-sm"
-                  (click)="removeCustomDataRow(i)"
-                  title="Remove entry"
-                  i18n-title="@@featureAdminProfiles-customDataRemove"
-                  i18n-aria-label="@@featureAdminProfiles-customDataRemove"
-                  aria-label="Remove entry"
-                >
-                  <i class="bi bi-trash" aria-hidden="true"></i>
-                </button>
-              </div>
-            </div>
-          }
-        }
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="submitCustomData()"
-          [disabled]="customDataLoading() || customDataSaving()"
-          i18n="@@featureAdminProfiles-customDataSave"
-        >
-          Save
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+</fpc-modal>
 
 <ng-template #profileFields let-form="form" let-prefix="prefix">
   <div class="row">
-    <div class="col-md-6 mb-3">
-      <label class="form-label" [attr.for]="prefix + 'FirstName'" i18n="@@featureAdminProfiles-firstName"
-        >First name</label
-      >
-      <input
-        type="text"
-        class="form-control"
-        [id]="prefix + 'FirstName'"
-        [(ngModel)]="form.firstName"
-        [name]="prefix + 'FirstName'"
-      />
+    <div class="col-md-6">
+      <fpc-form-field [forId]="prefix + 'FirstName'" i18n-label="@@featureAdminProfiles-firstName" label="First name">
+        <fpc-form-control
+          [controlId]="prefix + 'FirstName'"
+          [(ngModel)]="form.firstName"
+          [name]="prefix + 'FirstName'"
+        />
+      </fpc-form-field>
     </div>
-    <div class="col-md-6 mb-3">
-      <label class="form-label" [attr.for]="prefix + 'LastName'" i18n="@@featureAdminProfiles-lastName"
-        >Last name</label
-      >
-      <input
-        type="text"
-        class="form-control"
-        [id]="prefix + 'LastName'"
-        [(ngModel)]="form.lastName"
-        [name]="prefix + 'LastName'"
-      />
+    <div class="col-md-6">
+      <fpc-form-field [forId]="prefix + 'LastName'" i18n-label="@@featureAdminProfiles-lastName" label="Last name">
+        <fpc-form-control [controlId]="prefix + 'LastName'" [(ngModel)]="form.lastName" [name]="prefix + 'LastName'" />
+      </fpc-form-field>
     </div>
   </div>
-  <div class="mb-3">
-    <label class="form-label" [attr.for]="prefix + 'Company'" i18n="@@featureAdminProfiles-company">Company</label>
-    <input
-      type="text"
-      class="form-control"
-      [id]="prefix + 'Company'"
-      [(ngModel)]="form.company"
-      [name]="prefix + 'Company'"
-    />
-  </div>
+  <fpc-form-field [forId]="prefix + 'Company'" i18n-label="@@featureAdminProfiles-company" label="Company">
+    <fpc-form-control [controlId]="prefix + 'Company'" [(ngModel)]="form.company" [name]="prefix + 'Company'" />
+  </fpc-form-field>
   <div class="row">
-    <div class="col-md-6 mb-3">
-      <label class="form-label" [attr.for]="prefix + 'CustomerType'" i18n="@@featureAdminProfiles-customerType"
-        >Customer type</label
+    <div class="col-md-6">
+      <fpc-form-field
+        [forId]="prefix + 'CustomerType'"
+        i18n-label="@@featureAdminProfiles-customerType"
+        label="Customer type"
       >
-      <select
-        class="form-select"
-        [id]="prefix + 'CustomerType'"
-        [(ngModel)]="form.customerType"
-        [name]="prefix + 'CustomerType'"
-      >
-        <option value="consumer" i18n="@@featureBilling-customerTypeConsumer">Consumer</option>
-        <option value="business" i18n="@@featureBilling-customerTypeBusiness">Business</option>
-      </select>
+        <fpc-form-control
+          controlType="select"
+          [controlId]="prefix + 'CustomerType'"
+          [(ngModel)]="form.customerType"
+          [name]="prefix + 'CustomerType'"
+        >
+          <option value="consumer" i18n="@@featureBilling-customerTypeConsumer">Consumer</option>
+          <option value="business" i18n="@@featureBilling-customerTypeBusiness">Business</option>
+        </fpc-form-control>
+      </fpc-form-field>
     </div>
-    <div class="col-md-6 mb-3">
-      <label class="form-label" [attr.for]="prefix + 'VatId'" i18n="@@featureAdminProfiles-vatId">VAT ID</label>
-      <input
-        type="text"
-        class="form-control"
-        [id]="prefix + 'VatId'"
-        [(ngModel)]="form.vatId"
-        [name]="prefix + 'VatId'"
-        autocomplete="off"
-      />
+    <div class="col-md-6">
+      <fpc-form-field [forId]="prefix + 'VatId'" i18n-label="@@featureAdminProfiles-vatId" label="VAT ID">
+        <fpc-form-control
+          [controlId]="prefix + 'VatId'"
+          [(ngModel)]="form.vatId"
+          [name]="prefix + 'VatId'"
+          autocomplete="off"
+        />
+      </fpc-form-field>
     </div>
   </div>
   @if (prefix === 'edit') {
-    <div class="mb-3">
-      <label class="form-label" i18n="@@featureAdminProfiles-vatIdValidationStatus">VAT ID validation</label>
-      <input
-        type="text"
-        class="form-control"
-        [value]="vatIdValidationStatusLabel(editForm.vatIdValidationStatus)"
-        readonly
-        disabled
-        aria-readonly="true"
-      />
+    <fpc-form-field i18n-label="@@featureAdminProfiles-vatIdValidationStatus" label="VAT ID validation">
+      <fpc-form-control [value]="vatIdValidationStatusLabel(editForm.vatIdValidationStatus)" readOnly disabled />
       @if (editForm.vatIdValidatedAt) {
-        <div class="form-text">
+        <div fpcFormFieldHint>
           <span i18n="@@featureAdminProfiles-vatIdValidatedAt">Validated at:</span>
           {{ formatDate(editForm.vatIdValidatedAt) }}
         </div>
       }
-    </div>
+    </fpc-form-field>
   }
-  <div class="mb-3">
-    <label class="form-label" [attr.for]="prefix + 'Email'" i18n="@@featureAdminProfiles-email">Email</label>
-    <input
-      type="email"
-      class="form-control"
-      [id]="prefix + 'Email'"
+  <fpc-form-field [forId]="prefix + 'Email'" i18n-label="@@featureAdminProfiles-email" label="Email">
+    <fpc-form-control
+      inputType="email"
+      [controlId]="prefix + 'Email'"
       [(ngModel)]="form.email"
       [name]="prefix + 'Email'"
     />
-  </div>
-  <div class="mb-3">
-    <label class="form-label" [attr.for]="prefix + 'Address1'" i18n="@@featureAdminProfiles-addressLine1"
-      >Address line 1</label
-    >
-    <input
-      type="text"
-      class="form-control"
-      [id]="prefix + 'Address1'"
-      [(ngModel)]="form.addressLine1"
-      [name]="prefix + 'Address1'"
-    />
-  </div>
-  <div class="mb-3">
-    <label class="form-label" [attr.for]="prefix + 'Address2'" i18n="@@featureAdminProfiles-addressLine2"
-      >Address line 2</label
-    >
-    <input
-      type="text"
-      class="form-control"
-      [id]="prefix + 'Address2'"
-      [(ngModel)]="form.addressLine2"
-      [name]="prefix + 'Address2'"
-    />
-  </div>
+  </fpc-form-field>
+  <fpc-form-field [forId]="prefix + 'Address1'" i18n-label="@@featureAdminProfiles-addressLine1" label="Address line 1">
+    <fpc-form-control [controlId]="prefix + 'Address1'" [(ngModel)]="form.addressLine1" [name]="prefix + 'Address1'" />
+  </fpc-form-field>
+  <fpc-form-field [forId]="prefix + 'Address2'" i18n-label="@@featureAdminProfiles-addressLine2" label="Address line 2">
+    <fpc-form-control [controlId]="prefix + 'Address2'" [(ngModel)]="form.addressLine2" [name]="prefix + 'Address2'" />
+  </fpc-form-field>
   <div class="row">
-    <div class="col-md-4 mb-3">
-      <label class="form-label" [attr.for]="prefix + 'PostalCode'" i18n="@@featureAdminProfiles-postalCode"
-        >Postal code</label
+    <div class="col-md-4">
+      <fpc-form-field
+        [forId]="prefix + 'PostalCode'"
+        i18n-label="@@featureAdminProfiles-postalCode"
+        label="Postal code"
       >
-      <input
-        type="text"
-        class="form-control"
-        [id]="prefix + 'PostalCode'"
-        [(ngModel)]="form.postalCode"
-        [name]="prefix + 'PostalCode'"
-      />
+        <fpc-form-control
+          [controlId]="prefix + 'PostalCode'"
+          [(ngModel)]="form.postalCode"
+          [name]="prefix + 'PostalCode'"
+        />
+      </fpc-form-field>
     </div>
-    <div class="col-md-4 mb-3">
-      <label class="form-label" [attr.for]="prefix + 'City'" i18n="@@featureAdminProfiles-city">City</label>
-      <input type="text" class="form-control" [id]="prefix + 'City'" [(ngModel)]="form.city" [name]="prefix + 'City'" />
+    <div class="col-md-4">
+      <fpc-form-field [forId]="prefix + 'City'" i18n-label="@@featureAdminProfiles-city" label="City">
+        <fpc-form-control [controlId]="prefix + 'City'" [(ngModel)]="form.city" [name]="prefix + 'City'" />
+      </fpc-form-field>
     </div>
-    <div class="col-md-4 mb-3">
-      <label class="form-label" [attr.for]="prefix + 'State'" i18n="@@featureAdminProfiles-state">State / Region</label>
-      <input
-        type="text"
-        class="form-control"
-        [id]="prefix + 'State'"
-        [(ngModel)]="form.state"
-        [name]="prefix + 'State'"
-      />
+    <div class="col-md-4">
+      <fpc-form-field [forId]="prefix + 'State'" i18n-label="@@featureAdminProfiles-state" label="State / Region">
+        <fpc-form-control [controlId]="prefix + 'State'" [(ngModel)]="form.state" [name]="prefix + 'State'" />
+      </fpc-form-field>
     </div>
   </div>
   <div class="row">
-    <div class="col-md-6 mb-3">
-      <label class="form-label" [attr.for]="prefix + 'Country'" i18n="@@featureAdminProfiles-country">Country</label>
-      <select class="form-select" [id]="prefix + 'Country'" [(ngModel)]="form.country" [name]="prefix + 'Country'">
-        @for (country of countryOptions; track country.code) {
-          <option [value]="country.code">{{ country.name }}</option>
-        }
-      </select>
+    <div class="col-md-6">
+      <fpc-form-field [forId]="prefix + 'Country'" i18n-label="@@featureAdminProfiles-country" label="Country">
+        <fpc-form-control
+          controlType="select"
+          [controlId]="prefix + 'Country'"
+          [(ngModel)]="form.country"
+          [name]="prefix + 'Country'"
+        >
+          @for (country of countryOptions; track country.code) {
+            <option [value]="country.code">{{ country.name }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
     </div>
-    <div class="col-md-6 mb-3">
-      <label class="form-label" [attr.for]="prefix + 'Phone'" i18n="@@featureAdminProfiles-phone">Phone</label>
-      <input
-        type="text"
-        class="form-control"
-        [id]="prefix + 'Phone'"
-        [(ngModel)]="form.phone"
-        [name]="prefix + 'Phone'"
-      />
+    <div class="col-md-6">
+      <fpc-form-field [forId]="prefix + 'Phone'" i18n-label="@@featureAdminProfiles-phone" label="Phone">
+        <fpc-form-control [controlId]="prefix + 'Phone'" [(ngModel)]="form.phone" [name]="prefix + 'Phone'" />
+      </fpc-form-field>
     </div>
   </div>
 </ng-template>

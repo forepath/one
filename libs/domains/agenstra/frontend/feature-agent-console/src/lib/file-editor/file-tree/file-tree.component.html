@@ -1,47 +1,51 @@
 <div class="file-tree-container d-flex flex-column h-100">
-  <div class="file-tree-header p-2 border-bottom bg-body-tertiary">
+  <div class="file-tree-header p-2 ps-3 border-bottom bg-body-tertiary">
     <div class="d-flex justify-content-between align-items-center">
       <h6 class="mb-0 fw-semibold" i18n="@@featureFileTree-filesHeader">Files</h6>
-      <div class="btn-group btn-group-sm" role="group">
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-secondary"
+      <fpc-button-group size="sm">
+        <fpc-button
+          variant="primary"
+          size="sm"
+          iconOnly
           [class.active]="creatingItem()?.path === '.' && creatingItem()?.type === 'file'"
-          (click)="onCreateItem('file')"
+          (clicked)="onCreateItem('file')"
           i18n-title="@@featureFileTree-newFileTitle"
           title="New File"
         >
           <i class="bi bi-file-earmark-plus"></i>
-        </button>
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-secondary"
+        </fpc-button>
+        <fpc-button
+          variant="primary"
+          size="sm"
+          iconOnly
           [class.active]="creatingItem()?.path === '.' && creatingItem()?.type === 'directory'"
-          (click)="onCreateItem('directory')"
+          (clicked)="onCreateItem('directory')"
           i18n-title="@@featureFileTree-newDirectoryTitle"
           title="New Directory"
         >
           <i class="bi bi-folder-plus"></i>
-        </button>
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-secondary"
-          (click)="onUploadFile()"
+        </fpc-button>
+        <fpc-button
+          variant="primary"
+          size="sm"
+          iconOnly
+          (clicked)="onUploadFile()"
           i18n-title="@@featureFileTree-uploadFileTitle"
           title="Upload File"
         >
           <i class="bi bi-upload"></i>
-        </button>
-        <button
-          type="button"
-          class="btn btn-sm btn-outline-secondary"
-          (click)="onRefreshRoot()"
+        </fpc-button>
+        <fpc-button
+          variant="dark"
+          size="sm"
+          iconOnly
+          (clicked)="onRefreshRoot()"
           i18n-title="@@featureFileTree-refreshTitle"
           title="Refresh"
         >
           <i class="bi bi-arrow-clockwise"></i>
-        </button>
-      </div>
+        </fpc-button>
+      </fpc-button-group>
     </div>
   </div>
 
@@ -55,9 +59,7 @@
   >
     @if (rootLoading$ | async) {
       <div class="d-flex justify-content-center align-items-center p-4">
-        <div class="spinner-border spinner-border-sm text-primary" role="status">
-          <span class="visually-hidden" i18n="@@featureFileTree-loading">Loading...</span>
-        </div>
+        <fpc-spinner size="sm" variant="primary" i18n-label="@@featureFileTree-loading" label="Loading..." />
       </div>
     } @else {
       @if (treeNodes().length === 0) {
@@ -69,21 +71,19 @@
         @if (creatingItem()?.path === '.') {
           <div class="create-item-input px-2 py-1" [style.padding-left.px]="24">
             <div class="input-group input-group-sm">
-              <input
-                type="text"
-                class="form-control form-control-sm"
+              <fpc-form-control
+                size="sm"
                 [(ngModel)]="newItemName"
                 (keydown.enter)="onConfirmCreate()"
                 (keydown.escape)="onCancelCreate()"
                 [placeholder]="getCreateItemPlaceholder()"
-                autofocus
               />
-              <button class="btn btn-sm btn-primary" type="button" (click)="onConfirmCreate()">
+              <fpc-button variant="primary" size="sm" iconOnly (clicked)="onConfirmCreate()">
                 <i class="bi bi-check"></i>
-              </button>
-              <button class="btn btn-sm btn-secondary" type="button" (click)="onCancelCreate()">
+              </fpc-button>
+              <fpc-button variant="dark" size="sm" iconOnly (clicked)="onCancelCreate()">
                 <i class="bi bi-x"></i>
-              </button>
+              </fpc-button>
             </div>
           </div>
         }
@@ -94,21 +94,19 @@
             <li>
               <div class="create-item-input px-2 py-1" [style.padding-left.px]="24">
                 <div class="input-group input-group-sm">
-                  <input
-                    type="text"
-                    class="form-control form-control-sm"
+                  <fpc-form-control
+                    size="sm"
                     [(ngModel)]="newItemName"
                     (keydown.enter)="onConfirmCreate()"
                     (keydown.escape)="onCancelCreate()"
                     [placeholder]="getCreateItemPlaceholder()"
-                    autofocus
                   />
-                  <button class="btn btn-sm btn-primary" type="button" (click)="onConfirmCreate()">
+                  <fpc-button variant="primary" size="sm" iconOnly (clicked)="onConfirmCreate()">
                     <i class="bi bi-check"></i>
-                  </button>
-                  <button class="btn btn-sm btn-secondary" type="button" (click)="onCancelCreate()">
+                  </fpc-button>
+                  <fpc-button variant="dark" size="sm" iconOnly (clicked)="onCancelCreate()">
                     <i class="bi bi-x"></i>
-                  </button>
+                  </fpc-button>
                 </div>
               </div>
             </li>
@@ -161,13 +159,7 @@
                   [title]="getStatusIndicatorTitle(indicator)"
                 >
                   @if (showStatusIndicatorSpinner$ | async) {
-                    <span
-                      class="spinner-border spinner-border-sm"
-                      role="status"
-                      style="width: 10px; height: 10px; border-width: 1.5px"
-                    >
-                      <span class="visually-hidden" i18n="@@featureFileTree-loading">Loading...</span>
-                    </span>
+                    <fpc-spinner size="sm" i18n-label="@@featureFileTree-loading" label="Loading..." />
                   }
                 </span>
               }
@@ -242,48 +234,52 @@
           <i class="bi me-2 tree-node-icon" [ngClass]="getIcon(node)"></i>
         }
         <span class="tree-node-name flex-grow-1 text-truncate" [title]="node.name">{{ node.name }}</span>
-        <div class="btn-group btn-group-sm ms-2" role="group">
+        <fpc-button-group size="sm" class="ms-2">
           @if (node.type === 'directory') {
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-secondary py-0 px-1"
+            <fpc-button
+              variant="dark"
+              size="sm"
+              iconOnly
               [class.active]="creatingItem()?.path === node.path && creatingItem()?.type === 'file'"
-              (click)="onCreateItem('file', node.path); $event.stopPropagation()"
+              (clicked)="onCreateItem('file', node.path); $event.stopPropagation()"
               i18n-title="@@featureFileTree-newFileTitle"
               title="New File"
             >
               <i class="bi bi-file-earmark-plus"></i>
-            </button>
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-secondary py-0 px-1"
+            </fpc-button>
+            <fpc-button
+              variant="dark"
+              size="sm"
+              iconOnly
               [class.active]="creatingItem()?.path === node.path && creatingItem()?.type === 'directory'"
-              (click)="onCreateItem('directory', node.path); $event.stopPropagation()"
+              (clicked)="onCreateItem('directory', node.path); $event.stopPropagation()"
               i18n-title="@@featureFileTree-newDirectoryTitle"
               title="New Directory"
             >
               <i class="bi bi-folder-plus"></i>
-            </button>
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-secondary py-0 px-1"
-              (click)="onUploadFile(node.path); $event.stopPropagation()"
+            </fpc-button>
+            <fpc-button
+              variant="dark"
+              size="sm"
+              iconOnly
+              (clicked)="onUploadFile(node.path); $event.stopPropagation()"
               i18n-title="@@featureFileTree-uploadFileTitle"
               title="Upload File"
             >
               <i class="bi bi-upload"></i>
-            </button>
+            </fpc-button>
           }
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-danger py-0 px-1"
-            (click)="onDeleteItem(node.path); $event.stopPropagation()"
+          <fpc-button
+            variant="danger"
+            size="sm"
+            iconOnly
+            (clicked)="onDeleteItem(node.path); $event.stopPropagation()"
             i18n-title="@@featureFileTree-deleteTitle"
             title="Delete"
           >
             <i class="bi bi-trash"></i>
-          </button>
-        </div>
+          </fpc-button>
+        </fpc-button-group>
       </div>
     </div>
 
@@ -291,21 +287,19 @@
     @if (creatingItem()?.path === node.path && node.path !== '.') {
       <div class="create-item-input px-2 py-1" [style.padding-left.px]="(level + 1) * 20 + 24">
         <div class="input-group input-group-sm">
-          <input
-            type="text"
-            class="form-control form-control-sm"
+          <fpc-form-control
+            size="sm"
             [(ngModel)]="newItemName"
             (keydown.enter)="onConfirmCreate()"
             (keydown.escape)="onCancelCreate()"
             [placeholder]="getCreateItemPlaceholder()"
-            autofocus
           />
-          <button class="btn btn-sm btn-primary" type="button" (click)="onConfirmCreate()">
+          <fpc-button variant="primary" size="sm" iconOnly (clicked)="onConfirmCreate()">
             <i class="bi bi-check"></i>
-          </button>
-          <button class="btn btn-sm btn-secondary" type="button" (click)="onCancelCreate()">
+          </fpc-button>
+          <fpc-button variant="dark" size="sm" iconOnly (clicked)="onCancelCreate()">
             <i class="bi bi-x"></i>
-          </button>
+          </fpc-button>
         </div>
       </div>
     }
@@ -390,155 +384,75 @@
   <div class="context-menu-overlay" (click)="onCloseContextMenu()"></div>
 }
 
-<!-- Delete File/Directory Confirmation Modal -->
-<div
-  class="modal fade"
-  id="deleteFileModal"
-  tabindex="-1"
-  aria-labelledby="deleteFileModalLabel"
-  aria-hidden="true"
-  #deleteFileModal
+<fpc-confirm-dialog
+  [(open)]="deleteFileModalOpen"
+  [title]="getDeleteModalTitle()"
+  i18n-confirmLabel="@@featureFileTree-delete"
+  confirmLabel="Delete"
+  [danger]="true"
+  (confirmed)="confirmDeleteItem()"
+  (cancelled)="itemToDelete.set(null)"
 >
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="deleteFileModalLabel">{{ getDeleteModalTitle() }}</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          i18n-aria-label="@@featureFileTree-closeAriaLabel"
-          aria-label="Close"
-          (click)="itemToDelete.set(null)"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <p>{{ getDeleteModalMessage() }}</p>
-        <p class="text-danger mb-0">
-          <i class="bi bi-exclamation-triangle-fill me-2"></i>
-          <span i18n="@@featureFileTree-deleteModalWarning">This action cannot be undone.</span>
-        </p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" (click)="confirmDeleteItem()" i18n="@@featureFileTree-delete">
-          Delete
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+  <p>{{ getDeleteModalMessage() }}</p>
+  <p class="text-danger mb-0">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    <span i18n="@@featureFileTree-deleteModalWarning">This action cannot be undone.</span>
+  </p>
+</fpc-confirm-dialog>
 
-<!-- Rename File/Directory Modal -->
-<div
-  class="modal fade"
-  id="renameFileModal"
-  tabindex="-1"
-  aria-labelledby="renameFileModalLabel"
-  aria-hidden="true"
-  #renameFileModal
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="renameFileModalLabel">{{ getRenameModalTitle() }}</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          i18n-aria-label="@@featureFileTree-closeAriaLabel"
-          aria-label="Close"
-          (click)="cancelRenameItem()"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <p>{{ getRenameModalMessage() }}</p>
-        <div class="mb-3">
-          <label for="renameNewName" class="form-label" i18n="@@featureFileTree-newNameLabel">New Name</label>
-          <input
-            type="text"
-            class="form-control"
-            id="renameNewName"
-            [(ngModel)]="renameNewName"
-            (keydown.enter)="confirmRenameItem()"
-            (keydown.escape)="cancelRenameItem()"
-            autofocus
-          />
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="confirmRenameItem()"
-          [disabled]="!renameNewName().trim() || renameNewName().trim() === itemToRename()?.name"
-          i18n="@@featureFileTree-rename"
-        >
-          Rename
-        </button>
-      </div>
-    </div>
+<fpc-modal [(open)]="renameFileModalOpen" [title]="getRenameModalTitle()" (closed)="cancelRenameItem()">
+  <p>{{ getRenameModalMessage() }}</p>
+  <fpc-form-field forId="renameNewName" i18n-label="@@featureFileTree-newNameLabel" label="New Name">
+    <fpc-form-control
+      controlId="renameNewName"
+      [(ngModel)]="renameNewName"
+      (keydown.enter)="confirmRenameItem()"
+      (keydown.escape)="cancelRenameItem()"
+    />
+  </fpc-form-field>
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      (clicked)="confirmRenameItem()"
+      [disabled]="!renameNewName().trim() || renameNewName().trim() === itemToRename()?.name"
+      i18n="@@featureFileTree-rename"
+    >
+      Rename
+    </fpc-button>
   </div>
-</div>
+</fpc-modal>
 
-<!-- Move File/Directory Modal -->
-<div
-  class="modal fade"
-  id="moveFileModal"
-  tabindex="-1"
-  aria-labelledby="moveFileModalLabel"
-  aria-hidden="true"
-  #moveFileModal
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="moveFileModalLabel">{{ getMoveModalTitle() }}</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          i18n-aria-label="@@featureFileTree-closeAriaLabel"
-          aria-label="Close"
-          (click)="cancelMoveItem()"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <p>{{ getMoveModalMessage() }}</p>
-        <div class="mb-3">
-          <label for="moveDestinationPath" class="form-label" i18n="@@featureFileTree-destinationPathLabel"
-            >Destination Path</label
-          >
-          <input
-            type="text"
-            class="form-control"
-            id="moveDestinationPath"
-            [(ngModel)]="moveDestinationPath"
-            (keydown.enter)="confirmMoveItem()"
-            (keydown.escape)="cancelMoveItem()"
-            i18n-placeholder="@@featureFileTree-moveDestinationPlaceholder"
-            placeholder="Enter destination path (e.g., 'folder' or 'folder/subfolder')"
-            autofocus
-          />
-          <div class="form-text" i18n="@@featureFileTree-moveDestinationHint">
-            Use '.' for root directory, or enter a relative path like 'folder' or 'folder/subfolder'
-          </div>
-        </div>
-        <p class="text-muted small mb-0">
-          <i class="bi bi-info-circle me-1"></i>
-          {{ getMoveDestinationLabel() }}
-        </p>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="confirmMoveItem()"
-          [disabled]="!moveDestinationPath().trim()"
-          i18n="@@featureFileTree-move"
-        >
-          Move
-        </button>
-      </div>
-    </div>
+<fpc-modal [(open)]="moveFileModalOpen" [title]="getMoveModalTitle()" (closed)="cancelMoveItem()">
+  <p>{{ getMoveModalMessage() }}</p>
+  <fpc-form-field
+    forId="moveDestinationPath"
+    i18n-label="@@featureFileTree-destinationPathLabel"
+    label="Destination Path"
+  >
+    <fpc-form-control
+      controlId="moveDestinationPath"
+      [(ngModel)]="moveDestinationPath"
+      (keydown.enter)="confirmMoveItem()"
+      (keydown.escape)="cancelMoveItem()"
+      i18n-placeholder="@@featureFileTree-moveDestinationPlaceholder"
+      placeholder="Enter destination path (e.g., 'folder' or 'folder/subfolder')"
+    />
+    <span fpcFormFieldHint i18n="@@featureFileTree-moveDestinationHint">
+      Use '.' for root directory, or enter a relative path like 'folder' or 'folder/subfolder'
+    </span>
+  </fpc-form-field>
+  <p class="text-muted small mb-0">
+    <i class="bi bi-info-circle me-1"></i>
+    {{ getMoveDestinationLabel() }}
+  </p>
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      (clicked)="confirmMoveItem()"
+      [disabled]="!moveDestinationPath().trim()"
+      i18n="@@featureFileTree-move"
+    >
+      Move
+    </fpc-button>
   </div>
-</div>
+</fpc-modal>

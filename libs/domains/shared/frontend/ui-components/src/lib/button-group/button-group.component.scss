@@ -1,0 +1,22 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  vertical-align: middle;
+}
+
+:host(.fpc-button-group--gap-xs) {
+  gap: 0.125rem;
+}
+
+:host(.fpc-button-group--gap-sm) {
+  gap: 0.25rem;
+}
+
+:host(.fpc-button-group--gap-md) {
+  gap: 0.375rem;
+}
+
+:host(.fpc-button-group--gap-lg) {
+  gap: 0.5rem;
+}

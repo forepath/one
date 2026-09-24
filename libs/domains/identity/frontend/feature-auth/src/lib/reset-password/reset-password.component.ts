@@ -17,15 +17,35 @@ import {
   isAuthMarketingPanelVisible,
   resetPasswordSuccess,
 } from '@forepath/identity/frontend';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcInputGroupComponent,
+  FpcOtpInputComponent,
+  FpcSectionColumnComponent,
+  FpcSectionRowComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
 
-import { IdentityOtpInputComponent } from '../otp-input/otp-input.component';
-
 @Component({
   selector: 'identity-auth-reset-password',
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, IdentityOtpInputComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ReactiveFormsModule,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcInputGroupComponent,
+    FpcOtpInputComponent,
+    FpcSectionRowComponent,
+    FpcSectionColumnComponent,
+  ],
   styleUrls: ['./reset-password.component.scss'],
   templateUrl: './reset-password.component.html',
   standalone: true,
@@ -52,6 +72,9 @@ export class IdentityResetPasswordComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.authFacade.clearError();
+    this.authFacade.clearSuccessMessage();
+
     const emailFromQuery = this.route.snapshot.queryParamMap.get('email') ?? '';
 
     this.form = this.fb.group(

@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -9,6 +9,23 @@ import {
   type SupplierProfileDto,
   type VatIdValidationStatus,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcConfirmDialogComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { debounceTime, distinctUntilChanged, skip } from 'rxjs';
 
 import { BILLING_COUNTRY_OPTIONS, DEFAULT_BILLING_COUNTRY_CODE } from '../billing-country-options';
@@ -24,16 +41,38 @@ import {
 @Component({
   selector: 'framework-admin-supplier-profiles-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcListItemComponent,
+    FpcConfirmDialogComponent,
+    FpcListComponent,
+    FpcEmptyStateComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+  ],
   providers: [DatePipe],
   templateUrl: './admin-supplier-profiles-page.component.html',
   styleUrls: ['./admin-supplier-profiles-page.component.scss'],
 })
 export class AdminSupplierProfilesPageComponent implements OnInit {
-  @ViewChild('createModal', { static: false }) private createModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('editModal', { static: false }) private editModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('deleteModal', { static: false }) private deleteModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('customDataModal', { static: false }) private customDataModal!: ElementRef<HTMLDivElement>;
+  readonly createModalOpen = signal(false);
+  readonly editModalOpen = signal(false);
+  readonly deleteModalOpen = signal(false);
+  readonly customDataModalOpen = signal(false);
+
+  readonly pageTitle = $localize`:@@featureAdminSupplierProfiles-title:Supplier Profiles`;
+  readonly addProfileAriaLabel = $localize`:@@featureAdminSupplierProfiles-add:Add`;
+  readonly searchPlaceholder = $localize`:@@featureAdminSupplierProfiles-searchPlaceholder:Search supplier profiles`;
 
   private readonly facade = inject(AdminSupplierProfilesFacade);
   private readonly profilesService = inject(AdminSupplierProfilesService);
@@ -82,7 +121,7 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
 
   openCreateModal(): void {
     this.resetCreateForm();
-    showBillingModal(this.createModal);
+    showBillingModal(this.createModalOpen);
   }
 
   openEditModal(profile: AdminSupplierProfileListItem): void {
@@ -108,14 +147,14 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
           country: full.country ?? DEFAULT_BILLING_COUNTRY_CODE,
           phone: full.phone ?? '',
         };
-        showBillingModal(this.editModal);
+        showBillingModal(this.editModalOpen);
       },
     });
   }
 
   openDeleteModal(profile: AdminSupplierProfileListItem): void {
     this.profileToDelete = profile;
-    showBillingModal(this.deleteModal);
+    showBillingModal(this.deleteModalOpen);
   }
 
   openCustomDataModal(profile: AdminSupplierProfileListItem): void {
@@ -124,7 +163,7 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
     this.customDataOriginal = {};
     this.customDataRows = [];
     this.customDataLoading.set(true);
-    showBillingModal(this.customDataModal);
+    showBillingModal(this.customDataModalOpen);
     this.profilesService.getById(profile.id).subscribe({
       next: (full) => {
         const customData = full.customData ?? {};
@@ -310,7 +349,7 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.creating$,
       error$: this.error$,
-      modal: () => this.createModal,
+      open: this.createModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.resetCreateForm();
@@ -320,7 +359,7 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.updating$,
       error$: this.error$,
-      modal: () => this.editModal,
+      open: this.editModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.resetEditForm();
@@ -330,7 +369,7 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.deleting$,
       error$: this.error$,
-      modal: () => this.deleteModal,
+      open: this.deleteModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.profileToDelete = null;
@@ -339,7 +378,7 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.customDataSaving$,
       error$: this.error$,
-      modal: () => this.customDataModal,
+      open: this.customDataModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.resetCustomDataForm();

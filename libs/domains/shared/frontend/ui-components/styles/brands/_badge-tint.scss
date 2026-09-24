@@ -1,0 +1,21 @@
+// Soft badge fills used across consoles. Emit after brand palette + chrome so
+// `$badge-line-height` is set; load before Bootstrap so rules sit with the design-system layer.
+
+@mixin fpc-badge-text-bg-tint($color-name) {
+  .badge {
+    &.bg-#{$color-name},
+    &.text-bg-#{$color-name} {
+      background-color: color-mix(in srgb, var(--bs-#{$color-name}) 24%, var(--bs-tertiary-bg)) !important;
+      color: var(--bs-#{$color-name}-text-emphasis) !important;
+      // Edge darker than the soft fill (design chrome depends on visible borders).
+      border: var(--bs-border-width) solid var(--bs-#{$color-name}-border-subtle) !important;
+      line-height: $badge-line-height;
+    }
+  }
+}
+
+$fpc-badge-text-bg-colors: primary, secondary, success, info, warning, danger, light, dark;
+
+@each $color-name in $fpc-badge-text-bg-colors {
+  @include fpc-badge-text-bg-tint($color-name);
+}

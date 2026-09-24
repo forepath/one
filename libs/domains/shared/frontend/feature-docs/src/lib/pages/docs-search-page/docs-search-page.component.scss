@@ -1,20 +1,14 @@
-.docs-search-page {
-  .search-results {
-    .list-group-item {
-      cursor: pointer;
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+}
 
-      &:hover {
-        background-color: var(--bs-secondary-bg);
-      }
-
-      h5 {
-        color: var(--bs-link-color);
-      }
-
-      mark {
-        background-color: var(--bs-warning);
-        padding: 0;
-      }
-    }
+.docs-search-page__body {
+  mark {
+    background-color: var(--bs-warning);
+    padding: 0;
   }
 }

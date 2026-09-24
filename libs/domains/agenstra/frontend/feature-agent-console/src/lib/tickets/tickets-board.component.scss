@@ -28,50 +28,6 @@
   min-height: 12rem;
 }
 
-.tickets-board__lane .card-header {
-  background: var(--bs-secondary-bg);
-  border-radius: 0;
-}
-
-.tickets-board__lane-search {
-  margin: 0;
-}
-
-.search-input {
-  border-radius: 0;
-  position: relative;
-  padding-left: 0;
-  box-shadow: none;
-}
-
-.search-input-container {
-  position: relative;
-
-  i {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-  }
-}
-
-.tickets-board__lane {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.tickets-board__list {
-  flex: 1 1 auto;
-  min-height: 0;
-  height: 100%;
-  max-height: calc(100vh - 13rem);
-  overflow: hidden;
-  border-radius: 0 !important;
-}
-
 .tickets-board__viewport {
   flex: 1 1 auto;
   width: 100%;
@@ -80,10 +36,6 @@
 }
 
 .tickets-board__lane-dropzone {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 4rem;
   position: relative;
 }
 
@@ -104,8 +56,11 @@
 .tickets-board__card {
   cursor: grab;
   border-radius: 0;
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
   box-sizing: border-box;
-  height: 88px;
   overflow: hidden;
 }
 
@@ -148,7 +103,8 @@
   user-select: none;
 }
 
-.tickets-board__detail-subtasks {
+.tickets-board__detail-subtasks,
+.tickets-board__detail-relations {
   max-height: 14rem;
   overflow-y: auto;
 }
@@ -156,7 +112,6 @@
 .tickets-board__detail-subtask-row {
   border-left: 0;
   border-right: 0;
-
   position: relative;
 
   &:before {
@@ -176,43 +131,36 @@
   background: color-mix(in srgb, var(--bs-body-bg) 88%, var(--bs-secondary-bg));
 }
 
-.tickets-board__detail-subtask-btn {
-  color: var(--bs-body-color);
+.tickets-board__detail-subtask-btn,
+.tickets-board__detail-relation-btn {
   max-width: 100%;
 }
 
-.tickets-board__detail-subtask-btn:hover {
-  color: var(--bs-link-hover-color);
-}
+// Host utilities do not reach the inner `.btn`; color/hover live on the control.
+:host ::ng-deep .tickets-board__detail-subtask-btn .fpc-button__btn,
+:host ::ng-deep .tickets-board__detail-relation-btn .fpc-button__btn {
+  color: var(--bs-body-color);
+  text-decoration: none;
+  max-width: 100%;
 
-.tickets-board__breadcrumb {
-  --bs-breadcrumb-divider: '›';
-  flex-wrap: wrap;
-  row-gap: 0.15rem;
-  font-size: 0.875rem;
-
-  button {
-    color: var(--bs-body-color);
-    font-size: 0.875rem;
-    line-height: 1.2;
+  &:hover,
+  &:focus-visible {
+    color: var(--bs-link-hover-color);
     text-decoration: none;
   }
 }
 
-.tickets-hierarchy-badge {
-  display: inline-flex;
+.tickets-board__hierarchy-box {
+  display: flex;
   align-items: center;
-  justify-content: start;
-
-  &.info-badge.tickets-board__chip--status-draft {
-    background-color: rgba(var(--bs-tertiary-bg-rgb), var(--bs-bg-opacity)) !important;
-  }
+  box-sizing: border-box;
+  height: 2rem;
+  min-height: 2rem;
+  overflow: hidden;
 }
 
-.tickets-board__breadcrumb-current,
-.tickets-board__breadcrumb-link {
+:host ::ng-deep .tickets-board__ticket-detail-modal fpc-breadcrumb-item {
   max-width: min(14rem, 35vw);
-  vertical-align: bottom;
 }
 
 .tickets-board__body {
@@ -236,9 +184,56 @@
   flex: 0 0 auto;
 }
 
-// Chips use the app-wide `.info-badge` base (chat / deployments); modifiers add a light semantic tint.
-.tickets-board__meta-chips .info-badge,
-.tickets-board__activity-line .info-badge {
+.tickets-board__comment-composer {
+  position: relative;
+}
+
+// Outer control owns the border; bottom padding is the send-button strip (same as chat).
+.tickets-board__comment-shell {
+  padding-top: 0.375rem;
+  padding-right: 0;
+  padding-bottom: 2.5rem;
+  padding-left: 0;
+}
+
+.tickets-board__comment-textarea {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0 0.5rem;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  background-color: transparent;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.tickets-board__comment-send {
+  position: absolute;
+  right: 0.375rem;
+  bottom: 0.375rem;
+  z-index: 2;
+}
+
+.tickets-board__relation-chip-clear {
+  width: 0.5rem;
+  height: 0.5rem;
+  padding: 0;
+  margin-left: 0.125rem;
+  background-size: 0.5rem;
+  opacity: 0.55;
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+  }
+}
+
+// Chips use `fpc-badge variant="info"`; modifiers add a light semantic tint.
+.tickets-board__meta-chips fpc-badge,
+.tickets-board__activity-line fpc-badge {
   margin-top: 0;
 }
 
@@ -248,75 +243,75 @@
   color: $text-color !important;
 }
 
-.info-badge.tickets-board__chip--priority-low {
+fpc-badge.tickets-board__chip--priority-low {
   @include tickets-board-chip-tint(var(--bs-secondary), var(--bs-secondary-text-emphasis, var(--bs-secondary)));
 }
 
-.info-badge.tickets-board__chip--priority-medium {
+fpc-badge.tickets-board__chip--priority-medium {
   @include tickets-board-chip-tint(var(--bs-info), var(--bs-info-text-emphasis, var(--bs-info)));
 }
 
-.info-badge.tickets-board__chip--priority-high {
+fpc-badge.tickets-board__chip--priority-high {
   @include tickets-board-chip-tint(var(--bs-warning), var(--bs-warning-text-emphasis, var(--bs-warning)));
 }
 
-.info-badge.tickets-board__chip--priority-critical {
+fpc-badge.tickets-board__chip--priority-critical {
   @include tickets-board-chip-tint(var(--bs-danger), var(--bs-danger-text-emphasis, var(--bs-danger)));
 }
 
-.info-badge.tickets-board__chip--status-draft {
+fpc-badge.tickets-board__chip--status-draft {
   @include tickets-board-chip-tint(var(--bs-secondary), var(--bs-secondary-text-emphasis, var(--bs-secondary)));
 }
 
-.info-badge.tickets-board__chip--status-todo {
+fpc-badge.tickets-board__chip--status-todo {
   @include tickets-board-chip-tint(var(--bs-primary), var(--bs-primary-text-emphasis, var(--bs-primary)));
 }
 
-.info-badge.tickets-board__chip--status-in-progress {
+fpc-badge.tickets-board__chip--status-in-progress {
   @include tickets-board-chip-tint(var(--bs-info), var(--bs-info-text-emphasis, var(--bs-info)));
 }
 
-.info-badge.tickets-board__chip--status-prototype {
+fpc-badge.tickets-board__chip--status-prototype {
   @include tickets-board-chip-tint(var(--bs-warning), var(--bs-warning-text-emphasis, var(--bs-warning)));
 }
 
-.info-badge.tickets-board__chip--status-done {
+fpc-badge.tickets-board__chip--status-done {
   @include tickets-board-chip-tint(var(--bs-success), var(--bs-success-text-emphasis, var(--bs-success)));
 }
 
-.info-badge.tickets-board__chip--status-closed {
+fpc-badge.tickets-board__chip--status-closed {
   @include tickets-board-chip-tint(var(--bs-secondary), var(--bs-secondary-text-emphasis, var(--bs-secondary)));
 }
 
-.info-badge.tickets-board__chip--activity-created {
+fpc-badge.tickets-board__chip--activity-created {
   @include tickets-board-chip-tint(var(--bs-success), var(--bs-success-text-emphasis, var(--bs-success)));
 }
 
-.info-badge.tickets-board__chip--activity-deleted {
+fpc-badge.tickets-board__chip--activity-deleted {
   @include tickets-board-chip-tint(var(--bs-danger), var(--bs-danger-text-emphasis, var(--bs-danger)));
 }
 
-.info-badge.tickets-board__chip--activity-comment {
+fpc-badge.tickets-board__chip--activity-comment {
   @include tickets-board-chip-tint(var(--bs-info), var(--bs-info-text-emphasis, var(--bs-info)));
 }
 
-.info-badge.tickets-board__chip--activity-status {
+fpc-badge.tickets-board__chip--activity-status {
   @include tickets-board-chip-tint(var(--bs-primary), var(--bs-primary-text-emphasis, var(--bs-primary)));
 }
 
-.info-badge.tickets-board__chip--activity-priority {
+fpc-badge.tickets-board__chip--activity-priority {
   @include tickets-board-chip-tint(var(--bs-warning), var(--bs-warning-text-emphasis, var(--bs-warning)));
 }
 
-.info-badge.tickets-board__chip--activity-muted {
+fpc-badge.tickets-board__chip--activity-muted {
   @include tickets-board-chip-tint(var(--bs-secondary), var(--bs-secondary-text-emphasis, var(--bs-secondary)));
 }
 
-.info-badge.tickets-board__chip--activity-ai-content {
+fpc-badge.tickets-board__chip--activity-ai-content {
   @include tickets-board-chip-tint(var(--bs-dark), var(--bs-dark-text-emphasis, var(--bs-dark)));
 }
 
-.info-badge.tickets-board__chip--activity-ai {
+fpc-badge.tickets-board__chip--activity-ai {
   @include tickets-board-chip-tint(var(--bs-info), var(--bs-info-text-emphasis, var(--bs-info)));
 }
 
@@ -327,7 +322,7 @@
 .tickets-board__workspace-badge-btn {
   max-width: 100%;
 
-  .info-badge {
+  fpc-badge {
     max-width: min(20rem, 70vw);
   }
 }
@@ -346,34 +341,38 @@
   overflow-y: auto;
 }
 
-.tickets-board__global-search-results {
-  max-height: min(20rem, 50vh);
-  overflow-y: auto;
-}
-
 .list-group-item.active .tickets-board__workspace-current-badge {
   background-color: var(--bs-body-bg);
   color: var(--bs-body-color);
-}
-
-.btn-group-options {
-  > .btn-options {
-    border-radius: 0;
-    border-top: 0;
-    border-bottom: 0;
-    border-left: 0;
-    flex: 1 1 auto;
-
-    &:last-child {
-      border-right: 0;
-    }
-  }
 }
 
 .tickets-board__detail-title-clickable {
   cursor: pointer;
 }
 
-.modal-ticket-detail {
-  --bs-modal-width: calc(100% - (var(--bs-modal-margin) * 2));
+.tickets-board__ticket-detail-modal {
+  ::ng-deep .modal-dialog {
+    --bs-modal-width: calc(100% - (var(--bs-modal-margin) * 2));
+  }
+
+  ::ng-deep .modal-title {
+    width: 100%;
+  }
+
+  ::ng-deep .modal-body {
+    padding: 0;
+    overflow: hidden;
+  }
+}
+
+.tickets-board__ticket-detail-layout {
+  min-height: 0;
+}
+
+.tickets-board__ticket-detail-toolbar {
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.tickets-board__ticket-detail-body {
+  min-height: 0;
 }

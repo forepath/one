@@ -1,0 +1,135 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Foundation/Theming" />
+
+# Theming
+
+FPC components never hard-code colours. They read **Bootstrap 5 CSS variables** (`--bs-primary`, `--bs-body-bg`, `--bs-*-bg-subtle`, …), so they follow the host app theme — including `html[data-bs-theme="dark"]`.
+
+## How apps theme
+
+Brand tokens live in **`styles/brands/`** (shared by consoles, landings, docs, and Storybook). Each app `styles.scss`:
+
+1. Imports `bootstrap/scss/functions`
+2. Imports `styles/brands/<brand>/palette` + `chrome` + `badge-tint`
+3. Imports `bootstrap/scss/bootstrap` (emits `--bs-*` on `:root` / `[data-bs-theme]`)
+4. Loads shared FPC globals (`ui-components/styles`)
+5. Loads `styles/brands/extras` + `styles/brands/<brand>/extras`
+
+There is **no production runtime multi-brand switch**. Brand = which palette the app compiled.
+
+<table>
+  <thead>
+    <tr>
+      <th>Brand</th>
+      <th>
+        <code>$primary</code>
+      </th>
+      <th>Typical apps</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Decabill</td>
+      <td>
+        <code>#32a852</code>
+      </td>
+      <td>billing console, Decabill landing/docs</td>
+    </tr>
+    <tr>
+      <td>Agenstra</td>
+      <td>
+        <code>#7a3fff</code>
+      </td>
+      <td>agent console, Agenstra landing/docs, shared docs</td>
+    </tr>
+    <tr>
+      <td>ForePath</td>
+      <td>
+        <code>#ff6b35</code>
+      </td>
+      <td>ForePath billing console / landing</td>
+    </tr>
+  </tbody>
+</table>
+
+`--bs-primary-dark` / `--bs-success-dark` use `color-mix` (92% / 80% with black) so they stay derived from the brand colours.
+
+## Colour modes (light / dark)
+
+Apps and Storybook set **`data-bs-theme`** on `<html>` (`light` | `dark`). Use the Storybook **Theme** toolbar to toggle.
+
+Stock Bootstrap behaviour: [Color modes](https://getbootstrap.com/docs/5.3/customize/color-modes/) and [CSS variables](https://getbootstrap.com/docs/5.3/customize/css-variables/).
+
+## Storybook brand switcher
+
+The **Color set** toolbar sets `data-fpc-brand` to `decabill` | `agenstra` | `forepath` (or clears it for stock Bootstrap). `.storybook/brands/*.scss` are thin scoped emitters over the same `styles/brands/*/palette` files — change the palette once for apps and Storybook.
+
+Storybook loads stock `bootstrap.min.css`, then brand overlays re-emit root `--bs-*` **and** remapped component locals (`.btn-*`, pagination active, progress bar, nav pills, form checks/range) so those controls follow the Color set. Apps that compile Bootstrap from Sass already get this for free.
+
+## Library-only layout variables
+
+Override in the app the same way as `--bs-*`:
+
+- `--fpc-sidebar-width`
+- `--fpc-summary-bar-columns`
+- `--fpc-sidebar-popover-columns`
+- `--fpc-avatar-size` / `--fpc-status-badge-size`
+- `--sidebar-item-hover-bg` / `--sidebar-item-active-bg`
+
+## Live swatches
+
+Use the **Theme** and **Color set** toolbars — these specimens read live CSS variables (no refresh needed):
+
+<div className="d-flex flex-wrap gap-3 mb-3">
+  <div
+    className="fpc-docs-swatch"
+    style={{ background: 'var(--bs-primary)', color: '#fff' }}
+  >
+    primary
+  </div>
+  <div
+    className="fpc-docs-swatch"
+    style={{ background: 'var(--bs-primary-dark)', color: '#fff' }}
+  >
+    primary-dark
+  </div>
+  <div
+    className="fpc-docs-swatch"
+    style={{ background: 'var(--bs-secondary)', color: '#fff' }}
+  >
+    secondary
+  </div>
+  <div
+    className="fpc-docs-swatch"
+    style={{ background: 'var(--bs-body-bg)', color: 'var(--bs-body-color)' }}
+  >
+    body
+  </div>
+  <div
+    className="fpc-docs-swatch"
+    style={{
+      background: 'var(--bs-primary-bg-subtle)',
+      color: 'var(--bs-primary-text-emphasis)',
+    }}
+  >
+    primary subtle
+  </div>
+  <div
+    className="fpc-docs-swatch"
+    style={{
+      background: 'var(--bs-tertiary-bg)',
+      color: 'var(--bs-body-color)',
+    }}
+  >
+    tertiary
+  </div>
+</div>
+
+<button type="button" className="btn btn-primary me-2">
+  Primary button
+</button>
+<button type="button" className="btn btn-primary me-2">
+  Outline
+</button>
+<span className="badge text-bg-primary">Badge</span>

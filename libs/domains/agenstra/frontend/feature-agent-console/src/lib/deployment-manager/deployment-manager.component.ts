@@ -8,6 +8,11 @@ import {
   type DeploymentRun,
   type Workflow,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
+import {
+  FpcButtonComponent,
+  FpcEmptyStateComponent,
+  FpcPageHeaderComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { LocaleService } from '@forepath/shared/frontend/util-configuration';
 import { Actions, ofType } from '@ngrx/effects';
 import { combineLatest, map, Observable, take } from 'rxjs';
@@ -18,7 +23,15 @@ import { DeploymentRunsListComponent } from './deployment-runs-list/deployment-r
 
 @Component({
   selector: 'framework-deployment-manager',
-  imports: [CommonModule, DeploymentConfigurationComponent, DeploymentRunsListComponent, DeploymentRunDetailsComponent],
+  imports: [
+    CommonModule,
+    FpcButtonComponent,
+    FpcEmptyStateComponent,
+    FpcPageHeaderComponent,
+    DeploymentConfigurationComponent,
+    DeploymentRunsListComponent,
+    DeploymentRunDetailsComponent,
+  ],
   templateUrl: './deployment-manager.component.html',
   styleUrls: ['./deployment-manager.component.scss'],
   standalone: true,
@@ -47,6 +60,14 @@ export class DeploymentManagerComponent implements AfterViewInit {
 
   // Outputs
   readonly closeRequested = output<void>();
+
+  readonly configurationHeaderTitle = $localize`:@@featureDeploymentManager-configurationHeader:Deployment Configuration`;
+  readonly runsHeaderTitle = $localize`:@@featureDeploymentManager-runsHeader:Deployment Runs`;
+  readonly runDetailsHeaderTitle = $localize`:@@featureDeploymentManager-runDetailsHeader:Run Details`;
+  readonly closeConfigurationTitle = $localize`:@@featureDeploymentManager-closeConfigurationTitle:Close Configuration`;
+  readonly closeRunsTitle = $localize`:@@featureDeploymentManager-closeRunsTitle:Close Runs List`;
+  readonly closeRunDetailsTitle = $localize`:@@featureDeploymentManager-closeRunDetailsTitle:Close Run Details`;
+  readonly refreshRunsTitle = $localize`:@@featureDeploymentManager-refreshRunsTitle:Refresh Runs`;
 
   // Convert signals to observables
   private readonly clientId$ = toObservable(this.clientId);

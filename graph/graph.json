@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-21T09:43:41.765Z",
+  "generatedAt": "2026-09-24T13:27:57.857Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -896,6 +896,32 @@
       }
     },
     {
+      "id": "project:shared-frontend-ui-components",
+      "type": "lib",
+      "attrs": {
+        "name": "shared-frontend-ui-components",
+        "root": "libs/domains/shared/frontend/ui-components",
+        "tags": [
+          "npm:public",
+          "domain:shared",
+          "scope:frontend",
+          "type:ui"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "nx-release-publish",
+          "build",
+          "test",
+          "storybook",
+          "build-storybook"
+        ],
+        "domain": "shared",
+        "context": "frontend",
+        "featureGroup": "ui"
+      }
+    },
+    {
       "id": "project:shared-frontend-feature-docs",
       "type": "lib",
       "attrs": {
@@ -1251,27 +1277,6 @@
         "domain": "shared",
         "context": "backend",
         "featureGroup": "util"
-      }
-    },
-    {
-      "id": "project:shared-frontend-ui-lists",
-      "type": "lib",
-      "attrs": {
-        "name": "shared-frontend-ui-lists",
-        "root": "libs/domains/shared/frontend/ui-lists",
-        "tags": [
-          "domain:shared",
-          "scope:frontend",
-          "type:ui"
-        ],
-        "type": "lib",
-        "targets": [
-          "lint",
-          "test"
-        ],
-        "domain": "shared",
-        "context": "frontend",
-        "featureGroup": "ui"
       }
     },
     {
@@ -2366,6 +2371,14 @@
       "attrs": {
         "name": "ngx-monaco-editor-v2",
         "version": "21.1.4"
+      }
+    },
+    {
+      "id": "package:react",
+      "type": "package",
+      "attrs": {
+        "name": "react",
+        "version": "18.3.1"
       }
     },
     {
@@ -11830,6 +11843,24 @@
       }
     },
     {
+      "id": "file:libs/domains/shared/frontend/ui-components/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/shared/frontend/ui-components/README.md",
+        "languageOrKind": "md",
+        "projectName": "shared-frontend-ui-components"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/frontend/ui-components/docs/catalog.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/shared/frontend/ui-components/docs/catalog.md",
+        "languageOrKind": "md",
+        "projectName": "shared-frontend-ui-components"
+      }
+    },
+    {
       "id": "file:libs/domains/shared/frontend/feature-docs/README.md",
       "type": "readme",
       "attrs": {
@@ -12169,15 +12200,6 @@
         "path": "libs/domains/shared/backend/util-otel/src/lib/otel.module.ts",
         "languageOrKind": "ts",
         "projectName": "shared-backend-util-otel"
-      }
-    },
-    {
-      "id": "file:libs/domains/shared/frontend/ui-lists/README.md",
-      "type": "readme",
-      "attrs": {
-        "path": "libs/domains/shared/frontend/ui-lists/README.md",
-        "languageOrKind": "md",
-        "projectName": "shared-frontend-ui-lists"
       }
     },
     {
@@ -31330,20 +31352,20 @@
       }
     },
     {
-      "id": "feature-group:app",
+      "id": "feature-group:ui",
       "type": "feature-group",
       "attrs": {
-        "name": "app",
+        "name": "ui",
         "kind": "feature-group",
         "label": "feature group",
         "source": "tag"
       }
     },
     {
-      "id": "feature-group:ui",
+      "id": "feature-group:app",
       "type": "feature-group",
       "attrs": {
-        "name": "ui",
+        "name": "app",
         "kind": "feature-group",
         "label": "feature group",
         "source": "tag"
@@ -31448,7 +31470,7 @@
     },
     {
       "from": "project:decabill-frontend-feature-billing-console",
-      "to": "project:shared-frontend-ui-lists",
+      "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
     },
     {
@@ -31568,7 +31590,7 @@
     },
     {
       "from": "project:agenstra-frontend-feature-agent-console",
-      "to": "project:shared-frontend-ui-lists",
+      "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
     },
     {
@@ -31608,6 +31630,11 @@
     },
     {
       "from": "project:agenstra-frontend-feature-landingpage",
+      "to": "project:shared-frontend-ui-components",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-landingpage",
       "to": "project:agenstra-frontend-data-access-portal",
       "type": "depends_on"
     },
@@ -31628,12 +31655,22 @@
     },
     {
       "from": "project:decabill-frontend-feature-landingpage",
+      "to": "project:shared-frontend-ui-components",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-feature-landingpage",
       "to": "project:decabill-frontend-data-access-portal",
       "type": "depends_on"
     },
     {
       "from": "project:decabill-frontend-feature-landingpage",
       "to": "project:shared-frontend-feature-landingpage",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:forepath-frontend-feature-landingpage",
+      "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
     },
     {
@@ -31669,6 +31706,11 @@
     {
       "from": "project:shared-frontend-feature-notifications",
       "to": "project:shared-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-frontend-feature-notifications",
+      "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
     },
     {
@@ -31709,6 +31751,11 @@
     {
       "from": "project:shared-frontend-feature-landingpage",
       "to": "project:shared-frontend-data-access-communication",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-frontend-feature-landingpage",
+      "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
     },
     {
@@ -31757,6 +31804,16 @@
       "type": "depends_on"
     },
     {
+      "from": "project:shared-frontend-feature-updates",
+      "to": "project:shared-frontend-ui-components",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:identity-frontend-feature-auth",
+      "to": "project:shared-frontend-ui-components",
+      "type": "depends_on"
+    },
+    {
       "from": "project:identity-frontend-feature-auth",
       "to": "project:identity-frontend-util-auth",
       "type": "depends_on"
@@ -31784,6 +31841,11 @@
     {
       "from": "project:identity-backend-feature-auth",
       "to": "project:identity-backend-util-auth",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-frontend-feature-docs",
+      "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
     },
     {
@@ -32143,26 +32205,6 @@
     },
     {
       "from": "project:forepath-frontend-landingpage",
-      "to": "project:shared-frontend-util-express-server",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-docs",
-      "to": "project:shared-frontend-docs",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-docs",
-      "to": "project:shared-frontend-util-express-server",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-docs",
-      "to": "project:shared-frontend-docs",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-docs",
       "to": "project:shared-frontend-util-express-server",
       "type": "depends_on"
     },
@@ -32573,6 +32615,11 @@
     },
     {
       "from": "project:agenstra-frontend-billing-console",
+      "to": "package:react",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-billing-console",
       "to": "package:rxjs",
       "type": "depends_on"
     },
@@ -32708,6 +32755,11 @@
     },
     {
       "from": "project:decabill-frontend-billing-console",
+      "to": "package:react",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-billing-console",
       "to": "package:rxjs",
       "type": "depends_on"
     },
@@ -32839,6 +32891,11 @@
     {
       "from": "project:forepath-frontend-billing-console",
       "to": "package:ngx-monaco-editor-v2",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:forepath-frontend-billing-console",
+      "to": "package:react",
       "type": "depends_on"
     },
     {
@@ -33239,6 +33296,11 @@
     {
       "from": "project:agenstra-frontend-agent-console",
       "to": "package:ngx-monaco-editor-v2",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-agent-console",
+      "to": "package:react",
       "type": "depends_on"
     },
     {
@@ -33738,6 +33800,11 @@
     },
     {
       "from": "project:agenstra-frontend-landingpage",
+      "to": "package:react",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-landingpage",
       "to": "package:rxjs",
       "type": "depends_on"
     },
@@ -33848,6 +33915,11 @@
     },
     {
       "from": "project:decabill-frontend-landingpage",
+      "to": "package:react",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-landingpage",
       "to": "package:rxjs",
       "type": "depends_on"
     },
@@ -33948,6 +34020,11 @@
     },
     {
       "from": "project:forepath-frontend-landingpage",
+      "to": "package:react",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:forepath-frontend-landingpage",
       "to": "package:rxjs",
       "type": "depends_on"
     },
@@ -33957,166 +34034,6 @@
       "type": "depends_on"
     },
     {
-      "from": "project:agenstra-frontend-docs",
-      "to": "package:@angular/animations",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-docs",
-      "to": "package:@angular/common",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-docs",
-      "to": "package:@angular/compiler",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-docs",
-      "to": "package:@angular/core",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-docs",
-      "to": "package:@angular/forms",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-docs",
-      "to": "package:@angular/platform-browser",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-docs",
-      "to": "package:@angular/platform-server",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-docs",
-      "to": "package:@angular/router",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-docs",
-      "to": "package:@angular/ssr",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-docs",
-      "to": "package:cookieconsent",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-docs",
-      "to": "package:express",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-docs",
-      "to": "package:marked",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-docs",
-      "to": "package:mermaid",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-docs",
-      "to": "package:ngx-cookieconsent",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-docs",
-      "to": "package:rxjs",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-docs",
-      "to": "package:zone.js",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-docs",
-      "to": "package:@angular/animations",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-docs",
-      "to": "package:@angular/common",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-docs",
-      "to": "package:@angular/compiler",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-docs",
-      "to": "package:@angular/core",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-docs",
-      "to": "package:@angular/forms",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-docs",
-      "to": "package:@angular/platform-browser",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-docs",
-      "to": "package:@angular/platform-server",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-docs",
-      "to": "package:@angular/router",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-docs",
-      "to": "package:@angular/ssr",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-docs",
-      "to": "package:cookieconsent",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-docs",
-      "to": "package:express",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-docs",
-      "to": "package:marked",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-docs",
-      "to": "package:mermaid",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-docs",
-      "to": "package:ngx-cookieconsent",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-docs",
-      "to": "package:rxjs",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:decabill-frontend-docs",
-      "to": "package:zone.js",
-      "type": "depends_on"
-    },
-    {
       "from": "project:shared-frontend-docs",
       "to": "package:@angular/animations",
       "type": "depends_on"
@@ -34184,6 +34101,11 @@
     {
       "from": "project:shared-frontend-docs",
       "to": "package:ngx-cookieconsent",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-frontend-docs",
+      "to": "package:react",
       "type": "depends_on"
     },
     {
@@ -39207,6 +39129,16 @@
       "type": "contains"
     },
     {
+      "from": "project:shared-frontend-ui-components",
+      "to": "file:libs/domains/shared/frontend/ui-components/README.md",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-frontend-ui-components",
+      "to": "file:libs/domains/shared/frontend/ui-components/docs/catalog.md",
+      "type": "contains"
+    },
+    {
       "from": "project:shared-frontend-feature-docs",
       "to": "file:libs/domains/shared/frontend/feature-docs/README.md",
       "type": "contains"
@@ -39394,11 +39326,6 @@
     {
       "from": "project:shared-backend-util-otel",
       "to": "file:libs/domains/shared/backend/util-otel/src/lib/otel.module.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:shared-frontend-ui-lists",
-      "to": "file:libs/domains/shared/frontend/ui-lists/README.md",
       "type": "contains"
     },
     {
@@ -73317,6 +73244,21 @@
       "type": "belongs_to"
     },
     {
+      "from": "project:shared-frontend-ui-components",
+      "to": "domain:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-frontend-ui-components",
+      "to": "context:frontend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-frontend-ui-components",
+      "to": "feature-group:ui",
+      "type": "belongs_to"
+    },
+    {
       "from": "project:shared-frontend-feature-docs",
       "to": "domain:shared",
       "type": "belongs_to"
@@ -73524,21 +73466,6 @@
     {
       "from": "project:shared-backend-util-otel",
       "to": "feature-group:util",
-      "type": "belongs_to"
-    },
-    {
-      "from": "project:shared-frontend-ui-lists",
-      "to": "domain:shared",
-      "type": "belongs_to"
-    },
-    {
-      "from": "project:shared-frontend-ui-lists",
-      "to": "context:frontend",
-      "type": "belongs_to"
-    },
-    {
-      "from": "project:shared-frontend-ui-lists",
-      "to": "feature-group:ui",
       "type": "belongs_to"
     },
     {

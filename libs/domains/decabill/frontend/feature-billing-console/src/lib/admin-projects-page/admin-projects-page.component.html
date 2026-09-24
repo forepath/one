@@ -1,273 +1,248 @@
-<div class="admin-projects-container border-top d-flex flex-column h-100">
-  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
-    <h5 class="mb-0 fw-semibold" i18n="@@featureAdminProjects-title">Projects</h5>
-    <button
-      type="button"
-      class="btn btn-sm btn-primary"
-      (click)="openCreateModal()"
+<div class="admin-projects-container border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="pageTitle">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="primary"
+      size="sm"
+      iconOnly
       [disabled]="(creating$ | async) === true"
-      i18n-title="@@featureAdminProjects-add"
-      title="Add"
-      i18n-aria-label="@@featureAdminProjects-add"
-      aria-label="Add"
+      [ariaLabel]="addProjectAriaLabel"
+      [title]="addProjectAriaLabel"
+      (clicked)="openCreateModal()"
     >
       <i class="bi bi-plus" aria-hidden="true"></i>
-    </button>
-  </div>
+    </fpc-button>
+  </fpc-page-header>
 
-  <div class="input-group search-input-container border-bottom">
-    <i class="bi bi-search"></i>
-    <input
-      type="text"
-      class="form-control border-0 search-input"
-      placeholder="Search projects"
-      i18n-placeholder="@@featureAdminProjects-searchPlaceholder"
-      [ngModel]="searchQuery()"
-      (ngModelChange)="onSearchChange($event)"
-      name="search"
-    />
-  </div>
+  <fpc-search-field
+    class="border-bottom"
+    name="search"
+    [bordered]="false"
+    [placeholder]="searchPlaceholder"
+    [ariaLabel]="searchPlaceholder"
+    [(value)]="searchQuery"
+  />
 
-  <div #scrollRoot class="flex-grow-1 overflow-auto">
+  <div #scrollRoot class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
     @if (loading$ | async) {
-      <div class="d-flex justify-content-center p-4"><div class="spinner-border text-primary" role="status"></div></div>
+      <div class="d-flex justify-content-center p-4"><fpc-spinner variant="primary" /></div>
     } @else {
       @if (error$ | async; as error) {
-        <div class="alert alert-danger m-3" role="alert">{{ error }}</div>
+        <fpc-alert class="m-3" variant="danger" [message]="error" />
       }
       @if (projects().length === 0) {
-        <div class="p-4 text-muted text-center" i18n="@@featureAdminProjects-empty">No projects found</div>
+        @if (searchQuery().trim()) {
+          <fpc-empty-state
+            icon="search"
+            message="No search results"
+            i18n-message="@@featureAdminProjects-noSearchResults"
+          />
+        } @else {
+          <fpc-empty-state message="No projects yet" i18n-message="@@featureAdminProjects-empty" />
+        }
       } @else {
-        <div class="list-group list-group-flush">
+        <fpc-list [flush]="true">
           @for (project of projects(); track project.id) {
-            <div class="list-group-item d-flex justify-content-between align-items-center gap-3 border-bottom">
+            <fpc-list-item>
               <a
+                fpcListItemTitle
                 [routerLink]="[project.id, 'board']"
                 [relativeTo]="projectsRoute"
-                class="min-w-0 flex-grow-1 text-decoration-none text-body"
+                class="text-decoration-none text-body"
               >
-                <div class="fw-semibold mb-1">{{ project.name }}</div>
-                <div class="small text-muted d-flex align-items-center gap-3 flex-wrap">
-                  <span [ngClass]="projectStatusTextClass(project.status)">
-                    <i class="bi me-1" [ngClass]="projectStatusIconClass(project.status)" aria-hidden="true"></i
-                    >{{ projectStatusLabel(project.status) }}
-                  </span>
-                  <span
-                    ><i class="bi bi-cash me-1" aria-hidden="true"></i
-                    >{{ hourlyRateLabel(project.hourlyRateNet, project.currency) }}</span
-                  >
-                  <span
-                    ><i class="bi bi-hourglass-split me-1" aria-hidden="true"></i
-                    >{{ unbilledTimeLabel(project.unbilledMinutes) }}</span
-                  >
-                  <span
-                    ><i class="bi bi-cash-stack me-1" aria-hidden="true"></i
-                    >{{ openBillableLabel(project.openBillableAmountNet, project.currency) }}</span
-                  >
-                  <span><i class="bi bi-person me-1" aria-hidden="true"></i>{{ projectOwnerLabel(project) }}</span>
-                </div>
+                <div class="fw-semibold">{{ project.name }}</div>
               </a>
-              <div class="btn-group btn-group-sm flex-shrink-0" role="group">
-                <button
-                  type="button"
-                  class="btn btn-outline-primary"
-                  (click)="$event.preventDefault(); $event.stopPropagation(); openEditModal(project)"
+              <a
+                fpcListItemMeta
+                [routerLink]="[project.id, 'board']"
+                [relativeTo]="projectsRoute"
+                class="small d-flex align-items-center gap-3 flex-wrap text-decoration-none"
+              >
+                <span [ngClass]="projectStatusTextClass(project.status)">
+                  <i class="bi me-1" [ngClass]="projectStatusIconClass(project.status)" aria-hidden="true"></i
+                  >{{ projectStatusLabel(project.status) }}
+                </span>
+                <span
+                  ><i class="bi bi-cash me-1" aria-hidden="true"></i
+                  >{{ hourlyRateLabel(project.hourlyRateNet, project.currency) }}</span
+                >
+                <span
+                  ><i class="bi bi-hourglass-split me-1" aria-hidden="true"></i
+                  >{{ unbilledTimeLabel(project.unbilledMinutes) }}</span
+                >
+                <span
+                  ><i class="bi bi-cash-stack me-1" aria-hidden="true"></i
+                  >{{ openBillableLabel(project.openBillableAmountNet, project.currency) }}</span
+                >
+                <span><i class="bi bi-person me-1" aria-hidden="true"></i>{{ projectOwnerLabel(project) }}</span>
+              </a>
+              <fpc-button-group fpcListItemActions size="sm">
+                <fpc-button
+                  iconOnly
+                  size="sm"
+                  variant="warning"
+                  (clicked)="$event.preventDefault(); $event.stopPropagation(); openEditModal(project)"
                   i18n-title="@@featureAdminProjects-edit"
                   title="Edit"
                 >
                   <i class="bi bi-pencil" aria-hidden="true"></i>
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-danger"
-                  (click)="$event.preventDefault(); $event.stopPropagation(); openDeleteModal(project)"
+                </fpc-button>
+                <fpc-button
+                  iconOnly
+                  size="sm"
+                  variant="danger"
+                  (clicked)="$event.preventDefault(); $event.stopPropagation(); openDeleteModal(project)"
                   i18n-title="@@featureAdminProjects-delete"
                   title="Delete"
                 >
                   <i class="bi bi-trash" aria-hidden="true"></i>
-                </button>
-              </div>
-            </div>
+                </fpc-button>
+              </fpc-button-group>
+            </fpc-list-item>
           }
-        </div>
+        </fpc-list>
+        @if ((appendLoading$ | async) || (appendError$ | async)) {
+          <fpc-list-append-footer
+            [loading]="!!(appendLoading$ | async)"
+            [error]="!!(appendError$ | async)"
+            (retry)="facade.loadMoreAdminProjects()"
+          />
+        }
+        <div
+          fpcInfiniteScroll
+          [root]="scrollRoot"
+          [paused]="!!(appendError$ | async)"
+          [disabled]="(hasMore$ | async) === false || !!(appendLoading$ | async) || !!(loading$ | async)"
+          (reachedEnd)="facade.loadMoreAdminProjects()"
+          aria-hidden="true"
+          style="height: 1px; width: 100%; flex-shrink: 0"
+        ></div>
       }
     }
-    @if ((appendLoading$ | async) || (appendError$ | async)) {
-      <shared-list-append-footer
-        [loading]="!!(appendLoading$ | async)"
-        [error]="!!(appendError$ | async)"
-        (retry)="facade.loadMoreAdminProjects()"
-      />
-    }
-    <div
-      sharedInfiniteScroll
-      [root]="scrollRoot"
-      [paused]="!!(appendError$ | async)"
-      [disabled]="(hasMore$ | async) === false || !!(appendLoading$ | async) || !!(loading$ | async)"
-      (reachedEnd)="facade.loadMoreAdminProjects()"
-      aria-hidden="true"
-      style="height: 1px; width: 100%; flex-shrink: 0"
-    ></div>
   </div>
 </div>
 
-<div #createModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureAdminProjects-createTitle">Create project</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <framework-billing-admin-user-select
-          #createUserSelect
-          inputId="createProjectUser"
-          [users]="usersWithoutProject()"
-          [(selectedUserId)]="createForm.userId"
-          [required]="true"
-        />
-        <div class="my-3">
-          <label class="form-label" for="createProjectName" i18n="@@featureAdminProjects-nameLabel">Name</label>
-          <input id="createProjectName" class="form-control" [(ngModel)]="createForm.name" name="createName" required />
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="createProjectRate" i18n="@@featureAdminProjects-rateLabel"
-            >Hourly rate (net)</label
-          >
-          <input
-            id="createProjectRate"
-            type="number"
-            class="form-control"
-            [(ngModel)]="createForm.hourlyRateNet"
-            name="createRate"
-            min="0"
-            step="0.01"
-          />
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="createProjectTargetHours" i18n="@@featureAdminProjects-targetHoursLabel"
-            >Target hours</label
-          >
-          <input
-            id="createProjectTargetHours"
-            type="number"
-            class="form-control"
-            [(ngModel)]="createTargetHoursInput"
-            name="createTargetHours"
-            min="0.01"
-            step="0.25"
-          />
-          <div class="form-text" i18n="@@featureAdminProjects-targetHoursHint">
-            Optional. Leave empty for no target.
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="submitCreate()"
-          [disabled]="(creating$ | async) === true"
-          i18n="@@featureAdminProjects-create"
-        >
-          Create
-        </button>
-      </div>
-    </div>
+<fpc-modal [(open)]="createModalOpen" i18n-title="@@featureAdminProjects-createTitle" title="Create project">
+  <framework-billing-admin-user-select
+    #createUserSelect
+    inputId="createProjectUser"
+    [users]="usersWithoutProject()"
+    [(selectedUserId)]="createForm.userId"
+    [required]="true"
+  />
+  <fpc-form-field
+    class="mt-3"
+    forId="createProjectName"
+    i18n-label="@@featureAdminProjects-nameLabel"
+    label="Name"
+    required
+  >
+    <fpc-form-control controlId="createProjectName" [(ngModel)]="createForm.name" name="createName" required />
+  </fpc-form-field>
+  <fpc-form-field forId="createProjectRate" i18n-label="@@featureAdminProjects-rateLabel" label="Hourly rate (net)">
+    <fpc-form-control
+      controlId="createProjectRate"
+      inputType="number"
+      [(ngModel)]="createForm.hourlyRateNet"
+      name="createRate"
+      min="0"
+      step="0.01"
+    />
+  </fpc-form-field>
+  <fpc-form-field
+    forId="createProjectTargetHours"
+    i18n-label="@@featureAdminProjects-targetHoursLabel"
+    label="Target hours"
+    i18n-hint="@@featureAdminProjects-targetHoursHint"
+    hint="Optional. Leave empty for no target."
+  >
+    <fpc-form-control
+      controlId="createProjectTargetHours"
+      inputType="number"
+      [(ngModel)]="createTargetHoursInput"
+      name="createTargetHours"
+      min="0.01"
+      step="0.25"
+    />
+  </fpc-form-field>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button
+      variant="primary"
+      (clicked)="submitCreate()"
+      [disabled]="(creating$ | async) === true"
+      i18n="@@featureAdminProjects-create"
+    >
+      Create
+    </fpc-button>
   </div>
-</div>
+</fpc-modal>
 
-<div #editModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureAdminProjects-editTitle">Edit project</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label" for="editProjectName" i18n="@@featureAdminProjects-nameLabel">Name</label>
-          <input id="editProjectName" class="form-control" [(ngModel)]="editForm.name" name="editName" />
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="editProjectRate" i18n="@@featureAdminProjects-rateLabel"
-            >Hourly rate (net)</label
-          >
-          <input
-            id="editProjectRate"
-            type="number"
-            class="form-control"
-            [(ngModel)]="editForm.hourlyRateNet"
-            name="editRate"
-            min="0"
-            step="0.01"
-          />
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="editProjectTargetHours" i18n="@@featureAdminProjects-targetHoursLabel"
-            >Target hours</label
-          >
-          <input
-            id="editProjectTargetHours"
-            type="number"
-            class="form-control"
-            [(ngModel)]="editTargetHoursInput"
-            name="editTargetHours"
-            min="0.01"
-            step="0.25"
-          />
-          <div class="form-text" i18n="@@featureAdminProjects-targetHoursHint">
-            Optional. Leave empty for no target.
-          </div>
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="editProjectStatus" i18n="@@featureAdminProjects-statusLabel">Status</label>
-          <select id="editProjectStatus" class="form-select" [(ngModel)]="editForm.status" name="editStatus">
-            <option value="active" i18n="@@featureAdminProjects-statusActive">Active</option>
-            <option value="archived" i18n="@@featureAdminProjects-statusArchived">Archived</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="submitEdit()"
-          [disabled]="(updating$ | async) === true"
-          i18n="@@featureAdminProjects-save"
-        >
-          Save
-        </button>
-      </div>
-    </div>
+<fpc-modal [(open)]="editModalOpen" i18n-title="@@featureAdminProjects-editTitle" title="Edit project">
+  <fpc-form-field forId="editProjectName" i18n-label="@@featureAdminProjects-nameLabel" label="Name">
+    <fpc-form-control controlId="editProjectName" [(ngModel)]="editForm.name" name="editName" />
+  </fpc-form-field>
+  <fpc-form-field forId="editProjectRate" i18n-label="@@featureAdminProjects-rateLabel" label="Hourly rate (net)">
+    <fpc-form-control
+      controlId="editProjectRate"
+      inputType="number"
+      [(ngModel)]="editForm.hourlyRateNet"
+      name="editRate"
+      min="0"
+      step="0.01"
+    />
+  </fpc-form-field>
+  <fpc-form-field
+    forId="editProjectTargetHours"
+    i18n-label="@@featureAdminProjects-targetHoursLabel"
+    label="Target hours"
+    i18n-hint="@@featureAdminProjects-targetHoursHint"
+    hint="Optional. Leave empty for no target."
+  >
+    <fpc-form-control
+      controlId="editProjectTargetHours"
+      inputType="number"
+      [(ngModel)]="editTargetHoursInput"
+      name="editTargetHours"
+      min="0.01"
+      step="0.25"
+    />
+  </fpc-form-field>
+  <fpc-form-field forId="editProjectStatus" i18n-label="@@featureAdminProjects-statusLabel" label="Status">
+    <fpc-form-control
+      controlType="select"
+      controlId="editProjectStatus"
+      [(ngModel)]="editForm.status"
+      name="editStatus"
+    >
+      <option value="active" i18n="@@featureAdminProjects-statusActive">Active</option>
+      <option value="archived" i18n="@@featureAdminProjects-statusArchived">Archived</option>
+    </fpc-form-control>
+  </fpc-form-field>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button
+      variant="primary"
+      (clicked)="submitEdit()"
+      [disabled]="(updating$ | async) === true"
+      i18n="@@featureAdminProjects-save"
+    >
+      Save
+    </fpc-button>
   </div>
-</div>
+</fpc-modal>
 
-<div #deleteModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureAdminProjects-deleteTitle">Delete project</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p i18n="@@featureAdminProjects-deleteConfirm">Delete this project? Unbilled time must be cleared first.</p>
-        <p class="text-danger mb-0">
-          <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
-          <span i18n="@@featureAdminProjects-cannotUndo">This action cannot be undone.</span>
-        </p>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="submitDelete()"
-          [disabled]="(deleting$ | async) === true"
-          i18n="@@featureAdminProjects-delete"
-        >
-          Delete
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+<fpc-confirm-dialog
+  [(open)]="deleteModalOpen"
+  i18n-title="@@featureAdminProjects-deleteTitle"
+  title="Delete project"
+  i18n-confirmLabel="@@featureAdminProjects-delete"
+  confirmLabel="Delete"
+  [danger]="true"
+  [busy]="(deleting$ | async) === true"
+  (confirmed)="submitDelete()"
+>
+  <p i18n="@@featureAdminProjects-deleteConfirm">Delete this project? Unbilled time must be cleared first.</p>
+  <p class="text-danger mb-0">
+    <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+    <span i18n="@@featureAdminProjects-cannotUndo">This action cannot be undone.</span>
+  </p>
+</fpc-confirm-dialog>

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -13,6 +13,26 @@ import {
   type UpdateWebhookEndpointDto,
   type WebhookEndpointResponseDto,
 } from '@forepath/shared/frontend/data-access-notifications';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcConfirmDialogComponent,
+  FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcFormSwitchComponent,
+  FpcLabelComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { combineLatestWith, map, of } from 'rxjs';
 
 import {
@@ -47,7 +67,28 @@ const emptyForm = (): WebhookFormState => ({
 
 @Component({
   selector: 'shared-webhook-manager',
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcConfirmDialogComponent,
+    FpcEmptyStateComponent,
+    FpcFormCheckComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcFormSwitchComponent,
+    FpcLabelComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './webhook-manager.component.html',
   styleUrls: ['./webhook-manager.component.scss'],
   standalone: true,
@@ -58,21 +99,18 @@ export class WebhookManagerComponent implements OnInit {
   readonly environment = inject(NOTIFICATION_ADMIN_ENVIRONMENT);
   private readonly clientProvider = inject(NOTIFICATION_ADMIN_CLIENT_PROVIDER, { optional: true });
 
-  @ViewChild('createWebhookModal', { static: false })
-  private createWebhookModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('editWebhookModal', { static: false })
-  private editWebhookModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('deleteWebhookModal', { static: false })
-  private deleteWebhookModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('deliveriesModal', { static: false })
-  private deliveriesModal!: ElementRef<HTMLDivElement>;
+  readonly createWebhookModalOpen = signal(false);
+  readonly editWebhookModalOpen = signal(false);
+  readonly deleteWebhookModalOpen = signal(false);
+  readonly deliveriesModalOpen = signal(false);
 
   readonly WebhookHttpMethod = WebhookHttpMethod;
   readonly WebhookAuthType = WebhookAuthType;
   readonly clientFilterEnabled = this.environment.clientFilterEnabled;
+
+  readonly pageTitle = $localize`:@@featureNotifications-title:Webhooks`;
+  readonly addWebhookTitle = $localize`:@@featureNotifications-addWebhookTitle:Add webhook`;
+  readonly searchPlaceholder = $localize`:@@featureNotifications-searchPlaceholder:Search webhooks`;
 
   readonly searchQuery = signal('');
   readonly searchQuery$ = toObservable(this.searchQuery);
@@ -130,7 +168,7 @@ export class WebhookManagerComponent implements OnInit {
     watchNotificationMutationModalClose({
       loading$: this.saving$,
       error$: this.endpointsError$,
-      modal: () => this.editWebhookModal,
+      open: this.editWebhookModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.endpointToEdit = null;
@@ -141,7 +179,7 @@ export class WebhookManagerComponent implements OnInit {
   onAddWebhook(): void {
     this.createForm = emptyForm();
     this.facade.clearCreatedSigningSecret();
-    showNotificationModal(this.createWebhookModal);
+    showNotificationModal(this.createWebhookModalOpen);
   }
 
   onSubmitCreateWebhook(): void {
@@ -156,12 +194,12 @@ export class WebhookManagerComponent implements OnInit {
 
   onCreateDone(): void {
     this.facade.clearCreatedSigningSecret();
-    hideNotificationModal(this.createWebhookModal);
+    hideNotificationModal(this.createWebhookModalOpen);
     this.createForm = emptyForm();
   }
 
   cancelEditWebhook(): void {
-    hideNotificationModal(this.editWebhookModal);
+    hideNotificationModal(this.editWebhookModalOpen);
     this.endpointToEdit = null;
   }
 
@@ -178,7 +216,7 @@ export class WebhookManagerComponent implements OnInit {
       authValue: '',
       clientId: endpoint.clientId ?? '',
     };
-    showNotificationModal(this.editWebhookModal);
+    showNotificationModal(this.editWebhookModalOpen);
   }
 
   onSubmitEditWebhook(): void {
@@ -197,7 +235,7 @@ export class WebhookManagerComponent implements OnInit {
 
   onDeleteWebhook(endpoint: WebhookEndpointResponseDto): void {
     this.endpointToDelete = endpoint;
-    showNotificationModal(this.deleteWebhookModal);
+    showNotificationModal(this.deleteWebhookModalOpen);
   }
 
   confirmDeleteWebhook(): void {
@@ -206,12 +244,12 @@ export class WebhookManagerComponent implements OnInit {
     }
 
     this.facade.delete(this.endpointToDelete.id);
-    hideNotificationModal(this.deleteWebhookModal);
+    hideNotificationModal(this.deleteWebhookModalOpen);
     this.endpointToDelete = null;
   }
 
   cancelDeleteWebhook(): void {
-    hideNotificationModal(this.deleteWebhookModal);
+    hideNotificationModal(this.deleteWebhookModalOpen);
     this.endpointToDelete = null;
   }
 
@@ -227,11 +265,11 @@ export class WebhookManagerComponent implements OnInit {
   onViewDeliveries(endpoint: WebhookEndpointResponseDto): void {
     this.deliveriesEndpoint = endpoint;
     this.facade.loadDeliveries(endpoint.id);
-    showNotificationModal(this.deliveriesModal);
+    showNotificationModal(this.deliveriesModalOpen);
   }
 
   onCloseDeliveries(): void {
-    hideNotificationModal(this.deliveriesModal);
+    hideNotificationModal(this.deliveriesModalOpen);
     this.deliveriesEndpoint = null;
     this.facade.clearDeliveries();
   }

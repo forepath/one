@@ -77,7 +77,7 @@ describe('agent-chat-event-display', () => {
     expect(row.summaryBody).toContain('Success');
     expect(row.summaryBody).toContain('hello');
     expect(row.summaryBody).not.toBe('[object Object]');
-    expect(row.badgeClass).toBe('text-bg-success');
+    expect(row.badgeColor).toBe('success');
   });
 
   it('returns null for non-success payloads', () => {
@@ -97,7 +97,7 @@ describe('agent-chat-event-display', () => {
         kindLabel: 'Thinking',
         summaryTitle: 'Thinking',
         summaryBody: 'First chunk',
-        badgeClass: 'bg-light',
+        badgeColor: 'light',
         detailJson: '{"a":1}',
         popoverPlainDetail: 'First chunk full',
         displayTimestampMs: 1,
@@ -108,7 +108,7 @@ describe('agent-chat-event-display', () => {
         kindLabel: 'Thinking',
         summaryTitle: 'Thinking',
         summaryBody: ' second chunk',
-        badgeClass: 'bg-light',
+        badgeColor: 'light',
         detailJson: '{"b":2}',
         popoverPlainDetail: 'Second chunk full',
         displayTimestampMs: 2,
@@ -119,7 +119,7 @@ describe('agent-chat-event-display', () => {
         kindLabel: 'Tool',
         summaryTitle: 'Tool · read',
         summaryBody: 'started',
-        badgeClass: 'text-bg-info',
+        badgeColor: 'info',
         detailJson: '{}',
         displayTimestampMs: 3,
       },
@@ -142,7 +142,7 @@ describe('agent-chat-event-display', () => {
         kindLabel: 'Interaction',
         summaryTitle: 'Query',
         summaryBody: 'First',
-        badgeClass: 'bg-light',
+        badgeColor: 'light',
         detailJson: '{"a":1}',
         popoverPlainDetail: 'First full',
         displayTimestampMs: 1,
@@ -153,7 +153,7 @@ describe('agent-chat-event-display', () => {
         kindLabel: 'Interaction',
         summaryTitle: 'Query',
         summaryBody: 'Second',
-        badgeClass: 'bg-light',
+        badgeColor: 'light',
         detailJson: '{"b":2}',
         popoverPlainDetail: 'Second full',
         displayTimestampMs: 2,
@@ -164,7 +164,7 @@ describe('agent-chat-event-display', () => {
         kindLabel: 'Tool',
         summaryTitle: 'Tool · read',
         summaryBody: 'started',
-        badgeClass: 'text-bg-info',
+        badgeColor: 'info',
         detailJson: '{}',
         displayTimestampMs: 3,
       },
@@ -256,7 +256,7 @@ describe('agent-chat-event-display', () => {
 
     expect(rows).toHaveLength(1);
     expect(rows[0]?.kind).toBe('toolCall');
-    expect(rows[0]?.badgeClass).toBe('text-bg-success');
+    expect(rows[0]?.badgeColor).toBe('success');
     expect(rows[0]?.toolPair?.callDetailJson).toBeDefined();
     expect(rows[0]?.toolPair?.resultDetailJson).toBeDefined();
   });

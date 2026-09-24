@@ -1,8 +1,28 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { PersonalAccessTokensFacade, type PersonalAccessTokenResponseDto } from '@forepath/identity/frontend';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcConfirmDialogComponent,
+  FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcLabelComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+  FpcTooltipComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { combineLatestWith, filter, map, of, pairwise, withLatestFrom } from 'rxjs';
 
 type TokenFormState = {
@@ -19,7 +39,28 @@ const emptyForm = (): TokenFormState => ({
 
 @Component({
   selector: 'identity-auth-token-manager',
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcConfirmDialogComponent,
+    FpcEmptyStateComponent,
+    FpcFormCheckComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcLabelComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+    FpcTooltipComponent,
+  ],
   templateUrl: './token-manager.component.html',
   styleUrls: ['./token-manager.component.scss'],
   standalone: true,
@@ -28,14 +69,15 @@ export class IdentityTokenManagerComponent implements OnInit {
   private readonly facade = inject(PersonalAccessTokensFacade);
   private readonly destroyRef = inject(DestroyRef);
 
-  @ViewChild('createTokenModal', { static: false })
-  private createTokenModal!: ElementRef<HTMLDivElement>;
+  readonly createTokenModalOpen = signal(false);
+  readonly editTokenModalOpen = signal(false);
+  readonly revokeTokenModalOpen = signal(false);
 
-  @ViewChild('editTokenModal', { static: false })
-  private editTokenModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('revokeTokenModal', { static: false })
-  private revokeTokenModal!: ElementRef<HTMLDivElement>;
+  readonly pageTitle = $localize`:@@featureTokenManager-title:Personal Access Tokens`;
+  readonly addTokenTitle = $localize`:@@featureTokenManager-addTokenTitle:Create token`;
+  readonly searchPlaceholder = $localize`:@@featureTokenManager-searchPlaceholder:Search tokens`;
+  readonly loadingLabel = $localize`:@@featureTokenManager-loading:Loading tokens...`;
+  readonly emptyMessage = $localize`:@@featureTokenManager-empty:No personal access tokens yet`;
 
   readonly searchQuery = signal('');
   readonly searchQuery$ = toObservable(this.searchQuery);
@@ -89,7 +131,7 @@ export class IdentityTokenManagerComponent implements OnInit {
           return;
         }
 
-        this.hideModal(this.editTokenModal);
+        this.editTokenModalOpen.set(false);
         this.tokenToEdit = null;
         this.editForm = emptyForm();
       });
@@ -99,7 +141,7 @@ export class IdentityTokenManagerComponent implements OnInit {
     this.createForm = emptyForm();
     this.facade.clearCreatedPlaintext();
     this.copied.set(false);
-    this.showModal(this.createTokenModal);
+    this.createTokenModalOpen.set(true);
   }
 
   onSubmitCreateToken(): void {
@@ -121,7 +163,7 @@ export class IdentityTokenManagerComponent implements OnInit {
 
   onCreateDone(): void {
     this.facade.clearCreatedPlaintext();
-    this.hideModal(this.createTokenModal);
+    this.createTokenModalOpen.set(false);
     this.createForm = emptyForm();
     this.copied.set(false);
   }
@@ -133,7 +175,7 @@ export class IdentityTokenManagerComponent implements OnInit {
       scopes: [...token.scopes],
       expiresAt: '',
     };
-    this.showModal(this.editTokenModal);
+    this.editTokenModalOpen.set(true);
   }
 
   onSubmitEditToken(): void {
@@ -148,14 +190,14 @@ export class IdentityTokenManagerComponent implements OnInit {
   }
 
   cancelEditToken(): void {
-    this.hideModal(this.editTokenModal);
+    this.editTokenModalOpen.set(false);
     this.tokenToEdit = null;
     this.editForm = emptyForm();
   }
 
   onRevokeToken(token: PersonalAccessTokenResponseDto): void {
     this.tokenToRevoke = token;
-    this.showModal(this.revokeTokenModal);
+    this.revokeTokenModalOpen.set(true);
   }
 
   confirmRevokeToken(): void {
@@ -164,12 +206,12 @@ export class IdentityTokenManagerComponent implements OnInit {
     }
 
     this.facade.revoke(this.tokenToRevoke.id);
-    this.hideModal(this.revokeTokenModal);
+    this.revokeTokenModalOpen.set(false);
     this.tokenToRevoke = null;
   }
 
   cancelRevokeToken(): void {
-    this.hideModal(this.revokeTokenModal);
+    this.revokeTokenModalOpen.set(false);
     this.tokenToRevoke = null;
   }
 
@@ -215,35 +257,6 @@ export class IdentityTokenManagerComponent implements OnInit {
       return new Date(iso).toLocaleString();
     } catch {
       return iso;
-    }
-  }
-
-  private showModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const modal = (window as any).bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
-
-      if (modal) {
-        modal.show();
-      } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const Modal = (window as any).bootstrap?.Modal;
-
-        if (Modal) {
-          new Modal(modalElement.nativeElement).show();
-        }
-      }
-    }
-  }
-
-  private hideModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const modal = (window as any).bootstrap?.Modal?.getInstance(modalElement.nativeElement);
-
-      if (modal) {
-        modal.hide();
-      }
     }
   }
 }

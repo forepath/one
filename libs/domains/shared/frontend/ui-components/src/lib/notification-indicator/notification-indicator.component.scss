@@ -1,0 +1,37 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+// Mirrors the sidebar badge placement used by the consoles.
+:host(.fpc-notification-indicator--absolute) {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+}
+
+.fpc-notification-indicator__dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.fpc-notification-indicator__dot--unread {
+  background-color: var(--bs-primary);
+}
+
+.fpc-notification-indicator__dot--git {
+  background-color: var(--bs-info);
+}
+
+.fpc-notification-indicator__dot--security-warning {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background-color: var(--bs-warning);
+}

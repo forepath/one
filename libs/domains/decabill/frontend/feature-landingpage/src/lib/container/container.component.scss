@@ -181,40 +181,7 @@
   }
 }
 
-#footerLanguageDropdown {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  --bs-btn-color: var(--bs-white);
-  --bs-btn-bg: var(--bs-dark-alt);
-  --bs-btn-border-color: var(--bs-dark-alt);
-  --bs-btn-hover-color: var(--bs-white);
-  --bs-btn-hover-bg: color-mix(in srgb, var(--bs-dark-alt) 88%, var(--bs-white));
-  --bs-btn-hover-border-color: color-mix(in srgb, var(--bs-dark-alt) 88%, var(--bs-white));
-  --bs-btn-active-color: var(--bs-white);
-  --bs-btn-active-bg: color-mix(in srgb, var(--bs-dark-alt) 80%, var(--bs-white));
-  --bs-btn-active-border-color: color-mix(in srgb, var(--bs-dark-alt) 80%, var(--bs-white));
-  --bs-btn-disabled-color: var(--bs-white);
-  --bs-btn-disabled-bg: var(--bs-dark-alt);
-  --bs-btn-disabled-border-color: var(--bs-dark-alt);
-
-  &:after {
-    display: none;
-  }
-}
-
-.portal-nav-dropdown-menu.dropdown-menu[aria-labelledby='footerLanguageDropdown'] {
-  @media (max-width: 767.98px) {
-    position: absolute !important;
-    width: auto;
-    margin-top: 0;
-    margin-bottom: 0.625rem;
-    box-shadow: var(--portal-nav-dropdown-shadow);
-    border: 1px solid rgba(50, 168, 82, 0.14);
-    border-radius: 0.75rem;
-    background-color: var(--bs-body-bg);
-  }
-}
+// Footer language trigger tones live on `fpc-language-switcher` (`appearance="footer"`).
 
 .text-white {
   color: rgba(245, 245, 245, 0.85) !important;
@@ -290,13 +257,13 @@
 }
 
 .portal-nav-dropdown.show .portal-nav-dropdown-chevron,
+.portal-nav-dropdown:has(.dropdown-menu.show) .portal-nav-dropdown-chevron,
 .portal-nav-dropdown-toggle[aria-expanded='true'] .portal-nav-dropdown-chevron {
   transform: rotate(180deg);
 }
 
-.portal-nav-dropdown-menu {
+.portal-nav-dropdown .dropdown-menu {
   --portal-nav-dropdown-shadow: 0 16px 48px rgba(15, 23, 42, 0.14), 0 4px 16px rgba(50, 168, 82, 0.1);
-  position: relative;
   margin-top: 0.625rem;
   padding: 0.375rem;
   min-width: 11.5rem;
@@ -305,7 +272,7 @@
   background-color: var(--bs-body-bg);
   box-shadow: var(--portal-nav-dropdown-shadow);
 
-  > li + li {
+  > .fpc-dropdown-item + .fpc-dropdown-item {
     margin-top: 0.125rem;
   }
 
@@ -331,7 +298,7 @@
   }
 }
 
-.portal-nav-dropdown-menu--wide {
+.portal-nav-dropdown--wide .dropdown-menu {
   min-width: 13.5rem;
 
   @media (min-width: 768px) {

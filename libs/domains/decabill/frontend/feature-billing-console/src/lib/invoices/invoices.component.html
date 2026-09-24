@@ -1,235 +1,196 @@
-<div class="invoices-container border-top d-flex flex-column h-100">
-  <div class="invoices-header p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
-    <h5 class="mb-0 fw-semibold" i18n="@@featureInvoices-title">Billing</h5>
-  </div>
+<div class="invoices-container border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="pageTitle" />
 
-  <div class="d-flex align-items-center gap-0 d-md-none border-bottom btn-group-options">
-    @for (panel of mobilePanels; track panel) {
-      <button
-        type="button"
-        class="btn btn-sm btn-options"
-        [class.btn-outline-secondary]="mobilePanel() !== panel"
-        [class.btn-primary]="mobilePanel() === panel"
-        (click)="mobilePanel.set(panel)"
-      >
-        {{ mobilePanelLabel(panel) }}
-      </button>
-    }
-  </div>
+  <fpc-tab-group
+    class="d-md-none flex-shrink-0"
+    [activeId]="mobilePanel()"
+    (activeIdChange)="onMobilePanelTabChange($event)"
+  >
+    <fpc-tab id="openOverdue" [label]="mobilePanelLabel('openOverdue')" />
+    <fpc-tab id="history" [label]="mobilePanelLabel('history')" />
+  </fpc-tab-group>
 
   <div class="section__container flex-grow-1 d-flex flex-column min-h-0">
     @if (paymentReturnFeedback === 'waiting') {
-      <div
-        class="alert alert-success mb-0 rounded-0 border-0 border-bottom py-2 small"
-        role="status"
-        aria-live="polite"
-      >
-        <span i18n="@@featureInvoices-paymentWaiting">
+      <fpc-alert [flush]="true" variant="success"
+        ><span i18n="@@featureInvoices-paymentWaiting">
           Payment submitted. Waiting for confirmation from the payment provider…
-        </span>
-      </div>
+        </span></fpc-alert
+      >
     }
     @if (paymentReturnFeedback === 'confirmed') {
-      <div
-        class="alert alert-success mb-0 rounded-0 border-0 border-bottom py-2 small"
-        role="status"
-        aria-live="polite"
+      <fpc-alert [flush]="true" variant="success"
+        ><span i18n="@@featureInvoices-paymentConfirmed"
+          >Payment confirmed. Your invoice is marked as paid.</span
+        ></fpc-alert
       >
-        <span i18n="@@featureInvoices-paymentConfirmed">Payment confirmed. Your invoice is marked as paid.</span>
-      </div>
     }
     @if (paymentReturnFeedback === 'canceled') {
-      <div
-        class="alert alert-warning mb-0 rounded-0 border-0 border-bottom py-2 small"
-        role="status"
-        aria-live="polite"
-      >
-        <span i18n="@@featureInvoices-paymentCanceled"
+      <fpc-alert [flush]="true" variant="warning"
+        ><span i18n="@@featureInvoices-paymentCanceled"
           >Payment was canceled. You can try again from an open invoice.</span
-        >
-      </div>
+        ></fpc-alert
+      >
     }
     @if (invoicesError$ | async; as err) {
-      <div class="alert alert-danger mb-0 rounded-0 border-0 border-bottom" role="alert">{{ err }}</div>
+      <fpc-alert [flush]="true" variant="danger" [message]="err" />
     }
 
-    <div class="customer-billing__summary-bar flex-shrink-0">
-      <div class="row g-0 customer-billing__summary-grid">
-        <div class="col-6 col-md-3">
-          <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--first">
-            <div class="card-body">
-              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureInvoices-openOverdueCount">
-                Open and overdue invoices
-              </h6>
-              @if (invoicesSummaryLoading$ | async) {
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              } @else if (invoicesSummary$ | async; as summary) {
-                <p class="card-title mb-0 fs-4 fw-bold">{{ summary.openOverdueCount }}</p>
-              } @else {
-                <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
-              }
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--second">
-            <div class="card-body">
-              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureInvoices-openOverdueTotal">
-                Open total amount
-              </h6>
-              @if (invoicesSummaryLoading$ | async) {
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              } @else if (invoicesSummary$ | async; as summary) {
-                <p class="card-title mb-0 fs-4 fw-bold">{{ summary.openOverdueTotal | number: '1.2-2' }}€</p>
-              } @else {
-                <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
-              }
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--third">
-            <div class="card-body">
-              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureInvoices-nextBillingDay">
-                Your next billing day
-              </h6>
-              @if (invoicesSummaryLoading$ | async) {
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              } @else if (invoicesSummary$ | async; as summary) {
-                <p class="card-title mb-0 fs-4 fw-bold">{{ summary.billingDayOfMonth | nextBillingDay }}</p>
-              } @else {
-                <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
-              }
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--fourth">
-            <div class="card-body">
-              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureInvoices-unbilledTotal">
-                Unbilled amount
-              </h6>
-              @if (invoicesSummaryLoading$ | async) {
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              } @else if (invoicesSummary$ | async; as summary) {
-                <p class="card-title mb-0 fs-4 fw-bold">{{ summary.unbilledTotal | number: '1.2-2' }}€</p>
-              } @else {
-                <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
-              }
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <fpc-summary-bar [columns]="4">
+      <fpc-summary-card [label]="openOverdueCountLabel">
+        <span fpcSummaryCardValue>
+          @if (invoicesSummaryLoading$ | async) {
+            <fpc-spinner size="sm" />
+          } @else if (invoicesSummary$ | async; as summary) {
+            {{ summary.openOverdueCount }}
+          } @else {
+            <span class="text-body-secondary">—</span>
+          }
+        </span>
+      </fpc-summary-card>
+      <fpc-summary-card [label]="openOverdueTotalLabel">
+        <span fpcSummaryCardValue>
+          @if (invoicesSummaryLoading$ | async) {
+            <fpc-spinner size="sm" />
+          } @else if (invoicesSummary$ | async; as summary) {
+            {{ summary.openOverdueTotal | number: '1.2-2' }}€
+          } @else {
+            <span class="text-body-secondary">—</span>
+          }
+        </span>
+      </fpc-summary-card>
+      <fpc-summary-card [label]="nextBillingDayLabel">
+        <span fpcSummaryCardValue>
+          @if (invoicesSummaryLoading$ | async) {
+            <fpc-spinner size="sm" />
+          } @else if (invoicesSummary$ | async; as summary) {
+            {{ summary.billingDayOfMonth | nextBillingDay }}
+          } @else {
+            <span class="text-body-secondary">—</span>
+          }
+        </span>
+      </fpc-summary-card>
+      <fpc-summary-card [label]="unbilledTotalLabel">
+        <span fpcSummaryCardValue>
+          @if (invoicesSummaryLoading$ | async) {
+            <fpc-spinner size="sm" />
+          } @else if (invoicesSummary$ | async; as summary) {
+            {{ summary.unbilledTotal | number: '1.2-2' }}€
+          } @else {
+            <span class="text-body-secondary">—</span>
+          }
+        </span>
+      </fpc-summary-card>
+    </fpc-summary-bar>
 
     <div class="section__row flex-grow-1 min-h-0">
       <div
         class="section__column section__column--open-overdue d-md-flex flex-column min-h-0 border-end"
         [class.d-none]="mobilePanel() !== 'openOverdue'"
       >
-        <div class="customer-billing__lane card h-100 border-0 d-flex flex-column min-h-0">
-          <div class="card-header customer-billing__lane-header py-2 small fw-semibold flex-shrink-0">
-            <span i18n="@@featureInvoices-openOverdueList">Open and overdue invoices</span>
-          </div>
-          <form class="lane-search" (ngSubmit)="$event.preventDefault()">
-            <label for="openOverdueSearchInput" class="visually-hidden" i18n="@@featureInvoices-searchOpenOverdue">
-              Search open and overdue invoices
-            </label>
-            <div class="input-group search-input-container border-bottom">
-              <i class="bi bi-search" aria-hidden="true"></i>
-              <input
-                id="openOverdueSearchInput"
-                type="search"
-                class="form-control border-0 search-input"
-                placeholder="Search open and overdue invoices"
-                i18n-placeholder="@@featureInvoices-searchOpenOverdue"
-                [ngModel]="openOverdueSearch()"
-                (ngModelChange)="onOpenOverdueSearchChange($event)"
-                name="openOverdueSearch"
+        <fpc-board-lane class="h-100">
+          <fpc-lane-header fpcBoardLaneHeader flush>
+            <span fpcLaneHeaderTitle i18n="@@featureInvoices-openOverdueList">Open and overdue invoices</span>
+          </fpc-lane-header>
+          <fpc-search-field
+            fpcBoardLaneSearch
+            inputId="openOverdueSearchInput"
+            name="openOverdueSearch"
+            [bordered]="false"
+            i18n-placeholder="@@featureInvoices-searchOpenOverdue"
+            placeholder="Search open and overdue invoices"
+            i18n-ariaLabel="@@featureInvoices-searchOpenOverdue"
+            ariaLabel="Search open and overdue invoices"
+            [(value)]="openOverdueSearch"
+          />
+          @if (openOverdueListLoading$ | async) {
+            <div class="d-flex justify-content-center align-items-center p-4">
+              <fpc-spinner
+                variant="primary"
+                i18n-label="@@featureInvoices-loadingOpenOverdue"
+                label="Loading open and overdue invoices..."
               />
             </div>
-          </form>
-          <div class="customer-billing__lane-list list-group list-group-flush flex-grow-1">
-            @if (openOverdueListLoading$ | async) {
-              <div class="d-flex justify-content-center align-items-center p-4">
-                <div class="spinner-border text-primary" role="status">
-                  <span class="visually-hidden" i18n="@@featureInvoices-loadingOpenOverdue"
-                    >Loading open and overdue invoices...</span
-                  >
-                </div>
-              </div>
-            } @else {
-              @if (openOverdueListError$ | async; as listErr) {
-                <div class="alert alert-warning m-3" role="alert">{{ listErr }}</div>
-              }
-              @if (openOverdueList().length === 0) {
-                <div class="d-flex justify-content-center align-items-center p-4 text-muted">
-                  <p class="mb-0" i18n="@@featureInvoices-noOpenOverdue">No open or overdue invoices.</p>
-                </div>
-              } @else if (openOverdueList().length === 0) {
-                <div class="d-flex justify-content-center align-items-center p-4 text-muted">
-                  <p class="mb-0" i18n="@@featureInvoices-noSearchResults">No invoices match your search.</p>
-                </div>
+          } @else {
+            @if (openOverdueListError$ | async; as listErr) {
+              <fpc-alert class="m-3" variant="warning" [message]="listErr" />
+            }
+            @if (openOverdueList().length === 0) {
+              @if (openOverdueSearch().trim()) {
+                <fpc-empty-state
+                  size="sm"
+                  icon="search"
+                  message="No search results"
+                  i18n-message="@@featureInvoices-noSearchResults"
+                />
               } @else {
+                <fpc-empty-state
+                  size="sm"
+                  message="No open or overdue invoices yet"
+                  i18n-message="@@featureInvoices-noOpenOverdue"
+                />
+              }
+            } @else {
+              <fpc-list [flush]="true">
                 @for (inv of openOverdueList(); track inv.id) {
                   <ng-container
                     *ngTemplateOutlet="invoiceListItem; context: { $implicit: inv, subscriptionId: inv.subscriptionId }"
                   ></ng-container>
                 }
-              }
+              </fpc-list>
             }
-          </div>
-        </div>
+          }
+        </fpc-board-lane>
       </div>
 
       <div
         class="section__column section__column--history d-md-flex flex-column min-h-0"
         [class.d-none]="mobilePanel() !== 'history'"
       >
-        <div class="customer-billing__lane card h-100 border-0 d-flex flex-column min-h-0">
-          <div class="card-header customer-billing__lane-header py-2 small fw-semibold flex-shrink-0">
-            <span i18n="@@featureInvoices-historyList">Invoice history</span>
-          </div>
-          <form class="lane-search" (ngSubmit)="$event.preventDefault()">
-            <label for="historyInvoicesSearchInput" class="visually-hidden" i18n="@@featureInvoices-searchHistory">
-              Search invoice history
-            </label>
-            <div class="input-group search-input-container border-bottom">
-              <i class="bi bi-search" aria-hidden="true"></i>
-              <input
-                id="historyInvoicesSearchInput"
-                type="search"
-                class="form-control border-0 search-input"
-                placeholder="Search invoice history"
-                i18n-placeholder="@@featureInvoices-searchHistory"
-                [ngModel]="historyInvoicesSearch()"
-                (ngModelChange)="onHistoryInvoicesSearchChange($event)"
-                name="historyInvoicesSearch"
+        <fpc-board-lane class="h-100">
+          <fpc-lane-header fpcBoardLaneHeader flush>
+            <span fpcLaneHeaderTitle i18n="@@featureInvoices-historyList">Invoice history</span>
+          </fpc-lane-header>
+          <fpc-search-field
+            fpcBoardLaneSearch
+            inputId="historyInvoicesSearchInput"
+            name="historyInvoicesSearch"
+            [bordered]="false"
+            i18n-placeholder="@@featureInvoices-searchHistory"
+            placeholder="Search invoice history"
+            i18n-ariaLabel="@@featureInvoices-searchHistory"
+            ariaLabel="Search invoice history"
+            [(value)]="historyInvoicesSearch"
+          />
+          @if (historyListLoading$ | async) {
+            <div class="d-flex justify-content-center align-items-center p-4">
+              <fpc-spinner
+                variant="primary"
+                i18n-label="@@featureInvoices-loadingHistory"
+                label="Loading invoice history..."
               />
             </div>
-          </form>
-          <div class="customer-billing__lane-list list-group list-group-flush flex-grow-1">
-            @if (historyListLoading$ | async) {
-              <div class="d-flex justify-content-center align-items-center p-4">
-                <div class="spinner-border text-primary" role="status">
-                  <span class="visually-hidden" i18n="@@featureInvoices-loadingHistory"
-                    >Loading invoice history...</span
-                  >
-                </div>
-              </div>
-            } @else {
-              @if (historyListError$ | async; as listErr) {
-                <div class="alert alert-warning m-3" role="alert">{{ listErr }}</div>
-              }
-              @if (historyList().length === 0) {
-                <div class="d-flex justify-content-center align-items-center p-4 text-muted">
-                  <p class="mb-0" i18n="@@featureInvoices-noHistory">No invoice history.</p>
-                </div>
-              } @else if (historyList().length === 0) {
-                <div class="d-flex justify-content-center align-items-center p-4 text-muted">
-                  <p class="mb-0" i18n="@@featureInvoices-noSearchResults">No invoices match your search.</p>
-                </div>
+          } @else {
+            @if (historyListError$ | async; as listErr) {
+              <fpc-alert class="m-3" variant="warning" [message]="listErr" />
+            }
+            @if (historyList().length === 0) {
+              @if (historyInvoicesSearch().trim()) {
+                <fpc-empty-state
+                  size="sm"
+                  icon="search"
+                  message="No search results"
+                  i18n-message="@@featureInvoices-noSearchResults"
+                />
               } @else {
+                <fpc-empty-state
+                  size="sm"
+                  message="No invoice history yet"
+                  i18n-message="@@featureInvoices-noHistory"
+                />
+              }
+            } @else {
+              <fpc-list [flush]="true">
                 @for (inv of historyList(); track inv.id) {
                   <ng-container
                     *ngTemplateOutlet="
@@ -238,286 +199,271 @@
                     "
                   ></ng-container>
                 }
-              }
+              </fpc-list>
             }
-          </div>
-        </div>
+          }
+        </fpc-board-lane>
       </div>
     </div>
   </div>
 </div>
 
 <ng-template #invoiceListItem let-inv let-subscriptionId="subscriptionId" let-showTotalGross="showTotalGross">
-  <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-2">
-    <div class="min-w-0 flex-grow-1">
-      <div class="fw-semibold mb-1">{{ invoiceDisplayTitle(inv) }}</div>
-      <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-        <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-          <span
-            class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded me-2"
-            [ngClass]="invoiceStatusBadgeClass(inv.status)"
-            [attr.title]="inv.status ?? undefined"
-          >
-            {{ getInvoiceStatus(inv.status) }}
+  <fpc-list-item>
+    <div fpcListItemTitle class="fw-semibold">{{ invoiceDisplayTitle(inv) }}</div>
+    <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
+      <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+        <fpc-badge
+          variant="info"
+          color="secondary"
+          class="me-2"
+          [ngClass]="invoiceStatusBadgeClass(inv.status)"
+          [attr.title]="inv.status ?? undefined"
+        >
+          {{ getInvoiceStatus(inv.status) }}
+        </fpc-badge>
+        @if (inv.subscriptionNumber) {
+          <span class="me-2">
+            <i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>{{ inv.subscriptionNumber }}
           </span>
-          @if (inv.subscriptionNumber) {
-            <span class="me-2">
-              <i class="bi bi-diagram-3 me-1" aria-hidden="true"></i>{{ inv.subscriptionNumber }}
-            </span>
+        }
+        <span class="me-2">
+          <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>
+          @let listAmount = invoiceListAmount(inv, showTotalGross);
+          @if (listAmount !== null) {
+            {{ listAmount | number: '1.2-2' }} EUR
+          } @else {
+            —
           }
-          <span class="me-2">
-            <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>
-            @let listAmount = invoiceListAmount(inv, showTotalGross);
-            @if (listAmount !== null) {
-              {{ listAmount | number: '1.2-2' }} EUR
-            } @else {
-              —
-            }
-          </span>
-          <span class="me-2">
-            <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>{{ formatDate(inv.createdAt) }}
-          </span>
-          <span class="me-2">
-            <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ formatDate(inv.dueDate) }}
-          </span>
-        </div>
+        </span>
+        <span class="me-2">
+          <i class="bi bi-calendar3 me-1" aria-hidden="true"></i>{{ formatDate(inv.createdAt) }}
+        </span>
+        <span class="me-2">
+          <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ formatDate(inv.dueDate) }}
+        </span>
       </div>
     </div>
-    <div
-      class="btn-group btn-group-sm flex-shrink-0"
-      role="group"
-      aria-label="Invoice actions"
-      i18n-aria-label="@@featureInvoices-invoiceActionsAria"
+    <fpc-button-group
+      fpcListItemActions
+      size="sm"
+      ariaLabel="Invoice actions"
+      i18n-ariaLabel="@@featureInvoices-invoiceActionsAria"
     >
       @if (inv.canPreview) {
-        <button
-          type="button"
-          class="btn btn-outline-secondary"
-          (click)="openPreview(subscriptionId, inv)"
+        <fpc-button
+          iconOnly
+          size="sm"
+          variant="dark"
+          (clicked)="openPreview(subscriptionId, inv)"
           title="Preview invoice"
           i18n-title="@@featureInvoices-previewButtonTitle"
         >
           <i class="bi bi-eye" aria-hidden="true"></i>
-        </button>
+        </fpc-button>
       }
       @if (shouldShowPayButton(inv)) {
-        <button
-          type="button"
-          class="btn btn-outline-success"
+        <fpc-button
+          iconOnly
+          size="sm"
+          variant="dark"
           [disabled]="isPayButtonDisabled(inv, payingInvoiceRefId$ | async)"
-          [attr.title]="payButtonTitle(inv)"
-          (click)="payInvoice(subscriptionId, inv)"
+          [title]="payButtonTitle(inv)"
+          (clicked)="payInvoice(subscriptionId, inv)"
         >
           <i class="bi bi-credit-card" aria-hidden="true"></i>
           <span class="visually-hidden">{{ payButtonTitle(inv) }}</span>
-        </button>
+        </fpc-button>
       }
       @if (inv.canDownload) {
-        <button
-          type="button"
-          class="btn btn-outline-secondary"
-          (click)="downloadInvoice(subscriptionId, inv)"
+        <fpc-button
+          size="sm"
+          variant="dark"
+          iconOnly
+          (clicked)="downloadInvoice(subscriptionId, inv)"
           title="Download PDF"
           i18n-title="@@featureInvoices-downloadButtonTitle"
         >
           <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i>
-        </button>
+        </fpc-button>
       }
       @if (inv.canDownloadVoidDocument) {
-        <button
-          type="button"
-          class="btn btn-outline-secondary"
-          (click)="downloadVoidDocument(subscriptionId, inv)"
+        <fpc-button
+          size="sm"
+          variant="dark"
+          iconOnly
+          (clicked)="downloadVoidDocument(subscriptionId, inv)"
           title="Download credit note"
           i18n-title="@@featureInvoices-downloadCreditNoteButtonTitle"
         >
           <i class="bi bi-file-earmark-x" aria-hidden="true"></i>
-        </button>
+        </fpc-button>
       }
       @if (inv.canDownloadTimeReport) {
-        <button
-          type="button"
-          class="btn btn-outline-secondary"
-          (click)="downloadTimeReport(subscriptionId, inv)"
+        <fpc-button
+          size="sm"
+          variant="dark"
+          iconOnly
+          (clicked)="downloadTimeReport(subscriptionId, inv)"
           title="Download time report"
           i18n-title="@@featureInvoices-downloadTimeReportButtonTitle"
         >
           <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
-        </button>
+        </fpc-button>
       }
-    </div>
-  </div>
+    </fpc-button-group>
+  </fpc-list-item>
 </ng-template>
 
-<div
-  #previewInvoiceModal
-  class="modal fade"
-  tabindex="-1"
-  aria-labelledby="previewInvoiceModalLabel"
-  aria-hidden="true"
+<fpc-modal
+  class="invoice-preview-modal"
+  [(open)]="previewInvoiceModalOpen"
+  size="xl"
+  i18n-title="@@featureInvoices-previewTitle"
+  title="Invoice preview"
 >
-  <div class="modal-dialog modal-xl invoice-preview-modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="previewInvoiceModalLabel" i18n="@@featureInvoices-previewTitle">Invoice preview</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        @if (invoiceDetailsLoading$ | async) {
-          <div class="invoice-preview-modal__loading">
-            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            <span i18n="@@featureInvoices-loadingDetails">Loading invoice details…</span>
+  @if (invoiceDetailsLoading$ | async) {
+    <div class="invoice-preview-modal__loading">
+      <fpc-spinner size="sm" />
+      <span i18n="@@featureInvoices-loadingDetails">Loading invoice details…</span>
+    </div>
+  } @else {
+    @if (previewDetail$ | async; as detail) {
+      <article class="invoice-preview d-flex flex-column gap-3">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+              <div>
+                <h6 class="card-title fs-5 mb-2">{{ detail.invoiceNumber ?? detail.id }}</h6>
+                <fpc-badge
+                  variant="info"
+                  color="secondary"
+                  class="d-inline-flex align-self-start"
+                  [ngClass]="invoiceStatusBadgeClass(detail.status)"
+                >
+                  {{ getInvoiceStatus(detail.status) }}
+                </fpc-badge>
+              </div>
+              <div class="row g-3 mb-0">
+                <div class="col-auto">
+                  <div class="small text-muted text-uppercase" i18n="@@featureInvoices-issuedAt">Issued</div>
+                  <div class="fw-medium">{{ formatDate(detail.issuedAt ?? detail.createdAt) }}</div>
+                </div>
+                <div class="col-auto">
+                  <div class="small text-muted text-uppercase" i18n="@@featureInvoices-dueDate">Due date</div>
+                  <div class="fw-medium">{{ formatDate(detail.dueDate) }}</div>
+                </div>
+                <div class="col-auto">
+                  <div class="small text-muted text-uppercase" i18n="@@featureInvoices-currency">Currency</div>
+                  <div class="fw-medium">{{ detail.currency }}</div>
+                </div>
+              </div>
+            </div>
           </div>
-        } @else {
-          @if (previewDetail$ | async; as detail) {
-            <article class="invoice-preview d-flex flex-column gap-3">
-              <div class="card">
-                <div class="card-body">
-                  <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
-                    <div>
-                      <h6 class="card-title fs-5 mb-2">{{ detail.invoiceNumber ?? detail.id }}</h6>
-                      <span
-                        class="info-badge py-1 px-2 rounded d-inline-flex align-self-start"
-                        [ngClass]="invoiceStatusBadgeClass(detail.status)"
-                      >
-                        {{ getInvoiceStatus(detail.status) }}
-                      </span>
-                    </div>
-                    <div class="row g-3 mb-0">
-                      <div class="col-auto">
-                        <div class="small text-muted text-uppercase" i18n="@@featureInvoices-issuedAt">Issued</div>
-                        <div class="fw-medium">{{ formatDate(detail.issuedAt ?? detail.createdAt) }}</div>
-                      </div>
-                      <div class="col-auto">
-                        <div class="small text-muted text-uppercase" i18n="@@featureInvoices-dueDate">Due date</div>
-                        <div class="fw-medium">{{ formatDate(detail.dueDate) }}</div>
-                      </div>
-                      <div class="col-auto">
-                        <div class="small text-muted text-uppercase" i18n="@@featureInvoices-currency">Currency</div>
-                        <div class="fw-medium">{{ detail.currency }}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        </div>
 
-              <div class="card">
-                <div class="card-header py-2 small fw-semibold" i18n="@@featureInvoices-lineItems">Line items</div>
-                <div class="table-responsive">
-                  <table class="table table-hover align-middle mb-0">
-                    <thead>
-                      <tr class="small text-muted">
-                        <th scope="col" i18n="@@featureInvoices-lineDescription">Description</th>
-                        <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineQty">Qty</th>
-                        <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineUnitNet">
-                          Unit (net)
-                        </th>
-                        <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineNet">Net</th>
-                        <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineTax">Tax</th>
-                        <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineGross">Gross</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @for (line of detail.lineItems; track $index) {
-                        <tr>
-                          <td class="text-break">{{ line.description }}</td>
-                          <td class="text-end text-nowrap">{{ line.quantity | number: '1.0-2' }}</td>
-                          <td class="text-end text-nowrap">{{ line.unitPriceNet | number: '1.2-2' }} €</td>
-                          <td class="text-end text-nowrap">{{ line.lineNet | number: '1.2-2' }} €</td>
-                          <td class="text-end">
-                            <span class="text-nowrap">{{ line.lineTax | number: '1.2-2' }} €</span>
-                            <br />
-                            <small class="text-muted">{{ line.taxRate | number: '1.0-1' }}%</small>
-                          </td>
-                          <td class="text-end text-nowrap">{{ line.lineGross | number: '1.2-2' }} €</td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div class="row g-3 justify-content-end">
-                @if (detail.taxBreakdown.length > 0) {
-                  <div class="col-md-6 col-lg-5">
-                    <div class="card bg-body-tertiary h-100">
-                      <div class="card-header py-2 small fw-semibold" i18n="@@featureInvoices-taxBreakdown">
-                        Tax breakdown
-                      </div>
-                      <ul class="list-group list-group-flush">
-                        @for (tax of detail.taxBreakdown; track $index) {
-                          <li class="list-group-item d-flex justify-content-between bg-transparent text-nowrap">
-                            <span>{{ tax.taxRate | number: '1.0-1' }}%</span>
-                            <span class="fw-medium">{{ tax.taxAmount | number: '1.2-2' }} €</span>
-                          </li>
-                        }
-                      </ul>
-                    </div>
-                  </div>
+        <div class="card">
+          <fpc-lane-header>
+            <span fpcLaneHeaderTitle i18n="@@featureInvoices-lineItems">Line items</span>
+          </fpc-lane-header>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr class="small text-muted">
+                  <th scope="col" i18n="@@featureInvoices-lineDescription">Description</th>
+                  <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineQty">Qty</th>
+                  <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineUnitNet">Unit (net)</th>
+                  <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineNet">Net</th>
+                  <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineTax">Tax</th>
+                  <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineGross">Gross</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (line of detail.lineItems; track $index) {
+                  <tr>
+                    <td class="text-break">{{ line.description }}</td>
+                    <td class="text-end text-nowrap">{{ line.quantity | number: '1.0-2' }}</td>
+                    <td class="text-end text-nowrap">{{ line.unitPriceNet | number: '1.2-2' }} €</td>
+                    <td class="text-end text-nowrap">{{ line.lineNet | number: '1.2-2' }} €</td>
+                    <td class="text-end">
+                      <span class="text-nowrap">{{ line.lineTax | number: '1.2-2' }} €</span>
+                      <br />
+                      <small class="text-muted">{{ line.taxRate | number: '1.0-1' }}%</small>
+                    </td>
+                    <td class="text-end text-nowrap">{{ line.lineGross | number: '1.2-2' }} €</td>
+                  </tr>
                 }
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-                <div class="col-md-6 col-lg-4">
-                  <div class="card bg-body-tertiary h-100">
-                    <div class="card-header py-2 small fw-semibold" i18n="@@featureInvoices-summary">Summary</div>
-                    <ul class="list-group list-group-flush">
-                      <li class="list-group-item d-flex justify-content-between bg-transparent">
-                        <span i18n="@@featureInvoices-subtotalNet">Subtotal (net)</span>
-                        <span class="text-nowrap">{{ detail.subtotalNet | number: '1.2-2' }} €</span>
-                      </li>
-                      <li class="list-group-item d-flex justify-content-between bg-transparent">
-                        <span i18n="@@featureInvoices-taxTotal">Tax total</span>
-                        <span class="text-nowrap">{{ detail.taxTotal | number: '1.2-2' }} €</span>
-                      </li>
-                      <li class="list-group-item d-flex justify-content-between fw-semibold border-top">
-                        <span i18n="@@featureInvoices-totalGross">Total</span>
-                        <span class="text-nowrap">{{ detail.totalGross | number: '1.2-2' }} €</span>
-                      </li>
-                      <li class="list-group-item d-flex justify-content-between text-muted small bg-transparent">
-                        <span i18n="@@featureInvoices-balanceDue">Balance due</span>
-                        <span class="text-nowrap">{{ detail.balanceDue | number: '1.2-2' }} €</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
+        <div class="row g-3 justify-content-end">
+          @if (detail.taxBreakdown.length > 0) {
+            <div class="col-md-6 col-lg-5">
+              <div class="card bg-body-tertiary h-100">
+                <fpc-lane-header>
+                  <span fpcLaneHeaderTitle i18n="@@featureInvoices-taxBreakdown">Tax breakdown</span>
+                </fpc-lane-header>
+                <ul class="list-group list-group-flush">
+                  @for (tax of detail.taxBreakdown; track $index) {
+                    <li class="list-group-item d-flex justify-content-between bg-transparent text-nowrap">
+                      <span>{{ tax.taxRate | number: '1.0-1' }}%</span>
+                      <span class="fw-medium">{{ tax.taxAmount | number: '1.2-2' }} €</span>
+                    </li>
+                  }
+                </ul>
               </div>
-            </article>
+            </div>
           }
-        }
-      </div>
-    </div>
-  </div>
-</div>
 
-<div #createInvoiceModal class="modal fade" tabindex="-1" aria-labelledby="createInvoiceModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="createInvoiceModalLabel" i18n="@@featureInvoices-createTitle">Create invoice</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <label for="createInvoiceDescription" class="form-label" i18n="@@featureInvoices-description"
-          >Description</label
-        >
-        <input
-          id="createInvoiceDescription"
-          type="text"
-          class="form-control"
-          [(ngModel)]="createInvoiceDescription"
-          name="createInvoiceDescription"
-        />
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          [disabled]="isCreateInvoiceDisabled$ | async"
-          (click)="onSubmitCreateInvoice()"
-          i18n="@@featureInvoices-create"
-        >
-          Create
-        </button>
-      </div>
-    </div>
+          <div class="col-md-6 col-lg-4">
+            <div class="card bg-body-tertiary h-100">
+              <fpc-lane-header>
+                <span fpcLaneHeaderTitle i18n="@@featureInvoices-summary">Summary</span>
+              </fpc-lane-header>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between bg-transparent">
+                  <span i18n="@@featureInvoices-subtotalNet">Subtotal (net)</span>
+                  <span class="text-nowrap">{{ detail.subtotalNet | number: '1.2-2' }} €</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between bg-transparent">
+                  <span i18n="@@featureInvoices-taxTotal">Tax total</span>
+                  <span class="text-nowrap">{{ detail.taxTotal | number: '1.2-2' }} €</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between fw-semibold border-top">
+                  <span i18n="@@featureInvoices-totalGross">Total</span>
+                  <span class="text-nowrap">{{ detail.totalGross | number: '1.2-2' }} €</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between text-muted small bg-transparent">
+                  <span i18n="@@featureInvoices-balanceDue">Balance due</span>
+                  <span class="text-nowrap">{{ detail.balanceDue | number: '1.2-2' }} €</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </article>
+    }
+  }
+</fpc-modal>
+
+<fpc-modal [(open)]="createInvoiceModalOpen" i18n-title="@@featureInvoices-createTitle" title="Create invoice">
+  <fpc-form-field forId="createInvoiceDescription" i18n-label="@@featureInvoices-description" label="Description">
+    <fpc-form-control
+      controlId="createInvoiceDescription"
+      [(ngModel)]="createInvoiceDescription"
+      name="createInvoiceDescription"
+    />
+  </fpc-form-field>
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button
+      variant="primary"
+      [disabled]="isCreateInvoiceDisabled$ | async"
+      (clicked)="onSubmitCreateInvoice()"
+      i18n="@@featureInvoices-create"
+    >
+      Create
+    </fpc-button>
   </div>
-</div>
+</fpc-modal>

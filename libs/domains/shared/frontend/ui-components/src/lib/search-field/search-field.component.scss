@@ -1,0 +1,155 @@
+:host {
+  display: block;
+}
+
+:host(.fpc-search-field--marketing) {
+  max-width: 32rem;
+}
+
+// Mirrors the `search-input-container` pattern used across the consoles: the glyph is a
+// fixed-size flex item, so the input needs no extra start padding.
+.search-input-container {
+  background-color: var(--bs-body-bg);
+  position: relative;
+  // Lock strip height to the leading glyph so the clear control cannot grow the row.
+  align-items: center;
+
+  > i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    color: var(--bs-secondary-color);
+    flex: 0 0 auto;
+  }
+
+  .fpc-search-field__input {
+    // Match glyph height so empty and non-empty states share one strip size.
+    min-height: 2.25rem;
+    height: 2.25rem;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .fpc-search-field__clear {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 2.25rem;
+    height: 2.25rem;
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    padding: 0;
+    margin: 0;
+    line-height: 1;
+  }
+}
+
+// Reserve end inset whenever clear is enabled so showing the × does not widen the strip.
+:host(.fpc-search-field--clearable) .search-input-container .fpc-search-field__input {
+  padding-right: 2.25rem;
+}
+
+:host(.fpc-search-field--sm.fpc-search-field--clearable) .search-input-container .fpc-search-field__input {
+  padding-right: 1.875rem;
+}
+
+.fpc-search-field__input {
+  // The glyph already provides the start inset, so the control sits flush in the strip.
+  border-radius: 0;
+  padding-left: 0;
+  box-shadow: none;
+
+  // Suppress the WebKit clear affordance; the component ships its own clear button.
+  &::-webkit-search-cancel-button {
+    appearance: none;
+  }
+
+  &:focus {
+    box-shadow: none;
+  }
+}
+
+.fpc-search-field__clear {
+  color: var(--bs-secondary-color);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--bs-body-color);
+  }
+}
+
+:host(.fpc-search-field--sm) .search-input-container {
+  > i,
+  .fpc-search-field__clear {
+    width: 1.875rem;
+    height: 1.875rem;
+    min-width: 1.875rem;
+    min-height: 1.875rem;
+  }
+
+  .fpc-search-field__input {
+    min-height: 1.875rem;
+    height: 1.875rem;
+  }
+}
+
+// Landing / blog hero search: overlaid icon + padded rounded control.
+.fpc-search-field__container--marketing {
+  position: relative;
+}
+
+.fpc-search-field__container--marketing .fpc-search-field__icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  color: var(--bs-secondary-color);
+  pointer-events: none;
+}
+
+.fpc-search-field__input--marketing {
+  padding-left: 2.75rem;
+  border-radius: 0.75rem;
+  box-shadow: none;
+
+  &:focus {
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+  }
+}
+
+:host(.fpc-search-field--clearable) .fpc-search-field__input--marketing {
+  padding-right: 2.75rem;
+}
+
+.fpc-search-field__input--xl {
+  // Above Bootstrap `lg` for landing heroes; keep `form-control-lg` as the base scale.
+  min-height: calc(1.5em + 1.25rem + calc(var(--bs-border-width) * 2));
+  padding-block: 0.75rem;
+  font-size: 1.125rem;
+}
+
+.fpc-search-field__container--marketing .fpc-search-field__clear {
+  position: absolute;
+  right: 0.35rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+}

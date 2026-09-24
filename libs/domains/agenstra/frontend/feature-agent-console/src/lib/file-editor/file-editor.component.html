@@ -12,15 +12,16 @@
       @if (fileTreeVisible() || !gitManagerVisible()) {
         <div class="d-block d-md-none p-3 border-bottom bg-body-tertiary">
           <div class="d-flex align-items-center gap-2">
-            <button
-              type="button"
-              class="btn btn-sm btn-secondary"
-              (click)="onCloseFileTree()"
+            <fpc-button
+              variant="dark"
+              size="sm"
+              iconOnly
+              (clicked)="onCloseFileTree()"
               i18n-title="@@featureFileEditor-closeFileTreeTitle"
               title="Close File Tree"
             >
               <i class="bi bi-arrow-left"></i>
-            </button>
+            </fpc-button>
             <h5 class="mb-0 fw-semibold" i18n="@@featureFileEditor-fileTreeHeader">File Tree</h5>
           </div>
         </div>
@@ -59,15 +60,16 @@
           <!-- Git Manager Header with Back Button (mobile only) -->
           <div class="d-block d-md-none p-3 border-bottom bg-body-tertiary">
             <div class="d-flex align-items-center gap-2">
-              <button
-                type="button"
-                class="btn btn-sm btn-secondary"
-                (click)="onCloseGitManager()"
+              <fpc-button
+                variant="dark"
+                size="sm"
+                iconOnly
+                (clicked)="onCloseGitManager()"
                 i18n-title="@@featureFileEditor-closeVersionControlTitle"
                 title="Close Version Control"
               >
                 <i class="bi bi-arrow-left"></i>
-              </button>
+              </fpc-button>
               <h5 class="mb-0 fw-semibold" i18n="@@featureFileEditor-versionControlHeader">Version Control</h5>
             </div>
           </div>
@@ -128,43 +130,38 @@
             }
           </div>
           @if (showMoreFilesDropdown()) {
-            <div class="dropdown">
-              <button
-                class="btn btn-sm btn-link text-decoration-none dropdown-toggle border-start bg-primary text-white file-editor-more-button"
-                type="button"
-                id="moreFilesDropdown"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
+            <fpc-dropdown alignment="end" [(open)]="moreFilesMenuOpen">
+              <fpc-button
+                fpcDropdownTrigger
+                size="sm"
+                variant="link"
+                btnClass="text-decoration-none dropdown-toggle border-start bg-primary text-white file-editor-more-button"
+                controlId="moreFilesDropdown"
               >
                 <span i18n="@@featureFileEditor-moreFiles">More files</span>
-              </button>
-              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="moreFilesDropdown">
-                @for (tab of overflowedTabs(); track tab.filePath) {
-                  <li>
-                    <a
-                      class="dropdown-item d-flex align-items-center justify-content-between"
-                      [class.active]="selectedFilePath() === tab.filePath"
-                      [class.fst-italic]="!tab.pinned"
-                      (click)="onTabClickFromDropdown(tab.filePath, $event)"
-                      [title]="tab.filePath"
-                      href="#"
-                    >
-                      <span class="d-flex align-items-center">
-                        <i class="bi bi-file-earmark-code me-2"></i>
-                        {{ getFileName(tab.filePath) }}
-                      </span>
-                      <button
-                        type="button"
-                        class="btn-close btn-close-sm ms-2"
-                        (click)="onTabClose(tab.filePath, $event)"
-                        i18n-aria-label="@@featureFileEditor-closeTabAriaLabel"
-                        aria-label="Close tab"
-                      ></button>
-                    </a>
-                  </li>
-                }
-              </ul>
-            </div>
+              </fpc-button>
+              @for (tab of overflowedTabs(); track tab.filePath) {
+                <fpc-dropdown-item
+                  icon="file-earmark-code"
+                  [active]="selectedFilePath() === tab.filePath"
+                  [itemClass]="tab.pinned ? null : 'fst-italic'"
+                  [title]="tab.filePath"
+                  (selected)="onTabClickFromDropdown(tab.filePath)"
+                >
+                  {{ getFileName(tab.filePath) }}
+                  <span
+                    fpcDropdownItemEnd
+                    role="button"
+                    tabindex="0"
+                    class="btn-close btn-close-sm"
+                    (click)="onTabClose(tab.filePath, $event)"
+                    (keydown.enter)="onTabClose(tab.filePath, $event)"
+                    i18n-aria-label="@@featureFileEditor-closeTabAriaLabel"
+                    aria-label="Close tab"
+                  ></span>
+                </fpc-dropdown-item>
+              }
+            </fpc-dropdown>
           }
         </div>
       </div>
@@ -185,40 +182,35 @@
             <i class="bi bi-box-arrow-up-right"></i>
           </a>
           @if (isDirty()) {
-            <span class="badge bg-warning text-dark ms-2" i18n="@@featureFileEditor-unsavedBadge">Unsaved</span>
+            <fpc-badge color="warning" class="ms-2" i18n="@@featureFileEditor-unsavedBadge">Unsaved</fpc-badge>
           }
         </div>
         <div class="d-flex align-items-center gap-3">
-          <div class="form-check">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              id="autosaveCheckbox"
-              [checked]="autosaveEnabled()"
-              (change)="autosaveEnabled.set($any($event.target).checked)"
-            />
-            <label class="form-check-label small" for="autosaveCheckbox" i18n="@@featureFileEditor-autosaveLabel">
-              Autosave
-            </label>
-          </div>
-          <div class="btn-group btn-group-sm" role="group">
-            <button
-              type="button"
-              class="btn btn-sm btn-primary"
-              (click)="onSave()"
+          <fpc-form-check
+            checkId="autosaveCheckbox"
+            [checked]="autosaveEnabled()"
+            (checkedChange)="autosaveEnabled.set($event)"
+          >
+            <label class="form-check-label small" for="autosaveCheckbox" i18n="@@featureFileEditor-autosaveLabel"
+              >Autosave</label
+            >
+          </fpc-form-check>
+          <fpc-button-group size="sm">
+            <fpc-button
+              variant="primary"
+              size="sm"
+              iconOnly
+              (clicked)="onSave()"
               [disabled]="!selectedFilePath() || !isDirty() || (isWritingFile$ | async)"
+              [loading]="(isWritingFile$ | async) === true"
               i18n-title="@@featureFileEditor-saveTitle"
               title="Save (Ctrl+S)"
               i18n-aria-label="@@featureFileEditor-saveTitle"
-              aria-label="Save (Ctrl+S)"
+              ariaLabel="Save (Ctrl+S)"
             >
-              @if (isWritingFile$ | async) {
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              } @else {
-                <i class="bi bi-save" aria-hidden="true"></i>
-              }
-            </button>
-          </div>
+              <i class="bi bi-save" aria-hidden="true"></i>
+            </fpc-button>
+          </fpc-button-group>
         </div>
       </div>
     }
@@ -236,7 +228,7 @@
         </div>
       } @else {
         <div
-          class="editor-content"
+          class="editor-content d-flex flex-column"
           [class.flex-grow-1]="!terminalVisible()"
           [style.flex-basis]="terminalVisible() ? '60%' : '100%'"
           [class.mobile-hidden]="fileTreeVisible() || terminalVisible() || gitManagerVisible()"
@@ -244,9 +236,7 @@
           @if (selectedFilePath()) {
             @if (isReadingFile$ | async) {
               <div class="d-flex justify-content-center align-items-center h-100">
-                <div class="spinner-border text-primary" role="status">
-                  <span class="visually-hidden" i18n="@@featureFileEditor-loadingFile">Loading file...</span>
-                </div>
+                <fpc-spinner variant="primary" i18n-label="@@featureFileEditor-loadingFile" label="Loading file..." />
               </div>
             } @else {
               <framework-monaco-editor-wrapper
@@ -261,15 +251,11 @@
               ></framework-monaco-editor-wrapper>
             }
           } @else {
-            <div class="d-flex justify-content-center align-items-center h-100 bg-body-secondary">
-              <div class="text-center text-muted p-4">
-                <i class="bi bi-file-earmark-code fs-1 d-block mb-3"></i>
-                <p class="mb-0" i18n="@@featureFileEditor-noFileSelected">No file selected</p>
-                <small class="text-muted" i18n="@@featureFileEditor-selectFileHint"
-                  >Select a file from the tree to start editing</small
-                >
-              </div>
-            </div>
+            <fpc-empty-state
+              icon="file-earmark"
+              message="No file selected yet"
+              i18n-message="@@featureFileEditor-noFileSelected"
+            />
           }
         </div>
       }
@@ -278,15 +264,16 @@
           <!-- Terminal Header with Back Button (mobile only) -->
           <div class="d-block d-md-none p-3 border-bottom bg-body-tertiary flex-shrink-0">
             <div class="d-flex align-items-center gap-2">
-              <button
-                type="button"
-                class="btn btn-sm btn-secondary"
-                (click)="onCloseTerminal()"
+              <fpc-button
+                variant="dark"
+                size="sm"
+                iconOnly
+                (clicked)="onCloseTerminal()"
                 i18n-title="@@featureFileEditor-closeTerminalTitle"
                 title="Close Terminal"
               >
                 <i class="bi bi-arrow-left"></i>
-              </button>
+              </fpc-button>
               <h5 class="mb-0 fw-semibold" i18n="@@featureFileEditor-terminalHeader">Terminal</h5>
             </div>
           </div>
@@ -311,109 +298,49 @@
   </div>
 </div>
 
-<!-- File Update Notification Modal -->
-<div
-  class="modal fade"
-  id="fileUpdateModal"
-  tabindex="-1"
-  aria-labelledby="fileUpdateModalLabel"
-  aria-hidden="true"
-  #fileUpdateModal
+<fpc-modal
+  [(open)]="showFileUpdateModal"
+  i18n-title="@@featureFileEditor-externalChangesTitle"
+  title="External File Changes Detected"
 >
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="fileUpdateModalLabel">
-          <span i18n="@@featureFileEditor-externalChangesTitle">External File Changes Detected</span>
-        </h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          i18n-aria-label="@@featureFileEditor-closeAriaLabel"
-          aria-label="Close"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <p i18n="@@featureFileEditor-externalChangesMessage">
-          The file <strong>{{ fileUpdateNotification()?.filePath }}</strong> has been updated by another user while you
-          have unsaved changes.
-        </p>
-        <p class="mb-0" i18n="@@featureFileEditor-externalChangesQuestion">What would you like to do?</p>
-        <ul class="mt-2">
-          <li i18n="@@featureFileEditor-externalChangesAcceptOption">
-            <strong>Accept:</strong> Reload the file from the server (your unsaved changes will be lost)
-          </li>
-          <li i18n="@@featureFileEditor-externalChangesRejectOption">
-            <strong>Reject:</strong> Keep your local changes and override the external changes when you save
-          </li>
-        </ul>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          (click)="onRejectFileUpdate()"
-          data-bs-dismiss="modal"
-          i18n="@@featureFileEditor-rejectButton"
-        >
-          Reject
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="onAcceptFileUpdate()"
-          data-bs-dismiss="modal"
-          i18n="@@featureFileEditor-acceptButton"
-        >
-          Accept
-        </button>
-      </div>
-    </div>
+  <p i18n="@@featureFileEditor-externalChangesMessage">
+    The file <strong>{{ fileUpdateNotification()?.filePath }}</strong> has been updated by another user while you have
+    unsaved changes.
+  </p>
+  <p class="mb-0" i18n="@@featureFileEditor-externalChangesQuestion">What would you like to do?</p>
+  <ul class="mt-2">
+    <li i18n="@@featureFileEditor-externalChangesAcceptOption">
+      <strong>Accept:</strong> Reload the file from the server (your unsaved changes will be lost)
+    </li>
+    <li i18n="@@featureFileEditor-externalChangesRejectOption">
+      <strong>Reject:</strong> Keep your local changes and override the external changes when you save
+    </li>
+  </ul>
+  <div *fpcModalFooter>
+    <fpc-button-group>
+      <fpc-button variant="dark" (clicked)="onRejectFileUpdate()" i18n="@@featureFileEditor-rejectButton">
+        Reject
+      </fpc-button>
+      <fpc-button variant="primary" (clicked)="onAcceptFileUpdate()" i18n="@@featureFileEditor-acceptButton">
+        Accept
+      </fpc-button>
+    </fpc-button-group>
   </div>
-</div>
+</fpc-modal>
 
-<!-- Save Override Confirmation Modal -->
-<div
-  class="modal fade"
-  id="saveOverrideModal"
-  tabindex="-1"
-  aria-labelledby="saveOverrideModalLabel"
-  aria-hidden="true"
-  #saveOverrideModal
+<fpc-confirm-dialog
+  [(open)]="saveOverrideModalOpen"
+  i18n-title="@@featureFileEditor-overrideNewerTitle"
+  title="Override Newer Changes?"
+  i18n-confirmLabel="@@featureFileEditor-save"
+  confirmLabel="Save"
+  [danger]="true"
+  (confirmed)="onConfirmSaveOverride()"
+  (cancelled)="onCancelSaveOverride()"
 >
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="saveOverrideModalLabel">
-          <span i18n="@@featureFileEditor-overrideNewerTitle">Override Newer Changes?</span>
-        </h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          i18n-aria-label="@@featureFileEditor-closeAriaLabel"
-          aria-label="Close"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <p i18n="@@featureFileEditor-overrideNewerMessage">
-          You previously rejected external changes to <strong>{{ selectedFilePath() }}</strong
-          >. Saving now will override those newer changes.
-        </p>
-        <p class="mb-0" i18n="@@featureFileEditor-overrideNewerConfirm">Are you sure you want to proceed?</p>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="onConfirmSaveOverride()"
-          data-bs-dismiss="modal"
-          i18n="@@featureFileEditor-save"
-        >
-          Save
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+  <p i18n="@@featureFileEditor-overrideNewerMessage">
+    You previously rejected external changes to <strong>{{ selectedFilePath() }}</strong
+    >. Saving now will override those newer changes.
+  </p>
+  <p class="mb-0" i18n="@@featureFileEditor-overrideNewerConfirm">Are you sure you want to proceed?</p>
+</fpc-confirm-dialog>

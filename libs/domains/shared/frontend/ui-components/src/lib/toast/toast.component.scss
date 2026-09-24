@@ -1,0 +1,15 @@
+:host {
+  display: block;
+}
+
+.fpc-toast__toast {
+  width: 100%;
+  max-width: 22rem;
+}
+
+// Variant toasts colour the whole surface, so the header must stay transparent.
+.fpc-toast__toast[class*='text-bg-'] .toast-header {
+  background-color: transparent;
+  color: inherit;
+  border-bottom-color: rgb(255 255 255 / 0.25);
+}

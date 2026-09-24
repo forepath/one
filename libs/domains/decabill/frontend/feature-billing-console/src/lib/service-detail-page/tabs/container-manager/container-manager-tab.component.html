@@ -1,17 +1,18 @@
 <div class="container-manager-tab d-flex flex-column h-100 min-h-0">
   @if (error(); as err) {
-    <div class="alert alert-danger mb-0 rounded-0" role="alert">{{ err }}</div>
+    <fpc-alert [flush]="true" variant="danger" [message]="err" />
   }
 
   <div class="container-manager-tab__layout flex-grow-1 min-h-0">
     <div class="container-manager-tab__main min-h-0">
       <div class="container-manager-tab__main-toolbar">
-        <button
-          type="button"
-          class="btn btn-outline-secondary btn-sm d-lg-none"
-          (click)="toggleSidebar()"
+        <fpc-button
+          variant="dark"
+          size="sm"
+          (clicked)="toggleSidebar()"
           [attr.aria-expanded]="sidebarOpen()"
           aria-controls="containerManagerSidebar"
+          class="d-lg-none"
         >
           @if (sidebarOpen()) {
             <i class="bi bi-layout-sidebar-reverse me-1" aria-hidden="true"></i>
@@ -20,7 +21,7 @@
             <i class="bi bi-layout-sidebar-reverse me-1" aria-hidden="true"></i>
             <span i18n="@@featureContainerManager-showSidebar">Containers</span>
           }
-        </button>
+        </fpc-button>
       </div>
 
       <div
@@ -47,7 +48,7 @@
 
             @if (loadingNetworks()) {
               <div class="d-flex align-items-center gap-2 text-body-secondary px-3 pb-3">
-                <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+                <fpc-spinner size="sm" />
                 <span i18n="@@featureContainerManager-loadingNetworks">Loading networks…</span>
               </div>
             } @else if (topologyLayout().length === 0) {
@@ -110,13 +111,11 @@
         } @else {
           <div class="d-flex flex-column gap-3">
             <div class="card" aria-labelledby="containerManagerStatsHeading">
-              <div
-                class="card-header py-2 small fw-semibold"
-                id="containerManagerStatsHeading"
-                i18n="@@featureContainerManager-statsTitle"
-              >
-                Resource usage
-              </div>
+              <fpc-lane-header>
+                <span fpcLaneHeaderTitle id="containerManagerStatsHeading" i18n="@@featureContainerManager-statsTitle"
+                  >Resource usage</span
+                >
+              </fpc-lane-header>
               <div class="card-body">
                 @if (!selectedContainer()) {
                   <p class="text-body-secondary mb-0" i18n="@@featureContainerManager-selectContainerHint">
@@ -124,7 +123,7 @@
                   </p>
                 } @else if (loadingStatsHistory()) {
                   <div class="d-flex align-items-center gap-2 text-body-secondary">
-                    <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+                    <fpc-spinner size="sm" />
                     <span i18n="@@featureContainerManager-loadingStats">Loading resource history…</span>
                   </div>
                 } @else if (cpuChart(); as chart) {
@@ -219,17 +218,17 @@
             </div>
 
             <div class="card" aria-labelledby="containerManagerLogsHeading">
-              <div
-                class="card-header py-2 small fw-semibold d-flex flex-wrap align-items-center justify-content-between gap-2"
-              >
-                <span id="containerManagerLogsHeading" i18n="@@featureContainerManager-logsTitle">Container logs</span>
+              <fpc-lane-header>
+                <span fpcLaneHeaderTitle id="containerManagerLogsHeading" i18n="@@featureContainerManager-logsTitle"
+                  >Container logs</span
+                >
                 @if (logsCollectedAt(); as collectedAt) {
-                  <span class="small text-body-secondary fw-normal">
+                  <span fpcLaneHeaderActions class="small text-body-secondary fw-normal">
                     <span i18n="@@featureContainerManager-collectedAt">Collected</span>
                     {{ collectedAt | date: 'short' }}
                   </span>
                 }
-              </div>
+              </fpc-lane-header>
               <div class="card-body p-0">
                 @if (!selectedContainer()) {
                   <p class="text-body-secondary mb-0 p-3" i18n="@@featureContainerManager-selectContainerLogsHint">
@@ -237,7 +236,7 @@
                   </p>
                 } @else if (loadingLogs() && logLines().length === 0) {
                   <div class="d-flex align-items-center gap-2 text-body-secondary p-3">
-                    <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+                    <fpc-spinner size="sm" />
                     <span i18n="@@featureContainerManager-loadingLogs">Loading logs…</span>
                   </div>
                 } @else if (logLines().length === 0) {
@@ -303,35 +302,34 @@
           }
         </div>
 
-        <div class="input-group search-input-container border-bottom">
-          <i class="bi bi-search" aria-hidden="true"></i>
-          <input
-            type="search"
-            class="form-control border-0 search-input"
-            name="containerSearch"
-            placeholder="Search containers"
-            i18n-placeholder="@@featureContainerManager-searchPlaceholder"
-            [ngModel]="searchQuery()"
-            (ngModelChange)="searchQuery.set($event)"
-            aria-label="Search containers"
-            i18n-aria-label="@@featureContainerManager-searchPlaceholder"
-          />
-        </div>
+        <fpc-search-field
+          class="border-bottom"
+          name="containerSearch"
+          [bordered]="false"
+          [placeholder]="containerSearchPlaceholder"
+          [ariaLabel]="containerSearchPlaceholder"
+          [(value)]="searchQuery"
+        />
 
         <div class="container-manager-tab__sidebar-list overflow-auto min-h-0">
           @if (loadingContainers()) {
             <div class="d-flex align-items-center gap-2 text-body-secondary p-3">
-              <div class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></div>
+              <fpc-spinner size="sm" />
               <span i18n="@@featureContainerManager-loadingContainers">Loading containers…</span>
             </div>
           } @else if (containers().length === 0) {
-            <p class="text-body-secondary mb-0 p-3" i18n="@@featureContainerManager-noContainers">
-              No containers found on this host.
-            </p>
+            <fpc-empty-state
+              size="sm"
+              message="No containers found on this host."
+              i18n-message="@@featureContainerManager-noContainers"
+            />
           } @else if (filteredContainers().length === 0) {
-            <p class="text-body-secondary mb-0 p-3" i18n="@@featureContainerManager-noSearchResults">
-              No containers match your search.
-            </p>
+            <fpc-empty-state
+              size="sm"
+              icon="search"
+              message="No search results"
+              i18n-message="@@featureContainerManager-noSearchResults"
+            />
           } @else {
             <div class="list-group list-group-flush">
               @for (container of filteredContainers(); track container.id) {
@@ -355,22 +353,26 @@
                       <div class="small text-body-secondary text-truncate">{{ container.image }}</div>
                     </div>
                     <div class="container-manager-tab__stat-badges">
-                      <span
-                        class="info-badge container-manager-tab__stat-badge text-muted bg-body-tertiary py-1 px-2 rounded"
+                      <fpc-badge
+                        variant="info"
+                        color="secondary"
+                        class="container-manager-tab__stat-badge"
                         title="CPU"
                         i18n-title="@@featureContainerManager-cpu"
                       >
                         <i class="bi bi-cpu" aria-hidden="true"></i>
                         <span>{{ formatPercent(container.stats?.cpuPercent) }}</span>
-                      </span>
-                      <span
-                        class="info-badge container-manager-tab__stat-badge text-muted bg-body-tertiary py-1 px-2 rounded"
+                      </fpc-badge>
+                      <fpc-badge
+                        variant="info"
+                        color="secondary"
+                        class="container-manager-tab__stat-badge"
                         title="Memory"
                         i18n-title="@@featureContainerManager-memory"
                       >
                         <i class="bi bi-memory" aria-hidden="true"></i>
                         <span>{{ formatBytes(container.stats?.memoryUsageBytes) }}</span>
-                      </span>
+                      </fpc-badge>
                     </div>
                   </div>
                 </button>

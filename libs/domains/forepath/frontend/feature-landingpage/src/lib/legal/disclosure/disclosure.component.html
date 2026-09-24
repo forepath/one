@@ -108,21 +108,21 @@
               content immediately.
             </p>
             <div class="d-flex flex-wrap gap-2">
-              <a
+              <fpc-button
                 routerLink="/legal/content-report"
                 [queryParams]="{ type: 'dsa' }"
                 fragment="report-form"
-                class="btn btn-primary"
+                variant="primary"
                 i18n="@@featureForepathDisclosure-contentReportDsaLink"
-                >Report illegal content (DSA)</a
+                >Report illegal content (DSA)</fpc-button
               >
-              <a
+              <fpc-button
                 routerLink="/legal/content-report"
                 [queryParams]="{ type: 'tco' }"
                 fragment="report-form"
-                class="btn btn-primary"
+                variant="primary"
                 i18n="@@featureForepathDisclosure-contentReportTcoLink"
-                >Report removal order (TCO-VO)</a
+                >Report removal order (TCO-VO)</fpc-button
               >
             </div>
           </div>
@@ -180,12 +180,15 @@
             happy to help.
           </p>
           <div class="d-flex gap-3 justify-content-center flex-wrap">
-            <a
+            <fpc-button
+              variant="primary"
+              size="xl"
+              btnClass="rounded-3"
               routerLink="/contact"
-              class="btn btn-primary btn-lg rounded-3 cta-btn cta-btn-primary"
               i18n="@@featureForepathDisclosure-ctaContact"
-              ><i class="bi bi-envelope" aria-hidden="true"></i>Contact us</a
             >
+              <i class="bi bi-envelope" aria-hidden="true"></i>Contact us
+            </fpc-button>
           </div>
         </div>
       </div>

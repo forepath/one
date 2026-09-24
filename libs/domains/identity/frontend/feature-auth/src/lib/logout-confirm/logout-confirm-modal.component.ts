@@ -1,9 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, inject, output, signal, ViewChild } from '@angular/core';
+import { Component, inject, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthenticationFacade } from '@forepath/identity/frontend';
-
-import { hideAuthModal, showAuthModal } from './auth-modal.util';
+import { FpcConfirmDialogComponent, FpcFormCheckComponent } from '@forepath/shared/frontend/ui-components';
 
 export interface LogoutConfirmResult {
   invalidateAllSessions: boolean;
@@ -11,7 +10,7 @@ export interface LogoutConfirmResult {
 
 @Component({
   selector: 'identity-logout-confirm-modal',
-  imports: [CommonModule],
+  imports: [CommonModule, FpcConfirmDialogComponent, FpcFormCheckComponent],
   templateUrl: './logout-confirm-modal.component.html',
   standalone: true,
 })
@@ -20,9 +19,11 @@ export class IdentityLogoutConfirmModalComponent {
 
   readonly confirmed = output<LogoutConfirmResult>();
 
-  @ViewChild('modal', { static: true }) private readonly modalRef!: ElementRef<HTMLDivElement>;
-
+  readonly dialogOpen = signal(false);
   readonly logoutAllSessions = signal(false);
+
+  readonly confirmLabel = $localize`:@@identityLogoutConfirm-confirm:Log out`;
+  readonly cancelLabel = $localize`:@@identityLogoutConfirm-cancel:Cancel`;
 
   private readonly authenticationType = toSignal(this.authenticationFacade.authenticationType$, {
     initialValue: null,
@@ -30,11 +31,10 @@ export class IdentityLogoutConfirmModalComponent {
 
   open(): void {
     this.logoutAllSessions.set(false);
-    showAuthModal(this.modalRef);
+    this.dialogOpen.set(true);
   }
 
   onConfirm(): void {
-    hideAuthModal(this.modalRef);
     this.confirmed.emit({
       invalidateAllSessions: this.showLogoutAllSessionsOption() && this.logoutAllSessions(),
     });

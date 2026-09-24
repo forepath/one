@@ -56,38 +56,8 @@
 
         &:hover,
         &:focus {
-          text-decoration: none;
-        }
-      }
-
-      *:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6) {
-        > a {
-          color: var(--bs-white);
-          text-decoration: none;
-          border: 0;
-          border-radius: 0;
-          background-color: var(--bs-primary);
-          clip-path: polygon(
-            var(--bs-border-radius) 0,
-            100% 0,
-            100% calc(100% - var(--bs-border-radius)),
-            calc(100% - var(--bs-border-radius)) 100%,
-            0 100%,
-            0 var(--bs-border-radius)
-          );
-          padding: 0.25rem 0.5rem;
-          font-weight: normal;
-          margin: 0 0.125rem;
-          white-space: nowrap;
-
-          &:has(code) {
-            padding-bottom: 0.25rem;
-            padding-top: 0.125rem;
-          }
-
-          code {
-            background: transparent;
-          }
+          color: var(--bs-link-hover-color);
+          text-decoration: underline;
         }
       }
 

@@ -1,0 +1,32 @@
+:host {
+  --fpc-status-badge-size: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: var(--fpc-status-badge-size);
+  height: var(--fpc-status-badge-size);
+  border-radius: 50%;
+  line-height: 1;
+  font-size: calc(var(--fpc-status-badge-size) * 0.45);
+}
+
+:host(.fpc-status-badge--sm) {
+  --fpc-status-badge-size: 1.75rem;
+}
+
+:host(.fpc-status-badge--lg) {
+  --fpc-status-badge-size: 3.5rem;
+}
+
+@each $tone in (primary, secondary, success, danger, warning, info, light, dark) {
+  :host(.fpc-status-badge--#{$tone}) {
+    background-color: var(--bs-#{$tone}-bg-subtle);
+    color: var(--bs-#{$tone}-text-emphasis);
+  }
+}
+
+:host(.fpc-status-badge--neutral) {
+  background-color: var(--bs-tertiary-bg);
+  color: var(--bs-body-color);
+}

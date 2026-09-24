@@ -83,12 +83,12 @@
         <target>Laden...</target>
       </trans-unit>
       <trans-unit id="featureDocsSearchPage-noResultsFor" datatype="html">
-        <source>No results found for &quot;<x id="INTERPOLATION" equiv-text="{{ searchQuery() }}"/>&quot;</source>
-        <target>Keine Ergebnisse für &quot;<x id="INTERPOLATION" equiv-text="{{ searchQuery() }}"/>&quot; gefunden</target>
+        <source>No search results</source>
+        <target>Keine Suchergebnisse</target>
       </trans-unit>
       <trans-unit id="featureDocsSearchPage-enterQueryHint" datatype="html">
-        <source>Enter a search query above to find documentation.</source>
-        <target>Geben Sie oben eine Suchanfrage ein, um die Dokumentation zu durchsuchen.</target>
+        <source>No search query yet</source>
+        <target>Noch keine Suchanfrage</target>
       </trans-unit>
       <trans-unit id="featureDocsSearchPage-metaDescription" datatype="html">
         <source>Search Agenstra docs for setup guides, API references, security hardening, agent configuration, deployment patterns, and troubleshooting.</source>

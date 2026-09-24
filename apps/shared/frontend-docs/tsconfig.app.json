@@ -8,13 +8,11 @@
     "src/main.ts",
     "src/main.server.ts",
     "src/server.ts",
+    "src/server.agenstra.ts",
+    "src/server.decabill.ts",
     "src/polyfills.ts"
   ],
-  "include": [
-    "src/**/*.d.ts",
-    "src/delegating-server.ts",
-    "src/create-docs-server.ts"
-  ],
+  "include": ["src/**/*.d.ts", "src/delegating-server.ts"],
   "exclude": [
     "jest.config.ts",
     "src/test-setup.ts",

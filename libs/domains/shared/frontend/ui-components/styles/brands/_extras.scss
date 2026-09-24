@@ -1,0 +1,55 @@
+// Portal extras shared by all brands. Load after Bootstrap so `--bs-primary` exists.
+
+// Solid buttons (except light): white label like primary — softer a11y tradeoff for brand chrome.
+$fpc-btn-solid-colors: primary, secondary, success, danger, warning, info, light, dark;
+$fpc-btn-white-label-colors: primary, secondary, success, danger, warning, info, dark;
+
+@each $name in $fpc-btn-white-label-colors {
+  .btn-#{$name} {
+    --bs-btn-color: #fff;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-active-color: #fff;
+    --bs-btn-disabled-color: #fff;
+  }
+}
+
+// Solid buttons: thin edge as a shade of the fill (same idea as landing CTAs /
+// `--bs-primary-dark`). Track hover/active bg so the border never fights the fill.
+@each $name in $fpc-btn-solid-colors {
+  .btn-#{$name} {
+    --bs-btn-border-color: color-mix(in srgb, var(--bs-btn-bg) 90%, black);
+    --bs-btn-hover-border-color: color-mix(in srgb, var(--bs-btn-hover-bg) 90%, black);
+    --bs-btn-active-border-color: color-mix(in srgb, var(--bs-btn-active-bg) 90%, black);
+    --bs-btn-disabled-border-color: color-mix(in srgb, var(--bs-btn-disabled-bg) 90%, black);
+  }
+}
+
+:root {
+  // ~92% primary + black matches previous hand-tuned Decabill/Agenstra/ForePath darks.
+  --bs-primary-dark: color-mix(in srgb, var(--bs-primary) 92%, black);
+  // ~80% success + black matches previous hand-tuned success darks.
+  --bs-success-dark: color-mix(in srgb, var(--bs-success) 80%, black);
+  --bs-dark-alt: #262828;
+  --bs-scrollbar-thumb: rgba(var(--bs-body-color-rgb), 0.28);
+  --bs-scrollbar-thumb-hover: rgba(var(--bs-body-color-rgb), 0.45);
+  --bs-scrollbar-thumb-active: rgba(var(--bs-body-color-rgb), 0.55);
+  --bs-scrollbar-track: transparent;
+}
+
+// Dark theme: `$dark` ≈ body-bg / near tertiary, so solid `.btn-dark` washes out.
+// Lift the fill above tertiary (same white-wash idea as `sidebar__item.active`), a bit
+// stronger so it still reads as a solid control. Hover/active go lighter, not darker.
+// Border vars already track `--bs-btn-*-bg` via the solid-button loop above.
+// `--fpc-btn-dark-bg` is shared (e.g. active list open-dot) so fills stay in sync.
+[data-bs-theme='dark'] {
+  --fpc-btn-dark-bg: color-mix(in srgb, var(--bs-tertiary-bg) 82%, white);
+  --fpc-btn-dark-hover-bg: color-mix(in srgb, var(--bs-tertiary-bg) 74%, white);
+  --fpc-btn-dark-active-bg: color-mix(in srgb, var(--bs-tertiary-bg) 68%, white);
+
+  .btn-dark {
+    --bs-btn-bg: var(--fpc-btn-dark-bg);
+    --bs-btn-hover-bg: var(--fpc-btn-dark-hover-bg);
+    --bs-btn-active-bg: var(--fpc-btn-dark-active-bg);
+    --bs-btn-disabled-bg: var(--fpc-btn-dark-bg);
+  }
+}

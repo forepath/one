@@ -1,624 +1,508 @@
-<div class="service-types-container border-top d-flex flex-column h-100">
-  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
-    <h5 class="mb-0 fw-semibold" i18n="@@featureServiceTypes-title">Service Providers</h5>
-    <button
-      type="button"
-      class="btn btn-sm btn-primary"
-      (click)="openCreateModal()"
+<div class="service-types-container border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="pageTitle">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="primary"
+      size="sm"
+      iconOnly
       [disabled]="(loadingAny$ | async) === true"
-      i18n-title="@@featureServiceTypes-add"
-      title="Add service provider"
-      i18n-aria-label="@@featureServiceTypes-add"
-      aria-label="Add service provider"
+      [ariaLabel]="addServiceProviderAriaLabel"
+      [title]="addServiceProviderAriaLabel"
+      (clicked)="openCreateModal()"
     >
       <i class="bi bi-plus" aria-hidden="true"></i>
-    </button>
-  </div>
+    </fpc-button>
+  </fpc-page-header>
 
-  <div class="input-group search-input-container border-bottom">
-    <i class="bi bi-search"></i>
-    <input
-      type="text"
-      class="form-control border-0 search-input"
-      placeholder="Search providers"
-      i18n-placeholder="@@featureServiceTypes-searchPlaceholder"
-      [ngModel]="searchQuery()"
-      (ngModelChange)="searchQuery.set($event)"
-      name="search"
-    />
-  </div>
+  <fpc-search-field
+    class="border-bottom"
+    name="search"
+    [bordered]="false"
+    [placeholder]="searchPlaceholder"
+    [ariaLabel]="searchPlaceholder"
+    [(value)]="searchQuery"
+  />
 
-  <div class="flex-grow-1 overflow-auto">
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
     @if (loading$ | async) {
       <div class="d-flex justify-content-center align-items-center p-4">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden" i18n="@@featureServiceTypes-loading">Loading...</span>
-        </div>
+        <fpc-spinner variant="primary" i18n-label="@@featureServiceTypes-loading" label="Loading..." />
       </div>
     } @else {
       @if (error$ | async; as err) {
-        <div class="alert alert-danger m-3" role="alert">{{ err }}</div>
+        <fpc-alert class="m-3" variant="danger" [message]="err" />
       }
       @if (serviceTypes$ | async; as listData) {
         @if (listData.serviceTypes.length === 0) {
-          <div class="d-flex justify-content-center align-items-center p-4 text-muted">
-            <p class="mb-0" i18n="@@featureServiceTypes-empty">No service types.</p>
-          </div>
+          @if (searchQuery().trim()) {
+            <fpc-empty-state
+              icon="search"
+              message="No search results"
+              i18n-message="@@featureServiceTypes-noSearchResults"
+            />
+          } @else {
+            <fpc-empty-state message="No service types yet" i18n-message="@@featureServiceTypes-empty" />
+          }
         } @else {
-          <div class="list-group list-group-flush">
+          <fpc-list [flush]="true">
             @for (st of listData.serviceTypes; track st.id) {
-              <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-3">
-                <div class="min-w-0 flex-grow-1">
-                  <div class="fw-semibold mb-1">{{ st.name }}</div>
-                  <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                    <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                      <span class="me-2" [ngClass]="activeStatusTextClass(st.isActive)">
-                        @if (st.isActive) {
-                          <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
-                        } @else {
-                          <i class="bi bi-pause-circle me-1" aria-hidden="true"></i>
-                        }
-                        {{ activeStatusLabel(st.isActive) }}
-                      </span>
-                      <span class="me-2">
-                        <i class="bi bi-box-seam me-1" aria-hidden="true"></i
-                        >{{ providersListLabel(st, listData.providerDetails) }}
-                      </span>
-                    </div>
+              <fpc-list-item>
+                <div fpcListItemTitle class="fw-semibold">{{ st.name }}</div>
+                <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
+                  <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+                    <span class="me-2" [ngClass]="activeStatusTextClass(st.isActive)">
+                      @if (st.isActive) {
+                        <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+                      } @else {
+                        <i class="bi bi-pause-circle me-1" aria-hidden="true"></i>
+                      }
+                      {{ activeStatusLabel(st.isActive) }}
+                    </span>
+                    <span class="me-2">
+                      <i class="bi bi-box-seam me-1" aria-hidden="true"></i
+                      >{{ providersListLabel(st, listData.providerDetails) }}
+                    </span>
                   </div>
                 </div>
-                <div
-                  class="btn-group btn-group-sm flex-shrink-0"
-                  role="group"
-                  aria-label="Service provider actions"
-                  i18n-aria-label="@@featureServiceTypes-serviceTypeActionsAria"
+                <fpc-button-group
+                  fpcListItemActions
+                  size="sm"
+                  ariaLabel="Service provider actions"
+                  i18n-ariaLabel="@@featureServiceTypes-serviceTypeActionsAria"
                 >
-                  <button
-                    type="button"
-                    class="btn btn-outline-primary"
-                    (click)="openEditModal(st)"
+                  <fpc-button
+                    iconOnly
+                    size="sm"
+                    variant="warning"
+                    (clicked)="openEditModal(st)"
                     [disabled]="(loadingAny$ | async) === true"
                     title="Edit service provider"
                     i18n-title="@@featureServiceTypes-editButtonTitle"
                   >
                     <i class="bi bi-pencil" aria-hidden="true"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-danger"
-                    (click)="openDeleteConfirm(st)"
+                  </fpc-button>
+                  <fpc-button
+                    iconOnly
+                    size="sm"
+                    variant="danger"
+                    (clicked)="openDeleteConfirm(st)"
                     [disabled]="(loadingAny$ | async) === true"
                     title="Delete service provider"
                     i18n-title="@@featureServiceTypes-deleteButtonTitle"
                   >
                     <i class="bi bi-trash" aria-hidden="true"></i>
-                  </button>
-                </div>
-              </div>
+                  </fpc-button>
+                </fpc-button-group>
+              </fpc-list-item>
             }
-          </div>
+          </fpc-list>
         }
       }
     }
   </div>
 </div>
 
-<!-- Create modal -->
-<div
-  class="modal fade"
-  id="createServiceTypeModal"
-  tabindex="-1"
-  aria-labelledby="createServiceTypeModalLabel"
-  aria-hidden="true"
-  #createModal
+<fpc-modal
+  [(open)]="createModalOpen"
+  i18n-title="@@featureServiceTypes-createTitle"
+  title="Add service provider"
+  [closable]="(creating$ | async) !== true"
 >
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="createServiceTypeModalLabel" i18n="@@featureServiceTypes-createTitle">
-          Add service provider
-        </h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-          [disabled]="(creating$ | async) === true"
-        ></button>
-      </div>
-      <form (ngSubmit)="onSubmitCreate()">
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="createKey" class="form-label" i18n="@@featureServiceTypes-key">Key</label>
-            <input
-              type="text"
-              class="form-control"
-              id="createKey"
-              name="key"
-              [(ngModel)]="createForm.key"
-              required
+  <form (ngSubmit)="onSubmitCreate()">
+    <fpc-form-field forId="createKey" i18n-label="@@featureServiceTypes-key" label="Key" required>
+      <fpc-form-control
+        controlId="createKey"
+        name="key"
+        [(ngModel)]="createForm.key"
+        required
+        [disabled]="(creating$ | async) === true"
+      />
+    </fpc-form-field>
+    <fpc-form-field forId="createName" i18n-label="@@featureServiceTypes-name" label="Name" required>
+      <fpc-form-control
+        controlId="createName"
+        name="name"
+        [(ngModel)]="createForm.name"
+        required
+        [disabled]="(creating$ | async) === true"
+      />
+    </fpc-form-field>
+    <fpc-form-field forId="createDescription" i18n-label="@@featureServiceTypes-description" label="Description">
+      <fpc-form-control
+        controlId="createDescription"
+        name="description"
+        [(ngModel)]="createForm.description"
+        [disabled]="(creating$ | async) === true"
+      />
+    </fpc-form-field>
+    <fpc-form-field forId="createProvider" i18n-label="@@featureServiceTypes-provider" label="Providers">
+      @if (providerDetailsLoading$ | async) {
+        <div class="form-control-plaintext text-body-secondary" i18n="@@featureServiceTypes-loadingProviders">
+          Loading providers...
+        </div>
+      } @else {
+        @if (providerDetails$ | async; as providers) {
+          @if (providers.length > 0) {
+            <select
+              id="createProvider"
+              name="provider"
+              class="form-select"
+              multiple
+              size="6"
+              [ngModel]="createSelectedProviders"
+              (ngModelChange)="onProvidersSelectionChange('create', $event, providers)"
+              [compareWith]="compareProviderId"
               [disabled]="(creating$ | async) === true"
-            />
-          </div>
-          <div class="mb-3">
-            <label for="createName" class="form-label" i18n="@@featureServiceTypes-name">Name</label>
-            <input
-              type="text"
-              class="form-control"
-              id="createName"
-              name="name"
-              [(ngModel)]="createForm.name"
-              required
-              [disabled]="(creating$ | async) === true"
-            />
-          </div>
-          <div class="mb-3">
-            <label for="createDescription" class="form-label" i18n="@@featureServiceTypes-description"
-              >Description</label
             >
-            <input
-              type="text"
-              class="form-control"
-              id="createDescription"
-              name="description"
-              [(ngModel)]="createForm.description"
+              <option [ngValue]="noneProviderValue" i18n="@@featureServiceTypes-noneProvider">None</option>
+              @for (p of providers; track p.id) {
+                <option [ngValue]="p.id" [disabled]="isProviderOptionDisabled('create', p, providers)">
+                  {{ p.displayName }}
+                </option>
+              }
+            </select>
+            <div fpcFormFieldHint i18n="@@featureServiceTypes-providersMultiHelp">
+              Hold Ctrl/Cmd to select multiple compatible providers. First selected is primary. Choose None for no cloud
+              provider.
+            </div>
+          } @else {
+            <fpc-form-control
+              controlId="createProvider"
+              name="providerManual"
+              [ngModel]="createForm.provider ?? ''"
+              (ngModelChange)="onProvidersSelectionChange('create', $event?.trim() ? [$event.trim()] : [], providers)"
               [disabled]="(creating$ | async) === true"
+              i18n-placeholder="@@featureServiceTypes-providerPlaceholder"
+              placeholder="e.g. hetzner"
             />
+            <div fpcFormFieldHint i18n="@@featureServiceTypes-noProvidersHint">
+              No providers configured. Enter provider id manually.
+            </div>
+          }
+        }
+      }
+    </fpc-form-field>
+    @if (providerDetails$ | async; as providers) {
+      @if (hasProviderDefaultsSection('create', providers)) {
+        <div class="mb-3 border rounded p-3 bg-body-secondary">
+          <div class="d-flex justify-content-between align-items-center gap-2">
+            <h6 class="mb-0" i18n="@@featureServiceTypes-providerDefaults">Provider defaults</h6>
+            <fpc-button
+              variant="dark"
+              size="sm"
+              data-bs-toggle="collapse"
+              data-bs-target="#createProviderDefaults"
+              [attr.aria-expanded]="createProviderDefaultsExpanded()"
+              aria-controls="createProviderDefaults"
+              [attr.title]="createProviderDefaultsExpanded() ? hideProviderDefaultsLabel : showProviderDefaultsLabel"
+              [ariaLabel]="createProviderDefaultsExpanded() ? hideProviderDefaultsLabel : showProviderDefaultsLabel"
+              class="flex-shrink-0"
+            >
+              @if (createProviderDefaultsExpanded()) {
+                <i class="bi bi-eye-slash" aria-hidden="true"></i>
+              } @else {
+                <i class="bi bi-eye" aria-hidden="true"></i>
+              }
+            </fpc-button>
           </div>
-          <div class="mb-3">
-            <label for="createProvider" class="form-label" i18n="@@featureServiceTypes-provider">Providers</label>
-            @if (providerDetailsLoading$ | async) {
-              <div class="form-control-plaintext text-body-secondary" i18n="@@featureServiceTypes-loadingProviders">
-                Loading providers...
-              </div>
-            } @else {
-              @if (providerDetails$ | async; as providers) {
-                @if (providers.length > 0) {
-                  <select
-                    id="createProvider"
-                    name="provider"
-                    class="form-select"
-                    multiple
-                    size="6"
-                    [ngModel]="createSelectedProviders"
-                    (ngModelChange)="onProvidersSelectionChange('create', $event, providers)"
-                    [compareWith]="compareProviderId"
-                    [disabled]="(creating$ | async) === true"
-                  >
-                    <option [ngValue]="noneProviderValue" i18n="@@featureServiceTypes-noneProvider">None</option>
-                    @for (p of providers; track p.id) {
-                      <option [ngValue]="p.id" [disabled]="isProviderOptionDisabled('create', p, providers)">
-                        {{ p.displayName }}
-                      </option>
+          <div
+            class="collapse"
+            id="createProviderDefaults"
+            (shown.bs.collapse)="createProviderDefaultsExpanded.set(true)"
+            (hidden.bs.collapse)="createProviderDefaultsExpanded.set(false)"
+          >
+            <p class="form-text text-body-secondary small mb-3 mt-2" i18n="@@featureServiceTypes-providerDefaultsHelp">
+              Overrides platform environment variables for this service type. Leave blank to use the environment
+              default.
+            </p>
+            @if (getProviderDefaultsGroups('create', providers); as groups) {
+              @if (groups.length > 1) {
+                @for (group of groups; track group.providerId) {
+                  <div class="border rounded p-3 mb-3">
+                    <div
+                      class="form-text text-body-secondary small mb-2 mt-0"
+                      i18n="@@featureServiceTypes-providerDefaultsGroupIntro"
+                    >
+                      Defaults for {{ group.label }}
+                    </div>
+                    @for (field of group.fields; track field.envKey) {
+                      <fpc-form-field
+                        [forId]="'createProviderDefault_' + group.providerId + '_' + field.envKey"
+                        [label]="field.label"
+                      >
+                        <fpc-form-control
+                          [inputType]="field.sensitive ? 'password' : 'text'"
+                          [controlId]="'createProviderDefault_' + group.providerId + '_' + field.envKey"
+                          [name]="'createProviderDefault_' + group.providerId + '_' + field.envKey"
+                          [ngModel]="getProviderDefaultValue('create', field.envKey)"
+                          (ngModelChange)="setProviderDefaultValue('create', field.envKey, $event)"
+                          [disabled]="(creating$ | async) === true"
+                          i18n-placeholder="@@featureServiceTypes-providerDefaultEnvPlaceholder"
+                          placeholder="Using environment default"
+                        />
+                      </fpc-form-field>
                     }
-                  </select>
-                  <div class="form-text text-body-secondary small" i18n="@@featureServiceTypes-providersMultiHelp">
-                    Hold Ctrl/Cmd to select multiple compatible providers. First selected is primary. Choose None for no
-                    cloud provider.
                   </div>
-                } @else {
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="createProvider"
-                    name="providerManual"
-                    [ngModel]="createForm.provider ?? ''"
-                    (ngModelChange)="
-                      onProvidersSelectionChange('create', $event?.trim() ? [$event.trim()] : [], providers)
-                    "
-                    [disabled]="(creating$ | async) === true"
-                    i18n-placeholder="@@featureServiceTypes-providerPlaceholder"
-                    placeholder="e.g. hetzner"
-                  />
-                  <small class="text-body-secondary" i18n="@@featureServiceTypes-noProvidersHint"
-                    >No providers configured. Enter provider id manually.</small
-                  >
+                }
+              } @else {
+                @for (field of getSelectedProvidersEnvDefaultFields('create', providers); track field.envKey) {
+                  <fpc-form-field [forId]="'createProviderDefault_' + field.envKey" [label]="field.label">
+                    <fpc-form-control
+                      [inputType]="field.sensitive ? 'password' : 'text'"
+                      [controlId]="'createProviderDefault_' + field.envKey"
+                      [name]="'createProviderDefault_' + field.envKey"
+                      [ngModel]="getProviderDefaultValue('create', field.envKey)"
+                      (ngModelChange)="setProviderDefaultValue('create', field.envKey, $event)"
+                      [disabled]="(creating$ | async) === true"
+                      i18n-placeholder="@@featureServiceTypes-providerDefaultEnvPlaceholder"
+                      placeholder="Using environment default"
+                    />
+                  </fpc-form-field>
                 }
               }
             }
           </div>
-          @if (providerDetails$ | async; as providers) {
-            @if (hasProviderDefaultsSection('create', providers)) {
-              <div class="mb-3 border rounded p-3 bg-body-secondary">
-                <div class="d-flex justify-content-between align-items-center gap-2">
-                  <h6 class="mb-0" i18n="@@featureServiceTypes-providerDefaults">Provider defaults</h6>
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-outline-secondary flex-shrink-0"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#createProviderDefaults"
-                    [attr.aria-expanded]="createProviderDefaultsExpanded()"
-                    aria-controls="createProviderDefaults"
-                    [attr.title]="
-                      createProviderDefaultsExpanded() ? hideProviderDefaultsLabel : showProviderDefaultsLabel
-                    "
-                    [attr.aria-label]="
-                      createProviderDefaultsExpanded() ? hideProviderDefaultsLabel : showProviderDefaultsLabel
-                    "
-                  >
-                    @if (createProviderDefaultsExpanded()) {
-                      <i class="bi bi-eye-slash" aria-hidden="true"></i>
-                    } @else {
-                      <i class="bi bi-eye" aria-hidden="true"></i>
-                    }
-                  </button>
-                </div>
-                <div
-                  class="collapse"
-                  id="createProviderDefaults"
-                  (shown.bs.collapse)="createProviderDefaultsExpanded.set(true)"
-                  (hidden.bs.collapse)="createProviderDefaultsExpanded.set(false)"
-                >
-                  <p
-                    class="form-text text-body-secondary small mb-3 mt-2"
-                    i18n="@@featureServiceTypes-providerDefaultsHelp"
-                  >
-                    Overrides platform environment variables for this service type. Leave blank to use the environment
-                    default.
-                  </p>
-                  @if (getProviderDefaultsGroups('create', providers); as groups) {
-                    @if (groups.length > 1) {
-                      @for (group of groups; track group.providerId) {
-                        <div class="border rounded p-3 mb-3">
-                          <div
-                            class="form-text text-body-secondary small mb-2 mt-0"
-                            i18n="@@featureServiceTypes-providerDefaultsGroupIntro"
-                          >
-                            Defaults for {{ group.label }}
-                          </div>
-                          @for (field of group.fields; track field.envKey) {
-                            <div class="mb-3">
-                              <label
-                                [attr.for]="'createProviderDefault_' + group.providerId + '_' + field.envKey"
-                                class="form-label"
-                                >{{ field.label }}</label
-                              >
-                              <input
-                                [type]="field.sensitive ? 'password' : 'text'"
-                                class="form-control"
-                                [id]="'createProviderDefault_' + group.providerId + '_' + field.envKey"
-                                [name]="'createProviderDefault_' + group.providerId + '_' + field.envKey"
-                                [ngModel]="getProviderDefaultValue('create', field.envKey)"
-                                (ngModelChange)="setProviderDefaultValue('create', field.envKey, $event)"
-                                [disabled]="(creating$ | async) === true"
-                                i18n-placeholder="@@featureServiceTypes-providerDefaultEnvPlaceholder"
-                                placeholder="Using environment default"
-                              />
-                            </div>
-                          }
-                        </div>
-                      }
-                    } @else {
-                      @for (field of getSelectedProvidersEnvDefaultFields('create', providers); track field.envKey) {
-                        <div class="mb-3">
-                          <label [attr.for]="'createProviderDefault_' + field.envKey" class="form-label">{{
-                            field.label
-                          }}</label>
-                          <input
-                            [type]="field.sensitive ? 'password' : 'text'"
-                            class="form-control"
-                            [id]="'createProviderDefault_' + field.envKey"
-                            [name]="'createProviderDefault_' + field.envKey"
-                            [ngModel]="getProviderDefaultValue('create', field.envKey)"
-                            (ngModelChange)="setProviderDefaultValue('create', field.envKey, $event)"
-                            [disabled]="(creating$ | async) === true"
-                            i18n-placeholder="@@featureServiceTypes-providerDefaultEnvPlaceholder"
-                            placeholder="Using environment default"
-                          />
-                        </div>
-                      }
-                    }
-                  }
-                </div>
-              </div>
-            }
-          }
-          <ng-container
-            *ngTemplateOutlet="
-              serviceTypeMetersSection;
-              context: {
-                mode: 'create',
-                disabled: (creating$ | async) === true,
-                providerId: primaryProviderId('create'),
-              }
-            "
-          />
-          <div class="form-check">
-            <input
-              type="checkbox"
-              class="form-check-input"
-              id="createIsActive"
-              name="isActive"
-              [(ngModel)]="createForm.isActive"
-              [disabled]="(creating$ | async) === true"
-            />
-            <label class="form-check-label" for="createIsActive" i18n="@@featureServiceTypes-active">Active</label>
-          </div>
-          <div class="form-check mt-2">
-            <input
-              type="checkbox"
-              class="form-check-input"
-              id="createDisallowStatutoryWithdrawal"
-              name="disallowStatutoryWithdrawal"
-              [(ngModel)]="createForm.disallowStatutoryWithdrawal"
-              [disabled]="(creating$ | async) === true"
-            />
-            <label
-              class="form-check-label"
-              for="createDisallowStatutoryWithdrawal"
-              i18n="@@featureServiceTypes-disallowStatutoryWithdrawal"
-              >Disallow statutory withdrawal after provisioning</label
-            >
-          </div>
         </div>
-        <div class="modal-footer">
-          <button
-            type="submit"
-            class="btn btn-primary"
-            [disabled]="!createForm.key.trim() || !createForm.name.trim() || (creating$ | async) === true"
-            i18n="@@featureServiceTypes-create"
-          >
-            Create
-          </button>
-        </div>
-      </form>
+      }
+    }
+    <ng-container
+      *ngTemplateOutlet="
+        serviceTypeMetersSection;
+        context: {
+          mode: 'create',
+          disabled: (creating$ | async) === true,
+          providerId: primaryProviderId('create'),
+        }
+      "
+    />
+    <fpc-form-switch
+      switchId="createIsActive"
+      name="isActive"
+      [(ngModel)]="createForm.isActive"
+      [disabled]="(creating$ | async) === true"
+      i18n-label="@@featureServiceTypes-active"
+      label="Active"
+    />
+    <fpc-form-check
+      class="mt-2"
+      checkId="createDisallowStatutoryWithdrawal"
+      name="disallowStatutoryWithdrawal"
+      [(ngModel)]="createForm.disallowStatutoryWithdrawal"
+      [disabled]="(creating$ | async) === true"
+      i18n-label="@@featureServiceTypes-disallowStatutoryWithdrawal"
+      label="Disallow statutory withdrawal after provisioning"
+    />
+    <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+      <fpc-button
+        variant="primary"
+        type="submit"
+        [disabled]="!createForm.key.trim() || !createForm.name.trim() || (creating$ | async) === true"
+        i18n="@@featureServiceTypes-create"
+      >
+        Create
+      </fpc-button>
     </div>
-  </div>
-</div>
+  </form>
+</fpc-modal>
 
-<!-- Edit modal -->
-<div
-  class="modal fade"
-  id="editServiceTypeModal"
-  tabindex="-1"
-  aria-labelledby="editServiceTypeModalLabel"
-  aria-hidden="true"
-  #editModal
+<fpc-modal
+  [(open)]="editModalOpen"
+  i18n-title="@@featureServiceTypes-editTitle"
+  title="Edit service provider"
+  [closable]="(updating$ | async) !== true"
 >
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="editServiceTypeModalLabel" i18n="@@featureServiceTypes-editTitle">
-          Edit service provider
-        </h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-          [disabled]="(updating$ | async) === true"
-        ></button>
-      </div>
-      <form (ngSubmit)="onSubmitEdit()">
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="editName" class="form-label" i18n="@@featureServiceTypes-name">Name</label>
-            <input
-              type="text"
-              class="form-control"
-              id="editName"
-              name="name"
-              [(ngModel)]="editForm.name"
+  <form (ngSubmit)="onSubmitEdit()">
+    <fpc-form-field forId="editName" i18n-label="@@featureServiceTypes-name" label="Name">
+      <fpc-form-control
+        controlId="editName"
+        name="name"
+        [(ngModel)]="editForm.name"
+        [disabled]="(updating$ | async) === true"
+      />
+    </fpc-form-field>
+    <fpc-form-field forId="editDescription" i18n-label="@@featureServiceTypes-description" label="Description">
+      <fpc-form-control
+        controlId="editDescription"
+        name="description"
+        [(ngModel)]="editForm.description"
+        [disabled]="(updating$ | async) === true"
+      />
+    </fpc-form-field>
+    <fpc-form-field forId="editProvider" i18n-label="@@featureServiceTypes-provider" label="Providers">
+      @if (providerDetailsLoading$ | async) {
+        <div class="form-control-plaintext text-body-secondary" i18n="@@featureServiceTypes-loadingProviders">
+          Loading providers...
+        </div>
+      } @else {
+        @if (providerDetails$ | async; as providers) {
+          @if (providers.length > 0) {
+            <select
+              id="editProvider"
+              name="provider"
+              class="form-select"
+              multiple
+              size="6"
+              [ngModel]="editSelectedProviders"
+              (ngModelChange)="onProvidersSelectionChange('edit', $event, providers)"
+              [compareWith]="compareProviderId"
               [disabled]="(updating$ | async) === true"
-            />
-          </div>
-          <div class="mb-3">
-            <label for="editDescription" class="form-label" i18n="@@featureServiceTypes-description">Description</label>
-            <input
-              type="text"
-              class="form-control"
-              id="editDescription"
-              name="description"
-              [(ngModel)]="editForm.description"
+            >
+              <option [ngValue]="noneProviderValue" i18n="@@featureServiceTypes-noneProvider">None</option>
+              @for (p of providers; track p.id) {
+                <option [ngValue]="p.id" [disabled]="isProviderOptionDisabled('edit', p, providers)">
+                  {{ p.displayName }}
+                </option>
+              }
+            </select>
+            <div fpcFormFieldHint i18n="@@featureServiceTypes-providersMultiHelp">
+              Hold Ctrl/Cmd to select multiple compatible providers. First selected is primary. Choose None for no cloud
+              provider.
+            </div>
+          } @else {
+            <fpc-form-control
+              controlId="editProvider"
+              name="providerManual"
+              [ngModel]="editForm.provider ?? ''"
+              (ngModelChange)="onProvidersSelectionChange('edit', $event?.trim() ? [$event.trim()] : [], providers)"
               [disabled]="(updating$ | async) === true"
+              i18n-placeholder="@@featureServiceTypes-providerPlaceholder"
+              placeholder="e.g. hetzner"
             />
+            <div fpcFormFieldHint i18n="@@featureServiceTypes-noProvidersHint">
+              No providers configured. Enter provider id manually.
+            </div>
+          }
+        }
+      }
+    </fpc-form-field>
+    @if (providerDetails$ | async; as providers) {
+      @if (hasProviderDefaultsSection('edit', providers)) {
+        <div class="mb-3 border rounded p-3 bg-body-secondary">
+          <div class="d-flex justify-content-between align-items-center gap-2">
+            <h6 class="mb-0" i18n="@@featureServiceTypes-providerDefaults">Provider defaults</h6>
+            <fpc-button
+              variant="dark"
+              size="sm"
+              data-bs-toggle="collapse"
+              data-bs-target="#editProviderDefaults"
+              [attr.aria-expanded]="editProviderDefaultsExpanded()"
+              aria-controls="editProviderDefaults"
+              [attr.title]="editProviderDefaultsExpanded() ? hideProviderDefaultsLabel : showProviderDefaultsLabel"
+              [ariaLabel]="editProviderDefaultsExpanded() ? hideProviderDefaultsLabel : showProviderDefaultsLabel"
+              class="flex-shrink-0"
+            >
+              @if (editProviderDefaultsExpanded()) {
+                <i class="bi bi-eye-slash" aria-hidden="true"></i>
+              } @else {
+                <i class="bi bi-eye" aria-hidden="true"></i>
+              }
+            </fpc-button>
           </div>
-          <div class="mb-3">
-            <label for="editProvider" class="form-label" i18n="@@featureServiceTypes-provider">Providers</label>
-            @if (providerDetailsLoading$ | async) {
-              <div class="form-control-plaintext text-body-secondary" i18n="@@featureServiceTypes-loadingProviders">
-                Loading providers...
-              </div>
-            } @else {
-              @if (providerDetails$ | async; as providers) {
-                @if (providers.length > 0) {
-                  <select
-                    id="editProvider"
-                    name="provider"
-                    class="form-select"
-                    multiple
-                    size="6"
-                    [ngModel]="editSelectedProviders"
-                    (ngModelChange)="onProvidersSelectionChange('edit', $event, providers)"
-                    [compareWith]="compareProviderId"
-                    [disabled]="(updating$ | async) === true"
-                  >
-                    <option [ngValue]="noneProviderValue" i18n="@@featureServiceTypes-noneProvider">None</option>
-                    @for (p of providers; track p.id) {
-                      <option [ngValue]="p.id" [disabled]="isProviderOptionDisabled('edit', p, providers)">
-                        {{ p.displayName }}
-                      </option>
+          <div
+            class="collapse"
+            id="editProviderDefaults"
+            (shown.bs.collapse)="editProviderDefaultsExpanded.set(true)"
+            (hidden.bs.collapse)="editProviderDefaultsExpanded.set(false)"
+          >
+            <p class="form-text text-body-secondary small mb-3 mt-2" i18n="@@featureServiceTypes-providerDefaultsHelp">
+              Overrides platform environment variables for this service type. Leave blank to use the environment
+              default.
+            </p>
+            @if (getProviderDefaultsGroups('edit', providers); as groups) {
+              @if (groups.length > 1) {
+                @for (group of groups; track group.providerId) {
+                  <div class="border rounded p-3 mb-3">
+                    <div
+                      class="form-text text-body-secondary small mb-2 mt-0"
+                      i18n="@@featureServiceTypes-providerDefaultsGroupIntro"
+                    >
+                      Defaults for {{ group.label }}
+                    </div>
+                    @for (field of group.fields; track field.envKey) {
+                      <fpc-form-field
+                        [forId]="'editProviderDefault_' + group.providerId + '_' + field.envKey"
+                        [label]="field.label"
+                      >
+                        <fpc-form-control
+                          [inputType]="field.sensitive ? 'password' : 'text'"
+                          [controlId]="'editProviderDefault_' + group.providerId + '_' + field.envKey"
+                          [name]="'editProviderDefault_' + group.providerId + '_' + field.envKey"
+                          [ngModel]="getProviderDefaultValue('edit', field.envKey)"
+                          (ngModelChange)="setProviderDefaultValue('edit', field.envKey, $event)"
+                          [disabled]="(updating$ | async) === true"
+                          [placeholder]="
+                            isProviderDefaultConfigured('edit', field.envKey)
+                              ? 'Override configured — leave blank to clear'
+                              : 'Using environment default'
+                          "
+                        />
+                      </fpc-form-field>
                     }
-                  </select>
-                  <div class="form-text text-body-secondary small" i18n="@@featureServiceTypes-providersMultiHelp">
-                    Hold Ctrl/Cmd to select multiple compatible providers. First selected is primary. Choose None for no
-                    cloud provider.
                   </div>
-                } @else {
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="editProvider"
-                    name="providerManual"
-                    [ngModel]="editForm.provider ?? ''"
-                    (ngModelChange)="
-                      onProvidersSelectionChange('edit', $event?.trim() ? [$event.trim()] : [], providers)
-                    "
-                    [disabled]="(updating$ | async) === true"
-                    i18n-placeholder="@@featureServiceTypes-providerPlaceholder"
-                    placeholder="e.g. hetzner"
-                  />
-                  <small class="text-body-secondary" i18n="@@featureServiceTypes-noProvidersHint"
-                    >No providers configured. Enter provider id manually.</small
-                  >
+                }
+              } @else {
+                @for (field of getSelectedProvidersEnvDefaultFields('edit', providers); track field.envKey) {
+                  <fpc-form-field [forId]="'editProviderDefault_' + field.envKey" [label]="field.label">
+                    <fpc-form-control
+                      [inputType]="field.sensitive ? 'password' : 'text'"
+                      [controlId]="'editProviderDefault_' + field.envKey"
+                      [name]="'editProviderDefault_' + field.envKey"
+                      [ngModel]="getProviderDefaultValue('edit', field.envKey)"
+                      (ngModelChange)="setProviderDefaultValue('edit', field.envKey, $event)"
+                      [disabled]="(updating$ | async) === true"
+                      [placeholder]="
+                        isProviderDefaultConfigured('edit', field.envKey)
+                          ? 'Override configured — leave blank to clear'
+                          : 'Using environment default'
+                      "
+                    />
+                  </fpc-form-field>
                 }
               }
             }
           </div>
-          @if (providerDetails$ | async; as providers) {
-            @if (hasProviderDefaultsSection('edit', providers)) {
-              <div class="mb-3 border rounded p-3 bg-body-secondary">
-                <div class="d-flex justify-content-between align-items-center gap-2">
-                  <h6 class="mb-0" i18n="@@featureServiceTypes-providerDefaults">Provider defaults</h6>
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-outline-secondary flex-shrink-0"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#editProviderDefaults"
-                    [attr.aria-expanded]="editProviderDefaultsExpanded()"
-                    aria-controls="editProviderDefaults"
-                    [attr.title]="
-                      editProviderDefaultsExpanded() ? hideProviderDefaultsLabel : showProviderDefaultsLabel
-                    "
-                    [attr.aria-label]="
-                      editProviderDefaultsExpanded() ? hideProviderDefaultsLabel : showProviderDefaultsLabel
-                    "
-                  >
-                    @if (editProviderDefaultsExpanded()) {
-                      <i class="bi bi-eye-slash" aria-hidden="true"></i>
-                    } @else {
-                      <i class="bi bi-eye" aria-hidden="true"></i>
-                    }
-                  </button>
-                </div>
-                <div
-                  class="collapse"
-                  id="editProviderDefaults"
-                  (shown.bs.collapse)="editProviderDefaultsExpanded.set(true)"
-                  (hidden.bs.collapse)="editProviderDefaultsExpanded.set(false)"
-                >
-                  <p
-                    class="form-text text-body-secondary small mb-3 mt-2"
-                    i18n="@@featureServiceTypes-providerDefaultsHelp"
-                  >
-                    Overrides platform environment variables for this service type. Leave blank to use the environment
-                    default.
-                  </p>
-                  @if (getProviderDefaultsGroups('edit', providers); as groups) {
-                    @if (groups.length > 1) {
-                      @for (group of groups; track group.providerId) {
-                        <div class="border rounded p-3 mb-3">
-                          <div
-                            class="form-text text-body-secondary small mb-2 mt-0"
-                            i18n="@@featureServiceTypes-providerDefaultsGroupIntro"
-                          >
-                            Defaults for {{ group.label }}
-                          </div>
-                          @for (field of group.fields; track field.envKey) {
-                            <div class="mb-3">
-                              <label
-                                [attr.for]="'editProviderDefault_' + group.providerId + '_' + field.envKey"
-                                class="form-label"
-                                >{{ field.label }}</label
-                              >
-                              <input
-                                [type]="field.sensitive ? 'password' : 'text'"
-                                class="form-control"
-                                [id]="'editProviderDefault_' + group.providerId + '_' + field.envKey"
-                                [name]="'editProviderDefault_' + group.providerId + '_' + field.envKey"
-                                [ngModel]="getProviderDefaultValue('edit', field.envKey)"
-                                (ngModelChange)="setProviderDefaultValue('edit', field.envKey, $event)"
-                                [disabled]="(updating$ | async) === true"
-                                [placeholder]="
-                                  isProviderDefaultConfigured('edit', field.envKey)
-                                    ? 'Override configured — leave blank to clear'
-                                    : 'Using environment default'
-                                "
-                              />
-                            </div>
-                          }
-                        </div>
-                      }
-                    } @else {
-                      @for (field of getSelectedProvidersEnvDefaultFields('edit', providers); track field.envKey) {
-                        <div class="mb-3">
-                          <label [attr.for]="'editProviderDefault_' + field.envKey" class="form-label">{{
-                            field.label
-                          }}</label>
-                          <input
-                            [type]="field.sensitive ? 'password' : 'text'"
-                            class="form-control"
-                            [id]="'editProviderDefault_' + field.envKey"
-                            [name]="'editProviderDefault_' + field.envKey"
-                            [ngModel]="getProviderDefaultValue('edit', field.envKey)"
-                            (ngModelChange)="setProviderDefaultValue('edit', field.envKey, $event)"
-                            [disabled]="(updating$ | async) === true"
-                            [placeholder]="
-                              isProviderDefaultConfigured('edit', field.envKey)
-                                ? 'Override configured — leave blank to clear'
-                                : 'Using environment default'
-                            "
-                          />
-                        </div>
-                      }
-                    }
-                  }
-                </div>
-              </div>
-            }
-          }
-          <ng-container
-            *ngTemplateOutlet="
-              serviceTypeMetersSection;
-              context: {
-                mode: 'edit',
-                disabled: (updating$ | async) === true,
-                providerId: primaryProviderId('edit'),
-              }
-            "
-          />
-          <div class="form-check">
-            <input
-              type="checkbox"
-              class="form-check-input"
-              id="editIsActive"
-              name="isActive"
-              [(ngModel)]="editForm.isActive"
-              [disabled]="(updating$ | async) === true"
-            />
-            <label class="form-check-label" for="editIsActive" i18n="@@featureServiceTypes-active">Active</label>
-          </div>
-          <div class="form-check mt-2">
-            <input
-              type="checkbox"
-              class="form-check-input"
-              id="editDisallowStatutoryWithdrawal"
-              name="disallowStatutoryWithdrawal"
-              [(ngModel)]="editForm.disallowStatutoryWithdrawal"
-              [disabled]="(updating$ | async) === true"
-            />
-            <label
-              class="form-check-label"
-              for="editDisallowStatutoryWithdrawal"
-              i18n="@@featureServiceTypes-disallowStatutoryWithdrawal"
-              >Disallow statutory withdrawal after provisioning</label
-            >
-          </div>
         </div>
-        <div class="modal-footer">
-          <button
-            type="submit"
-            class="btn btn-primary"
-            [disabled]="(updating$ | async) === true"
-            i18n="@@featureServiceTypes-save"
-          >
-            Save
-          </button>
-        </div>
-      </form>
+      }
+    }
+    <ng-container
+      *ngTemplateOutlet="
+        serviceTypeMetersSection;
+        context: {
+          mode: 'edit',
+          disabled: (updating$ | async) === true,
+          providerId: primaryProviderId('edit'),
+        }
+      "
+    />
+    <fpc-form-switch
+      switchId="editIsActive"
+      name="isActive"
+      [(ngModel)]="editForm.isActive"
+      [disabled]="(updating$ | async) === true"
+      i18n-label="@@featureServiceTypes-active"
+      label="Active"
+    />
+    <fpc-form-check
+      class="mt-2"
+      checkId="editDisallowStatutoryWithdrawal"
+      name="disallowStatutoryWithdrawal"
+      [(ngModel)]="editForm.disallowStatutoryWithdrawal"
+      [disabled]="(updating$ | async) === true"
+      i18n-label="@@featureServiceTypes-disallowStatutoryWithdrawal"
+      label="Disallow statutory withdrawal after provisioning"
+    />
+    <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+      <fpc-button
+        variant="primary"
+        type="submit"
+        [disabled]="(updating$ | async) === true"
+        i18n="@@featureServiceTypes-save"
+      >
+        Save
+      </fpc-button>
     </div>
-  </div>
-</div>
+  </form>
+</fpc-modal>
 
 <ng-template #serviceTypeMetersSection let-mode="mode" let-disabled="disabled" let-providerId="providerId">
   <div class="mb-3 border rounded p-3 bg-body-secondary">
@@ -628,7 +512,7 @@
       overrides.
     </p>
     @if (mode === 'edit' && meterAttachError) {
-      <div class="alert alert-danger py-2">{{ meterAttachError }}</div>
+      <fpc-alert class="py-2" variant="danger" [message]="meterAttachError" />
     }
     @if (mode === 'create') {
       @if (providerDetails$ | async; as providers) {
@@ -668,76 +552,84 @@
         <div class="col-12 col-md-5">
           <div class="row g-2">
             <div class="col-6">
-              <label
-                class="form-label small mb-0"
-                [for]="mode + 'ServiceTypeMeterOverride' + attached.meterId"
-                i18n="@@featureServiceTypes-meterUnitPriceOverride"
-                >Unit price override (net)</label
+              <fpc-form-field
+                [forId]="mode + 'ServiceTypeMeterOverride' + attached.meterId"
+                i18n-label="@@featureServiceTypes-meterUnitPriceOverride"
+                label="Unit price override (net)"
               >
-              <input
-                type="number"
-                min="0"
-                step="0.0001"
-                class="form-control form-control-sm"
-                [id]="mode + 'ServiceTypeMeterOverride' + attached.meterId"
-                #serviceTypeMeterOverride
-                [value]="attachedMeterOverrideInput(attached)"
-                [disabled]="disabled || (mode === 'edit' && meterAttachLoading)"
-              />
+                <fpc-form-control
+                  #serviceTypeMeterOverride
+                  inputType="number"
+                  min="0"
+                  step="0.0001"
+                  size="sm"
+                  [controlId]="mode + 'ServiceTypeMeterOverride' + attached.meterId"
+                  [value]="attachedMeterOverrideInput(attached)"
+                  [disabled]="disabled || (mode === 'edit' && meterAttachLoading)"
+                />
+              </fpc-form-field>
             </div>
             <div class="col-6">
-              <label
-                class="form-label small mb-0"
-                [for]="mode + 'ServiceTypeMeterIncludedUsage' + attached.meterId"
-                i18n="@@featureServiceTypes-meterIncludedUsageOverride"
-                >Included usage override</label
+              <fpc-form-field
+                [forId]="mode + 'ServiceTypeMeterIncludedUsage' + attached.meterId"
+                i18n-label="@@featureServiceTypes-meterIncludedUsageOverride"
+                label="Included usage override"
               >
-              <input
-                type="number"
-                min="0"
-                step="1"
-                class="form-control form-control-sm"
-                [id]="mode + 'ServiceTypeMeterIncludedUsage' + attached.meterId"
-                #serviceTypeMeterIncludedUsage
-                [value]="attachedMeterIncludedUsageOverrideInput(attached)"
-                [disabled]="disabled || (mode === 'edit' && meterAttachLoading)"
-              />
+                <fpc-form-control
+                  #serviceTypeMeterIncludedUsage
+                  inputType="number"
+                  min="0"
+                  step="1"
+                  size="sm"
+                  [controlId]="mode + 'ServiceTypeMeterIncludedUsage' + attached.meterId"
+                  [value]="attachedMeterIncludedUsageOverrideInput(attached)"
+                  [disabled]="disabled || (mode === 'edit' && meterAttachLoading)"
+                />
+              </fpc-form-field>
             </div>
           </div>
         </div>
         <div class="col-12 col-md-3 d-flex gap-1 flex-wrap justify-content-md-end">
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-primary"
-            (click)="
+          <fpc-button
+            (clicked)="
               updateAttachedServiceTypeMeter(
                 mode,
                 attached,
-                serviceTypeMeterOverride.value,
-                serviceTypeMeterIncludedUsage.value
+                serviceTypeMeterOverride.value(),
+                serviceTypeMeterIncludedUsage.value()
               )
             "
+            variant="primary"
+            size="sm"
+            iconOnly
+            click
+            updateAttachedServiceTypeMeter
+            mode
+            attached
+            serviceTypeMeterOverride.value()
+            serviceTypeMeterIncludedUsage.value()
             [disabled]="disabled || (mode === 'edit' && meterAttachLoading)"
             title="Update price"
             i18n-title="@@featureServiceTypes-updateMeterPrice"
-            aria-label="Update price"
-            i18n-aria-label="@@featureServiceTypes-updateMeterPrice"
+            ariaLabel="Update price"
+            i18n-ariaLabel="@@featureServiceTypes-updateMeterPrice"
           >
             <i class="bi bi-check-lg" aria-hidden="true"></i>
-          </button>
+          </fpc-button>
           @if (!attached.required) {
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-danger"
-              (click)="detachServiceTypeMeter(mode, attached)"
+            <fpc-button
+              variant="danger"
+              size="sm"
+              iconOnly
+              (clicked)="detachServiceTypeMeter(mode, attached)"
               [disabled]="disabled || (mode === 'edit' && meterAttachLoading)"
               title="Detach meter"
               i18n-title="@@featureServiceTypes-detachMeter"
-              aria-label="Detach meter"
-              i18n-aria-label="@@featureServiceTypes-detachMeter"
+              ariaLabel="Detach meter"
+              i18n-ariaLabel="@@featureServiceTypes-detachMeter"
             >
               <i class="bi bi-trash" aria-hidden="true"></i>
-            </button>
+            </fpc-button>
           }
         </div>
       </div>
@@ -754,111 +646,114 @@
           @if (availableMeters.length > 0) {
             <div class="row g-2 align-items-end">
               <div class="col-12 col-md-5">
-                <label
-                  class="form-label small mb-0"
-                  [for]="mode + 'AttachServiceTypeMeter'"
-                  i18n="@@featureServiceTypes-attachMeter"
-                  >Attach meter</label
+                <fpc-form-field
+                  [forId]="mode + 'AttachServiceTypeMeter'"
+                  i18n-label="@@featureServiceTypes-attachMeter"
+                  label="Attach meter"
                 >
-                @if (mode === 'create') {
-                  <select
-                    [id]="mode + 'AttachServiceTypeMeter'"
-                    class="form-select form-select-sm"
-                    [(ngModel)]="createMeterAttachMeterId"
-                    [name]="mode + 'AttachServiceTypeMeter'"
-                    [disabled]="disabled"
-                  >
-                    <option [ngValue]="''" i18n="@@featureServiceTypes-selectMeter">Select meter</option>
-                    @for (meter of availableMeters; track meter.id) {
-                      <option [ngValue]="meter.id">{{ meter.name }} ({{ meter.key }})</option>
-                    }
-                  </select>
-                } @else {
-                  <select
-                    [id]="mode + 'AttachServiceTypeMeter'"
-                    class="form-select form-select-sm"
-                    [(ngModel)]="editMeterAttachMeterId"
-                    [name]="mode + 'AttachServiceTypeMeter'"
-                    [disabled]="disabled || meterAttachLoading"
-                  >
-                    <option [ngValue]="''" i18n="@@featureServiceTypes-selectMeter">Select meter</option>
-                    @for (meter of availableMeters; track meter.id) {
-                      <option [ngValue]="meter.id">{{ meter.name }} ({{ meter.key }})</option>
-                    }
-                  </select>
-                }
+                  @if (mode === 'create') {
+                    <fpc-form-control
+                      controlType="select"
+                      size="sm"
+                      [controlId]="mode + 'AttachServiceTypeMeter'"
+                      [(ngModel)]="createMeterAttachMeterId"
+                      [name]="mode + 'AttachServiceTypeMeter'"
+                      [disabled]="disabled"
+                    >
+                      <option value="" i18n="@@featureServiceTypes-selectMeter">Select meter</option>
+                      @for (meter of availableMeters; track meter.id) {
+                        <option [value]="meter.id">{{ meter.name }} ({{ meter.key }})</option>
+                      }
+                    </fpc-form-control>
+                  } @else {
+                    <fpc-form-control
+                      controlType="select"
+                      size="sm"
+                      [controlId]="mode + 'AttachServiceTypeMeter'"
+                      [(ngModel)]="editMeterAttachMeterId"
+                      [name]="mode + 'AttachServiceTypeMeter'"
+                      [disabled]="disabled || meterAttachLoading"
+                    >
+                      <option value="" i18n="@@featureServiceTypes-selectMeter">Select meter</option>
+                      @for (meter of availableMeters; track meter.id) {
+                        <option [value]="meter.id">{{ meter.name }} ({{ meter.key }})</option>
+                      }
+                    </fpc-form-control>
+                  }
+                </fpc-form-field>
               </div>
               <div class="col-12 col-md-5">
                 <div class="row g-2">
                   <div class="col-6">
-                    <label
-                      class="form-label small mb-0"
-                      [for]="mode + 'AttachServiceTypeMeterPrice'"
-                      i18n="@@featureServiceTypes-attachMeterPrice"
-                      >Override price (optional)</label
+                    <fpc-form-field
+                      [forId]="mode + 'AttachServiceTypeMeterPrice'"
+                      i18n-label="@@featureServiceTypes-attachMeterPrice"
+                      label="Override price (optional)"
                     >
-                    @if (mode === 'create') {
-                      <input
-                        [id]="mode + 'AttachServiceTypeMeterPrice'"
-                        type="number"
-                        min="0"
-                        step="0.0001"
-                        class="form-control form-control-sm"
-                        [(ngModel)]="createMeterAttachUnitPrice"
-                        [name]="mode + 'AttachServiceTypeMeterPrice'"
-                        [disabled]="disabled"
-                      />
-                    } @else {
-                      <input
-                        [id]="mode + 'AttachServiceTypeMeterPrice'"
-                        type="number"
-                        min="0"
-                        step="0.0001"
-                        class="form-control form-control-sm"
-                        [(ngModel)]="editMeterAttachUnitPrice"
-                        [name]="mode + 'AttachServiceTypeMeterPrice'"
-                        [disabled]="disabled || meterAttachLoading"
-                      />
-                    }
+                      @if (mode === 'create') {
+                        <fpc-form-control
+                          inputType="number"
+                          min="0"
+                          step="0.0001"
+                          size="sm"
+                          [controlId]="mode + 'AttachServiceTypeMeterPrice'"
+                          [(ngModel)]="createMeterAttachUnitPrice"
+                          [name]="mode + 'AttachServiceTypeMeterPrice'"
+                          [disabled]="disabled"
+                        />
+                      } @else {
+                        <fpc-form-control
+                          inputType="number"
+                          min="0"
+                          step="0.0001"
+                          size="sm"
+                          [controlId]="mode + 'AttachServiceTypeMeterPrice'"
+                          [(ngModel)]="editMeterAttachUnitPrice"
+                          [name]="mode + 'AttachServiceTypeMeterPrice'"
+                          [disabled]="disabled || meterAttachLoading"
+                        />
+                      }
+                    </fpc-form-field>
                   </div>
                   <div class="col-6">
-                    <label
-                      class="form-label small mb-0"
-                      [for]="mode + 'AttachServiceTypeMeterIncludedUsage'"
-                      i18n="@@featureServiceTypes-attachMeterIncludedUsage"
-                      >Override included usage (optional)</label
+                    <fpc-form-field
+                      [forId]="mode + 'AttachServiceTypeMeterIncludedUsage'"
+                      i18n-label="@@featureServiceTypes-attachMeterIncludedUsage"
+                      label="Override included usage (optional)"
                     >
-                    @if (mode === 'create') {
-                      <input
-                        [id]="mode + 'AttachServiceTypeMeterIncludedUsage'"
-                        type="number"
-                        min="0"
-                        step="1"
-                        class="form-control form-control-sm"
-                        [(ngModel)]="createMeterAttachIncludedUsage"
-                        [name]="mode + 'AttachServiceTypeMeterIncludedUsage'"
-                        [disabled]="disabled"
-                      />
-                    } @else {
-                      <input
-                        [id]="mode + 'AttachServiceTypeMeterIncludedUsage'"
-                        type="number"
-                        min="0"
-                        step="1"
-                        class="form-control form-control-sm"
-                        [(ngModel)]="editMeterAttachIncludedUsage"
-                        [name]="mode + 'AttachServiceTypeMeterIncludedUsage'"
-                        [disabled]="disabled || meterAttachLoading"
-                      />
-                    }
+                      @if (mode === 'create') {
+                        <fpc-form-control
+                          inputType="number"
+                          min="0"
+                          step="1"
+                          size="sm"
+                          [controlId]="mode + 'AttachServiceTypeMeterIncludedUsage'"
+                          [(ngModel)]="createMeterAttachIncludedUsage"
+                          [name]="mode + 'AttachServiceTypeMeterIncludedUsage'"
+                          [disabled]="disabled"
+                        />
+                      } @else {
+                        <fpc-form-control
+                          inputType="number"
+                          min="0"
+                          step="1"
+                          size="sm"
+                          [controlId]="mode + 'AttachServiceTypeMeterIncludedUsage'"
+                          [(ngModel)]="editMeterAttachIncludedUsage"
+                          [name]="mode + 'AttachServiceTypeMeterIncludedUsage'"
+                          [disabled]="disabled || meterAttachLoading"
+                        />
+                      }
+                    </fpc-form-field>
                   </div>
                 </div>
               </div>
               <div class="col-12 col-md-2 d-flex justify-content-md-end">
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-primary"
-                  (click)="attachServiceTypeMeter(mode)"
+                <fpc-button
+                  variant="primary"
+                  size="sm"
+                  iconOnly
+                  (clicked)="attachServiceTypeMeter(mode)"
                   [disabled]="
                     disabled ||
                     (mode === 'edit' && meterAttachLoading) ||
@@ -866,11 +761,11 @@
                   "
                   title="Attach meter"
                   i18n-title="@@featureServiceTypes-attachMeterAction"
-                  aria-label="Attach meter"
-                  i18n-aria-label="@@featureServiceTypes-attachMeterAction"
+                  ariaLabel="Attach meter"
+                  i18n-ariaLabel="@@featureServiceTypes-attachMeterAction"
                 >
                   <i class="bi bi-plus" aria-hidden="true"></i>
-                </button>
+                </fpc-button>
               </div>
             </div>
           } @else if (meters.length === 0) {
@@ -886,51 +781,23 @@
   </div>
 </ng-template>
 
-<!-- Delete confirm modal -->
-<div
-  class="modal fade"
-  id="deleteServiceTypeModal"
-  tabindex="-1"
-  aria-labelledby="deleteServiceTypeModalLabel"
-  aria-hidden="true"
-  #deleteConfirmModal
+<fpc-confirm-dialog
+  [(open)]="deleteConfirmModalOpen"
+  i18n-title="@@featureServiceTypes-deleteTitle"
+  title="Delete service provider?"
+  i18n-confirmLabel="@@featureServiceTypes-delete"
+  confirmLabel="Delete"
+  [danger]="true"
+  [busy]="(deleting$ | async) === true"
+  (confirmed)="confirmDelete()"
 >
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="deleteServiceTypeModalLabel" i18n="@@featureServiceTypes-deleteTitle">
-          Delete service provider?
-        </h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-          [disabled]="(deleting$ | async) === true"
-        ></button>
-      </div>
-      <div class="modal-body">
-        @if (serviceTypeToDelete; as st) {
-          <p i18n="@@featureServiceTypes-deleteConfirm">
-            Are you sure you want to delete the service type &quot;{{ st.name }}&quot; ({{ st.key }})?
-          </p>
-          <p class="text-danger mb-0">
-            <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
-            <span i18n="@@featureServiceTypes-cannotUndo">This action cannot be undone.</span>
-          </p>
-        }
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="confirmDelete()"
-          [disabled]="(deleting$ | async) === true || !serviceTypeToDelete"
-          i18n="@@featureServiceTypes-delete"
-        >
-          Delete
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+  @if (serviceTypeToDelete; as st) {
+    <p i18n="@@featureServiceTypes-deleteConfirm">
+      Are you sure you want to delete the service type &quot;{{ st.name }}&quot; ({{ st.key }})?
+    </p>
+    <p class="text-danger mb-0">
+      <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+      <span i18n="@@featureServiceTypes-cannotUndo">This action cannot be undone.</span>
+    </p>
+  }
+</fpc-confirm-dialog>

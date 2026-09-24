@@ -3,30 +3,13 @@
 :host {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1 1 0;
+  width: 100%;
   min-height: 0;
   overflow: hidden;
 }
 
 .admin-subscriptions-container {
+  flex: 1 1 0;
   min-height: 0;
-}
-
-.admin-subscriptions__summary-bar {
-  flex-shrink: 0;
-  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
-}
-
-.admin-subscriptions__summary-grid .admin-subscriptions__summary-card {
-  background: var(--bs-body-bg);
-  border-top: 0;
-}
-
-.admin-subscriptions__summary-card--first {
-  border-left: 0;
-}
-
-.admin-subscriptions__summary-card--second {
-  border-right: 0;
-  border-bottom: 0;
 }

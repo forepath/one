@@ -1,0 +1,19 @@
+// Global stylesheet entry for apps consuming `@forepath/shared/frontend/ui-components`.
+//
+// Brand tokens live under `styles/brands/` and are loaded by each app *before* Bootstrap:
+//
+//   @import 'bootstrap/scss/functions';
+//   @import '…/styles/brands/<brand>/palette';
+//   @import '…/styles/brands/chrome';
+//   @import '…/styles/brands/badge-tint';
+//   @import 'bootstrap/scss/bootstrap';
+//   @import '…/styles';
+//   @import '…/styles/brands/extras';
+//   @import '…/styles/brands/<brand>/extras';
+//
+// What stays global by design:
+// - scrollbar: shared thin scrollbar using `--bs-scrollbar-*` from brands/extras
+// - section-outlet: fill routed hosts under `fpc-section-container` (crosses encapsulation)
+// Modal / sidebar-popover / icon-button chrome live on their components.
+@forward 'scrollbar';
+@forward 'section-outlet';

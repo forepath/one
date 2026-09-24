@@ -1,41 +1,46 @@
-<div class="projects-container border-top d-flex flex-column h-100">
-  <div class="p-3 border-bottom bg-body-tertiary">
-    <h5 class="mb-0 fw-semibold" i18n="@@featureProjects-title">Projects</h5>
-  </div>
+<div class="projects-container border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="pageTitle" />
 
-  <div class="input-group search-input-container border-bottom">
-    <i class="bi bi-search"></i>
-    <input
-      type="text"
-      class="form-control border-0 search-input"
-      placeholder="Search projects"
-      i18n-placeholder="@@featureProjects-searchPlaceholder"
-      [ngModel]="searchQuery()"
-      (ngModelChange)="searchQuery.set($event)"
-      name="search"
-    />
-  </div>
+  <fpc-search-field
+    class="border-bottom"
+    name="search"
+    [bordered]="false"
+    [placeholder]="searchPlaceholder"
+    [ariaLabel]="searchPlaceholder"
+    [(value)]="searchQuery"
+  />
 
-  <div #scrollRoot class="flex-grow-1 overflow-auto">
+  <div #scrollRoot class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
     @if (loading$ | async) {
       <div class="d-flex justify-content-center p-4">
-        <div class="spinner-border text-primary" role="status"></div>
+        <fpc-spinner variant="primary" />
       </div>
     } @else {
       @if (error$ | async; as error) {
-        <div class="alert alert-danger m-3" role="alert">{{ error }}</div>
+        <fpc-alert class="m-3" variant="danger" [message]="error" />
       }
       @if (projects().length === 0) {
-        <div class="p-4 text-muted text-center" i18n="@@featureProjects-empty">No projects assigned to you</div>
+        @if (searchQuery().trim()) {
+          <fpc-empty-state icon="search" message="No search results" i18n-message="@@featureProjects-noMatching" />
+        } @else {
+          <fpc-empty-state message="No projects yet" i18n-message="@@featureProjects-empty" />
+        }
       } @else {
-        <div class="list-group list-group-flush">
+        <fpc-list [flush]="true">
           @for (project of projects(); track project.id) {
-            <a
-              [routerLink]="['/projects', project.id, 'board']"
-              class="list-group-item list-group-item-action border-bottom"
-            >
-              <div class="fw-semibold mb-1">{{ project.name }}</div>
-              <div class="small text-muted d-flex align-items-center gap-3 flex-wrap">
+            <fpc-list-item>
+              <a
+                fpcListItemTitle
+                [routerLink]="['/projects', project.id, 'board']"
+                class="text-decoration-none text-body"
+              >
+                <div class="fw-semibold">{{ project.name }}</div>
+              </a>
+              <a
+                fpcListItemMeta
+                [routerLink]="['/projects', project.id, 'board']"
+                class="small d-flex align-items-center gap-3 flex-wrap text-decoration-none"
+              >
                 <span [ngClass]="projectStatusTextClass(project.status)">
                   <i class="bi me-1" [ngClass]="projectStatusIconClass(project.status)" aria-hidden="true"></i
                   >{{ projectStatusLabel(project.status) }}</span
@@ -52,27 +57,27 @@
                   ><i class="bi bi-cash-stack me-1" aria-hidden="true"></i
                   >{{ openBillableLabel(project.openBillableAmountNet, project.currency) }}</span
                 >
-              </div>
-            </a>
+              </a>
+            </fpc-list-item>
           }
-        </div>
+        </fpc-list>
+        @if ((appendLoading$ | async) || (appendError$ | async)) {
+          <fpc-list-append-footer
+            [loading]="!!(appendLoading$ | async)"
+            [error]="!!(appendError$ | async)"
+            (retry)="facade.loadMore()"
+          />
+        }
+        <div
+          fpcInfiniteScroll
+          [root]="scrollRoot"
+          [paused]="!!(appendError$ | async)"
+          [disabled]="(hasMore$ | async) === false || !!(appendLoading$ | async) || !!(loading$ | async)"
+          (reachedEnd)="facade.loadMore()"
+          aria-hidden="true"
+          style="height: 1px; width: 100%; flex-shrink: 0"
+        ></div>
       }
     }
-    @if ((appendLoading$ | async) || (appendError$ | async)) {
-      <shared-list-append-footer
-        [loading]="!!(appendLoading$ | async)"
-        [error]="!!(appendError$ | async)"
-        (retry)="facade.loadMore()"
-      />
-    }
-    <div
-      sharedInfiniteScroll
-      [root]="scrollRoot"
-      [paused]="!!(appendError$ | async)"
-      [disabled]="(hasMore$ | async) === false || !!(appendLoading$ | async) || !!(loading$ | async)"
-      (reachedEnd)="facade.loadMore()"
-      aria-hidden="true"
-      style="height: 1px; width: 100%; flex-shrink: 0"
-    ></div>
   </div>
 </div>

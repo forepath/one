@@ -1,5 +1,5 @@
 import { CommonModule, DecimalPipe } from '@angular/common';
-import { Component, computed, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -11,7 +11,24 @@ import {
   type UpdateAdminProjectDto,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { AuthenticationFacade, type UserResponseDto } from '@forepath/identity/frontend';
-import { InfiniteScrollDirective, ListAppendFooterComponent } from '@forepath/shared/frontend/ui-lists';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcConfirmDialogComponent,
+  FpcEmptyStateComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcInfiniteScrollDirective,
+  FpcListAppendFooterComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { debounceTime, distinctUntilChanged, skip } from 'rxjs';
 
 import { BillingAdminUserSelectComponent } from '../billing-admin-user-select/billing-admin-user-select.component';
@@ -34,18 +51,36 @@ import { showBillingModal, watchBillingMutationModalClose } from '../billing-mod
     FormsModule,
     RouterModule,
     BillingAdminUserSelectComponent,
-    InfiniteScrollDirective,
-    ListAppendFooterComponent,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcConfirmDialogComponent,
+    FpcFormControlComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcFormFieldComponent,
+    FpcListItemComponent,
+    FpcListComponent,
+    FpcEmptyStateComponent,
+    FpcInfiniteScrollDirective,
+    FpcListAppendFooterComponent,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
   ],
   providers: [DecimalPipe],
   templateUrl: './admin-projects-page.component.html',
   styleUrls: ['./admin-projects-page.component.scss'],
 })
 export class AdminProjectsPageComponent implements OnInit {
-  @ViewChild('createModal', { static: false }) private createModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('editModal', { static: false }) private editModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('deleteModal', { static: false }) private deleteModal!: ElementRef<HTMLDivElement>;
+  readonly createModalOpen = signal(false);
+  readonly editModalOpen = signal(false);
+  readonly deleteModalOpen = signal(false);
   @ViewChild('createUserSelect') private createUserSelect?: BillingAdminUserSelectComponent;
+
+  readonly pageTitle = $localize`:@@featureAdminProjects-title:Projects`;
+  readonly addProjectAriaLabel = $localize`:@@featureAdminProjects-add:Add`;
+  readonly searchPlaceholder = $localize`:@@featureAdminProjects-searchPlaceholder:Search projects`;
 
   readonly facade = inject(ProjectsFacade);
   private readonly adminService = inject(AdminProjectsService);
@@ -95,7 +130,7 @@ export class AdminProjectsPageComponent implements OnInit {
   openCreateModal(): void {
     this.createForm = this.emptyCreateForm();
     this.createTargetHoursInput = null;
-    showBillingModal(this.createModal);
+    showBillingModal(this.createModalOpen);
     queueMicrotask(() => this.createUserSelect?.reset());
   }
 
@@ -111,14 +146,14 @@ export class AdminProjectsPageComponent implements OnInit {
           currency: full.currency,
         };
         this.editTargetHoursInput = full.targetHours ?? null;
-        showBillingModal(this.editModal);
+        showBillingModal(this.editModalOpen);
       },
     });
   }
 
   openDeleteModal(project: AdminProjectListItem): void {
     this.projectToDelete = project;
-    showBillingModal(this.deleteModal);
+    showBillingModal(this.deleteModalOpen);
   }
 
   submitCreate(): void {
@@ -195,7 +230,7 @@ export class AdminProjectsPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.creating$,
       error$: this.error$,
-      modal: () => this.createModal,
+      open: this.createModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.createForm = this.emptyCreateForm();
@@ -206,14 +241,14 @@ export class AdminProjectsPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.updating$,
       error$: this.error$,
-      modal: () => this.editModal,
+      open: this.editModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: reload,
     });
     watchBillingMutationModalClose({
       loading$: this.deleting$,
       error$: this.error$,
-      modal: () => this.deleteModal,
+      open: this.deleteModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.projectToDelete = null;

@@ -1,12 +1,33 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, ElementRef, inject, input, signal, ViewChild } from '@angular/core';
+import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { DeploymentsFacade } from '@forepath/agenstra/frontend/data-access-agent-console';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcConfirmDialogComponent,
+  FpcLaneHeaderComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcSpinnerComponent,
+  type FpcBadgeColor,
+} from '@forepath/shared/frontend/ui-components';
 import { of, switchMap } from 'rxjs';
 
 @Component({
   selector: 'framework-deployment-run-details',
-  imports: [CommonModule],
+  imports: [
+    CommonModule,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcConfirmDialogComponent,
+    FpcLaneHeaderComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './deployment-run-details.component.html',
   styleUrls: ['./deployment-run-details.component.scss'],
   standalone: true,
@@ -14,8 +35,7 @@ import { of, switchMap } from 'rxjs';
 export class DeploymentRunDetailsComponent {
   private readonly deploymentsFacade = inject(DeploymentsFacade);
 
-  @ViewChild('cancelRunConfirmModal', { static: false })
-  private cancelRunConfirmModal!: ElementRef<HTMLDivElement>;
+  readonly cancelRunConfirmModalOpen = signal(false);
 
   // Inputs
   clientId = input.required<string>();
@@ -203,15 +223,15 @@ export class DeploymentRunDetailsComponent {
   }
 
   onOpenCancelRunConfirm(): void {
-    setTimeout(() => this.showCancelRunConfirmModal(), 0);
+    this.cancelRunConfirmModalOpen.set(true);
   }
 
   onCancelCancelRunConfirm(): void {
-    this.hideCancelRunConfirmModal();
+    this.cancelRunConfirmModalOpen.set(false);
   }
 
   confirmCancelRun(): void {
-    this.hideCancelRunConfirmModal();
+    this.cancelRunConfirmModalOpen.set(false);
     const runId = this.runId();
     const clientId = this.clientId();
     const agentId = this.agentId();
@@ -221,53 +241,21 @@ export class DeploymentRunDetailsComponent {
     }
   }
 
-  private showCancelRunConfirmModal(): void {
-    const el = this.cancelRunConfirmModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const Modal = (window as any).bootstrap?.Modal;
-
-    if (!Modal) {
-      return;
-    }
-
-    const inst = Modal.getOrCreateInstance ? Modal.getOrCreateInstance(el) : new Modal(el);
-
-    inst.show();
-  }
-
-  private hideCancelRunConfirmModal(): void {
-    const el = this.cancelRunConfirmModal?.nativeElement;
-
-    if (!el) {
-      return;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const modal = (window as any).bootstrap?.Modal?.getInstance(el);
-
-    modal?.hide();
-  }
-
-  getStatusBadgeClass(status: string): string {
+  getStatusBadgeColor(status: string): FpcBadgeColor {
     switch (status.toLowerCase()) {
       case 'completed':
       case 'success':
-        return 'bg-success';
+        return 'success';
       case 'in_progress':
       case 'running':
       case 'queued':
-        return 'bg-primary';
+        return 'primary';
       case 'failed':
       case 'failure':
       case 'cancelled':
-        return 'bg-danger';
+        return 'danger';
       default:
-        return 'bg-secondary';
+        return 'secondary';
     }
   }
 
@@ -291,21 +279,21 @@ export class DeploymentRunDetailsComponent {
     }
   }
 
-  getJobStatusBadgeClass(status: string): string {
+  getJobStatusBadgeColor(status: string): FpcBadgeColor {
     switch (status.toLowerCase()) {
       case 'completed':
       case 'success':
-        return 'bg-success';
+        return 'success';
       case 'in_progress':
       case 'running':
-        return 'bg-primary';
+        return 'primary';
       case 'failed':
       case 'failure':
-        return 'bg-danger';
+        return 'danger';
       case 'cancelled':
-        return 'bg-warning';
+        return 'warning';
       default:
-        return 'bg-secondary';
+        return 'secondary';
     }
   }
 

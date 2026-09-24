@@ -1,11 +1,11 @@
 @use '../section.scss';
 @use '../admin-list-page.scss';
-@use '../customer-lane-layout.scss';
 
 :host {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1 1 0;
+  width: 100%;
   min-height: 0;
   overflow: hidden;
 }
@@ -17,43 +17,6 @@
 
 .invoices-header {
   min-height: 64px;
-}
-
-.customer-billing__summary-bar {
-  flex-shrink: 0;
-  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
-}
-
-.customer-billing__summary-grid .customer-billing__summary-card {
-  background: var(--bs-body-bg);
-  border-top: 0;
-}
-
-.customer-billing__summary-card--first {
-  border-left: 0;
-}
-
-.customer-billing__summary-card--second {
-  @media (max-width: 767.98px) {
-    border-right: 0;
-  }
-}
-
-.customer-billing__summary-card--third {
-  border-left: 0;
-
-  @media (max-width: 767.98px) {
-    border-bottom: 0;
-  }
-
-  @media (min-width: 768px) {
-    border-left-width: var(--bs-border-width);
-  }
-}
-
-.customer-billing__summary-card--fourth {
-  border-right: 0;
-  border-bottom: 0;
 }
 
 .section__row {
@@ -70,38 +33,17 @@
   overflow: hidden;
 }
 
-.customer-billing__lane {
-  border-radius: 0;
-
-  .customer-billing__lane-header,
-  .customer-billing__lane-subscription-select {
-    background: var(--bs-tertiary-bg);
-    border-radius: 0;
-  }
-}
-
-.btn-group-options {
-  > .btn-options {
-    border-radius: 0;
-    border-top: 0;
-    border-bottom: 0;
-    border-left: 0;
-    flex: 1 1 auto;
-
-    &:last-child {
-      border-right: 0;
-    }
-  }
-}
-
 /* Disabled pay buttons still need hover so the minimum-amount title is visible. */
-.btn-group > .btn:disabled {
+[fpcListItemActions] .fpc-button .btn:disabled,
+[fpcListItemActions] .fpc-button__btn:disabled {
   pointer-events: auto;
 }
 
-.invoice-preview-modal {
+.invoice-preview-modal ::ng-deep .modal-dialog {
   max-width: 56rem;
+}
 
+.invoice-preview-modal {
   &__loading {
     display: flex;
     align-items: center;

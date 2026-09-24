@@ -1,15 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, DestroyRef, effect, inject, input, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { FpcButtonComponent, FpcTypeaheadSelectComponent } from '@forepath/shared/frontend/ui-components';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 
-import { DocsSearchService } from '../../services';
+import { DocsSearchService, SearchResult } from '../../services';
 
 @Component({
   selector: 'framework-docs-search',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FpcTypeaheadSelectComponent, FpcButtonComponent],
   templateUrl: './docs-search.component.html',
   styleUrls: ['./docs-search.component.scss'],
   standalone: true,
@@ -20,25 +20,23 @@ export class DocsSearchComponent {
   private readonly searchService = inject(DocsSearchService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
-  /**
-   * Search input value
-   */
+
+  readonly searchPlaceholder = $localize`:@@featureDocsSearch-searchPlaceholder:Search documentation...`;
+  readonly noResultsMessage = $localize`:@@featureDocsSearch-noResults:No search results`;
+  readonly viewAllResultsLabel = $localize`:@@featureDocsSearch-viewAllResults:View all results`;
+
+  /** Search input value. */
   readonly searchQuery = signal<string>('');
 
-  /**
-   * Whether search dropdown is visible
-   */
-  readonly showResults = signal<boolean>(false);
+  /** Whether the typeahead suggestion menu is open. */
+  readonly suggestionsOpen = signal<boolean>(false);
 
-  /**
-   * Search results
-   */
+  /** Search results. */
   readonly searchResults = computed(() => this.searchService.searchResults());
 
   private readonly searchSubject = new Subject<string>();
 
   constructor() {
-    // Debounce search input
     this.searchSubject
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe((query: string) => {
@@ -55,7 +53,6 @@ export class DocsSearchComponent {
         }
       });
 
-    // Sync with service
     effect(() => {
       const query = this.searchService.searchQuery();
 
@@ -63,58 +60,47 @@ export class DocsSearchComponent {
     });
   }
 
-  /**
-   * Handle search input
-   */
-  onSearchInput(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-
+  onSearchValueChange(value: string): void {
     this.searchQuery.set(value);
     this.searchSubject.next(value);
-    this.showResults.set(value.trim().length > 0);
+    this.suggestionsOpen.set(value.trim().length > 0);
   }
 
-  /**
-   * Handle search result click
-   */
-  onResultClick(result: { entry: { path: string } }): void {
-    this.router.navigate([result.entry.path]);
-    this.showResults.set(false);
+  onSuggestionsOpenChange(open: boolean): void {
+    if (!open) {
+      this.suggestionsOpen.set(false);
+
+      return;
+    }
+
+    this.suggestionsOpen.set(this.searchQuery().trim().length > 0);
+  }
+
+  onCleared(): void {
+    this.searchQuery.set('');
+    this.searchService.clearSearch();
+    this.suggestionsOpen.set(false);
+  }
+
+  onResultClick(result: SearchResult, event: MouseEvent): void {
+    event.preventDefault();
+    void this.router.navigate([result.entry.path]);
+    this.suggestionsOpen.set(false);
     this.searchQuery.set('');
     this.searchService.clearSearch();
   }
 
-  /**
-   * Handle search button click
-   */
-  onSearchClick(): void {
+  onSearchClick(event?: MouseEvent): void {
+    event?.preventDefault();
+
     const query = this.searchQuery().trim();
 
     if (query.length > 0) {
-      this.router.navigate(['/search'], { queryParams: { q: query } });
-      this.showResults.set(false);
+      void this.router.navigate(['/search'], { queryParams: { q: query } });
     } else {
-      this.router.navigate(['/search']);
-      this.showResults.set(false);
+      void this.router.navigate(['/search']);
     }
-  }
 
-  /**
-   * Handle focus
-   */
-  onFocus(): void {
-    if (this.searchQuery().trim().length > 0) {
-      this.showResults.set(true);
-    }
-  }
-
-  /**
-   * Handle blur
-   */
-  onBlur(): void {
-    // Delay to allow click events to fire
-    setTimeout(() => {
-      this.showResults.set(false);
-    }, 200);
+    this.suggestionsOpen.set(false);
   }
 }

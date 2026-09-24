@@ -1,0 +1,60 @@
+:host {
+  display: block;
+  flex: 0 0 auto;
+  padding: 0.5rem 1rem; // Matches Bootstrap `py-2` + card-header horizontal padding
+  font-size: 0.875rem; // `small`
+  font-weight: 600; // `fw-semibold`
+  line-height: 1.25;
+  background-color: var(--bs-tertiary-bg);
+  border-radius: 0;
+}
+
+:host(.fpc-lane-header--flush) {
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+}
+
+:host(.fpc-lane-header--md-up) {
+  display: none;
+
+  @media (min-width: 768px) {
+    display: block;
+  }
+}
+
+.fpc-lane-header__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  // Match `fpc-button` size="sm" icon-only so title-only and action rows share one height.
+  min-height: 2.025rem;
+  flex-wrap: nowrap;
+}
+
+.fpc-lane-header__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.fpc-lane-header__title-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fpc-lane-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+}
+
+.fpc-lane-header__actions:empty {
+  display: none;
+}

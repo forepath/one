@@ -4,6 +4,7 @@ import type {
   AgentResponseObject,
   SuccessResponse,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
+import type { FpcBadgeColor } from '@forepath/shared/frontend/ui-components';
 
 import { extractInteractionQueryPreviewText, extractThinkingPreviewText } from './agent-chat-response-markdown';
 
@@ -18,8 +19,8 @@ export interface AgentChatEventDisplayRow {
   summaryTitle: string;
   /** Secondary line (preview, ids, status) */
   summaryBody: string;
-  /** Bootstrap contextual badge class (without `text-*` unless needed) */
-  badgeClass: string;
+  /** `fpc-badge` color for the kind pill */
+  badgeColor: FpcBadgeColor;
   /** Pretty-printed JSON for the full envelope (expandable details) */
   detailJson: string;
   /**
@@ -91,14 +92,14 @@ export function toolPairOutcomeFromCallStatus(status: string): AgentChatToolPair
   return 'pending';
 }
 
-export function toolPairOutcomeToBadgeClass(outcome: AgentChatToolPairOutcome): string {
+export function toolPairOutcomeToBadgeColor(outcome: AgentChatToolPairOutcome): FpcBadgeColor {
   switch (outcome) {
     case 'pending':
-      return 'text-bg-info';
+      return 'info';
     case 'success':
-      return 'text-bg-success';
+      return 'success';
     case 'error':
-      return 'text-bg-warning';
+      return 'warning';
   }
 }
 
@@ -148,7 +149,7 @@ export function mergeToolPairDisplayRows(
     kindLabel: AGENT_CHAT_EVENT_KIND_LABELS.toolCall,
     summaryTitle: callRow.summaryTitle,
     summaryBody: `${callRow.summaryBody} → ${resultRow.summaryBody}`,
-    badgeClass: toolPairOutcomeToBadgeClass(outcome),
+    badgeColor: toolPairOutcomeToBadgeColor(outcome),
     detailJson: `${callDetail}\n\n---\n\n${resultDetail}`,
     toolCallId: callRow.toolCallId,
     toolPair: {
@@ -291,7 +292,7 @@ function summarizeEnvelope(
   const kindLabel = agentChatEventKindLabel(kind);
   let summaryTitle = kindLabel;
   let summaryBody = '';
-  let badgeClass = 'bg-secondary';
+  let badgeColor: FpcBadgeColor = 'secondary';
 
   switch (kind) {
     case 'userMessage': {
@@ -299,7 +300,7 @@ function summarizeEnvelope(
 
       summaryTitle = $localize`:@@featureChat-agentEventSummaryUserMessage:User message`;
       summaryBody = previewString(text, 200);
-      badgeClass = 'bg-secondary';
+      badgeColor = 'secondary';
       break;
     }
 
@@ -309,7 +310,7 @@ function summarizeEnvelope(
 
       summaryTitle = $localize`:@@featureChat-agentEventSummaryThinking:Agent is thinking`;
       summaryBody = phase ? previewString(phase, 120) : 'Waiting for the first response…';
-      badgeClass = 'bg-light text-dark border';
+      badgeColor = 'light';
       break;
     }
 
@@ -321,7 +322,7 @@ function summarizeEnvelope(
 
       summaryTitle = $localize`:@@featureChat-agentEventSummaryInteractionQuery:Query`;
       summaryBody = preview ? previewString(preview, 120) : 'Waiting for the first response…';
-      badgeClass = 'bg-light text-dark border';
+      badgeColor = 'light';
       break;
     }
 
@@ -331,7 +332,7 @@ function summarizeEnvelope(
 
       summaryTitle = $localize`:@@featureChat-agentEventSummaryAssistantStreaming:Assistant (streaming)`;
       summaryBody = previewString(delta, 220);
-      badgeClass = 'bg-info';
+      badgeColor = 'info';
       break;
     }
 
@@ -340,7 +341,7 @@ function summarizeEnvelope(
 
       summaryTitle = $localize`:@@featureChat-agentEventSummaryAssistantMessage:Assistant message`;
       summaryBody = previewString(text, 220);
-      badgeClass = 'bg-primary';
+      badgeColor = 'primary';
       break;
     }
 
@@ -365,7 +366,7 @@ function summarizeEnvelope(
         summaryBody += ` · ${previewUnknown(p.args, 160)}`;
       }
 
-      badgeClass = toolPairOutcomeToBadgeClass(toolPairOutcomeFromCallStatus(status));
+      badgeColor = toolPairOutcomeToBadgeColor(toolPairOutcomeFromCallStatus(status));
       break;
     }
 
@@ -385,7 +386,7 @@ function summarizeEnvelope(
           ? $localize`:@@featureChat-agentEventSummaryEnrichmentResult:Enrichment result`
           : $localize`:@@featureChat-agentEventSummaryToolResult:Tool result · ${name}:toolName:`;
       summaryBody = `${isError ? 'Failed' : 'Success'} · ${toolCallId} · ${previewUnknown(p.result, 200)}`;
-      badgeClass = toolPairOutcomeToBadgeClass(isError ? 'error' : 'success');
+      badgeColor = toolPairOutcomeToBadgeColor(isError ? 'error' : 'success');
       break;
     }
 
@@ -396,7 +397,7 @@ function summarizeEnvelope(
 
       summaryTitle = $localize`:@@featureChat-agentEventKindQuestion:Question`;
       summaryBody = [qid ? `#${qid}` : '', previewString(prompt, 200)].filter(Boolean).join(' · ');
-      badgeClass = 'bg-primary';
+      badgeColor = 'primary';
       break;
     }
 
@@ -406,7 +407,7 @@ function summarizeEnvelope(
 
       summaryTitle = $localize`:@@featureChat-agentEventKindStatus:Status`;
       summaryBody = previewString(msg, 220);
-      badgeClass = 'bg-secondary';
+      badgeColor = 'secondary';
       break;
     }
 
@@ -424,13 +425,13 @@ function summarizeEnvelope(
         summaryBody += ` · ${previewString(p.details, 120)}`;
       }
 
-      badgeClass = 'bg-danger';
+      badgeColor = 'danger';
       break;
     }
 
     default: {
       summaryBody = previewUnknown(payload, 200);
-      badgeClass = 'bg-secondary';
+      badgeColor = 'secondary';
     }
   }
 
@@ -439,7 +440,7 @@ function summarizeEnvelope(
     kindLabel,
     summaryTitle,
     summaryBody,
-    badgeClass,
+    badgeColor,
   };
 }
 
@@ -597,7 +598,7 @@ export function coalesceDuplicateToolCallDisplayRows(rows: AgentChatEventDisplay
       ...base,
       summaryTitle: row.summaryTitle || base.summaryTitle,
       summaryBody: row.summaryBody || base.summaryBody,
-      badgeClass: row.badgeClass || base.badgeClass,
+      badgeColor: row.badgeColor || base.badgeColor,
       detailJson: row.detailJson || base.detailJson,
       toolPair: {
         outcome: row.toolPair?.outcome ?? base.toolPair?.outcome ?? 'pending',
@@ -750,7 +751,7 @@ export function mapForwardedChatEventToDisplayRow(forwarded: {
       outcome,
       callDetailJson: row.detailJson,
     };
-    row.badgeClass = toolPairOutcomeToBadgeClass(outcome);
+    row.badgeColor = toolPairOutcomeToBadgeColor(outcome);
   }
 
   if (envelope.kind === 'toolResult') {
@@ -768,7 +769,7 @@ export function mapForwardedChatEventToDisplayRow(forwarded: {
       outcome,
       resultDetailJson: row.detailJson,
     };
-    row.badgeClass = toolPairOutcomeToBadgeClass(outcome);
+    row.badgeColor = toolPairOutcomeToBadgeColor(outcome);
   }
 
   return row;

@@ -1,0 +1,12 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0; // Critical for flex scrolling
+  overflow: hidden; // Prevent page-level overflow
+}
+
+// Routed view hosts (siblings of `<router-outlet>`) are sized by global
+// `styles/_section-outlet.scss` — component encapsulation cannot target them from here.

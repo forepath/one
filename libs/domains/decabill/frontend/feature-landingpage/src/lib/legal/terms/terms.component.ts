@@ -4,10 +4,11 @@ import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@forepath/shared/frontend/util-meta';
+import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
 @Component({
   selector: 'framework-portal-legal-terms',
-  imports: [CommonModule, RouterModule],
+  imports: [FpcBadgeComponent, FpcButtonComponent, CommonModule, RouterModule],
   styleUrls: ['./terms.component.scss'],
   templateUrl: './terms.component.html',
   standalone: true,

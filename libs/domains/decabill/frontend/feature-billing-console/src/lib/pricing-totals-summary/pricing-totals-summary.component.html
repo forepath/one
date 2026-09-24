@@ -7,7 +7,7 @@
 >
   @if (loading) {
     <div class="small d-flex align-items-center gap-2" [class.text-muted]="!isPrimary">
-      <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+      <fpc-spinner size="sm" />
       <span i18n="@@featureSubscriptions-loadingPrice">Loading price…</span>
     </div>
   } @else if (summary; as totals) {

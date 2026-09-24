@@ -1,15 +1,21 @@
-.audit-container {
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  width: 100%;
   min-height: 0;
+  overflow: hidden;
 }
 
-.audit-filters {
-  max-height: 50vh;
-
-  @media (max-width: 767.98px) {
-    max-height: none;
-  }
+.audit-container {
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 .audit-content {
   min-height: 0;
+}
+
+.audit-table-search {
+  max-width: 200px;
 }

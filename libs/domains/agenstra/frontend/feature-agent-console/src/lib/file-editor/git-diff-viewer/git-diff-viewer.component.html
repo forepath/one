@@ -22,9 +22,12 @@
   <div class="git-diff-viewer-content flex-grow-1 position-relative">
     @if (loading()) {
       <div class="d-flex justify-content-center align-items-center h-100">
-        <div class="spinner-border spinner-border-sm text-primary" role="status">
-          <span class="visually-hidden" i18n="@@featureGitDiffViewer-loadingDiff">Loading diff...</span>
-        </div>
+        <fpc-spinner
+          size="sm"
+          variant="primary"
+          i18n-label="@@featureGitDiffViewer-loadingDiff"
+          label="Loading diff..."
+        />
       </div>
     } @else if (error()) {
       <div class="d-flex justify-content-center align-items-center h-100">

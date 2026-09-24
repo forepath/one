@@ -19,6 +19,8 @@ import type { editor } from 'monaco-editor';
 import * as monaco from 'monaco-editor';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 
+import { FpcButtonComponent, FpcButtonGroupComponent } from '@forepath/shared/frontend/ui-components';
+
 import { ThemeService } from '../../theme.service';
 
 // Type declaration for marked library
@@ -54,7 +56,7 @@ function utf8ToBase64(str: string): string {
 
 @Component({
   selector: 'framework-monaco-editor-wrapper',
-  imports: [CommonModule, MonacoEditorModule],
+  imports: [CommonModule, FpcButtonComponent, FpcButtonGroupComponent, MonacoEditorModule],
   templateUrl: './monaco-editor-wrapper.component.html',
   styleUrls: ['./monaco-editor-wrapper.component.scss'],
   standalone: true,

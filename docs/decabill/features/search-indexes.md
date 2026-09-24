@@ -9,7 +9,7 @@ Search queries always apply tenant/user authorization filters server-side. When 
 
 ## Console list UX
 
-Customer and admin console lists use **infinite scroll** where applicable: the first page loads immediately; further pages append on scroll via `sharedInfiniteScroll` and `shared-list-append-footer`. Append failures pause scrolling until the user retries. Lane boards use CDK virtual scroll for card rows.
+Customer and admin console lists use **infinite scroll** where applicable: the first page loads immediately; further pages append on scroll via `fpcInfiniteScroll` and `fpc-list-append-footer` from `@forepath/shared/frontend/ui-components`. Append failures pause scrolling until the user retries. Lane boards use CDK virtual scroll for card rows.
 
 ### Search pattern
 

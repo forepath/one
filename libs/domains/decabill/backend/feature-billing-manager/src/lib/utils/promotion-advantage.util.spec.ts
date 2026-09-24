@@ -94,10 +94,17 @@ describe('computeBenefitWindow', () => {
 });
 
 describe('validateAdvantageConfig', () => {
-  it('accepts valid configs', () => {
-    expect(() => validateAdvantageConfig(PromotionAdvantageType.FIXED_AMOUNT_NET, { amountNet: 10 })).not.toThrow();
-    expect(() => validateAdvantageConfig(PromotionAdvantageType.FREE_DAYS, { days: 1 })).not.toThrow();
-    expect(() => validateAdvantageConfig(PromotionAdvantageType.FREE_BILLING_PERIODS, { periods: 1 })).not.toThrow();
+  it('accepts valid configs and coerces string numbers from form controls', () => {
+    const fixed = { amountNet: '10' as unknown as number };
+    const days = { days: '3' as unknown as number };
+    const periods = { periods: '2' as unknown as number };
+
+    expect(() => validateAdvantageConfig(PromotionAdvantageType.FIXED_AMOUNT_NET, fixed)).not.toThrow();
+    expect(fixed.amountNet).toBe(10);
+    expect(() => validateAdvantageConfig(PromotionAdvantageType.FREE_DAYS, days)).not.toThrow();
+    expect(days.days).toBe(3);
+    expect(() => validateAdvantageConfig(PromotionAdvantageType.FREE_BILLING_PERIODS, periods)).not.toThrow();
+    expect(periods.periods).toBe(2);
   });
 
   it('rejects invalid configs', () => {

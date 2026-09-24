@@ -8,7 +8,16 @@ import type {
   PublicWithdrawalAddressee,
   PublicWithdrawalStep,
 } from '@forepath/decabill/frontend/data-access-billing-console';
-import { IdentityOtpInputComponent } from '@forepath/identity/frontend';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcLaneHeaderComponent,
+  FpcOtpInputComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { isAuthMarketingPanelVisible } from '@forepath/identity/frontend';
 import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import type { Observable } from 'rxjs';
@@ -32,7 +41,19 @@ type AcknowledgeForm = {
 
 @Component({
   selector: 'framework-public-withdrawal',
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, IdentityOtpInputComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    FpcOtpInputComponent,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcFormCheckComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcLaneHeaderComponent,
+    FpcSpinnerComponent,
+  ],
   styleUrls: ['./public-withdrawal.component.scss'],
   templateUrl: './public-withdrawal.component.html',
   standalone: true,

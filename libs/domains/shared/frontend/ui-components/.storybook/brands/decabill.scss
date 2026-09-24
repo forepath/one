@@ -1,0 +1,28 @@
+// Storybook Decabill brand overlay — shared palette, scoped CSS vars for the Color set toolbar.
+@import 'bootstrap/scss/functions';
+@import '../../styles/brands/decabill/palette';
+@import '../../styles/brands/chrome';
+
+@import 'bootstrap/scss/variables';
+@import 'bootstrap/scss/variables-dark';
+@import 'bootstrap/scss/maps';
+@import 'bootstrap/scss/mixins/color-mode';
+@import 'bootstrap/scss/vendor/rfs';
+@import 'emit-root';
+
+html[data-fpc-brand='decabill'] {
+  @include fpc-brand-light-vars;
+  @include fpc-brand-badge-tint;
+  @include fpc-brand-theme-components;
+
+  --bs-primary-dark: color-mix(in srgb, var(--bs-primary) 92%, black);
+  --bs-success-dark: color-mix(in srgb, var(--bs-success) 80%, black);
+  --bs-body-bg-alt: #f2f6f6;
+  --bs-dark-alt: #262828;
+
+  &[data-bs-theme='dark'] {
+    @include fpc-brand-dark-vars;
+  }
+}
+
+@import '../../styles/brands/extras';

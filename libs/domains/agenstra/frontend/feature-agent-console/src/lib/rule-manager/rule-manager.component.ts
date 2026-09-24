@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, OnInit, ViewChild, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -15,7 +15,27 @@ import {
   type FilterRuleWorkspaceSyncDto,
   type UpdateFilterRuleDto,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
-import { InfiniteScrollDirective, ListAppendFooterComponent } from '@forepath/shared/frontend/ui-lists';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcConfirmDialogComponent,
+  FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcFormSwitchComponent,
+  FpcInfiniteScrollDirective,
+  FpcListAppendFooterComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { Actions, ofType } from '@ngrx/effects';
 import { combineLatest, debounceTime, distinctUntilChanged, filter, skip } from 'rxjs';
 
@@ -32,7 +52,30 @@ import { resolveNamedDisplayLabel } from '../display-name.util';
 
 @Component({
   selector: 'framework-rule-manager',
-  imports: [CommonModule, FormsModule, RouterModule, InfiniteScrollDirective, ListAppendFooterComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcConfirmDialogComponent,
+    FpcEmptyStateComponent,
+    FpcFormCheckComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcFormSwitchComponent,
+    FpcInfiniteScrollDirective,
+    FpcListAppendFooterComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './rule-manager.component.html',
   styleUrls: ['./rule-manager.component.scss'],
   standalone: true,
@@ -47,10 +90,10 @@ export class RuleManagerComponent implements OnInit {
   private readonly actions$ = inject(Actions);
   private readonly destroyRef = inject(DestroyRef);
 
-  @ViewChild('createModal', { static: false }) createModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('editModal', { static: false }) editModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('deleteModal', { static: false }) deleteModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('testerModal', { static: false }) testerModal!: ElementRef<HTMLDivElement>;
+  readonly createModalOpen = signal(false);
+  readonly editModalOpen = signal(false);
+  readonly deleteModalOpen = signal(false);
+  readonly testerModalOpen = signal(false);
 
   readonly rules$ = this.filterRulesFacade.rules$;
   readonly rules = toSignal(this.rules$, { initialValue: [] as FilterRuleResponseDto[] });
@@ -63,6 +106,12 @@ export class RuleManagerComponent implements OnInit {
   readonly appendError$ = this.filterRulesFacade.appendError$;
 
   readonly clients = toSignal(this.clientsFacade.clients$, { initialValue: [] as ClientResponseDto[] });
+
+  readonly pageTitle = $localize`:@@featureRuleManager-title:Filters`;
+  readonly addButtonTitle = $localize`:@@featureRuleManager-addButtonTitle:Add filter rule`;
+  readonly searchPlaceholder = $localize`:@@featureRuleManager-searchPlaceholder:Search rules`;
+  readonly loadingLabel = $localize`:@@featureRuleManager-loading:Loading…`;
+  readonly emptyMessage = $localize`:@@featureRuleManager-empty:No filter rules yet`;
 
   readonly searchQuery = signal('');
   readonly searchQuery$ = toObservable(this.searchQuery);
@@ -97,7 +146,6 @@ export class RuleManagerComponent implements OnInit {
       .subscribe((search) => {
         this.filterRulesFacade.load({ search: search.trim() || undefined });
       });
-    // Workspace pickers need the full client list; drain pages without a search API.
     combineLatest([
       this.clientsFacade.hasMore$,
       this.clientsFacade.appendLoading$,
@@ -114,12 +162,12 @@ export class RuleManagerComponent implements OnInit {
     this.actions$
       .pipe(ofType(createFilterRuleSuccess, updateFilterRuleSuccess), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
-        this.hideModal(this.createModal);
-        this.hideModal(this.editModal);
+        this.createModalOpen.set(false);
+        this.editModalOpen.set(false);
         this.editRule = null;
       });
     this.actions$.pipe(ofType(deleteFilterRuleSuccess), takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-      this.hideModal(this.deleteModal);
+      this.deleteModalOpen.set(false);
       this.ruleToDelete = null;
     });
   }
@@ -168,6 +216,18 @@ export class RuleManagerComponent implements OnInit {
     return 'synced';
   }
 
+  /** Colored first meta value (Decabill admin-list pattern). */
+  statusTextClass(rule: FilterRuleResponseDto): string {
+    switch (this.statusLabel(rule)) {
+      case 'inactive':
+        return 'text-secondary';
+      case 'active':
+        return 'text-warning';
+      default:
+        return 'text-success';
+    }
+  }
+
   onAdd(): void {
     this.createForm = {
       pattern: '',
@@ -185,7 +245,7 @@ export class RuleManagerComponent implements OnInit {
     }
 
     this.createWorkspaceSelection = sel;
-    this.showModal(this.createModal);
+    this.createModalOpen.set(true);
   }
 
   submitCreate(): void {
@@ -227,7 +287,7 @@ export class RuleManagerComponent implements OnInit {
       workspaceIds: [...rule.workspaceIds],
       workspaceIdsSelected: selected,
     };
-    this.showModal(this.editModal);
+    this.editModalOpen.set(true);
   }
 
   submitEdit(): void {
@@ -257,7 +317,7 @@ export class RuleManagerComponent implements OnInit {
 
   onDelete(rule: FilterRuleResponseDto): void {
     this.ruleToDelete = rule;
-    this.showModal(this.deleteModal);
+    this.deleteModalOpen.set(true);
   }
 
   confirmDelete(): void {
@@ -270,7 +330,7 @@ export class RuleManagerComponent implements OnInit {
     this.ruleToTest = rule;
     this.testerInput = '';
     this.testerResult = null;
-    this.showModal(this.testerModal);
+    this.testerModalOpen.set(true);
   }
 
   runTester(): void {
@@ -329,50 +389,21 @@ export class RuleManagerComponent implements OnInit {
   }
 
   cancelCreate(): void {
-    this.hideModal(this.createModal);
+    this.createModalOpen.set(false);
   }
 
   cancelEdit(): void {
-    this.hideModal(this.editModal);
+    this.editModalOpen.set(false);
     this.editRule = null;
   }
 
   cancelDelete(): void {
-    this.hideModal(this.deleteModal);
+    this.deleteModalOpen.set(false);
     this.ruleToDelete = null;
   }
 
   cancelTest(): void {
-    this.hideModal(this.testerModal);
+    this.testerModalOpen.set(false);
     this.ruleToTest = null;
-  }
-
-  private showModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const modal = (window as any).bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
-
-      if (modal) {
-        modal.show();
-      } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const Modal = (window as any).bootstrap?.Modal;
-
-        if (Modal) {
-          new Modal(modalElement.nativeElement).show();
-        }
-      }
-    }
-  }
-
-  private hideModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const modal = (window as any).bootstrap?.Modal?.getInstance(modalElement.nativeElement);
-
-      if (modal) {
-        modal.hide();
-      }
-    }
   }
 }

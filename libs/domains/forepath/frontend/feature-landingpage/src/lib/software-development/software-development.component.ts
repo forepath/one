@@ -16,6 +16,7 @@ import { RouterModule } from '@angular/router';
 import { ForepathOneTeaserComponent } from '../forepath-one-teaser/forepath-one-teaser.component';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
+import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
 type SkeletonLineWidth = 'long' | 'medium' | 'short';
 
@@ -103,7 +104,7 @@ const SKELETON_LANGUAGES: readonly SkeletonLanguage[] = [
 
 @Component({
   selector: 'framework-forepath-software-development',
-  imports: [CommonModule, RouterModule, ForepathOneTeaserComponent],
+  imports: [FpcButtonComponent, CommonModule, RouterModule, ForepathOneTeaserComponent],
   styleUrls: ['./software-development.component.scss'],
   templateUrl: './software-development.component.html',
   standalone: true,

@@ -1,0 +1,19 @@
+:host {
+  display: block;
+}
+
+.form-check {
+  margin-bottom: 0;
+}
+
+.form-check-input {
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+}
+
+.form-check-label {
+  cursor: pointer;
+}

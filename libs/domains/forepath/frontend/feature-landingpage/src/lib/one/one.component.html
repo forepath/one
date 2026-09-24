@@ -34,8 +34,8 @@
             class="card border rounded-3 shadow-sm overflow-hidden h-100 one-alignment-visual card-capability card-capability-primary"
           >
             <div class="p-3 p-lg-4 pb-0">
-              <span class="badge bg-primary mb-3 bento-badge" i18n="@@featureForepathOne-alignmentVisualBadge"
-                >One thread across services and products</span
+              <fpc-badge color="primary" class="mb-3 bento-badge" i18n="@@featureForepathOne-alignmentVisualBadge"
+                >One thread across services and products</fpc-badge
               >
             </div>
             <div class="one-alignment-visual-slot px-3 px-lg-4 pb-3 pb-lg-4">
@@ -325,15 +325,24 @@
         what order.
       </p>
       <div class="d-flex flex-wrap gap-3 justify-content-center">
-        <a
+        <fpc-button
+          variant="primary"
+          size="xl"
+          btnClass="rounded-3"
           routerLink="/pricing/estimate"
-          class="btn btn-primary btn-lg rounded-3 cta-btn"
           i18n="@@featureForepathOne-ctaEstimateButton"
-          ><i class="bi bi-calculator" aria-hidden="true"></i>Get an instant quote</a
         >
-        <a routerLink="/contact" class="btn btn-primary btn-lg rounded-3 cta-btn" i18n="@@featureForepathOne-ctaButton"
-          ><i class="bi bi-envelope" aria-hidden="true"></i>Contact us</a
+          <i class="bi bi-calculator" aria-hidden="true"></i>Get an instant quote
+        </fpc-button>
+        <fpc-button
+          variant="primary"
+          size="xl"
+          btnClass="rounded-3"
+          routerLink="/contact"
+          i18n="@@featureForepathOne-ctaButton"
         >
+          <i class="bi bi-envelope" aria-hidden="true"></i>Contact us
+        </fpc-button>
       </div>
     </div>
   </div>

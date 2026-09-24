@@ -1,7 +1,34 @@
+:host {
+  display: block;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--bs-tertiary-bg);
+  // Soft top→bottom grayscale wash (same language as `fpc-sidebar` / top-bar).
+  --fpc-sidebar-shade: color-mix(in srgb, var(--bs-white) 22%, transparent);
+  --fpc-sidebar-shade-angle: 155deg;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(var(--fpc-sidebar-shade-angle), var(--fpc-sidebar-shade) 0%, transparent 55%);
+  }
+}
+
+:host-context(html[data-bs-theme='dark']) {
+  --fpc-sidebar-shade: color-mix(in srgb, var(--bs-black) 22%, transparent);
+  --fpc-sidebar-shade-angle: 205deg;
+}
+
 .docs-navigation {
   height: 100%;
   overflow-y: auto;
   padding: 1rem;
+  position: relative;
+  z-index: 1;
 
   .nav-list {
     list-style: none;

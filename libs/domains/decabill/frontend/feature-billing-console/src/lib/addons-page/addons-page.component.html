@@ -1,272 +1,255 @@
-<div class="addons-container border-top d-flex flex-column h-100">
-  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
-    <h5 class="mb-0 fw-semibold" i18n="@@featureAddons-title">Addons</h5>
-    <button
-      type="button"
-      class="btn btn-sm btn-primary"
-      (click)="openCreateModal()"
+<div class="addons-container border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="pageTitle">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="primary"
+      size="sm"
+      iconOnly
+      (clicked)="openCreateModal()"
       [disabled]="(loadingAny$ | async) === true"
-      title="Add addon"
-      i18n-title="@@featureAddons-add"
-      aria-label="Add addon"
-      i18n-aria-label="@@featureAddons-add"
+      [title]="addAddonAriaLabel"
+      [ariaLabel]="addAddonAriaLabel"
     >
       <i class="bi bi-plus" aria-hidden="true"></i>
-    </button>
-  </div>
-  <div class="input-group search-input-container border-bottom">
-    <i class="bi bi-search" aria-hidden="true"></i>
-    <input
-      type="search"
-      class="form-control border-0 search-input"
-      placeholder="Search addons"
-      i18n-placeholder="@@featureAddons-searchPlaceholder"
-      [ngModel]="searchQuery()"
-      (ngModelChange)="searchQuery.set($event)"
-      name="search"
-    />
-  </div>
-  <div class="flex-grow-1 overflow-auto">
+    </fpc-button>
+  </fpc-page-header>
+  <fpc-search-field
+    class="border-bottom"
+    name="search"
+    [bordered]="false"
+    [placeholder]="searchPlaceholder"
+    [ariaLabel]="searchPlaceholder"
+    [(value)]="searchQuery"
+  />
+  <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
     @if (loading$ | async) {
       <div class="d-flex justify-content-center align-items-center p-4">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden" i18n="@@featureAddons-loading">Loading...</span>
-        </div>
+        <fpc-spinner variant="primary" i18n-label="@@featureAddons-loading" label="Loading..." />
       </div>
     } @else {
       @if (error$ | async; as error) {
-        <div class="alert alert-danger m-3" role="alert">{{ error }}</div>
+        <fpc-alert class="m-3" variant="danger" [message]="error" />
       }
       @if (addons$ | async; as addons) {
         @if (addons.length === 0) {
-          <div class="d-flex justify-content-center align-items-center p-4 text-muted">
-            <p class="mb-0" i18n="@@featureAddons-empty">No addons.</p>
-          </div>
+          @if (searchQuery().trim()) {
+            <fpc-empty-state icon="search" message="No search results" i18n-message="@@featureAddons-noSearchResults" />
+          } @else {
+            <fpc-empty-state message="No addons yet" i18n-message="@@featureAddons-empty" />
+          }
         } @else {
-          <div class="list-group list-group-flush">
+          <fpc-list [flush]="true">
             @for (addon of addons; track addon.id) {
-              <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-3">
-                <div class="min-w-0 flex-grow-1">
-                  <div class="fw-semibold mb-1">{{ addon.name }}</div>
-                  <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-                    <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-                      <span class="me-2" [ngClass]="activeStatusTextClass(addon.isActive)">
-                        @if (addon.isActive) {
-                          <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
-                        } @else {
-                          <i class="bi bi-pause-circle me-1" aria-hidden="true"></i>
-                        }
-                        {{ activeStatusLabel(addon.isActive) }}
-                      </span>
-                      <span class="me-2"> <i class="bi bi-key me-1" aria-hidden="true"></i>{{ addon.key }} </span>
-                      <span class="me-2">
-                        @if (addon.implementationType === 'module') {
-                          <i class="bi bi-puzzle me-1" aria-hidden="true"></i>
-                        } @else {
-                          <i class="bi bi-file-code me-1" aria-hidden="true"></i>
-                        }
-                        {{ implementationTypeLabel(addon.implementationType) }}
-                      </span>
-                      <span class="me-2">
-                        <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>{{ formatPrice(addon) }}
-                      </span>
-                      <span class="me-2">
-                        <i class="bi bi-hdd-stack me-1" aria-hidden="true"></i>{{ compatibleProvidersLabel(addon) }}
-                      </span>
-                      <span class="me-2">
-                        <i class="bi bi-sliders me-1" aria-hidden="true"></i
-                        ><span i18n="@@featureAddons-configFieldCount"
-                          >{{ configFieldCount(addon) }} config fields</span
-                        >
-                      </span>
-                      @if (addonMeterCount(addon) > 0) {
-                        <span class="me-2">
-                          <i class="bi bi-speedometer2 me-1" aria-hidden="true"></i>{{ addonMeterCount(addon) }}
-                          <span i18n="@@featureAddons-metersBadge">meters</span>
-                        </span>
+              <fpc-list-item>
+                <div fpcListItemTitle class="fw-semibold">{{ addon.name }}</div>
+                <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
+                  <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+                    <span class="me-2" [ngClass]="activeStatusTextClass(addon.isActive)">
+                      @if (addon.isActive) {
+                        <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+                      } @else {
+                        <i class="bi bi-pause-circle me-1" aria-hidden="true"></i>
                       }
-                    </div>
+                      {{ activeStatusLabel(addon.isActive) }}
+                    </span>
+                    <span class="me-2"> <i class="bi bi-key me-1" aria-hidden="true"></i>{{ addon.key }} </span>
+                    <span class="me-2">
+                      @if (addon.implementationType === 'module') {
+                        <i class="bi bi-puzzle me-1" aria-hidden="true"></i>
+                      } @else {
+                        <i class="bi bi-file-code me-1" aria-hidden="true"></i>
+                      }
+                      {{ implementationTypeLabel(addon.implementationType) }}
+                    </span>
+                    <span class="me-2">
+                      <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>{{ formatPrice(addon) }}
+                    </span>
+                    <span class="me-2">
+                      <i class="bi bi-hdd-stack me-1" aria-hidden="true"></i>{{ compatibleProvidersLabel(addon) }}
+                    </span>
+                    <span class="me-2">
+                      <i class="bi bi-sliders me-1" aria-hidden="true"></i
+                      ><span i18n="@@featureAddons-configFieldCount">{{ configFieldCount(addon) }} config fields</span>
+                    </span>
+                    @if (addonMeterCount(addon) > 0) {
+                      <span class="me-2">
+                        <i class="bi bi-speedometer2 me-1" aria-hidden="true"></i>{{ addonMeterCount(addon) }}
+                        <span i18n="@@featureAddons-metersBadge">meters</span>
+                      </span>
+                    }
                   </div>
                 </div>
-                <div
-                  class="btn-group btn-group-sm flex-shrink-0"
-                  role="group"
-                  aria-label="Addon actions"
-                  i18n-aria-label="@@featureAddons-addonActionsAria"
+                <fpc-button-group
+                  fpcListItemActions
+                  size="sm"
+                  ariaLabel="Addon actions"
+                  i18n-ariaLabel="@@featureAddons-addonActionsAria"
                 >
-                  <button
-                    type="button"
-                    class="btn btn-outline-primary"
-                    (click)="openEditModal(addon)"
+                  <fpc-button
+                    iconOnly
+                    size="sm"
+                    variant="warning"
+                    (clicked)="openEditModal(addon)"
                     [disabled]="(loadingAny$ | async) === true"
                     title="Edit addon"
                     i18n-title="@@featureAddons-edit"
-                    aria-label="Edit addon"
-                    i18n-aria-label="@@featureAddons-edit"
+                    ariaLabel="Edit addon"
+                    i18n-ariaLabel="@@featureAddons-edit"
                   >
                     <i class="bi bi-pencil" aria-hidden="true"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-danger"
-                    (click)="openDeleteConfirm(addon)"
+                  </fpc-button>
+                  <fpc-button
+                    iconOnly
+                    size="sm"
+                    variant="danger"
+                    (clicked)="openDeleteConfirm(addon)"
                     [disabled]="(loadingAny$ | async) === true"
                     title="Delete addon"
                     i18n-title="@@featureAddons-delete"
-                    aria-label="Delete addon"
-                    i18n-aria-label="@@featureAddons-delete"
+                    ariaLabel="Delete addon"
+                    i18n-ariaLabel="@@featureAddons-delete"
                   >
                     <i class="bi bi-trash" aria-hidden="true"></i>
-                  </button>
-                </div>
-              </div>
+                  </fpc-button>
+                </fpc-button-group>
+              </fpc-list-item>
             }
-          </div>
+          </fpc-list>
         }
       }
     }
   </div>
 </div>
 
-<div #createModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureAddons-createTitle">Add addon</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <form (ngSubmit)="onSubmitCreate()">
-        <div class="modal-body">
-          <ng-container
-            *ngTemplateOutlet="
-              addonForm;
-              context: { form: createForm, prefix: 'create', disabled: (creating$ | async) }
-            "
-          ></ng-container>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary" [disabled]="(creating$ | async) === true">
-            <span i18n="@@featureAddons-create">Create</span>
-          </button>
-        </div>
-      </form>
+<fpc-modal [(open)]="createModalOpen" size="xl" i18n-title="@@featureAddons-createTitle" title="Add addon">
+  <form (ngSubmit)="onSubmitCreate()">
+    <ng-container
+      *ngTemplateOutlet="addonForm; context: { form: createForm, prefix: 'create', disabled: (creating$ | async) }"
+    ></ng-container>
+    <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+      <fpc-button variant="primary" type="submit" [disabled]="(creating$ | async) === true">
+        <span i18n="@@featureAddons-create">Create</span>
+      </fpc-button>
     </div>
-  </div>
-</div>
+  </form>
+</fpc-modal>
 
-<div #editModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureAddons-editTitle">Edit addon</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <form (ngSubmit)="onSubmitEdit()">
-        <div class="modal-body">
-          <ng-container
-            *ngTemplateOutlet="addonForm; context: { form: editForm, prefix: 'edit', disabled: (updating$ | async) }"
-          ></ng-container>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary" [disabled]="(updating$ | async) === true">
-            <span i18n="@@featureAddons-save">Save</span>
-          </button>
-        </div>
-      </form>
+<fpc-modal [(open)]="editModalOpen" size="xl" i18n-title="@@featureAddons-editTitle" title="Edit addon">
+  <form (ngSubmit)="onSubmitEdit()">
+    <ng-container
+      *ngTemplateOutlet="addonForm; context: { form: editForm, prefix: 'edit', disabled: (updating$ | async) }"
+    ></ng-container>
+    <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+      <fpc-button variant="primary" type="submit" [disabled]="(updating$ | async) === true">
+        <span i18n="@@featureAddons-save">Save</span>
+      </fpc-button>
     </div>
-  </div>
-</div>
+  </form>
+</fpc-modal>
 
 <ng-template #addonForm let-form="form" let-prefix="prefix" let-disabled="disabled">
   <div class="row g-3">
     <div class="col-md-6">
-      <label class="form-label" [for]="prefix + 'AddonKey'" i18n="@@featureAddons-key">Key</label>
-      <input
-        class="form-control"
-        [id]="prefix + 'AddonKey'"
-        [(ngModel)]="form.key"
-        [name]="prefix + 'AddonKey'"
-        [disabled]="prefix === 'edit' || disabled"
-        required
-      />
+      <fpc-form-field [forId]="prefix + 'AddonKey'" i18n-label="@@featureAddons-key" label="Key" required>
+        <fpc-form-control
+          [controlId]="prefix + 'AddonKey'"
+          [(ngModel)]="form.key"
+          [name]="prefix + 'AddonKey'"
+          [disabled]="prefix === 'edit' || disabled"
+          required
+        />
+      </fpc-form-field>
     </div>
     <div class="col-md-6">
-      <label class="form-label" [for]="prefix + 'AddonName'" i18n="@@featureAddons-name">Name</label>
-      <input
-        class="form-control"
-        [id]="prefix + 'AddonName'"
-        [(ngModel)]="form.name"
-        [name]="prefix + 'AddonName'"
-        [disabled]="disabled"
-        required
-      />
-    </div>
-    <div class="col-12">
-      <label class="form-label" [for]="prefix + 'AddonDescription'" i18n="@@featureAddons-description"
-        >Description</label
-      >
-      <textarea
-        class="form-control"
-        rows="2"
-        [id]="prefix + 'AddonDescription'"
-        [(ngModel)]="form.description"
-        [name]="prefix + 'AddonDescription'"
-        [disabled]="disabled"
-      ></textarea>
-    </div>
-    <div class="col-md-6">
-      <label class="form-label" [for]="prefix + 'AddonImplementationType'" i18n="@@featureAddons-implementationType"
-        >Implementation type</label
-      >
-      <select
-        class="form-select"
-        [id]="prefix + 'AddonImplementationType'"
-        [(ngModel)]="form.implementationType"
-        [name]="prefix + 'AddonImplementationType'"
-        (ngModelChange)="onImplementationTypeChange(form)"
-        [disabled]="disabled"
-      >
-        @for (type of implementationTypes; track type) {
-          <option [ngValue]="type">{{ implementationTypeLabel(type) }}</option>
-        }
-      </select>
-    </div>
-    <div class="col-md-6">
-      <label class="form-label" [for]="prefix + 'AddonProviders'" i18n="@@featureAddons-compatibleProviders"
-        >Compatible providers</label
-      >
-      <select
-        class="form-select"
-        [id]="prefix + 'AddonProviders'"
-        multiple
-        size="4"
-        [ngModel]="form.compatibleProviders"
-        (ngModelChange)="onCompatibleProvidersChange(form, $event)"
-        [compareWith]="compareProviderId"
-        [name]="prefix + 'AddonProviders'"
-        [disabled]="disabled"
-      >
-        @if (providerOptions$ | async; as providers) {
-          @for (provider of providers; track provider.id) {
-            <option [ngValue]="provider.id">{{ providerOptionLabel(provider) }}</option>
-          }
-        }
-      </select>
-      <div class="form-text" i18n="@@featureAddons-compatibleProvidersHelp">
-        Hold Ctrl/Cmd to select multiple. Leave empty for all addon-capable providers.
-      </div>
-    </div>
-    @if (form.implementationType === 'module') {
-      <div class="col-12">
-        <label class="form-label" [for]="prefix + 'AddonModuleKey'" i18n="@@featureAddons-moduleKey">Module key</label>
-        <input
-          class="form-control"
-          [id]="prefix + 'AddonModuleKey'"
-          [(ngModel)]="form.moduleKey"
-          [name]="prefix + 'AddonModuleKey'"
+      <fpc-form-field [forId]="prefix + 'AddonName'" i18n-label="@@featureAddons-name" label="Name" required>
+        <fpc-form-control
+          [controlId]="prefix + 'AddonName'"
+          [(ngModel)]="form.name"
+          [name]="prefix + 'AddonName'"
           [disabled]="disabled"
           required
         />
+      </fpc-form-field>
+    </div>
+    <div class="col-12">
+      <fpc-form-field
+        [forId]="prefix + 'AddonDescription'"
+        i18n-label="@@featureAddons-description"
+        label="Description"
+      >
+        <fpc-form-control
+          controlType="textarea"
+          [rows]="2"
+          [controlId]="prefix + 'AddonDescription'"
+          [(ngModel)]="form.description"
+          [name]="prefix + 'AddonDescription'"
+          [disabled]="disabled"
+        />
+      </fpc-form-field>
+    </div>
+    <div class="col-md-6">
+      <fpc-form-field
+        [forId]="prefix + 'AddonImplementationType'"
+        i18n-label="@@featureAddons-implementationType"
+        label="Implementation type"
+      >
+        <fpc-form-control
+          controlType="select"
+          [controlId]="prefix + 'AddonImplementationType'"
+          [(ngModel)]="form.implementationType"
+          [name]="prefix + 'AddonImplementationType'"
+          (ngModelChange)="onImplementationTypeChange(form)"
+          [disabled]="disabled"
+        >
+          @for (type of implementationTypes; track type) {
+            <option [value]="type">{{ implementationTypeLabel(type) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    </div>
+    <div class="col-md-6">
+      <fpc-form-field
+        [forId]="prefix + 'AddonProviders'"
+        i18n-label="@@featureAddons-compatibleProviders"
+        label="Compatible providers"
+        i18n-hint="@@featureAddons-compatibleProvidersHelp"
+        hint="Hold Ctrl/Cmd to select multiple. Leave empty for all addon-capable providers."
+      >
+        <select
+          class="form-select"
+          [id]="prefix + 'AddonProviders'"
+          multiple
+          size="4"
+          [ngModel]="form.compatibleProviders"
+          (ngModelChange)="onCompatibleProvidersChange(form, $event)"
+          [compareWith]="compareProviderId"
+          [name]="prefix + 'AddonProviders'"
+          [disabled]="disabled"
+        >
+          @if (providerOptions$ | async; as providers) {
+            @for (provider of providers; track provider.id) {
+              <option [ngValue]="provider.id">{{ providerOptionLabel(provider) }}</option>
+            }
+          }
+        </select>
+      </fpc-form-field>
+    </div>
+    @if (form.implementationType === 'module') {
+      <div class="col-12">
+        <fpc-form-field
+          [forId]="prefix + 'AddonModuleKey'"
+          i18n-label="@@featureAddons-moduleKey"
+          label="Module key"
+          required
+        >
+          <fpc-form-control
+            [controlId]="prefix + 'AddonModuleKey'"
+            [(ngModel)]="form.moduleKey"
+            [name]="prefix + 'AddonModuleKey'"
+            [disabled]="disabled"
+            required
+          />
+        </fpc-form-field>
       </div>
       @if (showModuleDefaultsSection(form)) {
         <div class="col-12">
@@ -277,17 +260,15 @@
               unused.
             </p>
             @for (field of form.moduleEnvFields; track field.key) {
-              <div class="mb-3">
-                <label [attr.for]="prefix + 'ModuleDefault_' + field.key" class="form-label">{{ field.label }}</label>
+              <fpc-form-field [forId]="prefix + 'ModuleDefault_' + field.key" [label]="field.label">
                 @if (field.useRandomDefault) {
-                  <div class="form-text small mb-0" i18n="@@featureAddons-randomDefaultHint">
+                  <div fpcFormFieldHint i18n="@@featureAddons-randomDefaultHint">
                     Uses a random default at provision time.
                   </div>
                 } @else {
-                  <input
-                    type="password"
-                    class="form-control"
-                    [id]="prefix + 'ModuleDefault_' + field.key"
+                  <fpc-form-control
+                    inputType="password"
+                    [controlId]="prefix + 'ModuleDefault_' + field.key"
                     [name]="prefix + 'ModuleDefault_' + field.key"
                     [ngModel]="getModuleDefaultValue(form, field.key)"
                     (ngModelChange)="setModuleDefaultValue(form, field.key, $event)"
@@ -295,207 +276,194 @@
                     autocomplete="new-password"
                   />
                   @if (field.description) {
-                    <div class="form-text text-body-secondary small">{{ field.description }}</div>
+                    <div fpcFormFieldHint>{{ field.description }}</div>
                   }
                 }
-              </div>
+              </fpc-form-field>
             }
           </div>
         </div>
       }
     } @else {
       <div class="col-md-6">
-        <label class="form-label" i18n="@@featureAddons-scriptTemplate">Cloud-init provision script template</label>
-        <framework-monaco-editor-wrapper
-          [value]="form.scriptTemplate"
-          (valueChange)="form.scriptTemplate = $event"
-          language="shell"
-          editorHeight="20rem"
-        ></framework-monaco-editor-wrapper>
-        <div class="form-text">{{ scriptEnvHint }}</div>
+        <fpc-form-field
+          i18n-label="@@featureAddons-scriptTemplate"
+          label="Cloud-init provision script template"
+          [hint]="scriptEnvHint"
+        >
+          <framework-monaco-editor-wrapper
+            [value]="form.scriptTemplate"
+            (valueChange)="form.scriptTemplate = $event"
+            language="shell"
+            editorHeight="20rem"
+          ></framework-monaco-editor-wrapper>
+        </fpc-form-field>
       </div>
       <div class="col-md-6">
-        <label class="form-label" i18n="@@featureAddons-deprovisionScriptTemplate"
-          >Cloud-init deprovision script template</label
+        <fpc-form-field
+          i18n-label="@@featureAddons-deprovisionScriptTemplate"
+          label="Cloud-init deprovision script template"
+          [hint]="deprovisionScriptHint"
         >
-        <framework-monaco-editor-wrapper
-          [value]="form.deprovisionScriptTemplate"
-          (valueChange)="form.deprovisionScriptTemplate = $event"
-          language="shell"
-          editorHeight="20rem"
-        ></framework-monaco-editor-wrapper>
-        <div class="form-text">{{ deprovisionScriptHint }}</div>
+          <framework-monaco-editor-wrapper
+            [value]="form.deprovisionScriptTemplate"
+            (valueChange)="form.deprovisionScriptTemplate = $event"
+            language="shell"
+            editorHeight="20rem"
+          ></framework-monaco-editor-wrapper>
+        </fpc-form-field>
       </div>
       <div class="col-12">
         <div class="border rounded p-3 bg-body-secondary">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <label class="form-label mb-0" i18n="@@featureAddons-envVariables">Environment variables</label>
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-primary"
-              (click)="addEnvVariable(form)"
+            <span class="fw-semibold" i18n="@@featureAddons-envVariables">Environment variables</span>
+            <fpc-button
+              variant="primary"
+              size="sm"
+              iconOnly
+              (clicked)="addEnvVariable(form)"
               [disabled]="disabled"
               title="Add line"
               i18n-title="@@featureAddons-addEnvVar"
-              aria-label="Add line"
-              i18n-aria-label="@@featureAddons-addEnvVar"
+              ariaLabel="Add line"
+              i18n-ariaLabel="@@featureAddons-addEnvVar"
             >
               <i class="bi bi-plus" aria-hidden="true"></i>
-            </button>
+            </fpc-button>
           </div>
           @for (row of form.environmentVariableRows; track $index; let i = $index) {
             <div class="row g-2 mb-2 align-items-end">
               <div class="col-12 col-md-2">
-                <label class="form-label small mb-0" [for]="prefix + 'EnvKey' + i" i18n="@@featureAddons-envKey"
-                  >Key</label
-                >
-                <input
-                  [id]="prefix + 'EnvKey' + i"
-                  class="form-control form-control-sm"
-                  [(ngModel)]="row.key"
-                  [name]="prefix + 'EnvKey' + i"
-                  [disabled]="disabled"
-                />
+                <fpc-form-field [forId]="prefix + 'EnvKey' + i" i18n-label="@@featureAddons-envKey" label="Key">
+                  <fpc-form-control
+                    size="sm"
+                    [controlId]="prefix + 'EnvKey' + i"
+                    [(ngModel)]="row.key"
+                    [name]="prefix + 'EnvKey' + i"
+                    [disabled]="disabled"
+                  />
+                </fpc-form-field>
               </div>
               <div class="col-12 col-md-2">
-                <label class="form-label small mb-0" [for]="prefix + 'EnvLabel' + i" i18n="@@featureAddons-envLabel"
-                  >Label</label
-                >
-                <input
-                  [id]="prefix + 'EnvLabel' + i"
-                  class="form-control form-control-sm"
-                  [(ngModel)]="row.label"
-                  [name]="prefix + 'EnvLabel' + i"
-                  [disabled]="disabled"
-                />
-              </div>
-              <div class="col-12 col-md-3">
-                <label
-                  class="form-label small mb-0"
-                  [for]="prefix + 'EnvDesc' + i"
-                  i18n="@@featureAddons-envDescription"
-                  >Description</label
-                >
-                <input
-                  [id]="prefix + 'EnvDesc' + i"
-                  class="form-control form-control-sm"
-                  [(ngModel)]="row.description"
-                  [name]="prefix + 'EnvDesc' + i"
-                  [disabled]="disabled"
-                />
-              </div>
-              <div class="col-12 col-md-3">
-                <div class="form-check mb-1">
-                  <input
-                    [id]="prefix + 'EnvRandom' + i"
-                    class="form-check-input"
-                    type="checkbox"
-                    [ngModel]="row.useRandomDefault"
-                    (ngModelChange)="onEnvRandomDefaultChange(row, $event)"
-                    [name]="prefix + 'EnvRandom' + i"
+                <fpc-form-field [forId]="prefix + 'EnvLabel' + i" i18n-label="@@featureAddons-envLabel" label="Label">
+                  <fpc-form-control
+                    size="sm"
+                    [controlId]="prefix + 'EnvLabel' + i"
+                    [(ngModel)]="row.label"
+                    [name]="prefix + 'EnvLabel' + i"
                     [disabled]="disabled"
                   />
-                  <label
-                    class="form-check-label small"
-                    [for]="prefix + 'EnvRandom' + i"
-                    i18n="@@featureAddons-envRandom"
-                    >Random</label
-                  >
-                </div>
+                </fpc-form-field>
+              </div>
+              <div class="col-12 col-md-3">
+                <fpc-form-field
+                  [forId]="prefix + 'EnvDesc' + i"
+                  i18n-label="@@featureAddons-envDescription"
+                  label="Description"
+                >
+                  <fpc-form-control
+                    size="sm"
+                    [controlId]="prefix + 'EnvDesc' + i"
+                    [(ngModel)]="row.description"
+                    [name]="prefix + 'EnvDesc' + i"
+                    [disabled]="disabled"
+                  />
+                </fpc-form-field>
+              </div>
+              <div class="col-12 col-md-3">
+                <fpc-form-check
+                  class="mb-1"
+                  [checkId]="prefix + 'EnvRandom' + i"
+                  [ngModel]="row.useRandomDefault"
+                  (ngModelChange)="onEnvRandomDefaultChange(row, $event)"
+                  [name]="prefix + 'EnvRandom' + i"
+                  [disabled]="disabled"
+                  i18n-label="@@featureAddons-envRandom"
+                  label="Random"
+                />
                 @if (!row.useRandomDefault) {
-                  <label
-                    class="form-label small mb-0"
-                    [for]="prefix + 'EnvDefault' + i"
-                    i18n="@@featureAddons-envDefault"
-                    >Default</label
+                  <fpc-form-field
+                    [forId]="prefix + 'EnvDefault' + i"
+                    i18n-label="@@featureAddons-envDefault"
+                    label="Default"
                   >
-                  <input
-                    [id]="prefix + 'EnvDefault' + i"
-                    type="password"
-                    class="form-control form-control-sm"
-                    [(ngModel)]="row.defaultValue"
-                    [name]="prefix + 'EnvDefault' + i"
-                    [disabled]="disabled"
-                    autocomplete="new-password"
-                  />
+                    <fpc-form-control
+                      size="sm"
+                      inputType="password"
+                      [controlId]="prefix + 'EnvDefault' + i"
+                      [(ngModel)]="row.defaultValue"
+                      [name]="prefix + 'EnvDefault' + i"
+                      [disabled]="disabled"
+                      autocomplete="new-password"
+                    />
+                  </fpc-form-field>
                 } @else {
-                  <label
-                    class="form-label small mb-0"
-                    [for]="prefix + 'EnvRandomLength' + i"
-                    i18n="@@featureAddons-envRandomLength"
-                    >Length</label
+                  <fpc-form-field
+                    [forId]="prefix + 'EnvRandomLength' + i"
+                    i18n-label="@@featureAddons-envRandomLength"
+                    label="Length"
                   >
-                  <input
-                    [id]="prefix + 'EnvRandomLength' + i"
-                    type="number"
-                    class="form-control form-control-sm mb-1"
-                    [(ngModel)]="row.randomDefaultLength"
-                    [name]="prefix + 'EnvRandomLength' + i"
-                    [min]="minRandomDefaultLength"
-                    [disabled]="disabled"
-                  />
-                  <div class="form-check">
-                    <input
-                      [id]="prefix + 'EnvRandomSpecial' + i"
-                      class="form-check-input"
-                      type="checkbox"
-                      [(ngModel)]="row.randomDefaultSpecialChars"
-                      [name]="prefix + 'EnvRandomSpecial' + i"
+                    <fpc-form-control
+                      size="sm"
+                      inputType="number"
+                      [controlId]="prefix + 'EnvRandomLength' + i"
+                      [(ngModel)]="row.randomDefaultLength"
+                      [name]="prefix + 'EnvRandomLength' + i"
+                      [min]="minRandomDefaultLength"
                       [disabled]="disabled"
                     />
-                    <label
-                      class="form-check-label small"
-                      [for]="prefix + 'EnvRandomSpecial' + i"
-                      i18n="@@featureAddons-envRandomSpecial"
-                      >Special chars</label
-                    >
-                  </div>
+                  </fpc-form-field>
+                  <fpc-form-check
+                    [checkId]="prefix + 'EnvRandomSpecial' + i"
+                    [(ngModel)]="row.randomDefaultSpecialChars"
+                    [name]="prefix + 'EnvRandomSpecial' + i"
+                    [disabled]="disabled"
+                    i18n-label="@@featureAddons-envRandomSpecial"
+                    label="Special chars"
+                  />
                 }
               </div>
               <div class="col-12 col-md-1">
-                <div class="form-check mb-1">
-                  <input
-                    [id]="prefix + 'EnvShow' + i"
-                    class="form-check-input"
-                    type="checkbox"
-                    [(ngModel)]="row.showInOrderForm"
-                    [name]="prefix + 'EnvShow' + i"
-                    [disabled]="disabled"
-                  />
-                  <label class="form-check-label small" [for]="prefix + 'EnvShow' + i" i18n="@@featureAddons-envOrder"
-                    >Order</label
-                  >
-                </div>
+                <fpc-form-check
+                  class="mb-1"
+                  [checkId]="prefix + 'EnvShow' + i"
+                  [(ngModel)]="row.showInOrderForm"
+                  [name]="prefix + 'EnvShow' + i"
+                  [disabled]="disabled"
+                  i18n-label="@@featureAddons-envOrder"
+                  label="Order"
+                />
               </div>
               <div class="col-12 col-md-2 d-flex gap-1">
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-secondary"
-                  (click)="moveEnvVariable(form, i, -1)"
+                <fpc-button
+                  variant="dark"
+                  size="sm"
+                  (clicked)="moveEnvVariable(form, i, -1)"
                   [disabled]="disabled || i === 0"
                 >
                   ↑
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-secondary"
-                  (click)="moveEnvVariable(form, i, 1)"
+                </fpc-button>
+                <fpc-button
+                  variant="dark"
+                  size="sm"
+                  (clicked)="moveEnvVariable(form, i, -1)"
                   [disabled]="disabled || i === form.environmentVariableRows.length - 1"
                 >
                   ↓
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-danger"
-                  (click)="removeEnvVariable(form, i)"
+                </fpc-button>
+                <fpc-button
+                  variant="danger"
+                  size="sm"
+                  iconOnly
+                  (clicked)="removeEnvVariable(form, i)"
                   [disabled]="disabled"
                   title="Remove"
                   i18n-title="@@featureServicePlans-removeHighlight"
-                  aria-label="Remove"
-                  i18n-aria-label="@@featureServicePlans-removeHighlight"
+                  ariaLabel="Remove"
+                  i18n-ariaLabel="@@featureServicePlans-removeHighlight"
                 >
                   <i class="bi bi-trash" aria-hidden="true"></i>
-                </button>
+                </fpc-button>
               </div>
             </div>
           }
@@ -503,46 +471,49 @@
       </div>
     }
     <div class="col-md-4">
-      <label class="form-label" [for]="prefix + 'AddonBasePrice'" i18n="@@featureAddons-basePrice">Base price</label>
-      <input
-        type="text"
-        inputmode="decimal"
-        class="form-control"
-        [id]="prefix + 'AddonBasePrice'"
-        [(ngModel)]="form.basePrice"
-        [name]="prefix + 'AddonBasePrice'"
-        [disabled]="disabled"
-      />
+      <fpc-form-field [forId]="prefix + 'AddonBasePrice'" i18n-label="@@featureAddons-basePrice" label="Base price">
+        <fpc-form-control
+          [controlId]="prefix + 'AddonBasePrice'"
+          [(ngModel)]="form.basePrice"
+          [name]="prefix + 'AddonBasePrice'"
+          [disabled]="disabled"
+        />
+      </fpc-form-field>
     </div>
     <div class="col-md-4">
-      <label class="form-label" [for]="prefix + 'AddonIntervalType'" i18n="@@featureAddons-priceIntervalType"
-        >Price interval</label
+      <fpc-form-field
+        [forId]="prefix + 'AddonIntervalType'"
+        i18n-label="@@featureAddons-priceIntervalType"
+        label="Price interval"
       >
-      <select
-        class="form-select"
-        [id]="prefix + 'AddonIntervalType'"
-        [(ngModel)]="form.priceIntervalType"
-        [name]="prefix + 'AddonIntervalType'"
-        [disabled]="disabled || !form.basePrice.trim()"
-      >
-        @for (type of intervalTypes; track type) {
-          <option [ngValue]="type">{{ type }}</option>
-        }
-      </select>
+        <fpc-form-control
+          controlType="select"
+          [controlId]="prefix + 'AddonIntervalType'"
+          [(ngModel)]="form.priceIntervalType"
+          [name]="prefix + 'AddonIntervalType'"
+          [disabled]="disabled || !form.basePrice.trim()"
+        >
+          @for (type of intervalTypes; track type) {
+            <option [value]="type">{{ type }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
     </div>
     <div class="col-md-4">
-      <label class="form-label" [for]="prefix + 'AddonIntervalValue'" i18n="@@featureAddons-priceIntervalValue"
-        >Interval value</label
+      <fpc-form-field
+        [forId]="prefix + 'AddonIntervalValue'"
+        i18n-label="@@featureAddons-priceIntervalValue"
+        label="Interval value"
       >
-      <input
-        type="number"
-        min="1"
-        class="form-control"
-        [id]="prefix + 'AddonIntervalValue'"
-        [(ngModel)]="form.priceIntervalValue"
-        [name]="prefix + 'AddonIntervalValue'"
-        [disabled]="disabled || !form.basePrice.trim()"
-      />
+        <fpc-form-control
+          inputType="number"
+          min="1"
+          [controlId]="prefix + 'AddonIntervalValue'"
+          [(ngModel)]="form.priceIntervalValue"
+          [name]="prefix + 'AddonIntervalValue'"
+          [disabled]="disabled || !form.basePrice.trim()"
+        />
+      </fpc-form-field>
     </div>
     <div class="col-12">
       <div class="border rounded p-3 bg-body-secondary">
@@ -551,7 +522,7 @@
           Attach usage meters to this addon with optional unit price and included usage overrides.
         </p>
         @if (prefix === 'edit' && addonMeterAttachError) {
-          <div class="alert alert-danger py-2">{{ addonMeterAttachError }}</div>
+          <fpc-alert class="py-2" variant="danger" [message]="addonMeterAttachError" />
         }
         @if (prefix === 'edit' && addonMeterAttachLoading && attachedMetersFor('edit').length === 0) {
           <div class="text-muted small mb-2" i18n="@@featureAddons-metersLoading">Loading meters…</div>
@@ -570,71 +541,88 @@
             <div class="col-12 col-md-5">
               <div class="row g-2">
                 <div class="col-6">
-                  <label
-                    class="form-label small mb-0"
-                    [for]="prefix + 'AddonMeterOverride' + attached.meterId"
-                    i18n="@@featureAddons-meterUnitPriceOverride"
-                    >Unit price override (net)</label
+                  <fpc-form-field
+                    [forId]="prefix + 'AddonMeterOverride' + attached.meterId"
+                    i18n-label="@@featureAddons-meterUnitPriceOverride"
+                    label="Unit price override (net)"
                   >
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.0001"
-                    class="form-control form-control-sm"
-                    [id]="prefix + 'AddonMeterOverride' + attached.meterId"
-                    #addonMeterOverride
-                    [value]="attachedMeterOverrideInput(attached)"
-                    [disabled]="disabled || (prefix === 'edit' && addonMeterAttachLoading)"
-                  />
+                    <fpc-form-control
+                      #addonMeterOverride
+                      inputType="number"
+                      min="0"
+                      step="0.0001"
+                      size="sm"
+                      [controlId]="prefix + 'AddonMeterOverride' + attached.meterId"
+                      [value]="attachedMeterOverrideInput(attached)"
+                      [disabled]="disabled || (prefix === 'edit' && addonMeterAttachLoading)"
+                    />
+                  </fpc-form-field>
                 </div>
                 <div class="col-6">
-                  <label
-                    class="form-label small mb-0"
-                    [for]="prefix + 'AddonMeterIncludedUsage' + attached.meterId"
-                    i18n="@@featureAddons-meterIncludedUsageOverride"
-                    >Included usage override</label
+                  <fpc-form-field
+                    [forId]="prefix + 'AddonMeterIncludedUsage' + attached.meterId"
+                    i18n-label="@@featureAddons-meterIncludedUsageOverride"
+                    label="Included usage override"
                   >
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    class="form-control form-control-sm"
-                    [id]="prefix + 'AddonMeterIncludedUsage' + attached.meterId"
-                    #addonMeterIncludedUsage
-                    [value]="attachedMeterIncludedUsageOverrideInput(attached)"
-                    [disabled]="disabled || (prefix === 'edit' && addonMeterAttachLoading)"
-                  />
+                    <fpc-form-control
+                      #addonMeterIncludedUsage
+                      inputType="number"
+                      min="0"
+                      step="1"
+                      size="sm"
+                      [controlId]="prefix + 'AddonMeterIncludedUsage' + attached.meterId"
+                      [value]="attachedMeterIncludedUsageOverrideInput(attached)"
+                      [disabled]="disabled || (prefix === 'edit' && addonMeterAttachLoading)"
+                    />
+                  </fpc-form-field>
                 </div>
               </div>
             </div>
             <div class="col-12 col-md-3 d-flex gap-1 flex-wrap justify-content-md-end">
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-primary"
-                (click)="
-                  updateAttachedAddonMeter(prefix, attached, addonMeterOverride.value, addonMeterIncludedUsage.value)
+              <fpc-button
+                (clicked)="
+                  updateAttachedAddonMeter(
+                    prefix,
+                    attached,
+                    addonMeterOverride.value(),
+                    addonMeterIncludedUsage.value()
+                  )
                 "
+                variant="primary"
+                size="sm"
+                iconOnly
+                click
+                updateAttachedAddonMeter
+                prefix
+                attached
+                addonMeterOverride.value()
+                addonMeterIncludedUsage.value()
                 [disabled]="disabled || (prefix === 'edit' && addonMeterAttachLoading)"
                 title="Update price"
                 i18n-title="@@featureAddons-updateMeterPrice"
-                aria-label="Update price"
-                i18n-aria-label="@@featureAddons-updateMeterPrice"
+                ariaLabel="Update price"
+                i18n-ariaLabel="@@featureAddons-updateMeterPrice"
               >
                 <i class="bi bi-check-lg" aria-hidden="true"></i>
-              </button>
+              </fpc-button>
               @if (!attached.required) {
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-danger"
-                  (click)="detachAddonMeter(prefix, attached.meterId)"
+                <fpc-button
+                  (clicked)="detachAddonMeter(prefix, attached.meterId)"
+                  variant="danger"
+                  size="sm"
+                  iconOnly
+                  click
+                  detachAddonMeter
+                  prefix
+                  attached.meterId
                   [disabled]="disabled || (prefix === 'edit' && addonMeterAttachLoading)"
                   title="Detach meter"
                   i18n-title="@@featureAddons-detachMeter"
-                  aria-label="Detach meter"
-                  i18n-aria-label="@@featureAddons-detachMeter"
+                  ariaLabel="Detach meter"
+                  i18n-ariaLabel="@@featureAddons-detachMeter"
                 >
                   <i class="bi bi-trash" aria-hidden="true"></i>
-                </button>
+                </fpc-button>
               } @else {
                 <span class="small text-muted align-self-center" i18n="@@featureAddons-requiredMeter">Required</span>
               }
@@ -652,111 +640,114 @@
             @if (availableMeters.length > 0) {
               <div class="row g-2 align-items-end">
                 <div class="col-12 col-md-5">
-                  <label
-                    class="form-label small mb-0"
-                    [for]="prefix + 'AttachAddonMeter'"
-                    i18n="@@featureAddons-attachMeter"
-                    >Attach meter</label
+                  <fpc-form-field
+                    [forId]="prefix + 'AttachAddonMeter'"
+                    i18n-label="@@featureAddons-attachMeter"
+                    label="Attach meter"
                   >
-                  @if (prefix === 'create') {
-                    <select
-                      [id]="prefix + 'AttachAddonMeter'"
-                      class="form-select form-select-sm"
-                      [(ngModel)]="createAddonMeterAttachMeterId"
-                      [name]="prefix + 'AttachAddonMeter'"
-                      [disabled]="disabled"
-                    >
-                      <option [ngValue]="''" i18n="@@featureAddons-selectMeter">Select meter</option>
-                      @for (meter of availableMeters; track meter.id) {
-                        <option [ngValue]="meter.id">{{ meter.name }} ({{ meter.key }})</option>
-                      }
-                    </select>
-                  } @else {
-                    <select
-                      [id]="prefix + 'AttachAddonMeter'"
-                      class="form-select form-select-sm"
-                      [(ngModel)]="editAddonMeterAttachMeterId"
-                      [name]="prefix + 'AttachAddonMeter'"
-                      [disabled]="disabled || addonMeterAttachLoading"
-                    >
-                      <option [ngValue]="''" i18n="@@featureAddons-selectMeter">Select meter</option>
-                      @for (meter of availableMeters; track meter.id) {
-                        <option [ngValue]="meter.id">{{ meter.name }} ({{ meter.key }})</option>
-                      }
-                    </select>
-                  }
+                    @if (prefix === 'create') {
+                      <fpc-form-control
+                        controlType="select"
+                        size="sm"
+                        [controlId]="prefix + 'AttachAddonMeter'"
+                        [(ngModel)]="createAddonMeterAttachMeterId"
+                        [name]="prefix + 'AttachAddonMeter'"
+                        [disabled]="disabled"
+                      >
+                        <option value="" i18n="@@featureAddons-selectMeter">Select meter</option>
+                        @for (meter of availableMeters; track meter.id) {
+                          <option [value]="meter.id">{{ meter.name }} ({{ meter.key }})</option>
+                        }
+                      </fpc-form-control>
+                    } @else {
+                      <fpc-form-control
+                        controlType="select"
+                        size="sm"
+                        [controlId]="prefix + 'AttachAddonMeter'"
+                        [(ngModel)]="editAddonMeterAttachMeterId"
+                        [name]="prefix + 'AttachAddonMeter'"
+                        [disabled]="disabled || addonMeterAttachLoading"
+                      >
+                        <option value="" i18n="@@featureAddons-selectMeter">Select meter</option>
+                        @for (meter of availableMeters; track meter.id) {
+                          <option [value]="meter.id">{{ meter.name }} ({{ meter.key }})</option>
+                        }
+                      </fpc-form-control>
+                    }
+                  </fpc-form-field>
                 </div>
                 <div class="col-12 col-md-5">
                   <div class="row g-2">
                     <div class="col-6">
-                      <label
-                        class="form-label small mb-0"
-                        [for]="prefix + 'AttachAddonMeterPrice'"
-                        i18n="@@featureAddons-attachMeterPrice"
-                        >Override price (optional)</label
+                      <fpc-form-field
+                        [forId]="prefix + 'AttachAddonMeterPrice'"
+                        i18n-label="@@featureAddons-attachMeterPrice"
+                        label="Override price (optional)"
                       >
-                      @if (prefix === 'create') {
-                        <input
-                          [id]="prefix + 'AttachAddonMeterPrice'"
-                          type="number"
-                          min="0"
-                          step="0.0001"
-                          class="form-control form-control-sm"
-                          [(ngModel)]="createAddonMeterAttachUnitPrice"
-                          [name]="prefix + 'AttachAddonMeterPrice'"
-                          [disabled]="disabled"
-                        />
-                      } @else {
-                        <input
-                          [id]="prefix + 'AttachAddonMeterPrice'"
-                          type="number"
-                          min="0"
-                          step="0.0001"
-                          class="form-control form-control-sm"
-                          [(ngModel)]="editAddonMeterAttachUnitPrice"
-                          [name]="prefix + 'AttachAddonMeterPrice'"
-                          [disabled]="disabled || addonMeterAttachLoading"
-                        />
-                      }
+                        @if (prefix === 'create') {
+                          <fpc-form-control
+                            inputType="number"
+                            min="0"
+                            step="0.0001"
+                            size="sm"
+                            [controlId]="prefix + 'AttachAddonMeterPrice'"
+                            [(ngModel)]="createAddonMeterAttachUnitPrice"
+                            [name]="prefix + 'AttachAddonMeterPrice'"
+                            [disabled]="disabled"
+                          />
+                        } @else {
+                          <fpc-form-control
+                            inputType="number"
+                            min="0"
+                            step="0.0001"
+                            size="sm"
+                            [controlId]="prefix + 'AttachAddonMeterPrice'"
+                            [(ngModel)]="editAddonMeterAttachUnitPrice"
+                            [name]="prefix + 'AttachAddonMeterPrice'"
+                            [disabled]="disabled || addonMeterAttachLoading"
+                          />
+                        }
+                      </fpc-form-field>
                     </div>
                     <div class="col-6">
-                      <label
-                        class="form-label small mb-0"
-                        [for]="prefix + 'AttachAddonMeterIncludedUsage'"
-                        i18n="@@featureAddons-attachMeterIncludedUsage"
-                        >Override included usage (optional)</label
+                      <fpc-form-field
+                        [forId]="prefix + 'AttachAddonMeterIncludedUsage'"
+                        i18n-label="@@featureAddons-attachMeterIncludedUsage"
+                        label="Override included usage (optional)"
                       >
-                      @if (prefix === 'create') {
-                        <input
-                          [id]="prefix + 'AttachAddonMeterIncludedUsage'"
-                          type="number"
-                          min="0"
-                          step="1"
-                          class="form-control form-control-sm"
-                          [(ngModel)]="createAddonMeterAttachIncludedUsage"
-                          [name]="prefix + 'AttachAddonMeterIncludedUsage'"
-                          [disabled]="disabled"
-                        />
-                      } @else {
-                        <input
-                          [id]="prefix + 'AttachAddonMeterIncludedUsage'"
-                          type="number"
-                          min="0"
-                          step="1"
-                          class="form-control form-control-sm"
-                          [(ngModel)]="editAddonMeterAttachIncludedUsage"
-                          [name]="prefix + 'AttachAddonMeterIncludedUsage'"
-                          [disabled]="disabled || addonMeterAttachLoading"
-                        />
-                      }
+                        @if (prefix === 'create') {
+                          <fpc-form-control
+                            inputType="number"
+                            min="0"
+                            step="1"
+                            size="sm"
+                            [controlId]="prefix + 'AttachAddonMeterIncludedUsage'"
+                            [(ngModel)]="createAddonMeterAttachIncludedUsage"
+                            [name]="prefix + 'AttachAddonMeterIncludedUsage'"
+                            [disabled]="disabled"
+                          />
+                        } @else {
+                          <fpc-form-control
+                            inputType="number"
+                            min="0"
+                            step="1"
+                            size="sm"
+                            [controlId]="prefix + 'AttachAddonMeterIncludedUsage'"
+                            [(ngModel)]="editAddonMeterAttachIncludedUsage"
+                            [name]="prefix + 'AttachAddonMeterIncludedUsage'"
+                            [disabled]="disabled || addonMeterAttachLoading"
+                          />
+                        }
+                      </fpc-form-field>
                     </div>
                   </div>
                 </div>
                 <div class="col-12 col-md-2 d-flex justify-content-md-end">
-                  <button
-                    type="button"
-                    class="btn btn-sm btn-outline-primary"
-                    (click)="attachAddonMeter(prefix)"
+                  <fpc-button
+                    variant="primary"
+                    size="sm"
+                    iconOnly
+                    (clicked)="attachAddonMeter(prefix)"
                     [disabled]="
                       disabled ||
                       (prefix === 'edit' && addonMeterAttachLoading) ||
@@ -764,11 +755,11 @@
                     "
                     title="Attach meter"
                     i18n-title="@@featureAddons-attachMeterAction"
-                    aria-label="Attach meter"
-                    i18n-aria-label="@@featureAddons-attachMeterAction"
+                    ariaLabel="Attach meter"
+                    i18n-ariaLabel="@@featureAddons-attachMeterAction"
                   >
                     <i class="bi bi-plus" aria-hidden="true"></i>
-                  </button>
+                  </fpc-button>
                 </div>
               </div>
             } @else if (meters.length === 0) {
@@ -787,45 +778,30 @@
       </div>
     </div>
     <div class="col-12">
-      <div class="form-check">
-        <input
-          type="checkbox"
-          class="form-check-input"
-          [id]="prefix + 'AddonActive'"
-          [(ngModel)]="form.isActive"
-          [name]="prefix + 'AddonActive'"
-          [disabled]="disabled"
-        />
-        <label class="form-check-label" [for]="prefix + 'AddonActive'" i18n="@@featureAddons-active">Active</label>
-      </div>
+      <fpc-form-switch
+        [switchId]="prefix + 'AddonActive'"
+        [(ngModel)]="form.isActive"
+        [name]="prefix + 'AddonActive'"
+        [disabled]="disabled"
+        i18n-label="@@featureAddons-active"
+        label="Active"
+      />
     </div>
   </div>
 </ng-template>
 
-<div #deleteConfirmModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureAddons-deleteTitle">Delete addon</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        @if (addonToDelete) {
-          <p i18n="@@featureAddons-deleteConfirm">Delete addon "{{ addonToDelete.name }}"?</p>
-          <p class="text-danger mb-0" i18n="@@featureAddons-cannotUndo">This action cannot be undone.</p>
-        }
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-danger"
-          (click)="confirmDelete()"
-          [disabled]="(deleting$ | async) === true"
-          i18n="@@featureAddons-delete"
-        >
-          Delete
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+<fpc-confirm-dialog
+  [(open)]="deleteConfirmModalOpen"
+  i18n-title="@@featureAddons-deleteTitle"
+  title="Delete addon"
+  i18n-confirmLabel="@@featureAddons-delete"
+  confirmLabel="Delete"
+  [danger]="true"
+  [busy]="(deleting$ | async) === true"
+  (confirmed)="confirmDelete()"
+>
+  @if (addonToDelete) {
+    <p i18n="@@featureAddons-deleteConfirm">Delete addon "{{ addonToDelete.name }}"?</p>
+    <p class="text-danger mb-0" i18n="@@featureAddons-cannotUndo">This action cannot be undone.</p>
+  }
+</fpc-confirm-dialog>

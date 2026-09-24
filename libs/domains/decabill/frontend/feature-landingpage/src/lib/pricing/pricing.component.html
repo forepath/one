@@ -73,24 +73,28 @@
     </div>
     <div class="position-relative">
       <div class="pricing-carousel-scroll-buttons d-none d-lg-flex justify-content-between align-items-center">
-        <button
-          type="button"
-          class="btn btn-primary pricing-carousel-scroll-button-left"
-          (click)="scrollPricingCarousel('left')"
+        <fpc-button
+          variant="primary"
+          iconOnly
+          btnClass="pricing-carousel-scroll-button-left"
+          (clicked)="scrollPricingCarousel('left')"
           [disabled]="!isLastCardVisible()"
+          ariaLabel="Previous plans"
+          i18n-ariaLabel="@@featureDecabillPricing-scrollPrev"
         >
           <i class="bi bi-arrow-left" aria-hidden="true"></i>
-          <span class="visually-hidden" i18n="@@featureDecabillPricing-scrollPrev">Previous plans</span>
-        </button>
-        <button
-          type="button"
-          class="btn btn-primary pricing-carousel-scroll-button-right"
-          (click)="scrollPricingCarousel('right')"
+        </fpc-button>
+        <fpc-button
+          variant="primary"
+          iconOnly
+          btnClass="pricing-carousel-scroll-button-right"
+          (clicked)="scrollPricingCarousel('right')"
           [disabled]="isLastCardVisible()"
+          ariaLabel="Next plans"
+          i18n-ariaLabel="@@featureDecabillPricing-scrollNext"
         >
           <i class="bi bi-arrow-right" aria-hidden="true"></i>
-          <span class="visually-hidden" i18n="@@featureDecabillPricing-scrollNext">Next plans</span>
-        </button>
+        </fpc-button>
       </div>
       <div
         class="row g-4 flex-lg-nowrap overflow-x-hidden position-relative pb-2 pb-lg-5 pricing-tiers-row"
@@ -101,10 +105,12 @@
             <div class="card-body p-4 p-lg-5 d-flex flex-column">
               <div class="text-center mb-4">
                 <h3 class="h4 m-0" i18n="@@featureDecabillPricing-openSourceTitle">Open Source</h3>
-                <span
-                  class="badge bg-secondary-subtle text-secondary px-3 py-2 my-2"
+                <fpc-badge
+                  variant="marketing"
+                  color="secondary"
+                  class="my-2"
                   i18n="@@featureDecabillPricing-selfHostedBadge"
-                  >Self-Hosted</span
+                  >Self-Hosted</fpc-badge
                 >
                 <div class="card border-0 rounded-3 bg-body-tertiary p-3 my-3">
                   <div class="display-6 fw-bold text-primary mb-1" i18n="@@featureDecabillPricing-openSourcePrice">
@@ -144,13 +150,14 @@
                 </li>
               </ul>
               <div class="d-grid mt-auto">
-                <a
+                <fpc-button
                   href="https://github.com/forepath/one"
-                  class="btn btn-outline-primary"
+                  variant="outline-primary"
+                  block
                   target="_blank"
                   rel="noopener noreferrer"
                   i18n="@@featureDecabillPricing-viewOnGitHub"
-                  >View on GitHub</a
+                  >View on GitHub</fpc-button
                 >
               </div>
             </div>
@@ -162,10 +169,12 @@
             <div class="card-body p-4 p-lg-5 d-flex flex-column">
               <div class="text-center mb-4">
                 <h3 class="h4 m-0" i18n="@@featureDecabillPricing-startupTitle">Startup</h3>
-                <span
-                  class="badge bg-secondary-subtle text-secondary px-3 py-2 my-2"
+                <fpc-badge
+                  variant="marketing"
+                  color="secondary"
+                  class="my-2"
                   i18n="@@featureDecabillPricing-selfHostedBadge"
-                  >Self-Hosted</span
+                  >Self-Hosted</fpc-badge
                 >
                 <div class="card border-0 rounded-3 bg-body-tertiary p-3 my-3">
                   <div class="display-6 fw-bold text-primary mb-1" i18n="@@featureDecabillPricing-startupPrice">
@@ -207,13 +216,14 @@
                 </li>
               </ul>
               <div class="d-grid mt-auto">
-                <a
+                <fpc-button
                   href="https://github.com/forepath/one"
-                  class="btn btn-outline-primary"
+                  variant="outline-primary"
+                  block
                   target="_blank"
                   rel="noopener noreferrer"
                   i18n="@@featureDecabillPricing-viewOnGitHub"
-                  >View on GitHub</a
+                  >View on GitHub</fpc-button
                 >
               </div>
             </div>
@@ -232,10 +242,12 @@
             <div class="card-body p-4 p-lg-5 d-flex flex-column">
               <div class="text-center mb-4">
                 <h3 class="h4 m-0" i18n="@@featureDecabillPricing-businessTitle">Business</h3>
-                <span
-                  class="badge bg-secondary-subtle text-secondary px-3 py-2 my-2"
+                <fpc-badge
+                  variant="marketing"
+                  color="secondary"
+                  class="my-2"
                   i18n="@@featureDecabillPricing-selfHostedBadge"
-                  >Self-Hosted</span
+                  >Self-Hosted</fpc-badge
                 >
                 <div class="card border-0 rounded-3 card-capability card-capability-primary p-3 my-3">
                   <div class="display-6 fw-bold text-primary mb-1" i18n="@@featureDecabillPricing-businessPrice">
@@ -267,8 +279,8 @@
                 </li>
               </ul>
               <div class="d-grid mt-auto">
-                <a routerLink="/contact" class="btn btn-primary" i18n="@@featureDecabillPricing-bookDemo"
-                  >Book a Demo</a
+                <fpc-button routerLink="/contact" variant="primary" block i18n="@@featureDecabillPricing-bookDemo"
+                  >Book a Demo</fpc-button
                 >
               </div>
             </div>
@@ -280,10 +292,12 @@
             <div class="card-body p-4 p-lg-5 d-flex flex-column">
               <div class="text-center mb-4">
                 <h3 class="h4 m-0" i18n="@@featureDecabillPricing-enterpriseTitle">Enterprise</h3>
-                <span
-                  class="badge bg-secondary-subtle text-secondary px-3 py-2 my-2"
+                <fpc-badge
+                  variant="marketing"
+                  color="secondary"
+                  class="my-2"
                   i18n="@@featureDecabillPricing-selfHostedBadge"
-                  >Self-Hosted</span
+                  >Self-Hosted</fpc-badge
                 >
                 <div class="card border-0 rounded-3 bg-body-tertiary p-3 my-3">
                   <div class="display-6 fw-bold text-primary mb-1" i18n="@@featureDecabillPricing-enterprisePrice">
@@ -317,8 +331,8 @@
                 </li>
               </ul>
               <div class="d-grid mt-auto">
-                <a routerLink="/contact" class="btn btn-primary" i18n="@@featureDecabillPricing-contactSales"
-                  >Contact Sales</a
+                <fpc-button routerLink="/contact" variant="primary" block i18n="@@featureDecabillPricing-contactSales"
+                  >Contact Sales</fpc-button
                 >
               </div>
             </div>
@@ -344,7 +358,7 @@
         <div class="col-lg-8 p-4 p-lg-5">
           <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
             <h3 class="h5 fw-semibold mb-0" i18n="@@featureDecabillPricing-cloudTitle">Decabill Cloud</h3>
-            <span class="badge bg-primary text-white" i18n="@@featureDecabillPricing-managedBadge">Managed</span>
+            <fpc-badge color="primary" i18n="@@featureDecabillPricing-managedBadge">Managed</fpc-badge>
           </div>
           <p class="text-muted mb-4" i18n="@@featureDecabillPricing-cloudDescription">
             Fully managed Decabill platform hosted in the cloud. Made for agencies and product teams of any size. No
@@ -408,13 +422,14 @@
               }
             }
           </div>
-          <a
+          <fpc-button
+            class="mb-2"
             [href]="billingBaseUrl"
-            class="btn btn-primary mb-2"
+            variant="primary"
             target="_blank"
             rel="noopener noreferrer"
             i18n="@@featureDecabillPricing-getStartedNow"
-            >Get Started Now</a
+            >Get Started Now</fpc-button
           >
           <a
             routerLink="/"
@@ -439,20 +454,26 @@
         reliable billing for agencies and digital products.
       </p>
       <div class="d-flex gap-3 justify-content-center flex-wrap">
-        <a
+        <fpc-button
+          variant="primary"
+          size="xl"
+          btnClass="rounded-3"
           href="https://github.com/forepath/one"
-          class="btn btn-primary btn-lg rounded-3 cta-btn cta-btn-primary"
           target="_blank"
           rel="noopener noreferrer"
           i18n="@@featureDecabillPricing-ctaGetStarted"
-          ><i class="bi bi-rocket-takeoff" aria-hidden="true"></i>Get Started Free</a
         >
-        <a
+          <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>Get Started Free
+        </fpc-button>
+        <fpc-button
+          variant="primary"
+          size="xl"
+          btnClass="rounded-3"
           routerLink="/contact"
-          class="btn btn-primary btn-lg rounded-3 cta-btn cta-btn-secondary"
           i18n="@@featureDecabillPricing-ctaTalkToSales"
-          ><i class="bi bi-chat-dots" aria-hidden="true"></i>Talk to Sales</a
         >
+          <i class="bi bi-chat-dots" aria-hidden="true"></i>Talk to Sales
+        </fpc-button>
       </div>
     </div>
   </div>

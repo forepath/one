@@ -5,10 +5,11 @@ import { RouterModule } from '@angular/router';
 import { ForepathOneTeaserComponent } from '../forepath-one-teaser/forepath-one-teaser.component';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
+import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
 @Component({
   selector: 'framework-forepath-consulting',
-  imports: [CommonModule, RouterModule, ForepathOneTeaserComponent],
+  imports: [FpcButtonComponent, CommonModule, RouterModule, ForepathOneTeaserComponent],
   styleUrls: ['./consulting.component.scss'],
   templateUrl: './consulting.component.html',
   standalone: true,

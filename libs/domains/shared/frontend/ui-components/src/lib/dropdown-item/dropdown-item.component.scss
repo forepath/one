@@ -1,0 +1,49 @@
+:host {
+  display: block;
+}
+
+.fpc-dropdown-item__row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin: 0;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+
+  &.disabled {
+    opacity: 0.55;
+    pointer-events: none;
+    cursor: default;
+  }
+}
+
+.fpc-dropdown-item__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  // Title + caption (e.g. Forepath nav) stack; single-line labels stay one row.
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.125rem;
+}
+
+.fpc-dropdown-item__end {
+  flex: 0 0 auto;
+  display: none;
+  align-items: center;
+  gap: 0.25rem;
+  margin-inline-start: auto;
+
+  &:has(*) {
+    display: inline-flex;
+  }
+}
+
+// Keep the danger tint readable while hovered / focused.
+.fpc-dropdown-item__row.text-danger:hover,
+.fpc-dropdown-item__row.text-danger:focus-within {
+  background-color: var(--bs-danger-bg-subtle);
+}

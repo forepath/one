@@ -6,13 +6,33 @@ import { RouterModule } from '@angular/router';
 import type { IdentityAuthEnvironment, UsersAuthenticationConfig } from '@forepath/identity/frontend';
 import { AuthenticationFacade, loginSuccess } from '@forepath/identity/frontend';
 import { IDENTITY_AUTH_ENVIRONMENT, isAuthMarketingPanelVisible } from '@forepath/identity/frontend';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcInputGroupComponent,
+  FpcSectionColumnComponent,
+  FpcSectionRowComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'identity-auth-login',
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ReactiveFormsModule,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcInputGroupComponent,
+    FpcSectionRowComponent,
+    FpcSectionColumnComponent,
+  ],
   styleUrls: ['./login.component.scss'],
   templateUrl: './login.component.html',
   standalone: true,
@@ -89,6 +109,10 @@ export class IdentityLoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Drop leftover errors from other auth screens; keep success (e.g. after reset/confirm).
+    this.patRejectedError = null;
+    this.authFacade.clearError();
+
     if (this.isUsersAuth) {
       this.loginForm = this.fb.group({
         email: ['', [Validators.required, Validators.email]],

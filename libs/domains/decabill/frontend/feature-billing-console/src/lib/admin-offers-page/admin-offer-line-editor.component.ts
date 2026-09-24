@@ -35,12 +35,30 @@ import {
 } from './admin-offer-totals.util';
 import { PlanOrderConfiguratorComponent } from '../plan-order-configurator/plan-order-configurator.component';
 import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
+import {
+  FpcButtonComponent,
+  FpcFormCheckComponent,
+  FpcFormCheckGroupComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+} from '@forepath/shared/frontend/ui-components';
+
 import type { PricingTotalsLeadingRow } from '../pricing-totals-summary/pricing-totals.util';
 
 @Component({
   selector: 'framework-admin-offer-line-editor',
   standalone: true,
-  imports: [CommonModule, FormsModule, PlanOrderConfiguratorComponent, PricingTotalsSummaryComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    PlanOrderConfiguratorComponent,
+    PricingTotalsSummaryComponent,
+    FpcButtonComponent,
+    FpcFormCheckComponent,
+    FpcFormCheckGroupComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+  ],
   templateUrl: './admin-offer-line-editor.component.html',
 })
 export class AdminOfferLineEditorComponent implements OnInit, OnChanges {

@@ -1,0 +1,36 @@
+:host {
+  display: inline-block;
+  position: relative;
+}
+
+.fpc-dropdown__trigger {
+  display: inline-flex;
+  align-items: center;
+}
+
+.fpc-dropdown__menu {
+  // `position: absolute` keeps the menu anchored without Popper.
+  position: absolute;
+  top: 100%;
+  inset-inline-start: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  overflow: hidden;
+  padding-top: 0;
+  padding-bottom: 0;
+  --bs-dropdown-padding-y: 0;
+  z-index: var(--bs-dropdown-zindex, 1000);
+}
+
+:host(.dropup) .fpc-dropdown__menu {
+  top: auto;
+  bottom: 100%;
+  margin-top: 0;
+  // Small gap so the menu does not sit flush on the trigger.
+  margin-bottom: 0.125rem;
+}
+
+.fpc-dropdown__menu.dropdown-menu-end {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+}

@@ -4,7 +4,17 @@ import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-i
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ProjectsFacade, type ProjectListItem } from '@forepath/decabill/frontend/data-access-billing-console';
-import { InfiniteScrollDirective, ListAppendFooterComponent } from '@forepath/shared/frontend/ui-lists';
+import {
+  FpcAlertComponent,
+  FpcEmptyStateComponent,
+  FpcInfiniteScrollDirective,
+  FpcListAppendFooterComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { debounceTime, distinctUntilChanged, skip } from 'rxjs';
 
 import {
@@ -19,11 +29,27 @@ import {
 @Component({
   selector: 'framework-projects-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, InfiniteScrollDirective, ListAppendFooterComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    FpcAlertComponent,
+    FpcEmptyStateComponent,
+    FpcInfiniteScrollDirective,
+    FpcListAppendFooterComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './projects-page.component.html',
   styleUrls: ['./projects-page.component.scss'],
 })
 export class ProjectsPageComponent implements OnInit {
+  readonly pageTitle = $localize`:@@featureProjects-title:Projects`;
+  readonly searchPlaceholder = $localize`:@@featureProjects-searchPlaceholder:Search projects`;
+
   readonly facade = inject(ProjectsFacade);
   private readonly destroyRef = inject(DestroyRef);
 

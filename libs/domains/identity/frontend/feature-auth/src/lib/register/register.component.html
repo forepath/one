@@ -1,63 +1,53 @@
-<section class="section__row" [class.section__row--marketing-hidden]="!showAuthMarketingPanel">
-  <div
-    class="section__column section__column--marketing d-flex align-items-center justify-content-center bg-body-tertiary h-100 border-end"
+<fpc-section-row [marketingHidden]="!showAuthMarketingPanel">
+  <fpc-section-column
+    variant="marketing"
+    class="d-flex align-items-center justify-content-center bg-body-tertiary h-100 border-end"
   >
     <div class="p-4" style="width: 700px; max-width: 100%">
       <h1 class="display-5 fw-bold mb-3" i18n="@@featureRegister-title">Create an Account</h1>
       <p class="lead mb-4">{{ registerDescription }}</p>
     </div>
-  </div>
-  <div class="section__column section__column--form section__column--scroll d-flex align-items-center">
+  </fpc-section-column>
+  <fpc-section-column variant="form" [scroll]="true" class="d-flex align-items-center">
     <div class="p-4 my-auto" style="width: 500px; max-width: 100%">
       <h2 class="section__column-title mb-4 text-end" i18n="@@featureRegister-formTitle">Register</h2>
 
       @if (!isUsersAuth) {
-        <div class="alert alert-info" role="alert">
-          <i class="bi bi-info-circle-fill me-2"></i>
+        <fpc-alert variant="info">
           <ng-container i18n="@@featureRegister-authNotAvailable"
             >User registration is not available for this authentication method.</ng-container
           >
           <a routerLink="/login" class="alert-link" i18n="@@featureRegister-returnToLogin">Return to login</a>
-        </div>
+        </fpc-alert>
       } @else {
         <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="needs-validation" novalidate>
-          <!-- Success Alert -->
           @if (successMessage$ | async; as successMessage) {
-            <div class="alert alert-success" role="alert">
-              <i class="bi bi-check-circle-fill me-2"></i>
-              <span>{{ successMessage }}</span>
-            </div>
+            <fpc-alert variant="success" [message]="successMessage" />
           }
 
-          <!-- Error Alert -->
           @if (error$ | async; as error) {
-            <div class="alert alert-danger" role="alert">
-              <i class="bi bi-exclamation-triangle-fill me-2"></i>
-              <span>{{ error }}</span>
-            </div>
+            <fpc-alert variant="danger" [message]="error" />
           }
 
           <!-- Email Input -->
-          <div class="mb-3">
-            <label for="email" class="form-label" i18n="@@featureRegister-emailLabel">Email</label>
-            <div class="input-group">
-              <span class="input-group-text">
-                <i class="bi bi-envelope-fill"></i>
+          <fpc-form-field forId="email" i18n-label="@@featureRegister-emailLabel" label="Email">
+            <fpc-input-group>
+              <span fpcInputGroupPrefix class="input-group-text">
+                <i class="bi bi-envelope-fill" aria-hidden="true"></i>
               </span>
-              <input
-                type="email"
-                class="form-control"
-                [class.is-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
-                id="email"
+              <fpc-form-control
+                controlId="email"
+                inputType="email"
                 formControlName="email"
-                placeholder="Enter your email"
                 i18n-placeholder="@@featureRegister-emailPlaceholder"
-                [disabled]="(registering$ | async) ?? false"
+                placeholder="Enter your email"
                 autocomplete="email"
+                [invalid]="!!(registerForm.get('email')?.invalid && registerForm.get('email')?.touched)"
+                [disabled]="(registering$ | async) ?? false"
               />
-            </div>
+            </fpc-input-group>
             @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
-              <div class="invalid-feedback d-block">
+              <div fpcFormFieldError>
                 @if (registerForm.get('email')?.errors?.['required']) {
                   <ng-container i18n="@@featureRegister-emailRequired">Email is required.</ng-container>
                 } @else if (registerForm.get('email')?.errors?.['email']) {
@@ -65,29 +55,27 @@
                 }
               </div>
             }
-          </div>
+          </fpc-form-field>
 
           <!-- Password Input -->
-          <div class="mb-3">
-            <label for="password" class="form-label" i18n="@@featureRegister-passwordLabel">Password</label>
-            <div class="input-group">
-              <span class="input-group-text">
-                <i class="bi bi-lock-fill"></i>
+          <fpc-form-field forId="password" i18n-label="@@featureRegister-passwordLabel" label="Password">
+            <fpc-input-group>
+              <span fpcInputGroupPrefix class="input-group-text">
+                <i class="bi bi-lock-fill" aria-hidden="true"></i>
               </span>
-              <input
-                type="password"
-                class="form-control"
-                [class.is-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
-                id="password"
+              <fpc-form-control
+                controlId="password"
+                inputType="password"
                 formControlName="password"
-                placeholder="Enter your password (min. 8 characters)"
                 i18n-placeholder="@@featureRegister-passwordPlaceholder"
-                [disabled]="(registering$ | async) ?? false"
+                placeholder="Enter your password (min. 8 characters)"
                 autocomplete="new-password"
+                [invalid]="!!(registerForm.get('password')?.invalid && registerForm.get('password')?.touched)"
+                [disabled]="(registering$ | async) ?? false"
               />
-            </div>
+            </fpc-input-group>
             @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
-              <div class="invalid-feedback d-block">
+              <div fpcFormFieldError>
                 @if (registerForm.get('password')?.errors?.['required']) {
                   <ng-container i18n="@@featureRegister-passwordRequired">Password is required.</ng-container>
                 } @else if (registerForm.get('password')?.errors?.['minlength']) {
@@ -97,46 +85,46 @@
                 }
               </div>
             }
-          </div>
+          </fpc-form-field>
 
           <!-- Password Confirmation Input -->
-          <div class="mb-3">
-            <label for="passwordConfirmation" class="form-label" i18n="@@featureRegister-confirmPasswordLabel"
-              >Confirm Password</label
-            >
-            <div class="input-group">
-              <span class="input-group-text">
-                <i class="bi bi-lock-fill"></i>
+          <fpc-form-field
+            forId="passwordConfirmation"
+            i18n-label="@@featureRegister-confirmPasswordLabel"
+            label="Confirm Password"
+          >
+            <fpc-input-group>
+              <span fpcInputGroupPrefix class="input-group-text">
+                <i class="bi bi-lock-fill" aria-hidden="true"></i>
               </span>
-              <input
-                type="password"
-                class="form-control"
-                [class.is-invalid]="
-                  (registerForm.get('passwordConfirmation')?.invalid &&
-                    registerForm.get('passwordConfirmation')?.touched) ||
-                  registerForm.errors?.['passwordMismatch']
-                "
-                id="passwordConfirmation"
+              <fpc-form-control
+                controlId="passwordConfirmation"
+                inputType="password"
                 formControlName="passwordConfirmation"
-                placeholder="Confirm your password"
                 i18n-placeholder="@@featureRegister-confirmPasswordPlaceholder"
-                [disabled]="(registering$ | async) ?? false"
+                placeholder="Confirm your password"
                 autocomplete="new-password"
+                [invalid]="
+                  !!(
+                    (registerForm.get('passwordConfirmation')?.invalid &&
+                      registerForm.get('passwordConfirmation')?.touched) ||
+                    registerForm.errors?.['passwordMismatch']
+                  )
+                "
+                [disabled]="(registering$ | async) ?? false"
               />
-            </div>
+            </fpc-input-group>
             @if (
               registerForm.get('passwordConfirmation')?.invalid && registerForm.get('passwordConfirmation')?.touched
             ) {
-              <div class="invalid-feedback d-block" i18n="@@featureRegister-confirmPasswordRequired">
+              <div fpcFormFieldError i18n="@@featureRegister-confirmPasswordRequired">
                 Password confirmation is required.
               </div>
             }
             @if (registerForm.errors?.['passwordMismatch'] && registerForm.get('passwordConfirmation')?.touched) {
-              <div class="invalid-feedback d-block" i18n="@@featureRegister-passwordsMismatch">
-                Passwords do not match.
-              </div>
+              <div fpcFormFieldError i18n="@@featureRegister-passwordsMismatch">Passwords do not match.</div>
             }
-          </div>
+          </fpc-form-field>
 
           @if (termsUrl && privacyPolicyUrl) {
             <p class="form-check-label mb-3 small border p-3 rounded-2">
@@ -166,21 +154,21 @@
               <i class="bi bi-arrow-left me-2"></i>
               <span i18n="@@featureRegister-backToLogin">Back to login</span>
             </a>
-            <button
+            <fpc-button
               type="submit"
-              class="btn btn-primary d-flex align-items-center justify-content-center gap-1 w-auto"
+              variant="primary"
               [disabled]="registerForm.invalid || ((registering$ | async) ?? false)"
+              [loading]="(registering$ | async) ?? false"
             >
               @if ((registering$ | async) ?? false) {
-                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                 <span i18n="@@featureRegister-registering">Registering...</span>
               } @else {
                 <span i18n="@@featureRegister-submit">Register</span>
               }
-            </button>
+            </fpc-button>
           </div>
         </form>
       }
     </div>
-  </div>
-</section>
+  </fpc-section-column>
+</fpc-section-row>

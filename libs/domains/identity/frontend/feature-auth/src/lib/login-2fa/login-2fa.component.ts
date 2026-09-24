@@ -11,15 +11,31 @@ import {
   loginSuccess,
   PENDING_LOGIN_PASSWORD_STORAGE_KEY,
 } from '@forepath/identity/frontend';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcFormFieldComponent,
+  FpcOtpInputComponent,
+  FpcSectionColumnComponent,
+  FpcSectionRowComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { Actions, ofType } from '@ngrx/effects';
 import { Observable } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
 
-import { IdentityOtpInputComponent } from '../otp-input/otp-input.component';
-
 @Component({
   selector: 'identity-auth-login-2fa',
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, IdentityOtpInputComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcFormFieldComponent,
+    FpcOtpInputComponent,
+    FpcSectionRowComponent,
+    FpcSectionColumnComponent,
+  ],
   styleUrls: ['./login-2fa.component.scss'],
   templateUrl: './login-2fa.component.html',
   standalone: true,
@@ -59,8 +75,9 @@ export class IdentityLogin2faComponent implements OnInit {
 
     this.method = methodParam === 'totp' ? 'totp' : 'email';
 
-    // Challenge redirect is not a failure; clear any leftover message from login.
+    // Challenge redirect is not a failure; clear leftovers from other auth screens.
     this.authFacade.clearError();
+    this.authFacade.clearSuccessMessage();
 
     const password = sessionStorage.getItem(PENDING_LOGIN_PASSWORD_STORAGE_KEY) ?? '';
 

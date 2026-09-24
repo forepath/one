@@ -1,0 +1,40 @@
+:host {
+  display: flex; // Flex child behaviour, so nested scroll areas work
+  flex-direction: column; // Stack children vertically
+  flex: 1;
+  min-width: 0; // Critical for flex shrinking
+  min-height: 0; // Critical for flex scrolling
+  overflow: hidden; // Prevent horizontal overflow
+}
+
+:host(.section__column--scroll) {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+:host(.section__column--marketing) {
+  // Soft grayscale wash over `bg-body-tertiary` (same language as `fpc-sidebar` / docs nav).
+  --fpc-sidebar-shade: color-mix(in srgb, var(--bs-white) 22%, transparent);
+  --fpc-sidebar-shade-angle: 155deg;
+  background-image: linear-gradient(var(--fpc-sidebar-shade-angle), var(--fpc-sidebar-shade) 0%, transparent 55%);
+
+  @media (max-width: 767.98px) {
+    display: none;
+  }
+}
+
+:host-context(html[data-bs-theme='dark']):host(.section__column--marketing) {
+  --fpc-sidebar-shade: color-mix(in srgb, var(--bs-black) 22%, transparent);
+  --fpc-sidebar-shade-angle: 205deg;
+}
+
+:host(.section__column--form) {
+  @media (max-width: 767.98px) {
+    flex: 1 1 100%;
+  }
+}
+
+.section__column-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+}

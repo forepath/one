@@ -1,0 +1,68 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  // Fill leftover flex space. Basis 0 so parents with a definite height distribute free
+  // space (basis auto keeps the host content-sized).
+  flex: 1 1 0;
+  align-self: stretch;
+  width: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  text-align: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1.5rem;
+  color: var(--bs-body-color);
+}
+
+// Solo child of an overflow scrollport (no list/sentinel siblings): fill the scrollport
+// without relying on flex-grow, which some engines ignore on overflow:auto containers.
+// Do not use min-height: 100% when siblings exist — that plus a 1px infinite-scroll
+// sentinel overflows the scrollport and shows a useless scrollbar.
+:host:only-child {
+  min-height: 100%;
+}
+
+:host(.fpc-empty-state--sm) {
+  padding: 1.25rem 1rem;
+}
+
+:host(.fpc-empty-state--lg) {
+  padding: 4rem 2rem;
+}
+
+.fpc-empty-state__icon {
+  font-size: 2.5rem;
+  line-height: 1;
+  color: var(--bs-secondary-color);
+}
+
+:host(.fpc-empty-state--sm) .fpc-empty-state__icon {
+  font-size: 1.75rem;
+}
+
+:host(.fpc-empty-state--lg) .fpc-empty-state__icon {
+  font-size: 3.5rem;
+}
+
+.fpc-empty-state__title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.fpc-empty-state__message {
+  margin: 0;
+  max-width: 32rem;
+}
+
+.fpc-empty-state__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem; // Bootstrap mt-2
+}
+
+.fpc-empty-state__actions:empty {
+  display: none;
+}

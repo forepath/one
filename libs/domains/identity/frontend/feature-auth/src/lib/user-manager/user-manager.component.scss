@@ -1,4 +1,14 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .user-manager-container {
+  flex: 1 1 0;
   min-height: 0;
 }
 
@@ -16,23 +26,4 @@
 
 .editor-toolbar-badge {
   font-size: 0.5rem;
-}
-
-.search-input {
-  border-radius: 0;
-  position: relative;
-  padding-left: 0;
-  box-shadow: none;
-}
-
-.search-input-container {
-  position: relative;
-
-  i {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-  }
 }

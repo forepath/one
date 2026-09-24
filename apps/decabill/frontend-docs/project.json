@@ -67,7 +67,7 @@
         ],
         "server": "apps/shared/frontend-docs/src/main.server.ts",
         "ssr": {
-          "entry": "apps/decabill/frontend-docs/src/server.ts"
+          "entry": "apps/shared/frontend-docs/src/server.decabill.ts"
         },
         "prerender": true,
         "scripts": [
@@ -96,8 +96,8 @@
             },
             {
               "type": "anyComponentStyle",
-              "maximumWarning": "4kb",
-              "maximumError": "16kb"
+              "maximumWarning": "16kb",
+              "maximumError": "32kb"
             }
           ],
           "outputHashing": "all",

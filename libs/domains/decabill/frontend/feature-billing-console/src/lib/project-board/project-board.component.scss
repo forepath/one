@@ -24,50 +24,6 @@
   overflow: hidden;
 }
 
-.project-board__lane .card-header {
-  background: var(--bs-secondary-bg);
-  border-radius: 0;
-}
-
-.project-board__lane-search {
-  margin: 0;
-}
-
-.search-input {
-  border-radius: 0;
-  position: relative;
-  padding-left: 0;
-  box-shadow: none;
-}
-
-.search-input-container {
-  position: relative;
-
-  i {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-  }
-}
-
-.project-board__lane {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.project-board__list {
-  flex: 1 1 auto;
-  min-height: 0;
-  height: 100%;
-  max-height: calc(100vh - 13rem);
-  overflow: hidden;
-  border-radius: 0 !important;
-}
-
 .project-board__viewport {
   flex: 1 1 auto;
   width: 100%;
@@ -76,10 +32,6 @@
 }
 
 .project-board__lane-dropzone {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 4rem;
   position: relative;
 }
 
@@ -101,8 +53,11 @@
 .project-board__card {
   cursor: pointer;
   border-radius: 0;
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
   box-sizing: border-box;
-  height: 88px;
   overflow: hidden;
 }
 
@@ -146,16 +101,11 @@
   user-select: none;
 }
 
-.project-board__meta-chips .info-badge {
+.project-board__meta-chips fpc-badge {
   display: inline-flex;
   width: fit-content;
   max-width: 100%;
   margin-top: 0;
-}
-
-.project-board__global-search-results {
-  max-height: min(20rem, 50vh);
-  overflow-y: auto;
 }
 
 @mixin project-board-chip-tint($mix-color, $text-color) {
@@ -163,72 +113,95 @@
   color: $text-color !important;
 }
 
-.info-badge.project-board__chip--priority-low {
+fpc-badge.project-board__chip--priority-low {
   @include project-board-chip-tint(var(--bs-secondary), var(--bs-secondary-text-emphasis, var(--bs-secondary)));
 }
 
-.info-badge.project-board__chip--priority-medium {
+fpc-badge.project-board__chip--priority-medium {
   @include project-board-chip-tint(var(--bs-info), var(--bs-info-text-emphasis, var(--bs-info)));
 }
 
-.info-badge.project-board__chip--priority-high {
+fpc-badge.project-board__chip--priority-high {
   @include project-board-chip-tint(var(--bs-warning), var(--bs-warning-text-emphasis, var(--bs-warning)));
 }
 
-.info-badge.project-board__chip--priority-critical {
+fpc-badge.project-board__chip--priority-critical {
   @include project-board-chip-tint(var(--bs-danger), var(--bs-danger-text-emphasis, var(--bs-danger)));
 }
 
-.info-badge.project-board__chip--status-draft {
+fpc-badge.project-board__chip--status-draft {
   @include project-board-chip-tint(var(--bs-secondary), var(--bs-secondary-text-emphasis, var(--bs-secondary)));
 }
 
-.info-badge.project-board__chip--status-todo {
+fpc-badge.project-board__chip--status-todo {
   @include project-board-chip-tint(var(--bs-primary), var(--bs-primary-text-emphasis, var(--bs-primary)));
 }
 
-.info-badge.project-board__chip--status-in-progress {
+fpc-badge.project-board__chip--status-in-progress {
   @include project-board-chip-tint(var(--bs-info), var(--bs-info-text-emphasis, var(--bs-info)));
 }
 
-.info-badge.project-board__chip--status-prototype {
+fpc-badge.project-board__chip--status-prototype {
   @include project-board-chip-tint(var(--bs-warning), var(--bs-warning-text-emphasis, var(--bs-warning)));
 }
 
-.info-badge.project-board__chip--status-done {
+fpc-badge.project-board__chip--status-done {
   @include project-board-chip-tint(var(--bs-success), var(--bs-success-text-emphasis, var(--bs-success)));
 }
 
-.info-badge.project-board__chip--status-closed {
+fpc-badge.project-board__chip--status-closed {
   @include project-board-chip-tint(var(--bs-secondary), var(--bs-secondary-text-emphasis, var(--bs-secondary)));
 }
 
-.info-badge.project-board__chip--activity-created {
+fpc-badge.project-board__chip--activity-created {
   @include project-board-chip-tint(var(--bs-success), var(--bs-success-text-emphasis, var(--bs-success)));
 }
 
-.info-badge.project-board__chip--activity-deleted {
+fpc-badge.project-board__chip--activity-deleted {
   @include project-board-chip-tint(var(--bs-danger), var(--bs-danger-text-emphasis, var(--bs-danger)));
 }
 
-.info-badge.project-board__chip--activity-comment {
+fpc-badge.project-board__chip--activity-comment {
   @include project-board-chip-tint(var(--bs-info), var(--bs-info-text-emphasis, var(--bs-info)));
 }
 
-.info-badge.project-board__chip--activity-status {
+fpc-badge.project-board__chip--activity-status {
   @include project-board-chip-tint(var(--bs-primary), var(--bs-primary-text-emphasis, var(--bs-primary)));
 }
 
-.info-badge.project-board__chip--activity-priority {
+fpc-badge.project-board__chip--activity-priority {
   @include project-board-chip-tint(var(--bs-warning), var(--bs-warning-text-emphasis, var(--bs-warning)));
 }
 
-.info-badge.project-board__chip--activity-muted {
+fpc-badge.project-board__chip--activity-muted {
   @include project-board-chip-tint(var(--bs-secondary), var(--bs-secondary-text-emphasis, var(--bs-secondary)));
 }
 
-.modal-ticket-detail {
-  --bs-modal-width: calc(100% - (var(--bs-modal-margin) * 2));
+fpc-modal.modal-ticket-detail {
+  ::ng-deep .modal-dialog {
+    --bs-modal-width: calc(100% - (var(--bs-modal-margin) * 2));
+  }
+
+  ::ng-deep .modal-title {
+    width: 100%;
+  }
+
+  ::ng-deep .modal-body {
+    padding: 0;
+    overflow: hidden;
+  }
+}
+
+.project-board__ticket-detail-layout {
+  min-height: 0;
+}
+
+.project-board__ticket-detail-toolbar {
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.project-board__ticket-detail-body {
+  min-height: 0;
 }
 
 .project-board__detail-title-clickable {
@@ -241,37 +214,24 @@
   }
 }
 
-// Global `.info-badge` is block-level flex; in definition-list cells that stretches full column width.
-.project-board__detail-fields > dd > .info-badge {
+// `fpc-badge` info variant is block-level flex; in definition-list cells that stretches full column width.
+.project-board__detail-fields > dd > fpc-badge {
   display: inline-flex;
   width: fit-content;
   max-width: 100%;
 }
 
-.project-board__hierarchy-badge {
-  display: inline-flex;
+.project-board__hierarchy-box {
+  display: flex;
   align-items: center;
-  justify-content: start;
+  box-sizing: border-box;
+  height: 2rem;
+  min-height: 2rem;
+  overflow: hidden;
 }
 
-.project-board__breadcrumb {
-  --bs-breadcrumb-divider: '›';
-  flex-wrap: wrap;
-  row-gap: 0.15rem;
-  font-size: 0.875rem;
-
-  button {
-    color: var(--bs-body-color);
-    font-size: 0.875rem;
-    line-height: 1.2;
-    text-decoration: none;
-  }
-}
-
-.project-board__breadcrumb-current,
-.project-board__breadcrumb-link {
+:host ::ng-deep .modal-ticket-detail fpc-breadcrumb-item {
   max-width: min(14rem, 35vw);
-  vertical-align: bottom;
 }
 
 .project-board__detail-subtasks {
@@ -302,12 +262,20 @@
 }
 
 .project-board__detail-subtask-btn {
-  color: var(--bs-body-color);
   max-width: 100%;
 }
 
-.project-board__detail-subtask-btn:hover {
-  color: var(--bs-link-hover-color);
+// Host utilities do not reach the inner `.btn`; color/hover live on the control.
+:host ::ng-deep .project-board__detail-subtask-btn .fpc-button__btn {
+  color: var(--bs-body-color);
+  text-decoration: none;
+  max-width: 100%;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--bs-link-hover-color);
+    text-decoration: none;
+  }
 }
 
 .project-board__detail-time-entries {
@@ -319,7 +287,7 @@
   overflow-y: auto;
 }
 
-.project-board__activity-line .info-badge {
+.project-board__activity-line fpc-badge {
   margin-top: 0;
 }
 
@@ -333,22 +301,35 @@
   flex: 0 0 auto;
 }
 
-.btn-group-options {
-  > .btn-options {
-    border-radius: 0;
-    border-top: 0 !important;
-    border-bottom: 0 !important;
-    border-left: 0;
-    border-right-color: var(--bs-border-color) !important;
-    flex: 1 1 auto;
+.project-board__comment-composer {
+  position: relative;
+}
 
-    &.btn-primary,
-    &.btn-outline-secondary {
-      border-right-color: var(--bs-border-color) !important;
-    }
+// Outer control owns the border; bottom padding is the send-button strip (same as chat).
+.project-board__comment-shell {
+  padding-top: 0.375rem;
+  padding-right: 0;
+  padding-bottom: 2.5rem;
+  padding-left: 0;
+}
 
-    &:last-child {
-      border-right: 0;
-    }
-  }
+.project-board__comment-textarea {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0 0.5rem;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+  background-color: transparent;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.project-board__comment-send {
+  position: absolute;
+  right: 0.375rem;
+  bottom: 0.375rem;
+  z-index: 2;
 }

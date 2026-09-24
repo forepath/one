@@ -1,3 +1,21 @@
 .container-stats-status-bar {
   flex-shrink: 0;
+  position: relative;
+  isolation: isolate;
+
+  // Soft grayscale shade over primary chrome (same language as `fpc-top-bar`).
+  // Bar stays `bg-primary` in both app themes, so black wash reads either way.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(245deg, color-mix(in srgb, var(--bs-black) 28%, transparent) 0%, transparent 55%);
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 }

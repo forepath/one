@@ -1,315 +1,260 @@
 <div class="project-detail-container border-top d-flex flex-column h-100">
   @if (selectedProject$ | async; as project) {
-    <div class="p-3 border-bottom bg-body-tertiary">
+    <fpc-page-header [title]="project.name">
       <a
+        fpcPageHeaderBreadcrumbs
         [routerLink]="['../..']"
         [relativeTo]="route"
-        class="small text-decoration-none d-inline-flex align-items-center mb-3"
+        class="small text-decoration-none d-inline-flex align-items-center"
         i18n="@@featureProjectDetail-backToAdminProjects"
       >
-        <i class="bi bi-arrow-left me-1"></i>
+        <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>
         Back to projects
       </a>
-      <h5
-        class="fw-semibold"
-        [class.mb-0]="!(isAdminView() && assigneeEmail(project)) && !project.description"
-        [class.mb-1]="(isAdminView() && assigneeEmail(project)) || project.description"
-      >
-        {{ project.name }}
-      </h5>
       @if (isAdminView() && assigneeEmail(project); as email) {
         <p class="mb-0 small text-muted" i18n="@@featureProjectDetail-assignee">Assignee: {{ email }}</p>
       }
       @if (project.description) {
         <p class="mb-0 small text-muted">{{ project.description }}</p>
       }
-    </div>
+    </fpc-page-header>
   }
 
   @if (error$ | async; as err) {
-    <div class="alert alert-danger mb-0 rounded-0" role="alert">{{ err }}</div>
+    <fpc-alert variant="danger" [message]="err" />
   }
 
-  <div class="customer-billing__summary-bar flex-shrink-0">
-    <div class="row g-0 customer-billing__summary-grid customer-billing__summary-grid--five">
-      <div class="col-6 col-lg customer-billing__summary-col">
-        <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--first">
-          <div class="card-body">
-            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureProjectDetail-trackedTime">Tracked time</h6>
-            @if (loadingSummary$ | async) {
-              <span class="spinner-border spinner-border-sm" role="status"></span>
-            } @else if (summary$ | async; as summary) {
-              @if (selectedProject$ | async; as project) {
-                <p class="card-title mb-0 fs-4 fw-bold">
-                  {{ formatMinutes(summary.totalTrackedMinutes) }}
-                  @if (hasTargetHours(project.targetHours)) {
-                    <span class="text-muted customer-billing__summary-out-of">
-                      / {{ formatTargetHoursDuration(project.targetHours) }}
-                    </span>
-                  }
-                </p>
-                @let progress = targetHoursProgress(summary.totalTrackedMinutes, project.targetHours);
+  <fpc-summary-bar [columns]="5">
+    <fpc-summary-card [label]="trackedTimeLabel">
+      <span fpcSummaryCardValue>
+        @if (loadingSummary$ | async) {
+          <fpc-spinner size="sm" />
+        } @else if (summary$ | async; as summary) {
+          @if (selectedProject$ | async; as project) {
+            {{ formatMinutes(summary.totalTrackedMinutes) }}
+            @if (hasTargetHours(project.targetHours)) {
+              <span class="text-muted customer-billing__summary-out-of">
+                / {{ formatTargetHoursDuration(project.targetHours) }}
+              </span>
+            }
+          } @else {
+            {{ formatMinutes(summary.totalTrackedMinutes) }}
+          }
+        } @else {
+          <span class="text-body-secondary">—</span>
+        }
+      </span>
+      @if ((loadingSummary$ | async) === false) {
+        @if (summary$ | async; as summary) {
+          @if (selectedProject$ | async; as project) {
+            @let progress = targetHoursProgress(summary.totalTrackedMinutes, project.targetHours);
+            <div
+              class="progress w-100 rounded-pill mt-1"
+              role="progressbar"
+              [attr.aria-valuenow]="progress.isOver ? 100 : progress.primaryPct"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              [attr.aria-label]="
+                hasTargetHours(project.targetHours)
+                  ? trackedTimeTargetAriaLabel(summary.totalTrackedMinutes, project.targetHours)
+                  : trackedTimeProgressAriaLabel
+              "
+            >
+              <div class="progress-bar" [style.width.%]="progress.primaryPct"></div>
+              @if (progress.isOver) {
                 <div
-                  class="progress w-100 rounded-pill mt-1"
-                  role="progressbar"
-                  [attr.aria-valuenow]="progress.isOver ? 100 : progress.primaryPct"
-                  aria-valuemin="0"
-                  aria-valuemax="100"
-                  [attr.aria-label]="
-                    hasTargetHours(project.targetHours)
-                      ? trackedTimeTargetAriaLabel(summary.totalTrackedMinutes, project.targetHours)
-                      : trackedTimeProgressAriaLabel
-                  "
-                >
-                  <div class="progress-bar" [style.width.%]="progress.primaryPct"></div>
-                  @if (progress.isOver) {
-                    <div
-                      class="progress-bar customer-billing__summary-progress-over"
-                      [style.width.%]="progress.dangerPct"
-                    ></div>
-                  }
-                </div>
-              } @else {
-                <p class="card-title mb-0 fs-4 fw-bold">{{ formatMinutes(summary.totalTrackedMinutes) }}</p>
+                  class="progress-bar customer-billing__summary-progress-over"
+                  [style.width.%]="progress.dangerPct"
+                ></div>
               }
-            } @else {
-              <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
-            }
-          </div>
-        </div>
-      </div>
-      <div class="col-6 col-lg customer-billing__summary-col">
-        <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--second">
-          <div class="card-body">
-            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureProjectDetail-unbilledTime">
-              Unbilled time
-            </h6>
-            @if (loadingSummary$ | async) {
-              <span class="spinner-border spinner-border-sm" role="status"></span>
-            } @else if (summary$ | async; as summary) {
-              <p class="card-title mb-0 fs-4 fw-bold">{{ formatMinutes(summary.unbilledMinutes) }}</p>
-            } @else {
-              <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
-            }
-          </div>
-        </div>
-      </div>
-      <div class="col-6 col-lg customer-billing__summary-col">
-        <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--third">
-          <div class="card-body">
-            <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureProjectDetail-openBillable">
-              Open billable
-            </h6>
-            @if (loadingSummary$ | async) {
-              <span class="spinner-border spinner-border-sm" role="status"></span>
-            } @else if (summary$ | async; as summary) {
-              <p class="card-title mb-0 fs-4 fw-bold">{{ summary.openBillableAmountNet | number: '1.2-2' }}€</p>
-            } @else {
-              <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
-            }
-          </div>
-        </div>
-      </div>
-      <div class="col-6 col-lg customer-billing__summary-col">
-        <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--fourth">
-          <div class="card-body">
-            @if (isAdminView()) {
-              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureProjectDetail-openMilestones">
-                Open milestones
-              </h6>
-            } @else {
-              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureProjectDetail-completedMilestones">
-                Completed milestones
-              </h6>
-            }
-            @if (loadingSummary$ | async) {
-              <span class="spinner-border spinner-border-sm" role="status"></span>
-            } @else if (summary$ | async; as summary) {
-              <p class="card-title mb-0 fs-4 fw-bold">
-                {{ milestoneSummaryPrimaryCount(summary) }}
-                @if (summary.milestoneCount > 0) {
-                  <span class="text-muted customer-billing__summary-out-of"> / {{ summary.milestoneCount }}</span>
-                }
-              </p>
-              @let progress = milestonesCompleteProgress(summary);
-              <div
-                class="progress w-100 rounded-pill mt-1"
-                role="progressbar"
-                [attr.aria-valuenow]="hasOpenDoneSplit(progress) ? 100 : progress.primaryPct"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                i18n-aria-label="@@featureProjectDetail-milestonesProgressAria"
-                aria-label="Milestone completion"
-              >
-                @if (hasOpenDoneSplit(progress) && progress.openPct! > 0) {
-                  <div
-                    class="progress-bar customer-billing__summary-progress-open"
-                    [style.width.%]="progress.openPct"
-                  ></div>
-                }
-                <div class="progress-bar" [style.width.%]="progress.primaryPct"></div>
-              </div>
-            } @else {
-              <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
-            }
-          </div>
-        </div>
-      </div>
-      <div class="col-6 col-lg customer-billing__summary-col">
-        <div class="card h-100 rounded-0 customer-billing__summary-card customer-billing__summary-card--fifth">
-          <div class="card-body">
-            @if (isAdminView()) {
-              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureProjectDetail-openTickets">
-                Open tickets
-              </h6>
-            } @else {
-              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureProjectDetail-completedTickets">
-                Completed tickets
-              </h6>
-            }
-            @if (loadingSummary$ | async) {
-              <span class="spinner-border spinner-border-sm" role="status"></span>
-            } @else if (summary$ | async; as summary) {
-              <p class="card-title mb-0 fs-4 fw-bold">
-                {{ ticketSummaryPrimaryCount(summary) }}
-                @if (totalTicketCount(summary) > 0) {
-                  <span class="text-muted customer-billing__summary-out-of"> / {{ totalTicketCount(summary) }}</span>
-                }
-              </p>
-              @let progress = ticketsDoneProgress(summary);
-              <div
-                class="progress w-100 rounded-pill mt-1"
-                role="progressbar"
-                [attr.aria-valuenow]="hasOpenDoneSplit(progress) ? 100 : progress.primaryPct"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                i18n-aria-label="@@featureProjectDetail-ticketsProgressAria"
-                aria-label="Tickets done"
-              >
-                @if (hasOpenDoneSplit(progress) && progress.openPct! > 0) {
-                  <div
-                    class="progress-bar customer-billing__summary-progress-open"
-                    [style.width.%]="progress.openPct"
-                  ></div>
-                }
-                <div class="progress-bar" [style.width.%]="progress.primaryPct"></div>
-              </div>
-            } @else {
-              <p class="card-title mb-0 fs-4 fw-bold text-body-secondary">—</p>
-            }
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="d-flex align-items-center gap-0 border-bottom btn-group-options flex-shrink-0">
-    <button
-      type="button"
-      class="btn btn-sm btn-options"
-      [class.btn-primary]="activeTab() === 'board'"
-      [class.btn-outline-secondary]="activeTab() !== 'board'"
-      (click)="setTab('board')"
-    >
-      {{ tabLabel('board') }}
-    </button>
-    <button
-      type="button"
-      class="btn btn-sm btn-options"
-      [class.btn-primary]="activeTab() === 'milestones'"
-      [class.btn-outline-secondary]="activeTab() !== 'milestones'"
-      (click)="setTab('milestones')"
-    >
-      {{ tabLabel('milestones') }}
-    </button>
-    <button
-      type="button"
-      class="btn btn-sm btn-options"
-      [class.btn-primary]="activeTab() === 'time'"
-      [class.btn-outline-secondary]="activeTab() !== 'time'"
-      (click)="setTab('time')"
-    >
-      {{ tabLabel('time') }}
-    </button>
-  </div>
-
-  <div class="flex-grow-1 min-h-0 overflow-hidden">
-    @if (activeTab() === 'board' && projectId) {
-      <framework-project-board [projectId]="projectId" [isAdmin]="isAdminView()"></framework-project-board>
-    }
-    @if (activeTab() === 'milestones' && projectId) {
-      <framework-project-milestones-panel
-        [projectId]="projectId"
-        [isAdmin]="isAdminView()"
-      ></framework-project-milestones-panel>
-    }
-    @if (activeTab() === 'time' && projectId) {
-      <div class="section__content-wrapper d-flex flex-column h-100">
-        <div class="px-3 py-2 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center gap-2">
-          <h5 class="mb-0 fw-semibold h6" i18n="@@featureProjectDetail-timeEntries">Time entries</h5>
-          @if (isAdminView()) {
-            <div class="d-flex gap-2">
-              <button
-                type="button"
-                class="btn btn-sm btn-primary"
-                (click)="openCreateTimeModal()"
-                i18n-title="@@featureProjectDetail-addTime"
-                title="Add"
-                i18n-aria-label="@@featureProjectDetail-addTime"
-                aria-label="Add"
-              >
-                <i class="bi bi-plus" aria-hidden="true"></i>
-              </button>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-secondary"
-                (click)="openBillTimeModal()"
-                [disabled]="
-                  (billing$ | async) === true ||
-                  billBoundsLoading() ||
-                  (loadingSummary$ | async) === true ||
-                  !hasUnbilledTime(summary$ | async)
-                "
-                i18n-title="@@featureProjectDetail-billTime"
-                title="Bill unbilled time"
-                i18n-aria-label="@@featureProjectDetail-billTime"
-                aria-label="Bill unbilled time"
-              >
-                <i class="bi bi-cash-coin" aria-hidden="true"></i>
-              </button>
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-secondary"
-                (click)="openTimeReportModal()"
-                [disabled]="timeReportSaving() || timeReportBoundsLoading()"
-                i18n-title="@@featureProjectDetail-timeReport"
-                title="Time report"
-                i18n-aria-label="@@featureProjectDetail-timeReport"
-                aria-label="Time report"
-              >
-                <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
-              </button>
             </div>
           }
-        </div>
-        <div class="flex-grow-1 overflow-auto">
-          @if (timeError$ | async; as timeError) {
-            <div class="alert alert-danger m-3 mb-0" role="alert">{{ timeError }}</div>
+        }
+      }
+    </fpc-summary-card>
+    <fpc-summary-card [label]="unbilledTimeLabel">
+      <span fpcSummaryCardValue>
+        @if (loadingSummary$ | async) {
+          <fpc-spinner size="sm" />
+        } @else if (summary$ | async; as summary) {
+          {{ formatMinutes(summary.unbilledMinutes) }}
+        } @else {
+          <span class="text-body-secondary">—</span>
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card [label]="openBillableLabel">
+      <span fpcSummaryCardValue>
+        @if (loadingSummary$ | async) {
+          <fpc-spinner size="sm" />
+        } @else if (summary$ | async; as summary) {
+          {{ summary.openBillableAmountNet | number: '1.2-2' }}€
+        } @else {
+          <span class="text-body-secondary">—</span>
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card [label]="isAdminView() ? openMilestonesLabel : completedMilestonesLabel">
+      <span fpcSummaryCardValue>
+        @if (loadingSummary$ | async) {
+          <fpc-spinner size="sm" />
+        } @else if (summary$ | async; as summary) {
+          {{ milestoneSummaryPrimaryCount(summary) }}
+          @if (summary.milestoneCount > 0) {
+            <span class="text-muted customer-billing__summary-out-of"> / {{ summary.milestoneCount }}</span>
           }
-          @if (timeLoading$ | async) {
-            <div class="d-flex justify-content-center py-4">
-              <div class="spinner-border text-primary" role="status"></div>
-            </div>
-          } @else if (timeEntries$ | async; as entries) {
-            @if (entries.length === 0) {
-              <p class="p-4 text-muted mb-0" i18n="@@featureProjectDetail-timeEntriesEmpty">No time entries yet</p>
-            } @else {
-              <div class="list-group list-group-flush">
-                @for (entry of entries; track entry.id) {
-                  <div class="list-group-item d-flex justify-content-between align-items-center gap-3 border-bottom">
-                    <div class="min-w-0 flex-grow-1">
-                      <div class="fw-semibold mb-1">{{ timeEntryTitle(entry) }}</div>
-                      <div class="small text-muted d-flex align-items-center gap-3 flex-wrap">
+        } @else {
+          <span class="text-body-secondary">—</span>
+        }
+      </span>
+      @if ((loadingSummary$ | async) === false) {
+        @if (summary$ | async; as summary) {
+          @let progress = milestonesCompleteProgress(summary);
+          <div
+            class="progress w-100 rounded-pill mt-1"
+            role="progressbar"
+            [attr.aria-valuenow]="hasOpenDoneSplit(progress) ? 100 : progress.primaryPct"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            i18n-aria-label="@@featureProjectDetail-milestonesProgressAria"
+            aria-label="Milestone completion"
+          >
+            @if (hasOpenDoneSplit(progress) && progress.openPct! > 0) {
+              <div
+                class="progress-bar customer-billing__summary-progress-open"
+                [style.width.%]="progress.openPct"
+              ></div>
+            }
+            <div class="progress-bar" [style.width.%]="progress.primaryPct"></div>
+          </div>
+        }
+      }
+    </fpc-summary-card>
+    <fpc-summary-card [label]="isAdminView() ? openTicketsLabel : completedTicketsLabel">
+      <span fpcSummaryCardValue>
+        @if (loadingSummary$ | async) {
+          <fpc-spinner size="sm" />
+        } @else if (summary$ | async; as summary) {
+          {{ ticketSummaryPrimaryCount(summary) }}
+          @if (totalTicketCount(summary) > 0) {
+            <span class="text-muted customer-billing__summary-out-of"> / {{ totalTicketCount(summary) }}</span>
+          }
+        } @else {
+          <span class="text-body-secondary">—</span>
+        }
+      </span>
+      @if ((loadingSummary$ | async) === false) {
+        @if (summary$ | async; as summary) {
+          @let progress = ticketsDoneProgress(summary);
+          <div
+            class="progress w-100 rounded-pill mt-1"
+            role="progressbar"
+            [attr.aria-valuenow]="hasOpenDoneSplit(progress) ? 100 : progress.primaryPct"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            i18n-aria-label="@@featureProjectDetail-ticketsProgressAria"
+            aria-label="Tickets done"
+          >
+            @if (hasOpenDoneSplit(progress) && progress.openPct! > 0) {
+              <div
+                class="progress-bar customer-billing__summary-progress-open"
+                [style.width.%]="progress.openPct"
+              ></div>
+            }
+            <div class="progress-bar" [style.width.%]="progress.primaryPct"></div>
+          </div>
+        }
+      }
+    </fpc-summary-card>
+  </fpc-summary-bar>
+
+  <fpc-tab-group
+    class="flex-grow-1 min-h-0 overflow-hidden"
+    [activeId]="activeTab()"
+    (activeIdChange)="onProjectTabChange($event)"
+  >
+    <fpc-tab id="board" [label]="tabLabel('board')">
+      @if (projectId) {
+        <framework-project-board [projectId]="projectId" [isAdmin]="isAdminView()"></framework-project-board>
+      }
+    </fpc-tab>
+    <fpc-tab id="milestones" [label]="tabLabel('milestones')">
+      @if (projectId) {
+        <framework-project-milestones-panel
+          [projectId]="projectId"
+          [isAdmin]="isAdminView()"
+        ></framework-project-milestones-panel>
+      }
+    </fpc-tab>
+    <fpc-tab id="time" [label]="tabLabel('time')">
+      @if (projectId) {
+        <div class="section__content-wrapper d-flex flex-column h-100">
+          <fpc-page-header title="Time entries" i18n-title="@@featureProjectDetail-timeEntries" density="compact">
+            @if (isAdminView()) {
+              <ng-container fpcPageHeaderActions>
+                <fpc-button
+                  variant="primary"
+                  size="sm"
+                  iconOnly
+                  (clicked)="openCreateTimeModal()"
+                  i18n-title="@@featureProjectDetail-addTime"
+                  title="Add"
+                  i18n-ariaLabel="@@featureProjectDetail-addTime"
+                  ariaLabel="Add"
+                >
+                  <i class="bi bi-plus" aria-hidden="true"></i>
+                </fpc-button>
+                <fpc-button
+                  variant="dark"
+                  size="sm"
+                  iconOnly
+                  (clicked)="openBillTimeModal()"
+                  [disabled]="
+                    (billing$ | async) === true ||
+                    billBoundsLoading() ||
+                    (loadingSummary$ | async) === true ||
+                    !hasUnbilledTime(summary$ | async)
+                  "
+                  i18n-title="@@featureProjectDetail-billTime"
+                  title="Bill unbilled time"
+                  i18n-ariaLabel="@@featureProjectDetail-billTime"
+                  ariaLabel="Bill unbilled time"
+                >
+                  <i class="bi bi-cash-coin" aria-hidden="true"></i>
+                </fpc-button>
+                <fpc-button
+                  variant="dark"
+                  size="sm"
+                  iconOnly
+                  (clicked)="openTimeReportModal()"
+                  [disabled]="timeReportSaving() || timeReportBoundsLoading()"
+                  i18n-title="@@featureProjectDetail-timeReport"
+                  title="Time report"
+                  i18n-ariaLabel="@@featureProjectDetail-timeReport"
+                  ariaLabel="Time report"
+                >
+                  <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
+                </fpc-button>
+              </ng-container>
+            }
+          </fpc-page-header>
+          <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
+            @if (timeError$ | async; as timeError) {
+              <fpc-alert class="m-3" variant="danger" [message]="timeError" />
+            }
+            @if (timeLoading$ | async) {
+              <div class="d-flex justify-content-center py-4">
+                <fpc-spinner variant="primary" />
+              </div>
+            } @else if (timeEntries$ | async; as entries) {
+              @if (entries.length === 0) {
+                <fpc-empty-state message="No time entries yet" i18n-message="@@featureProjectDetail-timeEntriesEmpty" />
+              } @else {
+                <fpc-list [flush]="true">
+                  @for (entry of entries; track entry.id) {
+                    <fpc-list-item>
+                      <div fpcListItemTitle class="fw-semibold">{{ timeEntryTitle(entry) }}</div>
+                      <div fpcListItemMeta class="small d-flex align-items-center gap-3 flex-wrap">
                         <span [ngClass]="timeEntryBillingStatusTextClass(entry)">
                           <i class="bi me-1" [ngClass]="timeEntryBillingStatusIconClass(entry)" aria-hidden="true"></i
                           >{{ timeEntryBillingStatusLabel(entry) }}
@@ -329,429 +274,364 @@
                           >
                         }
                       </div>
-                    </div>
-                    @if (isAdminView() && isTimeEntryEditable(entry)) {
-                      <div class="btn-group btn-group-sm flex-shrink-0" role="group">
-                        <button
-                          type="button"
-                          class="btn btn-outline-primary"
-                          (click)="openEditTimeModal(entry)"
-                          i18n-title="@@featureProjectDetail-editTime"
-                          title="Edit"
-                        >
-                          <i class="bi bi-pencil" aria-hidden="true"></i>
-                        </button>
-                        <button
-                          type="button"
-                          class="btn btn-outline-danger"
-                          (click)="openDeleteTimeModal(entry)"
-                          i18n-title="@@featureProjectDetail-deleteTime"
-                          title="Delete"
-                        >
-                          <i class="bi bi-trash" aria-hidden="true"></i>
-                        </button>
-                      </div>
-                    }
-                  </div>
-                }
-              </div>
+                      @if (isAdminView() && isTimeEntryEditable(entry)) {
+                        <fpc-button-group fpcListItemActions size="sm">
+                          <fpc-button
+                            iconOnly
+                            size="sm"
+                            variant="warning"
+                            (clicked)="openEditTimeModal(entry)"
+                            i18n-title="@@featureProjectDetail-editTime"
+                            title="Edit"
+                          >
+                            <i class="bi bi-pencil" aria-hidden="true"></i>
+                          </fpc-button>
+                          <fpc-button
+                            iconOnly
+                            size="sm"
+                            variant="danger"
+                            (clicked)="openDeleteTimeModal(entry)"
+                            i18n-title="@@featureProjectDetail-deleteTime"
+                            title="Delete"
+                          >
+                            <i class="bi bi-trash" aria-hidden="true"></i>
+                          </fpc-button>
+                        </fpc-button-group>
+                      }
+                    </fpc-list-item>
+                  }
+                </fpc-list>
+              }
             }
-          }
+          </div>
         </div>
-      </div>
+      }
+    </fpc-tab>
+  </fpc-tab-group>
+</div>
+
+<fpc-modal [(open)]="createTimeModalOpen" i18n-title="@@featureProjectDetail-createTimeTitle" title="New time entry">
+  <fpc-form-field forId="timeStartedAt" i18n-label="@@featureProjectDetail-startLabel" label="Start" required>
+    <fpc-form-control
+      controlId="timeStartedAt"
+      inputType="datetime-local"
+      [(ngModel)]="timeFormStartedAt"
+      name="timeStartedAt"
+      required
+    />
+  </fpc-form-field>
+  <fpc-form-field forId="timeEndedAt" i18n-label="@@featureProjectDetail-endLabel" label="End" required>
+    <fpc-form-control
+      controlId="timeEndedAt"
+      inputType="datetime-local"
+      [(ngModel)]="timeFormEndedAt"
+      name="timeEndedAt"
+      required
+    />
+  </fpc-form-field>
+  <fpc-form-field forId="timeDesc" i18n-label="@@featureProjectDetail-descriptionLabel" label="Description">
+    <fpc-form-control controlId="timeDesc" [(ngModel)]="timeFormDescription" name="description" />
+  </fpc-form-field>
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      (clicked)="submitTimeEntry()"
+      [disabled]="(timeSaving$ | async) === true || !isTimeFormValid()"
+      i18n="@@featureProjectDetail-create"
+    >
+      Create
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal [(open)]="editTimeModalOpen" i18n-title="@@featureProjectDetail-editTimeTitle" title="Edit time entry">
+  <fpc-form-field forId="editTimeStartedAt" i18n-label="@@featureProjectDetail-startLabel" label="Start" required>
+    <fpc-form-control
+      controlId="editTimeStartedAt"
+      inputType="datetime-local"
+      [(ngModel)]="editTimeFormStartedAt"
+      name="editTimeStartedAt"
+      required
+    />
+  </fpc-form-field>
+  <fpc-form-field forId="editTimeEndedAt" i18n-label="@@featureProjectDetail-endLabel" label="End" required>
+    <fpc-form-control
+      controlId="editTimeEndedAt"
+      inputType="datetime-local"
+      [(ngModel)]="editTimeFormEndedAt"
+      name="editTimeEndedAt"
+      required
+    />
+  </fpc-form-field>
+  <fpc-form-field forId="editTimeDesc" i18n-label="@@featureProjectDetail-descriptionLabel" label="Description">
+    <fpc-form-control controlId="editTimeDesc" [(ngModel)]="editTimeFormDescription" name="editTimeDesc" />
+  </fpc-form-field>
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      (clicked)="submitEditTimeEntry()"
+      [disabled]="(timeSaving$ | async) === true || !isEditTimeFormValid()"
+      i18n="@@featureProjectDetail-save"
+    >
+      Save
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [(open)]="deleteTimeModalOpen"
+  i18n-title="@@featureProjectDetail-deleteTimeTitle"
+  title="Delete time entry"
+  i18n-confirmLabel="@@featureProjectDetail-delete"
+  confirmLabel="Delete"
+  [danger]="true"
+  [busy]="(timeSaving$ | async) === true"
+  (confirmed)="submitDeleteTimeEntry()"
+>
+  @if (timeEntryToDelete; as entry) {
+    <p class="mb-0" i18n="@@featureProjectDetail-deleteTimeConfirm">
+      Delete this time entry ({{ formatMinutes(entry.durationMinutes) }})? This cannot be undone.
+    </p>
+  }
+</fpc-confirm-dialog>
+
+<fpc-modal
+  [(open)]="billTimeModalOpen"
+  size="lg"
+  i18n-title="@@featureProjectDetail-billTimeTitle"
+  title="Bill unbilled time"
+>
+  @if (billBoundsLoading()) {
+    <div class="d-flex justify-content-center py-3">
+      <fpc-spinner
+        variant="primary"
+        size="sm"
+        i18n-label="@@featureProjectDetail-billTimeLoading"
+        label="Loading range…"
+      />
+    </div>
+  } @else {
+    <fpc-form-field forId="billTimeFrom" i18n-label="@@featureProjectDetail-billTimeFromLabel" label="From" required>
+      <fpc-form-control
+        controlId="billTimeFrom"
+        inputType="datetime-local"
+        [(ngModel)]="billFormFrom"
+        name="billTimeFrom"
+        required
+      />
+    </fpc-form-field>
+    <fpc-form-field forId="billTimeTo" i18n-label="@@featureProjectDetail-billTimeToLabel" label="To" required>
+      <fpc-form-control
+        controlId="billTimeTo"
+        inputType="datetime-local"
+        [(ngModel)]="billFormTo"
+        name="billTimeTo"
+        required
+      />
+    </fpc-form-field>
+    <p class="text-muted small mb-3" i18n="@@featureProjectDetail-billTimeRangeHint">
+      Only time entries fully within the selected range are included (start on or after From, end on or before To).
+    </p>
+    @if (billBoundsEntryCount() === 0) {
+      <p class="text-muted small mb-3" i18n="@@featureProjectDetail-billTimeNoUnbilled">
+        No unbilled time entries to bill.
+      </p>
     }
+    <fpc-form-field
+      forId="billTimeSubscription"
+      i18n-label="@@featureProjectDetail-billTimeSubscription"
+      label="Subscription (optional)"
+    >
+      <framework-billing-admin-subscription-select
+        #billTimeSubscriptionSelect
+        inputId="billTimeSubscription"
+        [subscriptions]="billTimeSubscriptions()"
+        [loading]="billTimeSubscriptionsLoading()"
+        [(selectedSubscriptionId)]="billSubscriptionId"
+      />
+    </fpc-form-field>
+    <h6 class="mb-2" i18n="@@featureProjectDetail-billTimeAdditionalLines">Additional line items (optional)</h6>
+    <p class="text-muted small" i18n="@@featureProjectDetail-billTimeAdditionalLinesHint">
+      Unbilled time is billed as the first invoice line. Add extra lines here if needed.
+    </p>
+    @for (line of billCustomLineItems; track $index; let i = $index) {
+      <ng-container
+        *ngTemplateOutlet="billTimeLineItem; context: { line: line, index: i, itemCount: billCustomLineItems.length }"
+      ></ng-container>
+    }
+    <fpc-button
+      variant="dark"
+      size="sm"
+      iconOnly
+      (clicked)="addBillTimeLineItem()"
+      title="Add line item"
+      i18n-title="@@featureProjectDetail-billTimeAddLine"
+      ariaLabel="Add line item"
+      i18n-ariaLabel="@@featureProjectDetail-billTimeAddLine"
+    >
+      <i class="bi bi-plus" aria-hidden="true"></i>
+    </fpc-button>
+    @if (error$ | async; as err) {
+      <fpc-alert class="mt-3" variant="danger" [message]="err" />
+    }
+  }
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      (clicked)="submitBillTime()"
+      [disabled]="
+        (billing$ | async) === true ||
+        billBoundsLoading() ||
+        billBoundsEntryCount() === 0 ||
+        !isBillTimeFormValid() ||
+        !hasValidBillTimeCustomLineItems()
+      "
+      i18n="@@featureProjectDetail-bill"
+    >
+      Bill
+    </fpc-button>
   </div>
-</div>
+</fpc-modal>
 
-<div #createTimeModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureProjectDetail-createTimeTitle">New time entry</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label" for="timeStartedAt" i18n="@@featureProjectDetail-startLabel">Start</label>
-          <input
-            id="timeStartedAt"
-            type="datetime-local"
-            class="form-control"
-            [(ngModel)]="timeFormStartedAt"
-            name="timeStartedAt"
-            required
-          />
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="timeEndedAt" i18n="@@featureProjectDetail-endLabel">End</label>
-          <input
-            id="timeEndedAt"
-            type="datetime-local"
-            class="form-control"
-            [(ngModel)]="timeFormEndedAt"
-            name="timeEndedAt"
-            required
-          />
-        </div>
-        <div class="mb-0">
-          <label class="form-label" for="timeDesc" i18n="@@featureProjectDetail-descriptionLabel">Description</label>
-          <input id="timeDesc" class="form-control" [(ngModel)]="timeFormDescription" name="description" />
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="submitTimeEntry()"
-          [disabled]="(timeSaving$ | async) === true || !isTimeFormValid()"
-          i18n="@@featureProjectDetail-create"
-        >
-          Create
-        </button>
-      </div>
+<fpc-modal [(open)]="timeReportModalOpen" i18n-title="@@featureProjectDetail-timeReportTitle" title="Time report">
+  @if (timeReportBoundsLoading()) {
+    <div class="d-flex justify-content-center py-3">
+      <fpc-spinner
+        variant="primary"
+        size="sm"
+        i18n-label="@@featureProjectDetail-timeReportLoading"
+        label="Loading range…"
+      />
     </div>
+  } @else {
+    <fpc-form-field
+      forId="timeReportFrom"
+      i18n-label="@@featureProjectDetail-timeReportFromLabel"
+      label="From"
+      required
+    >
+      <fpc-form-control
+        controlId="timeReportFrom"
+        inputType="datetime-local"
+        [(ngModel)]="timeReportFormFrom"
+        name="timeReportFrom"
+        required
+      />
+    </fpc-form-field>
+    <fpc-form-field forId="timeReportTo" i18n-label="@@featureProjectDetail-timeReportToLabel" label="To" required>
+      <fpc-form-control
+        controlId="timeReportTo"
+        inputType="datetime-local"
+        [(ngModel)]="timeReportFormTo"
+        name="timeReportTo"
+        required
+      />
+    </fpc-form-field>
+    <p class="text-muted small mb-3" i18n="@@featureProjectDetail-timeReportRangeHint">
+      Only time entries fully within the selected range are included (start on or after From, end on or before To).
+    </p>
+    <fpc-form-check
+      class="mb-0"
+      checkId="timeReportUnbilledOnly"
+      [(ngModel)]="timeReportUnbilledOnly"
+      name="timeReportUnbilledOnly"
+      i18n-label="@@featureProjectDetail-timeReportUnbilledOnly"
+      label="Only include unbilled positions"
+    />
+    @if (timeReportError(); as err) {
+      <fpc-alert class="mt-3" variant="danger" [message]="err" />
+    }
+  }
+  <div *fpcModalFooter>
+    <fpc-button
+      variant="primary"
+      (clicked)="submitTimeReport()"
+      [disabled]="timeReportSaving() || timeReportBoundsLoading() || !isTimeReportFormValid()"
+      i18n="@@featureProjectDetail-save"
+    >
+      Save
+    </fpc-button>
   </div>
-</div>
-
-<div #editTimeModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureProjectDetail-editTimeTitle">Edit time entry</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label" for="editTimeStartedAt" i18n="@@featureProjectDetail-startLabel">Start</label>
-          <input
-            id="editTimeStartedAt"
-            type="datetime-local"
-            class="form-control"
-            [(ngModel)]="editTimeFormStartedAt"
-            name="editTimeStartedAt"
-            required
-          />
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="editTimeEndedAt" i18n="@@featureProjectDetail-endLabel">End</label>
-          <input
-            id="editTimeEndedAt"
-            type="datetime-local"
-            class="form-control"
-            [(ngModel)]="editTimeFormEndedAt"
-            name="editTimeEndedAt"
-            required
-          />
-        </div>
-        <div class="mb-0">
-          <label class="form-label" for="editTimeDesc" i18n="@@featureProjectDetail-descriptionLabel"
-            >Description</label
-          >
-          <input id="editTimeDesc" class="form-control" [(ngModel)]="editTimeFormDescription" name="editTimeDesc" />
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="submitEditTimeEntry()"
-          [disabled]="(timeSaving$ | async) === true || !isEditTimeFormValid()"
-          i18n="@@featureProjectDetail-save"
-        >
-          Save
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div #deleteTimeModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureProjectDetail-deleteTimeTitle">Delete time entry</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        @if (timeEntryToDelete; as entry) {
-          <p class="mb-0" i18n="@@featureProjectDetail-deleteTimeConfirm">
-            Delete this time entry ({{ formatMinutes(entry.durationMinutes) }})? This cannot be undone.
-          </p>
-        }
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="submitDeleteTimeEntry()"
-          [disabled]="(timeSaving$ | async) === true || !timeEntryToDelete"
-          i18n="@@featureProjectDetail-delete"
-        >
-          Delete
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div #billTimeModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureProjectDetail-billTimeTitle">Bill unbilled time</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        @if (billBoundsLoading()) {
-          <div class="d-flex justify-content-center py-3">
-            <div class="spinner-border spinner-border-sm text-primary" role="status">
-              <span class="visually-hidden" i18n="@@featureProjectDetail-billTimeLoading">Loading range…</span>
-            </div>
-          </div>
-        } @else {
-          <div class="mb-3">
-            <label class="form-label" for="billTimeFrom" i18n="@@featureProjectDetail-billTimeFromLabel">From</label>
-            <input
-              id="billTimeFrom"
-              type="datetime-local"
-              class="form-control"
-              [(ngModel)]="billFormFrom"
-              name="billTimeFrom"
-              required
-            />
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="billTimeTo" i18n="@@featureProjectDetail-billTimeToLabel">To</label>
-            <input
-              id="billTimeTo"
-              type="datetime-local"
-              class="form-control"
-              [(ngModel)]="billFormTo"
-              name="billTimeTo"
-              required
-            />
-          </div>
-          <p class="text-muted small mb-3" i18n="@@featureProjectDetail-billTimeRangeHint">
-            Only time entries fully within the selected range are included (start on or after From, end on or before
-            To).
-          </p>
-          @if (billBoundsEntryCount() === 0) {
-            <p class="text-muted small mb-3" i18n="@@featureProjectDetail-billTimeNoUnbilled">
-              No unbilled time entries to bill.
-            </p>
-          }
-          <div class="mb-3">
-            <label class="form-label" for="billTimeSubscription" i18n="@@featureProjectDetail-billTimeSubscription"
-              >Subscription (optional)</label
-            >
-            <framework-billing-admin-subscription-select
-              #billTimeSubscriptionSelect
-              inputId="billTimeSubscription"
-              [subscriptions]="billTimeSubscriptions()"
-              [loading]="billTimeSubscriptionsLoading()"
-              [(selectedSubscriptionId)]="billSubscriptionId"
-            />
-          </div>
-          <h6 class="mb-2" i18n="@@featureProjectDetail-billTimeAdditionalLines">Additional line items (optional)</h6>
-          <p class="text-muted small" i18n="@@featureProjectDetail-billTimeAdditionalLinesHint">
-            Unbilled time is billed as the first invoice line. Add extra lines here if needed.
-          </p>
-          @for (line of billCustomLineItems; track $index; let i = $index) {
-            <ng-container
-              *ngTemplateOutlet="
-                billTimeLineItem;
-                context: { line: line, index: i, itemCount: billCustomLineItems.length }
-              "
-            ></ng-container>
-          }
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-secondary"
-            (click)="addBillTimeLineItem()"
-            title="Add line item"
-            i18n-title="@@featureProjectDetail-billTimeAddLine"
-            aria-label="Add line item"
-            i18n-aria-label="@@featureProjectDetail-billTimeAddLine"
-          >
-            <i class="bi bi-plus" aria-hidden="true"></i>
-          </button>
-          @if (error$ | async; as err) {
-            <div class="alert alert-danger mt-3 mb-0" role="alert">{{ err }}</div>
-          }
-        }
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="submitBillTime()"
-          [disabled]="
-            (billing$ | async) === true ||
-            billBoundsLoading() ||
-            billBoundsEntryCount() === 0 ||
-            !isBillTimeFormValid() ||
-            !hasValidBillTimeCustomLineItems()
-          "
-          i18n="@@featureProjectDetail-bill"
-        >
-          Bill
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div #timeReportModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureProjectDetail-timeReportTitle">Time report</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        @if (timeReportBoundsLoading()) {
-          <div class="d-flex justify-content-center py-3">
-            <div class="spinner-border spinner-border-sm text-primary" role="status">
-              <span class="visually-hidden" i18n="@@featureProjectDetail-timeReportLoading">Loading range…</span>
-            </div>
-          </div>
-        } @else {
-          <div class="mb-3">
-            <label class="form-label" for="timeReportFrom" i18n="@@featureProjectDetail-timeReportFromLabel"
-              >From</label
-            >
-            <input
-              id="timeReportFrom"
-              type="datetime-local"
-              class="form-control"
-              [(ngModel)]="timeReportFormFrom"
-              name="timeReportFrom"
-              required
-            />
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="timeReportTo" i18n="@@featureProjectDetail-timeReportToLabel">To</label>
-            <input
-              id="timeReportTo"
-              type="datetime-local"
-              class="form-control"
-              [(ngModel)]="timeReportFormTo"
-              name="timeReportTo"
-              required
-            />
-          </div>
-          <p class="text-muted small mb-3" i18n="@@featureProjectDetail-timeReportRangeHint">
-            Only time entries fully within the selected range are included (start on or after From, end on or before
-            To).
-          </p>
-          <div class="form-check mb-0">
-            <input
-              id="timeReportUnbilledOnly"
-              type="checkbox"
-              class="form-check-input"
-              [(ngModel)]="timeReportUnbilledOnly"
-              name="timeReportUnbilledOnly"
-            />
-            <label
-              class="form-check-label"
-              for="timeReportUnbilledOnly"
-              i18n="@@featureProjectDetail-timeReportUnbilledOnly"
-            >
-              Only include unbilled positions
-            </label>
-          </div>
-          @if (timeReportError(); as err) {
-            <div class="alert alert-danger mt-3 mb-0" role="alert">{{ err }}</div>
-          }
-        }
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          (click)="submitTimeReport()"
-          [disabled]="timeReportSaving() || timeReportBoundsLoading() || !isTimeReportFormValid()"
-          i18n="@@featureProjectDetail-save"
-        >
-          Save
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+</fpc-modal>
 
 <ng-template #billTimeLineItem let-line="line" let-i="index" let-itemCount="itemCount">
   <div class="mb-2">
     <div class="border rounded p-2">
-      <label class="form-label" [for]="'billTimeLineDesc' + i" i18n="@@featureAdminInvoices-lineDescription"
-        >Description</label
+      <fpc-form-field
+        [forId]="'billTimeLineDesc' + i"
+        i18n-label="@@featureAdminInvoices-lineDescription"
+        label="Description"
       >
-      <input
-        class="form-control mb-2"
-        [id]="'billTimeLineDesc' + i"
-        [(ngModel)]="line.description"
-        [name]="'billTimeDesc' + i"
-      />
+        <fpc-form-control
+          [controlId]="'billTimeLineDesc' + i"
+          [(ngModel)]="line.description"
+          [name]="'billTimeDesc' + i"
+        />
+      </fpc-form-field>
       <div class="row g-2">
         <div class="col-sm-6">
-          <label class="form-label" [for]="'billTimeLineQty' + i" i18n="@@featureAdminInvoices-lineQuantity"
-            >Quantity</label
+          <fpc-form-field
+            [forId]="'billTimeLineQty' + i"
+            i18n-label="@@featureAdminInvoices-lineQuantity"
+            label="Quantity"
           >
-          <input
-            type="number"
-            class="form-control"
-            [id]="'billTimeLineQty' + i"
-            [(ngModel)]="line.quantity"
-            [name]="'billTimeQty' + i"
-            min="0.0001"
-            step="any"
-          />
+            <fpc-form-control
+              inputType="number"
+              [controlId]="'billTimeLineQty' + i"
+              [(ngModel)]="line.quantity"
+              [name]="'billTimeQty' + i"
+              min="0.0001"
+              step="any"
+            />
+          </fpc-form-field>
         </div>
         <div class="col-sm-6">
-          <label class="form-label" [for]="'billTimeLinePrice' + i" i18n="@@featureAdminInvoices-lineUnitPriceNet"
-            >Unit price (net)</label
+          <fpc-form-field
+            [forId]="'billTimeLinePrice' + i"
+            i18n-label="@@featureAdminInvoices-lineUnitPriceNet"
+            label="Unit price (net)"
           >
-          <input
-            type="number"
-            class="form-control"
-            [id]="'billTimeLinePrice' + i"
-            [(ngModel)]="line.unitPriceNet"
-            [name]="'billTimePrice' + i"
-            min="0"
-            step="any"
-          />
+            <fpc-form-control
+              inputType="number"
+              [controlId]="'billTimeLinePrice' + i"
+              [(ngModel)]="line.unitPriceNet"
+              [name]="'billTimePrice' + i"
+              min="0"
+              step="any"
+            />
+          </fpc-form-field>
         </div>
       </div>
       <div class="mt-2">
         <span class="form-label d-block" i18n="@@featureAdminInvoices-lineTaxCategory">VAT rate</span>
-        @for (option of taxCategoryOptions(); track option.value) {
-          <div class="form-check form-check-inline">
-            <input
+        <fpc-form-check-group inline>
+          @for (option of taxCategoryOptions(); track option.value) {
+            <fpc-form-check
               type="radio"
-              class="form-check-input"
+              inline
               [name]="'billTimeTax' + i"
-              [id]="'billTimeTax' + i + '_' + option.value"
+              [checkId]="'billTimeTax' + i + '_' + option.value"
               [value]="option.value"
               [checked]="line.taxCategory === option.value"
-              (change)="line.taxCategory = option.value"
+              (valueSelect)="line.taxCategory = $any($event)"
+              [label]="option.label"
             />
-            <label class="form-check-label" [attr.for]="'billTimeTax' + i + '_' + option.value">{{
-              option.label
-            }}</label>
-          </div>
-        }
+          }
+        </fpc-form-check-group>
       </div>
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-danger mt-2"
-        (click)="removeBillTimeLineItem(i)"
+      <fpc-button
+        variant="danger"
+        size="sm"
+        iconOnly
+        (clicked)="removeBillTimeLineItem(i)"
         title="Remove line"
         i18n-title="@@featureAdminInvoices-removeLine"
-        aria-label="Remove line"
-        i18n-aria-label="@@featureAdminInvoices-removeLine"
+        ariaLabel="Remove line"
+        i18n-ariaLabel="@@featureAdminInvoices-removeLine"
+        class="mt-2"
       >
         <i class="bi bi-trash" aria-hidden="true"></i>
-      </button>
+      </fpc-button>
     </div>
     <div class="mt-1">
       <framework-pricing-totals-summary [summary]="billTimeLineSummary(line)"></framework-pricing-totals-summary>

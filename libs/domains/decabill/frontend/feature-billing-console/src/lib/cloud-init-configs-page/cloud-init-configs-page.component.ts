@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal, type WritableSignal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -10,7 +10,25 @@ import {
   type CreateCloudInitConfigDto,
   type UpdateCloudInitConfigDto,
 } from '@forepath/decabill/frontend/data-access-billing-console';
-import { debounceTime, distinctUntilChanged, map, skip, take } from 'rxjs';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcConfirmDialogComponent,
+  FpcFormSwitchComponent,
+  FpcListComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcListItemComponent,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
+import { debounceTime, distinctUntilChanged, skip, take } from 'rxjs';
 
 import { getActiveStatusLabel, getActiveStatusTextClass, getUnavailableLabel } from '../billing-status-labels';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
@@ -91,14 +109,38 @@ const MIN_RANDOM_DEFAULT_LENGTH = 21;
 @Component({
   selector: 'framework-billing-cloud-init-configs-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, MonacoEditorWrapperComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MonacoEditorWrapperComponent,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcFormCheckComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcConfirmDialogComponent,
+    FpcFormSwitchComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcListItemComponent,
+    FpcListComponent,
+    FpcEmptyStateComponent,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './cloud-init-configs-page.component.html',
   styleUrls: ['./cloud-init-configs-page.component.scss'],
 })
 export class CloudInitConfigsPageComponent implements OnInit {
-  @ViewChild('createModal', { static: false }) private createModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('editModal', { static: false }) private editModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('deleteConfirmModal', { static: false }) private deleteConfirmModal!: ElementRef<HTMLDivElement>;
+  readonly createModalOpen = signal(false);
+  readonly editModalOpen = signal(false);
+  readonly deleteConfirmModalOpen = signal(false);
+
+  readonly pageTitle = $localize`:@@featureCloudInitConfigs-title:CloudInit Configs`;
+  readonly addConfigAriaLabel = $localize`:@@featureCloudInitConfigs-add:Add config`;
+  readonly searchPlaceholder = $localize`:@@featureCloudInitConfigs-searchPlaceholder:Search configs`;
 
   private readonly facade = inject(CloudInitConfigsFacade);
   private readonly cloudInitConfigsService = inject(CloudInitConfigsService);
@@ -136,7 +178,7 @@ export class CloudInitConfigsPageComponent implements OnInit {
 
   openCreateModal(): void {
     this.resetCreateForm();
-    this.showModalWithMonacoLayout(this.createModal);
+    this.openModalWithMonacoLayout(this.createModalOpen);
   }
 
   openEditModal(config: CloudInitConfigResponse): void {
@@ -167,14 +209,14 @@ export class CloudInitConfigsPageComponent implements OnInit {
             randomDefaultSpecialChars: row.randomDefaultSpecialChars === true,
           })),
         };
-        showBillingModal(this.editModal);
-        this.scheduleMonacoLayout(this.editModal);
+        showBillingModal(this.editModalOpen);
+        this.scheduleMonacoLayout();
       });
   }
 
   openDeleteConfirm(config: CloudInitConfigResponse): void {
     this.configToDelete = config;
-    showBillingModal(this.deleteConfirmModal);
+    showBillingModal(this.deleteConfirmModalOpen);
   }
 
   envVarCount(config: CloudInitConfigResponse): number {
@@ -482,40 +524,34 @@ export class CloudInitConfigsPageComponent implements OnInit {
     this.editForm = this.getDefaultEditForm();
   }
 
-  private showModalWithMonacoLayout(modal: ElementRef<HTMLDivElement>): void {
-    this.scheduleMonacoLayout(modal);
-    showBillingModal(modal);
+  private openModalWithMonacoLayout(open: WritableSignal<boolean>): void {
+    showBillingModal(open);
+    this.scheduleMonacoLayout();
   }
 
-  private scheduleMonacoLayout(modal: ElementRef<HTMLDivElement>): void {
-    modal.nativeElement.addEventListener(
-      'shown.bs.modal',
-      () => {
-        window.dispatchEvent(new Event('resize'));
-      },
-      { once: true },
-    );
+  private scheduleMonacoLayout(): void {
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 200);
   }
 
   private registerModalCloseWatchers(): void {
     watchBillingMutationModalClose({
       loading$: this.creating$,
       error$: this.error$,
-      modal: () => this.createModal,
+      open: this.createModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => this.resetCreateForm(),
     });
     watchBillingMutationModalClose({
       loading$: this.updating$,
       error$: this.error$,
-      modal: () => this.editModal,
+      open: this.editModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => this.resetEditForm(),
     });
     watchBillingMutationModalClose({
       loading$: this.deleting$,
       error$: this.error$,
-      modal: () => this.deleteConfirmModal,
+      open: this.deleteConfirmModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.configToDelete = null;

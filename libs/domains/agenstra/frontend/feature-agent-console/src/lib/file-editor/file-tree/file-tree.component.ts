@@ -23,6 +23,16 @@ import {
   type FileNodeDto,
   type ListDirectoryParams,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
+import {
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcConfirmDialogComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { combineLatest, filter, map, Observable, of, Subscription, switchMap, take } from 'rxjs';
 
 import { getGitRepositoryDisplayLabel } from '../../git-repository-display';
@@ -62,7 +72,19 @@ interface CollectedUploadFile {
 
 @Component({
   selector: 'framework-file-tree',
-  imports: [CommonModule, FormsModule, GitBranchModalComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    GitBranchModalComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcConfirmDialogComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './file-tree.component.html',
   styleUrls: ['./file-tree.component.scss'],
   standalone: true,
@@ -74,14 +96,9 @@ export class FileTreeComponent implements OnInit {
   private readonly vcsFacade = inject(VcsFacade);
   private readonly destroyRef = inject(DestroyRef);
 
-  @ViewChild('deleteFileModal', { static: false })
-  private deleteFileModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('renameFileModal', { static: false })
-  private renameFileModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('moveFileModal', { static: false })
-  private moveFileModal!: ElementRef<HTMLDivElement>;
+  readonly deleteFileModalOpen = signal(false);
+  readonly renameFileModalOpen = signal(false);
+  readonly moveFileModalOpen = signal(false);
 
   @ViewChild('rootFileInput', { static: false })
   private rootFileInput!: ElementRef<HTMLInputElement>;
@@ -1097,7 +1114,7 @@ export class FileTreeComponent implements OnInit {
 
     if (node) {
       this.itemToDelete.set({ path, type: node.type });
-      this.showModal(this.deleteFileModal);
+      this.deleteFileModalOpen.set(true);
       this.onCloseContextMenu();
     }
   }
@@ -1109,7 +1126,7 @@ export class FileTreeComponent implements OnInit {
     if (node) {
       this.itemToRename.set({ path, type: node.type, name: node.name });
       this.renameNewName.set(node.name);
-      this.showModal(this.renameFileModal);
+      this.renameFileModalOpen.set(true);
       this.onCloseContextMenu();
     }
   }
@@ -1124,7 +1141,7 @@ export class FileTreeComponent implements OnInit {
       const parentPath = this.getParentPath(path);
 
       this.moveDestinationPath.set(parentPath);
-      this.showModal(this.moveFileModal);
+      this.moveFileModalOpen.set(true);
       this.onCloseContextMenu();
     }
   }
@@ -1134,7 +1151,7 @@ export class FileTreeComponent implements OnInit {
 
     if (item) {
       this.fileDelete.emit(item.path);
-      this.hideModal(this.deleteFileModal);
+      this.deleteFileModalOpen.set(false);
       this.itemToDelete.set(null);
 
       // Determine parent directory path
@@ -1172,7 +1189,7 @@ export class FileTreeComponent implements OnInit {
       this.fileManagerContext(),
     );
 
-    this.hideModal(this.renameFileModal);
+    this.renameFileModalOpen.set(false);
     this.itemToRename.set(null);
     this.renameNewName.set('');
 
@@ -1195,7 +1212,7 @@ export class FileTreeComponent implements OnInit {
 
     // Don't move if source and destination are the same
     if (item.path === fullDestinationPath) {
-      this.hideModal(this.moveFileModal);
+      this.moveFileModalOpen.set(false);
       this.itemToMove.set(null);
       this.moveDestinationPath.set('');
 
@@ -1213,7 +1230,7 @@ export class FileTreeComponent implements OnInit {
       this.fileManagerContext(),
     );
 
-    this.hideModal(this.moveFileModal);
+    this.moveFileModalOpen.set(false);
     this.itemToMove.set(null);
     this.moveDestinationPath.set('');
 
@@ -1236,13 +1253,13 @@ export class FileTreeComponent implements OnInit {
   }
 
   cancelRenameItem(): void {
-    this.hideModal(this.renameFileModal);
+    this.renameFileModalOpen.set(false);
     this.itemToRename.set(null);
     this.renameNewName.set('');
   }
 
   cancelMoveItem(): void {
-    this.hideModal(this.moveFileModal);
+    this.moveFileModalOpen.set(false);
     this.itemToMove.set(null);
     this.moveDestinationPath.set('');
   }
@@ -1393,37 +1410,6 @@ export class FileTreeComponent implements OnInit {
     };
 
     return findInNodes(this.treeNodes());
-  }
-
-  private showModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      // Use Bootstrap 5 Modal API
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const modal = (window as any).bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
-
-      if (modal) {
-        modal.show();
-      } else {
-        // Fallback: create new modal instance
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const Modal = (window as any).bootstrap?.Modal;
-
-        if (Modal) {
-          new Modal(modalElement.nativeElement).show();
-        }
-      }
-    }
-  }
-
-  private hideModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const modal = (window as any).bootstrap?.Modal?.getInstance(modalElement.nativeElement);
-
-      if (modal) {
-        modal.hide();
-      }
-    }
   }
 
   private updateTreeCache(path: string, nodes: FileNodeDto[]): void {

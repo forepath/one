@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
@@ -17,6 +17,24 @@ import {
   type ServiceTypeResponse,
   type UpdateServiceTypeDto,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcConfirmDialogComponent,
+  FpcFormSwitchComponent,
+  FpcListComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcListItemComponent,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import {
   catchError,
   combineLatest,
@@ -42,14 +60,37 @@ const NONE_PROVIDER_SENTINEL = '';
 @Component({
   selector: 'framework-billing-service-types-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcFormCheckComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcConfirmDialogComponent,
+    FpcFormSwitchComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcListItemComponent,
+    FpcListComponent,
+    FpcEmptyStateComponent,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './service-types-page.component.html',
   styleUrls: ['./service-types-page.component.scss'],
 })
 export class ServiceTypesPageComponent implements OnInit {
-  @ViewChild('createModal', { static: false }) private createModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('editModal', { static: false }) private editModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('deleteConfirmModal', { static: false }) private deleteConfirmModal!: ElementRef<HTMLDivElement>;
+  readonly createModalOpen = signal(false);
+  readonly editModalOpen = signal(false);
+  readonly deleteConfirmModalOpen = signal(false);
+
+  readonly pageTitle = $localize`:@@featureServiceTypes-title:Service Providers`;
+  readonly addServiceProviderAriaLabel = $localize`:@@featureServiceTypes-add:Add service provider`;
+  readonly searchPlaceholder = $localize`:@@featureServiceTypes-searchPlaceholder:Search providers`;
 
   private readonly facade = inject(ServiceTypesFacade);
   private readonly serviceTypesService = inject(ServiceTypesService);
@@ -137,7 +178,7 @@ export class ServiceTypesPageComponent implements OnInit {
 
   openCreateModal(): void {
     this.resetCreateForm();
-    showBillingModal(this.createModal);
+    showBillingModal(this.createModalOpen);
   }
 
   openEditModal(st: ServiceTypeResponse): void {
@@ -160,12 +201,12 @@ export class ServiceTypesPageComponent implements OnInit {
     this.resetMeterAttachForm('edit');
     this.meterAttachError = null;
     this.loadServiceTypeAttachedMeters(st.id);
-    showBillingModal(this.editModal);
+    showBillingModal(this.editModalOpen);
   }
 
   openDeleteConfirm(st: ServiceTypeResponse): void {
     this.serviceTypeToDelete = st;
-    showBillingModal(this.deleteConfirmModal);
+    showBillingModal(this.deleteConfirmModalOpen);
   }
 
   providerLabel(providerId: string | null | undefined, providers: ProviderDetail[] | null | undefined): string {
@@ -819,7 +860,7 @@ export class ServiceTypesPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.creating$,
       error$: this.error$,
-      modal: () => this.createModal,
+      open: this.createModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         const pendingMeters = [...this.createAttachedMeters];
@@ -831,14 +872,14 @@ export class ServiceTypesPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.updating$,
       error$: this.error$,
-      modal: () => this.editModal,
+      open: this.editModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => this.resetEditForm(),
     });
     watchBillingMutationModalClose({
       loading$: this.deleting$,
       error$: this.error$,
-      modal: () => this.deleteConfirmModal,
+      open: this.deleteConfirmModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.serviceTypeToDelete = null;

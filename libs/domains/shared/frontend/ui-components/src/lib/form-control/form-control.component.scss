@@ -1,0 +1,45 @@
+:host {
+  display: block;
+}
+
+// Participate as the flex item inside Bootstrap `.input-group`. Do not use
+// `display: contents` — the child combinator (`>`) uses the element tree, so
+// Bootstrap's `.input-group > .form-control { width: 1% }` never matches the
+// nested native input and `width: 100%` wraps suffixes under `flex-wrap`.
+:host-context(.input-group) {
+  position: relative;
+  flex: 1 1 auto;
+  width: 1%;
+  min-width: 0;
+}
+
+:host-context(.input-group) .form-control:focus,
+:host-context(.input-group) .form-select:focus {
+  z-index: 5;
+}
+
+:host-context(.input-group):not(:last-child) {
+  .form-control,
+  .form-select {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
+
+:host-context(.input-group):not(:first-child) {
+  .form-control,
+  .form-select {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+}
+
+textarea {
+  resize: vertical;
+}
+
+.fpc-form-control__control--xl {
+  min-height: calc(1.5em + 1.25rem + calc(var(--bs-border-width) * 2));
+  padding-block: 0.75rem;
+  font-size: 1.125rem;
+}

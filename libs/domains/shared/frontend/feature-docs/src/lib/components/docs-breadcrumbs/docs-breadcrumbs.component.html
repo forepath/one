@@ -1,16 +1,11 @@
-<nav aria-label="breadcrumb">
-  <ol class="breadcrumb mb-0">
-    <li class="breadcrumb-item">
-      <a routerLink="/docs" i18n="@@featureDocsBreadcrumbs-documentation">Documentation</a>
-    </li>
-    @for (crumb of breadcrumbs(); track crumb.path) {
-      <li class="breadcrumb-item" [class.active]="$last">
-        @if ($last) {
-          {{ crumb.title }}
-        } @else {
-          <a [routerLink]="crumb.path">{{ crumb.title }}</a>
-        }
-      </li>
-    }
-  </ol>
-</nav>
+<fpc-breadcrumbs [ariaLabel]="breadcrumbAriaLabel">
+  <fpc-breadcrumb-item [label]="documentationLabel" href="/docs" (selected)="onCrumbSelected($event, '/docs')" />
+  @for (crumb of breadcrumbs(); track crumb.path) {
+    <fpc-breadcrumb-item
+      [label]="crumb.title"
+      [href]="$last ? null : crumb.path"
+      [active]="$last"
+      (selected)="onCrumbSelected($event, crumb.path)"
+    />
+  }
+</fpc-breadcrumbs>

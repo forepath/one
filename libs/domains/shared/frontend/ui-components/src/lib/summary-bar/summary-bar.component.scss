@@ -1,0 +1,115 @@
+:host {
+  display: block;
+  flex-shrink: 0;
+  background: var(--bs-body-bg);
+}
+
+:host(.fpc-summary-bar--bordered) {
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+$fpc-summary-border: var(--bs-border-width) solid var(--bs-border-color);
+
+.fpc-summary-bar__grid {
+  display: grid;
+  // Default before --cols-* host class applies (columns input defaults to 4).
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+// Projected cards are light-DOM children of the grid; pierce so nth-child / :has match them.
+:host ::ng-deep .fpc-summary-bar__grid > fpc-summary-card {
+  border-right: $fpc-summary-border;
+  border-top: 0;
+  border-bottom: 0;
+}
+
+@mixin fpc-summary-bar-row-bottoms($cols, $max-rows) {
+  @for $row from 1 through $max-rows {
+    $row-start: ($row - 1) * $cols + 1;
+    $row-end: $row * $cols;
+    $next-row-first: $row-end + 1;
+
+    :host(.fpc-summary-bar--cols-#{$cols})
+      ::ng-deep
+      .fpc-summary-bar__grid:has(> fpc-summary-card:nth-child(#{$next-row-first}))
+      > fpc-summary-card:nth-child(n + #{$row-start}):nth-child(-n + #{$row-end}) {
+      border-bottom: $fpc-summary-border;
+    }
+  }
+}
+
+// Desktop: honor the bar's column count (grid + borders). Media-scoped so neither the grid nor
+// Nn border drops leak into tablet/phone (e.g. dashboard cols-5 wraps to 2-col with a short last row).
+@media (min-width: 768px) {
+  @for $cols from 1 through 12 {
+    :host(.fpc-summary-bar--cols-#{$cols}) .fpc-summary-bar__grid {
+      grid-template-columns: repeat(#{$cols}, minmax(0, 1fr));
+    }
+
+    @if $cols == 1 {
+      :host(.fpc-summary-bar--cols-1) ::ng-deep .fpc-summary-bar__grid > fpc-summary-card {
+        border-right: 0;
+      }
+
+      @include fpc-summary-bar-row-bottoms(1, 12);
+    } @else {
+      :host(.fpc-summary-bar--cols-#{$cols}) ::ng-deep .fpc-summary-bar__grid > fpc-summary-card:nth-child(#{$cols}n) {
+        border-right: 0;
+      }
+
+      @include fpc-summary-bar-row-bottoms($cols, 8);
+    }
+  }
+}
+
+@media (max-width: 767.98px) {
+  .fpc-summary-bar__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767.98px) and (min-width: 480px) {
+  :host ::ng-deep .fpc-summary-bar__grid > fpc-summary-card {
+    border-right: $fpc-summary-border;
+    border-bottom: 0;
+  }
+
+  :host ::ng-deep .fpc-summary-bar__grid > fpc-summary-card:nth-child(2n) {
+    border-right: 0;
+  }
+
+  @for $row from 1 through 8 {
+    $row-start: ($row - 1) * 2 + 1;
+    $row-end: $row * 2;
+    $next-row-first: $row-end + 1;
+
+    :host
+      ::ng-deep
+      .fpc-summary-bar__grid:has(> fpc-summary-card:nth-child(#{$next-row-first}))
+      > fpc-summary-card:nth-child(n + #{$row-start}):nth-child(-n + #{$row-end}) {
+      border-bottom: $fpc-summary-border;
+    }
+  }
+}
+
+@media (max-width: 479.98px) {
+  .fpc-summary-bar__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :host ::ng-deep .fpc-summary-bar__grid > fpc-summary-card {
+    border-right: 0;
+    border-bottom: 0;
+  }
+
+  @for $row from 1 through 12 {
+    $next-row-first: $row + 1;
+
+    :host
+      ::ng-deep
+      .fpc-summary-bar__grid:has(> fpc-summary-card:nth-child(#{$next-row-first}))
+      > fpc-summary-card:nth-child(#{$row}) {
+      border-bottom: $fpc-summary-border;
+    }
+  }
+}

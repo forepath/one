@@ -1,0 +1,95 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Foundation/Fonts" />
+
+# Fonts
+
+Consoles use **Plus Jakarta Sans Variable** as `$font-family-base`, with **`$font-size-base: 0.875rem`** (14px) so dense billing/agent UIs stay compact. Icons come from **Bootstrap Icons**.
+
+## Loading
+
+Apps (and Storybook) load:
+
+```scss
+@import '@fontsource-variable/plus-jakarta-sans/wght.css';
+@import 'bootstrap-icons/font/bootstrap-icons';
+```
+
+Bootstrap then exposes `--bs-body-font-family` / `--bs-body-font-size` from the Sass overrides.
+
+## What we customize vs Bootstrap
+
+<table>
+  <thead>
+    <tr>
+      <th>Concern</th>
+      <th>Ours</th>
+      <th>Bootstrap docs</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Face</td>
+      <td>Plus Jakarta Sans Variable</td>
+      <td>
+        <a href="https://getbootstrap.com/docs/5.3/content/typography/">
+          Typography
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>Base size</td>
+      <td>
+        <code>0.875rem</code>
+      </td>
+      <td>
+        Default is <code>1rem</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Scale / utilities</td>
+      <td>
+        Stock (<code>h1</code>…<code>h6</code>, <code>.display-</code>,{' '}
+        <code>.fs-</code>, <code>.fw-</code>, <code>.small</code>)
+      </td>
+      <td>Same docs</td>
+    </tr>
+    <tr>
+      <td>Icons</td>
+      <td>
+        <code>bi bi-</code> via <code>fpc-icon</code> or raw classes
+      </td>
+      <td>
+        <a href="https://icons.getbootstrap.com/">Bootstrap Icons</a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+We do **not** ship a parallel type scale — prefer Bootstrap utilities.
+
+## Specimens
+
+<p className="mb-2">
+  Body — The quick brown fox jumps over the lazy dog. 0123456789
+</p>
+<p className="small text-body-secondary mb-3">
+  .small / secondary — Supporting copy in consoles
+</p>
+
+<h1 className="h1">Heading 1</h1>
+<h2 className="h2">Heading 2</h2>
+<h3 className="h3">Heading 3</h3>
+<p className="fs-4 fw-semibold mb-3">fs-4 fw-semibold (summary card values)</p>
+
+<p className="mb-3">
+  <code>inline code</code> and{' '}
+  <span className="font-monospace">.font-monospace</span>
+</p>
+
+<p className="mb-0 fs-4">
+  <i className="bi bi-house-door me-2" aria-hidden="true" />
+  <i className="bi bi-receipt me-2" aria-hidden="true" />
+  <i className="bi bi-gear me-2" aria-hidden="true" />
+  <i className="bi bi-moon-stars" aria-hidden="true" />
+</p>

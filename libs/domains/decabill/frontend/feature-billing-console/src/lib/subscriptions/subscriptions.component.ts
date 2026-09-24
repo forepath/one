@@ -1,6 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import {
-  AfterViewInit,
   ChangeDetectorRef,
   Component,
   computed,
@@ -13,7 +12,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, RouterLink } from '@angular/router';
 import {
   AvailabilityService,
   BackordersFacade,
@@ -58,7 +57,35 @@ import {
   type ValidatePromotionRequest,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
-import { InfiniteScrollDirective, ListAppendFooterComponent } from '@forepath/shared/frontend/ui-lists';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcBoardLaneComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcInfiniteScrollDirective,
+  FpcInputGroupComponent,
+  FpcLaneHeaderComponent,
+  FpcListAppendFooterComponent,
+  FpcConfirmDialogComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSectionColumnComponent,
+  FpcSectionContainerComponent,
+  FpcSectionRowComponent,
+  FpcSpinnerComponent,
+  FpcSummaryBarComponent,
+  FpcSummaryCardComponent,
+  FpcSummaryCardValueDirective,
+  FpcTabComponent,
+  FpcTabGroupComponent,
+} from '@forepath/shared/frontend/ui-components';
 import {
   combineLatest,
   debounceTime,
@@ -69,6 +96,7 @@ import {
   of,
   pairwise,
   skip,
+  startWith,
   switchMap,
   take,
   withLatestFrom,
@@ -95,6 +123,12 @@ import {
 } from '../billing-country-options';
 import { showBillingModal, watchBillingMutationModalClose } from '../billing-modal';
 import { buildPromotionAdjustedOrderPricing } from '../promotion-pricing-preview.util';
+import { PricingTotalsSummaryComponent } from '../pricing-totals-summary/pricing-totals-summary.component';
+import {
+  buildPricingTotalsSummary,
+  type PricingTotalsLeadingRow,
+  type PricingTotalsSummary,
+} from '../pricing-totals-summary/pricing-totals.util';
 
 type CustomerPlansMobilePanel = 'subscriptions' | 'backorders';
 
@@ -117,26 +151,59 @@ type ConfigChangeWizardStep = {
 @Component({
   selector: 'framework-billing-subscriptions',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, InfiniteScrollDirective, ListAppendFooterComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcBoardLaneComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcEmptyStateComponent,
+    FpcFormCheckComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcInfiniteScrollDirective,
+    FpcInputGroupComponent,
+    FpcLaneHeaderComponent,
+    FpcListAppendFooterComponent,
+    FpcConfirmDialogComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSectionColumnComponent,
+    FpcSectionContainerComponent,
+    FpcSectionRowComponent,
+    FpcSpinnerComponent,
+    FpcSummaryBarComponent,
+    FpcSummaryCardComponent,
+    FpcSummaryCardValueDirective,
+    FpcTabComponent,
+    FpcTabGroupComponent,
+    PricingTotalsSummaryComponent,
+  ],
   providers: [DatePipe],
   templateUrl: './subscriptions.component.html',
   styleUrls: ['./subscriptions.component.scss'],
 })
-export class SubscriptionsComponent implements OnInit, AfterViewInit {
-  readonly mobilePanels: CustomerPlansMobilePanel[] = ['subscriptions', 'backorders'];
+export class SubscriptionsComponent implements OnInit {
   readonly mobilePanel = signal<CustomerPlansMobilePanel>('subscriptions');
   readonly subscriptionsSearch = signal('');
   readonly backordersSearch = signal('');
   readonly subscriptionsSearch$ = toObservable(this.subscriptionsSearch);
   readonly backordersSearch$ = toObservable(this.backordersSearch);
-  @ViewChild('orderPlanModal', { static: false }) private orderPlanModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('modifyConfigModal', { static: false }) private modifyConfigModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('cancelSubscriptionModal', { static: false }) private cancelSubscriptionModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('withdrawSubscriptionModal', { static: false })
-  private withdrawSubscriptionModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('resumeConfirmModal', { static: false }) private resumeConfirmModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('cancelBackorderModal', { static: false }) private cancelBackorderModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('editProfileModal', { static: false }) private editProfileModal!: ElementRef<HTMLDivElement>;
+  readonly orderPlanModalOpen = signal(false);
+  readonly modifyConfigModalOpen = signal(false);
+  readonly cancelSubscriptionModalOpen = signal(false);
+  readonly withdrawSubscriptionModalOpen = signal(false);
+  readonly resumeConfirmModalOpen = signal(false);
+  readonly cancelBackorderModalOpen = signal(false);
+  readonly editProfileModalOpen = signal(false);
+
+  @ViewChild('orderPlanModalScroll') private orderPlanModalScroll?: ElementRef<HTMLElement>;
+  @ViewChild('modifyConfigModalScroll') private modifyConfigModalScroll?: ElementRef<HTMLElement>;
 
   private readonly subscriptionsFacade = inject(SubscriptionsFacade);
   private readonly configChangeFacade = inject(SubscriptionConfigChangeFacade);
@@ -185,6 +252,12 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   readonly summarySubscriptionsTotal = signal(0);
   readonly summaryActiveCount = signal(0);
   readonly summaryBackordersCount = signal(0);
+  readonly pageTitle = $localize`:@@featureSubscriptions-title:Plans & Subscriptions`;
+  readonly orderPlanAriaLabel = $localize`:@@featureSubscriptions-orderPlanButton:Order`;
+  readonly summaryTotalLabel = $localize`:@@featureSubscriptions-summaryTotal:Subscriptions`;
+  readonly summaryActiveLabel = $localize`:@@featureSubscriptions-summaryActive:Active`;
+  readonly customerProfileLabel = $localize`:@@featureSubscriptions-customerProfile:Billing profile`;
+  readonly backordersLabel = $localize`:@@featureSubscriptions-backorders:Pending backorders`;
   readonly isCustomerProfileComplete = toSignal(this.customerProfileFacade.isCustomerProfileComplete$(), {
     initialValue: false,
   });
@@ -219,6 +292,11 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+
+  constructor() {
+    this.registerQueryParamModalOpeners();
+    this.registerModalCloseWatchers();
+  }
 
   private initialPlanIdFromQuery: string | null = null;
   autoBillingSetupFeedback: AutoBillingSetupFeedback | null = null;
@@ -511,6 +589,12 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     return getVatIdValidationStatusLabel(status);
   }
 
+  onMobilePanelTabChange(tabId: string | null): void {
+    if (tabId === 'subscriptions' || tabId === 'backorders') {
+      this.mobilePanel.set(tabId);
+    }
+  }
+
   mobilePanelLabel(panel: CustomerPlansMobilePanel): string {
     switch (panel) {
       case 'subscriptions':
@@ -612,6 +696,85 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
   formatCurrencyAmount(amount: number): string {
     return `€${amount.toFixed(2)}`;
+  }
+
+  orderPricingLeadingRows(): PricingTotalsLeadingRow[] {
+    const pricing = this.orderPricingPreview();
+
+    if (!pricing) {
+      return [];
+    }
+
+    const promo = this.orderPromotionPricingAdjustment();
+    const rows: PricingTotalsLeadingRow[] = [
+      {
+        label: $localize`:@@featureSubscriptions-productBase:Product total (net)`,
+        amount: pricing.totalPrice,
+        strong: true,
+        borderBottom: true,
+      },
+    ];
+
+    for (const addonLine of pricing.addonLines ?? []) {
+      rows.push({
+        label: addonLine.name,
+        amount: addonLine.periodPrice,
+        invalid: addonLine.invalid === true,
+        invalidLabel: addonLine.invalid === true ? this.orderInvalidAddonLabel : undefined,
+      });
+    }
+
+    if ((pricing.addonLines?.length ?? 0) > 0) {
+      rows.push({
+        label: $localize`:@@featureSubscriptions-addonsTotal:Addons total`,
+        amount: pricing.addonsTotal ?? 0,
+        strong: true,
+        borderBottom: true,
+      });
+
+      if (promo) {
+        rows.push({
+          label: $localize`:@@featureSubscriptions-grandTotal:Plan and addons`,
+          amount: pricing.grandTotal ?? pricing.totalPrice,
+          borderBottom: true,
+        });
+      }
+    }
+
+    if (promo && promo.duringBenefit.discountNet > 0) {
+      rows.push({
+        label: `${$localize`:@@featurePromotions-orderDiscountLabel:Promotion`} (${promo.promotionLabel})`,
+        amount: -promo.duringBenefit.discountNet,
+      });
+    }
+
+    return rows;
+  }
+
+  orderPricingTotalsSummary(): PricingTotalsSummary | null {
+    const pricing = this.orderPricingPreview();
+
+    if (!pricing) {
+      return null;
+    }
+
+    const promo = this.orderPromotionPricingAdjustment();
+
+    if (promo) {
+      return buildPricingTotalsSummary({
+        net: promo.duringBenefit.subtotalNet,
+        tax: promo.duringBenefit.taxTotal,
+        taxRate: promo.taxRate,
+        gross: promo.duringBenefit.totalGross,
+      });
+    }
+
+    return buildPricingTotalsSummary({
+      net: Number(pricing.grandTotal ?? pricing.totalPrice),
+      tax: Number(pricing.taxTotal),
+      taxRate: Number(pricing.taxRate),
+      gross: Number(pricing.totalGross),
+    });
   }
 
   formatEntryPeriodPrice(totalPrice: number | null | undefined, plan: ServicePlanResponse | null): string {
@@ -801,42 +964,70 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
       });
   }
 
-  ngAfterViewInit(): void {
-    this.registerModalCloseWatchers();
+  /**
+   * Open order/profile modals from `?order=true` / `?profile=true` (and plan / autoBilling).
+   * Subscribes in the constructor so the first URL (deep link or dashboard CTA) is not missed.
+   * Reads from the router URL so nested empty-path routes cannot hide query params. Clears the
+   * flags after handling so the same CTA can open again.
+   */
+  private registerQueryParamModalOpeners(): void {
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        map(() => this.router.parseUrl(this.router.url).queryParams),
+        startWith(this.router.parseUrl(this.router.url).queryParams),
+        map((params) => ({
+          plan: typeof params['plan'] === 'string' ? params['plan'].trim() || null : null,
+          order: params['order'] === 'true',
+          profile: params['profile'] === 'true',
+          autoBilling: typeof params['autoBilling'] === 'string' ? params['autoBilling'] : null,
+        })),
+        distinctUntilChanged(
+          (previous, next) =>
+            previous.plan === next.plan &&
+            previous.order === next.order &&
+            previous.profile === next.profile &&
+            previous.autoBilling === next.autoBilling,
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(({ plan, order, profile, autoBilling }) => {
+        if (plan) {
+          this.initialPlanIdFromQuery = plan;
+        }
 
-    const queryParamMap = this.route.snapshot.queryParamMap;
-    const planParam = queryParamMap.get('plan');
+        if (autoBilling === 'setup_success') {
+          this.autoBillingSetupFeedback = 'waiting';
+          this.startAutoBillingConfirmationPoll();
+        } else if (autoBilling === 'setup_cancel') {
+          this.autoBillingSetupFeedback = 'canceled';
+        }
 
-    this.initialPlanIdFromQuery = planParam?.trim() || null;
+        const clearParams: Record<string, null> = {};
 
-    const orderParam = queryParamMap.get('order');
+        if (autoBilling) {
+          clearParams['autoBilling'] = null;
+        }
 
-    if (orderParam === 'true') {
-      this.openOrderPlanModal();
-    }
+        if (order) {
+          this.openOrderPlanModal();
+          clearParams['order'] = null;
+        }
 
-    const profileParam = queryParamMap.get('profile');
-    const autoBillingParam = queryParamMap.get('autoBilling');
+        if (profile) {
+          this.openEditProfileModal();
+          clearParams['profile'] = null;
+        }
 
-    if (autoBillingParam === 'setup_success') {
-      this.autoBillingSetupFeedback = 'waiting';
-      this.startAutoBillingConfirmationPoll();
-    } else if (autoBillingParam === 'setup_cancel') {
-      this.autoBillingSetupFeedback = 'canceled';
-    }
-
-    if (autoBillingParam) {
-      void this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: { autoBilling: null },
-        queryParamsHandling: 'merge',
-        replaceUrl: true,
+        if (Object.keys(clearParams).length > 0) {
+          void this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: clearParams,
+            queryParamsHandling: 'merge',
+            replaceUrl: true,
+          });
+        }
       });
-    }
-
-    if (profileParam === 'true') {
-      this.openEditProfileModal();
-    }
   }
 
   openOrderPlanModal(preferredPlanId?: string | null): void {
@@ -875,7 +1066,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
         this.syncOrderAddons();
         this.syncOrderPricingPreview();
       });
-    showBillingModal(this.orderPlanModal);
+    showBillingModal(this.orderPlanModalOpen);
   }
 
   onOrderPlanIdChange(): void {
@@ -1181,17 +1372,23 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   }
 
   private scrollOrderPlanModalToTop(): void {
-    const modalEl = this.orderPlanModal?.nativeElement;
+    const scrollEl = this.orderPlanModalScroll?.nativeElement;
 
-    if (!modalEl) {
+    if (!scrollEl) {
       return;
     }
 
-    queueMicrotask(() => {
-      modalEl.scrollTop = 0;
-      modalEl.querySelector<HTMLElement>('.modal-body')?.scrollTo({ top: 0 });
-      modalEl.querySelector<HTMLElement>('.modal-dialog')?.scrollTo({ top: 0 });
-    });
+    queueMicrotask(() => scrollEl.scrollTo({ top: 0 }));
+  }
+
+  private scrollModifyConfigModalToTop(): void {
+    const scrollEl = this.modifyConfigModalScroll?.nativeElement;
+
+    if (!scrollEl) {
+      return;
+    }
+
+    queueMicrotask(() => scrollEl.scrollTo({ top: 0 }));
   }
 
   isOrderInfrastructureStepReady(): boolean {
@@ -2131,7 +2328,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
         this.cdr.detectChanges();
       });
 
-    showBillingModal(this.modifyConfigModal);
+    showBillingModal(this.modifyConfigModalOpen);
   }
 
   onModifyConfigModalHidden(): void {
@@ -2352,6 +2549,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
     if (this.configChangeWizardStepIndex() < maxIndex) {
       this.configChangeWizardStepIndex.update((index) => index + 1);
+      this.scrollModifyConfigModalToTop();
 
       if (this.getActiveConfigChangeStepId() === 'summary') {
         this.syncConfigChangePreview();
@@ -2362,6 +2560,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   goConfigChangeBack(): void {
     if (this.configChangeWizardStepIndex() > 0) {
       this.configChangeWizardStepIndex.update((index) => index - 1);
+      this.scrollModifyConfigModalToTop();
     }
   }
 
@@ -2631,7 +2830,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
   openCancelConfirm(sub: SubscriptionResponse): void {
     this.subscriptionToCancel = sub;
-    showBillingModal(this.cancelSubscriptionModal);
+    showBillingModal(this.cancelSubscriptionModalOpen);
   }
 
   confirmCancelSubscription(): void {
@@ -2642,7 +2841,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
   openWithdrawConfirm(sub: SubscriptionResponse): void {
     this.subscriptionToWithdraw = sub;
-    showBillingModal(this.withdrawSubscriptionModal);
+    showBillingModal(this.withdrawSubscriptionModalOpen);
   }
 
   confirmWithdrawSubscription(): void {
@@ -2653,7 +2852,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
   openResumeConfirm(sub: SubscriptionResponse): void {
     this.subscriptionToResume = sub;
-    showBillingModal(this.resumeConfirmModal);
+    showBillingModal(this.resumeConfirmModalOpen);
   }
 
   confirmResume(): void {
@@ -2668,7 +2867,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
 
   openCancelBackorderConfirm(bo: BackorderResponse): void {
     this.backorderToCancel = bo;
-    showBillingModal(this.cancelBackorderModal);
+    showBillingModal(this.cancelBackorderModalOpen);
   }
 
   confirmCancelBackorder(): void {
@@ -2678,7 +2877,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   }
 
   openEditProfileModal(): void {
-    showBillingModal(this.editProfileModal);
+    showBillingModal(this.editProfileModalOpen);
 
     combineLatest([
       this.customerProfileFacade.getCustomerProfile$(),
@@ -2705,7 +2904,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
           email: profile?.email ?? undefined,
           phone: profile?.phone ?? undefined,
         };
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       });
   }
 
@@ -2754,6 +2953,22 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
   }
 
   private registerModalCloseWatchers(): void {
+    toObservable(this.orderPlanModalOpen)
+      .pipe(
+        pairwise(),
+        filter(([wasOpen, isOpen]) => wasOpen && !isOpen),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => this.onOrderPlanModalHidden());
+
+    toObservable(this.modifyConfigModalOpen)
+      .pipe(
+        pairwise(),
+        filter(([wasOpen, isOpen]) => wasOpen && !isOpen),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => this.onModifyConfigModalHidden());
+
     this.subscriptionsCreating$
       .pipe(
         pairwise(),
@@ -2782,13 +2997,13 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     watchBillingMutationModalClose({
       loading$: this.customerProfileUpdating$,
       error$: this.customerProfileError$,
-      modal: () => this.editProfileModal,
+      open: this.editProfileModalOpen,
       destroyRef: this.destroyRef,
     });
     watchBillingMutationModalClose({
       loading$: this.subscriptionsCanceling$,
       error$: this.subscriptionsError$,
-      modal: () => this.cancelSubscriptionModal,
+      open: this.cancelSubscriptionModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.subscriptionToCancel = null;
@@ -2797,7 +3012,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     watchBillingMutationModalClose({
       loading$: this.subscriptionsWithdrawing$,
       error$: this.subscriptionsError$,
-      modal: () => this.withdrawSubscriptionModal,
+      open: this.withdrawSubscriptionModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.subscriptionToWithdraw = null;
@@ -2806,7 +3021,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     watchBillingMutationModalClose({
       loading$: this.subscriptionsResuming$,
       error$: this.subscriptionsError$,
-      modal: () => this.resumeConfirmModal,
+      open: this.resumeConfirmModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.subscriptionToResume = null;
@@ -2815,7 +3030,7 @@ export class SubscriptionsComponent implements OnInit, AfterViewInit {
     watchBillingMutationModalClose({
       loading$: this.backordersCanceling$,
       error$: this.backordersError$,
-      modal: () => this.cancelBackorderModal,
+      open: this.cancelBackorderModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.backorderToCancel = null;

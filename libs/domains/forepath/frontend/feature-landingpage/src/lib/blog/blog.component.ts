@@ -4,6 +4,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import {
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcSearchFieldComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { Subject, catchError, debounceTime, distinctUntilChanged, finalize, of, switchMap, tap } from 'rxjs';
@@ -22,7 +27,15 @@ import type { GhostPagination, GhostPost, GhostTag } from './ghost.types';
 
 @Component({
   selector: 'framework-forepath-blog',
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, DatePipe],
+  imports: [
+    CommonModule,
+    RouterModule,
+    ReactiveFormsModule,
+    DatePipe,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcSearchFieldComponent,
+  ],
   styleUrls: ['./blog.component.scss'],
   templateUrl: './blog.component.html',
   standalone: true,

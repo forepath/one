@@ -3,11 +3,28 @@ import { Component, DestroyRef, effect, inject, input, output, signal } from '@a
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { VcsFacade, type GitFileStatus } from '@forepath/agenstra/frontend/data-access-agent-console';
+import {
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { combineLatest, filter, map, pairwise, startWith, switchMap, take } from 'rxjs';
 
 @Component({
   selector: 'framework-git-manager',
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcSpinnerComponent,
+  ],
   templateUrl: './git-manager.component.html',
   styleUrls: ['./git-manager.component.scss'],
   standalone: true,

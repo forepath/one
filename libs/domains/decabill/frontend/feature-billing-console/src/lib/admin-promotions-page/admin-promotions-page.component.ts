@@ -1,6 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, DestroyRef, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
-import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   AdminPromotionsFacade,
@@ -12,6 +12,22 @@ import {
   type PromotionRedemptionResponse,
   type PromotionSubscriptionEligibility,
 } from '@forepath/decabill/frontend/data-access-billing-console';
+import {
+  FpcAlertComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcFormSwitchComponent,
+  FpcListComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcListItemComponent,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+} from '@forepath/shared/frontend/ui-components';
 import { combineLatest, debounceTime, distinctUntilChanged, map, skip } from 'rxjs';
 
 import {
@@ -29,15 +45,36 @@ import { showBillingModal, watchBillingMutationModalClose } from '../billing-mod
 @Component({
   selector: 'framework-admin-promotions-page',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    FpcAlertComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcFormSwitchComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcListItemComponent,
+    FpcListComponent,
+    FpcEmptyStateComponent,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+  ],
   providers: [DatePipe],
   templateUrl: './admin-promotions-page.component.html',
   styleUrls: ['./admin-promotions-page.component.scss'],
 })
 export class AdminPromotionsPageComponent implements OnInit {
-  @ViewChild('createModal', { static: false }) private createModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('editModal', { static: false }) private editModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('redemptionsModal', { static: false }) private redemptionsModal!: ElementRef<HTMLDivElement>;
+  readonly createModalOpen = signal(false);
+  readonly editModalOpen = signal(false);
+  readonly redemptionsModalOpen = signal(false);
+
+  readonly pageTitle = $localize`:@@featureAdminPromotions-pageTitle:Promotions`;
+  readonly createPromotionAriaLabel = $localize`:@@featureAdminPromotions-create:Create promotion`;
+  readonly searchPlaceholder = $localize`:@@featureAdminPromotions-searchPlaceholder:Search promotions`;
 
   private readonly facade = inject(AdminPromotionsFacade);
   private readonly servicePlansFacade = inject(ServicePlansFacade);
@@ -85,7 +122,7 @@ export class AdminPromotionsPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.creating$,
       error$: this.error$,
-      modal: () => this.createModal,
+      open: this.createModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.createForm = this.emptyForm();
@@ -94,14 +131,14 @@ export class AdminPromotionsPageComponent implements OnInit {
     watchBillingMutationModalClose({
       loading$: this.updating$,
       error$: this.error$,
-      modal: () => this.editModal,
+      open: this.editModalOpen,
       destroyRef: this.destroyRef,
     });
   }
 
   openCreateModal(): void {
     this.createForm = this.emptyForm();
-    showBillingModal(this.createModal);
+    showBillingModal(this.createModalOpen);
   }
 
   openEditModal(promotion: AdminPromotionResponse): void {
@@ -121,13 +158,13 @@ export class AdminPromotionsPageComponent implements OnInit {
       subscriptionEligibility: promotion.subscriptionEligibility,
     };
     this.onAdvantageTypeChange(this.editForm);
-    showBillingModal(this.editModal);
+    showBillingModal(this.editModalOpen);
   }
 
   openRedemptionsModal(promotion: AdminPromotionResponse): void {
     this.selectedPromotion = promotion;
     this.facade.loadRedemptions(promotion.id);
-    showBillingModal(this.redemptionsModal);
+    showBillingModal(this.redemptionsModalOpen);
   }
 
   submitCreate(): void {
@@ -250,13 +287,37 @@ export class AdminPromotionsPageComponent implements OnInit {
   }
 
   private buildDto(form: CreateAdminPromotionDto): CreateAdminPromotionDto {
+    const maxTotalRaw = form.maxTotalRedemptions as number | string | null | undefined;
+    const maxTotal =
+      maxTotalRaw === null || maxTotalRaw === undefined || maxTotalRaw === '' ? undefined : Number(maxTotalRaw);
+
     return {
       ...form,
       code: form.code.trim(),
+      description: form.description?.trim() || undefined,
       redeemableFrom: new Date(form.redeemableFrom).toISOString(),
       redeemableTo: new Date(form.redeemableTo).toISOString(),
+      maxPerUserRedemptions: Number(form.maxPerUserRedemptions),
+      maxTotalRedemptions: maxTotal != null && Number.isFinite(maxTotal) && maxTotal >= 1 ? maxTotal : undefined,
+      advantageConfig: this.normalizeAdvantageConfig(form.advantageType, form.advantageConfig),
       applicablePlanIds: form.applicablePlanIds?.length ? form.applicablePlanIds : undefined,
     };
+  }
+
+  /** `fpc-form-control` number inputs emit strings; coerce before API submit. */
+  private normalizeAdvantageConfig(
+    type: PromotionAdvantageType,
+    config: Record<string, unknown>,
+  ): Record<string, unknown> {
+    if (type === 'fixed_amount_net') {
+      return { amountNet: Number(config['amountNet'] ?? 0) };
+    }
+
+    if (type === 'free_days') {
+      return { days: Number(config['days'] ?? 0) };
+    }
+
+    return { periods: Number(config['periods'] ?? 0) };
   }
 
   private emptyForm(): CreateAdminPromotionDto {

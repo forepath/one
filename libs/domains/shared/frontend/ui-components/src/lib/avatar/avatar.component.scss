@@ -1,0 +1,44 @@
+:host {
+  --fpc-avatar-size: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: var(--fpc-avatar-size);
+  height: var(--fpc-avatar-size);
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: var(--bs-secondary-bg);
+  color: var(--bs-secondary-color);
+  font-size: calc(var(--fpc-avatar-size) * 0.4);
+  font-weight: 600;
+  line-height: 1;
+  user-select: none;
+}
+
+:host(.fpc-avatar--xs) {
+  --fpc-avatar-size: 1.5rem;
+}
+
+:host(.fpc-avatar--sm) {
+  --fpc-avatar-size: 2rem;
+}
+
+:host(.fpc-avatar--lg) {
+  --fpc-avatar-size: 3.5rem;
+}
+
+:host(.fpc-avatar--xl) {
+  --fpc-avatar-size: 5rem;
+}
+
+.fpc-avatar__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.fpc-avatar__initials {
+  letter-spacing: 0.02em;
+}

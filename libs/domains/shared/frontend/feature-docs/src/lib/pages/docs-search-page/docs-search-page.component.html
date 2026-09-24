@@ -1,53 +1,46 @@
-<div class="docs-search-page">
-  <h1 i18n="@@featureDocsSearchPage-title">Search Documentation</h1>
+<fpc-page-header [title]="pageTitle" />
 
-  <div class="mb-4">
-    <framework-docs-search />
-  </div>
+@if (isBrowser) {
+  <fpc-search-field
+    class="border-bottom"
+    name="docsPageSearch"
+    inputId="docsPageSearchInput"
+    [bordered]="false"
+    [placeholder]="searchPlaceholder"
+    [ariaLabel]="searchPlaceholder"
+    [value]="searchQuery()"
+    (valueChange)="onSearchValueChange($event)"
+    (cleared)="onSearchCleared()"
+  />
+}
 
+<div class="docs-search-page__body flex-grow-1 overflow-auto d-flex flex-column min-h-0">
   @if (loading()) {
-    <div class="d-flex justify-content-center align-items-center p-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden" i18n="@@featureDocsSearchPage-loading">Loading...</span>
-      </div>
+    <div class="d-flex justify-content-center align-items-center p-4">
+      <fpc-spinner variant="primary" i18n-label="@@featureDocsSearchPage-loading" label="Loading..." />
     </div>
-  } @else if (searchQuery() && searchResults().length === 0) {
-    <div class="alert alert-info" role="alert">
-      <i class="bi bi-info-circle me-2"></i>
-      <span i18n="@@featureDocsSearchPage-noResultsFor">No results found for "{{ searchQuery() }}"</span>
-    </div>
-  } @else if (searchResults().length > 0) {
-    <div class="search-results">
-      <p class="text-muted mb-3">
-        {{ getResultsCountMessage(searchResults().length, searchQuery()) }}
-      </p>
-
-      <div class="list-group">
-        @for (result of searchResults(); track result.entry.path) {
-          <div class="list-group-item list-group-item-action" (click)="onResultClick(result)">
-            <div class="d-flex w-100 justify-content-between">
-              <h5 class="mb-1">{{ result.entry.title }}</h5>
-              <small class="text-muted">{{ result.score }}</small>
-            </div>
+  } @else if (!searchQuery().trim()) {
+    <fpc-empty-state [message]="enterQueryHint" />
+  } @else if (searchResults().length === 0) {
+    <fpc-empty-state icon="search" message="No search results" i18n-message="@@featureDocsSearchPage-noResultsFor" />
+  } @else {
+    <fpc-list [flush]="true" [ariaLabel]="resultsAriaLabel">
+      @for (result of searchResults(); track result.entry.path) {
+        <fpc-list-item [clickable]="true" (selected)="onResultClick(result)">
+          <div fpcListItemTitle class="fw-semibold">{{ result.entry.title }}</div>
+          <div fpcListItemMeta class="d-flex flex-column gap-1">
             @if (result.entry.summary) {
-              <p class="mb-1">{{ result.entry.summary }}</p>
+              <span>{{ result.entry.summary }}</span>
             }
-            <small class="text-muted">{{ result.entry.path }}</small>
+            <span class="d-flex align-items-center gap-3 flex-wrap">
+              <span> <i class="bi bi-file-earmark-text me-1" aria-hidden="true"></i>{{ result.entry.path }} </span>
+            </span>
             @if (result.highlights.length > 0) {
-              <div class="mt-2">
-                @for (highlight of result.highlights; track $index) {
-                  <small [innerHTML]="highlight" class="d-block text-muted"></small>
-                }
-              </div>
+              <span [innerHTML]="result.highlights[0]"></span>
             }
           </div>
-        }
-      </div>
-    </div>
-  } @else {
-    <div class="alert alert-secondary" role="alert">
-      <i class="bi bi-search me-2"></i>
-      <span i18n="@@featureDocsSearchPage-enterQueryHint">Enter a search query above to find documentation.</span>
-    </div>
+        </fpc-list-item>
+      }
+    </fpc-list>
   }
 </div>

@@ -66,7 +66,34 @@ import {
   type WorkspaceConfigurationSettingKey,
   type WorkspaceConfigurationSettingResponseDto,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
-import { InfiniteScrollDirective, ListAppendFooterComponent } from '@forepath/shared/frontend/ui-lists';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcButtonGroupComponent,
+  FpcConfirmDialogComponent,
+  FpcDropdownComponent,
+  FpcDropdownItemComponent,
+  FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormCheckGroupComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcFormSwitchComponent,
+  FpcInfiniteScrollDirective,
+  FpcInputGroupComponent,
+  FpcListAppendFooterComponent,
+  FpcListComponent,
+  FpcListItemComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
+  FpcNotificationIndicatorComponent,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+  FpcTypeaheadSelectComponent,
+  type FpcBadgeColor,
+} from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import {
@@ -80,7 +107,6 @@ import {
   map,
   Observable,
   of,
-  pairwise,
   shareReplay,
   skip,
   startWith,
@@ -107,6 +133,7 @@ import {
 } from '../tickets/ticket-automation-run-labels';
 import { ticketLaneStatusLabel } from '../tickets/ticket-lane-status-label';
 
+import { hideAgentModal, showAgentModal, watchAgentMutationModalClose } from '../agent-modal';
 import { mapForwardedChatEventsToDisplayRows } from './agent-chat-event-display';
 import { AgentChatEventRowComponent } from './agent-chat-event-row.component';
 import { formatAgentResponseForChatMarkdown, formatUnknownAsMarkdown } from './agent-chat-response-markdown';
@@ -153,8 +180,31 @@ type ChatMessageWithFilter = {
     DeploymentManagerComponent,
     ContainerStatsStatusBarComponent,
     AgentChatEventRowComponent,
-    InfiniteScrollDirective,
-    ListAppendFooterComponent,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcConfirmDialogComponent,
+    FpcDropdownComponent,
+    FpcDropdownItemComponent,
+    FpcEmptyStateComponent,
+    FpcFormCheckComponent,
+    FpcFormCheckGroupComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcFormSwitchComponent,
+    FpcInfiniteScrollDirective,
+    FpcInputGroupComponent,
+    FpcListAppendFooterComponent,
+    FpcListComponent,
+    FpcListItemComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
+    FpcNotificationIndicatorComponent,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+    FpcTypeaheadSelectComponent,
   ],
   styleUrls: ['./chat.component.scss'],
   templateUrl: './chat.component.html',
@@ -167,6 +217,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly automationRunPhaseLabel = ticketAutomationRunPhaseLabelFn;
 
   readonly openTicketFromChatButtonLabel = $localize`:@@featureChat-openTicketFromAutomationCard:Open ticket`;
+  readonly workspacesHeaderTitle = $localize`:@@featureChat-workspaces:Workspaces`;
+  readonly environmentsHeaderTitle = $localize`:@@featureChat-environments:Environments`;
+  readonly addWorkspaceTitle = $localize`:@@featureChat-addWorkspaceTitle:Add Workspace`;
+  readonly addEnvironmentTitle = $localize`:@@featureChat-addEnvironmentTitle:Add Environment`;
+  readonly backToWorkspacesTitle = $localize`:@@featureChat-backToWorkspaces:Back to workspaces`;
+  readonly searchWorkspacesPlaceholder = $localize`:@@featureChat-searchWorkspacesPlaceholder:Search workspaces`;
+  readonly searchEnvironmentsPlaceholder = $localize`:@@featureChat-searchEnvironmentsPlaceholder:Search environments`;
 
   readonly clientsFacade = inject(ClientsFacade);
   private readonly agentsFacade = inject(AgentsFacade);
@@ -193,53 +250,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   @ViewChild('chatMessagesContainer', { static: false })
   private chatMessagesContainer!: ElementRef<HTMLDivElement>;
 
-  @ViewChild('deleteClientModal', { static: false })
-  private deleteClientModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('deleteAgentModal', { static: false })
-  private deleteAgentModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('deleteChatSessionModal', { static: false })
-  private deleteChatSessionModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('renameChatSessionModal', { static: false })
-  private renameChatSessionModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('addClientModal', { static: false })
-  private addClientModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('addAgentModal', { static: false })
-  private addAgentModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('updateClientModal', { static: false })
-  private updateClientModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('updateAgentModal', { static: false })
-  private updateAgentModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('environmentVariablesModal', { static: false })
-  private environmentVariablesModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('workspaceConfigurationModal', { static: false })
-  private workspaceConfigurationModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('ticketAutonomyModal', { static: false })
-  private ticketAutonomyModal!: ElementRef<HTMLDivElement>;
-  @ViewChild('contextSelectionModal', { static: false })
-  private contextSelectionModal!: ElementRef<HTMLDivElement>;
-
-  @ViewChild('clientUsersModal', { static: false })
-  private clientUsersModal!: ElementRef<HTMLDivElement>;
-
   @ViewChild('fileEditor', { static: false })
   fileEditor!: FileEditorComponent;
 
   @ViewChild('deploymentManager', { static: false })
   deploymentManager!: DeploymentManagerComponent;
-
-  @ViewChild('shareFileLinkButton', { static: false })
-  shareFileLinkButton!: ElementRef<HTMLButtonElement>;
-
-  private shareButtonTooltip: any = null;
 
   // Cache for marked instance to avoid repeated async imports
   private markedInstance: Marked | null = null;
@@ -689,6 +704,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly terminalVisible = signal<boolean>(false);
   readonly gitManagerVisible = signal<boolean>(false);
   readonly selectedFilePathForShare = signal<string | null>(null);
+  /** Brief success flash after the share-link button copies to the clipboard. */
+  readonly shareFileLinkCopied = signal(false);
+  private shareFileLinkCopiedReset: ReturnType<typeof setTimeout> | null = null;
 
   // Convert signals to observables (must be in field initializer for injection context)
   private readonly standaloneMode$ = toObservable(this.standaloneMode);
@@ -967,7 +985,22 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly chatSessionToDeleteId = signal<string | null>(null);
   readonly chatSessionToDeleteName = signal<string>('');
   readonly chatSessionToRenameId = signal<string | null>(null);
+  readonly chatSessionDropdownOpen = signal(false);
   readonly chatSessionToRenameTitle = signal<string>('');
+
+  readonly contextSelectionModalOpen = signal(false);
+  readonly deleteClientModalOpen = signal(false);
+  readonly deleteAgentModalOpen = signal(false);
+  readonly deleteChatSessionModalOpen = signal(false);
+  readonly renameChatSessionModalOpen = signal(false);
+  readonly addClientModalOpen = signal(false);
+  readonly addAgentModalOpen = signal(false);
+  readonly updateClientModalOpen = signal(false);
+  readonly updateAgentModalOpen = signal(false);
+  readonly workspaceConfigurationModalOpen = signal(false);
+  readonly environmentVariablesModalOpen = signal(false);
+  readonly ticketAutonomyModalOpen = signal(false);
+  readonly clientUsersModalOpen = signal(false);
 
   readonly chatSessionDeleting$: Observable<boolean> = combineLatest([
     this.activeClientId$,
@@ -1018,6 +1051,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly provisioningProviders$ = this.clientsFacade.provisioningProviders$;
   readonly loadingProviders$ = this.clientsFacade.loadingProviders$;
   readonly provisioning$ = this.clientsFacade.provisioning$;
+  readonly addClientSubmitting$ = combineLatest([this.clientsCreating$, this.provisioning$]).pipe(
+    map(([creating, provisioning]) => creating || provisioning),
+  );
+  readonly agentsError$ = this.activeClientId$.pipe(
+    switchMap((clientId) => (clientId ? this.agentsFacade.getClientAgentsError$(clientId) : of(null))),
+  );
 
   // Computed observables for server types based on selected provider
   readonly serverTypes$ = toObservable(this.selectedProvider).pipe(
@@ -2029,6 +2068,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           this.standaloneFileLoaded = true;
         }
       });
+
+    this.registerModalCloseWatchers();
   }
 
   ngOnDestroy(): void {
@@ -2043,10 +2084,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       this.syncTimeoutId = null;
     }
 
-    // Dispose tooltip if it exists
-    if (this.shareButtonTooltip) {
-      this.shareButtonTooltip.dispose();
-      this.shareButtonTooltip = null;
+    if (this.shareFileLinkCopiedReset !== null) {
+      clearTimeout(this.shareFileLinkCopiedReset);
+      this.shareFileLinkCopiedReset = null;
     }
   }
 
@@ -2338,6 +2378,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   onSelectChatSession(chatId: string, event?: Event): void {
     event?.preventDefault();
     event?.stopPropagation();
+    this.hideChatSessionDropdown();
 
     const clientId = this.activeClientId;
     const agentId = this.selectedAgentId();
@@ -2363,6 +2404,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   onCreateChatSession(): void {
+    this.hideChatSessionDropdown();
+
     const clientId = this.activeClientId;
     const agentId = this.selectedAgentId();
 
@@ -2396,8 +2439,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     this.chatSessionToRenameId.set(session.id);
     this.chatSessionToRenameTitle.set(session.title?.trim() ?? '');
-    this.hideChatSessionDropdown(event);
-    this.showModal(this.renameChatSessionModal);
+    this.hideChatSessionDropdown();
+    showAgentModal(this.renameChatSessionModalOpen);
   }
 
   onSubmitRenameChatSession(): void {
@@ -2411,17 +2454,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
 
     this.chatSessionsFacade.updateChatSession(clientId, agentId, sessionId, { title });
-    this.chatSessionUpdating$
-      .pipe(
-        filter((updating) => !updating),
-        take(1),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => {
-        this.hideModal(this.renameChatSessionModal);
-        this.chatSessionToRenameId.set(null);
-        this.chatSessionToRenameTitle.set('');
-      });
   }
 
   onDeleteChatSession(session: ChatSessionResponseDto, event?: Event): void {
@@ -2434,8 +2466,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     this.chatSessionToDeleteId.set(session.id);
     this.chatSessionToDeleteName.set(this.getChatSessionDisplayTitle(session));
-    this.hideChatSessionDropdown(event);
-    this.showModal(this.deleteChatSessionModal);
+    this.hideChatSessionDropdown();
+    showAgentModal(this.deleteChatSessionModalOpen);
   }
 
   confirmDeleteChatSession(): void {
@@ -2468,37 +2500,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       }
 
       this.chatSessionsFacade.deleteChatSession(clientId, agentId, sessionId);
-      this.chatSessionDeleting$
-        .pipe(
-          filter((deleting) => !deleting),
-          take(1),
-          takeUntilDestroyed(this.destroyRef),
-        )
-        .subscribe(() => {
-          this.hideModal(this.deleteChatSessionModal);
-          this.chatSessionToDeleteId.set(null);
-          this.chatSessionToDeleteName.set('');
-        });
     });
   }
 
-  private hideChatSessionDropdown(event?: Event): void {
-    const dropdownRoot =
-      (event?.target as HTMLElement | undefined)?.closest?.('.dropdown') ??
-      document.getElementById('chatSessionDropdown')?.closest('.dropdown');
-    const toggleButton =
-      dropdownRoot?.querySelector('[data-bs-toggle="dropdown"]') ?? document.getElementById('chatSessionDropdown');
-
-    if (!toggleButton) {
-      return;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const bootstrap = (window as any).bootstrap;
-    const dropdown =
-      bootstrap?.Dropdown?.getInstance(toggleButton) ?? bootstrap?.Dropdown?.getOrCreateInstance?.(toggleButton);
-
-    dropdown?.hide();
+  private hideChatSessionDropdown(): void {
+    this.chatSessionDropdownOpen.set(false);
   }
 
   /**
@@ -2665,7 +2671,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       this.knowledgeFacade.loadTree(clientId);
     }
 
-    this.showModal(this.contextSelectionModal);
+    showAgentModal(this.contextSelectionModalOpen);
   }
 
   onCloseContextSelectionModal(): void {
@@ -2675,7 +2681,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.knowledgeContextInputError.set(null);
     this.knowledgeContextInput.set('');
     this.knowledgeContextSuggestionsOpen.set(false);
-    this.hideModal(this.contextSelectionModal);
   }
 
   isEnvironmentContextSelected(environmentId: string): boolean {
@@ -2703,19 +2708,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       this.ticketContextInputError.set(null);
     }
 
-    if (value.trim().length > 0) {
-      this.ticketContextSuggestionsOpen.set(true);
-    }
+    this.ticketContextSuggestionsOpen.set(value.trim().length > 0 && this.ticketContextSuggestions().length > 0);
   }
 
-  onTicketContextShaInputFocus(): void {
-    if (this.ticketContextInput().trim().length > 0 && this.ticketContextSuggestions().length > 0) {
-      this.ticketContextSuggestionsOpen.set(true);
-    }
-  }
-
-  onTicketContextShaInputBlur(): void {
-    setTimeout(() => this.ticketContextSuggestionsOpen.set(false), 180);
+  onTicketContextSuggestionsOpenChange(open: boolean): void {
+    this.ticketContextSuggestionsOpen.set(
+      open && this.ticketContextInput().trim().length > 0 && this.ticketContextSuggestions().length > 0,
+    );
   }
 
   onPickTicketContextSuggestion(ticket: TicketResponseDto, event?: Event): void {
@@ -2801,19 +2800,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       this.knowledgeContextInputError.set(null);
     }
 
-    if (value.trim().length > 0) {
-      this.knowledgeContextSuggestionsOpen.set(true);
-    }
+    this.knowledgeContextSuggestionsOpen.set(value.trim().length > 0 && this.knowledgeContextSuggestions().length > 0);
   }
 
-  onKnowledgeContextShaInputFocus(): void {
-    if (this.knowledgeContextInput().trim().length > 0 && this.knowledgeContextSuggestions().length > 0) {
-      this.knowledgeContextSuggestionsOpen.set(true);
-    }
-  }
-
-  onKnowledgeContextShaInputBlur(): void {
-    setTimeout(() => this.knowledgeContextSuggestionsOpen.set(false), 180);
+  onKnowledgeContextSuggestionsOpenChange(open: boolean): void {
+    this.knowledgeContextSuggestionsOpen.set(
+      open && this.knowledgeContextInput().trim().length > 0 && this.knowledgeContextSuggestions().length > 0,
+    );
   }
 
   onPickKnowledgeContextSuggestion(node: KnowledgeNodeDto, event?: Event): void {
@@ -3115,6 +3108,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       : $localize`:@@featureChat-showVersionControl:Show Version Control`;
   }
 
+  getShareFileLinkTitle(): string {
+    return this.shareFileLinkCopied()
+      ? $localize`:@@featureChat-shareFileLinkCopied:Link copied`
+      : $localize`:@@featureChat-shareFileLink:Share file link`;
+  }
+
   getChatBackTitle(): string {
     return this.editorOpen()
       ? $localize`:@@featureChat-closeChat:Close Chat`
@@ -3344,7 +3343,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
 
     this.managingTicketAutonomyAgentId.set(agent.id);
-    this.showModal(this.ticketAutonomyModal);
+    showAgentModal(this.ticketAutonomyModalOpen);
   }
 
   onCloseTicketAutonomyModal(): void {
@@ -3396,18 +3395,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     this.autonomyFacade.clearError();
     this.autonomyFacade.upsert(clientId, agentId, dto);
-
-    // Close modal when save completes (same pattern as onSubmitUpdateAgent)
-    this.autonomyFacade.saving$
-      .pipe(
-        pairwise(),
-        filter(([wasSaving, isSaving]) => wasSaving && !isSaving),
-        take(1),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => {
-        this.hideModal(this.ticketAutonomyModal);
-      });
   }
 
   /**
@@ -3529,155 +3516,28 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     navigator.clipboard
       .writeText(url)
       .then(() => {
-        console.log('File link copied to clipboard:', url);
-        this.showShareTooltip('Link copied');
+        this.flashShareFileLinkCopied();
       })
       .catch((err) => {
         console.error('Failed to copy file link to clipboard:', err);
         // Fallback: try using the older clipboard API
-        const success = this.fallbackCopyToClipboard(url);
-
-        if (success) {
-          this.showShareTooltip('Link copied');
+        if (this.fallbackCopyToClipboard(url)) {
+          this.flashShareFileLinkCopied();
         }
       });
   }
 
-  /**
-   * Show tooltip with message and hide it after a couple seconds.
-   * Uses a simple approach: just update the title and let Bootstrap handle it naturally.
-   * Avoids programmatic hide() calls that cause errors.
-   */
-  private showShareTooltip(message: string): void {
-    if (!this.shareFileLinkButton?.nativeElement || !message) {
-      return;
+  /** Temporary success styling on the share button after a successful copy. */
+  private flashShareFileLinkCopied(): void {
+    if (this.shareFileLinkCopiedReset !== null) {
+      clearTimeout(this.shareFileLinkCopiedReset);
     }
 
-    const element = this.shareFileLinkButton.nativeElement;
-    // Store original values
-    const originalTitle = element.getAttribute('title') || 'Share file link';
-
-    // Clean up any existing tooltip completely first
-    this.cleanupTooltipCompletely();
-
-    // Update title - this will be picked up by Bootstrap's tooltip
-    element.setAttribute('title', message);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const bootstrap = (window as any).bootstrap;
-
-    if (!bootstrap?.Tooltip) {
-      console.warn('Bootstrap Tooltip not available');
-
-      return;
-    }
-
-    // Get or create tooltip instance - let Bootstrap manage it
-    try {
-      // Use getOrCreateInstance if available to avoid creating duplicates
-      if (bootstrap.Tooltip.getOrCreateInstance) {
-        this.shareButtonTooltip = bootstrap.Tooltip.getOrCreateInstance(element);
-      } else {
-        // Fallback: check for existing instance first
-        const existing = bootstrap.Tooltip.getInstance?.(element);
-
-        if (existing) {
-          this.shareButtonTooltip = existing;
-        } else {
-          this.shareButtonTooltip = new bootstrap.Tooltip(element);
-        }
-      }
-
-      // Update the tooltip title
-      if (this.shareButtonTooltip && typeof this.shareButtonTooltip.setContent === 'function') {
-        this.shareButtonTooltip.setContent({ '.tooltip-inner': message });
-      }
-
-      // Show tooltip manually
-      setTimeout(() => {
-        if (this.shareButtonTooltip && typeof this.shareButtonTooltip.show === 'function') {
-          try {
-            this.shareButtonTooltip.show();
-          } catch (error) {
-            console.error('Failed to show tooltip:', error);
-          }
-        }
-      }, 10);
-    } catch (error) {
-      console.error('Failed to create Bootstrap Tooltip:', error);
-
-      return;
-    }
-
-    // After 2 seconds, restore original state
-    // Don't call hide() - just update the title and let it fade naturally
-    setTimeout(() => {
-      // Restore original title
-      element.setAttribute('title', originalTitle);
-
-      // Update tooltip content if method exists
-      if (this.shareButtonTooltip && typeof this.shareButtonTooltip.setContent === 'function') {
-        try {
-          this.shareButtonTooltip.setContent({ '.tooltip-inner': originalTitle });
-        } catch (e) {
-          // Ignore
-        }
-      }
-
-      // Remove manual trigger and let it work normally
-      element.removeAttribute('data-bs-trigger');
+    this.shareFileLinkCopied.set(true);
+    this.shareFileLinkCopiedReset = setTimeout(() => {
+      this.shareFileLinkCopied.set(false);
+      this.shareFileLinkCopiedReset = null;
     }, 2000);
-  }
-
-  /**
-   * Completely clean up tooltip - removes from DOM to prevent errors
-   */
-  private cleanupTooltipCompletely(): void {
-    if (!this.shareFileLinkButton?.nativeElement) {
-      return;
-    }
-
-    const element = this.shareFileLinkButton.nativeElement;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const bootstrap = (window as any).bootstrap;
-    // Remove any tooltip elements from DOM first to prevent Bootstrap from accessing them
-    const tooltipElements = document.querySelectorAll('.tooltip');
-
-    tooltipElements.forEach((tooltip) => {
-      try {
-        tooltip.remove();
-      } catch (e) {
-        // Ignore
-      }
-    });
-
-    // Get and dispose any Bootstrap-managed instance
-    if (bootstrap?.Tooltip?.getInstance) {
-      try {
-        const instance = bootstrap.Tooltip.getInstance(element);
-
-        if (instance) {
-          try {
-            instance.dispose();
-          } catch (e) {
-            // Ignore disposal errors
-          }
-        }
-      } catch (e) {
-        // Ignore
-      }
-    }
-
-    // Dispose our stored reference
-    if (this.shareButtonTooltip) {
-      try {
-        this.shareButtonTooltip.dispose();
-      } catch (e) {
-        // Ignore disposal errors
-      }
-
-      this.shareButtonTooltip = null;
-    }
   }
 
   /**
@@ -3727,7 +3587,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         if (serverInfo) {
           // ServerInfo exists, client has provisioning
           this.clientToDeleteHasProvisioning.set(true);
-          this.showModal(this.deleteClientModal);
+          showAgentModal(this.deleteClientModalOpen);
         } else {
           // Try to load serverInfo to check if provisioning exists
           this.clientsFacade.loadServerInfo(clientId);
@@ -3742,7 +3602,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
             )
             .subscribe((info) => {
               this.clientToDeleteHasProvisioning.set(!!info);
-              this.showModal(this.deleteClientModal);
+              showAgentModal(this.deleteClientModalOpen);
             });
         }
       });
@@ -3751,7 +3611,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   onDeleteAgentClick(agentId: string, agentName: string): void {
     this.agentToDeleteId.set(agentId);
     this.agentToDeleteName.set(agentName);
-    this.showModal(this.deleteAgentModal);
+    showAgentModal(this.deleteAgentModalOpen);
   }
 
   confirmDeleteClient(): void {
@@ -3759,19 +3619,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     if (clientId) {
       this.clientsFacade.deleteClient(clientId);
-      // Subscribe to deletion completion (success or failure) to close modal
-      this.clientsDeleting$
-        .pipe(
-          filter((deleting) => !deleting),
-          take(1),
-          takeUntilDestroyed(this.destroyRef),
-        )
-        .subscribe(() => {
-          this.hideModal(this.deleteClientModal);
-          this.clientToDeleteId.set(null);
-          this.clientToDeleteName.set('');
-          this.clientToDeleteHasProvisioning.set(false);
-        });
     }
   }
 
@@ -3781,53 +3628,186 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     if (agentId && clientId) {
       this.agentsFacade.deleteClientAgent(clientId, agentId);
-      // Subscribe to deletion completion (success or failure) to close modal
-      this.agentsDeleting$
-        .pipe(
-          filter((deleting) => !deleting),
-          take(1),
-          takeUntilDestroyed(this.destroyRef),
-        )
-        .subscribe(() => {
-          this.hideModal(this.deleteAgentModal);
-          this.agentToDeleteId.set(null);
-          this.agentToDeleteName.set('');
+    }
+  }
+
+  cancelDeleteClient(): void {
+    hideAgentModal(this.deleteClientModalOpen);
+    this.clientToDeleteId.set(null);
+    this.clientToDeleteName.set('');
+    this.clientToDeleteHasProvisioning.set(false);
+  }
+
+  cancelDeleteAgent(): void {
+    hideAgentModal(this.deleteAgentModalOpen);
+    this.agentToDeleteId.set(null);
+    this.agentToDeleteName.set('');
+  }
+
+  cancelDeleteChatSession(): void {
+    hideAgentModal(this.deleteChatSessionModalOpen);
+    this.chatSessionToDeleteId.set(null);
+    this.chatSessionToDeleteName.set('');
+  }
+
+  cancelRenameChatSession(): void {
+    hideAgentModal(this.renameChatSessionModalOpen);
+    this.chatSessionToRenameId.set(null);
+    this.chatSessionToRenameTitle.set('');
+  }
+
+  cancelAddClient(): void {
+    hideAgentModal(this.addClientModalOpen);
+    this.resetClientForm();
+  }
+
+  cancelAddAgent(): void {
+    hideAgentModal(this.addAgentModalOpen);
+    this.newAgent.set({
+      name: '',
+      description: '',
+      agentType: undefined,
+      containerType: undefined,
+      gitRepositorySetupMode: this.getDefaultAgentGitRepositorySetupMode(),
+      gitRepositoryUrl: undefined,
+      createVirtualWorkspace: false,
+      createSshConnection: false,
+    });
+  }
+
+  cancelUpdateClient(): void {
+    hideAgentModal(this.updateClientModalOpen);
+    this.editingClientId.set(null);
+    this.editingClient.set({
+      name: '',
+      description: '',
+      endpoint: '',
+      authenticationType: undefined,
+      apiKey: undefined,
+      keycloakClientId: undefined,
+      keycloakClientSecret: undefined,
+      keycloakRealm: undefined,
+      agentWsPort: undefined,
+    });
+  }
+
+  cancelUpdateAgent(): void {
+    hideAgentModal(this.updateAgentModalOpen);
+    this.editingAgentId.set(null);
+    this.editingAgent.set({
+      name: '',
+      description: '',
+      containerType: undefined,
+    });
+  }
+
+  private registerModalCloseWatchers(): void {
+    watchAgentMutationModalClose({
+      loading$: this.clientsDeleting$,
+      error$: this.clientsError$,
+      open: this.deleteClientModalOpen,
+      destroyRef: this.destroyRef,
+      onSuccess: () => {
+        this.clientToDeleteId.set(null);
+        this.clientToDeleteName.set('');
+        this.clientToDeleteHasProvisioning.set(false);
+      },
+    });
+    watchAgentMutationModalClose({
+      loading$: this.agentsDeleting$,
+      error$: this.agentsError$,
+      open: this.deleteAgentModalOpen,
+      destroyRef: this.destroyRef,
+      onSuccess: () => {
+        this.agentToDeleteId.set(null);
+        this.agentToDeleteName.set('');
+      },
+    });
+    watchAgentMutationModalClose({
+      loading$: this.chatSessionDeleting$,
+      open: this.deleteChatSessionModalOpen,
+      destroyRef: this.destroyRef,
+      onSuccess: () => {
+        this.chatSessionToDeleteId.set(null);
+        this.chatSessionToDeleteName.set('');
+      },
+    });
+    watchAgentMutationModalClose({
+      loading$: this.chatSessionUpdating$,
+      open: this.renameChatSessionModalOpen,
+      destroyRef: this.destroyRef,
+      onSuccess: () => {
+        this.chatSessionToRenameId.set(null);
+        this.chatSessionToRenameTitle.set('');
+      },
+    });
+    watchAgentMutationModalClose({
+      loading$: this.addClientSubmitting$,
+      error$: this.clientsError$,
+      open: this.addClientModalOpen,
+      destroyRef: this.destroyRef,
+      onSuccess: () => {
+        this.resetClientForm();
+      },
+    });
+    watchAgentMutationModalClose({
+      loading$: this.agentsCreating$,
+      error$: this.agentsError$,
+      open: this.addAgentModalOpen,
+      destroyRef: this.destroyRef,
+      onSuccess: () => {
+        this.newAgent.set({
+          name: '',
+          description: '',
+          agentType: undefined,
+          containerType: undefined,
+          gitRepositorySetupMode: this.getDefaultAgentGitRepositorySetupMode(),
+          gitRepositoryUrl: undefined,
+          createVirtualWorkspace: false,
+          createSshConnection: false,
         });
-    }
-  }
-
-  /**
-   * Show a Bootstrap modal
-   */
-  private showModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      // Use Bootstrap 5 Modal API
-      const modal = (window as any).bootstrap?.Modal?.getOrCreateInstance(modalElement.nativeElement);
-
-      if (modal) {
-        modal.show();
-      } else {
-        // Fallback: create new modal instance
-        const Modal = (window as any).bootstrap?.Modal;
-
-        if (Modal) {
-          new Modal(modalElement.nativeElement).show();
-        }
-      }
-    }
-  }
-
-  /**
-   * Hide a Bootstrap modal
-   */
-  private hideModal(modalElement: ElementRef<HTMLDivElement>): void {
-    if (modalElement?.nativeElement) {
-      const modal = (window as any).bootstrap?.Modal?.getInstance(modalElement.nativeElement);
-
-      if (modal) {
-        modal.hide();
-      }
-    }
+      },
+    });
+    watchAgentMutationModalClose({
+      loading$: this.clientsUpdating$,
+      error$: this.clientsError$,
+      open: this.updateClientModalOpen,
+      destroyRef: this.destroyRef,
+      onSuccess: () => {
+        this.editingClientId.set(null);
+        this.editingClient.set({
+          name: '',
+          description: '',
+          endpoint: '',
+          authenticationType: undefined,
+          apiKey: undefined,
+          keycloakClientId: undefined,
+          keycloakClientSecret: undefined,
+          keycloakRealm: undefined,
+          agentWsPort: undefined,
+        });
+      },
+    });
+    watchAgentMutationModalClose({
+      loading$: this.agentsUpdating$,
+      error$: this.agentsError$,
+      open: this.updateAgentModalOpen,
+      destroyRef: this.destroyRef,
+      onSuccess: () => {
+        this.editingAgentId.set(null);
+        this.editingAgent.set({
+          name: '',
+          description: '',
+          containerType: undefined,
+        });
+      },
+    });
+    watchAgentMutationModalClose({
+      loading$: this.autonomyFacade.saving$,
+      error$: this.autonomyFacade.error$,
+      open: this.ticketAutonomyModalOpen,
+      destroyRef: this.destroyRef,
+    });
   }
 
   onAddClientClick(): void {
@@ -3860,7 +3840,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.selectedLocation.set('');
     // Load providers when opening modal
     this.clientsFacade.loadProvisioningProviders();
-    this.showModal(this.addClientModal);
+    showAgentModal(this.addClientModalOpen);
   }
 
   onAddAgentClick(): void {
@@ -3873,7 +3853,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       gitRepositorySetupMode: this.getDefaultAgentGitRepositorySetupMode(),
       gitRepositoryUrl: undefined,
     });
-    this.showModal(this.addAgentModal);
+    showAgentModal(this.addAgentModalOpen);
   }
 
   onClientAuthTypeChange(): void {
@@ -4057,18 +4037,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       }
 
       this.clientsFacade.provisionServer(provisionDto);
-
-      // Subscribe to provisioning completion to close modal
-      this.provisioning$
-        .pipe(
-          filter((provisioning) => !provisioning),
-          take(1),
-          takeUntilDestroyed(this.destroyRef),
-        )
-        .subscribe(() => {
-          this.hideModal(this.addClientModal);
-          this.resetClientForm();
-        });
     } else {
       // Manual client creation flow
       if (!clientData.name || !clientData.endpoint || !clientData.authenticationType) {
@@ -4109,18 +4077,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       }
 
       this.clientsFacade.createClient(createDto);
-
-      // Subscribe to creation completion to close modal
-      this.clientsCreating$
-        .pipe(
-          filter((creating) => !creating),
-          take(1),
-          takeUntilDestroyed(this.destroyRef),
-        )
-        .subscribe(() => {
-          this.hideModal(this.addClientModal);
-          this.resetClientForm();
-        });
     }
   }
 
@@ -4183,28 +4139,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     createDto.createSshConnection = agentData.createSshConnection ?? false;
 
     this.agentsFacade.createClientAgent(clientId, createDto);
-
-    // Subscribe to creation completion to close modal
-    this.agentsCreating$
-      .pipe(
-        filter((creating) => !creating),
-        take(1),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => {
-        this.hideModal(this.addAgentModal);
-        // Reset form
-        this.newAgent.set({
-          name: '',
-          description: '',
-          agentType: undefined,
-          containerType: undefined,
-          gitRepositorySetupMode: this.getDefaultAgentGitRepositorySetupMode(),
-          gitRepositoryUrl: undefined,
-          createVirtualWorkspace: false,
-          createSshConnection: false,
-        });
-      });
   }
 
   private getDefaultAgentGitRepositorySetupMode(): 'clone' | 'empty' {
@@ -4336,7 +4270,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       keycloakRealm: undefined,
       agentWsPort: client.agentWsPort,
     });
-    this.showModal(this.updateClientModal);
+    showAgentModal(this.updateClientModalOpen);
   }
 
   onEditAgentClick(agent: AgentResponseDto): void {
@@ -4347,7 +4281,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       description: agent.description,
       containerType: agent.containerType,
     });
-    this.showModal(this.updateAgentModal);
+    showAgentModal(this.updateAgentModalOpen);
   }
 
   onStartAgent(clientId: string, agentId: string): void {
@@ -4425,30 +4359,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
 
     this.clientsFacade.updateClient(clientId, updateDto);
-
-    // Subscribe to update completion to close modal
-    this.clientsUpdating$
-      .pipe(
-        filter((updating) => !updating),
-        take(1),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => {
-        this.hideModal(this.updateClientModal);
-        // Reset form
-        this.editingClientId.set(null);
-        this.editingClient.set({
-          name: '',
-          description: '',
-          endpoint: '',
-          authenticationType: undefined,
-          apiKey: undefined,
-          keycloakClientId: undefined,
-          keycloakClientSecret: undefined,
-          keycloakRealm: undefined,
-          agentWsPort: undefined,
-        });
-      });
   }
 
   onSubmitUpdateAgent(): void {
@@ -4476,24 +4386,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
 
     this.agentsFacade.updateClientAgent(clientId, agentId, updateDto);
-
-    // Subscribe to update completion to close modal
-    this.agentsUpdating$
-      .pipe(
-        filter((updating) => !updating),
-        take(1),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => {
-        this.hideModal(this.updateAgentModal);
-        // Reset form
-        this.editingAgentId.set(null);
-        this.editingAgent.set({
-          name: '',
-          description: '',
-          containerType: undefined,
-        });
-      });
   }
 
   onManageEnvironmentVariablesClick(agent: AgentResponseDto): void {
@@ -4509,7 +4401,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     // Load environment variables when opening modal
     this.envFacade.loadEnvironmentVariables(clientId, agent.id);
 
-    this.showModal(this.environmentVariablesModal);
+    showAgentModal(this.environmentVariablesModalOpen);
   }
 
   onSubmitCreateEnvironmentVariable(): void {
@@ -4621,7 +4513,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.managingWorkspaceConfigurationClient.set(client);
     this.managingWorkspaceConfigurationClientId.set(client.id);
     this.workspaceConfigFacade.loadSettings(client.id);
-    this.showModal(this.workspaceConfigurationModal);
+    showAgentModal(this.workspaceConfigurationModalOpen);
   }
 
   getEditingWorkspaceConfigurationValue(setting: WorkspaceConfigurationSettingResponseDto): string {
@@ -4703,14 +4595,14 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
   }
 
-  getWorkspaceConfigurationSourceBadgeClass(setting: WorkspaceConfigurationSettingResponseDto): string {
+  getWorkspaceConfigurationSourceBadgeColor(setting: WorkspaceConfigurationSettingResponseDto): FpcBadgeColor {
     switch (setting.source) {
       case 'override':
-        return 'bg-primary-subtle text-primary-emphasis';
+        return 'primary';
       case 'default_env':
-        return 'bg-info-subtle text-info-emphasis';
+        return 'info';
       default:
-        return 'bg-secondary-subtle text-secondary-emphasis';
+        return 'secondary';
     }
   }
 
@@ -4779,7 +4671,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   onManageClientUsersClick(client: ClientResponseDto): void {
     this.managingClientUsersClientId.set(client.id);
     this.clientsFacade.loadClientUsers(client.id);
-    this.showModal(this.clientUsersModal);
+    showAgentModal(this.clientUsersModalOpen);
   }
 
   onSubmitAddClientUser(): void {

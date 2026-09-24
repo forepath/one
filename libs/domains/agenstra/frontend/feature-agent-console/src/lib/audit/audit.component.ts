@@ -11,6 +11,21 @@ import {
   type StatisticsSeriesPoint,
   type UserResponseDto,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
+import {
+  FpcAlertComponent,
+  FpcBadgeComponent,
+  FpcButtonComponent,
+  FpcCollapsibleFilterPanelComponent,
+  FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcPageHeaderComponent,
+  FpcSearchFieldComponent,
+  FpcSpinnerComponent,
+  FpcSummaryBarComponent,
+  FpcSummaryCardComponent,
+  FpcSummaryCardValueDirective,
+} from '@forepath/shared/frontend/ui-components';
 import type {
   ApexAxisChartSeries,
   ApexChart,
@@ -22,6 +37,7 @@ import type {
 import { NgApexchartsModule } from 'ng-apexcharts';
 
 import { getUnavailableDisplayLabel, resolveNamedDisplayLabel } from '../display-name.util';
+import { ClientSelectComponent } from '../client-select/client-select.component';
 
 const PAGE_SIZE = 10;
 const AUDIT_FILTERS_STORAGE_KEY = 'agent-console-audit-filters';
@@ -51,7 +67,26 @@ const BS_CHART_COLORS = [
 @Component({
   selector: 'framework-audit',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgApexchartsModule, RouterLink],
+  imports: [
+    CommonModule,
+    FormsModule,
+    NgApexchartsModule,
+    RouterLink,
+    FpcAlertComponent,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    FpcCollapsibleFilterPanelComponent,
+    FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcPageHeaderComponent,
+    FpcSearchFieldComponent,
+    FpcSpinnerComponent,
+    FpcSummaryBarComponent,
+    FpcSummaryCardComponent,
+    FpcSummaryCardValueDirective,
+    ClientSelectComponent,
+  ],
   providers: [DatePipe],
   templateUrl: './audit.component.html',
   styleUrls: ['./audit.component.scss'],
@@ -61,6 +96,17 @@ export class AuditComponent implements OnInit {
   private readonly clientsFacade = inject(ClientsFacade);
   private readonly statisticsFacade = inject(StatisticsFacade);
   private readonly datePipe = inject(DatePipe);
+
+  readonly pageTitle = $localize`:@@featureAudit-pageTitle:Audit`;
+  readonly filtersPanelTitle = $localize`:@@featureAudit-filtersTitle:Filters`;
+  readonly resetFiltersTitle = $localize`:@@featureAudit-resetFiltersTitle:Reset filters to defaults`;
+  readonly searchPlaceholder = $localize`:@@featureAudit-searchPlaceholder:Search`;
+  readonly loadingLabel = $localize`:@@featureAudit-loading:Loading statistics...`;
+  readonly totalMessagesLabel = $localize`:@@featureAudit-totalMessages:Total messages`;
+  readonly totalWordsLabel = $localize`:@@featureAudit-totalWords:Total words`;
+  readonly avgWordsPerMessageLabel = $localize`:@@featureAudit-avgWordsPerMessage:Avg words/message`;
+  readonly filterFlagsLabel = $localize`:@@featureAudit-filterFlags:Filter flags`;
+  readonly filterDropsLabel = $localize`:@@featureAudit-filterDrops:Filter drops`;
 
   readonly filtersCollapsed = signal(true);
   readonly selectedClientId = signal<string | null>(null);
@@ -218,23 +264,6 @@ export class AuditComponent implements OnInit {
     };
   });
 
-  readonly filtersAreDefault = computed(() => {
-    const defaultFrom = this.formatDateForInput(this.getDefaultFromDate());
-    const defaultTo = this.formatDateForInput(this.getDefaultToDate());
-
-    return (
-      this.selectedClientId() === null &&
-      this.fromDate() === defaultFrom &&
-      this.toDate() === defaultTo &&
-      this.groupBy() === 'day' &&
-      this.chatIoSearch() === '' &&
-      this.filterDropsSearch() === '' &&
-      this.filterFlagsSearch() === '' &&
-      this.entityEventsSearch() === '' &&
-      this.filtersCollapsed() === true
-    );
-  });
-
   ngOnInit(): void {
     const stored = this.loadFilters();
 
@@ -363,6 +392,7 @@ export class AuditComponent implements OnInit {
     this.filterDropsPage.set(0);
     this.filterFlagsPage.set(0);
     this.entityEventsPage.set(0);
+    this.filtersCollapsed.set(true);
     this.applyFilters();
   }
 
@@ -403,8 +433,8 @@ export class AuditComponent implements OnInit {
     this.applyFilters();
   }
 
-  onToggleFilters(): void {
-    this.filtersCollapsed.update((v) => !v);
+  onFiltersOpenChange(open: boolean): void {
+    this.filtersCollapsed.set(!open);
   }
 
   onChatIoPageChange(page: number): void {

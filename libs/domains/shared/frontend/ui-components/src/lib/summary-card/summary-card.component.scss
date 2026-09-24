@@ -1,0 +1,56 @@
+// Cell / row chrome is owned by `fpc-summary-bar` (nth-child and :has need the sibling list).
+// The card only owns layout and typography.
+:host {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  min-width: 0;
+  height: 100%;
+  background: var(--bs-body-bg);
+}
+
+.fpc-summary-card__label {
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+}
+
+// Value and trailing actions share one baseline row so actions sit bottom-right next to the figure.
+.fpc-summary-card__row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.fpc-summary-card__value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.fpc-summary-card__value-text {
+  // Match Bootstrap `fs-4` / `fw-semibold` (also applied by `fpcSummaryCardValue`).
+  font-size: 1.5rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.fpc-summary-card__actions {
+  flex: 0 0 auto;
+}
+
+// Hide when nothing actionable was projected into the inner button group.
+.fpc-summary-card__actions:not(:has(fpc-button, button, a, .btn)) {
+  display: none;
+}
+
+@each $tone in (primary, success, danger, warning, info) {
+  :host(.fpc-summary-card--#{$tone}) .fpc-summary-card__value-text {
+    color: var(--bs-#{$tone}-text-emphasis);
+  }
+}

@@ -1,219 +1,187 @@
 <div class="section__content-wrapper atlassian-import-admin d-flex flex-column border-top">
-  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center flex-wrap gap-2">
-    <div class="d-flex align-items-center flex-wrap gap-2 min-width-0">
-      <h5 class="mb-0 fw-semibold" i18n="@@featureAtlassianImportAdmin-pageTitle">
-        Atlassian import (Jira & Confluence)
-      </h5>
-    </div>
-    <div class="d-flex align-items-center gap-2">
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-secondary"
-        (click)="refresh()"
-        [disabled]="loading$ | async"
-        i18n-title="@@featureAtlassianImportAdmin-refresh"
-        title="Refresh"
-        i18n-aria-label="@@featureAtlassianImportAdmin-refresh"
-        aria-label="Refresh"
-      >
-        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
-      </button>
-    </div>
-  </div>
+  <fpc-page-header [title]="pageTitle">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="dark"
+      size="sm"
+      iconOnly
+      [disabled]="(loading$ | async) === true"
+      [ariaLabel]="refreshTitle"
+      [title]="refreshTitle"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </fpc-page-header>
 
-  <div class="d-flex align-items-center gap-0 d-md-none border-bottom btn-group-options">
+  <fpc-tab-group
+    class="d-md-none flex-shrink-0"
+    [activeId]="selectedLane()"
+    (activeIdChange)="onSelectedLaneTabChange($event)"
+  >
     @for (lane of adminLanes; track lane) {
-      <button
-        type="button"
-        class="btn btn-sm btn-options"
-        [class.btn-outline-secondary]="selectedLane() !== lane"
-        [class.btn-primary]="selectedLane() === lane"
-        (click)="selectedLane.set(lane)"
-      >
-        {{ adminLaneLabel(lane) }}
-      </button>
+      <fpc-tab [id]="lane" [label]="adminLaneLabel(lane)" />
     }
-  </div>
+  </fpc-tab-group>
 
   @if (error$ | async; as err) {
-    <div class="alert alert-danger d-flex align-items-center justify-content-between mb-0" role="alert">
-      <span>{{ err }}</span>
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-danger"
-        (click)="onClearError()"
-        i18n="@@featureAtlassianImportAdmin-dismiss"
-      >
-        Dismiss
-      </button>
-    </div>
+    <fpc-alert
+      [flush]="true"
+      variant="danger"
+      [message]="err"
+      [dismissible]="true"
+      [closeAriaLabel]="dismissAriaLabel"
+      (closed)="onClearError()"
+    />
   }
 
   @if (lastConnectionTest$ | async; as test) {
-    <div
-      class="alert d-flex align-items-center justify-content-between mb-0"
-      [class.alert-success]="test.result.ok"
-      [class.alert-warning]="!test.result.ok"
-      role="status"
+    <fpc-alert
+      [flush]="true"
+      [variant]="test.result.ok ? 'success' : 'warning'"
+      [dismissible]="true"
+      [closeAriaLabel]="dismissAriaLabel"
+      (closed)="onClearTestResult()"
     >
-      <span>
-        <strong i18n="@@featureAtlassianImportAdmin-connectionTestLabel">Connection test:</strong>
-        @if (test.result.ok) {
-          <span i18n="@@featureAtlassianImportAdmin-connectionTestOk">OK</span>
-        } @else {
-          <span i18n="@@featureAtlassianImportAdmin-connectionTestFailed">Failed</span>
-        }
-        @if (test.result.message) {
-          <span> — {{ test.result.message }}</span>
-        }
-      </span>
-      <button
-        type="button"
-        class="btn btn-sm btn-outline-secondary"
-        (click)="onClearTestResult()"
-        i18n="@@featureAtlassianImportAdmin-dismiss"
-      >
-        Dismiss
-      </button>
-    </div>
+      <strong i18n="@@featureAtlassianImportAdmin-connectionTestLabel">Connection test:</strong>
+      @if (test.result.ok) {
+        <span i18n="@@featureAtlassianImportAdmin-connectionTestOk">OK</span>
+      } @else {
+        <span i18n="@@featureAtlassianImportAdmin-connectionTestFailed">Failed</span>
+      }
+      @if (test.result.message) {
+        <span> — {{ test.result.message }}</span>
+      }
+    </fpc-alert>
   }
 
   <section class="section__row flex-grow-1 atlassian-import-admin__lanes">
     <div class="section__column d-md-flex flex-column border-end" [class.d-none]="selectedLane() !== 'connections'">
       <div class="atlassian-import-admin__lane card h-100 border-0">
-        <div
-          class="card-header py-2 small fw-semibold d-none d-md-flex justify-content-between align-items-center gap-2"
-        >
-          <span>{{ adminLaneLabel('connections') }}</span>
-          <button
-            type="button"
-            class="btn btn-primary btn-sm"
-            (click)="openCreateConnectionModal()"
+        <fpc-lane-header flush visibility="md-up">
+          <span fpcLaneHeaderTitle>{{ adminLaneLabel('connections') }}</span>
+          <fpc-button
+            fpcLaneHeaderActions
+            variant="primary"
+            size="sm"
+            [iconOnly]="true"
+            (clicked)="openCreateConnectionModal()"
             i18n-title="@@featureAtlassianImportAdmin-add"
             title="Add"
-            i18n-aria-label="@@featureAtlassianImportAdmin-add"
-            aria-label="Add"
+            i18n-ariaLabel="@@featureAtlassianImportAdmin-add"
+            ariaLabel="Add"
           >
             <i class="bi bi-plus" aria-hidden="true"></i>
-          </button>
-        </div>
+          </fpc-button>
+        </fpc-lane-header>
         <div class="card-body d-flex flex-column flex-grow-1 overflow-hidden min-height-0 p-0">
           <div class="d-flex d-md-none justify-content-end px-3 py-2 border-bottom">
-            <button
-              type="button"
-              class="btn btn-primary btn-sm"
-              (click)="openCreateConnectionModal()"
+            <fpc-button
+              variant="primary"
+              size="sm"
+              [iconOnly]="true"
+              (clicked)="openCreateConnectionModal()"
               i18n-title="@@featureAtlassianImportAdmin-add"
               title="Add"
-              i18n-aria-label="@@featureAtlassianImportAdmin-add"
-              aria-label="Add"
+              i18n-ariaLabel="@@featureAtlassianImportAdmin-add"
+              ariaLabel="Add"
             >
               <i class="bi bi-plus" aria-hidden="true"></i>
-            </button>
+            </fpc-button>
           </div>
-          <div class="input-group search-input-container border-bottom">
-            <i class="bi bi-search" aria-hidden="true"></i>
-            <label
-              class="visually-hidden"
-              for="atlassianImportConnSearch"
-              i18n="@@featureAtlassianImportAdmin-searchConnectionsLabel"
-              >Search site connections</label
-            >
-            <input
-              id="atlassianImportConnSearch"
-              type="search"
-              class="form-control border-0 search-input"
-              name="atlassianImportConnSearch"
-              [ngModel]="connectionsSearchQuery()"
-              (ngModelChange)="connectionsSearchQuery.set($event)"
-              placeholder="Search connections"
-              i18n-placeholder="@@featureAtlassianImportAdmin-searchConnectionsPlaceholder"
-            />
-          </div>
-          <div class="flex-grow-1 overflow-auto min-height-0">
+          <fpc-search-field
+            class="border-bottom flex-shrink-0"
+            inputId="atlassianImportConnSearch"
+            name="atlassianImportConnSearch"
+            [bordered]="false"
+            [placeholder]="searchConnectionsPlaceholder"
+            [ariaLabel]="searchConnectionsLabel"
+            [(value)]="connectionsSearchQuery"
+          />
+          <div class="flex-grow-1 overflow-auto min-height-0 d-flex flex-column min-h-0">
             @if (loading$ | async) {
               <div class="d-flex justify-content-center p-4">
-                <div class="spinner-border text-primary" role="status">
-                  <span class="visually-hidden" i18n="@@featureAtlassianImportAdmin-loadingConnections"
-                    >Loading connections…</span
-                  >
-                </div>
+                <fpc-spinner variant="primary" [label]="loadingConnectionsLabel" />
               </div>
             } @else {
               @if (!connections().length) {
-                <div class="text-center text-muted p-4" i18n="@@featureAtlassianImportAdmin-noConnectionsYet">
-                  No connections yet.
-                </div>
-              } @else if (!connections().length) {
-                <div class="text-center text-muted p-4" i18n="@@featureAtlassianImportAdmin-noConnectionsMatchSearch">
-                  No connections match your search.
-                </div>
+                @if (connectionsSearchQuery().trim()) {
+                  <fpc-empty-state
+                    size="sm"
+                    icon="search"
+                    message="No search results"
+                    i18n-message="@@featureAtlassianImportAdmin-noSearchResults"
+                  />
+                } @else {
+                  <fpc-empty-state
+                    size="sm"
+                    message="No connections yet"
+                    i18n-message="@@featureAtlassianImportAdmin-noConnectionsYet"
+                  />
+                }
               } @else {
-                <div class="list-group list-group-flush">
+                <fpc-list [flush]="true">
                   @for (c of connections(); track c.id) {
-                    <div class="list-group-item border-bottom">
-                      <div class="d-flex justify-content-between align-items-center gap-2">
-                        <div class="flex-grow-1 min-width-0">
-                          <div class="fw-semibold text-break mb-2">{{ c.label || unnamedConnectionLabel() }}</div>
-                          <div class="d-flex flex-wrap gap-1 align-items-center">
-                            @if (connectionHostname(c)) {
-                              <span
-                                class="badge text-bg-secondary text-truncate"
-                                style="max-width: min(100%, 22rem)"
-                                [attr.title]="c.baseUrl"
-                              >
-                                {{ connectionHostname(c) }}
-                              </span>
-                            }
-                            <span
-                              class="badge bg-info text-dark"
-                              style="max-width: min(100%, 22rem)"
-                              [attr.title]="c.accountEmail"
-                            >
-                              {{ c.accountEmail }}
-                            </span>
-                          </div>
-                        </div>
-                        <div
-                          class="btn-group btn-group-sm flex-shrink-0"
-                          role="group"
-                          aria-label="Connection actions"
-                          i18n-aria-label="@@featureAtlassianImportAdmin-connectionActionsAria"
-                        >
-                          <button
-                            type="button"
-                            class="btn btn-outline-secondary"
-                            (click)="testConnection(c.id)"
-                            [disabled]="(testingConnectionId$ | async) === c.id || (saving$ | async)"
-                            title="Test connection"
-                            i18n-title="@@featureAtlassianImportAdmin-testConnectionTitle"
-                          >
-                            <i class="bi bi-lightning-charge" aria-hidden="true"></i>
-                          </button>
-                          <button
-                            type="button"
-                            class="btn btn-outline-warning"
-                            (click)="openEditConnection(c)"
-                            title="Edit connection"
-                            i18n-title="@@featureAtlassianImportAdmin-editConnectionTitle"
-                          >
-                            <i class="bi bi-pencil" aria-hidden="true"></i>
-                          </button>
-                          <button
-                            type="button"
-                            class="btn btn-outline-danger"
-                            (click)="openDeleteConnectionConfirm(c)"
-                            [disabled]="deleting$ | async"
-                            title="Delete connection"
-                            i18n-title="@@featureAtlassianImportAdmin-deleteConnectionTitle"
-                          >
-                            <i class="bi bi-trash" aria-hidden="true"></i>
-                          </button>
-                        </div>
+                    <fpc-list-item>
+                      <div fpcListItemTitle class="fw-semibold text-break">
+                        {{ c.label || unnamedConnectionLabel() }}
                       </div>
-                    </div>
+                      <div fpcListItemMeta class="small d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+                        @if (connectionHostname(c)) {
+                          <span class="me-2 text-truncate" style="max-width: min(100%, 22rem)" [attr.title]="c.baseUrl">
+                            <i class="bi bi-globe me-1" aria-hidden="true"></i>{{ connectionHostname(c) }}
+                          </span>
+                        }
+                        <span
+                          class="me-2 text-truncate"
+                          style="max-width: min(100%, 22rem)"
+                          [attr.title]="c.accountEmail"
+                        >
+                          <i class="bi bi-envelope me-1" aria-hidden="true"></i>{{ c.accountEmail }}
+                        </span>
+                      </div>
+                      <fpc-button-group
+                        fpcListItemActions
+                        size="sm"
+                        ariaLabel="Connection actions"
+                        i18n-ariaLabel="@@featureAtlassianImportAdmin-connectionActionsAria"
+                      >
+                        <fpc-button
+                          variant="dark"
+                          size="sm"
+                          [iconOnly]="true"
+                          (clicked)="testConnection(c.id)"
+                          [disabled]="(testingConnectionId$ | async) === c.id || (saving$ | async)"
+                          title="Test connection"
+                          i18n-title="@@featureAtlassianImportAdmin-testConnectionTitle"
+                        >
+                          <i class="bi bi-lightning-charge" aria-hidden="true"></i>
+                        </fpc-button>
+                        <fpc-button
+                          variant="warning"
+                          size="sm"
+                          [iconOnly]="true"
+                          (clicked)="openEditConnection(c)"
+                          title="Edit connection"
+                          i18n-title="@@featureAtlassianImportAdmin-editConnectionTitle"
+                        >
+                          <i class="bi bi-pencil" aria-hidden="true"></i>
+                        </fpc-button>
+                        <fpc-button
+                          variant="danger"
+                          size="sm"
+                          [iconOnly]="true"
+                          (clicked)="openDeleteConnectionConfirm(c)"
+                          [disabled]="!!(deleting$ | async)"
+                          title="Delete connection"
+                          i18n-title="@@featureAtlassianImportAdmin-deleteConnectionTitle"
+                        >
+                          <i class="bi bi-trash" aria-hidden="true"></i>
+                        </fpc-button>
+                      </fpc-button-group>
+                    </fpc-list-item>
                   }
-                </div>
+                </fpc-list>
               }
             }
           </div>
@@ -223,193 +191,180 @@
 
     <div class="section__column d-md-flex flex-column" [class.d-none]="selectedLane() !== 'configs'">
       <div class="atlassian-import-admin__lane card h-100 border-0">
-        <div
-          class="card-header py-2 small fw-semibold d-none d-md-flex justify-content-between align-items-center gap-2"
-        >
-          <span>{{ adminLaneLabel('configs') }}</span>
-          <button
-            type="button"
-            class="btn btn-primary btn-sm"
-            (click)="openCreateConfigModal()"
+        <fpc-lane-header flush visibility="md-up">
+          <span fpcLaneHeaderTitle>{{ adminLaneLabel('configs') }}</span>
+          <fpc-button
+            fpcLaneHeaderActions
+            variant="primary"
+            size="sm"
+            [iconOnly]="true"
+            (clicked)="openCreateConfigModal()"
             i18n-title="@@featureAtlassianImportAdmin-add"
             title="Add"
-            i18n-aria-label="@@featureAtlassianImportAdmin-add"
-            aria-label="Add"
+            i18n-ariaLabel="@@featureAtlassianImportAdmin-add"
+            ariaLabel="Add"
           >
             <i class="bi bi-plus" aria-hidden="true"></i>
-          </button>
-        </div>
+          </fpc-button>
+        </fpc-lane-header>
         <div class="card-body d-flex flex-column flex-grow-1 overflow-hidden min-height-0 p-0">
           <div class="d-flex d-md-none justify-content-end px-3 py-2 border-bottom">
-            <button
-              type="button"
-              class="btn btn-primary btn-sm"
-              (click)="openCreateConfigModal()"
+            <fpc-button
+              variant="primary"
+              size="sm"
+              [iconOnly]="true"
+              (clicked)="openCreateConfigModal()"
               i18n-title="@@featureAtlassianImportAdmin-add"
               title="Add"
-              i18n-aria-label="@@featureAtlassianImportAdmin-add"
-              aria-label="Add"
+              i18n-ariaLabel="@@featureAtlassianImportAdmin-add"
+              ariaLabel="Add"
             >
               <i class="bi bi-plus" aria-hidden="true"></i>
-            </button>
+            </fpc-button>
           </div>
-          <div class="input-group search-input-container border-bottom">
-            <i class="bi bi-search" aria-hidden="true"></i>
-            <label
-              class="visually-hidden"
-              for="atlassianImportCfgSearch"
-              i18n="@@featureAtlassianImportAdmin-searchConfigsLabel"
-              >Search import configs</label
-            >
-            <input
-              id="atlassianImportCfgSearch"
-              type="search"
-              class="form-control border-0 search-input"
-              name="atlassianImportCfgSearch"
-              [ngModel]="configsSearchQuery()"
-              (ngModelChange)="configsSearchQuery.set($event)"
-              placeholder="Search import configs"
-              i18n-placeholder="@@featureAtlassianImportAdmin-searchConfigsPlaceholder"
-            />
-          </div>
-          <div class="flex-grow-1 overflow-auto min-height-0">
+          <fpc-search-field
+            class="border-bottom flex-shrink-0"
+            inputId="atlassianImportCfgSearch"
+            name="atlassianImportCfgSearch"
+            [bordered]="false"
+            [placeholder]="searchConfigsPlaceholder"
+            [ariaLabel]="searchConfigsLabel"
+            [(value)]="configsSearchQuery"
+          />
+          <div class="flex-grow-1 overflow-auto min-height-0 d-flex flex-column min-h-0">
             @if (loading$ | async) {
               <div class="d-flex justify-content-center p-4">
-                <div class="spinner-border text-primary" role="status">
-                  <span class="visually-hidden" i18n="@@featureAtlassianImportAdmin-loadingConfigs"
-                    >Loading configs…</span
-                  >
-                </div>
+                <fpc-spinner variant="primary" [label]="loadingConfigsLabel" />
               </div>
             } @else {
               @if (!configs().length) {
-                <div class="text-center text-muted p-4" i18n="@@featureAtlassianImportAdmin-noConfigsYet">
-                  No import configs yet.
-                </div>
-              } @else if (!configs().length) {
-                <div class="text-center text-muted p-4" i18n="@@featureAtlassianImportAdmin-noConfigsMatchSearch">
-                  No import configs match your search.
-                </div>
+                @if (configsSearchQuery().trim()) {
+                  <fpc-empty-state
+                    size="sm"
+                    icon="search"
+                    message="No search results"
+                    i18n-message="@@featureAtlassianImportAdmin-noSearchResults"
+                  />
+                } @else {
+                  <fpc-empty-state
+                    size="sm"
+                    message="No import configs yet"
+                    i18n-message="@@featureAtlassianImportAdmin-noConfigsYet"
+                  />
+                }
               } @else {
                 @let runningConfigId = runningConfigId$ | async;
                 @let savingActive = saving$ | async;
-                <div class="list-group list-group-flush">
+                <fpc-list [flush]="true">
                   @for (cfg of configs(); track cfg.id) {
-                    <div class="list-group-item border-bottom">
-                      <div class="d-flex justify-content-between align-items-center gap-2">
-                        <div class="flex-grow-1 min-width-0">
-                          <div class="d-flex align-items-center gap-2 mb-2">
-                            @if (cfg.enabled) {
-                              <span class="badge text-bg-success" i18n="@@featureAtlassianImportAdmin-badgeOn">On</span>
-                            } @else {
-                              <span class="badge text-bg-secondary" i18n="@@featureAtlassianImportAdmin-badgeOff"
-                                >Off</span
-                              >
-                            }
-                            <div class="fw-semibold text-capitalize">{{ cfg.importKind }}</div>
-                          </div>
-                          @if (cfg.importKind === 'jira') {
-                            <pre
-                              class="atlassian-import-admin__config-query small bg-body-secondary border rounded p-2"
-                            ><code class="text-body">{{ (cfg.jql ?? '').trim() ? cfg.jql : emptyFieldMarker() }}</code></pre>
-                          } @else {
-                            <pre
-                              class="atlassian-import-admin__config-query small bg-body-secondary border rounded p-2"
-                            ><code class="text-body">{{ displayConfluenceSearchCql(cfg) }}</code></pre>
-                          }
-                          <div class="small text-muted d-flex flex-column gap-2">
-                            <div class="d-flex align-items-center gap-2 flex-wrap">
-                              <span class="d-inline-flex align-items-center gap-1 flex-wrap text-body-secondary">
-                                <span class="badge text-bg-secondary" [attr.title]="connectionNameForConfig(cfg)">{{
-                                  connectionNameForConfig(cfg)
-                                }}</span>
-                                @if (cfg.importKind === 'jira') {
-                                  <span class="badge bg-info text-dark">{{ cfg.jiraBoardId }}</span>
-                                }
-                                <span class="text-muted" i18n="@@featureAtlassianImportAdmin-connectionToWorkspace"
-                                  >to</span
-                                >
-                                <span class="badge text-bg-secondary" [attr.title]="clientName(cfg.clientId)">{{
-                                  clientName(cfg.clientId)
-                                }}</span>
-                              </span>
-                            </div>
-                            <div class="d-inline-flex align-items-center gap-1 flex-wrap">
-                              @if (cfg.lastRunAt) {
-                                <span class="text-success">
-                                  <i class="bi bi-clock-history me-1" aria-hidden="true"></i>
-                                  <span>{{ cfg.lastRunAt | date: 'medium' }}</span>
-                                </span>
-                              } @else {
-                                <span class="text-muted">
-                                  <i class="bi bi-clock me-1" aria-hidden="true"></i>
-                                  <span i18n="@@featureAtlassianImportAdmin-neverRun">Never run</span>
-                                </span>
-                              }
-                            </div>
-                          </div>
-                          @if (cfg.lastError) {
-                            <div class="alert alert-danger small py-2 mt-2 mb-0" role="alert">{{ cfg.lastError }}</div>
-                          }
-                        </div>
-                        <div
-                          class="btn-group btn-group-sm flex-shrink-0"
-                          role="group"
-                          aria-label="Import config actions"
-                          i18n-aria-label="@@featureAtlassianImportAdmin-configActionsAria"
+                    <fpc-list-item>
+                      <div fpcListItemTitle class="d-flex align-items-center gap-2">
+                        @if (cfg.enabled) {
+                          <fpc-badge color="success" i18n="@@featureAtlassianImportAdmin-badgeOn">On</fpc-badge>
+                        } @else {
+                          <fpc-badge color="secondary" i18n="@@featureAtlassianImportAdmin-badgeOff">Off</fpc-badge>
+                        }
+                        <div class="fw-semibold text-capitalize">{{ cfg.importKind }}</div>
+                      </div>
+                      <fpc-button-group
+                        fpcListItemActions
+                        size="sm"
+                        ariaLabel="Import config actions"
+                        i18n-ariaLabel="@@featureAtlassianImportAdmin-configActionsAria"
+                      >
+                        <fpc-button
+                          variant="dark"
+                          size="sm"
+                          [iconOnly]="true"
+                          [loading]="runningConfigId === cfg.id"
+                          (clicked)="runConfig(cfg.id)"
+                          [disabled]="runningConfigId === cfg.id || !!savingActive || !cfg.enabled"
+                          title="Run import now"
+                          i18n-title="@@featureAtlassianImportAdmin-runImportTitle"
                         >
-                          <button
-                            type="button"
-                            class="btn btn-outline-success"
-                            (click)="runConfig(cfg.id)"
-                            [disabled]="runningConfigId === cfg.id || !!savingActive || !cfg.enabled"
-                            [attr.aria-busy]="runningConfigId === cfg.id"
-                            title="Run import now"
-                            i18n-title="@@featureAtlassianImportAdmin-runImportTitle"
-                          >
-                            @if (runningConfigId === cfg.id) {
-                              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                              <span class="visually-hidden" i18n="@@featureAtlassianImportAdmin-runningImport"
-                                >Running import…</span
-                              >
-                            } @else {
-                              <i class="bi bi-play-fill" aria-hidden="true"></i>
+                          @if (runningConfigId !== cfg.id) {
+                            <i class="bi bi-play-fill" aria-hidden="true"></i>
+                          }
+                        </fpc-button>
+                        <fpc-button
+                          variant="dark"
+                          size="sm"
+                          [iconOnly]="true"
+                          (clicked)="openClearMarkersConfirm(cfg)"
+                          [disabled]="(clearingMarkersId$ | async) === cfg.id"
+                          title="Clear sync markers"
+                          i18n-title="@@featureAtlassianImportAdmin-clearMarkersTitle"
+                        >
+                          <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                        </fpc-button>
+                        <fpc-button
+                          variant="warning"
+                          size="sm"
+                          [iconOnly]="true"
+                          (clicked)="openEditConfig(cfg)"
+                          title="Edit import config"
+                          i18n-title="@@featureAtlassianImportAdmin-editConfigTitle"
+                        >
+                          <i class="bi bi-pencil" aria-hidden="true"></i>
+                        </fpc-button>
+                        <fpc-button
+                          variant="danger"
+                          size="sm"
+                          [iconOnly]="true"
+                          (clicked)="openDeleteConfigConfirm(cfg)"
+                          [disabled]="!!(deleting$ | async)"
+                          title="Delete import config"
+                          i18n-title="@@featureAtlassianImportAdmin-deleteConfigTitle"
+                        >
+                          <i class="bi bi-trash" aria-hidden="true"></i>
+                        </fpc-button>
+                      </fpc-button-group>
+                      @if (cfg.importKind === 'jira') {
+                        <pre
+                          class="atlassian-import-admin__config-query small bg-body-secondary border rounded p-2"
+                        ><code class="text-body">{{ (cfg.jql ?? '').trim() ? cfg.jql : emptyFieldMarker() }}</code></pre>
+                      } @else {
+                        <pre
+                          class="atlassian-import-admin__config-query small bg-body-secondary border rounded p-2"
+                        ><code class="text-body">{{ displayConfluenceSearchCql(cfg) }}</code></pre>
+                      }
+                      <div class="small text-muted d-flex flex-column gap-2">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                          <span class="d-inline-flex align-items-center gap-1 flex-wrap text-body-secondary">
+                            <fpc-badge color="secondary" [attr.title]="connectionNameForConfig(cfg)">{{
+                              connectionNameForConfig(cfg)
+                            }}</fpc-badge>
+                            @if (cfg.importKind === 'jira') {
+                              <fpc-badge color="info">{{ cfg.jiraBoardId }}</fpc-badge>
                             }
-                          </button>
-                          <button
-                            type="button"
-                            class="btn btn-outline-secondary"
-                            (click)="openClearMarkersConfirm(cfg)"
-                            [disabled]="(clearingMarkersId$ | async) === cfg.id"
-                            title="Clear sync markers"
-                            i18n-title="@@featureAtlassianImportAdmin-clearMarkersTitle"
-                          >
-                            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
-                          </button>
-                          <button
-                            type="button"
-                            class="btn btn-outline-warning"
-                            (click)="openEditConfig(cfg)"
-                            title="Edit import config"
-                            i18n-title="@@featureAtlassianImportAdmin-editConfigTitle"
-                          >
-                            <i class="bi bi-pencil" aria-hidden="true"></i>
-                          </button>
-                          <button
-                            type="button"
-                            class="btn btn-outline-danger"
-                            (click)="openDeleteConfigConfirm(cfg)"
-                            [disabled]="deleting$ | async"
-                            title="Delete import config"
-                            i18n-title="@@featureAtlassianImportAdmin-deleteConfigTitle"
-                          >
-                            <i class="bi bi-trash" aria-hidden="true"></i>
-                          </button>
+                            <span class="text-muted" i18n="@@featureAtlassianImportAdmin-connectionToWorkspace"
+                              >to</span
+                            >
+                            <fpc-badge color="secondary" [attr.title]="clientName(cfg.clientId)">{{
+                              clientName(cfg.clientId)
+                            }}</fpc-badge>
+                          </span>
+                        </div>
+                        <div class="d-inline-flex align-items-center gap-1 flex-wrap">
+                          @if (cfg.lastRunAt) {
+                            <span class="text-success">
+                              <i class="bi bi-clock-history me-1" aria-hidden="true"></i>
+                              <span>{{ cfg.lastRunAt | date: 'medium' }}</span>
+                            </span>
+                          } @else {
+                            <span class="text-muted">
+                              <i class="bi bi-clock me-1" aria-hidden="true"></i>
+                              <span i18n="@@featureAtlassianImportAdmin-neverRun">Never run</span>
+                            </span>
+                          }
                         </div>
                       </div>
-                    </div>
+                      @if (cfg.lastError) {
+                        <fpc-alert class="mt-2" variant="danger" [message]="cfg.lastError" />
+                      }
+                    </fpc-list-item>
                   }
-                </div>
+                </fpc-list>
               }
             }
           </div>
@@ -418,917 +373,742 @@
     </div>
   </section>
 
-  <div
-    class="modal fade"
-    id="createAtlassianConnectionModal"
-    tabindex="-1"
-    aria-labelledby="createAtlassianConnectionModalLabel"
-    aria-hidden="true"
-    #createConnectionModal
-    data-bs-backdrop="static"
-    (hidden.bs.modal)="onCreateConnectionModalHidden()"
+  <fpc-modal
+    [(open)]="createConnectionModalOpen"
+    i18n-title="@@featureAtlassianImportAdmin-newConnectionTitle"
+    title="New connection"
+    size="lg"
+    [closeOnBackdrop]="false"
+    (closed)="onCreateConnectionModalHidden()"
   >
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2
-            class="modal-title h5"
-            id="createAtlassianConnectionModalLabel"
-            i18n="@@featureAtlassianImportAdmin-newConnectionTitle"
-          >
-            New connection
-          </h2>
-          <button
-            type="button"
-            class="btn-close"
-            aria-label="Close"
-            i18n-aria-label="@@featureAtlassianImportAdmin-closeAria"
-            (click)="onCloseCreateConnectionModal()"
-          ></button>
-        </div>
-        <div class="modal-body">
-          <div class="row g-2">
-            <div class="col-md-6">
-              <label class="form-label" for="newConnLabel" i18n="@@featureAtlassianImportAdmin-newConnLabel"
-                >Label (optional)</label
-              >
-              <input id="newConnLabel" class="form-control form-control-sm" [(ngModel)]="newConnection.label" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label" for="newConnBase" i18n="@@featureAtlassianImportAdmin-newConnBaseUrl"
-                >Base URL</label
-              >
-              <input
-                id="newConnBase"
-                class="form-control form-control-sm"
-                [(ngModel)]="newConnection.baseUrl"
-                placeholder="https://your-site.atlassian.net"
-                i18n-placeholder="@@featureAtlassianImportAdmin-newConnBaseUrlPlaceholder"
-              />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label" for="newConnEmail" i18n="@@featureAtlassianImportAdmin-newConnAccountEmail"
-                >Account email</label
-              >
-              <input id="newConnEmail" class="form-control form-control-sm" [(ngModel)]="newConnection.accountEmail" />
-            </div>
-            <div class="col-md-6">
-              <label class="form-label" for="newConnToken" i18n="@@featureAtlassianImportAdmin-newConnApiToken"
-                >API token</label
-              >
-              <input
-                id="newConnToken"
-                type="password"
-                class="form-control form-control-sm"
-                [(ngModel)]="newConnection.apiToken"
-                autocomplete="new-password"
-              />
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-primary"
-            (click)="submitNewConnection()"
-            [disabled]="saving$ | async"
-            i18n="@@featureAtlassianImportAdmin-create"
-          >
-            Create
-          </button>
-        </div>
+    <div class="row g-2">
+      <div class="col-md-6">
+        <fpc-form-field
+          forId="newConnLabel"
+          i18n-label="@@featureAtlassianImportAdmin-newConnLabel"
+          label="Label (optional)"
+        >
+          <fpc-form-control controlId="newConnLabel" size="sm" [(ngModel)]="newConnection.label" />
+        </fpc-form-field>
+      </div>
+      <div class="col-md-6">
+        <fpc-form-field forId="newConnBase" i18n-label="@@featureAtlassianImportAdmin-newConnBaseUrl" label="Base URL">
+          <fpc-form-control
+            controlId="newConnBase"
+            size="sm"
+            [(ngModel)]="newConnection.baseUrl"
+            placeholder="https://your-site.atlassian.net"
+            i18n-placeholder="@@featureAtlassianImportAdmin-newConnBaseUrlPlaceholder"
+          />
+        </fpc-form-field>
+      </div>
+      <div class="col-md-6">
+        <fpc-form-field
+          forId="newConnEmail"
+          i18n-label="@@featureAtlassianImportAdmin-newConnAccountEmail"
+          label="Account email"
+        >
+          <fpc-form-control controlId="newConnEmail" size="sm" [(ngModel)]="newConnection.accountEmail" />
+        </fpc-form-field>
+      </div>
+      <div class="col-md-6">
+        <fpc-form-field
+          forId="newConnToken"
+          i18n-label="@@featureAtlassianImportAdmin-newConnApiToken"
+          label="API token"
+        >
+          <fpc-form-control
+            controlId="newConnToken"
+            size="sm"
+            inputType="password"
+            [(ngModel)]="newConnection.apiToken"
+            autocomplete="new-password"
+          />
+        </fpc-form-field>
       </div>
     </div>
-  </div>
+    <div *fpcModalFooter>
+      <fpc-button
+        variant="primary"
+        [loading]="(saving$ | async) === true"
+        [disabled]="!!(saving$ | async)"
+        (clicked)="submitNewConnection()"
+        i18n="@@featureAtlassianImportAdmin-create"
+      >
+        Create
+      </fpc-button>
+    </div>
+  </fpc-modal>
 
-  <div
-    class="modal fade"
-    id="createAtlassianImportConfigModal"
-    tabindex="-1"
-    aria-labelledby="createAtlassianImportConfigModalLabel"
-    aria-hidden="true"
-    #createConfigModal
-    data-bs-backdrop="static"
-    (hidden.bs.modal)="onCreateConfigModalHidden()"
+  <fpc-modal
+    [(open)]="createConfigModalOpen"
+    i18n-title="@@featureAtlassianImportAdmin-newConfigTitle"
+    title="New import config"
+    size="xl"
+    [closeOnBackdrop]="false"
+    (closed)="onCreateConfigModalHidden()"
   >
-    <div class="modal-dialog modal-xl">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2
-            class="modal-title h5"
-            id="createAtlassianImportConfigModalLabel"
-            i18n="@@featureAtlassianImportAdmin-newConfigTitle"
+    <div class="row g-2">
+      <div class="col-md-4">
+        <fpc-form-field
+          forId="newCfgConn"
+          i18n-label="@@featureAtlassianImportAdmin-fieldConnection"
+          label="Connection"
+        >
+          <fpc-form-control
+            controlType="select"
+            controlId="newCfgConn"
+            size="sm"
+            [(ngModel)]="newConfig.atlassianConnectionId"
           >
-            New import config
-          </h2>
-          <button
-            type="button"
-            class="btn-close"
-            aria-label="Close"
-            i18n-aria-label="@@featureAtlassianImportAdmin-closeAria"
-            (click)="onCloseCreateConfigModal()"
-          ></button>
-        </div>
-        <div class="modal-body">
-          <div class="row g-2">
-            <div class="col-md-4">
-              <label class="form-label" for="newCfgConn" i18n="@@featureAtlassianImportAdmin-fieldConnection"
-                >Connection</label
-              >
-              <select id="newCfgConn" class="form-select form-select-sm" [(ngModel)]="newConfig.atlassianConnectionId">
-                <option value="" i18n="@@featureAtlassianImportAdmin-selectPlaceholder">Select…</option>
-                @for (c of connections(); track c.id) {
-                  <option [value]="c.id">{{ connectionLabel(c) }}</option>
-                }
-              </select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label" for="newCfgClient" i18n="@@featureAtlassianImportAdmin-fieldWorkspace"
-                >Workspace</label
-              >
-              <select
-                id="newCfgClient"
-                class="form-select form-select-sm"
-                [(ngModel)]="newConfig.clientId"
-                (ngModelChange)="onWorkspaceDataLoad($event)"
-              >
-                <option value="" i18n="@@featureAtlassianImportAdmin-selectPlaceholder">Select…</option>
-                @for (cl of clients(); track cl.id) {
-                  <option [value]="cl.id">{{ cl.name }}</option>
-                }
-              </select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label" for="newCfgKind" i18n="@@featureAtlassianImportAdmin-fieldKind">Kind</label>
-              <select
-                id="newCfgKind"
-                class="form-select form-select-sm"
-                [ngModel]="newConfig.importKind"
-                (ngModelChange)="onNewConfigKindChange($event)"
-              >
-                <option value="jira" i18n="@@featureAtlassianImportAdmin-importKindJira">Jira</option>
-                <option value="confluence" i18n="@@featureAtlassianImportAdmin-importKindConfluence">Confluence</option>
-              </select>
-            </div>
-            <div class="col-12">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="newCfgEn" [(ngModel)]="newConfig.enabled" />
-                <label class="form-check-label" for="newCfgEn" i18n="@@featureAtlassianImportAdmin-fieldEnabled"
-                  >Enabled</label
-                >
-              </div>
-            </div>
-            @if (newConfig.importKind === 'jira') {
-              <div class="col-md-4">
-                <label class="form-label" for="newCfgBoard" i18n="@@featureAtlassianImportAdmin-newBoardIdOptional"
-                  >Board ID (optional)</label
-                >
-                <input
-                  id="newCfgBoard"
-                  class="form-control form-control-sm"
-                  [(ngModel)]="newConfigJiraBoardIdText"
-                  placeholder="e.g. 123"
-                  i18n-placeholder="@@featureAtlassianImportAdmin-boardIdExamplePlaceholder"
-                />
-              </div>
-              <div class="col-md-8">
-                <label class="form-label" for="newCfgJql">
-                  <ng-container i18n="@@featureAtlassianImportAdmin-fieldJql">JQL</ng-container>
-                  <span class="text-danger">*</span>
-                </label>
-                <textarea
-                  id="newCfgJql"
-                  class="form-control form-control-sm"
-                  rows="2"
-                  [(ngModel)]="newConfig.jql"
-                  spellcheck="false"
-                ></textarea>
-                <div class="form-text" i18n="@@featureAtlassianImportAdmin-jqlHelp">
-                  Required. Imported issues are not capped per run.
-                </div>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label" for="newCfgSwimlane" i18n="@@featureAtlassianImportAdmin-fieldImportSwimlane"
-                  >Import swimlane</label
-                >
-                <select
-                  id="newCfgSwimlane"
-                  class="form-select form-select-sm"
-                  name="newCfgSwimlane"
-                  [(ngModel)]="newConfig.importTargetTicketStatus"
-                >
-                  @for (opt of jiraSwimlaneOptions; track opt.value) {
-                    <option [ngValue]="opt.value">{{ opt.label }}</option>
-                  }
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label
-                  class="form-label"
-                  for="newCfgParentTicket"
-                  i18n="@@featureAtlassianImportAdmin-newParentTicketOptional"
-                >
-                  Parent ticket (optional)
-                </label>
-                <div class="position-relative">
-                  <input
-                    id="newCfgParentTicket"
-                    type="text"
-                    class="form-control form-control-sm"
-                    autocomplete="off"
-                    [ngModel]="newParentTicketSearch"
-                    (ngModelChange)="onNewParentTicketInput($event)"
-                    (focus)="onNewParentTicketFocus()"
-                    (blur)="onNewParentTicketBlur()"
-                    placeholder="Search by title or ID"
-                    i18n-placeholder="@@featureAtlassianImportAdmin-searchParentTicketPlaceholder"
-                  />
-                  @if (newParentTicketSuggestOpen && newParentTicketSuggestions().length > 0) {
-                    <ul
-                      class="dropdown-menu show position-absolute shadow-sm border mt-1 py-0 w-100"
-                      style="z-index: 2000; max-height: 240px; overflow-y: auto"
-                    >
-                      @for (t of newParentTicketSuggestions(); track t.id) {
-                        <li>
-                          <button
-                            type="button"
-                            class="dropdown-item py-2 text-start"
-                            (mousedown)="onPickNewParentTicket(t, $event)"
-                          >
-                            <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
-                              <span class="font-monospace text-muted small flex-shrink-0">{{ t.shas?.short }}</span>
-                              <span class="text-truncate small flex-grow-1 min-width-0">{{ t.title }}</span>
-                            </span>
-                          </button>
-                        </li>
-                      }
-                    </ul>
-                  }
-                </div>
-                @if (newConfig.agenstraParentTicketId) {
-                  <div class="small text-muted mt-1 d-flex align-items-center gap-2">
-                    <span class="text-truncate" i18n="@@featureAtlassianImportAdmin-selectedParentTicket">
-                      Selected: {{ newConfig.agenstraParentTicketId }}
-                    </span>
-                    <button
-                      type="button"
-                      class="btn btn-link btn-sm p-0"
-                      (click)="clearNewParentTicket()"
-                      i18n="@@featureAtlassianImportAdmin-clearSelection"
-                    >
-                      Clear
-                    </button>
-                  </div>
-                }
-              </div>
-            } @else {
-              <div class="col-md-4">
-                <label class="form-label" for="newCfgSpace" i18n="@@featureAtlassianImportAdmin-newSpaceKeyOptional"
-                  >Space key (optional)</label
-                >
-                <input
-                  id="newCfgSpace"
-                  class="form-control form-control-sm"
-                  [(ngModel)]="newConfig.confluenceSpaceKey"
-                />
-              </div>
-              <div class="col-md-4">
-                <label class="form-label" for="newCfgRoot" i18n="@@featureAtlassianImportAdmin-newRootPageIdOptional"
-                  >Root page ID (optional)</label
-                >
-                <input
-                  id="newCfgRoot"
-                  class="form-control form-control-sm"
-                  [(ngModel)]="newConfig.confluenceRootPageId"
-                />
-              </div>
-              <div class="col-md-12">
-                <label class="form-label" for="newCfgCql">
-                  <ng-container i18n="@@featureAtlassianImportAdmin-fieldCql">CQL</ng-container>
-                  <span class="text-danger">*</span>
-                </label>
-                <textarea
-                  id="newCfgCql"
-                  class="form-control form-control-sm"
-                  rows="2"
-                  [(ngModel)]="newConfig.cql"
-                  spellcheck="false"
-                ></textarea>
-                <div class="form-text" i18n="@@featureAtlassianImportAdmin-cqlHelp">
-                  Required. Matching pages are fetched in full (paginated against Confluence).
-                </div>
-              </div>
-              <div class="col-md-6">
-                <label
-                  class="form-label"
-                  for="newCfgParentFolder"
-                  i18n="@@featureAtlassianImportAdmin-newParentFolderOptional"
-                >
-                  Parent folder (optional)
-                </label>
-                <div class="position-relative">
-                  <input
-                    id="newCfgParentFolder"
-                    type="text"
-                    class="form-control form-control-sm"
-                    autocomplete="off"
-                    [ngModel]="newParentFolderSearch"
-                    (ngModelChange)="onNewParentFolderInput($event)"
-                    (focus)="onNewParentFolderFocus()"
-                    (blur)="onNewParentFolderBlur()"
-                    placeholder="Search folder title or SHA"
-                    i18n-placeholder="@@featureAtlassianImportAdmin-searchParentFolderPlaceholder"
-                  />
-                  @if (newParentFolderSuggestOpen && newParentFolderSuggestions().length > 0) {
-                    <ul
-                      class="dropdown-menu show position-absolute shadow-sm border mt-1 py-0 w-100"
-                      style="z-index: 2000; max-height: 240px; overflow-y: auto"
-                    >
-                      @for (n of newParentFolderSuggestions(); track n.id) {
-                        <li>
-                          <button
-                            type="button"
-                            class="dropdown-item py-2 text-start"
-                            (mousedown)="onPickNewParentFolder(n, $event)"
-                          >
-                            <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
-                              <span class="font-monospace text-muted small flex-shrink-0">{{ n.shas.short }}</span>
-                              <span
-                                class="text-truncate small flex-grow-1 min-width-0"
-                                i18n="@@featureAtlassianImportAdmin-folderSuggestRow"
-                              >
-                                Folder · {{ n.title }}
-                              </span>
-                            </span>
-                          </button>
-                        </li>
-                      }
-                    </ul>
-                  }
-                </div>
-                @if (newConfig.agenstraParentFolderId) {
-                  <div class="small text-muted mt-1 d-flex align-items-center gap-2">
-                    <span class="text-truncate" i18n="@@featureAtlassianImportAdmin-selectedParentFolder">
-                      Selected: {{ newConfig.agenstraParentFolderId }}
-                    </span>
-                    <button
-                      type="button"
-                      class="btn btn-link btn-sm p-0"
-                      (click)="clearNewParentFolder()"
-                      i18n="@@featureAtlassianImportAdmin-clearSelection"
-                    >
-                      Clear
-                    </button>
-                  </div>
-                }
-              </div>
+            <option value="" i18n="@@featureAtlassianImportAdmin-selectPlaceholder">Select…</option>
+            @for (c of connections(); track c.id) {
+              <option [value]="c.id">{{ connectionLabel(c) }}</option>
             }
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-primary"
-            (click)="submitNewConfig()"
-            [disabled]="saving$ | async"
-            i18n="@@featureAtlassianImportAdmin-create"
-          >
-            Create
-          </button>
-        </div>
+          </fpc-form-control>
+        </fpc-form-field>
       </div>
+      <div class="col-md-4">
+        <fpc-form-field
+          forId="newCfgClient"
+          i18n-label="@@featureAtlassianImportAdmin-fieldWorkspace"
+          label="Workspace"
+        >
+          <fpc-form-control
+            controlType="select"
+            controlId="newCfgClient"
+            size="sm"
+            [(ngModel)]="newConfig.clientId"
+            (ngModelChange)="onWorkspaceDataLoad($event)"
+          >
+            <option value="" i18n="@@featureAtlassianImportAdmin-selectPlaceholder">Select…</option>
+            @for (cl of clients(); track cl.id) {
+              <option [value]="cl.id">{{ cl.name }}</option>
+            }
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+      <div class="col-md-4">
+        <fpc-form-field forId="newCfgKind" i18n-label="@@featureAtlassianImportAdmin-fieldKind" label="Kind">
+          <fpc-form-control
+            controlType="select"
+            controlId="newCfgKind"
+            size="sm"
+            [ngModel]="newConfig.importKind"
+            (ngModelChange)="onNewConfigKindChange($event)"
+          >
+            <option value="jira" i18n="@@featureAtlassianImportAdmin-importKindJira">Jira</option>
+            <option value="confluence" i18n="@@featureAtlassianImportAdmin-importKindConfluence">Confluence</option>
+          </fpc-form-control>
+        </fpc-form-field>
+      </div>
+      <div class="col-12">
+        <fpc-form-switch
+          switchId="newCfgEn"
+          i18n-label="@@featureAtlassianImportAdmin-fieldEnabled"
+          label="Enabled"
+          [(ngModel)]="newConfig.enabled"
+        />
+      </div>
+      @if (newConfig.importKind === 'jira') {
+        <div class="col-md-4">
+          <fpc-form-field
+            forId="newCfgBoard"
+            i18n-label="@@featureAtlassianImportAdmin-newBoardIdOptional"
+            label="Board ID (optional)"
+          >
+            <fpc-form-control
+              controlId="newCfgBoard"
+              size="sm"
+              [(ngModel)]="newConfigJiraBoardIdText"
+              placeholder="e.g. 123"
+              i18n-placeholder="@@featureAtlassianImportAdmin-boardIdExamplePlaceholder"
+            />
+          </fpc-form-field>
+        </div>
+        <div class="col-md-8">
+          <fpc-form-field
+            forId="newCfgJql"
+            i18n-label="@@featureAtlassianImportAdmin-fieldJql"
+            label="JQL"
+            [required]="true"
+          >
+            <fpc-form-control
+              controlType="textarea"
+              controlId="newCfgJql"
+              size="sm"
+              [rows]="2"
+              [(ngModel)]="newConfig.jql"
+            />
+            <span fpcFormFieldHint i18n="@@featureAtlassianImportAdmin-jqlHelp">
+              Required. Imported issues are not capped per run.
+            </span>
+          </fpc-form-field>
+        </div>
+        <div class="col-md-6">
+          <fpc-form-field
+            forId="newCfgSwimlane"
+            i18n-label="@@featureAtlassianImportAdmin-fieldImportSwimlane"
+            label="Import swimlane"
+          >
+            <fpc-form-control
+              controlType="select"
+              controlId="newCfgSwimlane"
+              size="sm"
+              name="newCfgSwimlane"
+              [(ngModel)]="newConfig.importTargetTicketStatus"
+            >
+              @for (opt of jiraSwimlaneOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+        <div class="col-md-6">
+          <fpc-form-field
+            forId="newCfgParentTicket"
+            i18n-label="@@featureAtlassianImportAdmin-newParentTicketOptional"
+            label="Parent ticket (optional)"
+          >
+            <fpc-typeahead-select
+              inputId="newCfgParentTicket"
+              listboxId="newCfgParentTicket-listbox"
+              size="sm"
+              [openOnFocus]="true"
+              placeholder="Search by title or ID"
+              i18n-placeholder="@@featureAtlassianImportAdmin-searchParentTicketPlaceholder"
+              [query]="newParentTicketSearch"
+              (queryChange)="onNewParentTicketInput($event)"
+              [open]="newParentTicketSuggestOpen"
+              (openChange)="onNewParentTicketSuggestOpenChange($event)"
+              (cleared)="onNewParentTicketInput('')"
+            >
+              <div fpcTypeaheadSuggestions>
+                @for (t of newParentTicketSuggestions(); track t.id) {
+                  <button
+                    type="button"
+                    class="dropdown-item py-2 text-start"
+                    (mousedown)="onPickNewParentTicket(t, $event)"
+                  >
+                    <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
+                      <span class="font-monospace text-muted small flex-shrink-0">{{ t.shas?.short }}</span>
+                      <span class="text-truncate small flex-grow-1 min-width-0">{{ t.title }}</span>
+                    </span>
+                  </button>
+                }
+              </div>
+            </fpc-typeahead-select>
+            @if (newConfig.agenstraParentTicketId) {
+              <span fpcFormFieldHint class="d-flex align-items-center gap-2">
+                <span class="text-truncate" i18n="@@featureAtlassianImportAdmin-selectedParentTicket">
+                  Selected: {{ newConfig.agenstraParentTicketId }}
+                </span>
+                <fpc-button
+                  variant="link"
+                  size="sm"
+                  class="p-0"
+                  (clicked)="clearNewParentTicket()"
+                  i18n="@@featureAtlassianImportAdmin-clearSelection"
+                >
+                  Clear
+                </fpc-button>
+              </span>
+            }
+          </fpc-form-field>
+        </div>
+      } @else {
+        <div class="col-md-4">
+          <fpc-form-field
+            forId="newCfgSpace"
+            i18n-label="@@featureAtlassianImportAdmin-newSpaceKeyOptional"
+            label="Space key (optional)"
+          >
+            <fpc-form-control controlId="newCfgSpace" size="sm" [(ngModel)]="newConfig.confluenceSpaceKey" />
+          </fpc-form-field>
+        </div>
+        <div class="col-md-4">
+          <fpc-form-field
+            forId="newCfgRoot"
+            i18n-label="@@featureAtlassianImportAdmin-newRootPageIdOptional"
+            label="Root page ID (optional)"
+          >
+            <fpc-form-control controlId="newCfgRoot" size="sm" [(ngModel)]="newConfig.confluenceRootPageId" />
+          </fpc-form-field>
+        </div>
+        <div class="col-md-12">
+          <fpc-form-field
+            forId="newCfgCql"
+            i18n-label="@@featureAtlassianImportAdmin-fieldCql"
+            label="CQL"
+            [required]="true"
+          >
+            <fpc-form-control
+              controlType="textarea"
+              controlId="newCfgCql"
+              size="sm"
+              [rows]="2"
+              [(ngModel)]="newConfig.cql"
+            />
+            <span fpcFormFieldHint i18n="@@featureAtlassianImportAdmin-cqlHelp">
+              Required. Matching pages are fetched in full (paginated against Confluence).
+            </span>
+          </fpc-form-field>
+        </div>
+        <div class="col-md-6">
+          <fpc-form-field
+            forId="newCfgParentFolder"
+            i18n-label="@@featureAtlassianImportAdmin-newParentFolderOptional"
+            label="Parent folder (optional)"
+          >
+            <fpc-typeahead-select
+              inputId="newCfgParentFolder"
+              listboxId="newCfgParentFolder-listbox"
+              size="sm"
+              [openOnFocus]="true"
+              placeholder="Search folder title or SHA"
+              i18n-placeholder="@@featureAtlassianImportAdmin-searchParentFolderPlaceholder"
+              [query]="newParentFolderSearch"
+              (queryChange)="onNewParentFolderInput($event)"
+              [open]="newParentFolderSuggestOpen"
+              (openChange)="onNewParentFolderSuggestOpenChange($event)"
+              (cleared)="onNewParentFolderInput('')"
+            >
+              <div fpcTypeaheadSuggestions>
+                @for (n of newParentFolderSuggestions(); track n.id) {
+                  <button
+                    type="button"
+                    class="dropdown-item py-2 text-start"
+                    (mousedown)="onPickNewParentFolder(n, $event)"
+                  >
+                    <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
+                      <span class="font-monospace text-muted small flex-shrink-0">{{ n.shas.short }}</span>
+                      <span
+                        class="text-truncate small flex-grow-1 min-width-0"
+                        i18n="@@featureAtlassianImportAdmin-folderSuggestRow"
+                      >
+                        Folder · {{ n.title }}
+                      </span>
+                    </span>
+                  </button>
+                }
+              </div>
+            </fpc-typeahead-select>
+            @if (newConfig.agenstraParentFolderId) {
+              <span fpcFormFieldHint class="d-flex align-items-center gap-2">
+                <span class="text-truncate" i18n="@@featureAtlassianImportAdmin-selectedParentFolder">
+                  Selected: {{ newConfig.agenstraParentFolderId }}
+                </span>
+                <fpc-button
+                  variant="link"
+                  size="sm"
+                  class="p-0"
+                  (clicked)="clearNewParentFolder()"
+                  i18n="@@featureAtlassianImportAdmin-clearSelection"
+                >
+                  Clear
+                </fpc-button>
+              </span>
+            }
+          </fpc-form-field>
+        </div>
+      }
     </div>
-  </div>
+    <div *fpcModalFooter>
+      <fpc-button
+        variant="primary"
+        [loading]="(saving$ | async) === true"
+        [disabled]="!!(saving$ | async)"
+        (clicked)="submitNewConfig()"
+        i18n="@@featureAtlassianImportAdmin-create"
+      >
+        Create
+      </fpc-button>
+    </div>
+  </fpc-modal>
 
-  <div
-    class="modal fade"
-    id="editAtlassianConnectionModal"
-    tabindex="-1"
-    aria-labelledby="editAtlassianConnectionModalLabel"
-    aria-hidden="true"
-    #editConnectionModal
-    (hidden.bs.modal)="onEditConnectionModalHidden()"
+  <fpc-modal
+    [(open)]="editConnectionModalOpen"
+    i18n-title="@@featureAtlassianImportAdmin-editConnectionTitleHeading"
+    title="Edit connection"
+    size="lg"
+    (closed)="onEditConnectionModalHidden()"
   >
     @if (connectionToEdit) {
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2
-              class="modal-title h5"
-              id="editAtlassianConnectionModalLabel"
-              i18n="@@featureAtlassianImportAdmin-editConnectionTitleHeading"
-            >
-              Edit connection
-            </h2>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-              i18n-aria-label="@@featureAtlassianImportAdmin-closeAria"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <div class="row g-2">
-              <div class="col-md-6">
-                <label class="form-label" for="editConnLabel" i18n="@@featureAtlassianImportAdmin-editConnLabel"
-                  >Label</label
-                >
-                <input id="editConnLabel" class="form-control form-control-sm" [(ngModel)]="editConnection.label" />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label" for="editConnBase" i18n="@@featureAtlassianImportAdmin-editConnBaseUrl"
-                  >Base URL</label
-                >
-                <input id="editConnBase" class="form-control form-control-sm" [(ngModel)]="editConnection.baseUrl" />
-              </div>
-              <div class="col-md-6">
-                <label class="form-label" for="editConnEmail" i18n="@@featureAtlassianImportAdmin-editConnAccountEmail"
-                  >Account email</label
-                >
-                <input
-                  id="editConnEmail"
-                  class="form-control form-control-sm"
-                  [(ngModel)]="editConnection.accountEmail"
-                />
-              </div>
-              <div class="col-md-6">
-                <label
-                  class="form-label"
-                  for="editConnToken"
-                  i18n="@@featureAtlassianImportAdmin-editConnNewApiTokenOptional"
-                >
-                  New API token (optional)
-                </label>
-                <input
-                  id="editConnToken"
-                  type="password"
-                  class="form-control form-control-sm"
-                  [(ngModel)]="editConnection.apiToken"
-                  autocomplete="new-password"
-                />
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-primary"
-              (click)="submitEditConnection()"
-              [disabled]="saving$ | async"
-              i18n="@@featureAtlassianImportAdmin-save"
-            >
-              Save
-            </button>
-          </div>
+      <div class="row g-2">
+        <div class="col-md-6">
+          <fpc-form-field forId="editConnLabel" i18n-label="@@featureAtlassianImportAdmin-editConnLabel" label="Label">
+            <fpc-form-control controlId="editConnLabel" size="sm" [(ngModel)]="editConnection.label" />
+          </fpc-form-field>
+        </div>
+        <div class="col-md-6">
+          <fpc-form-field
+            forId="editConnBase"
+            i18n-label="@@featureAtlassianImportAdmin-editConnBaseUrl"
+            label="Base URL"
+          >
+            <fpc-form-control controlId="editConnBase" size="sm" [(ngModel)]="editConnection.baseUrl" />
+          </fpc-form-field>
+        </div>
+        <div class="col-md-6">
+          <fpc-form-field
+            forId="editConnEmail"
+            i18n-label="@@featureAtlassianImportAdmin-editConnAccountEmail"
+            label="Account email"
+          >
+            <fpc-form-control controlId="editConnEmail" size="sm" [(ngModel)]="editConnection.accountEmail" />
+          </fpc-form-field>
+        </div>
+        <div class="col-md-6">
+          <fpc-form-field
+            forId="editConnToken"
+            i18n-label="@@featureAtlassianImportAdmin-editConnNewApiTokenOptional"
+            label="New API token (optional)"
+          >
+            <fpc-form-control
+              controlId="editConnToken"
+              size="sm"
+              inputType="password"
+              [(ngModel)]="editConnection.apiToken"
+              autocomplete="new-password"
+            />
+          </fpc-form-field>
         </div>
       </div>
     }
-  </div>
+    @if (connectionToEdit) {
+      <div *fpcModalFooter>
+        <fpc-button
+          variant="primary"
+          [loading]="(saving$ | async) === true"
+          [disabled]="!!(saving$ | async)"
+          (clicked)="submitEditConnection()"
+          i18n="@@featureAtlassianImportAdmin-save"
+        >
+          Save
+        </fpc-button>
+      </div>
+    }
+  </fpc-modal>
 
-  <div
-    class="modal fade"
-    id="editAtlassianImportConfigModal"
-    tabindex="-1"
-    aria-labelledby="editAtlassianImportConfigModalLabel"
-    aria-hidden="true"
-    #editConfigModal
-    (hidden.bs.modal)="onEditConfigModalHidden()"
-  >
+  <fpc-modal [(open)]="editConfigModalOpen" size="lg" (closed)="onEditConfigModalHidden()">
+    @if (configToEdit; as cfg) {
+      <span fpcModalTitle i18n="@@featureAtlassianImportAdmin-editConfigHeading">
+        Edit import config ({{ cfg.importKind }})
+      </span>
+    }
     @if (configToEdit) {
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2
-              class="modal-title h5"
-              id="editAtlassianImportConfigModalLabel"
-              i18n="@@featureAtlassianImportAdmin-editConfigHeading"
+      <div class="row g-2">
+        <div class="col-md-6">
+          <fpc-form-field
+            forId="editCfgConn"
+            i18n-label="@@featureAtlassianImportAdmin-fieldConnection"
+            label="Connection"
+          >
+            <fpc-form-control
+              controlType="select"
+              controlId="editCfgConn"
+              size="sm"
+              [(ngModel)]="editConfig.atlassianConnectionId"
             >
-              Edit import config ({{ configToEdit.importKind }})
-            </h2>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-              i18n-aria-label="@@featureAtlassianImportAdmin-closeAria"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <div class="row g-2">
-              <div class="col-md-6">
-                <label class="form-label" for="editCfgConn" i18n="@@featureAtlassianImportAdmin-fieldConnection"
-                  >Connection</label
-                >
-                <select
-                  id="editCfgConn"
-                  class="form-select form-select-sm"
-                  [(ngModel)]="editConfig.atlassianConnectionId"
-                >
-                  @for (c of connections(); track c.id) {
-                    <option [value]="c.id">{{ connectionLabel(c) }}</option>
-                  }
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label" for="editCfgClient" i18n="@@featureAtlassianImportAdmin-fieldWorkspace"
-                  >Workspace</label
-                >
-                <select
-                  id="editCfgClient"
-                  class="form-select form-select-sm"
-                  [(ngModel)]="editConfig.clientId"
-                  (ngModelChange)="onWorkspaceDataLoad($event)"
-                >
-                  @for (cl of clients(); track cl.id) {
-                    <option [value]="cl.id">{{ cl.name }}</option>
-                  }
-                </select>
-              </div>
-              <div class="col-12">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="editCfgEn" [(ngModel)]="editConfig.enabled" />
-                  <label class="form-check-label" for="editCfgEn" i18n="@@featureAtlassianImportAdmin-fieldEnabled"
-                    >Enabled</label
-                  >
-                </div>
-              </div>
-              @if (configToEdit.importKind === 'jira') {
-                <div class="col-md-4">
-                  <label class="form-label" for="editCfgBoard" i18n="@@featureAtlassianImportAdmin-editBoardId"
-                    >Board ID</label
-                  >
-                  <input
-                    id="editCfgBoard"
-                    class="form-control form-control-sm"
-                    [(ngModel)]="editConfigJiraBoardIdText"
-                  />
-                </div>
-                <div class="col-md-8">
-                  <label class="form-label" for="editCfgJql">
-                    <ng-container i18n="@@featureAtlassianImportAdmin-fieldJql">JQL</ng-container>
-                    <span class="text-danger">*</span>
-                  </label>
-                  <textarea
-                    id="editCfgJql"
-                    class="form-control form-control-sm"
-                    rows="2"
-                    [(ngModel)]="editConfig.jql"
-                    spellcheck="false"
-                  ></textarea>
-                </div>
-                <div class="col-md-6">
-                  <label
-                    class="form-label"
-                    for="editCfgSwimlane"
-                    i18n="@@featureAtlassianImportAdmin-fieldImportSwimlane"
-                    >Import swimlane</label
-                  >
-                  <select
-                    id="editCfgSwimlane"
-                    class="form-select form-select-sm"
-                    name="editCfgSwimlane"
-                    [(ngModel)]="editConfig.importTargetTicketStatus"
-                  >
-                    @for (opt of jiraSwimlaneOptions; track opt.value) {
-                      <option [ngValue]="opt.value">{{ opt.label }}</option>
-                    }
-                  </select>
-                </div>
-                <div class="col-md-6">
-                  <label
-                    class="form-label"
-                    for="editCfgParentTicket"
-                    i18n="@@featureAtlassianImportAdmin-editParentTicketOptional"
-                  >
-                    Parent ticket (optional)
-                  </label>
-                  <div class="position-relative">
-                    <input
-                      id="editCfgParentTicket"
-                      type="text"
-                      class="form-control form-control-sm"
-                      autocomplete="off"
-                      [ngModel]="editParentTicketSearch"
-                      (ngModelChange)="onEditParentTicketInput($event)"
-                      (focus)="onEditParentTicketFocus()"
-                      (blur)="onEditParentTicketBlur()"
-                      placeholder="Search by title or ID"
-                      i18n-placeholder="@@featureAtlassianImportAdmin-searchParentTicketPlaceholder"
-                    />
-                    @if (editParentTicketSuggestOpen && editParentTicketSuggestions().length > 0) {
-                      <ul
-                        class="dropdown-menu show position-absolute shadow-sm border mt-1 py-0 w-100"
-                        style="z-index: 1070; max-height: 240px; overflow-y: auto"
-                      >
-                        @for (t of editParentTicketSuggestions(); track t.id) {
-                          <li>
-                            <button
-                              type="button"
-                              class="dropdown-item py-2 text-start"
-                              (mousedown)="onPickEditParentTicket(t, $event)"
-                            >
-                              <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
-                                <span class="font-monospace text-muted small flex-shrink-0">{{ t.shas?.short }}</span>
-                                <span class="text-truncate small flex-grow-1 min-width-0">{{ t.title }}</span>
-                              </span>
-                            </button>
-                          </li>
-                        }
-                      </ul>
-                    }
-                  </div>
-                  @if (editConfig.agenstraParentTicketId) {
-                    <div class="small text-muted mt-1 d-flex align-items-center gap-2">
-                      <span class="text-truncate" i18n="@@featureAtlassianImportAdmin-selectedParentTicketEdit">
-                        Selected: {{ editConfig.agenstraParentTicketId }}
-                      </span>
-                      <button
-                        type="button"
-                        class="btn btn-link btn-sm p-0"
-                        (click)="clearEditParentTicket()"
-                        i18n="@@featureAtlassianImportAdmin-clearSelection"
-                      >
-                        Clear
-                      </button>
-                    </div>
-                  }
-                </div>
-              } @else {
-                <div class="col-md-4">
-                  <label class="form-label" for="editCfgSpace" i18n="@@featureAtlassianImportAdmin-editSpaceKey"
-                    >Space key</label
-                  >
-                  <input
-                    id="editCfgSpace"
-                    class="form-control form-control-sm"
-                    [(ngModel)]="editConfig.confluenceSpaceKey"
-                  />
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label" for="editCfgRoot" i18n="@@featureAtlassianImportAdmin-editRootPageId"
-                    >Root page ID</label
-                  >
-                  <input
-                    id="editCfgRoot"
-                    class="form-control form-control-sm"
-                    [(ngModel)]="editConfig.confluenceRootPageId"
-                  />
-                </div>
-                <div class="col-md-12">
-                  <label class="form-label" for="editCfgCql">
-                    <ng-container i18n="@@featureAtlassianImportAdmin-fieldCql">CQL</ng-container>
-                    <span class="text-danger">*</span>
-                  </label>
-                  <textarea
-                    id="editCfgCql"
-                    class="form-control form-control-sm"
-                    rows="2"
-                    [(ngModel)]="editConfig.cql"
-                    spellcheck="false"
-                  ></textarea>
-                </div>
-                <div class="col-md-6">
-                  <label
-                    class="form-label"
-                    for="editCfgParentFolder"
-                    i18n="@@featureAtlassianImportAdmin-editParentFolderOptional"
-                  >
-                    Parent folder (optional)
-                  </label>
-                  <div class="position-relative">
-                    <input
-                      id="editCfgParentFolder"
-                      type="text"
-                      class="form-control form-control-sm"
-                      autocomplete="off"
-                      [ngModel]="editParentFolderSearch"
-                      (ngModelChange)="onEditParentFolderInput($event)"
-                      (focus)="onEditParentFolderFocus()"
-                      (blur)="onEditParentFolderBlur()"
-                      placeholder="Search folder title or SHA"
-                      i18n-placeholder="@@featureAtlassianImportAdmin-searchParentFolderPlaceholder"
-                    />
-                    @if (editParentFolderSuggestOpen && editParentFolderSuggestions().length > 0) {
-                      <ul
-                        class="dropdown-menu show position-absolute shadow-sm border mt-1 py-0 w-100"
-                        style="z-index: 1070; max-height: 240px; overflow-y: auto"
-                      >
-                        @for (n of editParentFolderSuggestions(); track n.id) {
-                          <li>
-                            <button
-                              type="button"
-                              class="dropdown-item py-2 text-start"
-                              (mousedown)="onPickEditParentFolder(n, $event)"
-                            >
-                              <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
-                                <span class="font-monospace text-muted small flex-shrink-0">{{ n.shas.short }}</span>
-                                <span
-                                  class="text-truncate small flex-grow-1 min-width-0"
-                                  i18n="@@featureAtlassianImportAdmin-folderSuggestRow"
-                                >
-                                  Folder · {{ n.title }}
-                                </span>
-                              </span>
-                            </button>
-                          </li>
-                        }
-                      </ul>
-                    }
-                  </div>
-                  @if (editConfig.agenstraParentFolderId) {
-                    <div class="small text-muted mt-1 d-flex align-items-center gap-2">
-                      <span class="text-truncate" i18n="@@featureAtlassianImportAdmin-selectedParentFolderEdit">
-                        Selected: {{ editConfig.agenstraParentFolderId }}
-                      </span>
-                      <button
-                        type="button"
-                        class="btn btn-link btn-sm p-0"
-                        (click)="clearEditParentFolder()"
-                        i18n="@@featureAtlassianImportAdmin-clearSelection"
-                      >
-                        Clear
-                      </button>
-                    </div>
-                  }
-                </div>
+              @for (c of connections(); track c.id) {
+                <option [value]="c.id">{{ connectionLabel(c) }}</option>
               }
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-primary"
-              (click)="submitEditConfig()"
-              [disabled]="saving$ | async"
-              i18n="@@featureAtlassianImportAdmin-save"
-            >
-              Save
-            </button>
-          </div>
+            </fpc-form-control>
+          </fpc-form-field>
         </div>
+        <div class="col-md-6">
+          <fpc-form-field
+            forId="editCfgClient"
+            i18n-label="@@featureAtlassianImportAdmin-fieldWorkspace"
+            label="Workspace"
+          >
+            <fpc-form-control
+              controlType="select"
+              controlId="editCfgClient"
+              size="sm"
+              [(ngModel)]="editConfig.clientId"
+              (ngModelChange)="onWorkspaceDataLoad($event)"
+            >
+              @for (cl of clients(); track cl.id) {
+                <option [value]="cl.id">{{ cl.name }}</option>
+              }
+            </fpc-form-control>
+          </fpc-form-field>
+        </div>
+        <div class="col-12">
+          <fpc-form-switch
+            switchId="editCfgEn"
+            i18n-label="@@featureAtlassianImportAdmin-fieldEnabled"
+            label="Enabled"
+            [(ngModel)]="editConfig.enabled"
+          />
+        </div>
+        @if (configToEdit.importKind === 'jira') {
+          <div class="col-md-4">
+            <fpc-form-field
+              forId="editCfgBoard"
+              i18n-label="@@featureAtlassianImportAdmin-editBoardId"
+              label="Board ID"
+            >
+              <fpc-form-control controlId="editCfgBoard" size="sm" [(ngModel)]="editConfigJiraBoardIdText" />
+            </fpc-form-field>
+          </div>
+          <div class="col-md-8">
+            <fpc-form-field
+              forId="editCfgJql"
+              i18n-label="@@featureAtlassianImportAdmin-fieldJql"
+              label="JQL"
+              [required]="true"
+            >
+              <fpc-form-control
+                controlType="textarea"
+                controlId="editCfgJql"
+                size="sm"
+                [rows]="2"
+                [(ngModel)]="editConfig.jql"
+              />
+            </fpc-form-field>
+          </div>
+          <div class="col-md-6">
+            <fpc-form-field
+              forId="editCfgSwimlane"
+              i18n-label="@@featureAtlassianImportAdmin-fieldImportSwimlane"
+              label="Import swimlane"
+            >
+              <fpc-form-control
+                controlType="select"
+                controlId="editCfgSwimlane"
+                size="sm"
+                name="editCfgSwimlane"
+                [(ngModel)]="editConfig.importTargetTicketStatus"
+              >
+                @for (opt of jiraSwimlaneOptions; track opt.value) {
+                  <option [value]="opt.value">{{ opt.label }}</option>
+                }
+              </fpc-form-control>
+            </fpc-form-field>
+          </div>
+          <div class="col-md-6">
+            <fpc-form-field
+              forId="editCfgParentTicket"
+              i18n-label="@@featureAtlassianImportAdmin-editParentTicketOptional"
+              label="Parent ticket (optional)"
+            >
+              <fpc-typeahead-select
+                inputId="editCfgParentTicket"
+                listboxId="editCfgParentTicket-listbox"
+                size="sm"
+                [openOnFocus]="true"
+                placeholder="Search by title or ID"
+                i18n-placeholder="@@featureAtlassianImportAdmin-searchParentTicketPlaceholder"
+                [query]="editParentTicketSearch"
+                (queryChange)="onEditParentTicketInput($event)"
+                [open]="editParentTicketSuggestOpen"
+                (openChange)="onEditParentTicketSuggestOpenChange($event)"
+                (cleared)="onEditParentTicketInput('')"
+              >
+                <div fpcTypeaheadSuggestions>
+                  @for (t of editParentTicketSuggestions(); track t.id) {
+                    <button
+                      type="button"
+                      class="dropdown-item py-2 text-start"
+                      (mousedown)="onPickEditParentTicket(t, $event)"
+                    >
+                      <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
+                        <span class="font-monospace text-muted small flex-shrink-0">{{ t.shas?.short }}</span>
+                        <span class="text-truncate small flex-grow-1 min-width-0">{{ t.title }}</span>
+                      </span>
+                    </button>
+                  }
+                </div>
+              </fpc-typeahead-select>
+              @if (editConfig.agenstraParentTicketId) {
+                <span fpcFormFieldHint class="d-flex align-items-center gap-2">
+                  <span class="text-truncate" i18n="@@featureAtlassianImportAdmin-selectedParentTicketEdit">
+                    Selected: {{ editConfig.agenstraParentTicketId }}
+                  </span>
+                  <fpc-button
+                    variant="link"
+                    size="sm"
+                    class="p-0"
+                    (clicked)="clearEditParentTicket()"
+                    i18n="@@featureAtlassianImportAdmin-clearSelection"
+                  >
+                    Clear
+                  </fpc-button>
+                </span>
+              }
+            </fpc-form-field>
+          </div>
+        } @else {
+          <div class="col-md-4">
+            <fpc-form-field
+              forId="editCfgSpace"
+              i18n-label="@@featureAtlassianImportAdmin-editSpaceKey"
+              label="Space key"
+            >
+              <fpc-form-control controlId="editCfgSpace" size="sm" [(ngModel)]="editConfig.confluenceSpaceKey" />
+            </fpc-form-field>
+          </div>
+          <div class="col-md-4">
+            <fpc-form-field
+              forId="editCfgRoot"
+              i18n-label="@@featureAtlassianImportAdmin-editRootPageId"
+              label="Root page ID"
+            >
+              <fpc-form-control controlId="editCfgRoot" size="sm" [(ngModel)]="editConfig.confluenceRootPageId" />
+            </fpc-form-field>
+          </div>
+          <div class="col-md-12">
+            <fpc-form-field
+              forId="editCfgCql"
+              i18n-label="@@featureAtlassianImportAdmin-fieldCql"
+              label="CQL"
+              [required]="true"
+            >
+              <fpc-form-control
+                controlType="textarea"
+                controlId="editCfgCql"
+                size="sm"
+                [rows]="2"
+                [(ngModel)]="editConfig.cql"
+              />
+            </fpc-form-field>
+          </div>
+          <div class="col-md-6">
+            <fpc-form-field
+              forId="editCfgParentFolder"
+              i18n-label="@@featureAtlassianImportAdmin-editParentFolderOptional"
+              label="Parent folder (optional)"
+            >
+              <fpc-typeahead-select
+                inputId="editCfgParentFolder"
+                listboxId="editCfgParentFolder-listbox"
+                size="sm"
+                [openOnFocus]="true"
+                placeholder="Search folder title or SHA"
+                i18n-placeholder="@@featureAtlassianImportAdmin-searchParentFolderPlaceholder"
+                [query]="editParentFolderSearch"
+                (queryChange)="onEditParentFolderInput($event)"
+                [open]="editParentFolderSuggestOpen"
+                (openChange)="onEditParentFolderSuggestOpenChange($event)"
+                (cleared)="onEditParentFolderInput('')"
+              >
+                <div fpcTypeaheadSuggestions>
+                  @for (n of editParentFolderSuggestions(); track n.id) {
+                    <button
+                      type="button"
+                      class="dropdown-item py-2 text-start"
+                      (mousedown)="onPickEditParentFolder(n, $event)"
+                    >
+                      <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
+                        <span class="font-monospace text-muted small flex-shrink-0">{{ n.shas.short }}</span>
+                        <span
+                          class="text-truncate small flex-grow-1 min-width-0"
+                          i18n="@@featureAtlassianImportAdmin-folderSuggestRow"
+                        >
+                          Folder · {{ n.title }}
+                        </span>
+                      </span>
+                    </button>
+                  }
+                </div>
+              </fpc-typeahead-select>
+              @if (editConfig.agenstraParentFolderId) {
+                <span fpcFormFieldHint class="d-flex align-items-center gap-2">
+                  <span class="text-truncate" i18n="@@featureAtlassianImportAdmin-selectedParentFolderEdit">
+                    Selected: {{ editConfig.agenstraParentFolderId }}
+                  </span>
+                  <fpc-button
+                    variant="link"
+                    size="sm"
+                    class="p-0"
+                    (clicked)="clearEditParentFolder()"
+                    i18n="@@featureAtlassianImportAdmin-clearSelection"
+                  >
+                    Clear
+                  </fpc-button>
+                </span>
+              }
+            </fpc-form-field>
+          </div>
+        }
       </div>
     }
-  </div>
+    @if (configToEdit) {
+      <div *fpcModalFooter>
+        <fpc-button
+          variant="primary"
+          [loading]="(saving$ | async) === true"
+          [disabled]="!!(saving$ | async)"
+          (clicked)="submitEditConfig()"
+          i18n="@@featureAtlassianImportAdmin-save"
+        >
+          Save
+        </fpc-button>
+      </div>
+    }
+  </fpc-modal>
 
-  <div
-    class="modal fade"
-    id="deleteAtlassianConnectionModal"
-    tabindex="-1"
-    aria-labelledby="deleteAtlassianConnectionModalLabel"
-    aria-hidden="true"
-    #deleteConnectionModal
-    (hidden.bs.modal)="onDeleteConnectionModalHidden()"
+  <fpc-confirm-dialog
+    [(open)]="deleteConnectionModalOpen"
+    i18n-title="@@featureAtlassianImportAdmin-deleteConnectionHeading"
+    title="Delete connection"
+    i18n-confirmLabel="@@featureAtlassianImportAdmin-delete"
+    confirmLabel="Delete"
+    [danger]="true"
+    [busy]="(deleting$ | async) === true"
+    (confirmed)="executeDeleteConnection()"
+    (cancelled)="onDeleteConnectionModalHidden()"
   >
-    @if (connectionPendingDelete) {
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2
-              class="modal-title h5"
-              id="deleteAtlassianConnectionModalLabel"
-              i18n="@@featureAtlassianImportAdmin-deleteConnectionHeading"
-            >
-              Delete connection
-            </h2>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-              i18n-aria-label="@@featureAtlassianImportAdmin-closeAria"
-              [disabled]="deleting$ | async"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <p i18n="@@featureAtlassianImportAdmin-deleteConnectionBody">
-              Delete connection "{{ connectionLabel(connectionPendingDelete) }}"? Related import configs may stop
-              working.
-            </p>
-            <p class="text-danger mb-0">
-              <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
-              <span i18n="@@featureAtlassianImportAdmin-cannotUndo">This action cannot be undone.</span>
-            </p>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-primary"
-              (click)="executeDeleteConnection()"
-              [disabled]="deleting$ | async"
-              i18n="@@featureAtlassianImportAdmin-delete"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      </div>
+    @if (connectionPendingDelete; as pending) {
+      <p i18n="@@featureAtlassianImportAdmin-deleteConnectionBody">
+        Delete connection "{{ connectionLabel(pending) }}"? Related import configs may stop working.
+      </p>
+      <p class="text-danger mb-0">
+        <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+        <span i18n="@@featureAtlassianImportAdmin-cannotUndo">This action cannot be undone.</span>
+      </p>
     }
-  </div>
+  </fpc-confirm-dialog>
 
-  <div
-    class="modal fade"
-    id="deleteAtlassianImportConfigModal"
-    tabindex="-1"
-    aria-labelledby="deleteAtlassianImportConfigModalLabel"
-    aria-hidden="true"
-    #deleteConfigModal
-    (hidden.bs.modal)="onDeleteConfigModalHidden()"
+  <fpc-confirm-dialog
+    [(open)]="deleteConfigModalOpen"
+    i18n-title="@@featureAtlassianImportAdmin-deleteConfigHeading"
+    title="Delete import config"
+    i18n-confirmLabel="@@featureAtlassianImportAdmin-delete"
+    confirmLabel="Delete"
+    [danger]="true"
+    [busy]="(deleting$ | async) === true"
+    (confirmed)="executeDeleteConfig()"
+    (cancelled)="onDeleteConfigModalHidden()"
   >
-    @if (configPendingDelete) {
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2
-              class="modal-title h5"
-              id="deleteAtlassianImportConfigModalLabel"
-              i18n="@@featureAtlassianImportAdmin-deleteConfigHeading"
-            >
-              Delete import config
-            </h2>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-              i18n-aria-label="@@featureAtlassianImportAdmin-closeAria"
-              [disabled]="deleting$ | async"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <p i18n="@@featureAtlassianImportAdmin-deleteConfigBody">
-              Delete {{ configPendingDelete.importKind }} import config for workspace
-              {{ clientName(configPendingDelete.clientId) }}?
-            </p>
-            <p class="text-danger mb-0">
-              <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
-              <span i18n="@@featureAtlassianImportAdmin-cannotUndo">This action cannot be undone.</span>
-            </p>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-primary"
-              (click)="executeDeleteConfig()"
-              [disabled]="deleting$ | async"
-              i18n="@@featureAtlassianImportAdmin-delete"
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      </div>
+    @if (configPendingDelete; as pending) {
+      <p i18n="@@featureAtlassianImportAdmin-deleteConfigBody">
+        Delete {{ pending.importKind }} import config for workspace {{ clientName(pending.clientId) }}?
+      </p>
+      <p class="text-danger mb-0">
+        <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+        <span i18n="@@featureAtlassianImportAdmin-cannotUndo">This action cannot be undone.</span>
+      </p>
     }
-  </div>
+  </fpc-confirm-dialog>
 
-  <div
-    class="modal fade"
-    id="clearAtlassianImportMarkersModal"
-    tabindex="-1"
-    aria-labelledby="clearAtlassianImportMarkersModalLabel"
-    aria-hidden="true"
-    #clearMarkersModal
-    (hidden.bs.modal)="onClearMarkersModalHidden()"
+  <fpc-confirm-dialog
+    [(open)]="clearMarkersModalOpen"
+    i18n-title="@@featureAtlassianImportAdmin-clearMarkersHeading"
+    title="Clear sync markers"
+    i18n-confirmLabel="@@featureAtlassianImportAdmin-clear"
+    confirmLabel="Clear"
+    [busy]="(clearingMarkersId$ | async) === configPendingClearMarkers?.id"
+    (confirmed)="executeClearMarkers()"
+    (cancelled)="onClearMarkersModalHidden()"
   >
-    @if (configPendingClearMarkers) {
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2
-              class="modal-title h5"
-              id="clearAtlassianImportMarkersModalLabel"
-              i18n="@@featureAtlassianImportAdmin-clearMarkersHeading"
-            >
-              Clear sync markers
-            </h2>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-              i18n-aria-label="@@featureAtlassianImportAdmin-closeAria"
-              [disabled]="(clearingMarkersId$ | async) === configPendingClearMarkers.id"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <p class="mb-0" i18n="@@featureAtlassianImportAdmin-clearMarkersBody">
-              Clear all sync markers for this {{ configPendingClearMarkers.importKind }} config? External items may be
-              re-imported as duplicates.
-            </p>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-primary"
-              (click)="executeClearMarkers()"
-              [disabled]="(clearingMarkersId$ | async) === configPendingClearMarkers.id"
-              i18n="@@featureAtlassianImportAdmin-clear"
-            >
-              Clear
-            </button>
-          </div>
-        </div>
-      </div>
+    @if (configPendingClearMarkers; as pending) {
+      <p class="mb-0" i18n="@@featureAtlassianImportAdmin-clearMarkersBody">
+        Clear all sync markers for this {{ pending.importKind }} config? External items may be re-imported as
+        duplicates.
+      </p>
     }
-  </div>
+  </fpc-confirm-dialog>
 </div>

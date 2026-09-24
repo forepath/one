@@ -187,14 +187,6 @@ section {
   font-size: 0.875rem;
 }
 
-.blog-card__tag {
-  display: inline-block;
-  padding: 0.15rem 0.55rem;
-  border-radius: 0.35rem;
-  background: rgba(255, 107, 53, 0.1);
-  color: var(--bs-body-color);
-}
-
 .logo-partner {
   filter: grayscale(100%);
   opacity: 0.5;
@@ -207,62 +199,7 @@ section {
   }
 }
 
-// Marketing CTAs: same 1:2 y:x padding ratio as Bootstrap buttons, scaled above btn-lg.
-// Font weight matches base `.btn` ($btn-font-weight / normal).
-.cta-btn,
-.home-cta-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 1rem 2rem;
-  font-size: 1.125rem;
-  font-weight: 400;
-
-  > i {
-    font-size: 1.25rem;
-    line-height: 1;
-  }
-}
-
-// Pre-footer CTA bands: slightly darkened primary (subtle, same idea as hero contrast).
-#cta,
-#fit {
-  .cta-btn.btn-primary,
-  .home-cta-btn.btn-primary {
-    --bs-btn-color: #fff;
-    --bs-btn-bg: color-mix(in srgb, var(--bs-primary) 88%, #000);
-    --bs-btn-border-color: color-mix(in srgb, var(--bs-primary) 88%, #000);
-    --bs-btn-hover-color: #fff;
-    --bs-btn-hover-bg: color-mix(in srgb, var(--bs-primary) 80%, #000);
-    --bs-btn-hover-border-color: color-mix(in srgb, var(--bs-primary) 80%, #000);
-    --bs-btn-active-color: #fff;
-    --bs-btn-active-bg: color-mix(in srgb, var(--bs-primary) 74%, #000);
-    --bs-btn-active-border-color: color-mix(in srgb, var(--bs-primary) 74%, #000);
-    --bs-btn-disabled-color: #fff;
-    --bs-btn-disabled-bg: color-mix(in srgb, var(--bs-primary) 88%, #000);
-    --bs-btn-disabled-border-color: color-mix(in srgb, var(--bs-primary) 88%, #000);
-  }
-}
-
-// Hero contrast CTAs: dark fill slightly offset from the hero surface (not pure black).
-#hero {
-  .cta-btn.btn-dark,
-  .home-cta-btn.btn-dark {
-    --bs-btn-color: #fff;
-    --bs-btn-bg: color-mix(in srgb, var(--bs-tertiary-bg) 72%, #000);
-    --bs-btn-border-color: color-mix(in srgb, var(--bs-tertiary-bg) 72%, #000);
-    --bs-btn-hover-color: #fff;
-    --bs-btn-hover-bg: color-mix(in srgb, var(--bs-tertiary-bg) 62%, #000);
-    --bs-btn-hover-border-color: color-mix(in srgb, var(--bs-tertiary-bg) 62%, #000);
-    --bs-btn-active-color: #fff;
-    --bs-btn-active-bg: color-mix(in srgb, var(--bs-tertiary-bg) 54%, #000);
-    --bs-btn-active-border-color: color-mix(in srgb, var(--bs-tertiary-bg) 54%, #000);
-    --bs-btn-disabled-color: #fff;
-    --bs-btn-disabled-bg: color-mix(in srgb, var(--bs-tertiary-bg) 72%, #000);
-    --bs-btn-disabled-border-color: color-mix(in srgb, var(--bs-tertiary-bg) 72%, #000);
-  }
-}
+// Marketing CTA sizing + #cta/#fit/#hero tones live on `fpc-button` (`size="xl"`).
 
 .bento-badge {
   position: relative;

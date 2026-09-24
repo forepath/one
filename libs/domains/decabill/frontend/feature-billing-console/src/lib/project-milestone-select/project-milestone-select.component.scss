@@ -2,8 +2,16 @@
   max-width: min(100%, 22rem);
 }
 
-.project-milestone-select__suggestions {
-  z-index: 1070;
-  max-height: 240px;
-  overflow-y: auto;
+.project-milestone-select__clear {
+  width: 0.5rem;
+  height: 0.5rem;
+  padding: 0;
+  margin-left: 0.125rem;
+  background-size: 0.5rem;
+  opacity: 0.55;
+
+  &:hover:not(:disabled),
+  &:focus-visible:not(:disabled) {
+    opacity: 1;
+  }
 }

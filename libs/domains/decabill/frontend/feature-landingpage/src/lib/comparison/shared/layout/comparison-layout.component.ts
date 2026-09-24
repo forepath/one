@@ -4,6 +4,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@forepath/shared/frontend/util-meta';
+import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
 import { PortalComparisonMatrixComponent } from '../matrix/comparison-matrix.component';
 import { PORTAL_COMPARISON_NAV_ITEMS } from '../misc/comparison-nav.items';
@@ -12,7 +13,7 @@ import type { ComparisonPageConfig } from '../misc/comparison-page.model';
 @Component({
   selector: 'framework-portal-comparison-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, PortalComparisonMatrixComponent],
+  imports: [FpcButtonComponent, CommonModule, RouterModule, PortalComparisonMatrixComponent],
   templateUrl: './comparison-layout.component.html',
   styleUrl: './comparison-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

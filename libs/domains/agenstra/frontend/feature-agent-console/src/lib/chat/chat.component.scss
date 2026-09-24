@@ -1,5 +1,4 @@
 @use '../section.scss';
-@use '../notification-badge.scss';
 
 @mixin open-editor-git-dirty-indicator {
   z-index: 2;
@@ -8,11 +7,8 @@
 }
 
 :host {
-  .btn.open-editor-btn--git-dirty {
-    @include open-editor-git-dirty-indicator;
-  }
-
-  .btn-group.open-editor-btn--git-dirty > .btn.btn-outline-primary:first-child {
+  .fpc-button.open-editor-btn--git-dirty .fpc-button__btn,
+  .fpc-button.open-editor-btn--git-dirty .btn {
     @include open-editor-git-dirty-indicator;
   }
 
@@ -390,8 +386,7 @@ span {
   }
 }
 
-// Active list items - white text on primary background
-.list-group-item.active,
+// Active dropdown rows still use a solid primary surface — keep inverted labels/actions.
 .dropdown-item.active {
   color: white;
 
@@ -407,11 +402,12 @@ span {
     opacity: 1;
   }
 
-  > .btn:not(.btn-outline-primary):not(.btn-outline-danger) {
+  > .btn:not(.btn-primary):not(.btn-danger),
+  > button.bg-transparent {
     color: white;
   }
 
-  .btn-outline-primary {
+  .btn-primary {
     // Keep edit button visible on active background
     border-color: rgba(255, 255, 255, 0.5);
     color: white;
@@ -423,7 +419,7 @@ span {
     }
   }
 
-  .btn-outline-danger {
+  .btn-danger {
     // Keep delete button visible on active background
     border-color: rgba(255, 255, 255, 0.5);
     color: white;
@@ -442,12 +438,30 @@ span {
   align-items: center;
 }
 
+.chat-session-new-item .fpc-dropdown-item__label {
+  flex-direction: row;
+  align-items: center;
+}
+
+.chat-session-dropdown .dropdown-menu {
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+}
+
+.chat-session-dropdown .fpc-dropdown-item__label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
 .chat-session-chevron {
   display: inline-block;
   transition: transform 0.15s ease-in-out;
 }
 
-#chatSessionDropdown[aria-expanded='true'] .chat-session-chevron {
+#chatSessionDropdown[aria-expanded='true'] .chat-session-chevron,
+.chat-session-dropdown:has(.dropdown-menu.show) .chat-session-chevron {
   transform: translateY(-1px) rotate(180deg);
 }
 
@@ -507,25 +521,6 @@ span {
   overflow-x: auto;
   font-size: 0.8125rem; // Slightly smaller code
   line-height: 1.4;
-}
-
-.search-input {
-  border-radius: 0;
-  position: relative;
-  padding-left: 0;
-  box-shadow: none;
-}
-
-.search-input-container {
-  position: relative;
-
-  i {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-  }
 }
 
 .agent-event-json-pre {

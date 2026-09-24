@@ -1,59 +1,54 @@
-<div class="docs-search-container position-relative">
-  <div class="input-group">
-    @if (searchField()) {
-      <input
-        type="text"
-        class="form-control"
-        i18n-placeholder="@@featureDocsSearch-searchPlaceholder"
-        placeholder="Search documentation..."
-        [value]="searchQuery()"
-        (input)="onSearchInput($event)"
-        (focus)="onFocus()"
-        (blur)="onBlur()"
-        (keydown.enter)="onSearchClick()"
-      />
-    }
-    <button class="btn btn-primary" type="button" (click)="onSearchClick()">
-      <i class="bi bi-search"></i>
-    </button>
-  </div>
-
-  @if (showResults() && searchResults().length > 0) {
-    <div class="search-results-dropdown">
-      <div class="list-group">
-        @for (result of searchResults(); track result.entry.path) {
-          <button type="button" class="list-group-item list-group-item-action" (click)="onResultClick(result)">
-            <div class="d-flex w-100 justify-content-between">
-              <h6 class="mb-1">{{ result.entry.title }}</h6>
-              <small class="text-muted">{{ result.score }}</small>
-            </div>
-            @if (result.entry.summary) {
-              <p class="mb-1 small text-muted">{{ result.entry.summary }}</p>
-            }
-            @if (result.highlights.length > 0) {
-              <small [innerHTML]="result.highlights[0]"></small>
-            }
+<div
+  class="docs-search-container"
+  [class.docs-search-container--field]="searchField()"
+  [class.docs-search-container--icon]="!searchField()"
+  (keydown.enter)="onSearchClick()"
+>
+  @if (searchField()) {
+    <fpc-typeahead-select
+      inputId="docsSearchInput"
+      listboxId="docsSearchInput-listbox"
+      [query]="searchQuery()"
+      [open]="suggestionsOpen()"
+      [openOnFocus]="false"
+      [placeholder]="searchPlaceholder"
+      [ariaLabel]="searchPlaceholder"
+      (queryChange)="onSearchValueChange($event)"
+      (openChange)="onSuggestionsOpenChange($event)"
+      (cleared)="onCleared()"
+    >
+      <div fpcTypeaheadSuggestions>
+        @if (searchResults().length > 0) {
+          @for (result of searchResults(); track result.entry.path) {
+            <button type="button" class="dropdown-item py-2 text-start" (mousedown)="onResultClick(result, $event)">
+              <span class="fw-medium d-block text-break">{{ result.entry.title }}</span>
+              @if (result.entry.summary) {
+                <small class="d-block text-muted text-break">{{ result.entry.summary }}</small>
+              }
+              @if (result.highlights.length > 0) {
+                <small class="d-block text-muted" [innerHTML]="result.highlights[0]"></small>
+              }
+            </button>
+          }
+          <button type="button" class="dropdown-item py-2 text-center text-primary" (mousedown)="onSearchClick($event)">
+            {{ viewAllResultsLabel }}
           </button>
+        } @else if (searchQuery().trim().length > 0) {
+          <span class="dropdown-item-text text-muted small">{{ noResultsMessage }}</span>
         }
       </div>
-      <div class="search-results-footer">
-        <button
-          type="button"
-          class="btn btn-link btn-sm"
-          (click)="onSearchClick()"
-          i18n="@@featureDocsSearch-viewAllResults"
-        >
-          View all results
-        </button>
-      </div>
-    </div>
-  } @else if (showResults() && searchQuery().trim().length > 0) {
-    <div class="search-results-dropdown">
-      <div class="list-group">
-        <div class="list-group-item text-center text-muted">
-          <small i18n="@@featureDocsSearch-noResults">No results found</small>
-        </div>
-      </div>
-    </div>
+    </fpc-typeahead-select>
+  } @else {
+    <fpc-button
+      class="fpc-top-bar__action"
+      variant="link"
+      size="sm"
+      iconOnly
+      [ariaLabel]="searchPlaceholder"
+      [title]="searchPlaceholder"
+      (clicked)="onSearchClick()"
+    >
+      <i class="bi bi-search" aria-hidden="true"></i>
+    </fpc-button>
   }
 </div>

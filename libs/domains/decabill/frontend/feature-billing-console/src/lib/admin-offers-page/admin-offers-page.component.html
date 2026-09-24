@@ -1,91 +1,71 @@
-<div class="admin-offers-container border-top d-flex flex-column h-100">
-  <div class="p-3 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
-    <h5 class="mb-0 fw-semibold" i18n="@@featureAdminOffers-title">Offers</h5>
-    <button
-      type="button"
-      class="btn btn-sm btn-primary"
-      (click)="openCreateModal()"
+<div class="admin-offers-container border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="pageTitle">
+    <fpc-button
+      fpcPageHeaderActions
+      variant="primary"
+      size="sm"
+      iconOnly
       [disabled]="(mutating$ | async) === true"
-      i18n-title="@@featureAdminOffers-create"
-      title="Create offer"
+      [ariaLabel]="createOfferAriaLabel"
+      [title]="createOfferAriaLabel"
+      (clicked)="openCreateModal()"
     >
       <i class="bi bi-plus" aria-hidden="true"></i>
-    </button>
-  </div>
+    </fpc-button>
+  </fpc-page-header>
 
-  <div class="d-flex align-items-center gap-0 d-md-none border-bottom btn-group-options">
-    @for (panel of mobilePanels; track panel) {
-      <button
-        type="button"
-        class="btn btn-sm btn-options"
-        [class.btn-outline-secondary]="mobilePanel() !== panel"
-        [class.btn-primary]="mobilePanel() === panel"
-        (click)="mobilePanel.set(panel)"
-      >
-        {{ mobilePanelLabel(panel) }}
-      </button>
-    }
-  </div>
+  <fpc-tab-group
+    class="d-md-none flex-shrink-0"
+    [activeId]="mobilePanel()"
+    (activeIdChange)="onMobilePanelTabChange($event)"
+  >
+    <fpc-tab id="overview" [label]="mobilePanelLabel('overview')" />
+    <fpc-tab id="offers" [label]="mobilePanelLabel('offers')" />
+  </fpc-tab-group>
 
   <div class="section__container flex-grow-1 d-flex flex-column min-h-0">
     @if (error$ | async; as err) {
-      <div class="alert alert-danger mb-0 rounded-0 border-0 border-bottom" role="alert">{{ err }}</div>
+      <fpc-alert [flush]="true" variant="danger" [message]="err" />
     }
 
-    <div class="admin-offers__summary-bar flex-shrink-0">
-      <div class="row g-0 admin-offers__summary-grid">
-        <div class="col-6 col-md-3">
-          <div class="card h-100 rounded-0 admin-offers__summary-card admin-offers__summary-card--first">
-            <div class="card-body">
-              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminOffers-draftCount">Draft</h6>
-              @if (statisticsLoading$ | async) {
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              } @else if (statistics$ | async; as stats) {
-                <p class="card-title mb-0 fs-4 fw-bold">{{ stats.draftCount }}</p>
-              }
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="card h-100 rounded-0 admin-offers__summary-card admin-offers__summary-card--second">
-            <div class="card-body">
-              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminOffers-pendingCount">Pending</h6>
-              @if (statisticsLoading$ | async) {
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              } @else if (statistics$ | async; as stats) {
-                <p class="card-title mb-0 fs-4 fw-bold">{{ stats.pendingCount }}</p>
-              }
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="card h-100 rounded-0 admin-offers__summary-card admin-offers__summary-card--third">
-            <div class="card-body">
-              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminOffers-acceptedCount">Accepted</h6>
-              @if (statisticsLoading$ | async) {
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              } @else if (statistics$ | async; as stats) {
-                <p class="card-title mb-0 fs-4 fw-bold">{{ stats.acceptedCount }}</p>
-              }
-            </div>
-          </div>
-        </div>
-        <div class="col-6 col-md-3">
-          <div class="card h-100 rounded-0 admin-offers__summary-card admin-offers__summary-card--fourth">
-            <div class="card-body">
-              <h6 class="card-subtitle mb-1 text-muted small" i18n="@@featureAdminOffers-pendingGross">
-                Pending gross
-              </h6>
-              @if (statisticsLoading$ | async) {
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              } @else if (statistics$ | async; as stats) {
-                <p class="card-title mb-0 fs-4 fw-bold">{{ stats.pendingGross | number: '1.2-2' }}€</p>
-              }
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <fpc-summary-bar [columns]="4">
+      <fpc-summary-card [label]="draftCountLabel">
+        <span fpcSummaryCardValue>
+          @if (statisticsLoading$ | async) {
+            <fpc-spinner size="sm" />
+          } @else if (statistics$ | async; as stats) {
+            {{ stats.draftCount }}
+          }
+        </span>
+      </fpc-summary-card>
+      <fpc-summary-card [label]="pendingCountLabel">
+        <span fpcSummaryCardValue>
+          @if (statisticsLoading$ | async) {
+            <fpc-spinner size="sm" />
+          } @else if (statistics$ | async; as stats) {
+            {{ stats.pendingCount }}
+          }
+        </span>
+      </fpc-summary-card>
+      <fpc-summary-card [label]="acceptedCountLabel">
+        <span fpcSummaryCardValue>
+          @if (statisticsLoading$ | async) {
+            <fpc-spinner size="sm" />
+          } @else if (statistics$ | async; as stats) {
+            {{ stats.acceptedCount }}
+          }
+        </span>
+      </fpc-summary-card>
+      <fpc-summary-card [label]="pendingGrossLabel">
+        <span fpcSummaryCardValue>
+          @if (statisticsLoading$ | async) {
+            <fpc-spinner size="sm" />
+          } @else if (statistics$ | async; as stats) {
+            {{ stats.pendingGross | number: '1.2-2' }}€
+          }
+        </span>
+      </fpc-summary-card>
+    </fpc-summary-bar>
 
     <div class="section__row flex-grow-1 min-h-0">
       <div
@@ -93,100 +73,96 @@
         [class.d-none]="mobilePanel() !== 'overview'"
       >
         @if (statisticsError$ | async; as statsErr) {
-          <div class="alert alert-danger mb-0 rounded-0 border-0 border-bottom" role="alert">{{ statsErr }}</div>
+          <fpc-alert [flush]="true" variant="danger" [message]="statsErr" />
         }
 
         <div class="admin-offers__statistics-lane card flex-grow-1 border-0 d-flex flex-column min-h-0">
-          <div
-            class="card-header admin-offers__lane-header py-2 small fw-semibold d-flex justify-content-between align-items-center flex-shrink-0"
+          <fpc-lane-header flush>
+            <span fpcLaneHeaderTitle i18n="@@featureAdminOffers-statisticsTitle">Statistics</span>
+          </fpc-lane-header>
+
+          <fpc-collapsible-filter-panel
+            [open]="!filtersCollapsed()"
+            (openChange)="onFiltersOpenChange($event)"
+            [title]="filtersPanelTitle"
+            [showClear]="false"
           >
-            <span i18n="@@featureAdminOffers-statisticsTitle">Statistics</span>
-            <button
-              type="button"
-              class="btn btn-sm btn-outline-secondary"
-              (click)="onToggleFilters()"
-              [attr.aria-expanded]="!filtersCollapsed()"
-              i18n-title="@@featureAdminOffers-toggleFilters"
-              title="Toggle filters"
-              i18n-aria-label="@@featureAdminOffers-toggleFilters"
-              aria-label="Toggle filters"
-            >
-              <i class="bi bi-funnel" aria-hidden="true"></i>
-              <i
-                class="bi ms-1"
-                [class.bi-chevron-down]="filtersCollapsed()"
-                [class.bi-chevron-up]="!filtersCollapsed()"
-                aria-hidden="true"
-              ></i>
-            </button>
-          </div>
-
-          @if (!filtersCollapsed()) {
-            <div class="border-bottom p-3 d-flex flex-wrap gap-3 align-items-end">
-              <div>
-                <label class="form-label small mb-1" for="offersFromDate" i18n="@@featureAdminOffers-fromDate"
-                  >From</label
+            <div class="row g-3 mb-0 w-100">
+              <div class="col-12">
+                <fpc-form-field i18n-label="@@featureAdminOffers-customerFilter" label="Customer">
+                  <framework-billing-admin-user-select
+                    [(selectedUserId)]="filterUserId"
+                    [size]="'sm'"
+                  ></framework-billing-admin-user-select>
+                </fpc-form-field>
+              </div>
+              <div class="col-6">
+                <fpc-form-field forId="offersFromDate" i18n-label="@@featureAdminOffers-fromDate" label="From">
+                  <fpc-form-control
+                    controlId="offersFromDate"
+                    inputType="date"
+                    size="sm"
+                    [ngModel]="fromDate()"
+                    (ngModelChange)="fromDate.set($event)"
+                    name="fromDate"
+                  />
+                </fpc-form-field>
+              </div>
+              <div class="col-6">
+                <fpc-form-field forId="offersToDate" i18n-label="@@featureAdminOffers-toDate" label="To">
+                  <fpc-form-control
+                    controlId="offersToDate"
+                    inputType="date"
+                    size="sm"
+                    [ngModel]="toDate()"
+                    (ngModelChange)="toDate.set($event)"
+                    name="toDate"
+                  />
+                </fpc-form-field>
+              </div>
+              <div class="col-12">
+                <fpc-form-field forId="offersGroupBy" i18n-label="@@featureAdminOffers-groupBy" label="Group by">
+                  <fpc-form-control
+                    controlType="select"
+                    controlId="offersGroupBy"
+                    size="sm"
+                    [ngModel]="groupBy()"
+                    (ngModelChange)="groupBy.set($event)"
+                    name="groupBy"
+                  >
+                    <option value="day" i18n="@@featureAdminOffers-groupByDay">Day</option>
+                    <option value="month" i18n="@@featureAdminOffers-groupByMonth">Month</option>
+                  </fpc-form-control>
+                </fpc-form-field>
+              </div>
+              <div class="col-12 d-flex gap-2">
+                <fpc-button
+                  variant="primary"
+                  size="sm"
+                  (clicked)="onApplyFilters()"
+                  i18n="@@featureAdminOffers-applyFilters"
                 >
-                <input
-                  id="offersFromDate"
-                  type="date"
-                  class="form-control form-control-sm"
-                  [ngModel]="fromDate()"
-                  (ngModelChange)="fromDate.set($event)"
-                  name="fromDate"
-                />
-              </div>
-              <div>
-                <label class="form-label small mb-1" for="offersToDate" i18n="@@featureAdminOffers-toDate">To</label>
-                <input
-                  id="offersToDate"
-                  type="date"
-                  class="form-control form-control-sm"
-                  [ngModel]="toDate()"
-                  (ngModelChange)="toDate.set($event)"
-                  name="toDate"
-                />
-              </div>
-              <div>
-                <label class="form-label small mb-1" for="offersGroupBy" i18n="@@featureAdminOffers-groupBy"
-                  >Group by</label
+                  Apply
+                </fpc-button>
+                <fpc-button
+                  variant="dark"
+                  size="sm"
+                  (clicked)="onResetFilters()"
+                  i18n="@@featureAdminOffers-resetFilters"
                 >
-                <select
-                  id="offersGroupBy"
-                  class="form-select form-select-sm"
-                  [ngModel]="groupBy()"
-                  (ngModelChange)="groupBy.set($event)"
-                  name="groupBy"
-                >
-                  <option value="day" i18n="@@featureAdminOffers-groupByDay">Day</option>
-                  <option value="month" i18n="@@featureAdminOffers-groupByMonth">Month</option>
-                </select>
+                  Reset
+                </fpc-button>
               </div>
-              <div class="flex-grow-1 min-w-0">
-                <label class="form-label small mb-1" i18n="@@featureAdminOffers-customerFilter">Customer</label>
-                <framework-billing-admin-user-select
-                  [(selectedUserId)]="filterUserId"
-                  [size]="'sm'"
-                ></framework-billing-admin-user-select>
-              </div>
-              <button
-                type="button"
-                class="btn btn-sm btn-primary"
-                (click)="onApplyFilters()"
-                i18n="@@featureAdminOffers-applyFilters"
-              >
-                Apply
-              </button>
             </div>
-          }
+          </fpc-collapsible-filter-panel>
 
-          <div class="admin-offers__statistics-body flex-grow-1 overflow-auto">
+          <div class="admin-offers__statistics-body flex-grow-1 overflow-auto d-flex flex-column min-h-0">
             <div class="d-flex flex-column gap-3 p-3">
               <div class="card">
                 <div class="card-body">
                   @if (statisticsLoading$ | async) {
                     <div class="text-center py-4">
-                      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                      <fpc-spinner size="sm" />
                     </div>
                   } @else if (seriesChartOptions(); as chart) {
                     <apx-chart
@@ -218,114 +194,111 @@
         [class.d-none]="mobilePanel() !== 'offers'"
       >
         <div class="admin-offers__offers-lane card flex-grow-1 border-0 d-flex flex-column min-h-0">
-          <div
-            class="card-header admin-offers__lane-header py-2 small fw-semibold d-flex justify-content-between align-items-center flex-shrink-0 d-none d-md-flex"
-          >
-            <span i18n="@@featureAdminOffers-listTitle">Offers</span>
-            <span class="btn btn-sm btn-outline-secondary invisible" aria-hidden="true">
-              <i class="bi bi-funnel" aria-hidden="true"></i>
-              <i class="bi bi-chevron-down ms-1" aria-hidden="true"></i>
-            </span>
-          </div>
+          <fpc-lane-header flush visibility="md-up">
+            <span fpcLaneHeaderTitle i18n="@@featureAdminOffers-listTitle">Offers</span>
+            <span fpcLaneHeaderActions class="admin-lane-header-spacer invisible" aria-hidden="true">&nbsp;</span>
+          </fpc-lane-header>
 
-          <div class="input-group search-input-container border-bottom">
-            <i class="bi bi-search" aria-hidden="true"></i>
-            <input
-              type="search"
-              class="form-control border-0 search-input"
-              placeholder="Search offers"
-              i18n-placeholder="@@featureAdminOffers-searchPlaceholder"
-              [ngModel]="searchQuery()"
-              (ngModelChange)="searchQuery.set($event)"
-              name="search"
-            />
-          </div>
+          <fpc-search-field
+            class="border-bottom"
+            name="search"
+            [bordered]="false"
+            i18n-placeholder="@@featureAdminOffers-searchPlaceholder"
+            placeholder="Search offers"
+            [(value)]="searchQuery"
+          />
 
-          <div class="flex-grow-1 overflow-auto min-h-0">
+          <div class="flex-grow-1 overflow-auto min-h-0 d-flex flex-column">
             @if (loading$ | async) {
               <div class="d-flex justify-content-center align-items-center p-4">
-                <span class="spinner-border text-primary" role="status" aria-hidden="true"></span>
+                <fpc-spinner variant="primary" />
               </div>
             } @else if (offers().length === 0) {
-              <div class="d-flex justify-content-center align-items-center p-4 text-muted">
-                <p class="mb-0" i18n="@@featureAdminOffers-empty">No offers found</p>
-              </div>
+              @if (searchQuery().trim()) {
+                <fpc-empty-state
+                  icon="search"
+                  message="No search results"
+                  i18n-message="@@featureAdminOffers-noSearchResults"
+                />
+              } @else {
+                <fpc-empty-state message="No offers yet" i18n-message="@@featureAdminOffers-empty" />
+              }
             } @else {
-              <div class="list-group list-group-flush">
+              <fpc-list [flush]="true">
                 @for (offer of offers(); track offer.id) {
-                  <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-3">
-                    <div class="min-w-0 flex-grow-1">
-                      <div class="fw-semibold mb-1">{{ offer.offerNumber || offer.id }}</div>
-                      <div class="small text-muted d-flex align-items-center gap-3 flex-wrap">
-                        <span
-                          class="info-badge text-muted bg-body-tertiary py-1 px-2 rounded"
-                          [ngClass]="offerStatusBadgeClass(offer.status)"
-                        >
-                          {{ offerStatusLabel(offer.status) }}
-                        </span>
-                        <span>{{ offer.userEmail || offer.userId }}</span>
-                        <span>{{ offer.totalGross | number: '1.2-2' }} {{ offer.currency }}</span>
-                        <span>{{ formatDate(offer.createdAt) }}</span>
-                      </div>
+                  <fpc-list-item>
+                    <div fpcListItemTitle class="fw-semibold">{{ offer.offerNumber || offer.id }}</div>
+                    <div fpcListItemMeta class="small d-flex align-items-center gap-3 flex-wrap">
+                      <fpc-badge variant="info" color="secondary" [ngClass]="offerStatusBadgeClass(offer.status)">
+                        {{ offerStatusLabel(offer.status) }}
+                      </fpc-badge>
+                      <span>{{ offer.userEmail || offer.userId }}</span>
+                      <span>{{ offer.totalGross | number: '1.2-2' }} {{ offer.currency }}</span>
+                      <span>{{ formatDate(offer.createdAt) }}</span>
                     </div>
-                    <div class="btn-group btn-group-sm flex-shrink-0" role="group">
+                    <fpc-button-group fpcListItemActions size="sm">
                       @if (canEditOffer(offer)) {
-                        <button
-                          type="button"
-                          class="btn btn-outline-primary"
-                          (click)="openEditModal(offer)"
+                        <fpc-button
+                          iconOnly
+                          size="sm"
+                          variant="warning"
+                          (clicked)="openEditModal(offer)"
                           title="Edit"
                           i18n-title="@@featureAdminOffers-edit"
                         >
                           <i class="bi bi-pencil" aria-hidden="true"></i>
-                        </button>
+                        </fpc-button>
                       }
-                      <button
-                        type="button"
-                        class="btn btn-outline-secondary"
-                        (click)="openAuditHistory(offer)"
+                      <fpc-button
+                        iconOnly
+                        size="sm"
+                        variant="dark"
+                        (clicked)="openAuditHistory(offer)"
                         title="Audit log"
                         i18n-title="@@featureAdminOffers-audit"
                       >
                         <i class="bi bi-clock-history" aria-hidden="true"></i>
-                      </button>
+                      </fpc-button>
                       @if (canArchiveOffer(offer)) {
-                        <button
-                          type="button"
-                          class="btn btn-outline-success"
-                          (click)="archiveOffer(offer)"
+                        <fpc-button
+                          size="sm"
+                          variant="dark"
+                          iconOnly
+                          (clicked)="archiveOffer(offer)"
                           title="Send to customer"
                           i18n-title="@@featureAdminOffers-archive"
                         >
                           <i class="bi bi-send" aria-hidden="true"></i>
-                        </button>
+                        </fpc-button>
                       }
                       @if (canRevokeOffer(offer)) {
-                        <button
-                          type="button"
-                          class="btn btn-outline-warning"
-                          (click)="revokeOffer(offer)"
+                        <fpc-button
+                          size="sm"
+                          variant="dark"
+                          iconOnly
+                          (clicked)="revokeOffer(offer)"
                           title="Revoke"
                           i18n-title="@@featureAdminOffers-revoke"
                         >
                           <i class="bi bi-slash-circle" aria-hidden="true"></i>
-                        </button>
+                        </fpc-button>
                       }
                       @if (canDeleteOffer(offer)) {
-                        <button
-                          type="button"
-                          class="btn btn-outline-danger"
-                          (click)="openDeleteModal(offer)"
+                        <fpc-button
+                          size="sm"
+                          variant="danger"
+                          iconOnly
+                          (clicked)="openDeleteModal(offer)"
                           title="Delete"
                           i18n-title="@@featureAdminOffers-delete"
                         >
                           <i class="bi bi-trash" aria-hidden="true"></i>
-                        </button>
+                        </fpc-button>
                       }
-                    </div>
-                  </div>
+                    </fpc-button-group>
+                  </fpc-list-item>
                 }
-              </div>
+              </fpc-list>
             }
           </div>
         </div>
@@ -334,225 +307,156 @@
   </div>
 </div>
 
-<div #createModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureAdminOffers-createTitle">Create offer</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label class="form-label" i18n="@@featureAdminOffers-customer">Customer</label>
-          <framework-billing-admin-user-select
-            #createOfferUserSelect
-            [(selectedUserId)]="createUserId"
-          ></framework-billing-admin-user-select>
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="createExpiresAt" i18n="@@featureAdminOffers-expiresAt">Expires at</label>
-          <input
-            id="createExpiresAt"
-            type="datetime-local"
-            class="form-control"
-            [(ngModel)]="createForm.expiresAt"
-            name="createExpiresAt"
-          />
-        </div>
-        <div class="form-check mb-3">
-          <input
-            id="createBillToOpenPositions"
-            type="checkbox"
-            class="form-check-input"
-            [(ngModel)]="createForm.billToOpenPositions"
-            name="createBillToOpenPositions"
-          />
-          <label
-            class="form-check-label"
-            for="createBillToOpenPositions"
-            i18n="@@featureAdminOffers-billToOpenPositions"
-          >
-            Bill accepted charges to open positions
-          </label>
-        </div>
-        <framework-admin-offer-line-editor
-          #createLineEditor
-          prefix="create"
-          [lines]="createLineItems"
-          [customerUserId]="createUserId"
-        ></framework-admin-offer-line-editor>
-      </div>
-      <div class="modal-footer flex-column align-items-stretch gap-3">
-        <framework-pricing-totals-summary
-          variant="primary"
-          [summary]="createLineEditor?.draftSummary() ?? null"
-        ></framework-pricing-totals-summary>
-        <div class="d-flex justify-content-end w-100">
-          <button
-            type="button"
-            class="btn btn-primary"
-            [disabled]="!canSubmitCreate() || (mutating$ | async)"
-            (click)="submitCreate()"
-            i18n="@@featureAdminInvoices-create"
-          >
-            Create
-          </button>
-        </div>
-      </div>
+<fpc-modal [(open)]="createModalOpen" size="lg" i18n-title="@@featureAdminOffers-createTitle" title="Create offer">
+  <fpc-form-field i18n-label="@@featureAdminOffers-customer" label="Customer">
+    <framework-billing-admin-user-select
+      #createOfferUserSelect
+      [(selectedUserId)]="createUserId"
+    ></framework-billing-admin-user-select>
+  </fpc-form-field>
+  <fpc-form-field forId="createExpiresAt" i18n-label="@@featureAdminOffers-expiresAt" label="Expires at">
+    <fpc-form-control
+      controlId="createExpiresAt"
+      inputType="datetime-local"
+      [(ngModel)]="createForm.expiresAt"
+      name="createExpiresAt"
+    />
+  </fpc-form-field>
+  <fpc-form-check
+    class="mb-3"
+    checkId="createBillToOpenPositions"
+    [(ngModel)]="createForm.billToOpenPositions"
+    name="createBillToOpenPositions"
+    i18n-label="@@featureAdminOffers-billToOpenPositions"
+    label="Bill accepted charges to open positions"
+  />
+  <framework-admin-offer-line-editor
+    #createLineEditor
+    prefix="create"
+    [lines]="createLineItems"
+    [customerUserId]="createUserId"
+  ></framework-admin-offer-line-editor>
+  <div *fpcModalFooter class="d-flex flex-column align-items-stretch gap-3 w-100">
+    <framework-pricing-totals-summary
+      variant="primary"
+      [summary]="createLineEditor?.draftSummary() ?? null"
+    ></framework-pricing-totals-summary>
+    <div class="d-flex justify-content-end w-100">
+      <fpc-button
+        variant="primary"
+        [disabled]="!canSubmitCreate() || (mutating$ | async)"
+        (clicked)="submitCreate()"
+        i18n="@@featureAdminInvoices-create"
+      >
+        Create
+      </fpc-button>
     </div>
   </div>
-</div>
+</fpc-modal>
 
-<div #editModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureAdminOffers-editTitle">Edit offer</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        @if (editDetailLoading) {
-          <div class="d-flex justify-content-center p-4">
-            <span class="spinner-border text-primary" role="status" aria-hidden="true"></span>
-          </div>
-        } @else {
-          <div class="mb-3">
-            <label class="form-label" for="editExpiresAt" i18n="@@featureAdminOffers-expiresAt">Expires at</label>
-            <input
-              id="editExpiresAt"
-              type="datetime-local"
-              class="form-control"
-              [(ngModel)]="editForm.expiresAt"
-              name="editExpiresAt"
-            />
-          </div>
-          <div class="form-check mb-3">
-            <input
-              id="editBillToOpenPositions"
-              type="checkbox"
-              class="form-check-input"
-              [(ngModel)]="editForm.billToOpenPositions"
-              name="editBillToOpenPositions"
-            />
-            <label
-              class="form-check-label"
-              for="editBillToOpenPositions"
-              i18n="@@featureAdminOffers-billToOpenPositions"
-            >
-              Bill accepted charges to open positions
-            </label>
-          </div>
-          <framework-admin-offer-line-editor
-            #editLineEditor
-            prefix="edit"
-            [lines]="editLineItems"
-            [customerUserId]="editForm.userId"
-          ></framework-admin-offer-line-editor>
-        }
-      </div>
-      <div class="modal-footer flex-column align-items-stretch gap-3">
-        @if (!editDetailLoading) {
-          <framework-pricing-totals-summary
-            variant="primary"
-            [summary]="editLineEditor?.draftSummary() ?? null"
-          ></framework-pricing-totals-summary>
-        }
-        <div class="d-flex justify-content-end gap-2 w-100">
-          <button
-            type="button"
-            class="btn btn-outline-secondary"
-            data-bs-dismiss="modal"
-            i18n="@@featureAdminOffers-cancel"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            [disabled]="!canSubmitEdit() || (mutating$ | async)"
-            (click)="submitEdit()"
-            i18n="@@featureAdminOffers-saveChanges"
-          >
-            Save changes
-          </button>
-        </div>
-      </div>
+<fpc-modal [(open)]="editModalOpen" size="lg" i18n-title="@@featureAdminOffers-editTitle" title="Edit offer">
+  @if (editDetailLoading) {
+    <div class="d-flex justify-content-center p-4">
+      <fpc-spinner variant="primary" />
     </div>
-  </div>
-</div>
-
-<div #deleteModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureAdminOffers-deleteTitle">Delete draft offer?</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body" i18n="@@featureAdminOffers-deleteBody">This permanently deletes the draft offer.</div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-outline-secondary"
-          data-bs-dismiss="modal"
-          i18n="@@featureAdminOffers-cancel"
-        >
+  } @else {
+    <fpc-form-field forId="editExpiresAt" i18n-label="@@featureAdminOffers-expiresAt" label="Expires at">
+      <fpc-form-control
+        controlId="editExpiresAt"
+        inputType="datetime-local"
+        [(ngModel)]="editForm.expiresAt"
+        name="editExpiresAt"
+      />
+    </fpc-form-field>
+    <fpc-form-check
+      class="mb-3"
+      checkId="editBillToOpenPositions"
+      [(ngModel)]="editForm.billToOpenPositions"
+      name="editBillToOpenPositions"
+      i18n-label="@@featureAdminOffers-billToOpenPositions"
+      label="Bill accepted charges to open positions"
+    />
+    <framework-admin-offer-line-editor
+      #editLineEditor
+      prefix="edit"
+      [lines]="editLineItems"
+      [customerUserId]="editForm.userId"
+    ></framework-admin-offer-line-editor>
+  }
+  <div *fpcModalFooter class="d-flex flex-column align-items-stretch gap-3 w-100">
+    @if (!editDetailLoading) {
+      <framework-pricing-totals-summary
+        variant="primary"
+        [summary]="editLineEditor?.draftSummary() ?? null"
+      ></framework-pricing-totals-summary>
+    }
+    <div class="d-flex justify-content-end w-100">
+      <fpc-button-group>
+        <fpc-button variant="dark" (clicked)="editModalOpen.set(false)" i18n="@@featureAdminOffers-cancel">
           Cancel
-        </button>
-        <button
-          type="button"
-          class="btn btn-danger"
-          [disabled]="mutating$ | async"
-          (click)="confirmDelete()"
-          i18n="@@featureAdminOffers-deleteConfirm"
+        </fpc-button>
+        <fpc-button
+          variant="primary"
+          [disabled]="!canSubmitEdit() || (mutating$ | async)"
+          (clicked)="submitEdit()"
+          i18n="@@featureAdminOffers-saveChanges"
         >
-          Delete
-        </button>
-      </div>
+          Save changes
+        </fpc-button>
+      </fpc-button-group>
     </div>
   </div>
-</div>
+</fpc-modal>
 
-<div #auditHistoryModal class="modal fade" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" i18n="@@featureAdminOffers-auditTitle">Audit history</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        @if (auditLogsError$ | async; as auditErr) {
-          <div class="alert alert-danger" role="alert">{{ auditErr }}</div>
-        }
-        @if (auditLogsLoading$ | async) {
-          <div class="d-flex justify-content-center p-4">
-            <span class="spinner-border text-primary" role="status" aria-hidden="true"></span>
-          </div>
-        } @else if (selectedAuditLogs().length === 0) {
-          <p class="text-muted mb-0" i18n="@@featureAdminOffers-noAuditLogs">No audit entries.</p>
-        } @else {
-          <div class="list-group list-group-flush">
-            @for (entry of selectedAuditLogs(); track entry.id) {
-              <div class="list-group-item px-0">
-                <div class="fw-semibold">{{ entry.message }}</div>
-                <div class="small text-muted">{{ entry.process }} · {{ formatDate(entry.createdAt) }}</div>
-              </div>
-            }
-          </div>
-          @if (auditLogsHasMore()) {
-            <div class="text-center mt-3">
-              <button
-                type="button"
-                class="btn btn-sm btn-outline-secondary"
-                [disabled]="auditLogsAppendLoading$ | async"
-                (click)="loadMoreAuditLogs()"
-                i18n="@@featureAdminOffers-loadMoreAudit"
-              >
-                Load more
-              </button>
-            </div>
-          }
-        }
-      </div>
+<fpc-confirm-dialog
+  [(open)]="deleteModalOpen"
+  i18n-title="@@featureAdminOffers-deleteTitle"
+  title="Delete draft offer?"
+  i18n-message="@@featureAdminOffers-deleteBody"
+  message="This permanently deletes the draft offer."
+  i18n-confirmLabel="@@featureAdminOffers-deleteConfirm"
+  confirmLabel="Delete"
+  [danger]="true"
+  [busy]="(mutating$ | async) === true"
+  (confirmed)="confirmDelete()"
+/>
+
+<fpc-modal
+  [(open)]="auditHistoryModalOpen"
+  size="lg"
+  i18n-title="@@featureAdminOffers-auditTitle"
+  title="Audit history"
+>
+  @if (auditLogsError$ | async; as auditErr) {
+    <fpc-alert variant="danger" [message]="auditErr" />
+  }
+  @if (auditLogsLoading$ | async) {
+    <div class="d-flex justify-content-center p-4">
+      <fpc-spinner variant="primary" />
     </div>
-  </div>
-</div>
+  } @else if (selectedAuditLogs().length === 0) {
+    <p class="text-muted mb-0" i18n="@@featureAdminOffers-noAuditLogs">No audit entries.</p>
+  } @else {
+    <div class="list-group list-group-flush">
+      @for (entry of selectedAuditLogs(); track entry.id) {
+        <div class="list-group-item px-0">
+          <div class="fw-semibold">{{ entry.message }}</div>
+          <div class="small text-muted">{{ entry.process }} · {{ formatDate(entry.createdAt) }}</div>
+        </div>
+      }
+    </div>
+    @if (auditLogsHasMore()) {
+      <div class="text-center mt-3">
+        <fpc-button
+          variant="dark"
+          size="sm"
+          [disabled]="auditLogsAppendLoading$ | async"
+          (clicked)="loadMoreAuditLogs()"
+          i18n="@@featureAdminOffers-loadMoreAudit"
+        >
+          Load more
+        </fpc-button>
+      </div>
+    }
+  }
+</fpc-modal>

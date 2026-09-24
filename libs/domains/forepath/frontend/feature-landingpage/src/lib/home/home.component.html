@@ -15,18 +15,24 @@
           standards, and outcomes you can sustain after the engagement ends.
         </p>
         <div class="d-flex gap-3 justify-content-center flex-wrap">
-          <a
+          <fpc-button
+            variant="primary"
+            size="xl"
+            btnClass="rounded-3"
             routerLink="/contact"
-            class="btn btn-primary btn-lg rounded-3 cta-btn cta-btn-primary"
             i18n="@@featureForepathHome-heroContact"
-            ><i class="bi bi-envelope" aria-hidden="true"></i>Start a conversation</a
           >
-          <a
+            <i class="bi bi-envelope" aria-hidden="true"></i>Start a conversation
+          </fpc-button>
+          <fpc-button
+            variant="dark"
+            size="xl"
+            btnClass="rounded-3"
             routerLink="/pricing/estimate"
-            class="btn btn-dark btn-lg rounded-3 cta-btn"
             i18n="@@featureForepathHome-heroEstimate"
-            ><i class="bi bi-calculator" aria-hidden="true"></i>Get an instant quote</a
           >
+            <i class="bi bi-calculator" aria-hidden="true"></i>Get an instant quote
+          </fpc-button>
         </div>
         @if (latestBlogPost(); as post) {
           <a
@@ -563,31 +569,31 @@
           aria-label="Towns and cities in Ostwestfalen-Lippe where we often meet clients on site"
         >
           <li role="listitem">
-            <span class="badge rounded-pill home-roots-city px-3 py-2">Herford</span>
+            <fpc-badge variant="marketing" [pill]="true">Herford</fpc-badge>
           </li>
           <li role="listitem">
-            <span class="badge rounded-pill home-roots-city px-3 py-2">Bielefeld</span>
+            <fpc-badge variant="marketing" [pill]="true">Bielefeld</fpc-badge>
           </li>
           <li role="listitem">
-            <span class="badge rounded-pill home-roots-city px-3 py-2">Rheda-Wiedenbrück</span>
+            <fpc-badge variant="marketing" [pill]="true">Rheda-Wiedenbrück</fpc-badge>
           </li>
           <li role="listitem">
-            <span class="badge rounded-pill home-roots-city px-3 py-2">Gütersloh</span>
+            <fpc-badge variant="marketing" [pill]="true">Gütersloh</fpc-badge>
           </li>
           <li role="listitem">
-            <span class="badge rounded-pill home-roots-city px-3 py-2">Bad Salzuflen</span>
+            <fpc-badge variant="marketing" [pill]="true">Bad Salzuflen</fpc-badge>
           </li>
           <li role="listitem">
-            <span class="badge rounded-pill home-roots-city px-3 py-2">Detmold</span>
+            <fpc-badge variant="marketing" [pill]="true">Detmold</fpc-badge>
           </li>
           <li role="listitem">
-            <span class="badge rounded-pill home-roots-city px-3 py-2">Lemgo</span>
+            <fpc-badge variant="marketing" [pill]="true">Lemgo</fpc-badge>
           </li>
           <li role="listitem">
-            <span class="badge rounded-pill home-roots-city px-3 py-2">Minden</span>
+            <fpc-badge variant="marketing" [pill]="true">Minden</fpc-badge>
           </li>
           <li role="listitem">
-            <span class="badge rounded-pill home-roots-city px-3 py-2">Paderborn</span>
+            <fpc-badge variant="marketing" [pill]="true">Paderborn</fpc-badge>
           </li>
         </ul>
       </div>
@@ -604,9 +610,15 @@
         Tell us where you are stuck. That might be migration, delivery, AI adoption, or all three. We will propose a
         practical path and the team to execute it.
       </p>
-      <a routerLink="/contact" class="btn btn-primary btn-lg rounded-3 cta-btn" i18n="@@featureForepathHome-ctaButton"
-        ><i class="bi bi-envelope" aria-hidden="true"></i>Contact us</a
+      <fpc-button
+        variant="primary"
+        size="xl"
+        btnClass="rounded-3"
+        routerLink="/contact"
+        i18n="@@featureForepathHome-ctaButton"
       >
+        <i class="bi bi-envelope" aria-hidden="true"></i>Contact us
+      </fpc-button>
     </div>
   </div>
 </section>
