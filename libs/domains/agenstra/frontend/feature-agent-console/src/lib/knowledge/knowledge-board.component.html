@@ -343,53 +343,58 @@
   <label class="visually-hidden" for="relationsSearchInput" i18n="@@featureKnowledgeBoard-searchRelationsLabel">
     Search relations
   </label>
-  <div class="d-flex align-items-start gap-2 mb-2">
-    <fpc-typeahead-select
-      #relationsSearchInput
-      class="flex-grow-1 min-width-0"
-      inputId="relationsSearchInput"
-      listboxId="relationsSearchInput-listbox"
-      [openOnFocus]="false"
-      i18n-placeholder="@@featureKnowledgeBoard-searchRelationsPlaceholder"
-      placeholder="Title or short/long SHA"
-      i18n-ariaLabel="@@featureKnowledgeBoard-searchRelationsLabel"
-      ariaLabel="Search relations"
-      [query]="relationsSearchQuery()"
-      (queryChange)="onRelationInputChange($event)"
-      [open]="relationSuggestionsOpen()"
-      (openChange)="onRelationSuggestionsOpenChange($event)"
-      (cleared)="onRelationInputChange('')"
+  <fpc-typeahead-select
+    #relationsSearchInput
+    class="mb-2"
+    inputId="relationsSearchInput"
+    listboxId="relationsSearchInput-listbox"
+    [openOnFocus]="false"
+    i18n-placeholder="@@featureKnowledgeBoard-searchRelationsPlaceholder"
+    placeholder="Title or short/long SHA"
+    i18n-ariaLabel="@@featureKnowledgeBoard-searchRelationsLabel"
+    ariaLabel="Search relations"
+    [query]="relationsSearchQuery()"
+    (queryChange)="onRelationInputChange($event)"
+    [open]="relationSuggestionsOpen()"
+    (openChange)="onRelationSuggestionsOpenChange($event)"
+    (cleared)="onRelationInputChange('')"
+  >
+    <fpc-button
+      fpcTypeaheadSuffix
+      variant="dark"
+      [iconOnly]="true"
+      (clicked)="onAddRelationBySearch()"
+      i18n-ariaLabel="@@featureKnowledgeBoard-addRelationTarget"
+      ariaLabel="Add relation target"
     >
-      <div fpcTypeaheadSuggestions>
-        @for (
-          candidate of relationCandidates();
-          track candidate.kind === 'knowledge' ? candidate.node.id : candidate.ticket.id
-        ) {
-          <button
-            type="button"
-            class="dropdown-item py-2 text-start"
-            (mousedown)="onPickRelationCandidate(candidate, $event)"
-          >
-            <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
-              <span class="font-monospace text-muted small flex-shrink-0">{{
-                candidate.kind === 'knowledge' ? candidate.node.shas.short : candidate.ticket.shas.short
-              }}</span>
-              <span class="text-truncate small flex-grow-1 min-width-0">
-                {{
-                  candidate.kind === 'knowledge'
-                    ? (candidate.node.nodeType === 'folder' ? 'Folder' : 'Page') + ' · ' + candidate.node.title
-                    : 'Ticket · ' + candidate.ticket.title
-                }}
-              </span>
-            </span>
-          </button>
-        }
-      </div>
-    </fpc-typeahead-select>
-    <fpc-button variant="dark" [iconOnly]="true" (clicked)="onAddRelationBySearch()">
       <i class="bi bi-plus"></i>
     </fpc-button>
-  </div>
+    <div fpcTypeaheadSuggestions>
+      @for (
+        candidate of relationCandidates();
+        track candidate.kind === 'knowledge' ? candidate.node.id : candidate.ticket.id
+      ) {
+        <button
+          type="button"
+          class="dropdown-item py-2 text-start"
+          (mousedown)="onPickRelationCandidate(candidate, $event)"
+        >
+          <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
+            <span class="font-monospace text-muted small flex-shrink-0">{{
+              candidate.kind === 'knowledge' ? candidate.node.shas.short : candidate.ticket.shas.short
+            }}</span>
+            <span class="text-truncate small flex-grow-1 min-width-0">
+              {{
+                candidate.kind === 'knowledge'
+                  ? (candidate.node.nodeType === 'folder' ? 'Folder' : 'Page') + ' · ' + candidate.node.title
+                  : 'Ticket · ' + candidate.ticket.title
+              }}
+            </span>
+          </span>
+        </button>
+      }
+    </div>
+  </fpc-typeahead-select>
   @if (relationSearchError()) {
     <div class="form-text text-danger mb-2">{{ relationSearchError() }}</div>
   }

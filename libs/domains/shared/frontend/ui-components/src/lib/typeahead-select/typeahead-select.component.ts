@@ -30,6 +30,7 @@ export type FpcTypeaheadSelectVariant = 'menu' | 'inline';
  *
  * - `[fpcTypeaheadSelection]` — chips or summary for the current selection
  * - `[fpcTypeaheadSuggestions]` — the suggestion list
+ * - `[fpcTypeaheadSuffix]` — optional control appended in the same input group (e.g. add button)
  *
  * **Variants**
  * - `menu` (default): suggestion menu is portaled to `document.body` with `position: fixed`
@@ -55,39 +56,42 @@ export type FpcTypeaheadSelectVariant = 'menu' | 'inline';
       <ng-content select="[fpcTypeaheadSelection]" />
     </div>
 
-    <div #anchor class="input-group fpc-typeahead-select__input-group border rounded">
-      <i class="bi bi-search" aria-hidden="true"></i>
-      <input
-        type="text"
-        class="form-control border-0 fpc-typeahead-select__input"
-        [class.form-control-sm]="size() === 'sm'"
-        role="combobox"
-        autocomplete="off"
-        [id]="inputId()"
-        [attr.placeholder]="placeholder()"
-        [attr.aria-label]="ariaLabel()"
-        [attr.aria-expanded]="open()"
-        [attr.aria-controls]="listboxId()"
-        [attr.aria-required]="required() ? true : null"
-        [disabled]="disabled()"
-        [value]="query()"
-        (input)="onInput($event)"
-        (focus)="onFocus()"
-        (keydown.escape)="close()"
-      />
-      @if (loading()) {
-        <fpc-spinner size="sm" class="fpc-typeahead-select__spinner" label="Loading" />
-      }
-      @if (clearable() && query().length > 0) {
-        <button
-          type="button"
-          class="btn btn-link border-0 fpc-typeahead-select__clear"
-          [attr.aria-label]="clearAriaLabel()"
-          (click)="clear()"
-        >
-          <i class="bi bi-x-lg" aria-hidden="true"></i>
-        </button>
-      }
+    <div #anchor class="input-group fpc-typeahead-select__input-group">
+      <div class="fpc-typeahead-select__field">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <input
+          type="text"
+          class="form-control border-0 fpc-typeahead-select__input"
+          [class.form-control-sm]="size() === 'sm'"
+          role="combobox"
+          autocomplete="off"
+          [id]="inputId()"
+          [attr.placeholder]="placeholder()"
+          [attr.aria-label]="ariaLabel()"
+          [attr.aria-expanded]="open()"
+          [attr.aria-controls]="listboxId()"
+          [attr.aria-required]="required() ? true : null"
+          [disabled]="disabled()"
+          [value]="query()"
+          (input)="onInput($event)"
+          (focus)="onFocus()"
+          (keydown.escape)="close()"
+        />
+        @if (loading()) {
+          <fpc-spinner size="sm" class="fpc-typeahead-select__spinner" label="Loading" />
+        }
+        @if (clearable() && query().length > 0) {
+          <button
+            type="button"
+            class="btn btn-link border-0 fpc-typeahead-select__clear"
+            [attr.aria-label]="clearAriaLabel()"
+            (click)="clear()"
+          >
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+          </button>
+        }
+      </div>
+      <ng-content select="[fpcTypeaheadSuffix]" />
     </div>
 
     @if (open()) {

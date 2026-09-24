@@ -15,11 +15,21 @@
 }
 
 .fpc-typeahead-select__input-group {
+  align-items: stretch;
+  flex-wrap: nowrap;
+}
+
+.fpc-typeahead-select__field {
   position: relative;
+  display: flex;
   align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
   // Match `fpc-search-field`: one surface for glyph + input so a dark parent (top bar)
   // cannot show through as a separate “badge” beside the control.
   background-color: var(--bs-body-bg);
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
 
   i.bi-search {
     display: flex;
@@ -32,7 +42,13 @@
   }
 }
 
-:host(.fpc-typeahead-select--sm) .fpc-typeahead-select__input-group {
+// Appended `[fpcTypeaheadSuffix]` (e.g. add button) shares the input-group chrome.
+.fpc-typeahead-select__input-group:has([fpcTypeaheadSuffix]) .fpc-typeahead-select__field {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+:host(.fpc-typeahead-select--sm) .fpc-typeahead-select__field {
   i.bi-search,
   .fpc-typeahead-select__spinner,
   .fpc-typeahead-select__clear {

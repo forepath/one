@@ -1379,37 +1379,19 @@
   </div>
   <div class="mt-3">
     <fpc-form-field forId="ticketContextShaInput" label="Ticket context (SHA)">
-      <div class="d-flex align-items-start gap-2">
-        <fpc-typeahead-select
-          class="flex-grow-1 min-width-0"
-          inputId="ticketContextShaInput"
-          listboxId="ticketContextShaInput-listbox"
-          [openOnFocus]="false"
-          placeholder="Title or short/long SHA"
-          [query]="ticketContextInput()"
-          (queryChange)="onTicketContextInputChange($event)"
-          [open]="ticketContextSuggestionsOpen()"
-          (openChange)="onTicketContextSuggestionsOpenChange($event)"
-          (cleared)="onTicketContextInputChange('')"
-        >
-          <div fpcTypeaheadSuggestions>
-            @for (ticket of ticketContextSuggestions(); track ticket.id) {
-              <button
-                type="button"
-                class="dropdown-item py-2 text-start"
-                (mousedown)="onPickTicketContextSuggestion(ticket, $event)"
-              >
-                <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
-                  @if (ticket.shas?.short) {
-                    <span class="font-monospace text-muted small flex-shrink-0">{{ ticket.shas.short }}</span>
-                  }
-                  <span class="text-truncate small flex-grow-1 min-width-0">{{ ticket.title }}</span>
-                </span>
-              </button>
-            }
-          </div>
-        </fpc-typeahead-select>
+      <fpc-typeahead-select
+        inputId="ticketContextShaInput"
+        listboxId="ticketContextShaInput-listbox"
+        [openOnFocus]="false"
+        placeholder="Title or short/long SHA"
+        [query]="ticketContextInput()"
+        (queryChange)="onTicketContextInputChange($event)"
+        [open]="ticketContextSuggestionsOpen()"
+        (openChange)="onTicketContextSuggestionsOpenChange($event)"
+        (cleared)="onTicketContextInputChange('')"
+      >
         <fpc-button
+          fpcTypeaheadSuffix
           variant="dark"
           [iconOnly]="true"
           (clicked)="onAddTicketContextBySha()"
@@ -1418,7 +1400,23 @@
         >
           <i class="bi bi-plus"></i>
         </fpc-button>
-      </div>
+        <div fpcTypeaheadSuggestions>
+          @for (ticket of ticketContextSuggestions(); track ticket.id) {
+            <button
+              type="button"
+              class="dropdown-item py-2 text-start"
+              (mousedown)="onPickTicketContextSuggestion(ticket, $event)"
+            >
+              <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
+                @if (ticket.shas?.short) {
+                  <span class="font-monospace text-muted small flex-shrink-0">{{ ticket.shas.short }}</span>
+                }
+                <span class="text-truncate small flex-grow-1 min-width-0">{{ ticket.title }}</span>
+              </span>
+            </button>
+          }
+        </div>
+      </fpc-typeahead-select>
       @if (ticketContextInputError(); as ticketContextError) {
         <div fpcFormFieldError class="text-danger">{{ ticketContextError }}</div>
       }
@@ -1426,19 +1424,15 @@
     @if (selectedTicketContextShas().length > 0) {
       <div class="d-flex flex-wrap gap-2 mt-2">
         @for (sha of selectedTicketContextShas(); track sha) {
-          <fpc-badge variant="info" color="secondary" style="max-width: min(100%, 22rem)">
+          <fpc-badge variant="info" color="secondary" class="chat-context-chip" style="max-width: min(100%, 22rem)">
             <span class="text-truncate small">{{ ticketContextChipDisplay(sha) }}</span>
-            <fpc-button
-              variant="link"
-              size="sm"
-              iconOnly
-              class="ms-1 align-baseline flex-shrink-0"
-              (clicked)="onRemoveTicketContextSha(sha)"
+            <button
+              type="button"
+              class="btn-close chat-context-chip-clear"
+              (click)="onRemoveTicketContextSha(sha)"
               i18n-aria-label="@@featureChat-removeTicketContext"
-              ariaLabel="Remove ticket context"
-            >
-              <i class="bi bi-x"></i>
-            </fpc-button>
+              aria-label="Remove ticket context"
+            ></button>
           </fpc-badge>
         }
       </div>
@@ -1450,40 +1444,20 @@
       i18n-label="@@featureChat-knowledgeContextLabel"
       label="Knowledge context (SHA)"
     >
-      <div class="d-flex align-items-start gap-2">
-        <fpc-typeahead-select
-          class="flex-grow-1 min-width-0"
-          inputId="knowledgeContextShaInput"
-          listboxId="knowledgeContextShaInput-listbox"
-          [openOnFocus]="false"
-          i18n-placeholder="@@featureChat-knowledgeContextPlaceholder"
-          placeholder="Title or short/long SHA"
-          [query]="knowledgeContextInput()"
-          (queryChange)="onKnowledgeContextInputChange($event)"
-          [open]="knowledgeContextSuggestionsOpen()"
-          (openChange)="onKnowledgeContextSuggestionsOpenChange($event)"
-          (cleared)="onKnowledgeContextInputChange('')"
-        >
-          <div fpcTypeaheadSuggestions>
-            @for (node of knowledgeContextSuggestions(); track node.id) {
-              <button
-                type="button"
-                class="dropdown-item py-2 text-start"
-                (mousedown)="onPickKnowledgeContextSuggestion(node, $event)"
-              >
-                <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
-                  @if (node.shas?.short) {
-                    <span class="font-monospace text-muted small flex-shrink-0">{{ node.shas.short }}</span>
-                  }
-                  <span class="text-truncate small flex-grow-1 min-width-0">
-                    {{ node.nodeType === 'folder' ? 'Folder' : 'Page' }} · {{ node.title }}
-                  </span>
-                </span>
-              </button>
-            }
-          </div>
-        </fpc-typeahead-select>
+      <fpc-typeahead-select
+        inputId="knowledgeContextShaInput"
+        listboxId="knowledgeContextShaInput-listbox"
+        [openOnFocus]="false"
+        i18n-placeholder="@@featureChat-knowledgeContextPlaceholder"
+        placeholder="Title or short/long SHA"
+        [query]="knowledgeContextInput()"
+        (queryChange)="onKnowledgeContextInputChange($event)"
+        [open]="knowledgeContextSuggestionsOpen()"
+        (openChange)="onKnowledgeContextSuggestionsOpenChange($event)"
+        (cleared)="onKnowledgeContextInputChange('')"
+      >
         <fpc-button
+          fpcTypeaheadSuffix
           variant="dark"
           [iconOnly]="true"
           (clicked)="onAddKnowledgeContextBySha()"
@@ -1492,7 +1466,25 @@
         >
           <i class="bi bi-plus"></i>
         </fpc-button>
-      </div>
+        <div fpcTypeaheadSuggestions>
+          @for (node of knowledgeContextSuggestions(); track node.id) {
+            <button
+              type="button"
+              class="dropdown-item py-2 text-start"
+              (mousedown)="onPickKnowledgeContextSuggestion(node, $event)"
+            >
+              <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
+                @if (node.shas?.short) {
+                  <span class="font-monospace text-muted small flex-shrink-0">{{ node.shas.short }}</span>
+                }
+                <span class="text-truncate small flex-grow-1 min-width-0">
+                  {{ node.nodeType === 'folder' ? 'Folder' : 'Page' }} · {{ node.title }}
+                </span>
+              </span>
+            </button>
+          }
+        </div>
+      </fpc-typeahead-select>
       @if (knowledgeContextInputError(); as knowledgeContextError) {
         <div fpcFormFieldError class="text-danger">{{ knowledgeContextError }}</div>
       }
@@ -1500,19 +1492,15 @@
     @if (selectedKnowledgeContextShas().length > 0) {
       <div class="d-flex flex-wrap gap-2 mt-2">
         @for (sha of selectedKnowledgeContextShas(); track sha) {
-          <fpc-badge variant="info" color="secondary" style="max-width: min(100%, 22rem)">
+          <fpc-badge variant="info" color="secondary" class="chat-context-chip" style="max-width: min(100%, 22rem)">
             <span class="text-truncate small">{{ knowledgeContextChipDisplay(sha) }}</span>
-            <fpc-button
-              variant="link"
-              size="sm"
-              iconOnly
-              class="ms-1 align-baseline flex-shrink-0"
-              (clicked)="onRemoveKnowledgeContextSha(sha)"
+            <button
+              type="button"
+              class="btn-close chat-context-chip-clear"
+              (click)="onRemoveKnowledgeContextSha(sha)"
               i18n-aria-label="@@featureChat-removeKnowledgeContext"
-              ariaLabel="Remove knowledge context"
-            >
-              <i class="bi bi-x"></i>
-            </fpc-button>
+              aria-label="Remove knowledge context"
+            ></button>
           </fpc-badge>
         }
       </div>

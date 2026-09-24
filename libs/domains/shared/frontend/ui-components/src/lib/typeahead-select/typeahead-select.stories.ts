@@ -3,6 +3,7 @@ import { moduleMetadata } from '@storybook/angular';
 import { action } from 'storybook/actions';
 
 import { FpcBadgeComponent } from '../badge/badge.component';
+import { FpcButtonComponent } from '../button/button.component';
 import { FpcTypeaheadSelectComponent } from './typeahead-select.component';
 
 /** Storybook does not derive the implicit `Change` outputs of `model()` inputs, so they are declared here. */
@@ -19,6 +20,8 @@ const meta: Meta<TypeaheadStoryArgs> = {
 
 **Variants:** \`menu\` (default) — floating suggestion menu, \`position: fixed\` and portaled to \`document.body\` so modal overflow / dialog transforms cannot clip results. \`inline\` — results list in document flow under the input (modal search panels).
 
+**Slots:** \`[fpcTypeaheadSelection]\`, \`[fpcTypeaheadSuggestions]\`, optional \`[fpcTypeaheadSuffix]\` (appended in the same input group, e.g. an add button).
+
 **Behavior:** While \`loading\` is true, the results host stays hidden so empty-state copy and an empty bordered panel cannot flash before the first response.
 
 **When not to:** Plain free-text search → \`fpc-search-field\`.`,
@@ -28,7 +31,7 @@ const meta: Meta<TypeaheadStoryArgs> = {
 
   title: 'Forms/Typeahead Select',
   component: FpcTypeaheadSelectComponent,
-  decorators: [moduleMetadata({ imports: [FpcTypeaheadSelectComponent, FpcBadgeComponent] })],
+  decorators: [moduleMetadata({ imports: [FpcTypeaheadSelectComponent, FpcBadgeComponent, FpcButtonComponent] })],
   args: {
     query: 'ma',
     open: true,
@@ -119,6 +122,28 @@ export const WithSelectionChips: Story = {
                 <button type="button" class="dropdown-item">Marie Curie</button>
                 <button type="button" class="dropdown-item">Alan Turing</button>
                 <button type="button" class="dropdown-item">Grace Hopper</button>
+            </div>
+        </fpc-typeahead-select>`,
+  }),
+};
+
+export const WithSuffixButton: Story = {
+  args: { open: false, query: '' },
+  render: (args) => ({
+    props: args,
+    template: `<fpc-typeahead-select
+            [query]="query"
+            [open]="open"
+            [placeholder]="placeholder"
+            (queryChange)="queryChange($event)"
+            (openChange)="openChange($event)"
+            (cleared)="cleared()"
+        >
+            <fpc-button fpcTypeaheadSuffix variant="dark" [iconOnly]="true" ariaLabel="Add">
+                <i class="bi bi-plus"></i>
+            </fpc-button>
+            <div fpcTypeaheadSuggestions>
+                <button type="button" class="dropdown-item">Marie Curie</button>
             </div>
         </fpc-typeahead-select>`,
   }),
