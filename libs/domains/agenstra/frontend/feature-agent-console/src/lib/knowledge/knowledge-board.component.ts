@@ -160,7 +160,6 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
   readonly globalSearchSuggestionsOpen = signal(false);
   readonly relationsSearchQuery = signal('');
   readonly relationSuggestionsOpen = signal(false);
-  readonly relationSearchError = signal<string | null>(null);
   readonly selectedRelationTargets = signal<
     Array<{ kind: 'knowledge'; nodeId: string } | { kind: 'ticket'; ticketLongSha: string }>
   >([]);
@@ -631,7 +630,6 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
 
   openRelationsModal(): void {
     this.relationsSearchQuery.set('');
-    this.relationSearchError.set(null);
     this.relationSuggestionsOpen.set(false);
     this.selectedRelationTargets.set([]);
     this.relationsModalOpen.set(true);
@@ -641,14 +639,12 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
   onCloseRelationsModal(): void {
     this.relationsModalOpen.set(false);
     this.relationsSearchQuery.set('');
-    this.relationSearchError.set(null);
     this.relationSuggestionsOpen.set(false);
     this.selectedRelationTargets.set([]);
   }
 
   onRelationInputChange(value: string): void {
     this.relationsSearchQuery.set(value);
-    this.relationSearchError.set(null);
     this.relationSuggestionsOpen.set(value.trim().length > 0 && this.relationCandidates().length > 0);
   }
 
@@ -665,43 +661,6 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
     event?.preventDefault();
     this.addRelationCandidate(candidate);
     this.relationsSearchQuery.set('');
-    this.relationSearchError.set(null);
-    this.relationSuggestionsOpen.set(false);
-  }
-
-  onAddRelationBySearch(): void {
-    const query = this.relationsSearchQuery().trim().toLowerCase();
-
-    if (!query) {
-      this.relationSearchError.set('Enter a ticket, page, or folder SHA.');
-
-      return;
-    }
-
-    const candidate = this.relationCandidates().find((item) => {
-      if (item.kind === this.RELATION_TARGET_KIND_KNOWLEDGE) {
-        const shortSha = item.node.shas.short.toLowerCase();
-        const longSha = item.node.shas.long.toLowerCase();
-
-        return shortSha === query || longSha === query || item.node.title.toLowerCase() === query;
-      }
-
-      const shortSha = item.ticket.shas.short.toLowerCase();
-      const longSha = item.ticket.shas.long.toLowerCase();
-      const title = (item.ticket.title ?? '').toLowerCase();
-
-      return shortSha === query || longSha === query || title === query;
-    });
-
-    if (!candidate) {
-      this.relationSearchError.set('No matching ticket, page, or folder found.');
-
-      return;
-    }
-
-    this.addRelationCandidate(candidate);
-    this.relationsSearchQuery.set('');
-    this.relationSearchError.set(null);
     this.relationSuggestionsOpen.set(false);
   }
 
