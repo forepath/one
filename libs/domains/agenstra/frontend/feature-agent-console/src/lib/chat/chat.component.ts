@@ -28,7 +28,6 @@ import {
   EnvFacade,
   FilesFacade,
   filterTicketsForTicketContextSuggestions,
-  findPermittedTicketByExactSha,
   KnowledgeFacade,
   NotificationsFacade,
   SocketsFacade,
@@ -681,9 +680,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   selectedTicketContextShas = signal<string[]>([]);
   selectedKnowledgeContextShas = signal<string[]>([]);
   ticketContextInput = signal<string>('');
-  ticketContextInputError = signal<string | null>(null);
   knowledgeContextInput = signal<string>('');
-  knowledgeContextInputError = signal<string | null>(null);
   /** Keeps suggestion menu open while interacting (blur closes with delay for mousedown). */
   ticketContextSuggestionsOpen = signal<boolean>(false);
   knowledgeContextSuggestionsOpen = signal<boolean>(false);
@@ -2662,8 +2659,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   onOpenContextSelectionModal(): void {
-    this.ticketContextInputError.set(null);
-    this.knowledgeContextInputError.set(null);
     const clientId = this.activeClientIdSignal();
 
     if (clientId) {
@@ -2675,10 +2670,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   onCloseContextSelectionModal(): void {
-    this.ticketContextInputError.set(null);
     this.ticketContextInput.set('');
     this.ticketContextSuggestionsOpen.set(false);
-    this.knowledgeContextInputError.set(null);
     this.knowledgeContextInput.set('');
     this.knowledgeContextSuggestionsOpen.set(false);
   }
@@ -2703,11 +2696,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   onTicketContextInputChange(value: string): void {
     this.ticketContextInput.set(value);
-
-    if (this.ticketContextInputError()) {
-      this.ticketContextInputError.set(null);
-    }
-
     this.ticketContextSuggestionsOpen.set(value.trim().length > 0 && this.ticketContextSuggestions().length > 0);
   }
 
@@ -2721,32 +2709,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     event?.preventDefault();
     this.addTicketToContextIfPermitted(ticket);
     this.ticketContextInput.set('');
-    this.ticketContextInputError.set(null);
-    this.ticketContextSuggestionsOpen.set(false);
-  }
-
-  onAddTicketContextBySha(): void {
-    const raw = this.ticketContextInput();
-    const input = raw.trim().toLowerCase();
-
-    if (!input) {
-      this.ticketContextInputError.set('Enter a ticket SHA.');
-
-      return;
-    }
-
-    const permitted = this.ticketContextPermittedTickets();
-    const ticket = findPermittedTicketByExactSha(permitted, raw);
-
-    if (!ticket?.shas?.long) {
-      this.ticketContextInputError.set(null);
-
-      return;
-    }
-
-    this.addTicketToContextIfPermitted(ticket);
-    this.ticketContextInput.set('');
-    this.ticketContextInputError.set(null);
     this.ticketContextSuggestionsOpen.set(false);
   }
 
@@ -2795,11 +2757,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   onKnowledgeContextInputChange(value: string): void {
     this.knowledgeContextInput.set(value);
-
-    if (this.knowledgeContextInputError()) {
-      this.knowledgeContextInputError.set(null);
-    }
-
     this.knowledgeContextSuggestionsOpen.set(value.trim().length > 0 && this.knowledgeContextSuggestions().length > 0);
   }
 
@@ -2813,35 +2770,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     event?.preventDefault();
     this.addKnowledgeToContextIfPermitted(node);
     this.knowledgeContextInput.set('');
-    this.knowledgeContextInputError.set(null);
-    this.knowledgeContextSuggestionsOpen.set(false);
-  }
-
-  onAddKnowledgeContextBySha(): void {
-    const input = this.knowledgeContextInput().trim().toLowerCase();
-
-    if (!input) {
-      this.knowledgeContextInputError.set('Enter a page or folder SHA.');
-
-      return;
-    }
-
-    const node = this.knowledgeContextPermittedNodes().find((row) => {
-      const shortSha = row.shas?.short?.toLowerCase() ?? '';
-      const longSha = row.shas?.long?.toLowerCase() ?? '';
-
-      return shortSha === input || longSha === input;
-    });
-
-    if (!node?.shas?.long) {
-      this.knowledgeContextInputError.set(null);
-
-      return;
-    }
-
-    this.addKnowledgeToContextIfPermitted(node);
-    this.knowledgeContextInput.set('');
-    this.knowledgeContextInputError.set(null);
     this.knowledgeContextSuggestionsOpen.set(false);
   }
 

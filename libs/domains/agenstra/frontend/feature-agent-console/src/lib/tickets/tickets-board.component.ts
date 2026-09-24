@@ -459,7 +459,6 @@ export class TicketsBoardComponent implements OnInit {
   pendingBodyCorrelation = signal<string | null>(null);
   ticketRelationsSearchQuery = signal('');
   ticketRelationsSuggestionsOpen = signal(false);
-  ticketRelationsSearchError = signal<string | null>(null);
   selectedTicketRelationTargets = signal<
     Array<
       { kind: 'knowledge'; nodeId: string; nodeType: KnowledgeNodeType } | { kind: 'ticket'; ticketLongSha: string }
@@ -1436,7 +1435,6 @@ export class TicketsBoardComponent implements OnInit {
 
   openTicketRelationsModal(): void {
     this.ticketRelationsSearchQuery.set('');
-    this.ticketRelationsSearchError.set(null);
     this.ticketRelationsSuggestionsOpen.set(false);
     this.selectedTicketRelationTargets.set([]);
     this.refreshTicketRelationKnowledgeNodes();
@@ -1458,7 +1456,6 @@ export class TicketsBoardComponent implements OnInit {
       swapState: this.ticketDetailOverlaySwapState,
     });
     this.ticketRelationsSearchQuery.set('');
-    this.ticketRelationsSearchError.set(null);
     this.ticketRelationsSuggestionsOpen.set(false);
     this.selectedTicketRelationTargets.set([]);
   }
@@ -1509,7 +1506,6 @@ export class TicketsBoardComponent implements OnInit {
 
   onTicketRelationInputChange(value: string): void {
     this.ticketRelationsSearchQuery.set(value);
-    this.ticketRelationsSearchError.set(null);
     this.ticketRelationsSuggestionsOpen.set(value.trim().length > 0 && this.ticketRelationCandidates().length > 0);
   }
 
@@ -1526,43 +1522,6 @@ export class TicketsBoardComponent implements OnInit {
     event?.preventDefault();
     this.addTicketRelationCandidate(candidate);
     this.ticketRelationsSearchQuery.set('');
-    this.ticketRelationsSearchError.set(null);
-    this.ticketRelationsSuggestionsOpen.set(false);
-  }
-
-  onAddTicketRelationBySearch(): void {
-    const query = this.ticketRelationsSearchQuery().trim().toLowerCase();
-
-    if (!query) {
-      this.ticketRelationsSearchError.set('Enter a ticket, page, or folder SHA.');
-
-      return;
-    }
-
-    const candidate = this.ticketRelationCandidates().find((item) => {
-      if (item.kind === this.RELATION_TARGET_KIND_KNOWLEDGE) {
-        const shortSha = item.node.shas.short.toLowerCase();
-        const longSha = item.node.shas.long.toLowerCase();
-
-        return shortSha === query || longSha === query || item.node.title.toLowerCase() === query;
-      }
-
-      const shortSha = item.ticket.shas.short.toLowerCase();
-      const longSha = item.ticket.shas.long.toLowerCase();
-      const title = (item.ticket.title ?? '').toLowerCase();
-
-      return shortSha === query || longSha === query || title === query;
-    });
-
-    if (!candidate) {
-      this.ticketRelationsSearchError.set('No matching ticket, page, or folder found.');
-
-      return;
-    }
-
-    this.addTicketRelationCandidate(candidate);
-    this.ticketRelationsSearchQuery.set('');
-    this.ticketRelationsSearchError.set(null);
     this.ticketRelationsSuggestionsOpen.set(false);
   }
 
