@@ -31,7 +31,7 @@ flowchart TB
     subgraph FILES["📁 HTTP REST API - Proxied File System (/api/clients/:id/agents/:agentId/files)"]
         direction TB
         FILES_USE["Use Case: File System Operations via Client<br/>Proxy to Remote Agent-Manager<br/>Optional query context=app|config (config needs workspace management)"]
-        FILES_USE --> FILES1["📖 Read File (Proxied)<br/>GET /api/clients/:id/agents/:agentId/files/*path?context=<br/>Returns: File Content (base64)"]
+        FILES_USE --> FILES1["📖 Read File (Proxied)<br/>GET /api/clients/:id/agents/:agentId/files/*path?context=<br/>Returns: raw bytes + X-File-Type"]
         FILES_USE --> FILES2["✍️ Write File (Proxied)<br/>PUT /api/clients/:id/agents/:agentId/files/*path?context=<br/>Returns: 204 No Content"]
         FILES_USE --> FILES3["📂 List Directory (Proxied)<br/>GET /api/clients/:id/agents/:agentId/files?path=&context=<br/>Returns: File Nodes"]
         FILES_USE --> FILES4["➕ Create File/Dir (Proxied)<br/>POST /api/clients/:id/agents/:agentId/files/*path<br/>Returns: 201 Created"]

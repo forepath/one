@@ -1,10 +1,4 @@
-import {
-  CreateFileDto,
-  FileContentDto,
-  FileNodeDto,
-  MoveFileDto,
-  WriteFileDto,
-} from '@forepath/agenstra/backend/feature-agent-manager';
+import { CreateFileDto, FileNodeDto, MoveFileDto } from '@forepath/agenstra/backend/feature-agent-manager';
 import { AuthenticationType, ClientEntity } from '@forepath/identity/backend';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -37,10 +31,7 @@ describe('ClientAgentFileSystemProxyService', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
-  const mockFileContent: FileContentDto = {
-    content: Buffer.from('Hello, World!', 'utf-8').toString('base64'),
-    encoding: 'utf-8',
-  };
+  const mockFileBuffer = Buffer.from('Hello, World!', 'utf-8');
   const mockFileNodes: FileNodeDto[] = [
     {
       name: 'file1.txt',
@@ -89,16 +80,31 @@ describe('ClientAgentFileSystemProxyService', () => {
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       mockedAxios.request.mockResolvedValue({
         status: 200,
-        data: mockFileContent,
+        data: mockFileBuffer.buffer.slice(
+          mockFileBuffer.byteOffset,
+          mockFileBuffer.byteOffset + mockFileBuffer.byteLength,
+        ),
+        headers: {
+          'content-type': 'text/plain; charset=utf-8',
+          'x-file-type': 'text',
+          'accept-ranges': 'bytes',
+          'content-length': String(mockFileBuffer.length),
+        },
       } as any);
 
       const result = await service.readFile(mockClientId, mockAgentId, mockFilePath);
 
-      expect(result).toEqual(mockFileContent);
+      expect(result.buffer.toString('utf-8')).toBe('Hello, World!');
+      expect(result.fileType).toBe('text');
+      expect(result.contentType).toBe('text/plain; charset=utf-8');
+      expect(result.status).toBe(200);
+      expect(result.acceptRanges).toBe('bytes');
+      expect(result.size).toBe(mockFileBuffer.length);
       expect(clientsRepository.findByIdOrThrow).toHaveBeenCalledWith(mockClientId);
       expect(mockedAxios.request).toHaveBeenCalledWith(
         expect.objectContaining({
           method: 'GET',
+          responseType: 'arraybuffer',
           url: expect.stringContaining(`/api/agents/${mockAgentId}/files`),
           headers: expect.objectContaining({
             Authorization: 'Bearer test-api-key',
@@ -108,18 +114,105 @@ describe('ClientAgentFileSystemProxyService', () => {
       );
     });
 
-    it('should forward context=config on read', async () => {
+    it('should forward context=config and download on read', async () => {
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       mockedAxios.request.mockResolvedValue({
         status: 200,
-        data: mockFileContent,
+        data: new ArrayBuffer(0),
+        headers: {
+          'content-type': 'application/octet-stream',
+          'x-file-type': 'binary',
+          'content-disposition': 'attachment; filename="test-file.txt"',
+        },
       } as any);
 
-      await service.readFile(mockClientId, mockAgentId, mockFilePath, 'config');
+      await service.readFile(mockClientId, mockAgentId, mockFilePath, 'config', { download: true });
 
       expect(mockedAxios.request).toHaveBeenCalledWith(
         expect.objectContaining({
-          params: { context: 'config' },
+          params: { context: 'config', download: 'true' },
+        }),
+      );
+    });
+
+    it('should forward Range header on read', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      const chunk = Buffer.from('Hello');
+
+      mockedAxios.request.mockResolvedValue({
+        status: 206,
+        data: chunk,
+        headers: {
+          'content-type': 'text/plain; charset=utf-8',
+          'x-file-type': 'text',
+          'content-range': 'bytes 0-4/13',
+          'accept-ranges': 'bytes',
+          'content-length': '5',
+        },
+      } as any);
+
+      const result = await service.readFile(mockClientId, mockAgentId, mockFilePath, 'app', {
+        range: 'bytes=0-4',
+      });
+
+      expect(result.status).toBe(206);
+      expect(result.contentRange).toBe('bytes 0-4/13');
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Range: 'bytes=0-4',
+          }),
+        }),
+      );
+    });
+
+    it('should forward 416 Range Not Satisfiable instead of mapping to 400', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({
+        status: 416,
+        data: new ArrayBuffer(0),
+        headers: {
+          'content-type': 'audio/mpeg',
+          'x-file-type': 'audio',
+          'content-range': 'bytes */0',
+          'accept-ranges': 'bytes',
+        },
+      } as any);
+
+      const result = await service.readFile(mockClientId, mockAgentId, 'empty.mp3', 'app', {
+        range: 'bytes=0-',
+        download: true,
+      });
+
+      expect(result.status).toBe(416);
+      expect(result.contentRange).toBe('bytes */0');
+      expect(result.fileType).toBe('audio');
+    });
+
+    it('should probe file metadata via HEAD', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({
+        status: 200,
+        data: new ArrayBuffer(0),
+        headers: {
+          'content-type': 'audio/mpeg',
+          'x-file-type': 'audio',
+          'content-length': '3304030',
+          'accept-ranges': 'bytes',
+        },
+      } as any);
+
+      const result = await service.probeFile(mockClientId, mockAgentId, 'track.mp3');
+
+      expect(result).toEqual({
+        fileType: 'audio',
+        contentType: 'audio/mpeg',
+        size: 3304030,
+        acceptRanges: 'bytes',
+      });
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'HEAD',
         }),
       );
     });
@@ -135,12 +228,16 @@ describe('ClientAgentFileSystemProxyService', () => {
       clientsService.getAccessToken.mockResolvedValue('keycloak-jwt-token');
       mockedAxios.request.mockResolvedValue({
         status: 200,
-        data: mockFileContent,
+        data: mockFileBuffer,
+        headers: {
+          'content-type': 'text/plain; charset=utf-8',
+          'x-file-type': 'text',
+        },
       } as any);
 
       const result = await service.readFile(mockClientId, mockAgentId, mockFilePath);
 
-      expect(result).toEqual(mockFileContent);
+      expect(result.buffer.toString('utf-8')).toBe('Hello, World!');
       expect(clientsService.getAccessToken).toHaveBeenCalledWith(mockClientId);
       expect(mockedAxios.request).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -158,21 +255,25 @@ describe('ClientAgentFileSystemProxyService', () => {
       await expect(service.readFile(mockClientId, mockAgentId, mockFilePath)).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw NotFoundException when remote returns 404', async () => {
+    it('should throw NotFoundException when remote returns 404 with JSON body', async () => {
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      const errorBody = Buffer.from(JSON.stringify({ message: 'File not found' }), 'utf-8');
+
       mockedAxios.request.mockResolvedValue({
         status: 404,
-        data: { message: 'File not found' },
+        data: errorBody,
+        headers: { 'content-type': 'application/json' },
       } as any);
 
       await expect(service.readFile(mockClientId, mockAgentId, mockFilePath)).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw BadRequestException when remote returns 400', async () => {
+    it('should use generic error when remote 400 body is not JSON', async () => {
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       mockedAxios.request.mockResolvedValue({
         status: 400,
-        data: { message: 'Invalid path' },
+        data: Buffer.from('not-json'),
+        headers: { 'content-type': 'application/octet-stream' },
       } as any);
 
       await expect(service.readFile(mockClientId, mockAgentId, mockFilePath)).rejects.toThrow(BadRequestException);
@@ -180,44 +281,55 @@ describe('ClientAgentFileSystemProxyService', () => {
   });
 
   describe('writeFile', () => {
-    it('should proxy write file request successfully', async () => {
-      const writeDto: WriteFileDto = {
-        content: Buffer.from('New content', 'utf-8').toString('base64'),
-        encoding: 'utf-8',
-      };
+    it('should proxy write file request with raw buffer', async () => {
+      const body = Buffer.from('New content', 'utf-8');
 
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       mockedAxios.request.mockResolvedValue({
         status: 204,
-        data: undefined,
+        data: new ArrayBuffer(0),
+        headers: {},
       } as any);
 
-      await service.writeFile(mockClientId, mockAgentId, mockFilePath, writeDto);
+      await service.writeFile(mockClientId, mockAgentId, mockFilePath, body);
 
       expect(clientsRepository.findByIdOrThrow).toHaveBeenCalledWith(mockClientId);
       expect(mockedAxios.request).toHaveBeenCalledWith(
         expect.objectContaining({
           method: 'PUT',
+          responseType: 'arraybuffer',
           url: expect.stringContaining(`/api/agents/${mockAgentId}/files`),
-          data: writeDto,
+          data: body,
           params: undefined,
+          headers: expect.objectContaining({
+            'Content-Type': 'application/octet-stream',
+          }),
         }),
       );
     });
 
-    it('should forward context=config on write', async () => {
-      const writeDto: WriteFileDto = {
-        content: Buffer.from('x', 'utf-8').toString('base64'),
-      };
+    it('should forward chunk upload headers and context=config', async () => {
+      const body = Buffer.from('ab', 'utf-8');
 
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
-      mockedAxios.request.mockResolvedValue({ status: 204, data: undefined } as any);
+      mockedAxios.request.mockResolvedValue({ status: 204, data: new ArrayBuffer(0), headers: {} } as any);
 
-      await service.writeFile(mockClientId, mockAgentId, mockFilePath, writeDto, 'config');
+      await service.writeFile(mockClientId, mockAgentId, mockFilePath, body, 'config', {
+        contentRange: 'bytes 0-1/4',
+        uploadId: 'upload-1',
+        fileType: 'binary',
+        contentType: 'application/octet-stream',
+      });
 
       expect(mockedAxios.request).toHaveBeenCalledWith(
         expect.objectContaining({
           params: { context: 'config' },
+          headers: expect.objectContaining({
+            'Content-Range': 'bytes 0-1/4',
+            'X-Upload-Id': 'upload-1',
+            'X-File-Type': 'binary',
+            'Content-Type': 'application/octet-stream',
+          }),
         }),
       );
     });
@@ -280,7 +392,6 @@ describe('ClientAgentFileSystemProxyService', () => {
     it('should proxy create file request successfully', async () => {
       const createDto: CreateFileDto = {
         type: 'file',
-        content: Buffer.from('File content', 'utf-8').toString('base64'),
       };
 
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
@@ -448,9 +559,10 @@ describe('ClientAgentFileSystemProxyService', () => {
         response: {
           status: 500,
           data: { message: 'Internal server error' },
+          headers: { 'content-type': 'application/json' },
         },
         message: 'Request failed',
-      } as AxiosError;
+      } as unknown as AxiosError;
 
       mockedAxios.request.mockRejectedValue(axiosError);
 

@@ -130,7 +130,7 @@ Tickets live on the controller database (not on the remote manager). See [Ticket
 Workspace knowledge folders/pages and relations. See OpenAPI `/knowledge/*` and Socket.IO namespace **pages**.
 
 - `GET/POST /api/knowledge` - List and create nodes (`clientId` query on list)
-- `POST /api/knowledge/upload-text` - Upload `.md` / `.mmd` / `.txt` as pages (`onConflict`: reject | replace | number)
+- `POST /api/knowledge/upload` - Upload `.md` / `.mmd` / `.txt` as pages (`onConflict`: reject | replace | number)
 - `GET /api/knowledge/tree` - Nested tree
 - `GET/PATCH/DELETE /api/knowledge/:id` - Read, update, delete
 - `GET /api/knowledge/:id/activity` - Page activity

@@ -8,7 +8,6 @@ import {
   CreateEnvironmentVariableDto,
   CreateFileDto,
   EnvironmentVariableResponseDto,
-  FileContentDto,
   FileNodeDto,
   MoveFileDto,
   parseAgentFileManagerContext,
@@ -16,7 +15,6 @@ import {
   UpdateAgentDto,
   UpdateChatSessionDto,
   UpdateEnvironmentVariableDto,
-  WriteFileDto,
 } from '@forepath/agenstra/backend/feature-agent-manager';
 import {
   AddClientUserDto,
@@ -38,6 +36,8 @@ import {
   Delete,
   ForbiddenException,
   Get,
+  Head,
+  Headers,
   HttpCode,
   HttpStatus,
   Param,
@@ -48,7 +48,10 @@ import {
   Put,
   Query,
   Req,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
+import type { Response } from 'express';
 
 import { ClientResponseDto } from '../dto/client-response.dto';
 import { CreateClientResponseDto } from '../dto/create-client-response.dto';
@@ -467,13 +470,48 @@ export class ClientsController {
   }
 
   /**
-   * Read file content from agent container via client proxy.
-   * Only accessible if the user has access to the client.
-   * @param id - The UUID of the client
-   * @param agentId - The UUID of the agent
-   * @param path - The file path (wildcard parameter for nested paths)
-   * @param req - The request object
-   * @returns File content (base64-encoded) and encoding type
+   * Probe file metadata via HEAD (type, content-type, size) without transferring the body.
+   */
+  @Head(':id/agents/:agentId/files/*path')
+  @HttpCode(HttpStatus.OK)
+  @RequireScopes('agents:files')
+  async headFile(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Param('path') path: string | string[] | Record<string, unknown> | undefined,
+    @Res({ passthrough: true }) res: Response,
+    @Query('context') contextRaw?: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<void> {
+    const context = await this.authorizeFileProxyRequest(id, contextRaw, req);
+    let normalizedPath: string;
+
+    if (typeof path === 'string') {
+      normalizedPath = path;
+    } else if (Array.isArray(path)) {
+      normalizedPath = path.join('/');
+    } else if (path && typeof path === 'object') {
+      normalizedPath = '.';
+    } else {
+      normalizedPath = '.';
+    }
+
+    const result = await this.clientAgentFileSystemProxyService.probeFile(id, agentId, normalizedPath, context);
+
+    if (result.acceptRanges) {
+      res.setHeader('Accept-Ranges', result.acceptRanges);
+    } else {
+      res.setHeader('Accept-Ranges', 'bytes');
+    }
+
+    res.setHeader('X-File-Type', result.fileType);
+    res.setHeader('Content-Type', result.contentType);
+    res.setHeader('Content-Length', String(result.size));
+  }
+
+  /**
+   * Read file content from agent container via client proxy as a binary stream.
+   * Supports Range requests (206) and optional download disposition from the manager.
    */
   @Get(':id/agents/:agentId/files/*path')
   @RequireScopes('agents:files')
@@ -481,9 +519,12 @@ export class ClientsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('path') path: string | string[] | Record<string, unknown> | undefined,
+    @Res({ passthrough: true }) res: Response,
+    @Headers('range') rangeHeader?: string,
     @Query('context') contextRaw?: string,
+    @Query('download') download?: string,
     @Req() req?: RequestWithUser,
-  ): Promise<FileContentDto> {
+  ): Promise<StreamableFile> {
     const context = await this.authorizeFileProxyRequest(id, contextRaw, req);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
     let normalizedPath: string;
@@ -499,17 +540,40 @@ export class ClientsController {
       normalizedPath = '.';
     }
 
-    return await this.clientAgentFileSystemProxyService.readFile(id, agentId, normalizedPath, context);
+    const result = await this.clientAgentFileSystemProxyService.readFile(id, agentId, normalizedPath, context, {
+      range: rangeHeader,
+      download: download === 'true',
+    });
+
+    if (result.acceptRanges) {
+      res.setHeader('Accept-Ranges', result.acceptRanges);
+    }
+
+    res.setHeader('X-File-Type', result.fileType);
+    res.setHeader('Content-Type', result.contentType);
+
+    if (result.contentDisposition) {
+      res.setHeader('Content-Disposition', result.contentDisposition);
+    }
+
+    if (result.contentRange) {
+      res.setHeader('Content-Range', result.contentRange);
+    }
+
+    res.setHeader('Content-Length', String(result.buffer.length));
+
+    if (result.status === HttpStatus.PARTIAL_CONTENT) {
+      res.status(HttpStatus.PARTIAL_CONTENT);
+    } else if (result.status === HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE) {
+      res.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE);
+    }
+
+    return new StreamableFile(result.buffer);
   }
 
   /**
-   * Write file content to agent container via client proxy.
-   * Only accessible if the user has access to the client.
-   * @param id - The UUID of the client
-   * @param agentId - The UUID of the agent
-   * @param path - The file path (wildcard parameter for nested paths)
-   * @param writeFileDto - The file content to write (base64-encoded)
-   * @param req - The request object
+   * Write file content to agent container via client proxy from a raw body Buffer.
+   * Optional Content-Range + X-Upload-Id enable chunked uploads on the manager.
    */
   @Put(':id/agents/:agentId/files/*path')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -518,9 +582,12 @@ export class ClientsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('path') path: string | string[] | Record<string, unknown> | undefined,
-    @Body() writeFileDto: WriteFileDto,
+    @Req() req: RequestWithUser,
     @Query('context') contextRaw?: string,
-    @Req() req?: RequestWithUser,
+    @Headers('content-range') contentRangeHeader?: string,
+    @Headers('x-upload-id') uploadId?: string,
+    @Headers('x-file-type') fileType?: string,
+    @Headers('content-type') contentType?: string,
   ): Promise<void> {
     const context = await this.authorizeFileProxyRequest(id, contextRaw, req);
     // Normalize path: wildcard parameters can be string, array, object, or undefined
@@ -539,7 +606,16 @@ export class ClientsController {
       throw new BadRequestException('File path is required');
     }
 
-    await this.clientAgentFileSystemProxyService.writeFile(id, agentId, normalizedPath, writeFileDto, context);
+    if (!Buffer.isBuffer(req.body)) {
+      throw new BadRequestException('Expected raw binary body');
+    }
+
+    await this.clientAgentFileSystemProxyService.writeFile(id, agentId, normalizedPath, req.body, context, {
+      contentRange: contentRangeHeader,
+      uploadId,
+      fileType,
+      contentType: contentType?.split(';')[0]?.trim(),
+    });
   }
 
   /**

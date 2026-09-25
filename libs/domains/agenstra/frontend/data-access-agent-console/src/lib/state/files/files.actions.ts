@@ -46,7 +46,13 @@ export const writeFile = createAction(
 
 export const writeFileSuccess = createAction(
   '[Files] Write File Success',
-  props<{ clientId: string; agentId: string; filePath: string; context?: FileManagerContext }>(),
+  props<{
+    clientId: string;
+    agentId: string;
+    filePath: string;
+    content: FileContentDto;
+    context?: FileManagerContext;
+  }>(),
 );
 
 export const writeFileFailure = createAction(

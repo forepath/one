@@ -6,37 +6,43 @@ sequenceDiagram
     participant Docker as DockerService
     participant Container as Agent Container<br/>(/app)
 
-    Note over Client,Container: HTTP API - Agent File System Operations
+    Note over Client,Container: HTTP API - Agent File System (raw bytes)
 
     rect rgb(230, 240, 255)
         Note over Client,Container: Read File
-        Client->>API: GET /api/agents/{id}/files/{path}?context=app|config
+        Client->>API: GET /api/agents/{id}/files/{path}?context=app|config<br/>optional Range / download=true
         API->>FileService: readFile(agentId, filePath, context)
         FileService->>FileService: sanitizePath(filePath)
         FileService->>AgentService: findOne(agentId)
         AgentService-->>FileService: agent entity
-        FileService->>Docker: sendCommandToContainer(containerId, "cat /app/{path}")
-        Docker->>Container: Execute cat command
-        Container-->>Docker: file content
-        Docker-->>FileService: content string
-        FileService->>FileService: validate file size
-        FileService-->>API: FileContentDto<br/>{content, encoding}
-        API-->>Client: 200 OK<br/>{content, encoding}
+        FileService->>Docker: copyFileFromContainer
+        Docker->>Container: docker cp / archive
+        Container-->>Docker: file bytes
+        Docker-->>FileService: host temp file
+        FileService->>FileService: classifyAgentFile → X-File-Type + Content-Type
+        FileService-->>API: AgentFileReadResult (buffer, fileType, contentType, size)
+        alt Range request
+            API-->>Client: 206 Partial Content<br/>Accept-Ranges, Content-Range, X-File-Type<br/>raw bytes slice
+        else full
+            API-->>Client: 200 OK<br/>Accept-Ranges, X-File-Type, Content-Type<br/>raw bytes
+        end
     end
 
     rect rgb(240, 255, 240)
-        Note over Client,Container: Write File
-        Client->>API: PUT /api/agents/{id}/files/{path}?context=app|config<br/>{content}
-        API->>FileService: writeFile(agentId, filePath, content, encoding, context)
-        FileService->>FileService: sanitizePath(filePath)
-        FileService->>FileService: validate content size
-        FileService->>AgentService: findOne(agentId)
-        AgentService-->>FileService: agent entity
-        FileService->>FileService: encode content (base64)
-        FileService->>Docker: sendCommandToContainer(containerId, "echo '{base64}' | base64 -d > /app/{path}")
-        Docker->>Container: Execute write command
-        Container-->>Docker: success
-        Docker-->>FileService: success
+        Note over Client,Container: Write File (single or chunked)
+        Client->>API: PUT /api/agents/{id}/files/{path}?context=app|config<br/>raw body + optional Content-Range / X-Upload-Id
+        alt Content-Range present
+            API->>FileService: writeFileChunk(...)
+            FileService->>FileService: stage sequential chunks
+            alt last chunk
+                FileService->>Docker: write assembled bytes to container
+                Docker->>Container: write file
+            end
+        else full body
+            API->>FileService: writeFile(agentId, path, buffer, context)
+            FileService->>Docker: write bytes to container
+            Docker->>Container: write file
+        end
         FileService-->>API: void
         API-->>Client: 204 No Content
     end
@@ -45,68 +51,19 @@ sequenceDiagram
         Note over Client,Container: List Directory
         Client->>API: GET /api/agents/{id}/files?path={dir}&context=app|config
         API->>FileService: listDirectory(agentId, path, context)
-        FileService->>FileService: sanitizePath(path)
-        FileService->>AgentService: findOne(agentId)
-        AgentService-->>FileService: agent entity
-        FileService->>Docker: sendCommandToContainer(containerId, "find /app/{path} ...")
-        Docker->>Container: Execute find command
-        Container-->>Docker: directory listing
-        Docker-->>FileService: output string
-        FileService->>FileService: parse output to FileNodeDto[]
+        FileService->>Docker: list container directory
         FileService-->>API: FileNodeDto[]
         API-->>Client: 200 OK<br/>[file nodes]
     end
 
     rect rgb(255, 255, 230)
         Note over Client,Container: Create File/Directory
-        Client->>API: POST /api/agents/{id}/files/{path}<br/>{type, content?}
-        API->>FileService: createFileOrDirectory(agentId, path, type, content?)
-        FileService->>FileService: sanitizePath(path)
-        FileService->>AgentService: findOne(agentId)
-        AgentService-->>FileService: agent entity
-        alt type === 'directory'
-            FileService->>Docker: sendCommandToContainer(containerId, "mkdir -p /app/{path}")
-        else type === 'file'
-            alt content provided
-                FileService->>FileService: writeFile(agentId, path, content)
-            else
-                FileService->>Docker: sendCommandToContainer(containerId, "touch /app/{path}")
-            end
+        Client->>API: POST /api/agents/{id}/files/{path}<br/>{type}
+        API->>FileService: createFileOrDirectory(agentId, path, type)
+        alt type === directory
+            FileService->>Docker: mkdir -p
+        else type === file
+            FileService->>Docker: touch (empty; content via PUT)
         end
-        Docker->>Container: Execute create command
-        Container-->>Docker: success
-        Docker-->>FileService: success
-        FileService-->>API: void
         API-->>Client: 201 Created
-    end
-
-    rect rgb(255, 230, 255)
-        Note over Client,Container: Delete File/Directory
-        Client->>API: DELETE /api/agents/{id}/files/{path}
-        API->>FileService: deleteFileOrDirectory(agentId, path)
-        FileService->>FileService: sanitizePath(path)
-        FileService->>AgentService: findOne(agentId)
-        AgentService-->>FileService: agent entity
-        FileService->>Docker: sendCommandToContainer(containerId, "rm -rf /app/{path}")
-        Docker->>Container: Execute delete command
-        Container-->>Docker: success
-        Docker-->>FileService: success
-        FileService-->>API: void
-        API-->>Client: 204 No Content
-    end
-
-    rect rgb(240, 230, 255)
-        Note over Client,Container: Move File/Directory
-        Client->>API: PATCH /api/agents/{id}/files/{path}<br/>{destination}
-        API->>FileService: moveFileOrDirectory(agentId, sourcePath, destinationPath)
-        FileService->>FileService: sanitizePath(sourcePath)
-        FileService->>FileService: sanitizePath(destinationPath)
-        FileService->>AgentService: findOne(agentId)
-        AgentService-->>FileService: agent entity
-        FileService->>Docker: sendCommandToContainer(containerId, "mv /app/{sourcePath} /app/{destinationPath}")
-        Docker->>Container: Execute mv command
-        Container-->>Docker: success
-        Docker-->>FileService: success
-        FileService-->>API: void
-        API-->>Client: 204 No Content
     end

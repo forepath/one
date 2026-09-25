@@ -4,9 +4,19 @@
     <div class="preview-section d-flex flex-column flex-grow-1 w-100 min-h-0">
       <div class="preview-header d-flex align-items-center justify-content-between p-2 border-bottom bg-body-tertiary">
         <span class="small fw-semibold" i18n="@@featureMonacoEditor-imagePreview">Image Preview</span>
+        <fpc-button
+          size="sm"
+          iconOnly
+          variant="secondary"
+          (clicked)="onDownload()"
+          i18n-title="@@featureMonacoEditor-downloadTitle"
+          title="Download"
+        >
+          <i class="bi bi-download"></i>
+        </fpc-button>
       </div>
       <div class="preview-content flex-grow-1 p-3 overflow-auto">
-        @if (imagePreviewUrl(); as imageUrl) {
+        @if (mediaPreviewHref(); as imageUrl) {
           <div class="d-flex align-items-center justify-content-center h-100">
             <img
               [src]="imageUrl"
@@ -19,7 +29,97 @@
           <fpc-empty-state
             icon="image"
             i18n-message="@@featureMonacoEditor-imagePreviewUnavailable"
-            message="Image preview unavailable"
+            [message]="bodyOmitted() ? 'File too large to preview' : 'Image preview unavailable'"
+            size="sm"
+          />
+        }
+      </div>
+    </div>
+  </div>
+} @else if (isPdf()) {
+  <div class="monaco-editor-container d-flex flex-column">
+    <div class="preview-section d-flex flex-column flex-grow-1 w-100 min-h-0">
+      <div class="preview-header d-flex align-items-center justify-content-between p-2 border-bottom bg-body-tertiary">
+        <span class="small fw-semibold" i18n="@@featureMonacoEditor-pdfPreview">PDF Preview</span>
+        <fpc-button
+          size="sm"
+          iconOnly
+          variant="secondary"
+          (clicked)="onDownload()"
+          i18n-title="@@featureMonacoEditor-downloadTitle"
+          title="Download"
+        >
+          <i class="bi bi-download"></i>
+        </fpc-button>
+      </div>
+      <div class="preview-content flex-grow-1 min-h-0">
+        @if (mediaPreviewUrl(); as pdfUrl) {
+          <iframe [src]="pdfUrl" class="w-100 h-100 border-0" title="PDF preview"></iframe>
+        } @else {
+          <fpc-empty-state
+            icon="file-earmark-pdf"
+            i18n-message="@@featureMonacoEditor-pdfPreviewUnavailable"
+            [message]="bodyOmitted() ? 'File too large to preview' : 'PDF preview unavailable'"
+            size="sm"
+          />
+        }
+      </div>
+    </div>
+  </div>
+} @else if (isVideo()) {
+  <div class="monaco-editor-container d-flex flex-column">
+    <div class="preview-section d-flex flex-column flex-grow-1 w-100 min-h-0">
+      <div class="preview-header d-flex align-items-center justify-content-between p-2 border-bottom bg-body-tertiary">
+        <span class="small fw-semibold" i18n="@@featureMonacoEditor-videoPreview">Video Preview</span>
+        <fpc-button
+          size="sm"
+          iconOnly
+          variant="secondary"
+          (clicked)="onDownload()"
+          i18n-title="@@featureMonacoEditor-downloadTitle"
+          title="Download"
+        >
+          <i class="bi bi-download"></i>
+        </fpc-button>
+      </div>
+      <div class="preview-content flex-grow-1 p-3 overflow-auto d-flex align-items-center justify-content-center">
+        @if (mediaPreviewHref(); as videoUrl) {
+          <video [src]="videoUrl" controls playsinline class="mw-100 mh-100"></video>
+        } @else {
+          <fpc-empty-state
+            icon="film"
+            i18n-message="@@featureMonacoEditor-videoPreviewUnavailable"
+            [message]="bodyOmitted() ? 'File too large to preview' : 'Video preview unavailable'"
+            size="sm"
+          />
+        }
+      </div>
+    </div>
+  </div>
+} @else if (isAudio()) {
+  <div class="monaco-editor-container d-flex flex-column">
+    <div class="preview-section d-flex flex-column flex-grow-1 w-100 min-h-0">
+      <div class="preview-header d-flex align-items-center justify-content-between p-2 border-bottom bg-body-tertiary">
+        <span class="small fw-semibold" i18n="@@featureMonacoEditor-audioPreview">Audio Preview</span>
+        <fpc-button
+          size="sm"
+          iconOnly
+          variant="secondary"
+          (clicked)="onDownload()"
+          i18n-title="@@featureMonacoEditor-downloadTitle"
+          title="Download"
+        >
+          <i class="bi bi-download"></i>
+        </fpc-button>
+      </div>
+      <div class="preview-content flex-grow-1 p-3 overflow-auto d-flex align-items-center justify-content-center">
+        @if (mediaPreviewHref(); as audioUrl) {
+          <audio [src]="audioUrl" controls class="w-100" style="max-width: 40rem"></audio>
+        } @else {
+          <fpc-empty-state
+            icon="music-note-beamed"
+            i18n-message="@@featureMonacoEditor-audioPreviewUnavailable"
+            [message]="bodyOmitted() ? 'File too large to preview' : 'Audio preview unavailable'"
             size="sm"
           />
         }
@@ -28,10 +128,42 @@
   </div>
 } @else if (isBinary()) {
   <div class="monaco-editor-container d-flex flex-column">
+    <div class="preview-header d-flex align-items-center justify-content-end p-2 border-bottom bg-body-tertiary">
+      <fpc-button
+        size="sm"
+        iconOnly
+        variant="secondary"
+        (clicked)="onDownload()"
+        i18n-title="@@featureMonacoEditor-downloadTitle"
+        title="Download"
+      >
+        <i class="bi bi-download"></i>
+      </fpc-button>
+    </div>
     <fpc-empty-state
       icon="file-binary"
       i18n-message="@@featureMonacoEditor-binaryFileMessage"
       message="Binary file - cannot edit"
+    />
+  </div>
+} @else if (bodyOmitted()) {
+  <div class="monaco-editor-container d-flex flex-column">
+    <div class="preview-header d-flex align-items-center justify-content-end p-2 border-bottom bg-body-tertiary">
+      <fpc-button
+        size="sm"
+        iconOnly
+        variant="secondary"
+        (clicked)="onDownload()"
+        i18n-title="@@featureMonacoEditor-downloadTitle"
+        title="Download"
+      >
+        <i class="bi bi-download"></i>
+      </fpc-button>
+    </div>
+    <fpc-empty-state
+      icon="file-earmark"
+      i18n-message="@@featureMonacoEditor-fileTooLargeMessage"
+      message="File too large to open in editor"
     />
   </div>
 } @else {
@@ -83,18 +215,30 @@
               <i class="bi bi-arrow-clockwise"></i>
             </fpc-button>
           </fpc-button-group>
-          @if (isPreviewable()) {
+          <div class="d-flex align-items-center gap-1">
+            @if (isPreviewable()) {
+              <fpc-button
+                size="sm"
+                iconOnly
+                [variant]="previewVisible() ? 'primary' : 'secondary'"
+                (clicked)="togglePreview()"
+                i18n-title="@@featureMonacoEditor-togglePreviewTitle"
+                title="Toggle preview"
+              >
+                <i class="bi bi-search"></i>
+              </fpc-button>
+            }
             <fpc-button
               size="sm"
               iconOnly
-              [variant]="previewVisible() ? 'primary' : 'secondary'"
-              (clicked)="togglePreview()"
-              i18n-title="@@featureMonacoEditor-togglePreviewTitle"
-              title="Toggle preview"
+              variant="secondary"
+              (clicked)="onDownload()"
+              i18n-title="@@featureMonacoEditor-downloadTitle"
+              title="Download"
             >
-              <i class="bi bi-search"></i>
+              <i class="bi bi-download"></i>
             </fpc-button>
-          }
+          </div>
         </div>
         <ngx-monaco-editor
           class="flex-grow-1 min-h-0"

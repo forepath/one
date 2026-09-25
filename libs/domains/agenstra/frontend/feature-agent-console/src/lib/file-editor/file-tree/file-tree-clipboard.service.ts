@@ -13,21 +13,10 @@ import {
   writeFileSuccess,
   type FileManagerContext,
   type FileNodeDto,
+  type WriteFileDto,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
-import { Actions, ofType } from '@ngrx/effects';
-import {
-  Observable,
-  Subject,
-  catchError,
-  concatMap,
-  filter,
-  finalize,
-  firstValueFrom,
-  from,
-  map,
-  of,
-  take,
-} from 'rxjs';
+import { Store } from '@ngrx/store';
+import { Observable, Subject, catchError, concatMap, finalize, firstValueFrom, from, map, of } from 'rxjs';
 
 import {
   type FileTreeClipboardEntry,
@@ -67,7 +56,7 @@ export type FileTreeResolveNameCollision = (
 export class FileTreeClipboardService {
   private readonly filesFacade = inject(FilesFacade);
   private readonly filesService = inject(FilesService);
-  private readonly actions$ = inject(Actions);
+  private readonly store = inject(Store);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly clipboard = signal<FileTreeClipboardState | null>(null);
@@ -277,7 +266,7 @@ export class FileTreeClipboardService {
       this.filesService.readFile(batch.clientId, batch.agentId, entry.path, batch.context),
     );
 
-    await this.awaitFacadeWrite(batch, destination, { content: content.content });
+    await this.awaitFacadeWrite(batch, destination, await this.filesService.fileContentToWriteDto(content));
   }
 
   private async copyEntryRecursive(
@@ -290,10 +279,8 @@ export class FileTreeClipboardService {
         this.filesService.readFile(batch.clientId, batch.agentId, entry.path, batch.context),
       );
 
-      await this.awaitFacadeCreate(batch, destination, {
-        type: 'file',
-        content: content.content,
-      });
+      await this.awaitFacadeCreate(batch, destination, { type: 'file' });
+      await this.awaitFacadeWrite(batch, destination, await this.filesService.fileContentToWriteDto(content));
 
       return;
     }
@@ -333,87 +320,141 @@ export class FileTreeClipboardService {
   }
 
   private awaitFacadeDelete(batch: FileTreeBatchContext, filePath: string): Promise<void> {
-    this.filesFacade.deleteFileOrDirectory(batch.clientId, batch.agentId, filePath, batch.context);
-
-    return firstValueFrom(
-      this.actions$.pipe(
-        ofType(deleteFileOrDirectorySuccess, deleteFileOrDirectoryFailure),
-        filter(
-          (action) =>
-            action.clientId === batch.clientId && action.agentId === batch.agentId && action.filePath === filePath,
+    return this.runFileMutation(
+      this.filesService.deleteFileOrDirectory(batch.clientId, batch.agentId, filePath, batch.context),
+      () =>
+        this.store.dispatch(
+          deleteFileOrDirectorySuccess({
+            clientId: batch.clientId,
+            agentId: batch.agentId,
+            filePath,
+            context: batch.context,
+          }),
         ),
-        take(1),
-        map((action) => {
-          if (action.type === deleteFileOrDirectoryFailure.type) {
-            throw new Error(action.error);
-          }
-        }),
-      ),
+      (error) =>
+        this.store.dispatch(
+          deleteFileOrDirectoryFailure({
+            clientId: batch.clientId,
+            agentId: batch.agentId,
+            filePath,
+            error,
+            context: batch.context,
+          }),
+        ),
     );
   }
 
   private awaitFacadeCreate(
     batch: FileTreeBatchContext,
     filePath: string,
-    dto: { type: 'file' | 'directory'; content?: string },
+    dto: { type: 'file' | 'directory' },
   ): Promise<void> {
-    this.filesFacade.createFileOrDirectory(batch.clientId, batch.agentId, filePath, dto, batch.context);
-
-    return firstValueFrom(
-      this.actions$.pipe(
-        ofType(createFileOrDirectorySuccess, createFileOrDirectoryFailure),
-        filter(
-          (action) =>
-            action.clientId === batch.clientId && action.agentId === batch.agentId && action.filePath === filePath,
+    return this.runFileMutation(
+      this.filesService.createFileOrDirectory(batch.clientId, batch.agentId, filePath, dto, batch.context),
+      () =>
+        this.store.dispatch(
+          createFileOrDirectorySuccess({
+            clientId: batch.clientId,
+            agentId: batch.agentId,
+            filePath,
+            fileType: dto.type,
+            context: batch.context,
+          }),
         ),
-        take(1),
-        map((action) => {
-          if (action.type === createFileOrDirectoryFailure.type) {
-            throw new Error(action.error);
-          }
-        }),
-      ),
+      (error) =>
+        this.store.dispatch(
+          createFileOrDirectoryFailure({
+            clientId: batch.clientId,
+            agentId: batch.agentId,
+            filePath,
+            error,
+            context: batch.context,
+          }),
+        ),
     );
   }
 
-  private awaitFacadeWrite(batch: FileTreeBatchContext, filePath: string, dto: { content: string }): Promise<void> {
-    this.filesFacade.writeFile(batch.clientId, batch.agentId, filePath, dto, batch.context);
+  private async awaitFacadeWrite(batch: FileTreeBatchContext, filePath: string, dto: WriteFileDto): Promise<void> {
+    const content = await this.filesService.materializeWriteContent(
+      batch.clientId,
+      batch.agentId,
+      filePath,
+      batch.context,
+      {
+        ...dto,
+        bytes: dto.bytes.slice(0),
+      },
+    );
 
-    return firstValueFrom(
-      this.actions$.pipe(
-        ofType(writeFileSuccess, writeFileFailure),
-        filter(
-          (action) =>
-            action.clientId === batch.clientId && action.agentId === batch.agentId && action.filePath === filePath,
+    return this.runFileMutation(
+      this.filesService.writeFile(batch.clientId, batch.agentId, filePath, dto, batch.context),
+      () =>
+        this.store.dispatch(
+          writeFileSuccess({
+            clientId: batch.clientId,
+            agentId: batch.agentId,
+            filePath,
+            content,
+            context: batch.context,
+          }),
         ),
-        take(1),
-        map((action) => {
-          if (action.type === writeFileFailure.type) {
-            throw new Error(action.error);
-          }
-        }),
-      ),
+      (error) =>
+        this.store.dispatch(
+          writeFileFailure({
+            clientId: batch.clientId,
+            agentId: batch.agentId,
+            filePath,
+            error,
+            context: batch.context,
+          }),
+        ),
     );
   }
 
   private awaitFacadeMove(batch: FileTreeBatchContext, sourcePath: string, destination: string): Promise<void> {
-    this.filesFacade.moveFileOrDirectory(batch.clientId, batch.agentId, sourcePath, { destination }, batch.context);
-
-    return firstValueFrom(
-      this.actions$.pipe(
-        ofType(moveFileOrDirectorySuccess, moveFileOrDirectoryFailure),
-        filter(
-          (action) =>
-            action.clientId === batch.clientId && action.agentId === batch.agentId && action.sourcePath === sourcePath,
+    return this.runFileMutation(
+      this.filesService.moveFileOrDirectory(batch.clientId, batch.agentId, sourcePath, { destination }, batch.context),
+      () =>
+        this.store.dispatch(
+          moveFileOrDirectorySuccess({
+            clientId: batch.clientId,
+            agentId: batch.agentId,
+            sourcePath,
+            destinationPath: destination,
+            context: batch.context,
+          }),
         ),
-        take(1),
-        map((action) => {
-          if (action.type === moveFileOrDirectoryFailure.type) {
-            throw new Error(action.error);
-          }
-        }),
-      ),
+      (error) =>
+        this.store.dispatch(
+          moveFileOrDirectoryFailure({
+            clientId: batch.clientId,
+            agentId: batch.agentId,
+            sourcePath,
+            error,
+            context: batch.context,
+          }),
+        ),
     );
+  }
+
+  /**
+   * Run HTTP via FilesService, then dispatch NgRx success/failure so store listeners stay in sync.
+   * Avoids await-on-actions$ races (dispatch-then-subscribe can miss sync completions / queued effects).
+   */
+  private async runFileMutation(
+    request$: Observable<unknown>,
+    onSuccess: () => void,
+    onFailure: (error: string) => void,
+  ): Promise<void> {
+    try {
+      await firstValueFrom(request$);
+      onSuccess();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+
+      onFailure(message);
+      throw error instanceof Error ? error : new Error(message);
+    }
   }
 
   private refreshParent(batch: FileTreeBatchContext, path: string): void {

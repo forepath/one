@@ -226,7 +226,6 @@ describe('AgentsVcsService', () => {
     it('should return file diff for text file', async () => {
       const filePath = 'test-file.txt';
       const mockOriginalContent = 'Old content\nline 2\nline 3';
-      const mockModifiedContent = Buffer.from('New content\nline 2\nline 3', 'utf-8').toString('base64');
 
       agentsService.findOne.mockResolvedValue({} as any);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
@@ -236,10 +235,11 @@ describe('AgentsVcsService', () => {
       dockerService.sendCommandToContainer.mockResolvedValueOnce(mockOriginalContent);
       // Mock readFile from agentFileSystemService
       agentFileSystemService.readFile.mockResolvedValue({
-        content: mockModifiedContent,
-        encoding: 'utf-8',
-        isBinary: false,
-      } as any);
+        buffer: Buffer.from('New content\nline 2\nline 3', 'utf-8'),
+        fileType: 'text',
+        contentType: 'text/plain; charset=utf-8',
+        size: 24,
+      });
 
       const result = await service.getFileDiff(mockAgentId, filePath);
 
@@ -247,6 +247,7 @@ describe('AgentsVcsService', () => {
       expect(result.path).toBe(filePath);
       expect(result.isBinary).toBe(false);
       expect(result.encoding).toBe('utf-8');
+      expect(result.modifiedContent).toBe(Buffer.from('New content\nline 2\nline 3', 'utf-8').toString('base64'));
       expect(agentFileSystemService.readFile).toHaveBeenCalledWith(mockAgentId, filePath);
     });
 

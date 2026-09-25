@@ -1,105 +1,35 @@
 sequenceDiagram
-    participant Component as Angular Component
+    participant Component as File Editor / Tree
     participant Facade as FilesFacade
-    participant Store as NgRx Store
     participant Effects as FilesEffects
     participant Service as FilesService
-    participant API as HTTP API<br/>(/api/clients/:id/agents/:agentId/files?context= optional)
+    participant API as Agent Controller
 
-    Note over Component,API: NgRx File System Operations Flow
+    Note over Component,API: Frontend file I/O (raw bytes)
 
     rect rgb(230, 240, 255)
         Note over Component,API: Read File
-        Component->>Facade: readFile(clientId, agentId, filePath, context?)
-        Facade->>Store: dispatch(readFile({clientId, agentId, filePath, context?}))
-        Store->>Store: Update state: reading[key] = true
-        Store->>Effects: readFile$ effect triggered
-        Effects->>Service: readFile(clientId, agentId, filePath, context default app)
-        Service->>API: GET .../files/{path}?context=config when not app
-        API-->>Service: 200 OK<br/>{content: base64, encoding: 'utf-8'|'base64'}
-        Service-->>Effects: Observable<FileContentDto>
-        Effects->>Store: dispatch(readFileSuccess({clientId, agentId, filePath, content, context}))
-        Store->>Store: Update state:<br/>fileContents[clientId:agentId:context:path] = content<br/>reading[key] = false
-        Component->>Facade: getFileContent$(clientId, agentId, filePath, context?)
-        Facade->>Store: select(selectFileContent(...))
-        Store-->>Facade: Observable<FileContentDto | null>
-        Facade-->>Component: Observable<FileContentDto | null>
+        Component->>Facade: readFile(clientId, agentId, path, context?)
+        Facade->>Effects: readFile action
+        Effects->>Service: readFile(...)
+        Service->>API: GET .../files/{path}<br/>responseType=arraybuffer
+        API-->>Service: 200 + ArrayBuffer + X-File-Type
+        Service-->>Effects: Observable&lt;FileContentDto&gt;<br/>(fileType, contentType, text?, bodyRef?)
+        Effects-->>Facade: store content
+        Component->>Facade: getFileContent$(...)
+        Facade-->>Component: FileContentDto | null
     end
 
     rect rgb(240, 255, 240)
         Note over Component,API: Write File
-        Component->>Facade: writeFile(clientId, agentId, filePath, writeFileDto, context?)
-        Facade->>Store: dispatch(writeFile({clientId, agentId, filePath, writeFileDto, context?}))
-        Store->>Store: Update state: writing[key] = true
-        Store->>Effects: writeFile$ effect triggered
-        Effects->>Service: writeFile(..., context default app)
-        Service->>API: PUT .../files/{path} optional ?context=config<br/>{content: base64, encoding?}
-        API-->>Service: 204 No Content
-        Service-->>Effects: Observable<void>
-        Effects->>Store: dispatch(writeFileSuccess({clientId, agentId, filePath, context}))
-        Store->>Store: Update state:<br/>Remove fileContents[key]<br/>writing[key] = false
-        Component->>Facade: isWritingFile$(clientId, agentId, filePath)
-        Facade->>Store: select(selectIsWritingFile(...))
-        Store-->>Facade: Observable<boolean>
-        Facade-->>Component: Observable<boolean>
-    end
-
-    rect rgb(255, 240, 240)
-        Note over Component,API: List Directory
-        Component->>Facade: listDirectory(clientId, agentId, params?)
-        Facade->>Store: dispatch(listDirectory({clientId, agentId, params}))
-        Store->>Store: Update state: listing[key] = true
-        Store->>Effects: listDirectory$ effect triggered
-        Effects->>Service: listDirectory(clientId, agentId, params)
-        Service->>API: GET .../files?path={dir} optional context
-        API-->>Service: 200 OK<br/>[file nodes]
-        Service-->>Effects: Observable<FileNodeDto[]>
-        Effects->>Store: dispatch(listDirectorySuccess({clientId, agentId, directoryPath, files, context}))
-        Store->>Store: Update state:<br/>directoryListings[key] = files<br/>listing[key] = false
-        Component->>Facade: getDirectoryListing$(clientId, agentId, directoryPath)
-        Facade->>Store: select(selectDirectoryListing(...))
-        Store-->>Facade: Observable<FileNodeDto[] | null>
-        Facade-->>Component: Observable<FileNodeDto[] | null>
-    end
-
-    rect rgb(255, 255, 230)
-        Note over Component,API: Create File/Directory
-        Component->>Facade: createFileOrDirectory(clientId, agentId, filePath, createFileDto)
-        Facade->>Store: dispatch(createFileOrDirectory({clientId, agentId, filePath, createFileDto}))
-        Store->>Store: Update state: creating[key] = true
-        Store->>Effects: createFileOrDirectory$ effect triggered
-        Effects->>Service: createFileOrDirectory(clientId, agentId, filePath, createFileDto)
-        Service->>API: POST /api/clients/{id}/agents/{agentId}/files/{path}<br/>{type, content?}
-        API-->>Service: 201 Created
-        Service-->>Effects: Observable<void>
-        Effects->>Store: dispatch(createFileOrDirectorySuccess({clientId, agentId, filePath, type}))
-        Store->>Store: Update state:<br/>Invalidate parent directory listing<br/>creating[key] = false
-    end
-
-    rect rgb(255, 230, 255)
-        Note over Component,API: Delete File/Directory
-        Component->>Facade: deleteFileOrDirectory(clientId, agentId, filePath)
-        Facade->>Store: dispatch(deleteFileOrDirectory({clientId, agentId, filePath}))
-        Store->>Store: Update state: deleting[key] = true
-        Store->>Effects: deleteFileOrDirectory$ effect triggered
-        Effects->>Service: deleteFileOrDirectory(clientId, agentId, filePath)
-        Service->>API: DELETE /api/clients/{id}/agents/{agentId}/files/{path}
-        API-->>Service: 204 No Content
-        Service-->>Effects: Observable<void>
-        Effects->>Store: dispatch(deleteFileOrDirectorySuccess({clientId, agentId, filePath}))
-        Store->>Store: Update state:<br/>Remove fileContents[key]<br/>Remove directoryListings[key]<br/>Invalidate parent directory listing<br/>deleting[key] = false
-    end
-
-    rect rgb(240, 240, 255)
-        Note over Component,Store: Error Handling
-        alt API Error
-            API-->>Service: 4xx/5xx Error
-            Service-->>Effects: Observable error
-            Effects->>Store: dispatch(*Failure({clientId, agentId, filePath, error}))
-            Store->>Store: Update state:<br/>errors[key] = error message<br/>loading state = false
-            Component->>Facade: getFileError$(clientId, agentId, filePath)
-            Facade->>Store: select(selectFileError(...))
-            Store-->>Facade: Observable<string | null>
-            Facade-->>Component: Observable<string | null>
+        Component->>Facade: writeFile(..., { bytes, fileType? })
+        Facade->>Effects: writeFile action
+        Effects->>Service: writeFile(...)
+        alt size ≤ 10MB
+            Service->>API: PUT full ArrayBuffer
+        else chunked
+            Service->>API: PUT Content-Range chunks + X-Upload-Id
         end
+        API-->>Service: 204
+        Service-->>Effects: void
     end

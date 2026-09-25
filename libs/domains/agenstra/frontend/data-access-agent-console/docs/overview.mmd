@@ -2,7 +2,7 @@ flowchart TB
     subgraph STATE["📦 NgRx State Management"]
         direction TB
         STATE_USE["Use Case: File System State<br/>Reactive State Management<br/>Caching & Loading States"]
-        STATE_USE -->         STATE1["📄 File Contents Cache<br/>Key: clientId:agentId:context:filePath<br/>Value: FileContentDto (base64)"]
+        STATE_USE -->         STATE1["📄 File Contents Cache<br/>Key: clientId:agentId:context:filePath<br/>Value: FileContentDto (metadata + bodyRef)"]
         STATE_USE --> STATE2["📂 Directory Listings Cache<br/>Key: clientId:agentId:context:directoryPath<br/>Value: FileNodeDto[]"]
         STATE_USE --> STATE3["⏳ Loading States<br/>reading, writing, listing,<br/>creating, deleting"]
         STATE_USE --> STATE4["❌ Error States<br/>Key: clientId:agentId:context:path<br/>Value: error message"]
@@ -41,9 +41,9 @@ flowchart TB
 
     subgraph API["🔷 HTTP REST API"]
         direction TB
-        API_USE["Use Case: Backend Proxy<br/>Agent File System Operations<br/>Binary Support (base64)"]
-        API_USE --> API1["Read File<br/>Returns: {content: base64, encoding}"]
-        API_USE --> API2["Write File<br/>Accepts: {content: base64, encoding?}"]
+        API_USE["Use Case: Backend Proxy<br/>Agent File System Operations<br/>Raw binary + X-File-Type"]
+        API_USE --> API1["Read File<br/>Returns: raw bytes + X-File-Type"]
+        API_USE --> API2["Write File<br/>Accepts: raw bytes (+ Content-Range chunks)"]
         API_USE --> API3["List Directory<br/>Returns: FileNodeDto[]"]
         API_USE --> API4["Create File/Directory<br/>Accepts: {type, content?}"]
         API_USE --> API5["Delete File/Directory<br/>Returns: 204 No Content"]

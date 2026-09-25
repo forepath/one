@@ -41,8 +41,11 @@ describe('FilesEffects', () => {
   const clientId = 'client-1';
   const agentId = 'agent-1';
   const mockFileContent: FileContentDto = {
-    content: Buffer.from('Hello, World!', 'utf-8').toString('base64'),
-    encoding: 'utf-8',
+    fileType: 'text',
+    contentType: 'text/plain; charset=utf-8',
+    text: 'Hello, World!',
+    bodyRef: 'mock-body-ref',
+    size: 13,
   };
   const mockFileNodes: FileNodeDto[] = [
     {
@@ -57,7 +60,9 @@ describe('FilesEffects', () => {
   beforeEach(() => {
     filesService = {
       readFile: jest.fn(),
+      openFile: jest.fn(),
       writeFile: jest.fn(),
+      materializeWriteContent: jest.fn(),
       listDirectory: jest.fn(),
       createFileOrDirectory: jest.fn(),
       deleteFileOrDirectory: jest.fn(),
@@ -90,11 +95,11 @@ describe('FilesEffects', () => {
       });
 
       actions$ = of(action);
-      filesService.readFile.mockReturnValue(of(mockFileContent));
+      filesService.openFile.mockReturnValue(of(mockFileContent));
 
       readFile$(actions$, filesService).subscribe((result) => {
         expect(result).toEqual(outcome);
-        expect(filesService.readFile).toHaveBeenCalledWith(clientId, agentId, filePath, 'app');
+        expect(filesService.openFile).toHaveBeenCalledWith(clientId, agentId, filePath, 'app');
         done();
       });
     });
@@ -106,11 +111,11 @@ describe('FilesEffects', () => {
       const outcome = readFileFailure({ clientId, agentId, filePath, error: 'Read failed', context: 'app' });
 
       actions$ = of(action);
-      filesService.readFile.mockReturnValue(throwError(() => error));
+      filesService.openFile.mockReturnValue(throwError(() => error));
 
       readFile$(actions$, filesService).subscribe((result) => {
         expect(result).toEqual(outcome);
-        expect(filesService.readFile).toHaveBeenCalledWith(clientId, agentId, filePath, 'app');
+        expect(filesService.openFile).toHaveBeenCalledWith(clientId, agentId, filePath, 'app');
         done();
       });
     });
@@ -127,11 +132,11 @@ describe('FilesEffects', () => {
       });
 
       actions$ = of(action);
-      filesService.readFile.mockReturnValue(of(mockFileContent));
+      filesService.openFile.mockReturnValue(of(mockFileContent));
 
       readFile$(actions$, filesService).subscribe((result) => {
         expect(result).toEqual(outcome);
-        expect(filesService.readFile).toHaveBeenCalledWith(clientId, agentId, filePath, 'config');
+        expect(filesService.openFile).toHaveBeenCalledWith(clientId, agentId, filePath, 'config');
         done();
       });
     });
@@ -141,18 +146,34 @@ describe('FilesEffects', () => {
     it('should return writeFileSuccess on success', (done) => {
       const filePath = 'test-file.txt';
       const writeDto: WriteFileDto = {
-        content: Buffer.from('New content', 'utf-8').toString('base64'),
-        encoding: 'utf-8',
+        bytes: new TextEncoder().encode('New content').buffer,
+        fileType: 'text',
+        contentType: 'text/plain; charset=utf-8',
       };
       const action = writeFile({ clientId, agentId, filePath, writeFileDto: writeDto });
-      const outcome = writeFileSuccess({ clientId, agentId, filePath, context: 'app' });
+      const storedContent: FileContentDto = {
+        fileType: 'text',
+        contentType: 'text/plain; charset=utf-8',
+        text: 'New content',
+        bodyRef: 'mock-body-ref-new',
+        size: writeDto.bytes.byteLength,
+      };
+      const outcome = writeFileSuccess({
+        clientId,
+        agentId,
+        filePath,
+        content: storedContent,
+        context: 'app',
+      });
 
       actions$ = of(action);
       filesService.writeFile.mockReturnValue(of(undefined));
+      filesService.materializeWriteContent.mockResolvedValue(storedContent);
 
       writeFile$(actions$, filesService).subscribe((result) => {
         expect(result).toEqual(outcome);
         expect(filesService.writeFile).toHaveBeenCalledWith(clientId, agentId, filePath, writeDto, 'app');
+        expect(filesService.materializeWriteContent).toHaveBeenCalled();
         done();
       });
     });
@@ -160,7 +181,8 @@ describe('FilesEffects', () => {
     it('should return writeFileFailure on error', (done) => {
       const filePath = 'test-file.txt';
       const writeDto: WriteFileDto = {
-        content: Buffer.from('New content', 'utf-8').toString('base64'),
+        bytes: new TextEncoder().encode('New content').buffer,
+        fileType: 'text',
       };
       const action = writeFile({ clientId, agentId, filePath, writeFileDto: writeDto });
       const error = new Error('Write failed');
@@ -266,7 +288,6 @@ describe('FilesEffects', () => {
       const filePath = 'new-file.txt';
       const createDto: CreateFileDto = {
         type: 'file',
-        content: Buffer.from('File content', 'utf-8').toString('base64'),
       };
       const action = createFileOrDirectory({ clientId, agentId, filePath, createFileDto: createDto });
       const outcome = createFileOrDirectorySuccess({
@@ -445,7 +466,7 @@ describe('FilesEffects', () => {
       const outcome = readFileFailure({ clientId, agentId, filePath, error: 'Test error', context: 'app' });
 
       actions$ = of(action);
-      filesService.readFile.mockReturnValue(throwError(() => error));
+      filesService.openFile.mockReturnValue(throwError(() => error));
 
       readFile$(actions$, filesService).subscribe((result) => {
         expect(result).toEqual(outcome);
@@ -460,7 +481,7 @@ describe('FilesEffects', () => {
       const outcome = readFileFailure({ clientId, agentId, filePath, error: 'String error', context: 'app' });
 
       actions$ = of(action);
-      filesService.readFile.mockReturnValue(throwError(() => error));
+      filesService.openFile.mockReturnValue(throwError(() => error));
 
       readFile$(actions$, filesService).subscribe((result) => {
         expect(result).toEqual(outcome);
@@ -475,7 +496,7 @@ describe('FilesEffects', () => {
       const outcome = readFileFailure({ clientId, agentId, filePath, error: 'Object error', context: 'app' });
 
       actions$ = of(action);
-      filesService.readFile.mockReturnValue(throwError(() => error));
+      filesService.openFile.mockReturnValue(throwError(() => error));
 
       readFile$(actions$, filesService).subscribe((result) => {
         expect(result).toEqual(outcome);
@@ -496,7 +517,7 @@ describe('FilesEffects', () => {
       });
 
       actions$ = of(action);
-      filesService.readFile.mockReturnValue(throwError(() => error));
+      filesService.openFile.mockReturnValue(throwError(() => error));
 
       readFile$(actions$, filesService).subscribe((result) => {
         expect(result).toEqual(outcome);

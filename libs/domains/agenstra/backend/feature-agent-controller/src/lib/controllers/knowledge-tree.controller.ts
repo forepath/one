@@ -69,7 +69,7 @@ export class KnowledgeTreeController {
   }
 
   @RequireScopes('knowledge:write')
-  @Post('upload-text')
+  @Post('upload')
   @HttpCode(HttpStatus.CREATED)
   async uploadTextFiles(@Body() dto: UploadKnowledgeTextDto, @Req() req?: RequestWithUser) {
     return await this.knowledgeTreeService.uploadTextFiles(dto, req);

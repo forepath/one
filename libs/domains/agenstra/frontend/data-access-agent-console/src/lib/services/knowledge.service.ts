@@ -48,7 +48,7 @@ export class KnowledgeService {
   }
 
   uploadTextFiles(dto: UploadKnowledgeTextDto): Observable<UploadKnowledgeTextResultDto> {
-    return this.http.post<UploadKnowledgeTextResultDto>(`${this.apiUrl}/knowledge/upload-text`, dto);
+    return this.http.post<UploadKnowledgeTextResultDto>(`${this.apiUrl}/knowledge/upload`, dto);
   }
 
   update(id: string, dto: UpdateKnowledgeNodeDto): Observable<KnowledgeNodeDto> {

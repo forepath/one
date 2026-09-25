@@ -1068,7 +1068,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KnowledgeNodeResponseDto'
-  /knowledge/upload-text:
+  /knowledge/upload:
     post:
       summary: Upload UTF-8 text files as knowledge pages
       description: |
@@ -2409,9 +2409,9 @@ paths:
         '404':
           description: Client, agent, or directory not found
   /clients/{id}/agents/{agentId}/files/{path}:
-    get:
-      summary: Read file content (proxied)
-      operationId: readClientAgentFile
+    head:
+      summary: Probe file metadata without transferring the body (proxied)
+      operationId: headClientAgentFile
       parameters:
         - in: path
           name: id
@@ -2436,19 +2436,113 @@ paths:
         - $ref: '#/components/parameters/fileManagerContext'
       responses:
         '200':
-          description: File content (base64-encoded)
-          content:
-            application/json:
+          description: Metadata headers only (no body)
+          headers:
+            Accept-Ranges:
+              schema: { type: string, enum: [bytes] }
+            X-File-Type:
               schema:
-                $ref: '#/components/schemas/FileContentDto'
+                $ref: '#/components/schemas/AgentFileType'
+            Content-Type:
+              schema: { type: string }
+            Content-Length:
+              schema: { type: integer }
+        '400':
+          description: Invalid path, invalid context, or missing access
+        '404':
+          description: Client, agent, or file not found
+    get:
+      summary: Read file content as raw bytes (proxied)
+      operationId: readClientAgentFile
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the client
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the agent
+        - in: path
+          name: path
+          required: true
+          schema:
+            type: string
+          description: File path relative to the selected context root (supports nested paths)
+        - $ref: '#/components/parameters/fileManagerContext'
+        - in: query
+          name: download
+          schema:
+            type: boolean
+          description: When true, set Content-Disposition attachment with the file basename
+        - in: header
+          name: Range
+          schema:
+            type: string
+          description: Optional bytes range (e.g. bytes=0-1023) for partial content
+      responses:
+        '200':
+          description: Full file content
+          headers:
+            Accept-Ranges:
+              schema: { type: string, enum: [bytes] }
+            X-File-Type:
+              schema:
+                $ref: '#/components/schemas/AgentFileType'
+            Content-Disposition:
+              schema: { type: string }
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+            application/pdf:
+              schema: { type: string, format: binary }
+            text/plain:
+              schema: { type: string, format: binary }
+            image/*:
+              schema: { type: string, format: binary }
+            video/*:
+              schema: { type: string, format: binary }
+            audio/*:
+              schema: { type: string, format: binary }
+        '206':
+          description: Partial content for Range requests
+          headers:
+            Accept-Ranges:
+              schema: { type: string, enum: [bytes] }
+            Content-Range:
+              schema: { type: string }
+            X-File-Type:
+              schema:
+                $ref: '#/components/schemas/AgentFileType'
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+            application/pdf:
+              schema: { type: string, format: binary }
+            text/plain:
+              schema: { type: string, format: binary }
+            image/*:
+              schema: { type: string, format: binary }
+            video/*:
+              schema: { type: string, format: binary }
+            audio/*:
+              schema: { type: string, format: binary }
         '400':
           description: Invalid path, invalid context, or agent type does not support configuration file access
         '403':
           description: User does not have access to this client, or lacks workspace management rights when context is config
         '404':
           description: Client, agent, or file not found
+        '416':
+          description: Range not satisfiable
     put:
-      summary: Write file content (proxied)
+      summary: Write file content as raw bytes (proxied; full file or Content-Range chunk)
       operationId: writeClientAgentFile
       parameters:
         - in: path
@@ -2472,17 +2566,42 @@ paths:
             type: string
           description: File path relative to the selected context root (supports nested paths)
         - $ref: '#/components/parameters/fileManagerContext'
+        - in: header
+          name: Content-Range
+          schema:
+            type: string
+          description: Optional chunk range (bytes start-end/total) for chunked uploads
+        - in: header
+          name: X-Upload-Id
+          schema:
+            type: string
+            format: uuid
+          description: Optional upload session id for chunked uploads
+        - in: header
+          name: X-File-Type
+          schema:
+            $ref: '#/components/schemas/AgentFileType'
+          description: Optional client classification hint
       requestBody:
         required: true
         content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WriteFileDto'
+          application/octet-stream:
+            schema: { type: string, format: binary }
+          application/pdf:
+            schema: { type: string, format: binary }
+          text/plain:
+            schema: { type: string, format: binary }
+          image/*:
+            schema: { type: string, format: binary }
+          video/*:
+            schema: { type: string, format: binary }
+          audio/*:
+            schema: { type: string, format: binary }
       responses:
         '204':
-          description: File written successfully
+          description: File written successfully (or chunk accepted; last chunk finalizes)
         '400':
-          description: Invalid path, content too large, invalid context, or agent type does not support configuration file access
+          description: Invalid path, content too large, invalid range, invalid context, or agent type does not support configuration file access
         '403':
           description: User does not have access to this client, or lacks workspace management rights when context is config
         '404':
@@ -5637,17 +5756,10 @@ components:
           items:
             $ref: '#/components/schemas/AgentTypeInfo'
           description: Array of available agent provider types with display names
-    FileContentDto:
-      type: object
-      required: [content, encoding]
-      properties:
-        content:
-          type: string
-          description: File content as base64-encoded string (supports both text and binary files)
-        encoding:
-          type: string
-          enum: [utf-8, base64]
-          description: Encoding indicator - 'utf-8' for text files, 'base64' for binary files
+    AgentFileType:
+      type: string
+      enum: [text, binary, pdf, image, video, audio]
+      description: Server-authoritative file classification for editor/preview behavior
     FileNodeDto:
       type: object
       required: [name, type, path]
@@ -5669,17 +5781,6 @@ components:
           type: [string, 'null']
           format: date-time
           description: Last modification timestamp
-    WriteFileDto:
-      type: object
-      required: [content]
-      properties:
-        content:
-          type: string
-          description: File content as base64-encoded string (supports both text and binary files)
-        encoding:
-          type: string
-          enum: [utf-8, base64]
-          description: Optional encoding indicator - 'utf-8' for text files, 'base64' for binary files (defaults to 'utf-8')
     CreateFileDto:
       type: object
       required: [type]
@@ -5687,10 +5788,7 @@ components:
         type:
           type: string
           enum: [file, directory]
-          description: Type of node to create
-        content:
-          type: [string, 'null']
-          description: Optional content for file creation (base64-encoded)
+          description: Type of node to create (empty file or directory; write content via PUT)
     MoveFileDto:
       type: object
       required: [destination]

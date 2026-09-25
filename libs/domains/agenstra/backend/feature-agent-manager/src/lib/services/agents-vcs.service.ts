@@ -641,9 +641,9 @@ export class AgentsVcsService {
         originalContent = '';
       }
 
-      // Get modified content from working tree
-      const modifiedContentDto = await this.agentFileSystemService.readFile(agentId, filePath);
-      const modifiedContent = modifiedContentDto.content; // Already base64-encoded
+      // Get modified content from working tree (base64 for GitDiffDto wire format)
+      const modifiedContentResult = await this.agentFileSystemService.readFile(agentId, filePath);
+      const modifiedContent = modifiedContentResult.buffer.toString('base64');
 
       return {
         path: filePath,

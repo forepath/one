@@ -18,27 +18,30 @@ Browse the file system structure:
 
 ### Read File
 
-Open and view file contents:
+Open and view file contents over raw HTTP bytes (not JSON/base64):
 
-- Read file content
-- Display in Monaco Editor
-- Syntax highlighting based on file type
-- Code completion and IntelliSense
+- Response body is the file bytes; classification via `X-File-Type` (`text` | `image` | `video` | `audio` | `pdf` | `binary`) and concrete `Content-Type`
+- Always advertises `Accept-Ranges: bytes`; clients may send `Range` for partial reads (**206** + `Content-Range`)
+- **HEAD** returns the same classification headers + `Content-Length` with no body so the UI can decide the renderer before transferring bytes
+- Optional `?download=true` sets `Content-Disposition: attachment`
+- UI: Monaco for text; image / video / audio / PDF preview; binary (and oversized files) show download-only without a full GET
+- Large files should use Range fetches when over the single-response budget
 
 ### Write File
 
-Edit and save file contents:
+Edit and save file contents as raw bytes:
 
-- Edit files in Monaco Editor
-- Save changes to the container
-- Real-time file updates
-- Automatic syntax validation
+- Prefer matching `Content-Type`; optional `X-File-Type`
+- Agent-manager and controller parse **all** file PUT bodies as raw bytes (matched by route, not MIME allowlist), so uploads work for any `Content-Type` the browser sends
+- Single PUT without `Content-Range`: full file, hard cap **10MB**
+- Chunked upload: sequential `Content-Range: bytes start-end/total` (+ optional `X-Upload-Id`); assembled total up to **100MB**
+- File-tree uploads use `Blob.slice` chunks and show percent on pending-upload rows
 
 ### Create File or Directory
 
 Create new files or directories:
 
-- Create files with specified content
+- Create empty files or directories only (`{ type }`); write content with PUT
 - Create empty directories
 - Set file permissions
 
@@ -83,22 +86,22 @@ sequenceDiagram
     participant C as Container
 
     U->>F: Read File
-    F->>AC: GET /api/clients/:id/agents/:agentId/files/:path
-    AC->>AM: GET /api/agents/:agentId/files/:path
-    AM->>C: Read File
-    C-->>AM: File Content
-    AM-->>AC: File Response
-    AC-->>F: File Response
-    F->>F: Display in Editor
+    F->>AC: GET .../files/:path (arraybuffer, optional Range)
+    AC->>AM: GET .../files/:path
+    AM->>C: Read bytes
+    C-->>AM: File bytes
+    AM-->>AC: 200/206 + X-File-Type + raw body
+    AC-->>F: StreamableFile + headers
+    F->>F: Preview / Monaco / download
 
-    U->>F: Save File
-    F->>AC: PUT /api/clients/:id/agents/:agentId/files/:path
-    AC->>AM: PUT /api/agents/:agentId/files/:path
-    AM->>C: Write File
+    U->>F: Save / upload File
+    F->>AC: PUT raw body (or Content-Range chunks)
+    AC->>AM: PUT .../files/:path
+    AM->>C: Write (assemble if chunked)
     C-->>AM: Success
     AM->>AM: Notify Other Clients (fileUpdate)
-    AM-->>AC: File Response
-    AC-->>F: File Response
+    AM-->>AC: 204
+    AC-->>F: 204
     F->>F: Show Success
 ```
 
@@ -123,9 +126,9 @@ This enables real-time collaboration and ensures all clients see the latest file
 ### File Operations
 
 - `GET /api/clients/:id/agents/:agentId/files` - List directory contents
-- `GET /api/clients/:id/agents/:agentId/files/:path` - Read file content
-- `POST /api/clients/:id/agents/:agentId/files/:path` - Create file or directory
-- `PUT /api/clients/:id/agents/:agentId/files/:path` - Write file content
+- `GET /api/clients/:id/agents/:agentId/files/:path` - Read file bytes (`X-File-Type`, optional `Range` / `download`)
+- `POST /api/clients/:id/agents/:agentId/files/:path` - Create empty file or directory
+- `PUT /api/clients/:id/agents/:agentId/files/:path` - Write file bytes (optional `Content-Range` chunks)
 - `DELETE /api/clients/:id/agents/:agentId/files/:path` - Delete file or directory
 - `PATCH /api/clients/:id/agents/:agentId/files/:path` - Move file or directory
 

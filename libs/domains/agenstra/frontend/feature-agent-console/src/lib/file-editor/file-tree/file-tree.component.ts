@@ -18,14 +18,17 @@ import {
   AgentsFacade,
   ClientsFacade,
   FilesFacade,
+  FilesService,
   VcsFacade,
   createFileOrDirectoryFailure,
   createFileOrDirectorySuccess,
+  mimeToAgentFileType,
   writeFileFailure,
   writeFileSuccess,
   type FileManagerContext,
   type FileNodeDto,
   type ListDirectoryParams,
+  type WriteFileDto,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import {
   FpcButtonComponent,
@@ -38,6 +41,7 @@ import {
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { Actions, ofType } from '@ngrx/effects';
+import { Store } from '@ngrx/store';
 import { combineLatest, filter, firstValueFrom, map, Observable, of, Subscription, switchMap, take } from 'rxjs';
 
 import { getGitRepositoryDisplayLabel } from '../../git-repository-display';
@@ -97,6 +101,8 @@ interface PendingUpload {
   name: string;
   parentPath: string;
   type: 'file' | 'directory';
+  /** Upload progress 0–100 when available. */
+  progress?: number;
 }
 
 @Component({
@@ -126,10 +132,12 @@ interface PendingUpload {
 })
 export class FileTreeComponent implements OnInit {
   private readonly filesFacade = inject(FilesFacade);
+  private readonly filesService = inject(FilesService);
   private readonly clientsFacade = inject(ClientsFacade);
   private readonly agentsFacade = inject(AgentsFacade);
   private readonly vcsFacade = inject(VcsFacade);
   private readonly actions$ = inject(Actions);
+  private readonly store = inject(Store);
   private readonly destroyRef = inject(DestroyRef);
   readonly clipboardService = inject(FileTreeClipboardService);
   private readonly hostElement = inject(ElementRef<HTMLElement>);
@@ -177,6 +185,8 @@ export class FileTreeComponent implements OnInit {
   // Internal state
   treeNodes = signal<TreeNode[]>([]);
   treeCache = signal<Map<string, FileNodeDto[]>>(new Map());
+  /** Must be created in an injection context — do not call toObservable inside switchMap. */
+  private readonly treeCache$ = toObservable(this.treeCache);
   contextMenuPath = signal<string | null>(null);
   contextMenuPosition = signal<{ x: number; y: number } | null>(null);
   creatingItem = signal<{ path: string; type: 'file' | 'directory' } | null>(null);
@@ -248,7 +258,7 @@ export class FileTreeComponent implements OnInit {
       // Use local treeCache — store listings are invalidated on create/delete/move.
       return combineLatest([
         this.filesFacade.isListingDirectory$(config.clientId, config.agentId, '.', config.context),
-        toObservable(this.treeCache),
+        this.treeCache$,
       ]).pipe(map(([isLoading, cache]) => isLoading && !cache.has('.')));
     }),
   );
@@ -676,8 +686,9 @@ export class FileTreeComponent implements OnInit {
   }
 
   /**
-   * Paste into the tree: OS clipboard files upload into the paste target folder;
-   * otherwise apply the internal copy/cut clipboard.
+   * Paste into the tree: OS clipboard files upload into the paste target folder
+   * when present; otherwise apply the internal copy/cut clipboard.
+   * In-tree Ctrl+C/X replaces the OS clipboard so stale File items cannot win over a newer selection.
    */
   onTreePaste(event: ClipboardEvent): void {
     if (this.shouldIgnorePasteTarget(event.target)) {
@@ -689,6 +700,8 @@ export class FileTreeComponent implements OnInit {
     if (files.length > 0) {
       event.preventDefault();
       event.stopPropagation();
+      // A fresh OS file copy supersedes the virtual clipboard.
+      this.clipboardService.clearClipboard();
       this.uploadFilesToPath(files, this.resolvePasteTargetPath());
 
       return;
@@ -862,6 +875,7 @@ export class FileTreeComponent implements OnInit {
     }
 
     this.clipboardService.setClipboard('copy', entries);
+    void this.syncOsClipboardAfterInternalCopy(entries.map((entry) => entry.path));
   }
 
   private cutSelectionToClipboard(): void {
@@ -876,6 +890,23 @@ export class FileTreeComponent implements OnInit {
     }
 
     this.clipboardService.setClipboard('cut', entries);
+    void this.syncOsClipboardAfterInternalCopy(entries.map((entry) => entry.path));
+  }
+
+  /**
+   * Replace the OS clipboard with path text so leftover File items from a prior
+   * desktop copy do not take priority on the next Ctrl+V in the tree.
+   */
+  private async syncOsClipboardAfterInternalCopy(paths: string[]): Promise<void> {
+    if (typeof navigator === 'undefined' || !navigator.clipboard?.writeText) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(paths.join('\n'));
+    } catch {
+      // Permissions / insecure context — paste may still prefer stale OS files.
+    }
   }
 
   private pasteClipboardIntoTarget(): void {
@@ -2026,6 +2057,14 @@ export class FileTreeComponent implements OnInit {
       php: 'bi-filetype-php',
       go: 'bi-filetype-go',
       rs: 'bi-filetype-rs',
+      mp3: 'bi-file-earmark-music',
+      wav: 'bi-file-earmark-music',
+      flac: 'bi-file-earmark-music',
+      m4a: 'bi-file-earmark-music',
+      aac: 'bi-file-earmark-music',
+      oga: 'bi-file-earmark-music',
+      ogg: 'bi-file-earmark-music',
+      opus: 'bi-file-earmark-music',
       vue: 'bi-filetype-vue',
     };
 
@@ -2381,45 +2420,62 @@ export class FileTreeComponent implements OnInit {
     return targetPath === '.' ? relativePath : `${targetPath}/${relativePath}`;
   }
 
-  private awaitUploadFileContent(fullPath: string, base64Content: string, replace = false): Promise<void> {
-    if (replace) {
-      this.filesFacade.writeFile(
-        this.clientId(),
-        this.agentId(),
-        fullPath,
-        { content: base64Content },
-        this.fileManagerContext(),
-      );
+  private awaitUploadFileContent(fullPath: string, bytes: ArrayBuffer, file: File, replace = false): Promise<void> {
+    const writeDto: WriteFileDto = {
+      bytes,
+      fileType: mimeToAgentFileType(file.type),
+      contentType: file.type || 'application/octet-stream',
+    };
+    const onProgress = (loaded: number, total: number): void => {
+      const progress = total > 0 ? Math.round((loaded / total) * 100) : 0;
 
-      return firstValueFrom(
-        this.actions$.pipe(
-          ofType(writeFileSuccess, writeFileFailure),
-          filter(
-            (action) =>
-              action.clientId === this.clientId() && action.agentId === this.agentId() && action.filePath === fullPath,
-          ),
-          take(1),
-          map((action) => {
-            if (action.type === writeFileFailure.type) {
-              throw new Error(action.error);
-            }
+      this.updatePendingUploadProgress(fullPath, progress);
+    };
+    const putBytes = async (): Promise<void> => {
+      const clientId = this.clientId();
+      const agentId = this.agentId();
+      const context = this.fileManagerContext();
+      // Snapshot before HTTP — large uploads may detach/transfer the request ArrayBuffer.
+      const snapshot: WriteFileDto = {
+        ...writeDto,
+        bytes: writeDto.bytes.slice(0),
+      };
+
+      try {
+        await firstValueFrom(this.filesService.writeFile(clientId, agentId, fullPath, writeDto, context, onProgress));
+        const content = await this.filesService.materializeWriteContent(clientId, agentId, fullPath, context, snapshot);
+
+        this.store.dispatch(
+          writeFileSuccess({
+            clientId,
+            agentId,
+            filePath: fullPath,
+            content,
+            context,
           }),
-        ),
-      );
+        );
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+
+        this.store.dispatch(
+          writeFileFailure({
+            clientId,
+            agentId,
+            filePath: fullPath,
+            error: message,
+            context,
+          }),
+        );
+        throw error;
+      }
+    };
+
+    if (replace) {
+      return putBytes();
     }
 
-    this.filesFacade.createFileOrDirectory(
-      this.clientId(),
-      this.agentId(),
-      fullPath,
-      {
-        type: 'file',
-        content: base64Content,
-      },
-      this.fileManagerContext(),
-    );
-
-    return firstValueFrom(
+    // Subscribe before dispatch so a fast create success is not missed.
+    const created = firstValueFrom(
       this.actions$.pipe(
         ofType(createFileOrDirectorySuccess, createFileOrDirectoryFailure),
         filter(
@@ -2434,22 +2490,22 @@ export class FileTreeComponent implements OnInit {
         }),
       ),
     );
+
+    this.filesFacade.createFileOrDirectory(
+      this.clientId(),
+      this.agentId(),
+      fullPath,
+      { type: 'file' },
+      this.fileManagerContext(),
+    );
+
+    return created.then(() => putBytes());
   }
 
-  private readFileAsBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.onload = () => {
-        const result = reader.result as string;
-        const base64Content = result.includes(',') ? result.split(',')[1] : result;
-
-        resolve(base64Content);
-      };
-
-      reader.onerror = () => reject(new Error(`Failed to read file: ${file.name}`));
-      reader.readAsDataURL(file);
-    });
+  private updatePendingUploadProgress(path: string, progress: number): void {
+    this.pendingUploads.update((current) =>
+      current.map((pending) => (pending.path === path ? { ...pending, progress } : pending)),
+    );
   }
 
   private uploadFilesToPath(files: File[], targetPath: string): void {
@@ -2497,9 +2553,9 @@ export class FileTreeComponent implements OnInit {
       siblingNames.add(finalName);
 
       try {
-        const base64Content = await this.readFileAsBase64(file);
+        const bytes = await file.arrayBuffer();
 
-        await this.awaitUploadFileContent(fullPath, base64Content, replace);
+        await this.awaitUploadFileContent(fullPath, bytes, file, replace);
         uploadedPaths.push(fullPath);
       } catch (error: unknown) {
         console.error(error);
@@ -2610,9 +2666,9 @@ export class FileTreeComponent implements OnInit {
       pendingCreatePaths.push(fullPath);
 
       try {
-        const base64Content = await this.readFileAsBase64(file);
+        const bytes = await file.arrayBuffer();
 
-        await this.awaitUploadFileContent(fullPath, base64Content);
+        await this.awaitUploadFileContent(fullPath, bytes, file);
         uploadedPaths.push(fullPath);
       } catch (error: unknown) {
         console.error(error);
@@ -2637,15 +2693,7 @@ export class FileTreeComponent implements OnInit {
   }
 
   private awaitCreateDirectory(fullPath: string): Promise<void> {
-    this.filesFacade.createFileOrDirectory(
-      this.clientId(),
-      this.agentId(),
-      fullPath,
-      { type: 'directory' },
-      this.fileManagerContext(),
-    );
-
-    return firstValueFrom(
+    const created = firstValueFrom(
       this.actions$.pipe(
         ofType(createFileOrDirectorySuccess, createFileOrDirectoryFailure),
         filter(
@@ -2660,6 +2708,16 @@ export class FileTreeComponent implements OnInit {
         }),
       ),
     );
+
+    this.filesFacade.createFileOrDirectory(
+      this.clientId(),
+      this.agentId(),
+      fullPath,
+      { type: 'directory' },
+      this.fileManagerContext(),
+    );
+
+    return created;
   }
 
   private registerPendingUploads(entries: Array<{ path: string; type: 'file' | 'directory' }>): void {

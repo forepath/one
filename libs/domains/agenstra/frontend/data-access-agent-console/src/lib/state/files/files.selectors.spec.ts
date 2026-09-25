@@ -27,8 +27,11 @@ describe('Files Selectors', () => {
   const directoryKey = `${clientId}:${agentId}:app:${directoryPath}`;
   const clientAgentKey = `${clientId}:${agentId}:app`;
   const mockFileContent: FileContentDto = {
-    content: Buffer.from('Hello, World!', 'utf-8').toString('base64'),
-    encoding: 'utf-8',
+    fileType: 'text',
+    contentType: 'text/plain; charset=utf-8',
+    text: 'Hello, World!',
+    bodyRef: 'mock-body-ref',
+    size: 13,
   };
   const mockFileNodes: FileNodeDto[] = [
     {
@@ -82,8 +85,11 @@ describe('Files Selectors', () => {
     it('should resolve config context keys separately from app', () => {
       const configKey = `${clientId}:${agentId}:config:${filePath}`;
       const configContent: FileContentDto = {
-        content: Buffer.from('x', 'utf-8').toString('base64'),
-        encoding: 'utf-8',
+        fileType: 'text',
+        contentType: 'text/plain',
+        text: 'x',
+        bodyRef: 'mock-body-ref-x',
+        size: 1,
       };
       const fileContents = { ...mockFilesState.fileContents, [configKey]: configContent };
       const selector = selectFileContent(clientId, agentId, filePath, 'config');

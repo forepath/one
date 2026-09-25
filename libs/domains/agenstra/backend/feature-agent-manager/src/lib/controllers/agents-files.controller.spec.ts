@@ -1,11 +1,10 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, HttpStatus, StreamableFile } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import type { Request, Response } from 'express';
 
 import { CreateFileDto } from '../dto/create-file.dto';
-import { FileContentDto } from '../dto/file-content.dto';
 import { FileNodeDto } from '../dto/file-node.dto';
 import { MoveFileDto } from '../dto/move-file.dto';
-import { WriteFileDto } from '../dto/write-file.dto';
 import { AgentFileSystemService } from '../services/agent-file-system.service';
 
 import { AgentsFilesController } from './agents-files.controller';
@@ -16,9 +15,12 @@ describe('AgentsFilesController', () => {
   const mockAgentId = 'test-agent-uuid';
   const mockFilePath = 'test-file.txt';
   const mockDirectoryPath = 'test-directory';
-  const mockFileContent: FileContentDto = {
-    content: 'Hello, World!',
-    encoding: 'utf-8',
+  const mockFileBuffer = Buffer.from('Hello, World!', 'utf-8');
+  const mockFileReadResult = {
+    buffer: mockFileBuffer,
+    fileType: 'text' as const,
+    contentType: 'text/plain; charset=utf-8',
+    size: mockFileBuffer.length,
   };
   const mockFileNodes: FileNodeDto[] = [
     {
@@ -36,12 +38,21 @@ describe('AgentsFilesController', () => {
   ];
   const mockService = {
     readFile: jest.fn(),
+    probeFile: jest.fn(),
     writeFile: jest.fn(),
+    writeFileChunk: jest.fn(),
     listDirectory: jest.fn(),
     createFileOrDirectory: jest.fn(),
     deleteFileOrDirectory: jest.fn(),
     moveFileOrDirectory: jest.fn(),
   };
+
+  function createMockResponse(): Response {
+    return {
+      setHeader: jest.fn(),
+      status: jest.fn().mockReturnThis(),
+    } as unknown as Response;
+  }
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -62,42 +73,117 @@ describe('AgentsFilesController', () => {
     jest.clearAllMocks();
   });
 
+  describe('headFile', () => {
+    it('should set metadata headers without a body', async () => {
+      service.probeFile.mockResolvedValue({
+        fileType: 'audio',
+        contentType: 'audio/mpeg',
+        size: 3304030,
+      });
+      const res = createMockResponse();
+
+      await controller.headFile(mockAgentId, 'track.mp3', res, undefined);
+
+      expect(service.probeFile).toHaveBeenCalledWith(mockAgentId, 'track.mp3', 'app');
+      expect(res.setHeader).toHaveBeenCalledWith('Accept-Ranges', 'bytes');
+      expect(res.setHeader).toHaveBeenCalledWith('X-File-Type', 'audio');
+      expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'audio/mpeg');
+      expect(res.setHeader).toHaveBeenCalledWith('Content-Length', '3304030');
+    });
+  });
+
   describe('readFile', () => {
-    it('should return file content', async () => {
-      service.readFile.mockResolvedValue(mockFileContent);
+    it('should return StreamableFile with metadata headers', async () => {
+      service.readFile.mockResolvedValue(mockFileReadResult);
+      const res = createMockResponse();
 
-      const result = await controller.readFile(mockAgentId, mockFilePath, undefined);
+      const result = await controller.readFile(mockAgentId, mockFilePath, res, undefined, undefined, undefined);
 
-      expect(result).toEqual(mockFileContent);
+      expect(result).toBeInstanceOf(StreamableFile);
       expect(service.readFile).toHaveBeenCalledWith(mockAgentId, mockFilePath, 'app');
+      expect(res.setHeader).toHaveBeenCalledWith('Accept-Ranges', 'bytes');
+      expect(res.setHeader).toHaveBeenCalledWith('X-File-Type', 'text');
+      expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'text/plain; charset=utf-8');
+      expect(res.setHeader).toHaveBeenCalledWith('Content-Length', String(mockFileBuffer.length));
     });
 
     it('should forward config context to service', async () => {
-      service.readFile.mockResolvedValue(mockFileContent);
+      service.readFile.mockResolvedValue(mockFileReadResult);
+      const res = createMockResponse();
 
-      await controller.readFile(mockAgentId, mockFilePath, 'config');
+      await controller.readFile(mockAgentId, mockFilePath, res, undefined, 'config', undefined);
 
       expect(service.readFile).toHaveBeenCalledWith(mockAgentId, mockFilePath, 'config');
+    });
+
+    it('should return 206 for satisfiable Range', async () => {
+      service.readFile.mockResolvedValue(mockFileReadResult);
+      const res = createMockResponse();
+
+      const result = await controller.readFile(mockAgentId, mockFilePath, res, 'bytes=0-4', undefined, undefined);
+
+      expect(result).toBeInstanceOf(StreamableFile);
+      expect(res.status).toHaveBeenCalledWith(HttpStatus.PARTIAL_CONTENT);
+      expect(res.setHeader).toHaveBeenCalledWith('Content-Range', `bytes 0-4/${mockFileBuffer.length}`);
+    });
+
+    it('should return 416 for unsatisfiable Range', async () => {
+      service.readFile.mockResolvedValue(mockFileReadResult);
+      const res = createMockResponse();
+
+      await controller.readFile(mockAgentId, mockFilePath, res, 'bytes=999-1000', undefined, undefined);
+
+      expect(res.status).toHaveBeenCalledWith(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE);
+      expect(res.setHeader).toHaveBeenCalledWith('Content-Range', `bytes */${mockFileBuffer.length}`);
+    });
+
+    it('should set Content-Disposition when download=true', async () => {
+      service.readFile.mockResolvedValue(mockFileReadResult);
+      const res = createMockResponse();
+
+      await controller.readFile(mockAgentId, mockFilePath, res, undefined, undefined, 'true');
+
+      expect(res.setHeader).toHaveBeenCalledWith('Content-Disposition', expect.stringContaining('attachment'));
     });
   });
 
   describe('writeFile', () => {
-    it('should write file content', async () => {
-      const writeDto: WriteFileDto = {
-        content: 'New content',
-      };
+    it('should write raw body buffer', async () => {
+      const body = Buffer.from('New content', 'utf-8');
+      const req = { body } as Request;
 
       service.writeFile.mockResolvedValue(undefined);
 
-      await controller.writeFile(mockAgentId, mockFilePath, writeDto, undefined);
+      await controller.writeFile(mockAgentId, mockFilePath, req, undefined, undefined, undefined, undefined);
 
-      expect(service.writeFile).toHaveBeenCalledWith(
+      expect(service.writeFile).toHaveBeenCalledWith(mockAgentId, mockFilePath, body, 'app');
+    });
+
+    it('should write chunk when Content-Range is present', async () => {
+      const body = Buffer.from('ab', 'utf-8');
+      const req = { body } as Request;
+
+      service.writeFileChunk.mockResolvedValue(undefined);
+
+      await controller.writeFile(mockAgentId, mockFilePath, req, undefined, 'bytes 0-1/4', 'upload-1', 'binary');
+
+      expect(service.writeFileChunk).toHaveBeenCalledWith(
         mockAgentId,
         mockFilePath,
-        writeDto.content,
-        writeDto.encoding,
+        body,
+        { start: 0, end: 1, total: 4 },
+        'upload-1',
         'app',
       );
+      expect(service.writeFile).not.toHaveBeenCalled();
+    });
+
+    it('should reject non-buffer body', async () => {
+      const req = { body: { not: 'buffer' } } as unknown as Request;
+
+      await expect(
+        controller.writeFile(mockAgentId, mockFilePath, req, undefined, undefined, undefined, undefined),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -126,23 +212,16 @@ describe('AgentsFilesController', () => {
   });
 
   describe('createFileOrDirectory', () => {
-    it('should create file with content', async () => {
+    it('should create empty file', async () => {
       const createDto: CreateFileDto = {
         type: 'file',
-        content: 'File content',
       };
 
       service.createFileOrDirectory.mockResolvedValue(undefined);
 
       await controller.createFileOrDirectory(mockAgentId, mockFilePath, createDto, undefined);
 
-      expect(service.createFileOrDirectory).toHaveBeenCalledWith(
-        mockAgentId,
-        mockFilePath,
-        'file',
-        'File content',
-        'app',
-      );
+      expect(service.createFileOrDirectory).toHaveBeenCalledWith(mockAgentId, mockFilePath, 'file', 'app');
     });
 
     it('should create directory', async () => {
@@ -154,38 +233,24 @@ describe('AgentsFilesController', () => {
 
       await controller.createFileOrDirectory(mockAgentId, mockDirectoryPath, createDto, undefined);
 
-      expect(service.createFileOrDirectory).toHaveBeenCalledWith(
-        mockAgentId,
-        mockDirectoryPath,
-        'directory',
-        undefined,
-        'app',
-      );
+      expect(service.createFileOrDirectory).toHaveBeenCalledWith(mockAgentId, mockDirectoryPath, 'directory', 'app');
     });
 
     it('should handle array path parameter', async () => {
       const createDto: CreateFileDto = {
         type: 'file',
-        content: 'File content',
       };
 
       service.createFileOrDirectory.mockResolvedValue(undefined);
 
       await controller.createFileOrDirectory(mockAgentId, ['nested', 'path', 'file.txt'], createDto, undefined);
 
-      expect(service.createFileOrDirectory).toHaveBeenCalledWith(
-        mockAgentId,
-        'nested/path/file.txt',
-        'file',
-        'File content',
-        'app',
-      );
+      expect(service.createFileOrDirectory).toHaveBeenCalledWith(mockAgentId, 'nested/path/file.txt', 'file', 'app');
     });
 
     it('should throw BadRequestException when path is undefined', async () => {
       const createDto: CreateFileDto = {
         type: 'file',
-        content: 'File content',
       };
 
       await expect(controller.createFileOrDirectory(mockAgentId, undefined, createDto, undefined)).rejects.toThrow(
@@ -196,7 +261,6 @@ describe('AgentsFilesController', () => {
     it('should throw BadRequestException when path is an object', async () => {
       const createDto: CreateFileDto = {
         type: 'file',
-        content: 'File content',
       };
 
       await expect(
