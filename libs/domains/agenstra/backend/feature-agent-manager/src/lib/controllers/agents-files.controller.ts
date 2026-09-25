@@ -4,6 +4,8 @@ import {
   Controller,
   Delete,
   Get,
+  Head,
+  Headers,
   HttpCode,
   HttpStatus,
   Param,
@@ -12,15 +14,18 @@ import {
   Post,
   Put,
   Query,
+  Req,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
+import type { Request, Response } from 'express';
 
 import { CreateFileDto } from '../dto/create-file.dto';
-import { FileContentDto } from '../dto/file-content.dto';
 import { FileNodeDto } from '../dto/file-node.dto';
 import { MoveFileDto } from '../dto/move-file.dto';
-import { WriteFileDto } from '../dto/write-file.dto';
 import { AgentFileSystemService } from '../services/agent-file-system.service';
 import { parseAgentFileManagerContext } from '../utils/agent-file-manager-context';
+import { contentDispositionAttachment, parseContentRangeHeader, parseRangeHeader } from '../utils/agent-file-type';
 
 /**
  * Controller for agent file system operations.
@@ -31,73 +36,114 @@ export class AgentsFilesController {
   constructor(private readonly agentFileSystemService: AgentFileSystemService) {}
 
   /**
-   * Read file content from agent container.
-   * @param agentId - The UUID of the agent
-   * @param path - The file path (wildcard parameter for nested paths)
-   * @returns File content and encoding
+   * Probe file metadata (type, content-type, size) without transferring the body.
+   */
+  @Head('*path')
+  @HttpCode(HttpStatus.OK)
+  async headFile(
+    @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Param('path') path: string | string[] | Record<string, unknown> | undefined,
+    @Res({ passthrough: true }) res: Response,
+    @Query('context') contextRaw?: string,
+  ): Promise<void> {
+    const context = parseAgentFileManagerContext(contextRaw);
+    const normalizedPath = this.normalizeRequiredPath(path);
+    const result = await this.agentFileSystemService.probeFile(agentId, normalizedPath, context);
+
+    res.setHeader('Accept-Ranges', 'bytes');
+    res.setHeader('X-File-Type', result.fileType);
+    res.setHeader('Content-Type', result.contentType);
+    res.setHeader('Content-Length', String(result.size));
+  }
+
+  /**
+   * Read file content from agent container as a binary stream.
+   * Supports Range requests (206) and optional download disposition.
    */
   @Get('*path')
   async readFile(
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('path') path: string | string[] | Record<string, unknown> | undefined,
+    @Res({ passthrough: true }) res: Response,
+    @Headers('range') rangeHeader?: string,
     @Query('context') contextRaw?: string,
-  ): Promise<FileContentDto> {
+    @Query('download') download?: string,
+  ): Promise<StreamableFile> {
     const context = parseAgentFileManagerContext(contextRaw);
-    // Normalize path: wildcard parameters can be string, array, object, or undefined
-    let normalizedPath: string;
+    const normalizedPath = this.normalizeOptionalListPath(path);
+    const result = await this.agentFileSystemService.readFile(agentId, normalizedPath, context);
 
-    if (typeof path === 'string') {
-      normalizedPath = path;
-    } else if (Array.isArray(path)) {
-      normalizedPath = path.join('/');
-    } else if (path && typeof path === 'object') {
-      // If it's an object, try to extract a meaningful path or use default
-      normalizedPath = '.';
-    } else {
-      normalizedPath = '.';
+    res.setHeader('Accept-Ranges', 'bytes');
+    res.setHeader('X-File-Type', result.fileType);
+    res.setHeader('Content-Type', result.contentType);
+
+    if (download === 'true') {
+      res.setHeader('Content-Disposition', contentDispositionAttachment(normalizedPath));
     }
 
-    return await this.agentFileSystemService.readFile(agentId, normalizedPath, context);
+    const range = parseRangeHeader(rangeHeader, result.size);
+
+    if (range === 'unsatisfiable') {
+      res.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE);
+      res.setHeader('Content-Range', `bytes */${result.size}`);
+
+      return new StreamableFile(Buffer.alloc(0));
+    }
+
+    if (range) {
+      const chunk = result.buffer.subarray(range.start, range.end + 1);
+
+      res.status(HttpStatus.PARTIAL_CONTENT);
+      res.setHeader('Content-Range', `bytes ${range.start}-${range.end}/${result.size}`);
+      res.setHeader('Content-Length', String(chunk.length));
+
+      return new StreamableFile(chunk);
+    }
+
+    res.setHeader('Content-Length', String(result.size));
+
+    return new StreamableFile(result.buffer);
   }
 
   /**
-   * Write file content to agent container.
-   * @param agentId - The UUID of the agent
-   * @param path - The file path (wildcard parameter for nested paths)
-   * @param writeFileDto - The file content to write (base64-encoded)
+   * Write file content to agent container from a raw body Buffer.
+   * Optional Content-Range + X-Upload-Id enable chunked uploads.
    */
   @Put('*path')
   @HttpCode(HttpStatus.NO_CONTENT)
   async writeFile(
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Param('path') path: string | string[] | Record<string, unknown> | undefined,
-    @Body() writeFileDto: WriteFileDto,
+    @Req() req: Request,
     @Query('context') contextRaw?: string,
+    @Headers('content-range') contentRangeHeader?: string,
+    @Headers('x-upload-id') uploadId?: string,
+    @Headers('x-file-type') _fileType?: string,
   ): Promise<void> {
     const context = parseAgentFileManagerContext(contextRaw);
-    // Normalize path: wildcard parameters can be string, array, object, or undefined
-    let normalizedPath: string | undefined;
+    const normalizedPath = this.normalizeRequiredPath(path);
 
-    if (typeof path === 'string') {
-      normalizedPath = path;
-    } else if (Array.isArray(path)) {
-      normalizedPath = path.join('/');
-    } else if (path && typeof path === 'object') {
-      // If it's an object, we can't determine the path - throw error
-      throw new BadRequestException('File path must be a string or array, got object');
+    if (!Buffer.isBuffer(req.body)) {
+      throw new BadRequestException('Expected raw binary body');
     }
 
-    if (!normalizedPath) {
-      throw new BadRequestException('File path is required');
+    const buffer: Buffer = req.body;
+    const contentRange = parseContentRangeHeader(contentRangeHeader);
+
+    if (contentRange) {
+      await this.agentFileSystemService.writeFileChunk(
+        agentId,
+        normalizedPath,
+        buffer,
+        contentRange,
+        uploadId,
+        context,
+      );
+
+      return;
     }
 
-    await this.agentFileSystemService.writeFile(
-      agentId,
-      normalizedPath,
-      writeFileDto.content,
-      writeFileDto.encoding,
-      context,
-    );
+    await this.agentFileSystemService.writeFile(agentId, normalizedPath, buffer, context);
   }
 
   /**
@@ -118,10 +164,8 @@ export class AgentsFilesController {
   }
 
   /**
-   * Create a file or directory in agent container.
-   * @param agentId - The UUID of the agent
-   * @param path - The file path (wildcard parameter for nested paths)
-   * @param createFileDto - The file/directory creation data
+   * Create an empty file or directory in agent container.
+   * Write content separately via PUT raw bytes.
    */
   @Post('*path')
   @HttpCode(HttpStatus.CREATED)
@@ -132,29 +176,9 @@ export class AgentsFilesController {
     @Query('context') contextRaw?: string,
   ): Promise<void> {
     const context = parseAgentFileManagerContext(contextRaw);
-    // Normalize path: wildcard parameters can be string, array, object, or undefined
-    let normalizedPath: string | undefined;
+    const normalizedPath = this.normalizeRequiredPath(path);
 
-    if (typeof path === 'string') {
-      normalizedPath = path;
-    } else if (Array.isArray(path)) {
-      normalizedPath = path.join('/');
-    } else if (path && typeof path === 'object') {
-      // If it's an object, we can't determine the path - throw error
-      throw new BadRequestException('File path must be a string or array, got object');
-    }
-
-    if (!normalizedPath) {
-      throw new BadRequestException('File path is required');
-    }
-
-    await this.agentFileSystemService.createFileOrDirectory(
-      agentId,
-      normalizedPath,
-      createFileDto.type,
-      createFileDto.content,
-      context,
-    );
+    await this.agentFileSystemService.createFileOrDirectory(agentId, normalizedPath, createFileDto.type, context);
   }
 
   /**
@@ -170,21 +194,7 @@ export class AgentsFilesController {
     @Query('context') contextRaw?: string,
   ): Promise<void> {
     const context = parseAgentFileManagerContext(contextRaw);
-    // Normalize path: wildcard parameters can be string, array, object, or undefined
-    let normalizedPath: string | undefined;
-
-    if (typeof path === 'string') {
-      normalizedPath = path;
-    } else if (Array.isArray(path)) {
-      normalizedPath = path.join('/');
-    } else if (path && typeof path === 'object') {
-      // If it's an object, we can't determine the path - throw error
-      throw new BadRequestException('File path must be a string or array, got object');
-    }
-
-    if (!normalizedPath) {
-      throw new BadRequestException('File path is required');
-    }
+    const normalizedPath = this.normalizeRequiredPath(path);
 
     await this.agentFileSystemService.deleteFileOrDirectory(agentId, normalizedPath, context);
   }
@@ -204,7 +214,28 @@ export class AgentsFilesController {
     @Query('context') contextRaw?: string,
   ): Promise<void> {
     const context = parseAgentFileManagerContext(contextRaw);
-    // Normalize path: wildcard parameters can be string, array, object, or undefined
+    const normalizedPath = this.normalizeRequiredPath(path);
+
+    if (!moveFileDto.destination) {
+      throw new BadRequestException('Destination path is required');
+    }
+
+    await this.agentFileSystemService.moveFileOrDirectory(agentId, normalizedPath, moveFileDto.destination, context);
+  }
+
+  private normalizeOptionalListPath(path: string | string[] | Record<string, unknown> | undefined): string {
+    if (typeof path === 'string') {
+      return path;
+    }
+
+    if (Array.isArray(path)) {
+      return path.join('/');
+    }
+
+    return '.';
+  }
+
+  private normalizeRequiredPath(path: string | string[] | Record<string, unknown> | undefined): string {
     let normalizedPath: string | undefined;
 
     if (typeof path === 'string') {
@@ -212,7 +243,6 @@ export class AgentsFilesController {
     } else if (Array.isArray(path)) {
       normalizedPath = path.join('/');
     } else if (path && typeof path === 'object') {
-      // If it's an object, we can't determine the path - throw error
       throw new BadRequestException('File path must be a string or array, got object');
     }
 
@@ -220,10 +250,6 @@ export class AgentsFilesController {
       throw new BadRequestException('File path is required');
     }
 
-    if (!moveFileDto.destination) {
-      throw new BadRequestException('Destination path is required');
-    }
-
-    await this.agentFileSystemService.moveFileOrDirectory(agentId, normalizedPath, moveFileDto.destination, context);
+    return normalizedPath;
   }
 }

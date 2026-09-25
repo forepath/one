@@ -35,8 +35,11 @@ describe('filesReducer', () => {
   const filePath = 'test-file.txt';
   const directoryPath = '.';
   const mockFileContent: FileContentDto = {
-    content: Buffer.from('Hello, World!', 'utf-8').toString('base64'),
-    encoding: 'utf-8',
+    fileType: 'text',
+    contentType: 'text/plain; charset=utf-8',
+    text: 'Hello, World!',
+    bodyRef: 'mock-body-ref',
+    size: 13,
   };
   const mockFileNodes: FileNodeDto[] = [
     {
@@ -113,7 +116,12 @@ describe('filesReducer', () => {
       };
       const newState = filesReducer(
         state,
-        writeFile({ clientId, agentId, filePath, writeFileDto: { content: 'base64' } }),
+        writeFile({
+          clientId,
+          agentId,
+          filePath,
+          writeFileDto: { bytes: new TextEncoder().encode('x').buffer, fileType: 'text' },
+        }),
       );
       const key = `${clientId}:${agentId}:app:${filePath}`;
 
@@ -123,16 +131,16 @@ describe('filesReducer', () => {
   });
 
   describe('writeFileSuccess', () => {
-    it('should invalidate cached content and set writing to false', () => {
+    it('should store written content and set writing to false', () => {
       const key = `${clientId}:${agentId}:app:${filePath}`;
       const state: FilesState = {
         ...initialFilesState,
         fileContents: { [key]: mockFileContent },
         writing: { [key]: true },
       };
-      const newState = filesReducer(state, writeFileSuccess({ clientId, agentId, filePath }));
+      const newState = filesReducer(state, writeFileSuccess({ clientId, agentId, filePath, content: mockFileContent }));
 
-      expect(newState.fileContents[key]).toBeUndefined();
+      expect(newState.fileContents[key]).toEqual(mockFileContent);
       expect(newState.writing[key]).toBe(false);
       expect(newState.errors[key]).toBeNull();
     });
@@ -950,7 +958,7 @@ describe('filesReducer', () => {
         openTabs: { [key]: [{ filePath, pinned: false }] },
         writing: { [`${clientId}:${agentId}:app:${filePath}`]: true },
       };
-      const newState = filesReducer(state, writeFileSuccess({ clientId, agentId, filePath }));
+      const newState = filesReducer(state, writeFileSuccess({ clientId, agentId, filePath, content: mockFileContent }));
 
       expect(newState.openTabs[key][0].pinned).toBe(true);
     });
@@ -962,7 +970,7 @@ describe('filesReducer', () => {
         openTabs: { [key]: [{ filePath, pinned: true }] },
         writing: { [`${clientId}:${agentId}:app:${filePath}`]: true },
       };
-      const newState = filesReducer(state, writeFileSuccess({ clientId, agentId, filePath }));
+      const newState = filesReducer(state, writeFileSuccess({ clientId, agentId, filePath, content: mockFileContent }));
 
       expect(newState.openTabs[key][0].pinned).toBe(true);
     });
@@ -974,7 +982,7 @@ describe('filesReducer', () => {
         openTabs: {},
         writing: { [`${clientId}:${agentId}:app:${filePath}`]: true },
       };
-      const newState = filesReducer(state, writeFileSuccess({ clientId, agentId, filePath }));
+      const newState = filesReducer(state, writeFileSuccess({ clientId, agentId, filePath, content: mockFileContent }));
 
       expect(newState.openTabs[key]).toHaveLength(1);
       expect(newState.openTabs[key][0].filePath).toBe(filePath);
@@ -994,7 +1002,7 @@ describe('filesReducer', () => {
         },
         writing: { [`${clientId}:${agentId}:app:${filePath}`]: true },
       };
-      const newState = filesReducer(state, writeFileSuccess({ clientId, agentId, filePath }));
+      const newState = filesReducer(state, writeFileSuccess({ clientId, agentId, filePath, content: mockFileContent }));
 
       expect(newState.openTabs[key]).toHaveLength(2);
       expect(newState.openTabs[key][0].filePath).toBe(filePath);
@@ -1027,8 +1035,11 @@ describe('filesReducer', () => {
     it('should keep app and config file content caches independent', () => {
       const appKey = `${clientId}:${agentId}:app:${filePath}`;
       const configContent: FileContentDto = {
-        content: Buffer.from('config', 'utf-8').toString('base64'),
-        encoding: 'utf-8',
+        fileType: 'text',
+        contentType: 'text/plain',
+        text: 'config',
+        bodyRef: 'mock-body-ref-config',
+        size: 6,
       };
       let state = filesReducer(
         initialFilesState,

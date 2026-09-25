@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-25T07:32:50.881Z",
+  "generatedAt": "2026-09-25T17:07:26.241Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -10083,15 +10083,6 @@
       }
     },
     {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/file-content.dto.ts",
-      "type": "dto",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/file-content.dto.ts",
-        "languageOrKind": "ts",
-        "projectName": "agenstra-backend-feature-agent-manager"
-      }
-    },
-    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/file-node.dto.ts",
       "type": "dto",
       "attrs": {
@@ -10276,15 +10267,6 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/workspace-configuration-setting-response.dto.ts",
-        "languageOrKind": "ts",
-        "projectName": "agenstra-backend-feature-agent-manager"
-      }
-    },
-    {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/write-file.dto.ts",
-      "type": "dto",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/write-file.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -14761,11 +14743,11 @@
       }
     },
     {
-      "id": "api:HTTP:POST:/knowledge/upload-text",
+      "id": "api:HTTP:POST:/knowledge/upload",
       "type": "endpoint",
       "attrs": {
         "method": "POST",
-        "pathOrChannel": "/knowledge/upload-text",
+        "pathOrChannel": "/knowledge/upload",
         "operationId": "uploadKnowledgeTextFiles",
         "summary": "Upload UTF-8 text files as knowledge pages",
         "specKind": "openapi"
@@ -15344,13 +15326,24 @@
       }
     },
     {
+      "id": "api:HTTP:HEAD:/clients/{id}/agents/{agentId}/files/{path}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "HEAD",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/files/{path}",
+        "operationId": "headClientAgentFile",
+        "summary": "Probe file metadata without transferring the body (proxied)",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/files/{path}",
       "type": "endpoint",
       "attrs": {
         "method": "GET",
         "pathOrChannel": "/clients/{id}/agents/{agentId}/files/{path}",
         "operationId": "readClientAgentFile",
-        "summary": "Read file content (proxied)",
+        "summary": "Read file content as raw bytes (proxied)",
         "specKind": "openapi"
       }
     },
@@ -15361,7 +15354,7 @@
         "method": "PUT",
         "pathOrChannel": "/clients/{id}/agents/{agentId}/files/{path}",
         "operationId": "writeClientAgentFile",
-        "summary": "Write file content (proxied)",
+        "summary": "Write file content as raw bytes (proxied; full file or Content-Range chunk)",
         "specKind": "openapi"
       }
     },
@@ -20921,13 +20914,24 @@
       }
     },
     {
+      "id": "api:HTTP:HEAD:/agents/{agentId}/files/{path}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "HEAD",
+        "pathOrChannel": "/agents/{agentId}/files/{path}",
+        "operationId": "headFile",
+        "summary": "Probe file metadata without transferring the body",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/agents/{agentId}/files/{path}",
       "type": "endpoint",
       "attrs": {
         "method": "GET",
         "pathOrChannel": "/agents/{agentId}/files/{path}",
         "operationId": "readFile",
-        "summary": "Read file content",
+        "summary": "Read file content as raw bytes",
         "specKind": "openapi"
       }
     },
@@ -20949,7 +20953,7 @@
         "method": "PUT",
         "pathOrChannel": "/agents/{agentId}/files/{path}",
         "operationId": "writeFile",
-        "summary": "Write file content",
+        "summary": "Write file content as raw bytes (full file or Content-Range chunk)",
         "specKind": "openapi"
       }
     },
@@ -38231,11 +38235,6 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/file-content.dto.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/file-node.dto.ts",
       "type": "contains"
     },
@@ -38337,11 +38336,6 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/workspace-configuration-setting-response.dto.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/write-file.dto.ts",
       "type": "contains"
     },
     {
@@ -40066,7 +40060,7 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:POST:/knowledge/upload-text",
+      "to": "api:HTTP:POST:/knowledge/upload",
       "type": "contains"
     },
     {
@@ -40327,6 +40321,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/files",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:HEAD:/clients/{id}/agents/{agentId}/files/{path}",
       "type": "contains"
     },
     {
@@ -43187,6 +43186,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/agents/{agentId}/files",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:HEAD:/agents/{agentId}/files/{path}",
       "type": "contains"
     },
     {
@@ -50461,6 +50465,16 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:HEAD:/clients/{id}/agents/{agentId}/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:HEAD:/clients/{id}/agents/{agentId}/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
       "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/files/{path}",
       "type": "implements"
     },
@@ -51271,12 +51285,12 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/knowledge-tree.controller.ts",
-      "to": "api:HTTP:POST:/knowledge/upload-text",
+      "to": "api:HTTP:POST:/knowledge/upload",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:POST:/knowledge/upload-text",
+      "to": "api:HTTP:POST:/knowledge/upload",
       "type": "implements"
     },
     {
@@ -55406,6 +55420,16 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:HEAD:/agents/{agentId}/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:HEAD:/agents/{agentId}/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
       "to": "api:HTTP:GET:/agents/{agentId}/files/{path}",
       "type": "implements"
     },
@@ -55927,6 +55951,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
       "to": "api:HTTP:GET:/agents/{agentId}/files",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:HEAD:/agents/{agentId}/files/{path}",
       "type": "implements"
     },
     {
@@ -65736,27 +65765,7 @@
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/files.service.ts",
-      "to": "api:HTTP:PUT:/clients/{id}/agents/{agentId}/files/{path}",
-      "type": "calls"
-    },
-    {
-      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/files.service.ts",
       "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/files",
-      "type": "calls"
-    },
-    {
-      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/files.service.ts",
-      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/files/{path}",
-      "type": "calls"
-    },
-    {
-      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/files.service.ts",
-      "to": "api:HTTP:DELETE:/clients/{id}/agents/{agentId}/files/{path}",
-      "type": "calls"
-    },
-    {
-      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/files.service.ts",
-      "to": "api:HTTP:PATCH:/clients/{id}/agents/{agentId}/files/{path}",
       "type": "calls"
     },
     {
@@ -65801,7 +65810,7 @@
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/knowledge.service.ts",
-      "to": "api:HTTP:POST:/knowledge/upload-text",
+      "to": "api:HTTP:POST:/knowledge/upload",
       "type": "calls"
     },
     {
@@ -67877,26 +67886,6 @@
     {
       "from": "concept:agenstra-events",
       "to": "api:HTTP:POST:/auth/login",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-file-operation-flow",
-      "to": "api:HTTP:GET:/clients",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-file-operation-flow",
-      "to": "api:HTTP:POST:/clients",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-file-operation-flow",
-      "to": "api:HTTP:GET:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-file-operation-flow",
-      "to": "api:HTTP:POST:/agents",
       "type": "documents"
     },
     {

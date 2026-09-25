@@ -29,9 +29,24 @@ import {
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import axios from 'axios';
+import * as express from 'express';
 
 import { AppModule } from './app/app.module';
 import { typeormConfig } from './typeorm.config';
+
+/**
+ * Agent file PUT always carries raw bytes. Match by route, not Content-Type —
+ * browsers send many MIME types (text/markdown, audio/mpeg, …) and an allowlist
+ * silently drops the body for anything unlisted.
+ */
+function shouldParseAgentFileRawBody(req: express.Request): boolean {
+  if (req.method !== 'PUT') {
+    return false;
+  }
+
+  // /api/clients/:clientId/agents/:agentId/files/...
+  return /\/api\/clients\/[^/]+\/agents\/[^/]+\/files\//.test(req.path);
+}
 
 export async function bootstrap(): Promise<void> {
   const appLogger = new CorrelationAwareConsoleLogger({ json: true, colors: false });
@@ -68,7 +83,7 @@ export async function bootstrap(): Promise<void> {
     return;
   }
 
-  const app = await NestFactory.create(AppModule, { logger: appLogger });
+  const app = await NestFactory.create(AppModule, { logger: appLogger, bodyParser: false });
   const httpLogger = new Logger('HTTP');
 
   app.use(
@@ -97,10 +112,38 @@ export async function bootstrap(): Promise<void> {
   app.enableCors({
     origin,
     credentials: origin !== '*' && Array.isArray(origin) && origin.length > 0,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Correlation-Id', 'X-Request-Id'],
-    exposedHeaders: ['Content-Range', 'X-Content-Range', 'X-Correlation-Id'],
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Correlation-Id',
+      'X-Request-Id',
+      'Range',
+      'Content-Range',
+      'X-File-Type',
+      'X-Upload-Id',
+      'Content-Disposition',
+    ],
+    exposedHeaders: [
+      'Accept-Ranges',
+      'Content-Range',
+      'Content-Length',
+      'X-Content-Range',
+      'X-File-Type',
+      'Content-Disposition',
+      'X-Correlation-Id',
+    ],
   });
+
+  // File PUTs first (any Content-Type), then Nest-equivalent JSON parsers for other routes.
+  app.use(
+    express.raw({
+      type: shouldParseAgentFileRawBody,
+      limit: '10mb',
+    }),
+  );
+  app.use(express.json({ limit: '100kb' }));
+  app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
   await runPendingMigrationsIfRoleAllows(app, role, typeormConfig);
 

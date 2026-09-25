@@ -8,6 +8,7 @@ import {
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import { Actions } from '@ngrx/effects';
+import { Store } from '@ngrx/store';
 import { of, Subject } from 'rxjs';
 
 import { FileTreeClipboardService } from './file-tree-clipboard.service';
@@ -64,7 +65,18 @@ describe('FileTreeComponent selection', () => {
       imports: [FileTreeComponent],
       providers: [
         { provide: FilesFacade, useValue: filesFacadeStub },
-        { provide: FilesService, useValue: { readFile: jest.fn(), listDirectory: jest.fn() } },
+        {
+          provide: FilesService,
+          useValue: {
+            readFile: jest.fn(),
+            listDirectory: jest.fn(),
+            writeFile: jest.fn().mockReturnValue(of(undefined)),
+            createFileOrDirectory: jest.fn().mockReturnValue(of(undefined)),
+            moveFileOrDirectory: jest.fn().mockReturnValue(of(undefined)),
+            deleteFileOrDirectory: jest.fn().mockReturnValue(of(undefined)),
+            fileContentToWriteDto: jest.fn(),
+          },
+        },
         { provide: ENVIRONMENT, useValue: { controller: { restApiUrl: 'http://localhost' } } },
         { provide: ClientsFacade, useValue: { getClientById$: () => of(null) } },
         {
@@ -76,6 +88,7 @@ describe('FileTreeComponent selection', () => {
         },
         { provide: VcsFacade, useValue: vcsFacadeStub },
         { provide: Actions, useValue: new Subject() },
+        { provide: Store, useValue: { dispatch: jest.fn() } },
         FileTreeClipboardService,
       ],
     })
@@ -189,6 +202,12 @@ describe('FileTreeComponent selection', () => {
   });
 
   it('Ctrl+C stores clipboard entries for paste', () => {
+    const writeText = jest.fn().mockResolvedValue(undefined);
+
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
     component.selectedPaths.set(new Set(['readme.md']));
     component.onTreeKeydown({
       key: 'c',
@@ -202,9 +221,38 @@ describe('FileTreeComponent selection', () => {
       mode: 'copy',
       entries: [{ path: 'readme.md', type: 'file' }],
     });
+    expect(writeText).toHaveBeenCalledWith('readme.md');
+  });
+
+  it('Ctrl+C replaces a previous internal clipboard with the new selection', () => {
+    const writeText = jest.fn().mockResolvedValue(undefined);
+
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
+    component.clipboardService.setClipboard('copy', [{ path: 'readme.md', type: 'file' }]);
+    component.selectedPaths.set(new Set(['src']));
+    component.onTreeKeydown({
+      key: 'c',
+      ctrlKey: true,
+      metaKey: false,
+      preventDefault: jest.fn(),
+      target: document.createElement('div'),
+    } as unknown as KeyboardEvent);
+
+    expect(component.clipboardService.clipboard()).toEqual({
+      mode: 'copy',
+      entries: [{ path: 'src', type: 'directory' }],
+    });
+    expect(writeText).toHaveBeenCalledWith('src');
   });
 
   it('Ctrl+X stores cut clipboard entries for move paste', () => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: jest.fn().mockResolvedValue(undefined) },
+    });
     component.selectedPaths.set(new Set(['src', 'readme.md']));
     component.onTreeKeydown({
       key: 'x',
@@ -221,6 +269,28 @@ describe('FileTreeComponent selection', () => {
         { path: 'readme.md', type: 'file' },
       ],
     });
+  });
+
+  it('paste uploads OS clipboard files and clears the internal clipboard', () => {
+    const uploadSpy = jest
+      .spyOn(component as unknown as { uploadFilesToPath: (files: File[], path: string) => void }, 'uploadFilesToPath')
+      .mockImplementation(() => undefined);
+    const file = new File(['hello'], 'pasted.txt', { type: 'text/plain' });
+    const dataTransfer = {
+      files: [file],
+      items: null,
+    } as unknown as DataTransfer;
+
+    component.clipboardService.setClipboard('copy', [{ path: 'readme.md', type: 'file' }]);
+    component.onTreePaste({
+      clipboardData: dataTransfer,
+      target: document.createElement('div'),
+      preventDefault: jest.fn(),
+      stopPropagation: jest.fn(),
+    } as unknown as ClipboardEvent);
+
+    expect(uploadSpy).toHaveBeenCalledWith([file], '.');
+    expect(component.clipboardService.clipboard()).toBeNull();
   });
 
   it('paste expands a collapsed target folder before enqueueing', () => {
@@ -279,10 +349,9 @@ describe('FileTreeComponent selection', () => {
   });
 
   it('paste uploads OS clipboard files into the paste target', () => {
-    const uploadSpy = jest.spyOn(
-      component as unknown as { uploadFilesToPath: (files: File[], path: string) => void },
-      'uploadFilesToPath',
-    );
+    const uploadSpy = jest
+      .spyOn(component as unknown as { uploadFilesToPath: (files: File[], path: string) => void }, 'uploadFilesToPath')
+      .mockImplementation(() => undefined);
     const file = new File(['hello'], 'pasted.txt', { type: 'text/plain' });
     const dataTransfer = {
       files: {

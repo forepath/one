@@ -395,6 +395,9 @@
         <i class="bi me-2 tree-node-icon text-muted" [ngClass]="getPendingUploadIcon(pending.name)"></i>
       }
       <span class="tree-node-name flex-grow-1 text-truncate text-muted" [title]="pending.name">{{ pending.name }}</span>
+      @if (pending.progress !== null && pending.progress !== undefined) {
+        <span class="small text-muted ms-2 flex-shrink-0">{{ pending.progress }}%</span>
+      }
     </div>
   </div>
 </ng-template>

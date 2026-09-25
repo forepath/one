@@ -4,16 +4,31 @@ import * as path from 'path';
 
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 
-import { FileContentDto } from '../dto/file-content.dto';
+import { AgentFileProbeResult, AgentFileReadResult } from '../dto/agent-file-read-result';
 import { FileNodeDto } from '../dto/file-node.dto';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentsRepository } from '../repositories/agents.repository';
 import type { AgentFileManagerContext } from '../utils/agent-file-manager-context';
+import { classifyAgentFile } from '../utils/agent-file-type';
 import { expandProviderPathTildeInContainer } from '../utils/provider-container-path.utils';
 
 import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.service';
 import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
+
+/** Inclusive byte range for a chunked upload (Content-Range semantics). */
+export interface AgentFileChunkRange {
+  start: number;
+  end: number;
+  total: number;
+}
+
+interface UploadStagingEntry {
+  total: number;
+  nextOffset: number;
+  chunks: Buffer[];
+  updatedAt: number;
+}
 
 /**
  * Service for agent file system operations.
@@ -22,9 +37,14 @@ import { DockerService } from './docker.service';
 @Injectable()
 export class AgentFileSystemService {
   private readonly logger = new Logger(AgentFileSystemService.name);
-  private readonly MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  /** Per-request / per-chunk size cap (10MB). */
+  private readonly MAX_FILE_SIZE = 10 * 1024 * 1024;
+  /** Maximum assembled size for chunked uploads (100MB). */
+  private readonly MAX_ASSEMBLED_FILE_SIZE = 100 * 1024 * 1024;
   private readonly DEFAULT_BASE_PATH = '/app';
   private static readonly CONFIG_NOT_SUPPORTED = 'Agent provider does not support agent-wide configuration file access';
+  private static readonly UPLOAD_TTL_MS = 30 * 60 * 1000;
+  private readonly uploadStaging = new Map<string, UploadStagingEntry>();
 
   constructor(
     private readonly agentsService: AgentsService,
@@ -156,16 +176,19 @@ export class AgentFileSystemService {
 
   /**
    * Read file content from agent container.
-   * Uses docker cp to copy the file to a temporary location, then reads it as base64.
-   * This approach avoids corruption issues that can occur with shell commands, especially for binary files.
+   * Uses docker cp to copy the file to a temporary location, then returns raw bytes + classification.
    * @param agentId - The UUID of the agent
    * @param filePath - The relative path to the file (from the provider's base path, defaults to /app)
    * @param context - `app` (workspace) or `config` (provider config directory)
-   * @returns File content (base64-encoded) and encoding type
+   * @returns Raw buffer, file type, content type, and size
    * @throws NotFoundException if agent or file is not found
-   * @throws BadRequestException if path is invalid or file is too large
+   * @throws BadRequestException if path is invalid or file exceeds MAX_ASSEMBLED_FILE_SIZE
    */
-  async readFile(agentId: string, filePath: string, context: AgentFileManagerContext = 'app'): Promise<FileContentDto> {
+  async readFile(
+    agentId: string,
+    filePath: string,
+    context: AgentFileManagerContext = 'app',
+  ): Promise<AgentFileReadResult> {
     await this.agentsService.findOne(agentId);
     const agentEntity = await this.agentsRepository.findByIdOrThrow(agentId);
 
@@ -196,70 +219,25 @@ export class AgentFileSystemService {
         throw new NotFoundException(`File not found: ${filePath}`);
       }
 
-      // Get file stats to check size
+      // Align with chunked upload ceiling so downloaded assemblies remain readable.
       const stats = fs.statSync(tempFilePath);
 
-      if (stats.size > this.MAX_FILE_SIZE) {
-        throw new BadRequestException(`File size exceeds maximum allowed size of ${this.MAX_FILE_SIZE} bytes`);
+      if (stats.size > this.MAX_ASSEMBLED_FILE_SIZE) {
+        throw new BadRequestException(
+          `File size exceeds maximum allowed size of ${this.MAX_ASSEMBLED_FILE_SIZE} bytes`,
+        );
       }
 
-      // Read file as binary buffer
       const fileBuffer = fs.readFileSync(tempFilePath);
-      // Encode to base64
-      const base64Content = fileBuffer.toString('base64');
-      // Try to determine if it's text by attempting to decode as UTF-8
-      // If it decodes successfully and has reasonable text content, mark as utf-8
-      let encoding: 'utf-8' | 'base64' = 'base64';
+      const classified = classifyAgentFile(filePath, fileBuffer);
 
-      try {
-        const textContent = fileBuffer.toString('utf-8');
-        // Check if it's likely text: low percentage of control characters (excluding common whitespace)
-        const sampleSize = Math.min(512, textContent.length);
-
-        // Empty files have no bytes to classify; treat as text so the editor can open them
-        if (sampleSize === 0) {
-          encoding = 'utf-8';
-          this.logger.debug(`File ${filePath} detected as text (empty file)`);
-        } else if (sampleSize > 0) {
-          const sample = textContent.substring(0, sampleSize);
-          let controlCharCount = 0;
-
-          for (let i = 0; i < sample.length; i++) {
-            const charCode = sample.charCodeAt(i);
-
-            // Count control characters (excluding common whitespace: tab, LF, CR)
-            if (
-              (charCode >= 0 && charCode <= 8) || // Null, bell, backspace, etc.
-              charCode === 11 || // Vertical tab
-              charCode === 12 || // Form feed
-              (charCode >= 14 && charCode <= 31) || // Other control chars (excluding CR/LF)
-              (charCode >= 127 && charCode <= 159) // DEL and C1 control chars
-            ) {
-              controlCharCount++;
-            }
-          }
-
-          // If less than 10% are control characters, it's likely text
-          const controlCharThreshold = 0.1;
-
-          if (controlCharCount / sampleSize <= controlCharThreshold) {
-            encoding = 'utf-8';
-            this.logger.debug(`File ${filePath} detected as text (${stats.size} bytes)`);
-          } else {
-            this.logger.debug(
-              `File ${filePath} detected as binary (${stats.size} bytes, ${((controlCharCount / sampleSize) * 100).toFixed(1)}% control chars)`,
-            );
-          }
-        }
-      } catch {
-        // If UTF-8 decoding fails, it's definitely binary
-        encoding = 'base64';
-        this.logger.debug(`File ${filePath} detected as binary (${stats.size} bytes, UTF-8 decode failed)`);
-      }
+      this.logger.debug(`File ${filePath} classified as ${classified.fileType} (${stats.size} bytes)`);
 
       return {
-        content: base64Content,
-        encoding,
+        buffer: fileBuffer,
+        fileType: classified.fileType,
+        contentType: classified.contentType,
+        size: stats.size,
       };
     } catch (error: unknown) {
       if (error instanceof NotFoundException || error instanceof BadRequestException) {
@@ -295,6 +273,89 @@ export class AgentFileSystemService {
   }
 
   /**
+   * Probe file metadata without transferring the full body.
+   * Uses separate `stat` + peek commands (avoids fragile `$()` / demux-sensitive markers).
+   */
+  async probeFile(
+    agentId: string,
+    filePath: string,
+    context: AgentFileManagerContext = 'app',
+  ): Promise<AgentFileProbeResult> {
+    await this.agentsService.findOne(agentId);
+    const agentEntity = await this.agentsRepository.findByIdOrThrow(agentId);
+
+    if (!agentEntity.containerId) {
+      throw new NotFoundException(`Agent ${agentId} has no associated container`);
+    }
+
+    const containerPath = await this.buildContainerPath(
+      filePath,
+      agentEntity.agentType,
+      context,
+      agentEntity.containerId,
+    );
+    const escapedPath = this.escapeForShell(containerPath);
+    const peekBytes = 8192;
+
+    try {
+      const existsOutput = await this.dockerService.sendCommandToContainer(
+        agentEntity.containerId,
+        `sh -c "test -f ${escapedPath} && echo EXISTS || echo NOTFOUND"`,
+      );
+
+      if (existsOutput.includes('NOTFOUND') || !existsOutput.includes('EXISTS')) {
+        throw new NotFoundException(`File not found: ${filePath}`);
+      }
+
+      // Small stdout only — parse first integer (docker demux can inject stray chars).
+      const sizeRaw = await this.dockerService.sendCommandToContainer(
+        agentEntity.containerId,
+        `stat -c %s -- ${escapedPath}`,
+      );
+      const sizeMatch = /(\d+)/.exec(sizeRaw);
+
+      if (!sizeMatch) {
+        throw new BadRequestException(`Unable to probe file metadata for: ${filePath}`);
+      }
+
+      const size = Number(sizeMatch[1]);
+      const peekRaw = await this.dockerService.sendCommandToContainer(
+        agentEntity.containerId,
+        `sh -c "head -c ${peekBytes} -- ${escapedPath} | base64 -w 0"`,
+      );
+      // Strip demux junk; keep only base64 alphabet.
+      const peekBase64 = peekRaw.replace(/[^A-Za-z0-9+/=]/g, '');
+      const peekBuffer = peekBase64 ? Buffer.from(peekBase64, 'base64') : Buffer.alloc(0);
+      const classified = classifyAgentFile(filePath, peekBuffer);
+
+      this.logger.debug(`Probed ${filePath} as ${classified.fileType} (${size} bytes)`);
+
+      return {
+        fileType: classified.fileType,
+        contentType: classified.contentType,
+        size,
+      };
+    } catch (error: unknown) {
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+
+      const err = error as { message?: string };
+
+      if (
+        err.message?.includes('No such file') ||
+        err.message?.includes('not found') ||
+        err.message?.includes('NOTFOUND')
+      ) {
+        throw new NotFoundException(`File not found: ${filePath}`);
+      }
+
+      this.logger.error(`Error probing file ${filePath} for agent ${agentId}: ${err.message}`);
+      throw error;
+    }
+  }
+
+  /**
    * Sanitize string by removing invalid filesystem characters.
    * Keeps common filename characters including spaces and parentheses (e.g. "Copy (1).txt").
    * Strips control characters and the pipe delimiter used by listDirectory parsing.
@@ -317,12 +378,11 @@ export class AgentFileSystemService {
   private static readonly LIST_OUTPUT_ALLOWED = /[^a-zA-Z0-9.\-_/ ()[\]{}+#@&=,~'!|\n]/g;
 
   /**
-   * Write file content to agent container.
-   * Accepts base64-encoded content to support both text and binary files.
+   * Write raw file bytes to agent container (single request, max MAX_FILE_SIZE).
+   * Internally pipes base64 over the docker shell channel (base64 -d).
    * @param agentId - The UUID of the agent
-   * @param filePath - The relative path to the file (from the provider's base path, defaults to /app)
-   * @param content - The file content as base64-encoded string
-   * @param encoding - Optional encoding indicator ('utf-8' or 'base64')
+   * @param filePath - The relative path to the file
+   * @param buffer - Raw file bytes
    * @param context - `app` or `config`
    * @throws NotFoundException if agent is not found
    * @throws BadRequestException if path is invalid or content is too large
@@ -330,9 +390,133 @@ export class AgentFileSystemService {
   async writeFile(
     agentId: string,
     filePath: string,
-    content: string,
-    encoding?: 'utf-8' | 'base64',
+    buffer: Buffer,
     context: AgentFileManagerContext = 'app',
+  ): Promise<void> {
+    if (!Buffer.isBuffer(buffer)) {
+      throw new BadRequestException('File content must be a Buffer');
+    }
+
+    if (buffer.length > this.MAX_FILE_SIZE) {
+      throw new BadRequestException(`File content size exceeds maximum allowed size of ${this.MAX_FILE_SIZE} bytes`);
+    }
+
+    await this.writeBufferToContainer(agentId, filePath, buffer, context);
+  }
+
+  /**
+   * Accept a sequential chunk of a multi-part upload and finalize when complete.
+   * Chunks must start at offset 0 and arrive in order (next start === previous end + 1).
+   */
+  async writeFileChunk(
+    agentId: string,
+    filePath: string,
+    buffer: Buffer,
+    range: AgentFileChunkRange,
+    uploadId?: string,
+    context: AgentFileManagerContext = 'app',
+  ): Promise<void> {
+    if (!Buffer.isBuffer(buffer)) {
+      throw new BadRequestException('File content must be a Buffer');
+    }
+
+    if (buffer.length > this.MAX_FILE_SIZE) {
+      throw new BadRequestException(`Chunk size exceeds maximum allowed size of ${this.MAX_FILE_SIZE} bytes`);
+    }
+
+    const expectedLength = range.end - range.start + 1;
+
+    if (buffer.length !== expectedLength) {
+      throw new BadRequestException(
+        `Chunk length ${buffer.length} does not match Content-Range span ${expectedLength}`,
+      );
+    }
+
+    if (range.total > this.MAX_ASSEMBLED_FILE_SIZE) {
+      throw new BadRequestException(
+        `Assembled file size exceeds maximum allowed size of ${this.MAX_ASSEMBLED_FILE_SIZE} bytes`,
+      );
+    }
+
+    this.cleanupExpiredUploads();
+
+    const stagingKey = this.uploadStagingKey(agentId, filePath, uploadId);
+    let staging = this.uploadStaging.get(stagingKey);
+
+    if (range.start === 0) {
+      staging = {
+        total: range.total,
+        nextOffset: 0,
+        chunks: [],
+        updatedAt: Date.now(),
+      };
+      this.uploadStaging.set(stagingKey, staging);
+    }
+
+    if (!staging) {
+      throw new BadRequestException('Upload not started; first chunk must begin at byte 0');
+    }
+
+    if (range.total !== staging.total) {
+      this.uploadStaging.delete(stagingKey);
+      throw new BadRequestException('Content-Range total does not match ongoing upload');
+    }
+
+    if (range.start !== staging.nextOffset) {
+      throw new BadRequestException(
+        `Chunks must be sequential; expected start ${staging.nextOffset}, got ${range.start}`,
+      );
+    }
+
+    staging.chunks.push(buffer);
+    staging.nextOffset = range.end + 1;
+    staging.updatedAt = Date.now();
+
+    if (range.end !== range.total - 1) {
+      return;
+    }
+
+    const assembled = Buffer.concat(staging.chunks, staging.total);
+
+    this.uploadStaging.delete(stagingKey);
+
+    if (assembled.length !== staging.total) {
+      throw new BadRequestException(
+        `Assembled size ${assembled.length} does not match declared total ${staging.total}`,
+      );
+    }
+
+    if (assembled.length > this.MAX_ASSEMBLED_FILE_SIZE) {
+      throw new BadRequestException(
+        `Assembled file size exceeds maximum allowed size of ${this.MAX_ASSEMBLED_FILE_SIZE} bytes`,
+      );
+    }
+
+    await this.writeBufferToContainer(agentId, filePath, assembled, context);
+  }
+
+  private uploadStagingKey(agentId: string, filePath: string, uploadId?: string): string {
+    return `${agentId}:${filePath}:${uploadId ?? 'default'}`;
+  }
+
+  private cleanupExpiredUploads(): void {
+    const now = Date.now();
+
+    for (const [key, entry] of this.uploadStaging.entries()) {
+      if (now - entry.updatedAt > AgentFileSystemService.UPLOAD_TTL_MS) {
+        this.uploadStaging.delete(key);
+      }
+    }
+  }
+
+  /**
+   * Write buffer to container via base64 decode on stdin (internal transport only).
+   */
+  private async writeBufferToContainer(
+    agentId: string,
+    filePath: string,
+    buffer: Buffer,
+    context: AgentFileManagerContext,
   ): Promise<void> {
     await this.agentsService.findOne(agentId);
     const agentEntity = await this.agentsRepository.findByIdOrThrow(agentId);
@@ -347,28 +531,18 @@ export class AgentFileSystemService {
       context,
       agentEntity.containerId,
     );
-    // Content is already base64-encoded, so we check the approximate decoded size
-    // Base64 is ~33% larger: original_size ≈ base64_length * 3/4
-    const approximateOriginalSize = (content.length * 3) / 4;
-
-    if (approximateOriginalSize > this.MAX_FILE_SIZE) {
-      throw new BadRequestException(`File content size exceeds maximum allowed size of ${this.MAX_FILE_SIZE} bytes`);
-    }
 
     try {
       const escapedPath = this.escapeForShell(containerPath);
+      const base64Wire = buffer.toString('base64');
 
-      // Write file using base64 decode
-      // The content is already base64-encoded, so we just decode it
-      // Use sh -c to run the command in a shell so redirection works
-      // The base64 content is sent to stdin, which base64 -d reads and decodes
       await this.dockerService.sendCommandToContainer(
         agentEntity.containerId,
         `sh -c "base64 -d > ${escapedPath}"`,
-        content,
+        base64Wire,
       );
 
-      this.logger.debug(`File written: ${filePath} for agent ${agentId} (encoding: ${encoding || 'utf-8'})`);
+      this.logger.debug(`File written: ${filePath} for agent ${agentId} (${buffer.length} bytes)`);
       this.notifyGitStateMayHaveChanged(agentId);
     } catch (error: unknown) {
       const err = error as { message?: string };
@@ -538,11 +712,11 @@ export class AgentFileSystemService {
   }
 
   /**
-   * Create a file or directory in agent container.
+   * Create an empty file or directory in agent container.
+   * Write content separately via PUT raw bytes.
    * @param agentId - The UUID of the agent
    * @param filePath - The relative path to create (from the provider's base path, defaults to /app)
    * @param type - The type to create ('file' or 'directory')
-   * @param content - Optional content for file creation
    * @param context - `app` or `config`
    * @throws NotFoundException if agent is not found
    * @throws BadRequestException if path is invalid or file already exists
@@ -551,7 +725,6 @@ export class AgentFileSystemService {
     agentId: string,
     filePath: string,
     type: 'file' | 'directory',
-    content?: string,
     context: AgentFileManagerContext = 'app',
   ): Promise<void> {
     await this.agentsService.findOne(agentId);
@@ -570,30 +743,19 @@ export class AgentFileSystemService {
 
     try {
       if (type === 'directory') {
-        // Create directory
         await this.dockerService.sendCommandToContainer(
           agentEntity.containerId,
           `mkdir -p ${this.escapeForShell(containerPath)}`,
         );
       } else {
-        // Create file with optional content
-        if (content !== undefined) {
-          // Content should be base64-encoded
-          await this.writeFile(agentId, filePath, content, 'utf-8', context);
-        } else {
-          // Create empty file
-          await this.dockerService.sendCommandToContainer(
-            agentEntity.containerId,
-            `touch ${this.escapeForShell(containerPath)}`,
-          );
-        }
+        await this.dockerService.sendCommandToContainer(
+          agentEntity.containerId,
+          `touch ${this.escapeForShell(containerPath)}`,
+        );
       }
 
       this.logger.debug(`Created ${type}: ${filePath} for agent ${agentId}`);
-
-      if (type === 'directory' || content === undefined) {
-        this.notifyGitStateMayHaveChanged(agentId);
-      }
+      this.notifyGitStateMayHaveChanged(agentId);
     } catch (error: unknown) {
       const err = error as { message?: string };
 

@@ -142,11 +142,9 @@ export const filesReducer = createReducer(
       errors: { ...state.errors, [key]: null },
     };
   }),
-  on(writeFileSuccess, (state, { clientId, agentId, filePath, context }) => {
+  on(writeFileSuccess, (state, { clientId, agentId, filePath, content, context }) => {
     const key = getFileKey(clientId, agentId, filePath, context);
     const clientAgentKey = getClientAgentContextKey(clientId, agentId, context);
-    // Invalidate cached content after write
-    const { [key]: _, ...fileContents } = state.fileContents;
     // Pin the tab when file is saved (create tab if it doesn't exist)
     const currentTabs = state.openTabs[clientAgentKey] || [];
     const existingTabIndex = currentTabs.findIndex((tab) => tab.filePath === filePath);
@@ -162,7 +160,7 @@ export const filesReducer = createReducer(
 
     return {
       ...state,
-      fileContents,
+      fileContents: { ...state.fileContents, [key]: content },
       writing: { ...state.writing, [key]: false },
       errors: { ...state.errors, [key]: null },
       openTabs: {

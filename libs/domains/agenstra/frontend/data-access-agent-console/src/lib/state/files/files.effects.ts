@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, concatMap, groupBy, map, mergeMap, of, switchMap } from 'rxjs';
+import { catchError, concatMap, from, groupBy, map, mergeMap, of, switchMap } from 'rxjs';
 
 import { FilesService } from '../../services/files.service';
 
@@ -51,7 +51,7 @@ export const readFile$ = createEffect(
       switchMap(({ clientId, agentId, filePath, context }) => {
         const c = context ?? 'app';
 
-        return filesService.readFile(clientId, agentId, filePath, c).pipe(
+        return filesService.openFile(clientId, agentId, filePath, c).pipe(
           map((content) => readFileSuccess({ clientId, agentId, filePath, content, context: c })),
           catchError((error) =>
             of(readFileFailure({ clientId, agentId, filePath, error: normalizeError(error), context: c })),
@@ -69,9 +69,26 @@ export const writeFile$ = createEffect(
       ofType(writeFile),
       concatMap(({ clientId, agentId, filePath, writeFileDto, context }) => {
         const c = context ?? 'app';
+        // Snapshot before HTTP — some backends detach/transfer the request ArrayBuffer.
+        const snapshot: typeof writeFileDto = {
+          ...writeFileDto,
+          bytes: writeFileDto.bytes.slice(0),
+        };
 
         return filesService.writeFile(clientId, agentId, filePath, writeFileDto, c).pipe(
-          map(() => writeFileSuccess({ clientId, agentId, filePath, context: c })),
+          switchMap(() =>
+            from(filesService.materializeWriteContent(clientId, agentId, filePath, c, snapshot)).pipe(
+              map((content) =>
+                writeFileSuccess({
+                  clientId,
+                  agentId,
+                  filePath,
+                  content,
+                  context: c,
+                }),
+              ),
+            ),
+          ),
           catchError((error) =>
             of(writeFileFailure({ clientId, agentId, filePath, error: normalizeError(error), context: c })),
           ),

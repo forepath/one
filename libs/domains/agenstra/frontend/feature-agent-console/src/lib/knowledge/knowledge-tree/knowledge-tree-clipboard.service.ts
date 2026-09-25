@@ -294,9 +294,7 @@ export class KnowledgeTreeClipboardService {
   }
 
   private awaitFacadeDelete(id: string, releaseExternalSyncMarker: boolean): Promise<void> {
-    this.knowledgeFacade.deleteNode(id, releaseExternalSyncMarker || undefined);
-
-    return firstValueFrom(
+    const done = firstValueFrom(
       this.actions$.pipe(
         ofType(deleteKnowledgeNodeSuccess, deleteKnowledgeNodeFailure),
         filter((action) => action.id === id),
@@ -308,12 +306,14 @@ export class KnowledgeTreeClipboardService {
         }),
       ),
     );
+
+    this.knowledgeFacade.deleteNode(id, releaseExternalSyncMarker || undefined);
+
+    return done;
   }
 
   private awaitFacadeDuplicate(id: string): Promise<{ id: string; parentId: string | null; title: string }> {
-    this.knowledgeFacade.duplicateNode(id);
-
-    return firstValueFrom(
+    const done = firstValueFrom(
       this.actions$.pipe(
         ofType(duplicateKnowledgeNodeSuccess, duplicateKnowledgeNodeFailure),
         filter((action) => action.sourceId === id),
@@ -331,6 +331,10 @@ export class KnowledgeTreeClipboardService {
         }),
       ),
     );
+
+    this.knowledgeFacade.duplicateNode(id);
+
+    return done;
   }
 
   private awaitFacadeMove(id: string, parentId: string | null): Promise<void> {
@@ -341,9 +345,7 @@ export class KnowledgeTreeClipboardService {
     id: string,
     dto: { parentId?: string | null; title?: string; content?: string | null },
   ): Promise<void> {
-    this.knowledgeFacade.updateNode(id, dto);
-
-    return firstValueFrom(
+    const done = firstValueFrom(
       this.actions$.pipe(
         ofType(updateKnowledgeNodeSuccess, updateKnowledgeNodeFailure),
         filter((action) => ('node' in action ? action.node.id === id : action.id === id)),
@@ -355,5 +357,9 @@ export class KnowledgeTreeClipboardService {
         }),
       ),
     );
+
+    this.knowledgeFacade.updateNode(id, dto);
+
+    return done;
   }
 }

@@ -17,6 +17,7 @@ import {
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import {
   FilesFacade,
+  FilesService,
   getSocketInstance,
   moveFileOrDirectorySuccess,
   SocketsFacade,
@@ -28,6 +29,7 @@ import {
   type ListDirectoryParams,
   type OpenTab,
   type WriteFileDto,
+  utf8ToArrayBuffer,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import {
   FpcBadgeComponent,
@@ -81,6 +83,7 @@ import { TerminalComponent } from './terminal/terminal.component';
 })
 export class FileEditorComponent implements OnDestroy, AfterViewInit {
   private readonly filesFacade = inject(FilesFacade);
+  private readonly filesService = inject(FilesService);
   private readonly socketsFacade = inject(SocketsFacade);
   private readonly vcsFacade = inject(VcsFacade);
   private readonly destroyRef = inject(DestroyRef);
@@ -265,18 +268,27 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       }
     });
 
-    // Update editor content only when a new file is selected (not when user edits)
+    // Sync editorContent from store on open and on external overwrite (upload/WS) when not dirty
     effect(() => {
       const filePath = this.selectedFilePath();
       const content = this.selectedFileContentSignal();
 
-      // Only update editorContent if:
-      // 1. We have content
-      // 2. The file path changed (new file selected) OR it's the first load
-      if (content && filePath && filePath !== this.lastLoadedFilePath()) {
-        // Content is already base64-encoded, pass it directly
-        this.editorContent.set(content.content);
+      if (!content || !filePath) {
+        return;
+      }
+
+      const pathChanged = filePath !== this.lastLoadedFilePath();
+      const isDirty = this.dirtyFiles().has(filePath);
+
+      if (pathChanged) {
+        this.editorContent.set(content.text ?? '');
         this.lastLoadedFilePath.set(filePath);
+
+        return;
+      }
+
+      if (!isDirty) {
+        this.editorContent.set(content.text ?? '');
       }
     });
 
@@ -552,10 +564,6 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     // Get content from editorContent signal (updated by contentChange events)
     const contentToSave = this.editorContent();
 
-    if (!contentToSave) {
-      return;
-    }
-
     // Check if there are rejected file updates for this file
     const rejectedTimestamp = this.rejectedFileUpdates().get(filePath);
 
@@ -570,6 +578,22 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     this.performSave(filePath, contentToSave);
   }
 
+  onDownloadFile(): void {
+    const filePath = this.selectedFilePath();
+    const clientId = this.clientId();
+    const agentId = this.agentId();
+
+    if (!filePath || !clientId || !agentId) {
+      return;
+    }
+
+    this.filesService.downloadFile(clientId, agentId, filePath, this.fileManagerContext()).subscribe({
+      error: (error) => {
+        console.warn('Failed to download file:', error);
+      },
+    });
+  }
+
   /**
    * Actually perform the save operation
    */
@@ -582,8 +606,9 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     }
 
     const writeDto: WriteFileDto = {
-      content: contentToSave, // Already base64-encoded
-      encoding: 'utf-8',
+      bytes: utf8ToArrayBuffer(contentToSave),
+      fileType: 'text',
+      contentType: 'text/plain; charset=utf-8',
     };
 
     this.filesFacade.writeFile(clientId, agentId, filePath, writeDto, this.fileManagerContext());
@@ -599,7 +624,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       .subscribe(([, savedContent]) => {
         // Update editorContent with saved content from server
         if (savedContent) {
-          this.editorContent.set(savedContent.content);
+          this.editorContent.set(savedContent.text ?? '');
         }
 
         // Mark as not dirty
@@ -673,11 +698,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     this.saveOverrideModalOpen.set(false);
 
     // Get content and perform save
-    const contentToSave = this.editorContent();
-
-    if (contentToSave) {
-      this.performSave(filePath, contentToSave);
-    }
+    this.performSave(filePath, this.editorContent());
   }
 
   /**

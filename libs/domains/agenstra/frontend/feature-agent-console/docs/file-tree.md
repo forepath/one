@@ -60,6 +60,7 @@ If the target folder is collapsed, paste **expands it automatically** (same beha
 - Folder-row / context upload buttons always target that folder.
 - Header upload targets the **single selected directory** when exactly one path is selected and it is a directory; otherwise workspace root (`.`).
 - Upload name collisions use the same Replace / Keep both dialog as copy paste.
+- Uploads send **raw bytes** via PUT (not base64 JSON). Files over 10MB use sequential `Content-Range` chunks; pending rows show **percent progress** while chunking.
 
 ## Batch errors
 

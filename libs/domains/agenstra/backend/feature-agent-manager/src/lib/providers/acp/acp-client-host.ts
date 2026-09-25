@@ -82,15 +82,18 @@ export class AcpClientHostFactory {
         };
       },
       readTextFile: async (params: ReadTextFileRequest): Promise<ReadTextFileResponse> => {
-        const dto = await this.agentFileSystemService.readFile(context.agentId, params.path, 'app');
-        const text = dto.encoding === 'utf-8' ? Buffer.from(dto.content, 'base64').toString('utf-8') : dto.content;
+        const result = await this.agentFileSystemService.readFile(context.agentId, params.path, 'app');
+        const text = result.fileType === 'text' ? result.buffer.toString('utf-8') : result.buffer.toString('base64');
 
         return { content: text };
       },
       writeTextFile: async (params: WriteTextFileRequest): Promise<WriteTextFileResponse> => {
-        const base64Content = Buffer.from(params.content, 'utf-8').toString('base64');
-
-        await this.agentFileSystemService.writeFile(context.agentId, params.path, base64Content, 'utf-8', 'app');
+        await this.agentFileSystemService.writeFile(
+          context.agentId,
+          params.path,
+          Buffer.from(params.content, 'utf-8'),
+          'app',
+        );
 
         return {};
       },

@@ -8,13 +8,11 @@ import {
   CreateEnvironmentVariableDto,
   CreateFileDto,
   EnvironmentVariableResponseDto,
-  FileContentDto,
   FileNodeDto,
   MoveFileDto,
   UpdateAgentDto,
   UpdateChatSessionDto,
   UpdateEnvironmentVariableDto,
-  WriteFileDto,
 } from '@forepath/agenstra/backend/feature-agent-manager';
 import {
   AddClientUserDto,
@@ -26,8 +24,9 @@ import {
   UserRole,
   WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE,
 } from '@forepath/identity/backend';
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, HttpStatus, StreamableFile } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import type { Response } from 'express';
 
 import { ClientResponseDto } from '../dto/client-response.dto';
 import { CreateClientResponseDto } from '../dto/create-client-response.dto';
@@ -534,41 +533,115 @@ describe('ClientsController', () => {
   });
 
   describe('readFile', () => {
-    it('should proxy read file request', async () => {
-      const mockFileContent: FileContentDto = {
-        content: Buffer.from('Hello, World!', 'utf-8').toString('base64'),
-        encoding: 'utf-8',
+    function createMockResponse(): Response {
+      return {
+        setHeader: jest.fn(),
+        status: jest.fn().mockReturnThis(),
+      } as unknown as Response;
+    }
+
+    it('should proxy read file request as StreamableFile', async () => {
+      const mockFileBuffer = Buffer.from('Hello, World!', 'utf-8');
+      const mockFileResult = {
+        buffer: mockFileBuffer,
+        fileType: 'text' as const,
+        contentType: 'text/plain; charset=utf-8',
+        status: 200,
+        acceptRanges: 'bytes',
+        size: mockFileBuffer.length,
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
+      const res = createMockResponse();
 
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
-      fileSystemProxyService.readFile.mockResolvedValue(mockFileContent);
+      fileSystemProxyService.readFile.mockResolvedValue(mockFileResult);
 
-      const result = await controller.readFile('client-uuid', 'agent-uuid', 'test.txt', undefined, mockReq);
+      const result = await controller.readFile(
+        'client-uuid',
+        'agent-uuid',
+        'test.txt',
+        res,
+        undefined,
+        undefined,
+        undefined,
+        mockReq,
+      );
 
-      expect(result).toEqual(mockFileContent);
-      expect(fileSystemProxyService.readFile).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'test.txt', 'app');
+      expect(result).toBeInstanceOf(StreamableFile);
+      expect(fileSystemProxyService.readFile).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'test.txt', 'app', {
+        range: undefined,
+        download: false,
+      });
+      expect(res.setHeader).toHaveBeenCalledWith('Accept-Ranges', 'bytes');
+      expect(res.setHeader).toHaveBeenCalledWith('X-File-Type', 'text');
+      expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'text/plain; charset=utf-8');
     });
 
     it('should use workspace management access and forward config context', async () => {
-      const mockFileContent: FileContentDto = {
-        content: Buffer.from('{}', 'utf-8').toString('base64'),
-        encoding: 'utf-8',
+      const mockFileBuffer = Buffer.from('{}', 'utf-8');
+      const mockFileResult = {
+        buffer: mockFileBuffer,
+        fileType: 'text' as const,
+        contentType: 'application/json',
+        status: 200,
+        size: mockFileBuffer.length,
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
+      const res = createMockResponse();
 
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
-      fileSystemProxyService.readFile.mockResolvedValue(mockFileContent);
+      fileSystemProxyService.readFile.mockResolvedValue(mockFileResult);
 
-      await controller.readFile('client-uuid', 'agent-uuid', 'cfg.json', 'config', mockReq);
+      await controller.readFile('client-uuid', 'agent-uuid', 'cfg.json', res, undefined, 'config', undefined, mockReq);
 
-      expect(fileSystemProxyService.readFile).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'cfg.json', 'config');
+      expect(fileSystemProxyService.readFile).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'cfg.json', 'config', {
+        range: undefined,
+        download: false,
+      });
+    });
+
+    it('should forward Range and set 206 from proxy status', async () => {
+      const mockFileBuffer = Buffer.from('Hello', 'utf-8');
+      const mockFileResult = {
+        buffer: mockFileBuffer,
+        fileType: 'text' as const,
+        contentType: 'text/plain; charset=utf-8',
+        status: 206,
+        contentRange: 'bytes 0-4/13',
+        acceptRanges: 'bytes',
+        size: 5,
+      };
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      const res = createMockResponse();
+
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+      fileSystemProxyService.readFile.mockResolvedValue(mockFileResult);
+
+      await controller.readFile(
+        'client-uuid',
+        'agent-uuid',
+        'test.txt',
+        res,
+        'bytes=0-4',
+        undefined,
+        undefined,
+        mockReq,
+      );
+
+      expect(fileSystemProxyService.readFile).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'test.txt', 'app', {
+        range: 'bytes=0-4',
+        download: false,
+      });
+      expect(res.status).toHaveBeenCalledWith(HttpStatus.PARTIAL_CONTENT);
+      expect(res.setHeader).toHaveBeenCalledWith('Content-Range', 'bytes 0-4/13');
     });
 
     it('should reject config context when user cannot manage workspace configuration', async () => {
       const mockReq = { apiKeyAuthenticated: false, user: { id: 'user-1', roles: ['user'] } } as any;
+      const res = createMockResponse();
 
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: 'other-user' } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue({
@@ -578,33 +651,102 @@ describe('ClientsController', () => {
         role: ClientUserRole.USER,
       } as any);
 
-      await expect(controller.readFile('client-uuid', 'agent-uuid', 'cfg.json', 'config', mockReq)).rejects.toThrow(
-        WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE,
-      );
+      await expect(
+        controller.readFile('client-uuid', 'agent-uuid', 'cfg.json', res, undefined, 'config', undefined, mockReq),
+      ).rejects.toThrow(WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE);
     });
   });
 
   describe('writeFile', () => {
-    it('should proxy write file request', async () => {
-      const writeDto: WriteFileDto = {
-        content: Buffer.from('New content', 'utf-8').toString('base64'),
-        encoding: 'utf-8',
-      };
-      const mockReq = { apiKeyAuthenticated: true } as any;
+    it('should proxy write file request with raw body buffer', async () => {
+      const body = Buffer.from('New content', 'utf-8');
+      const mockReq = { apiKeyAuthenticated: true, body } as any;
 
       clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.writeFile.mockResolvedValue(undefined);
 
-      await controller.writeFile('client-uuid', 'agent-uuid', 'test.txt', writeDto, undefined, mockReq);
+      await controller.writeFile(
+        'client-uuid',
+        'agent-uuid',
+        'test.txt',
+        mockReq,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+      );
 
       expect(fileSystemProxyService.writeFile).toHaveBeenCalledWith(
         'client-uuid',
         'agent-uuid',
         'test.txt',
-        writeDto,
+        body,
         'app',
+        {
+          contentRange: undefined,
+          uploadId: undefined,
+          fileType: undefined,
+          contentType: undefined,
+        },
       );
+    });
+
+    it('should forward chunk upload headers', async () => {
+      const body = Buffer.from('ab', 'utf-8');
+      const mockReq = { apiKeyAuthenticated: true, body } as any;
+
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+      fileSystemProxyService.writeFile.mockResolvedValue(undefined);
+
+      await controller.writeFile(
+        'client-uuid',
+        'agent-uuid',
+        'test.txt',
+        mockReq,
+        undefined,
+        'bytes 0-1/4',
+        'upload-1',
+        'binary',
+        'application/octet-stream',
+      );
+
+      expect(fileSystemProxyService.writeFile).toHaveBeenCalledWith(
+        'client-uuid',
+        'agent-uuid',
+        'test.txt',
+        body,
+        'app',
+        {
+          contentRange: 'bytes 0-1/4',
+          uploadId: 'upload-1',
+          fileType: 'binary',
+          contentType: 'application/octet-stream',
+        },
+      );
+    });
+
+    it('should reject non-buffer body', async () => {
+      const mockReq = { apiKeyAuthenticated: true, body: { not: 'buffer' } } as any;
+
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+
+      await expect(
+        controller.writeFile(
+          'client-uuid',
+          'agent-uuid',
+          'test.txt',
+          mockReq,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+        ),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -649,7 +791,6 @@ describe('ClientsController', () => {
     it('should proxy create file request', async () => {
       const createDto: CreateFileDto = {
         type: 'file',
-        content: Buffer.from('File content', 'utf-8').toString('base64'),
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
 
@@ -699,7 +840,6 @@ describe('ClientsController', () => {
     it('should handle array path parameter', async () => {
       const createDto: CreateFileDto = {
         type: 'file',
-        content: Buffer.from('File content', 'utf-8').toString('base64'),
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
 
@@ -728,7 +868,6 @@ describe('ClientsController', () => {
     it('should throw BadRequestException when path is undefined', async () => {
       const createDto: CreateFileDto = {
         type: 'file',
-        content: Buffer.from('File content', 'utf-8').toString('base64'),
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
 
@@ -743,7 +882,6 @@ describe('ClientsController', () => {
     it('should throw BadRequestException when path is an object', async () => {
       const createDto: CreateFileDto = {
         type: 'file',
-        content: Buffer.from('File content', 'utf-8').toString('base64'),
       };
       const mockReq = { apiKeyAuthenticated: true } as any;
 

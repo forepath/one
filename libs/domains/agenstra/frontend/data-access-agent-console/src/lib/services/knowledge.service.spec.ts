@@ -76,7 +76,7 @@ describe('KnowledgeService', () => {
     req.flush(mockNode);
   });
 
-  it('uploadTextFiles should POST to /knowledge/upload-text', (done) => {
+  it('uploadTextFiles should POST to /knowledge/upload', (done) => {
     const dto = {
       clientId: 'c1',
       files: [{ filename: 'notes.md', content: '# Hello' }],
@@ -86,7 +86,7 @@ describe('KnowledgeService', () => {
       expect(result.created).toEqual([mockNode]);
       done();
     });
-    const req = httpMock.expectOne(`${apiUrl}/knowledge/upload-text`);
+    const req = httpMock.expectOne(`${apiUrl}/knowledge/upload`);
 
     expect(req.request.method).toBe('POST');
     expect(req.request.body).toEqual(dto);

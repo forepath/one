@@ -242,12 +242,17 @@
                 #monacoEditor
                 class="flex-grow-1"
                 [filePath]="selectedFilePath()"
-                [content]="(selectedFileContent$ | async)?.content || null"
-                [encoding]="(selectedFileContent$ | async)?.encoding || 'utf-8'"
+                [fileType]="(selectedFileContent$ | async)?.fileType || null"
+                [contentType]="(selectedFileContent$ | async)?.contentType || null"
+                [text]="(selectedFileContent$ | async)?.text ?? null"
+                [bodyRef]="(selectedFileContent$ | async)?.bodyRef || null"
+                [revision]="(selectedFileContent$ | async)?.revision ?? null"
+                [bodyOmitted]="(selectedFileContent$ | async)?.bodyOmitted === true"
                 [isDirty]="isDirty()"
                 [autosaveEnabled]="autosaveEnabled()"
                 (contentChange)="onContentChange($event)"
                 (saveRequest)="onSave()"
+                (downloadRequest)="onDownloadFile()"
               ></framework-monaco-editor-wrapper>
             }
           } @else {

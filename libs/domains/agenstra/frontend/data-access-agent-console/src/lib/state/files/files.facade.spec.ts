@@ -29,8 +29,11 @@ describe('FilesFacade', () => {
   const filePath = 'test-file.txt';
   const directoryPath = '.';
   const mockFileContent: FileContentDto = {
-    content: Buffer.from('Hello, World!', 'utf-8').toString('base64'),
-    encoding: 'utf-8',
+    fileType: 'text',
+    contentType: 'text/plain; charset=utf-8',
+    text: 'Hello, World!',
+    bodyRef: 'mock-body-ref',
+    size: 13,
   };
   const mockFileNodes: FileNodeDto[] = [
     {
@@ -221,8 +224,9 @@ describe('FilesFacade', () => {
 
     it('should dispatch writeFile action', () => {
       const writeDto: WriteFileDto = {
-        content: Buffer.from('New content', 'utf-8').toString('base64'),
-        encoding: 'utf-8',
+        bytes: new TextEncoder().encode('New content').buffer,
+        fileType: 'text',
+        contentType: 'text/plain; charset=utf-8',
       };
 
       facade.writeFile(clientId, agentId, filePath, writeDto);
@@ -247,7 +251,6 @@ describe('FilesFacade', () => {
     it('should dispatch createFileOrDirectory action', () => {
       const createDto: CreateFileDto = {
         type: 'file',
-        content: Buffer.from('File content', 'utf-8').toString('base64'),
       };
 
       facade.createFileOrDirectory(clientId, agentId, filePath, createDto);
@@ -364,8 +367,11 @@ describe('FilesFacade', () => {
 
       // Second call for client-2/agent-2
       const mockFileContent2: FileContentDto = {
-        content: Buffer.from('Other content', 'utf-8').toString('base64'),
-        encoding: 'utf-8',
+        fileType: 'text',
+        contentType: 'text/plain',
+        text: 'Other content',
+        bodyRef: 'mock-body-ref-other',
+        size: 13,
       };
 
       store.select.mockReturnValueOnce(of(mockFileContent2));

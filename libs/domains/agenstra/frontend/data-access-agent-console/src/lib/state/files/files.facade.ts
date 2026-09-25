@@ -261,11 +261,11 @@ export class FilesFacade {
   }
 
   /**
-   * Write file content to agent container.
+   * Write file content to agent container as raw bytes.
    * @param clientId - The client ID
    * @param agentId - The agent ID
    * @param filePath - The file path relative to /app
-   * @param writeFileDto - The file content to write (base64-encoded)
+   * @param writeFileDto - Raw bytes plus optional file type / content type hints
    */
   writeFile(
     clientId: string,
