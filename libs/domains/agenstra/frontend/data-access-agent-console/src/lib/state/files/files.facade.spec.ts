@@ -146,6 +146,16 @@ describe('FilesFacade', () => {
       });
     });
 
+    it('should return active mutation paths observable', (done) => {
+      const paths = new Set([filePath]);
+      store.select.mockReturnValue(of(paths));
+
+      facade.getActiveMutationPaths$(clientId, agentId).subscribe((result) => {
+        expect(result).toBe(paths);
+        done();
+      });
+    });
+
     it('should return moving file loading observable', (done) => {
       store.select.mockReturnValue(of(true));
 

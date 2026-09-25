@@ -29,8 +29,9 @@ Monaco Editor supports syntax highlighting for:
 
 ### File Management
 
-- Browse file system
-- Open multiple files
+- Browse file system with multi-select
+- Copy / cut / paste files and folders (including recursive folder copy and queued multi-moves)
+- Open multiple files (tabs remap when a file or parent folder is moved)
 - Save files
 - Create new files
 - Delete files

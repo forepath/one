@@ -57,6 +57,20 @@ Move or rename files and directories:
 - Move files to different locations
 - Rename files and directories
 - Update file paths
+- In the Web IDE file tree: **Cut (Ctrl/Cmd+X) + Paste (Ctrl/Cmd+V)** moves one or many selected files/folders (queued). Open editor tabs are remapped when paths change.
+
+### Copy / paste (Web IDE)
+
+The agent console file tree clipboard:
+
+- **Copy** duplicates files and entire folder subtrees into the paste target
+- **Cut** moves selection (including folders) into the paste target
+- Name collisions on copy/upload prompt **Replace** vs **Keep both** (`name (1).ext`); cut collisions always keep both
+- Header upload targets the single selected folder when applicable; otherwise workspace root
+- Collapsed paste targets expand automatically (same as upload)
+- Multi-select uses topmost roots only
+
+Implementation notes live in the feature library doc `libs/domains/agenstra/frontend/feature-agent-console/docs/file-tree.md`.
 
 ## File Operation Flow
 

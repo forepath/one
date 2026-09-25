@@ -12,6 +12,8 @@ import type {
   KnowledgeNodeDto,
   KnowledgeRelationSourceType,
   UpdateKnowledgeNodeDto,
+  UploadKnowledgeTextDto,
+  UploadKnowledgeTextResultDto,
 } from '../state/knowledge/knowledge.types';
 
 @Injectable({
@@ -43,6 +45,10 @@ export class KnowledgeService {
 
   create(dto: CreateKnowledgeNodeDto): Observable<KnowledgeNodeDto> {
     return this.http.post<KnowledgeNodeDto>(`${this.apiUrl}/knowledge`, dto);
+  }
+
+  uploadTextFiles(dto: UploadKnowledgeTextDto): Observable<UploadKnowledgeTextResultDto> {
+    return this.http.post<UploadKnowledgeTextResultDto>(`${this.apiUrl}/knowledge/upload-text`, dto);
   }
 
   update(id: string, dto: UpdateKnowledgeNodeDto): Observable<KnowledgeNodeDto> {

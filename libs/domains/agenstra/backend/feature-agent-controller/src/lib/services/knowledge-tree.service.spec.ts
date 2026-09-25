@@ -360,4 +360,105 @@ describe('KnowledgeTreeService', () => {
       }),
     );
   });
+
+  describe('suggestNumberedTitle', () => {
+    it('returns the original title when free', () => {
+      expect(service.suggestNumberedTitle('Guide', ['Other'])).toBe('Guide');
+    });
+
+    it('appends (1) / (2) on collision', () => {
+      expect(service.suggestNumberedTitle('Guide', ['Guide'])).toBe('Guide (1)');
+      expect(service.suggestNumberedTitle('Guide', ['Guide', 'Guide (1)'])).toBe('Guide (2)');
+    });
+  });
+
+  describe('uploadTextFiles', () => {
+    it('rejects disallowed extensions and binary content', async () => {
+      (service as any).assertClientAccess = jest.fn().mockResolvedValue(undefined);
+      nodeRepo.find.mockResolvedValue([]);
+
+      const result = await service.uploadTextFiles({
+        clientId: 'client-1',
+        files: [
+          { filename: 'notes.pdf', content: 'x' },
+          { filename: 'ok.md', content: 'hello\0world' },
+        ],
+      });
+
+      expect(result.created).toHaveLength(0);
+      expect(result.rejected).toEqual([
+        expect.objectContaining({ filename: 'notes.pdf' }),
+        expect.objectContaining({ filename: 'ok.md' }),
+      ]);
+    });
+
+    it('creates a page from allowed text when no conflict', async () => {
+      (service as any).assertClientAccess = jest.fn().mockResolvedValue(undefined);
+      (service as any).assertValidParent = jest.fn().mockResolvedValue(undefined);
+      (service as any).nextSortOrder = jest.fn().mockResolvedValue(0);
+      nodeRepo.find.mockResolvedValue([]);
+      nodeRepo.save.mockImplementation(async (row: any) => ({
+        ...row,
+        id: row.id ?? 'new-page',
+        longSha: row.longSha ?? 'sha',
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01'),
+      }));
+      pageActivityRepo.save.mockImplementation(async (row: any) => row);
+
+      const result = await service.uploadTextFiles({
+        clientId: 'client-1',
+        files: [{ filename: 'Guide.md', content: '# Hello' }],
+      });
+
+      expect(result.rejected).toHaveLength(0);
+      expect(result.created).toHaveLength(1);
+      expect(result.created[0].title).toBe('Guide');
+      expect(result.created[0].content).toBe('# Hello');
+    });
+
+    it('numbers title when onConflict is number', async () => {
+      (service as any).assertClientAccess = jest.fn().mockResolvedValue(undefined);
+      (service as any).assertValidParent = jest.fn().mockResolvedValue(undefined);
+      (service as any).nextSortOrder = jest.fn().mockResolvedValue(1);
+      nodeRepo.find.mockResolvedValue([
+        {
+          id: 'existing',
+          title: 'Guide',
+          nodeType: KnowledgeNodeType.PAGE,
+          parentId: null,
+          clientId: 'client-1',
+        },
+      ]);
+      nodeRepo.save.mockImplementation(async (row: any) => ({
+        ...row,
+        id: row.id ?? 'new-page',
+        longSha: row.longSha ?? 'sha',
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-01-01'),
+      }));
+      pageActivityRepo.save.mockImplementation(async (row: any) => row);
+
+      const result = await service.uploadTextFiles({
+        clientId: 'client-1',
+        onConflict: 'number' as any,
+        files: [{ filename: 'Guide.md', content: 'body' }],
+      });
+
+      expect(result.created[0].title).toBe('Guide (1)');
+      expect(result.updated).toHaveLength(0);
+    });
+
+    it('rejects path separators in filename', async () => {
+      (service as any).assertClientAccess = jest.fn().mockResolvedValue(undefined);
+      nodeRepo.find.mockResolvedValue([]);
+
+      const result = await service.uploadTextFiles({
+        clientId: 'client-1',
+        files: [{ filename: '../evil.md', content: 'x' }],
+      });
+
+      expect(result.rejected[0].reason).toMatch(/path separators/i);
+    });
+  });
 });

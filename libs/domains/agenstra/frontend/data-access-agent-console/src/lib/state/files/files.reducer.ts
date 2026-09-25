@@ -88,6 +88,19 @@ function getClientAgentContextKey(clientId: string, agentId: string, context?: F
   return `${clientId}:${agentId}:${c}`;
 }
 
+/** Remap a path after moving `sourcePath` → `destinationPath` (exact or nested). */
+function remapStorePathAfterMove(path: string, sourcePath: string, destinationPath: string): string {
+  if (path === sourcePath) {
+    return destinationPath;
+  }
+
+  if (path.startsWith(`${sourcePath}/`)) {
+    return `${destinationPath}${path.slice(sourcePath.length)}`;
+  }
+
+  return path;
+}
+
 export const filesReducer = createReducer(
   initialFilesState,
   // Read File
@@ -243,12 +256,26 @@ export const filesReducer = createReducer(
   on(deleteFileOrDirectorySuccess, (state, { clientId, agentId, filePath, context }) => {
     const key = getFileKey(clientId, agentId, filePath, context);
     // Remove from cache
-    const { [key]: _, ...fileContents } = state.fileContents;
+    const { [key]: _, ...fileContentsWithoutDeleted } = state.fileContents;
     const { [key]: __, ...directoryListings } = state.directoryListings;
     // Invalidate parent directory listing
     const parentPath = filePath.split('/').slice(0, -1).join('/') || '.';
     const parentKey = getFileKey(clientId, agentId, parentPath, context);
     const { [parentKey]: ___, ...remainingListings } = directoryListings;
+    // Drop open tabs for the deleted path and any nested paths (directory delete)
+    const clientAgentKey = getClientAgentContextKey(clientId, agentId, context);
+    const currentTabs = state.openTabs[clientAgentKey] || [];
+    const updatedTabs = currentTabs.filter(
+      (tab) => tab.filePath !== filePath && !tab.filePath.startsWith(`${filePath}/`),
+    );
+    // Drop cached file contents under a deleted directory as well
+    const fileContents = Object.fromEntries(
+      Object.entries(fileContentsWithoutDeleted).filter(([contentKey]) => {
+        const pathSuffix = contentKey.slice(`${clientId}:${agentId}:${context ?? 'app'}:`.length);
+
+        return pathSuffix !== filePath && !pathSuffix.startsWith(`${filePath}/`);
+      }),
+    );
 
     return {
       ...state,
@@ -256,6 +283,10 @@ export const filesReducer = createReducer(
       directoryListings: remainingListings,
       deleting: { ...state.deleting, [key]: false },
       errors: { ...state.errors, [key]: null },
+      openTabs: {
+        ...state.openTabs,
+        [clientAgentKey]: updatedTabs,
+      },
     };
   }),
   on(deleteFileOrDirectoryFailure, (state, { clientId, agentId, filePath, error, context }) => {
@@ -279,25 +310,45 @@ export const filesReducer = createReducer(
   }),
   on(moveFileOrDirectorySuccess, (state, { clientId, agentId, sourcePath, destinationPath, context }) => {
     const sourceKey = getFileKey(clientId, agentId, sourcePath, context);
-    const destinationKey = getFileKey(clientId, agentId, destinationPath, context);
-    // Remove source file content from cache
-    const { [sourceKey]: removedSourceContent, ...fileContents } = state.fileContents;
-    // Move file content to destination if it exists
-    const updatedFileContents = removedSourceContent
-      ? { ...fileContents, [destinationKey]: removedSourceContent }
-      : fileContents;
+    const keyPrefix = `${clientId}:${agentId}:${resolveFileContext(context)}:`;
+    // Remap cached file contents for the moved path and any nested files under a moved directory
+    const updatedFileContents = Object.fromEntries(
+      Object.entries(state.fileContents).map(([contentKey, content]) => {
+        if (!contentKey.startsWith(keyPrefix)) {
+          return [contentKey, content];
+        }
+
+        const pathSuffix = contentKey.slice(keyPrefix.length);
+        const remappedPath = remapStorePathAfterMove(pathSuffix, sourcePath, destinationPath);
+
+        if (remappedPath === pathSuffix) {
+          return [contentKey, content];
+        }
+
+        return [getFileKey(clientId, agentId, remappedPath, context), content];
+      }),
+    );
     // Remove source and destination directory listings (invalidate cache)
     const sourceParentPath = sourcePath.split('/').slice(0, -1).join('/') || '.';
     const sourceParentKey = getFileKey(clientId, agentId, sourceParentPath, context);
     const destinationParentPath = destinationPath.split('/').slice(0, -1).join('/') || '.';
     const destinationParentKey = getFileKey(clientId, agentId, destinationParentPath, context);
-    const { [sourceParentKey]: _, [destinationParentKey]: __, ...directoryListings } = state.directoryListings;
-    // Update open tabs if the moved file is in a tab
+    const sourceListingKey = getFileKey(clientId, agentId, sourcePath, context);
+    const destinationListingKey = getFileKey(clientId, agentId, destinationPath, context);
+    const {
+      [sourceParentKey]: _sourceParent,
+      [destinationParentKey]: _destinationParent,
+      [sourceListingKey]: _sourceListing,
+      [destinationListingKey]: _destinationListing,
+      ...directoryListings
+    } = state.directoryListings;
+    // Update open tabs for the moved file and nested files under a moved directory
     const clientAgentKey = getClientAgentContextKey(clientId, agentId, context);
     const currentTabs = state.openTabs[clientAgentKey] || [];
-    const updatedTabs = currentTabs.map((tab) =>
-      tab.filePath === sourcePath ? { ...tab, filePath: destinationPath } : tab,
-    );
+    const updatedTabs = currentTabs.map((tab) => ({
+      ...tab,
+      filePath: remapStorePathAfterMove(tab.filePath, sourcePath, destinationPath),
+    }));
 
     return {
       ...state,

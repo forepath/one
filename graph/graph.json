@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-24T13:27:57.857Z",
+  "generatedAt": "2026-09-25T07:32:50.881Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -4700,6 +4700,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/knowledge/update-knowledge-node.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/knowledge/upload-knowledge-text.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/knowledge/upload-knowledge-text.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -9543,6 +9552,24 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/frontend/feature-agent-console/docs/file-tree.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/feature-agent-console/docs/file-tree.md",
+        "languageOrKind": "md",
+        "projectName": "agenstra-frontend-feature-agent-console"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/frontend/feature-agent-console/docs/knowledge-tree.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/feature-agent-console/docs/knowledge-tree.md",
+        "languageOrKind": "md",
+        "projectName": "agenstra-frontend-feature-agent-console"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/frontend/feature-agent-console/docs/sequence-chat-automation-tickets-handoff.mmd",
       "type": "diagram",
       "attrs": {
@@ -9579,6 +9606,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/frontend/feature-agent-console/src/lib/file-editor/file-tree/file-tree-clipboard.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/feature-agent-console/src/lib/file-editor/file-tree/file-tree-clipboard.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-feature-agent-console"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/frontend/feature-agent-console/src/lib/guards/config-editor.guard.ts",
       "type": "guard",
       "attrs": {
@@ -9592,6 +9628,15 @@
       "type": "guard",
       "attrs": {
         "path": "libs/domains/agenstra/frontend/feature-agent-console/src/lib/guards/tickets-require-active-client.guard.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-feature-agent-console"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/frontend/feature-agent-console/src/lib/knowledge/knowledge-tree/knowledge-tree-clipboard.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/feature-agent-console/src/lib/knowledge/knowledge-tree/knowledge-tree-clipboard.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-frontend-feature-agent-console"
       }
@@ -14712,6 +14757,17 @@
         "pathOrChannel": "/knowledge",
         "operationId": "createKnowledgeNode",
         "summary": "Create knowledge node",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/knowledge/upload-text",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/knowledge/upload-text",
+        "operationId": "uploadKnowledgeTextFiles",
+        "summary": "Upload UTF-8 text files as knowledge pages",
         "specKind": "openapi"
       }
     },
@@ -35205,6 +35261,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/knowledge/upload-knowledge-text.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/provision-server.dto.ts",
       "type": "contains"
     },
@@ -37875,6 +37936,16 @@
     },
     {
       "from": "project:agenstra-frontend-feature-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/feature-agent-console/docs/file-tree.md",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/feature-agent-console/docs/knowledge-tree.md",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-console",
       "to": "file:libs/domains/agenstra/frontend/feature-agent-console/docs/sequence-chat-automation-tickets-handoff.mmd",
       "type": "contains"
     },
@@ -37895,12 +37966,22 @@
     },
     {
       "from": "project:agenstra-frontend-feature-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/feature-agent-console/src/lib/file-editor/file-tree/file-tree-clipboard.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-console",
       "to": "file:libs/domains/agenstra/frontend/feature-agent-console/src/lib/guards/config-editor.guard.ts",
       "type": "contains"
     },
     {
       "from": "project:agenstra-frontend-feature-agent-console",
       "to": "file:libs/domains/agenstra/frontend/feature-agent-console/src/lib/guards/tickets-require-active-client.guard.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/feature-agent-console/src/lib/knowledge/knowledge-tree/knowledge-tree-clipboard.service.ts",
       "type": "contains"
     },
     {
@@ -39981,6 +40062,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:POST:/knowledge",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/knowledge/upload-text",
       "type": "contains"
     },
     {
@@ -51181,6 +51267,16 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "api:HTTP:POST:/knowledge",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/knowledge-tree.controller.ts",
+      "to": "api:HTTP:POST:/knowledge/upload-text",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/knowledge/upload-text",
       "type": "implements"
     },
     {
@@ -65701,6 +65797,11 @@
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/knowledge.service.ts",
       "to": "api:HTTP:POST:/knowledge",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/knowledge.service.ts",
+      "to": "api:HTTP:POST:/knowledge/upload-text",
       "type": "calls"
     },
     {

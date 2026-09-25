@@ -25,8 +25,11 @@ import {
   KnowledgeNodeResponseDto,
   KnowledgePromptContextResponseDto,
   KnowledgeRelationResponseDto,
+  KnowledgeUploadOnConflict,
   ReorderKnowledgeNodeDto,
   UpdateKnowledgeNodeDto,
+  UploadKnowledgeTextDto,
+  UploadKnowledgeTextResultDto,
 } from '../dto/knowledge';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import {
@@ -694,6 +697,176 @@ export class KnowledgeTreeService {
     return this.mapNode(saved);
   }
 
+  private static readonly ALLOWED_UPLOAD_EXTENSIONS = new Set(['.md', '.mmd', '.txt']);
+  private static readonly MAX_UPLOAD_CONTENT_CHARS = 10_485_760;
+
+  /**
+   * Upload UTF-8 text files as knowledge pages under a folder (or workspace root).
+   * Allowed extensions: .md, .mmd, .txt. Binary / null-byte content is rejected.
+   */
+  async uploadTextFiles(dto: UploadKnowledgeTextDto, req?: RequestWithUser): Promise<UploadKnowledgeTextResultDto> {
+    let clientId = dto.clientId;
+    const parentId = dto.parentId ?? null;
+    const onConflict = dto.onConflict ?? KnowledgeUploadOnConflict.REJECT;
+
+    if (!parentId && !clientId) {
+      throw new BadRequestException('clientId is required when parentId is not set');
+    }
+
+    if (parentId) {
+      const parent = await this.getNodeOrThrow(parentId);
+
+      await this.assertClientAccess(parent.clientId, req);
+
+      if (parent.nodeType !== KnowledgeNodeType.FOLDER) {
+        throw new BadRequestException('parentId must reference a folder');
+      }
+
+      clientId = parent.clientId;
+    } else {
+      await this.assertClientAccess(clientId!, req);
+    }
+
+    const siblings = await this.knowledgeNodeRepo.find({
+      where: { clientId: clientId!, parentId },
+      order: { sortOrder: 'ASC', createdAt: 'ASC' },
+    });
+    const created: KnowledgeNodeResponseDto[] = [];
+    const updated: KnowledgeNodeResponseDto[] = [];
+    const rejected: UploadKnowledgeTextResultDto['rejected'] = [];
+    const claimedTitles = new Set(siblings.map((row) => row.title.toLowerCase()));
+    const siblingByTitle = new Map(siblings.map((row) => [row.title.toLowerCase(), row]));
+
+    for (const file of dto.files) {
+      const parsed = this.parseUploadFilename(file.filename);
+
+      if (parsed.ok === false) {
+        rejected.push({ filename: file.filename, reason: parsed.reason });
+        continue;
+      }
+
+      const contentCheck = this.validateUploadContent(file.content);
+
+      if (contentCheck.ok === false) {
+        rejected.push({ filename: file.filename, reason: contentCheck.reason });
+        continue;
+      }
+
+      let title = parsed.title;
+      const existing = siblingByTitle.get(title.toLowerCase());
+
+      if (existing) {
+        if (existing.nodeType === KnowledgeNodeType.FOLDER || onConflict === KnowledgeUploadOnConflict.NUMBER) {
+          title = this.suggestNumberedTitle(title, claimedTitles);
+        } else if (onConflict === KnowledgeUploadOnConflict.REPLACE) {
+          if (existing.nodeType !== KnowledgeNodeType.PAGE) {
+            rejected.push({ filename: file.filename, reason: 'Cannot replace a non-page sibling' });
+            continue;
+          }
+
+          const replaced = await this.updateNode(existing.id, { content: file.content }, req);
+
+          updated.push(replaced);
+          continue;
+        } else {
+          rejected.push({ filename: file.filename, reason: `A node titled "${existing.title}" already exists` });
+          continue;
+        }
+      }
+
+      const node = await this.createNode(
+        {
+          clientId: clientId!,
+          parentId,
+          nodeType: KnowledgeNodeType.PAGE,
+          title,
+          content: file.content,
+        },
+        req,
+      );
+
+      created.push(node);
+      claimedTitles.add(node.title.toLowerCase());
+      siblingByTitle.set(node.title.toLowerCase(), {
+        id: node.id,
+        title: node.title,
+        nodeType: KnowledgeNodeType.PAGE,
+      } as KnowledgeNodeEntity);
+    }
+
+    return { created, updated, rejected };
+  }
+
+  private parseUploadFilename(filename: string): { ok: true; title: string } | { ok: false; reason: string } {
+    const trimmed = filename.trim();
+
+    if (!trimmed) {
+      return { ok: false, reason: 'Filename is empty' };
+    }
+
+    if (trimmed.includes('/') || trimmed.includes('\\') || trimmed.includes('..')) {
+      return { ok: false, reason: 'Filename must not contain path separators or ..' };
+    }
+
+    const lower = trimmed.toLowerCase();
+    const ext = KnowledgeTreeService.ALLOWED_UPLOAD_EXTENSIONS.has(lower.slice(lower.lastIndexOf('.')))
+      ? lower.slice(lower.lastIndexOf('.'))
+      : '';
+
+    if (!ext || !KnowledgeTreeService.ALLOWED_UPLOAD_EXTENSIONS.has(ext)) {
+      return { ok: false, reason: 'Only .md, .mmd, and .txt files are allowed' };
+    }
+
+    const title = trimmed.slice(0, trimmed.length - ext.length).trim();
+
+    if (!title) {
+      return { ok: false, reason: 'Filename must include a basename before the extension' };
+    }
+
+    if (title.length > 500) {
+      return { ok: false, reason: 'Title exceeds maximum length' };
+    }
+
+    return { ok: true, title };
+  }
+
+  private validateUploadContent(content: string): { ok: true } | { ok: false; reason: string } {
+    if (typeof content !== 'string') {
+      return { ok: false, reason: 'Content must be a UTF-8 string' };
+    }
+
+    if (content.includes('\0')) {
+      return { ok: false, reason: 'Binary content is not allowed' };
+    }
+
+    if (content.length > KnowledgeTreeService.MAX_UPLOAD_CONTENT_CHARS) {
+      return { ok: false, reason: 'Content exceeds maximum size' };
+    }
+
+    return { ok: true };
+  }
+
+  /**
+   * Suggest a non-colliding sibling title: `Title (1)`, `Title (2)`, …
+   */
+  suggestNumberedTitle(title: string, existingTitles: Iterable<string>): string {
+    const existing = new Set([...existingTitles].map((name) => name.toLowerCase()));
+
+    if (!existing.has(title.toLowerCase())) {
+      return title;
+    }
+
+    let n = 1;
+    let candidate = `${title} (${n})`;
+
+    while (existing.has(candidate.toLowerCase())) {
+      n += 1;
+      candidate = `${title} (${n})`;
+    }
+
+    return candidate;
+  }
+
   async duplicateNode(id: string, req?: RequestWithUser): Promise<KnowledgeNodeResponseDto> {
     const seed = await this.assertNodeReadable(id, req);
     const all = await this.knowledgeNodeRepo.find({
@@ -710,17 +883,20 @@ export class KnowledgeTreeService {
       byParent.set(key, list);
     }
 
+    const siblingTitles = (byParent.get(seed.parentId ?? null) ?? []).map((row) => row.title);
+    const rootTitle = this.suggestNumberedTitle(seed.title, siblingTitles);
+
     const cloneRecursively = async (
       source: KnowledgeNodeEntity,
       parentId: string | null,
-      titleSuffix: string,
+      titleOverride?: string,
     ): Promise<KnowledgeNodeEntity> => {
       const cloned = await this.knowledgeNodeRepo.save(
         this.knowledgeNodeRepo.create({
           clientId: source.clientId,
           nodeType: source.nodeType,
           parentId,
-          title: `${source.title}${titleSuffix}`,
+          title: titleOverride ?? source.title,
           content: source.content ?? null,
           sortOrder: await this.nextSortOrder(source.clientId, parentId),
         }),
@@ -731,12 +907,12 @@ export class KnowledgeTreeService {
       const children = byParent.get(source.id) ?? [];
 
       for (const child of children) {
-        await cloneRecursively(child, saved.id, '');
+        await cloneRecursively(child, saved.id);
       }
 
       return saved;
     };
-    const duplicated = await cloneRecursively(seed, seed.parentId ?? null, ' (Copy)');
+    const duplicated = await cloneRecursively(seed, seed.parentId ?? null, rootTitle);
 
     this.emitKnowledgeTreeChanged(seed.clientId);
 

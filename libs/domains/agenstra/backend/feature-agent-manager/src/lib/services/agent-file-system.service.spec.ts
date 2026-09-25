@@ -246,6 +246,31 @@ describe('AgentFileSystemService', () => {
       expect(dockerService.copyFileFromContainer).toHaveBeenCalled();
     });
 
+    it('should treat empty files as utf-8 text so they remain editable', async () => {
+      const filePath = 'empty.txt';
+      const fileContent = '';
+      const base64Content = Buffer.from(fileContent, 'utf-8').toString('base64');
+
+      agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
+      dockerService.copyFileFromContainer.mockResolvedValue(undefined);
+
+      const mockTempDir = '/tmp/agent-file-read-abc123';
+
+      jest.spyOn(fs, 'mkdtempSync').mockReturnValue(mockTempDir);
+      jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+      jest.spyOn(fs, 'statSync').mockReturnValue({ size: 0 } as fs.Stats);
+      jest.spyOn(fs, 'readFileSync').mockReturnValue(Buffer.from(fileContent, 'utf-8'));
+      jest.spyOn(fs, 'unlinkSync').mockImplementation(jest.fn());
+      jest.spyOn(fs, 'rmSync').mockImplementation(jest.fn());
+
+      const result = await service.readFile(mockAgentId, filePath);
+
+      expect(result.content).toBe(base64Content);
+      expect(result.encoding).toBe('utf-8');
+      expect(dockerService.copyFileFromContainer).toHaveBeenCalled();
+    });
+
     it('should read binary file content successfully', async () => {
       const filePath = 'image.png';
       // Simulate binary content (PNG header)
@@ -449,6 +474,35 @@ file|file2.txt|2048|1704067200`;
       });
       expect(agentsService.findOne).toHaveBeenCalledWith(mockAgentId);
       expect(dockerService.sendCommandToContainer).toHaveBeenCalled();
+    });
+
+    it('should list files whose names contain spaces and parentheses', async () => {
+      const directoryPath = '.';
+      const mockLsOutput = `my file.txt
+Copy (1).md`;
+      const mockProcessOutput = `file|my file.txt|10|1704067200
+file|Copy (1).md|20|1704067200`;
+
+      agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
+      dockerService.sendCommandToContainer.mockResolvedValueOnce(mockLsOutput).mockResolvedValueOnce(mockProcessOutput);
+
+      const result = await service.listDirectory(mockAgentId, directoryPath);
+
+      expect(result).toHaveLength(2);
+      expect(result.map((n) => n.name).sort()).toEqual(['Copy (1).md', 'my file.txt']);
+      expect(result.find((n) => n.name === 'my file.txt')).toMatchObject<FileNodeDto>({
+        name: 'my file.txt',
+        type: 'file',
+        path: 'my file.txt',
+        size: 10,
+      });
+
+      const processCommand = dockerService.sendCommandToContainer.mock.calls[1][1] as string;
+
+      // Path join must quote $item so spaced names do not word-split in the shell
+      expect(processCommand).toContain('fullpath=');
+      expect(processCommand).toContain('/\\"\\$item\\"');
     });
 
     it('should use default path when not provided', async () => {

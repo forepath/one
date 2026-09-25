@@ -341,35 +341,30 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
         return;
       }
 
+      if (clientId !== action.clientId || agentId !== action.agentId) {
+        return;
+      }
+
       // Reload git status after file move (workspace only)
-      if (this.fileManagerContext() === 'app' && clientId === action.clientId && agentId === action.agentId) {
+      if (this.fileManagerContext() === 'app') {
         setTimeout(() => {
           this.vcsFacade.loadStatus(clientId, agentId);
         }, 500);
       }
 
-      // Check if the moved file is currently selected
-      if (currentSelectedPath === action.sourcePath && clientId === action.clientId && agentId === action.agentId) {
-        // Update selected file path to the new destination
-        this.selectedFilePath.set(action.destinationPath);
+      this.remapEditorStateAfterMove(action.sourcePath, action.destinationPath);
 
-        // Move dirty state from old path to new path if file was dirty
-        const wasDirty = this.dirtyFiles().has(action.sourcePath);
+      const remappedSelected =
+        currentSelectedPath === null
+          ? null
+          : this.remapPathAfterMove(currentSelectedPath, action.sourcePath, action.destinationPath);
 
-        if (wasDirty) {
-          this.dirtyFiles.update((dirty) => {
-            const newDirty = new Set(dirty);
-
-            newDirty.delete(action.sourcePath);
-            newDirty.add(action.destinationPath);
-
-            return newDirty;
-          });
-        }
+      // Check if the moved file (or a file under a moved directory) is currently selected
+      if (remappedSelected && remappedSelected !== currentSelectedPath) {
+        this.selectedFilePath.set(remappedSelected);
 
         // Load the file content at the new location
-        // The effect will automatically load it when selectedFilePath changes
-        this.filesFacade.readFile(clientId, agentId, action.destinationPath, this.fileManagerContext());
+        this.filesFacade.readFile(clientId, agentId, remappedSelected, this.fileManagerContext());
       }
     });
 
@@ -734,20 +729,8 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   }
 
   onFileDelete(filePath: string): void {
-    // Confirmation is handled by the file-tree component's Bootstrap modal
-    this.filesFacade.deleteFileOrDirectory(this.clientId(), this.agentId(), filePath, this.fileManagerContext());
-
-    // If deleted file was selected, clear selection
-    if (this.selectedFilePath() === filePath) {
-      this.selectedFilePath.set(null);
-      this.dirtyFiles.update((dirty) => {
-        const newDirty = new Set(dirty);
-
-        newDirty.delete(filePath);
-
-        return newDirty;
-      });
-    }
+    // Tree already deleted via facade; tabs are pruned in the store on success.
+    this.clearEditorStateForRemovedPath(filePath);
 
     // Refresh root directory listing
     this.filesFacade.listDirectory(this.clientId(), this.agentId(), this.listParams('.'));
@@ -758,6 +741,85 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
         this.vcsFacade.loadStatus(this.clientId(), this.agentId());
       }, 500);
     }
+  }
+
+  /**
+   * After a path (file or directory) is removed, drop dirty flags and retarget the
+   * open editor if the current file was deleted (or lived under a deleted folder).
+   */
+  private clearEditorStateForRemovedPath(removedPath: string): void {
+    const isAffected = (path: string): boolean => path === removedPath || path.startsWith(`${removedPath}/`);
+
+    this.dirtyFiles.update((dirty) => {
+      const next = new Set<string>();
+
+      for (const path of dirty) {
+        if (!isAffected(path)) {
+          next.add(path);
+        }
+      }
+
+      return next;
+    });
+
+    const selected = this.selectedFilePath();
+
+    if (!selected || !isAffected(selected)) {
+      return;
+    }
+
+    this.openTabs$.pipe(take(1), takeUntilDestroyed(this.destroyRef)).subscribe((tabs) => {
+      const remaining = tabs.filter((tab) => !isAffected(tab.filePath));
+
+      if (remaining.length > 0) {
+        this.selectedFilePath.set(remaining[0].filePath);
+      } else {
+        this.selectedFilePath.set(null);
+        this.lastLoadedFilePath.set(null);
+        this.editorContent.set('');
+      }
+    });
+  }
+
+  /** Remap dirty flags, expanded folders, and last-loaded path after a move/rename. */
+  private remapEditorStateAfterMove(sourcePath: string, destinationPath: string): void {
+    this.dirtyFiles.update((dirty) => {
+      const next = new Set<string>();
+
+      for (const path of dirty) {
+        next.add(this.remapPathAfterMove(path, sourcePath, destinationPath));
+      }
+
+      return next;
+    });
+
+    this.expandedPaths.update((expanded) => {
+      const next = new Set<string>();
+
+      for (const path of expanded) {
+        next.add(this.remapPathAfterMove(path, sourcePath, destinationPath));
+      }
+
+      return next;
+    });
+
+    const lastLoaded = this.lastLoadedFilePath();
+
+    if (lastLoaded) {
+      this.lastLoadedFilePath.set(this.remapPathAfterMove(lastLoaded, sourcePath, destinationPath));
+    }
+  }
+
+  private remapPathAfterMove(path: string, sourcePath: string, destinationPath: string): string {
+    if (path === sourcePath) {
+      return destinationPath;
+    }
+
+    if (path.startsWith(`${sourcePath}/`)) {
+      return `${destinationPath}${path.slice(sourcePath.length)}`;
+    }
+
+    return path;
   }
 
   onDirectoryExpand(path: string | Event): void {

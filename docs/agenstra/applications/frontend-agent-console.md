@@ -176,16 +176,7 @@ Monaco Editor integration for code editing with:
 
 - Syntax highlighting
 - Code completion
-- File system browser
-- Save functionality
-
-### FileEditorComponent
-
-Monaco Editor integration for code editing with:
-
-- Syntax highlighting
-- Code completion
-- File system browser
+- File system browser with multi-select, copy/cut/paste, and queued moves (see feature library `docs/file-tree.md`)
 - Save functionality
 
 ## WebSocket Communication

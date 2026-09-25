@@ -118,6 +118,26 @@ export const selectIsMovingFile = (clientId: string, agentId: string, filePath: 
     return moving[key] ?? false;
   });
 
+/**
+ * Paths currently being written, deleted, or moved for a client/agent/context.
+ * Used by the file tree to show per-item busy indicators (same idea as upload placeholders).
+ */
+export const selectActiveMutationPaths = (clientId: string, agentId: string, context?: FileManagerContext) =>
+  createSelector(selectFilesWriting, selectFilesDeleting, selectFilesMoving, (writing, deleting, moving) => {
+    const prefix = `${clientId}:${agentId}:${resolveFileContext(context)}:`;
+    const paths = new Set<string>();
+
+    for (const flags of [writing, deleting, moving]) {
+      for (const [key, active] of Object.entries(flags)) {
+        if (active && key.startsWith(prefix)) {
+          paths.add(key.slice(prefix.length));
+        }
+      }
+    }
+
+    return paths;
+  });
+
 // Error selectors (factory functions)
 export const selectFileError = (clientId: string, agentId: string, filePath: string, context?: FileManagerContext) =>
   createSelector(selectFilesErrors, (errors) => {

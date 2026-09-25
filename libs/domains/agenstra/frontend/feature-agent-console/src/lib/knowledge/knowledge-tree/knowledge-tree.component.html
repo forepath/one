@@ -25,6 +25,16 @@
         </fpc-button>
         <fpc-button
           size="sm"
+          variant="primary"
+          [iconOnly]="true"
+          (clicked)="onUploadFile(undefined, $event)"
+          i18n-title="@@featureKnowledgeTree-uploadFileTitle"
+          title="Upload file"
+        >
+          <i class="bi bi-upload"></i>
+        </fpc-button>
+        <fpc-button
+          size="sm"
           variant="dark"
           [iconOnly]="true"
           (clicked)="onContextRefresh()"
@@ -37,12 +47,22 @@
     </div>
   </div>
 
-  <div class="knowledge-tree-scroll flex-grow-1 overflow-auto d-flex flex-column min-h-0 p-2">
+  <div
+    class="knowledge-tree-scroll flex-grow-1 overflow-auto d-flex flex-column min-h-0 p-2"
+    [class.drag-over-root]="dragOverParentId() === null"
+    (dragover)="onDragOverRoot($event)"
+    (dragleave)="onDragLeaveRoot($event)"
+    (drop)="onDropRoot($event)"
+    (click)="onTreeBackgroundClick($event)"
+  >
+    @if (batchError(); as err) {
+      <div class="alert alert-danger alert-sm py-1 px-2 small mb-2" role="alert">{{ err }}</div>
+    }
     @if (shouldShowInitialLoadingSpinner()) {
       <div class="d-flex justify-content-center align-items-center p-4 flex-grow-1">
         <fpc-spinner size="sm" variant="primary" />
       </div>
-    } @else if (filteredRoots().length === 0) {
+    } @else if (filteredRoots().length === 0 && pendingUploadsFor(null).length === 0) {
       <fpc-empty-state size="sm" message="No pages yet" i18n-message="@@featureKnowledgeTree-noPages" />
       @if (creatingAt() && creatingAt()?.parentId === null) {
         <div class="create-item-input px-2 py-1 flex-shrink-0" [style.padding-left.px]="24">
@@ -98,95 +118,139 @@
             ></ng-container>
           </li>
         }
+        @for (pending of pendingUploadsFor(null); track pending.tempId) {
+          <li>
+            <ng-container
+              [ngTemplateOutlet]="pendingUploadTemplate"
+              [ngTemplateOutletContext]="{ $implicit: pending, level: 0 }"
+            ></ng-container>
+          </li>
+        }
       </ul>
     }
   </div>
 </div>
 
+<input
+  #uploadFileInput
+  type="file"
+  class="d-none"
+  multiple
+  accept=".md,.mmd,.txt,text/plain,text/markdown"
+  (change)="onFileSelected($event)"
+/>
+
 <ng-template #treeNodeTemplate let-node let-level="level">
   <div class="tree-node-wrapper">
     <div
       class="tree-node d-flex align-items-center py-1 px-2 rounded"
-      [class.selected]="selectedNodeId === node.id && node.nodeType === 'page'"
-      (click)="onSelectNode(node)"
+      [class.selected]="isNodeSelected(node.id)"
+      [class.tree-node-open]="isNodeOpen(node.id)"
+      [class.tree-node-clipboard-copy]="isNodeClipboardCopy(node.id)"
+      [class.tree-node-clipboard-cut]="isNodeClipboardCut(node.id)"
+      [class.tree-node-busy]="isNodeBusy(node.id)"
+      [class.drag-over]="dragOverParentId() === node.id && node.nodeType === 'folder'"
+      [attr.aria-busy]="isNodeBusy(node.id) ? true : null"
+      [attr.aria-current]="isNodeOpen(node.id) ? 'page' : null"
+      [attr.data-clipboard]="isNodeClipboardCopy(node.id) ? 'copy' : isNodeClipboardCut(node.id) ? 'cut' : null"
+      (click)="onNodeClick(node, $event)"
       (contextmenu)="onContextMenu($event, node)"
+      (dragover)="node.nodeType === 'folder' ? onDragOverFolder($event, node.id) : null"
+      (dragleave)="node.nodeType === 'folder' ? onDragLeaveFolder($event, node.id) : null"
+      (drop)="node.nodeType === 'folder' ? onDropFolder($event, node.id) : null"
     >
       @if (level > 0) {
         <div class="tree-indent" [style.width.px]="level * 20"></div>
       }
 
       <div class="tree-node-content d-flex align-items-center flex-grow-1 min-width-0">
+        @if (isNodeBusy(node.id)) {
+          <fpc-spinner
+            class="me-2 tree-node-busy-spinner"
+            size="sm"
+            variant="primary"
+            i18n-label="@@featureKnowledgeTree-itemBusy"
+            label="Working..."
+          />
+        }
         @if (node.nodeType === 'folder') {
           <i
             class="bi me-2 tree-node-icon"
+            [class.text-muted]="isNodeBusy(node.id)"
             [class.bi-folder]="!isExpanded(node)"
             [class.bi-folder2-open]="isExpanded(node)"
           ></i>
         } @else {
-          <i class="bi bi-file-earmark-text me-2 tree-node-icon"></i>
+          <i class="bi bi-file-earmark-text me-2 tree-node-icon" [class.text-muted]="isNodeBusy(node.id)"></i>
         }
 
-        <span class="text-truncate flex-grow-1 tree-node-name" [title]="node.title">
+        <span
+          class="text-truncate flex-grow-1 tree-node-name small"
+          [class.text-muted]="isNodeBusy(node.id)"
+          [title]="node.title"
+        >
           @if (node.shas.short) {
             <small class="text-muted">{{ node.shas.short }}</small>
           }
           {{ node.title }}
         </span>
 
-        <fpc-button-group size="sm" class="ms-2">
-          @if (node.nodeType === 'folder') {
+        @if (!isNodeBusy(node.id)) {
+          <fpc-button-group size="sm" class="ms-2">
+            @if (node.nodeType === 'folder') {
+              <fpc-button
+                size="sm"
+                [variant]="
+                  creatingAt()?.parentId === node.id && creatingAt()?.nodeType === 'page' ? 'primary' : 'secondary'
+                "
+                [iconOnly]="true"
+                (clicked)="openCreate(node.id, 'page', $event)"
+                i18n-title="@@featureKnowledgeTree-newPageTitle"
+                title="New page"
+              >
+                <i class="bi bi-file-earmark-plus"></i>
+              </fpc-button>
+              <fpc-button
+                size="sm"
+                [variant]="
+                  creatingAt()?.parentId === node.id && creatingAt()?.nodeType === 'folder' ? 'primary' : 'secondary'
+                "
+                [iconOnly]="true"
+                (clicked)="openCreate(node.id, 'folder', $event)"
+                i18n-title="@@featureKnowledgeTree-newFolderTitle"
+                title="New folder"
+              >
+                <i class="bi bi-folder-plus"></i>
+              </fpc-button>
+              <fpc-button
+                size="sm"
+                variant="secondary"
+                [iconOnly]="true"
+                (clicked)="onUploadFile(node.id, $event)"
+                i18n-title="@@featureKnowledgeTree-uploadFileTitle"
+                title="Upload file"
+              >
+                <i class="bi bi-upload"></i>
+              </fpc-button>
+            }
             <fpc-button
               size="sm"
-              [variant]="
-                creatingAt()?.parentId === node.id && creatingAt()?.nodeType === 'page' ? 'primary' : 'secondary'
-              "
+              variant="danger"
               [iconOnly]="true"
-              (clicked)="openCreate(node.id, 'page', $event)"
-              i18n-title="@@featureKnowledgeTree-newPageTitle"
-              title="New page"
+              (clicked)="onDelete(node, $event)"
+              i18n-title="@@featureKnowledgeTree-deleteTitle"
+              title="Delete"
             >
-              <i class="bi bi-file-earmark-plus"></i>
+              <i class="bi bi-trash"></i>
             </fpc-button>
-            <fpc-button
-              size="sm"
-              [variant]="
-                creatingAt()?.parentId === node.id && creatingAt()?.nodeType === 'folder' ? 'primary' : 'secondary'
-              "
-              [iconOnly]="true"
-              (clicked)="openCreate(node.id, 'folder', $event)"
-              i18n-title="@@featureKnowledgeTree-newFolderTitle"
-              title="New folder"
-            >
-              <i class="bi bi-folder-plus"></i>
-            </fpc-button>
-          }
-          <fpc-button
-            size="sm"
-            variant="dark"
-            [iconOnly]="true"
-            (clicked)="onDuplicate(node, $event)"
-            i18n-title="@@featureKnowledgeTree-duplicateTitle"
-            title="Duplicate"
-          >
-            <i class="bi bi-files"></i>
-          </fpc-button>
-          <fpc-button
-            size="sm"
-            variant="danger"
-            [iconOnly]="true"
-            (clicked)="onDelete(node, $event)"
-            i18n-title="@@featureKnowledgeTree-deleteTitle"
-            title="Delete"
-          >
-            <i class="bi bi-trash"></i>
-          </fpc-button>
-        </fpc-button-group>
+          </fpc-button-group>
+        }
       </div>
     </div>
   </div>
 
   @if (creatingAt()?.parentId === node.id) {
-    <div class="px-2 py-1" [style.padding-left.px]="(level + 1) * 16 + 38">
+    <div class="px-2 py-1 create-item-input" [style.padding-left.px]="(level + 1) * 16 + 38">
       <div class="input-group input-group-sm">
         <fpc-form-control
           size="sm"
@@ -207,7 +271,7 @@
     </div>
   }
 
-  @if (node.nodeType === 'folder' && isExpanded(node) && orderedChildren(node).length) {
+  @if (node.nodeType === 'folder' && isExpanded(node) && (orderedChildren(node).length || hasPendingUploads(node.id))) {
     <ul class="list-unstyled mb-0">
       @for (child of orderedChildren(node); track child.id) {
         <li>
@@ -217,8 +281,41 @@
           ></ng-container>
         </li>
       }
+      @for (pending of pendingUploadsFor(node.id); track pending.tempId) {
+        <li>
+          <ng-container
+            [ngTemplateOutlet]="pendingUploadTemplate"
+            [ngTemplateOutletContext]="{ $implicit: pending, level: level + 1 }"
+          ></ng-container>
+        </li>
+      }
     </ul>
   }
+</ng-template>
+
+<ng-template #pendingUploadTemplate let-pending let-level="level">
+  <div
+    class="tree-node tree-node-uploading d-flex align-items-center py-1 px-2 rounded"
+    role="status"
+    aria-live="polite"
+  >
+    @if (level > 0) {
+      <div class="tree-indent" [style.width.px]="level * 20"></div>
+    }
+    <div class="tree-node-content d-flex align-items-center flex-grow-1 min-width-0">
+      <fpc-spinner
+        class="me-2 tree-node-upload-spinner"
+        size="sm"
+        variant="primary"
+        i18n-label="@@featureKnowledgeTree-uploading"
+        label="Uploading..."
+      />
+      <i class="bi bi-file-earmark-text me-2 tree-node-icon text-muted"></i>
+      <span class="tree-node-name flex-grow-1 text-truncate text-muted small" [title]="pending.title">
+        {{ pending.title }}
+      </span>
+    </div>
+  </div>
 </ng-template>
 
 @if (contextMenuPosition(); as pos) {
@@ -231,13 +328,27 @@
         </button>
         <div class="dropdown-divider"></div>
       }
-      <button class="dropdown-item" type="button" (click)="onContextRename()">
-        <i class="bi bi-pencil me-2"></i><span i18n="@@featureKnowledgeTree-renameAction">Rename</span>
+      <button class="dropdown-item" type="button" (click)="onCopySelection()">
+        <i class="bi bi-clipboard me-2"></i><span i18n="@@featureKnowledgeTree-copyAction">Copy</span>
       </button>
-      <button class="dropdown-item" type="button" (click)="onContextMove()">
-        <i class="bi bi-arrow-right-circle me-2"></i><span i18n="@@featureKnowledgeTree-moveAction">Move</span>
+      <button class="dropdown-item" type="button" (click)="onCutSelection()">
+        <i class="bi bi-scissors me-2"></i><span i18n="@@featureKnowledgeTree-cutAction">Cut</span>
       </button>
+      @if (clipboardService.clipboard()) {
+        <button class="dropdown-item" type="button" (click)="onPasteSelection()">
+          <i class="bi bi-clipboard-check me-2"></i><span i18n="@@featureKnowledgeTree-pasteAction">Paste</span>
+        </button>
+      }
       <div class="dropdown-divider"></div>
+      @if (selectedIds().size <= 1) {
+        <button class="dropdown-item" type="button" (click)="onContextRename()">
+          <i class="bi bi-pencil me-2"></i><span i18n="@@featureKnowledgeTree-renameAction">Rename</span>
+        </button>
+        <button class="dropdown-item" type="button" (click)="onContextMove()">
+          <i class="bi bi-arrow-right-circle me-2"></i><span i18n="@@featureKnowledgeTree-moveAction">Move</span>
+        </button>
+        <div class="dropdown-divider"></div>
+      }
       <button class="dropdown-item text-danger" type="button" (click)="onContextDelete()">
         <i class="bi bi-trash me-2"></i><span i18n="@@featureKnowledgeTree-deleteAction">Delete</span>
       </button>
@@ -293,15 +404,14 @@
 
 <fpc-confirm-dialog
   [(open)]="deleteModalOpen"
-  i18n-title="@@featureKnowledgeTree-deleteModalTitle"
-  title="Delete item"
+  [title]="getDeleteModalTitle()"
   i18n-confirmLabel="@@featureKnowledgeTree-delete"
   confirmLabel="Delete"
   [danger]="true"
   (confirmed)="onConfirmDelete()"
   (cancelled)="onCancelDelete()"
 >
-  <p i18n="@@featureKnowledgeTree-deleteConfirmText">Are you sure you want to delete this item?</p>
+  <p>{{ getDeleteModalMessage() }}</p>
   <p class="text-danger mb-0">
     <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
     <span i18n="@@featureKnowledgeTree-cannotUndo">This action cannot be undone.</span>
@@ -313,4 +423,20 @@
     (checkedChange)="releaseExternalSyncMarkerOnDelete.set($event)"
     label="Allow re-import from external integrations (clears import sync marker for this page)"
   />
+</fpc-confirm-dialog>
+
+<fpc-confirm-dialog
+  [(open)]="nameCollisionOpen"
+  [title]="getNameCollisionTitle()"
+  i18n-confirmLabel="@@featureKnowledgeTree-replace"
+  confirmLabel="Replace"
+  i18n-cancelLabel="@@featureKnowledgeTree-keepBoth"
+  cancelLabel="Keep both"
+  [warning]="true"
+  (confirmed)="onNameCollisionReplace()"
+  (cancelled)="onNameCollisionKeepBoth()"
+>
+  <p i18n="@@featureKnowledgeTree-nameCollisionMessage">
+    Replace the existing page content, or keep both by creating a numbered title.
+  </p>
 </fpc-confirm-dialog>

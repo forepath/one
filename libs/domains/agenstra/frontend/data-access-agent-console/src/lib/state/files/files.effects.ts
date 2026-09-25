@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, exhaustMap, groupBy, map, mergeMap, of, switchMap } from 'rxjs';
+import { catchError, concatMap, groupBy, map, mergeMap, of, switchMap } from 'rxjs';
 
 import { FilesService } from '../../services/files.service';
 
@@ -67,7 +67,7 @@ export const writeFile$ = createEffect(
   (actions$ = inject(Actions), filesService = inject(FilesService)) => {
     return actions$.pipe(
       ofType(writeFile),
-      exhaustMap(({ clientId, agentId, filePath, writeFileDto, context }) => {
+      concatMap(({ clientId, agentId, filePath, writeFileDto, context }) => {
         const c = context ?? 'app';
 
         return filesService.writeFile(clientId, agentId, filePath, writeFileDto, c).pipe(
@@ -124,7 +124,7 @@ export const createFileOrDirectory$ = createEffect(
   (actions$ = inject(Actions), filesService = inject(FilesService)) => {
     return actions$.pipe(
       ofType(createFileOrDirectory),
-      exhaustMap(({ clientId, agentId, filePath, createFileDto, context }) => {
+      concatMap(({ clientId, agentId, filePath, createFileDto, context }) => {
         const c = context ?? 'app';
 
         return filesService.createFileOrDirectory(clientId, agentId, filePath, createFileDto, c).pipe(
@@ -151,7 +151,7 @@ export const deleteFileOrDirectory$ = createEffect(
   (actions$ = inject(Actions), filesService = inject(FilesService)) => {
     return actions$.pipe(
       ofType(deleteFileOrDirectory),
-      exhaustMap(({ clientId, agentId, filePath, context }) => {
+      concatMap(({ clientId, agentId, filePath, context }) => {
         const c = context ?? 'app';
 
         return filesService.deleteFileOrDirectory(clientId, agentId, filePath, c).pipe(
@@ -170,7 +170,7 @@ export const moveFileOrDirectory$ = createEffect(
   (actions$ = inject(Actions), filesService = inject(FilesService)) => {
     return actions$.pipe(
       ofType(moveFileOrDirectory),
-      exhaustMap(({ clientId, agentId, sourcePath, moveFileDto, context }) => {
+      concatMap(({ clientId, agentId, sourcePath, moveFileDto, context }) => {
         const c = context ?? 'app';
 
         return filesService.moveFileOrDirectory(clientId, agentId, sourcePath, moveFileDto, c).pipe(

@@ -12,6 +12,8 @@ export interface KnowledgeState {
   relationsLoading: boolean;
   activityLoading: boolean;
   loading: boolean;
+  /** Node ids currently being created/updated/duplicated/deleted (row busy UI). */
+  mutatingIds: ReadonlySet<string>;
   error: string | null;
 }
 
@@ -24,8 +26,29 @@ export const initialKnowledgeState: KnowledgeState = {
   relationsLoading: false,
   activityLoading: false,
   loading: false,
+  mutatingIds: new Set(),
   error: null,
 };
+
+function withMutatingId(state: KnowledgeState, id: string): ReadonlySet<string> {
+  const next = new Set(state.mutatingIds);
+
+  next.add(id);
+
+  return next;
+}
+
+function withoutMutatingId(state: KnowledgeState, id: string): ReadonlySet<string> {
+  if (!state.mutatingIds.has(id)) {
+    return state.mutatingIds;
+  }
+
+  const next = new Set(state.mutatingIds);
+
+  next.delete(id);
+
+  return next;
+}
 
 export const knowledgeReducer = createReducer(
   initialKnowledgeState,
@@ -80,33 +103,76 @@ export const knowledgeReducer = createReducer(
     selectedNodeId: nodeId,
     ...(nodeId ? {} : { activity: [] }),
   })),
-  on(
-    KnowledgeActions.createKnowledgeNode,
-    KnowledgeActions.updateKnowledgeNode,
-    KnowledgeActions.duplicateKnowledgeNode,
-    KnowledgeActions.deleteKnowledgeNode,
-    (state) => ({ ...state, loading: true, error: null }),
-  ),
-  on(
-    KnowledgeActions.createKnowledgeNodeSuccess,
-    KnowledgeActions.updateKnowledgeNodeSuccess,
-    KnowledgeActions.duplicateKnowledgeNodeSuccess,
-    (state) => ({ ...state, loading: false, error: null }),
-  ),
+  on(KnowledgeActions.createKnowledgeNode, (state) => ({ ...state, loading: true, error: null })),
+  on(KnowledgeActions.uploadKnowledgeTextFiles, (state) => ({ ...state, loading: true, error: null })),
+  on(KnowledgeActions.updateKnowledgeNode, (state, { id }) => ({
+    ...state,
+    loading: true,
+    error: null,
+    mutatingIds: withMutatingId(state, id),
+  })),
+  on(KnowledgeActions.duplicateKnowledgeNode, (state, { id }) => ({
+    ...state,
+    loading: true,
+    error: null,
+    mutatingIds: withMutatingId(state, id),
+  })),
+  on(KnowledgeActions.deleteKnowledgeNode, (state, { id }) => ({
+    ...state,
+    loading: true,
+    error: null,
+    mutatingIds: withMutatingId(state, id),
+  })),
+  on(KnowledgeActions.createKnowledgeNodeSuccess, (state) => ({ ...state, loading: false, error: null })),
+  on(KnowledgeActions.uploadKnowledgeTextFilesSuccess, (state) => ({ ...state, loading: false, error: null })),
+  on(KnowledgeActions.updateKnowledgeNodeSuccess, (state, { node }) => ({
+    ...state,
+    loading: false,
+    error: null,
+    mutatingIds: withoutMutatingId(state, node.id),
+  })),
+  on(KnowledgeActions.duplicateKnowledgeNodeSuccess, (state, { sourceId }) => ({
+    ...state,
+    loading: false,
+    error: null,
+    mutatingIds: withoutMutatingId(state, sourceId),
+  })),
   on(KnowledgeActions.deleteKnowledgeNodeSuccess, (state, { id }) => ({
     ...state,
     selectedNodeId: state.selectedNodeId === id ? null : state.selectedNodeId,
     activity: state.selectedNodeId === id ? [] : state.activity,
     loading: false,
     error: null,
+    mutatingIds: withoutMutatingId(state, id),
   })),
-  on(
-    KnowledgeActions.createKnowledgeNodeFailure,
-    KnowledgeActions.updateKnowledgeNodeFailure,
-    KnowledgeActions.duplicateKnowledgeNodeFailure,
-    KnowledgeActions.deleteKnowledgeNodeFailure,
-    (state, { error }) => ({ ...state, loading: false, error }),
-  ),
+  on(KnowledgeActions.createKnowledgeNodeFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
+  on(KnowledgeActions.uploadKnowledgeTextFilesFailure, (state, { error }) => ({
+    ...state,
+    loading: false,
+    error,
+  })),
+  on(KnowledgeActions.updateKnowledgeNodeFailure, (state, { id, error }) => ({
+    ...state,
+    loading: false,
+    error,
+    mutatingIds: withoutMutatingId(state, id),
+  })),
+  on(KnowledgeActions.duplicateKnowledgeNodeFailure, (state, { sourceId, error }) => ({
+    ...state,
+    loading: false,
+    error,
+    mutatingIds: withoutMutatingId(state, sourceId),
+  })),
+  on(KnowledgeActions.deleteKnowledgeNodeFailure, (state, { id, error }) => ({
+    ...state,
+    loading: false,
+    error,
+    mutatingIds: withoutMutatingId(state, id),
+  })),
   on(
     KnowledgeActions.createKnowledgeRelationFailure,
     KnowledgeActions.deleteKnowledgeRelationFailure,

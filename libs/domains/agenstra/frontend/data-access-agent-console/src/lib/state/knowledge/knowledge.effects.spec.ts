@@ -18,6 +18,7 @@ import {
   reloadRelationsAfterWrite$,
   reloadTreeAfterWrite$,
   updateKnowledgeNode$,
+  uploadKnowledgeTextFiles$,
 } from './knowledge.effects';
 import { type KnowledgeNodeDto, type KnowledgeRelationDto } from './knowledge.types';
 
@@ -53,6 +54,7 @@ describe('knowledge effects', () => {
       listByClient: jest.fn(),
       getTree: jest.fn(),
       create: jest.fn(),
+      uploadTextFiles: jest.fn(),
       update: jest.fn(),
       duplicate: jest.fn(),
       delete: jest.fn(),
@@ -98,6 +100,19 @@ describe('knowledge effects', () => {
     });
   });
 
+  it('uploadKnowledgeTextFiles$ emits success', (done) => {
+    const dto = { clientId: 'client-1', files: [{ filename: 'a.md', content: 'x' }] };
+    const result = { created: [mockNode], updated: [], rejected: [] };
+
+    actions$ = of(KnowledgeActions.uploadKnowledgeTextFiles({ dto }));
+    knowledgeService.uploadTextFiles.mockReturnValue(of(result));
+
+    uploadKnowledgeTextFiles$(actions$, knowledgeService).subscribe((action) => {
+      expect(action).toEqual(KnowledgeActions.uploadKnowledgeTextFilesSuccess({ result, dto }));
+      done();
+    });
+  });
+
   it('updateKnowledgeNode$ emits success', (done) => {
     actions$ = of(KnowledgeActions.updateKnowledgeNode({ id: 'node-1', dto: { title: 'renamed' } }));
     knowledgeService.update.mockReturnValue(of(mockNode));
@@ -113,7 +128,7 @@ describe('knowledge effects', () => {
     knowledgeService.duplicate.mockReturnValue(of(mockNode));
 
     duplicateKnowledgeNode$(actions$, knowledgeService).subscribe((result) => {
-      expect(result).toEqual(KnowledgeActions.duplicateKnowledgeNodeSuccess({ node: mockNode }));
+      expect(result).toEqual(KnowledgeActions.duplicateKnowledgeNodeSuccess({ sourceId: 'node-1', node: mockNode }));
       done();
     });
   });

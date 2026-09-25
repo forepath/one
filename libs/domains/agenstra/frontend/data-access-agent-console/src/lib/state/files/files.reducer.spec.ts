@@ -300,6 +300,34 @@ describe('filesReducer', () => {
       expect(newState.deleting[key]).toBe(false);
       expect(newState.errors[key]).toBeNull();
     });
+
+    it('should close open tabs for the deleted path and nested files', () => {
+      const clientAgentKey = `${clientId}:${agentId}:app`;
+      const nestedPath = 'src/a.ts';
+      const otherPath = 'readme.md';
+      const state: FilesState = {
+        ...initialFilesState,
+        openTabs: {
+          [clientAgentKey]: [
+            { filePath: 'src', pinned: false },
+            { filePath: nestedPath, pinned: true },
+            { filePath: otherPath, pinned: false },
+          ],
+        },
+        fileContents: {
+          [`${clientId}:${agentId}:app:${nestedPath}`]: mockFileContent,
+          [`${clientId}:${agentId}:app:${otherPath}`]: mockFileContent,
+        },
+      };
+      const newState = filesReducer(
+        state,
+        deleteFileOrDirectorySuccess({ clientId, agentId, filePath: 'src', context: 'app' }),
+      );
+
+      expect(newState.openTabs[clientAgentKey]).toEqual([{ filePath: otherPath, pinned: false }]);
+      expect(newState.fileContents[`${clientId}:${agentId}:app:${nestedPath}`]).toBeUndefined();
+      expect(newState.fileContents[`${clientId}:${agentId}:app:${otherPath}`]).toEqual(mockFileContent);
+    });
   });
 
   describe('deleteFileOrDirectoryFailure', () => {
@@ -386,6 +414,41 @@ describe('filesReducer', () => {
       );
 
       expect(newState.openTabs[clientAgentKey]).toEqual([{ filePath: destinationPath, pinned: true }]);
+    });
+
+    it('should remap nested open tabs and file contents when a directory is moved', () => {
+      const sourcePath = 'src';
+      const destinationPath = 'pkg';
+      const sourceKey = `${clientId}:${agentId}:app:${sourcePath}`;
+      const clientAgentKey = `${clientId}:${agentId}:app`;
+      const state: FilesState = {
+        ...initialFilesState,
+        openTabs: {
+          [clientAgentKey]: [
+            { filePath: 'src/a.ts', pinned: true },
+            { filePath: 'src/lib/b.ts', pinned: false },
+            { filePath: 'other.ts', pinned: false },
+          ],
+        },
+        fileContents: {
+          [`${clientId}:${agentId}:app:src/a.ts`]: mockFileContent,
+          [`${clientId}:${agentId}:app:other.ts`]: mockFileContent,
+        },
+        moving: { [sourceKey]: true },
+      };
+      const newState = filesReducer(
+        state,
+        moveFileOrDirectorySuccess({ clientId, agentId, sourcePath, destinationPath }),
+      );
+
+      expect(newState.openTabs[clientAgentKey]).toEqual([
+        { filePath: 'pkg/a.ts', pinned: true },
+        { filePath: 'pkg/lib/b.ts', pinned: false },
+        { filePath: 'other.ts', pinned: false },
+      ]);
+      expect(newState.fileContents[`${clientId}:${agentId}:app:pkg/a.ts`]).toEqual(mockFileContent);
+      expect(newState.fileContents[`${clientId}:${agentId}:app:src/a.ts`]).toBeUndefined();
+      expect(newState.fileContents[`${clientId}:${agentId}:app:other.ts`]).toEqual(mockFileContent);
     });
 
     it('should handle move when file content does not exist in cache', () => {

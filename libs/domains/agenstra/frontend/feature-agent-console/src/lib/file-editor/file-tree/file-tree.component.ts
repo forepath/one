@@ -19,6 +19,10 @@ import {
   ClientsFacade,
   FilesFacade,
   VcsFacade,
+  createFileOrDirectoryFailure,
+  createFileOrDirectorySuccess,
+  writeFileFailure,
+  writeFileSuccess,
   type FileManagerContext,
   type FileNodeDto,
   type ListDirectoryParams,
@@ -33,10 +37,26 @@ import {
   FpcModalFooterDirective,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
-import { combineLatest, filter, map, Observable, of, Subscription, switchMap, take } from 'rxjs';
+import { Actions, ofType } from '@ngrx/effects';
+import { combineLatest, filter, firstValueFrom, map, Observable, of, Subscription, switchMap, take } from 'rxjs';
 
 import { getGitRepositoryDisplayLabel } from '../../git-repository-display';
 import { GitBranchModalComponent } from '../git-branch-modal/git-branch-modal.component';
+import { FileTreeClipboardService } from './file-tree-clipboard.service';
+import {
+  buildClipboardEntries,
+  getClipboardModeForPath,
+  remapPathAfterMove,
+  resolvePasteTargetDirectory,
+} from './file-tree-clipboard.util';
+import {
+  applyFileTreeSelectionGesture,
+  flattenVisibleTreeNodes,
+  getTopmostSelectedPaths,
+  pruneSelectionAfterCollapse,
+  suggestCopyBasename,
+  type FileTreeSelectionGesture,
+} from './file-tree-selection.util';
 
 interface TreeNode {
   name: string;
@@ -70,6 +90,15 @@ interface CollectedUploadFile {
   file: File;
 }
 
+/** Placeholder row shown in the tree while a file/folder upload is in flight. */
+interface PendingUpload {
+  id: string;
+  path: string;
+  name: string;
+  parentPath: string;
+  type: 'file' | 'directory';
+}
+
 @Component({
   selector: 'framework-file-tree',
   imports: [
@@ -88,17 +117,37 @@ interface CollectedUploadFile {
   templateUrl: './file-tree.component.html',
   styleUrls: ['./file-tree.component.scss'],
   standalone: true,
+  providers: [FileTreeClipboardService],
+  host: {
+    tabindex: '0',
+    '(keydown)': 'onTreeKeydown($event)',
+    '(paste)': 'onTreePaste($event)',
+  },
 })
 export class FileTreeComponent implements OnInit {
   private readonly filesFacade = inject(FilesFacade);
   private readonly clientsFacade = inject(ClientsFacade);
   private readonly agentsFacade = inject(AgentsFacade);
   private readonly vcsFacade = inject(VcsFacade);
+  private readonly actions$ = inject(Actions);
   private readonly destroyRef = inject(DestroyRef);
+  readonly clipboardService = inject(FileTreeClipboardService);
+  private readonly hostElement = inject(ElementRef<HTMLElement>);
 
   readonly deleteFileModalOpen = signal(false);
   readonly renameFileModalOpen = signal(false);
   readonly moveFileModalOpen = signal(false);
+  readonly nameCollisionOpen = signal(false);
+  readonly nameCollisionName = signal('');
+  private nameCollisionResolver: ((choice: 'replace' | 'keepBoth') => void) | null = null;
+  readonly selectedPaths = signal<Set<string>>(new Set());
+  readonly selectionAnchorPath = signal<string | null>(null);
+  readonly batchError = signal<string | null>(null);
+  readonly pendingUploads = signal<PendingUpload[]>([]);
+  /** Paths currently writing/deleting/moving — spinner on the matching tree row. */
+  readonly busyPaths = signal<ReadonlySet<string>>(new Set());
+  private previousExpandedPaths = new Set<string>();
+  private pendingUploadSeq = 0;
 
   @ViewChild('rootFileInput', { static: false })
   private rootFileInput!: ElementRef<HTMLInputElement>;
@@ -122,6 +171,8 @@ export class FileTreeComponent implements OnInit {
   directoryExpand = output<string>();
   directoryCollapse = output<string>();
   toggleGitManager = output<void>();
+  /** Emits whenever multi-selection changes (for parent cleanup hooks). */
+  selectionChange = output<string[]>();
 
   // Internal state
   treeNodes = signal<TreeNode[]>([]);
@@ -130,7 +181,7 @@ export class FileTreeComponent implements OnInit {
   contextMenuPosition = signal<{ x: number; y: number } | null>(null);
   creatingItem = signal<{ path: string; type: 'file' | 'directory' } | null>(null);
   newItemName = signal<string>('');
-  itemToDelete = signal<{ path: string; type: 'file' | 'directory' } | null>(null);
+  itemsToDelete = signal<Array<{ path: string; type: 'file' | 'directory' }>>([]);
   itemToRename = signal<{ path: string; type: 'file' | 'directory'; name: string } | null>(null);
   itemToMove = signal<{ path: string; type: 'file' | 'directory'; name: string } | null>(null);
   renameNewName = signal<string>('');
@@ -199,6 +250,16 @@ export class FileTreeComponent implements OnInit {
         this.filesFacade.isListingDirectory$(config.clientId, config.agentId, '.', config.context),
         toObservable(this.treeCache),
       ]).pipe(map(([isLoading, cache]) => isLoading && !cache.has('.')));
+    }),
+  );
+
+  readonly activeMutationPaths$: Observable<ReadonlySet<string>> = toObservable(this.rootDirectorySignal).pipe(
+    switchMap((config) => {
+      if (!config) {
+        return of(new Set<string>());
+      }
+
+      return this.filesFacade.getActiveMutationPaths$(config.clientId, config.agentId, config.context);
     }),
   );
 
@@ -420,9 +481,29 @@ export class FileTreeComponent implements OnInit {
       // Rebuild tree whenever expanded paths change (for both expand and collapse)
       this.rebuildTree();
     });
+
+    // Prune selection when folders collapse so invisible descendants are not retained
+    effect(() => {
+      const expanded = this.expandedPaths();
+
+      for (const path of this.previousExpandedPaths) {
+        if (!expanded.has(path)) {
+          this.selectedPaths.update((selected) => pruneSelectionAfterCollapse(selected, path));
+        }
+      }
+
+      this.previousExpandedPaths = new Set(expanded);
+      this.emitSelectionChange();
+    });
+
+    this.activeMutationPaths$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((paths) => {
+      this.busyPaths.set(paths);
+    });
   }
 
   ngOnInit(): void {
+    this.clipboardService.setNameCollisionResolver((baseName) => this.promptNameCollision(baseName));
+
     // Subscribe to root directory observable with proper cleanup
     this.rootDirectory$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((nodes) => {
       if (nodes) {
@@ -432,13 +513,68 @@ export class FileTreeComponent implements OnInit {
     });
   }
 
+  promptNameCollision(baseName: string): Promise<'replace' | 'keepBoth'> {
+    return new Promise((resolve) => {
+      this.nameCollisionName.set(baseName);
+      this.nameCollisionResolver = resolve;
+      this.nameCollisionOpen.set(true);
+    });
+  }
+
+  onNameCollisionReplace(): void {
+    this.nameCollisionOpen.set(false);
+    this.nameCollisionResolver?.('replace');
+    this.nameCollisionResolver = null;
+  }
+
+  onNameCollisionKeepBoth(): void {
+    this.nameCollisionOpen.set(false);
+    this.nameCollisionResolver?.('keepBoth');
+    this.nameCollisionResolver = null;
+  }
+
+  isPathSelected(path: string): boolean {
+    return this.selectedPaths().has(path);
+  }
+
+  isPathOpen(path: string): boolean {
+    return this.selectedPath() === path;
+  }
+
+  /** Soft row highlight: path is staged on the virtual clipboard for copy. */
+  isPathClipboardCopy(path: string): boolean {
+    return getClipboardModeForPath(this.clipboardService.clipboard(), path) === 'copy';
+  }
+
+  /** Soft row highlight: path is staged on the virtual clipboard for cut/move. */
+  isPathClipboardCut(path: string): boolean {
+    return getClipboardModeForPath(this.clipboardService.clipboard(), path) === 'cut';
+  }
+
   onFileClick(node: TreeNode, event: MouseEvent): void {
     event.stopPropagation();
+    this.focusTreeHost();
 
-    if (node.type === 'file') {
-      this.fileSelect.emit(node.path);
-    } else {
-      this.onDirectoryToggle(node);
+    const gesture = this.resolveSelectionGesture(event);
+    const visibleNodes = flattenVisibleTreeNodes(this.treeNodes());
+    const result = applyFileTreeSelectionGesture({
+      gesture,
+      node,
+      visibleNodes,
+      previousSelected: this.selectedPaths(),
+      selectionAnchorPath: this.selectionAnchorPath(),
+    });
+
+    this.selectedPaths.set(result.selectedPaths);
+    this.selectionAnchorPath.set(result.selectionAnchorPath);
+    this.emitSelectionChange();
+
+    if (gesture === 'plain') {
+      if (node.type === 'file') {
+        this.fileSelect.emit(node.path);
+      } else {
+        this.onDirectoryToggle(node);
+      }
     }
   }
 
@@ -451,6 +587,8 @@ export class FileTreeComponent implements OnInit {
 
     if (isExpanded) {
       // Collapse
+      this.selectedPaths.update((selected) => pruneSelectionAfterCollapse(selected, node.path));
+      this.emitSelectionChange();
       this.directoryCollapse.emit(node.path);
     } else {
       // Expand - load directory if not cached
@@ -486,8 +624,344 @@ export class FileTreeComponent implements OnInit {
   onContextMenu(event: MouseEvent, node: TreeNode): void {
     event.preventDefault();
     event.stopPropagation();
+    this.focusTreeHost();
+
+    if (!this.selectedPaths().has(node.path)) {
+      this.selectedPaths.set(new Set([node.path]));
+      this.selectionAnchorPath.set(node.path);
+      this.emitSelectionChange();
+    }
+
     this.contextMenuPath.set(node.path);
     this.contextMenuPosition.set({ x: event.clientX, y: event.clientY });
+  }
+
+  onTreeKeydown(event: KeyboardEvent): void {
+    if (this.shouldIgnoreTreeHotkey(event)) {
+      return;
+    }
+
+    const key = event.key;
+    const mod = event.ctrlKey || event.metaKey;
+
+    if (key === 'Delete' || key === 'Backspace') {
+      event.preventDefault();
+      this.deleteSelectionFromHotkey();
+
+      return;
+    }
+
+    if (key === 'F2') {
+      event.preventDefault();
+      this.renameSelectionFromHotkey();
+
+      return;
+    }
+
+    if (mod && key.toLowerCase() === 'c') {
+      event.preventDefault();
+      this.copySelectionToClipboard();
+
+      return;
+    }
+
+    if (mod && key.toLowerCase() === 'x') {
+      event.preventDefault();
+      this.cutSelectionToClipboard();
+
+      return;
+    }
+
+    // Ctrl/Cmd+V is handled in onTreePaste so OS file uploads (clipboardData) work.
+  }
+
+  /**
+   * Paste into the tree: OS clipboard files upload into the paste target folder;
+   * otherwise apply the internal copy/cut clipboard.
+   */
+  onTreePaste(event: ClipboardEvent): void {
+    if (this.shouldIgnorePasteTarget(event.target)) {
+      return;
+    }
+
+    const files = this.getClipboardFiles(event);
+
+    if (files.length > 0) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.uploadFilesToPath(files, this.resolvePasteTargetPath());
+
+      return;
+    }
+
+    if (this.clipboardService.clipboard()) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.pasteClipboardIntoTarget();
+    }
+  }
+
+  private resolveSelectionGesture(event: MouseEvent): FileTreeSelectionGesture {
+    if (event.shiftKey) {
+      return 'shift';
+    }
+
+    if (event.ctrlKey || event.metaKey) {
+      return 'ctrl';
+    }
+
+    return 'plain';
+  }
+
+  private shouldIgnoreTreeHotkey(event: KeyboardEvent): boolean {
+    return this.shouldIgnorePasteTarget(event.target);
+  }
+
+  private shouldIgnorePasteTarget(target: EventTarget | null): boolean {
+    if (!target || !(target instanceof HTMLElement)) {
+      return true;
+    }
+
+    const tag = target.tagName;
+
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable) {
+      return true;
+    }
+
+    if (this.deleteFileModalOpen() || this.renameFileModalOpen() || this.moveFileModalOpen()) {
+      return true;
+    }
+
+    if (this.creatingItem()) {
+      return true;
+    }
+
+    return false;
+  }
+
+  private getClipboardFiles(event: ClipboardEvent): File[] {
+    const data = event.clipboardData;
+
+    if (!data) {
+      return [];
+    }
+
+    if (data.files?.length) {
+      return Array.from(data.files);
+    }
+
+    const files: File[] = [];
+
+    if (data.items) {
+      for (let index = 0; index < data.items.length; index++) {
+        const item = data.items[index];
+
+        if (item.kind !== 'file') {
+          continue;
+        }
+
+        const file = item.getAsFile();
+
+        if (file) {
+          files.push(file);
+        }
+      }
+    }
+
+    return files;
+  }
+
+  private resolvePasteTargetPath(): string {
+    const focusPath =
+      this.selectedPaths().size === 0 ? null : (this.selectionAnchorPath() ?? [...this.selectedPaths()][0] ?? null);
+
+    return resolvePasteTargetDirectory(focusPath, (path) => this.findNodeByPath(path)?.type ?? null);
+  }
+
+  focusTreeHost(): void {
+    const el = this.hostElement.nativeElement;
+
+    if (document.activeElement !== el) {
+      el.focus({ preventScroll: true });
+    }
+  }
+
+  /**
+   * Click on empty tree chrome (not a row): clear selection so the workspace root
+   * is the implicit paste target; selection-required actions stay disabled.
+   */
+  onTreeBackgroundClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+
+    if (target?.closest('.tree-node, .create-item-input, .context-menu, button, a, input, textarea, select')) {
+      return;
+    }
+
+    this.focusTreeHost();
+    this.clearTreeSelection();
+  }
+
+  clearTreeSelection(): void {
+    if (this.selectedPaths().size === 0 && this.selectionAnchorPath() === null) {
+      return;
+    }
+
+    this.selectedPaths.set(new Set());
+    this.selectionAnchorPath.set(null);
+    this.emitSelectionChange();
+  }
+
+  private emitSelectionChange(): void {
+    this.selectionChange.emit([...this.selectedPaths()]);
+  }
+
+  private getSelectionRoots(): Array<{ path: string; type: 'file' | 'directory' }> {
+    const roots = getTopmostSelectedPaths(this.selectedPaths());
+    const items: Array<{ path: string; type: 'file' | 'directory' }> = [];
+
+    for (const path of roots) {
+      const node = this.findNodeByPath(path);
+
+      if (node) {
+        items.push({ path: node.path, type: node.type });
+      }
+    }
+
+    return items;
+  }
+
+  private resolveActionTargets(path: string): Array<{ path: string; type: 'file' | 'directory' }> {
+    const selected = this.selectedPaths();
+
+    if (selected.size > 1 && selected.has(path)) {
+      return this.getSelectionRoots();
+    }
+
+    const node = this.findNodeByPath(path);
+
+    return node ? [{ path: node.path, type: node.type }] : [];
+  }
+
+  private batchContext() {
+    return {
+      clientId: this.clientId(),
+      agentId: this.agentId(),
+      context: this.fileManagerContext(),
+    };
+  }
+
+  private copySelectionToClipboard(): void {
+    if (this.selectedPaths().size === 0) {
+      return;
+    }
+
+    const entries = buildClipboardEntries(this.selectedPaths(), (path) => this.findNodeByPath(path)?.type ?? null);
+
+    if (entries.length === 0) {
+      return;
+    }
+
+    this.clipboardService.setClipboard('copy', entries);
+  }
+
+  private cutSelectionToClipboard(): void {
+    if (this.selectedPaths().size === 0) {
+      return;
+    }
+
+    const entries = buildClipboardEntries(this.selectedPaths(), (path) => this.findNodeByPath(path)?.type ?? null);
+
+    if (entries.length === 0) {
+      return;
+    }
+
+    this.clipboardService.setClipboard('cut', entries);
+  }
+
+  private pasteClipboardIntoTarget(): void {
+    if (!this.clipboardService.clipboard()) {
+      return;
+    }
+
+    const target = this.resolvePasteTargetPath();
+
+    // Same as upload: expand the paste target so the first pasted item is visible.
+    this.ensureUploadParentVisible(target);
+
+    this.clipboardService.enqueuePaste(this.batchContext(), target, (result) => {
+      this.listDirectoryRel(target === '.' ? '.' : target);
+
+      for (const destination of result.destinations) {
+        this.expandPathToDestination(destination);
+      }
+
+      if (result.mode === 'cut' && result.moves.length > 0) {
+        this.remapSelectionAfterMoves(result.moves);
+      }
+
+      const error = this.clipboardService.lastError();
+
+      if (error) {
+        this.batchError.set(error);
+      }
+    });
+  }
+
+  private remapSelectionAfterMoves(moves: Array<{ source: string; destination: string }>): void {
+    const selected = this.selectedPaths();
+
+    if (selected.size === 0) {
+      return;
+    }
+
+    const next = new Set<string>();
+
+    for (const path of selected) {
+      let remapped = path;
+
+      for (const move of moves) {
+        remapped = remapPathAfterMove(remapped, move.source, move.destination);
+      }
+
+      next.add(remapped);
+    }
+
+    this.selectedPaths.set(next);
+
+    const anchor = this.selectionAnchorPath();
+
+    if (anchor) {
+      let remappedAnchor = anchor;
+
+      for (const move of moves) {
+        remappedAnchor = remapPathAfterMove(remappedAnchor, move.source, move.destination);
+      }
+
+      this.selectionAnchorPath.set(remappedAnchor);
+    }
+
+    this.emitSelectionChange();
+  }
+
+  private deleteSelectionFromHotkey(): void {
+    const items = this.getSelectionRoots();
+
+    if (items.length === 0) {
+      return;
+    }
+
+    this.itemsToDelete.set(items);
+    this.deleteFileModalOpen.set(true);
+  }
+
+  private renameSelectionFromHotkey(): void {
+    const items = this.getSelectionRoots();
+
+    if (items.length !== 1) {
+      return;
+    }
+
+    this.onRenameItem(items[0].path);
   }
 
   onCopyFileLink(path: string): void {
@@ -1109,22 +1583,30 @@ export class FileTreeComponent implements OnInit {
   }
 
   onDeleteItem(path: string): void {
-    // Find the node to get its type
-    const node = this.findNodeByPath(path);
+    const targets = this.resolveActionTargets(path);
 
-    if (node) {
-      this.itemToDelete.set({ path, type: node.type });
-      this.deleteFileModalOpen.set(true);
-      this.onCloseContextMenu();
+    if (targets.length === 0) {
+      return;
     }
+
+    this.itemsToDelete.set(targets);
+    this.deleteFileModalOpen.set(true);
+    this.onCloseContextMenu();
   }
 
   onRenameItem(path: string): void {
-    // Find the node to get its type and name
-    const node = this.findNodeByPath(path);
+    const targets = this.resolveActionTargets(path);
+
+    if (targets.length !== 1) {
+      this.onCloseContextMenu();
+
+      return;
+    }
+
+    const node = this.findNodeByPath(targets[0].path);
 
     if (node) {
-      this.itemToRename.set({ path, type: node.type, name: node.name });
+      this.itemToRename.set({ path: node.path, type: node.type, name: node.name });
       this.renameNewName.set(node.name);
       this.renameFileModalOpen.set(true);
       this.onCloseContextMenu();
@@ -1132,13 +1614,21 @@ export class FileTreeComponent implements OnInit {
   }
 
   onMoveItem(path: string): void {
-    // Find the node to get its type and name
-    const node = this.findNodeByPath(path);
+    const targets = this.resolveActionTargets(path);
+
+    // Move modal remains single-item; multi uses cut/paste
+    if (targets.length !== 1) {
+      this.onCloseContextMenu();
+
+      return;
+    }
+
+    const node = this.findNodeByPath(targets[0].path);
 
     if (node) {
-      this.itemToMove.set({ path, type: node.type, name: node.name });
+      this.itemToMove.set({ path: node.path, type: node.type, name: node.name });
       // Set initial destination to parent directory
-      const parentPath = this.getParentPath(path);
+      const parentPath = this.getParentPath(node.path);
 
       this.moveDestinationPath.set(parentPath);
       this.moveFileModalOpen.set(true);
@@ -1146,23 +1636,67 @@ export class FileTreeComponent implements OnInit {
     }
   }
 
+  onCopySelection(): void {
+    this.copySelectionToClipboard();
+    this.onCloseContextMenu();
+  }
+
+  onCutSelection(): void {
+    this.cutSelectionToClipboard();
+    this.onCloseContextMenu();
+  }
+
+  onPasteSelection(): void {
+    this.pasteClipboardIntoTarget();
+    this.onCloseContextMenu();
+  }
+
   confirmDeleteItem(): void {
-    const item = this.itemToDelete();
+    const items = this.itemsToDelete();
 
-    if (item) {
-      this.fileDelete.emit(item.path);
-      this.deleteFileModalOpen.set(false);
-      this.itemToDelete.set(null);
-
-      // Determine parent directory path
-      const parentPath = this.getParentPath(item.path);
-
-      // Remove the deleted item from cache if it exists
-      this.removeFromCache(item.path);
-
-      // Refresh the parent directory listing to update the tree
-      this.listDirectoryRel(parentPath);
+    if (items.length === 0) {
+      return;
     }
+
+    const roots = getTopmostSelectedPaths(items.map((item) => item.path));
+    const pathsToDelete = roots;
+
+    this.deleteFileModalOpen.set(false);
+    this.itemsToDelete.set([]);
+
+    this.clipboardService.enqueueDelete(this.batchContext(), pathsToDelete, (deleted) => {
+      for (const path of deleted) {
+        this.fileDelete.emit(path);
+        this.removeFromCache(path);
+        this.selectedPaths.update((selected) => {
+          const next = new Set(selected);
+
+          next.delete(path);
+
+          for (const selectedPath of selected) {
+            if (selectedPath === path || selectedPath.startsWith(`${path}/`)) {
+              next.delete(selectedPath);
+            }
+          }
+
+          return next;
+        });
+      }
+
+      this.emitSelectionChange();
+
+      const parents = new Set(deleted.map((path) => this.getParentPath(path)));
+
+      for (const parent of parents) {
+        this.listDirectoryRel(parent);
+      }
+
+      const error = this.clipboardService.lastError();
+
+      if (error) {
+        this.batchError.set(error);
+      }
+    });
   }
 
   confirmRenameItem(): void {
@@ -1469,8 +2003,11 @@ export class FileTreeComponent implements OnInit {
       return node.expanded ? 'bi-folder2-open' : 'bi-folder';
     }
 
-    // File icons based on extension
-    const ext = node.name.split('.').pop()?.toLowerCase();
+    return this.getPendingUploadIcon(node.name);
+  }
+
+  getPendingUploadIcon(fileName: string): string {
+    const ext = fileName.split('.').pop()?.toLowerCase();
     const iconMap: Record<string, string> = {
       ts: 'bi-filetype-ts',
       js: 'bi-filetype-js',
@@ -1493,6 +2030,18 @@ export class FileTreeComponent implements OnInit {
     };
 
     return iconMap[ext || ''] || 'bi-file-earmark';
+  }
+
+  pendingUploadsFor(parentPath: string): PendingUpload[] {
+    return this.pendingUploads().filter((upload) => upload.parentPath === parentPath);
+  }
+
+  hasPendingUploads(parentPath: string): boolean {
+    return this.pendingUploads().some((upload) => upload.parentPath === parentPath);
+  }
+
+  isPathBusy(path: string): boolean {
+    return this.busyPaths().has(path);
   }
 
   getLevelArray(level: number): number[] {
@@ -1527,23 +2076,33 @@ export class FileTreeComponent implements OnInit {
   }
 
   getDeleteModalTitle(): string {
-    const item = this.itemToDelete();
+    const items = this.itemsToDelete();
 
-    if (!item) return '';
+    if (items.length === 0) return '';
 
-    return item.type === 'directory'
+    if (items.length > 1) {
+      return $localize`:@@featureFileTree-deleteMultipleTitle:Delete Items`;
+    }
+
+    return items[0].type === 'directory'
       ? $localize`:@@featureFileTree-deleteDirectoryTitle:Delete Directory`
       : $localize`:@@featureFileTree-deleteFileTitle:Delete File`;
   }
 
   getDeleteModalMessage(): string {
-    const item = this.itemToDelete();
+    const items = this.itemsToDelete();
 
-    if (!item) return '';
+    if (items.length === 0) return '';
 
-    const path = item.path;
+    if (items.length > 1) {
+      const count = items.length;
 
-    return item.type === 'directory'
+      return $localize`:@@featureFileTree-deleteMultipleMessage:Are you sure you want to delete ${count}:count: items?`;
+    }
+
+    const path = items[0].path;
+
+    return items[0].type === 'directory'
       ? $localize`:@@featureFileTree-deleteDirectoryMessage:Are you sure you want to delete the directory ${path}?:path:`
       : $localize`:@@featureFileTree-deleteFileMessage:Are you sure you want to delete the file ${path}?:path:`;
   }
@@ -1682,7 +2241,7 @@ export class FileTreeComponent implements OnInit {
   }
 
   onUploadFile(parentPath?: string): void {
-    const targetPath = parentPath || '.';
+    const targetPath = parentPath ?? this.resolveHeaderUploadTarget();
 
     this.uploadTargetPath.set(targetPath);
 
@@ -1692,6 +2251,20 @@ export class FileTreeComponent implements OnInit {
     if (fileInput?.nativeElement) {
       fileInput.nativeElement.click();
     }
+  }
+
+  /** Header upload: single selected directory, otherwise workspace root. */
+  private resolveHeaderUploadTarget(): string {
+    const selected = this.selectedPaths();
+
+    if (selected.size !== 1) {
+      return '.';
+    }
+
+    const [only] = selected;
+    const node = this.findNodeByPath(only);
+
+    return node?.type === 'directory' ? only : '.';
   }
 
   onFileSelected(event: Event): void {
@@ -1808,7 +2381,33 @@ export class FileTreeComponent implements OnInit {
     return targetPath === '.' ? relativePath : `${targetPath}/${relativePath}`;
   }
 
-  private uploadFileContent(fullPath: string, base64Content: string): void {
+  private awaitUploadFileContent(fullPath: string, base64Content: string, replace = false): Promise<void> {
+    if (replace) {
+      this.filesFacade.writeFile(
+        this.clientId(),
+        this.agentId(),
+        fullPath,
+        { content: base64Content },
+        this.fileManagerContext(),
+      );
+
+      return firstValueFrom(
+        this.actions$.pipe(
+          ofType(writeFileSuccess, writeFileFailure),
+          filter(
+            (action) =>
+              action.clientId === this.clientId() && action.agentId === this.agentId() && action.filePath === fullPath,
+          ),
+          take(1),
+          map((action) => {
+            if (action.type === writeFileFailure.type) {
+              throw new Error(action.error);
+            }
+          }),
+        ),
+      );
+    }
+
     this.filesFacade.createFileOrDirectory(
       this.clientId(),
       this.agentId(),
@@ -1818,6 +2417,22 @@ export class FileTreeComponent implements OnInit {
         content: base64Content,
       },
       this.fileManagerContext(),
+    );
+
+    return firstValueFrom(
+      this.actions$.pipe(
+        ofType(createFileOrDirectorySuccess, createFileOrDirectoryFailure),
+        filter(
+          (action) =>
+            action.clientId === this.clientId() && action.agentId === this.agentId() && action.filePath === fullPath,
+        ),
+        take(1),
+        map((action) => {
+          if (action.type === createFileOrDirectoryFailure.type) {
+            throw new Error(action.error);
+          }
+        }),
+      ),
     );
   }
 
@@ -1843,29 +2458,69 @@ export class FileTreeComponent implements OnInit {
     }
 
     this.uploadTargetPath.set(targetPath);
+    this.ensureUploadParentVisible(targetPath);
 
-    let completedCount = 0;
+    void this.uploadFilesToPathQueued(files, targetPath);
+  }
+
+  private async uploadFilesToPathQueued(files: File[], targetPath: string): Promise<void> {
+    const siblings = this.treeCache().get(targetPath === '.' ? '.' : targetPath) ?? [];
+    const siblingNames = new Set(siblings.map((node) => node.name));
     const uploadedPaths: string[] = [];
+    const pendingPaths: string[] = [];
 
-    files.forEach((file) => {
-      const fullPath = this.buildFullUploadPath(targetPath, file.name);
+    for (const file of files) {
+      const baseName = file.name;
+      const existing = siblings.find((node) => node.name.toLowerCase() === baseName.toLowerCase());
+      let finalName = baseName;
+      let replace = false;
 
-      this.readFileAsBase64(file)
-        .then((base64Content) => {
-          this.uploadFileContent(fullPath, base64Content);
-          uploadedPaths.push(fullPath);
-        })
-        .catch((error: unknown) => {
-          console.error(error);
-        })
-        .finally(() => {
-          completedCount++;
+      if (existing) {
+        if (existing.type === 'directory') {
+          finalName = suggestCopyBasename(baseName, siblingNames);
+        } else {
+          const choice = await this.promptNameCollision(baseName);
 
-          if (completedCount === files.length) {
-            this.onUploadComplete(targetPath, uploadedPaths, uploadedPaths);
+          if (choice === 'replace') {
+            replace = true;
+            finalName = existing.name;
+          } else {
+            finalName = suggestCopyBasename(baseName, siblingNames);
           }
-        });
-    });
+        }
+      }
+
+      const fullPath = this.buildFullUploadPath(targetPath, finalName);
+
+      pendingPaths.push(fullPath);
+      this.registerPendingUploads([{ path: fullPath, type: 'file' }]);
+      siblingNames.add(finalName);
+
+      try {
+        const base64Content = await this.readFileAsBase64(file);
+
+        await this.awaitUploadFileContent(fullPath, base64Content, replace);
+        uploadedPaths.push(fullPath);
+      } catch (error: unknown) {
+        console.error(error);
+        this.clearPendingUploads([fullPath]);
+      }
+    }
+
+    this.clearPendingUploads(pendingPaths);
+    this.refreshUploadedDirectories(targetPath);
+
+    if (this.fileManagerContext() === 'app') {
+      setTimeout(() => {
+        this.vcsFacade.loadStatus(this.clientId(), this.agentId());
+      }, 500);
+    }
+
+    if (uploadedPaths.length === 1) {
+      setTimeout(() => {
+        this.fileSelect.emit(uploadedPaths[0]);
+      }, 500);
+    }
   }
 
   private async uploadDroppedItems(event: DragEvent, targetPath: string): Promise<void> {
@@ -1876,6 +2531,7 @@ export class FileTreeComponent implements OnInit {
     }
 
     this.uploadTargetPath.set(targetPath);
+    this.ensureUploadParentVisible(targetPath);
 
     const entries = this.getDroppedFileSystemEntries(dataTransfer);
 
@@ -1887,6 +2543,14 @@ export class FileTreeComponent implements OnInit {
       return;
     }
 
+    // Register top-level drop names immediately so placeholders appear before deep walks finish.
+    this.registerPendingUploads(
+      entries.map((entry) => ({
+        path: this.buildFullUploadPath(targetPath, entry.name),
+        type: entry.isDirectory ? ('directory' as const) : ('file' as const),
+      })),
+    );
+
     const filesToUpload: CollectedUploadFile[] = [];
     const directories = new Set<string>();
 
@@ -1894,6 +2558,7 @@ export class FileTreeComponent implements OnInit {
       await Promise.all(entries.map((entry) => this.collectUploadEntries(entry, '', filesToUpload, directories)));
     } catch (error) {
       console.error('Failed to read dropped files:', error);
+      this.clearPendingUploads(entries.map((entry) => this.buildFullUploadPath(targetPath, entry.name)));
 
       return;
     }
@@ -1904,18 +2569,32 @@ export class FileTreeComponent implements OnInit {
     const pendingCreatePaths: string[] = [];
     const expandedDirectoryPaths: string[] = [];
 
+    // Replace early top-level placeholders with the full nested path set once known.
+    const nestedPending = [
+      ...sortedDirectories.map((relativeDirectory) => ({
+        path: this.buildFullUploadPath(targetPath, relativeDirectory),
+        type: 'directory' as const,
+      })),
+      ...filesToUpload.map(({ relativePath }) => ({
+        path: this.buildFullUploadPath(targetPath, relativePath),
+        type: 'file' as const,
+      })),
+    ];
+
+    this.clearPendingUploads(entries.map((entry) => this.buildFullUploadPath(targetPath, entry.name)));
+    this.registerPendingUploads(nestedPending);
+
     for (const relativeDirectory of sortedDirectories) {
       const fullDirectoryPath = this.buildFullUploadPath(targetPath, relativeDirectory);
 
       pendingCreatePaths.push(fullDirectoryPath);
 
-      this.filesFacade.createFileOrDirectory(
-        this.clientId(),
-        this.agentId(),
-        fullDirectoryPath,
-        { type: 'directory' },
-        this.fileManagerContext(),
-      );
+      try {
+        await this.awaitCreateDirectory(fullDirectoryPath);
+      } catch (error: unknown) {
+        console.error(error);
+        this.clearPendingUploads([fullDirectoryPath]);
+      }
 
       if (!this.expandedPaths().has(fullDirectoryPath)) {
         this.directoryExpand.emit(fullDirectoryPath);
@@ -1923,55 +2602,129 @@ export class FileTreeComponent implements OnInit {
       }
     }
 
-    if (filesToUpload.length === 0) {
-      this.onUploadComplete(targetPath, [], pendingCreatePaths, expandedDirectoryPaths);
-
-      return;
-    }
-
-    let completedCount = 0;
     const uploadedPaths: string[] = [];
 
     for (const { relativePath, file } of filesToUpload) {
       const fullPath = this.buildFullUploadPath(targetPath, relativePath);
 
       pendingCreatePaths.push(fullPath);
-      uploadedPaths.push(fullPath);
 
-      this.readFileAsBase64(file)
-        .then((base64Content) => {
-          this.uploadFileContent(fullPath, base64Content);
-        })
-        .catch((error: unknown) => {
-          console.error(error);
-        })
-        .finally(() => {
-          completedCount++;
+      try {
+        const base64Content = await this.readFileAsBase64(file);
 
-          if (completedCount === filesToUpload.length) {
-            this.onUploadComplete(targetPath, uploadedPaths, pendingCreatePaths, expandedDirectoryPaths);
-          }
-        });
+        await this.awaitUploadFileContent(fullPath, base64Content);
+        uploadedPaths.push(fullPath);
+      } catch (error: unknown) {
+        console.error(error);
+        this.clearPendingUploads([fullPath]);
+      }
+    }
+
+    this.clearPendingUploads(pendingCreatePaths);
+    this.refreshUploadedDirectories(targetPath, expandedDirectoryPaths);
+
+    if (this.fileManagerContext() === 'app') {
+      setTimeout(() => {
+        this.vcsFacade.loadStatus(this.clientId(), this.agentId());
+      }, 500);
+    }
+
+    if (uploadedPaths.length === 1) {
+      setTimeout(() => {
+        this.fileSelect.emit(uploadedPaths[0]);
+      }, 500);
     }
   }
 
-  private waitForCreatesToFinish(createPaths: string[]): Observable<void> {
-    const clientId = this.clientId();
-    const agentId = this.agentId();
-    const context = this.fileManagerContext();
-    const uniquePaths = [...new Set(createPaths)];
+  private awaitCreateDirectory(fullPath: string): Promise<void> {
+    this.filesFacade.createFileOrDirectory(
+      this.clientId(),
+      this.agentId(),
+      fullPath,
+      { type: 'directory' },
+      this.fileManagerContext(),
+    );
 
-    if (!clientId || !agentId || uniquePaths.length === 0) {
-      return of(undefined);
+    return firstValueFrom(
+      this.actions$.pipe(
+        ofType(createFileOrDirectorySuccess, createFileOrDirectoryFailure),
+        filter(
+          (action) =>
+            action.clientId === this.clientId() && action.agentId === this.agentId() && action.filePath === fullPath,
+        ),
+        take(1),
+        map((action) => {
+          if (action.type === createFileOrDirectoryFailure.type) {
+            throw new Error(action.error);
+          }
+        }),
+      ),
+    );
+  }
+
+  private registerPendingUploads(entries: Array<{ path: string; type: 'file' | 'directory' }>): void {
+    if (entries.length === 0) {
+      return;
     }
 
-    return combineLatest(
-      uniquePaths.map((path) => this.filesFacade.isCreatingFile$(clientId, agentId, path, context)),
-    ).pipe(
-      filter((creatingFlags) => creatingFlags.every((creating) => !creating)),
-      take(1),
-      map(() => undefined),
-    );
+    this.pendingUploads.update((current) => {
+      const next = [...current];
+
+      for (const entry of entries) {
+        if (next.some((pending) => pending.path === entry.path)) {
+          continue;
+        }
+
+        this.pendingUploadSeq += 1;
+        next.push({
+          id: `upload-${this.pendingUploadSeq}-${entry.path}`,
+          path: entry.path,
+          name: entry.path.includes('/') ? entry.path.slice(entry.path.lastIndexOf('/') + 1) : entry.path,
+          parentPath: this.getParentPath(entry.path),
+          type: entry.type,
+        });
+      }
+
+      return next;
+    });
+
+    for (const entry of entries) {
+      this.ensureAncestorsExpanded(entry.path);
+    }
+  }
+
+  private clearPendingUploads(paths: string[]): void {
+    if (paths.length === 0) {
+      return;
+    }
+
+    const pathSet = new Set(paths);
+
+    this.pendingUploads.update((current) => current.filter((pending) => !pathSet.has(pending.path)));
+  }
+
+  private ensureUploadParentVisible(targetPath: string): void {
+    if (targetPath === '.') {
+      return;
+    }
+
+    if (!this.expandedPaths().has(targetPath)) {
+      this.directoryExpand.emit(targetPath);
+    }
+
+    if (!this.treeCache().has(targetPath)) {
+      this.listDirectoryRel(targetPath);
+    }
+  }
+
+  /** Expand every ancestor folder so nested upload placeholders are visible. */
+  private ensureAncestorsExpanded(path: string): void {
+    let current = this.getParentPath(path);
+
+    while (current && current !== '.') {
+      this.ensureUploadParentVisible(current);
+      current = this.getParentPath(current);
+    }
   }
 
   private refreshUploadedDirectories(targetPath: string, expandedDirectoryPaths: string[] = []): void {
@@ -1984,34 +2737,5 @@ export class FileTreeComponent implements OnInit {
         this.listDirectoryRel(path);
       }, index * 50);
     });
-  }
-
-  private onUploadComplete(
-    targetPath: string,
-    uploadedPaths: string[],
-    pendingCreatePaths: string[] = uploadedPaths,
-    expandedDirectoryPaths: string[] = [],
-  ): void {
-    if (targetPath !== '.' && !this.expandedPaths().has(targetPath)) {
-      this.directoryExpand.emit(targetPath);
-    }
-
-    this.waitForCreatesToFinish(pendingCreatePaths)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        this.refreshUploadedDirectories(targetPath, expandedDirectoryPaths);
-
-        if (this.fileManagerContext() === 'app') {
-          setTimeout(() => {
-            this.vcsFacade.loadStatus(this.clientId(), this.agentId());
-          }, 500);
-        }
-
-        if (uploadedPaths.length === 1) {
-          setTimeout(() => {
-            this.fileSelect.emit(uploadedPaths[0]);
-          }, 500);
-        }
-      });
   }
 }
