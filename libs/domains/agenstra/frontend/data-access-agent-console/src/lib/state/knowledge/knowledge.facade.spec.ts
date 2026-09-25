@@ -72,6 +72,16 @@ describe('KnowledgeFacade', () => {
     expect(store.dispatch).toHaveBeenCalledWith(KnowledgeActions.createKnowledgeNode({ dto }));
   });
 
+  it('dispatches uploadTextFiles', () => {
+    const dto = {
+      clientId: 'client-1',
+      files: [{ filename: 'notes.md', content: '# Hello' }],
+    };
+
+    facade.uploadTextFiles(dto);
+    expect(store.dispatch).toHaveBeenCalledWith(KnowledgeActions.uploadKnowledgeTextFiles({ dto }));
+  });
+
   it('dispatches updateNode', () => {
     const dto = { title: 'Renamed' };
 

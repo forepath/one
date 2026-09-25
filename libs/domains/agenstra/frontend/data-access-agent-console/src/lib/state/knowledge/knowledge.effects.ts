@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { catchError, map, of, switchMap, withLatestFrom } from 'rxjs';
+import { catchError, concatMap, map, of, switchMap, withLatestFrom } from 'rxjs';
 
 import { KnowledgeService } from '../../services/knowledge.service';
 import { selectActiveClientId } from '../clients/clients.selectors';
@@ -35,6 +35,9 @@ import {
   updateKnowledgeNode,
   updateKnowledgeNodeFailure,
   updateKnowledgeNodeSuccess,
+  uploadKnowledgeTextFiles,
+  uploadKnowledgeTextFilesFailure,
+  uploadKnowledgeTextFilesSuccess,
 } from './knowledge.actions';
 import { selectKnowledgeSelectedNodeId } from './knowledge.selectors';
 
@@ -83,10 +86,25 @@ export const createKnowledgeNode$ = createEffect(
   (actions$ = inject(Actions), knowledgeService = inject(KnowledgeService)) => {
     return actions$.pipe(
       ofType(createKnowledgeNode),
-      switchMap(({ dto }) =>
+      concatMap(({ dto }) =>
         knowledgeService.create(dto).pipe(
           map((node) => createKnowledgeNodeSuccess({ node })),
           catchError((error) => of(createKnowledgeNodeFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    );
+  },
+  { functional: true },
+);
+
+export const uploadKnowledgeTextFiles$ = createEffect(
+  (actions$ = inject(Actions), knowledgeService = inject(KnowledgeService)) => {
+    return actions$.pipe(
+      ofType(uploadKnowledgeTextFiles),
+      concatMap(({ dto }) =>
+        knowledgeService.uploadTextFiles(dto).pipe(
+          map((result) => uploadKnowledgeTextFilesSuccess({ result, dto })),
+          catchError((error) => of(uploadKnowledgeTextFilesFailure({ error: normalizeError(error), dto }))),
         ),
       ),
     );
@@ -98,10 +116,10 @@ export const updateKnowledgeNode$ = createEffect(
   (actions$ = inject(Actions), knowledgeService = inject(KnowledgeService)) => {
     return actions$.pipe(
       ofType(updateKnowledgeNode),
-      switchMap(({ id, dto }) =>
+      concatMap(({ id, dto }) =>
         knowledgeService.update(id, dto).pipe(
           map((node) => updateKnowledgeNodeSuccess({ node })),
-          catchError((error) => of(updateKnowledgeNodeFailure({ error: normalizeError(error) }))),
+          catchError((error) => of(updateKnowledgeNodeFailure({ id, error: normalizeError(error) }))),
         ),
       ),
     );
@@ -113,10 +131,10 @@ export const duplicateKnowledgeNode$ = createEffect(
   (actions$ = inject(Actions), knowledgeService = inject(KnowledgeService)) => {
     return actions$.pipe(
       ofType(duplicateKnowledgeNode),
-      switchMap(({ id }) =>
+      concatMap(({ id }) =>
         knowledgeService.duplicate(id).pipe(
-          map((node) => duplicateKnowledgeNodeSuccess({ node })),
-          catchError((error) => of(duplicateKnowledgeNodeFailure({ error: normalizeError(error) }))),
+          map((node) => duplicateKnowledgeNodeSuccess({ sourceId: id, node })),
+          catchError((error) => of(duplicateKnowledgeNodeFailure({ sourceId: id, error: normalizeError(error) }))),
         ),
       ),
     );
@@ -128,10 +146,10 @@ export const deleteKnowledgeNode$ = createEffect(
   (actions$ = inject(Actions), knowledgeService = inject(KnowledgeService)) => {
     return actions$.pipe(
       ofType(deleteKnowledgeNode),
-      switchMap(({ id, releaseExternalSyncMarker }) =>
+      concatMap(({ id, releaseExternalSyncMarker }) =>
         knowledgeService.delete(id, releaseExternalSyncMarker).pipe(
           map(() => deleteKnowledgeNodeSuccess({ id })),
-          catchError((error) => of(deleteKnowledgeNodeFailure({ error: normalizeError(error) }))),
+          catchError((error) => of(deleteKnowledgeNodeFailure({ id, error: normalizeError(error) }))),
         ),
       ),
     );
@@ -242,6 +260,7 @@ export const reloadTreeAfterWrite$ = createEffect(
         updateKnowledgeNodeSuccess,
         duplicateKnowledgeNodeSuccess,
         deleteKnowledgeNodeSuccess,
+        uploadKnowledgeTextFilesSuccess,
       ),
       withLatestFrom(store.select(selectActiveClientId)),
       map(([, clientId]) => clientId),

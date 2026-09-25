@@ -8,6 +8,8 @@ import type {
   KnowledgeRelationDto,
   KnowledgeRelationSourceType,
   UpdateKnowledgeNodeDto,
+  UploadKnowledgeTextDto,
+  UploadKnowledgeTextResultDto,
 } from './knowledge.types';
 
 export const loadKnowledgeTree = createAction('[Knowledge] Load Tree', props<{ clientId: string; search?: string }>());
@@ -26,6 +28,19 @@ export const createKnowledgeNodeSuccess = createAction(
 );
 export const createKnowledgeNodeFailure = createAction('[Knowledge] Create Node Failure', props<{ error: string }>());
 
+export const uploadKnowledgeTextFiles = createAction(
+  '[Knowledge] Upload Text Files',
+  props<{ dto: UploadKnowledgeTextDto }>(),
+);
+export const uploadKnowledgeTextFilesSuccess = createAction(
+  '[Knowledge] Upload Text Files Success',
+  props<{ result: UploadKnowledgeTextResultDto; dto: UploadKnowledgeTextDto }>(),
+);
+export const uploadKnowledgeTextFilesFailure = createAction(
+  '[Knowledge] Upload Text Files Failure',
+  props<{ error: string; dto: UploadKnowledgeTextDto }>(),
+);
+
 export const updateKnowledgeNode = createAction(
   '[Knowledge] Update Node',
   props<{ id: string; dto: UpdateKnowledgeNodeDto }>(),
@@ -34,16 +49,19 @@ export const updateKnowledgeNodeSuccess = createAction(
   '[Knowledge] Update Node Success',
   props<{ node: KnowledgeNodeDto }>(),
 );
-export const updateKnowledgeNodeFailure = createAction('[Knowledge] Update Node Failure', props<{ error: string }>());
+export const updateKnowledgeNodeFailure = createAction(
+  '[Knowledge] Update Node Failure',
+  props<{ id: string; error: string }>(),
+);
 
 export const duplicateKnowledgeNode = createAction('[Knowledge] Duplicate Node', props<{ id: string }>());
 export const duplicateKnowledgeNodeSuccess = createAction(
   '[Knowledge] Duplicate Node Success',
-  props<{ node: KnowledgeNodeDto }>(),
+  props<{ sourceId: string; node: KnowledgeNodeDto }>(),
 );
 export const duplicateKnowledgeNodeFailure = createAction(
   '[Knowledge] Duplicate Node Failure',
-  props<{ error: string }>(),
+  props<{ sourceId: string; error: string }>(),
 );
 
 export const deleteKnowledgeNode = createAction(
@@ -51,7 +69,10 @@ export const deleteKnowledgeNode = createAction(
   props<{ id: string; releaseExternalSyncMarker?: boolean }>(),
 );
 export const deleteKnowledgeNodeSuccess = createAction('[Knowledge] Delete Node Success', props<{ id: string }>());
-export const deleteKnowledgeNodeFailure = createAction('[Knowledge] Delete Node Failure', props<{ error: string }>());
+export const deleteKnowledgeNodeFailure = createAction(
+  '[Knowledge] Delete Node Failure',
+  props<{ id: string; error: string }>(),
+);
 
 export const loadKnowledgeRelations = createAction(
   '[Knowledge] Load Relations',

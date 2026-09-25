@@ -1,5 +1,6 @@
 import type { FilesState, OpenTab } from './files.reducer';
 import {
+  selectActiveMutationPaths,
   selectDirectoryListing,
   selectDirectoryOperationLoading,
   selectFileContent,
@@ -206,6 +207,29 @@ describe('Files Selectors', () => {
       const result = selector.projector(mockFilesState.moving);
 
       expect(result).toBe(false);
+    });
+  });
+
+  describe('selectActiveMutationPaths', () => {
+    it('should return paths that are writing, deleting, or moving', () => {
+      const writing = { [fileKey]: true, [`${clientId}:${agentId}:app:other.txt`]: false };
+      const deleting = { [`${clientId}:${agentId}:app:gone.txt`]: true };
+      const moving = { [`${clientId}:${agentId}:app:relocated`]: true };
+      const selector = selectActiveMutationPaths(clientId, agentId);
+      const result = selector.projector(writing, deleting, moving);
+
+      expect(result).toEqual(new Set([filePath, 'gone.txt', 'relocated']));
+    });
+
+    it('should ignore paths for other clients or contexts', () => {
+      const writing = {
+        [`other-client:${agentId}:app:secret.txt`]: true,
+        [`${clientId}:${agentId}:config:secret.txt`]: true,
+      };
+      const selector = selectActiveMutationPaths(clientId, agentId, 'app');
+      const result = selector.projector(writing, {}, {});
+
+      expect(result.size).toBe(0);
     });
   });
 

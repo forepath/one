@@ -118,7 +118,7 @@
                 [title]="tab.filePath"
               >
                 <i class="bi bi-file-earmark-code me-1"></i>
-                <span [class.fst-italic]="!tab.pinned">{{ getFileName(tab.filePath) }}</span>
+                <span class="small" [class.fst-italic]="!tab.pinned">{{ getFileName(tab.filePath) }}</span>
                 <button
                   type="button"
                   class="btn-close btn-close-sm ms-2"
@@ -228,19 +228,19 @@
         </div>
       } @else {
         <div
-          class="editor-content d-flex flex-column"
-          [class.flex-grow-1]="!terminalVisible()"
-          [style.flex-basis]="terminalVisible() ? '60%' : '100%'"
+          class="editor-content d-flex flex-column flex-grow-1"
+          [style.flex-basis]="terminalVisible() ? '60%' : 'auto'"
           [class.mobile-hidden]="fileTreeVisible() || terminalVisible() || gitManagerVisible()"
         >
           @if (selectedFilePath()) {
             @if (isReadingFile$ | async) {
-              <div class="d-flex justify-content-center align-items-center h-100">
+              <div class="editor-loading d-flex justify-content-center align-items-center flex-grow-1">
                 <fpc-spinner variant="primary" i18n-label="@@featureFileEditor-loadingFile" label="Loading file..." />
               </div>
             } @else {
               <framework-monaco-editor-wrapper
                 #monacoEditor
+                class="flex-grow-1"
                 [filePath]="selectedFilePath()"
                 [content]="(selectedFileContent$ | async)?.content || null"
                 [encoding]="(selectedFileContent$ | async)?.encoding || 'utf-8'"

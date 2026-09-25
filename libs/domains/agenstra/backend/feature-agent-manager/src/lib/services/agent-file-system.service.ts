@@ -216,7 +216,11 @@ export class AgentFileSystemService {
         // Check if it's likely text: low percentage of control characters (excluding common whitespace)
         const sampleSize = Math.min(512, textContent.length);
 
-        if (sampleSize > 0) {
+        // Empty files have no bytes to classify; treat as text so the editor can open them
+        if (sampleSize === 0) {
+          encoding = 'utf-8';
+          this.logger.debug(`File ${filePath} detected as text (empty file)`);
+        } else if (sampleSize > 0) {
           const sample = textContent.substring(0, sampleSize);
           let controlCharCount = 0;
 
@@ -292,8 +296,8 @@ export class AgentFileSystemService {
 
   /**
    * Sanitize string by removing invalid filesystem characters.
-   * Keeps only valid characters: letters, numbers, dots, dashes, underscores, slashes, and spaces.
-   * Used for file names, directory names, paths, and other filesystem-related strings.
+   * Keeps common filename characters including spaces and parentheses (e.g. "Copy (1).txt").
+   * Strips control characters and the pipe delimiter used by listDirectory parsing.
    * @param str - The string to sanitize
    * @returns Sanitized string
    */
@@ -302,10 +306,15 @@ export class AgentFileSystemService {
       return '';
     }
 
-    // Keep only alphanumeric, dots, dashes, underscores, slashes, and spaces
-    // Remove everything else (control characters, shell special chars, etc.)
-    return str.replace(/[^a-zA-Z0-9.\-_/ ]/g, '').trim();
+    // Allow letters, numbers, and common filename punctuation; strip control chars and '|'
+    return str.replace(/[^a-zA-Z0-9.\-_/ ()[\]{}+#@&=,~'!]/g, '').trim();
   }
+
+  /**
+   * Characters allowed in listDirectory shell/Docker output before parsing.
+   * Same as sanitizeFilesystemString plus pipe (field separator) and newlines.
+   */
+  private static readonly LIST_OUTPUT_ALLOWED = /[^a-zA-Z0-9.\-_/ ()[\]{}+#@&=,~'!|\n]/g;
 
   /**
    * Write file content to agent container.
@@ -406,7 +415,7 @@ export class AgentFileSystemService {
       let output = await this.dockerService.sendCommandToContainer(agentEntity.containerId, listCommand);
 
       // Remove invalid characters that might come from Docker protocol parsing
-      output = output.replace(/[^a-zA-Z0-9.\-_/ \n]/g, '').trim();
+      output = output.replace(AgentFileSystemService.LIST_OUTPUT_ALLOWED, '').trim();
 
       this.logger.debug(`List directory output for ${containerPath}: ${output.substring(0, 200)}`);
 
@@ -424,11 +433,11 @@ export class AgentFileSystemService {
         return [];
       }
 
-      // Process all items in a single command using find with -exec
-      // This is more efficient than one command per item
+      // Quote $item when joining to the directory path so names with spaces resolve.
+      // Without quotes, `fullpath='/app'/$item` word-splits on spaces and stat fails → entry skipped.
       const escapedItems = items.map((item) => this.escapeForShell(item)).join(' ');
       const processCommand = `sh -c "for item in ${escapedItems}; do
-        fullpath=${escapedPath}/\\$item
+        fullpath=${escapedPath}/\\"\\$item\\"
         if [ -d \\"\\$fullpath\\" ]; then
           echo \\"directory|\\$item|0|\\$(stat -c %Y \\"\\$fullpath\\" 2>/dev/null || echo 0)\\"
         else
@@ -439,7 +448,7 @@ export class AgentFileSystemService {
 
       // Remove invalid characters that might come from Docker protocol parsing
       // Keep pipe separator (|) for parsing, newlines, and valid filename characters
-      processOutput = processOutput.replace(/[^a-zA-Z0-9.\-_/ |\n]/g, '').trim();
+      processOutput = processOutput.replace(AgentFileSystemService.LIST_OUTPUT_ALLOWED, '').trim();
 
       this.logger.debug(`Process output: ${processOutput.substring(0, 200)}`);
 

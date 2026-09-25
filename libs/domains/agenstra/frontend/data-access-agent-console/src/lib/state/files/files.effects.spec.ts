@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import { FilesService } from '../../services/files.service';
 
@@ -309,6 +309,43 @@ describe('FilesEffects', () => {
         expect(result).toEqual(outcome);
         done();
       });
+    });
+
+    it('should queue concurrent creates instead of dropping later ones', (done) => {
+      const createDto: CreateFileDto = { type: 'file' };
+      const firstPath = 'a.txt';
+      const secondPath = 'b.txt';
+      const firstResponse = new Subject<void>();
+      const secondResponse = new Subject<void>();
+      const actionsSubject = new Subject<ReturnType<typeof createFileOrDirectory>>();
+      const results: string[] = [];
+
+      filesService.createFileOrDirectory
+        .mockReturnValueOnce(firstResponse.asObservable())
+        .mockReturnValueOnce(secondResponse.asObservable());
+
+      actions$ = actionsSubject;
+      createFileOrDirectory$(actions$, filesService).subscribe((result) => {
+        if (result.type === createFileOrDirectorySuccess.type) {
+          results.push(result.filePath);
+        }
+
+        if (results.length === 2) {
+          expect(results).toEqual([firstPath, secondPath]);
+          expect(filesService.createFileOrDirectory).toHaveBeenCalledTimes(2);
+          done();
+        }
+      });
+
+      actionsSubject.next(createFileOrDirectory({ clientId, agentId, filePath: firstPath, createFileDto: createDto }));
+      actionsSubject.next(createFileOrDirectory({ clientId, agentId, filePath: secondPath, createFileDto: createDto }));
+
+      expect(filesService.createFileOrDirectory).toHaveBeenCalledTimes(1);
+
+      firstResponse.next();
+      firstResponse.complete();
+      secondResponse.next();
+      secondResponse.complete();
     });
   });
 

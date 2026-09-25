@@ -56,13 +56,14 @@
     (dragenter)="onDragEnterRoot($event)"
     (dragleave)="onDragLeaveRoot($event)"
     (drop)="onDropRoot($event)"
+    (click)="onTreeBackgroundClick($event)"
   >
     @if (rootLoading$ | async) {
       <div class="d-flex justify-content-center align-items-center p-4">
         <fpc-spinner size="sm" variant="primary" i18n-label="@@featureFileTree-loading" label="Loading..." />
       </div>
     } @else {
-      @if (treeNodes().length === 0) {
+      @if (treeNodes().length === 0 && pendingUploadsFor('.').length === 0) {
         <div class="text-center text-muted p-4">
           <i class="bi bi-folder-x fs-4 d-block mb-2"></i>
           <p class="mb-0 small" i18n="@@featureFileTree-noFiles">No files</p>
@@ -122,6 +123,14 @@
                   hasSiblings: treeNodes().length > 1,
                   parentChildren: treeNodes(),
                 }"
+              ></ng-container>
+            </li>
+          }
+          @for (pending of pendingUploadsFor('.'); track pending.id) {
+            <li>
+              <ng-container
+                [ngTemplateOutlet]="pendingUploadTemplate"
+                [ngTemplateOutletContext]="{ $implicit: pending, level: 0 }"
               ></ng-container>
             </li>
           }
@@ -195,13 +204,20 @@
   <div class="tree-node-wrapper">
     <div
       class="tree-node d-flex align-items-center py-1 px-2 rounded"
-      [class.selected]="selectedPath() === node.path"
+      [class.selected]="isPathSelected(node.path)"
+      [class.tree-node-open]="isPathOpen(node.path)"
+      [class.tree-node-clipboard-copy]="isPathClipboardCopy(node.path)"
+      [class.tree-node-clipboard-cut]="isPathClipboardCut(node.path)"
       [class.expanded]="node.expanded"
       [class.has-children]="node.children && node.children.length > 0"
       [class.creating-in]="creatingItem()?.path === node.path"
       [class.dragging]="draggedItem()?.path === node.path"
       [class.drag-over]="dragOverPath() === node.path && node.type === 'directory'"
-      [draggable]="true"
+      [class.tree-node-busy]="isPathBusy(node.path)"
+      [attr.aria-busy]="isPathBusy(node.path) ? true : null"
+      [attr.aria-current]="isPathOpen(node.path) ? 'page' : null"
+      [attr.data-clipboard]="isPathClipboardCopy(node.path) ? 'copy' : isPathClipboardCut(node.path) ? 'cut' : null"
+      [draggable]="!isPathBusy(node.path)"
       (click)="onFileClick(node, $event)"
       (contextmenu)="onContextMenu($event, node)"
       (dragstart)="onDragStart($event, node)"
@@ -222,64 +238,81 @@
 
       <!-- Node content -->
       <div class="tree-node-content d-flex align-items-center flex-grow-1">
+        @if (isPathBusy(node.path)) {
+          <fpc-spinner
+            class="me-2 tree-node-busy-spinner"
+            size="sm"
+            variant="primary"
+            i18n-label="@@featureFileTree-itemBusy"
+            label="Working..."
+          />
+        }
         @if (node.type === 'directory') {
           <i
             class="bi me-2 tree-node-icon"
+            [class.text-muted]="isPathBusy(node.path)"
             [class.bi-chevron-right]="!node.expanded"
             [class.bi-chevron-down]="node.expanded"
             [class.bi-folder]="!node.expanded"
             [class.bi-folder2-open]="node.expanded"
           ></i>
         } @else {
-          <i class="bi me-2 tree-node-icon" [ngClass]="getIcon(node)"></i>
+          <i class="bi me-2 tree-node-icon" [class.text-muted]="isPathBusy(node.path)" [ngClass]="getIcon(node)"></i>
         }
-        <span class="tree-node-name flex-grow-1 text-truncate" [title]="node.name">{{ node.name }}</span>
-        <fpc-button-group size="sm" class="ms-2">
-          @if (node.type === 'directory') {
+        <span
+          class="tree-node-name flex-grow-1 text-truncate small"
+          [class.text-muted]="isPathBusy(node.path)"
+          [title]="node.name"
+          >{{ node.name }}</span
+        >
+        @if (!isPathBusy(node.path)) {
+          <fpc-button-group size="sm" class="ms-2">
+            @if (node.type === 'directory') {
+              <fpc-button
+                variant="dark"
+                size="sm"
+                iconOnly
+                [class.active]="creatingItem()?.path === node.path && creatingItem()?.type === 'file'"
+                (clicked)="onCreateItem('file', node.path); $event.stopPropagation()"
+                i18n-title="@@featureFileTree-newFileTitle"
+                title="New File"
+              >
+                <i class="bi bi-file-earmark-plus"></i>
+              </fpc-button>
+              <fpc-button
+                variant="dark"
+                size="sm"
+                iconOnly
+                [class.active]="creatingItem()?.path === node.path && creatingItem()?.type === 'directory'"
+                (clicked)="onCreateItem('directory', node.path); $event.stopPropagation()"
+                i18n-title="@@featureFileTree-newDirectoryTitle"
+                title="New Directory"
+              >
+                <i class="bi bi-folder-plus"></i>
+              </fpc-button>
+              <fpc-button
+                variant="dark"
+                size="sm"
+                iconOnly
+                (clicked)="onUploadFile(node.path); $event.stopPropagation()"
+                i18n-title="@@featureFileTree-uploadFileTitle"
+                title="Upload File"
+              >
+                <i class="bi bi-upload"></i>
+              </fpc-button>
+            }
             <fpc-button
-              variant="dark"
+              variant="danger"
               size="sm"
               iconOnly
-              [class.active]="creatingItem()?.path === node.path && creatingItem()?.type === 'file'"
-              (clicked)="onCreateItem('file', node.path); $event.stopPropagation()"
-              i18n-title="@@featureFileTree-newFileTitle"
-              title="New File"
+              (clicked)="onDeleteItem(node.path); $event.stopPropagation()"
+              i18n-title="@@featureFileTree-deleteTitle"
+              title="Delete"
             >
-              <i class="bi bi-file-earmark-plus"></i>
+              <i class="bi bi-trash"></i>
             </fpc-button>
-            <fpc-button
-              variant="dark"
-              size="sm"
-              iconOnly
-              [class.active]="creatingItem()?.path === node.path && creatingItem()?.type === 'directory'"
-              (clicked)="onCreateItem('directory', node.path); $event.stopPropagation()"
-              i18n-title="@@featureFileTree-newDirectoryTitle"
-              title="New Directory"
-            >
-              <i class="bi bi-folder-plus"></i>
-            </fpc-button>
-            <fpc-button
-              variant="dark"
-              size="sm"
-              iconOnly
-              (clicked)="onUploadFile(node.path); $event.stopPropagation()"
-              i18n-title="@@featureFileTree-uploadFileTitle"
-              title="Upload File"
-            >
-              <i class="bi bi-upload"></i>
-            </fpc-button>
-          }
-          <fpc-button
-            variant="danger"
-            size="sm"
-            iconOnly
-            (clicked)="onDeleteItem(node.path); $event.stopPropagation()"
-            i18n-title="@@featureFileTree-deleteTitle"
-            title="Delete"
-          >
-            <i class="bi bi-trash"></i>
-          </fpc-button>
-        </fpc-button-group>
+          </fpc-button-group>
+        }
       </div>
     </div>
 
@@ -304,10 +337,10 @@
       </div>
     }
 
-    <!-- Children -->
-    @if (node.children && node.children.length > 0) {
+    <!-- Children + in-progress uploads into this folder -->
+    @if ((node.children && node.children.length > 0) || hasPendingUploads(node.path)) {
       <ul class="list-unstyled mb-0 tree-children">
-        @for (child of node.children; track child.path; let isLast = $last; let idx = $index) {
+        @for (child of node.children || []; track child.path; let isLast = $last; let idx = $index) {
           <li>
             <ng-container
               [ngTemplateOutlet]="treeNodeTemplate"
@@ -315,14 +348,54 @@
                 $implicit: child,
                 level: level + 1,
                 isLast: isLast,
-                hasSiblings: node.children.length > 1,
+                hasSiblings: (node.children?.length || 0) > 1,
                 parentChildren: node.children,
               }"
             ></ng-container>
           </li>
         }
+        @for (pending of pendingUploadsFor(node.path); track pending.id) {
+          <li>
+            <ng-container
+              [ngTemplateOutlet]="pendingUploadTemplate"
+              [ngTemplateOutletContext]="{ $implicit: pending, level: level + 1 }"
+            ></ng-container>
+          </li>
+        }
       </ul>
     }
+  </div>
+</ng-template>
+
+<!-- Pending upload placeholder (filename known early; spinner until create finishes) -->
+<ng-template #pendingUploadTemplate let-pending let-level="level">
+  <div
+    class="tree-node tree-node-uploading d-flex align-items-center py-1 px-2 rounded"
+    role="status"
+    aria-live="polite"
+  >
+    @if (level > 0) {
+      <div class="tree-indent" [style.width.px]="level * 20">
+        @for (i of getLevelArray(level); track i) {
+          <div class="tree-indent-line"></div>
+        }
+      </div>
+    }
+    <div class="tree-node-content d-flex align-items-center flex-grow-1">
+      <fpc-spinner
+        class="me-2 tree-node-upload-spinner"
+        size="sm"
+        variant="primary"
+        i18n-label="@@featureFileTree-uploading"
+        label="Uploading..."
+      />
+      @if (pending.type === 'directory') {
+        <i class="bi bi-folder me-2 tree-node-icon text-muted"></i>
+      } @else {
+        <i class="bi me-2 tree-node-icon text-muted" [ngClass]="getPendingUploadIcon(pending.name)"></i>
+      }
+      <span class="tree-node-name flex-grow-1 text-truncate text-muted" [title]="pending.name">{{ pending.name }}</span>
+    </div>
   </div>
 </ng-template>
 
@@ -366,13 +439,27 @@
       </button>
     }
     <div class="dropdown-divider"></div>
-    <button class="dropdown-item" (click)="onRenameItem(contextMenuPath()!)">
-      <i class="bi bi-pencil me-2"></i><span i18n="@@featureFileTree-contextRename">Rename</span>
+    <button class="dropdown-item" (click)="onCopySelection()">
+      <i class="bi bi-clipboard me-2"></i><span i18n="@@featureFileTree-contextCopy">Copy</span>
     </button>
-    <button class="dropdown-item" (click)="onMoveItem(contextMenuPath()!)">
-      <i class="bi bi-arrow-right-circle me-2"></i><span i18n="@@featureFileTree-contextMove">Move</span>
+    <button class="dropdown-item" (click)="onCutSelection()">
+      <i class="bi bi-scissors me-2"></i><span i18n="@@featureFileTree-contextCut">Cut</span>
     </button>
+    @if (clipboardService.clipboard()) {
+      <button class="dropdown-item" (click)="onPasteSelection()">
+        <i class="bi bi-clipboard-check me-2"></i><span i18n="@@featureFileTree-contextPaste">Paste</span>
+      </button>
+    }
     <div class="dropdown-divider"></div>
+    @if (selectedPaths().size <= 1) {
+      <button class="dropdown-item" (click)="onRenameItem(contextMenuPath()!)">
+        <i class="bi bi-pencil me-2"></i><span i18n="@@featureFileTree-contextRename">Rename</span>
+      </button>
+      <button class="dropdown-item" (click)="onMoveItem(contextMenuPath()!)">
+        <i class="bi bi-arrow-right-circle me-2"></i><span i18n="@@featureFileTree-contextMove">Move</span>
+      </button>
+      <div class="dropdown-divider"></div>
+    }
     <button class="dropdown-item text-danger" (click)="onDeleteItem(contextMenuPath()!)">
       <i class="bi bi-trash me-2"></i><span i18n="@@featureFileTree-contextDelete">Delete</span>
     </button>
@@ -391,12 +478,32 @@
   confirmLabel="Delete"
   [danger]="true"
   (confirmed)="confirmDeleteItem()"
-  (cancelled)="itemToDelete.set(null)"
+  (cancelled)="itemsToDelete.set([])"
 >
   <p>{{ getDeleteModalMessage() }}</p>
   <p class="text-danger mb-0">
     <i class="bi bi-exclamation-triangle-fill me-2"></i>
     <span i18n="@@featureFileTree-deleteModalWarning">This action cannot be undone.</span>
+  </p>
+</fpc-confirm-dialog>
+
+<fpc-confirm-dialog
+  [(open)]="nameCollisionOpen"
+  i18n-title="@@featureFileTree-nameCollisionTitle"
+  title="Name already exists"
+  i18n-confirmLabel="@@featureFileTree-replace"
+  confirmLabel="Replace"
+  i18n-cancelLabel="@@featureFileTree-keepBoth"
+  cancelLabel="Keep both"
+  (confirmed)="onNameCollisionReplace()"
+  (cancelled)="onNameCollisionKeepBoth()"
+>
+  <p>
+    <span i18n="@@featureFileTree-nameCollisionMessage">A file named</span>
+    <strong>{{ nameCollisionName() }}</strong>
+    <span i18n="@@featureFileTree-nameCollisionMessageSuffix">
+      already exists in this folder. Replace it or keep both with a numbered name?
+    </span>
   </p>
 </fpc-confirm-dialog>
 

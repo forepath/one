@@ -20,6 +20,7 @@ import {
 } from './files.actions';
 import type { OpenTab } from './files.reducer';
 import {
+  selectActiveMutationPaths,
   selectDirectoryListing,
   selectDirectoryOperationLoading,
   selectFileContent,
@@ -188,6 +189,17 @@ export class FilesFacade {
     context?: FileManagerContext,
   ): Observable<boolean> {
     return this.store.select(selectIsMovingFile(clientId, agentId, filePath, context));
+  }
+
+  /**
+   * Paths currently being written, deleted, or moved (for per-row busy UI).
+   */
+  getActiveMutationPaths$(
+    clientId: string,
+    agentId: string,
+    context?: FileManagerContext,
+  ): Observable<ReadonlySet<string>> {
+    return this.store.select(selectActiveMutationPaths(clientId, agentId, context));
   }
 
   /**

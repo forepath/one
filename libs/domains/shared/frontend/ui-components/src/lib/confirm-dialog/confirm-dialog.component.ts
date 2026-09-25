@@ -1,4 +1,13 @@
-import { booleanAttribute, ChangeDetectionStrategy, Component, computed, input, model, output } from '@angular/core';
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  HostListener,
+  input,
+  model,
+  output,
+} from '@angular/core';
 
 import { FpcButtonComponent, FpcButtonVariant } from '../button/button.component';
 import { FpcButtonGroupComponent } from '../button-group/button-group.component';
@@ -14,6 +23,8 @@ import { FpcModalAccent, FpcModalComponent, FpcModalSize } from '../modal/modal.
  *
  * `danger` / `warning` drive both the confirm button variant and the modal corner close accent
  * (fill + X ink match that button’s text/background colors).
+ *
+ * Enter confirms while the dialog is open (unless busy, or focus is on Cancel / a multiline field).
  */
 @Component({
   selector: 'fpc-confirm-dialog',
@@ -81,6 +92,31 @@ export class FpcConfirmDialogComponent {
   });
 
   protected readonly confirmVariant = computed<FpcButtonVariant>(() => this.accent());
+
+  @HostListener('document:keydown.enter', ['$event'])
+  protected onEnter(event: Event): void {
+    if (!this.open() || this.busy()) {
+      return;
+    }
+
+    const target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+
+    // Let focused buttons/links keep native Enter activation (e.g. Cancel).
+    if (target.closest('button, a, [role="button"]')) {
+      return;
+    }
+
+    // Multiline fields use Enter for newlines.
+    if (target.closest('textarea, [contenteditable="true"]')) {
+      return;
+    }
+
+    event.preventDefault();
+    this.onConfirm();
+  }
 
   protected onConfirm(): void {
     this.confirmed.emit();

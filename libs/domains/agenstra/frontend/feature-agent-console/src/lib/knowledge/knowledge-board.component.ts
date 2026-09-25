@@ -139,6 +139,9 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
   readonly selectedNode = toSignal(this.knowledgeFacade.selectedNode$, { initialValue: null });
   readonly tickets = toSignal(this.ticketsFacade.tickets$, { initialValue: [] as TicketResponseDto[] });
   readonly loading = toSignal(this.knowledgeFacade.loading$, { initialValue: false });
+  readonly mutatingIds = toSignal(this.knowledgeFacade.mutatingIds$, {
+    initialValue: new Set<string>(),
+  });
   readonly relations = toSignal(this.knowledgeFacade.relations$, { initialValue: [] });
   readonly relationsLoading = toSignal(this.knowledgeFacade.relationsLoading$, { initialValue: false });
   readonly activity = toSignal(this.knowledgeFacade.activity$, { initialValue: [] as KnowledgePageActivityDto[] });
@@ -550,10 +553,6 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
     this.knowledgeFacade.selectNode(node.id);
   }
 
-  onDuplicateNode(nodeId: string): void {
-    this.knowledgeFacade.duplicateNode(nodeId);
-  }
-
   onRefreshTree(): void {
     const clientId = this.activeClientId();
 
@@ -568,10 +567,6 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
 
   onMoveNode(event: { id: string; parentId: string | null }): void {
     this.knowledgeFacade.updateNode(event.id, { parentId: event.parentId });
-  }
-
-  onDeleteNode(event: { id: string; releaseExternalSyncMarker?: boolean }): void {
-    this.knowledgeFacade.deleteNode(event.id, event.releaseExternalSyncMarker);
   }
 
   onSavePageTitle(): void {

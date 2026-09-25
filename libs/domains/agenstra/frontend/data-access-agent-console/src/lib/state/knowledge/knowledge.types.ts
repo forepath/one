@@ -40,6 +40,31 @@ export interface CreateKnowledgeNodeDto {
   content?: string;
 }
 
+export type KnowledgeUploadOnConflict = 'reject' | 'replace' | 'number';
+
+export interface UploadKnowledgeTextFileDto {
+  filename: string;
+  content: string;
+}
+
+export interface UploadKnowledgeTextDto {
+  clientId?: string;
+  parentId?: string | null;
+  onConflict?: KnowledgeUploadOnConflict;
+  files: UploadKnowledgeTextFileDto[];
+}
+
+export interface UploadKnowledgeTextRejectedDto {
+  filename: string;
+  reason: string;
+}
+
+export interface UploadKnowledgeTextResultDto {
+  created: KnowledgeNodeDto[];
+  updated: KnowledgeNodeDto[];
+  rejected: UploadKnowledgeTextRejectedDto[];
+}
+
 export interface UpdateKnowledgeNodeDto {
   parentId?: string | null;
   title?: string;

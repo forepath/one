@@ -1837,10 +1837,13 @@ export class DockerService {
         fs.mkdirSync(hostDir, { recursive: true });
       }
 
-      // Write tar stream to a temporary file
-      const tempTarPath = `${hostPath}.tar`;
+      // Use a fixed archive name under a temp dir so host filenames with spaces never break shell tools
+      const workDir = fs.mkdtempSync(path.join(os.tmpdir(), 'docker-cp-'));
+      const tempTarPath = path.join(workDir, 'archive.tar');
+      const extractDir = path.join(workDir, 'extract');
       const writeStream = fs.createWriteStream(tempTarPath);
 
+      fs.mkdirSync(extractDir);
       tarStream.pipe(writeStream);
 
       // Wait for the tar file to be written
@@ -1854,9 +1857,9 @@ export class DockerService {
       // The tar archive from getArchive contains the file at the specified path
       // We need to extract it to the host path
       try {
-        // Extract the tar file to a temporary directory first
-        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'docker-cp-'));
-        const extractCommand = `tar -xf ${tempTarPath} -C ${tempDir} 2>&1`;
+        // Quote paths for shell: unquoted paths with spaces (e.g. "sdf f.txt.tar") make tar fail
+        const quoteShell = (value: string): string => `'${value.replace(/'/g, `'\\''`)}'`;
+        const extractCommand = `tar -xf ${quoteShell(tempTarPath)} -C ${quoteShell(extractDir)} 2>&1`;
         const { stderr: extractStderr } = await execAsync(extractCommand);
 
         // Check for extraction errors
@@ -1864,16 +1867,13 @@ export class DockerService {
           this.logger.warn(`Tar extraction warnings: ${extractStderr}`);
         }
 
-        // Find the extracted file (it will be in the temp directory with the same structure as container)
-        // The tar archive preserves the full path, so we need to find the file
-        const findCommand = `find ${tempDir} -type f | head -1`;
-        const { stdout: foundFile } = await execAsync(findCommand);
-        const extractedFilePath = foundFile.trim();
+        // Walk extractDir in Node so spaced filenames do not break `find`
+        const extractedFilePath = this.findFirstFileRecursive(extractDir);
 
         if (!extractedFilePath || !fs.existsSync(extractedFilePath)) {
-          // Try alternative: the file might be at the root of tempDir if path was stripped
+          // Try alternative: the file might be at the root of extractDir if path was stripped
           const fileName = path.basename(containerPath);
-          const alternativePath = path.join(tempDir, fileName);
+          const alternativePath = path.join(extractDir, fileName);
 
           if (fs.existsSync(alternativePath)) {
             fs.copyFileSync(alternativePath, hostPath);
@@ -1885,14 +1885,13 @@ export class DockerService {
           fs.copyFileSync(extractedFilePath, hostPath);
         }
 
-        // Clean up: remove temp tar and temp directory
-        fs.unlinkSync(tempTarPath);
-        fs.rmSync(tempDir, { recursive: true, force: true });
+        // Clean up work directory (archive + extract tree)
+        fs.rmSync(workDir, { recursive: true, force: true });
       } catch (extractError: unknown) {
-        // Clean up temp tar file on error
-        if (fs.existsSync(tempTarPath)) {
+        // Clean up work directory on error
+        if (fs.existsSync(workDir)) {
           try {
-            fs.unlinkSync(tempTarPath);
+            fs.rmSync(workDir, { recursive: true, force: true });
           } catch {
             // Ignore cleanup errors
           }
@@ -2020,5 +2019,34 @@ export class DockerService {
         await this.docker.pull(image);
       }
     }
+  }
+
+  /**
+   * Return the first regular file under dir (depth-first). Avoids shell `find` so spaced names work.
+   */
+  private findFirstFileRecursive(dir: string): string | null {
+    if (!fs.existsSync(dir)) {
+      return null;
+    }
+
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+
+      if (entry.isFile()) {
+        return fullPath;
+      }
+
+      if (entry.isDirectory()) {
+        const nested = this.findFirstFileRecursive(fullPath);
+
+        if (nested) {
+          return nested;
+        }
+      }
+    }
+
+    return null;
   }
 }

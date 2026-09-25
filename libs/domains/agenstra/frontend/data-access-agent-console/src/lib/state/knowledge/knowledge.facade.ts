@@ -7,6 +7,7 @@ import {
   selectKnowledgeActivityLoading,
   selectKnowledgeError,
   selectKnowledgeLoading,
+  selectKnowledgeMutatingIds,
   selectKnowledgeRelations,
   selectKnowledgeRelationsLoading,
   selectKnowledgeSelectedNode,
@@ -18,6 +19,7 @@ import type {
   CreateKnowledgeRelationDto,
   KnowledgeRelationSourceType,
   UpdateKnowledgeNodeDto,
+  UploadKnowledgeTextDto,
 } from './knowledge.types';
 
 @Injectable()
@@ -26,6 +28,7 @@ export class KnowledgeFacade {
 
   readonly tree$ = this.store.select(selectKnowledgeTree);
   readonly loading$ = this.store.select(selectKnowledgeLoading);
+  readonly mutatingIds$ = this.store.select(selectKnowledgeMutatingIds);
   readonly error$ = this.store.select(selectKnowledgeError);
   readonly relations$ = this.store.select(selectKnowledgeRelations);
   readonly relationsLoading$ = this.store.select(selectKnowledgeRelationsLoading);
@@ -44,6 +47,10 @@ export class KnowledgeFacade {
 
   createNode(dto: CreateKnowledgeNodeDto): void {
     this.store.dispatch(KnowledgeActions.createKnowledgeNode({ dto }));
+  }
+
+  uploadTextFiles(dto: UploadKnowledgeTextDto): void {
+    this.store.dispatch(KnowledgeActions.uploadKnowledgeTextFiles({ dto }));
   }
 
   updateNode(id: string, dto: UpdateKnowledgeNodeDto): void {

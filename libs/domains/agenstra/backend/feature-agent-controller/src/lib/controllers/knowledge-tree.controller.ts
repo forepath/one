@@ -22,6 +22,7 @@ import {
   KnowledgePromptContextResponseDto,
   ReorderKnowledgeNodeDto,
   UpdateKnowledgeNodeDto,
+  UploadKnowledgeTextDto,
 } from '../dto/knowledge';
 import { KnowledgeRelationSourceType } from '../entities/knowledge-node.enums';
 import { KnowledgeTreeService } from '../services/knowledge-tree.service';
@@ -65,6 +66,13 @@ export class KnowledgeTreeController {
   @HttpCode(HttpStatus.CREATED)
   async createNode(@Body() dto: CreateKnowledgeNodeDto, @Req() req?: RequestWithUser) {
     return await this.knowledgeTreeService.createNode(dto, req);
+  }
+
+  @RequireScopes('knowledge:write')
+  @Post('upload-text')
+  @HttpCode(HttpStatus.CREATED)
+  async uploadTextFiles(@Body() dto: UploadKnowledgeTextDto, @Req() req?: RequestWithUser) {
+    return await this.knowledgeTreeService.uploadTextFiles(dto, req);
   }
 
   @RequireScopes('knowledge:write')

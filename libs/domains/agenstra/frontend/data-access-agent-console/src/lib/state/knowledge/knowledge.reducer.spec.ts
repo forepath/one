@@ -204,7 +204,10 @@ describe('knowledgeReducer', () => {
     expect(next.loading).toBe(false);
 
     next = knowledgeReducer(next, KnowledgeActions.duplicateKnowledgeNode({ id: 'node-1' }));
-    next = knowledgeReducer(next, KnowledgeActions.duplicateKnowledgeNodeSuccess({ node: mockNode }));
+    next = knowledgeReducer(
+      next,
+      KnowledgeActions.duplicateKnowledgeNodeSuccess({ sourceId: 'node-1', node: mockNode }),
+    );
     expect(next.loading).toBe(false);
 
     next = knowledgeReducer(next, KnowledgeActions.deleteKnowledgeNode({ id: 'node-1' }));
@@ -225,15 +228,21 @@ describe('knowledgeReducer', () => {
       loading: false,
       error: 'c',
     });
-    expect(knowledgeReducer(base, KnowledgeActions.updateKnowledgeNodeFailure({ error: 'u' }))).toMatchObject({
+    expect(
+      knowledgeReducer(base, KnowledgeActions.updateKnowledgeNodeFailure({ id: 'node-1', error: 'u' })),
+    ).toMatchObject({
       loading: false,
       error: 'u',
     });
-    expect(knowledgeReducer(base, KnowledgeActions.duplicateKnowledgeNodeFailure({ error: 'd' }))).toMatchObject({
+    expect(
+      knowledgeReducer(base, KnowledgeActions.duplicateKnowledgeNodeFailure({ sourceId: 'node-1', error: 'd' })),
+    ).toMatchObject({
       loading: false,
       error: 'd',
     });
-    expect(knowledgeReducer(base, KnowledgeActions.deleteKnowledgeNodeFailure({ error: 'del' }))).toMatchObject({
+    expect(
+      knowledgeReducer(base, KnowledgeActions.deleteKnowledgeNodeFailure({ id: 'node-1', error: 'del' })),
+    ).toMatchObject({
       loading: false,
       error: 'del',
     });

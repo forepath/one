@@ -76,6 +76,23 @@ describe('KnowledgeService', () => {
     req.flush(mockNode);
   });
 
+  it('uploadTextFiles should POST to /knowledge/upload-text', (done) => {
+    const dto = {
+      clientId: 'c1',
+      files: [{ filename: 'notes.md', content: '# Hello' }],
+    };
+
+    service.uploadTextFiles(dto).subscribe((result) => {
+      expect(result.created).toEqual([mockNode]);
+      done();
+    });
+    const req = httpMock.expectOne(`${apiUrl}/knowledge/upload-text`);
+
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(dto);
+    req.flush({ created: [mockNode], updated: [], rejected: [] });
+  });
+
   it('update should PATCH', (done) => {
     service.update('n1', { title: 'X' }).subscribe(() => done());
     const req = httpMock.expectOne(`${apiUrl}/knowledge/n1`);

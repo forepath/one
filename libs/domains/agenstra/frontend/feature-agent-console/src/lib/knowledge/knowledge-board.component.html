@@ -81,13 +81,12 @@
           [nodes]="tree()"
           [selectedNodeId]="selectedNode()?.id ?? null"
           [loading]="loading()"
+          [mutatingIds]="mutatingIds()"
           (selectNode)="onSelectNode($event)"
           (refreshTree)="onRefreshTree()"
           (createNode)="onCreateNode($event)"
           (renameNode)="onRenameNode($event)"
           (moveNode)="onMoveNode($event)"
-          (duplicateNode)="onDuplicateNode($event)"
-          (deleteNode)="onDeleteNode($event)"
         ></framework-knowledge-tree>
       </div>
 

@@ -7,6 +7,7 @@ export const selectKnowledgeState = createFeatureSelector<KnowledgeState>('knowl
 
 export const selectKnowledgeTree = createSelector(selectKnowledgeState, (state) => state.tree);
 export const selectKnowledgeLoading = createSelector(selectKnowledgeState, (state) => state.loading);
+export const selectKnowledgeMutatingIds = createSelector(selectKnowledgeState, (state) => state.mutatingIds);
 export const selectKnowledgeRelationsLoading = createSelector(selectKnowledgeState, (state) => state.relationsLoading);
 export const selectKnowledgeActivityLoading = createSelector(selectKnowledgeState, (state) => state.activityLoading);
 export const selectKnowledgeError = createSelector(selectKnowledgeState, (state) => state.error);
