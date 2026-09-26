@@ -2408,6 +2408,148 @@ paths:
           description: User does not have access to this client, or lacks workspace management rights when context is config
         '404':
           description: Client, agent, or directory not found
+  /clients/{id}/agents/{agentId}/workspace-search:
+    get:
+      summary: Search indexed workspace file paths and text content
+      operationId: searchClientAgentWorkspace
+      description: |
+        Searches the controller-owned OpenSearch corpus for this clientId+agentId only (fail closed).
+        Response always includes index `status`. When status is missing/indexing/error, hits are empty.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the client
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the agent
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Search query (substring match; fields depend on mode)
+        - in: query
+          name: mode
+          schema:
+            type: string
+            enum: [full, files]
+            default: full
+          description: |
+            `full` searches path, file name, and text content.
+            `files` searches path and file name only (no content matches or snippets).
+        - in: query
+          name: include
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+          description: Optional path-prefix include filters (traversal rejected)
+        - in: query
+          name: exclude
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+          description: Optional path-prefix exclude filters (traversal rejected)
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Search response with status and hits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceSearchResponseDto'
+        '403':
+          description: User does not have access to this client/agent
+        '404':
+          description: Client or agent not found
+  /clients/{id}/agents/{agentId}/workspace-search/status:
+    get:
+      summary: Workspace search index status for an agent
+      operationId: getClientAgentWorkspaceSearchStatus
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Index status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceIndexStatusDto'
+        '403':
+          description: User does not have access to this client/agent
+        '404':
+          description: Client or agent not found
+  /clients/{id}/agents/{agentId}/workspace-search/reindex:
+    post:
+      summary: Rebuild workspace search index for an agent
+      operationId: reindexClientAgentWorkspace
+      description: |
+        Signals the agent-manager to emit a rebuild notification and starts controller re-hydration
+        from the file proxy. Returns 202 Accepted immediately.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '202':
+          description: Reindex accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [accepted]
+                properties:
+                  accepted:
+                    type: boolean
+                    enum: [true]
+        '403':
+          description: User does not have access to this client/agent
+        '404':
+          description: Client or agent not found
   /clients/{id}/agents/{agentId}/files/{path}:
     head:
       summary: Probe file metadata without transferring the body (proxied)
@@ -7931,3 +8073,57 @@ components:
               RELATION_REMOVED,
             ]
         payload: { type: object, additionalProperties: true }
+    WorkspaceIndexStatusDto:
+      type: object
+      required: [status, docCount]
+      properties:
+        status:
+          type: string
+          enum: [missing, indexing, ready, error]
+        docCount:
+          type: integer
+          minimum: 0
+        message:
+          type: string
+          nullable: true
+    WorkspaceSearchHitDto:
+      type: object
+      required: [path, fileName, fileType, size]
+      properties:
+        path: { type: string }
+        fileName: { type: string }
+        fileType: { type: string }
+        size: { type: integer }
+        matches:
+          type: array
+          description: Content line matches (full mode). Empty when only the path matched.
+          items:
+            $ref: '#/components/schemas/WorkspaceSearchMatchDto'
+        snippet:
+          type: string
+          nullable: true
+          description: First match snippet (compat; prefer matches)
+        line:
+          type: integer
+          nullable: true
+          description: First match line (compat; prefer matches)
+    WorkspaceSearchMatchDto:
+      type: object
+      required: [line, snippet]
+      properties:
+        line: { type: integer, minimum: 1 }
+        snippet: { type: string }
+    WorkspaceSearchResponseDto:
+      type: object
+      required: [status, hits, total]
+      properties:
+        status:
+          type: string
+          enum: [missing, indexing, ready, error]
+        hits:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkspaceSearchHitDto'
+        total:
+          type: integer
+          minimum: 0

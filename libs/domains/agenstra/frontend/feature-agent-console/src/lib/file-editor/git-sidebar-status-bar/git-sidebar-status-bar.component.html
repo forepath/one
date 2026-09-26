@@ -1,0 +1,59 @@
+@if (showBar$ | async) {
+  <div class="git-sidebar-status-bar px-2 py-1 border-top bg-body-tertiary">
+    <div class="d-flex align-items-center gap-2">
+      @if (clientRepositoryName$ | async; as repoName) {
+        <small class="text-muted d-flex align-items-center gap-2 text-truncate flex-grow-1" [title]="repoName">
+          <i class="bi bi-git me-1"></i>
+          <span class="text-truncate">{{ repoName }}</span>
+        </small>
+      } @else {
+        <small
+          class="text-muted d-flex align-items-center gap-2 text-truncate flex-grow-1"
+          i18n-title="@@featureGitSidebar-localRepoTitle"
+          title="Local repository"
+        >
+          <i class="bi bi-git me-1"></i>
+          <span class="text-truncate" i18n="@@featureGitSidebar-localRepo">Local</span>
+        </small>
+      }
+
+      <div class="d-flex align-items-center gap-2 flex-shrink-0">
+        @if (currentBranch$ | async; as branch) {
+          <small
+            class="text-muted d-flex align-items-center gap-2 cursor-pointer"
+            (click)="onOpenBranchModal()"
+            [title]="getCurrentBranchTitle(branch)"
+          >
+            <i class="bi bi-diagram-3"></i>
+            <span class="text-truncate">{{ branch }}</span>
+          </small>
+        }
+
+        @if (statusIndicator$ | async; as indicator) {
+          <span
+            class="git-status-indicator rounded-circle cursor-pointer position-relative d-inline-flex align-items-center justify-content-center"
+            [class.status-clean]="indicator === 'clean'"
+            [class.status-changes]="indicator === 'changes'"
+            [class.status-conflict]="indicator === 'conflict'"
+            [class.has-spinner]="showStatusIndicatorSpinner$ | async"
+            (click)="onStatusIndicatorClick($event)"
+            [title]="getStatusIndicatorTitle(indicator)"
+          >
+            @if (showStatusIndicatorSpinner$ | async) {
+              <fpc-spinner size="sm" i18n-label="@@featureFileTree-loading" label="Loading..." />
+            }
+          </span>
+        } @else if (loadingStatus$ | async) {
+          <fpc-spinner size="sm" i18n-label="@@featureFileTree-loading" label="Loading..." />
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<framework-git-branch-modal
+  [clientId]="clientId()"
+  [agentId]="agentId()"
+  [isOpen]="branchModalOpen()"
+  (closed)="onBranchModalClosed()"
+></framework-git-branch-modal>

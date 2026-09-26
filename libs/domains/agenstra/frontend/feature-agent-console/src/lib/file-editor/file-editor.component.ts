@@ -6,6 +6,7 @@ import {
   DestroyRef,
   effect,
   ElementRef,
+  HostListener,
   inject,
   input,
   NgZone,
@@ -22,12 +23,14 @@ import {
   moveFileOrDirectorySuccess,
   SocketsFacade,
   VcsFacade,
+  WorkspaceSearchFacade,
   type CreateFileDto,
   type FileContentDto,
   type FileManagerContext,
   type FileUpdateNotificationData,
   type ListDirectoryParams,
   type OpenTab,
+  type WorkspaceSearchMode,
   type WriteFileDto,
   utf8ToArrayBuffer,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
@@ -43,27 +46,34 @@ import {
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcSpinnerComponent,
+  FpcTabComponent,
+  FpcTabGroupComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { LocaleService } from '@forepath/shared/frontend/util-configuration';
 import { Actions, ofType } from '@ngrx/effects';
 import { combineLatest, debounceTime, filter, map, Observable, of, Subject, switchMap, take } from 'rxjs';
 
 import { ContainerStatsStatusBarComponent } from './container-stats-status-bar/container-stats-status-bar.component';
+import { fileIconClassForName, fileIconNameForName } from './file-icon.util';
 import { FileTreeComponent } from './file-tree/file-tree.component';
 import { GitDiffViewerComponent } from './git-diff-viewer/git-diff-viewer.component';
 import { GitManagerComponent } from './git-manager/git-manager.component';
+import { GitSidebarStatusBarComponent } from './git-sidebar-status-bar/git-sidebar-status-bar.component';
 import { MonacoEditorWrapperComponent } from './monaco-editor-wrapper/monaco-editor-wrapper.component';
 import { TerminalComponent } from './terminal/terminal.component';
+import { WorkspaceSearchPanelComponent } from './workspace-search-panel/workspace-search-panel.component';
 
 @Component({
   selector: 'framework-file-editor',
   imports: [
     CommonModule,
     FileTreeComponent,
+    WorkspaceSearchPanelComponent,
     MonacoEditorWrapperComponent,
     TerminalComponent,
     GitManagerComponent,
     GitDiffViewerComponent,
+    GitSidebarStatusBarComponent,
     ContainerStatsStatusBarComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
@@ -76,6 +86,8 @@ import { TerminalComponent } from './terminal/terminal.component';
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcSpinnerComponent,
+    FpcTabComponent,
+    FpcTabGroupComponent,
   ],
   templateUrl: './file-editor.component.html',
   styleUrls: ['./file-editor.component.scss'],
@@ -86,6 +98,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   private readonly filesService = inject(FilesService);
   private readonly socketsFacade = inject(SocketsFacade);
   private readonly vcsFacade = inject(VcsFacade);
+  private readonly workspaceSearchFacade = inject(WorkspaceSearchFacade);
   private readonly destroyRef = inject(DestroyRef);
   private readonly actions$ = inject(Actions);
   private readonly location = inject(Location);
@@ -118,11 +131,17 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   // Visibility toggles (exposed for parent component access)
   // Initialize based on screen size: true for desktop, false for mobile
   readonly fileTreeVisible = signal<boolean>(typeof window !== 'undefined' && window.innerWidth > 767.98);
+  /** Left sidebar mode: file tree or workspace search. */
+  readonly sidebarMode = signal<'files' | 'search'>('files');
+  readonly filesTabLabel = $localize`:@@featureFileEditor-filesTab:Files`;
+  readonly searchTabLabel = $localize`:@@featureFileEditor-searchTab:Search`;
   readonly terminalVisible = signal<boolean>(false);
   readonly gitManagerVisible = signal<boolean>(false);
   readonly gitDiffViewerVisible = signal<boolean>(false);
   readonly gitDiffFilePath = signal<string | null>(null);
   readonly autosaveEnabled = signal<boolean>(false);
+  /** Pending Monaco reveal from workspace search match selection. */
+  readonly revealLineRequest = signal<{ line: number; nonce: number } | null>(null);
 
   // Outputs
   readonly chatToggleRequested = output<void>();
@@ -947,6 +966,14 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     return filePath.split('/').pop() || filePath;
   }
 
+  getFileIconClass(filePath: string): string {
+    return fileIconClassForName(filePath);
+  }
+
+  getFileIconName(filePath: string): string {
+    return fileIconNameForName(filePath);
+  }
+
   onTabClick(filePath: string): void {
     this.selectedFilePath.set(filePath);
   }
@@ -1278,16 +1305,22 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       return;
     }
 
+    const isSystemUpdate = notification.socketId === 'system';
+    const isForeignPeerUpdate = !!currentSocketId && notification.socketId !== currentSocketId && !isSystemUpdate;
+
+    // Invalidate parent directory listing for any remote/system change
+    if ((isSystemUpdate || isForeignPeerUpdate) && clientId && agentId) {
+      const parentPath = notification.filePath.includes('/')
+        ? notification.filePath.slice(0, notification.filePath.lastIndexOf('/')) || '.'
+        : '.';
+
+      this.filesFacade.listDirectory(clientId, agentId, this.listParams(parentPath));
+    }
+
     // Check conditions:
-    // 1. Socket ID must be different (not our own update)
+    // 1. System update OR different socket (not our own peer update)
     // 2. Current user must be viewing the same file
-    if (
-      currentSocketId &&
-      notification.socketId !== currentSocketId &&
-      currentFilePath === notification.filePath &&
-      clientId &&
-      agentId
-    ) {
+    if ((isSystemUpdate || isForeignPeerUpdate) && currentFilePath === notification.filePath && clientId && agentId) {
       const isDirty = this.dirtyFiles().has(notification.filePath);
 
       if (isDirty) {
@@ -1299,6 +1332,80 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
         // File is not dirty - automatically reload from server (no need to disable autosave)
         this.filesFacade.readFile(clientId, agentId, notification.filePath, this.fileManagerContext());
       }
+    }
+  }
+
+  setSidebarMode(mode: 'files' | 'search'): void {
+    this.sidebarMode.set(mode);
+
+    if (!this.fileTreeVisible()) {
+      this.fileTreeVisible.set(true);
+    }
+  }
+
+  openWorkspaceSearch(mode: WorkspaceSearchMode): void {
+    this.workspaceSearchFacade.setMode(mode);
+    this.setSidebarMode('search');
+    // Wait for the search panel to render before focusing the query field.
+    setTimeout(() => {
+      document.getElementById('workspaceSearchQuery')?.focus();
+    }, 0);
+  }
+
+  onSidebarModeTabChange(tabId: string | null): void {
+    if (tabId === 'files' || tabId === 'search') {
+      this.setSidebarMode(tabId);
+    }
+  }
+
+  onWorkspaceSearchOpen(hit: { path: string; line?: number | null }): void {
+    this.onFileSelect(hit.path);
+
+    if (hit.line != null && hit.line > 0) {
+      this.revealLineRequest.set({ line: hit.line, nonce: Date.now() });
+    } else {
+      this.revealLineRequest.set(null);
+    }
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onSidebarHotkeys(event: KeyboardEvent): void {
+    const meta = event.ctrlKey || event.metaKey;
+
+    if (!meta || !this.fileTreeVisible()) {
+      return;
+    }
+
+    const key = event.key.toLowerCase();
+    const target = event.target as HTMLElement | null;
+    const tag = target?.tagName?.toLowerCase();
+    const isSearchHotkey = key === 'f';
+    const inEditable = tag === 'input' || tag === 'textarea' || !!target?.isContentEditable;
+
+    if (inEditable) {
+      // Allow Ctrl/Cmd(+Shift)+F inside search panel inputs; ignore elsewhere in inputs
+      if (!(isSearchHotkey && this.sidebarMode() === 'search')) {
+        return;
+      }
+    }
+
+    if (isSearchHotkey && event.shiftKey) {
+      event.preventDefault();
+      this.openWorkspaceSearch('files');
+
+      return;
+    }
+
+    if (isSearchHotkey && !event.shiftKey) {
+      event.preventDefault();
+      this.openWorkspaceSearch('full');
+
+      return;
+    }
+
+    if (key === 'e' && event.shiftKey) {
+      event.preventDefault();
+      this.setSidebarMode('files');
     }
   }
 

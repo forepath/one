@@ -15,6 +15,7 @@ import { AgentChatSessionsService } from './agent-chat-sessions.service';
 import { AgentsService } from './agents.service';
 import { DeploymentsService } from './deployments.service';
 import { DockerService } from './docker.service';
+import { WorkspaceInotifySupervisor } from './workspace-inotify-supervisor.service';
 
 describe('AgentsService', () => {
   let service: AgentsService;
@@ -161,6 +162,14 @@ describe('AgentsService', () => {
         {
           provide: DeploymentsService,
           useValue: mockDeploymentsService,
+        },
+        {
+          provide: WorkspaceInotifySupervisor,
+          useValue: {
+            onWorkspaceReady: jest.fn().mockResolvedValue(undefined),
+            startWatcher: jest.fn().mockResolvedValue(undefined),
+            stopWatcher: jest.fn().mockResolvedValue(undefined),
+          },
         },
       ],
     }).compile();
@@ -1729,6 +1738,14 @@ describe('AgentsService', () => {
           {
             provide: DeploymentsService,
             useValue: undefined,
+          },
+          {
+            provide: WorkspaceInotifySupervisor,
+            useValue: {
+              onWorkspaceReady: jest.fn().mockResolvedValue(undefined),
+              startWatcher: jest.fn().mockResolvedValue(undefined),
+              stopWatcher: jest.fn().mockResolvedValue(undefined),
+            },
           },
         ],
       }).compile();

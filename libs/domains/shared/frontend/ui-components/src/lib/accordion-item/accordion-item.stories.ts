@@ -10,7 +10,9 @@ const meta: Meta<FpcAccordionItemComponent> = {
       description: {
         component: `**When to use:** One expandable section inside \`fpc-accordion\`.
 
-**Pairs with:** \`fpc-accordion\`.`,
+**Pairs with:** \`fpc-accordion\`.
+
+**Variants:** \`condensed\` matches dense list rows (\`fpc-list-item variant="condensed"\`).`,
       },
     },
   },
@@ -23,6 +25,7 @@ const meta: Meta<FpcAccordionItemComponent> = {
     icon: 'receipt',
     open: true,
     disabled: false,
+    variant: 'default',
     toggled: action('toggled'),
   },
   render: (args) => ({
@@ -33,6 +36,7 @@ const meta: Meta<FpcAccordionItemComponent> = {
                 [icon]="icon"
                 [open]="open"
                 [disabled]="disabled"
+                [variant]="variant"
                 (toggled)="toggled($event)"
             >
                 <p class="mb-0">Invoices are issued on the first working day of each month.</p>
@@ -50,3 +54,5 @@ export const Open: Story = {};
 export const Collapsed: Story = { args: { open: false } };
 
 export const Disabled: Story = { args: { disabled: true, open: false } };
+
+export const Condensed: Story = { args: { variant: 'condensed' } };

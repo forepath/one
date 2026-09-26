@@ -10,6 +10,7 @@ import { ChatFilter, FilterDirection } from '../providers/chat-filter.interface'
 import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
 import { AgentGitStateBroadcastService } from '../services/agent-git-state-broadcast.service';
+import { WorkspaceChangeNotifierService } from '../services/workspace-change-notifier.service';
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
@@ -195,6 +196,16 @@ describe('AgentsGateway', () => {
         {
           provide: AgentGitStateBroadcastService,
           useValue: mockGitStateBroadcast,
+        },
+        {
+          provide: WorkspaceChangeNotifierService,
+          useValue: {
+            registerIndexBroadcaster: jest.fn(),
+            registerFileUpdateBroadcaster: jest.fn(),
+            notifyPathChanges: jest.fn(),
+            notifyRebuildRequired: jest.fn(),
+            notifySystemFileUpdate: jest.fn(),
+          },
         },
       ],
     }).compile();

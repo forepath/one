@@ -16,6 +16,7 @@ import { AgentsMessagesController } from '../controllers/agents-messages.control
 import { AgentsVcsController } from '../controllers/agents-vcs.controller';
 import { AgentsVerificationController } from '../controllers/agents-verification.controller';
 import { AgentsController } from '../controllers/agents.controller';
+import { AgentsWorkspaceIndexController } from '../controllers/agents-workspace-index.controller';
 import { ConfigController } from '../controllers/config.controller';
 import { WorkspaceConfigurationOverridesController } from '../controllers/workspace-configuration-overrides.controller';
 import { AgentChatSessionEntity } from '../entities/agent-chat-session.entity';
@@ -78,6 +79,8 @@ import { PromptContextComposerService } from '../services/prompt-context-compose
 import { RegexFilterRulesCacheService } from '../services/regex-filter-rules-cache.service';
 import { RegexFilterRulesEvaluateService } from '../services/regex-filter-rules-evaluate.service';
 import { WorkspaceConfigurationOverridesService } from '../services/workspace-configuration-overrides.service';
+import { WorkspaceChangeNotifierService } from '../services/workspace-change-notifier.service';
+import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-supervisor.service';
 
 /**
  * Module for agent management feature.
@@ -101,6 +104,7 @@ import { WorkspaceConfigurationOverridesService } from '../services/workspace-co
     AgentsController,
     AgentsMessagesController,
     AgentsFilesController,
+    AgentsWorkspaceIndexController,
     AgentsVcsController,
     AgentsVerificationController,
     AgentsDeploymentsController,
@@ -124,6 +128,8 @@ import { WorkspaceConfigurationOverridesService } from '../services/workspace-co
     AgentGitStateBroadcastService,
     AgentFileSystemService,
     AgentsVcsService,
+    WorkspaceChangeNotifierService,
+    WorkspaceInotifySupervisor,
     AgentsVerificationService,
     ConfigService,
     InstanceStatusService,

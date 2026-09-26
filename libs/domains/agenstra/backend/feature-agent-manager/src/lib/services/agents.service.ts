@@ -20,6 +20,7 @@ import { expandProviderPathTildeInContainer } from '../utils/provider-container-
 import { AgentChatSessionsService } from './agent-chat-sessions.service';
 import { DeploymentsService } from './deployments.service';
 import { DockerService } from './docker.service';
+import { WorkspaceInotifySupervisor } from './workspace-inotify-supervisor.service';
 
 /**
  * Service for agent business logic operations.
@@ -42,6 +43,8 @@ export class AgentsService implements OnApplicationBootstrap {
     private readonly agentChatSessionsService: AgentChatSessionsService,
     @Inject(forwardRef(() => DeploymentsService))
     private readonly deploymentsService?: DeploymentsService,
+    @Inject(forwardRef(() => WorkspaceInotifySupervisor))
+    private readonly workspaceInotifySupervisor?: WorkspaceInotifySupervisor,
   ) {}
 
   /**
@@ -584,6 +587,10 @@ export class AgentsService implements OnApplicationBootstrap {
 
         await this.agentChatSessionsService.ensurePrimarySession(agent.id);
 
+        void this.workspaceInotifySupervisor?.onWorkspaceReady(agent.id, basePath).catch((error: unknown) => {
+          this.logger.warn(`Failed to start workspace watcher for agent ${agent.id}: ${(error as Error).message}`);
+        });
+
         // Create deployment configuration if provided
         if (createAgentDto.deploymentConfiguration && this.deploymentsService) {
           try {
@@ -737,6 +744,8 @@ export class AgentsService implements OnApplicationBootstrap {
    */
   async remove(id: string): Promise<void> {
     const agent = await this.agentsRepository.findByIdOrThrow(id);
+
+    await this.workspaceInotifySupervisor?.stopWatcher(id).catch(() => undefined);
 
     if (agent.containerId) {
       try {

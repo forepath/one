@@ -68,6 +68,8 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
   bodyOmitted = input<boolean>(false);
   isDirty = input<boolean>(false);
   autosaveEnabled = input<boolean>(false);
+  /** 1-based line to reveal when opening from search (nonce forces re-reveal). */
+  revealLine = input<{ line: number; nonce: number } | null>(null);
 
   // Outputs
   contentChange = output<string>();
@@ -123,6 +125,30 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
       if (editor) {
         monaco.editor.setTheme(isDarkMode ? 'vs-dark' : 'vs-light');
       }
+    });
+
+    effect(() => {
+      const request = this.revealLine();
+      const editor = this.editorInstance();
+      // Re-run when file text arrives so reveal works after async open.
+      this.text();
+
+      if (!request || !editor || request.line < 1) {
+        return;
+      }
+
+      const line = request.line;
+      void request.nonce;
+
+      queueMicrotask(() => {
+        const model = editor.getModel();
+        const maxLine = model?.getLineCount() ?? line;
+        const target = Math.min(line, maxLine);
+
+        editor.revealLineInCenter(target);
+        editor.setPosition({ lineNumber: target, column: 1 });
+        editor.focus();
+      });
     });
 
     // Build blob URLs for image/PDF/video/audio preview from the body store.

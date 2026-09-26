@@ -78,7 +78,8 @@ channels:
       shape as `chatEnhanceResult`), "fileUpdate", "logout", "createTerminal", "terminalInput",
       "closeTerminal", etc. The remote agent-manager gateway will process the event and may emit
       response events (e.g., "chatMessage", "chatEnhanceResult", "ticketBodyResult",
-      "fileUpdateNotification", "terminalCreated", "terminalOutput", "terminalClosed", "containerStats")
+      "fileUpdateNotification", "workspaceIndexChanged", "workspaceIndexRebuildRequired",
+      "terminalCreated", "terminalOutput", "terminalClosed", "containerStats")
       which are automatically forwarded back to the client. The "containerStats" event payload
       (defined in the agent-manager AsyncAPI) includes container status (running/stopped) and, when
       running, container statistics. For autonomous ticket runs, proxied `chat` may include
@@ -97,6 +98,8 @@ channels:
       the same event broadcast to room `client:{clientId}` on the **clients** namespace.
       When a ticket row is created or updated (REST or internal), the controller also emits **ticketChatTicketUpsert**
       to room `client:{clientId}` on **clients** (same body as `tickets/ticketUpsert`).
+      Workspace index events (`workspaceIndexChanged` / `workspaceIndexRebuildRequired`) are also consumed locally
+      by the controller to hydrate OpenSearch (`agenstra-workspace-files`) before being forwarded to the FE.
   clients/ticketAutomationRunChatUpsert:
     address: clients/ticketAutomationRunChatUpsert
     messages:

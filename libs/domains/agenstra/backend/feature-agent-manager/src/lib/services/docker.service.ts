@@ -1122,6 +1122,106 @@ export class DockerService {
   }
 
   /**
+   * Start a long-lived exec that streams demultiplexed stdout/stderr lines until stopped.
+   * Used for inotifywait and similar watchers. Does not wait for process exit.
+   */
+  async startStreamingExec(
+    containerId: string,
+    command: string[],
+    onLine: (line: string) => void,
+  ): Promise<{ stop: () => Promise<void> }> {
+    const container = this.docker.getContainer(containerId);
+
+    try {
+      await container.inspect();
+    } catch (error: unknown) {
+      const dockerError = error as { statusCode?: number };
+
+      if (dockerError.statusCode === 404) {
+        throw new NotFoundException(`Container with ID '${containerId}' not found`);
+      }
+
+      throw error;
+    }
+
+    const execInstance = await container.exec({
+      Cmd: command,
+      AttachStdin: false,
+      AttachStdout: true,
+      AttachStderr: true,
+      Tty: false,
+    });
+    const stream = (await execInstance.start({
+      hijack: true,
+      stdin: false,
+    })) as NodeJS.ReadableStream;
+
+    let frameBuffer = Buffer.alloc(0);
+    let lineLeftover = '';
+    let stopped = false;
+
+    const onData = (chunk: Buffer): void => {
+      if (stopped) {
+        return;
+      }
+
+      frameBuffer = Buffer.concat([frameBuffer, chunk]);
+      let offset = 0;
+      let demuxed = '';
+
+      while (offset + 5 <= frameBuffer.length) {
+        const streamType = frameBuffer[offset];
+        const dataLength = frameBuffer.readUInt32BE(offset + 1);
+        const dataStart = offset + 5;
+        const dataEnd = dataStart + dataLength;
+
+        if (dataEnd > frameBuffer.length) {
+          break;
+        }
+
+        if (streamType === 1 || streamType === 2) {
+          demuxed += frameBuffer.subarray(dataStart, dataEnd).toString('utf-8');
+        }
+
+        offset = dataEnd;
+      }
+
+      frameBuffer = frameBuffer.subarray(offset);
+
+      if (!demuxed) {
+        return;
+      }
+
+      const combined = lineLeftover + demuxed;
+      const parts = combined.split(/\r?\n/);
+
+      lineLeftover = parts.pop() ?? '';
+
+      for (const part of parts) {
+        const line = part.trim();
+
+        if (line) {
+          onLine(line);
+        }
+      }
+    };
+
+    stream.on('data', onData);
+
+    return {
+      stop: async () => {
+        stopped = true;
+
+        try {
+          (stream as { destroy?: () => void }).destroy?.();
+        } catch {
+          // ignore
+        }
+      },
+    };
+  }
+
+  /**
    * Execute a command in a container and stream demuxed stdout/stderr chunks as they arrive.
    *
    * Intended for provider-level streaming (e.g. JSONL agent outputs). This uses dockerode's

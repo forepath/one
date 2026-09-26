@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-25T17:07:26.241Z",
+  "generatedAt": "2026-09-25T20:17:48.755Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -3771,6 +3771,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/workspace-search.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/workspace-search.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/agents",
       "type": "state",
       "attrs": {
@@ -4138,6 +4147,24 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/workspace-search",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/workspace-search",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console",
+        "sliceName": "workspace-search",
+        "memberFiles": [
+          "workspace-search.actions.ts",
+          "workspace-search.effects.ts",
+          "workspace-search.facade.ts",
+          "workspace-search.reducer.ts",
+          "workspace-search.selectors.ts",
+          "workspace-search.types.ts"
+        ]
+      }
+    },
+    {
       "id": "file:libs/domains/shared/frontend/util-runtime-config-server/README.md",
       "type": "readme",
       "attrs": {
@@ -4466,6 +4493,15 @@
       "type": "controller",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-vcs.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-workspace-search.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-workspace-search.controller.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -5411,6 +5447,15 @@
       "type": "module",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/agenstra-search.module.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/workspace-search-index.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/workspace-search-index.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -9912,6 +9957,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-workspace-index.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-workspace-index.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
       "type": "controller",
       "attrs": {
@@ -10695,10 +10749,28 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-change-notifier.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-change-notifier.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-configuration-overrides.service.ts",
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-configuration-overrides.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-inotify-supervisor.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-inotify-supervisor.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -13138,6 +13210,14 @@
       }
     },
     {
+      "id": "file:docs/agenstra/features/workspace-code-search.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/agenstra/features/workspace-code-search.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:docs/agenstra/getting-started.md",
       "type": "doc",
       "attrs": {
@@ -13920,7 +14000,7 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "clients/forward",
-        "summary": "Forward an arbitrary event to the selected client's agents namespace. When `agentId` is provided,\nthe gateway automatically logs in the agent using stored credentials before forwarding the event.\nTo restore chat history for an agent, forward a \"login\" event with `agentId` (the payload is\nautomatically overridden with credentials from the database, triggering login and subsequent\nchat history restoration). Supported events include \"chat\", \"enhanceChat\" (prompt improvement;\npayload `{ message, correlationId, model? }`; response `chatEnhanceResult` unicast from\nagent-manager, proxied to this socket only), \"generateTicketBody\" (ticket body from title;\npayload `{ title, correlationId, model? }`; response `ticketBodyResult` unicast, same envelope\nshape as `chatEnhanceResult`), \"fileUpdate\", \"logout\", \"createTerminal\", \"terminalInput\",\n\"closeTerminal\", etc. The remote agent-manager gateway will process the event and may emit\nresponse events (e.g., \"chatMessage\", \"chatEnhanceResult\", \"ticketBodyResult\",\n\"fileUpdateNotification\", \"terminalCreated\", \"terminalOutput\", \"terminalClosed\", \"containerStats\")\nwhich are automatically forwarded back to the client. The \"containerStats\" event payload\n(defined in the agent-manager AsyncAPI) includes container status (running/stopped) and, when\nrunning, container statistics. For autonomous ticket runs, proxied `chat` may include\n`responseMode: \"single\" | \"stream\" | \"sync\"`, `ephemeral: true`, `continue`, and `resumeSessionSuffix`;\nthe controller also uses isolated suffixes (e.g. `-ticket-auto-loop`, `-ticket-auto-commit-msg`) for\nimplementation turns vs. post-verify conventional-commit subject generation; statistics on the controller\nside record the latter under interaction kind `autonomous_ticket_commit_message`.\nAfter a successful run, the controller also completes the workflow over HTTP by proxying agent-manager VCS\n`commit` and `push` (see controller OpenAPI under `/clients/{clientId}/agents/{agentId}/vcs/...`).\nagent-manager passes these to `sendMessage` and skips `agent_messages` persistence when `ephemeral` is true.\nWhen `ephemeral` is true, chatMessage / chatEvent traffic for that turn is emitted only to the requesting\nsocket (not broadcast to other viewers on the same agent).\nAfter a successful **login** (explicit `forward` with `event: \"login\"` or first-time auto-login before another event),\nthe controller may emit **ticketAutomationRunChatUpsert** (unicast) to hydrate ticket automation runs for that\n`clientId` + `agentId` into the chat timeline (see `clients/ticketAutomationRunChatUpsert`). Live run updates use\nthe same event broadcast to room `client:{clientId}` on the **clients** namespace.\nWhen a ticket row is created or updated (REST or internal), the controller also emits **ticketChatTicketUpsert**\nto room `client:{clientId}` on **clients** (same body as `tickets/ticketUpsert`).\n",
+        "summary": "Forward an arbitrary event to the selected client's agents namespace. When `agentId` is provided,\nthe gateway automatically logs in the agent using stored credentials before forwarding the event.\nTo restore chat history for an agent, forward a \"login\" event with `agentId` (the payload is\nautomatically overridden with credentials from the database, triggering login and subsequent\nchat history restoration). Supported events include \"chat\", \"enhanceChat\" (prompt improvement;\npayload `{ message, correlationId, model? }`; response `chatEnhanceResult` unicast from\nagent-manager, proxied to this socket only), \"generateTicketBody\" (ticket body from title;\npayload `{ title, correlationId, model? }`; response `ticketBodyResult` unicast, same envelope\nshape as `chatEnhanceResult`), \"fileUpdate\", \"logout\", \"createTerminal\", \"terminalInput\",\n\"closeTerminal\", etc. The remote agent-manager gateway will process the event and may emit\nresponse events (e.g., \"chatMessage\", \"chatEnhanceResult\", \"ticketBodyResult\",\n\"fileUpdateNotification\", \"workspaceIndexChanged\", \"workspaceIndexRebuildRequired\",\n\"terminalCreated\", \"terminalOutput\", \"terminalClosed\", \"containerStats\")\nwhich are automatically forwarded back to the client. The \"containerStats\" event payload\n(defined in the agent-manager AsyncAPI) includes container status (running/stopped) and, when\nrunning, container statistics. For autonomous ticket runs, proxied `chat` may include\n`responseMode: \"single\" | \"stream\" | \"sync\"`, `ephemeral: true`, `continue`, and `resumeSessionSuffix`;\nthe controller also uses isolated suffixes (e.g. `-ticket-auto-loop`, `-ticket-auto-commit-msg`) for\nimplementation turns vs. post-verify conventional-commit subject generation; statistics on the controller\nside record the latter under interaction kind `autonomous_ticket_commit_message`.\nAfter a successful run, the controller also completes the workflow over HTTP by proxying agent-manager VCS\n`commit` and `push` (see controller OpenAPI under `/clients/{clientId}/agents/{agentId}/vcs/...`).\nagent-manager passes these to `sendMessage` and skips `agent_messages` persistence when `ephemeral` is true.\nWhen `ephemeral` is true, chatMessage / chatEvent traffic for that turn is emitted only to the requesting\nsocket (not broadcast to other viewers on the same agent).\nAfter a successful **login** (explicit `forward` with `event: \"login\"` or first-time auto-login before another event),\nthe controller may emit **ticketAutomationRunChatUpsert** (unicast) to hydrate ticket automation runs for that\n`clientId` + `agentId` into the chat timeline (see `clients/ticketAutomationRunChatUpsert`). Live run updates use\nthe same event broadcast to room `client:{clientId}` on the **clients** namespace.\nWhen a ticket row is created or updated (REST or internal), the controller also emits **ticketChatTicketUpsert**\nto room `client:{clientId}` on **clients** (same body as `tickets/ticketUpsert`).\nWorkspace index events (`workspaceIndexChanged` / `workspaceIndexRebuildRequired`) are also consumed locally\nby the controller to hydrate OpenSearch (`agenstra-workspace-files`) before being forwarded to the FE.\n",
         "specKind": "asyncapi"
       }
     },
@@ -15322,6 +15402,39 @@
         "pathOrChannel": "/clients/{id}/agents/{agentId}/files",
         "operationId": "listClientAgentDirectory",
         "summary": "List directory contents (proxied)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/workspace-search",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/workspace-search",
+        "operationId": "searchClientAgentWorkspace",
+        "summary": "Search indexed workspace file paths and text content",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/workspace-search/status",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/workspace-search/status",
+        "operationId": "getClientAgentWorkspaceSearchStatus",
+        "summary": "Workspace search index status for an agent",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{id}/agents/{agentId}/workspace-search/reindex",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/workspace-search/reindex",
+        "operationId": "reindexClientAgentWorkspace",
+        "summary": "Rebuild workspace search index for an agent",
         "specKind": "openapi"
       }
     },
@@ -20705,6 +20818,24 @@
       }
     },
     {
+      "id": "api:channel:agents/workspaceIndexChanged",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "agents/workspaceIndexChanged",
+        "summary": "Path-level workspace index change notifications (no file bodies). Controller hydrates OpenSearch\nvia the file HTTP API. Emitted from inotify, file API mutations, and VCS path batches.\n",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:agents/workspaceIndexRebuildRequired",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "agents/workspaceIndexRebuildRequired",
+        "summary": "Full rebuild signal after initial workspace setup, branch switch / pull / prepare-clean, or manual\nrebuild-signal. Optional path seed list speeds controller crawl; content is never included.\n",
+        "specKind": "asyncapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/agents",
       "type": "endpoint",
       "attrs": {
@@ -24808,6 +24939,46 @@
         "title": "Error Handling",
         "docPath": "docs/agenstra/features/websocket-communication.md",
         "sectionAnchor": "error-handling",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-workspace-code-search",
+      "type": "concept",
+      "attrs": {
+        "title": "Workspace code search",
+        "docPath": "docs/agenstra/features/workspace-code-search.md",
+        "sectionAnchor": "workspace-code-search",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-multi-workspace-isolation",
+      "type": "concept",
+      "attrs": {
+        "title": "Multi-workspace isolation",
+        "docPath": "docs/agenstra/features/workspace-code-search.md",
+        "sectionAnchor": "multi-workspace-isolation",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-index-lifecycle",
+      "type": "concept",
+      "attrs": {
+        "title": "Index lifecycle",
+        "docPath": "docs/agenstra/features/workspace-code-search.md",
+        "sectionAnchor": "index-lifecycle",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-api-controller",
+      "type": "concept",
+      "attrs": {
+        "title": "API (controller)",
+        "docPath": "docs/agenstra/features/workspace-code-search.md",
+        "sectionAnchor": "api-controller",
         "domain": "agenstra"
       }
     },
@@ -34850,6 +35021,11 @@
     },
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/workspace-search.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/agents",
       "type": "contains"
     },
@@ -34946,6 +35122,11 @@
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/workspace-config",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/workspace-search",
       "type": "contains"
     },
     {
@@ -35131,6 +35312,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-vcs.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-workspace-search.controller.ts",
       "type": "contains"
     },
     {
@@ -35656,6 +35842,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/agenstra-search.module.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/workspace-search-index.service.ts",
       "type": "contains"
     },
     {
@@ -38140,6 +38331,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-workspace-index.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
       "type": "contains"
     },
@@ -38575,7 +38771,17 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-change-notifier.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-configuration-overrides.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-inotify-supervisor.service.ts",
       "type": "contains"
     },
     {
@@ -40321,6 +40527,21 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/files",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/workspace-search",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/workspace-search/status",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/workspace-search/reindex",
       "type": "contains"
     },
     {
@@ -43091,6 +43312,16 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
       "to": "api:channel:agents/gitStateChanged",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
+      "to": "api:channel:agents/workspaceIndexChanged",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
+      "to": "api:channel:agents/workspaceIndexRebuildRequired",
       "type": "contains"
     },
     {
@@ -45946,6 +46177,36 @@
     {
       "from": "file:docs/agenstra/features/websocket-communication.md",
       "to": "concept:agenstra-related-documentation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/workspace-code-search.md",
+      "to": "concept:agenstra-workspace-code-search",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/workspace-code-search.md",
+      "to": "concept:agenstra-architecture",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/workspace-code-search.md",
+      "to": "concept:agenstra-multi-workspace-isolation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/workspace-code-search.md",
+      "to": "concept:agenstra-index-lifecycle",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/workspace-code-search.md",
+      "to": "concept:agenstra-frontend",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/workspace-code-search.md",
+      "to": "concept:agenstra-api-controller",
       "type": "contains"
     },
     {
@@ -50461,6 +50722,36 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/files",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/workspace-search",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/workspace-search",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/workspace-search/status",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/workspace-search/status",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/workspace-search/reindex",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/workspace-search/reindex",
       "type": "implements"
     },
     {
@@ -57449,6 +57740,26 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "api:channel:agents/workspaceIndexChanged",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:channel:agents/workspaceIndexChanged",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "api:channel:agents/workspaceIndexRebuildRequired",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:channel:agents/workspaceIndexRebuildRequired",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/controllers/public-contact-requests.controller.ts",
       "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/services/contact-request.service.ts",
       "type": "injects"
@@ -57564,6 +57875,26 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-workspace-search.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/workspace-search-index.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-workspace-search.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-file-system-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-workspace-search.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-workspace-search.controller.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/clients.service.ts",
       "type": "injects"
@@ -57606,6 +57937,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
       "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/workspace-search-index.service.ts",
       "type": "injects"
     },
     {
@@ -57724,6 +58060,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/workspace-search-index.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/knowledge-board.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
       "type": "injects"
@@ -57806,6 +58147,16 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/agenstra-search-index.service.ts",
       "to": "file:libs/domains/shared/backend/util-opensearch/src/lib/opensearch.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/workspace-search-index.service.ts",
+      "to": "file:libs/domains/shared/backend/util-opensearch/src/lib/opensearch.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/workspace-search-index.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-file-system-proxy.service.ts",
       "type": "injects"
     },
     {
@@ -61804,6 +62155,16 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-workspace-index.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-change-notifier.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-workspace-index.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-inotify-supervisor.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents.service.ts",
       "type": "injects"
@@ -61866,6 +62227,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-git-state-broadcast.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-change-notifier.service.ts",
       "type": "injects"
     },
     {
@@ -61949,6 +62315,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-file-system.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-change-notifier.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-message-events.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agent-message-events.repository.ts",
       "type": "injects"
@@ -62004,6 +62375,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents-vcs.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-change-notifier.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents-verification.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents.service.ts",
       "type": "injects"
@@ -62044,6 +62420,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-inotify-supervisor.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/deployments.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/deployment-configurations.repository.ts",
       "type": "injects"
@@ -62076,6 +62457,21 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-configuration-overrides.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-environment-variables.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-inotify-supervisor.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/docker.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-inotify-supervisor.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agents.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-inotify-supervisor.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-change-notifier.service.ts",
       "type": "injects"
     },
     {
@@ -62550,6 +62946,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients-workspace-search.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agenstra-metrics-collector.service.ts",
       "type": "provides"
     },
@@ -62641,6 +63042,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-file-system-proxy.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/workspace-search-index.service.ts",
       "type": "provides"
     },
     {
@@ -64205,6 +64611,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-workspace-index.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-vcs.controller.ts",
       "type": "provides"
     },
@@ -64306,6 +64717,16 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents-vcs.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-change-notifier.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-inotify-supervisor.service.ts",
       "type": "provides"
     },
     {
@@ -66079,6 +66500,21 @@
       "type": "calls"
     },
     {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/workspace-search.service.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/workspace-search/status",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/workspace-search.service.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/workspace-search",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/workspace-search.service.ts",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/workspace-search/reindex",
+      "type": "calls"
+    },
+    {
       "from": "file:libs/domains/identity/frontend/data-access-auth/src/lib/services/auth.service.ts",
       "to": "api:HTTP:POST:/auth/login",
       "type": "calls"
@@ -66394,6 +66830,11 @@
       "type": "contains"
     },
     {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/workspace-search",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/workspace-search.service.ts",
+      "type": "contains"
+    },
+    {
       "from": "file:libs/domains/shared/frontend/data-access-communication/src/lib/state/contact-request",
       "to": "file:libs/domains/shared/frontend/data-access-communication/src/lib/services/contact-request.service.ts",
       "type": "contains"
@@ -66436,16 +66877,6 @@
     {
       "from": "concept:agenstra-documentation-structure",
       "to": "api:HTTP:GET:/config",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-architecture",
-      "to": "api:HTTP:GET:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-architecture",
-      "to": "api:HTTP:POST:/agents",
       "type": "documents"
     },
     {
@@ -68196,6 +68627,81 @@
     {
       "from": "concept:agenstra-chat-history-restoration",
       "to": "api:HTTP:POST:/auth/login",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api-controller",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api-controller",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api-controller",
+      "to": "api:HTTP:GET:/clients/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api-controller",
+      "to": "api:HTTP:POST:/clients/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api-controller",
+      "to": "api:HTTP:DELETE:/clients/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api-controller",
+      "to": "api:HTTP:POST:/clients/{id}/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api-controller",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api-controller",
+      "to": "api:HTTP:DELETE:/clients/{id}/agents/{agentId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/workspace-search",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/workspace-search/status",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api-controller",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/workspace-search/reindex",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api-controller",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api-controller",
+      "to": "api:HTTP:POST:/agents",
       "type": "documents"
     },
     {
@@ -74004,6 +74510,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "file:docs/agenstra/features/workspace-code-search.md",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "file:docs/agenstra/getting-started.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -76060,6 +76571,26 @@
     },
     {
       "from": "concept:agenstra-error-handling",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-workspace-code-search",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-multi-workspace-isolation",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-index-lifecycle",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-api-controller",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

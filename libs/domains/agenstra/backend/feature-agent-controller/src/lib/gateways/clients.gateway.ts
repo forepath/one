@@ -26,6 +26,7 @@ import { FilterFlagDirection } from '../entities/statistics-chat-filter-flag.ent
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 import { AgentConsoleStatusService } from '../services/agent-console-status.service';
 import { AutoContextResolverService } from '../services/auto-context-resolver.service';
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
@@ -121,6 +122,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     private readonly workspaceConfigurationOverridesProxy: ClientWorkspaceConfigurationOverridesProxyService,
     private readonly agentConsoleStatusService: AgentConsoleStatusService,
     private readonly notificationPublisher: AgenstraNotificationPublisher,
+    private readonly workspaceSearchIndex: WorkspaceSearchIndexService,
   ) {}
 
   afterInit(server: Server): void {
@@ -450,6 +452,28 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
           void this.agentConsoleStatusService
             .notifyVcsStateChanged(currentClientId, lastAgentId)
             .catch(() => undefined);
+        } else if (event === 'workspaceIndexChanged' && currentClientId && args.length > 0) {
+          const envelope = args[0] as {
+            success?: boolean;
+            data?: { agentId?: string; changes?: Array<{ path: string; op: 'upsert' | 'delete' }> };
+          };
+          const payload = envelope?.success
+            ? envelope.data
+            : (args[0] as { agentId?: string; changes?: Array<{ path: string; op: 'upsert' | 'delete' }> });
+          const agentId = payload?.agentId ?? lastAgentId;
+          const changes = payload?.changes ?? [];
+
+          if (agentId && changes.length > 0) {
+            void this.workspaceSearchIndex.applyPathChanges(currentClientId, agentId, changes).catch(() => undefined);
+          }
+        } else if (event === 'workspaceIndexRebuildRequired' && currentClientId && args.length > 0) {
+          const envelope = args[0] as { success?: boolean; data?: { agentId?: string; paths?: string[] } };
+          const payload = envelope?.success ? envelope.data : (args[0] as { agentId?: string; paths?: string[] });
+          const agentId = payload?.agentId ?? lastAgentId;
+
+          if (agentId) {
+            void this.workspaceSearchIndex.rebuild(currentClientId, agentId, payload?.paths).catch(() => undefined);
+          }
         } else if (event === 'messageFilterResult' && currentClientId && lastAgentId && args.length > 0) {
           const data = args[0] as { success?: boolean; data?: Record<string, unknown> };
           const payload: Record<string, unknown> | undefined = data?.success ? data.data : data;

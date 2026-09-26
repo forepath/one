@@ -40,6 +40,17 @@
   cursor: pointer;
 }
 
+:host(.fpc-list-item--condensed) {
+  // Align with `fpc-accordion-item` condensed headers (incl. `fpc-badge size="sm"`).
+  padding: 0.25rem 0.75rem;
+  min-height: 2.25rem;
+  color: var(--bs-body-color);
+}
+
+:host(.fpc-list-item--condensed) .fpc-list-item__meta {
+  margin-top: 0.125rem;
+}
+
 :host(.disabled) {
   cursor: not-allowed;
   opacity: 0.65;

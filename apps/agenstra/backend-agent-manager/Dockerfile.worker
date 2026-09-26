@@ -31,6 +31,7 @@ RUN apt-get update && \
     bash \
     ca-certificates \
     git \
+    inotify-tools \
     openssh-client \
     sudo && \
     groupadd --gid "${APP_GID}" agenstra && \

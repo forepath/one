@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, HostListener, input, output } from '@angular/core';
 
+export type FpcListItemVariant = 'default' | 'condensed';
+
 /**
  * List row with title, meta, and actions content slots.
  *
@@ -8,6 +10,8 @@ import { ChangeDetectionStrategy, Component, HostListener, input, output } from 
  *
  * Action buttons: danger for delete (trash icon), warning for edit (pencil icon),
  * secondary for every other action.
+ *
+ * `variant="condensed"` tightens vertical padding for dense panels (e.g. search rows).
  */
 @Component({
   selector: 'fpc-list-item',
@@ -18,6 +22,7 @@ import { ChangeDetectionStrategy, Component, HostListener, input, output } from 
     '[class.list-group-item-action]': 'clickable()',
     '[class.active]': 'active()',
     '[class.disabled]': 'disabled()',
+    '[class.fpc-list-item--condensed]': 'variant() === "condensed"',
     '[attr.role]': '"listitem"',
     '[attr.tabindex]': 'clickable() && !disabled() ? 0 : null',
     '[attr.aria-current]': 'active() ? "true" : null',
@@ -45,6 +50,7 @@ export class FpcListItemComponent {
   readonly active = input(false);
   readonly disabled = input(false);
   readonly clickable = input(false);
+  readonly variant = input<FpcListItemVariant>('default');
 
   readonly selected = output<void>();
 

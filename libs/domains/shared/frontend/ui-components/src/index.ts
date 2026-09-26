@@ -11,7 +11,7 @@ export type { FpcButtonGroupGap, FpcButtonGroupSize } from './lib/button-group/b
 // Data display
 export { FpcAccordionComponent } from './lib/accordion/accordion.component';
 export { FPC_ACCORDION_HOST, FpcAccordionItemComponent } from './lib/accordion-item/accordion-item.component';
-export type { FpcAccordionHost } from './lib/accordion-item/accordion-item.component';
+export type { FpcAccordionHost, FpcAccordionItemVariant } from './lib/accordion-item/accordion-item.component';
 export { FpcAvatarComponent } from './lib/avatar/avatar.component';
 export type { FpcAvatarSize } from './lib/avatar/avatar.component';
 export { FpcBadgeComponent } from './lib/badge/badge.component';
@@ -22,6 +22,7 @@ export { FpcInfiniteScrollDirective } from './lib/infinite-scroll/infinite-scrol
 export { FpcListComponent } from './lib/list/list.component';
 export { FpcListAppendFooterComponent } from './lib/list-append-footer/list-append-footer.component';
 export { FpcListItemComponent } from './lib/list-item/list-item.component';
+export type { FpcListItemVariant } from './lib/list-item/list-item.component';
 export { FpcListSearchComponent } from './lib/list-search/list-search.component';
 export { FpcStatusBadgeComponent } from './lib/status-badge/status-badge.component';
 export type { FpcStatusBadgeSize, FpcStatusBadgeTone } from './lib/status-badge/status-badge.component';

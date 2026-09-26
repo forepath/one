@@ -2,7 +2,9 @@
 
 Agenstra Controller uses **OpenSearch** for list and typeahead search across workspaces, tickets, knowledge, rules, audit statistics, deployments, Atlassian import configs, and related entities. Indexes are populated by live mutation sync and periodic BullMQ reindex jobs (`search-reindex.coordinator` / `.unit`).
 
-Search queries always scope by authenticated client/workspace access (fail closed). When OpenSearch is unavailable or returns zero hits (empty/unindexed data, numeric/substring gaps), list and statistics endpoints fall back to SQL `ILIKE` or in-memory filtering where applicable.
+**Workspace file corpora** (`agenstra-workspace-files`) are a separate index on the **same controller OpenSearch** instance. They are driven by agent-manager change notifications (not by the entity reindex jobs). See [Workspace code search](./workspace-code-search.md).
+
+Search queries always scope by authenticated client/workspace access (fail closed). When OpenSearch is unavailable or returns zero hits (empty/unindexed data, numeric/substring gaps), list and statistics endpoints fall back to SQL `ILIKE` or in-memory filtering where applicable. Workspace code search does **not** fall back to ripgrep when OpenSearch is disabled.
 
 ## Console list UX
 

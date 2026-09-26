@@ -8,6 +8,7 @@ import { AgentsRepository } from '../repositories/agents.repository';
 
 import { AgentFileSystemService } from './agent-file-system.service';
 import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.service';
+import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 import { AgentsVcsService } from './agents-vcs.service';
 import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
@@ -72,6 +73,14 @@ describe('AgentsVcsService', () => {
           provide: AgentGitStateBroadcastService,
           useValue: mockGitStateBroadcast,
         },
+        {
+          provide: WorkspaceChangeNotifierService,
+          useValue: {
+            notifyPathChanges: jest.fn(),
+            notifyRebuildRequired: jest.fn(),
+            notifySystemFileUpdate: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -102,7 +111,7 @@ describe('AgentsVcsService', () => {
       agentsService.findOne.mockResolvedValue({} as any);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.sendCommandToContainer
-        .mockResolvedValueOnce(mockBranchOutput) // current branch: rev-parse --abbrev-ref HEAD
+        .mockResolvedValueOnce(mockBranchOutput) // current branch: branch --show-current
         .mockResolvedValueOnce(mockRemoteBranchExists) // remote branch exists: ls-remote
         .mockResolvedValueOnce(mockTrackingOutput) // tracking info: rev-list --left-right --count
         .mockResolvedValueOnce(mockStatusOutput); // status: status --porcelain
@@ -137,6 +146,23 @@ describe('AgentsVcsService', () => {
 
       expect(result.isClean).toBe(true);
       expect(result.files).toHaveLength(0);
+    });
+
+    it('should resolve branch via branch --show-current for unborn local repos', async () => {
+      agentsService.findOne.mockResolvedValue({} as any);
+      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
+      dockerService.sendCommandToContainer
+        .mockResolvedValueOnce('main') // branch --show-current (works unborn)
+        .mockResolvedValueOnce('') // ls-remote (no origin)
+        .mockResolvedValueOnce('main') // symbolic-ref origin/HEAD fallback
+        .mockResolvedValueOnce('0') // rev-list count vs origin/default
+        .mockResolvedValueOnce('?? f.txt'); // status porcelain
+
+      const result = await service.getStatus(mockAgentId);
+
+      expect(result.currentBranch).toBe('main');
+      expect(result.files).toHaveLength(1);
+      expect(result.files[0].path).toBe('f.txt');
     });
 
     it('should throw NotFoundException if agent has no container', async () => {
