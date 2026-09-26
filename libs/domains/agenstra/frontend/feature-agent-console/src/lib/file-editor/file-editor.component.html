@@ -8,6 +8,16 @@
     [style.flex-basis.px]="sidebarWidth()"
   >
     @if (clientId() && agentId()) {
+      <fpc-tab-group
+        class="sidebar-mode-tabs flex-shrink-0 border-bottom"
+        [activeId]="sidebarMode()"
+        (activeIdChange)="onSidebarModeTabChange($event)"
+        i18n-ariaLabel="@@featureFileEditor-sidebarTabsAria"
+        ariaLabel="Workspace sidebar"
+      >
+        <fpc-tab id="files" icon="folder2" [label]="filesTabLabel" />
+        <fpc-tab id="search" icon="search" [label]="searchTabLabel" />
+      </fpc-tab-group>
       <!-- File Tree Header with Back Button (mobile only, hidden when only git manager is visible) -->
       @if (fileTreeVisible() || !gitManagerVisible()) {
         <div class="d-block d-md-none p-3 border-bottom bg-body-tertiary">
@@ -30,8 +40,8 @@
       <div
         class="file-tree-wrapper"
         [class.flex-grow-1]="!gitManagerVisible()"
-        [style.flex-basis]="gitManagerVisible() ? '60%' : '100%'"
-        [class.d-none]="!fileTreeVisible() && gitManagerVisible()"
+        [style.flex-basis]="gitManagerVisible() ? '60%' : '0%'"
+        [class.d-none]="(!fileTreeVisible() && gitManagerVisible()) || sidebarMode() === 'search'"
       >
         <framework-file-tree
           [clientId]="clientId()!"
@@ -45,9 +55,22 @@
           (fileDelete)="onFileDelete($event)"
           (directoryExpand)="onDirectoryExpand($event)"
           (directoryCollapse)="onDirectoryCollapse($event)"
-          (toggleGitManager)="onToggleGitManager()"
         ></framework-file-tree>
       </div>
+      @if (sidebarMode() === 'search') {
+        <div
+          class="workspace-search-wrapper d-flex flex-column min-h-0 overflow-hidden"
+          [class.flex-grow-1]="!gitManagerVisible()"
+          [class.d-none]="!fileTreeVisible() && gitManagerVisible()"
+          [style.flex-basis]="gitManagerVisible() ? '60%' : '0%'"
+        >
+          <framework-workspace-search-panel
+            [clientId]="clientId()!"
+            [agentId]="agentId()!"
+            (openHit)="onWorkspaceSearchOpen($event)"
+          />
+        </div>
+      }
 
       <!-- Git Manager below File Tree (workspace app root only) -->
       @if (fileManagerContext() === 'app' && gitManagerVisible()) {
@@ -83,6 +106,15 @@
           </div>
         </div>
       }
+
+      @if (fileManagerContext() === 'app') {
+        <framework-git-sidebar-status-bar
+          class="flex-shrink-0 mt-auto"
+          [clientId]="clientId()!"
+          [agentId]="agentId()!"
+          (toggleGitManager)="onToggleGitManager()"
+        />
+      }
     } @else {
       <div class="d-flex justify-content-center align-items-center h-100 p-4">
         <div class="text-center text-muted">
@@ -117,7 +149,7 @@
                 (dblclick)="onTabDoubleClick(tab.filePath, $event)"
                 [title]="tab.filePath"
               >
-                <i class="bi bi-file-earmark-code me-1"></i>
+                <i class="bi me-1" [ngClass]="getFileIconClass(tab.filePath)"></i>
                 <span class="small" [class.fst-italic]="!tab.pinned">{{ getFileName(tab.filePath) }}</span>
                 <button
                   type="button"
@@ -142,7 +174,7 @@
               </fpc-button>
               @for (tab of overflowedTabs(); track tab.filePath) {
                 <fpc-dropdown-item
-                  icon="file-earmark-code"
+                  [icon]="getFileIconName(tab.filePath)"
                   [active]="selectedFilePath() === tab.filePath"
                   [itemClass]="tab.pinned ? null : 'fst-italic'"
                   [title]="tab.filePath"
@@ -170,7 +202,6 @@
     @if (selectedFilePath()) {
       <div class="editor-header p-2 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center">
-          <i class="bi bi-file-earmark me-2"></i>
           <span class="fw-semibold">{{ selectedFilePath() }}</span>
           <a
             href="#"
@@ -250,6 +281,7 @@
                 [bodyOmitted]="(selectedFileContent$ | async)?.bodyOmitted === true"
                 [isDirty]="isDirty()"
                 [autosaveEnabled]="autosaveEnabled()"
+                [revealLine]="revealLineRequest()"
                 (contentChange)="onContentChange($event)"
                 (saveRequest)="onSave()"
                 (downloadRequest)="onDownloadFile()"

@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, InjectionToken, input, model, output } from '@angular/core';
 
+export type FpcAccordionItemVariant = 'default' | 'condensed';
+
 let nextAccordionItemId = 0;
 
 /**
@@ -17,7 +19,10 @@ export const FPC_ACCORDION_HOST = new InjectionToken<FpcAccordionHost>('FPC_ACCO
   selector: 'fpc-accordion-item',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'accordion-item fpc-accordion-item' },
+  host: {
+    class: 'accordion-item fpc-accordion-item',
+    '[class.fpc-accordion-item--condensed]': 'variant() === "condensed"',
+  },
   template: `
     <h2 class="accordion-header">
       <button
@@ -30,7 +35,7 @@ export const FPC_ACCORDION_HOST = new InjectionToken<FpcAccordionHost>('FPC_ACCO
         (click)="toggle()"
       >
         @if (icon()) {
-          <i class="bi bi-{{ icon() }} me-2" aria-hidden="true"></i>
+          <i class="bi bi-{{ icon() }}" aria-hidden="true"></i>
         }
         <span class="fpc-accordion-item__heading">{{ heading() }}</span>
         <ng-content select="[fpcAccordionItemHeading]" />
@@ -52,6 +57,8 @@ export class FpcAccordionItemComponent {
   readonly icon = input<string | null>(null);
   readonly open = model(false);
   readonly disabled = input(false);
+  /** `condensed` matches dense list rows (e.g. workspace search file headers). */
+  readonly variant = input<FpcAccordionItemVariant>('default');
 
   readonly toggled = output<boolean>();
 

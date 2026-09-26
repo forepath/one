@@ -43,6 +43,7 @@ import { ClientAgentFileSystemProxyService } from '../services/client-agent-file
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { ClientsService } from '../services/clients.service';
 import { ProvisioningService } from '../services/provisioning.service';
+import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 
 import { ClientsController } from './clients.controller';
 
@@ -213,6 +214,13 @@ describe('ClientsController', () => {
         {
           provide: ClientUsersRepository,
           useValue: mockClientUsersRepository,
+        },
+        {
+          provide: WorkspaceSearchIndexService,
+          useValue: {
+            purgeAgent: jest.fn().mockResolvedValue(undefined),
+            getStatus: jest.fn().mockReturnValue({ status: 'missing', docCount: 0 }),
+          },
         },
       ],
     }).compile();

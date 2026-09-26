@@ -1663,6 +1663,81 @@
       <trans-unit id="featureFileEditor-fileTreeHeader" datatype="html">
         <source>File Tree</source>
         </trans-unit>
+      <trans-unit id="featureFileEditor-filesTab" datatype="html">
+        <source>Files</source>
+        </trans-unit>
+      <trans-unit id="featureFileEditor-searchTab" datatype="html">
+        <source>Search</source>
+        </trans-unit>
+      <trans-unit id="featureFileEditor-sidebarTabsAria" datatype="html">
+        <source>Workspace sidebar</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-header" datatype="html">
+        <source>Search</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-modeLabel" datatype="html">
+        <source>Search for</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-modeFull" datatype="html">
+        <source>Full</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-modeFiles" datatype="html">
+        <source>Files</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-queryLabel" datatype="html">
+        <source>Query</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-queryPlaceholder" datatype="html">
+        <source>Search files and content…</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-queryPlaceholderFiles" datatype="html">
+        <source>Search by file path…</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-rebuildTitle" datatype="html">
+        <source>Rebuild index</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-includeLabel" datatype="html">
+        <source>Include paths</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-includePlaceholder" datatype="html">
+        <source>Add path prefix…</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-excludeLabel" datatype="html">
+        <source>Exclude paths</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-excludePlaceholder" datatype="html">
+        <source>Exclude path prefix…</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-removePathAria" datatype="html">
+        <source>Remove path</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-addPath" datatype="html">
+        <source>Add</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-loading" datatype="html">
+        <source>Searching…</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-noIndexYet" datatype="html">
+        <source>No index yet</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-indexing" datatype="html">
+        <source>Indexing…</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-unavailable" datatype="html">
+        <source>Index unavailable</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-noResults" datatype="html">
+        <source>No results</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-enterQuery" datatype="html">
+        <source>Enter a search query</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-matchesAria" datatype="html">
+        <source>Matches</source>
+        </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-fileHitAria" datatype="html">
+        <source>File</source>
+        </trans-unit>
       <trans-unit id="featureFileEditor-closeVersionControlTitle" datatype="html">
         <source>Close Version Control</source>
         </trans-unit>
@@ -1833,6 +1908,12 @@
         </trans-unit>
       <trans-unit id="featureFileTree-currentBranchTitle" datatype="html">
         <source>Current branch: <x id="branch" equiv-text="branch"/></source>
+        </trans-unit>
+      <trans-unit id="featureGitSidebar-localRepo" datatype="html">
+        <source>Local</source>
+        </trans-unit>
+      <trans-unit id="featureGitSidebar-localRepoTitle" datatype="html">
+        <source>Local repository</source>
         </trans-unit>
       <trans-unit id="featureFileTree-deleteDirectoryTitle" datatype="html">
         <source>Delete Directory</source>

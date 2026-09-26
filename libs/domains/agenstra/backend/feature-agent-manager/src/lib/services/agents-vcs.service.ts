@@ -11,6 +11,7 @@ import { AgentFileSystemService } from './agent-file-system.service';
 import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.service';
 import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
+import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 
 /**
  * Service for agent VCS (Version Control System) operations.
@@ -32,6 +33,7 @@ export class AgentsVcsService {
     private readonly dockerService: DockerService,
     private readonly agentFileSystemService: AgentFileSystemService,
     private readonly gitStateBroadcast: AgentGitStateBroadcastService,
+    private readonly workspaceChangeNotifier: WorkspaceChangeNotifierService,
   ) {
     // Get commit author from environment variables
     this.commitAuthorName = process.env.GIT_COMMIT_AUTHOR_NAME || 'Agenstra Agent';
@@ -40,6 +42,10 @@ export class AgentsVcsService {
 
   private notifyGitStateMayHaveChanged(agentId: string): void {
     this.gitStateBroadcast.notifyGitStateMayHaveChanged(agentId);
+  }
+
+  private notifyWorkspaceRebuild(agentId: string, reason: string): void {
+    this.workspaceChangeNotifier.notifyRebuildRequired(agentId, reason);
   }
 
   /**
@@ -143,9 +149,14 @@ export class AgentsVcsService {
     }
 
     try {
-      // Get current branch
-      const currentBranchOutput = await this.executeGitCommand(agentEntity.containerId, 'rev-parse --abbrev-ref HEAD');
-      const currentBranch = this.cleanBranchName(currentBranchOutput);
+      // Prefer `branch --show-current` — works for unborn (no commits) local repos.
+      // `rev-parse --abbrev-ref HEAD` prints a fatal + "HEAD" and fails cleanBranchName.
+      const currentBranchOutput = await this.executeGitCommand(agentEntity.containerId, 'branch --show-current');
+      const currentBranch =
+        this.cleanBranchName(currentBranchOutput) ||
+        this.cleanBranchName(
+          await this.executeGitCommand(agentEntity.containerId, 'symbolic-ref --short HEAD 2>/dev/null || echo ""'),
+        );
       // Get branch tracking info
       // First check if remote branch exists
       let aheadCount = 0;
@@ -884,6 +895,7 @@ export class AgentsVcsService {
         true,
       );
       this.notifyGitStateMayHaveChanged(agentId);
+      this.notifyWorkspaceRebuild(agentId, 'git-pull');
     } catch (error: unknown) {
       const err = error as { message?: string };
 
@@ -993,6 +1005,7 @@ export class AgentsVcsService {
 
       await this.executeGitCommand(agentEntity.containerId, `checkout ${this.escapePath(cleanBranchName)}`);
       this.notifyGitStateMayHaveChanged(agentId);
+      this.notifyWorkspaceRebuild(agentId, 'git-switch-branch');
     } catch (error: unknown) {
       const err = error as { message?: string };
 
@@ -1161,6 +1174,7 @@ export class AgentsVcsService {
       await this.executeGitCommand(containerId, `reset --hard origin/${escaped}`, this.BASE_PATH, false, true, true);
       await this.executeGitCommand(containerId, 'clean -fd', this.BASE_PATH, false, true, true);
       this.notifyGitStateMayHaveChanged(agentId);
+      this.notifyWorkspaceRebuild(agentId, 'git-prepare-clean');
     } catch (error: unknown) {
       const err = error as { message?: string };
 

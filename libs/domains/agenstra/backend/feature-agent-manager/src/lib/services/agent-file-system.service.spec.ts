@@ -11,6 +11,7 @@ import { AgentsRepository } from '../repositories/agents.repository';
 
 import { AgentFileSystemService } from './agent-file-system.service';
 import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.service';
+import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
 
@@ -92,6 +93,14 @@ describe('AgentFileSystemService', () => {
         {
           provide: AgentGitStateBroadcastService,
           useValue: mockGitStateBroadcast,
+        },
+        {
+          provide: WorkspaceChangeNotifierService,
+          useValue: {
+            notifyPathChanges: jest.fn(),
+            notifyRebuildRequired: jest.fn(),
+            notifySystemFileUpdate: jest.fn(),
+          },
         },
       ],
     }).compile();

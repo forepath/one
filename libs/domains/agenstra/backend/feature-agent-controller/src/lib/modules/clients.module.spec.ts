@@ -60,6 +60,7 @@ import { ContextImportModule } from './context-import.module';
 import { FilterRulesModule } from './filter-rules.module';
 import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
+import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 
 @Module({
   providers: [
@@ -173,6 +174,14 @@ describe('ClientsModule', () => {
         isEnabled: jest.fn().mockReturnValue(false),
         searchIds: jest.fn().mockResolvedValue({ ids: [], total: 0 }),
         reindexBatch: jest.fn().mockResolvedValue({ indexed: 0, hasMore: false }),
+      })
+      .overrideProvider(WorkspaceSearchIndexService)
+      .useValue({
+        purgeAgent: jest.fn().mockResolvedValue(undefined),
+        applyPathChanges: jest.fn().mockResolvedValue(undefined),
+        rebuild: jest.fn().mockResolvedValue(undefined),
+        getStatus: jest.fn().mockReturnValue({ status: 'missing', docCount: 0 }),
+        search: jest.fn().mockResolvedValue({ status: 'missing', hits: [], total: 0 }),
       })
       .overrideProvider(getRepositoryToken(ClientEntity))
       .useValue(mockRepository)

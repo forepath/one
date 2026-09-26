@@ -6,6 +6,8 @@ File system operations in agent containers. Read, write, create, delete, and mov
 
 File management enables you to interact with the file system in agent containers. All operations are performed directly in the container's workspace, which typically contains a cloned Git repository.
 
+Workspace **code search** (path + text content) is indexed on the agent-controller OpenSearch instance from manager change notifications. See [Workspace code search](./workspace-code-search.md). Remote `fileUpdateNotification` events (including `socketId: system`) keep open editor previews in sync without putting file bodies on the websocket.
+
 ## File Operations
 
 ### List Directory

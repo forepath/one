@@ -130,6 +130,53 @@ export class OpenSearchService implements OnModuleDestroy {
     }
   }
 
+  /**
+   * Delete documents matching term filters (fail closed when filters empty).
+   */
+  async deleteByQuery(index: string, filters: Record<string, string | string[] | boolean | number>): Promise<void> {
+    if (!this.isEnabled()) {
+      return;
+    }
+
+    const filterEntries = Object.entries(filters).filter(([, value]) => {
+      if (value === undefined || value === null) {
+        return false;
+      }
+
+      if (Array.isArray(value)) {
+        return value.length > 0;
+      }
+
+      return true;
+    });
+
+    if (filterEntries.length === 0) {
+      this.logger.warn(`OpenSearch deleteByQuery refused for ${index}: empty filters`);
+
+      return;
+    }
+
+    try {
+      const client = this.getClient();
+      const must = filterEntries.map(([field, value]) =>
+        Array.isArray(value) ? { terms: { [field]: value } } : { term: { [field]: value } },
+      );
+
+      await client.deleteByQuery({
+        index,
+        body: {
+          query: {
+            bool: { must },
+          },
+        },
+        refresh: true,
+      });
+    } catch (error) {
+      this.logger.warn(`OpenSearch deleteByQuery failed for ${index}: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
   async search(params: OpenSearchSearchParams): Promise<OpenSearchSearchResult> {
     if (!this.isEnabled()) {
       return { hits: [], total: 0 };

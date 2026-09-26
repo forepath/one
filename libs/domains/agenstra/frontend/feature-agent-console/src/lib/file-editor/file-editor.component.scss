@@ -90,6 +90,13 @@
   flex-direction: column;
 }
 
+.workspace-search-wrapper {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 .git-manager-wrapper {
   min-height: 0;
   overflow: hidden;
@@ -145,7 +152,7 @@
 
 .file-editor-tabs-container {
   flex-shrink: 0;
-  height: 48px;
+  height: 40px;
   overflow: visible;
   background-color: var(--bs-body-bg);
   position: relative;
@@ -163,13 +170,13 @@
 }
 
 .file-editor-tabs-wrapper {
-  height: 48px;
+  height: 40px;
   width: 100%;
   overflow: visible;
 }
 
 .file-editor-tabs {
-  height: 48px;
+  height: 40px;
   flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
@@ -181,7 +188,7 @@
 
 .file-editor-more-button {
   flex-shrink: 0;
-  height: 48px;
+  height: 40px;
   padding: 0 12px;
   border: none;
   background: transparent;
@@ -233,7 +240,7 @@
 .file-editor-tab {
   display: inline-flex;
   align-items: center;
-  height: 48px;
+  height: 40px;
   padding: 0 12px;
   border-right: 1px solid var(--bs-border-color);
   border-bottom: 1px solid var(--bs-border-color);

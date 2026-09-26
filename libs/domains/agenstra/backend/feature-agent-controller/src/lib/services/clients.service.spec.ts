@@ -30,6 +30,8 @@ describe('ClientsService', () => {
   let clientAgentProxyService: jest.Mocked<ClientAgentProxyService>;
   let provisioningReferencesRepository: jest.Mocked<ProvisioningReferencesRepository>;
   let clientUsersRepository: jest.Mocked<ClientUsersRepository>;
+  const originalAuthMethod = process.env.AUTHENTICATION_METHOD;
+  const originalStaticApiKey = process.env.STATIC_API_KEY;
   const mockClient: ClientEntity = {
     id: 'test-uuid',
     name: 'Test Client',
@@ -87,6 +89,10 @@ describe('ClientsService', () => {
   };
 
   beforeEach(async () => {
+    // Avoid host STATIC_API_KEY / AUTHENTICATION_METHOD flipping isApiKeyMode() on.
+    delete process.env.AUTHENTICATION_METHOD;
+    delete process.env.STATIC_API_KEY;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ClientsService,
@@ -144,6 +150,18 @@ describe('ClientsService', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+
+    if (originalAuthMethod === undefined) {
+      delete process.env.AUTHENTICATION_METHOD;
+    } else {
+      process.env.AUTHENTICATION_METHOD = originalAuthMethod;
+    }
+
+    if (originalStaticApiKey === undefined) {
+      delete process.env.STATIC_API_KEY;
+    } else {
+      process.env.STATIC_API_KEY = originalStaticApiKey;
+    }
   });
 
   describe('create', () => {

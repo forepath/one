@@ -65,6 +65,7 @@ import { ChatSessionMessageResponse, ClientAgentChatsProxyService } from '../ser
 import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
+import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 import { ClientsService } from '../services/clients.service';
 import { ProvisioningService } from '../services/provisioning.service';
 
@@ -85,6 +86,7 @@ export class ClientsController {
     private readonly clientUsersService: ClientUsersService,
     private readonly clientsRepository: ClientsRepository,
     private readonly clientUsersRepository: ClientUsersRepository,
+    private readonly workspaceSearchIndex: WorkspaceSearchIndexService,
   ) {}
 
   /**
@@ -301,6 +303,7 @@ export class ClientsController {
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
 
     await this.clientAgentProxyService.deleteClientAgent(id, agentId, userInfo.userId);
+    await this.workspaceSearchIndex.purgeAgent(id, agentId);
   }
 
   /**

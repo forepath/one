@@ -15,6 +15,7 @@ import { expandProviderPathTildeInContainer } from '../utils/provider-container-
 import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.service';
 import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
+import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 
 /** Inclusive byte range for a chunked upload (Content-Range semantics). */
 export interface AgentFileChunkRange {
@@ -52,10 +53,25 @@ export class AgentFileSystemService {
     private readonly dockerService: DockerService,
     private readonly agentProviderFactory: AgentProviderFactory,
     private readonly gitStateBroadcast: AgentGitStateBroadcastService,
+    private readonly workspaceChangeNotifier: WorkspaceChangeNotifierService,
   ) {}
 
   private notifyGitStateMayHaveChanged(agentId: string): void {
     this.gitStateBroadcast.notifyGitStateMayHaveChanged(agentId);
+  }
+
+  private notifyWorkspacePathChange(
+    agentId: string,
+    path: string,
+    op: 'upsert' | 'delete',
+    reason: string,
+    context: AgentFileManagerContext = 'app',
+  ): void {
+    if (context !== 'app') {
+      return;
+    }
+
+    this.workspaceChangeNotifier.notifyPathChanges(agentId, [{ path, op }], reason);
   }
 
   /**
@@ -544,6 +560,7 @@ export class AgentFileSystemService {
 
       this.logger.debug(`File written: ${filePath} for agent ${agentId} (${buffer.length} bytes)`);
       this.notifyGitStateMayHaveChanged(agentId);
+      this.notifyWorkspacePathChange(agentId, filePath, 'upsert', 'write', context);
     } catch (error: unknown) {
       const err = error as { message?: string };
 
@@ -756,6 +773,7 @@ export class AgentFileSystemService {
 
       this.logger.debug(`Created ${type}: ${filePath} for agent ${agentId}`);
       this.notifyGitStateMayHaveChanged(agentId);
+      this.notifyWorkspacePathChange(agentId, filePath, 'upsert', 'create', context);
     } catch (error: unknown) {
       const err = error as { message?: string };
 
@@ -800,6 +818,7 @@ export class AgentFileSystemService {
 
       this.logger.debug(`Deleted: ${filePath} for agent ${agentId}`);
       this.notifyGitStateMayHaveChanged(agentId);
+      this.notifyWorkspacePathChange(agentId, filePath, 'delete', 'delete', context);
     } catch (error: unknown) {
       const err = error as { message?: string };
 
@@ -856,6 +875,8 @@ export class AgentFileSystemService {
 
       this.logger.debug(`Moved: ${sourcePath} to ${destinationPath} for agent ${agentId}`);
       this.notifyGitStateMayHaveChanged(agentId);
+      this.notifyWorkspacePathChange(agentId, sourcePath, 'delete', 'move', context);
+      this.notifyWorkspacePathChange(agentId, destinationPath, 'upsert', 'move', context);
     } catch (error: unknown) {
       const err = error as { message?: string };
 

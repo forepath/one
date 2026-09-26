@@ -32,6 +32,7 @@ import { AgentSessionHydrationService } from '../services/agent-session-hydratio
 import { AgentsService } from '../services/agents.service';
 import { DockerService } from '../services/docker.service';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
+import { WorkspaceChangeNotifierService } from '../services/workspace-change-notifier.service';
 import { ContextInjectionPayload } from '../types/context-injection.types';
 import { PROMPT_ENHANCEMENT_RESUME_SESSION_SUFFIX } from '../utils/chat-enhancement-prompt.utils';
 import { isNonGenericContainerType } from '../utils/context-injection-prompt.utils';
@@ -175,6 +176,7 @@ interface FileUpdateNotificationData {
   socketId: string;
   filePath: string;
   timestamp: string;
+  reason?: string;
 }
 
 interface MessageFilterResultData {
@@ -285,10 +287,17 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     private readonly promptContextComposer: PromptContextComposerService,
     private readonly agentSessionHydrationService: AgentSessionHydrationService,
     private readonly gitStateBroadcast: AgentGitStateBroadcastService,
+    private readonly workspaceChangeNotifier: WorkspaceChangeNotifierService,
   ) {}
 
   onModuleInit(): void {
     this.gitStateBroadcast.registerBroadcaster((agentId) => this.broadcastGitStateChanged(agentId));
+    this.workspaceChangeNotifier.registerIndexBroadcaster((agentId, event, data) => {
+      this.broadcastToAgent(agentId, event, createSuccessResponse(data));
+    });
+    this.workspaceChangeNotifier.registerFileUpdateBroadcaster((agentId, data) => {
+      this.broadcastToAgent(agentId, 'fileUpdateNotification', createSuccessResponse<FileUpdateNotificationData>(data));
+    });
   }
 
   /**
@@ -414,6 +423,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
 
     if (event.kind === 'toolResult' && !event.payload.isError && toolMayMutateGitWorkspace(event.payload.name)) {
       this.gitStateBroadcast.notifyGitStateMayHaveChanged(agentUuid);
+      this.workspaceChangeNotifier.notifyRebuildRequired(agentUuid, `tool:${event.payload.name}`);
     }
   }
 

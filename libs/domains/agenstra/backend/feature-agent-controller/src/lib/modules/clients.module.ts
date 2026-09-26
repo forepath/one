@@ -33,6 +33,7 @@ import { ClientsConfigurationOverridesController } from '../controllers/clients-
 import { ClientsDeploymentsController } from '../controllers/clients-deployments.controller';
 import { ClientsVcsController } from '../controllers/clients-vcs.controller';
 import { ClientsController } from '../controllers/clients.controller';
+import { ClientsWorkspaceSearchController } from '../controllers/clients-workspace-search.controller';
 import { KnowledgeTreeController } from '../controllers/knowledge-tree.controller';
 import { StatisticsController } from '../controllers/statistics.controller';
 import { TicketAutomationController } from '../controllers/ticket-automation.controller';
@@ -95,6 +96,7 @@ import { TicketBoardRealtimeService } from '../services/ticket-board-realtime.se
 import { TicketsService } from '../services/tickets.service';
 
 import { AgenstraSearchModule } from '../search/agenstra-search.module';
+import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 
 import { AgenstraNotificationsModule } from './agenstra-notifications.module';
 import { AgenstraUpdatesModule } from './agenstra-updates.module';
@@ -157,6 +159,7 @@ const authMethod = getAuthenticationMethod();
     ClientAgentAutonomyController,
     ClientAgentAutonomyDirectoryController,
     ClientsAgentAutomationProxyController,
+    ClientsWorkspaceSearchController,
   ],
   providers: [
     AgenstraMetricsCollectorService,
@@ -178,6 +181,7 @@ const authMethod = getAuthenticationMethod();
     KeycloakTokenService,
     ClientAgentProxyService,
     ClientAgentFileSystemProxyService,
+    WorkspaceSearchIndexService,
     ClientAgentVcsProxyService,
     ClientAgentDeploymentsProxyService,
     ClientAgentEnvironmentVariablesProxyService,

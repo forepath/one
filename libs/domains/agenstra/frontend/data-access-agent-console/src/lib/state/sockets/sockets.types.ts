@@ -312,6 +312,7 @@ export interface FileUpdateNotificationData {
   socketId: string;
   filePath: string;
   timestamp: string;
+  reason?: string;
 }
 
 /**

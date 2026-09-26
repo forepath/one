@@ -7,7 +7,7 @@ import {
   type AgentFileType,
 } from '@forepath/agenstra/backend/feature-agent-manager';
 import { AuthenticationType } from '@forepath/identity/backend';
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import axios, {
   AxiosError,
   AxiosRequestConfig,
@@ -113,6 +113,7 @@ export class ClientAgentFileSystemProxyService {
   private readonly logger = new Logger(ClientAgentFileSystemProxyService.name);
 
   constructor(
+    @Inject(forwardRef(() => ClientsService))
     private readonly clientsService: ClientsService,
     private readonly clientsRepository: ClientsRepository,
   ) {}
@@ -152,6 +153,51 @@ export class ClientAgentFileSystemProxyService {
 
     // Ensure /api/agents/{agentId}/files path
     return `${baseUrl}/api/agents/${agentId}/files`;
+  }
+
+  private buildAgentWorkspaceIndexApiUrl(endpoint: string, agentId: string): string {
+    const baseUrl = endpoint.replace(/\/$/, '');
+
+    return `${baseUrl}/api/agents/${agentId}/workspace-index`;
+  }
+
+  /**
+   * Ask the agent-manager to emit a workspace index rebuild signal (and ensure watcher).
+   */
+  async signalWorkspaceIndexRebuild(clientId: string, agentId: string, _req?: unknown): Promise<void> {
+    const clientEntity = await this.clientsRepository.findByIdOrThrow(clientId);
+
+    await validateClientEndpointWithDnsOrThrow(clientEntity.endpoint);
+    const authHeader = await this.getAuthHeader(clientId);
+    const baseUrl = this.buildAgentWorkspaceIndexApiUrl(clientEntity.endpoint, agentId);
+    const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
+
+    try {
+      const response = await axios.request({
+        method: 'POST',
+        url: `${baseUrl}/rebuild-signal`,
+        headers: buildClientProxyRequestHeaders({}, authHeader),
+        validateStatus: (status) => status < 500,
+        httpsAgent: baseUrl.startsWith('https://')
+          ? new (require('https').Agent)({
+              rejectUnauthorized: tlsPolicy.rejectUnauthorized,
+            })
+          : undefined,
+      });
+
+      if (response.status >= 400) {
+        const errorMessage = this.extractErrorMessage(response.data, response.headers);
+
+        this.throwForStatus(response.status, errorMessage);
+      }
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+
+      this.logger.warn(`Workspace rebuild signal failed for agent ${agentId}: ${(error as Error).message}`);
+      // Controller can still rebuild by walking files without the manager signal.
+    }
   }
 
   private extractErrorMessage(

@@ -1,0 +1,105 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.workspace-search-panel {
+  min-height: 0;
+  overflow: hidden;
+  background-color: var(--bs-body-bg);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  flex: 1 1 auto;
+}
+
+.workspace-search-header {
+  flex-shrink: 0;
+}
+
+.workspace-search-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+
+  .workspace-search-filters {
+    flex-shrink: 0;
+
+    .fpc-form-field {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.workspace-search-results {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.workspace-search-panel__chip {
+  max-width: 100%;
+}
+
+.workspace-search-panel__chip-clear {
+  width: 0.5rem;
+  height: 0.5rem;
+  padding: 0;
+  margin-left: 0.125rem;
+  background-size: 0.5rem;
+  opacity: 0.55;
+
+  &:hover,
+  &:focus-visible {
+    opacity: 1;
+  }
+}
+
+.workspace-search-hit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.workspace-search-hit-list__group {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+:host ::ng-deep {
+  // One file-tree indent step so excerpts nest under the file header.
+  .workspace-search-hit-list__matches .fpc-list-item {
+    padding-left: calc(0.75rem + 20px);
+  }
+
+  .workspace-search-hit-list .fpc-list,
+  .workspace-search-hit-list .fpc-list-item {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .workspace-search-hit-list .fpc-list-item__body,
+  .workspace-search-hit-list .fpc-list-item__title {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  // Prefer ellipsis over `overflow-wrap: anywhere` from the list-item default.
+  .workspace-search-hit-list .fpc-list-item__title {
+    overflow-wrap: normal;
+  }
+
+  .workspace-search-hit__heading {
+    flex: 1 1 auto;
+    min-width: 0;
+    line-height: 1.25;
+  }
+}

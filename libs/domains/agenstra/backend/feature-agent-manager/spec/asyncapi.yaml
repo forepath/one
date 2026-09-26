@@ -195,6 +195,22 @@ channels:
     description: |
       Broadcast after workspace tools that may mutate git state succeed (debounced).
       Clients should refresh git status / dirty indicators. Envelope matches other success broadcasts.
+  agents/workspaceIndexChanged:
+    address: agents/workspaceIndexChanged
+    messages:
+      workspaceIndexChangedEvent:
+        $ref: '#/components/messages/WorkspaceIndexChanged'
+    description: |
+      Path-level workspace index change notifications (no file bodies). Controller hydrates OpenSearch
+      via the file HTTP API. Emitted from inotify, file API mutations, and VCS path batches.
+  agents/workspaceIndexRebuildRequired:
+    address: agents/workspaceIndexRebuildRequired
+    messages:
+      workspaceIndexRebuildRequiredEvent:
+        $ref: '#/components/messages/WorkspaceIndexRebuildRequired'
+    description: |
+      Full rebuild signal after initial workspace setup, branch switch / pull / prepare-clean, or manual
+      rebuild-signal. Optional path seed list speeds controller crawl; content is never included.
 operations:
   clientSendsLogin:
     action: send
@@ -352,6 +368,18 @@ operations:
       $ref: '#/channels/agents~1gitStateChanged'
     messages:
       - $ref: '#/channels/agents~1gitStateChanged/messages/gitStateChangedEvent'
+  serverBroadcastsWorkspaceIndexChanged:
+    action: receive
+    channel:
+      $ref: '#/channels/agents~1workspaceIndexChanged'
+    messages:
+      - $ref: '#/channels/agents~1workspaceIndexChanged/messages/workspaceIndexChangedEvent'
+  serverBroadcastsWorkspaceIndexRebuildRequired:
+    action: receive
+    channel:
+      $ref: '#/channels/agents~1workspaceIndexRebuildRequired'
+    messages:
+      - $ref: '#/channels/agents~1workspaceIndexRebuildRequired/messages/workspaceIndexRebuildRequiredEvent'
 components:
   securitySchemes:
     jwt:
@@ -986,13 +1014,18 @@ components:
             properties:
               socketId:
                 type: string
-                description: Socket ID of the client who made the update. Clients can compare this with their own socket ID to determine if the update came from themselves or another client.
+                description: |
+                  Socket ID of the client who made the update. Use `system` for server-originated
+                  changes (inotify, VCS, API hooks) so open editors can refresh previews.
               filePath:
                 type: string
                 description: Path to the file that was updated
               timestamp:
                 type: string
                 description: ISO timestamp of the update
+              reason:
+                type: string
+                description: Optional machine-readable reason (e.g. inotify, write, vcs-pull)
           timestamp:
             type: string
             description: ISO timestamp
@@ -1227,3 +1260,72 @@ components:
             type: string
             format: date-time
             description: Envelope timestamp
+    WorkspaceIndexChanged:
+      name: WorkspaceIndexChanged
+      title: Workspace index path changes
+      contentType: application/json
+      payload:
+        type: object
+        required: [success, data, timestamp]
+        properties:
+          success:
+            type: boolean
+            enum: [true]
+          data:
+            type: object
+            required: [agentId, changes, reason, timestamp]
+            properties:
+              agentId:
+                type: string
+                format: uuid
+              changes:
+                type: array
+                items:
+                  type: object
+                  required: [path, op]
+                  properties:
+                    path:
+                      type: string
+                      description: Workspace-relative path (no file body)
+                    op:
+                      type: string
+                      enum: [upsert, delete]
+              reason:
+                type: string
+              timestamp:
+                type: string
+                format: date-time
+          timestamp:
+            type: string
+            format: date-time
+    WorkspaceIndexRebuildRequired:
+      name: WorkspaceIndexRebuildRequired
+      title: Workspace index full rebuild required
+      contentType: application/json
+      payload:
+        type: object
+        required: [success, data, timestamp]
+        properties:
+          success:
+            type: boolean
+            enum: [true]
+          data:
+            type: object
+            required: [agentId, reason, timestamp]
+            properties:
+              agentId:
+                type: string
+                format: uuid
+              reason:
+                type: string
+              paths:
+                type: array
+                items:
+                  type: string
+                description: Optional path inventory seed (no content)
+              timestamp:
+                type: string
+                format: date-time
+          timestamp:
+            type: string
+            format: date-time

@@ -1,0 +1,295 @@
+<div class="workspace-search-panel d-flex flex-column h-100">
+  <div class="workspace-search-header p-2 ps-3 border-bottom bg-body-tertiary">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0 fw-semibold" i18n="@@featureWorkspaceSearch-header">Search</h6>
+      <fpc-button
+        variant="dark"
+        size="sm"
+        iconOnly
+        (clicked)="onRebuild()"
+        i18n-title="@@featureWorkspaceSearch-rebuildTitle"
+        title="Rebuild index"
+        i18n-ariaLabel="@@featureWorkspaceSearch-rebuildTitle"
+        ariaLabel="Rebuild index"
+      >
+        <i class="bi bi-arrow-clockwise"></i>
+      </fpc-button>
+    </div>
+  </div>
+
+  <div class="workspace-search-content flex-grow-1 d-flex flex-column min-h-0">
+    <div class="workspace-search-filters flex-shrink-0 d-flex flex-column gap-2 p-2">
+      <fpc-form-check-group
+        inline
+        i18n-label="@@featureWorkspaceSearch-modeLabel"
+        label="Search for"
+        legendId="workspaceSearchModeLegend"
+      >
+        <fpc-form-check
+          type="radio"
+          inline
+          name="workspaceSearchMode"
+          checkId="workspaceSearchMode-full"
+          value="full"
+          [checked]="mode() === 'full'"
+          (valueSelect)="onModeSelect($event)"
+          [label]="modeFullLabel"
+        />
+        <fpc-form-check
+          type="radio"
+          inline
+          name="workspaceSearchMode"
+          checkId="workspaceSearchMode-files"
+          value="files"
+          [checked]="mode() === 'files'"
+          (valueSelect)="onModeSelect($event)"
+          [label]="modeFilesLabel"
+        />
+      </fpc-form-check-group>
+
+      <fpc-form-field label="Query" i18n-label="@@featureWorkspaceSearch-queryLabel">
+        <fpc-form-control
+          controlId="workspaceSearchQuery"
+          size="sm"
+          inputType="search"
+          [ngModel]="query()"
+          (ngModelChange)="onQueryInput($event)"
+          [placeholder]="queryPlaceholder()"
+        />
+      </fpc-form-field>
+
+      <fpc-form-field label="Include paths" i18n-label="@@featureWorkspaceSearch-includeLabel">
+        <fpc-typeahead-select
+          inputId="workspaceSearchInclude"
+          listboxId="workspaceSearchInclude-listbox"
+          size="sm"
+          [openOnFocus]="false"
+          [loading]="includeSuggestLoading()"
+          i18n-placeholder="@@featureWorkspaceSearch-includePlaceholder"
+          placeholder="Add path prefix…"
+          i18n-ariaLabel="@@featureWorkspaceSearch-includeLabel"
+          ariaLabel="Include paths"
+          [query]="includeDraft()"
+          (queryChange)="onIncludeDraftChange($event)"
+          [open]="includeSuggestionsOpen()"
+          (openChange)="includeSuggestionsOpen.set($event)"
+          (cleared)="onIncludeDraftChange('')"
+          (keydown)="onIncludeKeydown($event)"
+        >
+          <div fpcTypeaheadSelection>
+            @if (includePaths().length > 0) {
+              <div class="d-flex flex-wrap gap-1 mb-1">
+                @for (path of includePaths(); track path) {
+                  <fpc-badge variant="info" color="secondary" class="workspace-search-panel__chip">
+                    <span class="text-truncate small">{{ path }}</span>
+                    <button
+                      type="button"
+                      class="btn-close workspace-search-panel__chip-clear"
+                      (click)="removeIncludePath(path)"
+                      i18n-aria-label="@@featureWorkspaceSearch-removePathAria"
+                      aria-label="Remove path"
+                    ></button>
+                  </fpc-badge>
+                }
+              </div>
+            }
+          </div>
+          <div fpcTypeaheadSuggestions>
+            @if (includeDraft().trim()) {
+              <button
+                type="button"
+                class="dropdown-item py-2 text-start"
+                (mousedown)="addIncludePath(includeDraft(), $event)"
+              >
+                <span i18n="@@featureWorkspaceSearch-addPath">Add</span>
+                <span class="font-monospace ms-1">{{ includeDraft().trim() }}</span>
+              </button>
+            }
+            @for (path of includePathSuggestions(); track path) {
+              <button type="button" class="dropdown-item py-2 text-start" (mousedown)="addIncludePath(path, $event)">
+                <span class="font-monospace small">{{ path }}</span>
+              </button>
+            }
+          </div>
+        </fpc-typeahead-select>
+      </fpc-form-field>
+
+      <fpc-form-field label="Exclude paths" i18n-label="@@featureWorkspaceSearch-excludeLabel">
+        <fpc-typeahead-select
+          inputId="workspaceSearchExclude"
+          listboxId="workspaceSearchExclude-listbox"
+          size="sm"
+          [openOnFocus]="false"
+          [loading]="excludeSuggestLoading()"
+          i18n-placeholder="@@featureWorkspaceSearch-excludePlaceholder"
+          placeholder="Exclude path prefix…"
+          i18n-ariaLabel="@@featureWorkspaceSearch-excludeLabel"
+          ariaLabel="Exclude paths"
+          [query]="excludeDraft()"
+          (queryChange)="onExcludeDraftChange($event)"
+          [open]="excludeSuggestionsOpen()"
+          (openChange)="excludeSuggestionsOpen.set($event)"
+          (cleared)="onExcludeDraftChange('')"
+          (keydown)="onExcludeKeydown($event)"
+        >
+          <div fpcTypeaheadSelection>
+            @if (excludePaths().length > 0) {
+              <div class="d-flex flex-wrap gap-1 mb-1">
+                @for (path of excludePaths(); track path) {
+                  <fpc-badge variant="info" color="secondary" class="workspace-search-panel__chip">
+                    <span class="text-truncate small">{{ path }}</span>
+                    <button
+                      type="button"
+                      class="btn-close workspace-search-panel__chip-clear"
+                      (click)="removeExcludePath(path)"
+                      i18n-aria-label="@@featureWorkspaceSearch-removePathAria"
+                      aria-label="Remove path"
+                    ></button>
+                  </fpc-badge>
+                }
+              </div>
+            }
+          </div>
+          <div fpcTypeaheadSuggestions>
+            @if (excludeDraft().trim()) {
+              <button
+                type="button"
+                class="dropdown-item py-2 text-start"
+                (mousedown)="addExcludePath(excludeDraft(), $event)"
+              >
+                <span i18n="@@featureWorkspaceSearch-addPath">Add</span>
+                <span class="font-monospace ms-1">{{ excludeDraft().trim() }}</span>
+              </button>
+            }
+            @for (path of excludePathSuggestions(); track path) {
+              <button type="button" class="dropdown-item py-2 text-start" (mousedown)="addExcludePath(path, $event)">
+                <span class="font-monospace small">{{ path }}</span>
+              </button>
+            }
+          </div>
+        </fpc-typeahead-select>
+      </fpc-form-field>
+    </div>
+
+    <div class="workspace-search-results flex-grow-1 overflow-auto min-h-0 border-top">
+      @if (loading$ | async) {
+        <div class="d-flex justify-content-center py-4">
+          <fpc-spinner variant="primary" i18n-label="@@featureWorkspaceSearch-loading" label="Searching…" />
+        </div>
+      } @else {
+        @switch (indexStatus$ | async) {
+          @case ('missing') {
+            <fpc-empty-state
+              icon="database"
+              message="No index yet"
+              i18n-message="@@featureWorkspaceSearch-noIndexYet"
+            />
+          }
+          @case ('indexing') {
+            <fpc-empty-state
+              icon="hourglass-split"
+              message="Indexing…"
+              i18n-message="@@featureWorkspaceSearch-indexing"
+            />
+          }
+          @case ('error') {
+            <fpc-empty-state
+              icon="exclamation-triangle"
+              message="Index unavailable"
+              i18n-message="@@featureWorkspaceSearch-unavailable"
+            />
+          }
+          @default {
+            @if (hits().length) {
+              <div class="workspace-search-hit-list">
+                @for (hit of hits(); track hit.path) {
+                  @if (hitHasMatches(hit)) {
+                    <fpc-accordion [multi]="true" [flush]="true" class="workspace-search-hit-list__group">
+                      <fpc-accordion-item
+                        [icon]="fileIconForHit(hit)"
+                        [open]="true"
+                        variant="condensed"
+                        [attr.title]="hit.path"
+                      >
+                        <span fpcAccordionItemHeading class="workspace-search-hit__heading d-flex flex-column min-w-0">
+                          <span class="fw-semibold text-truncate">{{ fileLabel(hit) }}</span>
+                          @if (showPathDisambiguator(hit)) {
+                            <span class="workspace-search-hit__path small text-body-secondary text-truncate">
+                              {{ filePathHint(hit) }}
+                            </span>
+                          }
+                        </span>
+                        <fpc-badge
+                          fpcAccordionItemHeading
+                          variant="info"
+                          color="secondary"
+                          size="sm"
+                          class="ms-2 flex-shrink-0"
+                        >
+                          {{ hitMatches(hit).length }}
+                        </fpc-badge>
+                        <fpc-list
+                          [flush]="true"
+                          [bordered]="false"
+                          class="workspace-search-hit-list__matches"
+                          i18n-ariaLabel="@@featureWorkspaceSearch-matchesAria"
+                          ariaLabel="Matches"
+                        >
+                          @for (match of hitMatches(hit); track match.line + ':' + match.snippet) {
+                            <fpc-list-item
+                              [clickable]="true"
+                              variant="condensed"
+                              (selected)="onSelectMatch(hit, match)"
+                            >
+                              <span fpcListItemTitle class="font-monospace small fw-normal text-truncate">
+                                <span class="fw-semibold text-body-secondary me-1">L{{ match.line }}</span>
+                                {{ match.snippet }}
+                              </span>
+                            </fpc-list-item>
+                          }
+                        </fpc-list>
+                      </fpc-accordion-item>
+                    </fpc-accordion>
+                  } @else {
+                    <fpc-list
+                      [flush]="true"
+                      [bordered]="false"
+                      class="workspace-search-hit-list__group"
+                      i18n-ariaLabel="@@featureWorkspaceSearch-fileHitAria"
+                      ariaLabel="File"
+                    >
+                      <fpc-list-item
+                        [clickable]="true"
+                        variant="condensed"
+                        [attr.title]="hit.path"
+                        (selected)="onSelectFile(hit)"
+                      >
+                        <span fpcListItemTitle class="d-flex align-items-center gap-2 min-w-0 w-100 overflow-hidden">
+                          <i class="bi bi-{{ fileIconForHit(hit) }} flex-shrink-0" aria-hidden="true"></i>
+                          <span class="d-flex flex-column min-w-0 flex-grow-1 overflow-hidden">
+                            <span class="fw-semibold text-truncate">{{ fileLabel(hit) }}</span>
+                            @if (showPathDisambiguator(hit)) {
+                              <span class="small text-body-secondary text-truncate">{{ filePathHint(hit) }}</span>
+                            }
+                          </span>
+                        </span>
+                      </fpc-list-item>
+                    </fpc-list>
+                  }
+                }
+              </div>
+            } @else if (query().trim()) {
+              <fpc-empty-state icon="search" message="No results" i18n-message="@@featureWorkspaceSearch-noResults" />
+            } @else {
+              <fpc-empty-state
+                icon="search"
+                message="Enter a search query"
+                i18n-message="@@featureWorkspaceSearch-enterQuery"
+              />
+            }
+          }
+        }
+      }
+    </div>
+  </div>
+</div>

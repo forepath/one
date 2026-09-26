@@ -18,6 +18,7 @@ import { KnowledgeTreeService } from '../services/knowledge-tree.service';
 import { StatisticsService } from '../services/statistics.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
 import { TicketsService } from '../services/tickets.service';
+import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 
 import { ClientsGateway } from './clients.gateway';
 
@@ -173,6 +174,12 @@ describe('ClientsGateway', () => {
     publishChatMessage: jest.fn(),
     publishFilterRuleTriggered: jest.fn(),
   };
+  const mockWorkspaceSearchIndex = {
+    applyPathChanges: jest.fn().mockResolvedValue(undefined),
+    rebuild: jest.fn().mockResolvedValue(undefined),
+    purgeAgent: jest.fn().mockResolvedValue(undefined),
+    getStatus: jest.fn().mockReturnValue({ status: 'missing', docCount: 0 }),
+  };
   const createMockSocket = (id = 'socket-1', withUserInfo = true) => {
     const emitted: Record<string, unknown>[] = [];
     const socket = {
@@ -212,6 +219,10 @@ describe('ClientsGateway', () => {
         {
           provide: AgenstraNotificationPublisher,
           useValue: mockNotificationPublisher,
+        },
+        {
+          provide: WorkspaceSearchIndexService,
+          useValue: mockWorkspaceSearchIndex,
         },
       ],
     }).compile();

@@ -15,8 +15,6 @@ import {
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
-  AgentsFacade,
-  ClientsFacade,
   FilesFacade,
   FilesService,
   VcsFacade,
@@ -44,8 +42,7 @@ import { Actions, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { combineLatest, filter, firstValueFrom, map, Observable, of, Subscription, switchMap, take } from 'rxjs';
 
-import { getGitRepositoryDisplayLabel } from '../../git-repository-display';
-import { GitBranchModalComponent } from '../git-branch-modal/git-branch-modal.component';
+import { fileIconClassForName } from '../file-icon.util';
 import { FileTreeClipboardService } from './file-tree-clipboard.service';
 import {
   buildClipboardEntries,
@@ -110,7 +107,6 @@ interface PendingUpload {
   imports: [
     CommonModule,
     FormsModule,
-    GitBranchModalComponent,
     FpcButtonComponent,
     FpcButtonGroupComponent,
     FpcConfirmDialogComponent,
@@ -133,8 +129,6 @@ interface PendingUpload {
 export class FileTreeComponent implements OnInit {
   private readonly filesFacade = inject(FilesFacade);
   private readonly filesService = inject(FilesService);
-  private readonly clientsFacade = inject(ClientsFacade);
-  private readonly agentsFacade = inject(AgentsFacade);
   private readonly vcsFacade = inject(VcsFacade);
   private readonly actions$ = inject(Actions);
   private readonly store = inject(Store);
@@ -178,7 +172,6 @@ export class FileTreeComponent implements OnInit {
   fileDelete = output<string>();
   directoryExpand = output<string>();
   directoryCollapse = output<string>();
-  toggleGitManager = output<void>();
   /** Emits whenever multi-selection changes (for parent cleanup hooks). */
   selectionChange = output<string[]>();
 
@@ -273,73 +266,6 @@ export class FileTreeComponent implements OnInit {
     }),
   );
 
-  readonly clientRepositoryName$: Observable<string | null> = combineLatest([
-    toObservable(this.clientId),
-    toObservable(this.agentId),
-  ]).pipe(
-    switchMap(([clientId, agentId]) => {
-      if (!clientId || !agentId) {
-        return of(null);
-      }
-
-      return combineLatest([
-        this.clientsFacade.getClientById$(clientId),
-        this.agentsFacade
-          .getClientAgents$(clientId)
-          .pipe(map((agents) => agents.find((agent) => agent.id === agentId) ?? null)),
-      ]).pipe(map(([client, agent]) => getGitRepositoryDisplayLabel(agent, client?.config ?? null)));
-    }),
-  );
-
-  // Git status observables
-  readonly gitStatus$ = this.vcsFacade.status$;
-  readonly currentBranch$ = this.vcsFacade.currentBranch$;
-  readonly statusIndicator$ = this.vcsFacade.statusIndicator$;
-  readonly loadingStatus$ = this.vcsFacade.loadingStatus$;
-  readonly staging$ = this.vcsFacade.staging$;
-  readonly unstaging$ = this.vcsFacade.unstaging$;
-  readonly committing$ = this.vcsFacade.committing$;
-
-  // Track if content has been loaded (for spinner display)
-  private hasLoadedContent = signal<boolean>(false);
-  readonly hasLoadedContent$ = toObservable(this.hasLoadedContent);
-  private isReloadingAfterOperation = signal<boolean>(false);
-  readonly isReloadingAfterOperation$ = toObservable(this.isReloadingAfterOperation);
-
-  // Combined observable: true if any operation is in progress OR status is loading OR reloading after operation
-  readonly isAnyOperationInProgress$ = combineLatest([
-    this.staging$,
-    this.unstaging$,
-    this.committing$,
-    this.loadingStatus$,
-    this.isReloadingAfterOperation$,
-  ]).pipe(
-    map(
-      ([staging, unstaging, committing, loadingStatus, isReloading]) =>
-        staging || unstaging || committing || loadingStatus || isReloading,
-    ),
-  );
-
-  // Show spinner only when reloading after an operation (not on initial load or when panel opens)
-  // Track if we've had a successful operation that triggered a reload
-  private hasHadOperation = signal<boolean>(false);
-  readonly hasHadOperation$ = toObservable(this.hasHadOperation);
-
-  readonly showStatusIndicatorSpinner$ = combineLatest([
-    this.isAnyOperationInProgress$,
-    this.hasHadOperation$,
-    this.statusIndicator$,
-  ]).pipe(
-    map(([isInProgress, hasHadOp, indicator]) => {
-      // Show spinner only if:
-      // 1. Operation is in progress (staging/unstaging/committing/reloading)
-      // 2. AND we've had an operation before (user has performed staging/unstaging/committing)
-      // 3. AND status indicator exists (content is visible)
-      // This ensures it doesn't show when panel first opens or on initial load
-      return isInProgress && hasHadOp && indicator !== null;
-    }),
-  );
-
   // Helper to get directory listing observable
   getDirectoryListing$(path: string): Observable<FileNodeDto[] | null> {
     return this.filesFacade.getDirectoryListing$(this.clientId(), this.agentId(), path, this.fileManagerContext());
@@ -362,10 +288,6 @@ export class FileTreeComponent implements OnInit {
       const agentId = this.agentId();
 
       if (clientId && agentId) {
-        // Reset flags when client/agent changes (new agent = first load)
-        this.hasLoadedContent.set(false);
-        this.hasHadOperation.set(false);
-        this.isReloadingAfterOperation.set(false);
         this.filesFacade.listDirectory(clientId, agentId, this.listParams('.'));
 
         if (this.fileManagerContext() === 'app') {
@@ -373,74 +295,6 @@ export class FileTreeComponent implements OnInit {
         }
       }
     });
-
-    // Reset hasHadOperation when panel closes
-    effect(() => {
-      const visible = this.gitManagerVisible();
-
-      if (!visible) {
-        // Panel is closed - reset operation flag so spinner doesn't show on next open
-        this.hasHadOperation.set(false);
-      }
-    });
-
-    // Track when operations start - mark that we've had an operation
-    combineLatest([this.staging$, this.unstaging$, this.committing$])
-      .pipe(
-        filter(([staging, unstaging, committing]) => {
-          // Mark when any operation starts (user has interacted)
-          return staging || unstaging || committing;
-        }),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => {
-        // User has performed an operation - mark this so spinner can show on reload
-        if (!this.hasHadOperation()) {
-          this.hasHadOperation.set(true);
-        }
-      });
-
-    // Track when operations complete - mark as reloading to prevent flicker
-    // This bridges the gap between operation completion and reload start
-    combineLatest([this.staging$, this.unstaging$, this.committing$])
-      .pipe(
-        filter(([staging, unstaging, committing]) => {
-          // Only trigger when transitioning from true to false (operation just completed)
-          return !staging && !unstaging && !committing;
-        }),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => {
-        // Mark as reloading immediately to prevent flicker
-        // Only if we've had an operation (user has interacted)
-        if (this.hasHadOperation() && !this.isReloadingAfterOperation()) {
-          this.isReloadingAfterOperation.set(true);
-        }
-      });
-
-    // Mark as loaded once first load completes (status available and not loading)
-    combineLatest([this.loadingStatus$, this.gitStatus$])
-      .pipe(
-        filter(([loading, status]) => !loading && status !== null && !this.hasLoadedContent()),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => {
-        // First load completed - mark as loaded
-        this.hasLoadedContent.set(true);
-      });
-
-    // Clear reloading flag when status loading completes
-    combineLatest([this.loadingStatus$, this.gitStatus$])
-      .pipe(
-        filter(([loading, status]) => !loading && status !== null && this.isReloadingAfterOperation()),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => {
-        // Clear the flag after a brief delay to ensure smooth transition
-        setTimeout(() => {
-          this.isReloadingAfterOperation.set(false);
-        }, 100);
-      });
 
     // Subscribe to all expanded directory listings to rebuild tree when they change
     effect(() => {
@@ -2038,37 +1892,7 @@ export class FileTreeComponent implements OnInit {
   }
 
   getPendingUploadIcon(fileName: string): string {
-    const ext = fileName.split('.').pop()?.toLowerCase();
-    const iconMap: Record<string, string> = {
-      ts: 'bi-filetype-ts',
-      js: 'bi-filetype-js',
-      json: 'bi-filetype-json',
-      html: 'bi-filetype-html',
-      css: 'bi-filetype-css',
-      scss: 'bi-filetype-scss',
-      md: 'bi-filetype-md',
-      yaml: 'bi-filetype-yml',
-      yml: 'bi-filetype-yml',
-      xml: 'bi-filetype-xml',
-      py: 'bi-filetype-py',
-      java: 'bi-filetype-java',
-      c: 'bi-filetype-c',
-      cpp: 'bi-filetype-cpp',
-      php: 'bi-filetype-php',
-      go: 'bi-filetype-go',
-      rs: 'bi-filetype-rs',
-      mp3: 'bi-file-earmark-music',
-      wav: 'bi-file-earmark-music',
-      flac: 'bi-file-earmark-music',
-      m4a: 'bi-file-earmark-music',
-      aac: 'bi-file-earmark-music',
-      oga: 'bi-file-earmark-music',
-      ogg: 'bi-file-earmark-music',
-      opus: 'bi-file-earmark-music',
-      vue: 'bi-filetype-vue',
-    };
-
-    return iconMap[ext || ''] || 'bi-file-earmark';
+    return fileIconClassForName(fileName);
   }
 
   pendingUploadsFor(parentPath: string): PendingUpload[] {
@@ -2095,23 +1919,6 @@ export class FileTreeComponent implements OnInit {
     return item.type === 'file'
       ? $localize`:@@featureFileTree-enterFileName:Enter file name...`
       : $localize`:@@featureFileTree-enterFolderName:Enter folder name...`;
-  }
-
-  getStatusIndicatorTitle(indicator: string): string {
-    switch (indicator) {
-      case 'clean':
-        return $localize`:@@featureFileTree-statusClean:In sync with remote - Click to open Version Control`;
-      case 'changes':
-        return $localize`:@@featureFileTree-statusChanges:Local changes (staged, unstaged, or unpushed) - Click to open Version Control`;
-      case 'conflict':
-        return $localize`:@@featureFileTree-statusConflict:Merge conflicts detected - Click to open Version Control`;
-      default:
-        return '';
-    }
-  }
-
-  getCurrentBranchTitle(branch: string): string {
-    return $localize`:@@featureFileTree-currentBranchTitle:Current branch: ${branch}:branch:`;
   }
 
   getDeleteModalTitle(): string {
@@ -2227,21 +2034,6 @@ export class FileTreeComponent implements OnInit {
         this.listDirectoryRel(path);
       }, index * 50); // 50ms delay between each call
     });
-  }
-
-  branchModalOpen = signal<boolean>(false);
-
-  onOpenBranchModal(): void {
-    this.branchModalOpen.set(true);
-  }
-
-  onBranchModalClosed(): void {
-    this.branchModalOpen.set(false);
-  }
-
-  onStatusIndicatorClick(event: MouseEvent): void {
-    event.stopPropagation(); // Prevent triggering the branch modal
-    this.toggleGitManager.emit();
   }
 
   onRefreshFolder(folderPath: string): void {
