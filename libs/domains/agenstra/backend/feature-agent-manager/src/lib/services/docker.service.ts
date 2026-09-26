@@ -892,7 +892,7 @@ export class DockerService {
    * Send a command or keystrokes to a container.
    * Executes a command in the container and optionally sends input/keystrokes to stdin.
    * @param containerId - The ID of the container
-   * @param command - The command to execute (e.g., 'bash', 'sh', or a specific command)
+   * @param command - Shell string (parsed) or argv array passed straight to Docker exec
    * @param input - Optional input/keystrokes to send to stdin (string or array of strings)
    * @param checkExitCode - If true, check exit code and throw error if non-zero (default: false)
    * @returns The command output (stdout and stderr combined)
@@ -901,12 +901,14 @@ export class DockerService {
    */
   async sendCommandToContainer(
     containerId: string,
-    command: string,
+    command: string | string[],
     input?: string | string[],
     checkExitCode = false,
   ): Promise<string> {
     try {
-      this.logger.debug(`Sending command to container ${containerId}: ${command}`);
+      this.logger.debug(
+        `Sending command to container ${containerId}: ${Array.isArray(command) ? command.join(' ') : command}`,
+      );
 
       const container = this.docker.getContainer(containerId);
 
@@ -923,9 +925,8 @@ export class DockerService {
         throw error;
       }
 
-      // Parse command into executable and arguments
-      // Handles quoted arguments (single/double quotes) and escaped spaces
-      const commandParts = this.parseShellCommand(command.trim());
+      // Argv arrays skip parseShellCommand (needed for `sh -c` scripts with spaced paths).
+      const commandParts = Array.isArray(command) ? command : this.parseShellCommand(command.trim());
       const executable = commandParts[0];
       const args = commandParts.slice(1);
       // Create exec instance with stdin enabled for keystrokes

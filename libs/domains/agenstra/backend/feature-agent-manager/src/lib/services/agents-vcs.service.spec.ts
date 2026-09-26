@@ -21,6 +21,8 @@ describe('AgentsVcsService', () => {
   let agentFileSystemService: jest.Mocked<AgentFileSystemService>;
   const mockAgentId = 'test-agent-uuid';
   const mockContainerId = 'test-container-id';
+  /** Match executeGitCommand argv: ['sh', '-c', scriptContaining…] */
+  const shGitScriptContaining = (substring: string) => ['sh', '-c', expect.stringContaining(substring)];
   const mockAgentEntity: AgentEntity = {
     id: mockAgentId,
     name: 'Test Agent',
@@ -126,6 +128,26 @@ describe('AgentsVcsService', () => {
       expect(result.files[0].path).toBe('file1.txt');
       expect(result.files[0].status).toBe(' M'); // Porcelain format includes leading space for unstaged
       expect(result.files[0].type).toBe('unstaged');
+    });
+
+    it('should unquote C-style porcelain paths and rename destinations', async () => {
+      const mockStatusOutput = ' M "src/my file.ts"\nR  "old name.ts" -> "new name.ts"';
+      const mockBranchOutput = 'main';
+      const mockRemoteBranchExists = 'abc123\trefs/heads/main';
+      const mockTrackingOutput = '0 0';
+
+      agentsService.findOne.mockResolvedValue({} as any);
+      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
+      dockerService.sendCommandToContainer
+        .mockResolvedValueOnce(mockBranchOutput)
+        .mockResolvedValueOnce(mockRemoteBranchExists)
+        .mockResolvedValueOnce(mockTrackingOutput)
+        .mockResolvedValueOnce(mockStatusOutput)
+        .mockResolvedValue('not-binary'); // isBinaryFile probes
+
+      const result = await service.getStatus(mockAgentId);
+
+      expect(result.files.map((f) => f.path)).toEqual(['src/my file.ts', 'new name.ts']);
     });
 
     it('should handle clean repository', async () => {
@@ -310,11 +332,26 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        expect.stringContaining('git add'),
+        shGitScriptContaining("git add -- 'file1.txt' 'file2.txt'"),
         undefined,
         false,
       );
       expect(mockGitStateBroadcast.notifyGitStateMayHaveChanged).toHaveBeenCalledWith(mockAgentId);
+    });
+
+    it('should strip leftover porcelain quotes when staging', async () => {
+      agentsService.findOne.mockResolvedValue({} as any);
+      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
+      dockerService.sendCommandToContainer.mockResolvedValue('');
+
+      await service.stageFiles(mockAgentId, ['"src/my file.ts"']);
+
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
+        mockContainerId,
+        shGitScriptContaining("git add -- 'src/my file.ts'"),
+        undefined,
+        false,
+      );
     });
 
     it('should stage all files when empty array provided', async () => {
@@ -326,7 +363,7 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        expect.stringContaining('git add -A'),
+        shGitScriptContaining('git add -A'),
         undefined,
         false,
       );
@@ -345,10 +382,24 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        expect.stringContaining('git reset'),
+        shGitScriptContaining("git reset -- 'file1.txt'"),
         undefined,
         false,
       );
+    });
+
+    it('should unstage all with reset (no HEAD) so unborn repos work', async () => {
+      agentsService.findOne.mockResolvedValue({} as any);
+      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
+      dockerService.sendCommandToContainer.mockResolvedValue('');
+
+      await service.unstageFiles(mockAgentId, []);
+
+      const [, cmd] = dockerService.sendCommandToContainer.mock.calls[0];
+      const script = Array.isArray(cmd) ? cmd[2] : String(cmd);
+
+      expect(script).toMatch(/git reset$/);
+      expect(script).not.toContain('reset HEAD');
     });
   });
 
@@ -362,19 +413,23 @@ describe('AgentsVcsService', () => {
 
       await service.commit(mockAgentId, message);
 
-      // The commit command includes all config in a single call
-      // Find the commit call and verify it contains the message and author config
-      const commitCall = dockerService.sendCommandToContainer.mock.calls.find((call) => call[1].includes('commit'));
+      const commitCall = dockerService.sendCommandToContainer.mock.calls.find((call) => {
+        const cmd = call[1];
+
+        return Array.isArray(cmd) && typeof cmd[2] === 'string' && cmd[2].includes('commit');
+      });
 
       expect(commitCall).toBeDefined();
-      expect(commitCall[0]).toBe(mockContainerId);
-      expect(commitCall[1]).toContain('commit');
-      expect(commitCall[1]).toContain(message);
-      expect(commitCall[2]).toBeUndefined();
-      expect(commitCall[3]).toBe(false);
-      // Verify author config is present (either from env vars or defaults)
-      expect(commitCall[1]).toMatch(/user\.name/);
-      expect(commitCall[1]).toMatch(/user\.email/);
+      expect(commitCall![0]).toBe(mockContainerId);
+
+      const script = (commitCall![1] as string[])[2];
+
+      expect(script).toContain('commit');
+      expect(script).toContain(message);
+      expect(commitCall![2]).toBeUndefined();
+      expect(commitCall![3]).toBe(false);
+      expect(script).toMatch(/user\.name/);
+      expect(script).toMatch(/user\.email/);
     });
   });
 
@@ -391,7 +446,7 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        expect.stringContaining('git push -u origin main'),
+        shGitScriptContaining("git push -u origin 'main'"),
         undefined,
         true, // checkExitCode=true
       );
@@ -409,7 +464,7 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        expect.stringContaining('git push --force-with-lease origin main'),
+        shGitScriptContaining("git push --force-with-lease origin 'main'"),
         undefined,
         true,
       );
@@ -428,7 +483,7 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        expect.stringContaining('git pull'),
+        shGitScriptContaining('git pull'),
         undefined,
         true, // checkExitCode=true
       );
@@ -445,7 +500,7 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        expect.stringContaining('git fetch'),
+        shGitScriptContaining('git fetch'),
         undefined,
         true, // checkExitCode=true
       );
@@ -468,7 +523,7 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        expect.stringContaining('feat/new-feature'),
+        shGitScriptContaining('feat/new-feature'),
         undefined,
         false,
       );
@@ -488,7 +543,7 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        expect.stringContaining('custom-branch'),
+        shGitScriptContaining('custom-branch'),
         undefined,
         false,
       );
@@ -507,7 +562,7 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        expect.stringContaining(`git checkout ${branchName}`),
+        shGitScriptContaining(`git checkout '${branchName}'`),
         undefined,
         false,
       );
@@ -528,7 +583,7 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        expect.stringContaining(`git branch -D ${branchName}`),
+        shGitScriptContaining(`git branch -D '${branchName}'`),
         undefined,
         false,
       );
@@ -547,7 +602,7 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        expect.stringContaining(`git rebase ${branchName}`),
+        shGitScriptContaining(`git rebase '${branchName}'`),
         undefined,
         false,
       );
@@ -573,7 +628,7 @@ describe('AgentsVcsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         1,
         mockContainerId,
-        expect.stringContaining('--theirs'),
+        shGitScriptContaining('--theirs'),
         undefined,
         false,
       );
@@ -597,7 +652,7 @@ describe('AgentsVcsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         1,
         mockContainerId,
-        expect.stringContaining('--ours'),
+        shGitScriptContaining('--ours'),
         undefined,
         false,
       );

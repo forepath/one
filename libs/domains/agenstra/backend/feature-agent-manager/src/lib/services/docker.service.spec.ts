@@ -1728,6 +1728,20 @@ describe('DockerService', () => {
       });
     });
 
+    it('should pass argv arrays through without re-parsing', async () => {
+      mockContainer.inspect.mockResolvedValue({});
+
+      await service.sendCommandToContainer(containerId, ['sh', '-c', "cd '/app' && git add -- 'src/my file.ts'"]);
+
+      expect(mockContainer.exec).toHaveBeenCalledWith({
+        Cmd: ['sh', '-c', "cd '/app' && git add -- 'src/my file.ts'"],
+        AttachStdin: true,
+        AttachStdout: true,
+        AttachStderr: true,
+        Tty: false,
+      });
+    });
+
     it('should handle complex command with quotes and escaped characters', async () => {
       mockContainer.inspect.mockResolvedValue({});
 
