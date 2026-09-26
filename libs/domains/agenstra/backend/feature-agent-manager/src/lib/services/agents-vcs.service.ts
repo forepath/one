@@ -112,8 +112,6 @@ export class AgentsVcsService {
     disablePrompts = false,
     checkExitCode = false,
   ): Promise<string> {
-    // Escape the command for shell execution
-    const escapedCommand = command.replace(/'/g, "'\\''");
     // Set environment variables to disable interactive prompts if requested
     let envPrefix = '';
 
@@ -124,10 +122,15 @@ export class AgentsVcsService {
       envPrefix = "GIT_TERMINAL_PROMPT=0 GIT_ASKPASS='false' ";
     }
 
-    const fullCommand = `cd '${workingDir}' && ${envPrefix}git ${escapedCommand}`;
+    // Build the script that `sh -c` will run. Paths/args in `command` must already be
+    // shell-safe for that inner script (prefer single-quoted file paths).
+    // Pass argv directly so parseShellCommand cannot eat escapes or split on spaces
+    // inside the -c script (e.g. paths like `src/my file.ts`).
+    const safeWorkingDir = workingDir.replace(/'/g, `'\\''`);
+    const script = `cd '${safeWorkingDir}' && ${envPrefix}git ${command}`;
     const output = await this.dockerService.sendCommandToContainer(
       containerId,
-      `sh -c "${fullCommand}"`,
+      ['sh', '-c', script],
       undefined,
       checkExitCode,
     );
@@ -217,9 +220,10 @@ export class AgentsVcsService {
       }
 
       // Get git status --porcelain output (preserve leading spaces!)
+      // Disable quotepath so paths with spaces are not C-quoted; still unquote defensively below.
       const statusOutput = await this.executeGitCommand(
         agentEntity.containerId,
-        'status --porcelain',
+        '-c core.quotepath=false status --porcelain',
         this.BASE_PATH,
         true,
       );
@@ -273,7 +277,7 @@ export class AgentsVcsService {
           continue;
         }
 
-        const path = line.substring(pathStart).trim();
+        const path = this.unquoteGitPath(line.substring(pathStart));
 
         if (!path) {
           continue;
@@ -333,7 +337,10 @@ export class AgentsVcsService {
    */
   private async isBinaryFile(containerId: string, filePath: string): Promise<boolean> {
     try {
-      const output = await this.executeGitCommand(containerId, `check-attr -z binary -- ${this.escapePath(filePath)}`);
+      const output = await this.executeGitCommand(
+        containerId,
+        `check-attr -z binary -- ${this.shellQuoteFilePath(filePath)}`,
+      );
 
       return output.includes('binary: set');
     } catch {
@@ -341,7 +348,7 @@ export class AgentsVcsService {
       try {
         const diffOutput = await this.executeGitCommand(
           containerId,
-          `diff --check --quiet -- ${this.escapePath(filePath)} 2>&1 || true`,
+          `diff --check --quiet -- ${this.shellQuoteFilePath(filePath)} 2>&1 || true`,
         );
 
         return diffOutput.includes('Binary files differ');
@@ -420,10 +427,56 @@ export class AgentsVcsService {
   }
 
   /**
-   * Escape a file path for shell usage.
+   * Escape a branch / ref token for shell usage inside executeGitCommand's inner script.
    */
   private escapePath(path: string): string {
-    return path.replace(/'/g, "'\\''").replace(/\s/g, '\\ ');
+    return `'${path.replace(/'/g, `'\\''`)}'`;
+  }
+
+  /**
+   * Decode a git porcelain path (optional C-style quotes; rename/copy destination).
+   */
+  private unquoteGitPath(raw: string): string {
+    let path = raw.trim();
+
+    if (!path) {
+      return '';
+    }
+
+    // Rename/copy porcelain lines: `R  old -> new` (either side may be quoted)
+    const renameSeparator = ' -> ';
+    const renameIndex = path.lastIndexOf(renameSeparator);
+
+    if (renameIndex !== -1) {
+      path = path.slice(renameIndex + renameSeparator.length).trim();
+    }
+
+    if (path.length >= 2 && path.startsWith('"') && path.endsWith('"')) {
+      return path.slice(1, -1).replace(/\\([\\"nrt])/g, (_match, ch: string) => {
+        switch (ch) {
+          case 'n':
+            return '\n';
+          case 'r':
+            return '\r';
+          case 't':
+            return '\t';
+          default:
+            return ch;
+        }
+      });
+    }
+
+    return path;
+  }
+
+  /**
+   * Quote a workspace file path for the inner `sh -c` script (single-quoted).
+   * Strips leftover porcelain quotes first so stage/unstage hit the real path.
+   */
+  private shellQuoteFilePath(path: string): string {
+    const normalized = this.unquoteGitPath(path);
+
+    return `'${normalized.replace(/'/g, `'\\''`)}'`;
   }
 
   /**
@@ -643,7 +696,7 @@ export class AgentsVcsService {
       try {
         const originalOutput = await this.executeGitCommand(
           agentEntity.containerId,
-          `show HEAD:${this.escapePath(filePath)} 2>/dev/null || echo ""`,
+          `show HEAD:${this.shellQuoteFilePath(filePath)} 2>/dev/null || echo ""`,
         );
 
         originalContent = Buffer.from(originalOutput).toString('base64');
@@ -679,14 +732,16 @@ export class AgentsVcsService {
       let output: string;
 
       if (revision === 'WORKING') {
-        const escapedPath = this.escapePath(filePath);
+        const escapedPath = this.shellQuoteFilePath(filePath);
+        const safeBase = this.BASE_PATH.replace(/'/g, `'\\''`);
 
-        output = await this.dockerService.sendCommandToContainer(
-          containerId,
-          `sh -c "cd '${this.BASE_PATH}' && stat -c %s '${escapedPath}' 2>/dev/null || echo '0'"`,
-        );
+        output = await this.dockerService.sendCommandToContainer(containerId, [
+          'sh',
+          '-c',
+          `cd '${safeBase}' && stat -c %s ${escapedPath} 2>/dev/null || echo '0'`,
+        ]);
       } else {
-        const escapedPath = this.escapePath(filePath);
+        const escapedPath = this.shellQuoteFilePath(filePath);
 
         output = await this.executeGitCommand(
           containerId,
@@ -721,9 +776,9 @@ export class AgentsVcsService {
         await this.executeGitCommand(agentEntity.containerId, 'add -A');
       } else {
         // Stage specific files
-        const escapedFiles = files.map((f) => this.escapePath(f)).join(' ');
+        const escapedFiles = files.map((f) => this.shellQuoteFilePath(f)).join(' ');
 
-        await this.executeGitCommand(agentEntity.containerId, `add ${escapedFiles}`);
+        await this.executeGitCommand(agentEntity.containerId, `add -- ${escapedFiles}`);
       }
 
       this.notifyGitStateMayHaveChanged(agentId);
@@ -750,13 +805,14 @@ export class AgentsVcsService {
 
     try {
       if (files.length === 0) {
-        // Unstage all changes
-        await this.executeGitCommand(agentEntity.containerId, 'reset HEAD');
+        // Mixed reset without a revision: works with and without commits (unborn HEAD).
+        // `reset HEAD` fails fatally when there is no commit yet.
+        await this.executeGitCommand(agentEntity.containerId, 'reset');
       } else {
-        // Unstage specific files
-        const escapedFiles = files.map((f) => this.escapePath(f)).join(' ');
+        // Pathspec form: also works on unborn HEAD (unlike bare `reset HEAD`).
+        const escapedFiles = files.map((f) => this.shellQuoteFilePath(f)).join(' ');
 
-        await this.executeGitCommand(agentEntity.containerId, `reset HEAD ${escapedFiles}`);
+        await this.executeGitCommand(agentEntity.containerId, `reset -- ${escapedFiles}`);
       }
 
       this.notifyGitStateMayHaveChanged(agentId);
@@ -1112,7 +1168,7 @@ export class AgentsVcsService {
     }
 
     try {
-      const escapedPath = this.escapePath(dto.path);
+      const escapedPath = this.shellQuoteFilePath(dto.path);
 
       switch (dto.strategy) {
         case 'yours':
