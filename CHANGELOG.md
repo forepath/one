@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.33.0](https://github.com/forepath/one/compare/v2.32.0...v2.33.0) (2026-09-27)
+
+
+### Features
+
+* **agenstra:** code index ([#631](https://github.com/forepath/one/issues/631)) ([8d0d301](https://github.com/forepath/one/commit/8d0d3011387e75ee98fd84be249a24efcf662558))
+* **agenstra:** extended file tree and knowledge tree actions ([#626](https://github.com/forepath/one/issues/626)) ([8319b0d](https://github.com/forepath/one/commit/8319b0d69ad767d8c2cc575632a2d9b267c11994))
+* **agenstra:** native file upload api ([#630](https://github.com/forepath/one/issues/630)) ([2ab6f80](https://github.com/forepath/one/commit/2ab6f806b238eac3401a7d3c8d09eaf0844a763d))
+* **shared:** ui components library ([#625](https://github.com/forepath/one/issues/625)) ([b4127c0](https://github.com/forepath/one/commit/b4127c0ffe659165c4da3961216dd04d4c0cdc69))
+
+
+### Bug Fixes
+
+* **agenstra:** context add typeahead without button suffix ([#629](https://github.com/forepath/one/issues/629)) ([15af27d](https://github.com/forepath/one/commit/15af27d9fbee09f85d9be28f955422270cc9eb8f))
+* **agenstra:** git file staging ([#632](https://github.com/forepath/one/issues/632)) ([23fb879](https://github.com/forepath/one/commit/23fb879306b2c85e9080632a097b6f0b327c340f))
+
+
+### Chores
+
+* **deps:** bump the github-actions-dependencies ([#580](https://github.com/forepath/one/issues/580)) ([6047d6b](https://github.com/forepath/one/commit/6047d6b1a9f5cb38029ed9f813786d60f08a47d4))
+
 ## [2.32.0](https://github.com/forepath/one/compare/v2.31.5...v2.32.0) (2026-09-21)
 
 
