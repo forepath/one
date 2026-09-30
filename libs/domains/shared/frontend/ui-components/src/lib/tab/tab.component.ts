@@ -34,7 +34,21 @@ export class FpcTabComponent {
   readonly active = model(false);
   readonly disabled = input(false);
 
+  /**
+   * Optional Bootstrap Icons name for a trailing action on the tab button row
+   * (e.g. `lock-fill`). When null/empty, no action is rendered.
+   */
+  readonly actionIcon = input<string | null>(null);
+  /** Accessible name for the trailing action button. */
+  readonly actionAriaLabel = input('');
+  /** Optional pressed/active state for toggle-style actions. */
+  readonly actionPressed = input(false);
+  /** Title/tooltip for the trailing action. */
+  readonly actionTitle = input('');
+
   readonly selected = output<string>();
+  /** Emitted when the trailing tab action is activated (does not select the tab). */
+  readonly action = output<void>();
 
   /** Host id once `id` is bound; null while empty so we do not emit a bare prefix. */
   protected readonly panelId = computed(() => {

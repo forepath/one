@@ -3,10 +3,12 @@ import {
   MAP_MERGE_ROOT_KEYS,
   REPLACE_LOCK_ROOT_KEYS,
   SCALAR_LOCK_ROOT_KEYS,
+  type HeredityParentLayer,
   type InheritedAdditiveEntry,
   type JsonObject,
 } from './types';
 import { migrateConfigV1ToV2 } from './migrate-v1-to-v2';
+import { expandExplicitLocks } from './locks';
 
 function isPlainObject(value: unknown): value is JsonObject {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -202,10 +204,13 @@ function pointer(path: string): string {
 }
 
 /**
- * Compute locked paths and inherited additive entries from parent overlays
+ * Compute locked paths and inherited additive entries from parent layers
  * (higher layers only — not including the current layer).
+ *
+ * Accepts either legacy overlay objects or `{ overlay, locks }` parent descriptors.
+ * Explicit `locks` expand tab pointers and union with presence-derived locks.
  */
-export function computeHeredityMetadata(...parents: Array<JsonObject | null | undefined>): {
+export function computeHeredityMetadata(...parents: Array<HeredityParentLayer | JsonObject | null | undefined>): {
   lockedPaths: string[];
   inheritedAdditive: InheritedAdditiveEntry[];
 } {
@@ -225,12 +230,37 @@ export function computeHeredityMetadata(...parents: Array<JsonObject | null | un
     return created;
   };
 
-  for (const parent of parents) {
+  const normalizeParent = (
+    parent: HeredityParentLayer | JsonObject | null | undefined,
+  ): { overlay: JsonObject | null; locks: readonly string[] } => {
     if (!parent) {
+      return { overlay: null, locks: [] };
+    }
+
+    if ('overlay' in parent || 'locks' in parent) {
+      const layer = parent as HeredityParentLayer;
+
+      return {
+        overlay: (layer.overlay as JsonObject | null | undefined) ?? null,
+        locks: layer.locks ?? [],
+      };
+    }
+
+    return { overlay: parent as JsonObject, locks: [] };
+  };
+
+  for (const parent of parents) {
+    const { overlay, locks } = normalizeParent(parent);
+
+    for (const expanded of expandExplicitLocks(locks)) {
+      locked.add(expanded);
+    }
+
+    if (!overlay) {
       continue;
     }
 
-    const normalized = migrateConfigV1ToV2(parent);
+    const normalized = migrateConfigV1ToV2(overlay);
 
     for (const key of Object.keys(normalized)) {
       if ((REPLACE_LOCK_ROOT_KEYS as readonly string[]).includes(key)) {

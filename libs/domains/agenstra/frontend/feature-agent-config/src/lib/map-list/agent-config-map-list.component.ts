@@ -100,6 +100,11 @@ export interface ConfigMapEntryView {
               </span>
               <span fpcListItemMeta class="text-secondary">{{ entry.summary }}</span>
               <div fpcListItemActions class="d-flex gap-1">
+                @if (leadingActionsTemplate()) {
+                  <ng-container
+                    *ngTemplateOutlet="leadingActionsTemplate()!; context: { $implicit: entry.key, entry: entry }"
+                  />
+                }
                 <fpc-button
                   variant="secondary"
                   size="sm"
@@ -172,6 +177,8 @@ export interface ConfigMapEntryView {
 export class AgentConfigMapListComponent {
   readonly entries = input.required<ConfigMapEntryView[]>();
   readonly entryTemplate = input<TemplateRef<{ $implicit: string; entry: ConfigMapEntryView }> | null>(null);
+  /** Optional actions rendered before Edit/Remove (e.g. MCP Authenticate). */
+  readonly leadingActionsTemplate = input<TemplateRef<{ $implicit: string; entry: ConfigMapEntryView }> | null>(null);
   readonly disabled = input(false);
   readonly lockInherited = input(true);
   /** When false, the built-in free-text add chrome is omitted (host supplies its own). */

@@ -18,6 +18,13 @@ export class GlobalOpencodeConfigEntity {
   @Column({ type: 'jsonb', nullable: true, name: 'overrides' })
   overrides?: Record<string, unknown> | null;
 
+  /**
+   * Explicit JSON Pointer locks for lower layers (even when unset).
+   * Not part of OpenCode wire config.
+   */
+  @Column({ type: 'jsonb', nullable: true, name: 'locks' })
+  locks?: string[] | null;
+
   /** JSON object of secret string fields, AES-256-GCM encrypted at rest. */
   @Column({
     type: 'text',

@@ -3,8 +3,10 @@ import {
   assertNoCredentialKeysInConfig,
   assertNoV1RootKeys,
   assertOverlayRespectsHeredity,
+  assertSecretsRespectLocks,
   composeLayerOverlay,
   computeHeredityMetadata,
+  expandExplicitLocks,
   extractMcpEnvSecrets,
   extractNetworkSecrets,
   injectMcpSecretsIntoWire,
@@ -149,6 +151,39 @@ describe('computeHeredityMetadata', () => {
 
     expect(meta.lockedPaths).toEqual(expect.arrayContaining(['/model_allow', '/model_deny']));
   });
+
+  it('applies explicit locks even when the parent value is unset', () => {
+    const meta = computeHeredityMetadata({
+      overlay: {},
+      locks: ['/model', '/skills', '/tabs/mcp'],
+    });
+
+    expect(meta.lockedPaths).toEqual(
+      expect.arrayContaining(['/model', '/skills', '/tabs/mcp', '/mcp', '/mcp/timeout', '/mcp/servers']),
+    );
+  });
+
+  it('merges explicit locks from multiple parents with presence locks', () => {
+    const meta = computeHeredityMetadata(
+      { overlay: { permissions: [] }, locks: ['/username'] },
+      { overlay: {}, locks: ['/tabs/warming'] },
+    );
+
+    expect(meta.lockedPaths).toEqual(
+      expect.arrayContaining(['/permissions', '/username', '/tabs/warming', '/warming']),
+    );
+  });
+});
+
+describe('expandExplicitLocks / assertSecretsRespectLocks', () => {
+  it('expands tab locks and validates secret pointers', () => {
+    expect(expandExplicitLocks(['/tabs/providers', '/shell'])).toEqual(
+      expect.arrayContaining(['/tabs/providers', '/providers', '/shell']),
+    );
+
+    expect(() => assertSecretsRespectLocks({ HTTP_PROXY: 'x' }, ['/secrets/HTTP_PROXY'])).toThrow(/locked/i);
+    expect(() => assertSecretsRespectLocks({ HTTP_PROXY: 'x' }, ['/model'])).not.toThrow();
+  });
 });
 
 describe('assertOverlayRespectsHeredity', () => {
@@ -162,6 +197,14 @@ describe('assertOverlayRespectsHeredity', () => {
         [{ path: '/providers', keys: ['openai'] }],
       ),
     ).toThrow(/inherited/i);
+  });
+
+  it('rejects new map and array entries when the list root is explicitly locked', () => {
+    expect(() => assertOverlayRespectsHeredity({ providers: { openai: { name: 'x' } } }, ['/providers'], [])).toThrow(
+      /locked/i,
+    );
+
+    expect(() => assertOverlayRespectsHeredity({ skills: ['./child'] }, ['/skills'], [])).toThrow(/locked/i);
   });
 
   it('allows disabled/hidden stubs on inherited map keys', () => {

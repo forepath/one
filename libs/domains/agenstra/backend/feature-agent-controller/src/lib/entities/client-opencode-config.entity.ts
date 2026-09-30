@@ -32,6 +32,13 @@ export class ClientOpencodeConfigEntity {
   @Column({ type: 'jsonb', nullable: true, name: 'overrides' })
   overrides?: Record<string, unknown> | null;
 
+  /**
+   * Explicit JSON Pointer locks for lower layers (even when unset).
+   * Not part of OpenCode wire config.
+   */
+  @Column({ type: 'jsonb', nullable: true, name: 'locks' })
+  locks?: string[] | null;
+
   @Column({
     type: 'text',
     nullable: true,

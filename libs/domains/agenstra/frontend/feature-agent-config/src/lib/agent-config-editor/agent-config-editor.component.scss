@@ -92,7 +92,7 @@
 // Match vertical tab sidebar section titles (full-bleed bar + equal padding).
 .agent-config-editor__section-heading {
   margin: 0;
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 1rem;
   font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -104,6 +104,42 @@
 
   &:not(:first-child) {
     border-top: var(--bs-border-width) solid var(--bs-border-color);
+  }
+}
+
+.agent-config-editor__section-heading--with-lock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.agent-config-editor__list-lock {
+  flex: 0 0 auto;
+  line-height: 1;
+  font-size: 0.7rem;
+  text-decoration: none;
+  color: var(--bs-secondary-color);
+
+  &:hover,
+  &:focus-visible {
+    color: var(--bs-body-color);
+  }
+
+  &.text-warning {
+    color: var(--bs-warning);
+  }
+
+  &:disabled,
+  &:disabled:hover,
+  &:disabled:focus-visible {
+    opacity: 1;
+    color: var(--bs-secondary-color);
+    pointer-events: none;
+  }
+
+  &:disabled.text-warning {
+    color: var(--bs-warning);
   }
 }
 
