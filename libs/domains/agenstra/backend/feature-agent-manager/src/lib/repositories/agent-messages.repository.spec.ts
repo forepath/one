@@ -49,6 +49,7 @@ describe('AgentMessagesRepository', () => {
     save: jest.fn(),
     remove: jest.fn(),
     delete: jest.fn(),
+    createQueryBuilder: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -138,6 +139,88 @@ describe('AgentMessagesRepository', () => {
         order: { createdAt: 'ASC' },
         relations: ['agent'],
       });
+    });
+  });
+
+  describe('findPageBefore', () => {
+    it('should return latest page when beforeMessageId is null', async () => {
+      const newestFirst = [
+        { ...mockMessage, id: 'msg-2', createdAt: new Date('2024-01-02') },
+        { ...mockMessage, id: 'msg-1', createdAt: new Date('2024-01-01') },
+      ];
+      const qb = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(newestFirst),
+      };
+
+      mockTypeOrmRepository.createQueryBuilder.mockReturnValue(qb);
+
+      const result = await repository.findPageBefore('agent-uuid-123', 'primary-chat-id', null, 20);
+
+      expect(mockTypeOrmRepository.createQueryBuilder).toHaveBeenCalledWith('m');
+      expect(qb.where).toHaveBeenCalledWith('m.agent_id = :agentId', { agentId: 'agent-uuid-123' });
+      expect(qb.andWhere).toHaveBeenCalledWith('m.chat_session_id = :chatSessionId', {
+        chatSessionId: 'primary-chat-id',
+      });
+      expect(qb.take).toHaveBeenCalledWith(21);
+      expect(result.hasMoreOlder).toBe(false);
+      expect(result.messages.map((m) => m.id)).toEqual(['msg-1', 'msg-2']);
+    });
+
+    it('should page older than beforeMessageId and set hasMoreOlder when limit+1 rows', async () => {
+      const cursor = {
+        ...mockMessage,
+        id: 'cursor-id',
+        createdAt: new Date('2024-01-05'),
+      };
+      const newestFirst = Array.from({ length: 3 }, (_, i) => ({
+        ...mockMessage,
+        id: `msg-${i}`,
+        createdAt: new Date(`2024-01-0${3 - i}`),
+      }));
+      const qb = {
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue(newestFirst),
+      };
+
+      mockTypeOrmRepository.findOne.mockResolvedValue(cursor);
+      mockTypeOrmRepository.createQueryBuilder.mockReturnValue(qb);
+
+      const result = await repository.findPageBefore('agent-uuid-123', 'primary-chat-id', 'cursor-id', 2);
+
+      expect(mockTypeOrmRepository.findOne).toHaveBeenCalledWith({
+        where: { id: 'cursor-id', agentId: 'agent-uuid-123', chatSessionId: 'primary-chat-id' },
+      });
+      expect(qb.andWhere).toHaveBeenCalledWith(
+        '(m.created_at < :createdAt OR (m.created_at = :createdAt AND m.id < :id))',
+        { createdAt: cursor.createdAt, id: cursor.id },
+      );
+      expect(result.hasMoreOlder).toBe(true);
+      expect(result.messages).toHaveLength(2);
+    });
+
+    it('should throw NotFoundException when beforeMessageId is out of scope', async () => {
+      mockTypeOrmRepository.findOne.mockResolvedValue(null);
+      mockTypeOrmRepository.createQueryBuilder.mockReturnValue({
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getMany: jest.fn(),
+      });
+
+      await expect(repository.findPageBefore('agent-uuid-123', 'primary-chat-id', 'missing-id', 20)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 

@@ -1,21 +1,18 @@
 import { TestBed } from '@angular/core/testing';
-import { Actions } from '@ngrx/effects';
-import { provideMockActions } from '@ngrx/effects/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
-import { of } from 'rxjs';
+import { firstValueFrom, of, toArray } from 'rxjs';
 
-import { forwardedEventReceived } from '../sockets/sockets.actions';
-import { selectSelectedAgentId, selectSelectedClientId } from '../sockets/sockets.selectors';
-import { ChatActor } from '../sockets/sockets.types';
-import type { ChatMessageData, ContainerStatsPayload, SuccessResponse } from '../sockets/sockets.types';
+import { selectSelectedAgentId, selectSelectedClientId } from '../container-socket/container-socket.selectors';
+import type { ContainerStatsPayload, SuccessResponse } from '../container-socket/container-socket.types';
 
 import { containerStatsReceived } from './stats.actions';
-import { processContainerStats$ } from './stats.effects';
+import { mapContainerStatsTick$ } from './stats.effects';
+import { selectStatsByContainer } from './stats.selectors';
+import { buildContainerStatsEntry, isRedundantContainerStats } from './stats.utils';
+import type { ContainerStatsEntry } from './stats.types';
 
-describe('StatsEffects', () => {
-  let actions$: Actions;
+describe('StatsEffects / stats utils', () => {
   let store: MockStore;
-  let effects: ReturnType<typeof processContainerStats$>;
   const mockStats = {
     read: '2024-01-01T00:00:00.000000000Z',
     preread: '2024-01-01T00:00:00.000000000Z',
@@ -52,12 +49,16 @@ describe('StatsEffects', () => {
     },
     networks: {},
   };
-  const createContainerStatsPayload = (): SuccessResponse<ContainerStatsPayload> => ({
+
+  const createContainerStatsPayload = (
+    overrides: Partial<ContainerStatsPayload> = {},
+  ): SuccessResponse<ContainerStatsPayload> => ({
     success: true,
     data: {
       status: { running: true },
       stats: mockStats,
       timestamp: '2024-01-01T00:00:00.000Z',
+      ...overrides,
     },
     timestamp: '2024-01-01T00:00:00.000Z',
   });
@@ -65,165 +66,178 @@ describe('StatsEffects', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        provideMockActions(() => actions$),
         provideMockStore({
           selectors: [
-            {
-              selector: selectSelectedClientId,
-              value: 'client-1',
-            },
-            {
-              selector: selectSelectedAgentId,
-              value: 'agent-1',
-            },
+            { selector: selectSelectedClientId, value: 'client-1' },
+            { selector: selectSelectedAgentId, value: 'agent-1' },
+            { selector: selectStatsByContainer, value: {} },
           ],
         }),
       ],
     });
 
     store = TestBed.inject(MockStore);
-    const actions = TestBed.inject(Actions);
-
-    effects = processContainerStats$(actions, store);
   });
 
-  describe('processContainerStats$', () => {
-    it('should dispatch containerStatsReceived when containerStats event is received', (done) => {
-      const payload = createContainerStatsPayload();
+  describe('buildContainerStatsEntry', () => {
+    it('should map payload and fall back to unknown ids', () => {
+      const data = createContainerStatsPayload().data;
 
-      actions$ = of(forwardedEventReceived({ event: 'containerStats', payload }));
-
-      effects.subscribe((action) => {
-        expect(action).toEqual(
-          containerStatsReceived({
-            entry: {
-              stats: mockStats,
-              status: { running: true },
-              timestamp: '2024-01-01T00:00:00.000Z',
-              receivedAt: expect.any(Number),
-              clientId: 'client-1',
-              agentId: 'agent-1',
-            },
-          }),
-        );
-        done();
+      expect(buildContainerStatsEntry(data, null, null, 42)).toEqual({
+        stats: mockStats,
+        status: { running: true },
+        timestamp: '2024-01-01T00:00:00.000Z',
+        receivedAt: 42,
+        clientId: 'unknown',
+        agentId: 'unknown',
       });
     });
+  });
 
-    it('should use selectedClientId and selectedAgentId from store', (done) => {
+  describe('isRedundantContainerStats', () => {
+    const runningEntry = (cpuTotal: number, memory: number): ContainerStatsEntry =>
+      buildContainerStatsEntry(
+        {
+          status: { running: true },
+          stats: {
+            ...mockStats,
+            cpu_stats: {
+              ...mockStats.cpu_stats,
+              cpu_usage: { ...mockStats.cpu_stats.cpu_usage, total_usage: cpuTotal },
+            },
+            memory_stats: { ...mockStats.memory_stats, usage: memory },
+          },
+          timestamp: '2024-01-01T00:00:00.000Z',
+        },
+        'client-1',
+        'agent-1',
+        1,
+      );
+
+    const stoppedEntry = (): ContainerStatsEntry =>
+      buildContainerStatsEntry(
+        {
+          status: { running: false },
+          stats: mockStats,
+          timestamp: '2024-01-01T00:00:00.000Z',
+        },
+        'client-1',
+        'agent-1',
+        1,
+      );
+
+    it('should not treat the first sample as redundant', () => {
+      expect(isRedundantContainerStats(null, runningEntry(1, 1))).toBe(false);
+    });
+
+    it('should skip repeated stopped heartbeats', () => {
+      expect(isRedundantContainerStats(stoppedEntry(), stoppedEntry())).toBe(true);
+    });
+
+    it('should keep running→stopped transitions', () => {
+      expect(isRedundantContainerStats(runningEntry(1, 1), stoppedEntry())).toBe(false);
+    });
+
+    it('should keep running ticks when cpu/memory counters move', () => {
+      expect(isRedundantContainerStats(runningEntry(1, 1), runningEntry(2, 1))).toBe(false);
+    });
+
+    it('should skip identical running ticks', () => {
+      expect(isRedundantContainerStats(runningEntry(1, 1), runningEntry(1, 1))).toBe(true);
+    });
+
+    it('should keep running ticks when a status-only snapshot is followed by full stats', () => {
+      const statusOnly = buildContainerStatsEntry(
+        {
+          agentId: 'agent-1',
+          status: { running: true },
+          stats: null,
+          timestamp: '2024-01-01T00:00:00.000Z',
+        },
+        'client-1',
+        'agent-1',
+        1,
+      );
+
+      expect(isRedundantContainerStats(statusOnly, runningEntry(1, 1))).toBe(false);
+    });
+
+    it('should prefer payload agentId over selected agent id', () => {
+      const entry = buildContainerStatsEntry(
+        {
+          agentId: 'payload-agent',
+          status: { running: false },
+          stats: null,
+          timestamp: '2024-01-01T00:00:00.000Z',
+        },
+        'client-1',
+        'selected-agent',
+        1,
+      );
+
+      expect(entry.agentId).toBe('payload-agent');
+    });
+  });
+
+  describe('mapContainerStatsTick$', () => {
+    it('should dispatch containerStatsReceived for a useful tick', async () => {
+      const payload = createContainerStatsPayload();
+      const actions = await firstValueFrom(mapContainerStatsTick$(of(payload), store).pipe(toArray()));
+
+      expect(actions).toEqual([
+        containerStatsReceived({
+          entry: {
+            stats: mockStats,
+            status: { running: true },
+            timestamp: '2024-01-01T00:00:00.000Z',
+            receivedAt: expect.any(Number),
+            clientId: 'client-1',
+            agentId: 'agent-1',
+          },
+        }),
+      ]);
+    });
+
+    it('should use selected client/agent ids from the store', async () => {
       store.overrideSelector(selectSelectedClientId, 'client-2');
       store.overrideSelector(selectSelectedAgentId, 'agent-2');
       store.refreshState();
 
-      const payload = createContainerStatsPayload();
+      const actions = await firstValueFrom(
+        mapContainerStatsTick$(of(createContainerStatsPayload()), store).pipe(toArray()),
+      );
 
-      actions$ = of(forwardedEventReceived({ event: 'containerStats', payload }));
-
-      effects.subscribe((action) => {
-        expect(action).toEqual(
-          containerStatsReceived({
-            entry: expect.objectContaining({
-              clientId: 'client-2',
-              agentId: 'agent-2',
-            }),
+      expect(actions[0]).toEqual(
+        containerStatsReceived({
+          entry: expect.objectContaining({
+            clientId: 'client-2',
+            agentId: 'agent-2',
           }),
-        );
-        done();
-      });
+        }),
+      );
     });
 
-    it('should use "unknown" as clientId and agentId when selected values are null', (done) => {
-      store.overrideSelector(selectSelectedClientId, null);
-      store.overrideSelector(selectSelectedAgentId, null);
-      store.refreshState();
-
-      const payload = createContainerStatsPayload();
-
-      actions$ = of(forwardedEventReceived({ event: 'containerStats', payload }));
-
-      effects.subscribe((action) => {
-        expect(action).toEqual(
-          containerStatsReceived({
-            entry: expect.objectContaining({
-              clientId: 'unknown',
-              agentId: 'unknown',
-            }),
-          }),
-        );
-        done();
-      });
-    });
-
-    it('should not process non-containerStats events', (done) => {
-      const payload: SuccessResponse<ChatMessageData> = {
-        success: true as const,
-        data: {
-          from: ChatActor.USER,
-          text: 'test',
-          timestamp: '2024-01-01T00:00:00.000Z',
-        },
-        timestamp: '2024-01-01T00:00:00.000Z',
-      };
-
-      actions$ = of(forwardedEventReceived({ event: 'chatMessage', payload }));
-
-      let callCount = 0;
-      const subscription = effects.subscribe(() => {
-        callCount++;
-      });
-
-      // Complete the observable to ensure it processes
-      setTimeout(() => {
-        subscription.unsubscribe();
-        expect(callCount).toBe(0);
-        done();
-      }, 10);
-    });
-
-    it('should not dispatch for invalid payload (not success)', (done) => {
+    it('should emit nothing for invalid payloads', async () => {
       const payload = {
         success: false as const,
-        error: {
-          message: 'Error',
-        },
+        error: { message: 'Error' },
         timestamp: '2024-01-01T00:00:00.000Z',
       };
+      const actions = await firstValueFrom(mapContainerStatsTick$(of(payload), store).pipe(toArray()));
 
-      actions$ = of(forwardedEventReceived({ event: 'containerStats', payload }));
-
-      let callCount = 0;
-      const subscription = effects.subscribe(() => {
-        callCount++;
-      });
-
-      setTimeout(() => {
-        subscription.unsubscribe();
-        // Should not dispatch anything for invalid payloads
-        expect(callCount).toBe(0);
-        done();
-      }, 10);
+      expect(actions).toEqual([]);
     });
 
-    it('should not dispatch for payload without data', (done) => {
-      // Create a payload that looks like SuccessResponse but without data property
-      const payload = {
-        success: true as const,
-        timestamp: '2024-01-01T00:00:00.000Z',
-      } as unknown as SuccessResponse<ContainerStatsPayload>;
+    it('should emit nothing for redundant stopped heartbeats', async () => {
+      const stopped = createContainerStatsPayload({ status: { running: false } });
+      const previous = buildContainerStatsEntry(stopped.data, 'client-1', 'agent-1', 1);
 
-      actions$ = of(forwardedEventReceived({ event: 'containerStats', payload }));
+      store.overrideSelector(selectStatsByContainer, { 'client-1:agent-1': [previous] });
+      store.refreshState();
 
-      let callCount = 0;
-      const subscription = effects.subscribe(() => {
-        callCount++;
-      });
+      const actions = await firstValueFrom(mapContainerStatsTick$(of(stopped), store).pipe(toArray()));
 
-      setTimeout(() => {
-        subscription.unsubscribe();
-        // Should not dispatch anything for invalid payloads
-        expect(callCount).toBe(0);
-        done();
-      }, 10);
+      expect(actions).toEqual([]);
     });
   });
 });

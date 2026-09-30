@@ -1,36 +1,29 @@
 import { DestroyRef, inject, Injectable } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Store } from '@ngrx/store';
-import { distinctUntilChanged, Observable, take } from 'rxjs';
+import { Observable, take } from 'rxjs';
+
+import { chatEnhancementStarted, ticketBodyGenerationStarted } from '../chat-timeline/chat-timeline.actions';
+import {
+  chatTimelineForwardEnhanceFailure,
+  chatTimelineForwardTicketBodyFailure,
+} from '../chat-timeline/chat-timeline.actions';
 
 import {
-  chatEnhancementStarted,
-  ticketBodyGenerationStarted,
-  clearChatHistory,
   connectSocket,
   disconnectSocket,
   forwardEvent,
   setChatModel,
   setChatResponseMode,
   setClient,
-} from './sockets.actions';
-import { getSocketInstance } from './sockets.effects';
+} from './container-socket.actions';
+import { getSocketInstance } from './container-socket.effects';
 import {
-  selectChatEnhancementLastResult,
-  selectChatEnhancementPending,
-  selectChatTimelineOrdered,
-  type ChatTimelineOrderedRow,
-  selectTicketBodyGenerationPending,
-  selectTicketBodyLastResult,
   selectChatForwarding,
   selectChatModel,
   selectChatResponseMode,
-  selectForwardedEvents,
-  selectForwardedEventsByEvent,
+  selectContainerSocketState,
   selectIsRemoteReconnecting,
-  selectMessageFilterResults,
-  selectMostRecentForwardedEvent,
-  selectMostRecentForwardedEventByEvent,
   selectRemoteConnectionError,
   selectRemoteConnectionState,
   selectSelectedAgentId,
@@ -44,31 +37,27 @@ import {
   selectSocketForwarding,
   selectSocketReconnectAttempts,
   selectSocketReconnecting,
-  selectSocketsState,
-} from './sockets.selectors';
+} from './container-socket.selectors';
 import {
   ForwardableEvent,
   type AgentResponseMode,
   type ContextInjectionPayload,
   type ForwardableEventPayload,
-  type ForwardedEventPayload,
-} from './sockets.types';
+} from './container-socket.types';
 
 /**
- * Facade for sockets state management.
- * Provides a clean API for components to interact with socket state
- * without directly accessing the NgRx store or socket instance.
+ * Facade for clients-gateway container socket (connection/context only).
+ * Domain history lives in chat-timeline / terminals / files / stats.
  */
 @Injectable({
   providedIn: 'root',
 })
-export class SocketsFacade {
+export class ContainerSocketFacade {
   private readonly store = inject(Store);
   private readonly destroyRef = inject(DestroyRef);
   private currentChatModel: string | null = null;
   private currentChatResponseMode: AgentResponseMode = 'stream';
 
-  // State observables
   readonly connected$: Observable<boolean> = this.store.select(selectSocketConnected);
   readonly connecting$: Observable<boolean> = this.store.select(selectSocketConnecting);
   readonly disconnecting$: Observable<boolean> = this.store.select(selectSocketDisconnecting);
@@ -80,40 +69,9 @@ export class SocketsFacade {
   readonly settingClientId$: Observable<string | null> = this.store.select(selectSettingClientId);
   readonly forwarding$: Observable<boolean> = this.store.select(selectSocketForwarding);
   readonly chatForwarding$: Observable<boolean> = this.store.select(selectChatForwarding);
-  readonly chatEnhancementPending$: Observable<boolean> = this.store.select(selectChatEnhancementPending);
-  readonly chatEnhancementLastResult$ = this.store.select(selectChatEnhancementLastResult);
-  readonly ticketBodyGenerationPending$: Observable<boolean> = this.store.select(selectTicketBodyGenerationPending);
-  readonly ticketBodyLastResult$ = this.store.select(selectTicketBodyLastResult);
   readonly chatModel$: Observable<string | null> = this.store.select(selectChatModel);
   readonly chatResponseMode$: Observable<AgentResponseMode> = this.store.select(selectChatResponseMode);
   readonly error$: Observable<string | null> = this.store.select(selectSocketError);
-  readonly forwardedEvents$: Observable<Array<{ event: string; payload: ForwardedEventPayload; timestamp: number }>> =
-    this.store.select(selectForwardedEvents);
-  /** Chat messages + ticket automation chat events, ordered for the timeline. */
-  readonly chatTimelineOrdered$: Observable<ChatTimelineOrderedRow[]> = this.store.select(selectChatTimelineOrdered);
-
-  readonly messageFilterResults$: Observable<
-    Array<{
-      direction: 'incoming' | 'outgoing';
-      status: 'allowed' | 'filtered' | 'dropped';
-      message: string;
-      appliedFilters: Array<{
-        type: string;
-        displayName: string;
-        matched: boolean;
-        reason?: string;
-      }>;
-      matchedFilter?: {
-        type: string;
-        displayName: string;
-        matched: boolean;
-        reason?: string;
-      };
-      action?: 'drop' | 'flag';
-      timestamp: number;
-      receivedAt: number;
-    }>
-  > = this.store.select(selectMessageFilterResults);
 
   constructor() {
     this.chatModel$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((model) => {
@@ -124,24 +82,14 @@ export class SocketsFacade {
     });
   }
 
-  /**
-   * Connect to the socket
-   */
   connect(): void {
     this.store.dispatch(connectSocket());
   }
 
-  /**
-   * Disconnect from the socket
-   */
   disconnect(): void {
     this.store.dispatch(disconnectSocket());
   }
 
-  /**
-   * Set the client context for subsequent operations
-   * @param clientId - The client UUID
-   */
   setClient(clientId: string): void {
     const socket = getSocketInstance();
 
@@ -151,33 +99,22 @@ export class SocketsFacade {
       return;
     }
 
-    // Prevent duplicate setClient calls with the same clientId
-    // Use synchronous state check to avoid race conditions
-    const state = this.store.select(selectSocketsState).pipe(take(1));
+    const state = this.store.select(selectContainerSocketState).pipe(take(1));
 
     state.subscribe((socketsState) => {
-      // Skip if already selected
       if (socketsState.selectedClientId === clientId) {
         return;
       }
 
-      // Skip if already setting this clientId
       if (socketsState.settingClient && socketsState.settingClientId === clientId) {
         return;
       }
 
-      // Dispatch action and emit to socket
       this.store.dispatch(setClient({ clientId }));
       socket.emit('setClient', { clientId });
     });
   }
 
-  /**
-   * Forward an event to the agents namespace
-   * @param event - The event type (from ForwardableEvent enum)
-   * @param payload - Optional event payload (typed based on event)
-   * @param agentId - Optional agent UUID for auto-login
-   */
   forwardEvent(event: ForwardableEvent, payload?: ForwardableEventPayload, agentId?: string): void {
     const socket = getSocketInstance();
 
@@ -191,14 +128,6 @@ export class SocketsFacade {
     socket.emit('forward', { event, payload, agentId });
   }
 
-  /**
-   * Forward a chat event with typed payload
-   * @param message - The chat message text
-   * @param agentId - Agent UUID (required for routing the event to the correct agent)
-   * @param model - Optional model override
-   * @param contextInjection - Optional context injection payload
-   * @param chatId - Optional chat session id (defaults to primary on the agent)
-   */
   forwardChat(
     message: string,
     agentId: string,
@@ -218,28 +147,30 @@ export class SocketsFacade {
     this.forwardEvent(ForwardableEvent.CHAT, payload, agentId);
   }
 
-  /**
-   * Clear the local chat timeline (messages + filter results).
-   */
-  clearChatHistory(): void {
-    this.store.dispatch(clearChatHistory());
+  forwardRestoreChat(chatId: string, agentId: string, beforeMessageId?: string | null, limit?: number): void {
+    const payload: {
+      chatId: string;
+      beforeMessageId?: string;
+      limit?: number;
+    } = { chatId };
+
+    if (beforeMessageId) {
+      payload.beforeMessageId = beforeMessageId;
+    }
+
+    if (limit !== undefined) {
+      payload.limit = limit;
+    }
+
+    this.forwardEvent(ForwardableEvent.RESTORE_CHAT, payload, agentId);
   }
 
-  /**
-   * Ask the agent gateway to restore a chat session into the viewer timeline.
-   */
-  forwardRestoreChat(chatId: string, agentId: string): void {
-    this.forwardEvent(ForwardableEvent.RESTORE_CHAT, { chatId }, agentId);
-  }
-
-  /**
-   * Request prompt enhancement (unicast chatEnhanceResult; not added to main chat transcript).
-   */
   forwardEnhanceChat(message: string, agentId: string, correlationId: string, model?: string | null): void {
     const socket = getSocketInstance();
 
     if (!socket || !socket.connected) {
       console.warn('Socket not connected. Cannot forward enhance chat.');
+      this.store.dispatch(chatTimelineForwardEnhanceFailure({ errorMessage: 'Socket not connected' }));
 
       return;
     }
@@ -255,9 +186,6 @@ export class SocketsFacade {
     socket.emit('forward', { event: ForwardableEvent.ENHANCE_CHAT, payload, agentId });
   }
 
-  /**
-   * Generate ticket body from title (unicast ticketBodyResult; not added to main chat transcript).
-   */
   forwardGenerateTicketBody(
     title: string,
     agentId: string,
@@ -269,6 +197,7 @@ export class SocketsFacade {
 
     if (!socket || !socket.connected) {
       console.warn('Socket not connected. Cannot forward generate ticket body.');
+      this.store.dispatch(chatTimelineForwardTicketBodyFailure({ errorMessage: 'Socket not connected' }));
 
       return;
     }
@@ -287,10 +216,6 @@ export class SocketsFacade {
     socket.emit('forward', { event: ForwardableEvent.GENERATE_TICKET_BODY, payload, agentId });
   }
 
-  /**
-   * Set the preferred chat model (used as default for subsequent chat messages)
-   * @param model - Model identifier or null to clear the preference
-   */
   setChatModel(model: string | null): void {
     this.store.dispatch(setChatModel({ model }));
   }
@@ -299,120 +224,36 @@ export class SocketsFacade {
     this.store.dispatch(setChatResponseMode({ mode }));
   }
 
-  /**
-   * Forward a login event
-   * Note: When agentId is provided, credentials are loaded from the database.
-   * Optional chatId requests restore of that session after login (when supported by the controller).
-   * @param agentId - Agent UUID for auto-login (credentials loaded from database)
-   * @param chatId - Optional chat session to restore on login
-   */
   forwardLogin(agentId: string, chatId?: string | null): void {
     const payload = chatId ? ({ agentId, password: '', chatId } as const) : undefined;
 
     this.forwardEvent(ForwardableEvent.LOGIN, payload, agentId);
   }
 
-  /**
-   * Forward a logout event
-   */
   forwardLogout(): void {
     this.forwardEvent(ForwardableEvent.LOGOUT, {});
   }
 
-  /**
-   * Forward a file update event
-   * @param filePath - The path to the file that was updated
-   * @param agentId - Agent UUID (required for routing the event to the correct agent)
-   */
   forwardFileUpdate(filePath: string, agentId: string): void {
     this.forwardEvent(ForwardableEvent.FILE_UPDATE, { filePath }, agentId);
   }
 
-  /**
-   * Forward a create terminal event
-   * @param sessionId - Optional session ID (will be generated if not provided)
-   * @param shell - Optional shell override; omit to use OpenCode config / preferred shell
-   * @param agentId - Agent UUID (required for routing the event to the correct agent)
-   */
   forwardCreateTerminal(sessionId: string | undefined, shell: string | undefined, agentId: string): void {
     this.forwardEvent(ForwardableEvent.CREATE_TERMINAL, { sessionId, shell }, agentId);
   }
 
-  /**
-   * Forward a terminal input event
-   * @param sessionId - The terminal session ID
-   * @param data - The input data to send
-   * @param agentId - Agent UUID (required for routing the event to the correct agent)
-   */
   forwardTerminalInput(sessionId: string, data: string, agentId: string): void {
     this.forwardEvent(ForwardableEvent.TERMINAL_INPUT, { sessionId, data }, agentId);
   }
 
-  /**
-   * Forward terminal cols/rows to OpenCode PTY (WINCH).
-   */
   forwardTerminalResize(sessionId: string, cols: number, rows: number, agentId: string): void {
     this.forwardEvent(ForwardableEvent.TERMINAL_RESIZE, { sessionId, cols, rows }, agentId);
   }
 
-  /**
-   * Forward a close terminal event
-   * @param sessionId - The terminal session ID
-   * @param agentId - Agent UUID (required for routing the event to the correct agent)
-   */
   forwardCloseTerminal(sessionId: string, agentId: string): void {
     this.forwardEvent(ForwardableEvent.CLOSE_TERMINAL, { sessionId }, agentId);
   }
 
-  /**
-   * Get forwarded events for a specific event name
-   * @param eventName - The event name to filter by
-   * @returns Observable of filtered forwarded events
-   */
-  getForwardedEventsByEvent$(
-    eventName: string,
-  ): Observable<Array<{ event: string; payload: ForwardedEventPayload; timestamp: number }>> {
-    return this.store.select(selectForwardedEventsByEvent(eventName)).pipe(
-      // New filtered arrays are allocated on many unrelated store updates (e.g. chatEvent).
-      // Same logical list means same element references — skip emissions to avoid DOM churn downstream.
-      distinctUntilChanged((prev, curr) => {
-        if (prev.length !== curr.length) {
-          return false;
-        }
-
-        return prev.every((p, i) => p === curr[i]);
-      }),
-    );
-  }
-
-  /**
-   * Get the most recent forwarded event
-   * @returns Observable of the most recent event or null
-   */
-  getMostRecentForwardedEvent$(): Observable<{
-    event: string;
-    payload: ForwardedEventPayload;
-    timestamp: number;
-  } | null> {
-    return this.store.select(selectMostRecentForwardedEvent);
-  }
-
-  /**
-   * Get the most recent forwarded event for a specific event name
-   * @param eventName - The event name to filter by
-   * @returns Observable of the most recent event or null
-   */
-  getMostRecentForwardedEventByEvent$(
-    eventName: string,
-  ): Observable<{ event: string; payload: ForwardedEventPayload; timestamp: number } | null> {
-    return this.store.select(selectMostRecentForwardedEventByEvent(eventName));
-  }
-
-  /**
-   * Get remote connection state for a specific clientId
-   * @param clientId - The client UUID
-   * @returns Observable of remote connection state or null
-   */
   getRemoteConnectionState$(clientId: string): Observable<{
     clientId: string;
     connected: boolean;
@@ -423,20 +264,10 @@ export class SocketsFacade {
     return this.store.select(selectRemoteConnectionState(clientId));
   }
 
-  /**
-   * Check if a remote connection is reconnecting for a specific clientId
-   * @param clientId - The client UUID
-   * @returns Observable of boolean indicating if reconnecting
-   */
   isRemoteReconnecting$(clientId: string): Observable<boolean> {
     return this.store.select(selectIsRemoteReconnecting(clientId));
   }
 
-  /**
-   * Get the last error for a remote connection for a specific clientId
-   * @param clientId - The client UUID
-   * @returns Observable of error message or null
-   */
   getRemoteConnectionError$(clientId: string): Observable<string | null> {
     return this.store.select(selectRemoteConnectionError(clientId));
   }

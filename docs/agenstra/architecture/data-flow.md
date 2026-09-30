@@ -92,9 +92,9 @@ sequenceDiagram
     DB-->>AM: Valid
     AM->>AM: Load Chat History
     AM-->>AC: loginSuccess
-    AM-->>AC: chatMessage (history)
+    AM-->>AC: chatMessageBatch (history)
     AC-->>F: loginSuccess
-    AC-->>F: chatMessage (history)
+    AC-->>F: chatMessageBatch (history)
     F->>F: Update State (NgRx)
 ```
 
@@ -146,11 +146,11 @@ sequenceDiagram
         AC->>AM: forward (login, credentials)
         AM->>AM: Load Chat History
         AM-->>AC: loginSuccess
-        AM-->>AC: chatMessage (history)
+        AM-->>AC: chatMessageBatch (history)
     end
     AC-->>F: Client Context Restored
     AC-->>F: Chat History Restored
-    F->>F: Clear Old Events (prevent duplicates)
+    F->>F: Clear Timeline (prevent duplicates)
     F->>F: Update State (NgRx)
 ```
 

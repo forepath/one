@@ -76,6 +76,48 @@ export class AgentMessagesRepository {
     return await this.repository.count({ where: { agentId, chatSessionId } });
   }
 
+  /**
+   * Load a chronological page of messages for restore/pagination.
+   * When `beforeMessageId` is null, returns the latest `limit` messages.
+   * When set, returns up to `limit` messages strictly older than that cursor (same agent + session).
+   * Fetches limit+1 to compute `hasMoreOlder`, then returns ASC-ordered messages.
+   */
+  async findPageBefore(
+    agentId: string,
+    chatSessionId: string,
+    beforeMessageId: string | null,
+    limit: number,
+  ): Promise<{ messages: AgentMessageEntity[]; hasMoreOlder: boolean }> {
+    const qb = this.repository
+      .createQueryBuilder('m')
+      .where('m.agent_id = :agentId', { agentId })
+      .andWhere('m.chat_session_id = :chatSessionId', { chatSessionId })
+      .orderBy('m.created_at', 'DESC')
+      .addOrderBy('m.id', 'DESC')
+      .take(limit + 1);
+
+    if (beforeMessageId) {
+      const cursor = await this.repository.findOne({
+        where: { id: beforeMessageId, agentId, chatSessionId },
+      });
+
+      if (!cursor) {
+        throw new NotFoundException('Message not found for this chat session');
+      }
+
+      qb.andWhere('(m.created_at < :createdAt OR (m.created_at = :createdAt AND m.id < :id))', {
+        createdAt: cursor.createdAt,
+        id: cursor.id,
+      });
+    }
+
+    const newestFirst = await qb.getMany();
+    const hasMoreOlder = newestFirst.length > limit;
+    const page = hasMoreOlder ? newestFirst.slice(0, limit) : newestFirst;
+
+    return { messages: page.reverse(), hasMoreOlder };
+  }
+
   async deleteByChatSessionId(chatSessionId: string): Promise<number> {
     const result = await this.repository.delete({ chatSessionId });
 

@@ -3,6 +3,7 @@ import type { Environment } from '@forepath/shared/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
+import type { Action } from '@ngrx/store';
 import { KeycloakService } from 'keycloak-angular';
 import {
   catchError,
@@ -12,8 +13,10 @@ import {
   fromEvent,
   map,
   merge,
+  mergeMap,
   Observable,
   of,
+  share,
   switchMap,
   take,
   tap,
@@ -22,9 +25,26 @@ import {
 import { io, Socket } from 'socket.io-client';
 
 import { ticketAutomationRunChatSummaryToResponseDto } from '../../utils/ticket-automation-chat-run-mapper';
+import {
+  chatTimelineAutomationUpsert,
+  chatTimelineBatchReceived,
+  chatTimelineEnhanceResult,
+  chatTimelineEventReceived,
+  chatTimelineFilterReceived,
+  chatTimelineMessageReceived,
+  chatTimelineRestoreSuccess,
+  chatTimelineTicketBodyResult,
+} from '../chat-timeline/chat-timeline.actions';
+import { fileUpdateNotificationReceived } from '../files/files.actions';
+import {
+  terminalClosedReceived,
+  terminalCreatedReceived,
+  terminalOutputReceived,
+} from '../terminals/terminals.actions';
 import { ticketBoardAutomationRunUpsert } from '../ticket-automation/ticket-automation.actions';
 import { ticketBoardTicketUpsert } from '../tickets/tickets.actions';
 import type { TicketResponseDto } from '../tickets/tickets.types';
+import { mapContainerStatsTick$ } from '../stats/stats.effects';
 
 import {
   CLIENT_CHAT_AUTOMATION_SOCKET_EVENT,
@@ -51,13 +71,25 @@ import {
   socketReconnectError,
   socketReconnectFailed,
   socketReconnecting,
-} from './sockets.actions';
-import { selectSelectedAgentId, selectSelectedClientId, selectSettingClient } from './sockets.selectors';
+} from './container-socket.actions';
+import { selectSelectedAgentId, selectSelectedClientId, selectSettingClient } from './container-socket.selectors';
 import {
   ForwardableEvent,
+  type AgentEventEnvelope,
+  type ChatEnhanceResultPayload,
+  type ChatMessageBatchData,
+  type ChatMessageData,
+  type FileUpdateNotificationData,
   type ForwardedEventPayload,
+  type MessageFilterResultData,
+  type RestoreChatSuccessData,
+  type SuccessResponse,
+  type TerminalClosedData,
+  type TerminalCreatedData,
+  type TerminalOutputData,
   type TicketAutomationRunChatEventPayload,
-} from './sockets.types';
+  type TicketBodyResultPayload,
+} from './container-socket.types';
 
 /**
  * Socket.IO internal events that should not be forwarded or handled as application events
@@ -139,6 +171,7 @@ export const connectSocket$ = createEffect(
     actions$ = inject(Actions),
     environment = inject<Environment>(ENVIRONMENT),
     keycloakService = inject(KeycloakService, { optional: true }),
+    store = inject(Store),
   ) => {
     return actions$.pipe(
       ofType(connectSocket),
@@ -236,28 +269,38 @@ export const connectSocket$ = createEffect(
               socketInstance,
               'remoteReconnectFailed',
             ).pipe(map((data) => remoteReconnectFailed({ clientId: data.clientId, error: data.error })));
-            // Handle forwarded events from remote agents namespace
-            // Listen to all events and filter out internal Socket.IO events
-            const forwardedEvents$ = new Observable<{ event: string; payload: ForwardedEventPayload }>((subscriber) => {
-              const handler = (event: string, ...args: unknown[]) => {
-                // Only forward application-level events, not Socket.IO internal events
-                if (!INTERNAL_EVENTS.has(event)) {
-                  // Check if it's an internal Socket.IO error (Error instance) vs application error (plain object)
-                  if (event === 'error' && args.length > 0 && args[0] instanceof Error) {
-                    return; // Don't forward internal Socket.IO errors
+            // Handle forwarded events from remote agents namespace.
+            // containerStats is diverted off the generic bus (see containerStats$ below).
+            const socketApplicationEvents$ = new Observable<{ event: string; payload: ForwardedEventPayload }>(
+              (subscriber) => {
+                const handler = (event: string, ...args: unknown[]) => {
+                  if (!INTERNAL_EVENTS.has(event)) {
+                    if (event === 'error' && args.length > 0 && args[0] instanceof Error) {
+                      return;
+                    }
+
+                    subscriber.next({ event, payload: (args[0] ?? {}) as ForwardedEventPayload });
                   }
+                };
 
-                  // Type assertion: the payload should match ForwardedEventPayload based on event type
-                  subscriber.next({ event, payload: (args[0] ?? {}) as ForwardedEventPayload });
-                }
-              };
+                socketInstance?.onAny(handler);
 
-              socketInstance?.onAny(handler);
-
-              return () => {
-                socketInstance?.offAny(handler);
-              };
-            }).pipe(map(({ event, payload }) => forwardedEventReceived({ event, payload })));
+                return () => {
+                  socketInstance?.offAny(handler);
+                };
+              },
+            ).pipe(share());
+            const forwardedEvents$ = socketApplicationEvents$.pipe(
+              filter(({ event }) => event !== 'containerStats'),
+              map(({ event, payload }) => forwardedEventReceived({ event, payload })),
+            );
+            const containerStats$ = mapContainerStatsTick$(
+              socketApplicationEvents$.pipe(
+                filter(({ event }) => event === 'containerStats'),
+                map(({ payload }) => payload),
+              ),
+              store,
+            );
 
             // Merge all event streams
             return merge(
@@ -272,6 +315,7 @@ export const connectSocket$ = createEffect(
               forwardAck$,
               error$,
               forwardedEvents$,
+              containerStats$,
               remoteDisconnected$,
               remoteReconnecting$,
               remoteReconnected$,
@@ -415,7 +459,7 @@ export const restoreAgentLogin$ = createEffect(
 
             // Emit login event directly to the socket
             // We need to emit directly because forwardEvent action only dispatches to store,
-            // but the actual socket emission happens in SocketsFacade.forwardEvent()
+            // but the actual socket emission happens in ContainerSocketFacade.forwardEvent()
             socket.emit('forward', { event: ForwardableEvent.LOGIN, agentId: selectedAgentId });
 
             // Also dispatch the action to update the store state
@@ -466,3 +510,164 @@ export const syncTicketsFromClientsChatTicketUpsert$ = createEffect(
     ),
   { functional: true },
 );
+
+/**
+ * Bus forwarded WS events into domain slices (container-socket stays connection-only).
+ */
+export const routeForwardedEvents$ = createEffect(
+  (actions$ = inject(Actions)) =>
+    actions$.pipe(
+      ofType(forwardedEventReceived),
+      mergeMap((action) => {
+        const { event, payload } = action;
+        const routed: Action[] = [];
+
+        if (event === 'chatMessage' && isSuccessPayload(payload)) {
+          const success = payload as SuccessResponse<ChatMessageData>;
+
+          routed.push(
+            chatTimelineMessageReceived({
+              payload: success,
+              chatId: success.data.chatId,
+            }),
+          );
+        }
+
+        if (event === 'chatMessageBatch' && isSuccessPayload(payload)) {
+          const batch = (payload as SuccessResponse<ChatMessageBatchData>).data;
+
+          routed.push(
+            chatTimelineBatchReceived({
+              chatId: batch.chatId,
+              messages: batch.messages,
+              filterResults: batch.filterResults,
+              events: batch.events?.map((ev) => ({
+                success: true as const,
+                data: ev,
+                timestamp: ev.timestamp,
+              })),
+              hasMoreOlder: batch.hasMoreOlder,
+              replace: batch.replace,
+              oldestMessageId: batch.oldestMessageId ?? null,
+            }),
+          );
+        }
+
+        if (event === 'chatEvent' && isSuccessPayload(payload)) {
+          const success = payload as SuccessResponse<AgentEventEnvelope>;
+
+          routed.push(
+            chatTimelineEventReceived({
+              payload: success,
+              chatId: success.data.chatId,
+            }),
+          );
+        }
+
+        if (event === 'messageFilterResult' && isSuccessPayload(payload)) {
+          const success = payload as SuccessResponse<MessageFilterResultData>;
+
+          routed.push(
+            chatTimelineFilterReceived({
+              payload: success,
+              chatId: success.data.chatId,
+            }),
+          );
+        }
+
+        if (event === 'restoreChatSuccess' && isSuccessPayload(payload)) {
+          const data = (payload as SuccessResponse<RestoreChatSuccessData>).data;
+
+          routed.push(
+            chatTimelineRestoreSuccess({
+              chatId: data.chatId,
+              hasMoreOlder: data.hasMoreOlder ?? false,
+              oldestMessageId: data.oldestMessageId ?? null,
+              messageCount: data.messageCount,
+            }),
+          );
+        }
+
+        if (event === 'chatEnhanceResult' && isSuccessPayload(payload)) {
+          const data = (payload as SuccessResponse<ChatEnhanceResultPayload>).data;
+
+          if (data.success === true) {
+            routed.push(
+              chatTimelineEnhanceResult({
+                correlationId: data.correlationId,
+                success: true,
+                enhancedText: data.enhancedText,
+              }),
+            );
+          } else {
+            routed.push(
+              chatTimelineEnhanceResult({
+                correlationId: data.correlationId,
+                success: false,
+                errorMessage: data.error?.message ?? 'Enhancement failed',
+              }),
+            );
+          }
+        }
+
+        if (event === 'ticketBodyResult' && isSuccessPayload(payload)) {
+          const data = (payload as SuccessResponse<TicketBodyResultPayload>).data;
+
+          if (data.success === true) {
+            routed.push(
+              chatTimelineTicketBodyResult({
+                correlationId: data.correlationId,
+                success: true,
+                enhancedText: data.enhancedText,
+              }),
+            );
+          } else {
+            routed.push(
+              chatTimelineTicketBodyResult({
+                correlationId: data.correlationId,
+                success: false,
+                errorMessage: data.error?.message ?? 'Ticket body generation failed',
+              }),
+            );
+          }
+        }
+
+        if (event === 'terminalCreated' && isSuccessPayload(payload)) {
+          routed.push(terminalCreatedReceived((payload as SuccessResponse<TerminalCreatedData>).data));
+        }
+
+        if (event === 'terminalOutput' && isSuccessPayload(payload)) {
+          routed.push(terminalOutputReceived((payload as SuccessResponse<TerminalOutputData>).data));
+        }
+
+        if (event === 'terminalClosed' && isSuccessPayload(payload)) {
+          routed.push(terminalClosedReceived((payload as SuccessResponse<TerminalClosedData>).data));
+        }
+
+        if (event === 'fileUpdateNotification' && isSuccessPayload(payload)) {
+          routed.push(
+            fileUpdateNotificationReceived({
+              notification: (payload as SuccessResponse<FileUpdateNotificationData>).data,
+            }),
+          );
+        }
+
+        if (event === CLIENT_CHAT_AUTOMATION_SOCKET_EVENT && payload && typeof payload === 'object') {
+          routed.push(chatTimelineAutomationUpsert({ payload: payload as TicketAutomationRunChatEventPayload }));
+        }
+
+        return from(routed);
+      }),
+    ),
+  { functional: true },
+);
+
+function isSuccessPayload(payload: ForwardedEventPayload): boolean {
+  return (
+    !!payload &&
+    typeof payload === 'object' &&
+    'success' in payload &&
+    (payload as { success?: boolean }).success === true &&
+    'data' in payload
+  );
+}

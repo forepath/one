@@ -45,6 +45,7 @@ describe('AgentMessagesService', () => {
     create: jest.fn(),
     findByAgentId: jest.fn(),
     findByAgentIdAndChatSessionId: jest.fn(),
+    findPageBefore: jest.fn(),
     findLatestAgentMessage: jest.fn(),
     countByAgentId: jest.fn(),
     countByAgentIdAndChatSessionId: jest.fn(),
@@ -325,6 +326,24 @@ describe('AgentMessagesService', () => {
       await service.getChatHistory(agentId, 100, 10);
 
       expect(mockRepository.findByAgentIdAndChatSessionId).toHaveBeenCalledWith(agentId, primaryChatSessionId, 100, 10);
+    });
+  });
+
+  describe('getChatHistoryPageBefore', () => {
+    it('delegates to repository findPageBefore', async () => {
+      const page = { messages: [mockMessage], hasMoreOlder: true };
+
+      mockRepository.findPageBefore.mockResolvedValue(page);
+
+      const result = await service.getChatHistoryPageBefore('agent-uuid-123', primaryChatSessionId, 'cursor-id', 20);
+
+      expect(result).toEqual(page);
+      expect(mockRepository.findPageBefore).toHaveBeenCalledWith(
+        'agent-uuid-123',
+        primaryChatSessionId,
+        'cursor-id',
+        20,
+      );
     });
   });
 

@@ -1,7 +1,7 @@
 import type {
   TicketAutomationRunChatRunSummary,
   TicketAutomationRunChatTicketSummary,
-} from '../state/sockets/sockets.types';
+} from '../state/container-socket/container-socket.types';
 import type { TicketAutomationRunResponseDto } from '../state/ticket-automation/ticket-automation.types';
 import type { TicketResponseDto } from '../state/tickets/tickets.types';
 

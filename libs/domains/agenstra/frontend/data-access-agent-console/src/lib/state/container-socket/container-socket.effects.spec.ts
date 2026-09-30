@@ -2,6 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
+import { Store } from '@ngrx/store';
+import { provideMockStore } from '@ngrx/store/testing';
 import { KeycloakService } from 'keycloak-angular';
 import { of } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
@@ -25,9 +27,11 @@ import {
   socketReconnectError,
   socketReconnectFailed,
   socketReconnecting,
-} from './sockets.actions';
-import { connectSocket$, disconnectSocket$ } from './sockets.effects';
-import { ChatActor, type ForwardedEventPayload } from './sockets.types';
+} from './container-socket.actions';
+import { connectSocket$, disconnectSocket$ } from './container-socket.effects';
+import { selectSelectedAgentId, selectSelectedClientId } from './container-socket.selectors';
+import { ChatActor, type ForwardedEventPayload } from './container-socket.types';
+import { selectStatsByContainer } from '../stats/stats.selectors';
 
 // Mock socket.io-client
 jest.mock('socket.io-client', () => ({
@@ -92,6 +96,13 @@ describe('SocketsEffects', () => {
     TestBed.configureTestingModule({
       providers: [
         provideMockActions(() => actions$),
+        provideMockStore({
+          selectors: [
+            { selector: selectSelectedClientId, value: 'client-1' },
+            { selector: selectSelectedAgentId, value: 'agent-1' },
+            { selector: selectStatsByContainer, value: {} },
+          ],
+        }),
         {
           provide: ENVIRONMENT,
           useValue: mockEnvironment,
@@ -121,6 +132,13 @@ describe('SocketsEffects', () => {
       TestBed.configureTestingModule({
         providers: [
           provideMockActions(() => actions$),
+          provideMockStore({
+            selectors: [
+              { selector: selectSelectedClientId, value: 'client-1' },
+              { selector: selectSelectedAgentId, value: 'agent-1' },
+              { selector: selectStatsByContainer, value: {} },
+            ],
+          }),
           {
             provide: ENVIRONMENT,
             useValue: environmentWithoutUrl,
@@ -132,7 +150,7 @@ describe('SocketsEffects', () => {
 
       actions$ = of(action);
 
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
+      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe((result) => {
         expect(result).toEqual(connectSocketFailure({ error: 'WebSocket URL not configured' }));
         done();
       });
@@ -153,7 +171,7 @@ describe('SocketsEffects', () => {
         return mockSocket as any;
       });
 
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
+      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe((result) => {
         expect(io).toHaveBeenCalledWith('http://localhost:8081/clients', {
           transports: ['websocket'],
           rejectUnauthorized: false,
@@ -183,6 +201,13 @@ describe('SocketsEffects', () => {
       TestBed.configureTestingModule({
         providers: [
           provideMockActions(() => actions$),
+          provideMockStore({
+            selectors: [
+              { selector: selectSelectedClientId, value: 'client-1' },
+              { selector: selectSelectedAgentId, value: 'agent-1' },
+              { selector: selectStatsByContainer, value: {} },
+            ],
+          }),
           {
             provide: ENVIRONMENT,
             useValue: keycloakEnvironment,
@@ -207,7 +232,12 @@ describe('SocketsEffects', () => {
         return mockSocket as any;
       });
 
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), TestBed.inject(KeycloakService)).subscribe((result) => {
+      connectSocket$(
+        actions$,
+        TestBed.inject(ENVIRONMENT),
+        TestBed.inject(KeycloakService),
+        TestBed.inject(Store),
+      ).subscribe((result) => {
         expect(io).toHaveBeenCalledWith('http://localhost:8081/clients', {
           transports: ['websocket'],
           rejectUnauthorized: false,
@@ -237,7 +267,7 @@ describe('SocketsEffects', () => {
         return mockSocket as any;
       });
 
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
+      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe((result) => {
         // With reconnection enabled, connect_error emits socketReconnectError
         // Final failure will be emitted on reconnect_failed
         expect(result).toEqual(socketReconnectError({ error: 'Connection failed' }));
@@ -265,8 +295,8 @@ describe('SocketsEffects', () => {
         return mockSocket as any;
       });
 
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
-        if (result.type === '[Sockets] Set Client Success') {
+      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe((result) => {
+        if (result.type === '[Container Socket] Set Client Success') {
           expect(result).toEqual(setClientSuccess(setClientSuccessData));
           done();
         }
@@ -293,8 +323,8 @@ describe('SocketsEffects', () => {
         return mockSocket as any;
       });
 
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
-        if (result.type === '[Sockets] Forward Event Success') {
+      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe((result) => {
+        if (result.type === '[Container Socket] Forward Event Success') {
           expect(result).toEqual(forwardEventSuccess(forwardAckData));
           done();
         }
@@ -321,8 +351,8 @@ describe('SocketsEffects', () => {
         return mockSocket as any;
       });
 
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
-        if (result.type === '[Sockets] Socket Error') {
+      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe((result) => {
+        if (result.type === '[Container Socket] Socket Error') {
           expect(result).toEqual(socketError(errorData));
           done();
         }
@@ -359,8 +389,8 @@ describe('SocketsEffects', () => {
         return mockSocket as any;
       });
 
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
-        if (result.type === '[Sockets] Forwarded Event Received') {
+      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe((result) => {
+        if (result.type === '[Container Socket] Forwarded Event Received') {
           expect(result).toEqual(forwardedEventReceived({ event: 'chatMessage', payload: mockForwardedPayload }));
           done();
         }
@@ -402,8 +432,8 @@ describe('SocketsEffects', () => {
         return mockSocket as any;
       });
 
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
-        if (result.type === '[Sockets] Forwarded Event Received') {
+      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe((result) => {
+        if (result.type === '[Container Socket] Forwarded Event Received') {
           forwardedEventCount++;
           expect(result).toEqual(forwardedEventReceived({ event: 'chatMessage', payload: mockForwardedPayload }));
           expect(forwardedEventCount).toBe(1); // Only one forwarded event
@@ -430,7 +460,7 @@ describe('SocketsEffects', () => {
       });
 
       // Connect first
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe(() => {
+      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe(() => {
         // Now test disconnect
         const disconnectAction = disconnectSocket();
 
@@ -477,8 +507,8 @@ describe('SocketsEffects', () => {
         return mockSocket as any;
       });
 
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
-        if (result.type === '[Sockets] Socket Reconnecting') {
+      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe((result) => {
+        if (result.type === '[Container Socket] Socket Reconnecting') {
           expect(result).toEqual(socketReconnecting({ attempt: 2 }));
           done();
         }
@@ -505,8 +535,8 @@ describe('SocketsEffects', () => {
         return mockSocket as any;
       });
 
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
-        if (result.type === '[Sockets] Socket Reconnecting') {
+      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe((result) => {
+        if (result.type === '[Container Socket] Socket Reconnecting') {
           expect(result).toEqual(socketReconnecting({ attempt: 3 }));
           done();
         }
@@ -533,8 +563,8 @@ describe('SocketsEffects', () => {
         return mockSocket as any;
       });
 
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
-        if (result.type === '[Sockets] Socket Reconnected') {
+      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe((result) => {
+        if (result.type === '[Container Socket] Socket Reconnected') {
           expect(result).toEqual(socketReconnected());
           done();
         }
@@ -561,8 +591,8 @@ describe('SocketsEffects', () => {
         return mockSocket as any;
       });
 
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
-        if (result.type === '[Sockets] Socket Reconnect Error') {
+      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe((result) => {
+        if (result.type === '[Container Socket] Socket Reconnect Error') {
           expect(result).toEqual(socketReconnectError({ error: 'Reconnection error' }));
           done();
         }
@@ -589,8 +619,8 @@ describe('SocketsEffects', () => {
         return mockSocket as any;
       });
 
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
-        if (result.type === '[Sockets] Socket Reconnect Failed') {
+      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe((result) => {
+        if (result.type === '[Container Socket] Socket Reconnect Failed') {
           expect(result).toEqual(socketReconnectFailed({ error: 'Reconnection failed after all attempts' }));
           done();
         }
@@ -619,8 +649,8 @@ describe('SocketsEffects', () => {
         return mockSocket as any;
       });
 
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
-        if (result.type === '[Sockets] Remote Disconnected') {
+      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe((result) => {
+        if (result.type === '[Container Socket] Remote Disconnected') {
           expect(result).toEqual(remoteDisconnected({ clientId: 'client-1' }));
           done();
         }
@@ -647,8 +677,8 @@ describe('SocketsEffects', () => {
         return mockSocket as any;
       });
 
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
-        if (result.type === '[Sockets] Remote Reconnecting') {
+      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe((result) => {
+        if (result.type === '[Container Socket] Remote Reconnecting') {
           expect(result).toEqual(remoteReconnecting({ clientId: 'client-1', attempt: 2 }));
           done();
         }
@@ -675,8 +705,8 @@ describe('SocketsEffects', () => {
         return mockSocket as any;
       });
 
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
-        if (result.type === '[Sockets] Remote Reconnected') {
+      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe((result) => {
+        if (result.type === '[Container Socket] Remote Reconnected') {
           expect(result).toEqual(remoteReconnected({ clientId: 'client-1' }));
           done();
         }
@@ -703,8 +733,8 @@ describe('SocketsEffects', () => {
         return mockSocket as any;
       });
 
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
-        if (result.type === '[Sockets] Remote Reconnect Error') {
+      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe((result) => {
+        if (result.type === '[Container Socket] Remote Reconnect Error') {
           expect(result).toEqual(remoteReconnectError({ clientId: 'client-1', error: 'Timeout' }));
           done();
         }
@@ -731,8 +761,8 @@ describe('SocketsEffects', () => {
         return mockSocket as any;
       });
 
-      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
-        if (result.type === '[Sockets] Remote Reconnect Failed') {
+      connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe((result) => {
+        if (result.type === '[Container Socket] Remote Reconnect Failed') {
           expect(result).toEqual(remoteReconnectFailed({ clientId: 'client-1', error: 'Failed' }));
           done();
         }

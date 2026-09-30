@@ -12,13 +12,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import {
-  SocketsFacade,
-  type SuccessResponse,
-  type TerminalClosedData,
-  type TerminalCreatedData,
-  type TerminalOutputData,
-} from '@forepath/agenstra/frontend/data-access-agent-console';
+import { ContainerSocketFacade, TerminalsFacade } from '@forepath/agenstra/frontend/data-access-agent-console';
 import {
   FpcButtonComponent,
   FpcDropdownComponent,
@@ -95,7 +89,8 @@ const XTERM_THEME_LIGHT: ITheme = {
   standalone: true,
 })
 export class TerminalComponent implements AfterViewInit, OnDestroy {
-  private readonly socketsFacade = inject(SocketsFacade);
+  private readonly socketsFacade = inject(ContainerSocketFacade);
+  private readonly terminalsFacade = inject(TerminalsFacade);
   private readonly destroyRef = inject(DestroyRef);
   private readonly themeService = inject(ThemeService);
 
@@ -123,9 +118,8 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
   // ResizeObserver for terminal container
   private resizeObserver?: ResizeObserver;
 
-  // Track how many terminal output events have been processed per session
-  // This counter tells us how many messages to skip from the events array
-  private readonly processedEventCount = new Map<string, number>();
+  // Track last consumed terminal output seq
+  private lastConsumedOutputSeq = 0;
 
   constructor() {
     // Automatically create a terminal session when the panel becomes visible and no sessions exist
@@ -172,76 +166,24 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
       }
     }, 0);
 
-    // Subscribe to terminal events from socket
-    this.socketsFacade
-      .getForwardedEventsByEvent$('terminalCreated')
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((events) => {
-        if (events.length > 0) {
-          const latest = events[events.length - 1];
-          const response = latest.payload as SuccessResponse<TerminalCreatedData>;
-
-          if (response.success && response.data) {
-            this.handleTerminalCreated(response.data.sessionId);
-          }
+    this.terminalsFacade.sessions$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((sessions) => {
+      for (const [sessionId, meta] of Object.entries(sessions)) {
+        if (meta.status === 'open') {
+          this.handleTerminalCreated(sessionId);
+        } else if (meta.status === 'closed') {
+          this.handleTerminalClosed(sessionId);
         }
-      });
+      }
+    });
 
-    this.socketsFacade
-      .getForwardedEventsByEvent$('terminalOutput')
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((events) => {
-        // Group events by sessionId to process per session
-        const eventsBySession = new Map<string, typeof events>();
+    this.terminalsFacade.outputChunks$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((chunks) => {
+      const fresh = chunks.filter((c) => c.seq > this.lastConsumedOutputSeq);
 
-        for (const event of events) {
-          const response = event.payload as SuccessResponse<TerminalOutputData>;
-
-          if (response.success && response.data) {
-            const sessionId = response.data.sessionId;
-
-            if (!eventsBySession.has(sessionId)) {
-              eventsBySession.set(sessionId, []);
-            }
-
-            const sessionEvents = eventsBySession.get(sessionId);
-
-            if (sessionEvents) {
-              sessionEvents.push(event);
-            }
-          }
-        }
-
-        // Process events per session, skipping already processed ones
-        for (const [sessionId, sessionEvents] of eventsBySession) {
-          const skipCount = this.processedEventCount.get(sessionId) || 0;
-          const eventsToProcess = sessionEvents.slice(skipCount);
-
-          for (const event of eventsToProcess) {
-            const response = event.payload as SuccessResponse<TerminalOutputData>;
-
-            if (response.success && response.data) {
-              this.handleTerminalOutput(response.data.sessionId, response.data.data);
-            }
-          }
-
-          // Update counter: total events for this session
-          this.processedEventCount.set(sessionId, sessionEvents.length);
-        }
-      });
-
-    this.socketsFacade
-      .getForwardedEventsByEvent$('terminalClosed')
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((events) => {
-        for (const event of events) {
-          const response = event.payload as SuccessResponse<TerminalClosedData>;
-
-          if (response.success && response.data) {
-            this.handleTerminalClosed(response.data.sessionId);
-          }
-        }
-      });
+      for (const chunk of fresh) {
+        this.handleTerminalOutput(chunk.sessionId, chunk.data);
+        this.lastConsumedOutputSeq = Math.max(this.lastConsumedOutputSeq, chunk.seq);
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -256,7 +198,7 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
     this.sessions.set(new Map());
     this.activeTerminal = null;
     this.pendingRefreshReplaceSessionId = null;
-    this.processedEventCount.clear();
+    this.lastConsumedOutputSeq = 0;
 
     // Disconnect resize observer
     if (this.resizeObserver) {
@@ -390,7 +332,6 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
     }
 
     session.terminal.dispose();
-    this.processedEventCount.delete(sessionId);
 
     // Remove from sessions
     const sessions = new Map(this.sessions());

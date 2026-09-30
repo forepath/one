@@ -1,50 +1,38 @@
-import { inject } from '@angular/core';
-import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { combineLatest, filter, map, withLatestFrom } from 'rxjs';
+import { EMPTY, mergeMap, Observable, withLatestFrom } from 'rxjs';
 
-import { forwardedEventReceived } from '../sockets/sockets.actions';
-import { selectSelectedAgentId, selectSelectedClientId } from '../sockets/sockets.selectors';
-import type { ContainerStatsPayload } from '../sockets/sockets.types';
+import { selectSelectedAgentId, selectSelectedClientId } from '../container-socket/container-socket.selectors';
+import type { ContainerStatsPayload, ForwardedEventPayload } from '../container-socket/container-socket.types';
 
 import { containerStatsReceived } from './stats.actions';
-import type { ContainerStatsEntry } from './stats.types';
+import { selectStatsByContainer } from './stats.selectors';
+import { buildContainerStatsEntry, isRedundantContainerStats } from './stats.utils';
 
 /**
- * Effect to process containerStats events from socket and dispatch stats actions
+ * Map raw containerStats socket payloads to at most one {@link containerStatsReceived}
+ * when the tick changes something the UI uses. Redundant stopped heartbeats yield EMPTY.
  */
-export const processContainerStats$ = createEffect(
-  (actions$ = inject(Actions), store = inject(Store)) => {
-    return actions$.pipe(
-      ofType(forwardedEventReceived),
-      // Only process containerStats events
-      filter((action) => action.event === 'containerStats'),
-      withLatestFrom(combineLatest([store.select(selectSelectedClientId), store.select(selectSelectedAgentId)])),
-      map(([action, [selectedClientId, selectedAgentId]]) => {
-        // Extract payload
-        const payload = action.payload;
+export function mapContainerStatsTick$(payloads$: Observable<ForwardedEventPayload>, store: Store) {
+  return payloads$.pipe(
+    withLatestFrom(
+      store.select(selectSelectedClientId),
+      store.select(selectSelectedAgentId),
+      store.select(selectStatsByContainer),
+    ),
+    mergeMap(([payload, selectedClientId, selectedAgentId, statsByContainer]) => {
+      if (!payload || !('success' in payload) || !payload.success || !('data' in payload)) {
+        return EMPTY;
+      }
 
-        if (!payload || !('success' in payload) || !payload.success || !('data' in payload)) {
-          // Return null for invalid payloads - will be filtered out
-          return null;
-        }
+      const entry = buildContainerStatsEntry(payload.data as ContainerStatsPayload, selectedClientId, selectedAgentId);
+      const key = `${entry.clientId}:${entry.agentId}`;
+      const previous = statsByContainer[key]?.at(-1);
 
-        const statsData = payload.data as ContainerStatsPayload;
-        // Create stats entry with both clientId and agentId
-        const entry: ContainerStatsEntry = {
-          stats: statsData.stats,
-          status: statsData.status,
-          timestamp: statsData.timestamp,
-          receivedAt: Date.now(),
-          clientId: selectedClientId || 'unknown', // Use selected clientId or fallback
-          agentId: selectedAgentId || 'unknown', // Use selected agentId or fallback
-        };
+      if (isRedundantContainerStats(previous, entry)) {
+        return EMPTY;
+      }
 
-        return containerStatsReceived({ entry });
-      }),
-      // Filter out null values (invalid payloads)
-      filter((action): action is ReturnType<typeof containerStatsReceived> => action !== null),
-    );
-  },
-  { functional: true },
-);
+      return [containerStatsReceived({ entry })];
+    }),
+  );
+}

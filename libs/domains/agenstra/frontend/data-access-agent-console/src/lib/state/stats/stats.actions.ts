@@ -3,7 +3,8 @@ import { createAction, props } from '@ngrx/store';
 import type { ContainerStatsEntry } from './stats.types';
 
 /**
- * Action dispatched when container stats are received from socket
+ * Action dispatched when container stats change in a way the UI uses.
+ * High-frequency socket ticks that are redundant (e.g. stopped heartbeats) are not dispatched.
  */
 export const containerStatsReceived = createAction(
   '[Stats] Container Stats Received',

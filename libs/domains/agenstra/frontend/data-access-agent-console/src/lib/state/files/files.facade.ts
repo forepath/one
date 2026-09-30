@@ -17,6 +17,7 @@ import {
   readFile,
   unpinFileTab,
   writeFile,
+  clearFileUpdateNotification,
 } from './files.actions';
 import type { OpenTab } from './files.reducer';
 import {
@@ -32,6 +33,7 @@ import {
   selectIsMovingFile,
   selectIsReadingFile,
   selectIsWritingFile,
+  selectLastFileUpdateNotification,
   selectOpenTabsForClientAgent,
 } from './files.selectors';
 import type {
@@ -43,6 +45,7 @@ import type {
   MoveFileDto,
   WriteFileDto,
 } from './files.types';
+import type { FileUpdateNotificationData } from '../container-socket/container-socket.types';
 
 function withOptionalFileContext<T extends object>(
   payload: T,
@@ -422,5 +425,13 @@ export class FilesFacade {
    */
   clearOpenTabs(clientId: string, agentId: string, context?: FileManagerContext): void {
     this.store.dispatch(clearOpenTabs(withOptionalFileContext({ clientId, agentId }, context)));
+  }
+
+  readonly lastFileUpdateNotification$: Observable<FileUpdateNotificationData | null> = this.store.select(
+    selectLastFileUpdateNotification,
+  );
+
+  clearFileUpdateNotification(): void {
+    this.store.dispatch(clearFileUpdateNotification());
   }
 }

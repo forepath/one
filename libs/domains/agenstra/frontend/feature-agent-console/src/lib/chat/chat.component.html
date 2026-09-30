@@ -874,192 +874,231 @@
         </fpc-page-header>
 
         <!-- Chat messages -->
-        <div
-          #chatMessagesContainer
-          class="chat-messages-container flex-grow-1 overflow-auto d-flex flex-column min-h-0"
-        >
-          @if (displayChatThread$ | async; as thread) {
-            @if (thread.length === 0) {
-              <fpc-empty-state message="No messages yet" i18n-message="@@featureChat-noMessages" />
-            } @else {
-              <div class="d-flex flex-column gap-2 p-3">
-                @for (item of thread; track trackChatDisplayItem(item)) {
-                  @if (item.kind === 'user') {
-                    @if (getChatMessageData(item.msg.payload); as messageData) {
-                      <div class="d-flex justify-content-end">
-                        @if (
-                          item.msg.filterResult &&
-                          (item.msg.filterResult.status === 'filtered' || item.msg.filterResult.status === 'dropped')
-                        ) {
-                          <div class="card bg-primary text-white chat-message-card border-warning border-2">
-                            <div class="card-body chat-message-body">
-                              @if (formatMessageWithCommandBadge(getText(messageData)); as formattedText) {
-                                <p class="card-text chat-message-text" [innerHTML]="formattedText"></p>
-                              }
-                              <div class="d-flex align-items-center gap-2 mt-2">
-                                <i class="bi bi-shield-exclamation text-warning" title="Message was filtered"></i>
-                                <small class="chat-message-timestamp text-warning mt-0"> Filtered </small>
+        <div class="chat-messages-scroll-host position-relative flex-grow-1 d-flex flex-column">
+          <div
+            #chatMessagesContainer
+            class="chat-messages-container flex-grow-1 overflow-auto d-flex flex-column"
+            (scroll)="onChatMessagesScroll($event)"
+          >
+            @if (
+              {
+                loading: (chatTimelineLoadingInitial$ | async) === true,
+                thread: displayChatThread$ | async,
+              };
+              as view
+            ) {
+              @if (view.loading) {
+                <div class="d-flex flex-grow-1 justify-content-center align-items-center p-4 min-h-0">
+                  <fpc-spinner
+                    variant="primary"
+                    i18n-label="@@featureChat-loadingMessages"
+                    label="Loading messages..."
+                  />
+                </div>
+              } @else if (!view.thread || view.thread.length === 0) {
+                <fpc-empty-state message="No messages yet" i18n-message="@@featureChat-noMessages" />
+              } @else {
+                <div class="d-flex flex-column gap-2 p-3">
+                  @for (item of view.thread; track trackChatDisplayItem(item)) {
+                    @if (item.kind === 'user') {
+                      @if (getChatMessageData(item.msg.payload); as messageData) {
+                        <div class="d-flex justify-content-end">
+                          @if (
+                            item.msg.filterResult &&
+                            (item.msg.filterResult.status === 'filtered' || item.msg.filterResult.status === 'dropped')
+                          ) {
+                            <div class="card bg-primary text-white chat-message-card border-warning border-2">
+                              <div class="card-body chat-message-body">
+                                @if (formatMessageWithCommandBadge(getText(messageData)); as formattedText) {
+                                  <p class="card-text chat-message-text" [innerHTML]="formattedText"></p>
+                                }
+                                <div class="d-flex align-items-center gap-2 mt-2">
+                                  <i class="bi bi-shield-exclamation text-warning" title="Message was filtered"></i>
+                                  <small class="chat-message-timestamp text-warning mt-0"> Filtered </small>
+                                </div>
+                                <small class="chat-message-timestamp">{{ formatTimestamp(item.msg.timestamp) }}</small>
                               </div>
-                              <small class="chat-message-timestamp">{{ formatTimestamp(item.msg.timestamp) }}</small>
                             </div>
-                          </div>
-                        } @else {
-                          <div class="card bg-primary text-white chat-message-card">
+                          } @else {
+                            <div class="card bg-primary text-white chat-message-card">
+                              <div class="card-body chat-message-body">
+                                @if (formatMessageWithCommandBadge(getText(messageData)); as formattedText) {
+                                  <p class="card-text chat-message-text" [innerHTML]="formattedText"></p>
+                                }
+                                <small class="chat-message-timestamp">{{ formatTimestamp(item.msg.timestamp) }}</small>
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      }
+                    } @else if (item.kind === 'agentTurn') {
+                      @if (item.view.hasDropped) {
+                        <div class="d-flex justify-content-start">
+                          <div class="card bg-danger text-white chat-message-card border-danger border-2">
                             <div class="card-body chat-message-body">
-                              @if (formatMessageWithCommandBadge(getText(messageData)); as formattedText) {
-                                <p class="card-text chat-message-text" [innerHTML]="formattedText"></p>
-                              }
-                              <small class="chat-message-timestamp">{{ formatTimestamp(item.msg.timestamp) }}</small>
+                              <div class="d-flex align-items-center gap-2 mb-2">
+                                <i class="bi bi-exclamation-circle fs-5"></i>
+                                <strong i18n="@@featureChat-messageDropped">Message Dropped</strong>
+                              </div>
+                              <p class="card-text chat-message-text mb-0">
+                                <span i18n="@@featureChat-messageDroppedDesc"
+                                  >This message was filtered and dropped by the system.</span
+                                >
+                              </p>
+                              <small class="chat-message-timestamp text-white-50">{{
+                                formatTimestamp(item.view.displayTimestamp)
+                              }}</small>
                             </div>
-                          </div>
-                        }
-                      </div>
-                    }
-                  } @else if (item.kind === 'agentTurn') {
-                    @if (item.view.hasDropped) {
-                      <div class="d-flex justify-content-start">
-                        <div class="card bg-danger text-white chat-message-card border-danger border-2">
-                          <div class="card-body chat-message-body">
-                            <div class="d-flex align-items-center gap-2 mb-2">
-                              <i class="bi bi-exclamation-circle fs-5"></i>
-                              <strong i18n="@@featureChat-messageDropped">Message Dropped</strong>
-                            </div>
-                            <p class="card-text chat-message-text mb-0">
-                              <span i18n="@@featureChat-messageDroppedDesc"
-                                >This message was filtered and dropped by the system.</span
-                              >
-                            </p>
-                            <small class="chat-message-timestamp text-white-50">{{
-                              formatTimestamp(item.view.displayTimestamp)
-                            }}</small>
                           </div>
                         </div>
-                      </div>
-                    } @else {
-                      <div class="d-flex justify-content-start">
-                        <div
-                          class="card bg-body chat-message-card"
-                          [class.border-warning]="item.view.hasFiltered"
-                          [class.border-2]="item.view.hasFiltered"
-                        >
-                          <div class="card-body chat-message-body">
-                            @if (item.view.hasFiltered) {
-                              <div class="d-flex align-items-center gap-2 mb-2">
-                                <i class="bi bi-shield-exclamation text-warning" title="Message was filtered"></i>
-                                <small class="chat-message-timestamp text-warning mt-0"> Filtered </small>
-                              </div>
-                            }
-                            @for (seg of item.view.segments; track seg.kind === 'row' ? seg.row.trackId : seg.trackId) {
-                              @if (seg.kind === 'row') {
-                                <framework-agent-chat-event-row
-                                  [row]="seg.row"
-                                  [todosExpandScope]="trackChatDisplayItem(item)"
-                                  [alreadyAnswered]="isQuestionAnswered(seg.row)"
-                                  [replyBusy]="isQuestionReplyBusy(seg.row)"
-                                  [replyFailedMessage]="questionReplyError(seg.row)"
-                                  (questionReply)="onQuestionReply($event)"
-                                />
-                              } @else if (seg.kind === 'markdown') {
-                                @if (parseMarkdownFromString(seg.markdown); as turnMarkdownHtml) {
-                                  <div
-                                    class="card-text chat-message-text markdown-content mt-1"
-                                    [innerHTML]="turnMarkdownHtml"
-                                  ></div>
+                      } @else {
+                        <div class="d-flex justify-content-start">
+                          <div
+                            class="card bg-body chat-message-card"
+                            [class.border-warning]="item.view.hasFiltered"
+                            [class.border-2]="item.view.hasFiltered"
+                          >
+                            <div class="card-body chat-message-body">
+                              @if (item.view.hasFiltered) {
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                  <i class="bi bi-shield-exclamation text-warning" title="Message was filtered"></i>
+                                  <small class="chat-message-timestamp text-warning mt-0"> Filtered </small>
+                                </div>
+                              }
+                              @for (
+                                seg of item.view.segments;
+                                track seg.kind === 'row' ? seg.row.trackId : seg.trackId
+                              ) {
+                                @if (seg.kind === 'row') {
+                                  <framework-agent-chat-event-row
+                                    [row]="seg.row"
+                                    [todosExpandScope]="trackChatDisplayItem(item)"
+                                    [alreadyAnswered]="isQuestionAnswered(seg.row)"
+                                    [replyBusy]="isQuestionReplyBusy(seg.row)"
+                                    [replyFailedMessage]="questionReplyError(seg.row)"
+                                    (questionReply)="onQuestionReply($event)"
+                                  />
+                                } @else if (seg.kind === 'markdown') {
+                                  @if (parseMarkdownFromString(seg.markdown); as turnMarkdownHtml) {
+                                    <div
+                                      class="card-text chat-message-text markdown-content mt-1"
+                                      [innerHTML]="turnMarkdownHtml"
+                                    ></div>
+                                  }
                                 }
                               }
-                            }
-                            <small class="chat-message-timestamp text-muted">{{
-                              formatTimestamp(item.view.displayTimestamp)
-                            }}</small>
+                              <small class="chat-message-timestamp text-muted">{{
+                                formatTimestamp(item.view.displayTimestamp)
+                              }}</small>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    }
-                  } @else if (item.kind === 'ticketAutomationRun') {
-                    <div class="d-flex justify-content-start">
-                      <div class="card border-secondary bg-body chat-message-card">
-                        <div class="card-body chat-message-body">
-                          <div class="fw-semibold text-truncate" [attr.title]="item.payload.ticket.title">
-                            {{ item.payload.ticket.title }}
-                          </div>
-                          <div class="small text-muted mt-1 d-flex flex-wrap gap-1">
-                            <fpc-badge color="light" class="border">{{
-                              ticketWorkflowLaneLabel(item.payload.ticket.status)
-                            }}</fpc-badge>
-                            <fpc-badge color="secondary">{{
-                              automationRunStatusLabel(item.payload.run.status)
-                            }}</fpc-badge>
-                            <fpc-badge color="info">{{ automationRunPhaseLabel(item.payload.run.phase) }}</fpc-badge>
-                          </div>
-                          <div class="d-flex flex-wrap gap-2 mt-2">
-                            @if (item.payload.actions[0]; as act) {
+                      }
+                    } @else if (item.kind === 'ticketAutomationRun') {
+                      <div class="d-flex justify-content-start">
+                        <div class="card border-secondary bg-body chat-message-card">
+                          <div class="card-body chat-message-body">
+                            <div class="fw-semibold text-truncate" [attr.title]="item.payload.ticket.title">
+                              {{ item.payload.ticket.title }}
+                            </div>
+                            <div class="small text-muted mt-1 d-flex flex-wrap gap-1">
+                              <fpc-badge color="light" class="border">{{
+                                ticketWorkflowLaneLabel(item.payload.ticket.status)
+                              }}</fpc-badge>
+                              <fpc-badge color="secondary">{{
+                                automationRunStatusLabel(item.payload.run.status)
+                              }}</fpc-badge>
+                              <fpc-badge color="info">{{ automationRunPhaseLabel(item.payload.run.phase) }}</fpc-badge>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                              @if (item.payload.actions[0]; as act) {
+                                <fpc-button
+                                  variant="primary"
+                                  size="sm"
+                                  (clicked)="openTicketAutomationRunFromChat(item.payload)"
+                                >
+                                  {{ act.label }}
+                                </fpc-button>
+                              }
                               <fpc-button
                                 variant="primary"
                                 size="sm"
-                                (clicked)="openTicketAutomationRunFromChat(item.payload)"
+                                (clicked)="openTicketDetailFromChat(item.payload)"
                               >
-                                {{ act.label }}
+                                {{ openTicketFromChatButtonLabel }}
                               </fpc-button>
-                            }
-                            <fpc-button variant="primary" size="sm" (clicked)="openTicketDetailFromChat(item.payload)">
-                              {{ openTicketFromChatButtonLabel }}
-                            </fpc-button>
+                            </div>
+                            <small class="chat-message-timestamp text-muted d-block mt-2">{{
+                              formatTimestamp(item.sortTime)
+                            }}</small>
                           </div>
-                          <small class="chat-message-timestamp text-muted d-block mt-2">{{
-                            formatTimestamp(item.sortTime)
-                          }}</small>
                         </div>
                       </div>
-                    </div>
+                    }
                   }
-                }
-                <!-- In-flight agent response (chatEvent) until final chatMessage arrives -->
-                @if (chatPendingUi$ | async; as pending) {
-                  @if (pending.isPendingAgentResponse) {
-                    <div class="d-flex justify-content-start">
-                      <div class="card bg-body chat-message-card border border-info border-opacity-25">
-                        <div class="card-body chat-message-body">
-                          @if (pending.stream; as stream) {
-                            @for (seg of stream.segments; track seg.kind === 'row' ? seg.row.trackId : seg.trackId) {
-                              @if (seg.kind === 'row') {
-                                <framework-agent-chat-event-row
-                                  [row]="seg.row"
-                                  todosExpandScope="pending"
-                                  [alreadyAnswered]="isQuestionAnswered(seg.row)"
-                                  [replyBusy]="isQuestionReplyBusy(seg.row)"
-                                  [replyFailedMessage]="questionReplyError(seg.row)"
-                                  (questionReply)="onQuestionReply($event)"
-                                />
-                              } @else if (seg.kind === 'markdown') {
-                                @if (parseMarkdownFromString(seg.markdown); as streamHtml) {
-                                  <div
-                                    class="card-text chat-message-text markdown-content mt-1"
-                                    [innerHTML]="streamHtml"
-                                  ></div>
+                  <!-- In-flight agent response (chatEvent) until final chatMessage arrives -->
+                  @if (chatPendingUi$ | async; as pending) {
+                    @if (pending.isPendingAgentResponse) {
+                      <div class="d-flex justify-content-start">
+                        <div class="card bg-body chat-message-card border border-info border-opacity-25">
+                          <div class="card-body chat-message-body">
+                            @if (pending.stream; as stream) {
+                              @for (seg of stream.segments; track seg.kind === 'row' ? seg.row.trackId : seg.trackId) {
+                                @if (seg.kind === 'row') {
+                                  <framework-agent-chat-event-row
+                                    [row]="seg.row"
+                                    todosExpandScope="pending"
+                                    [alreadyAnswered]="isQuestionAnswered(seg.row)"
+                                    [replyBusy]="isQuestionReplyBusy(seg.row)"
+                                    [replyFailedMessage]="questionReplyError(seg.row)"
+                                    (questionReply)="onQuestionReply($event)"
+                                  />
+                                } @else if (seg.kind === 'markdown') {
+                                  @if (parseMarkdownFromString(seg.markdown); as streamHtml) {
+                                    <div
+                                      class="card-text chat-message-text markdown-content mt-1"
+                                      [innerHTML]="streamHtml"
+                                    ></div>
+                                  }
                                 }
                               }
                             }
-                          }
-                          <div
-                            class="chat-message-pending-footer d-flex align-items-center"
-                            [class.chat-message-pending-footer--with-separator]="
-                              pending.stream && pending.stream.segments.length > 0
-                            "
-                          >
-                            <fpc-spinner
-                              size="sm"
-                              variant="primary"
-                              i18n-label="@@featureChat-waitingForResponse"
-                              label="Waiting for response..."
-                            />
+                            <div
+                              class="chat-message-pending-footer d-flex align-items-center"
+                              [class.chat-message-pending-footer--with-separator]="
+                                pending.stream && pending.stream.segments.length > 0
+                              "
+                            >
+                              <fpc-spinner
+                                size="sm"
+                                variant="primary"
+                                i18n-label="@@featureChat-waitingForResponse"
+                                label="Waiting for response..."
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
+                    }
                   }
-                }
-              </div>
+                </div>
+              }
             }
+          </div>
+
+          @if (!stickToBottom()) {
+            <button
+              type="button"
+              class="btn btn-primary rounded-circle position-absolute bottom-0 end-0 m-3 shadow d-flex align-items-center justify-content-center chat-scroll-to-bottom-btn"
+              style="z-index: 2; width: 2.5rem; height: 2.5rem"
+              i18n-aria-label="@@featureChat-scrollToBottomAria"
+              aria-label="Scroll to latest messages"
+              i18n-title="@@featureChat-scrollToBottomTitle"
+              title="Scroll to latest messages"
+              (click)="onScrollToBottomClick()"
+            >
+              <i class="bi bi-arrow-down" aria-hidden="true"></i>
+            </button>
           }
         </div>
 

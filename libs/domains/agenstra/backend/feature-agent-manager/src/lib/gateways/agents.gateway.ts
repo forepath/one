@@ -1,4 +1,4 @@
-import { BadRequestException, Logger, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -63,6 +63,10 @@ interface ChatPayload {
 
 interface RestoreChatPayload {
   chatId: string;
+  /** Load messages older than this persisted message id (same chat). Omit for latest page. */
+  beforeMessageId?: string;
+  /** Page size; default 20, max 50. */
+  limit?: number;
 }
 
 interface EnhanceChatPayload {
@@ -168,6 +172,8 @@ interface UserChatMessageData {
   text: string;
   timestamp: string;
   chatId?: string;
+  /** Persisted `agent_messages.id` when available. */
+  id?: string;
 }
 
 interface AgentChatMessageData {
@@ -175,6 +181,8 @@ interface AgentChatMessageData {
   response: AgentResponseObject | string; // Parsed JSON object or raw string if parsing fails
   timestamp: string;
   chatId?: string;
+  /** Persisted `agent_messages.id` when available. */
+  id?: string;
 }
 
 type ChatMessageData = UserChatMessageData | AgentChatMessageData;
@@ -208,10 +216,33 @@ interface MessageFilterResultData {
   chatId?: string;
 }
 
+interface ChatMessageBatchData {
+  chatId: string;
+  messages: ChatMessageData[];
+  filterResults: MessageFilterResultData[];
+  events: AgentEventEnvelope[];
+  hasMoreOlder: boolean;
+  replace: boolean;
+  oldestMessageId: string | null;
+}
+
 interface RestoreChatSuccessData {
   chatId: string;
   message: string;
+  hasMoreOlder: boolean;
+  oldestMessageId: string | null;
+  messageCount: number;
 }
+
+interface RestoreChatHistoryResult {
+  chatId: string;
+  hasMoreOlder: boolean;
+  oldestMessageId: string | null;
+  messageCount: number;
+}
+
+const DEFAULT_RESTORE_CHAT_LIMIT = 20;
+const MAX_RESTORE_CHAT_LIMIT = 50;
 
 // Helper functions to create standardized responses
 const createSuccessResponse = <T>(data: T): SuccessResponse<T> => ({
@@ -486,6 +517,104 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     this.broadcastToAgent(agentUuid, event, data);
   }
 
+  /**
+   * Persist (when not ephemeral) then emit an agent chatMessage, including the entity id when saved.
+   */
+  private async emitAgentChatMessage(
+    agentUuid: string,
+    ephemeral: boolean,
+    requestSocket: Socket,
+    response: AgentResponseObject | string,
+    timestamp: string,
+    opts: {
+      chatSessionId?: string;
+      chatIdFields: { chatId?: string };
+      filtered?: boolean;
+    },
+  ): Promise<void> {
+    let messageId: string | undefined;
+
+    if (!ephemeral) {
+      try {
+        const persisted = await this.agentMessagesService.createAgentMessage(
+          agentUuid,
+          response,
+          opts.filtered === true,
+          opts.chatSessionId,
+        );
+
+        messageId = persisted.id;
+      } catch (persistError) {
+        const err = persistError as { message?: string };
+
+        this.logger.warn(`Failed to persist agent message: ${err.message}`);
+      }
+    }
+
+    this.emitChatPayloadToViewers(
+      agentUuid,
+      ephemeral,
+      requestSocket,
+      'chatMessage',
+      createSuccessResponse<ChatMessageData>({
+        ...(messageId ? { id: messageId } : {}),
+        from: ChatActor.AGENT,
+        response,
+        timestamp,
+        ...opts.chatIdFields,
+      }),
+    );
+  }
+
+  /**
+   * Persist (when not ephemeral) then emit a user chatMessage, including the entity id when saved.
+   */
+  private async emitUserChatMessage(
+    agentUuid: string,
+    ephemeral: boolean,
+    requestSocket: Socket,
+    text: string,
+    timestamp: string,
+    opts: {
+      chatSessionId?: string;
+      chatIdFields: { chatId?: string };
+      filtered?: boolean;
+    },
+  ): Promise<void> {
+    let messageId: string | undefined;
+
+    if (!ephemeral) {
+      try {
+        const persisted = await this.agentMessagesService.createUserMessage(
+          agentUuid,
+          text,
+          opts.filtered === true,
+          opts.chatSessionId,
+        );
+
+        messageId = persisted.id;
+      } catch (persistError) {
+        const err = persistError as { message?: string };
+
+        this.logger.warn(`Failed to persist user message: ${err.message}`);
+      }
+    }
+
+    this.emitChatPayloadToViewers(
+      agentUuid,
+      ephemeral,
+      requestSocket,
+      'chatMessage',
+      createSuccessResponse<ChatMessageData>({
+        ...(messageId ? { id: messageId } : {}),
+        from: ChatActor.USER,
+        text,
+        timestamp,
+        ...opts.chatIdFields,
+      }),
+    );
+  }
+
   private emitOrPersistChatEvent(
     agentUuid: string,
     ephemeral: boolean,
@@ -732,28 +861,39 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       }
 
       try {
-        await this.agentMessagesService.createAgentMessage(
+        const persisted = await this.agentMessagesService.createAgentMessage(
           agentUuid,
           responseToUse,
           outgoingFilterResult.status === 'filtered',
           chatSessionId,
         );
+
+        this.broadcastToAgent(
+          agentUuid,
+          'chatMessage',
+          createSuccessResponse<ChatMessageData>({
+            id: persisted.id,
+            from: ChatActor.AGENT,
+            response: responseToUse,
+            timestamp: agentResponseTimestamp,
+            ...(chatId ? { chatId } : {}),
+          }),
+        );
       } catch (persistError) {
         const err = persistError as { message?: string };
 
         this.logger.warn(`Failed to persist agent message: ${err.message}`);
+        this.broadcastToAgent(
+          agentUuid,
+          'chatMessage',
+          createSuccessResponse<ChatMessageData>({
+            from: ChatActor.AGENT,
+            response: responseToUse,
+            timestamp: agentResponseTimestamp,
+            ...(chatId ? { chatId } : {}),
+          }),
+        );
       }
-
-      this.broadcastToAgent(
-        agentUuid,
-        'chatMessage',
-        createSuccessResponse<ChatMessageData>({
-          from: ChatActor.AGENT,
-          response: responseToUse,
-          timestamp: agentResponseTimestamp,
-          ...(chatId ? { chatId } : {}),
-        }),
-      );
     }
   }
 
@@ -1101,27 +1241,25 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       );
       this.logger.log(`Agent ${agent.name} (${agentUuid}) authenticated on socket ${socket.id}`);
 
-      // Always restore chat from DB on fresh login or recovered reconnect. Socket.IO
-      // `connectionStateRecovery` alone is not enough: the Angular client clears `forwardedEvents`
-      // on reconnect, so skipping DB restore leaves only whatever few recovered packets arrived
-      // (often just recent toolCall/toolResult frames — e.g. bash). Skip only on a duplicate
-      // login on an already-authenticated, non-recovered socket (avoids double-emit).
-      if (!wasAlreadyAuthenticated || wasRecovered) {
-        try {
-          await this.restoreChatHistory(agentUuid, socket, data.chatId);
-        } catch (restoreError) {
-          const err = restoreError as { message?: string; stack?: string };
+      // Push container status ASAP (do not wait on chat restore) so the console can show
+      // start/stop/restart as soon as the environment is selected. Chat restore runs in parallel.
+      const restorePromise =
+        !wasAlreadyAuthenticated || wasRecovered
+          ? this.restoreChatHistory(agentUuid, socket, { chatId: data.chatId }).catch((restoreError: unknown) => {
+              const err = restoreError as { message?: string; stack?: string };
 
-          this.logger.warn(`Failed to restore chat history for agent ${agentUuid} on login: ${err.message}`, err.stack);
-        }
-      } else {
-        this.logger.debug(
-          `Skipping chat history restoration for agent ${agentUuid} on socket ${socket.id} because socket was already authenticated`,
-        );
-      }
+              this.logger.warn(
+                `Failed to restore chat history for agent ${agentUuid} on login: ${err.message}`,
+                err.stack,
+              );
+            })
+          : Promise.resolve().then(() => {
+              this.logger.debug(
+                `Skipping chat history restoration for agent ${agentUuid} on socket ${socket.id} because socket was already authenticated`,
+              );
+            });
 
-      // Start periodic stats broadcasting and send first stats immediately
-      await this.startStatsBroadcasting(agentUuid);
+      await Promise.all([this.startStatsBroadcasting(agentUuid), restorePromise]);
     } catch (error) {
       socket.emit('loginError', createErrorResponse('Invalid credentials', 'LOGIN_ERROR'));
       const err = error as { message?: string; stack?: string };
@@ -1131,72 +1269,88 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
   }
 
   /**
-   * Restore and re-emit chat history for an agent chat session.
-   * Messages are emitted in chronological order by their creation date.
+   * Restore chat history as a single `chatMessageBatch` for an agent chat session.
    * @param agentUuid - The UUID of the agent
-   * @param socket - The socket instance to emit messages to
-   * @param chatId - Optional chat session id; defaults to primary
+   * @param socket - The socket instance to emit to
+   * @param options.chatId - Optional chat session id; defaults to primary
+   * @param options.beforeMessageId - When set, load older page (replace=false); omit for latest (replace=true)
+   * @param options.limit - Page size (default 20, max 50)
    */
-  private async restoreChatHistory(agentUuid: string, socket: Socket, chatId?: string): Promise<void> {
-    const session = await this.agentChatSessionsService.resolveSessionForChat(agentUuid, chatId);
+  private async restoreChatHistory(
+    agentUuid: string,
+    socket: Socket,
+    options?: { chatId?: string; beforeMessageId?: string; limit?: number },
+  ): Promise<RestoreChatHistoryResult> {
+    const session = await this.agentChatSessionsService.resolveSessionForChat(agentUuid, options?.chatId);
+    const replace = !options?.beforeMessageId;
+    const limit = AgentsGateway.clampRestoreChatLimit(options?.limit);
+    const beforeMessageId = options?.beforeMessageId ?? null;
 
     try {
-      // Get total message count to calculate offset for latest messages
-      const totalCount = await this.agentMessagesService.countMessages(agentUuid, session.id);
-      const limit = 20;
-      // Calculate offset to get the latest 20 messages
-      // If totalCount <= 20, offset is 0 (get all messages)
-      // Otherwise, offset = totalCount - 20 (skip older messages)
-      const offset = Math.max(0, totalCount - limit);
-      // Fetch chat history (ordered chronologically by createdAt ASC)
-      // Only restore the most recent 20 messages
-      const chatHistory = await this.agentMessagesService.getChatHistory(agentUuid, limit, offset, session.id);
+      const { messages: chatHistory, hasMoreOlder } = await this.agentMessagesService.getChatHistoryPageBefore(
+        agentUuid,
+        session.id,
+        beforeMessageId,
+        limit,
+      );
 
       if (chatHistory.length === 0) {
         this.logger.debug(`No chat history found for agent ${agentUuid} chat ${session.id}`);
 
-        return;
+        // Always emit a batch (even empty) so clients can clear loadingInitial and show empty state.
+        socket.emit(
+          'chatMessageBatch',
+          createSuccessResponse<ChatMessageBatchData>({
+            chatId: session.id,
+            messages: [],
+            filterResults: [],
+            events: [],
+            hasMoreOlder: false,
+            replace,
+            oldestMessageId: null,
+          }),
+        );
+
+        return {
+          chatId: session.id,
+          hasMoreOlder: false,
+          oldestMessageId: null,
+          messageCount: 0,
+        };
       }
 
       this.logger.log(`Restoring ${chatHistory.length} messages for agent ${agentUuid} chat ${session.id}`);
 
-      // Emit each message in chronological order
+      const messages: ChatMessageData[] = [];
+      const filterResults: MessageFilterResultData[] = [];
+
       for (const messageEntity of chatHistory) {
         const timestamp = messageEntity.createdAt.toISOString();
 
-        // If message was filtered, send filter result before the message (maintains chronological order)
         if (messageEntity.filtered) {
           const direction: 'incoming' | 'outgoing' = messageEntity.actor === 'user' ? 'incoming' : 'outgoing';
-          // Create a simplified filter result for restored messages
-          // We don't have the full filter details, but we know it was flagged (not dropped, since it was persisted)
-          const filterResult: MessageFilterResultData = {
+
+          filterResults.push({
             direction,
             status: 'filtered',
             message: messageEntity.message,
-            appliedFilters: [], // We don't have historical filter details
+            appliedFilters: [],
             matchedFilter: undefined,
-            action: 'flag', // Since it was persisted, it must have been flagged, not dropped
+            action: 'flag',
             timestamp,
             chatId: session.id,
-          };
-
-          socket.emit('messageFilterResult', createSuccessResponse<MessageFilterResultData>(filterResult));
+          });
         }
 
         if (messageEntity.actor === 'user') {
-          // User message: emit with text field
-          socket.emit(
-            'chatMessage',
-            createSuccessResponse<ChatMessageData>({
-              from: ChatActor.USER,
-              text: messageEntity.message,
-              timestamp,
-              chatId: session.id,
-            }),
-          );
+          messages.push({
+            id: messageEntity.id,
+            from: ChatActor.USER,
+            text: messageEntity.message,
+            timestamp,
+            chatId: session.id,
+          });
         } else if (messageEntity.actor === 'agent') {
-          // Prefer a full JSON parse of the stored payload. Brace-slicing is a legacy fallback for
-          // noisy ACP stdout wraps and can truncate nested JSON if mis-applied.
           let response: AgentResponseObject | string;
 
           try {
@@ -1222,54 +1376,102 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
             }
           }
 
-          socket.emit(
-            'chatMessage',
-            createSuccessResponse<ChatMessageData>({
-              from: ChatActor.AGENT,
-              response,
-              timestamp,
-              chatId: session.id,
-            }),
-          );
+          messages.push({
+            id: messageEntity.id,
+            from: ChatActor.AGENT,
+            response,
+            timestamp,
+            chatId: session.id,
+          });
         }
       }
 
-      // Restore persisted structured events for the same visible history window.
-      // Tools are the main supplement; questions/thinking help when an older turn lacked agenstra_turn.
-      const since = chatHistory[0]?.createdAt;
-      const persistedToolEvents = await this.agentMessageEventsService.listRecentEvents(agentUuid, 400, {
-        kinds: ['toolCall', 'toolResult', 'question', 'thinking', 'status'],
-        chatSessionId: session.id,
-        ...(since ? { since } : {}),
-      });
+      const firstCreatedAt = chatHistory[0]?.createdAt;
+      const lastCreatedAt = chatHistory[chatHistory.length - 1]?.createdAt;
+      const events =
+        firstCreatedAt && lastCreatedAt
+          ? await this.agentMessageEventsService.listRecentEvents(agentUuid, 400, {
+              kinds: ['toolCall', 'toolResult', 'question', 'thinking', 'status'],
+              chatSessionId: session.id,
+              since: firstCreatedAt,
+              until: lastCreatedAt,
+            })
+          : [];
 
-      for (const event of persistedToolEvents) {
-        socket.emit(
-          'chatEvent',
-          createSuccessResponse<AgentEventEnvelope>({
-            ...event,
-            chatId: session.id,
-          }),
-        );
-      }
+      const oldestMessageId = chatHistory[0]?.id ?? null;
+
+      socket.emit(
+        'chatMessageBatch',
+        createSuccessResponse<ChatMessageBatchData>({
+          chatId: session.id,
+          messages,
+          filterResults,
+          events: events.map((event) => ({ ...event, chatId: session.id })),
+          hasMoreOlder,
+          replace,
+          oldestMessageId,
+        }),
+      );
 
       this.logger.debug(
         `Successfully restored ${chatHistory.length} messages for agent ${agentUuid} chat ${session.id}`,
       );
+
+      return {
+        chatId: session.id,
+        hasMoreOlder,
+        oldestMessageId,
+        messageCount: chatHistory.length,
+      };
     } catch (error) {
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+
       const err = error as { message?: string; stack?: string };
 
       this.logger.warn(
         `Failed to restore chat history for agent ${agentUuid} chat ${session.id}: ${err.message}`,
         err.stack,
       );
+
+      // Emit an empty replace batch so clients leave the loading state.
+      if (replace) {
+        socket.emit(
+          'chatMessageBatch',
+          createSuccessResponse<ChatMessageBatchData>({
+            chatId: session.id,
+            messages: [],
+            filterResults: [],
+            events: [],
+            hasMoreOlder: false,
+            replace: true,
+            oldestMessageId: null,
+          }),
+        );
+      }
+
       // Don't fail login if history restoration fails after session resolve
+      return {
+        chatId: session.id,
+        hasMoreOlder: false,
+        oldestMessageId: null,
+        messageCount: 0,
+      };
     }
+  }
+
+  private static clampRestoreChatLimit(limit?: number): number {
+    if (typeof limit !== 'number' || !Number.isFinite(limit)) {
+      return DEFAULT_RESTORE_CHAT_LIMIT;
+    }
+
+    return Math.min(MAX_RESTORE_CHAT_LIMIT, Math.max(1, Math.floor(limit)));
   }
 
   /**
    * Restore a specific chat session's history for the authenticated client.
-   * Client is responsible for clearing the local thread before calling.
+   * Client is responsible for clearing the local thread before calling (latest page uses replace=true).
    */
   @SubscribeMessage('restoreChat')
   async handleRestoreChat(@MessageBody() data: RestoreChatPayload, @ConnectedSocket() socket: Socket) {
@@ -1295,13 +1497,30 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       return;
     }
 
+    const beforeRaw = typeof data?.beforeMessageId === 'string' ? data.beforeMessageId.trim() : '';
+    const beforeMessageId = beforeRaw || undefined;
+
+    if (beforeMessageId && !AgentsGateway.isUuidV4(beforeMessageId)) {
+      socket.emit('error', createErrorResponse('beforeMessageId must be a valid UUID', 'INVALID_MESSAGE_ID'));
+
+      return;
+    }
+
     try {
-      await this.restoreChatHistory(agentUuid, socket, chatId);
+      const result = await this.restoreChatHistory(agentUuid, socket, {
+        chatId,
+        beforeMessageId,
+        limit: data?.limit,
+      });
+
       socket.emit(
         'restoreChatSuccess',
         createSuccessResponse<RestoreChatSuccessData>({
-          chatId,
+          chatId: result.chatId,
           message: 'Chat history restored',
+          hasMoreOlder: result.hasMoreOlder,
+          oldestMessageId: result.oldestMessageId,
+          messageCount: result.messageCount,
         }),
       );
     } catch (error) {
@@ -1387,28 +1606,11 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       const droppedResponseTimestamp = new Date().toISOString();
       const fakeUserMessage = `Message was dropped by filter: ${incomingFilterResult.matchedFilter?.reason || 'No reason provided'}`;
 
-      if (!ephemeral) {
-        try {
-          await this.agentMessagesService.createUserMessage(agentUuid, fakeUserMessage, false, chatSessionId);
-        } catch (persistError) {
-          const err = persistError as { message?: string };
-
-          this.logger.warn(`Failed to persist dropped message response: ${err.message}`);
-        }
-      }
-
-      this.emitChatPayloadToViewers(
-        agentUuid,
-        ephemeral,
-        socket,
-        'chatMessage',
-        createSuccessResponse<ChatMessageData>({
-          from: ChatActor.USER,
-          text: fakeUserMessage,
-          timestamp: droppedResponseTimestamp,
-          ...chatIdFields,
-        }),
-      );
+      await this.emitUserChatMessage(agentUuid, ephemeral, socket, fakeUserMessage, droppedResponseTimestamp, {
+        chatSessionId,
+        chatIdFields,
+        filtered: false,
+      });
 
       this.emitOrPersistChatEvent(
         agentUuid,
@@ -1434,18 +1636,36 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     const messageToUse = this.promptContextComposer.composeChatMessage(messageWithHydration, contextInjection);
     const enrichmentTranscriptParts = this.buildEnrichmentTranscriptParts(contextInjection, correlationId);
 
-    this.emitChatPayloadToViewers(
-      agentUuid,
-      ephemeral,
-      socket,
-      'chatMessage',
-      createSuccessResponse<ChatMessageData>({
-        from: ChatActor.USER,
-        text: filteredMessage,
-        timestamp: chatTimestamp,
-        ...chatIdFields,
-      }),
-    );
+    // Run first-message init before persisting so getChatHistory still sees an empty transcript.
+    if (!ephemeral && !this.agentsWithFirstMessageSent.has(agentUuid)) {
+      const existingHistory = await this.agentMessagesService.getChatHistory(agentUuid, 1, 0);
+
+      if (existingHistory.length === 0) {
+        const entity = await this.agentsRepository.findById(agentUuid);
+        const containerId = entity?.containerId;
+
+        if (containerId) {
+          try {
+            const provider = this.agentProviderFactory.getProvider(entity.agentType || 'opencode');
+
+            await provider.sendInitialization(agentUuid, containerId, { model: data.model });
+            this.logger.debug(`Sent initialization message to agent ${agentUuid}`);
+          } catch (error) {
+            const err = error as { message?: string; stack?: string };
+
+            this.logger.warn(`Failed to send initialization message to agent ${agentUuid}: ${err.message}`, err.stack);
+          }
+        }
+      }
+
+      this.agentsWithFirstMessageSent.add(agentUuid);
+    }
+
+    await this.emitUserChatMessage(agentUuid, ephemeral, socket, filteredMessage, chatTimestamp, {
+      chatSessionId,
+      chatIdFields,
+      filtered: incomingFilterResult.status === 'filtered',
+    });
 
     this.emitOrPersistChatEvent(
       agentUuid,
@@ -1534,60 +1754,6 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       const agent = await this.agentsService.findOne(agentUuid);
 
       this.logger.log(`Agent ${agent.name} (${agentUuid}) says: ${message}`);
-
-      // Check if this is the first message for this agent
-      // Send initialization message if agent has no chat history and hasn't received first message
-      if (!this.agentsWithFirstMessageSent.has(agentUuid)) {
-        const chatHistory = await this.agentMessagesService.getChatHistory(agentUuid, 1, 0);
-
-        if (chatHistory.length === 0) {
-          // This is the first message ever - send dummy initialization message first
-          const entity = await this.agentsRepository.findById(agentUuid);
-          const containerId = entity?.containerId;
-
-          if (containerId) {
-            try {
-              // Get the appropriate provider based on agent type
-              const provider = this.agentProviderFactory.getProvider(entity.agentType || 'opencode');
-
-              await provider.sendInitialization(agent.id, containerId, { model: data.model });
-              this.logger.debug(`Sent initialization message to agent ${agentUuid}`);
-            } catch (error) {
-              const err = error as { message?: string; stack?: string };
-
-              this.logger.warn(
-                `Failed to send initialization message to agent ${agentUuid}: ${err.message}`,
-                err.stack,
-              );
-              // Continue with normal flow even if initialization fails
-            }
-          }
-
-          // Mark agent as having received first message
-          this.agentsWithFirstMessageSent.add(agentUuid);
-        } else {
-          // Agent has chat history, mark as initialized
-          this.agentsWithFirstMessageSent.add(agentUuid);
-        }
-      }
-
-      // Persist user message (with filtered flag if filter matched)
-      // Use modified message if filter provided one
-      if (!ephemeral) {
-        try {
-          await this.agentMessagesService.createUserMessage(
-            agentUuid,
-            filteredMessage,
-            incomingFilterResult.status === 'filtered',
-            chatSessionId,
-          );
-        } catch (persistError) {
-          const err = persistError as { message?: string };
-
-          this.logger.warn(`Failed to persist user message: ${err.message}`);
-          // Continue with message broadcasting even if persistence fails
-        }
-      }
 
       // Forward message to the agent's container stdin
       // Use modified message if filter provided one
@@ -1782,32 +1948,13 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
                       message: `Message was dropped by filter: ${outgoingFilterResult.matchedFilter?.reason || 'No reason provided'}`,
                     };
 
-                    if (!ephemeral) {
-                      try {
-                        await this.agentMessagesService.createAgentMessage(
-                          agentUuid,
-                          fakeAgentResponse,
-                          false,
-                          chatSessionId,
-                        );
-                      } catch (persistError) {
-                        const err = persistError as { message?: string };
-
-                        this.logger.warn(`Failed to persist dropped message response: ${err.message}`);
-                      }
-                    }
-
-                    this.emitChatPayloadToViewers(
+                    await this.emitAgentChatMessage(
                       agentUuid,
                       ephemeral,
                       socket,
-                      'chatMessage',
-                      createSuccessResponse<ChatMessageData>({
-                        from: ChatActor.AGENT,
-                        response: fakeAgentResponse,
-                        timestamp: agentResponseTimestamp,
-                        ...chatIdFields,
-                      }),
+                      fakeAgentResponse,
+                      agentResponseTimestamp,
+                      { chatSessionId, chatIdFields, filtered: false },
                     );
 
                     const events = this.agentResponseToChatEvents(
@@ -1834,33 +1981,11 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
                     }
                   }
 
-                  if (!ephemeral) {
-                    try {
-                      await this.agentMessagesService.createAgentMessage(
-                        agentUuid,
-                        responseToUse,
-                        outgoingFilterResult.status === 'filtered',
-                        chatSessionId,
-                      );
-                    } catch (persistError) {
-                      const err = persistError as { message?: string };
-
-                      this.logger.warn(`Failed to persist agent message: ${err.message}`);
-                    }
-                  }
-
-                  this.emitChatPayloadToViewers(
-                    agentUuid,
-                    ephemeral,
-                    socket,
-                    'chatMessage',
-                    createSuccessResponse<ChatMessageData>({
-                      from: ChatActor.AGENT,
-                      response: responseToUse,
-                      timestamp: agentResponseTimestamp,
-                      ...chatIdFields,
-                    }),
-                  );
+                  await this.emitAgentChatMessage(agentUuid, ephemeral, socket, responseToUse, agentResponseTimestamp, {
+                    chatSessionId,
+                    chatIdFields,
+                    filtered: outgoingFilterResult.status === 'filtered',
+                  });
 
                   const events = this.agentResponseToChatEvents(agentUuid, correlationId, sequence++, responseToUse);
 
@@ -1897,32 +2022,13 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
                       message: `Message was dropped by filter: ${outgoingFilterResult.matchedFilter?.reason || 'No reason provided'}`,
                     };
 
-                    if (!ephemeral) {
-                      try {
-                        await this.agentMessagesService.createAgentMessage(
-                          agentUuid,
-                          fakeAgentResponse,
-                          false,
-                          chatSessionId,
-                        );
-                      } catch (persistError) {
-                        const err = persistError as { message?: string };
-
-                        this.logger.warn(`Failed to persist dropped message response: ${err.message}`);
-                      }
-                    }
-
-                    this.emitChatPayloadToViewers(
+                    await this.emitAgentChatMessage(
                       agentUuid,
                       ephemeral,
                       socket,
-                      'chatMessage',
-                      createSuccessResponse<ChatMessageData>({
-                        from: ChatActor.AGENT,
-                        response: fakeAgentResponse,
-                        timestamp: agentResponseTimestamp,
-                        ...chatIdFields,
-                      }),
+                      fakeAgentResponse,
+                      agentResponseTimestamp,
+                      { chatSessionId, chatIdFields, filtered: false },
                     );
 
                     const events = this.agentResponseToChatEvents(
@@ -1941,32 +2047,17 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
 
                   const stringResponseToUse = outgoingFilterResult.modifiedMessage ?? toParse;
 
-                  if (!ephemeral) {
-                    try {
-                      await this.agentMessagesService.createAgentMessage(
-                        agentUuid,
-                        stringResponseToUse,
-                        outgoingFilterResult.status === 'filtered',
-                        chatSessionId,
-                      );
-                    } catch (persistError) {
-                      const err = persistError as { message?: string };
-
-                      this.logger.warn(`Failed to persist agent message: ${err.message}`);
-                    }
-                  }
-
-                  this.emitChatPayloadToViewers(
+                  await this.emitAgentChatMessage(
                     agentUuid,
                     ephemeral,
                     socket,
-                    'chatMessage',
-                    createSuccessResponse<ChatMessageData>({
-                      from: ChatActor.AGENT,
-                      response: stringResponseToUse,
-                      timestamp: agentResponseTimestamp,
-                      ...chatIdFields,
-                    }),
+                    stringResponseToUse,
+                    agentResponseTimestamp,
+                    {
+                      chatSessionId,
+                      chatIdFields,
+                      filtered: outgoingFilterResult.status === 'filtered',
+                    },
                   );
 
                   const events = this.agentResponseToChatEvents(
@@ -2803,17 +2894,11 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
 
   /**
    * Start periodic stats broadcasting for an agent.
-   * Sends the first stats immediately, then continues periodically.
+   * Always sends a fresh snapshot immediately (status first, then full stats when running)
+   * so newly selected environments update the UI without waiting for the interval or chat restore.
    * @param agentUuid - The UUID of the agent
    */
   private async startStatsBroadcasting(agentUuid: string): Promise<void> {
-    // Check if stats interval already exists for this agent
-    if (this.statsIntervalsByAgent.has(agentUuid)) {
-      this.logger.debug(`Stats broadcasting already active for agent ${agentUuid}`);
-
-      return;
-    }
-
     // Get agent entity to find container
     const entity = await this.agentsRepository.findById(agentUuid);
     const containerId = entity?.containerId;
@@ -2824,8 +2909,14 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       return;
     }
 
-    // Send first stats immediately
-    await this.broadcastContainerStats(agentUuid, containerId);
+    // Always push a fresh snapshot for this login/selection — even if an interval already exists.
+    await this.broadcastContainerStats(agentUuid, containerId, { preferFastStatus: true });
+
+    if (this.statsIntervalsByAgent.has(agentUuid)) {
+      this.logger.debug(`Stats broadcasting already active for agent ${agentUuid}; refreshed snapshot only`);
+
+      return;
+    }
 
     // Start stats broadcasting interval
     const interval = setInterval(async () => {
@@ -2858,11 +2949,36 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
    * Always sends container status (running/stopped). Stats are included only when the container is running.
    * @param agentUuid - The UUID of the agent
    * @param containerId - The container ID
+   * @param options.preferFastStatus - Emit status immediately, then enrich with Docker stats when running
    */
-  private async broadcastContainerStats(agentUuid: string, containerId: string): Promise<void> {
+  private async broadcastContainerStats(
+    agentUuid: string,
+    containerId: string,
+    options?: { preferFastStatus?: boolean },
+  ): Promise<void> {
     try {
       const status = await this.dockerService.getContainerStatus(containerId);
       const statsTimestamp = new Date().toISOString();
+      const preferFastStatus = options?.preferFastStatus === true;
+
+      if (preferFastStatus) {
+        // Status alone is enough for start/stop/restart controls — do not wait on Docker stats.
+        this.broadcastToAgent(
+          agentUuid,
+          'containerStats',
+          createSuccessResponse({
+            agentId: agentUuid,
+            status,
+            stats: null,
+            timestamp: statsTimestamp,
+          }),
+        );
+
+        if (!status.running) {
+          return;
+        }
+      }
+
       let stats: Awaited<ReturnType<DockerService['getContainerStats']>> | null = null;
 
       if (status.running) {
@@ -2872,6 +2988,11 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
           const err = statsError as { message?: string; stack?: string };
 
           this.logger.warn(`Failed to get container stats for agent ${agentUuid}: ${err.message}`, err.stack);
+
+          if (preferFastStatus) {
+            // Status-only snapshot already sent; avoid a second empty payload.
+            return;
+          }
         }
       }
 
@@ -2879,6 +3000,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
         agentUuid,
         'containerStats',
         createSuccessResponse({
+          agentId: agentUuid,
           status,
           stats,
           timestamp: statsTimestamp,

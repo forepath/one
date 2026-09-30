@@ -16,6 +16,11 @@ export const selectFilesDeleting = createSelector(selectFilesState, (state) => s
 export const selectFilesMoving = createSelector(selectFilesState, (state) => state.moving);
 export const selectFilesErrors = createSelector(selectFilesState, (state) => state.errors);
 
+export const selectLastFileUpdateNotification = createSelector(
+  selectFilesState,
+  (state) => state.lastFileUpdateNotification,
+);
+
 function resolveFileContext(context?: FileManagerContext): FileManagerContext {
   return context ?? 'app';
 }

@@ -69,6 +69,13 @@
   overflow: hidden;
 }
 
+// Host for messages + jump-to-bottom FAB. Must bound height so the inner scroller works.
+.chat-messages-scroll-host {
+  min-height: 0; // Critical for flex scrolling (min-h-0 utility is not available)
+  overflow: hidden;
+  flex-shrink: 1;
+}
+
 // Chat messages container - prevent horizontal overflow and enable vertical scrolling
 .chat-messages-container {
   overflow-x: hidden;

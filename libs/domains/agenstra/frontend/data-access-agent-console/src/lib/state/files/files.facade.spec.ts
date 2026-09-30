@@ -377,7 +377,7 @@ describe('FilesFacade', () => {
       store.select.mockReturnValueOnce(of(mockFileContent2));
       facade.getFileContent$(clientId2, agentId2, filePath2).subscribe((result) => {
         expect(result).toEqual(mockFileContent2);
-        expect(store.select).toHaveBeenCalledTimes(2);
+        expect(store.select).toHaveBeenCalledTimes(3);
         done();
       });
     });

@@ -13,7 +13,7 @@ describe('StatsFacade', () => {
     stats: {
       runningOverrides: {},
       statsByContainer: {},
-      maxEntriesPerContainer: 1000,
+      maxEntriesPerContainer: 2,
     },
   };
   const mockStats = {
@@ -86,7 +86,7 @@ describe('StatsFacade', () => {
           statsByContainer: {
             'client-1:agent-1': [entry1, entry2],
           },
-          maxEntriesPerContainer: 1000,
+          maxEntriesPerContainer: 2,
         },
       });
 
@@ -115,7 +115,7 @@ describe('StatsFacade', () => {
           statsByContainer: {
             'client-1:agent-1': [entry1, entry2],
           },
-          maxEntriesPerContainer: 1000,
+          maxEntriesPerContainer: 2,
         },
       });
 
@@ -145,7 +145,7 @@ describe('StatsFacade', () => {
           statsByContainer: {
             'client-1:agent-1': [entry1, entry2, entry3],
           },
-          maxEntriesPerContainer: 1000,
+          maxEntriesPerContainer: 2,
         },
       });
 
@@ -171,7 +171,7 @@ describe('StatsFacade', () => {
           statsByContainer: {
             'client-1:agent-1': [entry1, entry2, entry3],
           },
-          maxEntriesPerContainer: 1000,
+          maxEntriesPerContainer: 2,
         },
       });
 
@@ -200,7 +200,7 @@ describe('StatsFacade', () => {
               createEntry('client-1', 'agent-1', '2024-01-01T00:10:00.000Z', 3000),
             ],
           },
-          maxEntriesPerContainer: 1000,
+          maxEntriesPerContainer: 2,
         },
       });
 
@@ -220,7 +220,7 @@ describe('StatsFacade', () => {
             'client-1:agent-1': [createEntry('client-1', 'agent-1', '2024-01-01T00:00:00.000Z', 1000)],
             'client-1:agent-2': [createEntry('client-1', 'agent-2', '2024-01-01T00:00:00.000Z', 2000)],
           },
-          maxEntriesPerContainer: 1000,
+          maxEntriesPerContainer: 2,
         },
       });
 
@@ -246,7 +246,7 @@ describe('StatsFacade', () => {
           statsByContainer: {
             'client-1:agent-1': entries,
           },
-          maxEntriesPerContainer: 1000,
+          maxEntriesPerContainer: 2,
         },
       });
 
@@ -271,7 +271,7 @@ describe('StatsFacade', () => {
           statsByContainer: {
             'client-1:agent-1': entries,
           },
-          maxEntriesPerContainer: 1000,
+          maxEntriesPerContainer: 2,
         },
       });
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, In, MoreThanOrEqual, Repository } from 'typeorm';
+import { And, FindOptionsWhere, In, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 
 import { AgentMessageEventEntity } from '../entities/agent-message-event.entity';
 
@@ -22,13 +22,23 @@ export class AgentMessageEventsRepository {
   async listRecent(
     agentId: string,
     limit: number,
-    opts?: { kinds?: string[]; since?: Date; chatSessionId?: string },
+    opts?: { kinds?: string[]; since?: Date; until?: Date; chatSessionId?: string },
   ): Promise<AgentMessageEventEntity[]> {
+    let eventTimestamp: FindOptionsWhere<AgentMessageEventEntity>['eventTimestamp'];
+
+    if (opts?.since && opts?.until) {
+      eventTimestamp = And(MoreThanOrEqual(opts.since), LessThanOrEqual(opts.until));
+    } else if (opts?.since) {
+      eventTimestamp = MoreThanOrEqual(opts.since);
+    } else if (opts?.until) {
+      eventTimestamp = LessThanOrEqual(opts.until);
+    }
+
     const where: FindOptionsWhere<AgentMessageEventEntity> = {
       agentId,
       ...(opts?.chatSessionId ? { chatSessionId: opts.chatSessionId } : {}),
       ...(opts?.kinds?.length ? { kind: In(opts.kinds) } : {}),
-      ...(opts?.since ? { eventTimestamp: MoreThanOrEqual(opts.since) } : {}),
+      ...(eventTimestamp ? { eventTimestamp } : {}),
     };
 
     // Newest-first under the cap so late status markers (e.g. answered questions) survive

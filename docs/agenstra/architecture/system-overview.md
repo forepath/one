@@ -233,7 +233,9 @@ graph TB
     subgraph "NgRx Store"
         Clients[clients state]
         Agents[agents state]
-        Sockets[sockets state]
+        ContainerSocket[containerSocket state]
+        ChatTimeline[chatTimeline state]
+        Terminals[terminals state]
         Files[files state]
         VCS[vcs state]
         Auth[authentication state]
@@ -253,14 +255,16 @@ graph TB
 
     Chat --> Clients
     Chat --> Agents
-    Chat --> Sockets
+    Chat --> ContainerSocket
+    Chat --> ChatTimeline
     Editor --> Files
+    Editor --> Terminals
     Editor --> VCS
     List --> Clients
     List --> Agents
     Load --> Clients
     Load --> Agents
-    Socket --> Sockets
+    Socket --> ContainerSocket
     File --> Files
 ```
 

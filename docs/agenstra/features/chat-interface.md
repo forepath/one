@@ -46,7 +46,9 @@ On the manager, the same operations live under `/api/agents/:agentId/chats`.
 ### Restoring a session
 
 - **Login** may include optional `chatId`; omitted means the primary session.
-- **`restoreChat`** with `{ chatId }` clears the local thread and re-emits recent history for that session (`chatMessage`, related filter/event traffic, then `restoreChatSuccess`).
+- **`restoreChat`** with `{ chatId }` (optional `beforeMessageId`, `limit`) clears the local thread on the first page and emits one **`chatMessageBatch`** for the latest window (default 20 messages), then `restoreChatSuccess` with `hasMoreOlder` / `oldestMessageId`.
+- Scrolling to the top of the chat loads the next older batch (`beforeMessageId`); the console prepends without force-scrolling to the bottom.
+- Auto-scroll sticks to the bottom until the user scrolls up; a jump-to-bottom control re-enables stickiness.
 - Switching sessions in the console uses the same restore path so history stays scoped to the selected `chatId`.
 
 ## Features

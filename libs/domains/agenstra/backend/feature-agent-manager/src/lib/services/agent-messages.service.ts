@@ -109,6 +109,18 @@ export class AgentMessagesService {
   }
 
   /**
+   * Cursor page of chat history for batched restore (`beforeMessageId` = older than cursor).
+   */
+  async getChatHistoryPageBefore(
+    agentId: string,
+    chatSessionId: string,
+    beforeMessageId: string | null,
+    limit: number,
+  ): Promise<{ messages: AgentMessageEntity[]; hasMoreOlder: boolean }> {
+    return await this.agentMessagesRepository.findPageBefore(agentId, chatSessionId, beforeMessageId, limit);
+  }
+
+  /**
    * Count messages for a specific agent (optionally scoped to a chat session).
    */
   async countMessages(agentId: string, chatSessionId?: string): Promise<number> {

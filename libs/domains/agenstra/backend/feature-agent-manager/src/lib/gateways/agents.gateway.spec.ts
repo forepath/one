@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { NotFoundException } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
@@ -96,6 +97,7 @@ describe('AgentsGateway', () => {
     createUserMessage: jest.fn(),
     createAgentMessage: jest.fn(),
     getChatHistory: jest.fn(),
+    getChatHistoryPageBefore: jest.fn(),
     countMessages: jest.fn(),
   };
   const mockAgentMessageEventsService = {
@@ -247,7 +249,28 @@ describe('AgentsGateway', () => {
 
     // Setup default mocks
     agentMessagesService.getChatHistory.mockResolvedValue([] as any);
+    agentMessagesService.getChatHistoryPageBefore.mockResolvedValue({ messages: [], hasMoreOlder: false } as any);
     agentMessagesService.countMessages.mockResolvedValue(0);
+    agentMessagesService.createUserMessage.mockResolvedValue({
+      id: 'persisted-user-msg',
+      agentId: mockAgent.id,
+      message: 'msg',
+      actor: 'user',
+      filtered: false,
+      chatSessionId: 'primary-chat-id',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as any);
+    agentMessagesService.createAgentMessage.mockResolvedValue({
+      id: 'persisted-agent-msg',
+      agentId: mockAgent.id,
+      message: '{}',
+      actor: 'agent',
+      filtered: false,
+      chatSessionId: 'primary-chat-id',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as any);
     // Mock getContainerStats and getContainerStatus
     dockerService.getContainerStats = jest.fn();
     dockerService.getContainerStatus = jest.fn().mockResolvedValue({ running: true });
@@ -277,7 +300,28 @@ describe('AgentsGateway', () => {
 
     // Reset default mocks
     agentMessagesService.getChatHistory.mockResolvedValue([] as any);
+    agentMessagesService.getChatHistoryPageBefore.mockResolvedValue({ messages: [], hasMoreOlder: false } as any);
     agentMessagesService.countMessages.mockResolvedValue(0);
+    agentMessagesService.createUserMessage.mockResolvedValue({
+      id: 'persisted-user-msg',
+      agentId: mockAgent.id,
+      message: 'msg',
+      actor: 'user',
+      filtered: false,
+      chatSessionId: 'primary-chat-id',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as any);
+    agentMessagesService.createAgentMessage.mockResolvedValue({
+      id: 'persisted-agent-msg',
+      agentId: mockAgent.id,
+      message: '{}',
+      actor: 'agent',
+      filtered: false,
+      chatSessionId: 'primary-chat-id',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as any);
   });
 
   describe('handleConnection', () => {
@@ -357,7 +401,7 @@ describe('AgentsGateway', () => {
       expect((gateway as any).authenticatedClients.get(socketId)).toBe(mockAgent.id);
     });
 
-    it('should restore chat history after successful login', async () => {
+    it('should restore chat history as chatMessageBatch after successful login', async () => {
       agentsRepository.findById.mockResolvedValue(mockAgent);
       agentsService.verifyCredentials.mockResolvedValue(true);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
@@ -395,60 +439,57 @@ describe('AgentsGateway', () => {
         },
       ];
 
-      agentMessagesService.countMessages.mockResolvedValue(mockMessages.length);
-      agentMessagesService.getChatHistory.mockResolvedValue(mockMessages as any);
+      agentMessagesService.getChatHistoryPageBefore.mockResolvedValue({
+        messages: mockMessages,
+        hasMoreOlder: false,
+      } as any);
 
       await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
 
-      // Verify chat history was fetched
-      // With 3 messages, offset = max(0, 3 - 20) = 0
-      expect(agentMessagesService.countMessages).toHaveBeenCalledWith(mockAgent.id, 'primary-chat-id');
-      expect(agentMessagesService.getChatHistory).toHaveBeenCalledWith(mockAgent.id, 20, 0, 'primary-chat-id');
+      expect(agentMessagesService.getChatHistoryPageBefore).toHaveBeenCalledWith(
+        mockAgent.id,
+        'primary-chat-id',
+        null,
+        20,
+      );
 
-      // Verify messages were emitted in chronological order
-      expect(mockSocket.emit).toHaveBeenCalledTimes(4); // loginSuccess + 3 chat messages
-
-      // Check first message (user)
+      expect(mockSocket.emit).toHaveBeenCalledTimes(2); // loginSuccess + chatMessageBatch
+      expect(mockSocket.emit).not.toHaveBeenCalledWith('restoreChatSuccess', expect.anything());
       expect(mockSocket.emit).toHaveBeenNthCalledWith(
         2,
-        'chatMessage',
+        'chatMessageBatch',
         expect.objectContaining({
           success: true,
           data: expect.objectContaining({
-            from: 'user',
-            text: 'Hello',
-            timestamp: '2024-01-01T10:00:00.000Z',
             chatId: 'primary-chat-id',
-          }),
-        }),
-      );
-
-      // Check second message (agent with JSON)
-      expect(mockSocket.emit).toHaveBeenNthCalledWith(
-        3,
-        'chatMessage',
-        expect.objectContaining({
-          success: true,
-          data: expect.objectContaining({
-            from: 'agent',
-            response: { type: 'response', result: 'Hi there!' },
-            timestamp: '2024-01-01T10:00:01.000Z',
-            chatId: 'primary-chat-id',
-          }),
-        }),
-      );
-
-      // Check third message (user)
-      expect(mockSocket.emit).toHaveBeenNthCalledWith(
-        4,
-        'chatMessage',
-        expect.objectContaining({
-          success: true,
-          data: expect.objectContaining({
-            from: 'user',
-            text: 'How are you?',
-            timestamp: '2024-01-01T10:00:02.000Z',
-            chatId: 'primary-chat-id',
+            replace: true,
+            hasMoreOlder: false,
+            oldestMessageId: 'msg-1',
+            messages: [
+              expect.objectContaining({
+                id: 'msg-1',
+                from: 'user',
+                text: 'Hello',
+                timestamp: '2024-01-01T10:00:00.000Z',
+                chatId: 'primary-chat-id',
+              }),
+              expect.objectContaining({
+                id: 'msg-2',
+                from: 'agent',
+                response: { type: 'response', result: 'Hi there!' },
+                timestamp: '2024-01-01T10:00:01.000Z',
+                chatId: 'primary-chat-id',
+              }),
+              expect.objectContaining({
+                id: 'msg-3',
+                from: 'user',
+                text: 'How are you?',
+                timestamp: '2024-01-01T10:00:02.000Z',
+                chatId: 'primary-chat-id',
+              }),
+            ],
+            filterResults: [],
+            events: [],
           }),
         }),
       );
@@ -459,8 +500,6 @@ describe('AgentsGateway', () => {
       agentsService.verifyCredentials.mockResolvedValue(true);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
 
-      // Simulate a stored message that's already cleaned (from failed parse)
-      // This would be stored as 'toParse' - a cleaned string without surrounding text
       const mockMessages = [
         {
           id: 'msg-1',
@@ -468,29 +507,32 @@ describe('AgentsGateway', () => {
           chatSessionId: 'primary-chat-id',
           agent: mockAgent,
           actor: 'agent',
-          message: 'Plain text response', // Already cleaned (no { or } to clean)
+          message: 'Plain text response',
           createdAt: new Date('2024-01-01T10:00:00Z'),
           updatedAt: new Date('2024-01-01T10:00:00Z'),
         },
       ];
 
-      agentMessagesService.countMessages.mockResolvedValue(mockMessages.length);
-      agentMessagesService.getChatHistory.mockResolvedValue(mockMessages as any);
+      agentMessagesService.getChatHistoryPageBefore.mockResolvedValue({
+        messages: mockMessages,
+        hasMoreOlder: false,
+      } as any);
 
       await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
 
-      // Verify message was emitted with string response (after cleaning logic is applied)
-      // Since there's no { or }, cleaning won't change it, and parsing will fail, so it uses the cleaned string
       expect(mockSocket.emit).toHaveBeenNthCalledWith(
         2,
-        'chatMessage',
+        'chatMessageBatch',
         expect.objectContaining({
           success: true,
           data: expect.objectContaining({
-            from: 'agent',
-            response: 'Plain text response', // Cleaned string (same as input since no { or })
-            timestamp: expect.any(String),
-            chatId: 'primary-chat-id',
+            messages: [
+              expect.objectContaining({
+                from: 'agent',
+                response: 'Plain text response',
+                chatId: 'primary-chat-id',
+              }),
+            ],
           }),
         }),
       );
@@ -501,8 +543,6 @@ describe('AgentsGateway', () => {
       agentsService.verifyCredentials.mockResolvedValue(true);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
 
-      // Simulate a stored message that might have extra text (though this shouldn't happen in practice)
-      // This tests that cleaning logic is applied consistently
       const mockMessages = [
         {
           id: 'msg-1',
@@ -516,22 +556,26 @@ describe('AgentsGateway', () => {
         },
       ];
 
-      agentMessagesService.countMessages.mockResolvedValue(mockMessages.length);
-      agentMessagesService.getChatHistory.mockResolvedValue(mockMessages as any);
+      agentMessagesService.getChatHistoryPageBefore.mockResolvedValue({
+        messages: mockMessages,
+        hasMoreOlder: false,
+      } as any);
 
       await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
 
-      // Verify cleaning logic was applied and JSON was parsed (same as live communication)
       expect(mockSocket.emit).toHaveBeenNthCalledWith(
         2,
-        'chatMessage',
+        'chatMessageBatch',
         expect.objectContaining({
           success: true,
           data: expect.objectContaining({
-            from: 'agent',
-            response: { type: 'response', result: 'Success' }, // Parsed JSON object
-            timestamp: expect.any(String),
-            chatId: 'primary-chat-id',
+            messages: [
+              expect.objectContaining({
+                from: 'agent',
+                response: { type: 'response', result: 'Success' },
+                chatId: 'primary-chat-id',
+              }),
+            ],
           }),
         }),
       );
@@ -541,34 +585,58 @@ describe('AgentsGateway', () => {
       agentsRepository.findById.mockResolvedValue(mockAgent);
       agentsService.verifyCredentials.mockResolvedValue(true);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
-      agentMessagesService.countMessages.mockResolvedValue(0);
-      agentMessagesService.getChatHistory.mockResolvedValue([] as any);
+      agentMessagesService.getChatHistoryPageBefore.mockResolvedValue({ messages: [], hasMoreOlder: false } as any);
 
       await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
 
-      // Verify chat history was fetched
-      // With 0 messages, offset = max(0, 0 - 20) = 0
-      expect(agentMessagesService.countMessages).toHaveBeenCalledWith(mockAgent.id, 'primary-chat-id');
-      expect(agentMessagesService.getChatHistory).toHaveBeenCalledWith(mockAgent.id, 20, 0, 'primary-chat-id');
+      expect(agentMessagesService.getChatHistoryPageBefore).toHaveBeenCalledWith(
+        mockAgent.id,
+        'primary-chat-id',
+        null,
+        20,
+      );
 
-      // Only loginSuccess should be emitted
-      expect(mockSocket.emit).toHaveBeenCalledTimes(1);
+      expect(mockSocket.emit).toHaveBeenCalledTimes(2); // loginSuccess + empty chatMessageBatch
       expect(mockSocket.emit).toHaveBeenCalledWith('loginSuccess', expect.any(Object));
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'chatMessageBatch',
+        expect.objectContaining({
+          success: true,
+          data: expect.objectContaining({
+            chatId: 'primary-chat-id',
+            messages: [],
+            filterResults: [],
+            events: [],
+            hasMoreOlder: false,
+            replace: true,
+            oldestMessageId: null,
+          }),
+        }),
+      );
     });
 
     it('should continue login even if chat history restoration fails', async () => {
       agentsRepository.findById.mockResolvedValue(mockAgent);
       agentsService.verifyCredentials.mockResolvedValue(true);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
-      agentMessagesService.countMessages.mockResolvedValue(0);
-      agentMessagesService.getChatHistory.mockRejectedValue(new Error('Database error'));
+      agentMessagesService.getChatHistoryPageBefore.mockRejectedValue(new Error('Database error'));
 
       const loggerWarnSpy = jest.spyOn(gateway['logger'], 'warn').mockImplementation();
 
       await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
 
-      // Login should still succeed
       expect(mockSocket.emit).toHaveBeenCalledWith('loginSuccess', expect.any(Object));
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'chatMessageBatch',
+        expect.objectContaining({
+          success: true,
+          data: expect.objectContaining({
+            chatId: 'primary-chat-id',
+            messages: [],
+            replace: true,
+          }),
+        }),
+      );
       expect(loggerWarnSpy).toHaveBeenCalledWith(
         expect.stringContaining('Failed to restore chat history'),
         expect.any(String),
@@ -577,7 +645,7 @@ describe('AgentsGateway', () => {
       loggerWarnSpy.mockRestore();
     });
 
-    it('should send messageFilterResult for filtered user messages during restoration', async () => {
+    it('should include filterResults in chatMessageBatch for filtered messages during restoration', async () => {
       agentsRepository.findById.mockResolvedValue(mockAgent);
       agentsService.verifyCredentials.mockResolvedValue(true);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
@@ -605,267 +673,64 @@ describe('AgentsGateway', () => {
           createdAt: new Date('2024-01-01T10:00:01Z'),
           updatedAt: new Date('2024-01-01T10:00:01Z'),
         },
-      ];
-
-      agentMessagesService.countMessages.mockResolvedValue(mockMessages.length);
-      agentMessagesService.getChatHistory.mockResolvedValue(mockMessages as any);
-
-      await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
-
-      // Verify filter result was sent before the filtered message
-      expect(mockSocket.emit).toHaveBeenNthCalledWith(
-        2,
-        'messageFilterResult',
-        expect.objectContaining({
-          success: true,
-          data: expect.objectContaining({
-            direction: 'incoming',
-            status: 'filtered',
-            message: 'Filtered message',
-            appliedFilters: [],
-            matchedFilter: undefined,
-            action: 'flag',
-            timestamp: '2024-01-01T10:00:00.000Z',
-            chatId: 'primary-chat-id',
-          }),
-        }),
-      );
-
-      // Verify filtered message was sent after filter result
-      expect(mockSocket.emit).toHaveBeenNthCalledWith(
-        3,
-        'chatMessage',
-        expect.objectContaining({
-          success: true,
-          data: expect.objectContaining({
-            from: 'user',
-            text: 'Filtered message',
-            timestamp: '2024-01-01T10:00:00.000Z',
-            chatId: 'primary-chat-id',
-          }),
-        }),
-      );
-
-      // Verify normal message was sent without filter result
-      expect(mockSocket.emit).toHaveBeenNthCalledWith(
-        4,
-        'chatMessage',
-        expect.objectContaining({
-          success: true,
-          data: expect.objectContaining({
-            from: 'user',
-            text: 'Normal message',
-            timestamp: '2024-01-01T10:00:01.000Z',
-            chatId: 'primary-chat-id',
-          }),
-        }),
-      );
-
-      // Should not send filter result for non-filtered message
-      const filterResultCalls = (mockSocket.emit as jest.Mock).mock.calls.filter(
-        (call) => call[0] === 'messageFilterResult',
-      );
-
-      expect(filterResultCalls).toHaveLength(1); // Only one filter result for the filtered message
-    });
-
-    it('should send messageFilterResult for filtered agent messages during restoration', async () => {
-      agentsRepository.findById.mockResolvedValue(mockAgent);
-      agentsService.verifyCredentials.mockResolvedValue(true);
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
-
-      const mockMessages = [
-        {
-          id: 'msg-1',
-          agentId: mockAgent.id,
-          chatSessionId: 'primary-chat-id',
-          agent: mockAgent,
-          actor: 'agent',
-          message: '{"type":"response","result":"Filtered response"}',
-          filtered: true,
-          createdAt: new Date('2024-01-01T10:00:00Z'),
-          updatedAt: new Date('2024-01-01T10:00:00Z'),
-        },
-        {
-          id: 'msg-2',
-          agentId: mockAgent.id,
-          chatSessionId: 'primary-chat-id',
-          agent: mockAgent,
-          actor: 'agent',
-          message: '{"type":"response","result":"Normal response"}',
-          filtered: false,
-          createdAt: new Date('2024-01-01T10:00:01Z'),
-          updatedAt: new Date('2024-01-01T10:00:01Z'),
-        },
-      ];
-
-      agentMessagesService.countMessages.mockResolvedValue(mockMessages.length);
-      agentMessagesService.getChatHistory.mockResolvedValue(mockMessages as any);
-
-      await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
-
-      // Verify filter result was sent before the filtered agent message
-      expect(mockSocket.emit).toHaveBeenNthCalledWith(
-        2,
-        'messageFilterResult',
-        expect.objectContaining({
-          success: true,
-          data: expect.objectContaining({
-            direction: 'outgoing',
-            status: 'filtered',
-            message: '{"type":"response","result":"Filtered response"}',
-            appliedFilters: [],
-            matchedFilter: undefined,
-            action: 'flag',
-            timestamp: '2024-01-01T10:00:00.000Z',
-            chatId: 'primary-chat-id',
-          }),
-        }),
-      );
-
-      // Verify filtered agent message was sent after filter result
-      expect(mockSocket.emit).toHaveBeenNthCalledWith(
-        3,
-        'chatMessage',
-        expect.objectContaining({
-          success: true,
-          data: expect.objectContaining({
-            from: 'agent',
-            response: { type: 'response', result: 'Filtered response' },
-            timestamp: '2024-01-01T10:00:00.000Z',
-            chatId: 'primary-chat-id',
-          }),
-        }),
-      );
-
-      // Verify normal agent message was sent without filter result
-      expect(mockSocket.emit).toHaveBeenNthCalledWith(
-        4,
-        'chatMessage',
-        expect.objectContaining({
-          success: true,
-          data: expect.objectContaining({
-            from: 'agent',
-            response: { type: 'response', result: 'Normal response' },
-            timestamp: '2024-01-01T10:00:01.000Z',
-            chatId: 'primary-chat-id',
-          }),
-        }),
-      );
-
-      // Should not send filter result for non-filtered message
-      const filterResultCalls = (mockSocket.emit as jest.Mock).mock.calls.filter(
-        (call) => call[0] === 'messageFilterResult',
-      );
-
-      expect(filterResultCalls).toHaveLength(1); // Only one filter result for the filtered message
-    });
-
-    it('should send messageFilterResult events in correct chronological order during restoration', async () => {
-      agentsRepository.findById.mockResolvedValue(mockAgent);
-      agentsService.verifyCredentials.mockResolvedValue(true);
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
-
-      const mockMessages = [
-        {
-          id: 'msg-1',
-          agentId: mockAgent.id,
-          chatSessionId: 'primary-chat-id',
-          agent: mockAgent,
-          actor: 'user',
-          message: 'First message',
-          filtered: false,
-          createdAt: new Date('2024-01-01T10:00:00Z'),
-          updatedAt: new Date('2024-01-01T10:00:00Z'),
-        },
-        {
-          id: 'msg-2',
-          agentId: mockAgent.id,
-          chatSessionId: 'primary-chat-id',
-          agent: mockAgent,
-          actor: 'user',
-          message: 'Filtered message',
-          filtered: true,
-          createdAt: new Date('2024-01-01T10:00:01Z'),
-          updatedAt: new Date('2024-01-01T10:00:01Z'),
-        },
         {
           id: 'msg-3',
           agentId: mockAgent.id,
           chatSessionId: 'primary-chat-id',
           agent: mockAgent,
           actor: 'agent',
-          message: '{"type":"response","result":"Agent response"}',
+          message: '{"type":"response","result":"Filtered response"}',
           filtered: true,
           createdAt: new Date('2024-01-01T10:00:02Z'),
           updatedAt: new Date('2024-01-01T10:00:02Z'),
         },
-        {
-          id: 'msg-4',
-          agentId: mockAgent.id,
-          chatSessionId: 'primary-chat-id',
-          agent: mockAgent,
-          actor: 'user',
-          message: 'Last message',
-          filtered: false,
-          createdAt: new Date('2024-01-01T10:00:03Z'),
-          updatedAt: new Date('2024-01-01T10:00:03Z'),
-        },
       ];
 
-      agentMessagesService.countMessages.mockResolvedValue(mockMessages.length);
-      agentMessagesService.getChatHistory.mockResolvedValue(mockMessages as any);
+      agentMessagesService.getChatHistoryPageBefore.mockResolvedValue({
+        messages: mockMessages,
+        hasMoreOlder: true,
+      } as any);
 
       await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
 
-      // Get all emit calls
-      const emitCalls = (mockSocket.emit as jest.Mock).mock.calls;
-
-      // Verify loginSuccess was called first
-      expect(emitCalls[0][0]).toBe('loginSuccess');
-
-      // Find positions of filter results and messages
-      const filterResultIndices: number[] = [];
-      const chatMessageIndices: number[] = [];
-
-      emitCalls.forEach((call, index) => {
-        if (call[0] === 'messageFilterResult') {
-          filterResultIndices.push(index);
-        } else if (call[0] === 'chatMessage') {
-          chatMessageIndices.push(index);
-        }
-      });
-
-      // Verify we have 2 filter results (for msg-2 and msg-3)
-      expect(filterResultIndices).toHaveLength(2);
-      // Verify we have 4 chat messages
-      expect(chatMessageIndices).toHaveLength(4);
-
-      // Verify filter result for "Filtered message" comes before its chat message
-      const filteredUserMessageIndex = emitCalls.findIndex(
-        (call) => call[0] === 'chatMessage' && call[1]?.data?.text === 'Filtered message',
-      );
-      const incomingFilterResultIndex = emitCalls.findIndex(
-        (call) => call[0] === 'messageFilterResult' && call[1]?.data?.direction === 'incoming',
-      );
-
-      expect(incomingFilterResultIndex).toBeLessThan(filteredUserMessageIndex);
-
-      // Verify filter result for agent message comes before its chat message
-      const filteredAgentMessageIndex = emitCalls.findIndex(
-        (call) =>
-          call[0] === 'chatMessage' &&
-          call[1]?.data?.from === 'agent' &&
-          call[1]?.data?.response?.result === 'Agent response',
-      );
-      const outgoingFilterResultIndex = emitCalls.findIndex(
-        (call) => call[0] === 'messageFilterResult' && call[1]?.data?.direction === 'outgoing',
+      expect(mockSocket.emit).toHaveBeenNthCalledWith(
+        2,
+        'chatMessageBatch',
+        expect.objectContaining({
+          success: true,
+          data: expect.objectContaining({
+            hasMoreOlder: true,
+            replace: true,
+            filterResults: [
+              expect.objectContaining({
+                direction: 'incoming',
+                status: 'filtered',
+                message: 'Filtered message',
+                action: 'flag',
+                chatId: 'primary-chat-id',
+              }),
+              expect.objectContaining({
+                direction: 'outgoing',
+                status: 'filtered',
+                message: '{"type":"response","result":"Filtered response"}',
+                action: 'flag',
+                chatId: 'primary-chat-id',
+              }),
+            ],
+            messages: expect.arrayContaining([
+              expect.objectContaining({ id: 'msg-1', text: 'Filtered message' }),
+              expect.objectContaining({ id: 'msg-2', text: 'Normal message' }),
+              expect.objectContaining({
+                id: 'msg-3',
+                response: { type: 'response', result: 'Filtered response' },
+              }),
+            ]),
+          }),
+        }),
       );
 
-      expect(outgoingFilterResultIndex).toBeLessThan(filteredAgentMessageIndex);
-
-      // Verify total calls: 1 loginSuccess + 4 messages + 2 filter results = 7
-      expect(emitCalls).toHaveLength(7);
+      expect((mockSocket.emit as jest.Mock).mock.calls.filter((c) => c[0] === 'messageFilterResult')).toHaveLength(0);
+      expect((mockSocket.emit as jest.Mock).mock.calls.filter((c) => c[0] === 'chatMessage')).toHaveLength(0);
     });
 
     it('should authenticate successfully with agent name', async () => {
@@ -3145,6 +3010,116 @@ describe('AgentsGateway', () => {
     });
   });
 
+  describe('handleRestoreChat', () => {
+    const chatUuid = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+    const beforeUuid = 'b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a12';
+    const olderMessages = [
+      {
+        id: 'msg-old-1',
+        agentId: mockAgent.id,
+        chatSessionId: chatUuid,
+        actor: 'user',
+        message: 'Older',
+        filtered: false,
+        createdAt: new Date('2024-01-01T09:00:00Z'),
+        updatedAt: new Date('2024-01-01T09:00:00Z'),
+      },
+    ];
+
+    beforeEach(() => {
+      const socketId = mockSocket.id || 'test-socket-id';
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (gateway as any).socketById.set(socketId, mockSocket);
+      mockAgentChatSessionsService.resolveSessionForChat.mockResolvedValue({
+        ...mockPrimaryChatSession,
+        id: chatUuid,
+      });
+    });
+
+    afterEach(() => {
+      mockAgentChatSessionsService.resolveSessionForChat.mockResolvedValue(mockPrimaryChatSession);
+    });
+
+    it('should emit chatMessageBatch with replace=false for older page and restoreChatSuccess', async () => {
+      agentMessagesService.getChatHistoryPageBefore.mockResolvedValue({
+        messages: olderMessages,
+        hasMoreOlder: true,
+      } as any);
+
+      await gateway.handleRestoreChat(
+        { chatId: chatUuid, beforeMessageId: beforeUuid, limit: 10 },
+        mockSocket as Socket,
+      );
+
+      expect(agentMessagesService.getChatHistoryPageBefore).toHaveBeenCalledWith(
+        mockAgent.id,
+        chatUuid,
+        beforeUuid,
+        10,
+      );
+
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'chatMessageBatch',
+        expect.objectContaining({
+          success: true,
+          data: expect.objectContaining({
+            chatId: chatUuid,
+            replace: false,
+            hasMoreOlder: true,
+            oldestMessageId: 'msg-old-1',
+            messages: [expect.objectContaining({ id: 'msg-old-1', text: 'Older' })],
+          }),
+        }),
+      );
+
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'restoreChatSuccess',
+        expect.objectContaining({
+          success: true,
+          data: expect.objectContaining({
+            chatId: chatUuid,
+            hasMoreOlder: true,
+            oldestMessageId: 'msg-old-1',
+            messageCount: 1,
+          }),
+        }),
+      );
+    });
+
+    it('should reject invalid beforeMessageId UUID', async () => {
+      await gateway.handleRestoreChat({ chatId: chatUuid, beforeMessageId: 'not-a-uuid' }, mockSocket as Socket);
+
+      expect(agentMessagesService.getChatHistoryPageBefore).not.toHaveBeenCalled();
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'error',
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({ code: 'INVALID_MESSAGE_ID' }),
+        }),
+      );
+    });
+
+    it('should emit generic error when beforeMessageId is not in session', async () => {
+      agentMessagesService.getChatHistoryPageBefore.mockRejectedValue(
+        new NotFoundException('Message not found for this chat session'),
+      );
+
+      await gateway.handleRestoreChat({ chatId: chatUuid, beforeMessageId: beforeUuid }, mockSocket as Socket);
+
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'error',
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({ code: 'RESTORE_CHAT_ERROR' }),
+        }),
+      );
+      expect(mockSocket.emit).not.toHaveBeenCalledWith('restoreChatSuccess', expect.anything());
+    });
+  });
+
   describe('handleLogout', () => {
     it('should logout authenticated user successfully', async () => {
       const socketId = mockSocket.id || 'test-socket-id';
@@ -3377,11 +3352,26 @@ describe('AgentsGateway', () => {
 
       expect(dockerService.getContainerStatus).toHaveBeenCalledWith(mockAgent.containerId);
       expect(dockerService.getContainerStats).toHaveBeenCalledWith(mockAgent.containerId);
+      // Fast status snapshot first (stats null), then full stats when running.
       expect(mockSocket.emit).toHaveBeenCalledWith(
         'containerStats',
         expect.objectContaining({
           success: true,
           data: {
+            agentId: mockAgent.id,
+            status: { running: true },
+            stats: null,
+            timestamp: expect.any(String),
+          },
+          timestamp: expect.any(String),
+        }),
+      );
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'containerStats',
+        expect.objectContaining({
+          success: true,
+          data: {
+            agentId: mockAgent.id,
             status: { running: true },
             stats: mockStats,
             timestamp: expect.any(String),
@@ -3434,6 +3424,7 @@ describe('AgentsGateway', () => {
         expect.objectContaining({
           success: true,
           data: {
+            agentId: mockAgent.id,
             status: { running: true },
             stats: mockStats,
             timestamp: expect.any(String),
@@ -3564,6 +3555,7 @@ describe('AgentsGateway', () => {
         expect.objectContaining({
           success: true,
           data: {
+            agentId: mockAgent.id,
             status: { running: false },
             stats: null,
             timestamp: expect.any(String),
@@ -3600,6 +3592,8 @@ describe('AgentsGateway', () => {
       // Verify same interval is used (not duplicated)
       expect(statsIntervals.has(mockAgent.id)).toBe(true);
       expect(statsIntervals.get(mockAgent.id)).toBe(firstInterval);
+      // Second login still refreshes an immediate snapshot for the UI
+      expect(dockerService.getContainerStatus.mock.calls.length).toBeGreaterThanOrEqual(2);
     });
   });
 
@@ -3622,7 +3616,10 @@ describe('AgentsGateway', () => {
         },
       ];
 
-      agentMessagesService.getChatHistory.mockResolvedValue(mockMessages as any);
+      agentMessagesService.getChatHistoryPageBefore.mockResolvedValue({
+        messages: mockMessages,
+        hasMoreOlder: false,
+      } as any);
 
       // Set socket.recovered to true (simulating Socket.IO connection state recovery)
       const recoveredSocket = { ...mockSocket, recovered: true } as Socket;
@@ -3643,13 +3640,18 @@ describe('AgentsGateway', () => {
       );
 
       // Client clears forwardedEvents on reconnect — recovered sockets must still reload from DB.
-      expect(agentMessagesService.getChatHistory).toHaveBeenCalledWith(mockAgent.id, 20, 0, 'primary-chat-id');
-
-      const chatMessageCalls = (recoveredSocket.emit as jest.Mock).mock.calls.filter(
-        (call: unknown[]) => call[0] === 'chatMessage',
+      expect(agentMessagesService.getChatHistoryPageBefore).toHaveBeenCalledWith(
+        mockAgent.id,
+        'primary-chat-id',
+        null,
+        20,
       );
 
-      expect(chatMessageCalls.length).toBeGreaterThan(0);
+      const batchCalls = (recoveredSocket.emit as jest.Mock).mock.calls.filter(
+        (call: unknown[]) => call[0] === 'chatMessageBatch',
+      );
+
+      expect(batchCalls.length).toBeGreaterThan(0);
     });
 
     it('should skip chat history restoration when agent is already authenticated', async () => {
@@ -3676,7 +3678,10 @@ describe('AgentsGateway', () => {
         },
       ];
 
-      agentMessagesService.getChatHistory.mockResolvedValue(mockMessages as any);
+      agentMessagesService.getChatHistoryPageBefore.mockResolvedValue({
+        messages: mockMessages,
+        hasMoreOlder: false,
+      } as any);
 
       await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
 
@@ -3694,14 +3699,14 @@ describe('AgentsGateway', () => {
       );
 
       // Verify chat history was NOT fetched (should be skipped for already authenticated agents)
-      expect(agentMessagesService.getChatHistory).not.toHaveBeenCalled();
+      expect(agentMessagesService.getChatHistoryPageBefore).not.toHaveBeenCalled();
 
-      // Verify only loginSuccess was emitted, no chat messages
-      const chatMessageCalls = (mockSocket.emit as jest.Mock).mock.calls.filter(
-        (call: unknown[]) => call[0] === 'chatMessage',
+      // Verify only loginSuccess was emitted, no chat batches
+      const batchCalls = (mockSocket.emit as jest.Mock).mock.calls.filter(
+        (call: unknown[]) => call[0] === 'chatMessageBatch',
       );
 
-      expect(chatMessageCalls.length).toBe(0);
+      expect(batchCalls.length).toBe(0);
     });
 
     it('should restore chat history for new login (not recovered, not already authenticated)', async () => {
@@ -3722,8 +3727,10 @@ describe('AgentsGateway', () => {
         },
       ];
 
-      agentMessagesService.countMessages.mockResolvedValue(mockMessages.length);
-      agentMessagesService.getChatHistory.mockResolvedValue(mockMessages as any);
+      agentMessagesService.getChatHistoryPageBefore.mockResolvedValue({
+        messages: mockMessages,
+        hasMoreOlder: false,
+      } as any);
 
       // Ensure socket is not recovered and agent is not already authenticated
       const newSocket = { ...mockSocket, recovered: false } as Socket;
@@ -3734,17 +3741,18 @@ describe('AgentsGateway', () => {
 
       await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, newSocket);
 
-      // Verify chat history WAS fetched (normal login scenario)
-      // With 1 message, offset = max(0, 1 - 20) = 0
-      expect(agentMessagesService.countMessages).toHaveBeenCalledWith(mockAgent.id, 'primary-chat-id');
-      expect(agentMessagesService.getChatHistory).toHaveBeenCalledWith(mockAgent.id, 20, 0, 'primary-chat-id');
-
-      // Verify chat message was emitted
-      const chatMessageCalls = (newSocket.emit as jest.Mock).mock.calls.filter(
-        (call: unknown[]) => call[0] === 'chatMessage',
+      expect(agentMessagesService.getChatHistoryPageBefore).toHaveBeenCalledWith(
+        mockAgent.id,
+        'primary-chat-id',
+        null,
+        20,
       );
 
-      expect(chatMessageCalls.length).toBe(1);
+      const batchCalls = (newSocket.emit as jest.Mock).mock.calls.filter(
+        (call: unknown[]) => call[0] === 'chatMessageBatch',
+      );
+
+      expect(batchCalls.length).toBe(1);
     });
   });
 

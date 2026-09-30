@@ -731,6 +731,15 @@
       <trans-unit id="featureChat-noMessages" datatype="html">
         <source>No messages yet</source>
         </trans-unit>
+      <trans-unit id="featureChat-loadingMessages" datatype="html">
+        <source>Loading messages...</source>
+        </trans-unit>
+      <trans-unit id="featureChat-scrollToBottomAria" datatype="html">
+        <source>Scroll to latest messages</source>
+      </trans-unit>
+      <trans-unit id="featureChat-scrollToBottomTitle" datatype="html">
+        <source>Scroll to latest messages</source>
+      </trans-unit>
       <trans-unit id="featureChat-messageDropped" datatype="html">
         <source>Message Dropped</source>
         </trans-unit>
