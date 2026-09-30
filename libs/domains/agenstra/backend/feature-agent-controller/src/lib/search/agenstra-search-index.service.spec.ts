@@ -8,6 +8,8 @@ import { AgentConsoleRegexFilterRuleEntity } from '../entities/agent-console-reg
 import { AtlassianSiteConnectionEntity } from '../entities/atlassian-site-connection.entity';
 import { ExternalImportConfigEntity } from '../entities/external-import-config.entity';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
+import { OpencodeMcpServerEntity } from '../entities/opencode-mcp-server.entity';
+import { OpencodeProviderEntity } from '../entities/opencode-provider.entity';
 import { StatisticsAgentEntity } from '../entities/statistics-agent.entity';
 import { StatisticsChatFilterDropEntity } from '../entities/statistics-chat-filter-drop.entity';
 import { StatisticsChatFilterFlagEntity } from '../entities/statistics-chat-filter-flag.entity';
@@ -59,6 +61,8 @@ describe('AgenstraSearchIndexService', () => {
         { provide: getRepositoryToken(StatisticsChatFilterFlagEntity), useValue: emptyRepo },
         { provide: getRepositoryToken(StatisticsEntityEventEntity), useValue: emptyRepo },
         { provide: getRepositoryToken(StatisticsUserEntity), useValue: emptyRepo },
+        { provide: getRepositoryToken(OpencodeProviderEntity), useValue: emptyRepo },
+        { provide: getRepositoryToken(OpencodeMcpServerEntity), useValue: emptyRepo },
       ],
     }).compile();
 

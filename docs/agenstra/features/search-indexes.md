@@ -6,6 +6,8 @@ Agenstra Controller uses **OpenSearch** for list and typeahead search across wor
 
 Search queries always scope by authenticated client/workspace access (fail closed). When OpenSearch is unavailable or returns zero hits (empty/unindexed data, numeric/substring gaps), list and statistics endpoints fall back to SQL `ILIKE` or in-memory filtering where applicable. Workspace code search does **not** fall back to ripgrep when OpenSearch is disabled.
 
+**Instance-scoped catalogs:** `opencode-providers` and `opencode-mcp-servers` are indexed without a workspace id (`instanceScoped: true`). List endpoints use OpenSearch when enabled, then hydrate Postgres rows in hit order; otherwise they use ILIKE on catalog columns. Catalog refresh jobs bulk-upsert search documents and delete removed ids/names.
+
 ## Console list UX
 
 Agent console lists (workspaces/clients, environments/agents, filter rules, and related tables) use **infinite scroll** where applicable: first page on entry, then append on scroll with `fpcInfiniteScroll` and `fpc-list-append-footer` from `@forepath/shared/frontend/ui-components`. Append errors pause loading until retry. Ticket board lane cards use CDK virtual scroll.

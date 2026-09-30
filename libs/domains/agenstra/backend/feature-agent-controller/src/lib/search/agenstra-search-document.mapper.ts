@@ -304,6 +304,77 @@ export function mapUserToSearchDocument(user: StatisticsUserEntity): AgenstraSea
   };
 }
 
+export function mapOpencodeProviderToSearchDocument(provider: {
+  id: string;
+  name: string;
+  npm?: string | null;
+  api?: string | null;
+  env?: string[] | null;
+  models?: Array<{ id?: string; name?: string }> | null;
+  createdAt?: Date | string | null;
+  updatedAt?: Date | string | null;
+}): AgenstraSearchDocument {
+  const modelIds = Array.isArray(provider.models)
+    ? provider.models.map((model) => model?.id).filter((id): id is string => typeof id === 'string' && id.length > 0)
+    : [];
+  const modelNames = Array.isArray(provider.models)
+    ? provider.models
+        .map((model) => model?.name)
+        .filter((name): name is string => typeof name === 'string' && name.length > 0)
+    : [];
+
+  return {
+    id: provider.id,
+    entityType: 'opencode-providers',
+    instanceScoped: true,
+    name: provider.name,
+    provider: provider.npm ?? null,
+    label: provider.api ?? null,
+    createdAt: toIso(provider.createdAt),
+    updatedAt: toIso(provider.updatedAt),
+    searchableText: joinSearchable([
+      provider.id,
+      provider.name,
+      provider.npm,
+      provider.api,
+      ...(provider.env ?? []),
+      ...modelIds,
+      ...modelNames,
+    ]),
+  };
+}
+
+export function mapOpencodeMcpServerToSearchDocument(server: {
+  name: string;
+  title: string;
+  description: string;
+  version?: string | null;
+  status?: string | null;
+  websiteUrl?: string | null;
+  createdAt?: Date | string | null;
+  updatedAt?: Date | string | null;
+}): AgenstraSearchDocument {
+  return {
+    id: server.name,
+    entityType: 'opencode-mcp-servers',
+    instanceScoped: true,
+    name: server.name,
+    title: server.title,
+    description: server.description,
+    status: server.status ?? null,
+    createdAt: toIso(server.createdAt),
+    updatedAt: toIso(server.updatedAt),
+    searchableText: joinSearchable([
+      server.name,
+      server.title,
+      server.description,
+      server.version,
+      server.status,
+      server.websiteUrl,
+    ]),
+  };
+}
+
 export function isAgenstraSearchEntityType(value: string): value is AgenstraSearchEntityType {
   return (
     value === 'clients' ||
@@ -319,6 +390,8 @@ export function isAgenstraSearchEntityType(value: string): value is AgenstraSear
     value === 'atlassian-connections' ||
     value === 'import-configs' ||
     value === 'environments' ||
-    value === 'users'
+    value === 'users' ||
+    value === 'opencode-providers' ||
+    value === 'opencode-mcp-servers'
   );
 }

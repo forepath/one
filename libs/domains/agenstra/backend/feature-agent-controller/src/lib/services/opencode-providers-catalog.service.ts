@@ -1,10 +1,18 @@
 import { InjectRepository } from '@nestjs/typeorm';
-import { Injectable, Logger } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { In, Repository } from 'typeorm';
 
 import { OPENCODE_PROVIDERS_MODELS_DEV_URL } from '../constants/opencode-providers.constants';
-import { OpencodeProviderDto, OpencodeProviderModelDto } from '../dto/opencode-providers.dto';
+import { OpencodeProviderDto, OpencodeProviderModelDto, OpencodeProvidersListDto } from '../dto/opencode-providers.dto';
 import { OpencodeProviderEntity } from '../entities/opencode-provider.entity';
+import { mapOpencodeProviderToSearchDocument } from '../search/agenstra-search-document.mapper';
+import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
+import {
+  applyAgenstraSearchIlike,
+  hydrateEntitiesBySearchIds,
+  sanitizeListSearch,
+  tryAgenstraSearchIds,
+} from '../search/agenstra-search-list.util';
 
 interface ModelsDevProviderEntry {
   id?: unknown;
@@ -20,6 +28,12 @@ export interface OpencodeProvidersRefreshResult {
   removed: number;
 }
 
+export interface OpencodeProvidersListParams {
+  search?: string;
+  limit: number;
+  offset: number;
+}
+
 /**
  * DB-backed catalog of OpenCode LLM providers sourced from models.dev.
  */
@@ -30,6 +44,7 @@ export class OpencodeProvidersCatalogService {
   constructor(
     @InjectRepository(OpencodeProviderEntity)
     private readonly providersRepository: Repository<OpencodeProviderEntity>,
+    private readonly searchIndex: AgenstraSearchIndexService,
   ) {}
 
   async count(): Promise<number> {
@@ -57,12 +72,74 @@ export class OpencodeProvidersCatalogService {
     return withModels === 0;
   }
 
-  async listProviders(): Promise<OpencodeProviderDto[]> {
-    const rows = await this.providersRepository.find({
+  async listProviders(params: OpencodeProvidersListParams): Promise<OpencodeProvidersListDto> {
+    const { limit, offset } = params;
+    const sanitized = sanitizeListSearch(params.search);
+
+    if (sanitized) {
+      const openSearchIds = await tryAgenstraSearchIds(
+        this.searchIndex,
+        {
+          entityType: 'opencode-providers',
+          query: sanitized,
+          instanceScoped: true,
+          limit,
+          offset,
+        },
+        this.logger,
+      );
+      const hydrated = await hydrateEntitiesBySearchIds(this.providersRepository, openSearchIds);
+
+      if (hydrated) {
+        return {
+          providers: hydrated.items.map((row) => this.toDto(row)),
+          total: hydrated.total,
+          limit,
+          offset,
+        };
+      }
+
+      const qb = this.providersRepository.createQueryBuilder('p').orderBy('p.name', 'ASC').addOrderBy('p.id', 'ASC');
+
+      applyAgenstraSearchIlike(qb, 'opencode-providers', 'p', sanitized);
+      const [rows, total] = await qb.skip(offset).take(limit).getManyAndCount();
+
+      return {
+        providers: rows.map((row) => this.toDto(row)),
+        total,
+        limit,
+        offset,
+      };
+    }
+
+    const [rows, total] = await this.providersRepository.findAndCount({
       order: { name: 'ASC', id: 'ASC' },
+      take: limit,
+      skip: offset,
     });
 
-    return rows.map((row) => this.toDto(row));
+    return {
+      providers: rows.map((row) => this.toDto(row)),
+      total,
+      limit,
+      offset,
+    };
+  }
+
+  async getProviderOrThrow(id: string): Promise<OpencodeProviderDto> {
+    const trimmed = id.trim();
+
+    if (!trimmed) {
+      throw new NotFoundException('Provider not found');
+    }
+
+    const row = await this.providersRepository.findOne({ where: { id: trimmed } });
+
+    if (!row) {
+      throw new NotFoundException('Provider not found');
+    }
+
+    return this.toDto(row);
   }
 
   /**
@@ -105,6 +182,13 @@ export class OpencodeProvidersCatalogService {
     });
 
     const keepIds = mapped.map((provider) => provider.id);
+    const staleRows = await this.providersRepository
+      .createQueryBuilder('p')
+      .select(['p.id'])
+      .where('p.id NOT IN (:...keepIds)', { keepIds })
+      .getMany();
+    const removedIds = staleRows.map((row) => row.id);
+
     const deleteResult = await this.providersRepository
       .createQueryBuilder()
       .delete()
@@ -112,6 +196,15 @@ export class OpencodeProvidersCatalogService {
       .execute();
 
     const removed = deleteResult.affected ?? 0;
+
+    void this.searchIndex.bulkUpsertSafe(
+      'opencode-providers',
+      rows.map((row) => mapOpencodeProviderToSearchDocument(row)),
+    );
+
+    for (const id of removedIds) {
+      void this.searchIndex.deleteSafe('opencode-providers', id);
+    }
 
     this.logger.log(`Refreshed OpenCode providers catalog: upserted=${mapped.length} removed=${removed}`);
 

@@ -14,6 +14,10 @@ export const CONTROLLER_QUEUE_NAME = 'agent-controller';
 const OPENCODE_PROVIDERS_REFRESH_JOB_NAME = 'opencode-providers.refresh';
 const OPENCODE_PROVIDERS_REFRESH_INTERVAL_MS_DEFAULT = 86_400_000;
 
+/** Keep in sync with OPENCODE_MCP_SERVERS_REFRESH_JOB_NAME in feature-agent-controller. */
+const OPENCODE_MCP_SERVERS_REFRESH_JOB_NAME = 'opencode-mcp-servers.refresh';
+const OPENCODE_MCP_SERVERS_REFRESH_INTERVAL_MS_DEFAULT = 86_400_000;
+
 export const ControllerJobName = {
   CONTEXT_IMPORT_COORDINATOR: 'context-import.coordinator',
   CONTEXT_IMPORT_UNIT: 'context-import.unit',
@@ -34,6 +38,7 @@ export const ControllerJobName = {
   WEBHOOK_DELIVERY_RETENTION_COORDINATOR,
   UPDATE_CHECK: UPDATE_CHECK_JOB_NAME,
   OPENCODE_PROVIDERS_REFRESH: OPENCODE_PROVIDERS_REFRESH_JOB_NAME,
+  OPENCODE_MCP_SERVERS_REFRESH: OPENCODE_MCP_SERVERS_REFRESH_JOB_NAME,
 } as const;
 
 export type ControllerJobName = (typeof ControllerJobName)[keyof typeof ControllerJobName];
@@ -160,6 +165,19 @@ export function getControllerRepeatableJobs(): ControllerRepeatableJobDefinition
       name: ControllerJobName.OPENCODE_PROVIDERS_REFRESH,
       coordinatorJobId: buildCoordinatorJobId('opencode-providers-refresh'),
       everyMs: providersRefreshInterval,
+    });
+  }
+
+  const mcpServersRefreshInterval = parseIntervalMs(
+    'OPENCODE_MCP_SERVERS_REFRESH_INTERVAL_MS',
+    OPENCODE_MCP_SERVERS_REFRESH_INTERVAL_MS_DEFAULT,
+  );
+
+  if (mcpServersRefreshInterval > 0) {
+    jobs.push({
+      name: ControllerJobName.OPENCODE_MCP_SERVERS_REFRESH,
+      coordinatorJobId: buildCoordinatorJobId('opencode-mcp-servers-refresh'),
+      everyMs: mcpServersRefreshInterval,
     });
   }
 

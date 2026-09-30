@@ -13,6 +13,8 @@ export const AGENSTRA_SEARCH_ENTITY_TYPES = [
   'import-configs',
   'environments',
   'users',
+  'opencode-providers',
+  'opencode-mcp-servers',
 ] as const;
 
 export type AgenstraSearchEntityType = (typeof AGENSTRA_SEARCH_ENTITY_TYPES)[number];

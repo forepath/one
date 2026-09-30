@@ -137,6 +137,19 @@ const SEARCH_FIELD_COLUMNS: Partial<
     importKind: (alias) => `${alias}.import_kind`,
     id: (alias) => `CAST(${alias}.id AS text)`,
   },
+  'opencode-providers': {
+    name: (alias) => `${alias}.name`,
+    id: (alias) => `${alias}.id`,
+    provider: (alias) => `${alias}.npm`,
+    label: (alias) => `${alias}.api`,
+  },
+  'opencode-mcp-servers': {
+    name: (alias) => `${alias}.name`,
+    title: (alias) => `${alias}.title`,
+    description: (alias) => `${alias}.description`,
+    status: (alias) => `${alias}.status`,
+    id: (alias) => `${alias}.name`,
+  },
 };
 
 export function applyAgenstraSearchIlike<T extends ObjectLiteral>(

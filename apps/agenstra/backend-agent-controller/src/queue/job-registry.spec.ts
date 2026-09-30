@@ -48,6 +48,14 @@ describe('controller job-registry', () => {
     expect(providersJob?.everyMs).toBe(86_400_000);
   });
 
+  it('getControllerRepeatableJobs includes opencode mcp servers refresh', () => {
+    const jobs = getControllerRepeatableJobs();
+    const mcpJob = jobs.find((job) => job.name === ControllerJobName.OPENCODE_MCP_SERVERS_REFRESH);
+
+    expect(mcpJob).toBeDefined();
+    expect(mcpJob?.everyMs).toBe(86_400_000);
+  });
+
   it('getControllerRepeatableJobs includes opencode config and layer-file sync', () => {
     const jobs = getControllerRepeatableJobs();
     const names = jobs.map((job) => job.name);

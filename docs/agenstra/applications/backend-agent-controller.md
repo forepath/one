@@ -17,7 +17,7 @@ This application provides:
 - **Usage Statistics** Aggregated chat, filter, and entity metrics for operators and admins
 - **Global Filter Rules** Admin-managed regex policies synced to workspaces
 - **Atlassian import** Admin-managed Atlassian site connections and Jira/Confluence import configurations (scheduled and on-demand)
-- **Agent configuration** Three-layer OpenCode V2 overlays (`/admin/opencode-config`, client and agent `/opencode-config`) with heredity locks and worker sync; see [Agent configuration](../features/agent-configuration.md)
+- **Agent configuration** Three-layer OpenCode V2 overlays (`/admin/opencode/config`, client and agent `/opencode/config`) with heredity locks and worker sync; see [Agent configuration](../features/agent-configuration.md)
 - **Per-Client Permissions** Fine-grained access control with user roles per client (keycloak/users mode)
 - **Secure Authentication** API key, Keycloak OAuth2/OIDC, or built-in users (JWT) for HTTP and WebSocket
 - **Database Support** PostgreSQL with TypeORM for data persistence

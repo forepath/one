@@ -1,5 +1,12 @@
-import { OpencodeConfigValidationError, type InheritedAdditiveEntry, type JsonObject } from './types';
+import {
+  INHERITED_MAP_ENTRY_OVERRIDE_KEYS,
+  OpencodeConfigValidationError,
+  type InheritedAdditiveEntry,
+  type JsonObject,
+} from './types';
 import { findForbiddenV1RootKeys } from './migrate-v1-to-v2';
+
+const ALLOWED_INHERITED_OVERRIDE = new Set<string>(INHERITED_MAP_ENTRY_OVERRIDE_KEYS);
 
 function isPlainObject(value: unknown): value is JsonObject {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -87,9 +94,25 @@ export function assertOverlayRespectsHeredity(
 
     if (entry.keys?.length && isPlainObject(value)) {
       for (const key of entry.keys) {
-        if (key in value) {
+        if (!(key in value)) {
+          continue;
+        }
+
+        const overlayEntry = value[key];
+
+        if (!isPlainObject(overlayEntry)) {
           throw new OpencodeConfigValidationError(
             `Key '${key}' at '${path}' is inherited from a higher layer and cannot be overridden`,
+          );
+        }
+
+        const disallowed = Object.keys(overlayEntry).filter((field) => !ALLOWED_INHERITED_OVERRIDE.has(field));
+
+        if (disallowed.length > 0) {
+          throw new OpencodeConfigValidationError(
+            `Key '${key}' at '${path}' is inherited; only ${INHERITED_MAP_ENTRY_OVERRIDE_KEYS.join(
+              ', ',
+            )} may be set (disallowed: ${disallowed.join(', ')})`,
           );
         }
       }

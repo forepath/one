@@ -1,12 +1,14 @@
 import {
   applySecretsPatch,
   assertNoCredentialKeysInConfig,
+  extractMcpEnvSecrets,
   extractNetworkSecrets,
   extractProviderEnvSecrets,
+  injectMcpSecretsIntoWire,
   isPemCertificateMaterial,
   resolveProviderAuthSecrets,
 } from '@forepath/agenstra/shared/util-opencode-config';
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 
 import {
   AgentOpencodeConfigResponseDto,
@@ -14,6 +16,9 @@ import {
   OpencodeAgentsListResponseDto,
   OpencodeCommandInfoDto,
   OpencodeCommandsListResponseDto,
+  OpencodeMcpAuthStartResponseDto,
+  OpencodeMcpServerStatusDto,
+  OpencodeMcpStatusListResponseDto,
   UpsertAgentOpencodeConfigDto,
 } from '../../dto/agent-opencode-config.dto';
 import { AgentsRepository } from '../../repositories/agents.repository';
@@ -105,7 +110,9 @@ function formatOpenCodeError(error: unknown): string {
 /**
  * Persists per-agent OpenCode config and pushes effective config + secrets to the worker.
  * Provider credentials use auth.set plus Docker Env for provider `env` names
- * (e.g. AZURE_RESOURCE_NAME); network proxy/CA keys use Docker Env (recreate when changed).
+ * (e.g. AZURE_RESOURCE_NAME); MCP secretEnv names use Docker Env; network proxy/CA
+ * keys use Docker Env (recreate when changed). MCP secret values are also merged into
+ * wire `mcp` environment/headers before PATCH.
  */
 @Injectable()
 export class OpenCodeConfigSyncService {
@@ -246,6 +253,11 @@ export class OpenCodeConfigSyncService {
 
       // Durable agent settings live in OpenCode global config (`~/.config/opencode`).
       // SDK `config.update` targets `/config` (project), which does not persist for workers.
+      // Inject MCP secrets after assert so stored overlays never hold credential-like keys.
+      const wireConfig = injectMcpSecretsIntoWire(
+        structuredClone(effective) as Record<string, unknown>,
+        secrets,
+      ) as Record<string, unknown>;
       const { baseUrl, authorization } = await this.clientFactory.resolveConnection(agentId, containerId);
       const response = await fetch(`${baseUrl.replace(/\/$/, '')}/global/config`, {
         method: 'PATCH',
@@ -254,7 +266,7 @@ export class OpenCodeConfigSyncService {
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(effective),
+        body: JSON.stringify(wireConfig),
       });
 
       if (!response.ok) {
@@ -285,9 +297,10 @@ export class OpenCodeConfigSyncService {
   }
 
   /**
-   * Apply network proxy/CA secrets and provider credential env vars via Docker Env.
-   * Inline PEM CA material is written to a file; env points at that path.
+   * Apply network proxy/CA secrets, provider credential env vars, and MCP secretEnv
+   * via Docker Env. Inline PEM CA material is written to a file; env points at that path.
    * Provider env names come from `providers`/`provider` `env` arrays (e.g. AZURE_RESOURCE_NAME).
+   * MCP env names come from `mcp`/`mcp.servers` `secretEnv` arrays.
    */
   private async applyEnvSecretsToContainer(
     agentId: string,
@@ -297,6 +310,7 @@ export class OpenCodeConfigSyncService {
   ): Promise<OpencodeSyncEffectiveResult & { containerId?: string; recreated?: boolean }> {
     const network = extractNetworkSecrets(secrets);
     const providerEnv = extractProviderEnvSecrets(secrets, effective as Record<string, unknown>);
+    const mcpEnv = extractMcpEnvSecrets(secrets, effective as Record<string, unknown>);
     const desiredEnv: Record<string, string | undefined> = {
       HTTP_PROXY: undefined,
       HTTPS_PROXY: undefined,
@@ -308,11 +322,19 @@ export class OpenCodeConfigSyncService {
       desiredEnv[key] = undefined;
     }
 
+    for (const key of mcpEnv.managedKeys) {
+      desiredEnv[key] = undefined;
+    }
+
     for (const [key, value] of Object.entries(network)) {
       desiredEnv[key] = value;
     }
 
     for (const [key, value] of Object.entries(providerEnv.values)) {
+      desiredEnv[key] = value;
+    }
+
+    for (const [key, value] of Object.entries(mcpEnv.values)) {
       desiredEnv[key] = value;
     }
 
@@ -430,6 +452,233 @@ export class OpenCodeConfigSyncService {
     commands.sort((a, b) => a.name.localeCompare(b.name));
 
     return { commands };
+  }
+
+  /**
+   * Lists live MCP server statuses from the running OpenCode worker (`GET /mcp`).
+   * Statuses include `needs_auth` / `needs_client_registration` for interactive OAuth.
+   */
+  async listMcpStatuses(agentId: string): Promise<OpencodeMcpStatusListResponseDto> {
+    const agent = await this.agentsRepository.findById(agentId);
+
+    if (!agent) {
+      throw new NotFoundException(`Agent with ID '${agentId}' not found`);
+    }
+
+    if (!agent.containerId) {
+      return { servers: [] };
+    }
+
+    const data = await this.fetchOpenCodeJson<Record<string, unknown>>(agentId, agent.containerId, '/mcp', {
+      method: 'GET',
+    });
+
+    return { servers: this.mapMcpStatusRecord(data) };
+  }
+
+  /**
+   * Starts MCP OAuth (`POST /mcp/{name}/auth`). Returns a browser authorization URL.
+   * When `redirectUri` is provided, patches OpenCode MCP oauth.redirectUri first so the IdP
+   * returns to the controller public callback (not 127.0.0.1:19876 inside Docker).
+   */
+  async startMcpAuth(agentId: string, name: string, redirectUri?: string): Promise<OpencodeMcpAuthStartResponseDto> {
+    const { containerId } = await this.requireRunningAgent(agentId);
+
+    if (redirectUri?.trim()) {
+      await this.patchMcpOAuthRedirectUri(agentId, containerId, name, redirectUri.trim());
+    }
+
+    const encoded = encodeURIComponent(name);
+    const data = await this.fetchOpenCodeJson<{ authorizationUrl?: string; oauthState?: string }>(
+      agentId,
+      containerId,
+      `/mcp/${encoded}/auth`,
+      { method: 'POST' },
+    );
+
+    const authorizationUrl = typeof data.authorizationUrl === 'string' ? data.authorizationUrl.trim() : '';
+
+    if (!authorizationUrl) {
+      throw new BadRequestException('OpenCode did not return an MCP authorization URL');
+    }
+
+    return {
+      authorizationUrl,
+      oauthState: typeof data.oauthState === 'string' ? data.oauthState : undefined,
+    };
+  }
+
+  /**
+   * Ensure OpenCode MCP remote oauth.redirectUri points at the Agenstra public callback
+   * before auth.start (OpenCode embeds this in the authorization request).
+   */
+  private async patchMcpOAuthRedirectUri(
+    agentId: string,
+    containerId: string,
+    name: string,
+    redirectUri: string,
+  ): Promise<void> {
+    const current = await this.fetchOpenCodeJson<Record<string, unknown>>(agentId, containerId, '/global/config', {
+      method: 'GET',
+    });
+    const mcpRaw = current?.['mcp'];
+    const mcp =
+      mcpRaw && typeof mcpRaw === 'object' && !Array.isArray(mcpRaw) ? { ...(mcpRaw as Record<string, unknown>) } : {};
+    const existing = mcp[name];
+
+    if (!existing || typeof existing !== 'object' || Array.isArray(existing)) {
+      throw new BadRequestException(`MCP server '${name}' is not present in the OpenCode worker config`);
+    }
+
+    const entry = { ...(existing as Record<string, unknown>) };
+    const oauthRaw = entry['oauth'];
+    const oauth =
+      oauthRaw && typeof oauthRaw === 'object' && !Array.isArray(oauthRaw)
+        ? { ...(oauthRaw as Record<string, unknown>) }
+        : {};
+
+    oauth['redirectUri'] = redirectUri;
+    entry['oauth'] = oauth;
+    mcp[name] = entry;
+
+    await this.fetchOpenCodeJson(agentId, containerId, '/global/config', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mcp }),
+    });
+  }
+
+  /**
+   * Completes MCP OAuth with the authorization code (`POST /mcp/{name}/auth/callback`).
+   */
+  async completeMcpAuth(agentId: string, name: string, code: string): Promise<OpencodeMcpServerStatusDto> {
+    const { containerId } = await this.requireRunningAgent(agentId);
+    const encoded = encodeURIComponent(name);
+    const data = await this.fetchOpenCodeJson<Record<string, unknown>>(
+      agentId,
+      containerId,
+      `/mcp/${encoded}/auth/callback`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ code }),
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
+
+    return this.mapSingleMcpStatus(name, data);
+  }
+
+  /**
+   * Removes stored MCP OAuth credentials (`DELETE /mcp/{name}/auth`).
+   */
+  async removeMcpAuth(agentId: string, name: string): Promise<{ success: true }> {
+    const { containerId } = await this.requireRunningAgent(agentId);
+    const encoded = encodeURIComponent(name);
+
+    await this.fetchOpenCodeJson<unknown>(agentId, containerId, `/mcp/${encoded}/auth`, {
+      method: 'DELETE',
+    });
+
+    return { success: true };
+  }
+
+  private async requireRunningAgent(agentId: string): Promise<{ containerId: string }> {
+    const agent = await this.agentsRepository.findById(agentId);
+
+    if (!agent) {
+      throw new NotFoundException(`Agent with ID '${agentId}' not found`);
+    }
+
+    if (!agent.containerId) {
+      throw new BadRequestException(`Agent '${agentId}' is not running`);
+    }
+
+    return { containerId: agent.containerId };
+  }
+
+  private async fetchOpenCodeJson<T>(
+    agentId: string,
+    containerId: string,
+    path: string,
+    init: RequestInit,
+  ): Promise<T> {
+    const { baseUrl, authorization } = await this.clientFactory.resolveConnection(agentId, containerId);
+    const headers = new Headers(init.headers);
+    headers.set('Authorization', authorization);
+    headers.set('Accept', 'application/json');
+
+    const response = await fetch(`${baseUrl.replace(/\/$/, '')}${path}`, {
+      ...init,
+      headers,
+    });
+
+    if (!response.ok) {
+      const body = await response.text().catch(() => '');
+      const detail = body || response.statusText;
+
+      throw new BadRequestException(`OpenCode MCP request failed (${response.status}): ${detail}`);
+    }
+
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
+    const text = await response.text().catch(() => '');
+
+    if (!text) {
+      return undefined as T;
+    }
+
+    return JSON.parse(text) as T;
+  }
+
+  private mapMcpStatusRecord(data: Record<string, unknown> | null | undefined): OpencodeMcpServerStatusDto[] {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      return [];
+    }
+
+    const servers: OpencodeMcpServerStatusDto[] = [];
+
+    for (const [name, raw] of Object.entries(data)) {
+      if (!name.trim()) {
+        continue;
+      }
+
+      servers.push(this.mapSingleMcpStatus(name, raw));
+    }
+
+    servers.sort((a, b) => a.name.localeCompare(b.name));
+
+    return servers;
+  }
+
+  private mapSingleMcpStatus(name: string, raw: unknown): OpencodeMcpServerStatusDto {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+      return { name, status: 'failed', error: 'Invalid MCP status payload' };
+    }
+
+    const entry = raw as Record<string, unknown>;
+    const status = entry['status'];
+
+    if (
+      status === 'connected' ||
+      status === 'disabled' ||
+      status === 'failed' ||
+      status === 'needs_auth' ||
+      status === 'needs_client_registration'
+    ) {
+      return {
+        name,
+        status,
+        error: typeof entry['error'] === 'string' ? entry['error'] : undefined,
+      };
+    }
+
+    return {
+      name,
+      status: 'failed',
+      error: typeof entry['error'] === 'string' ? entry['error'] : `Unknown MCP status: ${String(status)}`,
+    };
   }
 
   /**

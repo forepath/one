@@ -52,6 +52,15 @@ describe('cloud-init.utils', () => {
       expect(config1.backend.encryption.jwtSecret).not.toBe(config2.backend.encryption.jwtSecret);
     });
 
+    it('derives MCP OAuth public base URL from FQDN and generates a callback secret', () => {
+      const config1 = buildCloudInitConfigFromRequest({}, 'awesome-armadillo-abc12', 'spirde.com');
+      const config2 = buildCloudInitConfigFromRequest({}, 'other-host', 'spirde.com');
+
+      expect(config1.backend.mcpOAuth?.publicBaseUrl).toBe('http://awesome-armadillo-abc12.spirde.com:3100');
+      expect(config1.backend.mcpOAuth?.callbackSecret).toBeTruthy();
+      expect(config1.backend.mcpOAuth?.callbackSecret).not.toBe(config2.backend.mcpOAuth?.callbackSecret);
+    });
+
     it('sets provisioning tokens from effectiveConfig when provided', () => {
       const config = buildCloudInitConfigFromRequest(
         {
@@ -195,6 +204,53 @@ describe('cloud-init.utils', () => {
       expect(script).toContain("CLIENT_ENDPOINT_ALLOWED_HOSTS: '*'");
       expect(script).toContain("CORS_ORIGIN: 'https://test.spirde.com'");
       expect(script).toContain('CSP_ENFORCE: true');
+    });
+
+    it('embeds MCP OAuth public base URL and callback secret in backend environment', () => {
+      const config: CloudInitConfig = {
+        ssh: { publicKey: '' },
+        host: { hostname: 'test', fqdn: 'test.spirde.com' },
+        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
+        backend: {
+          host: '0.0.0.0',
+          port: 3100,
+          websocketPort: 8081,
+          websocketNamespace: 'websocket',
+          nodeEnv: 'production',
+          defaultLocale: 'en',
+          database: {
+            host: 'postgres',
+            port: 5432,
+            username: 'postgres',
+            password: 'postgres',
+            database: 'postgres',
+          },
+          authentication: {
+            authenticationMethod: 'users',
+            disableSignup: false,
+          },
+          encryption: { encryptionKey: 'key', jwtSecret: 'secret' },
+          mcpOAuth: {
+            publicBaseUrl: 'http://test.spirde.com:3100',
+            callbackSecret: 'mcp-oauth-secret',
+          },
+          smtp: {
+            host: 'mailhog',
+            port: 1025,
+            user: '',
+            password: '',
+            from: 'noreply@localhost',
+          },
+          cors: { origin: 'https://test.spirde.com' },
+          rateLimit: { enabled: false, ttl: 60, limit: 100 },
+        },
+      };
+      const b64 = buildBillingCloudInitUserData(config);
+      const script = Buffer.from(b64, 'base64').toString('utf-8');
+
+      expect(script).toContain("MCP_OAUTH_PUBLIC_BASE_URL: 'http://test.spirde.com:3100'");
+      expect(script).toContain('MCP_OAUTH_CALLBACK_SECRET: mcp-oauth-secret');
     });
 
     it('generates a compose stack with redis, opensearch, and api/worker/scheduler split', () => {

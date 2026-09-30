@@ -49,7 +49,7 @@ import { ChangeDetectionStrategy, Component, booleanAttribute, input } from '@an
         color: var(--bs-secondary-color);
       }
       .agent-config-settings-row__control {
-        flex: 0 1 18rem;
+        flex: 0 1 32rem;
         max-width: 50%;
       }
     `,

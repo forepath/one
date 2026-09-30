@@ -1,4 +1,7 @@
-import { assertProductionClientEndpointAllowlistConfigured } from '@forepath/agenstra/backend/feature-agent-controller';
+import {
+  assertProductionClientEndpointAllowlistConfigured,
+  getMcpOAuthCallbackGlobalPrefixExcludes,
+} from '@forepath/agenstra/backend/feature-agent-controller';
 import {
   CorrelationAwareConsoleLogger,
   CorrelationAwareSocketIoAdapter,
@@ -156,7 +159,11 @@ export async function bootstrap(): Promise<void> {
   );
 
   const globalPrefix = 'api';
-  const globalPrefixExcludes = [...getBullBoardGlobalPrefixExcludes(), ...getOtelMetricsGlobalPrefixExcludes()];
+  const globalPrefixExcludes = [
+    ...getBullBoardGlobalPrefixExcludes(),
+    ...getOtelMetricsGlobalPrefixExcludes(),
+    ...getMcpOAuthCallbackGlobalPrefixExcludes(),
+  ];
 
   app.setGlobalPrefix(globalPrefix, globalPrefixExcludes.length > 0 ? { exclude: globalPrefixExcludes } : undefined);
   const port = parseInt(process.env.PORT || '3100', 10);

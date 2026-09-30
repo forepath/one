@@ -5,7 +5,9 @@ import {
   assertOverlayRespectsHeredity,
   composeLayerOverlay,
   computeHeredityMetadata,
+  extractMcpEnvSecrets,
   extractNetworkSecrets,
+  injectMcpSecretsIntoWire,
   isPemCertificateMaterial,
   materializeModelAllowDeny,
   mergeConfigs,
@@ -162,6 +164,42 @@ describe('assertOverlayRespectsHeredity', () => {
     ).toThrow(/inherited/i);
   });
 
+  it('allows disabled/hidden stubs on inherited map keys', () => {
+    expect(() =>
+      assertOverlayRespectsHeredity(
+        { providers: { openai: { disabled: true } } },
+        [],
+        [{ path: '/providers', keys: ['openai'] }],
+      ),
+    ).not.toThrow();
+
+    expect(() =>
+      assertOverlayRespectsHeredity(
+        { mcp: { servers: { docs: { disabled: true } } } },
+        [],
+        [{ path: '/mcp/servers', keys: ['docs'] }],
+      ),
+    ).not.toThrow();
+
+    expect(() =>
+      assertOverlayRespectsHeredity(
+        { agents: { build: { hidden: true, disabled: true } } },
+        [],
+        [{ path: '/agents', keys: ['build'] }],
+      ),
+    ).not.toThrow();
+  });
+
+  it('rejects non-override fields on inherited map keys', () => {
+    expect(() =>
+      assertOverlayRespectsHeredity(
+        { mcp: { servers: { docs: { disabled: true, url: 'https://evil.example' } } } },
+        [],
+        [{ path: '/mcp/servers', keys: ['docs'] }],
+      ),
+    ).toThrow(/disabled, hidden/i);
+  });
+
   it('allows adding new map keys', () => {
     expect(() =>
       assertOverlayRespectsHeredity(
@@ -181,6 +219,39 @@ describe('assertOverlayRespectsHeredity', () => {
 describe('assertNoCredentialKeysInConfig', () => {
   it('rejects credential-like keys', () => {
     expect(() => assertNoCredentialKeysInConfig({ api_key: 'x' })).toThrow(OpencodeConfigValidationError);
+  });
+
+  it('allows MCP secretEnv and secretHeaders name lists', () => {
+    expect(() =>
+      assertNoCredentialKeysInConfig({
+        mcp: {
+          servers: {
+            docs: {
+              type: 'local',
+              command: ['npx', '-y', 'pkg'],
+              secretEnv: ['API_TOKEN'],
+              secretHeaders: ['Authorization'],
+            },
+          },
+        },
+      }),
+    ).not.toThrow();
+  });
+
+  it('still rejects credential-like keys nested under MCP servers', () => {
+    expect(() =>
+      assertNoCredentialKeysInConfig({
+        mcp: {
+          servers: {
+            docs: {
+              type: 'local',
+              command: ['npx'],
+              environment: { API_TOKEN: 'leaked' },
+            },
+          },
+        },
+      }),
+    ).toThrow(OpencodeConfigValidationError);
   });
 });
 
@@ -290,6 +361,82 @@ describe('extractProviderEnvSecrets', () => {
   });
 });
 
+describe('extractMcpEnvSecrets', () => {
+  it('collects MCP secretEnv names from wire mcp root', () => {
+    const result = extractMcpEnvSecrets(
+      { API_TOKEN: 'tok', OTHER: 'x' },
+      {
+        mcp: {
+          docs: { type: 'local', command: ['npx'], secretEnv: ['API_TOKEN'] },
+        },
+      },
+    );
+
+    expect(result.managedKeys).toEqual(['API_TOKEN']);
+    expect(result.values).toEqual({ API_TOKEN: 'tok' });
+  });
+});
+
+describe('injectMcpSecretsIntoWire', () => {
+  it('merges secret env headers and oauth then allowlists OpenCode fields', () => {
+    const wire = injectMcpSecretsIntoWire(
+      {
+        mcp: {
+          github: {
+            type: 'remote',
+            url: 'https://mcp.example/mcp',
+            headers: { 'X-Public': '1' },
+            secretEnv: [],
+            secretHeaders: ['Authorization'],
+            oauth: { client_id: 'cid', callback_port: 8080 },
+            auth_server_metadata_url: 'https://evil.example',
+          },
+        },
+      },
+      {
+        Authorization: 'Bearer secret',
+        'mcp.github.oauth.client_secret': 'oauth-secret',
+      },
+    );
+
+    expect(wire.mcp).toEqual({
+      github: {
+        type: 'remote',
+        url: 'https://mcp.example/mcp',
+        headers: { 'X-Public': '1', Authorization: 'Bearer secret' },
+        oauth: { clientId: 'cid', clientSecret: 'oauth-secret', callbackPort: 8080 },
+      },
+    });
+  });
+
+  it('sanitizes local marketplace seeds with secretEnv lists', () => {
+    const wire = injectMcpSecretsIntoWire(
+      {
+        mcp: {
+          fs: {
+            type: 'local',
+            command: ['npx', '-y', '@modelcontextprotocol/server-filesystem@1.0.2'],
+            environment: { LOG_LEVEL: 'info' },
+            secretEnv: ['API_TOKEN'],
+            secretHeaders: [],
+            disabled: true,
+          },
+        },
+      },
+      { API_TOKEN: 'tok' },
+    );
+
+    // Flat wire from prepareConfigForSync already has enabled; inject still strips secret lists.
+    expect(wire.mcp).toEqual({
+      fs: {
+        type: 'local',
+        command: ['npx', '-y', '@modelcontextprotocol/server-filesystem@1.0.2'],
+        environment: { LOG_LEVEL: 'info', API_TOKEN: 'tok' },
+      },
+    });
+  });
+});
+
 describe('envNameToAuthMetadataKey', () => {
   it('strips provider prefix and camelCases the rest', () => {
     expect(envNameToAuthMetadataKey('AZURE_RESOURCE_NAME', 'azure')).toBe('resourceName');
@@ -358,6 +505,12 @@ describe('materializeModelAllowDeny', () => {
         timeout: { startup: 1000, request: 2000 },
         servers: {
           docs: { type: 'local', command: ['echo'], timeout: { request: 1500 }, disabled: true },
+          remote: {
+            type: 'remote',
+            url: 'https://mcp.example/mcp',
+            oauth: { client_id: 'cid', client_secret: 'should-strip', callback_port: 9 },
+            secretEnv: ['TOKEN'],
+          },
         },
       },
     });
@@ -368,6 +521,12 @@ describe('materializeModelAllowDeny', () => {
     });
     expect(prepared.mcp).toEqual({
       docs: { type: 'local', command: ['echo'], timeout: 1500, enabled: false },
+      remote: {
+        type: 'remote',
+        url: 'https://mcp.example/mcp',
+        oauth: { clientId: 'cid', callbackPort: 9 },
+        secretEnv: ['TOKEN'],
+      },
     });
     expect((prepared.experimental as { mcp_timeout?: number }).mcp_timeout).toBe(2000);
   });

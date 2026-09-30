@@ -219,6 +219,9 @@
       ],
       "@forepath/agenstra/shared/util-opencode-providers": [
         "libs/domains/agenstra/shared/util-opencode-providers/src/index.ts"
+      ],
+      "@forepath/agenstra/shared/util-opencode-mcp-servers": [
+        "libs/domains/agenstra/shared/util-opencode-mcp-servers/src/index.ts"
       ]
     }
   },

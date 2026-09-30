@@ -2,6 +2,7 @@ import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, TemplateRef, input, model, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
+  FpcBadgeComponent,
   FpcButtonComponent,
   FpcEmptyStateComponent,
   FpcFormControlComponent,
@@ -11,6 +12,11 @@ import {
   FpcListItemComponent,
 } from '@forepath/shared/frontend/ui-components';
 
+export interface ConfigMapEntryBadge {
+  label: string;
+  color: 'success' | 'warning' | 'danger' | 'secondary';
+}
+
 export interface ConfigMapEntryView {
   key: string;
   summary: string;
@@ -19,6 +25,8 @@ export interface ConfigMapEntryView {
   dirty: boolean;
   /** True when the key existed in baseline but was removed from the current overlay. */
   deleted: boolean;
+  /** Extra status badges after Inherited/Removed (e.g. MCP runtime status). */
+  badges?: ConfigMapEntryBadge[];
 }
 
 /**
@@ -32,6 +40,7 @@ export interface ConfigMapEntryView {
     CommonModule,
     FormsModule,
     NgTemplateOutlet,
+    FpcBadgeComponent,
     FpcButtonComponent,
     FpcEmptyStateComponent,
     FpcFormControlComponent,
@@ -84,6 +93,9 @@ export interface ConfigMapEntryView {
                 }
                 @if (entry.deleted) {
                   <span class="badge text-bg-warning ms-2" i18n="@@featureAgentConfig-removedBadge">Removed</span>
+                }
+                @for (badge of entry.badges ?? []; track badge.label) {
+                  <fpc-badge class="ms-2" [color]="badge.color" size="sm">{{ badge.label }}</fpc-badge>
                 }
               </span>
               <span fpcListItemMeta class="text-secondary">{{ entry.summary }}</span>

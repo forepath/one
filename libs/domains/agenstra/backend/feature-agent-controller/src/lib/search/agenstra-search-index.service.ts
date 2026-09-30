@@ -8,6 +8,8 @@ import { AgentConsoleRegexFilterRuleEntity } from '../entities/agent-console-reg
 import { AtlassianSiteConnectionEntity } from '../entities/atlassian-site-connection.entity';
 import { ExternalImportConfigEntity } from '../entities/external-import-config.entity';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
+import { OpencodeMcpServerEntity } from '../entities/opencode-mcp-server.entity';
+import { OpencodeProviderEntity } from '../entities/opencode-provider.entity';
 import { StatisticsAgentEntity } from '../entities/statistics-agent.entity';
 import { StatisticsChatFilterDropEntity } from '../entities/statistics-chat-filter-drop.entity';
 import { StatisticsChatFilterFlagEntity } from '../entities/statistics-chat-filter-flag.entity';
@@ -29,6 +31,8 @@ import {
   mapFilterRuleToSearchDocument,
   mapImportConfigToSearchDocument,
   mapKnowledgeNodeToSearchDocument,
+  mapOpencodeMcpServerToSearchDocument,
+  mapOpencodeProviderToSearchDocument,
   mapTicketToSearchDocument,
   mapUserToSearchDocument,
 } from './agenstra-search-document.mapper';
@@ -76,6 +80,10 @@ export class AgenstraSearchIndexService {
     private readonly entityEventsRepo: Repository<StatisticsEntityEventEntity>,
     @InjectRepository(StatisticsUserEntity)
     private readonly statisticsUsersRepo: Repository<StatisticsUserEntity>,
+    @InjectRepository(OpencodeProviderEntity)
+    private readonly opencodeProvidersRepo: Repository<OpencodeProviderEntity>,
+    @InjectRepository(OpencodeMcpServerEntity)
+    private readonly opencodeMcpServersRepo: Repository<OpencodeMcpServerEntity>,
   ) {}
 
   isEnabled(): boolean {
@@ -122,6 +130,23 @@ export class AgenstraSearchIndexService {
       await this.delete(entityType, id);
     } catch (error) {
       this.logger.warn(`Search delete failed for ${entityType}/${id}: ${(error as Error).message}`);
+    }
+  }
+
+  /** Bulk upsert documents; chunks to keep OpenSearch payloads bounded. */
+  async bulkUpsertSafe(entityType: AgenstraSearchEntityType, documents: AgenstraSearchDocument[]): Promise<void> {
+    if (!this.isEnabled() || documents.length === 0) {
+      return;
+    }
+
+    const chunkSize = 500;
+
+    try {
+      for (let offset = 0; offset < documents.length; offset += chunkSize) {
+        await this.bulkIndex(entityType, documents.slice(offset, offset + chunkSize));
+      }
+    } catch (error) {
+      this.logger.warn(`Search bulk upsert failed for ${entityType}: ${(error as Error).message}`);
     }
   }
 
@@ -209,6 +234,10 @@ export class AgenstraSearchIndexService {
         return await this.reindexImportConfigs(offset, limit);
       case 'users':
         return await this.reindexUsers(offset, limit);
+      case 'opencode-providers':
+        return await this.reindexOpencodeProviders(offset, limit);
+      case 'opencode-mcp-servers':
+        return await this.reindexOpencodeMcpServers(offset, limit);
       case 'deployment-runs':
       case 'environments':
         // Proxied to agent-manager; live hooks index when available.
@@ -472,6 +501,36 @@ export class AgenstraSearchIndexService {
     await this.bulkIndex(
       'users',
       rows.map((row) => mapUserToSearchDocument(row)),
+    );
+
+    return { indexed: rows.length, hasMore: rows.length === limit };
+  }
+
+  private async reindexOpencodeProviders(offset: number, limit: number): Promise<AgenstraReindexBatchResult> {
+    const rows = await this.opencodeProvidersRepo.find({
+      order: { id: 'ASC' },
+      skip: offset,
+      take: limit,
+    });
+
+    await this.bulkIndex(
+      'opencode-providers',
+      rows.map((row) => mapOpencodeProviderToSearchDocument(row)),
+    );
+
+    return { indexed: rows.length, hasMore: rows.length === limit };
+  }
+
+  private async reindexOpencodeMcpServers(offset: number, limit: number): Promise<AgenstraReindexBatchResult> {
+    const rows = await this.opencodeMcpServersRepo.find({
+      order: { name: 'ASC' },
+      skip: offset,
+      take: limit,
+    });
+
+    await this.bulkIndex(
+      'opencode-mcp-servers',
+      rows.map((row) => mapOpencodeMcpServerToSearchDocument(row)),
     );
 
     return { indexed: rows.length, hasMore: rows.length === limit };

@@ -5284,25 +5284,129 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UpdateCheckTriggerResultDto'
-  /opencode-providers:
+  /opencode/providers:
     get:
       tags: [OpenCode]
       summary: List cached built-in OpenCode LLM providers
       description: |
         Returns the models.dev provider catalog cached in the database
         (including model id/name pairs). Refreshed by the `opencode-providers.refresh` BullMQ job.
+        Supports optional search (OpenSearch with ILIKE fallback) and pagination for typeahead UIs.
         Requires authenticated access with `clients:read`.
       operationId: listOpencodeProviders
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Case-insensitive filter across id, name, npm package, api, env, and models
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
       responses:
         '200':
-          description: Provider catalog
+          description: Provider catalog page
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/OpencodeProvidersListDto'
         '401':
           description: Not authenticated
-  /admin/opencode-config:
+  /opencode/providers/{id}:
+    get:
+      tags: [OpenCode]
+      summary: Get a cached OpenCode LLM provider
+      operationId: getOpencodeProvider
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Provider id (models.dev id)
+      responses:
+        '200':
+          description: Provider
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeProviderDto'
+        '401':
+          description: Not authenticated
+        '404':
+          description: Provider not found
+  /opencode/mcp-servers:
+    get:
+      tags: [OpenCode]
+      summary: List cached MCP Registry servers
+      description: |
+        Returns the official MCP Registry catalog cached in the database (latest versions).
+        Refreshed by the `opencode-mcp-servers.refresh` BullMQ job, which walks all
+        upstream cursor pages before upserting. Supports optional search (OpenSearch with ILIKE
+        fallback) and pagination for typeahead UIs. Requires authenticated access with `clients:read`.
+      operationId: listOpencodeMcpServers
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Case-insensitive filter across name, title, description, and status
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: MCP server catalog page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeMcpServersListDto'
+        '401':
+          description: Not authenticated
+  /opencode/mcp-servers/{name}:
+    get:
+      tags: [OpenCode]
+      summary: Get a cached MCP Registry server
+      operationId: getOpencodeMcpServer
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+          description: Reverse-DNS MCP Registry server name
+      responses:
+        '200':
+          description: MCP server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeMcpServerDto'
+        '401':
+          description: Not authenticated
+        '404':
+          description: MCP server not found
+  /admin/opencode/config:
     get:
       tags: [Admin]
       summary: Get global OpenCode config
@@ -5331,7 +5435,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OpencodeConfigResponseDto'
-  /admin/opencode-config/files:
+  /admin/opencode/config/files:
     get:
       tags: [Admin]
       summary: List children under a global layer path
@@ -5366,7 +5470,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OpencodeLayerFileResponseDto'
-  /admin/opencode-config/files/{path}:
+  /admin/opencode/config/files/{path}:
     get:
       tags: [Admin]
       summary: Get a global OpenCode layer file
@@ -5431,7 +5535,7 @@ paths:
                 properties:
                   ok:
                     type: boolean
-  /clients/{id}/opencode-config:
+  /clients/{id}/opencode/config:
     get:
       summary: Get workspace OpenCode config
       operationId: getClientOpencodeConfig
@@ -5472,7 +5576,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OpencodeConfigResponseDto'
-  /clients/{id}/opencode-config/files:
+  /clients/{id}/opencode/config/files:
     get:
       summary: List children under a workspace layer path
       operationId: listClientOpencodeLayerFiles
@@ -5518,7 +5622,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OpencodeLayerFileResponseDto'
-  /clients/{id}/opencode-config/files/{path}:
+  /clients/{id}/opencode/config/files/{path}:
     get:
       summary: Get a workspace OpenCode layer file
       operationId: getClientOpencodeLayerFile
@@ -5598,7 +5702,7 @@ paths:
                 properties:
                   ok:
                     type: boolean
-  /clients/{id}/agents/{agentId}/opencode-config:
+  /clients/{id}/agents/{agentId}/opencode/config:
     get:
       summary: Get agent OpenCode config
       operationId: getClientAgentOpencodeConfig
@@ -5651,7 +5755,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OpencodeConfigResponseDto'
-  /clients/{id}/agents/{agentId}/opencode-config/agents:
+  /clients/{id}/agents/{agentId}/opencode/config/agents:
     get:
       summary: List effective OpenCode agents for a remote worker
       operationId: listClientAgentOpencodeAgents
@@ -5675,7 +5779,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OpencodeAgentsListResponseDto'
-  /clients/{id}/agents/{agentId}/opencode-config/commands:
+  /clients/{id}/agents/{agentId}/opencode/config/commands:
     get:
       summary: List slash-invokable OpenCode commands for a remote worker
       description: >
@@ -5702,6 +5806,207 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OpencodeCommandsListResponseDto'
+  /clients/{id}/agents/{agentId}/opencode/mcp:
+    get:
+      summary: List live MCP server statuses for an Environment
+      description: >
+        Environment-only. Proxies OpenCode `GET /mcp` via the agent manager. Use to detect
+        servers that need interactive OAuth (`needs_auth` / `needs_client_registration`).
+      operationId: listClientAgentOpencodeMcpStatuses
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: MCP server statuses
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeMcpStatusListResponseDto'
+  /clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth:
+    post:
+      summary: Start interactive MCP OAuth for an Environment MCP server
+      description: >
+        Environment-only. Builds a signed public callback URL, sets it as the worker
+        oauth.redirectUri, then proxies OpenCode `POST /mcp/{name}/auth`.
+      operationId: startClientAgentOpencodeMcpAuth
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OAuth flow started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeMcpAuthStartResponseDto'
+        '400':
+          description: Agent not running, MCP OAuth unsupported, or callback env not configured
+    delete:
+      summary: Remove MCP OAuth credentials for an Environment MCP server
+      operationId: removeClientAgentOpencodeMcpAuth
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OAuth credentials removed
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success]
+                properties:
+                  success:
+                    type: boolean
+                    enum: [true]
+  /clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth/callback:
+    post:
+      summary: Complete MCP OAuth with authorization code
+      operationId: completeClientAgentOpencodeMcpAuth
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+                  minLength: 1
+      responses:
+        '200':
+          description: Updated MCP status after OAuth
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeMcpServerStatusDto'
+  /clients/{clientId}/agents/{agentId}/opencode/mcp/{name}/oauth/callback:
+    get:
+      summary: Public MCP OAuth redirect callback (no /api prefix)
+      description: >
+        IdP redirect target for Environment interactive MCP auth. Verifies HMAC `sig`/`exp`
+        query params (`MCP_OAUTH_CALLBACK_SECRET`), then proxies the authorization
+        `code` to the agent manager OpenCode auth/callback. Mounted outside the Nest `/api`
+        global prefix.
+      operationId: publicClientAgentOpencodeMcpOAuthCallback
+      servers:
+        - url: http://localhost:3100
+      security: []
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: code
+          schema:
+            type: string
+        - in: query
+          name: state
+          schema:
+            type: string
+        - in: query
+          name: exp
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: sig
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: error
+          schema:
+            type: string
+        - in: query
+          name: error_description
+          schema:
+            type: string
+      responses:
+        '200':
+          description: HTML success page after completing worker auth
+          content:
+            text/html:
+              schema:
+                type: string
+        '400':
+          description: Missing code or auth completion failed
+        '403':
+          description: Invalid or expired signature
   /otel/metrics:
     get:
       summary: Prometheus metrics scrape
@@ -8725,12 +9030,69 @@ components:
           type: string
     OpencodeProvidersListDto:
       type: object
-      required: [providers]
+      required: [providers, total, limit, offset]
       properties:
         providers:
           type: array
           items:
             $ref: '#/components/schemas/OpencodeProviderDto'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+    OpencodeMcpServerDto:
+      type: object
+      required: [name, title, description, version, status, packages, remotes]
+      properties:
+        name:
+          type: string
+          description: Reverse-DNS MCP Registry server name
+        title:
+          type: string
+        description:
+          type: string
+        version:
+          type: string
+        status:
+          type: string
+          description: Registry lifecycle status (active, deprecated)
+        websiteUrl:
+          type: string
+        packages:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        remotes:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        repository:
+          type: object
+          additionalProperties: true
+        publishedAt:
+          type: string
+          format: date-time
+        registryUpdatedAt:
+          type: string
+          format: date-time
+    OpencodeMcpServersListDto:
+      type: object
+      required: [servers, total, limit, offset]
+      properties:
+        servers:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpencodeMcpServerDto'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
     OpencodeAgentsListResponseDto:
       type: object
       required: [agents]
@@ -8786,6 +9148,35 @@ components:
               source:
                 type: string
                 enum: [command, mcp, skill]
+    OpencodeMcpServerStatusDto:
+      type: object
+      required: [name, status]
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+          enum:
+            [connected, disabled, failed, needs_auth, needs_client_registration]
+        error:
+          type: string
+    OpencodeMcpStatusListResponseDto:
+      type: object
+      required: [servers]
+      properties:
+        servers:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpencodeMcpServerStatusDto'
+    OpencodeMcpAuthStartResponseDto:
+      type: object
+      required: [authorizationUrl]
+      properties:
+        authorizationUrl:
+          type: string
+          format: uri
+        oauthState:
+          type: string
     UpsertOpencodeConfigDto:
       type: object
       properties:

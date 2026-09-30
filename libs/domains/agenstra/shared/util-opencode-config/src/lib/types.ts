@@ -36,6 +36,12 @@ export const REPLACE_LOCK_ROOT_KEYS = [
 /** Map keys whose entries deep-merge; parent entry names are locked. */
 export const MAP_MERGE_ROOT_KEYS = ['providers', 'commands', 'agents', 'references'] as const;
 
+/**
+ * Fields a child layer may set on an inherited additive map entry without replacing it.
+ * Merge deep-merges these onto the parent entry (e.g. disable an inherited MCP server).
+ */
+export const INHERITED_MAP_ENTRY_OVERRIDE_KEYS = ['disabled', 'hidden'] as const;
+
 /** Array keys that concatenate across layers. */
 export const ARRAY_CONCAT_ROOT_KEYS = ['skills', 'instructions', 'plugins'] as const;
 

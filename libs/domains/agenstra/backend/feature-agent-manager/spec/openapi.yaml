@@ -306,7 +306,7 @@ paths:
           description: Question reply accepted
         '404':
           description: Agent not found or not running
-  /agents/{id}/opencode-config:
+  /agents/{id}/opencode/config:
     get:
       summary: Get agent OpenCode user config
       operationId: getAgentOpencodeConfig
@@ -374,7 +374,7 @@ paths:
       responses:
         '200':
           description: Updated agent OpenCode config
-  /agents/{id}/opencode-config/agents:
+  /agents/{id}/opencode/config/agents:
     get:
       summary: List effective OpenCode agents (primary + subagents) from the worker
       operationId: listAgentOpencodeAgents
@@ -409,7 +409,7 @@ paths:
                           enum: [subagent, primary, all]
                         builtIn:
                           type: boolean
-  /agents/{id}/opencode-config/commands:
+  /agents/{id}/opencode/config/commands:
     get:
       summary: List slash-invokable OpenCode commands from the worker
       description: >
@@ -453,7 +453,7 @@ paths:
                           enum: [command, mcp, skill]
         '404':
           description: Agent not found
-  /agents/{id}/opencode-config/sync:
+  /agents/{id}/opencode/config/sync:
     post:
       summary: Best-effort sync effective OpenCode config into worker
       operationId: syncAgentOpencodeConfig
@@ -478,6 +478,138 @@ paths:
       responses:
         '200':
           description: Sync attempted
+  /agents/{id}/opencode/mcp:
+    get:
+      summary: List live MCP server statuses from the OpenCode worker
+      description: >
+        Proxies OpenCode `GET /mcp`. Statuses include `connected`, `disabled`, `failed`,
+        `needs_auth`, and `needs_client_registration`.
+      operationId: listAgentOpencodeMcpStatuses
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: MCP server statuses
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeMcpStatusListResponseDto'
+        '404':
+          description: Agent not found
+  /agents/{id}/opencode/mcp/{name}/auth:
+    post:
+      summary: Start interactive MCP OAuth for a server
+      description: >
+        Proxies OpenCode `POST /mcp/{name}/auth`. When `redirectUri` is set, patches the worker
+        MCP oauth.redirectUri first so the IdP returns to the Agenstra public callback.
+      operationId: startAgentOpencodeMcpAuth
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                redirectUri:
+                  type: string
+                  format: uri
+      responses:
+        '200':
+          description: OAuth flow started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeMcpAuthStartResponseDto'
+        '400':
+          description: Agent not running or MCP OAuth unsupported
+        '404':
+          description: Agent or MCP server not found
+    delete:
+      summary: Remove MCP OAuth credentials
+      operationId: removeAgentOpencodeMcpAuth
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OAuth credentials removed
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success]
+                properties:
+                  success:
+                    type: boolean
+                    enum: [true]
+        '400':
+          description: Agent not running
+        '404':
+          description: Agent or MCP server not found
+  /agents/{id}/opencode/mcp/{name}/auth/callback:
+    post:
+      summary: Complete MCP OAuth with authorization code
+      operationId: completeAgentOpencodeMcpAuth
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+                  minLength: 1
+      responses:
+        '200':
+          description: Updated MCP status after OAuth
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeMcpServerStatusDto'
+        '400':
+          description: Invalid code or OAuth failed
+        '404':
+          description: Agent or MCP server not found
   /agents-filters:
     get:
       summary: List regex filter rules
@@ -3036,3 +3168,32 @@ components:
         priority:
           type: integer
           minimum: 0
+    OpencodeMcpServerStatusDto:
+      type: object
+      required: [name, status]
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+          enum:
+            [connected, disabled, failed, needs_auth, needs_client_registration]
+        error:
+          type: string
+    OpencodeMcpStatusListResponseDto:
+      type: object
+      required: [servers]
+      properties:
+        servers:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpencodeMcpServerStatusDto'
+    OpencodeMcpAuthStartResponseDto:
+      type: object
+      required: [authorizationUrl]
+      properties:
+        authorizationUrl:
+          type: string
+          format: uri
+        oauthState:
+          type: string

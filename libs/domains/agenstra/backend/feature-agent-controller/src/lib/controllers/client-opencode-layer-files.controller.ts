@@ -15,7 +15,7 @@ import {
 import { ClientsRepository } from '../repositories/clients.repository';
 import { OpencodeLayerFilesService } from '../services/opencode-layer-files.service';
 
-@Controller('clients/:id/opencode-config/files')
+@Controller('clients/:id/opencode/config/files')
 export class ClientOpencodeLayerFilesController {
   constructor(
     private readonly layerFilesService: OpencodeLayerFilesService,

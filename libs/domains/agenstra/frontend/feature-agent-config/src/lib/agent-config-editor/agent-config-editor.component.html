@@ -350,30 +350,35 @@
                   i18n-label="@@featureAgentConfig-addKnownProviderLabel"
                   label="Add known provider"
                 >
-                  <fpc-input-group>
-                    <fpc-form-control
-                      controlId="agentConfigEnabledKnownProvider"
-                      controlType="select"
-                      [ngModel]="draftEnabledProviderId()"
-                      (ngModelChange)="draftEnabledProviderId.set($event)"
-                    >
-                      <option value=""></option>
-                      @for (provider of unusedEnabledProviderOptions(); track provider.id) {
-                        <option [value]="provider.id">{{ builtinProviderLabel(provider) }}</option>
+                  <fpc-typeahead-select
+                    inputId="agentConfigEnabledKnownProvider"
+                    listboxId="agentConfigEnabledKnownProvider-listbox"
+                    i18n-placeholder="@@featureAgentConfig-providerTypeaheadPlaceholder"
+                    placeholder="Search built-in providers…"
+                    i18n-ariaLabel="@@featureAgentConfig-providerTypeaheadAria"
+                    ariaLabel="Search built-in providers"
+                    [loading]="enabledProviderTypeaheadLoading()"
+                    [openOnFocus]="false"
+                    [query]="enabledProviderTypeaheadQuery()"
+                    (queryChange)="onEnabledProviderTypeaheadQueryChange($event)"
+                    [open]="enabledProviderTypeaheadOpen()"
+                    (openChange)="onEnabledProviderTypeaheadOpenChange($event)"
+                  >
+                    <div fpcTypeaheadSuggestions>
+                      @for (provider of filteredEnabledProviderTypeaheadResults(); track provider.id) {
+                        <button
+                          type="button"
+                          class="dropdown-item py-2 text-start"
+                          (mousedown)="pickEnabledProviderTypeahead(provider, $event)"
+                        >
+                          <span class="d-block small fw-medium text-truncate">{{
+                            builtinProviderLabel(provider)
+                          }}</span>
+                          <span class="d-block font-monospace text-muted small text-truncate">{{ provider.id }}</span>
+                        </button>
                       }
-                    </fpc-form-control>
-                    <fpc-button
-                      fpcInputGroupSuffix
-                      variant="secondary"
-                      iconOnly
-                      [disabled]="!draftEnabledProviderId().trim()"
-                      (clicked)="addKnownEnabledProvider()"
-                      i18n-ariaLabel="@@featureAgentConfig-addEntry"
-                      ariaLabel="Add"
-                    >
-                      <i class="bi bi-plus" aria-hidden="true"></i>
-                    </fpc-button>
-                  </fpc-input-group>
+                    </div>
+                  </fpc-typeahead-select>
                 </fpc-form-field>
               </div>
             }
@@ -400,30 +405,35 @@
                   i18n-label="@@featureAgentConfig-addKnownProviderLabel"
                   label="Add known provider"
                 >
-                  <fpc-input-group>
-                    <fpc-form-control
-                      controlId="agentConfigDisabledKnownProvider"
-                      controlType="select"
-                      [ngModel]="draftDisabledProviderId()"
-                      (ngModelChange)="draftDisabledProviderId.set($event)"
-                    >
-                      <option value=""></option>
-                      @for (provider of unusedDisabledProviderOptions(); track provider.id) {
-                        <option [value]="provider.id">{{ builtinProviderLabel(provider) }}</option>
+                  <fpc-typeahead-select
+                    inputId="agentConfigDisabledKnownProvider"
+                    listboxId="agentConfigDisabledKnownProvider-listbox"
+                    i18n-placeholder="@@featureAgentConfig-providerTypeaheadPlaceholder"
+                    placeholder="Search built-in providers…"
+                    i18n-ariaLabel="@@featureAgentConfig-providerTypeaheadAria"
+                    ariaLabel="Search built-in providers"
+                    [loading]="disabledProviderTypeaheadLoading()"
+                    [openOnFocus]="false"
+                    [query]="disabledProviderTypeaheadQuery()"
+                    (queryChange)="onDisabledProviderTypeaheadQueryChange($event)"
+                    [open]="disabledProviderTypeaheadOpen()"
+                    (openChange)="onDisabledProviderTypeaheadOpenChange($event)"
+                  >
+                    <div fpcTypeaheadSuggestions>
+                      @for (provider of filteredDisabledProviderTypeaheadResults(); track provider.id) {
+                        <button
+                          type="button"
+                          class="dropdown-item py-2 text-start"
+                          (mousedown)="pickDisabledProviderTypeahead(provider, $event)"
+                        >
+                          <span class="d-block small fw-medium text-truncate">{{
+                            builtinProviderLabel(provider)
+                          }}</span>
+                          <span class="d-block font-monospace text-muted small text-truncate">{{ provider.id }}</span>
+                        </button>
                       }
-                    </fpc-form-control>
-                    <fpc-button
-                      fpcInputGroupSuffix
-                      variant="secondary"
-                      iconOnly
-                      [disabled]="!draftDisabledProviderId().trim()"
-                      (clicked)="addKnownDisabledProvider()"
-                      i18n-ariaLabel="@@featureAgentConfig-addEntry"
-                      ariaLabel="Add"
-                    >
-                      <i class="bi bi-plus" aria-hidden="true"></i>
-                    </fpc-button>
-                  </fpc-input-group>
+                    </div>
+                  </fpc-typeahead-select>
                 </fpc-form-field>
               </div>
             }
@@ -452,19 +462,52 @@
                   label="Add known model"
                 >
                   <div class="agent-config-editor__known-model-add-row">
-                    <fpc-form-control
-                      controlId="agentConfigAllowKnownModelProvider"
-                      controlType="select"
-                      [ngModel]="draftAllowModelProviderId()"
-                      (ngModelChange)="onAllowModelProviderChange($event)"
-                      i18n-ariaLabel="@@featureAgentConfig-knownModelProviderAria"
-                      ariaLabel="Provider"
-                    >
-                      <option value="" i18n="@@featureAgentConfig-knownModelProviderPlaceholder">Provider</option>
-                      @for (provider of unusedAllowModelProviderOptions(); track provider.id) {
-                        <option [value]="provider.id">{{ builtinProviderLabel(provider) }}</option>
-                      }
-                    </fpc-form-control>
+                    @if (allowModelSelectedProvider(); as selectedProvider) {
+                      <div class="agent-config-editor__typeahead-selection">
+                        <span class="agent-config-editor__typeahead-selection-label text-truncate">{{
+                          builtinProviderLabel(selectedProvider)
+                        }}</span>
+                        <button
+                          type="button"
+                          class="btn-close agent-config-editor__selection-clear"
+                          (click)="clearAllowModelProviderSelection()"
+                          i18n-aria-label="@@featureAgentConfig-clearKnownModelProviderAria"
+                          aria-label="Clear provider"
+                        ></button>
+                      </div>
+                    } @else {
+                      <fpc-typeahead-select
+                        inputId="agentConfigAllowKnownModelProvider"
+                        listboxId="agentConfigAllowKnownModelProvider-listbox"
+                        i18n-placeholder="@@featureAgentConfig-knownModelProviderPlaceholder"
+                        placeholder="Provider"
+                        i18n-ariaLabel="@@featureAgentConfig-knownModelProviderAria"
+                        ariaLabel="Provider"
+                        [loading]="allowModelProviderTypeaheadLoading()"
+                        [openOnFocus]="false"
+                        [query]="allowModelProviderTypeaheadQuery()"
+                        (queryChange)="onAllowModelProviderTypeaheadQueryChange($event)"
+                        [open]="allowModelProviderTypeaheadOpen()"
+                        (openChange)="onAllowModelProviderTypeaheadOpenChange($event)"
+                      >
+                        <div fpcTypeaheadSuggestions>
+                          @for (provider of filteredAllowModelProviderTypeaheadResults(); track provider.id) {
+                            <button
+                              type="button"
+                              class="dropdown-item py-2 text-start"
+                              (mousedown)="pickAllowModelProviderTypeahead(provider, $event)"
+                            >
+                              <span class="d-block small fw-medium text-truncate">{{
+                                builtinProviderLabel(provider)
+                              }}</span>
+                              <span class="d-block font-monospace text-muted small text-truncate">{{
+                                provider.id
+                              }}</span>
+                            </button>
+                          }
+                        </div>
+                      </fpc-typeahead-select>
+                    }
                     <fpc-input-group>
                       @if (allowModelUsesCatalogSelect()) {
                         <fpc-form-control
@@ -533,19 +576,52 @@
                   label="Add known model"
                 >
                   <div class="agent-config-editor__known-model-add-row">
-                    <fpc-form-control
-                      controlId="agentConfigDenyKnownModelProvider"
-                      controlType="select"
-                      [ngModel]="draftDenyModelProviderId()"
-                      (ngModelChange)="onDenyModelProviderChange($event)"
-                      i18n-ariaLabel="@@featureAgentConfig-knownModelProviderAria"
-                      ariaLabel="Provider"
-                    >
-                      <option value="" i18n="@@featureAgentConfig-knownModelProviderPlaceholder">Provider</option>
-                      @for (provider of unusedDenyModelProviderOptions(); track provider.id) {
-                        <option [value]="provider.id">{{ builtinProviderLabel(provider) }}</option>
-                      }
-                    </fpc-form-control>
+                    @if (denyModelSelectedProvider(); as selectedProvider) {
+                      <div class="agent-config-editor__typeahead-selection">
+                        <span class="agent-config-editor__typeahead-selection-label text-truncate">{{
+                          builtinProviderLabel(selectedProvider)
+                        }}</span>
+                        <button
+                          type="button"
+                          class="btn-close agent-config-editor__selection-clear"
+                          (click)="clearDenyModelProviderSelection()"
+                          i18n-aria-label="@@featureAgentConfig-clearKnownModelProviderAria"
+                          aria-label="Clear provider"
+                        ></button>
+                      </div>
+                    } @else {
+                      <fpc-typeahead-select
+                        inputId="agentConfigDenyKnownModelProvider"
+                        listboxId="agentConfigDenyKnownModelProvider-listbox"
+                        i18n-placeholder="@@featureAgentConfig-knownModelProviderPlaceholder"
+                        placeholder="Provider"
+                        i18n-ariaLabel="@@featureAgentConfig-knownModelProviderAria"
+                        ariaLabel="Provider"
+                        [loading]="denyModelProviderTypeaheadLoading()"
+                        [openOnFocus]="false"
+                        [query]="denyModelProviderTypeaheadQuery()"
+                        (queryChange)="onDenyModelProviderTypeaheadQueryChange($event)"
+                        [open]="denyModelProviderTypeaheadOpen()"
+                        (openChange)="onDenyModelProviderTypeaheadOpenChange($event)"
+                      >
+                        <div fpcTypeaheadSuggestions>
+                          @for (provider of filteredDenyModelProviderTypeaheadResults(); track provider.id) {
+                            <button
+                              type="button"
+                              class="dropdown-item py-2 text-start"
+                              (mousedown)="pickDenyModelProviderTypeahead(provider, $event)"
+                            >
+                              <span class="d-block small fw-medium text-truncate">{{
+                                builtinProviderLabel(provider)
+                              }}</span>
+                              <span class="d-block font-monospace text-muted small text-truncate">{{
+                                provider.id
+                              }}</span>
+                            </button>
+                          }
+                        </div>
+                      </fpc-typeahead-select>
+                    }
                     <fpc-input-group>
                       @if (denyModelUsesCatalogSelect()) {
                         <fpc-form-control
@@ -608,34 +684,43 @@
                 i18n-label="@@featureAgentConfig-providerSelectLabel"
                 label="Provider"
               >
-                <fpc-input-group>
-                  <fpc-form-control
-                    controlId="agentConfigBuiltinProvider"
-                    controlType="select"
-                    [ngModel]="draftBuiltinProviderId()"
-                    (ngModelChange)="onProviderSelectChange($event)"
-                  >
-                    <option value=""></option>
-                    <option [value]="customProviderSelectValue" i18n="@@featureAgentConfig-customProviderOption">
-                      Custom
-                    </option>
-                    @for (provider of unusedBuiltinProviderOptions(); track provider.id) {
-                      <option [value]="provider.id">{{ builtinProviderLabel(provider) }}</option>
+                <fpc-typeahead-select
+                  inputId="agentConfigBuiltinProvider"
+                  listboxId="agentConfigBuiltinProvider-listbox"
+                  i18n-placeholder="@@featureAgentConfig-providerTypeaheadPlaceholder"
+                  placeholder="Search built-in providers…"
+                  i18n-ariaLabel="@@featureAgentConfig-providerTypeaheadAria"
+                  ariaLabel="Search built-in providers"
+                  [loading]="providerTypeaheadLoading()"
+                  [openOnFocus]="false"
+                  [query]="providerTypeaheadQuery()"
+                  (queryChange)="onProviderTypeaheadQueryChange($event)"
+                  [open]="providerTypeaheadOpen()"
+                  (openChange)="onProviderTypeaheadOpenChange($event)"
+                >
+                  <div fpcTypeaheadSuggestions>
+                    @for (provider of filteredProviderTypeaheadResults(); track provider.id) {
+                      <button
+                        type="button"
+                        class="dropdown-item py-2 text-start"
+                        (mousedown)="pickProviderTypeahead(provider, $event)"
+                      >
+                        <span class="d-block small fw-medium text-truncate">{{ builtinProviderLabel(provider) }}</span>
+                        <span class="d-block font-monospace text-muted small text-truncate">{{ provider.id }}</span>
+                      </button>
                     }
-                  </fpc-form-control>
-                  @if (!isCustomProviderMode() && draftBuiltinProviderId().trim()) {
-                    <fpc-button
-                      fpcInputGroupSuffix
-                      variant="secondary"
-                      iconOnly
-                      (clicked)="addBuiltinProvider()"
-                      i18n-ariaLabel="@@featureAgentConfig-addEntry"
-                      ariaLabel="Add"
-                    >
-                      <i class="bi bi-plus" aria-hidden="true"></i>
-                    </fpc-button>
-                  }
-                </fpc-input-group>
+                  </div>
+                </fpc-typeahead-select>
+                <div class="d-flex justify-content-end mt-1">
+                  <fpc-button
+                    size="sm"
+                    variant="secondary"
+                    (clicked)="startCustomProviderMode()"
+                    i18n="@@featureAgentConfig-customProviderOption"
+                  >
+                    Custom provider
+                  </fpc-button>
+                </div>
               </fpc-form-field>
               @if (isCustomProviderMode()) {
                 <fpc-form-field
@@ -830,17 +915,124 @@
             />
           </agenstra-agent-config-settings-row>
           <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-mcpServersHeading">Servers</h3>
+          <p class="agent-config-editor__note" i18n="@@featureAgentConfig-mcpServersHelp">
+            Pick a registry MCP server to seed command/URL and secret names, or add a custom id. Secret values are
+            stored in layer secrets, not in config JSON.
+          </p>
+          @if (!isLocked('/mcp/servers')) {
+            <div class="agent-config-editor__provider-add">
+              <fpc-form-field
+                forId="agentConfigBuiltinMcp"
+                i18n-label="@@featureAgentConfig-mcpSelectLabel"
+                label="MCP server"
+              >
+                <fpc-typeahead-select
+                  inputId="agentConfigBuiltinMcp"
+                  listboxId="agentConfigBuiltinMcp-listbox"
+                  i18n-placeholder="@@featureAgentConfig-mcpTypeaheadPlaceholder"
+                  placeholder="Search MCP registry…"
+                  i18n-ariaLabel="@@featureAgentConfig-mcpTypeaheadAria"
+                  ariaLabel="Search MCP registry servers"
+                  [loading]="mcpTypeaheadLoading()"
+                  [openOnFocus]="false"
+                  [query]="mcpTypeaheadQuery()"
+                  (queryChange)="onMcpTypeaheadQueryChange($event)"
+                  [open]="mcpTypeaheadOpen()"
+                  (openChange)="onMcpTypeaheadOpenChange($event)"
+                >
+                  <div fpcTypeaheadSuggestions>
+                    @for (server of filteredMcpTypeaheadResults(); track server.name) {
+                      <button
+                        type="button"
+                        class="dropdown-item py-2 text-start"
+                        (mousedown)="pickMcpTypeahead(server, $event)"
+                      >
+                        <span class="d-block small fw-medium text-truncate">{{
+                          builtinMcpServerOptionLabel(server)
+                        }}</span>
+                        <span class="d-block font-monospace text-muted small text-truncate">{{ server.name }}</span>
+                      </button>
+                    }
+                  </div>
+                </fpc-typeahead-select>
+                <div class="d-flex justify-content-end mt-1">
+                  <fpc-button
+                    size="sm"
+                    variant="secondary"
+                    (clicked)="startCustomMcpMode()"
+                    i18n="@@featureAgentConfig-customMcpOption"
+                  >
+                    Custom MCP server
+                  </fpc-button>
+                </div>
+              </fpc-form-field>
+              @if (isCustomMcpMode()) {
+                <fpc-form-field
+                  forId="agentConfigCustomMcp"
+                  i18n-label="@@featureAgentConfig-customMcpLabel"
+                  label="Custom MCP server id"
+                >
+                  <fpc-input-group>
+                    <fpc-form-control
+                      controlId="agentConfigCustomMcp"
+                      [ngModel]="draftCustomMcpServerId()"
+                      (ngModelChange)="draftCustomMcpServerId.set($event)"
+                      i18n-placeholder="@@featureAgentConfig-customMcpPlaceholder"
+                      placeholder="my-mcp-server"
+                    />
+                    <fpc-button
+                      fpcInputGroupSuffix
+                      variant="secondary"
+                      iconOnly
+                      [disabled]="!draftCustomMcpServerId().trim()"
+                      (clicked)="addCustomMcpServer()"
+                      i18n-ariaLabel="@@featureAgentConfig-addEntry"
+                      ariaLabel="Add"
+                    >
+                      <i class="bi bi-plus" aria-hidden="true"></i>
+                    </fpc-button>
+                  </fpc-input-group>
+                </fpc-form-field>
+              }
+            </div>
+          }
           <agenstra-agent-config-map-list
             [entries]="mcpServerEntries()"
             [entryTemplate]="mcpEntryTpl"
+            [disabled]="isLocked('/mcp/servers')"
+            [showAddChrome]="false"
+            [(expandedKey)]="mcpMapExpandedKey"
             emptyLabel="No MCP servers yet."
-            addLabel="Server"
-            i18n-addLabel="@@featureAgentConfig-addServerLabel"
             ariaLabel="MCP servers"
-            (add)="addMapEntry('mcp.servers', $event, { type: 'local', command: [] })"
             (remove)="removeMapEntry('mcp.servers', $event)"
           />
-          <ng-template #mcpEntryTpl let-key>
+          <ng-template #mcpEntryTpl let-key let-entry="entry">
+            @if (showMcpRuntimeAuth()) {
+              <agenstra-agent-config-settings-row
+                i18n-title="@@featureAgentConfig-mcpRuntimeStatusTitle"
+                title="Runtime status"
+                i18n-description="@@featureAgentConfig-mcpRuntimeStatusHelp"
+                description="Live OpenCode MCP connection state for this Environment"
+                [dirty]="false"
+              >
+                <div class="d-flex flex-column gap-2 align-items-stretch">
+                  @if (mcpAuthError()) {
+                    <fpc-alert variant="danger">{{ mcpAuthError() }}</fpc-alert>
+                  }
+                  <div class="d-flex justify-content-end">
+                    <fpc-button
+                      size="sm"
+                      variant="primary"
+                      [disabled]="mcpAuthButtonDisabled(key)"
+                      (clicked)="startMcpInteractiveAuth(key)"
+                      i18n="@@featureAgentConfig-mcpAuthStart"
+                    >
+                      Authenticate
+                    </fpc-button>
+                  </div>
+                </div>
+              </agenstra-agent-config-settings-row>
+            }
             <agenstra-agent-config-settings-row
               title="Type"
               description="local process or remote HTTP server"
@@ -850,6 +1042,7 @@
                 controlType="select"
                 [ngModel]="mapEntryString('mcp.servers', key, 'type') || 'local'"
                 (ngModelChange)="setMcpType(key, $event)"
+                [disabled]="!canEditMcpTransport(key) || entry.inherited"
               >
                 @for (type of mcpTypes; track type) {
                   <option [value]="type">{{ type }}</option>
@@ -867,6 +1060,7 @@
                   [rows]="3"
                   [ngModel]="mapEntryStringList('mcp.servers', key, 'command')"
                   (ngModelChange)="setMapEntryStringList('mcp.servers', key, 'command', $event)"
+                  [disabled]="!canEditMcpTransport(key) || entry.inherited"
                 />
               </agenstra-agent-config-settings-row>
               <agenstra-agent-config-settings-row
@@ -877,11 +1071,12 @@
                 <fpc-form-control
                   [ngModel]="mapEntryString('mcp.servers', key, 'cwd')"
                   (ngModelChange)="setMapEntryString('mcp.servers', key, 'cwd', $event)"
+                  [disabled]="entry.inherited"
                 />
               </agenstra-agent-config-settings-row>
               <agenstra-agent-config-settings-row
                 title="Environment"
-                description="KEY=value per line"
+                description="Non-secret KEY=value per line (secrets use fields below)"
                 [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'environment')"
               >
                 <fpc-form-control
@@ -889,6 +1084,7 @@
                   [rows]="3"
                   [ngModel]="mapEntryStringList('mcp.servers', key, 'environment')"
                   (ngModelChange)="setMapEntryStringList('mcp.servers', key, 'environment', $event, true)"
+                  [disabled]="entry.inherited"
                 />
               </agenstra-agent-config-settings-row>
             } @else {
@@ -900,11 +1096,12 @@
                 <fpc-form-control
                   [ngModel]="mapEntryString('mcp.servers', key, 'url')"
                   (ngModelChange)="setMapEntryString('mcp.servers', key, 'url', $event)"
+                  [disabled]="!canEditMcpTransport(key) || entry.inherited"
                 />
               </agenstra-agent-config-settings-row>
               <agenstra-agent-config-settings-row
                 title="Headers"
-                description="KEY=value per line"
+                description="Non-secret KEY=value per line (secrets use fields below)"
                 [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'headers')"
               >
                 <fpc-form-control
@@ -912,60 +1109,193 @@
                   [rows]="3"
                   [ngModel]="mapEntryStringList('mcp.servers', key, 'headers')"
                   (ngModelChange)="setMapEntryStringList('mcp.servers', key, 'headers', $event, true)"
+                  [disabled]="entry.inherited"
                 />
               </agenstra-agent-config-settings-row>
+              @if (showMcpOauthFields(key)) {
+                <agenstra-agent-config-settings-row
+                  title="OAuth client id"
+                  description="OAuth 2.0 client id"
+                  [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'oauth.client_id')"
+                >
+                  <fpc-form-control
+                    [ngModel]="mapEntryString('mcp.servers', key, 'oauth.client_id')"
+                    (ngModelChange)="setMapEntryString('mcp.servers', key, 'oauth.client_id', $event)"
+                    [disabled]="entry.inherited"
+                  />
+                </agenstra-agent-config-settings-row>
+                <agenstra-agent-config-settings-row
+                  i18n-title="@@featureAgentConfig-mcpOauthSecretTitle"
+                  title="OAuth client secret"
+                  [description]="
+                    secretSet(mcpOAuthSecretKey(key))
+                      ? 'Set (enter new value to rotate, clear to remove)'
+                      : 'Not set — stored as a layer secret'
+                  "
+                  [dirty]="isSecretDirty(mcpOAuthSecretKey(key))"
+                >
+                  <fpc-form-control
+                    inputType="password"
+                    [ngModel]="secretDrafts()[mcpOAuthSecretKey(key)] ?? ''"
+                    (ngModelChange)="setSecretDraft(mcpOAuthSecretKey(key), $event)"
+                    [disabled]="entry.inherited"
+                  />
+                </agenstra-agent-config-settings-row>
+                <agenstra-agent-config-settings-row
+                  title="OAuth scope"
+                  description="Space-separated OAuth scopes"
+                  [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'oauth.scope')"
+                >
+                  <fpc-form-control
+                    [ngModel]="mapEntryString('mcp.servers', key, 'oauth.scope')"
+                    (ngModelChange)="setMapEntryString('mcp.servers', key, 'oauth.scope', $event)"
+                    [disabled]="entry.inherited"
+                  />
+                </agenstra-agent-config-settings-row>
+                <agenstra-agent-config-settings-row
+                  title="OAuth callback port"
+                  description="Local port for the OAuth redirect listener"
+                  [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'oauth.callback_port')"
+                >
+                  <fpc-form-control
+                    controlType="input"
+                    inputType="number"
+                    [ngModel]="mapEntryNumber('mcp.servers', key, 'oauth.callback_port') ?? ''"
+                    (ngModelChange)="setMapEntryNumber('mcp.servers', key, 'oauth.callback_port', $event)"
+                    [disabled]="entry.inherited"
+                  />
+                </agenstra-agent-config-settings-row>
+                <agenstra-agent-config-settings-row
+                  title="OAuth redirect URI"
+                  description="Registered redirect URI override"
+                  [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'oauth.redirect_uri')"
+                >
+                  <fpc-form-control
+                    [ngModel]="mapEntryString('mcp.servers', key, 'oauth.redirect_uri')"
+                    (ngModelChange)="setMapEntryString('mcp.servers', key, 'oauth.redirect_uri', $event)"
+                    [disabled]="entry.inherited"
+                  />
+                </agenstra-agent-config-settings-row>
+              }
+            }
+            <h4 class="agent-config-editor__subsection-heading" i18n="@@featureAgentConfig-mcpSecretsHeading">
+              Secrets
+            </h4>
+            @for (envKey of mcpSecretEnvKeys(key); track envKey) {
               <agenstra-agent-config-settings-row
-                title="OAuth client id"
-                description="OAuth 2.0 client id"
-                [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'oauth.client_id')"
+                [title]="envKey"
+                [description]="secretSet(envKey) ? 'Set (enter new value to rotate, clear to remove)' : 'Not set'"
+                [dirty]="isSecretDirty(envKey)"
               >
-                <fpc-form-control
-                  [ngModel]="mapEntryString('mcp.servers', key, 'oauth.client_id')"
-                  (ngModelChange)="setMapEntryString('mcp.servers', key, 'oauth.client_id', $event)"
-                />
+                <div class="agent-config-editor__secret-row">
+                  <fpc-form-control
+                    [controlId]="'agentConfigMcpSecretEnv_' + key + '_' + envKey"
+                    inputType="password"
+                    [ngModel]="secretDrafts()[envKey] ?? ''"
+                    (ngModelChange)="setSecretDraft(envKey, $event)"
+                    [disabled]="entry.inherited"
+                  />
+                  @if (!entry.inherited && canAddMcpSecretEnv(key)) {
+                    <fpc-button
+                      variant="secondary"
+                      iconOnly
+                      [disabled]="isLocked('/mcp/servers')"
+                      (clicked)="removeMcpSecretEnvKey(key, envKey)"
+                      i18n-ariaLabel="@@featureAgentConfig-removeCredentialEnv"
+                      ariaLabel="Remove credential env"
+                    >
+                      <i class="bi bi-trash" aria-hidden="true"></i>
+                    </fpc-button>
+                  }
+                </div>
               </agenstra-agent-config-settings-row>
+            }
+            @if (!entry.inherited && canAddMcpSecretEnv(key)) {
               <agenstra-agent-config-settings-row
-                title="OAuth client secret"
-                description="Prefer env placeholders"
-                [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'oauth.client_secret')"
+                i18n-title="@@featureAgentConfig-addMcpSecretEnvTitle"
+                title="Add secret env"
+                i18n-description="@@featureAgentConfig-addMcpSecretEnvHelp"
+                description="Env var name for this MCP server (value stored as a secret)"
+                [dirty]="false"
               >
-                <fpc-form-control
-                  inputType="password"
-                  [ngModel]="mapEntryString('mcp.servers', key, 'oauth.client_secret')"
-                  (ngModelChange)="setMapEntryString('mcp.servers', key, 'oauth.client_secret', $event)"
-                />
+                <fpc-input-group>
+                  <fpc-form-control
+                    [ngModel]="draftMcpSecretEnvName()"
+                    (ngModelChange)="draftMcpSecretEnvName.set($event)"
+                    i18n-placeholder="@@featureAgentConfig-addCredentialEnvPlaceholder"
+                    placeholder="ENV_NAME"
+                  />
+                  <fpc-button
+                    fpcInputGroupSuffix
+                    variant="secondary"
+                    iconOnly
+                    [disabled]="!draftMcpSecretEnvName().trim()"
+                    (clicked)="addMcpSecretEnvKey(key)"
+                    i18n-ariaLabel="@@featureAgentConfig-addEntry"
+                    ariaLabel="Add"
+                  >
+                    <i class="bi bi-plus" aria-hidden="true"></i>
+                  </fpc-button>
+                </fpc-input-group>
               </agenstra-agent-config-settings-row>
+            }
+            @for (headerKey of mcpSecretHeaderKeys(key); track headerKey) {
               <agenstra-agent-config-settings-row
-                title="OAuth scope"
-                description="Space-separated OAuth scopes"
-                [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'oauth.scope')"
+                [title]="headerKey"
+                [description]="secretSet(headerKey) ? 'Set (enter new value to rotate, clear to remove)' : 'Not set'"
+                [dirty]="isSecretDirty(headerKey)"
               >
-                <fpc-form-control
-                  [ngModel]="mapEntryString('mcp.servers', key, 'oauth.scope')"
-                  (ngModelChange)="setMapEntryString('mcp.servers', key, 'oauth.scope', $event)"
-                />
+                <div class="agent-config-editor__secret-row">
+                  <fpc-form-control
+                    [controlId]="'agentConfigMcpSecretHeader_' + key + '_' + headerKey"
+                    inputType="password"
+                    [ngModel]="secretDrafts()[headerKey] ?? ''"
+                    (ngModelChange)="setSecretDraft(headerKey, $event)"
+                    [disabled]="entry.inherited"
+                  />
+                  @if (!entry.inherited && canAddMcpSecretHeader(key)) {
+                    <fpc-button
+                      variant="secondary"
+                      iconOnly
+                      [disabled]="isLocked('/mcp/servers')"
+                      (clicked)="removeMcpSecretHeaderKey(key, headerKey)"
+                      i18n-ariaLabel="@@featureAgentConfig-removeCredentialEnv"
+                      ariaLabel="Remove credential env"
+                    >
+                      <i class="bi bi-trash" aria-hidden="true"></i>
+                    </fpc-button>
+                  }
+                </div>
               </agenstra-agent-config-settings-row>
+            }
+            @if (
+              !entry.inherited && canAddMcpSecretHeader(key) && mapEntryString('mcp.servers', key, 'type') === 'remote'
+            ) {
               <agenstra-agent-config-settings-row
-                title="OAuth callback port"
-                description="Local port for the OAuth redirect listener"
-                [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'oauth.callback_port')"
+                i18n-title="@@featureAgentConfig-addMcpSecretHeaderTitle"
+                title="Add secret header"
+                i18n-description="@@featureAgentConfig-addMcpSecretHeaderHelp"
+                description="Header name for this remote MCP server (value stored as a secret)"
+                [dirty]="false"
               >
-                <fpc-form-control
-                  controlType="input"
-                  inputType="number"
-                  [ngModel]="mapEntryNumber('mcp.servers', key, 'oauth.callback_port') ?? ''"
-                  (ngModelChange)="setMapEntryNumber('mcp.servers', key, 'oauth.callback_port', $event)"
-                />
-              </agenstra-agent-config-settings-row>
-              <agenstra-agent-config-settings-row
-                title="OAuth redirect URI"
-                description="Registered redirect URI override"
-                [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'oauth.redirect_uri')"
-              >
-                <fpc-form-control
-                  [ngModel]="mapEntryString('mcp.servers', key, 'oauth.redirect_uri')"
-                  (ngModelChange)="setMapEntryString('mcp.servers', key, 'oauth.redirect_uri', $event)"
-                />
+                <fpc-input-group>
+                  <fpc-form-control
+                    [ngModel]="draftMcpSecretHeaderName()"
+                    (ngModelChange)="draftMcpSecretHeaderName.set($event)"
+                    placeholder="Authorization"
+                  />
+                  <fpc-button
+                    fpcInputGroupSuffix
+                    variant="secondary"
+                    iconOnly
+                    [disabled]="!draftMcpSecretHeaderName().trim()"
+                    (clicked)="addMcpSecretHeaderKey(key)"
+                    i18n-ariaLabel="@@featureAgentConfig-addEntry"
+                    ariaLabel="Add"
+                  >
+                    <i class="bi bi-plus" aria-hidden="true"></i>
+                  </fpc-button>
+                </fpc-input-group>
               </agenstra-agent-config-settings-row>
             }
             <agenstra-agent-config-settings-row
@@ -978,6 +1308,7 @@
                 inputType="number"
                 [ngModel]="mapEntryNumber('mcp.servers', key, 'timeout.startup') ?? ''"
                 (ngModelChange)="setMapEntryNumber('mcp.servers', key, 'timeout.startup', $event)"
+                [disabled]="entry.inherited"
               />
             </agenstra-agent-config-settings-row>
             <agenstra-agent-config-settings-row
@@ -990,6 +1321,7 @@
                 inputType="number"
                 [ngModel]="mapEntryNumber('mcp.servers', key, 'timeout.request') ?? ''"
                 (ngModelChange)="setMapEntryNumber('mcp.servers', key, 'timeout.request', $event)"
+                [disabled]="entry.inherited"
               />
             </agenstra-agent-config-settings-row>
             <agenstra-agent-config-settings-row

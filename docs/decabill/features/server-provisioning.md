@@ -54,11 +54,11 @@ sequenceDiagram
 
 Cloud-init installs Docker CE and deploys a docker-compose stack on the instance. Integrated service kinds:
 
-| Service id            | Stack                                                                                                                                                  |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `agenstra-controller` | PostgreSQL (pgvector), Redis, OpenSearch, Agenstra Controller API (api/worker/scheduler), agent console, Nginx + Certbot under `/opt/agent-controller` |
-| `agenstra-manager`    | PostgreSQL, Agenstra Manager API, Nginx under `/opt/agent-manager`                                                                                     |
-| `decabill-billing`    | PostgreSQL, Redis, OpenSearch, Decabill billing API (api/worker/scheduler), billing console, Nginx + Certbot under `/opt/decabill-billing`             |
+| Service id            | Stack                                                                                                                                                                                                                                                                                               |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `agenstra-controller` | PostgreSQL (pgvector), Redis, OpenSearch, Agenstra Controller API (api/worker/scheduler), agent console, Nginx + Certbot under `/opt/agent-controller`. Provisions `MCP_OAUTH_PUBLIC_BASE_URL` (`http://{fqdn}:3100`) and a random `MCP_OAUTH_CALLBACK_SECRET` for Environment MCP OAuth callbacks. |
+| `agenstra-manager`    | PostgreSQL, Agenstra Manager API, Nginx under `/opt/agent-manager`                                                                                                                                                                                                                                  |
+| `decabill-billing`    | PostgreSQL, Redis, OpenSearch, Decabill billing API (api/worker/scheduler), billing console, Nginx + Certbot under `/opt/decabill-billing`                                                                                                                                                          |
 
 Containers share a defined application directory on the host (typically under `/opt/`). Environment variables for authentication, database connection, and product-specific settings are interpolated into the generated compose file from the subscription's requested configuration.
 
