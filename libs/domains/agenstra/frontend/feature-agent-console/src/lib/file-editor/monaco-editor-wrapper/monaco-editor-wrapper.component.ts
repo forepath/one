@@ -26,6 +26,7 @@ import {
   FpcButtonComponent,
   FpcButtonGroupComponent,
   FpcEmptyStateComponent,
+  FpcFormCheckComponent,
 } from '@forepath/shared/frontend/ui-components';
 
 import { ThemeService } from '../../theme.service';
@@ -37,7 +38,14 @@ interface Marked {
 
 @Component({
   selector: 'framework-monaco-editor-wrapper',
-  imports: [CommonModule, FpcButtonComponent, FpcButtonGroupComponent, FpcEmptyStateComponent, MonacoEditorModule],
+  imports: [
+    CommonModule,
+    FpcButtonComponent,
+    FpcButtonGroupComponent,
+    FpcEmptyStateComponent,
+    FpcFormCheckComponent,
+    MonacoEditorModule,
+  ],
   templateUrl: './monaco-editor-wrapper.component.html',
   styleUrls: ['./monaco-editor-wrapper.component.scss'],
   standalone: true,
@@ -68,6 +76,14 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
   bodyOmitted = input<boolean>(false);
   isDirty = input<boolean>(false);
   autosaveEnabled = input<boolean>(false);
+  /** When true, show Autosave + Save in the editor toolbar (e.g. layer VFS IDE). */
+  showSaveActions = input<boolean>(false);
+  /** When false, hide Download (e.g. layer VFS has no download target). */
+  showDownload = input<boolean>(true);
+  /** Loading state for the toolbar Save button. */
+  saving = input<boolean>(false);
+  /** Unique checkbox id when multiple editors can mount. */
+  autosaveCheckId = input<string>('monacoAutosaveCheckbox');
   /** 1-based line to reveal when opening from search (nonce forces re-reveal). */
   revealLine = input<{ line: number; nonce: number } | null>(null);
 
@@ -75,6 +91,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
   contentChange = output<string>();
   saveRequest = output<void>();
   downloadRequest = output<void>();
+  autosaveEnabledChange = output<boolean>();
 
   // Internal state
   editorInstance = signal<editor.IStandaloneCodeEditor | null>(null);

@@ -1041,8 +1041,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
     // Build the URL
     const baseUrl = window.location.origin;
-    const segment = this.fileManagerContext() === 'config' ? 'config' : 'editor';
-    const editorPath = `/clients/${clientId}/agents/${agentId}/${segment}`;
+    const editorPath = `/clients/${clientId}/agents/${agentId}/editor`;
     const queryParams = new URLSearchParams();
 
     queryParams.set('standalone', 'true');

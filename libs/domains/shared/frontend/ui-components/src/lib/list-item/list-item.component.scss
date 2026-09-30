@@ -1,6 +1,7 @@
-:host {
+:host(.fpc-list-item) {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: 0.75rem;
   position: relative;
   // Contain elevated children (chip tooltips) so they cannot repaint over sibling rows.
@@ -54,6 +55,28 @@
 :host(.disabled) {
   cursor: not-allowed;
   opacity: 0.65;
+}
+
+// Title/meta + actions stay on one row; default projected content stacks below.
+.fpc-list-item__main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.fpc-list-item__main--dirty {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--bs-warning) 55%, transparent);
+  background-color: color-mix(in srgb, var(--bs-warning) 14%, var(--bs-tertiary-bg, var(--bs-body-bg)));
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+}
+
+// Rows that only project default content (no title/meta/actions) skip the header row.
+.fpc-list-item__main:has(> .fpc-list-item__actions:empty):has(.fpc-list-item__title:empty):has(
+    .fpc-list-item__meta:empty
+  ) {
+  display: none;
 }
 
 .fpc-list-item__body {
@@ -142,8 +165,16 @@
 .fpc-list-item__actions {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.5rem;
   flex: 0 0 auto;
+  margin-inline-start: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.fpc-list-item__content {
+  min-width: 0;
+  width: 100%;
   position: relative;
   z-index: 1;
 }

@@ -47,7 +47,6 @@ export interface CreateClientDto {
   gitToken?: string;
   gitPassword?: string;
   gitPrivateKey?: string;
-  cursorApiKey?: string;
   agentDefaultImage?: string;
   /** Provision flow only; `true`|`false` for AUTO_ENRICH_ENABLED_GLOBAL on the new server. */
   autoEnrichEnabledGlobal?: string;
@@ -120,7 +119,6 @@ export interface ProvisionServerDto {
   gitToken?: string;
   gitPassword?: string;
   gitPrivateKey?: string;
-  cursorApiKey?: string;
   agentDefaultImage?: string;
   /** When set, written to provisioned server as AUTO_ENRICH_ENABLED_GLOBAL (`true`|`false`). */
   autoEnrichEnabledGlobal?: string;

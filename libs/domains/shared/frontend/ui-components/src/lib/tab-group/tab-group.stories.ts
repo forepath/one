@@ -60,3 +60,31 @@ export const WithDisabledTab: Story = {
 export const FallsBackToFirstEnabledTab: Story = {
   args: { activeId: null },
 };
+
+export const VerticalWithSections: Story = {
+  args: { activeId: 'general', ariaLabel: 'Agent configuration' },
+  render: (args) => ({
+    props: args,
+    template: `<div style="height: 320px; border: 1px solid var(--bs-border-color)">
+      <fpc-tab-group
+        orientation="vertical"
+        [activeId]="activeId"
+        [ariaLabel]="ariaLabel"
+        (activeIdChange)="activeIdChange($event)"
+      >
+        <fpc-tab id="general" label="General" section="Core">
+          <p class="mb-0">General panel</p>
+        </fpc-tab>
+        <fpc-tab id="models" label="Models" section="Core">
+          <p class="mb-0">Models panel</p>
+        </fpc-tab>
+        <fpc-tab id="mcp" label="MCP" section="Extensions">
+          <p class="mb-0">MCP panel</p>
+        </fpc-tab>
+        <fpc-tab id="permissions" label="Permissions" section="Security">
+          <p class="mb-0">Permissions panel</p>
+        </fpc-tab>
+      </fpc-tab-group>
+    </div>`,
+  }),
+};

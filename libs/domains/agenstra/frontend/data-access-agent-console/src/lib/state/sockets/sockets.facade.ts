@@ -331,7 +331,7 @@ export class SocketsFacade {
   /**
    * Forward a create terminal event
    * @param sessionId - Optional session ID (will be generated if not provided)
-   * @param shell - Optional shell command (defaults to 'sh')
+   * @param shell - Optional shell override; omit to use OpenCode config / preferred shell
    * @param agentId - Agent UUID (required for routing the event to the correct agent)
    */
   forwardCreateTerminal(sessionId: string | undefined, shell: string | undefined, agentId: string): void {
@@ -346,6 +346,13 @@ export class SocketsFacade {
    */
   forwardTerminalInput(sessionId: string, data: string, agentId: string): void {
     this.forwardEvent(ForwardableEvent.TERMINAL_INPUT, { sessionId, data }, agentId);
+  }
+
+  /**
+   * Forward terminal cols/rows to OpenCode PTY (WINCH).
+   */
+  forwardTerminalResize(sessionId: string, cols: number, rows: number, agentId: string): void {
+    this.forwardEvent(ForwardableEvent.TERMINAL_RESIZE, { sessionId, cols, rows }, agentId);
   }
 
   /**

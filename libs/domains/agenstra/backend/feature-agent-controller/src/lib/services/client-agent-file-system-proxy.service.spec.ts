@@ -114,7 +114,7 @@ describe('ClientAgentFileSystemProxyService', () => {
       );
     });
 
-    it('should forward context=config and download on read', async () => {
+    it('should forward download on read', async () => {
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       mockedAxios.request.mockResolvedValue({
         status: 200,
@@ -126,11 +126,11 @@ describe('ClientAgentFileSystemProxyService', () => {
         },
       } as any);
 
-      await service.readFile(mockClientId, mockAgentId, mockFilePath, 'config', { download: true });
+      await service.readFile(mockClientId, mockAgentId, mockFilePath, 'app', { download: true });
 
       expect(mockedAxios.request).toHaveBeenCalledWith(
         expect.objectContaining({
-          params: { context: 'config', download: 'true' },
+          params: { download: 'true' },
         }),
       );
     });
@@ -308,13 +308,13 @@ describe('ClientAgentFileSystemProxyService', () => {
       );
     });
 
-    it('should forward chunk upload headers and context=config', async () => {
+    it('should forward chunk upload headers', async () => {
       const body = Buffer.from('ab', 'utf-8');
 
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       mockedAxios.request.mockResolvedValue({ status: 204, data: new ArrayBuffer(0), headers: {} } as any);
 
-      await service.writeFile(mockClientId, mockAgentId, mockFilePath, body, 'config', {
+      await service.writeFile(mockClientId, mockAgentId, mockFilePath, body, 'app', {
         contentRange: 'bytes 0-1/4',
         uploadId: 'upload-1',
         fileType: 'binary',
@@ -323,7 +323,7 @@ describe('ClientAgentFileSystemProxyService', () => {
 
       expect(mockedAxios.request).toHaveBeenCalledWith(
         expect.objectContaining({
-          params: { context: 'config' },
+          params: undefined,
           headers: expect.objectContaining({
             'Content-Range': 'bytes 0-1/4',
             'X-Upload-Id': 'upload-1',
@@ -354,18 +354,18 @@ describe('ClientAgentFileSystemProxyService', () => {
       );
     });
 
-    it('should forward context=config on list', async () => {
+    it('should forward path on list', async () => {
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       mockedAxios.request.mockResolvedValue({
         status: 200,
         data: mockFileNodes,
       } as any);
 
-      await service.listDirectory(mockClientId, mockAgentId, '.', 'config');
+      await service.listDirectory(mockClientId, mockAgentId, '.', 'app');
 
       expect(mockedAxios.request).toHaveBeenCalledWith(
         expect.objectContaining({
-          params: { path: '.', context: 'config' },
+          params: { path: '.' },
         }),
       );
     });

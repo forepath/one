@@ -44,7 +44,7 @@ describe('Agents Selectors', () => {
     id: 'agent-1',
     name: 'Test Agent',
     description: 'Test Description',
-    agentType: 'cursor',
+    agentType: 'opencode',
     containerType: 'generic' as ContainerType,
     chats: [],
     primaryChatId: 'primary-chat-1',
@@ -54,7 +54,7 @@ describe('Agents Selectors', () => {
   const mockAgent2: AgentResponseDto = {
     id: 'agent-2',
     name: 'Test Agent 2',
-    agentType: 'cursor',
+    agentType: 'opencode',
     containerType: 'generic' as ContainerType,
     chats: [],
     primaryChatId: 'primary-chat-2',
@@ -423,38 +423,35 @@ describe('Agents Selectors', () => {
     const agentId2 = 'agent-2';
 
     it('should return commands for a specific client and agent', () => {
-      const commands = ['/command1', '/command2'];
-      const agentType = 'cursor';
+      const commands = [{ name: '/command1' }, { name: '/command2' }];
       const state = createState({
-        commands: { [`${clientId}:${agentId}`]: { [agentType]: commands } },
+        commands: { [`${clientId}:${agentId}`]: commands },
       });
       const rootState = { agents: state };
-      const selector = selectClientAgentCommands(clientId, agentId, agentType);
+      const selector = selectClientAgentCommands(clientId, agentId);
       const result = selector(rootState as any);
 
       expect(result).toEqual(commands);
     });
 
     it('should return empty array when no commands exist', () => {
-      const agentType = 'cursor';
       const state = createState({
         commands: {},
       });
       const rootState = { agents: state };
-      const selector = selectClientAgentCommands(clientId, agentId, agentType);
+      const selector = selectClientAgentCommands(clientId, agentId);
       const result = selector(rootState as any);
 
       expect(result).toEqual([]);
     });
 
     it('should not return commands for different client:agent combination', () => {
-      const commands = ['/command1', '/command2'];
-      const agentType = 'cursor';
+      const commands = [{ name: '/command1' }, { name: '/command2' }];
       const state = createState({
-        commands: { [`${clientId}:${agentId}`]: { [agentType]: commands } },
+        commands: { [`${clientId}:${agentId}`]: commands },
       });
       const rootState = { agents: state };
-      const selector = selectClientAgentCommands(clientId2, agentId2, agentType);
+      const selector = selectClientAgentCommands(clientId2, agentId2);
       const result = selector(rootState as any);
 
       expect(result).toEqual([]);
@@ -502,11 +499,11 @@ describe('Agents Selectors', () => {
   describe('base selectors for commands', () => {
     it('should select commands', () => {
       const state = createState({
-        commands: { 'client-1:agent-1': { cursor: ['/command1'] } },
+        commands: { 'client-1:agent-1': [{ name: '/command1' }] },
       });
       const rootState = { agents: state };
 
-      expect(selectAgentsCommands(rootState as any)).toEqual({ 'client-1:agent-1': { cursor: ['/command1'] } });
+      expect(selectAgentsCommands(rootState as any)).toEqual({ 'client-1:agent-1': [{ name: '/command1' }] });
     });
 
     it('should select loadingCommands', () => {

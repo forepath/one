@@ -21,6 +21,7 @@ import {
   UserPersonalAccessTokenEntity,
   UsersRepository,
 } from '@forepath/identity/backend';
+import { BullModule } from '@nestjs/bullmq';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeycloakConnectModule } from 'nest-keycloak-connect';
@@ -34,11 +35,22 @@ import { ClientsDeploymentsController } from '../controllers/clients-deployments
 import { ClientsVcsController } from '../controllers/clients-vcs.controller';
 import { ClientsController } from '../controllers/clients.controller';
 import { ClientsWorkspaceSearchController } from '../controllers/clients-workspace-search.controller';
+import { AdminOpencodeConfigController } from '../controllers/admin-opencode-config.controller';
+import { AdminOpencodeLayerFilesController } from '../controllers/admin-opencode-layer-files.controller';
+import { ClientOpencodeLayerFilesController } from '../controllers/client-opencode-layer-files.controller';
+import { ClientOpencodeConfigController } from '../controllers/client-opencode-config.controller';
+import { OpencodeProvidersController } from '../controllers/opencode-providers.controller';
 import { KnowledgeTreeController } from '../controllers/knowledge-tree.controller';
 import { StatisticsController } from '../controllers/statistics.controller';
 import { TicketAutomationController } from '../controllers/ticket-automation.controller';
 import { TicketsController } from '../controllers/tickets.controller';
 import { ClientAgentAutonomyEntity } from '../entities/client-agent-autonomy.entity';
+import { ClientOpencodeConfigEntity } from '../entities/client-opencode-config.entity';
+import { GlobalOpencodeConfigEntity } from '../entities/global-opencode-config.entity';
+import { OpencodeProviderEntity } from '../entities/opencode-provider.entity';
+import { OpencodeLayerFileEntity } from '../entities/opencode-layer-file.entity';
+import { OpencodeLayerFileSyncTargetEntity } from '../entities/opencode-layer-file-sync-target.entity';
+import { OpencodeConfigSyncTargetEntity } from '../entities/opencode-config-sync-target.entity';
 import { KnowledgeNodeEmbeddingEntity } from '../entities/knowledge-node-embedding.entity';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import { KnowledgePageActivityEntity } from '../entities/knowledge-page-activity.entity';
@@ -78,11 +90,18 @@ import { ClientAgentDeploymentsProxyService } from '../services/client-agent-dep
 import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 import { ClientAgentMessagesProxyService } from '../services/client-agent-messages-proxy.service';
+import { ClientAgentOpencodeConfigProxyService } from '../services/client-agent-opencode-config-proxy.service';
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { ClientAgentVcsProxyService } from '../services/client-agent-vcs-proxy.service';
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
 import { ClientsService } from '../services/clients.service';
+import { OpencodeConfigService } from '../services/opencode-config.service';
+import { OpencodeProvidersBootstrapService } from '../services/opencode-providers-bootstrap.service';
+import { OpencodeProvidersCatalogService } from '../services/opencode-providers-catalog.service';
+import { OpencodeEffectiveConfigSyncService } from '../services/opencode-effective-config-sync.service';
+import { OpencodeConfigSyncTargetsService } from '../services/opencode-config-sync-targets.service';
+import { OpencodeLayerFilesService } from '../services/opencode-layer-files.service';
 import { KnowledgeEmbeddingIndexService } from '../services/embeddings/knowledge-embedding-index.service';
 import { LocalEmbeddingProvider } from '../services/embeddings/local-embedding.provider';
 import { KnowledgeBoardRealtimeService } from '../services/knowledge-board-realtime.service';
@@ -98,7 +117,7 @@ import { TicketsService } from '../services/tickets.service';
 import { AgenstraSearchModule } from '../search/agenstra-search.module';
 import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 
-import { AgenstraNotificationsModule } from './agenstra-notifications.module';
+import { AgenstraNotificationsModule, AGENSTRA_CONTROLLER_QUEUE_NAME } from './agenstra-notifications.module';
 import { AgenstraUpdatesModule } from './agenstra-updates.module';
 import { ContextImportModule } from './context-import.module';
 import { FilterRulesModule } from './filter-rules.module';
@@ -135,7 +154,14 @@ const authMethod = getAuthenticationMethod();
       KnowledgeRelationEntity,
       UserChatSessionReadStateEntity,
       UserEnvironmentReadStateEntity,
+      GlobalOpencodeConfigEntity,
+      ClientOpencodeConfigEntity,
+      OpencodeProviderEntity,
+      OpencodeLayerFileEntity,
+      OpencodeLayerFileSyncTargetEntity,
+      OpencodeConfigSyncTargetEntity,
     ]),
+    BullModule.registerQueue({ name: AGENSTRA_CONTROLLER_QUEUE_NAME }),
     RedisCacheModule,
     AgenstraSearchModule,
     AgenstraNotificationsModule,
@@ -160,6 +186,11 @@ const authMethod = getAuthenticationMethod();
     ClientAgentAutonomyDirectoryController,
     ClientsAgentAutomationProxyController,
     ClientsWorkspaceSearchController,
+    AdminOpencodeConfigController,
+    AdminOpencodeLayerFilesController,
+    ClientOpencodeConfigController,
+    ClientOpencodeLayerFilesController,
+    OpencodeProvidersController,
   ],
   providers: [
     AgenstraMetricsCollectorService,
@@ -187,6 +218,13 @@ const authMethod = getAuthenticationMethod();
     ClientAgentEnvironmentVariablesProxyService,
     ClientAgentChatsProxyService,
     ClientWorkspaceConfigurationOverridesProxyService,
+    ClientAgentOpencodeConfigProxyService,
+    OpencodeConfigService,
+    OpencodeProvidersCatalogService,
+    OpencodeProvidersBootstrapService,
+    OpencodeEffectiveConfigSyncService,
+    OpencodeConfigSyncTargetsService,
+    OpencodeLayerFilesService,
     ClientAgentCredentialsRepository,
     ClientAgentCredentialsService,
     SocketAuthService,
@@ -257,6 +295,9 @@ const authMethod = getAuthenticationMethod();
     KnowledgeTreeService,
     KnowledgeEmbeddingIndexService,
     AutonomousRunOrchestratorService,
+    OpencodeProvidersCatalogService,
+    OpencodeConfigSyncTargetsService,
+    OpencodeLayerFilesService,
   ],
 })
 export class ClientsModule {}

@@ -1,7 +1,15 @@
 import { randomBytes } from 'crypto';
 
 import { PasswordService } from '@forepath/identity/backend';
-import { BadRequestException, forwardRef, Inject, Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  HttpException,
+  Inject,
+  Injectable,
+  Logger,
+  OnApplicationBootstrap,
+} from '@nestjs/common';
 import * as sshpk from 'sshpk';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -14,6 +22,8 @@ import { AgentEntity, ContainerType } from '../entities/agent.entity';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentProvider } from '../providers/agent-provider.interface';
 import { AgentProviderModels } from '../providers/agent-provider.interface';
+import { OpenCodeClientFactory } from '../providers/opencode/opencode-client.factory';
+import { OPENCODE_SERVER_PORT, OPENCODE_SERVER_USERNAME_DEFAULT } from '../providers/opencode/opencode-provider.config';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { expandProviderPathTildeInContainer } from '../utils/provider-container-path.utils';
 
@@ -41,6 +51,7 @@ export class AgentsService implements OnApplicationBootstrap {
     private readonly passwordService: PasswordService,
     private readonly agentProviderFactory: AgentProviderFactory,
     private readonly agentChatSessionsService: AgentChatSessionsService,
+    private readonly openCodeClientFactory: OpenCodeClientFactory,
     @Inject(forwardRef(() => DeploymentsService))
     private readonly deploymentsService?: DeploymentsService,
     @Inject(forwardRef(() => WorkspaceInotifySupervisor))
@@ -398,24 +409,35 @@ export class AgentsService implements OnApplicationBootstrap {
       );
     }
 
-    // Determine agent type (default to 'cursor' for backward compatibility)
-    const agentType = createAgentDto.agentType || 'cursor';
+    // Determine agent type (default to 'opencode')
+    const agentType = createAgentDto.agentType || 'opencode';
     // Get the provider for this agent type to retrieve the Docker image
     const provider = this.agentProviderFactory.getProvider(agentType);
     const dockerImage = provider.getDockerImage();
     const virtualWorkspaceDockerImage = provider.getVirtualWorkspaceDockerImage();
     const sshConnectionDockerImage = provider.getSshConnectionDockerImage();
     const basePath = provider.getBasePath?.() || '/app';
+    const opencodeServerPassword = this.generateRandomPassword();
+    const opencodeServerUsername = process.env.OPENCODE_SERVER_USERNAME || OPENCODE_SERVER_USERNAME_DEFAULT;
 
     // Ensure the Docker image exists
     await this.dockerService.ensureImageExists(dockerImage);
+
+    const agentDockerNetwork = process.env.AGENT_DOCKER_NETWORK?.trim();
+
+    if (agentDockerNetwork) {
+      await this.dockerService.ensureNetworkExists(agentDockerNetwork);
+    }
 
     // Create a docker container
     const containerId = await this.dockerService.createContainer({
       image: dockerImage,
       env: {
         AGENT_NAME: createAgentDto.name,
-        CURSOR_API_KEY: process.env.CURSOR_API_KEY,
+        OPENCODE_SERVER_PASSWORD: opencodeServerPassword,
+        OPENCODE_SERVER_USERNAME: opencodeServerUsername,
+        OPENCODE_SERVER_HOSTNAME: '0.0.0.0',
+        OPENCODE_SERVER_PORT: String(OPENCODE_SERVER_PORT),
         ...this.buildGitContainerEnv(gitRepositorySetupMode, repositoryUrl),
         ...(provider.getEnvironmentVariables ? provider.getEnvironmentVariables() : {}),
       },
@@ -431,6 +453,20 @@ export class AgentsService implements OnApplicationBootstrap {
           readOnly: true,
         },
       ],
+      ...(agentDockerNetwork
+        ? {
+            // Reach OpenCode via container IP on the agent network — do not publish :4096 on the host.
+            network: agentDockerNetwork,
+          }
+        : {
+            // Local/dev without AGENT_DOCKER_NETWORK: bind OpenCode to loopback only.
+            ports: [
+              {
+                containerPort: OPENCODE_SERVER_PORT,
+                hostIp: '127.0.0.1',
+              },
+            ],
+          }),
     });
 
     try {
@@ -510,7 +546,6 @@ export class AgentsService implements OnApplicationBootstrap {
           image: virtualWorkspaceDockerImage,
           env: {
             AGENT_NAME: createAgentDto.name,
-            CURSOR_API_KEY: process.env.CURSOR_API_KEY,
             ...this.buildGitContainerEnv(gitRepositorySetupMode, repositoryUrl),
             VNC_PASSWORD: virtualWorkspacePassword,
           },
@@ -562,8 +597,9 @@ export class AgentsService implements OnApplicationBootstrap {
           hashedPassword,
           containerId: containerId,
           volumePath: agentVolumePath,
-          agentType: createAgentDto.agentType || 'cursor',
+          agentType: createAgentDto.agentType || 'opencode',
           containerType: createAgentDto.containerType || ContainerType.GENERIC,
+          opencodeServerPassword,
           ...(createAgentDto.createVirtualWorkspace &&
             virtualWorkspace && {
               vncContainerId: virtualWorkspace.containerId,
@@ -584,6 +620,13 @@ export class AgentsService implements OnApplicationBootstrap {
               ? GitRepositorySetupMode.EMPTY
               : createAgentDto.gitRepositorySetupMode,
         });
+
+        await this.openCodeClientFactory.waitForHealthy(agent.id, containerId, {
+          password: opencodeServerPassword,
+        });
+
+        // Full three-layer OpenCode config + secrets are applied by the controller
+        // via durable sync targets after create/start/restart (not agent-only defaults).
 
         await this.agentChatSessionsService.ensurePrimarySession(agent.id);
 
@@ -653,8 +696,16 @@ export class AgentsService implements OnApplicationBootstrap {
         );
       }
 
-      // Re-throw the original error
-      throw error;
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      const err = error as { message?: string; stack?: string };
+      const message = err.message || 'Unknown agent creation error';
+
+      this.logger.error(`Agent creation failed after container start: ${message}`, err.stack);
+      // Surface the real cause through the controller proxy (avoids opaque Nest 500).
+      throw new BadRequestException(message);
     }
   }
 
@@ -829,6 +880,16 @@ export class AgentsService implements OnApplicationBootstrap {
       }
     }
 
+    if (agent.containerId) {
+      try {
+        await this.openCodeClientFactory.waitForHealthy(agent.id, agent.containerId);
+      } catch (error: unknown) {
+        const err = error as { message?: string };
+
+        this.logger.warn(`OpenCode health check failed after start for agent ${agent.id}: ${err.message}`);
+      }
+    }
+
     return await this.mapToResponseDto(agent);
   }
 
@@ -929,6 +990,16 @@ export class AgentsService implements OnApplicationBootstrap {
       }
     }
 
+    if (agent.containerId) {
+      try {
+        await this.openCodeClientFactory.waitForHealthy(agent.id, agent.containerId);
+      } catch (error: unknown) {
+        const err = error as { message?: string };
+
+        this.logger.warn(`OpenCode health check failed after restart for agent ${agent.id}: ${err.message}`);
+      }
+    }
+
     return await this.mapToResponseDto(agent);
   }
 
@@ -979,7 +1050,7 @@ export class AgentsService implements OnApplicationBootstrap {
     let capabilities: AgentResponseDto['capabilities'];
 
     try {
-      const provider = this.agentProviderFactory.getProvider(agent.agentType || 'cursor');
+      const provider = this.agentProviderFactory.getProvider(agent.agentType || 'opencode');
       const caps = provider.getCapabilities();
 
       capabilities = {
@@ -1160,7 +1231,7 @@ export class AgentsService implements OnApplicationBootstrap {
   }
 
   /**
-   * List models for an agent.
+   * List models for an agent via the OpenCode HTTP API (preferred), with CLI fallback.
    * @param id - The UUID of the agent
    * @returns The list of models
    */
@@ -1168,27 +1239,83 @@ export class AgentsService implements OnApplicationBootstrap {
     const agent = await this.agentsRepository.findByIdOrThrow(id);
     const provider = this.agentProviderFactory.getProvider(agent.agentType);
 
+    if (!agent.containerId) {
+      return {};
+    }
+
+    if (agent.agentType === 'opencode') {
+      try {
+        return await this.listOpenCodeModelsViaHttp(agent.id, agent.containerId);
+      } catch (error: unknown) {
+        const err = error as { message?: string; stack?: string };
+
+        this.logger.warn(
+          `OpenCode HTTP model list failed for agent ${agent.name}, falling back to CLI: ${err.message}`,
+          err.stack,
+        );
+      }
+    }
+
     if (!provider.getModelsListCommand || !provider.toModelsList) {
       throw new BadRequestException('Provider does not support listing models');
     }
 
-    if (agent.containerId) {
-      try {
-        const result = await this.dockerService.sendCommandToContainer(
-          agent.containerId,
-          provider.getModelsListCommand(),
-        );
+    try {
+      const result = await this.dockerService.sendCommandToContainer(
+        agent.containerId,
+        provider.getModelsListCommand(),
+      );
 
-        return provider.toModelsList(result) || {};
-      } catch (error: unknown) {
-        const err = error as { message?: string; stack?: string };
+      return provider.toModelsList(result) || {};
+    } catch (error: unknown) {
+      const err = error as { message?: string; stack?: string };
 
-        this.logger.error(`Failed to list models for agent ${agent.name}: ${err.message}`, err.stack);
-        // Don't throw - we don't want to prevent the user from listing models if the container is not running
-      }
+      this.logger.error(`Failed to list models for agent ${agent.name}: ${err.message}`, err.stack);
     }
 
     return {};
+  }
+
+  /**
+   * Flatten OpenCode provider/model catalogs into `providerId/modelId` keys (CLI parity).
+   */
+  private async listOpenCodeModelsViaHttp(agentId: string, containerId: string): Promise<AgentProviderModels> {
+    const client = await this.openCodeClientFactory.getClient(agentId, containerId);
+    const models: AgentProviderModels = {};
+
+    const fromConfig = client.config?.providers ? await client.config.providers() : null;
+    const configProviders = fromConfig?.data?.providers;
+
+    if (configProviders?.length) {
+      for (const provider of configProviders) {
+        for (const [modelKey, model] of Object.entries(provider.models ?? {})) {
+          const modelId = model.id || modelKey;
+          const key = `${provider.id}/${modelId}`;
+
+          models[key] = model.name?.trim() || key;
+        }
+      }
+
+      if (Object.keys(models).length > 0) {
+        return models;
+      }
+    }
+
+    const fromProvider = client.provider?.list ? await client.provider.list() : null;
+    const providerRows = fromProvider?.data?.connected?.length ? fromProvider.data.connected : fromProvider?.data?.all;
+
+    if (providerRows?.length) {
+      for (const provider of providerRows) {
+        for (const [modelKey, model] of Object.entries(provider.models ?? {})) {
+          const modelId = model.id || modelKey;
+          const key = `${provider.id}/${modelId}`;
+
+          models[key] = model.name?.trim() || key;
+        }
+      }
+    }
+
+    return models;
   }
 
   /**

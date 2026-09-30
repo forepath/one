@@ -33,7 +33,7 @@ describe('AgentsFacade', () => {
     id: 'agent-1',
     name: 'Test Agent',
     description: 'Test Description',
-    agentType: 'cursor',
+    agentType: 'opencode',
     containerType: 'generic' as ContainerType,
     chats: [],
     primaryChatId: 'primary-chat-1',
@@ -43,7 +43,7 @@ describe('AgentsFacade', () => {
   const mockAgent2: AgentResponseDto = {
     id: 'agent-2',
     name: 'Test Agent 2',
-    agentType: 'cursor',
+    agentType: 'opencode',
     containerType: 'generic' as ContainerType,
     chats: [],
     primaryChatId: 'primary-chat-2',
@@ -382,12 +382,11 @@ describe('AgentsFacade', () => {
     const agentId = 'agent-1';
 
     it('should return client agent commands observable', (done) => {
-      const commands = ['/command1', '/command2'];
-      const agentType = 'cursor';
+      const commands = [{ name: '/command1' }, { name: '/command2' }];
 
       store.select.mockReturnValue(of(commands));
 
-      facade.getClientAgentCommands$(clientId, agentId, agentType).subscribe((result) => {
+      facade.getClientAgentCommands$(clientId, agentId).subscribe((result) => {
         expect(result).toEqual(commands);
         expect(store.select).toHaveBeenCalled();
         done();
@@ -395,11 +394,9 @@ describe('AgentsFacade', () => {
     });
 
     it('should return empty array when no commands', (done) => {
-      const agentType = 'cursor';
-
       store.select.mockReturnValue(of([]));
 
-      facade.getClientAgentCommands$(clientId, agentId, agentType).subscribe((result) => {
+      facade.getClientAgentCommands$(clientId, agentId).subscribe((result) => {
         expect(result).toEqual([]);
         done();
       });

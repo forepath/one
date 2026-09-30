@@ -12,11 +12,6 @@ import {
 } from './acp-client-host';
 import type { AcpLaunchSpec, AcpSessionKey } from './acp-launch-spec.types';
 import { AcpNotificationMapper, createAcpToolCallState } from './acp-notification-mapper';
-import {
-  CURSOR_ACP_STALE_AUTH_USER_MESSAGE,
-  isCursorAcpStaleAuthPrefix,
-  isCursorAcpStaleAuthResponse,
-} from './acp-stale-auth';
 import type { AcpTransport } from './acp-transport.interface';
 import { DockerAcpTransportFactory } from './docker-acp-transport';
 
@@ -25,12 +20,6 @@ interface ManagedAcpSession {
   transport: AcpTransport;
   acpSessionId: string;
   bindings: AcpClientHostBindings;
-}
-
-interface PromptAttemptMeta {
-  acpSessionId: string | undefined;
-  aggregatedText: string;
-  staleAuth: boolean;
 }
 
 @Injectable()
@@ -80,85 +69,11 @@ export class AcpSessionService {
     message: string,
     options?: AgentProviderOptions,
   ): AsyncIterable<AgentResponseObject> {
-    yield* this.promptStreamWithStaleAuthRetry(key, launchSpec, message, options, false);
-  }
-
-  async prompt(
-    key: AcpSessionKey,
-    launchSpec: AcpLaunchSpec,
-    message: string,
-    options?: AgentProviderOptions,
-  ): Promise<string> {
-    const parts: string[] = [];
-
-    for await (const obj of this.promptStream(key, launchSpec, message, options)) {
-      parts.push(JSON.stringify(obj));
-    }
-
-    return parts.join('\n');
-  }
-
-  private async *promptStreamWithStaleAuthRetry(
-    key: AcpSessionKey,
-    launchSpec: AcpLaunchSpec,
-    message: string,
-    options: AgentProviderOptions | undefined,
-    isRetry: boolean,
-  ): AsyncIterable<AgentResponseObject> {
-    const meta: PromptAttemptMeta = {
-      acpSessionId: undefined,
-      aggregatedText: '',
-      staleAuth: false,
-    };
-
-    yield* this.iteratePromptAttempt(key, launchSpec, message, options, meta);
-
-    if (meta.staleAuth) {
-      await this.resetSessionAfterStaleAuth(key);
-
-      if (isRetry) {
-        this.logger.warn(
-          `Cursor ACP stale auth persisted after restart for agent ${key.agentId}` +
-            (key.resumeSessionSuffix ? ` (suffix ${key.resumeSessionSuffix})` : ''),
-        );
-        throw new Error(CURSOR_ACP_STALE_AUTH_USER_MESSAGE);
-      }
-
-      this.logger.warn(
-        `Cursor ACP stale auth detected for agent ${key.agentId}; restarting ACP session and retrying once` +
-          (key.resumeSessionSuffix ? ` (suffix ${key.resumeSessionSuffix})` : ''),
-      );
-
-      // Keep reconnect UX out of the assistant transcript (thinking only).
-      yield { type: 'thinking', phase: 'running' };
-      yield* this.promptStreamWithStaleAuthRetry(key, launchSpec, message, options, true);
-
-      return;
-    }
-
-    if (meta.aggregatedText.trim()) {
-      yield this.mapper.buildFinalResult(meta.aggregatedText, meta.acpSessionId);
-    }
-  }
-
-  /**
-   * Streams one ACP prompt. Short replies that still look like the Cursor stale-auth line
-   * are held until the turn ends so we can discard them on restart/retry without flashing UI.
-   */
-  private async *iteratePromptAttempt(
-    key: AcpSessionKey,
-    launchSpec: AcpLaunchSpec,
-    message: string,
-    options: AgentProviderOptions | undefined,
-    meta: PromptAttemptMeta,
-  ): AsyncIterable<AgentResponseObject> {
     const queue: AgentResponseObject[] = [];
     let aggregatedText = '';
     let acpSessionId: string | undefined;
     let done = false;
     let promptError: unknown | null = null;
-    const held: AgentResponseObject[] = [];
-    let holdingForStaleAuth = true;
 
     const notify = (() => {
       let resolve: (() => void) | null = null;
@@ -202,50 +117,11 @@ export class AcpSessionService {
         notify.signal();
       });
 
-    const shouldHoldEvent = (obj: AgentResponseObject): boolean => {
-      if (!holdingForStaleAuth) {
-        return false;
-      }
-
-      if (
-        obj.type === 'tool_call' ||
-        obj.type === 'tool_result' ||
-        obj.type === 'interaction_query' ||
-        obj.type === 'interactionQuery' ||
-        obj.type === 'question'
-      ) {
-        holdingForStaleAuth = false;
-
-        return false;
-      }
-
-      if (!isCursorAcpStaleAuthPrefix(aggregatedText)) {
-        holdingForStaleAuth = false;
-
-        return false;
-      }
-
-      return true;
-    };
-
     while (!done || queue.length > 0) {
       const item = queue.shift();
 
       if (item) {
-        if (shouldHoldEvent(item)) {
-          held.push(item);
-        } else {
-          if (held.length > 0) {
-            for (const heldItem of held) {
-              yield heldItem;
-            }
-
-            held.length = 0;
-          }
-
-          yield item;
-        }
-
+        yield item;
         continue;
       }
 
@@ -260,23 +136,24 @@ export class AcpSessionService {
       throw promptError;
     }
 
-    meta.acpSessionId = acpSessionId;
-    meta.aggregatedText = aggregatedText;
-    meta.staleAuth = isCursorAcpStaleAuthResponse(aggregatedText);
-
-    if (meta.staleAuth) {
-      // Discard held sign-in deltas; caller will restart/retry.
-      return;
-    }
-
-    for (const heldItem of held) {
-      yield heldItem;
+    if (aggregatedText.trim()) {
+      yield this.mapper.buildFinalResult(aggregatedText, acpSessionId);
     }
   }
 
-  private async resetSessionAfterStaleAuth(key: AcpSessionKey): Promise<void> {
-    await this.closeSession(key);
-    await this.agentsRepository.clearAcpSession(key.agentId, key.resumeSessionSuffix);
+  async prompt(
+    key: AcpSessionKey,
+    launchSpec: AcpLaunchSpec,
+    message: string,
+    options?: AgentProviderOptions,
+  ): Promise<string> {
+    const parts: string[] = [];
+
+    for await (const obj of this.promptStream(key, launchSpec, message, options)) {
+      parts.push(JSON.stringify(obj));
+    }
+
+    return parts.join('\n');
   }
 
   private async runPrompt(

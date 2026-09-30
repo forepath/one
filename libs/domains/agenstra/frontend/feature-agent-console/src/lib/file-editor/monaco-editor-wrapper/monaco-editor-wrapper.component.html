@@ -168,15 +168,6 @@
   </div>
 } @else {
   <div class="monaco-editor-container d-flex flex-column">
-    @if (isDirty() && !autosaveEnabled()) {
-      <div class="editor-status-bar bg-warning text-dark px-3 py-1 small">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-        <span class="fw-bold me-1" i18n="@@featureMonacoEditor-unsavedChanges">Unsaved changes</span>
-        <span i18n="@@featureMonacoEditor-switchingFilesWarning"
-          >Switching files will discard any unsaved changes!</span
-        >
-      </div>
-    }
     <div class="editor-preview-wrapper d-flex flex-grow-1" [class.preview-active]="previewVisible()">
       <!-- Editor Section -->
       <div
@@ -215,31 +206,74 @@
               <i class="bi bi-arrow-clockwise"></i>
             </fpc-button>
           </fpc-button-group>
-          <div class="d-flex align-items-center gap-1">
-            @if (isPreviewable()) {
-              <fpc-button
-                size="sm"
-                iconOnly
-                [variant]="previewVisible() ? 'primary' : 'secondary'"
-                (clicked)="togglePreview()"
-                i18n-title="@@featureMonacoEditor-togglePreviewTitle"
-                title="Toggle preview"
+          <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-1">
+              @if (isPreviewable()) {
+                <fpc-button
+                  size="sm"
+                  iconOnly
+                  [variant]="previewVisible() ? 'primary' : 'secondary'"
+                  (clicked)="togglePreview()"
+                  i18n-title="@@featureMonacoEditor-togglePreviewTitle"
+                  title="Toggle preview"
+                >
+                  <i class="bi bi-search"></i>
+                </fpc-button>
+              }
+              @if (showDownload()) {
+                <fpc-button
+                  size="sm"
+                  iconOnly
+                  variant="secondary"
+                  (clicked)="onDownload()"
+                  i18n-title="@@featureMonacoEditor-downloadTitle"
+                  title="Download"
+                >
+                  <i class="bi bi-download"></i>
+                </fpc-button>
+              }
+            </div>
+            @if (showSaveActions()) {
+              <fpc-form-check
+                [checkId]="autosaveCheckId()"
+                [checked]="autosaveEnabled()"
+                (checkedChange)="autosaveEnabledChange.emit($event)"
               >
-                <i class="bi bi-search"></i>
-              </fpc-button>
+                <label
+                  class="form-check-label small"
+                  [attr.for]="autosaveCheckId()"
+                  i18n="@@featureFileEditor-autosaveLabel"
+                  >Autosave</label
+                >
+              </fpc-form-check>
+              <fpc-button-group size="sm">
+                <fpc-button
+                  variant="primary"
+                  size="sm"
+                  iconOnly
+                  (clicked)="onSave()"
+                  [disabled]="!filePath() || !isDirty() || saving()"
+                  [loading]="saving()"
+                  i18n-title="@@featureFileEditor-saveTitle"
+                  title="Save (Ctrl+S)"
+                  i18n-aria-label="@@featureFileEditor-saveTitle"
+                  ariaLabel="Save (Ctrl+S)"
+                >
+                  <i class="bi bi-save" aria-hidden="true"></i>
+                </fpc-button>
+              </fpc-button-group>
             }
-            <fpc-button
-              size="sm"
-              iconOnly
-              variant="secondary"
-              (clicked)="onDownload()"
-              i18n-title="@@featureMonacoEditor-downloadTitle"
-              title="Download"
-            >
-              <i class="bi bi-download"></i>
-            </fpc-button>
           </div>
         </div>
+        @if (isDirty() && !autosaveEnabled()) {
+          <div class="editor-status-bar bg-warning text-dark px-3 py-1 small border-bottom">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span class="fw-bold me-1" i18n="@@featureMonacoEditor-unsavedChanges">Unsaved changes</span>
+            <span i18n="@@featureMonacoEditor-switchingFilesWarning"
+              >Switching files will discard any unsaved changes!</span
+            >
+          </div>
+        }
         <ngx-monaco-editor
           class="flex-grow-1 min-h-0"
           [options]="editorOptions()"

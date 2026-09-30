@@ -151,13 +151,13 @@ Align image **`DOCKER_GID`** with the host `docker` group GID at build time.
 
 ### Per-Agent Workload Containers
 
-Spawned dynamically per agent. Typical cursor agents use a **worker** container; VNC is optional.
+Spawned dynamically per agent. Typical agents use a **worker** container; VNC is optional.
 
-| Container image           | vCPU (per agent) | Memory limit (per agent) | Disk (per agent)                               | Notes                                                                          |
-| ------------------------- | ---------------- | ------------------------ | ---------------------------------------------- | ------------------------------------------------------------------------------ |
-| `agenstra-manager-worker` | 2                | 2-4 GiB                  | 10-50 GiB workspace under `/opt/agents/{uuid}` | Includes cursor-agent, OpenCode, Nx, Git; builds and `npm install` spike usage |
-| `agenstra-manager-vnc`    | 2                | 2-4 GiB                  | 5 GiB                                          | XFCE4 + Chromium at default **1920×1080**                                      |
-| `agenstra-manager-ssh`    | 0.25             | 256-512 MiB              | -                                              | SSH sidecar                                                                    |
+| Container image           | vCPU (per agent) | Memory limit (per agent) | Disk (per agent)                               | Notes                                                            |
+| ------------------------- | ---------------- | ------------------------ | ---------------------------------------------- | ---------------------------------------------------------------- |
+| `agenstra-manager-worker` | 2                | 2-4 GiB                  | 10-50 GiB workspace under `/opt/agents/{uuid}` | Includes OpenCode, Nx, Git; builds and `npm install` spike usage |
+| `agenstra-manager-vnc`    | 2                | 2-4 GiB                  | 5 GiB                                          | XFCE4 + Chromium at default **1920×1080**                        |
+| `agenstra-manager-ssh`    | 0.25             | 256-512 MiB              | -                                              | SSH sidecar                                                      |
 
 Idle agent workers still consume baseline memory; stop agents when not in use.
 
@@ -220,16 +220,16 @@ Managers run on separately provisioned hosts per client/workspace.
 
 ## Network and External Dependencies
 
-| Dependency                 | Controller | Manager  | Notes                                    |
-| -------------------------- | :--------: | :------: | ---------------------------------------- |
-| PostgreSQL                 |    Yes     |   Yes    | Separate databases per stack             |
-| Redis                      |    Yes     |    No    | Controller BullMQ only                   |
-| Docker socket              |  Optional  |   Yes    | Required for agent lifecycle             |
-| Keycloak / API key         |  Optional  | Optional | Match `AUTHENTICATION_METHOD`            |
-| SMTP                       |  Optional  |    -     | Mailhog in local controller compose      |
-| Hetzner / DigitalOcean API |  Optional  |    -     | Server provisioning from controller      |
-| Cursor / provider API keys |     -      | Optional | Agent workloads (`CURSOR_API_KEY`, etc.) |
-| Outbound HTTPS             |    Yes     |   Yes    | Proxied agent and provider traffic       |
+| Dependency                 | Controller | Manager  | Notes                                                        |
+| -------------------------- | :--------: | :------: | ------------------------------------------------------------ |
+| PostgreSQL                 |    Yes     |   Yes    | Separate databases per stack                                 |
+| Redis                      |    Yes     |    No    | Controller BullMQ only                                       |
+| Docker socket              |  Optional  |   Yes    | Required for agent lifecycle                                 |
+| Keycloak / API key         |  Optional  | Optional | Match `AUTHENTICATION_METHOD`                                |
+| SMTP                       |  Optional  |    -     | Mailhog in local controller compose                          |
+| Hetzner / DigitalOcean API |  Optional  |    -     | Server provisioning from controller                          |
+| Provider API keys          |     -      | Optional | Agent workload credentials as required by OpenCode / plugins |
+| Outbound HTTPS             |    Yes     |   Yes    | Proxied agent and provider traffic                           |
 
 Ingress: expose console (**4200** or TLS terminator), controller API (**3100**) and WebSocket (**8081**), and manager API (**3000**) / WebSocket (**8080**) on manager hosts. Restrict Bull Board (`/admin/queues` on controller **3100**) to operations networks.
 

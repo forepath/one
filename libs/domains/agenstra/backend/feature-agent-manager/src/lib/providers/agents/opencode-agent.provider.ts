@@ -7,19 +7,18 @@ import {
   AgentProviderOptions,
   AgentResponseObject,
 } from '../agent-provider.interface';
-import { AcpAgentMessagingService } from '../acp/acp-agent-messaging.service';
-import { ACP_INITIALIZATION_INSTRUCTIONS, OPENCODE_ACP_LAUNCH_SPEC } from '../acp/acp-provider.config';
+import { OpenCodeRuntimeService } from '../opencode/opencode-runtime.service';
 
 /**
  * OpenCode agent provider implementation.
- * Handles communication with the opencode agent binary running in Docker containers.
+ * Handles communication with `opencode serve` in Docker containers via HTTP SDK.
  */
 @Injectable()
 export class OpenCodeAgentProvider implements AgentProvider {
   private static readonly TYPE = 'opencode';
   private static readonly LIST_MODELS_COMMAND = 'opencode models';
 
-  constructor(private readonly acpMessaging: AcpAgentMessagingService) {}
+  constructor(private readonly runtime: OpenCodeRuntimeService) {}
 
   /**
    * Get the unique type identifier for this provider.
@@ -39,7 +38,7 @@ export class OpenCodeAgentProvider implements AgentProvider {
 
   getCapabilities(): AgentProviderCapabilities {
     return {
-      transport: 'acp',
+      transport: 'opencode-http',
       supportsChat: true,
       supportsStreaming: true,
       supportsToolEvents: true,
@@ -53,9 +52,8 @@ export class OpenCodeAgentProvider implements AgentProvider {
     message: string,
     options?: AgentProviderOptions,
   ): AsyncIterable<AgentResponseObject> {
-    yield* this.acpMessaging.streamChatEvents(
+    yield* this.runtime.streamChatEvents(
       { agentId, containerId, resumeSessionSuffix: options?.resumeSessionSuffix },
-      OPENCODE_ACP_LAUNCH_SPEC,
       message,
       options,
     );
@@ -124,8 +122,15 @@ export class OpenCodeAgentProvider implements AgentProvider {
       return models;
     }
 
+    // ESC via fromCharCode — eslint no-control-regex rejects \u001b / \x1b in literals.
+    const ansiCsi = new RegExp(`${String.fromCharCode(0x1b)}\\[[0-9;?]*[ -/]*[@-~]`, 'g');
+
     for (const line of result.split(/\r?\n/)) {
-      const trimmed = line.trim();
+      // Strip ANSI + non-printable leftovers from docker exec demux / TTY noise.
+      const trimmed = line
+        .replace(ansiCsi, '')
+        .replace(/[^\x20-\x7E._/+:-]+/g, '')
+        .trim();
 
       if (trimmed) {
         models[trimmed] = trimmed;
@@ -141,9 +146,8 @@ export class OpenCodeAgentProvider implements AgentProvider {
     message: string,
     options?: AgentProviderOptions,
   ): Promise<string> {
-    return this.acpMessaging.sendMessage(
+    return this.runtime.sendMessage(
       { agentId, containerId, resumeSessionSuffix: options?.resumeSessionSuffix },
-      OPENCODE_ACP_LAUNCH_SPEC,
       message,
       options,
     );
@@ -155,26 +159,20 @@ export class OpenCodeAgentProvider implements AgentProvider {
     message: string,
     options?: AgentProviderOptions,
   ): AsyncIterable<string> {
-    yield* this.acpMessaging.sendMessageStream(
+    yield* this.runtime.sendMessageStream(
       { agentId, containerId, resumeSessionSuffix: options?.resumeSessionSuffix },
-      OPENCODE_ACP_LAUNCH_SPEC,
       message,
       options,
     );
   }
 
   /**
-   * Send an initialization message to the opencode-agent.
+   * Send an initialization message to the opencode server.
    * This establishes system context for the agent.
-   * @param _agentId - The UUID of the agent (unused for opencode)
-   * @param _containerId - The Docker container ID where the agent is running (unused for opencode)
-   * @param _options - Optional configuration (e.g., model name) (unused for opencode)
    */
   async sendInitialization(agentId: string, containerId: string, options?: AgentProviderOptions): Promise<void> {
-    await this.acpMessaging.sendInitialization(
+    await this.runtime.sendInitialization(
       { agentId, containerId, resumeSessionSuffix: options?.resumeSessionSuffix },
-      OPENCODE_ACP_LAUNCH_SPEC,
-      ACP_INITIALIZATION_INSTRUCTIONS,
       options,
     );
   }

@@ -1037,7 +1037,7 @@ describe('filesReducer', () => {
       const configContent: FileContentDto = {
         fileType: 'text',
         contentType: 'text/plain',
-        text: 'config',
+        text: 'app',
         bodyRef: 'mock-body-ref-config',
         size: 6,
       };

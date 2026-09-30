@@ -487,6 +487,14 @@
         <source> Avg words/message </source>
         <target>Ø Wörter/Nachricht</target>
       </trans-unit>
+      <trans-unit id="featureAudit-totalTokens" datatype="html">
+        <source>Total tokens</source>
+        <target>Tokens gesamt</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-totalCost" datatype="html">
+        <source>Total cost (USD)</source>
+        <target>Kosten gesamt (USD)</target>
+      </trans-unit>
       <trans-unit id="featureAudit-filterFlags" datatype="html">
         <source>Filter flags</source>
         <target>Filter-Markierungen</target>
@@ -770,10 +778,6 @@
       <trans-unit id="featureChat-appName" datatype="html">
         <source>Agenstra</source>
         <target>Agenstra</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentConfigBadge" datatype="html">
-        <source>Agent config</source>
-        <target>Agentenkonfiguration</target>
       </trans-unit>
       <trans-unit id="featureChat-studio" datatype="html">
         <source>Studio</source>
@@ -1186,9 +1190,9 @@
         <source>Agent Type</source>
         <target>Agententyp</target>
       </trans-unit>
-      <trans-unit id="featureChat-agentTypeDefaultCursor" datatype="html">
-        <source>Default (Cursor)</source>
-        <target>Standard (Cursor)</target>
+      <trans-unit id="featureChat-agentTypeDefaultOpencode" datatype="html">
+        <source>Default (OpenCode)</source>
+        <target>Standard (OpenCode)</target>
       </trans-unit>
       <trans-unit id="featureChat-containerTypeLabel" datatype="html">
         <source>Container Type</source>
@@ -1572,14 +1576,6 @@
         <source>Open Editor in New Window</source>
         <target>Editor in neuem Fenster öffnen</target>
       </trans-unit>
-      <trans-unit id="featureChat-openAgentConfigFilesNewWindow" datatype="html">
-        <source>Open agent config in New Window</source>
-        <target>Agentenkonfiguration in neuem Fenster öffnen</target>
-      </trans-unit>
-      <trans-unit id="featureChat-openAgentConfigFilesTitle" datatype="html">
-        <source>Open provider agent config files (requires workspace management access)</source>
-        <target>Provider-Konfigurationsdateien öffnen (erfordert Verwaltungszugriff auf den Arbeitsbereich)</target>
-      </trans-unit>
       <trans-unit id="featureChat-openDeploymentManagerNewWindow" datatype="html">
         <source>Open Deployment Manager in New Window</source>
         <target>Deployment Manager in neuem Fenster öffnen</target>
@@ -1615,10 +1611,6 @@
       <trans-unit id="featureChat-workspaceSettingTitleGitPrivateKey" datatype="html">
         <source>Git private key (SSH)</source>
         <target>Git-Privatschlüssel (SSH)</target>
-      </trans-unit>
-      <trans-unit id="featureChat-workspaceSettingTitleCursorApiKey" datatype="html">
-        <source>Cursor API key</source>
-        <target>Cursor-API-Schlüssel</target>
       </trans-unit>
       <trans-unit id="featureChat-workspaceSettingTitleAgentImage" datatype="html">
         <source>Agent default image</source>
@@ -1727,6 +1719,66 @@
       <trans-unit id="featureContainer-filters" datatype="html">
         <source>Filters</source>
         <target>Filterregeln</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-opencodeConfigTitle" datatype="html">
+        <source>OpenCode config</source>
+        <target>OpenCode-Konfiguration</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-opencodeConfig" datatype="html">
+        <source>OpenCode</source>
+        <target>OpenCode</target>
+      </trans-unit>
+      <trans-unit id="featureOpencodeConfig-adminTitle" datatype="html">
+        <source>OpenCode config</source>
+        <target>OpenCode-Konfiguration</target>
+      </trans-unit>
+      <trans-unit id="featureOpencodeConfig-configJson" datatype="html">
+        <source>Config JSON</source>
+        <target>Konfigurations-JSON</target>
+      </trans-unit>
+      <trans-unit id="featureOpencodeConfig-save" datatype="html">
+        <source>Save</source>
+        <target>Speichern</target>
+      </trans-unit>
+      <trans-unit id="featureChat-manageOpencodeConfig" datatype="html">
+        <source>OpenCode configuration</source>
+        <target>OpenCode-Konfiguration</target>
+      </trans-unit>
+      <trans-unit id="featureChat-manageOpencodeConfigTitle" datatype="html">
+        <source>Manage OpenCode config</source>
+        <target>OpenCode-Konfiguration verwalten</target>
+      </trans-unit>
+      <trans-unit id="featureChat-manageOpencodeConfigEnvironmentTitle" datatype="html">
+        <source>Manage OpenCode config</source>
+        <target>OpenCode-Konfiguration verwalten</target>
+      </trans-unit>
+      <trans-unit id="featureChat-opencodeConfigWorkspaceHelp" datatype="html">
+        <source>Workspace overlay JSON. Admin (global) keys override this layer when set.</source>
+        <target>Workspace-Overlay-JSON. Admin-(globale) Schlüssel überschreiben diese Ebene, wenn gesetzt.</target>
+      </trans-unit>
+      <trans-unit id="featureChat-opencodeConfigEnvironmentHelp" datatype="html">
+        <source>Environment overlay JSON. Workspace and admin keys override this layer when set.</source>
+        <target>Umgebungs-Overlay-JSON. Workspace- und Admin-Schlüssel überschreiben diese Ebene, wenn gesetzt.</target>
+      </trans-unit>
+      <trans-unit id="featureChat-opencodeConfigLockedKeys" datatype="html">
+        <source>Locked by higher layer:</source>
+        <target>Durch höhere Ebene gesperrt:</target>
+      </trans-unit>
+      <trans-unit id="featureChat-opencodeConfigJsonLabel" datatype="html">
+        <source>Config JSON</source>
+        <target>Konfigurations-JSON</target>
+      </trans-unit>
+      <trans-unit id="featureChat-opencodeConfigSave" datatype="html">
+        <source>Save</source>
+        <target>Speichern</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummarySubagent" datatype="html">
+        <source>Subagent</source>
+        <target>Subagent</target>
+      </trans-unit>
+      <trans-unit id="featureChat-agentEventSummarySubagentResult" datatype="html">
+        <source>Subagent result</source>
+        <target>Subagent-Ergebnis</target>
       </trans-unit>
       <trans-unit id="featureContainer-importTitle" datatype="html">
         <source>Import</source>
@@ -2619,6 +2671,10 @@
       <trans-unit id="featureTerminal-closeTerminalAriaLabel" datatype="html">
         <source>Close terminal</source>
         <target>Terminal schließen</target>
+      </trans-unit>
+      <trans-unit id="featureTerminal-refreshTerminalAriaLabel" datatype="html">
+        <source>Refresh terminal</source>
+        <target>Terminal aktualisieren</target>
       </trans-unit>
       <trans-unit id="featureTerminal-newTerminalTitle" datatype="html">
         <source>New Terminal</source>
@@ -5781,6 +5837,110 @@
       <trans-unit id="featureUserManager-totpEnabled" datatype="html">
         <source>Authenticator</source>
         <target>Authenticator</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-providersHelp" datatype="html">
+        <source>Configure provider overrides. Pick a built-in provider to seed credential env names and secret fields, or add a custom id. Inherited provider ids cannot be changed.</source>
+        <target>Provider-Overrides konfigurieren. Wählen Sie einen Built-in-Provider, um Credential-Env-Namen und Geheimfelder vorzubefüllen, oder fügen Sie eine eigene Id hinzu. Geerbte Provider-Ids können nicht geändert werden.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-lockedByHigherLayerAlert" datatype="html">
+        <source>Some settings are locked by a higher layer and cannot be edited here.</source>
+        <target>Einige Einstellungen sind durch eine höhere Ebene gesperrt und können hier nicht bearbeitet werden.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-providerSelectLabel" datatype="html">
+        <source>Provider</source>
+        <target>Provider</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-customProviderOption" datatype="html">
+        <source>Custom</source>
+        <target>Benutzerdefiniert</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-customProviderLabel" datatype="html">
+        <source>Custom provider id</source>
+        <target>Eigene Provider-Id</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-customProviderPlaceholder" datatype="html">
+        <source>my-provider</source>
+        <target>mein-provider</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addKnownProviderLabel" datatype="html">
+        <source>Add known provider</source>
+        <target>Bekannten Provider hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addKnownModelLabel" datatype="html">
+        <source>Add known model</source>
+        <target>Bekanntes Modell hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-knownModelProviderPlaceholder" datatype="html">
+        <source>Provider</source>
+        <target>Provider</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-knownModelPlaceholder" datatype="html">
+        <source>Model</source>
+        <target>Modell</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-knownModelIdPlaceholder" datatype="html">
+        <source>model-id</source>
+        <target>modell-id</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-knownModelProviderAria" datatype="html">
+        <source>Provider</source>
+        <target>Provider</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-knownModelAria" datatype="html">
+        <source>Model</source>
+        <target>Modell</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldModelPlaceholder" datatype="html">
+        <source>provider/model</source>
+        <target>provider/modell</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-providerCredentialsHeading" datatype="html">
+        <source>Credentials (secrets)</source>
+        <target>Zugangsdaten (Geheimnisse)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addCredentialEnvTitle" datatype="html">
+        <source>Add credential env</source>
+        <target>Credential-Env hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addCredentialEnvHelp" datatype="html">
+        <source>Env var name for this provider (value stored as a secret)</source>
+        <target>Env-Variablenname für diesen Provider (Wert wird als Geheimnis gespeichert)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addCredentialEnvPlaceholder" datatype="html">
+        <source>PROVIDER_API_KEY</source>
+        <target>PROVIDER_API_KEY</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-removeCredentialEnv" datatype="html">
+        <source>Remove credential env</source>
+        <target>Credential-Env entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-providerModelsTitle" datatype="html">
+        <source>Models</source>
+        <target>Modelle</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-providerModelsHelp" datatype="html">
+        <source>One model id per line</source>
+        <target>Eine Modell-Id pro Zeile</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-providerCatalogModelsHeading" datatype="html">
+        <source>Models (catalog)</source>
+        <target>Modelle (Katalog)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-providerCatalogModelsHelp" datatype="html">
+        <source>Available models from the provider catalog. Locked for built-in providers.</source>
+        <target>Verfügbare Modelle aus dem Provider-Katalog. Für Built-in-Provider gesperrt.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-accumulatedJsonLabel" datatype="html">
+        <source>Accumulated configuration</source>
+        <target>Akkumulierte Konfiguration</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-accumulatedJsonHelp" datatype="html">
+        <source>Read-only merged result for this stage, including higher layers.</source>
+        <target>Schreibgeschütztes Merge-Ergebnis für diese Stufe, inklusive höherer Layer.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-accumulatedJsonAria" datatype="html">
+        <source>Accumulated configuration JSON</source>
+        <target>Akkumulierte Konfiguration (JSON)</target>
       </trans-unit>
     </body>
   </file>

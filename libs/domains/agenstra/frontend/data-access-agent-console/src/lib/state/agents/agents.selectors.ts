@@ -114,11 +114,11 @@ export const selectHasClientAgents = (clientId: string) =>
   createSelector(selectClientAgents(clientId), (agents) => agents.length > 0);
 
 // Client:Agent-scoped selectors for commands
-export const selectClientAgentCommands = (clientId: string, agentId: string, agentType: string) =>
+export const selectClientAgentCommands = (clientId: string, agentId: string) =>
   createSelector(selectAgentsCommands, (commands) => {
     const key = `${clientId}:${agentId}`;
 
-    return commands[key]?.[agentType] ?? [];
+    return commands[key] ?? [];
   });
 
 export const selectClientAgentLoadingCommands = (clientId: string, agentId: string) =>

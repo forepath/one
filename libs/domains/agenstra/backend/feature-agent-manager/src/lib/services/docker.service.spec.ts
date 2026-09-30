@@ -141,19 +141,10 @@ describe('DockerService', () => {
     beforeEach(() => {
       createdContainer = { start: jest.fn().mockResolvedValue(undefined), id: 'abc123' } as any;
       (mockDocker as any).createContainer = jest.fn().mockResolvedValue(createdContainer);
-      (mockDocker as any).pull = jest.fn((image: string, cb: (err: unknown, stream: any) => void) => {
-        // Simulate immediate success
-        const fakeStream = {} as any;
-
-        cb(null, fakeStream);
-        // Simulate followProgress callback
-        (mockDocker as any).modem = {
-          followProgress: (_s: any, done: (err?: unknown) => void) => done(),
-        } as any;
-      });
+      jest.spyOn(service, 'ensureImageExists').mockResolvedValue(undefined);
     });
 
-    it('should pull image, create and start container with binds and ports', async () => {
+    it('should create and start container with binds and ports', async () => {
       const result = await service.createContainer({
         image: 'node:22-alpine',
         env: { FOO: 'bar' },
@@ -168,7 +159,7 @@ describe('DockerService', () => {
         network: 'test-network',
       });
 
-      expect((mockDocker as any).pull).toHaveBeenCalledWith('node:22-alpine', expect.any(Function));
+      expect(service.ensureImageExists).toHaveBeenCalledWith('node:22-alpine');
       expect((mockDocker as any).createContainer).toHaveBeenCalledWith({
         Image: 'node:22-alpine',
         Env: ['FOO=bar'],
@@ -202,23 +193,11 @@ describe('DockerService', () => {
       try {
         const result = await service.createContainer({ volumes: [], ports: [] });
 
-        expect((mockDocker as any).pull).toHaveBeenCalledWith('env/image:latest', expect.any(Function));
+        expect(service.ensureImageExists).toHaveBeenCalledWith('env/image:latest');
         expect(result).toBe('abc123');
       } finally {
         process.env.AGENT_DEFAULT_IMAGE = original;
       }
-    });
-
-    it('should proceed if pulling image fails (image exists locally)', async () => {
-      (mockDocker as any).pull = jest.fn((_image: string, cb: (err: unknown, stream?: any) => void) => {
-        cb(new Error('pull failed'));
-      });
-      (mockDocker as any).createContainer = jest.fn().mockResolvedValue(createdContainer);
-
-      const result = await service.createContainer({ image: 'local/image:tag' });
-
-      expect((mockDocker as any).createContainer).toHaveBeenCalled();
-      expect(result).toBe('abc123');
     });
 
     it('should call ensureImageExists before creating container', async () => {
@@ -856,6 +835,37 @@ describe('DockerService', () => {
       await service.deleteContainer(containerId);
 
       expect(mockDocker.getContainer).toHaveBeenCalledWith(containerId);
+    });
+  });
+
+  describe('ensureNetworkExists', () => {
+    const networkName = 'agent-manager-network';
+
+    it('returns when the network already exists', async () => {
+      mockNetwork.inspect.mockResolvedValue({ Id: 'existing' });
+
+      await service.ensureNetworkExists(networkName);
+
+      expect(mockDocker.getNetwork).toHaveBeenCalledWith(networkName);
+      expect((mockDocker as any).createNetwork).not.toHaveBeenCalled();
+    });
+
+    it('creates the network when inspect returns 404', async () => {
+      mockNetwork.inspect.mockRejectedValue({ statusCode: 404 });
+
+      await service.ensureNetworkExists(networkName);
+
+      expect((mockDocker as any).createNetwork).toHaveBeenCalledWith({
+        Name: networkName,
+        Driver: 'bridge',
+      });
+    });
+
+    it('treats create 409 as success', async () => {
+      mockNetwork.inspect.mockRejectedValue({ statusCode: 404 });
+      (mockDocker as any).createNetwork.mockRejectedValue({ statusCode: 409, message: 'already exists' });
+
+      await expect(service.ensureNetworkExists(networkName)).resolves.toBeUndefined();
     });
   });
 
@@ -1991,254 +2001,62 @@ describe('DockerService', () => {
     });
   });
 
-  describe('createTerminalSession', () => {
-    const containerId = 'test-container-id';
-    const sessionId = 'test-session-id';
+  describe('resolveContainerHttpBaseUrl', () => {
+    const containerId = 'container-http-1';
 
     beforeEach(() => {
-      mockContainer.inspect.mockResolvedValue({});
-      mockStream.on = jest.fn((_: string, __: () => void) => {
-        return mockStream;
-      });
+      mockDocker.getContainer.mockReturnValue(mockContainer as any);
     });
 
-    it('should throw NotFoundException when container does not exist', async () => {
-      mockContainer.inspect.mockRejectedValue({ statusCode: 404 });
-
-      await expect(service.createTerminalSession(containerId, sessionId)).rejects.toThrow(NotFoundException);
-      expect(mockContainer.inspect).toHaveBeenCalled();
-    });
-
-    it('should create a terminal session with TTY enabled', async () => {
-      mockContainer.inspect.mockResolvedValue({});
-
-      const stream = await service.createTerminalSession(containerId, sessionId);
-
-      expect(mockContainer.exec).toHaveBeenCalledWith({
-        Cmd: ['sh'],
-        AttachStdin: true,
-        AttachStdout: true,
-        AttachStderr: true,
-        Tty: true,
-      });
-      expect(mockExec.start).toHaveBeenCalledWith({
-        hijack: true,
-        stdin: true,
-        Tty: true,
-      });
-      expect(stream).toBe(mockStream);
-      expect(service.hasTerminalSession(sessionId)).toBe(true);
-    });
-
-    it('should create a terminal session with custom shell', async () => {
-      mockContainer.inspect.mockResolvedValue({});
-
-      await service.createTerminalSession(containerId, sessionId, 'bash');
-
-      expect(mockContainer.exec).toHaveBeenCalledWith({
-        Cmd: ['bash'],
-        AttachStdin: true,
-        AttachStdout: true,
-        AttachStderr: true,
-        Tty: true,
-      });
-    });
-
-    it('should close existing session if sessionId already exists', async () => {
-      mockContainer.inspect.mockResolvedValue({});
-      // Create first session
-      await service.createTerminalSession(containerId, sessionId);
-      // Create second session with same ID
-      await service.createTerminalSession(containerId, sessionId);
-
-      expect(mockStream.end).toHaveBeenCalled();
-      expect(mockContainer.exec).toHaveBeenCalledTimes(2);
-    });
-
-    it('should set up stream event handlers for cleanup', async () => {
-      mockContainer.inspect.mockResolvedValue({});
-      let endCallback: (() => void) | undefined;
-      let closeCallback: (() => void) | undefined;
-
-      mockStream.on = jest.fn((event: string, callback: () => void) => {
-        if (event === 'end') {
-          endCallback = callback;
-        } else if (event === 'close') {
-          closeCallback = callback;
-        } else if (event === 'error') {
-          // error callback
-        }
-
-        return mockStream;
+    it('prefers AGENT_DOCKER_NETWORK IP over other networks and published ports', async () => {
+      process.env.AGENT_DOCKER_NETWORK = 'agent-manager-network';
+      mockContainer.inspect.mockResolvedValue({
+        NetworkSettings: {
+          Ports: {
+            '4096/tcp': [{ HostIp: '127.0.0.1', HostPort: '32768' }],
+          },
+          Networks: {
+            'vnc-private': { IPAddress: '10.0.0.5' },
+            'agent-manager-network': { IPAddress: '172.28.0.3' },
+          },
+        },
       });
 
-      await service.createTerminalSession(containerId, sessionId);
-
-      expect(mockStream.on).toHaveBeenCalledWith('end', expect.any(Function));
-      expect(mockStream.on).toHaveBeenCalledWith('close', expect.any(Function));
-      expect(mockStream.on).toHaveBeenCalledWith('error', expect.any(Function));
-
-      // Test cleanup on end
-      if (endCallback) {
-        endCallback();
-        expect(service.hasTerminalSession(sessionId)).toBe(false);
-      }
-
-      // Recreate for close test
-      await service.createTerminalSession(containerId, sessionId);
-
-      if (closeCallback) {
-        closeCallback();
-        expect(service.hasTerminalSession(sessionId)).toBe(false);
-      }
-    });
-  });
-
-  describe('sendTerminalInput', () => {
-    const containerId = 'test-container-id';
-    const sessionId = 'test-session-id';
-
-    beforeEach(async () => {
-      mockContainer.inspect.mockResolvedValue({});
-      mockStream.on = jest.fn(() => mockStream);
-      await service.createTerminalSession(containerId, sessionId);
+      await expect(service.resolveContainerHttpBaseUrl(containerId, 4096)).resolves.toBe('http://172.28.0.3:4096');
     });
 
-    it('should throw NotFoundException when session does not exist', async () => {
-      await expect(service.sendTerminalInput('non-existent', 'data')).rejects.toThrow(NotFoundException);
-    });
-
-    it('should send string input to terminal session', async () => {
-      await service.sendTerminalInput(sessionId, 'test input');
-
-      expect(mockStream.write).toHaveBeenCalledWith(Buffer.from('test input', 'utf-8'));
-    });
-
-    it('should send Buffer input to terminal session', async () => {
-      const buffer = Buffer.from('test buffer', 'utf-8');
-
-      await service.sendTerminalInput(sessionId, buffer);
-
-      expect(mockStream.write).toHaveBeenCalledWith(buffer);
-    });
-  });
-
-  describe('closeTerminalSession', () => {
-    const containerId = 'test-container-id';
-    const sessionId = 'test-session-id';
-
-    beforeEach(async () => {
-      mockContainer.inspect.mockResolvedValue({});
-      mockStream.on = jest.fn(() => mockStream);
-      await service.createTerminalSession(containerId, sessionId);
-    });
-
-    it('should throw NotFoundException when session does not exist', async () => {
-      await expect(service.closeTerminalSession('non-existent')).rejects.toThrow(NotFoundException);
-    });
-
-    it('should close terminal session and remove from map', async () => {
-      expect(service.hasTerminalSession(sessionId)).toBe(true);
-
-      await service.closeTerminalSession(sessionId);
-
-      expect(mockStream.end).toHaveBeenCalled();
-      expect(service.hasTerminalSession(sessionId)).toBe(false);
-    });
-
-    it('should remove session from map even if close fails', async () => {
-      (mockStream.end as jest.Mock).mockImplementation(() => {
-        throw new Error('Close failed');
+    it('uses published host port when AGENT_DOCKER_NETWORK is unset', async () => {
+      delete process.env.AGENT_DOCKER_NETWORK;
+      process.env.DOCKER_HOST_GATEWAY = 'host.docker.internal';
+      mockContainer.inspect.mockResolvedValue({
+        NetworkSettings: {
+          Ports: {
+            '4096/tcp': [{ HostIp: '127.0.0.1', HostPort: '32768' }],
+          },
+          Networks: {
+            bridge: { IPAddress: '172.17.0.2' },
+          },
+        },
       });
 
-      await expect(service.closeTerminalSession(sessionId)).rejects.toThrow('Close failed');
-      expect(service.hasTerminalSession(sessionId)).toBe(false);
-    });
-  });
-
-  describe('getTerminalSession', () => {
-    const containerId = 'test-container-id';
-    const sessionId = 'test-session-id';
-
-    beforeEach(async () => {
-      mockContainer.inspect.mockResolvedValue({});
-      mockStream.on = jest.fn(() => mockStream);
-      await service.createTerminalSession(containerId, sessionId);
+      await expect(service.resolveContainerHttpBaseUrl(containerId, 4096)).resolves.toBe(
+        'http://host.docker.internal:32768',
+      );
     });
 
-    it('should throw NotFoundException when session does not exist', () => {
-      expect(() => service.getTerminalSession('non-existent')).toThrow(NotFoundException);
-    });
-
-    it('should return terminal session stream', () => {
-      const stream = service.getTerminalSession(sessionId);
-
-      expect(stream).toBe(mockStream);
-    });
-  });
-
-  describe('hasTerminalSession', () => {
-    const containerId = 'test-container-id';
-    const sessionId = 'test-session-id';
-
-    it('should return false when session does not exist', () => {
-      expect(service.hasTerminalSession(sessionId)).toBe(false);
-    });
-
-    it('should return true when session exists', async () => {
-      mockContainer.inspect.mockResolvedValue({});
-      mockStream.on = jest.fn(() => mockStream);
-      await service.createTerminalSession(containerId, sessionId);
-
-      expect(service.hasTerminalSession(sessionId)).toBe(true);
-    });
-  });
-
-  describe('getTerminalSessionsForContainer', () => {
-    const containerId1 = 'container-1';
-    const containerId2 = 'container-2';
-    const sessionId1 = 'session-1';
-    const sessionId2 = 'session-2';
-    const sessionId3 = 'session-3';
-
-    beforeEach(async () => {
-      mockContainer.inspect.mockResolvedValue({});
-      mockStream.on = jest.fn(() => mockStream);
-    });
-
-    it('should return empty array when no sessions exist', () => {
-      expect(service.getTerminalSessionsForContainer(containerId1)).toEqual([]);
-    });
-
-    it('should return sessions for specific container', async () => {
-      // Mock getContainer to return different containers
-      const mockContainer1 = { ...mockContainer };
-      const mockContainer2 = { ...mockContainer };
-
-      (mockDocker.getContainer as jest.Mock).mockImplementation((id: string) => {
-        if (id === containerId1) return mockContainer1;
-
-        if (id === containerId2) return mockContainer2;
-
-        return mockContainer;
+    it('falls back to any network IP when preferred network has no address', async () => {
+      process.env.AGENT_DOCKER_NETWORK = 'agent-manager-network';
+      mockContainer.inspect.mockResolvedValue({
+        NetworkSettings: {
+          Ports: {},
+          Networks: {
+            'agent-manager-network': { IPAddress: '' },
+            bridge: { IPAddress: '172.17.0.9' },
+          },
+        },
       });
 
-      mockContainer1.inspect.mockResolvedValue({});
-      mockContainer2.inspect.mockResolvedValue({});
-
-      await service.createTerminalSession(containerId1, sessionId1);
-      await service.createTerminalSession(containerId1, sessionId2);
-      await service.createTerminalSession(containerId2, sessionId3);
-
-      const sessions1 = service.getTerminalSessionsForContainer(containerId1);
-      const sessions2 = service.getTerminalSessionsForContainer(containerId2);
-
-      expect(sessions1).toContain(sessionId1);
-      expect(sessions1).toContain(sessionId2);
-      expect(sessions1).not.toContain(sessionId3);
-      expect(sessions2).toContain(sessionId3);
-      expect(sessions2).not.toContain(sessionId1);
-      expect(sessions2).not.toContain(sessionId2);
+      await expect(service.resolveContainerHttpBaseUrl(containerId, 4096)).resolves.toBe('http://172.17.0.9:4096');
     });
   });
 
@@ -2536,6 +2354,15 @@ describe('DockerService', () => {
   });
 
   describe('ensureImageExists', () => {
+    beforeEach(() => {
+      (mockDocker as any).modem = {
+        followProgress: (_s: unknown, done: (err?: unknown) => void) => done(),
+      };
+      (mockDocker as any).pull = jest.fn((_image: string, cb: (err: unknown, stream: unknown) => void) => {
+        cb(null, {});
+      });
+    });
+
     it('should not pull when image inspect succeeds', async () => {
       mockImage.inspect.mockResolvedValue({ Id: 'sha256:abc' });
 
@@ -2552,14 +2379,16 @@ describe('DockerService', () => {
       await service.ensureImageExists('missing:image');
 
       expect(mockDocker.getImage).toHaveBeenCalledWith('missing:image');
-      expect((mockDocker as any).pull).toHaveBeenCalledWith('missing:image');
+      expect((mockDocker as any).pull).toHaveBeenCalledWith('missing:image', expect.any(Function));
     });
 
-    it('should not pull when image inspect fails with a non-404 error', async () => {
+    it('should rethrow when image inspect fails with a non-404 error', async () => {
       mockImage.inspect.mockRejectedValue({ statusCode: 500, message: 'server error' });
 
-      await service.ensureImageExists('node:22-alpine');
-
+      await expect(service.ensureImageExists('node:22-alpine')).rejects.toEqual({
+        statusCode: 500,
+        message: 'server error',
+      });
       expect((mockDocker as any).pull).not.toHaveBeenCalled();
     });
   });

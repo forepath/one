@@ -491,7 +491,6 @@ export class SubscriptionsComponent implements OnInit {
       commitAuthorName: string;
       commitAuthorEmail: string;
     };
-    cursorApiKey: string;
   } = {
     service: 'agenstra-controller',
     authenticationMethod: 'users',
@@ -523,7 +522,6 @@ export class SubscriptionsComponent implements OnInit {
       commitAuthorName: '',
       commitAuthorEmail: '',
     },
-    cursorApiKey: '',
   };
   subscriptionToCancel: SubscriptionResponse | null = null;
   subscriptionToWithdraw: SubscriptionResponse | null = null;
@@ -2228,10 +2226,6 @@ export class SubscriptionsComponent implements OnInit {
             : {}),
         };
       }
-
-      if (cfg.cursorApiKey?.trim()) {
-        requestedConfig['cursorApiKey'] = cfg.cursorApiKey.trim();
-      }
     }
 
     this.attachProvisioningOptionKey(requestedConfig);
@@ -3085,7 +3079,6 @@ export class SubscriptionsComponent implements OnInit {
         commitAuthorName: '',
         commitAuthorEmail: '',
       },
-      cursorApiKey: '',
     };
   }
 }

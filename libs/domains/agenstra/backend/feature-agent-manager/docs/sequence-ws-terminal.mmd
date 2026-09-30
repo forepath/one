@@ -1,11 +1,11 @@
 sequenceDiagram
     participant User
     participant WS as Agents Gateway
-    participant Docker as Docker Service
-    participant Container as Agent Container
+    participant Pty as OpenCode PTY Service
+    participant OC as OpenCode serve
 
     rect rgb(220, 255, 220)
-        Note over User,Container: Step 1 - Create Terminal Session
+        Note over User,OC: Step 1 - Create Terminal Session
 
         User->>WS: createTerminal {sessionId?, shell?}
         WS->>WS: Verify authentication (socket.id -> agentId)
@@ -16,20 +16,17 @@ sequenceDiagram
             alt Container not found
                 WS-->>User: error {TERMINAL_ERROR}
             else Container found
-                WS->>Docker: createTerminalSession(containerId, sessionId, shell)
-                Docker->>Container: Create exec with TTY=true
-                Container-->>Docker: TTY stream
-                Docker->>Docker: Store session (sessionId -> TerminalSession)
-                Docker-->>WS: Terminal stream
+                WS->>Pty: open(agentId, containerId, sessionId, shell)
+                Pty->>OC: POST /pty + connect-token + WebSocket
+                Pty-->>WS: session registered
                 WS->>WS: Track session (socket.id -> sessionId)
-                WS->>WS: Set up stream handlers
                 WS-->>User: terminalCreated {sessionId}
             end
         end
     end
 
     rect rgb(220, 255, 220)
-        Note over User,Container: Step 2 - Send Terminal Input
+        Note over User,OC: Step 2 - Send Terminal Input
 
         User->>WS: terminalInput {sessionId, data}
         WS->>WS: Verify authentication
@@ -37,25 +34,30 @@ sequenceDiagram
         alt Session not found or access denied
             WS-->>User: error {TERMINAL_ERROR}
         else Session valid
-            WS->>Docker: sendTerminalInput(sessionId, data)
-            Docker->>Docker: Get session stream
-            Docker->>Container: Write data to TTY stream
-            Container-->>Docker: Data written
-            Docker-->>WS: Success
+            WS->>Pty: write(sessionId, data)
+            Pty->>OC: WebSocket send
         end
     end
 
     rect rgb(220, 255, 220)
-        Note over User,Container: Step 3 - Receive Terminal Output
+        Note over User,OC: Step 3 - Receive Terminal Output
 
-        Container->>Docker: TTY stream data event
-        Docker->>WS: Stream data chunk
+        OC->>Pty: WebSocket output
+        Pty->>WS: onOutput callback
         WS->>WS: Format as terminalOutput event
         WS-->>User: terminalOutput {sessionId, data}
     end
 
     rect rgb(220, 255, 220)
-        Note over User,Container: Step 4 - Close Terminal Session
+        Note over User,OC: Step 4 - Resize Terminal
+
+        User->>WS: terminalResize {sessionId, cols, rows}
+        WS->>Pty: resize(sessionId, cols, rows)
+        Pty->>OC: PATCH /pty/{ptyID}
+    end
+
+    rect rgb(220, 255, 220)
+        Note over User,OC: Step 5 - Close Terminal Session
 
         User->>WS: closeTerminal {sessionId}
         WS->>WS: Verify authentication
@@ -63,36 +65,27 @@ sequenceDiagram
         alt Session not found or access denied
             WS-->>User: error {TERMINAL_ERROR}
         else Session valid
-            WS->>Docker: closeTerminalSession(sessionId)
-            Docker->>Docker: Get session stream
-            Docker->>Container: End TTY stream
-            Container-->>Docker: Stream closed
-            Docker->>Docker: Remove session from map
-            Docker-->>WS: Success
+            WS->>Pty: close(sessionId)
+            Pty->>OC: DELETE /pty/{ptyID}
             WS->>WS: Remove session tracking
             WS-->>User: terminalClosed {sessionId}
         end
     end
 
     rect rgb(255, 220, 220)
-        Note over User,Container: Step 5 - Terminal Session Auto-Close (Exit Command)
+        Note over User,OC: Step 6 - PTY Exit (remote)
 
-        Container->>Docker: TTY stream end/close event
-        Docker->>Docker: Remove session from map
-        Docker->>WS: Stream end/close event
+        OC->>Pty: WebSocket close
+        Pty->>WS: onClosed callback
         WS->>WS: Remove session tracking
         WS-->>User: terminalClosed {sessionId}
     end
 
     rect rgb(255, 220, 220)
-        Note over User,Container: Step 6 - Disconnect (WebSocket)
+        Note over User,OC: Step 7 - Disconnect (WebSocket)
 
         User->>WS: Disconnect
         WS->>WS: Get all sessions for socket.id
-        loop For each session
-            WS->>Docker: closeTerminalSession(sessionId)
-            Docker->>Container: End TTY stream
-            Docker->>Docker: Remove session
-        end
+        WS->>Pty: closeAll(sessionIds)
         WS->>WS: Remove socket tracking
     end

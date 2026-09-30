@@ -19,5 +19,6 @@ ${names.map((name) => `  ${name}:`).join('\n')}`;
 export function buildComposeBridgeNetwork(name: string): string {
   return `networks:
   ${name}:
+    name: ${name}
     driver: bridge`;
 }

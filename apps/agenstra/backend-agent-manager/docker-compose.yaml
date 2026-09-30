@@ -29,11 +29,11 @@ services:
       WEBSOCKET_NAMESPACE: ${WEBSOCKET_NAMESPACE:-agents}
       WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-*}
       NODE_ENV: ${NODE_ENV:-development}
-      # Cursor agent configuration
-      CURSOR_API_KEY: ${CURSOR_API_KEY:-}
+      # Agent configuration
       AGENT_DEFAULT_IMAGE: ${AGENT_DEFAULT_IMAGE:-ghcr.io/forepath/agenstra-manager-worker:latest}
-      # Dynamic provider plugins (baked-in runtime deps and/or mounted plugin path)
-      DYNAMIC_AGENT_PROVIDERS: ${DYNAMIC_AGENT_PROVIDERS:-}
+      AGENT_DOCKER_NETWORK: ${AGENT_DOCKER_NETWORK:-agent-manager-network}
+      DOCKER_HOST_GATEWAY: ${DOCKER_HOST_GATEWAY:-host.docker.internal}
+      # Dynamic provider plugins (pipeline / chat filters; OpenCode is the only agent harness)
       DYNAMIC_PIPELINE_PROVIDERS: ${DYNAMIC_PIPELINE_PROVIDERS:-}
       DYNAMIC_CHAT_FILTERS: ${DYNAMIC_CHAT_FILTERS:-}
       DYNAMIC_PROVIDERS_FAIL_FAST: ${DYNAMIC_PROVIDERS_FAIL_FAST:-false}
@@ -47,6 +47,8 @@ services:
       DB_DATABASE: ${DB_DATABASE:-postgres}
       # Static API key authentication configuration
       STATIC_API_KEY: ${STATIC_API_KEY:-}
+      # AES-256-GCM key for encrypted columns (base64-encoded 32 bytes)
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
       # GIT repository configuration
       GIT_REPOSITORY_URL: ${GIT_REPOSITORY_URL:-}
       GIT_USERNAME: ${GIT_USERNAME:-}
@@ -70,10 +72,7 @@ services:
       KEYCLOAK_TOKEN_VALIDATION: ${KEYCLOAK_TOKEN_VALIDATION:-online}
       # Environment variables for users authentication (when AUTHENTICATION_METHOD=users)
       JWT_SECRET: ${JWT_SECRET:-}
-      # Docker images
-      CURSOR_AGENT_DOCKER_IMAGE: ${CURSOR_AGENT_DOCKER_IMAGE:-}
-      CURSOR_AGENT_VIRTUAL_WORKSPACE_DOCKER_IMAGE: ${CURSOR_AGENT_VIRTUAL_WORKSPACE_DOCKER_IMAGE:-}
-      CURSOR_AGENT_SSH_CONNECTION_DOCKER_IMAGE: ${CURSOR_AGENT_SSH_CONNECTION_DOCKER_IMAGE:-}
+      # Docker images (AGENT_DEFAULT_IMAGE is set above under Agent configuration)
       OPENCODE_AGENT_DOCKER_IMAGE: ${OPENCODE_AGENT_DOCKER_IMAGE:-}
       OPENCODE_AGENT_VIRTUAL_WORKSPACE_DOCKER_IMAGE: ${OPENCODE_AGENT_VIRTUAL_WORKSPACE_DOCKER_IMAGE:-}
       OPENCODE_AGENT_SSH_CONNECTION_DOCKER_IMAGE: ${OPENCODE_AGENT_SSH_CONNECTION_DOCKER_IMAGE:-}
@@ -95,6 +94,9 @@ services:
         condition: service_healthy
     networks:
       - agent-manager-network
+    extra_hosts:
+      # Linux: resolve host.docker.internal for published-port OpenCode health checks
+      - 'host.docker.internal:host-gateway'
     restart: unless-stopped
 
 volumes:
@@ -102,4 +104,5 @@ volumes:
 
 networks:
   agent-manager-network:
+    name: agent-manager-network
     driver: bridge

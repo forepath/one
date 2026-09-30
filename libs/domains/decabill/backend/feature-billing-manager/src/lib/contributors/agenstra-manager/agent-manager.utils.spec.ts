@@ -122,26 +122,6 @@ describe('agent-manager.utils', () => {
       expect(config.backend.git).toBeUndefined();
     });
 
-    it('includes cursorApiKey when request has cursorApiKey', () => {
-      const config = buildAgentManagerCloudInitConfigFromRequest(
-        { authenticationMethod: 'api-key', cursorApiKey: ' sk-secret-123 ' },
-        'host1',
-      );
-
-      expect(config.backend.cursorApiKey).toBe('sk-secret-123');
-    });
-
-    it('omits backend.cursorApiKey when request has no or empty cursorApiKey', () => {
-      const config1 = buildAgentManagerCloudInitConfigFromRequest({ authenticationMethod: 'api-key' }, 'host1');
-      const config2 = buildAgentManagerCloudInitConfigFromRequest(
-        { authenticationMethod: 'api-key', cursorApiKey: '   ' },
-        'host1',
-      );
-
-      expect(config1.backend.cursorApiKey).toBeUndefined();
-      expect(config2.backend.cursorApiKey).toBeUndefined();
-    });
-
     it('sets ssh.publicKey from effectiveConfig.sshPublicKey when provided', () => {
       const config = buildAgentManagerCloudInitConfigFromRequest(
         { authenticationMethod: 'api-key', sshPublicKey: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQ user@host' },
@@ -358,65 +338,6 @@ describe('agent-manager.utils', () => {
 
       expect(script).not.toContain('GIT_REPOSITORY_URL');
       expect(script).not.toContain('GIT_USERNAME');
-    });
-
-    it('includes CURSOR_API_KEY in backend env when config.backend.cursorApiKey is set', () => {
-      const config: AgentManagerCloudInitConfig = {
-        ssh: { publicKey: '' },
-        host: { hostname: 'test', fqdn: 'test.spirde.com' },
-        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
-        backend: {
-          host: '0.0.0.0',
-          port: 3000,
-          websocketPort: 8080,
-          nodeEnv: 'production',
-          database: {
-            host: 'postgres',
-            port: 5432,
-            username: 'postgres',
-            password: 'postgres',
-            database: 'postgres',
-          },
-          authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
-          encryption: { encryptionKey: 'enc', jwtSecret: 'jwt' },
-          smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
-          cors: { origin: 'https://test.spirde.com' },
-          cursorApiKey: 'sk-test-key',
-        },
-      };
-      const b64 = buildAgentManagerCloudInitUserData(config);
-      const script = Buffer.from(b64, 'base64').toString('utf-8');
-
-      expect(script).toContain('CURSOR_API_KEY: sk-test-key');
-    });
-
-    it('omits CURSOR_API_KEY when config.backend.cursorApiKey is absent', () => {
-      const config: AgentManagerCloudInitConfig = {
-        ssh: { publicKey: '' },
-        host: { hostname: 'test', fqdn: 'test.spirde.com' },
-        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
-        backend: {
-          host: '0.0.0.0',
-          port: 3000,
-          websocketPort: 8080,
-          nodeEnv: 'production',
-          database: {
-            host: 'postgres',
-            port: 5432,
-            username: 'postgres',
-            password: 'postgres',
-            database: 'postgres',
-          },
-          authentication: { authenticationMethod: 'api-key', staticApiKey: 'key' },
-          encryption: { encryptionKey: 'enc', jwtSecret: 'jwt' },
-          smtp: { host: 'mailhog', port: 1025, user: '', password: '', from: 'noreply@localhost' },
-          cors: { origin: 'https://test.spirde.com' },
-        },
-      };
-      const b64 = buildAgentManagerCloudInitUserData(config);
-      const script = Buffer.from(b64, 'base64').toString('utf-8');
-
-      expect(script).not.toContain('CURSOR_API_KEY');
     });
 
     it('includes ssh.publicKey in authorized_keys in the script when set', () => {

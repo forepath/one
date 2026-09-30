@@ -14,6 +14,7 @@ import {
   startClientAgent,
   stopClientAgent,
   updateClientAgent,
+  loadClientAgentCommands,
 } from './agents.actions';
 import {
   selectClientAgentById,
@@ -43,6 +44,7 @@ import {
 import type {
   AgentModelsMap,
   AgentResponseDto,
+  AgentSlashCommand,
   CreateAgentDto,
   ListClientAgentsParams,
   UpdateAgentDto,
@@ -241,6 +243,14 @@ export class AgentsFacade {
   }
 
   /**
+   * Load slash-invokable OpenCode commands (worker `GET /command`: config, builtins, skills, MCP prompts).
+   * Falls back to effective config + builtins when the worker list is unavailable.
+   */
+  loadClientAgentCommands(clientId: string, agentId: string): void {
+    this.store.dispatch(loadClientAgentCommands({ clientId, agentId }));
+  }
+
+  /**
    * Cached model id → label map for an agent, or null if not loaded.
    */
   getClientAgentModels$(clientId: string, agentId: string): Observable<AgentModelsMap | null> {
@@ -322,11 +332,11 @@ export class AgentsFacade {
    * Get commands for a specific client and agent.
    * @param clientId - The client ID
    * @param agentId - The agent ID
-   * @param agentType - The agent type (e.g., 'cursor', 'opencode')
+   * @param agentType - The agent type (e.g., 'opencode')
    * @returns Observable of commands array
    */
-  getClientAgentCommands$(clientId: string, agentId: string, agentType: string): Observable<string[]> {
-    return this.store.select(selectClientAgentCommands(clientId, agentId, agentType));
+  getClientAgentCommands$(clientId: string, agentId: string): Observable<AgentSlashCommand[]> {
+    return this.store.select(selectClientAgentCommands(clientId, agentId));
   }
 
   /**

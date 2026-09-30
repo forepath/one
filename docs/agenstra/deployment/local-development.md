@@ -125,8 +125,8 @@ GIT_REPOSITORY_URL=https://github.com/user/repo.git
 GIT_USERNAME=your-username
 GIT_TOKEN=your-git-token
 
-# Cursor Agent
-CURSOR_API_KEY=your-cursor-api-key
+# OpenCode Agent (optional image overrides)
+# OPENCODE_AGENT_DOCKER_IMAGE=ghcr.io/forepath/agenstra-manager-worker:latest
 ```
 
 ### Frontend Agent Console

@@ -19,7 +19,7 @@ This application provides:
 - **Auto Migrations** Automatic database schema migrations on startup
 - **Rate Limiting** Configurable rate limiting on all API endpoints
 - **CORS Configuration** Production-safe CORS defaults
-- **Plugin-based Agent Providers** Support for multiple agent implementations (Cursor and OpenCode via ACP, etc.)
+- **Plugin-based Agent Providers** Support for agent implementations (OpenCode via ACP; additional types via plugins)
 
 ## Architecture
 
@@ -154,7 +154,7 @@ The Socket.IO WebSocket gateway is available at `http://localhost:8080/agents` (
 - `chat` - Send chat message (requires authentication); optional `chatId` scopes the turn to a user-visible session
 - `restoreChat` - Re-emit history for `{ chatId }` after the client clears its local thread
 - `enhanceChat` / `generateTicketBody` - Isolated prompt helpers (unicast results)
-- Additional events for files, terminals, and tooling as described in the agent-manager AsyncAPI (for example `fileUpdate`, `createTerminal`, `terminalInput`, `closeTerminal`)
+- Additional events for files, terminals (OpenCode PTY), and tooling as described in the agent-manager AsyncAPI (for example `fileUpdate`, `createTerminal`, `terminalInput`, `terminalResize`, `closeTerminal`)
 
 #### Server → Client
 
@@ -241,9 +241,10 @@ See the application docs and environment configuration for complete environment 
 - `GIT_PASSWORD` - Git password (alternative to token)
 - `GIT_PRIVATE_KEY` - SSH private key for SSH repositories
 
-**Cursor Agent:** `CURSOR_API_KEY` - Cursor API key for agent communication
+**OpenCode Agent:** `OPENCODE_AGENT_DOCKER_IMAGE` - Docker image for opencode agent containers (default: `ghcr.io/forepath/agenstra-manager-worker:latest`)
 
-- `CURSOR_AGENT_DOCKER_IMAGE` - Docker image for cursor-agent containers
+- `OPENCODE_AGENT_VIRTUAL_WORKSPACE_DOCKER_IMAGE` - VNC image override
+- `OPENCODE_AGENT_SSH_CONNECTION_DOCKER_IMAGE` - SSH sidecar image override
 
 **VNC Browser Access:** `VNC_SERVER_DOCKER_IMAGE` - Docker image for VNC containers (default: `ghcr.io/forepath/agenstra-manager-vnc:latest`)
 
@@ -304,13 +305,13 @@ Treat socket access as **high privilege** on the host. The API image runs as **`
 | Image                            | User               | Registry (default)                         | Notes                                                                                 |
 | -------------------------------- | ------------------ | ------------------------------------------ | ------------------------------------------------------------------------------------- |
 | **API** (`Dockerfile.api`)       | `agenstra` (10001) | `ghcr.io/forepath/agenstra-manager-api`    | HTTP + WebSocket; Docker CLI + socket mount; restricted `sudo` for GID sync           |
-| **Worker** (`Dockerfile.worker`) | `agenstra`         | `ghcr.io/forepath/agenstra-manager-worker` | Cursor/OpenCode workloads; workspace at `/app`; credentials in `/home/agenstra`       |
+| **Worker** (`Dockerfile.worker`) | `agenstra`         | `ghcr.io/forepath/agenstra-manager-worker` | OpenCode workloads; workspace at `/app`; credentials in `/home/agenstra`              |
 | **VNC** (`Dockerfile.vnc`)       | `agenstra`         | `ghcr.io/forepath/agenstra-manager-vnc`    | Desktop browser; shared repo at `/home/agenstra/environment`; `VNC_PASSWORD` required |
 | **SSH** (`Dockerfile.ssh`)       | `agenstra`         | `ghcr.io/forepath/agenstra-manager-ssh`    | Optional shell; `SSH_PASSWORD` required; workspace at provider `basePath`             |
 
 Per-agent bind mounts (host `/opt/agents/{uuid}`) and read-only `/opt/agents` → `/opt/workspace` are documented in **[Container image security](../security/container-images.md)**.
 
-Configuration secrets belong in the environment at deploy time, not in image defaults. Override images per provider via `CURSOR_AGENT_*` and `OPENCODE_AGENT_*` variables (see [Environment configuration](../deployment/environment-configuration.md)). When upgrading, deploy API, worker, VNC, and SSH tags from the **same release**.
+Configuration secrets belong in the environment at deploy time, not in image defaults. Override images via `OPENCODE_AGENT_*` variables (see [Environment configuration](../deployment/environment-configuration.md)). When upgrading, deploy API, worker, VNC, and SSH tags from the **same release**.
 
 ## Production Deployment Checklist
 

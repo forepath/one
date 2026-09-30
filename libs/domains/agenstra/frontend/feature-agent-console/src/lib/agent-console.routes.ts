@@ -83,8 +83,7 @@ import {
   loadClient$,
   loadClientAgent$,
   loadClientAgentAutonomy$,
-  loadClientAgentCommandsFromFiles$,
-  loadClientAgentCommandsLoading$,
+  loadClientAgentCommandsFromConfig$,
   loadClientAgentModels$,
   loadClientAgents$,
   loadMoreClientAgents$,
@@ -218,9 +217,9 @@ import { AtlassianImportAdminComponent } from './atlassian-import-admin/atlassia
 import { AuditComponent } from './audit/audit.component';
 import { AgentConsoleChatComponent } from './chat/chat.component';
 import { AgentConsoleContainerComponent } from './container/container.component';
-import { configEditorGuard } from './guards/config-editor.guard';
 import { ticketsRequireActiveClientGuard } from './guards/tickets-require-active-client.guard';
 import { KnowledgeBoardComponent } from './knowledge/knowledge-board.component';
+import { AgentConfigAdminComponent } from './opencode-config/opencode-config-admin.component';
 import { RuleManagerComponent } from './rule-manager/rule-manager.component';
 import { provideAgenstraNotificationAdminClientProvider } from './providers/notification-admin.providers';
 import { TicketsBoardComponent } from './tickets/tickets-board.component';
@@ -250,6 +249,17 @@ export const agentConsoleRoutes: Route[] = [
         canActivate: [authGuard, adminGuard],
         component: RuleManagerComponent,
         title: $localize`:@@featureAgentConsole-filtersTitle:Filters :: Agenstra`,
+      },
+      {
+        path: 'agent-config',
+        canActivate: [authGuard, adminGuard],
+        component: AgentConfigAdminComponent,
+        title: $localize`:@@featureAgentConsole-agentConfigTitle:Agent configuration :: Agenstra`,
+      },
+      {
+        path: 'opencode-config',
+        redirectTo: 'agent-config',
+        pathMatch: 'full',
       },
       {
         path: 'imports/atlassian',
@@ -303,12 +313,6 @@ export const agentConsoleRoutes: Route[] = [
           },
           {
             path: ':clientId/agents/:agentId/editor',
-            component: AgentConsoleChatComponent,
-            pathMatch: 'full',
-          },
-          {
-            path: ':clientId/agents/:agentId/config',
-            canActivate: [authGuard, configEditorGuard],
             component: AgentConsoleChatComponent,
             pathMatch: 'full',
           },
@@ -398,8 +402,7 @@ export const agentConsoleRoutes: Route[] = [
         loadMoreClientAgents$,
         loadClientAgent$,
         loadClientAgentModels$,
-        loadClientAgentCommandsLoading$,
-        loadClientAgentCommandsFromFiles$,
+        loadClientAgentCommandsFromConfig$,
         createClientAgent$,
         updateClientAgent$,
         deleteClientAgent$,

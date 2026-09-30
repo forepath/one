@@ -2,7 +2,7 @@ import type { AgentChatSessionSummaryDto } from '../chat-sessions/chat-sessions.
 
 // Types based on OpenAPI spec
 export interface AgentTypeCapabilities {
-  transport?: 'acp';
+  transport?: 'acp' | 'opencode-http' | 'http';
   supportsChat: boolean;
   supportsStreaming: boolean;
   supportsToolEvents: boolean;
@@ -65,6 +65,14 @@ export interface ListClientAgentsParams {
 
 /** Model id → display name, as returned by GET .../agents/:agentId/models (proxied agent-manager). */
 export type AgentModelsMap = Record<string, string>;
+
+/** Slash typeahead entry mirroring OpenCode `GET /command` (`/name` + optional description). */
+export interface AgentSlashCommand {
+  name: string;
+  description?: string;
+  /** OpenCode registry source when loaded from the worker. */
+  source?: 'command' | 'mcp' | 'skill';
+}
 
 export enum ContainerType {
   GENERIC = 'generic',

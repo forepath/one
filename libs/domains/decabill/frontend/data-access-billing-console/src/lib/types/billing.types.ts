@@ -688,8 +688,6 @@ export interface RequestedConfigCloudInit {
   digitaloceanApiToken?: string;
   /** Optional Git configuration for manager instances. */
   git?: GitConfig;
-  /** Optional Cursor API key for manager instances (CURSOR_API_KEY env var). */
-  cursorApiKey?: string;
 }
 
 export interface CreateSubscriptionDto {

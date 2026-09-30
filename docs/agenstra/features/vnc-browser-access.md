@@ -185,7 +185,7 @@ Content-Type: application/json
 {
   "name": "my-agent",
   "description": "Agent with VNC support",
-  "agentType": "cursor"
+  "agentType": "opencode"
 }
 ```
 
@@ -196,7 +196,7 @@ Content-Type: application/json
   "id": "550e8400-e29b-41d4-a716-446655440000",
   "name": "my-agent",
   "description": "Agent with VNC support",
-  "agentType": "cursor",
+  "agentType": "opencode",
   "containerId": "abc123...",
   "vncContainerId": "def456...",
   "vncHostPort": 6123,

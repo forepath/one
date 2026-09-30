@@ -374,6 +374,12 @@
       <trans-unit id="featureAudit-avgWordsPerMessage" datatype="html">
         <source> Avg words/message </source>
         </trans-unit>
+      <trans-unit id="featureAudit-totalTokens" datatype="html">
+        <source>Total tokens</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-totalCost" datatype="html">
+        <source>Total cost (USD)</source>
+        </trans-unit>
       <trans-unit id="featureAudit-filterFlags" datatype="html">
         <source>Filter flags</source>
         </trans-unit>
@@ -587,9 +593,6 @@
       <trans-unit id="featureChat-appName" datatype="html">
         <source>Agenstra</source>
         </trans-unit>
-      <trans-unit id="featureChat-agentConfigBadge" datatype="html">
-        <source>Agent config</source>
-        </trans-unit>
       <trans-unit id="featureChat-studio" datatype="html">
         <source>Studio</source>
         </trans-unit>
@@ -755,8 +758,11 @@
       <trans-unit id="featureChat-commandsLabel" datatype="html">
         <source>Commands</source>
         </trans-unit>
+      <trans-unit id="featureChat-clearCommandAria" datatype="html">
+        <source>Clear command</source>
+        </trans-unit>
       <trans-unit id="featureChat-typeMessagePlaceholder" datatype="html">
-        <source>Type a message...</source>
+        <source>Type a message or /command…</source>
         </trans-unit>
       <trans-unit id="featureChat-selectContextTitle" datatype="html">
         <source>Select context</source>
@@ -772,9 +778,6 @@
         </trans-unit>
       <trans-unit id="featureChat-model" datatype="html">
         <source>Model</source>
-        </trans-unit>
-      <trans-unit id="featureChat-modelAuto" datatype="html">
-        <source>Auto</source>
         </trans-unit>
       <trans-unit id="featureChat-responseMode" datatype="html">
         <source>Response</source>
@@ -967,8 +970,8 @@
       <trans-unit id="featureChat-agentTypeLabel" datatype="html">
         <source>Agent Type</source>
         </trans-unit>
-      <trans-unit id="featureChat-agentTypeDefaultCursor" datatype="html">
-        <source>Default (Cursor)</source>
+      <trans-unit id="featureChat-agentTypeDefaultOpencode" datatype="html">
+        <source>Default (OpenCode)</source>
         </trans-unit>
       <trans-unit id="featureChat-containerTypeLabel" datatype="html">
         <source>Container Type</source>
@@ -1225,12 +1228,6 @@
       <trans-unit id="featureChat-openEditor" datatype="html">
         <source>Open Editor</source>
         </trans-unit>
-      <trans-unit id="featureChat-openAgentConfigFilesNewWindow" datatype="html">
-        <source>Open agent config in New Window</source>
-        </trans-unit>
-      <trans-unit id="featureChat-openAgentConfigFilesTitle" datatype="html">
-        <source>Open provider agent config files (requires workspace management access)</source>
-        </trans-unit>
       <trans-unit id="featureChat-openDeploymentManagerNewWindow" datatype="html">
         <source>Open Deployment Manager in New Window</source>
         </trans-unit>
@@ -1257,9 +1254,6 @@
         </trans-unit>
       <trans-unit id="featureChat-workspaceSettingTitleGitPrivateKey" datatype="html">
         <source>Git private key (SSH)</source>
-        </trans-unit>
-      <trans-unit id="featureChat-workspaceSettingTitleCursorApiKey" datatype="html">
-        <source>Cursor API key</source>
         </trans-unit>
       <trans-unit id="featureChat-workspaceSettingTitleAgentImage" datatype="html">
         <source>Agent default image</source>
@@ -1374,6 +1368,366 @@
         </trans-unit>
       <trans-unit id="featureContainer-filters" datatype="html">
         <source>Filters</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-opencodeConfigTitle" datatype="html">
+        <source>Agent configuration</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-opencodeConfig" datatype="html">
+        <source>Agent config</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-agentConfigTitle" datatype="html">
+        <source>Agent configuration</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-agentConfig" datatype="html">
+        <source>Agent config</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-adminTitle" datatype="html">
+        <source>Agent configuration</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-inheritedEntrySummary" datatype="html">
+        <source>Inherited from a higher layer</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-lockedByHigherLayerAlert" datatype="html">
+        <source>Some settings are locked by a higher layer and cannot be edited here.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-switchToRaw" datatype="html">
+        <source>Switch to raw JSON</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-switchToStructured" datatype="html">
+        <source>Switch to structured editor</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-save" datatype="html">
+        <source>Save</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-cancel" datatype="html">
+        <source>Cancel</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-unsavedChanges" datatype="html">
+        <source>Unsaved changes</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-unsavedChangesHint" datatype="html">
+        <source>Closing without saving will discard your edits.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-inheritedBadge" datatype="html">
+        <source>Inherited</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-removedBadge" datatype="html">
+        <source>Removed</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-removedEntrySummary" datatype="html">
+        <source>Removed (unsaved)</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addPathLabel" datatype="html">
+        <source>Path or URL</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addPathPlaceholder" datatype="html">
+        <source>/path or https://…</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-editFile" datatype="html">
+        <source>Edit file</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-openPath" datatype="html">
+        <source>Open</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-openUrl" datatype="html">
+        <source>Open URL</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-editPathEntry" datatype="html">
+        <source>Edit</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-removePathEntry" datatype="html">
+        <source>Remove</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addPathEntry" datatype="html">
+        <source>Add</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-layerFileEditorTitle" datatype="html">
+        <source>Edit layer file</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-layerFilePathLabel" datatype="html">
+        <source>Path</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-layerFileContent" datatype="html">
+        <source>Content</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-layerFileMissingClient" datatype="html">
+        <source>Workspace id is required</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-layerFileSaveFailed" datatype="html">
+        <source>Failed to save file</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-layerFileNewFile" datatype="html">
+        <source>New file</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-layerFileNewFolder" datatype="html">
+        <source>New folder</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-layerFileEmpty" datatype="html">
+        <source>Empty folder</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-layerFilePickFile" datatype="html">
+        <source>Select a file or create one in this folder</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-layerFileDeleteConfirm" datatype="html">
+        <source>Delete the selected items from the layer VFS?</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-workspaceTitle" datatype="html">
+        <source>Workspace agent configuration</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-environmentTitle" datatype="html">
+        <source>Environment agent configuration</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMcpTimeoutStartupHelp" datatype="html">
+        <source>Max wait for an MCP server to become ready</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMcpTimeoutRequestHelp" datatype="html">
+        <source>Max wait for a single MCP request round-trip</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldToolOutputLinesHelp" datatype="html">
+        <source>Truncate tool stdout/stderr after this many lines</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldToolOutputBytesHelp" datatype="html">
+        <source>Truncate tool output after this many bytes</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-generalIdentityHeading" datatype="html">
+        <source>Identity</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-generalBehaviorHeading" datatype="html">
+        <source>Behavior</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-generalWorkspaceHeading" datatype="html">
+        <source>Workspace</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-modelsProvidersHeading" datatype="html">
+        <source>Providers</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-modelsModelsHeading" datatype="html">
+        <source>Models</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-providersOverridesHeading" datatype="html">
+        <source>Overrides</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-providersHelp" datatype="html">
+        <source>Configure provider overrides. Pick a built-in provider to seed credential env names and secret fields, or add a custom id. Inherited provider ids cannot be changed.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-providerSelectLabel" datatype="html">
+        <source>Provider</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-customProviderOption" datatype="html">
+        <source>Custom</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-customProviderLabel" datatype="html">
+        <source>Custom provider id</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-customProviderPlaceholder" datatype="html">
+        <source>my-provider</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addKnownProviderLabel" datatype="html">
+        <source>Add known provider</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addKnownModelLabel" datatype="html">
+        <source>Add known model</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-knownModelProviderPlaceholder" datatype="html">
+        <source>Provider</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-knownModelPlaceholder" datatype="html">
+        <source>Model</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-knownModelIdPlaceholder" datatype="html">
+        <source>model-id</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-knownModelProviderAria" datatype="html">
+        <source>Provider</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-knownModelAria" datatype="html">
+        <source>Model</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldModelPlaceholder" datatype="html">
+        <source>provider/model</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-providerCredentialsHeading" datatype="html">
+        <source>Credentials (secrets)</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addCredentialEnvTitle" datatype="html">
+        <source>Add credential env</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addCredentialEnvHelp" datatype="html">
+        <source>Env var name for this provider (value stored as a secret)</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addCredentialEnvPlaceholder" datatype="html">
+        <source>PROVIDER_API_KEY</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-removeCredentialEnv" datatype="html">
+        <source>Remove credential env</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-providerModelsTitle" datatype="html">
+        <source>Models</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-providerModelsHelp" datatype="html">
+        <source>One model id per line</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-providerCatalogModelsHeading" datatype="html">
+        <source>Models (catalog)</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-providerCatalogModelsHelp" datatype="html">
+        <source>Available models from the provider catalog. Locked for built-in providers.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-accumulatedJsonLabel" datatype="html">
+        <source>Accumulated configuration</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-accumulatedJsonHelp" datatype="html">
+        <source>Read-only merged result for this stage, including higher layers.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-accumulatedJsonAria" datatype="html">
+        <source>Accumulated configuration JSON</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-rawJsonHelp" datatype="html">
+        <source>Composed view of structured settings plus Advanced overrides for this layer. Saving absorbs the JSON into structured config and clears overrides.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-sectionAdvanced" datatype="html">
+        <source>Advanced</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-tabOverrides" datatype="html">
+        <source>Overrides</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-overridesHeading" datatype="html">
+        <source>Raw overrides</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-overridesHelp" datatype="html">
+        <source>Optional JSON merged over the structured settings for this layer. Same heredity locks apply. Included in Configuration JSON.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-overridesJsonTitle" datatype="html">
+        <source>Overrides JSON</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpTimeoutsHeading" datatype="html">
+        <source>Timeouts</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpServersHeading" datatype="html">
+        <source>Servers</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-skillsHeading" datatype="html">
+        <source>Skills</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-instructionsHeading" datatype="html">
+        <source>Instructions</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-commandsHeading" datatype="html">
+        <source>Commands</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-pluginsHeading" datatype="html">
+        <source>Plugins</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-agentsHeading" datatype="html">
+        <source>Agents</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-referencesHeading" datatype="html">
+        <source>References</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-permissionsHeading" datatype="html">
+        <source>Permissions</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-policiesHeading" datatype="html">
+        <source>Policies</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-toolOutputHeading" datatype="html">
+        <source>Tool output</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-websearchHeading" datatype="html">
+        <source>Websearch</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-networkHeading" datatype="html">
+        <source>Network (secrets)</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-compactionHeading" datatype="html">
+        <source>Compaction</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-formattersHeading" datatype="html">
+        <source>Formatters</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mediaHeading" datatype="html">
+        <source>Media / attachments</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-warmingHeading" datatype="html">
+        <source>Warming</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addNameLabel" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addProviderLabel" datatype="html">
+        <source>Provider</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addServerLabel" datatype="html">
+        <source>Server</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addCommandLabel" datatype="html">
+        <source>Command</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addAgentLabel" datatype="html">
+        <source>Agent</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addReferenceLabel" datatype="html">
+        <source>Reference</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addFormatterLabel" datatype="html">
+        <source>Formatter</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addEntry" datatype="html">
+        <source>Add</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addPlugin" datatype="html">
+        <source>Add plugin</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addPermission" datatype="html">
+        <source>Add permission</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addPolicy" datatype="html">
+        <source>Add policy</source>
+        </trans-unit>
+      <trans-unit id="featureChat-manageAgentConfig" datatype="html">
+        <source>Manage agent configuration</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConsole-agentConfigTitle" datatype="html">
+        <source>Agent configuration :: Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureOpencodeConfig-adminTitle" datatype="html">
+        <source>Agent configuration</source>
+        </trans-unit>
+      <trans-unit id="featureOpencodeConfig-configJson" datatype="html">
+        <source>Config JSON</source>
+        </trans-unit>
+      <trans-unit id="featureOpencodeConfig-save" datatype="html">
+        <source>Save</source>
+        </trans-unit>
+      <trans-unit id="featureChat-manageOpencodeConfig" datatype="html">
+        <source>Agent configuration</source>
+        </trans-unit>
+      <trans-unit id="featureChat-manageOpencodeConfigTitle" datatype="html">
+        <source>Manage agent configuration</source>
+        </trans-unit>
+      <trans-unit id="featureChat-manageOpencodeConfigEnvironmentTitle" datatype="html">
+        <source>Manage agent configuration</source>
+        </trans-unit>
+      <trans-unit id="featureChat-opencodeConfigWorkspaceHelp" datatype="html">
+        <source>Workspace overlay JSON. Admin (global) keys override this layer when set.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-opencodeConfigEnvironmentHelp" datatype="html">
+        <source>Environment overlay JSON. Workspace and admin keys override this layer when set.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-opencodeConfigLockedKeys" datatype="html">
+        <source>Locked by higher layer:</source>
+        </trans-unit>
+      <trans-unit id="featureChat-opencodeConfigJsonLabel" datatype="html">
+        <source>Config JSON</source>
+        </trans-unit>
+      <trans-unit id="featureChat-opencodeConfigSave" datatype="html">
+        <source>Save</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventSummarySubagent" datatype="html">
+        <source>Subagent</source>
+        </trans-unit>
+      <trans-unit id="featureChat-agentEventSummarySubagentResult" datatype="html">
+        <source>Subagent result</source>
         </trans-unit>
       <trans-unit id="featureContainer-importTitle" datatype="html">
         <source>Import</source>
@@ -2118,6 +2472,9 @@
         </trans-unit>
       <trans-unit id="featureTerminal-closeTerminalAriaLabel" datatype="html">
         <source>Close terminal</source>
+        </trans-unit>
+      <trans-unit id="featureTerminal-refreshTerminalAriaLabel" datatype="html">
+        <source>Refresh terminal</source>
         </trans-unit>
       <trans-unit id="featureTerminal-newTerminalTitle" datatype="html">
         <source>New Terminal</source>

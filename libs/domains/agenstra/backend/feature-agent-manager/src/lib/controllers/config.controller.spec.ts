@@ -6,8 +6,8 @@ import { ConfigService } from '../services/config.service';
 
 import { ConfigController } from './config.controller';
 
-const cursorCapabilities = {
-  transport: 'acp' as const,
+const opencodeCapabilities = {
+  transport: 'opencode-http' as const,
   supportsChat: true,
   supportsStreaming: true,
   supportsToolEvents: true,
@@ -45,7 +45,9 @@ describe('ConfigController', () => {
   describe('getConfig', () => {
     it('should return configuration with git repository URL and agent types when set', async () => {
       const gitRepositoryUrl = 'https://github.com/user/repo.git';
-      const agentTypes: AgentTypeInfo[] = [{ type: 'cursor', displayName: 'Cursor', capabilities: cursorCapabilities }];
+      const agentTypes: AgentTypeInfo[] = [
+        { type: 'opencode', displayName: 'OpenCode', capabilities: opencodeCapabilities },
+      ];
 
       service.getGitRepositoryUrl.mockReturnValue(gitRepositoryUrl);
       service.getGitRepositorySetupMode.mockReturnValue(GitRepositorySetupMode.CLONE);
@@ -63,7 +65,9 @@ describe('ConfigController', () => {
     });
 
     it('should return configuration with undefined git repository URL when not set', async () => {
-      const agentTypes: AgentTypeInfo[] = [{ type: 'cursor', displayName: 'Cursor', capabilities: cursorCapabilities }];
+      const agentTypes: AgentTypeInfo[] = [
+        { type: 'opencode', displayName: 'OpenCode', capabilities: opencodeCapabilities },
+      ];
 
       service.getGitRepositoryUrl.mockReturnValue(undefined);
       service.getGitRepositorySetupMode.mockReturnValue(GitRepositorySetupMode.CLONE);
@@ -82,16 +86,16 @@ describe('ConfigController', () => {
 
     it('should return all registered agent types', async () => {
       const agentTypes: AgentTypeInfo[] = [
-        { type: 'cursor', displayName: 'Cursor', capabilities: cursorCapabilities },
+        { type: 'opencode', displayName: 'OpenCode', capabilities: opencodeCapabilities },
         {
           type: 'openai',
           displayName: 'OpenAI',
-          capabilities: { ...cursorCapabilities, transport: undefined },
+          capabilities: { ...opencodeCapabilities, transport: undefined },
         },
         {
           type: 'anthropic',
           displayName: 'Anthropic Claude',
-          capabilities: { ...cursorCapabilities, transport: undefined },
+          capabilities: { ...opencodeCapabilities, transport: undefined },
         },
       ];
 
@@ -104,9 +108,9 @@ describe('ConfigController', () => {
       expect(result.agentTypes).toEqual(agentTypes);
       expect(result.agentTypes).toHaveLength(3);
       expect(result.agentTypes[0]).toEqual({
-        type: 'cursor',
-        displayName: 'Cursor',
-        capabilities: cursorCapabilities,
+        type: 'opencode',
+        displayName: 'OpenCode',
+        capabilities: opencodeCapabilities,
       });
       expect(result.agentTypes[1].type).toBe('openai');
       expect(result.agentTypes[2].type).toBe('anthropic');

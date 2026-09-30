@@ -18,7 +18,7 @@ export class CreateAgentDto {
 
   @IsOptional()
   @IsString({ message: 'Agent type must be a string' })
-  @IsIn(['cursor', 'opencode'], { message: 'Agent type must be one of: cursor, opencode' })
+  @IsIn(['opencode'], { message: 'Agent type must be one of: opencode' })
   agentType?: string;
 
   @IsOptional()

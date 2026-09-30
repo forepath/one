@@ -111,9 +111,9 @@ describe('AgentsFilesController', () => {
       service.readFile.mockResolvedValue(mockFileReadResult);
       const res = createMockResponse();
 
-      await controller.readFile(mockAgentId, mockFilePath, res, undefined, 'config', undefined);
+      await controller.readFile(mockAgentId, mockFilePath, res, undefined, 'app', undefined);
 
-      expect(service.readFile).toHaveBeenCalledWith(mockAgentId, mockFilePath, 'config');
+      expect(service.readFile).toHaveBeenCalledWith(mockAgentId, mockFilePath, 'app');
     });
 
     it('should return 206 for satisfiable Range', async () => {

@@ -24,7 +24,6 @@ export interface IntegratedOrderFormConfig {
     commitAuthorName: string;
     commitAuthorEmail: string;
   };
-  cursorApiKey: string;
 }
 
 export function createDefaultIntegratedOrderConfig(): IntegratedOrderFormConfig {
@@ -59,7 +58,6 @@ export function createDefaultIntegratedOrderConfig(): IntegratedOrderFormConfig 
       commitAuthorName: '',
       commitAuthorEmail: '',
     },
-    cursorApiKey: '',
   };
 }
 
@@ -162,10 +160,6 @@ export function buildPlanOrderRequestedConfig(params: BuildPlanOrderRequestedCon
             }
           : {}),
       };
-    }
-
-    if (cfg.cursorApiKey.trim()) {
-      requestedConfig['cursorApiKey'] = cfg.cursorApiKey.trim();
     }
   }
 

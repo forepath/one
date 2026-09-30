@@ -3,6 +3,7 @@ import { createAction, props } from '@ngrx/store';
 import type {
   AgentModelsMap,
   AgentResponseDto,
+  AgentSlashCommand,
   CreateAgentDto,
   CreateAgentResponseDto,
   ListClientAgentsParams,
@@ -179,7 +180,7 @@ export const loadClientAgentCommands = createAction(
 
 export const loadClientAgentCommandsSuccess = createAction(
   '[Agents] Load Client Agent Commands Success',
-  props<{ clientId: string; agentId: string; commands: { [agentType: string]: string[] } }>(),
+  props<{ clientId: string; agentId: string; commands: AgentSlashCommand[] }>(),
 );
 
 export const loadClientAgentCommandsFailure = createAction(

@@ -80,6 +80,7 @@ export class AcpNotificationMapper {
             name,
             result: extractToolResultPayload(update),
             isError: update.status === 'failed',
+            ...(update.rawInput !== undefined ? { args: update.rawInput } : {}),
           });
         } else if (!state.emittedCalls.has(update.toolCallId)) {
           // First sighting of this tool (update without a prior tool_call).

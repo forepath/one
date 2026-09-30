@@ -4,10 +4,11 @@
 # Registry:   ghcr.io/forepath/agenstra-manager-worker
 # Base:       debian:trixie-slim
 # User:       agenstra (APP_UID / APP_GID, default 10001); sudo: chown only (workspace bind mount)
-# Exposes:    (none — idle worker; use `docker exec -u agenstra` for a shell)
+# Exposes:    4096 (opencode serve HTTP API)
 # Build:      npx nx run backend-agent-manager:worker-container-image
 # Run:        —
-# Notes:      Includes Node.js, Nx, cursor-agent, and opencode for agent workloads
+# Notes:      Includes Node.js, Nx, and opencode for agent workloads.
+#             Entry point runs `opencode serve` (set OPENCODE_SERVER_PASSWORD for Basic auth).
 # -----------------------------------------------------------------------------
 #
 FROM docker.io/debian:trixie-slim
@@ -20,7 +21,10 @@ ENV VERSION=${VERSION}
 ENV NVM_DIR=/home/agenstra/.nvm
 ENV NODE_VERSION=24.14.1
 ENV HOME=/home/agenstra
-ENV PATH="/home/agenstra/.local/bin:/home/agenstra/.opencode/bin:/home/agenstra/.nvm/versions/node/v${NODE_VERSION}/bin:${PATH}"
+ENV PATH="/home/agenstra/.opencode/bin:/home/agenstra/.nvm/versions/node/v${NODE_VERSION}/bin:${PATH}"
+ENV OPENCODE_SERVER_PORT=4096
+ENV OPENCODE_SERVER_HOSTNAME=0.0.0.0
+EXPOSE 4096
 
 WORKDIR /app
 
@@ -60,9 +64,7 @@ RUN echo "deb http://deb.debian.org/debian bookworm main" > /etc/apt/sources.lis
     rm -rf /var/lib/apt/lists/* && \
     rm -f /etc/apt/sources.list.d/bookworm.list
 
-RUN install -d -o agenstra -g agenstra /home/agenstra/.local/bin /home/agenstra/.opencode/bin && \
-    curl -fsSL https://cursor.com/install | bash -s -- --prefix /home/agenstra/.local && \
-    chown -R agenstra:agenstra /home/agenstra/.local
+RUN install -d -o agenstra -g agenstra /home/agenstra/.opencode/bin /home/agenstra/.config/opencode
 
 # OpenCode's installer reads VERSION as the CLI release tag; unset the image VERSION build-arg.
 RUN env -u VERSION HOME=/home/agenstra bash -c 'curl -fsSL https://opencode.ai/install | bash' && \
@@ -72,7 +74,9 @@ RUN printf '%s\n' \
     '#!/bin/bash' \
     'set -euo pipefail' \
     'sudo chown -R agenstra:agenstra /app 2>/dev/null || true' \
-    'exec tail -f /dev/null' \
+    'hostname="${OPENCODE_SERVER_HOSTNAME:-0.0.0.0}"' \
+    'port="${OPENCODE_SERVER_PORT:-4096}"' \
+    'exec opencode serve --hostname "${hostname}" --port "${port}"' \
     > /usr/local/bin/docker-entrypoint.sh && \
     chmod 755 /usr/local/bin/docker-entrypoint.sh && \
     chown agenstra:agenstra /usr/local/bin/docker-entrypoint.sh

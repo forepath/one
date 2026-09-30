@@ -9,6 +9,9 @@ import {
   FilterRulesSyncService,
   isAgenstraSearchEntityType,
   KnowledgeEmbeddingIndexService,
+  OpencodeConfigSyncTargetsService,
+  OpencodeLayerFilesService,
+  OpencodeProvidersCatalogService,
 } from '@forepath/agenstra/backend/feature-agent-controller';
 import {
   EMAIL_DELIVER_JOB_NAME,
@@ -37,6 +40,8 @@ import {
   getContextImportItemBudget,
   getFilterRulesSyncBatchSize,
   getKnowledgeEmbeddingPageBatchSize,
+  getOpencodeConfigSyncBatchSize,
+  getOpencodeLayerFilesSyncBatchSize,
   getSearchReindexBatchSize,
 } from '../job-registry';
 
@@ -61,6 +66,9 @@ export class ControllerJobsProcessor extends WorkerHost {
     private readonly updateCheckService: UpdateCheckService,
     private readonly searchIndex: AgenstraSearchIndexService,
     private readonly notificationPublisher: AgenstraNotificationPublisher,
+    private readonly opencodeProvidersCatalog: OpencodeProvidersCatalogService,
+    private readonly opencodeConfigSyncTargets: OpencodeConfigSyncTargetsService,
+    private readonly opencodeLayerFiles: OpencodeLayerFilesService,
   ) {
     super();
   }
@@ -95,6 +103,18 @@ export class ControllerJobsProcessor extends WorkerHost {
         break;
       case ControllerJobName.FILTER_RULES_RECONCILE:
         await this.filterRulesService.reconcileAllGlobalRules();
+        break;
+      case ControllerJobName.OPENCODE_CONFIG_SYNC_COORDINATOR:
+        await this.runOpencodeConfigSyncCoordinator();
+        break;
+      case ControllerJobName.OPENCODE_CONFIG_SYNC_UNIT:
+        await this.opencodeConfigSyncTargets.processTargetById((job.data as { targetId: string }).targetId);
+        break;
+      case ControllerJobName.OPENCODE_LAYER_FILES_SYNC_COORDINATOR:
+        await this.runOpencodeLayerFilesSyncCoordinator();
+        break;
+      case ControllerJobName.OPENCODE_LAYER_FILES_SYNC_UNIT:
+        await this.opencodeLayerFiles.processTargetById((job.data as { targetId: string }).targetId);
         break;
       case ControllerJobName.AUTONOMOUS_TICKET_COORDINATOR:
         await this.runAutonomousTicketCoordinator();
@@ -132,6 +152,9 @@ export class ControllerJobsProcessor extends WorkerHost {
       case ControllerJobName.UPDATE_CHECK:
       case UPDATE_CHECK_JOB_NAME:
         await this.updateCheckService.runCheck();
+        break;
+      case ControllerJobName.OPENCODE_PROVIDERS_REFRESH:
+        await this.opencodeProvidersCatalog.refreshFromModelsDev();
         break;
       default:
         this.logger.warn(`Unknown controller job name: ${job.name}`);
@@ -297,6 +320,34 @@ export class ControllerJobsProcessor extends WorkerHost {
         jobName: ControllerJobName.FILTER_RULES_SYNC_UNIT,
         payload: { targetId },
         jobIdNamespace: 'filter-rules:target',
+        jobIdParts: [targetId],
+      });
+    }
+  }
+
+  private async runOpencodeConfigSyncCoordinator(): Promise<void> {
+    const targetIds = await this.opencodeConfigSyncTargets.findPendingTargetIds(getOpencodeConfigSyncBatchSize());
+
+    for (const targetId of targetIds) {
+      await enqueueUnitJob({
+        queue: this.controllerQueue,
+        jobName: ControllerJobName.OPENCODE_CONFIG_SYNC_UNIT,
+        payload: { targetId },
+        jobIdNamespace: 'opencode-config:target',
+        jobIdParts: [targetId],
+      });
+    }
+  }
+
+  private async runOpencodeLayerFilesSyncCoordinator(): Promise<void> {
+    const targetIds = await this.opencodeLayerFiles.findPendingTargetIds(getOpencodeLayerFilesSyncBatchSize());
+
+    for (const targetId of targetIds) {
+      await enqueueUnitJob({
+        queue: this.controllerQueue,
+        jobName: ControllerJobName.OPENCODE_LAYER_FILES_SYNC_UNIT,
+        payload: { targetId },
+        jobIdNamespace: 'opencode-layer-files:target',
         jobIdParts: [targetId],
       });
     }

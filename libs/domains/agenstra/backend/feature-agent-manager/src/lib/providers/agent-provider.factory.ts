@@ -3,8 +3,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { AgentProvider } from './agent-provider.interface';
 
 /**
- * Factory service for getting the appropriate agent provider based on agent type.
- * Supports multiple agent implementations simultaneously.
+ * Factory for the OpenCode agent provider (sole supported harness).
  */
 @Injectable()
 export class AgentProviderFactory {
@@ -12,7 +11,7 @@ export class AgentProviderFactory {
   private readonly providers = new Map<string, AgentProvider>();
 
   /**
-   * Register an agent provider.
+   * Register an agent provider (OpenCode only in production).
    * @param provider - The agent provider implementation to register
    */
   registerProvider(provider: AgentProvider): void {
@@ -27,19 +26,20 @@ export class AgentProviderFactory {
   }
 
   /**
-   * Get an agent provider by type.
+   * Get an agent provider by type (defaults / resolves OpenCode).
    * @param type - The agent type identifier
    * @returns The agent provider instance
    * @throws BadRequestException if provider is not found
    */
   getProvider(type: string): AgentProvider {
-    const provider = this.providers.get(type);
+    const resolvedType = type || 'opencode';
+    const provider = this.providers.get(resolvedType) ?? this.providers.get('opencode');
 
     if (!provider) {
       const availableTypes = Array.from(this.providers.keys()).join(', ');
 
       throw new BadRequestException(
-        `Agent provider with type '${type}' not found. Available types: ${availableTypes || 'none'}`,
+        `Agent provider with type '${resolvedType}' not found. Available types: ${availableTypes || 'none'}`,
       );
     }
 
@@ -52,7 +52,7 @@ export class AgentProviderFactory {
    * @returns True if provider is registered, false otherwise
    */
   hasProvider(type: string): boolean {
-    return this.providers.has(type);
+    return this.providers.has(type) || (type !== 'opencode' && this.providers.has('opencode'));
   }
 
   /**

@@ -65,6 +65,16 @@
   flex: 0 0 auto;
 }
 
+// Wrapper stays layout-transparent so icon-only / label layouts match an unwrapped projection.
+.fpc-button__content {
+  display: contents;
+}
+
+// Icon-only loading: spinner replaces the icon; label+spinner buttons keep both.
+.fpc-button__content--hidden {
+  display: none;
+}
+
 // Bootstrap has no `btn-xs`; match the compact inline action height used across the apps.
 .fpc-button__btn--xs {
   --bs-btn-padding-y: 0.125rem;
@@ -161,4 +171,12 @@
   height: var(--fpc-page-header-control-size, 2.35rem);
   min-width: var(--fpc-page-header-control-size, 2.35rem);
   min-height: var(--fpc-page-header-control-size, 2.35rem);
+}
+
+// Menus nested under the header (e.g. session switcher) keep compact sm, not chrome height.
+:host-context(.dropdown-menu) .fpc-button__btn--icon.btn-sm {
+  width: 2.025rem;
+  height: 2.025rem;
+  min-width: 2.025rem;
+  min-height: 2.025rem;
 }

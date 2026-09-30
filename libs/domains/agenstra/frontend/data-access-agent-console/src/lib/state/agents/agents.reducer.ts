@@ -36,15 +36,15 @@ import {
   updateClientAgentFailure,
   updateClientAgentSuccess,
 } from './agents.actions';
-import type { AgentModelsMap, AgentResponseDto } from './agents.types';
+import type { AgentModelsMap, AgentResponseDto, AgentSlashCommand } from './agents.types';
 
 export interface AgentsState {
   // Agents grouped by clientId
   entities: Record<string, AgentResponseDto[]>;
   // Selected agent per client
   selectedAgents: Record<string, AgentResponseDto | null>;
-  // Commands per client:agent:agentType (keyed by clientId:agentId:agentType)
-  commands: Record<string, Record<string, string[]>>;
+  // Slash commands per client:agent (keyed by clientId:agentId)
+  commands: Record<string, AgentSlashCommand[]>;
   // Loading states per client
   loading: Record<string, boolean>;
   loadingAgent: Record<string, boolean>;

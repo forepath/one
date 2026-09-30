@@ -8,8 +8,8 @@ describe('ConfigService', () => {
   let service: ConfigService;
   let agentProviderFactory: jest.Mocked<AgentProviderFactory>;
   const mockProvider = {
-    getType: jest.fn().mockReturnValue('cursor'),
-    getDisplayName: jest.fn().mockReturnValue('Cursor'),
+    getType: jest.fn().mockReturnValue('opencode'),
+    getDisplayName: jest.fn().mockReturnValue('OpenCode'),
     getCapabilities: jest.fn().mockReturnValue({
       supportsChat: true,
       supportsStreaming: false,
@@ -71,7 +71,7 @@ describe('ConfigService', () => {
 
   describe('getAvailableAgentTypes', () => {
     it('should return array of agent types with display names', () => {
-      const agentTypes = ['cursor'];
+      const agentTypes = ['opencode'];
 
       agentProviderFactory.getRegisteredTypes.mockReturnValue(agentTypes);
 
@@ -79,8 +79,8 @@ describe('ConfigService', () => {
 
       expect(result).toEqual([
         {
-          type: 'cursor',
-          displayName: 'Cursor',
+          type: 'opencode',
+          displayName: 'OpenCode',
           capabilities: {
             supportsChat: true,
             supportsStreaming: false,
@@ -90,7 +90,7 @@ describe('ConfigService', () => {
         },
       ]);
       expect(agentProviderFactory.getRegisteredTypes).toHaveBeenCalled();
-      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('cursor');
+      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('opencode');
       expect(mockProvider.getType).toHaveBeenCalled();
       expect(mockProvider.getDisplayName).toHaveBeenCalled();
       expect(mockProvider.getCapabilities).toHaveBeenCalled();
@@ -135,7 +135,7 @@ describe('ConfigService', () => {
         getModelsListCommand: jest.fn().mockReturnValue(undefined),
         toModelsList: jest.fn().mockReturnValue(undefined),
       };
-      const agentTypes = ['cursor', 'openai', 'anthropic'];
+      const agentTypes = ['opencode', 'openai', 'anthropic'];
 
       agentProviderFactory.getRegisteredTypes.mockReturnValue(agentTypes);
       agentProviderFactory.getProvider
@@ -147,8 +147,8 @@ describe('ConfigService', () => {
 
       expect(result).toEqual([
         {
-          type: 'cursor',
-          displayName: 'Cursor',
+          type: 'opencode',
+          displayName: 'OpenCode',
           capabilities: {
             supportsChat: true,
             supportsStreaming: false,

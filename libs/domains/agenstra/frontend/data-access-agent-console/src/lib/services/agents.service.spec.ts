@@ -21,7 +21,7 @@ describe('AgentsService', () => {
     id: 'agent-1',
     name: 'Test Agent',
     description: 'Test Description',
-    agentType: 'cursor',
+    agentType: 'opencode',
     containerType: 'generic' as ContainerType,
     chats: [],
     primaryChatId: 'primary-chat-1',

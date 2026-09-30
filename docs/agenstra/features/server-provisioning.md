@@ -79,8 +79,7 @@ The provisioning endpoint accepts a `ProvisionServerDto` with the following fiel
 - **`gitUsername`** Git username for repository access
 - **`gitToken`** Git token/personal access token for repository access
 - **`gitPassword`** Git password for repository access (alternative to token)
-- **`cursorApiKey`** Cursor API key for agent configuration
-- **`agentDefaultImage`** Default Docker image for cursor agents (defaults to `ghcr.io/forepath/agenstra-manager-worker:latest`)
+- **`agentDefaultImage`** Default Docker image for agents (defaults to `ghcr.io/forepath/agenstra-manager-worker:latest`)
 
 ## Provisioning Steps
 
@@ -91,7 +90,7 @@ The provisioning endpoint accepts a `ProvisionServerDto` with the following fiel
    - Authentication configuration (API key or Keycloak)
    - Database connection to PostgreSQL
    - Git repository configuration (if provided)
-   - Cursor agent configuration (if provided)
+   - Agent default image override (if provided)
 5. **Client Creation**: A client entity is created in the database with the server's endpoint
 6. **Reference Storage**: A provisioning reference links the client to the cloud server
 
@@ -108,7 +107,7 @@ All configuration values are properly interpolated into the docker-compose.yml f
 
 - **Authentication**: `STATIC_API_KEY` or Keycloak variables
 - **Git Configuration**: `GIT_REPOSITORY_URL`, `GIT_USERNAME`, `GIT_TOKEN`, `GIT_PASSWORD`
-- **Cursor Agent**: `CURSOR_API_KEY`, `AGENT_DEFAULT_IMAGE`
+- **Agent Image**: `AGENT_DEFAULT_IMAGE` (optional override for worker image)
 
 Values are securely passed from the frontend through the backend to the user data script, which generates the docker-compose.yml with all environment variables properly set.
 

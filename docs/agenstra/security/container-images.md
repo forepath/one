@@ -25,9 +25,9 @@ When the agent manager creates an agent, it bind-mounts host paths into child co
 
 **Provider `basePath`:**
 
-| Agent type           | Primary image             | `basePath` | Git clone target |
-| -------------------- | ------------------------- | ---------- | ---------------- |
-| `cursor`, `opencode` | `agenstra-manager-worker` | `/app`     | `/app`           |
+| Agent type | Primary image             | `basePath` | Git clone target |
+| ---------- | ------------------------- | ---------- | ---------------- |
+| `opencode` | `agenstra-manager-worker` | `/app`     | `/app`           |
 
 The same host directory is shared across the worker, SSH, and VNC containers for one agent; only the **in-container mount point** differs (for example worker `/app` vs VNC `/home/agenstra/environment`).
 
@@ -51,6 +51,8 @@ Entrypoint scripts live under **`/usr/local/bin/docker-entrypoint.sh`**, not und
 | **Manager API**, **controller API** | `/usr/sbin/groupmod`, `/usr/sbin/groupadd`, `/usr/sbin/usermod` | Align in-container `docker` group GID with mounted `/var/run/docker.sock` before starting Node |
 
 Any other `sudo` attempt (for example `sudo bash`, `sudo apt`) should **fail** with “not allowed” and must not prompt for a password.
+
+**Layer VFS absolute paths** (for example `/opt/skills/…`): the agent manager installs these with Docker **`exec` as UID 0** from the API host (not in-container `sudo`), keeps **root ownership**, and sets mode **`u=rwX,go=rX`** so OpenCode (`agenstra`) can **read** them but cannot rewrite injected context. Workspace-relative paths under `/app` stay as the runtime user.
 
 **Operator check** (after rebuild):
 

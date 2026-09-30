@@ -1,10 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
 
-/** Root for proxied file operations: application workspace vs provider agent config directory. */
-export type AgentFileManagerContext = 'app' | 'config';
+/** Root for proxied file operations (application workspace `/app`). */
+export type AgentFileManagerContext = 'app';
 
 /**
- * Parse optional `context` query param. Omitted or empty defaults to `app` for backward compatibility.
+ * Parse optional `context` query param. Omitted or empty defaults to `app`.
+ * Legacy `config` is rejected (provider config file manager removed).
  */
 export function parseAgentFileManagerContext(value: string | undefined): AgentFileManagerContext {
   if (value === undefined || value === null || value.trim() === '') {
@@ -13,9 +14,9 @@ export function parseAgentFileManagerContext(value: string | undefined): AgentFi
 
   const v = value.trim();
 
-  if (v === 'app' || v === 'config') {
+  if (v === 'app') {
     return v;
   }
 
-  throw new BadRequestException(`Invalid context: ${value}. Allowed values are "app" and "config".`);
+  throw new BadRequestException(`Invalid context: ${value}. Allowed value is "app".`);
 }

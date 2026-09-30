@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-25T20:17:48.755Z",
+  "generatedAt": "2026-09-29T21:46:45.181Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -326,6 +326,29 @@
       }
     },
     {
+      "id": "project:agenstra-shared-util-opencode-providers",
+      "type": "lib",
+      "attrs": {
+        "name": "agenstra-shared-util-opencode-providers",
+        "root": "libs/domains/agenstra/shared/util-opencode-providers",
+        "tags": [
+          "npm:private",
+          "domain:agenstra",
+          "scope:shared",
+          "type:util"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "build",
+          "test"
+        ],
+        "domain": "agenstra",
+        "context": "shared",
+        "featureGroup": "util"
+      }
+    },
+    {
       "id": "project:agenstra-backend-feature-agent-manager",
       "type": "lib",
       "attrs": {
@@ -344,6 +367,27 @@
         ],
         "domain": "agenstra",
         "context": "backend",
+        "featureGroup": "feature"
+      }
+    },
+    {
+      "id": "project:agenstra-frontend-feature-agent-config",
+      "type": "lib",
+      "attrs": {
+        "name": "agenstra-frontend-feature-agent-config",
+        "root": "libs/domains/agenstra/frontend/feature-agent-config",
+        "tags": [
+          "domain:agenstra",
+          "scope:frontend",
+          "type:feature"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "test"
+        ],
+        "domain": "agenstra",
+        "context": "frontend",
         "featureGroup": "feature"
       }
     },
@@ -471,6 +515,29 @@
         "domain": "agenstra",
         "context": "frontend",
         "featureGroup": "data-access"
+      }
+    },
+    {
+      "id": "project:agenstra-shared-util-opencode-config",
+      "type": "lib",
+      "attrs": {
+        "name": "agenstra-shared-util-opencode-config",
+        "root": "libs/domains/agenstra/shared/util-opencode-config",
+        "tags": [
+          "npm:private",
+          "domain:agenstra",
+          "scope:shared",
+          "type:util"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "build",
+          "test"
+        ],
+        "domain": "agenstra",
+        "context": "shared",
+        "featureGroup": "util"
       }
     },
     {
@@ -1899,6 +1966,14 @@
       "attrs": {
         "name": "@nestjs/websockets",
         "version": "11.1.6"
+      }
+    },
+    {
+      "id": "package:@opencode-ai/sdk",
+      "type": "package",
+      "attrs": {
+        "name": "@opencode-ai/sdk",
+        "version": "1.18.31"
       }
     },
     {
@@ -3735,6 +3810,24 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/statistics.service.ts",
       "type": "service",
       "attrs": {
@@ -4435,6 +4528,24 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-agent-autonomy-directory.controller.ts",
       "type": "controller",
       "attrs": {
@@ -4448,6 +4559,24 @@
       "type": "controller",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-agent-autonomy.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-config.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-config.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-layer-files.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-layer-files.controller.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -4538,6 +4667,15 @@
       "type": "controller",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/knowledge-tree.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-providers.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-providers.controller.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -4745,6 +4883,33 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/knowledge/upload-knowledge-text.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/opencode-config.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/opencode-config.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/opencode-layer-file.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/opencode-layer-file.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/opencode-providers.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/opencode-providers.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -4993,6 +5158,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/client-opencode-config.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/client-opencode-config.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/external-import-config.entity.ts",
       "type": "entity",
       "attrs": {
@@ -5006,6 +5180,15 @@
       "type": "entity",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/external-import-sync-marker.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/global-opencode-config.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/global-opencode-config.entity.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -5042,6 +5225,42 @@
       "type": "entity",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/knowledge-relation.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/opencode-config-sync-target.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/opencode-config-sync-target.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/opencode-layer-file-sync-target.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/opencode-layer-file-sync-target.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/opencode-layer-file.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/opencode-layer-file.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/opencode-provider.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/opencode-provider.entity.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -5587,6 +5806,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-opencode-config-proxy.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-opencode-config-proxy.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-proxy.service.ts",
       "type": "service",
       "attrs": {
@@ -5708,6 +5936,60 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/knowledge-tree.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config-sync-targets.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config-sync-targets.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-effective-config-sync.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-effective-config-sync.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-layer-files.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-layer-files.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-providers-bootstrap.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-providers-bootstrap.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-providers-catalog.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-providers-catalog.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -9660,15 +9942,6 @@
       }
     },
     {
-      "id": "file:libs/domains/agenstra/frontend/feature-agent-console/src/lib/guards/config-editor.guard.ts",
-      "type": "guard",
-      "attrs": {
-        "path": "libs/domains/agenstra/frontend/feature-agent-console/src/lib/guards/config-editor.guard.ts",
-        "languageOrKind": "ts",
-        "projectName": "agenstra-frontend-feature-agent-console"
-      }
-    },
-    {
       "id": "file:libs/domains/agenstra/frontend/feature-agent-console/src/lib/guards/tickets-require-active-client.guard.ts",
       "type": "guard",
       "attrs": {
@@ -9693,6 +9966,15 @@
         "path": "libs/domains/agenstra/frontend/feature-agent-console/src/lib/theme.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-frontend-feature-agent-console"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/shared/util-opencode-providers/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/agenstra/shared/util-opencode-providers/README.md",
+        "languageOrKind": "md",
+        "projectName": "agenstra-shared-util-opencode-providers"
       }
     },
     {
@@ -9939,6 +10221,24 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-opencode-config.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-opencode-config.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-vcs.controller.ts",
       "type": "controller",
       "attrs": {
@@ -10006,6 +10306,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-models-response.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-opencode-config.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-opencode-config.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -10236,6 +10545,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/reply-permission.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/reply-permission.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/resolve-conflict.dto.ts",
       "type": "dto",
       "attrs": {
@@ -10461,19 +10779,46 @@
       }
     },
     {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/agents/cursor-agent.provider.ts",
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/agents/opencode-agent.provider.ts",
       "type": "provider",
       "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/agents/cursor-agent.provider.ts",
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/agents/opencode-agent.provider.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
     },
     {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/agents/opencode-agent.provider.ts",
-      "type": "provider",
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-config-sync.service.ts",
+      "type": "service",
       "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/agents/opencode-agent.provider.ts",
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-config-sync.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-pty.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-pty.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-runtime.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-runtime.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-session.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-session.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -10776,6 +11121,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/frontend/feature-agent-config/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/feature-agent-config/README.md",
+        "languageOrKind": "md",
+        "projectName": "agenstra-frontend-feature-agent-config"
+      }
+    },
+    {
       "id": "file:libs/domains/shared/frontend/util-loading-indicator/README.md",
       "type": "readme",
       "attrs": {
@@ -10889,6 +11243,15 @@
           "service-plans.reducer.ts",
           "service-plans.selectors.ts"
         ]
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/shared/util-opencode-config/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/agenstra/shared/util-opencode-config/README.md",
+        "languageOrKind": "md",
+        "projectName": "agenstra-shared-util-opencode-config"
       }
     },
     {
@@ -13034,6 +13397,14 @@
       }
     },
     {
+      "id": "file:docs/agenstra/features/agent-configuration.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/agenstra/features/agent-configuration.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:docs/agenstra/features/agent-management.md",
       "type": "doc",
       "attrs": {
@@ -14000,7 +14371,7 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "clients/forward",
-        "summary": "Forward an arbitrary event to the selected client's agents namespace. When `agentId` is provided,\nthe gateway automatically logs in the agent using stored credentials before forwarding the event.\nTo restore chat history for an agent, forward a \"login\" event with `agentId` (the payload is\nautomatically overridden with credentials from the database, triggering login and subsequent\nchat history restoration). Supported events include \"chat\", \"enhanceChat\" (prompt improvement;\npayload `{ message, correlationId, model? }`; response `chatEnhanceResult` unicast from\nagent-manager, proxied to this socket only), \"generateTicketBody\" (ticket body from title;\npayload `{ title, correlationId, model? }`; response `ticketBodyResult` unicast, same envelope\nshape as `chatEnhanceResult`), \"fileUpdate\", \"logout\", \"createTerminal\", \"terminalInput\",\n\"closeTerminal\", etc. The remote agent-manager gateway will process the event and may emit\nresponse events (e.g., \"chatMessage\", \"chatEnhanceResult\", \"ticketBodyResult\",\n\"fileUpdateNotification\", \"workspaceIndexChanged\", \"workspaceIndexRebuildRequired\",\n\"terminalCreated\", \"terminalOutput\", \"terminalClosed\", \"containerStats\")\nwhich are automatically forwarded back to the client. The \"containerStats\" event payload\n(defined in the agent-manager AsyncAPI) includes container status (running/stopped) and, when\nrunning, container statistics. For autonomous ticket runs, proxied `chat` may include\n`responseMode: \"single\" | \"stream\" | \"sync\"`, `ephemeral: true`, `continue`, and `resumeSessionSuffix`;\nthe controller also uses isolated suffixes (e.g. `-ticket-auto-loop`, `-ticket-auto-commit-msg`) for\nimplementation turns vs. post-verify conventional-commit subject generation; statistics on the controller\nside record the latter under interaction kind `autonomous_ticket_commit_message`.\nAfter a successful run, the controller also completes the workflow over HTTP by proxying agent-manager VCS\n`commit` and `push` (see controller OpenAPI under `/clients/{clientId}/agents/{agentId}/vcs/...`).\nagent-manager passes these to `sendMessage` and skips `agent_messages` persistence when `ephemeral` is true.\nWhen `ephemeral` is true, chatMessage / chatEvent traffic for that turn is emitted only to the requesting\nsocket (not broadcast to other viewers on the same agent).\nAfter a successful **login** (explicit `forward` with `event: \"login\"` or first-time auto-login before another event),\nthe controller may emit **ticketAutomationRunChatUpsert** (unicast) to hydrate ticket automation runs for that\n`clientId` + `agentId` into the chat timeline (see `clients/ticketAutomationRunChatUpsert`). Live run updates use\nthe same event broadcast to room `client:{clientId}` on the **clients** namespace.\nWhen a ticket row is created or updated (REST or internal), the controller also emits **ticketChatTicketUpsert**\nto room `client:{clientId}` on **clients** (same body as `tickets/ticketUpsert`).\nWorkspace index events (`workspaceIndexChanged` / `workspaceIndexRebuildRequired`) are also consumed locally\nby the controller to hydrate OpenSearch (`agenstra-workspace-files`) before being forwarded to the FE.\n",
+        "summary": "Forward an arbitrary event to the selected client's agents namespace. When `agentId` is provided,\nthe gateway automatically logs in the agent using stored credentials before forwarding the event.\nTo restore chat history for an agent, forward a \"login\" event with `agentId` (the payload is\nautomatically overridden with credentials from the database, triggering login and subsequent\nchat history restoration). Supported events include \"chat\", \"enhanceChat\" (prompt improvement;\npayload `{ message, correlationId, model? }`; response `chatEnhanceResult` unicast from\nagent-manager, proxied to this socket only), \"generateTicketBody\" (ticket body from title;\npayload `{ title, correlationId, model? }`; response `ticketBodyResult` unicast, same envelope\nshape as `chatEnhanceResult`), \"fileUpdate\", \"logout\", \"createTerminal\", \"terminalInput\", \"terminalResize\",\n\"closeTerminal\", etc. The remote agent-manager gateway will process the event and may emit\nresponse events (e.g., \"chatMessage\", \"chatEnhanceResult\", \"ticketBodyResult\",\n\"fileUpdateNotification\", \"workspaceIndexChanged\", \"workspaceIndexRebuildRequired\",\n\"terminalCreated\", \"terminalOutput\", \"terminalClosed\", \"containerStats\")\nwhich are automatically forwarded back to the client. The \"containerStats\" event payload\n(defined in the agent-manager AsyncAPI) includes container status (running/stopped) and, when\nrunning, container statistics. For autonomous ticket runs, proxied `chat` may include\n`responseMode: \"single\" | \"stream\" | \"sync\"`, `ephemeral: true`, `continue`, and `resumeSessionSuffix`;\nthe controller also uses isolated suffixes (e.g. `-ticket-auto-loop`, `-ticket-auto-commit-msg`) for\nimplementation turns vs. post-verify conventional-commit subject generation; statistics on the controller\nside record the latter under interaction kind `autonomous_ticket_commit_message`.\nAfter a successful run, the controller also completes the workflow over HTTP by proxying agent-manager VCS\n`commit` and `push` (see controller OpenAPI under `/clients/{clientId}/agents/{agentId}/vcs/...`).\nagent-manager passes these to `sendMessage` and skips `agent_messages` persistence when `ephemeral` is true.\nWhen `ephemeral` is true, chatMessage / chatEvent traffic for that turn is emitted only to the requesting\nsocket (not broadcast to other viewers on the same agent).\nAfter a successful **login** (explicit `forward` with `event: \"login\"` or first-time auto-login before another event),\nthe controller may emit **ticketAutomationRunChatUpsert** (unicast) to hydrate ticket automation runs for that\n`clientId` + `agentId` into the chat timeline (see `clients/ticketAutomationRunChatUpsert`). Live run updates use\nthe same event broadcast to room `client:{clientId}` on the **clients** namespace.\nWhen a ticket row is created or updated (REST or internal), the controller also emits **ticketChatTicketUpsert**\nto room `client:{clientId}` on **clients** (same body as `tickets/ticketUpsert`).\nWorkspace index events (`workspaceIndexChanged` / `workspaceIndexRebuildRequired`) are also consumed locally\nby the controller to hydrate OpenSearch (`agenstra-workspace-files`) before being forwarded to the FE.\n",
         "specKind": "asyncapi"
       }
     },
@@ -16293,6 +16664,215 @@
         "pathOrChannel": "/admin/updates/check",
         "operationId": "triggerAgenstraUpdateCheck",
         "summary": "Trigger application update check (admin)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/opencode-providers",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/opencode-providers",
+        "operationId": "listOpencodeProviders",
+        "summary": "List cached built-in OpenCode LLM providers",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/opencode-config",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/opencode-config",
+        "operationId": "getGlobalOpencodeConfig",
+        "summary": "Get global OpenCode config",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PUT:/admin/opencode-config",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PUT",
+        "pathOrChannel": "/admin/opencode-config",
+        "operationId": "putGlobalOpencodeConfig",
+        "summary": "Update global OpenCode config",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/opencode-config/files",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/opencode-config/files",
+        "operationId": "listGlobalOpencodeLayerFiles",
+        "summary": "List children under a global layer path",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/admin/opencode-config/files",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/admin/opencode-config/files",
+        "operationId": "createGlobalOpencodeLayerFile",
+        "summary": "Create a global layer file or directory",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/opencode-config/files/{path}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/opencode-config/files/{path}",
+        "operationId": "getGlobalOpencodeLayerFile",
+        "summary": "Get a global OpenCode layer file",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PUT:/admin/opencode-config/files/{path}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PUT",
+        "pathOrChannel": "/admin/opencode-config/files/{path}",
+        "operationId": "putGlobalOpencodeLayerFile",
+        "summary": "Create or update a global OpenCode layer file",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/admin/opencode-config/files/{path}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/admin/opencode-config/files/{path}",
+        "operationId": "deleteGlobalOpencodeLayerFile",
+        "summary": "Delete a global OpenCode layer file",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/opencode-config",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/opencode-config",
+        "operationId": "getClientOpencodeConfig",
+        "summary": "Get workspace OpenCode config",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PUT:/clients/{id}/opencode-config",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PUT",
+        "pathOrChannel": "/clients/{id}/opencode-config",
+        "operationId": "putClientOpencodeConfig",
+        "summary": "Update workspace OpenCode config",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/opencode-config/files",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/opencode-config/files",
+        "operationId": "listClientOpencodeLayerFiles",
+        "summary": "List children under a workspace layer path",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{id}/opencode-config/files",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{id}/opencode-config/files",
+        "operationId": "createClientOpencodeLayerFile",
+        "summary": "Create a workspace layer file or directory",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/opencode-config/files/{path}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/opencode-config/files/{path}",
+        "operationId": "getClientOpencodeLayerFile",
+        "summary": "Get a workspace OpenCode layer file",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PUT:/clients/{id}/opencode-config/files/{path}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PUT",
+        "pathOrChannel": "/clients/{id}/opencode-config/files/{path}",
+        "operationId": "putClientOpencodeLayerFile",
+        "summary": "Create or update a workspace OpenCode layer file",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/clients/{id}/opencode-config/files/{path}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/clients/{id}/opencode-config/files/{path}",
+        "operationId": "deleteClientOpencodeLayerFile",
+        "summary": "Delete a workspace OpenCode layer file",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/opencode-config",
+        "operationId": "getClientAgentOpencodeConfig",
+        "summary": "Get agent OpenCode config",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PUT:/clients/{id}/agents/{agentId}/opencode-config",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PUT",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/opencode-config",
+        "operationId": "putClientAgentOpencodeConfig",
+        "summary": "Update agent OpenCode config",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/agents",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/opencode-config/agents",
+        "operationId": "listClientAgentOpencodeAgents",
+        "summary": "List effective OpenCode agents for a remote worker",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/commands",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/opencode-config/commands",
+        "operationId": "listClientAgentOpencodeCommands",
+        "summary": "List slash-invokable OpenCode commands for a remote worker",
         "specKind": "openapi"
       }
     },
@@ -20750,7 +21330,7 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "agents/createTerminal",
-        "summary": "Client sends create terminal command (requires prior login). Creates a new TTY session for the agent's container.",
+        "summary": "Client sends create terminal command (requires prior login). Creates an OpenCode PTY session in the worker (`opencode serve`).",
         "specKind": "asyncapi"
       }
     },
@@ -20778,6 +21358,15 @@
       "attrs": {
         "pathOrChannel": "agents/terminalOutput",
         "summary": "Server sends terminal output data to the client. Emitted whenever the terminal session produces output.",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:agents/terminalResize",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "agents/terminalResize",
+        "summary": "Client sends terminal dimensions (requires prior login). Forwarded to OpenCode PTY size update.",
         "specKind": "asyncapi"
       }
     },
@@ -20942,6 +21531,83 @@
         "pathOrChannel": "/agents/{id}/models",
         "operationId": "listAgentModels",
         "summary": "List models for an agent",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/agents/{id}/permissions/{permissionId}/reply",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/agents/{id}/permissions/{permissionId}/reply",
+        "operationId": "replyAgentPermission",
+        "summary": "Reply to an OpenCode permission request",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/agents/{id}/questions/{questionId}/reply",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/agents/{id}/questions/{questionId}/reply",
+        "operationId": "replyAgentQuestion",
+        "summary": "Reply to an OpenCode question / form request",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agents/{id}/opencode-config",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agents/{id}/opencode-config",
+        "operationId": "getAgentOpencodeConfig",
+        "summary": "Get agent OpenCode user config",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PUT:/agents/{id}/opencode-config",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PUT",
+        "pathOrChannel": "/agents/{id}/opencode-config",
+        "operationId": "putAgentOpencodeConfig",
+        "summary": "Update agent OpenCode user config",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agents/{id}/opencode-config/agents",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agents/{id}/opencode-config/agents",
+        "operationId": "listAgentOpencodeAgents",
+        "summary": "List effective OpenCode agents (primary + subagents) from the worker",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agents/{id}/opencode-config/commands",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agents/{id}/opencode-config/commands",
+        "operationId": "listAgentOpencodeCommands",
+        "summary": "List slash-invokable OpenCode commands from the worker",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/agents/{id}/opencode-config/sync",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/agents/{id}/opencode-config/sync",
+        "operationId": "syncAgentOpencodeConfig",
+        "summary": "Best-effort sync effective OpenCode config into worker",
         "specKind": "openapi"
       }
     },
@@ -21859,6 +22525,16 @@
         "title": "Migration note",
         "docPath": "docs/agenstra/ai-agents/agent-client-protocol.md",
         "sectionAnchor": "migration-note",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-future-agenstra-as-acp-server",
+      "type": "concept",
+      "attrs": {
+        "title": "Future: Agenstra as ACP server",
+        "docPath": "docs/agenstra/ai-agents/agent-client-protocol.md",
+        "sectionAnchor": "future-agenstra-as-acp-server",
         "domain": "agenstra"
       }
     },
@@ -23363,12 +24039,22 @@
       }
     },
     {
-      "id": "concept:agenstra-cursor-agent",
+      "id": "concept:agenstra-opencode-agent-optional-image-overrides",
       "type": "concept",
       "attrs": {
-        "title": "Cursor Agent",
+        "title": "OpenCode Agent (optional image overrides)",
         "docPath": "docs/agenstra/deployment/local-development.md",
-        "sectionAnchor": "cursor-agent",
+        "sectionAnchor": "opencode-agent-optional-image-overrides",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-opencode-agent-docker-image-ghcr-io-forepath-agenstra-manager-worker-latest",
+      "type": "concept",
+      "attrs": {
+        "title": "OPENCODE_AGENT_DOCKER_IMAGE=ghcr.io/forepath/agenstra-manager-worker:latest",
+        "docPath": "docs/agenstra/deployment/local-development.md",
+        "sectionAnchor": "opencode-agent-docker-image-ghcr-io-forepath-agenstra-manager-worker-latest",
         "domain": "agenstra"
       }
     },
@@ -23739,6 +24425,126 @@
         "title": "Feature Relationships",
         "docPath": "docs/agenstra/features/README.md",
         "sectionAnchor": "feature-relationships",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-agent-configuration",
+      "type": "concept",
+      "attrs": {
+        "title": "Agent configuration",
+        "docPath": "docs/agenstra/features/agent-configuration.md",
+        "sectionAnchor": "agent-configuration",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-layers",
+      "type": "concept",
+      "attrs": {
+        "title": "Layers",
+        "docPath": "docs/agenstra/features/agent-configuration.md",
+        "sectionAnchor": "layers",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-ui-tabs-config-fields",
+      "type": "concept",
+      "attrs": {
+        "title": "UI tabs ↔ config fields",
+        "docPath": "docs/agenstra/features/agent-configuration.md",
+        "sectionAnchor": "ui-tabs-config-fields",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-heredity",
+      "type": "concept",
+      "attrs": {
+        "title": "Heredity",
+        "docPath": "docs/agenstra/features/agent-configuration.md",
+        "sectionAnchor": "heredity",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-v2-only-config",
+      "type": "concept",
+      "attrs": {
+        "title": "V2-only config",
+        "docPath": "docs/agenstra/features/agent-configuration.md",
+        "sectionAnchor": "v2-only-config",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-network",
+      "type": "concept",
+      "attrs": {
+        "title": "Network",
+        "docPath": "docs/agenstra/features/agent-configuration.md",
+        "sectionAnchor": "network",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-provider-credentials",
+      "type": "concept",
+      "attrs": {
+        "title": "Provider credentials",
+        "docPath": "docs/agenstra/features/agent-configuration.md",
+        "sectionAnchor": "provider-credentials",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-provider-models",
+      "type": "concept",
+      "attrs": {
+        "title": "Provider models",
+        "docPath": "docs/agenstra/features/agent-configuration.md",
+        "sectionAnchor": "provider-models",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-sync",
+      "type": "concept",
+      "attrs": {
+        "title": "Sync",
+        "docPath": "docs/agenstra/features/agent-configuration.md",
+        "sectionAnchor": "sync",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-chat-slash-typeahead",
+      "type": "concept",
+      "attrs": {
+        "title": "Chat slash typeahead",
+        "docPath": "docs/agenstra/features/agent-configuration.md",
+        "sectionAnchor": "chat-slash-typeahead",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-path-lists-and-layer-files",
+      "type": "concept",
+      "attrs": {
+        "title": "Path lists and layer files",
+        "docPath": "docs/agenstra/features/agent-configuration.md",
+        "sectionAnchor": "path-lists-and-layer-files",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-references",
+      "type": "concept",
+      "attrs": {
+        "title": "References",
+        "docPath": "docs/agenstra/features/agent-configuration.md",
+        "sectionAnchor": "references",
         "domain": "agenstra"
       }
     },
@@ -25099,6 +25905,16 @@
         "title": "Git Repository (for agent workspace)",
         "docPath": "docs/agenstra/getting-started.md",
         "sectionAnchor": "git-repository-for-agent-workspace",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-opencode-agent",
+      "type": "concept",
+      "attrs": {
+        "title": "OpenCode Agent",
+        "docPath": "docs/agenstra/getting-started.md",
+        "sectionAnchor": "opencode-agent",
         "domain": "agenstra"
       }
     },
@@ -31563,22 +32379,22 @@
       }
     },
     {
-      "id": "domain:identity",
-      "type": "domain",
-      "attrs": {
-        "name": "identity",
-        "kind": "domain",
-        "label": "domain",
-        "source": "tag"
-      }
-    },
-    {
       "id": "context:shared",
       "type": "context",
       "attrs": {
         "name": "shared",
         "kind": "context",
         "label": "bounded context",
+        "source": "tag"
+      }
+    },
+    {
+      "id": "domain:identity",
+      "type": "domain",
+      "attrs": {
+        "name": "identity",
+        "kind": "domain",
+        "label": "domain",
         "source": "tag"
       }
     },
@@ -31672,6 +32488,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "project:shared-backend-util-opensearch",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "project:agenstra-shared-util-opencode-config",
       "type": "depends_on"
     },
     {
@@ -31826,6 +32647,11 @@
     },
     {
       "from": "project:agenstra-frontend-feature-agent-console",
+      "to": "project:agenstra-frontend-feature-agent-config",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-console",
       "to": "project:shared-frontend-util-configuration",
       "type": "depends_on"
     },
@@ -31847,6 +32673,31 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "project:shared-backend-util-otel",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "project:agenstra-shared-util-opencode-config",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-config",
+      "to": "project:agenstra-frontend-data-access-agent-console",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-config",
+      "to": "project:agenstra-shared-util-opencode-config",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-config",
+      "to": "project:agenstra-shared-util-opencode-providers",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-config",
+      "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
     },
     {
@@ -32542,6 +33393,11 @@
     {
       "from": "project:agenstra-backend-agent-controller",
       "to": "package:@nestjs/websockets",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-agent-controller",
+      "to": "package:@opencode-ai/sdk",
       "type": "depends_on"
     },
     {
@@ -33622,6 +34478,11 @@
     {
       "from": "project:agenstra-backend-agent-manager",
       "to": "package:@nestjs/websockets",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-agent-manager",
+      "to": "package:@opencode-ai/sdk",
       "type": "depends_on"
     },
     {
@@ -35001,6 +35862,16 @@
     },
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/statistics.service.ts",
       "type": "contains"
     },
@@ -35281,12 +36152,32 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-agent-autonomy-directory.controller.ts",
       "type": "contains"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-agent-autonomy.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-config.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-layer-files.controller.ts",
       "type": "contains"
     },
     {
@@ -35337,6 +36228,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/knowledge-tree.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-providers.controller.ts",
       "type": "contains"
     },
     {
@@ -35452,6 +36348,21 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/knowledge/upload-knowledge-text.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/opencode-config.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/opencode-layer-file.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/opencode-providers.dto.ts",
       "type": "contains"
     },
     {
@@ -35591,12 +36502,22 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/client-opencode-config.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/external-import-config.entity.ts",
       "type": "contains"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/external-import-sync-marker.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/global-opencode-config.entity.ts",
       "type": "contains"
     },
     {
@@ -35617,6 +36538,26 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/knowledge-relation.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/opencode-config-sync-target.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/opencode-layer-file-sync-target.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/opencode-layer-file.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/opencode-provider.entity.ts",
       "type": "contains"
     },
     {
@@ -35921,6 +36862,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-opencode-config-proxy.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-proxy.service.ts",
       "type": "contains"
     },
@@ -35987,6 +36933,36 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/knowledge-tree.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config-sync-targets.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-effective-config-sync.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-layer-files.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-providers-bootstrap.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-providers-catalog.service.ts",
       "type": "contains"
     },
     {
@@ -38166,11 +39142,6 @@
     },
     {
       "from": "project:agenstra-frontend-feature-agent-console",
-      "to": "file:libs/domains/agenstra/frontend/feature-agent-console/src/lib/guards/config-editor.guard.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-frontend-feature-agent-console",
       "to": "file:libs/domains/agenstra/frontend/feature-agent-console/src/lib/guards/tickets-require-active-client.guard.ts",
       "type": "contains"
     },
@@ -38182,6 +39153,11 @@
     {
       "from": "project:agenstra-frontend-feature-agent-console",
       "to": "file:libs/domains/agenstra/frontend/feature-agent-console/src/lib/theme.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-shared-util-opencode-providers",
+      "to": "file:libs/domains/agenstra/shared/util-opencode-providers/README.md",
       "type": "contains"
     },
     {
@@ -38321,6 +39297,16 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-opencode-config.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-vcs.controller.ts",
       "type": "contains"
     },
@@ -38357,6 +39343,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-models-response.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-opencode-config.dto.ts",
       "type": "contains"
     },
     {
@@ -38486,6 +39477,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/reply-permission.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/resolve-conflict.dto.ts",
       "type": "contains"
     },
@@ -38611,12 +39607,27 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/agents/cursor-agent.provider.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/agents/opencode-agent.provider.ts",
       "type": "contains"
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/agents/opencode-agent.provider.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-config-sync.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-pty.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-runtime.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-session.service.ts",
       "type": "contains"
     },
     {
@@ -38785,6 +39796,11 @@
       "type": "contains"
     },
     {
+      "from": "project:agenstra-frontend-feature-agent-config",
+      "to": "file:libs/domains/agenstra/frontend/feature-agent-config/README.md",
+      "type": "contains"
+    },
+    {
       "from": "project:shared-frontend-util-loading-indicator",
       "to": "file:libs/domains/shared/frontend/util-loading-indicator/README.md",
       "type": "contains"
@@ -38842,6 +39858,11 @@
     {
       "from": "project:agenstra-frontend-data-access-portal",
       "to": "file:libs/domains/agenstra/frontend/data-access-portal/src/lib/state/service-plans",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-shared-util-opencode-config",
+      "to": "file:libs/domains/agenstra/shared/util-opencode-config/README.md",
       "type": "contains"
     },
     {
@@ -40932,6 +41953,101 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:POST:/admin/updates/check",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/opencode-providers",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/opencode-config",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:PUT:/admin/opencode-config",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/opencode-config/files",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/admin/opencode-config/files",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/opencode-config/files/{path}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:PUT:/admin/opencode-config/files/{path}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/admin/opencode-config/files/{path}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/opencode-config",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:PUT:/clients/{id}/opencode-config",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/opencode-config/files",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{id}/opencode-config/files",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/opencode-config/files/{path}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:PUT:/clients/{id}/opencode-config/files/{path}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/clients/{id}/opencode-config/files/{path}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:PUT:/clients/{id}/agents/{agentId}/opencode-config",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/agents",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/commands",
       "type": "contains"
     },
     {
@@ -43296,6 +44412,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
+      "to": "api:channel:agents/terminalResize",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
       "to": "api:channel:agents/closeTerminal",
       "type": "contains"
     },
@@ -43372,6 +44493,41 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/agents/{id}/models",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/agents/{id}/permissions/{permissionId}/reply",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/agents/{id}/questions/{questionId}/reply",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agents/{id}/opencode-config",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:PUT:/agents/{id}/opencode-config",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agents/{id}/opencode-config/agents",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agents/{id}/opencode-config/commands",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/agents/{id}/opencode-config/sync",
       "type": "contains"
     },
     {
@@ -43812,6 +44968,11 @@
     {
       "from": "file:docs/agenstra/ai-agents/agent-client-protocol.md",
       "to": "concept:agenstra-migration-note",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/ai-agents/agent-client-protocol.md",
+      "to": "concept:agenstra-future-agenstra-as-acp-server",
       "type": "contains"
     },
     {
@@ -44956,7 +46117,12 @@
     },
     {
       "from": "file:docs/agenstra/deployment/local-development.md",
-      "to": "concept:agenstra-cursor-agent",
+      "to": "concept:agenstra-opencode-agent-optional-image-overrides",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/deployment/local-development.md",
+      "to": "concept:agenstra-opencode-agent-docker-image-ghcr-io-forepath-agenstra-manager-worker-latest",
       "type": "contains"
     },
     {
@@ -45197,6 +46363,71 @@
     {
       "from": "file:docs/agenstra/features/README.md",
       "to": "concept:agenstra-related-documentation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-configuration.md",
+      "to": "concept:agenstra-agent-configuration",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-configuration.md",
+      "to": "concept:agenstra-layers",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-configuration.md",
+      "to": "concept:agenstra-ui-tabs-config-fields",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-configuration.md",
+      "to": "concept:agenstra-heredity",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-configuration.md",
+      "to": "concept:agenstra-v2-only-config",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-configuration.md",
+      "to": "concept:agenstra-network",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-configuration.md",
+      "to": "concept:agenstra-provider-credentials",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-configuration.md",
+      "to": "concept:agenstra-provider-models",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-configuration.md",
+      "to": "concept:agenstra-sync",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-configuration.md",
+      "to": "concept:agenstra-chat-slash-typeahead",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-configuration.md",
+      "to": "concept:agenstra-path-lists-and-layer-files",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-configuration.md",
+      "to": "concept:agenstra-implementation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-configuration.md",
+      "to": "concept:agenstra-references",
       "type": "contains"
     },
     {
@@ -46326,7 +47557,7 @@
     },
     {
       "from": "file:docs/agenstra/getting-started.md",
-      "to": "concept:agenstra-cursor-agent",
+      "to": "concept:agenstra-opencode-agent",
       "type": "contains"
     },
     {
@@ -50515,6 +51746,101 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
+      "to": "api:HTTP:GET:/admin/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/admin/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
+      "to": "api:HTTP:PUT:/admin/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:PUT:/admin/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
+      "to": "api:HTTP:GET:/admin/opencode-config/files",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/admin/opencode-config/files",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
+      "to": "api:HTTP:POST:/admin/opencode-config/files",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/admin/opencode-config/files",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
+      "to": "api:HTTP:GET:/admin/opencode-config/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/admin/opencode-config/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
+      "to": "api:HTTP:PUT:/admin/opencode-config/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:PUT:/admin/opencode-config/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/opencode-config/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:DELETE:/admin/opencode-config/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
+      "to": "api:HTTP:GET:/admin/opencode-config/files",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
+      "to": "api:HTTP:POST:/admin/opencode-config/files",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
+      "to": "api:HTTP:GET:/admin/opencode-config/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
+      "to": "api:HTTP:PUT:/admin/opencode-config/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
+      "to": "api:HTTP:DELETE:/admin/opencode-config/files/{path}",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
       "to": "api:HTTP:GET:/clients/{id}/agent-autonomy/enabled-agent-ids",
       "type": "implements"
@@ -51375,6 +52701,116 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:PUT:/clients/{id}/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:PUT:/clients/{id}/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/opencode-config/files",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/opencode-config/files",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{id}/opencode-config/files",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{id}/opencode-config/files",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/opencode-config/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/opencode-config/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:PUT:/clients/{id}/opencode-config/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:PUT:/clients/{id}/opencode-config/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:DELETE:/clients/{id}/opencode-config/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:DELETE:/clients/{id}/opencode-config/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:PUT:/clients/{id}/agents/{agentId}/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:PUT:/clients/{id}/agents/{agentId}/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/agents",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/agents",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/commands",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/commands",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/context-import.controller.ts",
       "to": "api:HTTP:GET:/imports/atlassian/connections",
       "type": "implements"
@@ -51702,6 +53138,16 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "api:HTTP:POST:/knowledge/{id}/duplicate",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-providers.controller.ts",
+      "to": "api:HTTP:GET:/opencode-providers",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/opencode-providers",
       "type": "implements"
     },
     {
@@ -55701,6 +57147,76 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:POST:/agents/{id}/permissions/{permissionId}/reply",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:POST:/agents/{id}/permissions/{permissionId}/reply",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:POST:/agents/{id}/questions/{questionId}/reply",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:POST:/agents/{id}/questions/{questionId}/reply",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:GET:/agents/{id}/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:GET:/agents/{id}/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:PUT:/agents/{id}/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:PUT:/agents/{id}/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:GET:/agents/{id}/opencode-config/agents",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:GET:/agents/{id}/opencode-config/agents",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:GET:/agents/{id}/opencode-config/commands",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:GET:/agents/{id}/opencode-config/commands",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:POST:/agents/{id}/opencode-config/sync",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:POST:/agents/{id}/opencode-config/sync",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
       "to": "api:HTTP:GET:/agents/{agentId}/files",
       "type": "implements"
     },
@@ -56186,6 +57702,336 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:POST:/agents/{agentId}/deployments/runs/{runId}/cancel",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:DELETE:/agents/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{id}/messages/latest-agent",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{id}/start",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{id}/stop",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{id}/restart",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{id}/models",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{id}/permissions/{permissionId}/reply",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{id}/questions/{questionId}/reply",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{id}/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:PUT:/agents/{id}/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{id}/opencode-config/agents",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{id}/opencode-config/commands",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{id}/opencode-config/sync",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/files",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:HEAD:/agents/{agentId}/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:PUT:/agents/{agentId}/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:DELETE:/agents/{agentId}/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:PATCH:/agents/{agentId}/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/environment",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/environment",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:DELETE:/agents/{agentId}/environment",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/environment/count",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:PUT:/agents/{agentId}/environment/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:DELETE:/agents/{agentId}/environment/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/chats",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/chats",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/chats/count",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/chats/{chatId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:PUT:/agents/{agentId}/chats/{chatId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:DELETE:/agents/{agentId}/chats/{chatId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/chats/{chatId}/messages",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/vcs/status",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/vcs/branches",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/vcs/branches",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:DELETE:/agents/{agentId}/vcs/branches/{branch}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/vcs/branches/{branch}/switch",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/vcs/diff",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/vcs/stage",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/vcs/unstage",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/vcs/commit",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/vcs/push",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/vcs/pull",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/vcs/fetch",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/vcs/workspace/prepare-clean",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/vcs/rebase",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/vcs/conflicts/resolve",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/automation/verify-commands",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/deployments/configuration",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/deployments/configuration",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:DELETE:/agents/{agentId}/deployments/configuration",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/deployments/repositories",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/deployments/repositories/{repositoryId}/branches",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/deployments/repositories/{repositoryId}/workflows",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/deployments/workflows/trigger",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/logs",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/jobs",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/deployments/runs/{runId}/jobs/{jobId}/logs",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
       "to": "api:HTTP:POST:/agents/{agentId}/deployments/runs/{runId}/cancel",
       "type": "implements"
     },
@@ -56237,6 +58083,41 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
       "to": "api:HTTP:GET:/agents/{id}/models",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:POST:/agents/{id}/permissions/{permissionId}/reply",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:POST:/agents/{id}/questions/{questionId}/reply",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:GET:/agents/{id}/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:PUT:/agents/{id}/opencode-config",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:GET:/agents/{id}/opencode-config/agents",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:GET:/agents/{id}/opencode-config/commands",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:POST:/agents/{id}/opencode-config/sync",
       "type": "implements"
     },
     {
@@ -57701,6 +59582,16 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "api:channel:agents/terminalResize",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:channel:agents/terminalResize",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
       "to": "api:channel:agents/closeTerminal",
       "type": "implements"
     },
@@ -57790,6 +59681,21 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config-sync-targets.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-layer-files.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-agent-autonomy-directory.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-autonomy.service.ts",
       "type": "injects"
@@ -57797,6 +59703,46 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-agent-autonomy.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-autonomy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-config.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-config.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-opencode-config-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-config.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config-sync-targets.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-config.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-config.controller.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-layer-files.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-layer-files.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-layer-files.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-layer-files.controller.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
       "type": "injects"
     },
     {
@@ -57945,6 +59891,16 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-layer-files.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config-sync-targets.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/context-import.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/atlassian-site-connection.service.ts",
       "type": "injects"
@@ -57977,6 +59933,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/knowledge-tree.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/knowledge-tree.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-providers.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-providers-catalog.service.ts",
       "type": "injects"
     },
     {
@@ -58360,6 +60321,16 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-opencode-config-proxy.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/clients.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-opencode-config-proxy.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-proxy.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/clients.service.ts",
       "type": "injects"
@@ -58522,6 +60493,56 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/knowledge-tree.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/external-import-sync-marker.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config-sync-targets.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-effective-config-sync.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config-sync-targets.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-effective-config-sync.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-effective-config-sync.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-opencode-config-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-effective-config-sync.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-effective-config-sync.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-layer-files.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-layer-files.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-layer-files.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-file-system-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-providers-bootstrap.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-providers-catalog.service.ts",
       "type": "injects"
     },
     {
@@ -62145,6 +64166,26 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-opencode-config.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-config-sync.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agents.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-runtime.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-vcs.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents-vcs.service.ts",
       "type": "injects"
@@ -62201,6 +64242,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-pty.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-messages.service.ts",
       "type": "injects"
     },
@@ -62245,13 +64291,28 @@
       "type": "injects"
     },
     {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/agents/cursor-agent.provider.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/acp/acp-agent-messaging.service.ts",
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/agents/opencode-agent.provider.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-runtime.service.ts",
       "type": "injects"
     },
     {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/agents/opencode-agent.provider.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/acp/acp-agent-messaging.service.ts",
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-config-sync.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agents.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-config-sync.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/docker.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-runtime.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-session.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-session.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agents.repository.ts",
       "type": "injects"
     },
     {
@@ -62705,6 +64766,16 @@
       "type": "injects"
     },
     {
+      "from": "file:apps/agenstra/backend-agent-controller/src/queue/processors/controller-jobs.processor.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-providers-catalog.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:apps/agenstra/backend-agent-controller/src/queue/processors/controller-jobs.processor.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config-sync-targets.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:apps/decabill/backend-billing-manager/src/queue/processors/billing-jobs.processor.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-tenant.service.ts",
       "type": "injects"
@@ -62951,6 +65022,31 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-config.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-layer-files.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-providers.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agenstra-metrics-collector.service.ts",
       "type": "provides"
     },
@@ -63072,6 +65168,41 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-workspace-configuration-overrides-proxy.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-opencode-config-proxy.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-providers-catalog.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-providers-bootstrap.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-effective-config-sync.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config-sync-targets.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-layer-files.service.ts",
       "type": "provides"
     },
     {
@@ -64601,6 +66732,16 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-opencode-config.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
       "type": "provides"
     },
@@ -64806,7 +66947,22 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/agents/cursor-agent.provider.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-session.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-runtime.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-pty.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-config-sync.service.ts",
       "type": "provides"
     },
     {
@@ -66270,6 +68426,101 @@
       "type": "calls"
     },
     {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
+      "to": "api:HTTP:GET:/opencode-providers",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
+      "to": "api:HTTP:GET:/admin/opencode-config",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
+      "to": "api:HTTP:PUT:/admin/opencode-config",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
+      "to": "api:HTTP:GET:/clients/{id}/opencode-config",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
+      "to": "api:HTTP:PUT:/clients/{id}/opencode-config",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
+      "to": "api:HTTP:PUT:/clients/{id}/agents/{agentId}/opencode-config",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/agents",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/commands",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
+      "to": "api:HTTP:GET:/admin/opencode-config/files",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
+      "to": "api:HTTP:GET:/clients/{id}/opencode-config/files",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
+      "to": "api:HTTP:POST:/admin/opencode-config/files",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
+      "to": "api:HTTP:POST:/clients/{id}/opencode-config/files",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
+      "to": "api:HTTP:GET:/admin/opencode-config/files/{path}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
+      "to": "api:HTTP:PUT:/admin/opencode-config/files/{path}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
+      "to": "api:HTTP:DELETE:/admin/opencode-config/files/{path}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
+      "to": "api:HTTP:GET:/clients/{id}/opencode-config/files/{path}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
+      "to": "api:HTTP:PUT:/clients/{id}/opencode-config/files/{path}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
+      "to": "api:HTTP:DELETE:/clients/{id}/opencode-config/files/{path}",
+      "type": "calls"
+    },
+    {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/statistics.service.ts",
       "to": "api:HTTP:GET:/clients/{id}/statistics/summary",
       "type": "calls"
@@ -67025,6 +69276,11 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-implementation",
+      "to": "api:HTTP:GET:/opencode-providers",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-api-reference",
       "to": "api:HTTP:GET:/clients",
       "type": "documents"
@@ -67367,11 +69623,6 @@
     {
       "from": "concept:agenstra-routing",
       "to": "api:HTTP:POST:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-routing",
-      "to": "api:HTTP:GET:/config",
       "type": "documents"
     },
     {
@@ -67735,6 +69986,116 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-layers",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-layers",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-layers",
+      "to": "api:HTTP:GET:/admin/opencode-config",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-layers",
+      "to": "api:HTTP:PUT:/admin/opencode-config",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-layers",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-layers",
+      "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-heredity",
+      "to": "api:HTTP:GET:/config",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-sync",
+      "to": "api:HTTP:GET:/config",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-chat-slash-typeahead",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-chat-slash-typeahead",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-chat-slash-typeahead",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-chat-slash-typeahead",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-chat-slash-typeahead",
+      "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-path-lists-and-layer-files",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-path-lists-and-layer-files",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-path-lists-and-layer-files",
+      "to": "api:HTTP:GET:/admin/opencode-config",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-path-lists-and-layer-files",
+      "to": "api:HTTP:PUT:/admin/opencode-config",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-path-lists-and-layer-files",
+      "to": "api:HTTP:GET:/admin/opencode-config/files",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-path-lists-and-layer-files",
+      "to": "api:HTTP:POST:/admin/opencode-config/files",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-path-lists-and-layer-files",
+      "to": "api:HTTP:GET:/config",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-path-lists-and-layer-files",
+      "to": "api:HTTP:POST:/agents/{agentId}/files/{path}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-references",
+      "to": "api:HTTP:GET:/config",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-creating-an-agent",
       "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
@@ -67752,11 +70113,6 @@
     {
       "from": "concept:agenstra-agent-lifecycle",
       "to": "api:HTTP:POST:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-agent-types",
-      "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
     },
     {
@@ -68842,6 +71198,11 @@
     {
       "from": "concept:agenstra-connection-issues",
       "to": "project:agenstra-backend-agent-controller",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-container-issues",
+      "to": "api:HTTP:GET:/health",
       "type": "documents"
     },
     {
@@ -73435,6 +75796,21 @@
       "type": "belongs_to"
     },
     {
+      "from": "project:agenstra-shared-util-opencode-providers",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:agenstra-shared-util-opencode-providers",
+      "to": "context:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:agenstra-shared-util-opencode-providers",
+      "to": "feature-group:util",
+      "type": "belongs_to"
+    },
+    {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -73446,6 +75822,21 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "feature-group:feature",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-config",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-config",
+      "to": "context:frontend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-config",
       "to": "feature-group:feature",
       "type": "belongs_to"
     },
@@ -73537,6 +75928,21 @@
     {
       "from": "project:agenstra-frontend-data-access-portal",
       "to": "feature-group:data-access",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:agenstra-shared-util-opencode-config",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:agenstra-shared-util-opencode-config",
+      "to": "context:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:agenstra-shared-util-opencode-config",
+      "to": "feature-group:util",
       "type": "belongs_to"
     },
     {
@@ -74400,6 +76806,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "file:docs/agenstra/features/agent-configuration.md",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "file:docs/agenstra/features/agent-management.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -75031,6 +77442,11 @@
     },
     {
       "from": "concept:agenstra-migration-note",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-future-agenstra-as-acp-server",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -75785,7 +78201,12 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-cursor-agent",
+      "from": "concept:agenstra-opencode-agent-optional-image-overrides",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-opencode-agent-docker-image-ghcr-io-forepath-agenstra-manager-worker-latest",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -75971,6 +78392,66 @@
     },
     {
       "from": "concept:agenstra-feature-relationships",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-agent-configuration",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-layers",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-ui-tabs-config-fields",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-heredity",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-v2-only-config",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-network",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-provider-credentials",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-provider-models",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-sync",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-chat-slash-typeahead",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-path-lists-and-layer-files",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-references",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -76651,6 +79132,11 @@
     },
     {
       "from": "concept:agenstra-git-repository-for-agent-workspace",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-opencode-agent",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

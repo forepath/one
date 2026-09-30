@@ -26,6 +26,7 @@ export enum ForwardableEvent {
   FILE_UPDATE = 'fileUpdate',
   CREATE_TERMINAL = 'createTerminal',
   TERMINAL_INPUT = 'terminalInput',
+  TERMINAL_RESIZE = 'terminalResize',
   CLOSE_TERMINAL = 'closeTerminal',
   RESTORE_CHAT = 'restoreChat',
 }
@@ -52,6 +53,7 @@ export type ForwardableEventPayload =
   | FileUpdatePayload
   | CreateTerminalPayload
   | TerminalInputPayload
+  | TerminalResizePayload
   | CloseTerminalPayload
   | RestoreChatPayload;
 
@@ -194,6 +196,15 @@ export interface CreateTerminalPayload {
 export interface TerminalInputPayload {
   sessionId: string;
   data: string;
+}
+
+/**
+ * Terminal resize event payload (from agents.gateway.ts TerminalResizePayload)
+ */
+export interface TerminalResizePayload {
+  sessionId: string;
+  cols: number;
+  rows: number;
 }
 
 /**

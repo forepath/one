@@ -5,7 +5,6 @@ export type WorkspaceConfigurationSettingKey =
   | 'gitToken'
   | 'gitPassword'
   | 'gitPrivateKey'
-  | 'cursorApiKey'
   | 'agentDefaultImage'
   | 'autoEnrichEnabledGlobal'
   | 'autoEnrichVectorMaxCosineDistance';

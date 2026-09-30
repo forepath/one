@@ -17,8 +17,11 @@ const TICKET_AUTOMATION_RUN_CHAT_UPSERT = 'ticketAutomationRunChatUpsert';
 
 import {
   AGENT_CHAT_EVENT_KIND_LABELS,
+  AGENT_CHAT_PERMISSION_KIND_LABEL,
+  buildQuestionInteractionFromPayload,
   computeToolPairMergePlanFromIndices,
   isConcreteToolCallId,
+  isInteractiveQuestionToolName,
   mergeAdjacentInteractionQueryDisplayRows,
   mergeAdjacentThinkingDisplayRows,
   mergeToolPairDisplayRows,
@@ -26,10 +29,12 @@ import {
   toolPairOutcomeToBadgeColor,
   type AgentChatEventDisplayRow,
 } from './agent-chat-event-display';
+import { resolveAgentChatToolDisplay } from './agent-chat-tool-display';
 import {
   extractInteractionQueryPreviewText,
   extractThinkingPreviewText,
   formatAgentResponseForChatMarkdown,
+  stripHiddenPromptBlocks,
 } from './agent-chat-response-markdown';
 
 /** Mirrors chat.component `ChatMessageWithFilter` without importing the component. */
@@ -231,6 +236,7 @@ function coalesceDuplicateToolCallSegments(segments: AgentTurnSegment[]): AgentT
       summaryBody: row.summaryBody || base.summaryBody,
       badgeColor: row.badgeColor || base.badgeColor,
       detailJson: row.detailJson || base.detailJson,
+      toolName: row.toolName ?? base.toolName,
       toolPair: {
         outcome: row.toolPair?.outcome ?? base.toolPair?.outcome ?? 'pending',
         callDetailJson: row.toolPair?.callDetailJson ?? base.toolPair?.callDetailJson ?? row.detailJson,
@@ -360,12 +366,18 @@ export function mapAgentResponseObjectToDisplayRow(
   const t = r.type;
 
   if (t === 'tool' || t === 'tool_call' || t === 'toolCall') {
-    const name = typeof r['name'] === 'string' ? r['name'] : 'tool';
+    const name = typeof r['name'] === 'string' ? r['name'] : typeof r['tool'] === 'string' ? r['tool'] : 'tool';
+
+    // Dedicated `question` parts own the interactive UI; skip duplicate tool frames (incl. history).
+    if (isInteractiveQuestionToolName(name)) {
+      return null;
+    }
+
     const rawToolCallId = typeof r['toolCallId'] === 'string' ? r['toolCallId'] : undefined;
     const toolCallIdDisplay = rawToolCallId ?? '—';
     const status = typeof r['status'] === 'string' ? r['status'] : 'unknown';
     let summaryBody = `${status} · ${toolCallIdDisplay}`;
-    const summaryTitle = name === 'enrichment' ? 'Enrichment' : `Tool call · ${name}`;
+    const summaryTitle = resolveAgentChatToolDisplay(name).label;
 
     if (r['args'] !== undefined) {
       summaryBody += ` · ${previewUnknown(r['args'], 160)}`;
@@ -383,6 +395,7 @@ export function mapAgentResponseObjectToDisplayRow(
       badgeColor: toolPairOutcomeToBadgeColor(outcome),
       detailJson,
       displayTimestampMs,
+      toolName: name,
       ...(isConcreteToolCallId(rawToolCallId) ? { toolCallId: rawToolCallId } : {}),
       toolPair: {
         outcome,
@@ -392,11 +405,16 @@ export function mapAgentResponseObjectToDisplayRow(
   }
 
   if (t === 'tool_result' || t === 'toolResult') {
-    const name = typeof r['name'] === 'string' ? r['name'] : 'tool';
+    const name = typeof r['name'] === 'string' ? r['name'] : typeof r['tool'] === 'string' ? r['tool'] : 'tool';
+
+    if (isInteractiveQuestionToolName(name)) {
+      return null;
+    }
+
     const rawToolCallId = typeof r['toolCallId'] === 'string' ? r['toolCallId'] : undefined;
     const toolCallIdDisplay = rawToolCallId ?? '—';
     const isError = Boolean(r['isError'] ?? r['is_error']);
-    const summaryTitle = name === 'enrichment' ? 'Enrichment result' : `Tool result · ${name}`;
+    const summaryTitle = resolveAgentChatToolDisplay(name).label;
     const detailJson = JSON.stringify(r, null, 2);
     const outcome = isError ? 'error' : 'success';
 
@@ -409,6 +427,7 @@ export function mapAgentResponseObjectToDisplayRow(
       badgeColor: toolPairOutcomeToBadgeColor(outcome),
       detailJson,
       displayTimestampMs,
+      toolName: name,
       ...(isConcreteToolCallId(rawToolCallId) ? { toolCallId: rawToolCallId } : {}),
       toolPair: {
         outcome,
@@ -419,17 +438,24 @@ export function mapAgentResponseObjectToDisplayRow(
 
   if (t === 'question') {
     const prompt = typeof r['prompt'] === 'string' ? r['prompt'] : '';
-    const qid = typeof r['questionId'] === 'string' ? r['questionId'] : '';
+    const interaction = buildQuestionInteractionFromPayload(r as Record<string, unknown>);
+    const isPermission = interaction?.replyKind === 'permission';
 
     return {
       trackId,
       kind: 'question',
-      kindLabel: AGENT_CHAT_EVENT_KIND_LABELS.question,
-      summaryTitle: 'Question',
-      summaryBody: [qid ? `#${qid}` : '', previewString(prompt, 200)].filter(Boolean).join(' · '),
-      badgeColor: 'primary',
+      kindLabel: isPermission ? AGENT_CHAT_PERMISSION_KIND_LABEL : AGENT_CHAT_EVENT_KIND_LABELS.question,
+      summaryTitle: isPermission ? AGENT_CHAT_PERMISSION_KIND_LABEL : 'Question',
+      summaryBody: previewString(prompt, 240) || (interaction?.questionId ? `#${interaction.questionId}` : ''),
+      badgeColor: isPermission ? 'warning' : 'primary',
       detailJson: JSON.stringify(r, null, 2),
       displayTimestampMs,
+      ...(interaction
+        ? {
+            questionInteraction: interaction,
+            popoverPlainDetail: interaction.prompt,
+          }
+        : {}),
     };
   }
 
@@ -451,6 +477,10 @@ export function mapAgentResponseObjectToDisplayRow(
 
   if (t === 'thinking') {
     const preview = extractThinkingPreviewText(r);
+    // OpenCode step-start used to emit phase "step"; ignore legacy noise.
+    if (preview.trim().toLowerCase() === 'step') {
+      return null;
+    }
 
     return {
       trackId,
@@ -461,6 +491,41 @@ export function mapAgentResponseObjectToDisplayRow(
       badgeColor: 'light',
       detailJson: JSON.stringify(r, null, 2),
       ...(preview.trim().length > 0 ? { popoverPlainDetail: preview } : {}),
+      displayTimestampMs,
+    };
+  }
+
+  if (t === 'status') {
+    const subtype = typeof r['subtype'] === 'string' ? r['subtype'] : '';
+
+    // OpenCode step-finish / step markers — never render as timeline or markdown.
+    if (subtype === 'step' || subtype.startsWith('step')) {
+      return null;
+    }
+
+    const message =
+      typeof r['message'] === 'string' ? r['message'] : typeof r['result'] === 'string' ? r['result'] : '';
+    const title = typeof r['title'] === 'string' ? r['title'].trim() : '';
+
+    if (!message && !title) {
+      return null;
+    }
+
+    // Return a sentinel so buildViewFromParts does not fall through to markdown.
+    // Use a structured status row; empty message with step already returned above.
+    return {
+      trackId,
+      kind: 'status',
+      kindLabel: AGENT_CHAT_EVENT_KIND_LABELS.status,
+      summaryTitle: title || AGENT_CHAT_EVENT_KIND_LABELS.status,
+      summaryBody: previewString(message, 220),
+      badgeColor:
+        title === 'Retry' || title === 'Permission'
+          ? 'warning'
+          : title === 'Todos' || title === 'Diff' || title === 'File' || title === 'Patch'
+            ? 'info'
+            : 'secondary',
+      detailJson: JSON.stringify(r, null, 2),
       displayTimestampMs,
     };
   }
@@ -503,6 +568,33 @@ function isMessageDropped(messageData: ChatMessageData): boolean {
   );
 }
 
+function shouldOmitAgentPartFromTranscript(part: AgentResponseObject): boolean {
+  const t = part.type;
+
+  if (t === 'status') {
+    const subtype = typeof part['subtype'] === 'string' ? part['subtype'] : '';
+    const title = typeof part['title'] === 'string' ? part['title'].trim() : '';
+
+    return subtype === 'step' || subtype.startsWith('step') || title === 'Step';
+  }
+
+  if (t === 'thinking') {
+    const preview = extractThinkingPreviewText(part).trim().toLowerCase();
+
+    return preview === 'step';
+  }
+
+  // Interactive Question UI is a dedicated `question` part; skip duplicate tool frames (do not
+  // fall through to markdown "Tool call · question").
+  if (t === 'tool' || t === 'tool_call' || t === 'toolCall' || t === 'tool_result' || t === 'toolResult') {
+    const name = typeof part['name'] === 'string' ? part['name'] : typeof part['tool'] === 'string' ? part['tool'] : '';
+
+    return isInteractiveQuestionToolName(name);
+  }
+
+  return false;
+}
+
 function buildViewFromParts(parts: AgentResponseObject[], baseTimestamp: number): AgentTurnView {
   const segments: AgentTurnSegment[] = [];
   let i = 0;
@@ -512,14 +604,21 @@ function buildViewFromParts(parts: AgentResponseObject[], baseTimestamp: number)
       continue;
     }
 
+    if (shouldOmitAgentPartFromTranscript(part)) {
+      i += 1;
+      continue;
+    }
+
     const row = mapAgentResponseObjectToDisplayRow(part, `part-${baseTimestamp}-${i}`, baseTimestamp);
 
     if (row) {
       segments.push({ kind: 'row', row });
     } else {
-      const md = formatAgentResponseForChatMarkdown(part);
+      const md = stripHiddenPromptBlocks(formatAgentResponseForChatMarkdown(part));
 
-      appendMarkdownToSegments(segments, md, `md-${baseTimestamp}-${i}`);
+      if (md.trim()) {
+        appendMarkdownToSegments(segments, md, `md-${baseTimestamp}-${i}`);
+      }
     }
 
     i += 1;

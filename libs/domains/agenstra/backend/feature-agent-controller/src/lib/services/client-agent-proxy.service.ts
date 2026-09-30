@@ -262,6 +262,38 @@ export class ClientAgentProxyService {
   }
 
   /**
+   * Reply to an OpenCode permission request (proxied to agent-manager).
+   */
+  async replyClientAgentPermission(
+    clientId: string,
+    agentId: string,
+    permissionId: string,
+    body: { reply: 'once' | 'always' | 'reject'; sessionId?: string },
+  ): Promise<void> {
+    await this.makeRequest<void>(clientId, {
+      method: 'POST',
+      url: `/${agentId}/permissions/${encodeURIComponent(permissionId)}/reply`,
+      data: body,
+    });
+  }
+
+  /**
+   * Reply to (or reject) an OpenCode question request (proxied to agent-manager).
+   */
+  async replyClientAgentQuestion(
+    clientId: string,
+    agentId: string,
+    questionId: string,
+    body: { answers?: string[]; reply?: 'reject'; sessionId?: string },
+  ): Promise<void> {
+    await this.makeRequest<void>(clientId, {
+      method: 'POST',
+      url: `/${agentId}/questions/${encodeURIComponent(questionId)}/reply`,
+      data: body,
+    });
+  }
+
+  /**
    * Create a new agent for a specific client.
    * @param clientId - The UUID of the client
    * @param createAgentDto - Data transfer object for creating an agent
@@ -289,7 +321,7 @@ export class ClientAgentProxyService {
           result.id,
           {
             clientId,
-            agentType: createAgentDto.agentType ?? 'cursor',
+            agentType: createAgentDto.agentType ?? 'opencode',
             containerType: createAgentDto.containerType?.toString() ?? 'generic',
             name: createAgentDto.name,
             description: createAgentDto.description,

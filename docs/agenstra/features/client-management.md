@@ -42,7 +42,7 @@ See the [Server Provisioning](./server-provisioning.md) documentation for detail
 Each client includes a `config` field that is automatically fetched from the remote agent-manager:
 
 - **`gitRepositoryUrl`** The Git repository URL configured on the agent-manager instance
-- **`agentTypes`** Array of available agent provider types (e.g., `['cursor', 'opencode']`)
+- **`agentTypes`** Array of available agent provider types (e.g., `['opencode']`)
 
 This configuration allows you to discover which agent types are available on each remote agent-manager instance.
 

@@ -18,7 +18,7 @@ flowchart LR
   Manager[Agent Manager]
   ACP[AcpSessionService]
   Worker[Worker container]
-  Agent[cursor-agent acp / opencode acp]
+  Agent[opencode acp]
 
   Console -->|WebSocket AgentEventEnvelope| Manager
   Manager --> ACP
@@ -28,9 +28,8 @@ flowchart LR
 
 Outward APIs (OpenAPI / AsyncAPI chat events) are unchanged. ACP replaces vendor-specific CLI NDJSON parsing inside providers.
 
-Built-in providers:
+Built-in provider:
 
-- **`cursor`** — launches `cursor-agent acp` in the worker container
 - **`opencode`** — launches `opencode acp` in the worker container
 
 ## Protocol details
@@ -73,17 +72,31 @@ Streaming token deltas are not notified.
 
 ## Worker image requirements
 
-The [worker image](../../../apps/agenstra/backend-agent-manager/Dockerfile.worker) installs Cursor CLI and OpenCode so the manager can exec:
+The [worker image](../../../apps/agenstra/backend-agent-manager/Dockerfile.worker) installs OpenCode so the manager can exec:
 
-- `cursor-agent acp`
 - `opencode acp`
 
 ## Troubleshooting
 
-- **Session fails at initialize** — Confirm the agent binary supports `acp` inside the container (`docker exec … cursor-agent acp` / `opencode acp`).
+- **Session fails at initialize** — Confirm the agent binary supports `acp` inside the container (`docker exec … opencode acp`).
 - **Permission prompts** — Set `ACP_AUTO_APPROVE=false` only if the console will answer `session/request_permission`.
-- **Auth errors** — Check Cursor/OpenCode credentials inside the worker container; stderr is logged as ACP exec stderr.
+- **Auth errors** — Check OpenCode credentials inside the worker container; stderr is logged as ACP exec stderr.
 
 ## Migration note
 
-Legacy OpenClaw (`openclaw` agent type / AGI image) has been removed. Recreate affected agents as `cursor` or `opencode`.
+- Legacy OpenClaw (`openclaw` agent type / AGI image) has been removed. Recreate affected agents as `opencode`.
+- Former `cursor` agents were remapped to `opencode`. ACP sessions for remapped agents were cleared so new sessions are established under OpenCode.
+
+## Future: Agenstra as ACP server
+
+OpenCode chat now runs over **HTTP** (`opencode serve` + `@opencode-ai/sdk`), not ACP stdio. ACP client code remains in the manager temporarily for compatibility and migration, but new work should target the OpenCode HTTP runtime.
+
+Agenstra may later expose an **ACP server** surface so external IDEs / clients can attach to platform-managed agents. The intended seam is:
+
+| Piece                         | Role                                                                                      |
+| ----------------------------- | ----------------------------------------------------------------------------------------- |
+| `OutboundAgentEventPublisher` | Maps internal `AgentResponseObject` / chat events outward (today a no-op sink)            |
+| OpenCode HTTP runtime         | Source of truth for turns, permissions, questions, and usage                              |
+| Future ACP server             | Adapts those outbound events to ACP JSON-RPC notifications and accepts ACP client prompts |
+
+No ACP server is implemented yet. When added, wire a real `OutboundAgentEventPublisher` implementation and keep ChatFilter / context injection on the existing manager chat path.

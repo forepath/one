@@ -31,6 +31,12 @@ import { StatisticsAgentEntity } from '../entities/statistics-agent.entity';
 import { StatisticsChatFilterDropEntity } from '../entities/statistics-chat-filter-drop.entity';
 import { StatisticsChatFilterFlagEntity } from '../entities/statistics-chat-filter-flag.entity';
 import { StatisticsChatIoEntity } from '../entities/statistics-chat-io.entity';
+import { GlobalOpencodeConfigEntity } from '../entities/global-opencode-config.entity';
+import { OpencodeLayerFileEntity } from '../entities/opencode-layer-file.entity';
+import { OpencodeLayerFileSyncTargetEntity } from '../entities/opencode-layer-file-sync-target.entity';
+import { OpencodeConfigSyncTargetEntity } from '../entities/opencode-config-sync-target.entity';
+import { ClientOpencodeConfigEntity } from '../entities/client-opencode-config.entity';
+import { OpencodeProviderEntity } from '../entities/opencode-provider.entity';
 import { StatisticsClientUserEntity } from '../entities/statistics-client-user.entity';
 import { StatisticsClientEntity } from '../entities/statistics-client.entity';
 import { StatisticsEntityEventEntity } from '../entities/statistics-entity-event.entity';
@@ -244,6 +250,18 @@ describe('ClientsModule', () => {
       .overrideProvider(getRepositoryToken(UserChatSessionReadStateEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(UserEnvironmentReadStateEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(GlobalOpencodeConfigEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(ClientOpencodeConfigEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(OpencodeProviderEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(OpencodeLayerFileEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(OpencodeLayerFileSyncTargetEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(OpencodeConfigSyncTargetEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(AgentConsoleRegexFilterRuleEntity))
       .useValue(mockRepository)

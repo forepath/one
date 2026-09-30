@@ -73,7 +73,7 @@ export class AgenstraManagerMetricsCollectorService implements OnModuleInit, OnM
       .getRawMany<{ agentType: string; containerType: string; count: string }>();
 
     const byKey = new Map(agentRows.map((row) => [`${row.agentType}:${row.containerType}`, parseInt(row.count, 10)]));
-    const agentTypes = new Set<string>([...agentRows.map((row) => row.agentType), 'cursor', 'opencode']);
+    const agentTypes = new Set<string>([...agentRows.map((row) => row.agentType), 'opencode']);
 
     for (const agentType of agentTypes) {
       for (const containerType of Object.values(ContainerType)) {

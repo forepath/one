@@ -5,9 +5,9 @@ import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
  */
 export class AgentTypeCapabilities {
   /**
-   * Wire transport used for agent messaging (`acp` = Agent Client Protocol over stdio).
+   * Wire transport used for agent messaging (`opencode-http` = OpenCode serve HTTP API).
    */
-  transport?: 'acp';
+  transport?: 'acp' | 'opencode-http' | 'http';
 
   supportsChat!: boolean;
   supportsStreaming!: boolean;
@@ -20,7 +20,7 @@ export class AgentTypeCapabilities {
  */
 export class AgentTypeInfo {
   /**
-   * The unique type identifier (e.g., 'cursor', 'opencode')
+   * The unique type identifier (e.g., 'opencode')
    */
   type!: string;
 

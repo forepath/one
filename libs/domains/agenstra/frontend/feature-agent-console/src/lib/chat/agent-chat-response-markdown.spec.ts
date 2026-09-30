@@ -4,11 +4,29 @@ import {
   extractThinkingPreviewText,
   formatAgentResponseForChatMarkdown,
   formatUnknownAsMarkdown,
+  stripHiddenPromptBlocks,
 } from './agent-chat-response-markdown';
 
 describe('formatAgentResponseForChatMarkdown', () => {
   it('returns plain text string responses unchanged', () => {
     expect(formatAgentResponseForChatMarkdown('Hello **world**')).toBe('Hello **world**');
+  });
+
+  it('strips hidden-context blocks from plain text', () => {
+    expect(stripHiddenPromptBlocks('<hidden-context>\nhint\n</hidden-context>\nVisible answer')).toBe('Visible answer');
+    expect(formatAgentResponseForChatMarkdown('<hidden-context>\nhint\n</hidden-context>\nVisible')).toBe('Visible');
+  });
+
+  it('omits step status and thinking phase step', () => {
+    expect(
+      formatAgentResponseForChatMarkdown({
+        type: 'status',
+        subtype: 'step',
+        title: 'Step',
+        message: 'Step finished (stop)',
+      }),
+    ).toBe('');
+    expect(formatAgentResponseForChatMarkdown({ type: 'thinking', phase: 'step' })).toBe('');
   });
 
   it('parses JSON string and formats tool_call', () => {
@@ -25,6 +43,28 @@ describe('formatAgentResponseForChatMarkdown', () => {
     expect(md).toContain('read');
     expect(md).toContain('README');
     expect(md).not.toContain('```');
+  });
+
+  it('omits question tool_call/tool_result markdown fallbacks', () => {
+    expect(
+      formatAgentResponseForChatMarkdown({
+        type: 'tool_call',
+        toolCallId: 'call_q',
+        name: 'question',
+        status: 'pending',
+        args: {},
+      }),
+    ).toBe('');
+
+    expect(
+      formatAgentResponseForChatMarkdown({
+        type: 'tool_result',
+        toolCallId: 'call_q',
+        name: 'question',
+        result: 'Red',
+        isError: false,
+      }),
+    ).toBe('');
   });
 
   it('formats tool_result with object payload without code fences', () => {

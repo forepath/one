@@ -5284,6 +5284,424 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UpdateCheckTriggerResultDto'
+  /opencode-providers:
+    get:
+      tags: [OpenCode]
+      summary: List cached built-in OpenCode LLM providers
+      description: |
+        Returns the models.dev provider catalog cached in the database
+        (including model id/name pairs). Refreshed by the `opencode-providers.refresh` BullMQ job.
+        Requires authenticated access with `clients:read`.
+      operationId: listOpencodeProviders
+      responses:
+        '200':
+          description: Provider catalog
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeProvidersListDto'
+        '401':
+          description: Not authenticated
+  /admin/opencode-config:
+    get:
+      tags: [Admin]
+      summary: Get global OpenCode config
+      operationId: getGlobalOpencodeConfig
+      responses:
+        '200':
+          description: Global OpenCode config overlay
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeConfigResponseDto'
+    put:
+      tags: [Admin]
+      summary: Update global OpenCode config
+      operationId: putGlobalOpencodeConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertOpencodeConfigDto'
+      responses:
+        '200':
+          description: Updated global OpenCode config
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeConfigResponseDto'
+  /admin/opencode-config/files:
+    get:
+      tags: [Admin]
+      summary: List children under a global layer path
+      operationId: listGlobalOpencodeLayerFiles
+      parameters:
+        - in: query
+          name: path
+          schema:
+            type: string
+            default: '.'
+      responses:
+        '200':
+          description: Directory listing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeLayerFileListResponseDto'
+    post:
+      tags: [Admin]
+      summary: Create a global layer file or directory
+      operationId: createGlobalOpencodeLayerFile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOpencodeLayerFileDto'
+      responses:
+        '200':
+          description: Created entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeLayerFileResponseDto'
+  /admin/opencode-config/files/{path}:
+    get:
+      tags: [Admin]
+      summary: Get a global OpenCode layer file
+      operationId: getGlobalOpencodeLayerFile
+      parameters:
+        - in: path
+          name: path
+          required: true
+          schema:
+            type: string
+          description: Path as entered in config (no managed prefix rewrite)
+      responses:
+        '200':
+          description: Global layer file
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeLayerFileResponseDto'
+        '404':
+          description: Layer file not found
+    put:
+      tags: [Admin]
+      summary: Create or update a global OpenCode layer file
+      operationId: putGlobalOpencodeLayerFile
+      parameters:
+        - in: path
+          name: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertOpencodeLayerFileDto'
+      responses:
+        '200':
+          description: Saved global layer file (fan-out emit started)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeLayerFileResponseDto'
+    delete:
+      tags: [Admin]
+      summary: Delete a global OpenCode layer file
+      operationId: deleteGlobalOpencodeLayerFile
+      parameters:
+        - in: path
+          name: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok]
+                properties:
+                  ok:
+                    type: boolean
+  /clients/{id}/opencode-config:
+    get:
+      summary: Get workspace OpenCode config
+      operationId: getClientOpencodeConfig
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Workspace OpenCode config overlay
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeConfigResponseDto'
+    put:
+      summary: Update workspace OpenCode config
+      operationId: putClientOpencodeConfig
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertOpencodeConfigDto'
+      responses:
+        '200':
+          description: Updated workspace OpenCode config
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeConfigResponseDto'
+  /clients/{id}/opencode-config/files:
+    get:
+      summary: List children under a workspace layer path
+      operationId: listClientOpencodeLayerFiles
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: path
+          schema:
+            type: string
+            default: '.'
+      responses:
+        '200':
+          description: Directory listing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeLayerFileListResponseDto'
+    post:
+      summary: Create a workspace layer file or directory
+      operationId: createClientOpencodeLayerFile
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOpencodeLayerFileDto'
+      responses:
+        '200':
+          description: Created entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeLayerFileResponseDto'
+  /clients/{id}/opencode-config/files/{path}:
+    get:
+      summary: Get a workspace OpenCode layer file
+      operationId: getClientOpencodeLayerFile
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: path
+          required: true
+          schema:
+            type: string
+          description: Path as entered in config (no managed prefix rewrite)
+      responses:
+        '200':
+          description: Workspace layer file
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeLayerFileResponseDto'
+        '404':
+          description: Layer file not found
+    put:
+      summary: Create or update a workspace OpenCode layer file
+      operationId: putClientOpencodeLayerFile
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertOpencodeLayerFileDto'
+      responses:
+        '200':
+          description: Saved workspace layer file (fan-out emit started)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeLayerFileResponseDto'
+    delete:
+      summary: Delete a workspace OpenCode layer file
+      operationId: deleteClientOpencodeLayerFile
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ok]
+                properties:
+                  ok:
+                    type: boolean
+  /clients/{id}/agents/{agentId}/opencode-config:
+    get:
+      summary: Get agent OpenCode config
+      operationId: getClientAgentOpencodeConfig
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Agent OpenCode config with effective merge
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeConfigResponseDto'
+    put:
+      summary: Update agent OpenCode config
+      operationId: putClientAgentOpencodeConfig
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertOpencodeConfigDto'
+      responses:
+        '200':
+          description: Updated agent OpenCode config with effective merge
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeConfigResponseDto'
+  /clients/{id}/agents/{agentId}/opencode-config/agents:
+    get:
+      summary: List effective OpenCode agents for a remote worker
+      operationId: listClientAgentOpencodeAgents
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Effective OpenCode agents (primary + subagents)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeAgentsListResponseDto'
+  /clients/{id}/agents/{agentId}/opencode-config/commands:
+    get:
+      summary: List slash-invokable OpenCode commands for a remote worker
+      description: >
+        Proxies the agent-manager list of OpenCode `GET /command` entries (config commands,
+        builtins, skills, MCP prompts).
+      operationId: listClientAgentOpencodeCommands
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Slash commands available on the worker
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpencodeCommandsListResponseDto'
   /otel/metrics:
     get:
       summary: Prometheus metrics scrape
@@ -5321,11 +5739,9 @@ components:
       required: false
       schema:
         type: string
-        enum: [app, config]
+        enum: [app]
         default: app
-      description: |
-        Proxied to agent-manager. `app` (default) is the workspace root; `config` is the provider configuration directory when supported.
-        When `config` is set, the caller must have workspace management rights (same as other workspace configuration APIs).
+      description: Proxied to agent-manager. `app` (default) is the workspace root under `/app`.
   schemas:
     AuthenticationType:
       type: string
@@ -5859,10 +6275,10 @@ components:
       properties:
         type:
           type: string
-          description: The unique type identifier (e.g., 'cursor', 'opencode')
+          description: The unique type identifier (e.g., 'opencode')
         displayName:
           type: string
-          description: Human-readable display name (e.g., 'Cursor', 'OpenCode')
+          description: Human-readable display name (e.g., 'OpenCode')
         capabilities:
           $ref: '#/components/schemas/AgentTypeCapabilities'
     AgentTypeCapabilities:
@@ -6225,8 +6641,6 @@ components:
           type: string
         gitPrivateKey:
           type: string
-        cursorApiKey:
-          type: string
         agentDefaultImage:
           type: string
         keycloakAuthServerUrl:
@@ -6417,7 +6831,6 @@ components:
           gitToken,
           gitPassword,
           gitPrivateKey,
-          cursorApiKey,
           agentDefaultImage,
           autoEnrichEnabledGlobal,
           autoEnrichVectorMaxCosineDistance,
@@ -6508,6 +6921,14 @@ components:
         totalChars:
           type: integer
         avgWordsPerMessage:
+          type: number
+        totalInputTokens:
+          type: integer
+        totalOutputTokens:
+          type: integer
+        totalTokens:
+          type: integer
+        totalCostUsd:
           type: number
         autoEnrichmentRuns:
           type: integer
@@ -8127,3 +8548,261 @@ components:
         total:
           type: integer
           minimum: 0
+    OpencodeLayerFileResponseDto:
+      type: object
+      required:
+        [
+          id,
+          scope,
+          path,
+          emittedPath,
+          entryKind,
+          content,
+          contentSha,
+          updatedAt,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        scope:
+          type: string
+          enum: [global, workspace]
+        clientId:
+          type: string
+          format: uuid
+          nullable: true
+        path:
+          type: string
+          description: Path as entered (sanitized; no managed prefix)
+        emittedPath:
+          type: string
+          description: Same as path; written into agent `/app` trees as entered
+        entryKind:
+          type: string
+          enum: [file, directory]
+        content:
+          type: string
+          description: Plaintext after AES-256-GCM decrypt (empty for directories)
+        contentSha:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+    OpencodeLayerFileListEntryDto:
+      type: object
+      required: [name, path, entryKind]
+      properties:
+        name:
+          type: string
+        path:
+          type: string
+        entryKind:
+          type: string
+          enum: [file, directory]
+    OpencodeLayerFileListResponseDto:
+      type: object
+      required: [path, entries]
+      properties:
+        path:
+          type: string
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpencodeLayerFileListEntryDto'
+    CreateOpencodeLayerFileDto:
+      type: object
+      required: [path, entryKind]
+      properties:
+        path:
+          type: string
+        entryKind:
+          type: string
+          enum: [file, directory]
+        content:
+          type: string
+    UpsertOpencodeLayerFileDto:
+      type: object
+      properties:
+        content:
+          type: string
+        entryKind:
+          type: string
+          enum: [file, directory]
+    OpencodeConfigResponseDto:
+      type: object
+      required: [config, overrides, secretKeys]
+      properties:
+        config:
+          type: object
+          additionalProperties: true
+        overrides:
+          type: object
+          additionalProperties: true
+          description: >
+            Raw JSON overrides for this layer, merged over `config` before
+            cross-layer merge (same heredity locks as `config`).
+        secretKeys:
+          type: array
+          items:
+            type: string
+        effective:
+          type: object
+          additionalProperties: true
+          description: >
+            Full merged config for this scope (agent → workspace → global).
+            Each layer is compose(config, overrides) before cross-layer merge.
+            Platform keys such as model_allow / model_deny are retained for the editor;
+            worker sync materializes them separately.
+            The `config` / `overrides` fields remain the editable overlays for the current layer only.
+        lockedPaths:
+          type: array
+          items:
+            type: string
+          description: JSON Pointer paths locked by a higher layer
+        inheritedAdditive:
+          type: array
+          items:
+            type: object
+            required: [path]
+            properties:
+              path:
+                type: string
+              keys:
+                type: array
+                items:
+                  type: string
+              items:
+                type: array
+        updatedAt:
+          type: string
+          format: date-time
+        sync:
+          type: object
+          nullable: true
+          description: Durable per-agent effective-config sync target (agent GET/PUT)
+          properties:
+            syncStatus:
+              type: string
+              enum: [pending, synced, failed]
+            desiredRevision:
+              type: string
+            appliedRevision:
+              type: string
+              nullable: true
+            lastError:
+              type: string
+              nullable: true
+            lastSyncedAt:
+              type: string
+              format: date-time
+              nullable: true
+    OpencodeProviderDto:
+      type: object
+      required: [id, name, env, models]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        env:
+          type: array
+          items:
+            type: string
+        models:
+          type: array
+          items:
+            type: object
+            required: [id, name]
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+        npm:
+          type: string
+        api:
+          type: string
+    OpencodeProvidersListDto:
+      type: object
+      required: [providers]
+      properties:
+        providers:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpencodeProviderDto'
+    OpencodeAgentsListResponseDto:
+      type: object
+      required: [agents]
+      properties:
+        agents:
+          type: array
+          items:
+            type: object
+            required: [name, mode, builtIn]
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              mode:
+                type: string
+                enum: [subagent, primary, all]
+              builtIn:
+                type: boolean
+              prompt:
+                type: string
+              temperature:
+                type: number
+              color:
+                type: string
+              model:
+                type: object
+                properties:
+                  modelID:
+                    type: string
+                  providerID:
+                    type: string
+    OpencodeCommandsListResponseDto:
+      type: object
+      required: [commands]
+      properties:
+        commands:
+          type: array
+          items:
+            type: object
+            required: [name]
+            properties:
+              name:
+                type: string
+              description:
+                type: string
+              agent:
+                type: string
+              model:
+                type: string
+              subtask:
+                type: boolean
+              source:
+                type: string
+                enum: [command, mcp, skill]
+    UpsertOpencodeConfigDto:
+      type: object
+      properties:
+        config:
+          type: object
+          nullable: true
+          additionalProperties: true
+        overrides:
+          type: object
+          nullable: true
+          additionalProperties: true
+          description: >
+            Raw JSON patch merged over `config` for this layer.
+            Same credential, v1-key, and heredity checks as `config`.
+            Empty object clears overrides when provided.
+        secrets:
+          type: object
+          nullable: true
+          additionalProperties:
+            type: string

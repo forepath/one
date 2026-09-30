@@ -68,6 +68,24 @@ export class StatisticsChatIoEntity {
   @Column({ type: 'int', name: 'char_count' })
   charCount!: number;
 
+  @Column({ type: 'int', nullable: true, name: 'input_tokens' })
+  inputTokens?: number | null;
+
+  @Column({ type: 'int', nullable: true, name: 'output_tokens' })
+  outputTokens?: number | null;
+
+  @Column({ type: 'int', nullable: true, name: 'reasoning_tokens' })
+  reasoningTokens?: number | null;
+
+  @Column({ type: 'int', nullable: true, name: 'cache_read_tokens' })
+  cacheReadTokens?: number | null;
+
+  @Column({ type: 'int', nullable: true, name: 'cache_write_tokens' })
+  cacheWriteTokens?: number | null;
+
+  @Column({ type: 'decimal', precision: 16, scale: 8, nullable: true, name: 'cost_usd' })
+  costUsd?: string | null;
+
   @Column({ type: 'timestamp', name: 'occurred_at' })
   occurredAt!: Date;
 }

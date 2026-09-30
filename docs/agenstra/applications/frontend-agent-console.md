@@ -132,6 +132,7 @@ Routes are defined in the framework library `libs/domains/agenstra/frontend/feat
 - ``(empty) → redirect to`clients`
 - **Identity** `identityAuthRoutes` (login, register, password reset, email confirmation, user management) merged under the shell component
 - `/audit`. Audit (authenticated)
+- `/agent-config`. Admin **Agent configuration** editor (structured + raw; **admin** guard); see [Agent configuration](../features/agent-configuration.md)
 - `/filters`. Global message filter rules (**admin** guard)
 - `/imports/atlassian`. Atlassian site connections and import configurations (**admin** guard; sidebar with Users/Filters)
 - `/tickets`, `/tickets/:clientId`. Ticket board (**authenticated**; requires active client context)
@@ -140,7 +141,6 @@ Routes are defined in the framework library `libs/domains/agenstra/frontend/feat
   - `/clients/:clientId`. Workspace selected
   - `/clients/:clientId/agents/:agentId`. Agent chat
   - `/clients/:clientId/agents/:agentId/editor`. Editor layout for the same shell
-  - `/clients/:clientId/agents/:agentId/config`. Agent configuration editor (guarded)
   - `/clients/:clientId/agents/:agentId/deployments`. Deployments UI for the agent
 - `**` → redirect to `clients`
 

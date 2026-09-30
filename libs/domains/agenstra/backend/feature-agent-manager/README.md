@@ -23,7 +23,7 @@ Agents are entities that can be created, authenticated, and interacted with thro
 - ✅ Chat message broadcasting
 - ✅ Container command forwarding
 - ✅ Support for UUID or name-based agent identification
-- ✅ **Plugin-based agent provider system** - Cursor and OpenCode via [Agent Client Protocol (ACP)](../../../../docs/agenstra/ai-agents/agent-client-protocol.md) over stdio; additional types through the unified `AgentProvider` interface
+- ✅ **Plugin-based agent provider system** - OpenCode via [Agent Client Protocol (ACP)](../../../../docs/agenstra/ai-agents/agent-client-protocol.md) over stdio; additional types through the unified `AgentProvider` interface
 - ✅ **Plugin-based chat filter system** - Support for multiple message filtering implementations (profanity, PII, content policy, etc.) through a unified interface
 - ✅ **Extensible architecture** - Easy to add new agent providers and chat filters by implementing the respective interfaces
 
@@ -46,7 +46,7 @@ The library follows Domain-Driven Design (DDD) principles with clear separation 
   - **Agent Providers**: Plugin-based agent provider system
     - `AgentProvider` - Interface for agent implementations
     - `AgentProviderFactory` - Factory for getting the appropriate provider based on agent type
-    - `CursorAgentProvider` - Cursor-agent implementation
+    - `OpenCodeAgentProvider` - OpenCode ACP implementation
   - **Chat Filters**: Plugin-based chat filter system
     - `ChatFilter` - Interface for message filtering implementations
     - `ChatFilterFactory` - Factory for managing and retrieving filters by direction
@@ -427,7 +427,7 @@ The `AgentEntity` includes:
 - `hashedPassword` (string, bcrypt hash)
 - `containerId` (string, optional - Docker container ID for agent container)
 - `volumePath` (string, optional - Host path to agent volume where git repository is cloned)
-- `agentType` (string, default: 'cursor' - Type identifier for the agent provider plugin)
+- `agentType` (string, default: 'opencode' - Type identifier for the agent provider plugin)
 - `createdAt` (timestamp)
 - `updatedAt` (timestamp)
 
@@ -446,7 +446,7 @@ The library uses a plugin-based architecture to support multiple agent implement
 
 #### Available Providers
 
-- **cursor** (default) - Cursor-agent binary running in Docker containers
+- **opencode** (default) - OpenCode binary running in Docker containers via ACP
 
 #### Adding New Providers
 
@@ -508,7 +508,7 @@ To add a new agent provider:
 3. Update the DTO validation to include the new type:
 
    ```typescript
-   @IsIn(['cursor', 'my-agent'], { message: 'Agent type must be one of: cursor, my-agent' })
+   @IsIn(['opencode', 'my-agent'], { message: 'Agent type must be one of: opencode, my-agent' })
    agentType?: string;
    ```
 
@@ -704,8 +704,9 @@ nx test agenstra-backend-feature-agent-manager --coverage
 - `KEYCLOAK_CLIENT_ID` - Keycloak client ID (required for HTTP authentication when `STATIC_API_KEY` is not set)
 - `KEYCLOAK_CLIENT_SECRET` - Keycloak client secret (required for HTTP authentication when `STATIC_API_KEY` is not set)
 - `STATIC_API_KEY` - Static API key for HTTP authentication (optional). If set, the API uses API key authentication only (no Keycloak fallback, no anonymous access). If not set, Keycloak authentication is used. The API key can be provided in the `Authorization` header using either `Bearer <key>` or `ApiKey <key>` format.
-- `CURSOR_API_KEY` - Cursor API key for agent communication (required for agent containers)
-- `CURSOR_AGENT_DOCKER_IMAGE` - Docker image (including tag) for cursor-agent containers (optional, defaults to `ghcr.io/forepath/agenstra-manager-worker:latest`)
+- `OPENCODE_AGENT_DOCKER_IMAGE` - Docker image (including tag) for opencode agent containers (optional, defaults to `ghcr.io/forepath/agenstra-manager-worker:latest`)
+- `OPENCODE_AGENT_VIRTUAL_WORKSPACE_DOCKER_IMAGE` - VNC image override (optional)
+- `OPENCODE_AGENT_SSH_CONNECTION_DOCKER_IMAGE` - SSH sidecar image override (optional)
 - `GIT_AUTHOR_NAME` - Git commit author name (optional, defaults to 'Agenstra')
 - `GIT_AUTHOR_EMAIL` - Git commit author email (optional, defaults to 'noreply@agenstra.com')
 

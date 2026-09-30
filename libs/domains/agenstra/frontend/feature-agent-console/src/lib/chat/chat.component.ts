@@ -35,10 +35,12 @@ import {
   TicketAutomationFacade,
   TicketsFacade,
   WorkspaceConfigFacade,
+  AgentsService,
   type AddClientUserDto,
   type AgentModelsMap,
   type AgentResponseDto,
   type AgentResponseObject,
+  type AgentSlashCommand,
   type ChatMessageData,
   type ChatSessionResponseDto,
   type ClientAgentAutonomyResponseDto,
@@ -65,6 +67,7 @@ import {
   type WorkspaceConfigurationSettingKey,
   type WorkspaceConfigurationSettingResponseDto,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
+import { AgentConfigEditorComponent } from '@forepath/agenstra/frontend/feature-agent-config';
 import {
   FpcAlertComponent,
   FpcBadgeComponent,
@@ -103,6 +106,7 @@ import {
   delay,
   distinctUntilChanged,
   filter,
+  finalize,
   map,
   Observable,
   of,
@@ -119,6 +123,7 @@ import { DeploymentManagerComponent } from '../deployment-manager/deployment-man
 import { resolveNamedDisplayLabel } from '../display-name.util';
 import { ContainerStatsStatusBarComponent } from '../file-editor/container-stats-status-bar/container-stats-status-bar.component';
 import { FileEditorComponent } from '../file-editor/file-editor.component';
+import { LayerFileIdeComponent } from '../layer-file-ide/layer-file-ide.component';
 import {
   getGitRepositoryDisplayLabel,
   isLocalGitRepository as isLocalGitRepositoryMode,
@@ -132,11 +137,28 @@ import {
 } from '../tickets/ticket-automation-run-labels';
 import { ticketLaneStatusLabel } from '../tickets/ticket-lane-status-label';
 
-import { hideAgentModal, showAgentModal, watchAgentMutationModalClose } from '../agent-modal';
-import { mapForwardedChatEventsToDisplayRows } from './agent-chat-event-display';
-import { AgentChatEventRowComponent } from './agent-chat-event-row.component';
-import { formatAgentResponseForChatMarkdown, formatUnknownAsMarkdown } from './agent-chat-response-markdown';
+import {
+  hideAgentModal,
+  restoreUnderlyingAgentModal,
+  showAgentModal,
+  swapToOverlayAgentModal,
+  watchAgentMutationModalClose,
+  type AgentModalSwapState,
+} from '../agent-modal';
+import {
+  collectAnsweredQuestionIdsFromChatEvents,
+  collectAnsweredQuestionIdsFromChatMessages,
+  mapForwardedChatEventsToDisplayRows,
+  type AgentChatEventDisplayRow,
+} from './agent-chat-event-display';
+import { AgentChatEventRowComponent, type AgentChatQuestionReplyRequest } from './agent-chat-event-row.component';
+import {
+  formatAgentResponseForChatMarkdown,
+  formatUnknownAsMarkdown,
+  stripHiddenPromptBlocks,
+} from './agent-chat-response-markdown';
 import { accumulateStreamingTurnFromEvents } from './agent-chat-streaming-aggregate';
+import { AgentChatTodosExpandCoordinator } from './agent-chat-todos-expand.coordinator';
 import { mergeTicketAutomationChatCardPayload } from './chat-automation-card-merge';
 import { buildMergedChatDisplayThread, type ChatDisplayThreadItem } from './chat-thread-display';
 
@@ -176,6 +198,8 @@ type ChatMessageWithFilter = {
     RouterModule,
     FormsModule,
     FileEditorComponent,
+    AgentConfigEditorComponent,
+    LayerFileIdeComponent,
     DeploymentManagerComponent,
     ContainerStatsStatusBarComponent,
     AgentChatEventRowComponent,
@@ -208,6 +232,7 @@ type ChatMessageWithFilter = {
   styleUrls: ['./chat.component.scss'],
   templateUrl: './chat.component.html',
   standalone: true,
+  providers: [AgentChatTodosExpandCoordinator],
 })
 export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDestroy {
   /** Board-parity labels for automation snapshot cards (same i18n as tickets board). */
@@ -239,6 +264,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private readonly knowledgeFacade = inject(KnowledgeFacade);
   private readonly autonomyFacade = inject(ClientAgentAutonomyFacade);
   private readonly deploymentsService = inject(DeploymentsService);
+  private readonly agentsService = inject(AgentsService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly router = inject(Router);
@@ -496,25 +522,17 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }),
   );
 
-  // Commands observables (computed based on active client and selected agent)
-  readonly commands$: Observable<string[]> = combineLatest([this.activeClientId$, this.selectedAgent$]).pipe(
+  // Slash commands from OpenCode worker (`GET /command`) with config fallback
+  readonly commands$: Observable<AgentSlashCommand[]> = combineLatest([this.activeClientId$, this.selectedAgent$]).pipe(
     switchMap(([clientId, agent]) => {
       if (!clientId || !agent) {
-        return of([]);
+        return of([] as AgentSlashCommand[]);
       }
 
-      return this.agentsFacade.getClientAgentCommands$(clientId, agent.id, agent.agentType);
+      return this.agentsFacade.getClientAgentCommands$(clientId, agent.id);
     }),
   );
-  readonly commandsLoading$: Observable<boolean> = combineLatest([this.activeClientId$, this.selectedAgent$]).pipe(
-    switchMap(([clientId, agent]) => {
-      if (!clientId || !agent) {
-        return of(false);
-      }
-
-      return this.agentsFacade.getClientAgentLoadingCommands$(clientId, agent.id);
-    }),
-  );
+  readonly commands = toSignal(this.commands$, { initialValue: [] as AgentSlashCommand[] });
 
   /** Model dropdown: API list when loaded, otherwise static env fallback for the agent type. */
   readonly chatModelSelectOptions$: Observable<{ value: string; label: string }[]> = combineLatest([
@@ -578,6 +596,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly recentChatEventRows$ = this.selectedChatEvents$.pipe(
     map((events) => mapForwardedChatEventsToDisplayRows(events.slice(-50))),
   );
+
+  private readonly recentChatEventRowsSnapshot = toSignal(this.recentChatEventRows$, {
+    initialValue: [] as AgentChatEventDisplayRow[],
+  });
 
   // Combine chat messages with filter results for efficient template access
   readonly chatMessagesWithFilters$: Observable<ChatMessageWithFilter[]> = combineLatest([
@@ -671,9 +693,50 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   chatMessage = signal<string>('');
   /** Shown when prompt enhancement fails (success clears it). */
   readonly enhanceErrorMessage = signal<string | null>(null);
-  selectedChatModel = signal<string | null>('auto');
+  /** Question IDs the user has already answered in this session. */
+  readonly answeredQuestionIds = signal<ReadonlySet<string>>(new Set());
+  /** Question ID currently waiting on a reply HTTP call. */
+  readonly questionReplyBusyId = signal<string | null>(null);
+  /** Last reply error keyed by question id. */
+  readonly questionReplyErrors = signal<ReadonlyMap<string, string>>(new Map());
+  selectedChatModel = signal<string | null>(null);
+  /** Marked slash command (OpenCode-style); prepended on send. */
   selectedCommand = signal<string | null>(null);
+  /** Dismiss typeahead without clearing the `/` fragment (Escape). */
+  private readonly slashMenuDismissed = signal(false);
+  slashHighlightIndex = signal(0);
   selectedAgentId = signal<string | null>(null);
+
+  /** Token after leading `/` while composing a slash command (`null` = menu inactive). */
+  readonly slashCommandQuery = computed(() => {
+    if (this.selectedCommand() || this.slashMenuDismissed()) {
+      return null;
+    }
+
+    const match = this.chatMessage().match(/^\/([^\s\n]*)$/);
+
+    return match ? match[1] : null;
+  });
+
+  readonly filteredSlashCommands = computed(() => {
+    const query = this.slashCommandQuery();
+
+    if (query === null) {
+      return [] as AgentSlashCommand[];
+    }
+
+    const needle = query.toLowerCase();
+
+    return this.commands().filter((command) => {
+      const name = command.name.startsWith('/') ? command.name.slice(1) : command.name;
+
+      return name.toLowerCase().startsWith(needle);
+    });
+  });
+
+  readonly slashCommandMenuOpen = computed(
+    () => this.slashCommandQuery() !== null && this.filteredSlashCommands().length > 0,
+  );
   includeWorkspaceContext = signal<boolean>(true);
   autoEnrichmentEnabled = signal<boolean>(true);
   selectedEnvironmentContextIds = signal<string[]>([]);
@@ -685,7 +748,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   ticketContextSuggestionsOpen = signal<boolean>(false);
   knowledgeContextSuggestionsOpen = signal<boolean>(false);
   editorOpen = signal<boolean>(false);
-  /** Active file editor API root from the current route (`/editor` vs `/config`). */
+  /** Workspace file editor root (`/app`). */
   fileManagerContext = signal<FileManagerContext>('app');
   deploymentManagerOpen = signal<boolean>(false);
   chatVisible = signal<boolean>(false);
@@ -955,6 +1018,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }),
   );
 
+  private readonly streamingAssistantStateSnapshot = toSignal(this.streamingAssistantState$, {
+    initialValue: null as ReturnType<typeof accumulateStreamingTurnFromEvents> | null,
+  });
+
   /** Bottom-of-thread: in-flight agent bubble (empty or streamed content) until final `chatMessage`. */
   readonly chatPendingUi$ = combineLatest([this.waitingForResponse$, this.streamingAssistantState$]).pipe(
     map(([waiting, stream]) => ({
@@ -995,6 +1062,18 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly updateClientModalOpen = signal(false);
   readonly updateAgentModalOpen = signal(false);
   readonly workspaceConfigurationModalOpen = signal(false);
+  readonly opencodeConfigModalOpen = signal(false);
+  readonly opencodeConfigScope = signal<'workspace' | 'agent'>('workspace');
+  readonly opencodeConfigClientId = signal<string | null>(null);
+  readonly opencodeConfigAgentId = signal<string | null>(null);
+  readonly layerFileEditorOpen = signal(false);
+  readonly layerFileEditorScope = signal<'workspace' | 'global'>('workspace');
+  readonly layerFileEditorClientId = signal<string | null>(null);
+  readonly layerFileEditorPath = signal<string | null>(null);
+  /** Suspend workspace config modal while the layer file IDE overlay is open. */
+  readonly opencodeConfigLayerEditorSwapState: AgentModalSwapState = { suspended: false };
+  readonly agentConfigWorkspaceTitle = $localize`:@@featureAgentConfig-workspaceTitle:Workspace agent configuration`;
+  readonly agentConfigEnvironmentTitle = $localize`:@@featureAgentConfig-environmentTitle:Environment agent configuration`;
   readonly environmentVariablesModalOpen = signal(false);
   readonly ticketAutonomyModalOpen = signal(false);
   readonly clientUsersModalOpen = signal(false);
@@ -1336,6 +1415,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   constructor() {
     effect(() => {
+      this.filteredSlashCommands();
+      this.slashHighlightIndex.set(0);
+    });
+    effect(() => {
       const agentId = this.managingTicketAutonomyAgentId();
       const clientId = this.activeClientId;
 
@@ -1357,10 +1440,22 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   ngOnInit(): void {
-    this.fileManagerContext.set(this.router.url.includes('/config') ? 'config' : 'app');
-
-    // Default chat model to auto mode on load
+    // Leave chat model unset until agent models load (OpenCode has no "auto" model).
     this.socketsFacade.setChatModel(null);
+
+    // Status frames with questionId mark prompts answered (incl. after reload / restore).
+    combineLatest([this.selectedChatEvents$, this.selectedChatMessages$])
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(([events, messages]) => {
+        const ids = [
+          ...collectAnsweredQuestionIdsFromChatEvents(events),
+          ...collectAnsweredQuestionIdsFromChatMessages(messages),
+        ];
+
+        if (ids.length > 0) {
+          this.markQuestionsAnswered(ids);
+        }
+      });
 
     // Keep status "active chat" in sync so in-view replies auto-clear unread, and mark read on session change.
     combineLatest([this.activeClientId$, this.selectedAgent$, this.selectedChatId$])
@@ -1470,10 +1565,14 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       )
       .subscribe((models) => {
         const current = this.selectedChatModel();
+        const available = Object.keys(models);
 
-        if (current && current !== 'auto' && !(current in models)) {
-          this.onChatModelChange('auto');
+        if (current && current in models) {
+          return;
         }
+
+        // Prefer the first available model; OpenCode does not support a synthetic "auto" id.
+        this.onChatModelChange(available[0] ?? '');
       });
 
     // Load provisioning providers on init (needed for displaying provider names)
@@ -1549,11 +1648,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           }
         }
 
-        // Select editor from route params (workspace editor or provider config editor)
+        // Select editor from route params
         if (
           !this.initialRouting['editor'] &&
           agents.length > 0 &&
-          (this.router.url.includes('/editor') || this.router.url.includes('/config')) &&
+          this.router.url.includes('/editor') &&
           !this.editorOpen()
         ) {
           // Check if file query parameter is set
@@ -1711,7 +1810,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => {
-        this.fileManagerContext.set(this.router.url.includes('/config') ? 'config' : 'app');
+        // Keep workspace file context; legacy /config routes are removed.
+        this.fileManagerContext.set('app');
       });
 
     // Reset editor view when selected agent changes and load commands
@@ -1780,13 +1880,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         }
       }
 
-      // Load commands when agent is selected
+      // Load slash commands from agent OpenCode config when agent is selected
       if (currentAgentId && this.activeClientId) {
-        if (agent?.agentType === 'cursor') {
-          this.filesFacade.listDirectory(this.activeClientId, currentAgentId, { path: '.cursor/commands' });
-        } else if (agent?.agentType === 'opencode') {
-          this.filesFacade.listDirectory(this.activeClientId, currentAgentId, { path: '.opencode/command' });
-        }
+        this.agentsFacade.loadClientAgentCommands(this.activeClientId, currentAgentId);
       }
 
       this.previousAgentId = currentAgentId;
@@ -2173,10 +2269,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
    * Wrapper for fileEditor's onToggleGitManager that syncs visibility after toggle
    */
   onToggleGitManager(): void {
-    if (this.fileManagerContext() === 'config') {
-      return;
-    }
-
     if (this.fileEditor) {
       this.fileEditor.onToggleGitManager();
       this.syncFileEditorVisibility();
@@ -2306,8 +2398,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
       if (clientId) {
         this.agentsFacade.loadClientAgent(clientId, agentId);
-        // Load commands for the selected agent
-        this.filesFacade.listDirectory(clientId, agentId, { path: '.cursor/commands' });
+        // Load slash commands from agent OpenCode config
+        this.agentsFacade.loadClientAgentCommands(clientId, agentId);
         // Reset message count when switching agents
         this.previousMessageCount = 0;
         this.previousDisplayThreadLength = 0;
@@ -2559,6 +2651,144 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
   }
 
+  isQuestionAnswered(row: AgentChatEventDisplayRow): boolean {
+    const id = row.questionInteraction?.questionId;
+
+    return id ? this.answeredQuestionIds().has(id) : false;
+  }
+
+  isQuestionReplyBusy(row: AgentChatEventDisplayRow): boolean {
+    const id = row.questionInteraction?.questionId;
+
+    return id != null && this.questionReplyBusyId() === id;
+  }
+
+  questionReplyError(row: AgentChatEventDisplayRow): string | null {
+    const id = row.questionInteraction?.questionId;
+
+    return id ? (this.questionReplyErrors().get(id) ?? null) : null;
+  }
+
+  private collectVisiblePermissionQuestionIds(): string[] {
+    const ids: string[] = [];
+
+    for (const row of this.recentChatEventRowsSnapshot()) {
+      const q = row.questionInteraction;
+
+      if (q?.replyKind === 'permission') {
+        ids.push(q.questionId);
+      }
+    }
+
+    const stream = this.streamingAssistantStateSnapshot();
+
+    if (stream) {
+      for (const seg of stream.segments) {
+        if (seg.kind === 'row' && seg.row.questionInteraction?.replyKind === 'permission') {
+          ids.push(seg.row.questionInteraction.questionId);
+        }
+      }
+    }
+
+    return [...new Set(ids)];
+  }
+
+  private markQuestionsAnswered(ids: Iterable<string>): void {
+    const answered = new Set(this.answeredQuestionIds());
+    let changed = false;
+
+    for (const id of ids) {
+      if (!answered.has(id)) {
+        answered.add(id);
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      this.answeredQuestionIds.set(answered);
+    }
+  }
+
+  private isPermissionRequestNotFoundMessage(message: string): boolean {
+    return /permission request not found/i.test(message);
+  }
+
+  onQuestionReply(request: AgentChatQuestionReplyRequest): void {
+    const clientId = this.activeClientId;
+    const agentId = this.selectedAgentId();
+
+    if (!clientId || !agentId) {
+      return;
+    }
+
+    this.questionReplyBusyId.set(request.questionId);
+    const nextErrors = new Map(this.questionReplyErrors());
+
+    nextErrors.delete(request.questionId);
+    this.questionReplyErrors.set(nextErrors);
+
+    const sessionId = request.sessionId;
+    const onSuccess = (alsoDismissOtherPermissions: boolean): void => {
+      const ids = [request.questionId];
+
+      if (alsoDismissOtherPermissions) {
+        ids.push(...this.collectVisiblePermissionQuestionIds());
+      }
+
+      this.markQuestionsAnswered(ids);
+    };
+    const onError = (err: unknown): void => {
+      const message =
+        (err as { error?: { message?: string }; message?: string })?.error?.message ||
+        (err as { message?: string })?.message ||
+        'Failed to send answer';
+
+      // OpenCode auto-clears pending requests after "always"; treat not-found as answered.
+      if (request.replyKind === 'permission' && this.isPermissionRequestNotFoundMessage(message)) {
+        onSuccess(true);
+
+        return;
+      }
+
+      const errors = new Map(this.questionReplyErrors());
+
+      errors.set(request.questionId, message);
+      this.questionReplyErrors.set(errors);
+    };
+    const done = (): void => {
+      if (this.questionReplyBusyId() === request.questionId) {
+        this.questionReplyBusyId.set(null);
+      }
+    };
+
+    if (request.replyKind === 'permission') {
+      const reply = request.reject
+        ? 'reject'
+        : ((request.answers?.[0] as 'once' | 'always' | 'reject' | undefined) ?? 'reject');
+
+      this.agentsService
+        .replyClientAgentPermission(clientId, agentId, request.questionId, {
+          reply,
+          ...(sessionId ? { sessionId } : {}),
+        })
+        .pipe(finalize(done), takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => onSuccess(reply === 'always'),
+          error: onError,
+        });
+
+      return;
+    }
+
+    this.agentsService
+      .replyClientAgentQuestion(clientId, agentId, request.questionId, {
+        ...(request.reject ? { reply: 'reject' as const } : { answers: request.answers ?? [] }),
+        ...(sessionId ? { sessionId } : {}),
+      })
+      .pipe(finalize(done), takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: () => onSuccess(false), error: onError });
+  }
+
   onSendMessage(): void {
     let message = this.chatMessage().trim();
     // Append selected command to message if one is selected
@@ -2625,16 +2855,73 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.enhanceErrorMessage.set(null);
     const correlationId = crypto.randomUUID();
     const model = this.selectedChatModel();
-    const normalizedModel = model === 'auto' || model === null || model === '' ? null : model;
+    const normalizedModel = model === null || model === '' ? null : model;
 
     this.socketsFacade.forwardEnhanceChat(message, agentId, correlationId, normalizedModel);
   }
 
   onChatInputKeydown(event: KeyboardEvent): void {
+    if (this.slashCommandMenuOpen()) {
+      const filtered = this.filteredSlashCommands();
+
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        this.slashHighlightIndex.update((index) => Math.min(index + 1, filtered.length - 1));
+
+        return;
+      }
+
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        this.slashHighlightIndex.update((index) => Math.max(index - 1, 0));
+
+        return;
+      }
+
+      if (event.key === 'Enter' || event.key === 'Tab') {
+        event.preventDefault();
+        const command = filtered[this.slashHighlightIndex()] ?? filtered[0];
+
+        if (command) {
+          this.pickSlashCommand(command);
+        }
+
+        return;
+      }
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.slashMenuDismissed.set(true);
+
+        return;
+      }
+    }
+
     if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey) {
       event.preventDefault();
       this.onSendMessage();
     }
+  }
+
+  onChatMessageInput(value: string): void {
+    this.chatMessage.set(value);
+    this.slashMenuDismissed.set(false);
+  }
+
+  pickSlashCommand(command: AgentSlashCommand | string, event?: Event): void {
+    event?.preventDefault();
+    const name = typeof command === 'string' ? command : command.name;
+    this.selectedCommand.set(name);
+    this.chatMessage.set(
+      this.chatMessage()
+        .replace(/^\/[^\s\n]*/, '')
+        .replace(/^\n/, ''),
+    );
+    this.slashMenuDismissed.set(true);
+  }
+
+  clearSelectedCommand(): void {
+    this.selectedCommand.set(null);
   }
 
   onChatModelChange(value: string): void {
@@ -2852,12 +3139,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     return { includeWorkspace, environmentIds, ticketShas, knowledgeShas, autoEnrichmentEnabled };
   }
 
-  onCommandChange(value: string): void {
-    const normalizedValue = value === '' ? null : value;
-
-    this.selectedCommand.set(normalizedValue);
-  }
-
   onConnectSocket(): void {
     this.socketsFacade.connect();
   }
@@ -2922,26 +3203,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     // Sync visibility signals after editor toggles
     setTimeout(() => this.syncFileEditorVisibility(), 0);
-  }
-
-  /**
-   * Navigate to the provider agent config file editor (requires workspace management access).
-   */
-  onOpenAgentConfigFiles(openInNewWindow = false): void {
-    const clientId = this.activeClientId;
-    const agentId = this.selectedAgentId();
-
-    if (!clientId || !agentId) {
-      return;
-    }
-
-    if (openInNewWindow) {
-      this.openAgentConfigInNewWindow();
-
-      return;
-    }
-
-    void this.router.navigate(['/clients', clientId, 'agents', agentId, 'config']);
   }
 
   /**
@@ -3060,12 +3321,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       : $localize`:@@featureChat-openEditor:Open Editor`;
   }
 
-  getOpenAgentConfigFilesTitle(): string {
-    return this.getOpenInNewWindow()
-      ? $localize`:@@featureChat-openAgentConfigFilesNewWindow:Open agent config in New Window`
-      : $localize`:@@featureChat-openAgentConfigFilesTitle:Open provider agent config files (requires workspace management access)`;
-  }
-
   getDeploymentManagerToggleTitle(): string {
     const openInNew = this.getDeploymentOpenInNewWindow();
     const isOpen = this.deploymentManagerOpen();
@@ -3099,8 +3354,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     // Build the URL
     const baseUrl = window.location.origin;
-    const segment = this.fileManagerContext() === 'config' ? 'config' : 'editor';
-    const editorPath = `/clients/${clientId}/agents/${agentId}/${segment}`;
+    const editorPath = `/clients/${clientId}/agents/${agentId}/editor`;
     const queryParams = new URLSearchParams();
 
     queryParams.set('standalone', 'true');
@@ -3148,71 +3402,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           }
         } catch (e) {
           // Browser may block window manipulation for security reasons
-          console.warn('Could not maximize window:', e);
-        }
-      }, 100);
-    }
-  }
-
-  /**
-   * Open the config file editor in a new window with standalone mode (same as {@link openEditorInNewWindow}).
-   */
-  private openAgentConfigInNewWindow(): void {
-    const clientId = this.activeClientId;
-    const agentId = this.selectedAgentId();
-
-    if (!clientId || !agentId) {
-      return;
-    }
-
-    let filePath: string | undefined;
-
-    if (this.fileEditor && this.fileManagerContext() === 'config') {
-      filePath = this.fileEditor.selectedFilePath() || undefined;
-    }
-
-    const baseUrl = window.location.origin;
-    const configPath = `/clients/${clientId}/agents/${agentId}/config`;
-    const queryParams = new URLSearchParams();
-
-    queryParams.set('standalone', 'true');
-
-    if (filePath) {
-      queryParams.set('file', encodeURIComponent(filePath));
-    }
-
-    const url = `${baseUrl}${configPath}?${queryParams.toString()}`;
-    const screenWidth = window.screen.availWidth || window.screen.width;
-    const screenHeight = window.screen.availHeight || window.screen.height;
-    const windowFeatures = [
-      'menubar=no',
-      'toolbar=no',
-      'location=no',
-      'status=no',
-      'resizable=yes',
-      'scrollbars=yes',
-      `width=${screenWidth}`,
-      `height=${screenHeight}`,
-      `left=0`,
-      `top=0`,
-    ].join(',');
-    const newWindow = window.open(url, '_blank', windowFeatures);
-
-    if (newWindow) {
-      setTimeout(() => {
-        try {
-          newWindow.moveTo(0, 0);
-          newWindow.resizeTo(screenWidth, screenHeight);
-
-          if (newWindow.screen && 'availWidth' in newWindow.screen) {
-            const availWidth = (newWindow.screen as Screen & { availWidth?: number }).availWidth;
-            const availHeight = (newWindow.screen as Screen & { availHeight?: number }).availHeight;
-
-            if (availWidth && availHeight) {
-              newWindow.resizeTo(availWidth, availHeight);
-            }
-          }
-        } catch (e) {
           console.warn('Could not maximize window:', e);
         }
       }, 100);
@@ -3432,8 +3621,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     // Build the URL
     const baseUrl = window.location.origin;
-    const segment = this.fileManagerContext() === 'config' ? 'config' : 'editor';
-    const editorPath = `/clients/${clientId}/agents/${agentId}/${segment}`;
+    const editorPath = `/clients/${clientId}/agents/${agentId}/editor`;
     const queryParams = new URLSearchParams();
 
     queryParams.set('standalone', 'true');
@@ -3757,7 +3945,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       gitToken: undefined,
       gitPassword: undefined,
       gitPrivateKey: undefined,
-      cursorApiKey: undefined,
       agentDefaultImage: undefined,
       autoEnrichEnabledGlobal: 'true',
       autoEnrichVectorMaxCosineDistance: 1,
@@ -3941,11 +4128,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         if (clientData.gitPrivateKey) {
           provisionDto.gitPrivateKey = clientData.gitPrivateKey;
         }
-      }
-
-      // Cursor agent configuration
-      if (clientData.cursorApiKey) {
-        provisionDto.cursorApiKey = clientData.cursorApiKey;
       }
 
       if (clientData.agentDefaultImage) {
@@ -4444,6 +4626,82 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     showAgentModal(this.workspaceConfigurationModalOpen);
   }
 
+  onManageOpencodeConfigClick(client: ClientResponseDto, agentId?: string): void {
+    this.opencodeConfigClientId.set(client.id);
+    this.opencodeConfigAgentId.set(agentId ?? null);
+    this.opencodeConfigScope.set(agentId ? 'agent' : 'workspace');
+    showAgentModal(this.opencodeConfigModalOpen);
+  }
+
+  onCloseOpencodeConfigModal(): void {
+    // Overlay swap closes this modal without emitting `(closed)`; only clear when truly dismissed.
+    if (this.opencodeConfigLayerEditorSwapState.suspended) {
+      return;
+    }
+
+    const clientId = this.opencodeConfigClientId() ?? this.activeClientId;
+    const agentId = this.opencodeConfigAgentId() ?? this.selectedAgentId();
+
+    this.opencodeConfigModalOpen.set(false);
+    this.opencodeConfigClientId.set(null);
+    this.opencodeConfigAgentId.set(null);
+
+    if (clientId && agentId) {
+      this.agentsFacade.loadClientAgentCommands(clientId, agentId);
+    }
+  }
+
+  /**
+   * Open a config-referenced local path in the studio editor (environment layer)
+   * or the layer virtual file editor (workspace layer).
+   */
+  onEditOpencodeConfigPathFile(path: string): void {
+    const trimmed = path.trim();
+
+    if (!trimmed) {
+      return;
+    }
+
+    const layer = this.opencodeConfigScope();
+    const clientId = this.opencodeConfigClientId() ?? this.activeClientId;
+    const agentId = this.opencodeConfigAgentId() ?? this.selectedAgentId();
+
+    if (layer === 'agent') {
+      if (!clientId || !agentId) {
+        return;
+      }
+
+      this.opencodeConfigLayerEditorSwapState.suspended = false;
+      this.opencodeConfigModalOpen.set(false);
+      void this.router.navigate(['/clients', clientId, 'agents', agentId, 'editor'], {
+        queryParams: { file: encodeURIComponent(trimmed) },
+      });
+
+      return;
+    }
+
+    if (layer === 'workspace' && clientId) {
+      this.layerFileEditorScope.set('workspace');
+      this.layerFileEditorClientId.set(clientId);
+      this.layerFileEditorPath.set(trimmed);
+      swapToOverlayAgentModal({
+        underlyingOpen: this.opencodeConfigModalOpen,
+        overlayOpen: this.layerFileEditorOpen,
+        swapState: this.opencodeConfigLayerEditorSwapState,
+      });
+    }
+  }
+
+  onCloseLayerFileEditor(): void {
+    hideAgentModal(this.layerFileEditorOpen);
+    this.layerFileEditorPath.set(null);
+    this.layerFileEditorClientId.set(null);
+    restoreUnderlyingAgentModal({
+      underlyingOpen: this.opencodeConfigModalOpen,
+      swapState: this.opencodeConfigLayerEditorSwapState,
+    });
+  }
+
   getEditingWorkspaceConfigurationValue(setting: WorkspaceConfigurationSettingResponseDto): string {
     const overrides = this.editingWorkspaceConfigurationValues();
     const fromOverride = overrides[setting.settingKey];
@@ -4499,8 +4757,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         return $localize`:@@featureChat-workspaceSettingTitleGitPassword:Git password`;
       case 'gitPrivateKey':
         return $localize`:@@featureChat-workspaceSettingTitleGitPrivateKey:Git private key (SSH)`;
-      case 'cursorApiKey':
-        return $localize`:@@featureChat-workspaceSettingTitleCursorApiKey:Cursor API key`;
       case 'agentDefaultImage':
         return $localize`:@@featureChat-workspaceSettingTitleAgentImage:Agent default image`;
       case 'autoEnrichEnabledGlobal':
@@ -4720,23 +4976,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       // If URL parsing fails, return the original string
       return url;
     }
-  }
-
-  /**
-   * Get the display name for an agent type from a client's config.
-   * @param agentType - The agent type identifier (e.g., 'cursor')
-   * @param client - The client response DTO (optional, will use active client if not provided)
-   * @returns The display name (e.g., 'Cursor') or the type itself if not found
-   */
-  getAgentTypeDisplayName(agentType: string | undefined, client?: ClientResponseDto | null): string {
-    if (!agentType) {
-      return '';
-    }
-
-    const clientToUse = client;
-    const agentTypeInfo = clientToUse?.config?.agentTypes?.find((at) => at.type === agentType);
-
-    return agentTypeInfo?.displayName || agentType;
   }
 
   /**
@@ -5395,7 +5634,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   getText(messageData: ChatMessageData): string | null {
     if ('text' in messageData) {
-      return messageData.text;
+      const stripped = stripHiddenPromptBlocks(messageData.text).trim();
+
+      return stripped.length > 0 ? stripped : null;
     }
 
     return null;

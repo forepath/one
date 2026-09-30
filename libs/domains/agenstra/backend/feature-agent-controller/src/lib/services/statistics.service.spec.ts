@@ -222,7 +222,7 @@ describe('StatisticsService', () => {
         'agent-uuid',
         {
           clientId: 'client-uuid',
-          agentType: 'cursor',
+          agentType: 'opencode',
           containerType: 'generic',
           name: 'Test Agent',
           description: 'Test',
@@ -234,7 +234,7 @@ describe('StatisticsService', () => {
         'agent-uuid',
         'stats-client-uuid',
         expect.objectContaining({
-          agentType: 'cursor',
+          agentType: 'opencode',
           containerType: 'generic',
           name: 'Test Agent',
           description: 'Test',
@@ -349,7 +349,7 @@ describe('StatisticsService', () => {
       await service.recordEntityUpdated(
         StatisticsEntityType.AGENT,
         'agent-uuid',
-        { clientId: 'client-uuid', agentType: 'cursor', name: 'My Agent' },
+        { clientId: 'client-uuid', agentType: 'opencode', name: 'My Agent' },
         'user-uuid',
       );
 
@@ -357,7 +357,7 @@ describe('StatisticsService', () => {
       expect(statisticsRepository.upsertStatisticsAgent).toHaveBeenCalledWith(
         'agent-uuid',
         'stats-client-uuid',
-        expect.objectContaining({ agentType: 'cursor', name: 'My Agent' }),
+        expect.objectContaining({ agentType: 'opencode', name: 'My Agent' }),
       );
       expect(statisticsRepository.createStatisticsEntityEvent).toHaveBeenCalledWith(
         expect.objectContaining({

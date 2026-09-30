@@ -14,6 +14,12 @@ export class StatisticsChatIoDto {
   interactionKind!: StatisticsInteractionKind;
   wordCount!: number;
   charCount!: number;
+  inputTokens?: number | null;
+  outputTokens?: number | null;
+  reasoningTokens?: number | null;
+  cacheReadTokens?: number | null;
+  cacheWriteTokens?: number | null;
+  costUsd?: number | null;
   occurredAt!: Date;
 }
 

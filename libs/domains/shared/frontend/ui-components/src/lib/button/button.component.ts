@@ -78,7 +78,13 @@ export type FpcButtonType = 'button' | 'submit' | 'reset';
       @if (loading()) {
         <fpc-spinner size="sm" class="fpc-button__spinner" label="Loading" />
       }
-      <ng-content />
+      <span
+        class="fpc-button__content"
+        [class.fpc-button__content--hidden]="loading() && iconOnly()"
+        [attr.aria-hidden]="loading() && iconOnly() ? 'true' : null"
+      >
+        <ng-content />
+      </span>
     </button>
   `,
   styleUrl: './button.component.scss',

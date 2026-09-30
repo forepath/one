@@ -143,34 +143,34 @@
   position: relative;
 }
 
-// Input group with commands select overlay
+// Input group with slash-command typeahead
 .chat-input-group {
   position: relative;
 }
 
-// Commands select - positioned absolutely over the textarea
-.chat-commands-select {
-  position: absolute;
-  // Position to align with textarea inside input-group
-  // The input-group is positioned after the select in DOM flow
-  // We need to align with where the textarea actually renders
-  // Account for: container padding + input-group positioning + textarea border
-  top: calc(0.75rem + 1px + 0.375rem); // Container padding + border + textarea border-radius offset
-  left: calc(0.75rem + 1px + 0.375rem); // Container padding + border + textarea border-radius offset
-  z-index: 10;
-  pointer-events: auto; // Allow interaction with select
-  width: calc(100% - 2.25rem - 2px);
+.chat-command-mark {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem 0;
+}
 
-  select {
-    width: 100%;
-    // Match model select styling
-    font-size: 0.875rem; // small
-    padding: 0.25rem 0.5rem; // form-select-sm
-    line-height: 1.5;
-    border-radius: 0.25rem;
-    background-color: var(--bs-body-bg, #fff); // Ensure select is visible over textarea
-    border: 1px solid var(--bs-border-color, #dee2e6);
-  }
+.chat-command-mark__badge {
+  max-width: 100%;
+}
+
+.chat-command-mark__clear {
+  font-size: 0.65rem;
+}
+
+.chat-command-typeahead {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 0.25rem);
+  z-index: 20;
+  max-height: 12rem;
+  overflow-y: auto;
+  width: 100%;
 }
 
 .chat-send-button-container {
@@ -179,7 +179,7 @@
   // The input-group is positioned after the select in DOM flow
   // We need to align with where the textarea actually renders
   // Account for: container padding + input-group positioning + textarea border
-  bottom: calc(1rem + 0.75rem + 0.5rem + 0.75rem + 1px + 0.375rem + 0.25rem);
+  bottom: calc(1rem + 0.75rem + 0.5rem + 0.75rem + 2px + 0.375rem + 0.25rem);
   display: flex;
   justify-content: flex-end;
   left: calc(0.75rem + 1px + 0.375rem); // Container padding + border + textarea border-radius offset
@@ -190,13 +190,18 @@
 }
 
 .chat-textarea-container {
+  position: relative;
   padding-bottom: 2rem;
-  padding-top: 2.5rem;
+  padding-top: 0.75rem;
   padding-right: 0;
   padding-left: 0;
 }
 
-// Textarea with padding to prevent typing in the rows where select is
+.chat-textarea-container--command-marked {
+  padding-top: 0;
+}
+
+// Textarea body
 .chat-textarea {
   min-width: 0; // Allow input to shrink
   overflow-wrap: break-word;
@@ -212,6 +217,7 @@
   max-width: 100%;
   padding-right: 0.75rem;
   padding-left: 0.75rem;
+  padding-top: 0.25rem;
 }
 
 // Input area - prevent horizontal overflow

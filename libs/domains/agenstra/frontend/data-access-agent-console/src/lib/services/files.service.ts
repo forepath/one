@@ -60,12 +60,8 @@ export class FilesService {
     return `${this.apiUrl}/clients/${clientId}/agents/${agentId}/files/${this.encodePath(filePath)}`;
   }
 
-  private contextParams(context: FileManagerContext, extra?: Record<string, string>): HttpParams {
+  private contextParams(_context: FileManagerContext, extra?: Record<string, string>): HttpParams {
     let params = new HttpParams();
-
-    if (context === 'config') {
-      params = params.set('context', 'config');
-    }
 
     if (extra) {
       for (const [key, value] of Object.entries(extra)) {
@@ -454,10 +450,6 @@ export class FilesService {
 
     if (params?.path !== undefined) {
       httpParams = httpParams.set('path', params.path);
-    }
-
-    if (params?.context === 'config') {
-      httpParams = httpParams.set('context', 'config');
     }
 
     return this.http.get<FileNodeDto[]>(`${this.apiUrl}/clients/${clientId}/agents/${agentId}/files`, {

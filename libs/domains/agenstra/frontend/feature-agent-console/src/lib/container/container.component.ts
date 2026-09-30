@@ -91,41 +91,9 @@ export class AgentConsoleContainerComponent implements OnInit {
         map(() => this.router.url),
         startWith(this.router.url),
       )
-      .pipe(
-        map(
-          (url) =>
-            (url.includes('/clients') ||
-              url.includes('/users') ||
-              url.includes('/filters') ||
-              url.includes('/webhooks') ||
-              url.includes('/updates') ||
-              url.includes('/audit') ||
-              url.includes('/tickets') ||
-              url.includes('/imports') ||
-              url.includes('/knowledge') ||
-              url.includes('/settings/tokens') ||
-              url.includes('/settings/security')) &&
-            !url.includes('/editor') &&
-            !url.includes('/config') &&
-            !url.includes('/deployments'),
-        ),
-      ),
+      .pipe(map((url) => this.shouldShowMainSidebar(url))),
     {
-      initialValue:
-        (this.router.url.includes('/clients') ||
-          this.router.url.includes('/users') ||
-          this.router.url.includes('/filters') ||
-          this.router.url.includes('/webhooks') ||
-          this.router.url.includes('/updates') ||
-          this.router.url.includes('/audit') ||
-          this.router.url.includes('/tickets') ||
-          this.router.url.includes('/imports') ||
-          this.router.url.includes('/knowledge') ||
-          this.router.url.includes('/settings/tokens') ||
-          this.router.url.includes('/settings/security')) &&
-        !this.router.url.includes('/editor') &&
-        !this.router.url.includes('/config') &&
-        !this.router.url.includes('/deployments'),
+      initialValue: this.shouldShowMainSidebar(this.router.url),
     },
   );
 
@@ -167,22 +135,10 @@ export class AgentConsoleContainerComponent implements OnInit {
       filter((e): e is NavigationEnd => e instanceof NavigationEnd),
       map(() => this.router.url),
       startWith(this.router.url),
-      map(
-        (url) =>
-          url.includes('/users') ||
-          url.includes('/filters') ||
-          url.includes('/imports') ||
-          url.includes('/webhooks') ||
-          url.includes('/updates'),
-      ),
+      map((url) => this.isAdminNavUrl(url)),
     ),
     {
-      initialValue:
-        this.router.url.includes('/users') ||
-        this.router.url.includes('/filters') ||
-        this.router.url.includes('/imports') ||
-        this.router.url.includes('/webhooks') ||
-        this.router.url.includes('/updates'),
+      initialValue: this.isAdminNavUrl(this.router.url),
     },
   );
 
@@ -217,6 +173,13 @@ export class AgentConsoleContainerComponent implements OnInit {
       icon: 'bi-funnel',
       title: $localize`:@@featureContainer-filtersTitle:Filters`,
       label: $localize`:@@featureContainer-filters:Filters`,
+    },
+    {
+      routerLink: ['/agent-config'],
+      activePaths: ['/agent-config', '/opencode-config'],
+      icon: 'bi-sliders',
+      title: $localize`:@@featureContainer-agentConfigTitle:Agent configuration`,
+      label: $localize`:@@featureContainer-agentConfig:Agent config`,
     },
     {
       routerLink: ['/imports/atlassian'],
@@ -263,6 +226,43 @@ export class AgentConsoleContainerComponent implements OnInit {
 
   getRoleAriaLabel(role: string): string {
     return $localize`:@@featureContainer-ariaLabelRole:Role ${role}:role:`;
+  }
+
+  /** Main nav routes that keep the app sidebar (excludes agent editor/config/deployments). */
+  private shouldShowMainSidebar(url: string): boolean {
+    const path = url.split(/[?#]/)[0] ?? url;
+    const onMainRoute =
+      path.includes('/clients') ||
+      path.includes('/users') ||
+      path.includes('/filters') ||
+      path.includes('/webhooks') ||
+      path.includes('/updates') ||
+      path.includes('/audit') ||
+      path.includes('/tickets') ||
+      path.includes('/imports') ||
+      path.includes('/knowledge') ||
+      path.includes('/agent-config') ||
+      path.includes('/settings/tokens') ||
+      path.includes('/settings/security');
+
+    if (!onMainRoute) {
+      return false;
+    }
+
+    return !path.includes('/editor') && !path.includes('/deployments');
+  }
+
+  private isAdminNavUrl(url: string): boolean {
+    const path = url.split(/[?#]/)[0] ?? url;
+
+    return (
+      path.includes('/users') ||
+      path.includes('/filters') ||
+      path.includes('/agent-config') ||
+      path.includes('/imports') ||
+      path.includes('/webhooks') ||
+      path.includes('/updates')
+    );
   }
 
   /**

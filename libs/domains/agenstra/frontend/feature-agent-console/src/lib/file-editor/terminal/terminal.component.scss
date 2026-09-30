@@ -7,8 +7,8 @@
 }
 
 .terminal-container {
-  background-color: #1e1e1e;
-  color: #d4d4d4;
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -49,26 +49,45 @@
   position: absolute;
 }
 
-// Terminal close button styling
-.terminal-close-btn {
-  width: 0.75rem;
-  height: 0.75rem;
+// Terminal close / refresh action affordances in the session dropdown
+.terminal-close-btn,
+.terminal-action-btn {
+  box-sizing: content-box;
+  width: 0.625rem;
+  height: 0.625rem;
+  padding: 0;
   font-size: 0.625rem;
+  line-height: 1;
   opacity: 0.6;
   transition: opacity 0.2s;
+  color: inherit;
+  text-decoration: none;
 
   &:hover {
     opacity: 1;
   }
 
   &.active {
-    // Make the X white for active terminal session
-    // Bootstrap's btn-close uses a background-image, so we use filter to invert it
-    filter: brightness(0) invert(1);
     opacity: 0.8;
 
     &:hover {
       opacity: 1;
     }
   }
+}
+
+.terminal-close-btn {
+  // btn-close uses a background SVG; size via Bootstrap vars + background-size.
+  --bs-btn-close-width: 0.625rem;
+  --bs-btn-close-height: 0.625rem;
+  background-size: 0.625rem;
+}
+
+.terminal-close-btn.active {
+  // Bootstrap's btn-close uses a background-image; invert so it stays visible on active items.
+  filter: brightness(0) invert(1);
+}
+
+.terminal-action-btn.active {
+  color: #fff;
 }

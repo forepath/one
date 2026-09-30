@@ -7,6 +7,18 @@ import type {
 import type { FpcBadgeColor } from '@forepath/shared/frontend/ui-components';
 
 import { extractInteractionQueryPreviewText, extractThinkingPreviewText } from './agent-chat-response-markdown';
+import { resolveAgentChatToolDisplay } from './agent-chat-tool-display';
+
+/** Interactive OpenCode question / permission request embedded in a chat event row. */
+export interface AgentChatQuestionInteraction {
+  questionId: string;
+  prompt: string;
+  options: Array<{ id: string; label: string }>;
+  allowMultiple: boolean;
+  sessionId?: string;
+  /** Permissions use once/always/reject; questions use selected option labels. */
+  replyKind: 'permission' | 'question';
+}
 
 /** One row in the structured agent-event list (decoded from websocket `chatEvent`). */
 export interface AgentChatEventDisplayRow {
@@ -32,10 +44,14 @@ export interface AgentChatEventDisplayRow {
   displayTimestampMs: number;
   /** Correlates `toolCall` / `toolResult` envelopes for pairing. */
   toolCallId?: string;
+  /** OpenCode tool id (e.g. `read`, `bash`) when this row is a tool call/result. */
+  toolName?: string;
   /**
    * When set, the row shows paired tool call/result popovers (instead of a single details icon).
    */
   toolPair?: AgentChatToolPairView;
+  /** When set, the row renders the question prompt and answer controls. */
+  questionInteraction?: AgentChatQuestionInteraction;
 }
 
 /** Outcome for a tool invocation/result pair (drives badge + secondary affordances). */
@@ -63,8 +79,67 @@ export const AGENT_CHAT_EVENT_KIND_LABELS: Record<AgentEventKind, string> = {
   error: $localize`:@@featureChat-agentEventKindError:Error`,
 };
 
+/** Badge label when a `question` row is actually an OpenCode permission prompt. */
+export const AGENT_CHAT_PERMISSION_KIND_LABEL = $localize`:@@featureChat-agentEventKindPermission:Permission`;
+
 export function agentChatEventKindLabel(kind: AgentEventKind): string {
   return AGENT_CHAT_EVENT_KIND_LABELS[kind] ?? kind;
+}
+
+/** Builds interactive question UI data from a mapped agent `question` payload. */
+export function buildQuestionInteractionFromPayload(
+  payload: Record<string, unknown>,
+): AgentChatQuestionInteraction | undefined {
+  const questionId =
+    (typeof payload['questionId'] === 'string' && payload['questionId']) ||
+    (typeof payload['request_id'] === 'string' && payload['request_id']) ||
+    '';
+
+  if (!questionId) {
+    return undefined;
+  }
+
+  const prompt = typeof payload['prompt'] === 'string' ? payload['prompt'] : '';
+  const sessionId =
+    (typeof payload['sessionId'] === 'string' && payload['sessionId']) ||
+    (typeof payload['session_id'] === 'string' && payload['session_id']) ||
+    undefined;
+  const subtype = typeof payload['subtype'] === 'string' ? payload['subtype'] : '';
+  const replyKind: AgentChatQuestionInteraction['replyKind'] =
+    subtype === 'permission' ||
+    subtype === 'permission.v2' ||
+    questionId.startsWith('per_') ||
+    questionId.startsWith('perm_')
+      ? 'permission'
+      : 'question';
+  const allowMultiple = payload['allowMultiple'] === true;
+  const options: Array<{ id: string; label: string }> = [];
+  const rawOptions = payload['options'];
+
+  if (Array.isArray(rawOptions)) {
+    for (const opt of rawOptions) {
+      if (!opt || typeof opt !== 'object') {
+        continue;
+      }
+
+      const o = opt as Record<string, unknown>;
+      const id = typeof o['id'] === 'string' ? o['id'] : '';
+      const label = typeof o['label'] === 'string' ? o['label'] : id;
+
+      if (id && label) {
+        options.push({ id, label });
+      }
+    }
+  }
+
+  return {
+    questionId,
+    prompt,
+    options,
+    allowMultiple,
+    ...(sessionId ? { sessionId } : {}),
+    replyKind,
+  };
 }
 
 function previewString(value: string, maxChars: number): string {
@@ -75,6 +150,11 @@ function previewString(value: string, maxChars: number): string {
   }
 
   return `${t.slice(0, maxChars - 1)}…`;
+}
+
+/** OpenCode `question` tool parts duplicate the dedicated interactive `question` event — omit from tool rows. */
+export function isInteractiveQuestionToolName(name: string | undefined): boolean {
+  return (name ?? '').trim().toLowerCase() === 'question';
 }
 
 /** `toolCallId` placeholders must not pair-merge (would collapse unrelated rows). */
@@ -152,6 +232,7 @@ export function mergeToolPairDisplayRows(
     badgeColor: toolPairOutcomeToBadgeColor(outcome),
     detailJson: `${callDetail}\n\n---\n\n${resultDetail}`,
     toolCallId: callRow.toolCallId,
+    toolName: callRow.toolName ?? resultRow.toolName,
     toolPair: {
       outcome,
       callDetailJson: callDetail.length > 0 ? callDetail : undefined,
@@ -276,6 +357,91 @@ export function tryParseChatEventEnvelope(payload: unknown): AgentEventEnvelope 
   return payload.data;
 }
 
+/**
+ * Collect question/permission ids marked answered via status frames (`questionId` on payload).
+ * Used after reload so restored prompts stay dismissed when a reply was persisted.
+ */
+export function collectAnsweredQuestionIdsFromChatEvents(events: Array<{ payload: unknown }>): string[] {
+  const ids: string[] = [];
+
+  for (const ev of events) {
+    const envelope = tryParseChatEventEnvelope(ev.payload);
+
+    if (envelope?.kind !== 'status') {
+      continue;
+    }
+
+    const questionId = (envelope.payload as { questionId?: unknown }).questionId;
+
+    if (typeof questionId === 'string' && questionId.trim()) {
+      ids.push(questionId.trim());
+    }
+  }
+
+  return ids;
+}
+
+/**
+ * Collect answered question ids embedded in persisted `agenstra_turn` parts
+ * (covers older transcripts where a reply status was only stored inside the turn,
+ * and turns where the agent continued after the prompt without a separate status frame).
+ */
+export function collectAnsweredQuestionIdsFromChatMessages(messages: Array<{ payload: unknown }>): string[] {
+  const ids: string[] = [];
+
+  for (const msg of messages) {
+    const payload = msg.payload;
+
+    if (!payload || typeof payload !== 'object') {
+      continue;
+    }
+
+    const success = payload as { success?: unknown; data?: unknown };
+
+    if (success.success !== true || !success.data || typeof success.data !== 'object') {
+      continue;
+    }
+
+    const data = success.data as { response?: unknown; from?: unknown };
+    const response = data.response;
+
+    if (!response || typeof response !== 'object') {
+      continue;
+    }
+
+    const r = response as { type?: unknown; parts?: unknown };
+
+    if (r.type !== 'agenstra_turn' || !Array.isArray(r.parts)) {
+      continue;
+    }
+
+    const parts = r.parts;
+
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+
+      if (!part || typeof part !== 'object') {
+        continue;
+      }
+
+      const p = part as { type?: unknown; questionId?: unknown };
+
+      if (p.type === 'status' && typeof p.questionId === 'string' && p.questionId.trim()) {
+        ids.push(p.questionId.trim());
+        continue;
+      }
+
+      // Question/permission prompts that are not the last part of the turn were already handled
+      // (agent continued after the reply). Keep last-part prompts interactive when restoring.
+      if (p.type === 'question' && typeof p.questionId === 'string' && p.questionId.trim() && i < parts.length - 1) {
+        ids.push(p.questionId.trim());
+      }
+    }
+  }
+
+  return ids;
+}
+
 function formatDetail(envelope: AgentEventEnvelope): string {
   try {
     return JSON.stringify(envelope, null, 2);
@@ -289,7 +455,7 @@ function summarizeEnvelope(
 ): Omit<AgentChatEventDisplayRow, 'detailJson' | 'trackId' | 'displayTimestampMs'> {
   const kind = envelope.kind;
   const payload = envelope.payload;
-  const kindLabel = agentChatEventKindLabel(kind);
+  let kindLabel = agentChatEventKindLabel(kind);
   let summaryTitle = kindLabel;
   let summaryBody = '';
   let badgeColor: FpcBadgeColor = 'secondary';
@@ -356,14 +522,26 @@ function summarizeEnvelope(
       const toolCallId = typeof p.toolCallId === 'string' ? p.toolCallId : '—';
       const status = typeof p.status === 'string' ? p.status : 'unknown';
 
-      summaryTitle =
-        name === 'enrichment'
-          ? $localize`:@@featureChat-agentEventSummaryEnrichment:Enrichment`
-          : $localize`:@@featureChat-agentEventSummaryToolCall:Tool call · ${name}:toolName:`;
+      summaryTitle = resolveAgentChatToolDisplay(name).label;
       summaryBody = `${status} · ${toolCallId}`;
 
       if (p.args !== undefined) {
-        summaryBody += ` · ${previewUnknown(p.args, 160)}`;
+        const args = p.args as Record<string, unknown>;
+        const agentName =
+          typeof args['agent'] === 'string'
+            ? args['agent']
+            : typeof args['subagent_type'] === 'string'
+              ? args['subagent_type']
+              : undefined;
+        const description = typeof args['description'] === 'string' ? args['description'] : undefined;
+
+        if (agentName || description) {
+          summaryBody = [agentName ? `@${agentName}` : null, description, `${status} · ${toolCallId}`]
+            .filter((part): part is string => Boolean(part))
+            .join(' · ');
+        } else {
+          summaryBody += ` · ${previewUnknown(p.args, 160)}`;
+        }
       }
 
       badgeColor = toolPairOutcomeToBadgeColor(toolPairOutcomeFromCallStatus(status));
@@ -381,33 +559,49 @@ function summarizeEnvelope(
       const toolCallId = typeof p.toolCallId === 'string' ? p.toolCallId : '—';
       const isError = Boolean(p.isError);
 
-      summaryTitle =
-        name === 'enrichment'
-          ? $localize`:@@featureChat-agentEventSummaryEnrichmentResult:Enrichment result`
-          : $localize`:@@featureChat-agentEventSummaryToolResult:Tool result · ${name}:toolName:`;
+      summaryTitle = resolveAgentChatToolDisplay(name).label;
       summaryBody = `${isError ? 'Failed' : 'Success'} · ${toolCallId} · ${previewUnknown(p.result, 200)}`;
       badgeColor = toolPairOutcomeToBadgeColor(isError ? 'error' : 'success');
       break;
     }
 
     case 'question': {
-      const p = payload as { prompt?: unknown; questionId?: unknown; options?: unknown };
+      const p = payload as {
+        prompt?: unknown;
+        questionId?: unknown;
+        options?: unknown;
+        subtype?: unknown;
+      };
+      const interaction = buildQuestionInteractionFromPayload(p as Record<string, unknown>);
       const prompt = typeof p.prompt === 'string' ? p.prompt : '';
       const qid = typeof p.questionId === 'string' ? p.questionId : '';
+      const isPermission = interaction?.replyKind === 'permission';
 
-      summaryTitle = $localize`:@@featureChat-agentEventKindQuestion:Question`;
-      summaryBody = [qid ? `#${qid}` : '', previewString(prompt, 200)].filter(Boolean).join(' · ');
-      badgeColor = 'primary';
+      if (isPermission) {
+        kindLabel = AGENT_CHAT_PERMISSION_KIND_LABEL;
+      }
+
+      summaryTitle = isPermission
+        ? AGENT_CHAT_PERMISSION_KIND_LABEL
+        : $localize`:@@featureChat-agentEventKindQuestion:Question`;
+      summaryBody = previewString(prompt, 240) || (qid ? `#${qid}` : '');
+      badgeColor = isPermission ? 'warning' : 'primary';
       break;
     }
 
     case 'status': {
-      const msg =
-        typeof (payload as { message?: unknown }).message === 'string' ? (payload as { message: string }).message : '';
+      const payloadObj = payload as { message?: unknown; title?: unknown };
+      const msg = typeof payloadObj.message === 'string' ? payloadObj.message : '';
+      const title = typeof payloadObj.title === 'string' ? payloadObj.title.trim() : '';
 
-      summaryTitle = $localize`:@@featureChat-agentEventKindStatus:Status`;
+      summaryTitle = title || $localize`:@@featureChat-agentEventKindStatus:Status`;
       summaryBody = previewString(msg, 220);
-      badgeColor = 'secondary';
+      badgeColor =
+        title === 'Retry' || title === 'Permission'
+          ? 'warning'
+          : title === 'Todos' || title === 'Diff' || title === 'File' || title === 'Patch'
+            ? 'info'
+            : 'secondary';
       break;
     }
 
@@ -600,6 +794,7 @@ export function coalesceDuplicateToolCallDisplayRows(rows: AgentChatEventDisplay
       summaryBody: row.summaryBody || base.summaryBody,
       badgeColor: row.badgeColor || base.badgeColor,
       detailJson: row.detailJson || base.detailJson,
+      toolName: row.toolName ?? base.toolName,
       toolPair: {
         outcome: row.toolPair?.outcome ?? base.toolPair?.outcome ?? 'pending',
         callDetailJson: row.toolPair?.callDetailJson ?? base.toolPair?.callDetailJson ?? row.detailJson,
@@ -707,6 +902,37 @@ export function mapForwardedChatEventToDisplayRow(forwarded: {
     return null;
   }
 
+  // Suppress OpenCode step markers (legacy envelopes still in flight / history).
+  if (envelope.kind === 'status') {
+    const p = envelope.payload as { title?: unknown; message?: unknown };
+    const title = typeof p.title === 'string' ? p.title.trim() : '';
+    const message = typeof p.message === 'string' ? p.message : '';
+
+    if (title === 'Step' || /^step\b/i.test(message.trim())) {
+      return null;
+    }
+  }
+
+  if (envelope.kind === 'thinking') {
+    const phase =
+      typeof (envelope.payload as { phase?: unknown }).phase === 'string'
+        ? (envelope.payload as { phase: string }).phase.trim().toLowerCase()
+        : '';
+
+    if (phase === 'step') {
+      return null;
+    }
+  }
+
+  // Interactive Question UI comes from `kind: 'question'`; drop duplicate tool frames.
+  if (envelope.kind === 'toolCall' || envelope.kind === 'toolResult') {
+    const name = (envelope.payload as { name?: unknown }).name;
+
+    if (typeof name === 'string' && isInteractiveQuestionToolName(name)) {
+      return null;
+    }
+  }
+
   const displayTimestampMs = parseEnvelopeTimestamp(envelope.timestamp, forwarded.timestamp);
   const row: AgentChatEventDisplayRow = {
     trackId: `${envelope.eventId}-${forwarded.timestamp}`,
@@ -737,11 +963,15 @@ export function mapForwardedChatEventToDisplayRow(forwarded: {
   }
 
   if (envelope.kind === 'toolCall') {
-    const p = envelope.payload as { toolCallId?: unknown; status?: unknown };
+    const p = envelope.payload as { toolCallId?: unknown; status?: unknown; name?: unknown };
     const rawId = typeof p.toolCallId === 'string' ? p.toolCallId : undefined;
 
     if (isConcreteToolCallId(rawId)) {
       row.toolCallId = rawId;
+    }
+
+    if (typeof p.name === 'string' && p.name.trim().length > 0) {
+      row.toolName = p.name;
     }
 
     const status = typeof p.status === 'string' ? p.status : 'unknown';
@@ -755,11 +985,15 @@ export function mapForwardedChatEventToDisplayRow(forwarded: {
   }
 
   if (envelope.kind === 'toolResult') {
-    const p = envelope.payload as { toolCallId?: unknown; isError?: unknown };
+    const p = envelope.payload as { toolCallId?: unknown; isError?: unknown; name?: unknown };
     const rawId = typeof p.toolCallId === 'string' ? p.toolCallId : undefined;
 
     if (isConcreteToolCallId(rawId)) {
       row.toolCallId = rawId;
+    }
+
+    if (typeof p.name === 'string' && p.name.trim().length > 0) {
+      row.toolName = p.name;
     }
 
     const err = Boolean(p.isError);
@@ -770,6 +1004,27 @@ export function mapForwardedChatEventToDisplayRow(forwarded: {
       resultDetailJson: row.detailJson,
     };
     row.badgeColor = toolPairOutcomeToBadgeColor(outcome);
+  }
+
+  if (envelope.kind === 'question') {
+    const payload =
+      envelope.payload && typeof envelope.payload === 'object' ? (envelope.payload as Record<string, unknown>) : {};
+    const interaction = buildQuestionInteractionFromPayload({
+      type: 'question',
+      ...payload,
+    });
+
+    if (interaction) {
+      row.questionInteraction = interaction;
+      row.summaryBody = previewString(interaction.prompt, 240) || row.summaryBody;
+      row.popoverPlainDetail = interaction.prompt;
+
+      if (interaction.replyKind === 'permission') {
+        row.kindLabel = AGENT_CHAT_PERMISSION_KIND_LABEL;
+        row.summaryTitle = AGENT_CHAT_PERMISSION_KIND_LABEL;
+        row.badgeColor = 'warning';
+      }
+    }
   }
 
   return row;

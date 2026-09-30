@@ -3,22 +3,18 @@ import { BadRequestException } from '@nestjs/common';
 import { parseAgentFileManagerContext } from './agent-file-manager-context';
 
 describe('parseAgentFileManagerContext', () => {
-  it('defaults to app when undefined or empty', () => {
+  it('defaults omitted or blank values to app', () => {
     expect(parseAgentFileManagerContext(undefined)).toBe('app');
     expect(parseAgentFileManagerContext('')).toBe('app');
     expect(parseAgentFileManagerContext('   ')).toBe('app');
   });
 
-  it('accepts app and config', () => {
+  it('accepts app', () => {
     expect(parseAgentFileManagerContext('app')).toBe('app');
-    expect(parseAgentFileManagerContext('config')).toBe('config');
   });
 
-  it('trims whitespace', () => {
-    expect(parseAgentFileManagerContext('  config  ')).toBe('config');
-  });
-
-  it('rejects invalid values', () => {
+  it('rejects legacy config and unknown values', () => {
+    expect(() => parseAgentFileManagerContext('config')).toThrow(BadRequestException);
     expect(() => parseAgentFileManagerContext('workspace')).toThrow(BadRequestException);
   });
 });

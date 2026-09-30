@@ -29,12 +29,12 @@ describe('sanitizeProviderMetadata', () => {
     expect(result).not.toHaveProperty('gitPassword');
   });
 
-  it('should remove cursorApiKey from metadata', () => {
-    const input = JSON.stringify({ serverType: 'cx11', cursorApiKey: 'cursor-key-xyz' });
+  it('should remove keys ending in Key from metadata', () => {
+    const input = JSON.stringify({ serverType: 'cx11', providerApiKey: 'secret-key-xyz' });
     const result = JSON.parse(sanitizeProviderMetadata(input));
 
     expect(result).toEqual({ serverType: 'cx11' });
-    expect(result).not.toHaveProperty('cursorApiKey');
+    expect(result).not.toHaveProperty('providerApiKey');
   });
 
   it('should remove keycloakClientSecret from metadata', () => {

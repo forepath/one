@@ -65,7 +65,7 @@ export class StatisticsAgentSyncService {
 
       for (const agent of batch) {
         await this.statisticsRepository.upsertStatisticsAgent(agent.id, statisticsClientId, {
-          agentType: agent.agentType ?? 'cursor',
+          agentType: agent.agentType ?? 'opencode',
           containerType: agent.containerType?.toString() ?? 'generic',
           name: agent.name,
           description: agent.description,

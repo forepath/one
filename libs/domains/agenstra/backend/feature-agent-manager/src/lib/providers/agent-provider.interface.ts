@@ -15,7 +15,7 @@ export interface AgentProviderCapabilities {
   /**
    * Wire transport used for agent messaging.
    */
-  transport?: 'acp';
+  transport?: 'acp' | 'opencode-http' | 'http';
 
   /**
    * Provider supports the chat flow (`chat` websocket event).
@@ -53,20 +53,20 @@ export interface AgentProviderModels {
 /**
  * Agent provider interface for implementing different agent solutions.
  * This interface allows the system to support multiple agent implementations
- * (e.g., cursor-agent, OpenAI, Anthropic, etc.) through a unified API.
+ * (e.g., opencode, OpenAI, Anthropic, etc.) through a unified API.
  */
 export interface AgentProvider {
   /**
    * Get the unique type identifier for this provider.
    * This is used to identify which provider to use for a given agent.
-   * @returns The agent type string (e.g., 'cursor', 'openai', 'anthropic')
+   * @returns The agent type string (e.g., 'opencode', 'openai', 'anthropic')
    */
   getType(): string;
 
   /**
    * Get the human-readable display name for this provider.
    * This is used in UI components to show a friendly name to users.
-   * @returns The display name string (e.g., 'Cursor', 'OpenAI', 'Anthropic Claude')
+   * @returns The display name string (e.g., 'OpenCode', 'OpenAI', 'Anthropic Claude')
    */
   getDisplayName(): string;
 
@@ -103,7 +103,7 @@ export interface AgentProvider {
   /**
    * Get the base path for the provider's configuration.
    * This is used to construct the API base URL for the provider's configuration.
-   * @returns The base path string (e.g., '~/.cursor')
+   * @returns The base path string (e.g., '~/.config/opencode')
    */
   getConfigBasePath?(): string;
 
@@ -209,7 +209,7 @@ export interface AgentProviderOptions {
   continue?: boolean;
 
   /**
-   * Appended to the Cursor-agent --resume session id for isolated one-off runs (e.g. prompt enhancement).
+   * Appended to the ACP resume session id for isolated one-off runs (e.g. prompt enhancement).
    * Ignored by providers that do not use resume-based sessions.
    */
   resumeSessionSuffix?: string;

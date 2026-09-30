@@ -375,10 +375,6 @@ export class ClientAgentFileSystemProxyService {
     const encodedPath = encodeURIComponent(filePath);
     const params: Record<string, string> = {};
 
-    if (context === 'config') {
-      params.context = 'config';
-    }
-
     const response = await this.makeBinaryRequest(clientId, agentId, {
       method: 'HEAD',
       url: `/${encodedPath}`,
@@ -420,10 +416,6 @@ export class ClientAgentFileSystemProxyService {
   ): Promise<ClientAgentFileProxyReadResult> {
     const encodedPath = encodeURIComponent(filePath);
     const params: Record<string, string> = {};
-
-    if (context === 'config') {
-      params.context = 'config';
-    }
 
     if (options?.download) {
       params.download = 'true';
@@ -506,7 +498,7 @@ export class ClientAgentFileSystemProxyService {
         method: 'PUT',
         url: `/${encodedPath}`,
         data: buffer,
-        params: context === 'config' ? { context: 'config' } : undefined,
+        params: undefined,
         headers: Object.keys(headers).length ? headers : undefined,
       },
       options?.contentType || 'application/octet-stream',
@@ -532,10 +524,6 @@ export class ClientAgentFileSystemProxyService {
       params.path = path;
     }
 
-    if (context === 'config') {
-      params.context = 'config';
-    }
-
     return await this.makeRequest<FileNodeDto[]>(clientId, agentId, {
       method: 'GET',
       params: Object.keys(params).length ? params : undefined,
@@ -559,7 +547,7 @@ export class ClientAgentFileSystemProxyService {
       method: 'POST',
       url: `/${encodedPath}`,
       data: createFileDto,
-      params: context === 'config' ? { context: 'config' } : undefined,
+      params: undefined,
     });
   }
 
@@ -580,7 +568,7 @@ export class ClientAgentFileSystemProxyService {
     await this.makeRequest<void>(clientId, agentId, {
       method: 'DELETE',
       url: `/${encodedPath}`,
-      params: context === 'config' ? { context: 'config' } : undefined,
+      params: undefined,
     });
   }
 
@@ -604,7 +592,7 @@ export class ClientAgentFileSystemProxyService {
       method: 'PATCH',
       url: `/${encodedPath}`,
       data: moveFileDto,
-      params: context === 'config' ? { context: 'config' } : undefined,
+      params: undefined,
     });
   }
 }
