@@ -16,6 +16,15 @@ export class UpsertOpencodeConfigDto {
   @IsObject()
   overrides?: Record<string, unknown> | null;
 
+  /**
+   * Explicit JSON Pointer locks for lower layers (global / workspace only).
+   * Empty array clears locks when provided. Ignored on agent PUT.
+   */
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  locks?: string[] | null;
+
   /** Secret string map (e.g. provider API keys). Stored GCM-encrypted. */
   @IsOptional()
   @IsObject()
@@ -49,6 +58,11 @@ export class OpencodeConfigResponseDto {
   config!: Record<string, unknown>;
   /** Raw JSON overrides for this layer (merged over `config`). */
   overrides!: Record<string, unknown>;
+  /**
+   * Explicit locks authored on this layer (global / workspace). Empty on agent responses.
+   * Lower layers receive these via expanded `lockedPaths`.
+   */
+  locks!: string[];
   /** Secret keys present (values redacted). */
   secretKeys!: string[];
   /**
@@ -58,7 +72,7 @@ export class OpencodeConfigResponseDto {
    * `config` / `overrides` remain the editable fields for the current layer only.
    */
   effective?: Record<string, unknown>;
-  /** JSON Pointer paths locked by a higher layer (replace semantics). */
+  /** JSON Pointer paths locked by a higher layer (replace semantics + explicit locks). */
   lockedPaths?: string[];
   /** Additive inherited map keys / array items from parents (read-only in UI). */
   inheritedAdditive?: InheritedAdditiveDto[];

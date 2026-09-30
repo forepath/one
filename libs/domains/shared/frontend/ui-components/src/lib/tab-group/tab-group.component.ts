@@ -42,22 +42,41 @@ import { FpcTabComponent } from '../tab/tab.component';
           <div class="fpc-tab-group__section-title" role="presentation">{{ group.section }}</div>
         }
         @for (tab of group.tabs; track tab) {
-          <button
-            type="button"
-            class="btn btn-options"
-            role="tab"
-            [id]="'fpc-tab-' + tab.id()"
-            [class.active]="tab.id() === activeId()"
-            [attr.aria-selected]="tab.id() === activeId()"
-            [attr.aria-controls]="'fpc-tabpanel-' + tab.id()"
-            [disabled]="tab.disabled()"
-            (click)="selectTab(tab)"
+          <div
+            class="fpc-tab-group__item"
+            [class.fpc-tab-group__item--active]="tab.id() === activeId()"
+            [class.fpc-tab-group__item--has-action]="!!tab.actionIcon()"
           >
-            @if (tab.icon()) {
-              <i class="bi bi-{{ tab.icon() }}" aria-hidden="true"></i>
+            <button
+              type="button"
+              class="btn btn-options"
+              role="tab"
+              [id]="'fpc-tab-' + tab.id()"
+              [class.active]="tab.id() === activeId()"
+              [attr.aria-selected]="tab.id() === activeId()"
+              [attr.aria-controls]="'fpc-tabpanel-' + tab.id()"
+              [disabled]="tab.disabled()"
+              (click)="selectTab(tab)"
+            >
+              @if (tab.icon()) {
+                <i class="bi bi-{{ tab.icon() }}" aria-hidden="true"></i>
+              }
+              <span>{{ tab.label() }}</span>
+            </button>
+            @if (tab.actionIcon()) {
+              <button
+                type="button"
+                class="fpc-tab-group__action btn btn-link"
+                [class.text-warning]="tab.actionPressed()"
+                [attr.aria-pressed]="tab.actionPressed()"
+                [attr.aria-label]="tab.actionAriaLabel() || null"
+                [title]="tab.actionTitle() || tab.actionAriaLabel() || null"
+                (click)="onTabAction(tab, $event)"
+              >
+                <i class="bi bi-{{ tab.actionIcon() }}" aria-hidden="true"></i>
+              </button>
             }
-            <span>{{ tab.label() }}</span>
-          </button>
+          </div>
         }
       }
     </div>
@@ -124,5 +143,11 @@ export class FpcTabGroupComponent {
 
     this.activeId.set(id);
     tab.selected.emit(id);
+  }
+
+  protected onTabAction(tab: FpcTabComponent, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    tab.action.emit();
   }
 }

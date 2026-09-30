@@ -37,7 +37,7 @@ function getAtPointer(config: JsonObject, pointerPath: string): unknown {
   return current;
 }
 
-function isPathLocked(lockedPaths: string[], candidate: string): boolean {
+export function isPathLocked(lockedPaths: readonly string[], candidate: string): boolean {
   const normalized = normalizePointer(candidate);
 
   return lockedPaths.some((locked) => {
@@ -47,8 +47,22 @@ function isPathLocked(lockedPaths: string[], candidate: string): boolean {
   });
 }
 
-function collectDefinedRootPointers(config: JsonObject): string[] {
-  return Object.keys(config).map((key) => `/${key}`);
+function assertNoLockedWrites(value: JsonObject, lockedPaths: readonly string[], prefix = ''): void {
+  for (const [key, nested] of Object.entries(value)) {
+    if (nested === undefined) {
+      continue;
+    }
+
+    const pointer = `${prefix}/${key}`;
+
+    if (isPathLocked(lockedPaths, pointer)) {
+      throw new OpencodeConfigValidationError(`Path '${pointer}' is locked by a higher layer`);
+    }
+
+    if (isPlainObject(nested)) {
+      assertNoLockedWrites(nested, lockedPaths, pointer);
+    }
+  }
 }
 
 /**
@@ -71,26 +85,16 @@ export function assertOverlayRespectsHeredity(
     );
   }
 
-  for (const pointer of collectDefinedRootPointers(overlay)) {
-    if (isPathLocked(lockedPaths, pointer)) {
-      throw new OpencodeConfigValidationError(`Path '${pointer}' is locked by a higher layer`);
-    }
-  }
-
-  // Nested locks under experimental
-  if (isPlainObject(overlay['experimental'])) {
-    for (const key of Object.keys(overlay['experimental'])) {
-      const pointer = `/experimental/${key}`;
-
-      if (isPathLocked(lockedPaths, pointer)) {
-        throw new OpencodeConfigValidationError(`Path '${pointer}' is locked by a higher layer`);
-      }
-    }
-  }
+  assertNoLockedWrites(overlay, lockedPaths);
 
   for (const entry of inheritedAdditive) {
     const path = normalizePointer(entry.path);
     const value = getAtPointer(overlay, path);
+
+    // Fully locked list/map roots already rejected above; skip additive checks when path is locked.
+    if (isPathLocked(lockedPaths, path)) {
+      continue;
+    }
 
     if (entry.keys?.length && isPlainObject(value)) {
       for (const key of entry.keys) {
@@ -128,6 +132,26 @@ export function assertOverlayRespectsHeredity(
           continue;
         }
       }
+    }
+  }
+}
+
+/**
+ * Reject secret map keys locked by a higher layer (`/secrets/{KEY}`).
+ */
+export function assertSecretsRespectLocks(
+  secrets: Record<string, string> | null | undefined,
+  lockedPaths: readonly string[],
+): void {
+  if (!secrets) {
+    return;
+  }
+
+  for (const key of Object.keys(secrets)) {
+    const pointer = `/secrets/${key}`;
+
+    if (isPathLocked(lockedPaths, pointer)) {
+      throw new OpencodeConfigValidationError(`Path '${pointer}' is locked by a higher layer`);
     }
   }
 }

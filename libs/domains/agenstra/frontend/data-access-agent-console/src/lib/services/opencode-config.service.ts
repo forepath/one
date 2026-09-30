@@ -14,6 +14,8 @@ export interface OpencodeConfigDto {
   config: Record<string, unknown>;
   /** Raw JSON overrides for this layer (merged over `config`). */
   overrides?: Record<string, unknown>;
+  /** Explicit locks authored on this layer (global / workspace). */
+  locks?: string[];
   secretKeys: string[];
   effective?: Record<string, unknown>;
   lockedPaths?: string[];
@@ -25,6 +27,8 @@ export interface UpsertOpencodeConfigPayload {
   config?: Record<string, unknown> | null;
   /** Raw JSON patch merged over `config`; empty object clears overrides when provided. */
   overrides?: Record<string, unknown> | null;
+  /** Explicit locks for lower layers (global / workspace only). */
+  locks?: string[] | null;
   secrets?: Record<string, string> | null;
 }
 
