@@ -1,0 +1,2066 @@
+@if (loading()) {
+  <div class="agent-config-editor__loading">
+    <fpc-spinner />
+  </div>
+} @else {
+  @if (error(); as err) {
+    <fpc-alert variant="danger" class="mb-3">{{ err }}</fpc-alert>
+  }
+
+  @if (lockedPaths().length) {
+    <fpc-alert
+      variant="warning"
+      class="mb-3"
+      i18n-message="@@featureAgentConfig-lockedByHigherLayerAlert"
+      message="Some settings are locked by a higher layer and cannot be edited here."
+    />
+  }
+
+  @if (presentation() === 'modal') {
+    <div class="agent-config-editor__toolbar mb-3">
+      <div class="agent-config-editor__heredity min-w-0">
+        @if (inheritedAdditive().length) {
+          <div class="text-secondary small">
+            <span i18n="@@featureAgentConfig-inheritedHint"
+              >Inherited additive entries are shown read-only where applicable.</span
+            >
+          </div>
+        }
+      </div>
+      <fpc-button
+        class="flex-shrink-0"
+        variant="secondary"
+        size="sm"
+        iconOnly
+        [title]="modeToggleTitle()"
+        [ariaLabel]="modeToggleTitle()"
+        (clicked)="toggleMode()"
+      >
+        @if (mode() === 'structured') {
+          <i class="bi bi-braces" aria-hidden="true"></i>
+        } @else {
+          <i class="bi bi-sliders" aria-hidden="true"></i>
+        }
+      </fpc-button>
+    </div>
+  } @else if (inheritedAdditive().length) {
+    <div class="agent-config-editor__heredity mb-3">
+      <div class="text-secondary small">
+        <span i18n="@@featureAgentConfig-inheritedHint"
+          >Inherited additive entries are shown read-only where applicable.</span
+        >
+      </div>
+    </div>
+  }
+
+  <div
+    class="agent-config-editor__surface"
+    [class.agent-config-editor__surface--with-drift]="isDirty() && presentation() === 'modal'"
+  >
+    @if (isDirty() && presentation() === 'modal') {
+      <div class="agent-config-editor__drift bg-warning text-dark px-3 py-1 small">
+        <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+        <span class="fw-bold" i18n="@@featureAgentConfig-unsavedChanges">Unsaved changes</span>
+        <span i18n="@@featureAgentConfig-unsavedChangesHint">Closing without saving will discard your edits.</span>
+      </div>
+    }
+
+    @if (mode() === 'raw') {
+      <div class="agent-config-editor__raw p-3">
+        <fpc-form-field
+          forId="agentConfigRawJson"
+          i18n-label="@@featureAgentConfig-rawJsonLabel"
+          label="Configuration JSON"
+        >
+          <fpc-form-control
+            controlId="agentConfigRawJson"
+            controlType="textarea"
+            [rows]="18"
+            [ngModel]="rawJson()"
+            (ngModelChange)="onRawJsonChange($event)"
+            [disabled]="isFullyLocked()"
+          />
+        </fpc-form-field>
+        <p class="text-secondary small mt-2 mb-0" i18n="@@featureAgentConfig-rawJsonHelp">
+          Composed view of structured settings plus Advanced overrides for this layer. Saving absorbs the JSON into
+          structured config and clears overrides.
+        </p>
+        @if (rawError(); as rawErr) {
+          <fpc-alert variant="warning" class="mt-2">{{ rawErr }}</fpc-alert>
+        }
+        @if (showAccumulatedConfig()) {
+          <div class="agent-config-editor__accumulated mt-3">
+            <div class="form-label mb-1" i18n="@@featureAgentConfig-accumulatedJsonLabel">
+              Accumulated configuration
+            </div>
+            <p class="text-secondary small mb-2" i18n="@@featureAgentConfig-accumulatedJsonHelp">
+              Read-only merged result for this stage, including higher layers.
+            </p>
+            <pre
+              class="agent-config-editor__accumulated-code small mb-0 font-monospace bg-body-tertiary rounded border p-3 overflow-auto"
+              tabindex="0"
+              role="region"
+              i18n-aria-label="@@featureAgentConfig-accumulatedJsonAria"
+              aria-label="Accumulated configuration JSON"
+            ><code>{{ effectiveJson() }}</code></pre>
+          </div>
+        }
+      </div>
+    } @else {
+      <fpc-tab-group
+        class="agent-config-editor__settings"
+        orientation="vertical"
+        [activeId]="settingsTab()"
+        ariaLabel="Configuration sections"
+        (activeIdChange)="settingsTab.set($event ?? 'general')"
+      >
+        <fpc-tab
+          id="general"
+          i18n-label="@@featureAgentConfig-tabGeneral"
+          label="General"
+          i18n-section="@@featureAgentConfig-sectionCore"
+          section="Core"
+        >
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-generalIdentityHeading">
+            Identity
+          </h3>
+          <agenstra-agent-config-settings-row
+            i18n-title="@@featureAgentConfig-fieldModel"
+            title="Default model"
+            i18n-description="@@featureAgentConfig-fieldModelHelp"
+            description="Pick provider and model, or type provider/model"
+            [dirty]="isConfigPathDirty('model')"
+          >
+            @if (defaultModelUsesPicker()) {
+              <div class="agent-config-editor__known-model-add-row">
+                <fpc-form-control
+                  controlId="agentConfigModelProvider"
+                  controlType="select"
+                  [ngModel]="draftDefaultModelProviderId()"
+                  (ngModelChange)="onDefaultModelProviderChange($event)"
+                  [disabled]="isLocked('/model')"
+                  i18n-ariaLabel="@@featureAgentConfig-knownModelProviderAria"
+                  ariaLabel="Provider"
+                >
+                  <option value="" i18n="@@featureAgentConfig-knownModelProviderPlaceholder">Provider</option>
+                  @for (provider of defaultModelProviderOptions(); track provider.id) {
+                    <option [value]="provider.id">{{ builtinProviderLabel(provider) }}</option>
+                  }
+                </fpc-form-control>
+                @if (defaultModelUsesCatalogSelect()) {
+                  <fpc-form-control
+                    controlId="agentConfigModel"
+                    controlType="select"
+                    [ngModel]="draftDefaultModelId()"
+                    (ngModelChange)="onDefaultModelIdChange($event)"
+                    [disabled]="isLocked('/model') || !draftDefaultModelProviderId().trim()"
+                    i18n-ariaLabel="@@featureAgentConfig-knownModelAria"
+                    ariaLabel="Model"
+                  >
+                    <option value="" i18n="@@featureAgentConfig-knownModelPlaceholder">Model</option>
+                    @for (model of defaultModelOptions(); track model.id) {
+                      <option [value]="model.id">{{ builtinModelLabel(model) }}</option>
+                    }
+                  </fpc-form-control>
+                } @else {
+                  <fpc-form-control
+                    controlId="agentConfigModel"
+                    [ngModel]="draftDefaultModelId()"
+                    (ngModelChange)="onDefaultModelIdChange($event)"
+                    [disabled]="isLocked('/model') || !draftDefaultModelProviderId().trim()"
+                    i18n-placeholder="@@featureAgentConfig-knownModelIdPlaceholder"
+                    placeholder="model-id"
+                    i18n-ariaLabel="@@featureAgentConfig-knownModelAria"
+                    ariaLabel="Model"
+                  />
+                }
+              </div>
+            } @else {
+              <fpc-form-control
+                controlId="agentConfigModel"
+                [ngModel]="stringValue('model')"
+                (ngModelChange)="onDefaultModelFreeTextChange($event)"
+                [disabled]="isLocked('/model')"
+                i18n-placeholder="@@featureAgentConfig-fieldModelPlaceholder"
+                placeholder="provider/model"
+              />
+            }
+          </agenstra-agent-config-settings-row>
+          <agenstra-agent-config-settings-row
+            i18n-title="@@featureAgentConfig-fieldShell"
+            title="Shell"
+            i18n-description="@@featureAgentConfig-fieldShellHelp"
+            description="Default shell for terminal tools"
+            [dirty]="isConfigPathDirty('shell')"
+          >
+            <fpc-form-control
+              controlId="agentConfigShell"
+              [ngModel]="stringValue('shell')"
+              (ngModelChange)="setString('shell', $event)"
+              [disabled]="isLocked('/shell')"
+            />
+          </agenstra-agent-config-settings-row>
+          <agenstra-agent-config-settings-row
+            i18n-title="@@featureAgentConfig-fieldUsername"
+            title="Username"
+            i18n-description="@@featureAgentConfig-fieldUsernameHelp"
+            description="Display username override"
+            [dirty]="isConfigPathDirty('username')"
+          >
+            <fpc-form-control
+              controlId="agentConfigUsername"
+              [ngModel]="stringValue('username')"
+              (ngModelChange)="setString('username', $event)"
+              [disabled]="isLocked('/username')"
+            />
+          </agenstra-agent-config-settings-row>
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-generalBehaviorHeading">
+            Behavior
+          </h3>
+          <agenstra-agent-config-settings-row
+            i18n-title="@@featureAgentConfig-fieldShare"
+            title="Sharing"
+            i18n-description="@@featureAgentConfig-fieldShareHelp"
+            description="manual, auto, or disabled"
+            [dirty]="isConfigPathDirty('share')"
+          >
+            <fpc-form-control
+              controlId="agentConfigShare"
+              controlType="select"
+              [ngModel]="stringValue('share')"
+              (ngModelChange)="setString('share', $event)"
+              [disabled]="isLocked('/share')"
+            >
+              <option value=""></option>
+              @for (option of shareOptions; track option) {
+                <option [value]="option">{{ option }}</option>
+              }
+            </fpc-form-control>
+          </agenstra-agent-config-settings-row>
+          <agenstra-agent-config-settings-row
+            i18n-title="@@featureAgentConfig-fieldUpdate"
+            title="Updates"
+            i18n-description="@@featureAgentConfig-fieldUpdateHelp"
+            description="true, false, or notify"
+            [dirty]="isConfigPathDirty('update')"
+          >
+            <fpc-form-control
+              controlId="agentConfigUpdate"
+              controlType="select"
+              [ngModel]="stringValue('update')"
+              (ngModelChange)="setString('update', $event)"
+              [disabled]="isLocked('/update')"
+            >
+              <option value=""></option>
+              @for (option of updateOptions; track option) {
+                <option [value]="option">{{ option }}</option>
+              }
+            </fpc-form-control>
+          </agenstra-agent-config-settings-row>
+          <agenstra-agent-config-settings-row
+            i18n-title="@@featureAgentConfig-fieldSnapshots"
+            title="Snapshots"
+            i18n-description="@@featureAgentConfig-fieldSnapshotsHelp"
+            description="Enable filesystem snapshots"
+            [dirty]="isConfigPathDirty('snapshots')"
+          >
+            <input
+              id="agentConfigSnapshots"
+              type="checkbox"
+              class="form-check-input"
+              [ngModel]="booleanValue('snapshots')"
+              (ngModelChange)="setBoolean('snapshots', $event)"
+              [disabled]="isLocked('/snapshots')"
+            />
+          </agenstra-agent-config-settings-row>
+          <agenstra-agent-config-settings-row
+            i18n-title="@@featureAgentConfig-fieldSubagentDepth"
+            title="Subagent depth"
+            i18n-description="@@featureAgentConfig-fieldSubagentDepthHelp"
+            description="Maximum nested subagent depth"
+            [dirty]="isConfigPathDirty('subagent_depth')"
+          >
+            <fpc-form-control
+              controlId="agentConfigSubagentDepth"
+              controlType="input"
+              inputType="number"
+              [ngModel]="numberValue('subagent_depth') ?? ''"
+              (ngModelChange)="setNumber('subagent_depth', $event)"
+              [disabled]="isLocked('/subagent_depth')"
+            />
+          </agenstra-agent-config-settings-row>
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-generalWorkspaceHeading">
+            Workspace
+          </h3>
+          <agenstra-agent-config-settings-row
+            i18n-title="@@featureAgentConfig-fieldWorktree"
+            title="Worktree directory"
+            i18n-description="@@featureAgentConfig-fieldWorktreeHelp"
+            description="Parent directory for new worktrees"
+            [dirty]="isConfigPathDirty('worktree.directory')"
+          >
+            <fpc-form-control
+              controlId="agentConfigWorktree"
+              [ngModel]="stringValue('worktree.directory')"
+              (ngModelChange)="setString('worktree.directory', $event)"
+              [disabled]="isLocked('/worktree')"
+            />
+          </agenstra-agent-config-settings-row>
+          <agenstra-agent-config-settings-row
+            i18n-title="@@featureAgentConfig-fieldWatcherIgnore"
+            title="Watcher ignore"
+            i18n-description="@@featureAgentConfig-fieldWatcherIgnoreHelp"
+            description="One glob per line"
+            [dirty]="isConfigPathDirty('watcher.ignore')"
+          >
+            <fpc-form-control
+              controlId="agentConfigWatcherIgnore"
+              controlType="textarea"
+              [rows]="4"
+              [ngModel]="stringListValue('watcher.ignore')"
+              (ngModelChange)="setStringList('watcher.ignore', $event)"
+              [disabled]="isLocked('/watcher')"
+            />
+          </agenstra-agent-config-settings-row>
+        </fpc-tab>
+
+        <fpc-tab id="models" i18n-label="@@featureAgentConfig-tabModels" label="Models" section="Core">
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-modelsProvidersHeading">
+            Providers
+          </h3>
+          <agenstra-agent-config-settings-row
+            i18n-title="@@featureAgentConfig-fieldEnabledProviders"
+            title="Provider allowlist"
+            i18n-description="@@featureAgentConfig-fieldEnabledProvidersHelp"
+            description="One provider id per line"
+            [dirty]="isConfigPathDirty('enabled_providers')"
+          >
+            <fpc-form-control
+              controlId="agentConfigEnabledProviders"
+              controlType="textarea"
+              [rows]="4"
+              [ngModel]="stringListValue('enabled_providers')"
+              (ngModelChange)="setStringList('enabled_providers', $event)"
+              [disabled]="isLocked('/enabled_providers')"
+            />
+            @if (!isLocked('/enabled_providers')) {
+              <div class="agent-config-editor__known-provider-add mt-2">
+                <fpc-form-field
+                  forId="agentConfigEnabledKnownProvider"
+                  i18n-label="@@featureAgentConfig-addKnownProviderLabel"
+                  label="Add known provider"
+                >
+                  <fpc-input-group>
+                    <fpc-form-control
+                      controlId="agentConfigEnabledKnownProvider"
+                      controlType="select"
+                      [ngModel]="draftEnabledProviderId()"
+                      (ngModelChange)="draftEnabledProviderId.set($event)"
+                    >
+                      <option value=""></option>
+                      @for (provider of unusedEnabledProviderOptions(); track provider.id) {
+                        <option [value]="provider.id">{{ builtinProviderLabel(provider) }}</option>
+                      }
+                    </fpc-form-control>
+                    <fpc-button
+                      fpcInputGroupSuffix
+                      variant="secondary"
+                      iconOnly
+                      [disabled]="!draftEnabledProviderId().trim()"
+                      (clicked)="addKnownEnabledProvider()"
+                      i18n-ariaLabel="@@featureAgentConfig-addEntry"
+                      ariaLabel="Add"
+                    >
+                      <i class="bi bi-plus" aria-hidden="true"></i>
+                    </fpc-button>
+                  </fpc-input-group>
+                </fpc-form-field>
+              </div>
+            }
+          </agenstra-agent-config-settings-row>
+          <agenstra-agent-config-settings-row
+            i18n-title="@@featureAgentConfig-fieldDisabledProviders"
+            title="Provider denylist"
+            i18n-description="@@featureAgentConfig-fieldDisabledProvidersHelp"
+            description="Overrides allowlist when both match"
+            [dirty]="isConfigPathDirty('disabled_providers')"
+          >
+            <fpc-form-control
+              controlId="agentConfigDisabledProviders"
+              controlType="textarea"
+              [rows]="4"
+              [ngModel]="stringListValue('disabled_providers')"
+              (ngModelChange)="setStringList('disabled_providers', $event)"
+              [disabled]="isLocked('/disabled_providers')"
+            />
+            @if (!isLocked('/disabled_providers')) {
+              <div class="agent-config-editor__known-provider-add mt-2">
+                <fpc-form-field
+                  forId="agentConfigDisabledKnownProvider"
+                  i18n-label="@@featureAgentConfig-addKnownProviderLabel"
+                  label="Add known provider"
+                >
+                  <fpc-input-group>
+                    <fpc-form-control
+                      controlId="agentConfigDisabledKnownProvider"
+                      controlType="select"
+                      [ngModel]="draftDisabledProviderId()"
+                      (ngModelChange)="draftDisabledProviderId.set($event)"
+                    >
+                      <option value=""></option>
+                      @for (provider of unusedDisabledProviderOptions(); track provider.id) {
+                        <option [value]="provider.id">{{ builtinProviderLabel(provider) }}</option>
+                      }
+                    </fpc-form-control>
+                    <fpc-button
+                      fpcInputGroupSuffix
+                      variant="secondary"
+                      iconOnly
+                      [disabled]="!draftDisabledProviderId().trim()"
+                      (clicked)="addKnownDisabledProvider()"
+                      i18n-ariaLabel="@@featureAgentConfig-addEntry"
+                      ariaLabel="Add"
+                    >
+                      <i class="bi bi-plus" aria-hidden="true"></i>
+                    </fpc-button>
+                  </fpc-input-group>
+                </fpc-form-field>
+              </div>
+            }
+          </agenstra-agent-config-settings-row>
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-modelsModelsHeading">Models</h3>
+          <agenstra-agent-config-settings-row
+            i18n-title="@@featureAgentConfig-fieldModelAllow"
+            title="Model allowlist"
+            i18n-description="@@featureAgentConfig-fieldModelAllowHelp"
+            description="provider/model per line"
+            [dirty]="isConfigPathDirty('model_allow')"
+          >
+            <fpc-form-control
+              controlId="agentConfigModelAllow"
+              controlType="textarea"
+              [rows]="4"
+              [ngModel]="stringListValue('model_allow')"
+              (ngModelChange)="setStringList('model_allow', $event)"
+              [disabled]="isLocked('/model_allow')"
+            />
+            @if (!isLocked('/model_allow')) {
+              <div class="agent-config-editor__known-model-add mt-2">
+                <fpc-form-field
+                  forId="agentConfigAllowKnownModelProvider"
+                  i18n-label="@@featureAgentConfig-addKnownModelLabel"
+                  label="Add known model"
+                >
+                  <div class="agent-config-editor__known-model-add-row">
+                    <fpc-form-control
+                      controlId="agentConfigAllowKnownModelProvider"
+                      controlType="select"
+                      [ngModel]="draftAllowModelProviderId()"
+                      (ngModelChange)="onAllowModelProviderChange($event)"
+                      i18n-ariaLabel="@@featureAgentConfig-knownModelProviderAria"
+                      ariaLabel="Provider"
+                    >
+                      <option value="" i18n="@@featureAgentConfig-knownModelProviderPlaceholder">Provider</option>
+                      @for (provider of unusedAllowModelProviderOptions(); track provider.id) {
+                        <option [value]="provider.id">{{ builtinProviderLabel(provider) }}</option>
+                      }
+                    </fpc-form-control>
+                    <fpc-input-group>
+                      @if (allowModelUsesCatalogSelect()) {
+                        <fpc-form-control
+                          controlId="agentConfigAllowKnownModel"
+                          controlType="select"
+                          [ngModel]="draftAllowModelId()"
+                          (ngModelChange)="draftAllowModelId.set($event)"
+                          [disabled]="!draftAllowModelProviderId().trim()"
+                          i18n-ariaLabel="@@featureAgentConfig-knownModelAria"
+                          ariaLabel="Model"
+                        >
+                          <option value="" i18n="@@featureAgentConfig-knownModelPlaceholder">Model</option>
+                          @for (model of unusedAllowModelOptions(); track model.id) {
+                            <option [value]="model.id">{{ builtinModelLabel(model) }}</option>
+                          }
+                        </fpc-form-control>
+                      } @else {
+                        <fpc-form-control
+                          controlId="agentConfigAllowKnownModel"
+                          [ngModel]="draftAllowModelId()"
+                          (ngModelChange)="draftAllowModelId.set($event)"
+                          [disabled]="!draftAllowModelProviderId().trim()"
+                          i18n-placeholder="@@featureAgentConfig-knownModelIdPlaceholder"
+                          placeholder="model-id"
+                          i18n-ariaLabel="@@featureAgentConfig-knownModelAria"
+                          ariaLabel="Model"
+                        />
+                      }
+                      <fpc-button
+                        fpcInputGroupSuffix
+                        variant="secondary"
+                        iconOnly
+                        [disabled]="!draftAllowModelProviderId().trim() || !draftAllowModelId().trim()"
+                        (clicked)="addKnownAllowModel()"
+                        i18n-ariaLabel="@@featureAgentConfig-addEntry"
+                        ariaLabel="Add"
+                      >
+                        <i class="bi bi-plus" aria-hidden="true"></i>
+                      </fpc-button>
+                    </fpc-input-group>
+                  </div>
+                </fpc-form-field>
+              </div>
+            }
+          </agenstra-agent-config-settings-row>
+          <agenstra-agent-config-settings-row
+            i18n-title="@@featureAgentConfig-fieldModelDeny"
+            title="Model denylist"
+            i18n-description="@@featureAgentConfig-fieldModelDenyHelp"
+            description="Wins over allowlist"
+            [dirty]="isConfigPathDirty('model_deny')"
+          >
+            <fpc-form-control
+              controlId="agentConfigModelDeny"
+              controlType="textarea"
+              [rows]="4"
+              [ngModel]="stringListValue('model_deny')"
+              (ngModelChange)="setStringList('model_deny', $event)"
+              [disabled]="isLocked('/model_deny')"
+            />
+            @if (!isLocked('/model_deny')) {
+              <div class="agent-config-editor__known-model-add mt-2">
+                <fpc-form-field
+                  forId="agentConfigDenyKnownModelProvider"
+                  i18n-label="@@featureAgentConfig-addKnownModelLabel"
+                  label="Add known model"
+                >
+                  <div class="agent-config-editor__known-model-add-row">
+                    <fpc-form-control
+                      controlId="agentConfigDenyKnownModelProvider"
+                      controlType="select"
+                      [ngModel]="draftDenyModelProviderId()"
+                      (ngModelChange)="onDenyModelProviderChange($event)"
+                      i18n-ariaLabel="@@featureAgentConfig-knownModelProviderAria"
+                      ariaLabel="Provider"
+                    >
+                      <option value="" i18n="@@featureAgentConfig-knownModelProviderPlaceholder">Provider</option>
+                      @for (provider of unusedDenyModelProviderOptions(); track provider.id) {
+                        <option [value]="provider.id">{{ builtinProviderLabel(provider) }}</option>
+                      }
+                    </fpc-form-control>
+                    <fpc-input-group>
+                      @if (denyModelUsesCatalogSelect()) {
+                        <fpc-form-control
+                          controlId="agentConfigDenyKnownModel"
+                          controlType="select"
+                          [ngModel]="draftDenyModelId()"
+                          (ngModelChange)="draftDenyModelId.set($event)"
+                          [disabled]="!draftDenyModelProviderId().trim()"
+                          i18n-ariaLabel="@@featureAgentConfig-knownModelAria"
+                          ariaLabel="Model"
+                        >
+                          <option value="" i18n="@@featureAgentConfig-knownModelPlaceholder">Model</option>
+                          @for (model of unusedDenyModelOptions(); track model.id) {
+                            <option [value]="model.id">{{ builtinModelLabel(model) }}</option>
+                          }
+                        </fpc-form-control>
+                      } @else {
+                        <fpc-form-control
+                          controlId="agentConfigDenyKnownModel"
+                          [ngModel]="draftDenyModelId()"
+                          (ngModelChange)="draftDenyModelId.set($event)"
+                          [disabled]="!draftDenyModelProviderId().trim()"
+                          i18n-placeholder="@@featureAgentConfig-knownModelIdPlaceholder"
+                          placeholder="model-id"
+                          i18n-ariaLabel="@@featureAgentConfig-knownModelAria"
+                          ariaLabel="Model"
+                        />
+                      }
+                      <fpc-button
+                        fpcInputGroupSuffix
+                        variant="secondary"
+                        iconOnly
+                        [disabled]="!draftDenyModelProviderId().trim() || !draftDenyModelId().trim()"
+                        (clicked)="addKnownDenyModel()"
+                        i18n-ariaLabel="@@featureAgentConfig-addEntry"
+                        ariaLabel="Add"
+                      >
+                        <i class="bi bi-plus" aria-hidden="true"></i>
+                      </fpc-button>
+                    </fpc-input-group>
+                  </div>
+                </fpc-form-field>
+              </div>
+            }
+          </agenstra-agent-config-settings-row>
+        </fpc-tab>
+
+        <fpc-tab id="providers" i18n-label="@@featureAgentConfig-tabProviders" label="Providers" section="Core">
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-providersOverridesHeading">
+            Overrides
+          </h3>
+          <p class="agent-config-editor__note" i18n="@@featureAgentConfig-providersHelp">
+            Configure provider overrides. Pick a built-in provider to seed credential env names, or add a custom id.
+            Inherited provider ids cannot be changed.
+          </p>
+          @if (!isLocked('/providers')) {
+            <div class="agent-config-editor__provider-add">
+              <fpc-form-field
+                forId="agentConfigBuiltinProvider"
+                i18n-label="@@featureAgentConfig-providerSelectLabel"
+                label="Provider"
+              >
+                <fpc-input-group>
+                  <fpc-form-control
+                    controlId="agentConfigBuiltinProvider"
+                    controlType="select"
+                    [ngModel]="draftBuiltinProviderId()"
+                    (ngModelChange)="onProviderSelectChange($event)"
+                  >
+                    <option value=""></option>
+                    <option [value]="customProviderSelectValue" i18n="@@featureAgentConfig-customProviderOption">
+                      Custom
+                    </option>
+                    @for (provider of unusedBuiltinProviderOptions(); track provider.id) {
+                      <option [value]="provider.id">{{ builtinProviderLabel(provider) }}</option>
+                    }
+                  </fpc-form-control>
+                  @if (!isCustomProviderMode() && draftBuiltinProviderId().trim()) {
+                    <fpc-button
+                      fpcInputGroupSuffix
+                      variant="secondary"
+                      iconOnly
+                      (clicked)="addBuiltinProvider()"
+                      i18n-ariaLabel="@@featureAgentConfig-addEntry"
+                      ariaLabel="Add"
+                    >
+                      <i class="bi bi-plus" aria-hidden="true"></i>
+                    </fpc-button>
+                  }
+                </fpc-input-group>
+              </fpc-form-field>
+              @if (isCustomProviderMode()) {
+                <fpc-form-field
+                  forId="agentConfigCustomProvider"
+                  i18n-label="@@featureAgentConfig-customProviderLabel"
+                  label="Custom provider id"
+                >
+                  <fpc-input-group>
+                    <fpc-form-control
+                      controlId="agentConfigCustomProvider"
+                      [ngModel]="draftCustomProviderId()"
+                      (ngModelChange)="draftCustomProviderId.set($event)"
+                      i18n-placeholder="@@featureAgentConfig-customProviderPlaceholder"
+                      placeholder="my-provider"
+                    />
+                    <fpc-button
+                      fpcInputGroupSuffix
+                      variant="secondary"
+                      iconOnly
+                      [disabled]="!draftCustomProviderId().trim()"
+                      (clicked)="addCustomProvider()"
+                      i18n-ariaLabel="@@featureAgentConfig-addEntry"
+                      ariaLabel="Add"
+                    >
+                      <i class="bi bi-plus" aria-hidden="true"></i>
+                    </fpc-button>
+                  </fpc-input-group>
+                </fpc-form-field>
+              }
+            </div>
+          }
+          <agenstra-agent-config-map-list
+            [entries]="providerEntries()"
+            [entryTemplate]="providerEntryTpl"
+            [disabled]="isLocked('/providers')"
+            [showAddChrome]="false"
+            [(expandedKey)]="providerMapExpandedKey"
+            emptyLabel="No provider overrides yet."
+            ariaLabel="Providers"
+            (remove)="removeMapEntry('providers', $event)"
+          />
+          <ng-template #providerEntryTpl let-key let-entry="entry">
+            <h4 class="agent-config-editor__subsection-heading" i18n="@@featureAgentConfig-providerCredentialsHeading">
+              Credentials (secrets)
+            </h4>
+            @for (envKey of providerEnvKeys(key); track envKey) {
+              <agenstra-agent-config-settings-row
+                [title]="envKey"
+                [description]="secretSet(envKey) ? 'Set (enter new value to rotate, clear to remove)' : 'Not set'"
+                [dirty]="isSecretDirty(envKey)"
+              >
+                <div class="agent-config-editor__secret-row">
+                  <fpc-form-control
+                    [controlId]="'agentConfigProviderSecret_' + key + '_' + envKey"
+                    inputType="password"
+                    [ngModel]="secretDrafts()[envKey] ?? ''"
+                    (ngModelChange)="setSecretDraft(envKey, $event)"
+                  />
+                  @if (!entry.inherited && canAddProviderCredentialEnv(key)) {
+                    <fpc-button
+                      variant="secondary"
+                      iconOnly
+                      [disabled]="isLocked('/providers')"
+                      (clicked)="removeProviderEnvKey(key, envKey)"
+                      i18n-ariaLabel="@@featureAgentConfig-removeCredentialEnv"
+                      ariaLabel="Remove credential env"
+                    >
+                      <i class="bi bi-trash" aria-hidden="true"></i>
+                    </fpc-button>
+                  }
+                </div>
+              </agenstra-agent-config-settings-row>
+            }
+            @if (!entry.inherited && canAddProviderCredentialEnv(key)) {
+              <agenstra-agent-config-settings-row
+                i18n-title="@@featureAgentConfig-addCredentialEnvTitle"
+                title="Add credential env"
+                i18n-description="@@featureAgentConfig-addCredentialEnvHelp"
+                description="Env var name for this provider (value stored as a secret)"
+                [dirty]="false"
+              >
+                <fpc-input-group>
+                  <fpc-form-control
+                    [controlId]="'agentConfigProviderEnvAdd_' + key"
+                    [ngModel]="draftProviderEnvName()"
+                    (ngModelChange)="draftProviderEnvName.set($event)"
+                    i18n-placeholder="@@featureAgentConfig-addCredentialEnvPlaceholder"
+                    placeholder="PROVIDER_API_KEY"
+                    [disabled]="isLocked('/providers')"
+                  />
+                  <fpc-button
+                    fpcInputGroupSuffix
+                    variant="secondary"
+                    iconOnly
+                    [disabled]="isLocked('/providers') || !draftProviderEnvName().trim()"
+                    (clicked)="addProviderEnvKey(key)"
+                    i18n-ariaLabel="@@featureAgentConfig-addEntry"
+                    ariaLabel="Add"
+                  >
+                    <i class="bi bi-plus" aria-hidden="true"></i>
+                  </fpc-button>
+                </fpc-input-group>
+              </agenstra-agent-config-settings-row>
+            }
+            @if (canEditProviderModels(key)) {
+              <agenstra-agent-config-settings-row
+                i18n-title="@@featureAgentConfig-providerModelsTitle"
+                title="Models"
+                i18n-description="@@featureAgentConfig-providerModelsHelp"
+                description="One model id per line"
+                [dirty]="isMapEntryFieldDirty('providers', key, 'models')"
+              >
+                <fpc-form-control
+                  controlType="textarea"
+                  [rows]="4"
+                  [ngModel]="mapEntryStringList('providers', key, 'models')"
+                  (ngModelChange)="setProviderModels(key, $event)"
+                />
+              </agenstra-agent-config-settings-row>
+            } @else {
+              <h4
+                class="agent-config-editor__subsection-heading"
+                i18n="@@featureAgentConfig-providerCatalogModelsHeading"
+              >
+                Models (catalog)
+              </h4>
+              <p class="agent-config-editor__note" i18n="@@featureAgentConfig-providerCatalogModelsHelp">
+                Available models from the provider catalog. Locked for built-in providers.
+              </p>
+              <ul class="agent-config-editor__catalog-models" role="list">
+                @for (model of providerCatalogModels(key); track model.id) {
+                  <li class="agent-config-editor__catalog-model">
+                    <span class="agent-config-editor__catalog-model-name">{{ model.name }}</span>
+                    <span class="agent-config-editor__catalog-model-id">{{ model.id }}</span>
+                  </li>
+                }
+              </ul>
+            }
+            <agenstra-agent-config-settings-row
+              title="Disabled"
+              description="Disable this provider override"
+              [dirty]="isMapEntryFieldDirty('providers', key, 'disabled')"
+            >
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [ngModel]="mapEntryBoolean('providers', key, 'disabled')"
+                (ngModelChange)="setMapEntryBoolean('providers', key, 'disabled', $event)"
+              />
+            </agenstra-agent-config-settings-row>
+          </ng-template>
+        </fpc-tab>
+
+        <fpc-tab
+          id="mcp"
+          i18n-label="@@featureAgentConfig-tabMcp"
+          label="MCP"
+          i18n-section="@@featureAgentConfig-sectionExtensions"
+          section="Extensions"
+        >
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-mcpTimeoutsHeading">Timeouts</h3>
+          <agenstra-agent-config-settings-row
+            i18n-title="@@featureAgentConfig-fieldMcpTimeoutStartup"
+            title="Startup timeout (ms)"
+            i18n-description="@@featureAgentConfig-fieldMcpTimeoutStartupHelp"
+            description="Max wait for an MCP server to become ready"
+            [dirty]="isConfigPathDirty('mcp.timeout.startup')"
+          >
+            <fpc-form-control
+              controlId="agentConfigMcpStartup"
+              controlType="input"
+              inputType="number"
+              [ngModel]="numberValue('mcp.timeout.startup') ?? ''"
+              (ngModelChange)="setNumber('mcp.timeout.startup', $event)"
+              [disabled]="isLocked('/mcp/timeout')"
+            />
+          </agenstra-agent-config-settings-row>
+          <agenstra-agent-config-settings-row
+            i18n-title="@@featureAgentConfig-fieldMcpTimeoutRequest"
+            title="Request timeout (ms)"
+            i18n-description="@@featureAgentConfig-fieldMcpTimeoutRequestHelp"
+            description="Max wait for a single MCP request round-trip"
+            [dirty]="isConfigPathDirty('mcp.timeout.request')"
+          >
+            <fpc-form-control
+              controlId="agentConfigMcpRequest"
+              controlType="input"
+              inputType="number"
+              [ngModel]="numberValue('mcp.timeout.request') ?? ''"
+              (ngModelChange)="setNumber('mcp.timeout.request', $event)"
+              [disabled]="isLocked('/mcp/timeout')"
+            />
+          </agenstra-agent-config-settings-row>
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-mcpServersHeading">Servers</h3>
+          <agenstra-agent-config-map-list
+            [entries]="mcpServerEntries()"
+            [entryTemplate]="mcpEntryTpl"
+            emptyLabel="No MCP servers yet."
+            addLabel="Server"
+            i18n-addLabel="@@featureAgentConfig-addServerLabel"
+            ariaLabel="MCP servers"
+            (add)="addMapEntry('mcp.servers', $event, { type: 'local', command: [] })"
+            (remove)="removeMapEntry('mcp.servers', $event)"
+          />
+          <ng-template #mcpEntryTpl let-key>
+            <agenstra-agent-config-settings-row
+              title="Type"
+              description="local process or remote HTTP server"
+              [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'type')"
+            >
+              <fpc-form-control
+                controlType="select"
+                [ngModel]="mapEntryString('mcp.servers', key, 'type') || 'local'"
+                (ngModelChange)="setMcpType(key, $event)"
+              >
+                @for (type of mcpTypes; track type) {
+                  <option [value]="type">{{ type }}</option>
+                }
+              </fpc-form-control>
+            </agenstra-agent-config-settings-row>
+            @if (mapEntryString('mcp.servers', key, 'type') !== 'remote') {
+              <agenstra-agent-config-settings-row
+                title="Command"
+                description="One argv part per line"
+                [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'command')"
+              >
+                <fpc-form-control
+                  controlType="textarea"
+                  [rows]="3"
+                  [ngModel]="mapEntryStringList('mcp.servers', key, 'command')"
+                  (ngModelChange)="setMapEntryStringList('mcp.servers', key, 'command', $event)"
+                />
+              </agenstra-agent-config-settings-row>
+              <agenstra-agent-config-settings-row
+                title="Working directory"
+                description="cwd for the local MCP process"
+                [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'cwd')"
+              >
+                <fpc-form-control
+                  [ngModel]="mapEntryString('mcp.servers', key, 'cwd')"
+                  (ngModelChange)="setMapEntryString('mcp.servers', key, 'cwd', $event)"
+                />
+              </agenstra-agent-config-settings-row>
+              <agenstra-agent-config-settings-row
+                title="Environment"
+                description="KEY=value per line"
+                [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'environment')"
+              >
+                <fpc-form-control
+                  controlType="textarea"
+                  [rows]="3"
+                  [ngModel]="mapEntryStringList('mcp.servers', key, 'environment')"
+                  (ngModelChange)="setMapEntryStringList('mcp.servers', key, 'environment', $event, true)"
+                />
+              </agenstra-agent-config-settings-row>
+            } @else {
+              <agenstra-agent-config-settings-row
+                title="URL"
+                description="Remote MCP endpoint URL"
+                [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'url')"
+              >
+                <fpc-form-control
+                  [ngModel]="mapEntryString('mcp.servers', key, 'url')"
+                  (ngModelChange)="setMapEntryString('mcp.servers', key, 'url', $event)"
+                />
+              </agenstra-agent-config-settings-row>
+              <agenstra-agent-config-settings-row
+                title="Headers"
+                description="KEY=value per line"
+                [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'headers')"
+              >
+                <fpc-form-control
+                  controlType="textarea"
+                  [rows]="3"
+                  [ngModel]="mapEntryStringList('mcp.servers', key, 'headers')"
+                  (ngModelChange)="setMapEntryStringList('mcp.servers', key, 'headers', $event, true)"
+                />
+              </agenstra-agent-config-settings-row>
+              <agenstra-agent-config-settings-row
+                title="OAuth client id"
+                description="OAuth 2.0 client id"
+                [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'oauth.client_id')"
+              >
+                <fpc-form-control
+                  [ngModel]="mapEntryString('mcp.servers', key, 'oauth.client_id')"
+                  (ngModelChange)="setMapEntryString('mcp.servers', key, 'oauth.client_id', $event)"
+                />
+              </agenstra-agent-config-settings-row>
+              <agenstra-agent-config-settings-row
+                title="OAuth client secret"
+                description="Prefer env placeholders"
+                [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'oauth.client_secret')"
+              >
+                <fpc-form-control
+                  inputType="password"
+                  [ngModel]="mapEntryString('mcp.servers', key, 'oauth.client_secret')"
+                  (ngModelChange)="setMapEntryString('mcp.servers', key, 'oauth.client_secret', $event)"
+                />
+              </agenstra-agent-config-settings-row>
+              <agenstra-agent-config-settings-row
+                title="OAuth scope"
+                description="Space-separated OAuth scopes"
+                [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'oauth.scope')"
+              >
+                <fpc-form-control
+                  [ngModel]="mapEntryString('mcp.servers', key, 'oauth.scope')"
+                  (ngModelChange)="setMapEntryString('mcp.servers', key, 'oauth.scope', $event)"
+                />
+              </agenstra-agent-config-settings-row>
+              <agenstra-agent-config-settings-row
+                title="OAuth callback port"
+                description="Local port for the OAuth redirect listener"
+                [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'oauth.callback_port')"
+              >
+                <fpc-form-control
+                  controlType="input"
+                  inputType="number"
+                  [ngModel]="mapEntryNumber('mcp.servers', key, 'oauth.callback_port') ?? ''"
+                  (ngModelChange)="setMapEntryNumber('mcp.servers', key, 'oauth.callback_port', $event)"
+                />
+              </agenstra-agent-config-settings-row>
+              <agenstra-agent-config-settings-row
+                title="OAuth redirect URI"
+                description="Registered redirect URI override"
+                [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'oauth.redirect_uri')"
+              >
+                <fpc-form-control
+                  [ngModel]="mapEntryString('mcp.servers', key, 'oauth.redirect_uri')"
+                  (ngModelChange)="setMapEntryString('mcp.servers', key, 'oauth.redirect_uri', $event)"
+                />
+              </agenstra-agent-config-settings-row>
+            }
+            <agenstra-agent-config-settings-row
+              title="Startup timeout (ms)"
+              description="Max wait for this server to become ready"
+              [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'timeout.startup')"
+            >
+              <fpc-form-control
+                controlType="input"
+                inputType="number"
+                [ngModel]="mapEntryNumber('mcp.servers', key, 'timeout.startup') ?? ''"
+                (ngModelChange)="setMapEntryNumber('mcp.servers', key, 'timeout.startup', $event)"
+              />
+            </agenstra-agent-config-settings-row>
+            <agenstra-agent-config-settings-row
+              title="Request timeout (ms)"
+              description="Max wait for a request on this server"
+              [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'timeout.request')"
+            >
+              <fpc-form-control
+                controlType="input"
+                inputType="number"
+                [ngModel]="mapEntryNumber('mcp.servers', key, 'timeout.request') ?? ''"
+                (ngModelChange)="setMapEntryNumber('mcp.servers', key, 'timeout.request', $event)"
+              />
+            </agenstra-agent-config-settings-row>
+            <agenstra-agent-config-settings-row
+              title="Disabled"
+              description="Do not start or call this server"
+              [dirty]="isMapEntryFieldDirty('mcp.servers', key, 'disabled')"
+            >
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [ngModel]="mapEntryBoolean('mcp.servers', key, 'disabled')"
+                (ngModelChange)="setMapEntryBoolean('mcp.servers', key, 'disabled', $event)"
+              />
+            </agenstra-agent-config-settings-row>
+          </ng-template>
+        </fpc-tab>
+
+        <fpc-tab
+          id="skills"
+          i18n-label="@@featureAgentConfig-tabSkills"
+          label="Skills & instructions"
+          section="Extensions"
+        >
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-skillsHeading">Skills</h3>
+          <agenstra-agent-config-path-list
+            [entries]="skillEntries()"
+            emptyLabel="No skills yet."
+            i18n-emptyLabel="@@featureAgentConfig-skillsEmpty"
+            addLabel="Skill path or URL"
+            i18n-addLabel="@@featureAgentConfig-addSkillLabel"
+            ariaLabel="Skills"
+            (add)="addPathListEntry('skills', $event)"
+            (entryChange)="updatePathListEntry('skills', $event.index, $event.value)"
+            (remove)="removePathListEntry('skills', $event)"
+            (editFile)="onEditPathFile($event)"
+            (openUrl)="onOpenExternalUrl($event)"
+          />
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-instructionsHeading">
+            Instructions
+          </h3>
+          <agenstra-agent-config-path-list
+            [entries]="instructionEntries()"
+            emptyLabel="No instructions yet."
+            i18n-emptyLabel="@@featureAgentConfig-instructionsEmpty"
+            addLabel="Instruction path or URL"
+            i18n-addLabel="@@featureAgentConfig-addInstructionLabel"
+            ariaLabel="Instructions"
+            (add)="addPathListEntry('instructions', $event)"
+            (entryChange)="updatePathListEntry('instructions', $event.index, $event.value)"
+            (remove)="removePathListEntry('instructions', $event)"
+            (editFile)="onEditPathFile($event)"
+            (openUrl)="onOpenExternalUrl($event)"
+          />
+        </fpc-tab>
+
+        <fpc-tab
+          id="commands"
+          i18n-label="@@featureAgentConfig-tabCommands"
+          label="Commands & plugins"
+          section="Extensions"
+        >
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-commandsHeading">Commands</h3>
+          <agenstra-agent-config-map-list
+            [entries]="commandEntries()"
+            [entryTemplate]="commandEntryTpl"
+            emptyLabel="No commands yet."
+            addLabel="Command"
+            i18n-addLabel="@@featureAgentConfig-addCommandLabel"
+            ariaLabel="Commands"
+            (add)="addMapEntry('commands', $event, { template: '' })"
+            (remove)="removeMapEntry('commands', $event)"
+          />
+          <ng-template #commandEntryTpl let-key>
+            <agenstra-agent-config-settings-row
+              title="Template"
+              description="Required prompt template"
+              [dirty]="isMapEntryFieldDirty('commands', key, 'template')"
+            >
+              <fpc-form-control
+                controlType="textarea"
+                [rows]="4"
+                [ngModel]="mapEntryString('commands', key, 'template')"
+                (ngModelChange)="setMapEntryString('commands', key, 'template', $event)"
+              />
+            </agenstra-agent-config-settings-row>
+            <agenstra-agent-config-settings-row
+              title="Description"
+              description="Short help text shown in the UI"
+              [dirty]="isMapEntryFieldDirty('commands', key, 'description')"
+            >
+              <fpc-form-control
+                [ngModel]="mapEntryString('commands', key, 'description')"
+                (ngModelChange)="setMapEntryString('commands', key, 'description', $event)"
+              />
+            </agenstra-agent-config-settings-row>
+            <agenstra-agent-config-settings-row
+              title="Agent"
+              description="Agent id to run this command as"
+              [dirty]="isMapEntryFieldDirty('commands', key, 'agent')"
+            >
+              <fpc-form-control
+                [ngModel]="mapEntryString('commands', key, 'agent')"
+                (ngModelChange)="setMapEntryString('commands', key, 'agent', $event)"
+              />
+            </agenstra-agent-config-settings-row>
+            <agenstra-agent-config-settings-row
+              title="Model"
+              description="provider/model"
+              [dirty]="isMapEntryFieldDirty('commands', key, 'model')"
+            >
+              <fpc-form-control
+                [ngModel]="mapEntryString('commands', key, 'model')"
+                (ngModelChange)="setMapEntryString('commands', key, 'model', $event)"
+              />
+            </agenstra-agent-config-settings-row>
+            <agenstra-agent-config-settings-row
+              title="Run as subagent"
+              description="Execute in a nested subagent session"
+              [dirty]="isMapEntryFieldDirty('commands', key, 'subagent')"
+            >
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [ngModel]="mapEntryBoolean('commands', key, 'subagent')"
+                (ngModelChange)="setMapEntryBoolean('commands', key, 'subagent', $event)"
+              />
+            </agenstra-agent-config-settings-row>
+          </ng-template>
+
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-pluginsHeading">Plugins</h3>
+          <div class="agent-config-editor__section-toolbar">
+            <fpc-button
+              variant="secondary"
+              size="sm"
+              iconOnly
+              (clicked)="addPlugin()"
+              ariaLabel="Add plugin"
+              i18n-ariaLabel="@@featureAgentConfig-addPlugin"
+            >
+              <i class="bi bi-plus" aria-hidden="true"></i>
+            </fpc-button>
+          </div>
+          @if (pluginEntries().length === 0) {
+            <div class="agent-config-editor__empty">
+              <fpc-empty-state size="sm" message="No plugins yet." i18n-message="@@featureAgentConfig-pluginsEmpty" />
+            </div>
+          } @else {
+            <fpc-list [flush]="true" ariaLabel="Plugins">
+              @for (plugin of pluginEntries(); track plugin.index) {
+                <fpc-list-item variant="condensed" [dirty]="plugin.dirty">
+                  <span fpcListItemTitle>
+                    {{ plugin.packageName || 'plugin' }}
+                    @if (plugin.inherited) {
+                      <span class="badge text-bg-secondary ms-2" i18n="@@featureAgentConfig-inheritedBadge"
+                        >Inherited</span
+                      >
+                    }
+                    @if (plugin.deleted) {
+                      <span class="badge text-bg-warning ms-2" i18n="@@featureAgentConfig-removedBadge">Removed</span>
+                    }
+                  </span>
+                  <div fpcListItemActions>
+                    <fpc-button
+                      variant="danger"
+                      size="sm"
+                      iconOnly
+                      [disabled]="plugin.inherited || plugin.deleted"
+                      (clicked)="removePlugin(plugin.index)"
+                      ariaLabel="Remove"
+                    >
+                      <i class="bi bi-trash" aria-hidden="true"></i>
+                    </fpc-button>
+                  </div>
+                  @if (!plugin.deleted) {
+                    <div class="w-100">
+                      <agenstra-agent-config-settings-row
+                        title="Package"
+                        description="npm package name or local path"
+                        [dirty]="isPluginPackageDirty(plugin.index)"
+                      >
+                        <div class="d-flex gap-2 align-items-start w-100">
+                          <fpc-form-control
+                            class="flex-grow-1"
+                            [ngModel]="plugin.packageName"
+                            (ngModelChange)="updatePluginPackage(plugin.index, $event)"
+                            [disabled]="plugin.inherited"
+                          />
+                          @if (isLocalEditorPathValue(plugin.packageName)) {
+                            <fpc-button
+                              variant="secondary"
+                              size="sm"
+                              iconOnly
+                              [disabled]="plugin.inherited"
+                              (clicked)="onEditPathFile(plugin.packageName)"
+                              i18n-ariaLabel="@@featureAgentConfig-openPath"
+                              ariaLabel="Open"
+                              title="Open"
+                            >
+                              <i class="bi bi-folder2-open" aria-hidden="true"></i>
+                            </fpc-button>
+                          }
+                        </div>
+                      </agenstra-agent-config-settings-row>
+                      <agenstra-agent-config-settings-row
+                        title="Options"
+                        description="Optional JSON object"
+                        [dirty]="isPluginOptionsDirty(plugin.index)"
+                      >
+                        <fpc-form-control
+                          controlType="textarea"
+                          [rows]="3"
+                          [ngModel]="plugin.optionsJson"
+                          (ngModelChange)="updatePluginOptions(plugin.index, $event)"
+                          [disabled]="plugin.inherited"
+                        />
+                      </agenstra-agent-config-settings-row>
+                    </div>
+                  }
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+        </fpc-tab>
+
+        <fpc-tab id="agents" i18n-label="@@featureAgentConfig-tabAgents" label="Agents" section="Extensions">
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-agentsHeading">Agents</h3>
+          <agenstra-agent-config-map-list
+            [entries]="agentEntries()"
+            [entryTemplate]="agentEntryTpl"
+            emptyLabel="No agent overrides yet."
+            addLabel="Agent"
+            i18n-addLabel="@@featureAgentConfig-addAgentLabel"
+            ariaLabel="Agents"
+            (add)="addMapEntry('agents', $event, { mode: 'all' })"
+            (remove)="removeMapEntry('agents', $event)"
+          />
+          <ng-template #agentEntryTpl let-key>
+            <agenstra-agent-config-settings-row
+              title="Description"
+              description="Short help text shown in the UI"
+              [dirty]="isMapEntryFieldDirty('agents', key, 'description')"
+            >
+              <fpc-form-control
+                [ngModel]="mapEntryString('agents', key, 'description')"
+                (ngModelChange)="setMapEntryString('agents', key, 'description', $event)"
+              />
+            </agenstra-agent-config-settings-row>
+            <agenstra-agent-config-settings-row
+              title="Mode"
+              description="all, primary, or subagent"
+              [dirty]="isMapEntryFieldDirty('agents', key, 'mode')"
+            >
+              <fpc-form-control
+                controlType="select"
+                [ngModel]="mapEntryString('agents', key, 'mode')"
+                (ngModelChange)="setMapEntryString('agents', key, 'mode', $event)"
+              >
+                <option value=""></option>
+                @for (mode of agentModes; track mode) {
+                  <option [value]="mode">{{ mode }}</option>
+                }
+              </fpc-form-control>
+            </agenstra-agent-config-settings-row>
+            <agenstra-agent-config-settings-row
+              title="Model"
+              description="provider/model"
+              [dirty]="isMapEntryFieldDirty('agents', key, 'model')"
+            >
+              <fpc-form-control
+                [ngModel]="mapEntryString('agents', key, 'model')"
+                (ngModelChange)="setMapEntryString('agents', key, 'model', $event)"
+              />
+            </agenstra-agent-config-settings-row>
+            <agenstra-agent-config-settings-row
+              title="System prompt"
+              description="Custom system prompt for this agent"
+              [dirty]="isMapEntryFieldDirty('agents', key, 'system')"
+            >
+              <fpc-form-control
+                controlType="textarea"
+                [rows]="4"
+                [ngModel]="mapEntryString('agents', key, 'system')"
+                (ngModelChange)="setMapEntryString('agents', key, 'system', $event)"
+              />
+            </agenstra-agent-config-settings-row>
+            <agenstra-agent-config-settings-row
+              title="Color"
+              description="Theme color or hex"
+              [dirty]="isMapEntryFieldDirty('agents', key, 'color')"
+            >
+              <fpc-form-control
+                [ngModel]="mapEntryString('agents', key, 'color')"
+                (ngModelChange)="setMapEntryString('agents', key, 'color', $event)"
+              />
+            </agenstra-agent-config-settings-row>
+            <agenstra-agent-config-settings-row
+              title="Steps"
+              description="Maximum tool/turn steps for this agent"
+              [dirty]="isMapEntryFieldDirty('agents', key, 'steps')"
+            >
+              <fpc-form-control
+                controlType="input"
+                inputType="number"
+                [ngModel]="mapEntryNumber('agents', key, 'steps') ?? ''"
+                (ngModelChange)="setMapEntryNumber('agents', key, 'steps', $event)"
+              />
+            </agenstra-agent-config-settings-row>
+            <agenstra-agent-config-settings-row
+              title="Disabled"
+              description="Disable this agent definition"
+              [dirty]="isMapEntryFieldDirty('agents', key, 'disabled')"
+            >
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [ngModel]="mapEntryBoolean('agents', key, 'disabled')"
+                (ngModelChange)="setMapEntryBoolean('agents', key, 'disabled', $event)"
+              />
+            </agenstra-agent-config-settings-row>
+            <agenstra-agent-config-settings-row
+              title="Hidden"
+              description="Hide from pickers but keep callable"
+              [dirty]="isMapEntryFieldDirty('agents', key, 'hidden')"
+            >
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [ngModel]="mapEntryBoolean('agents', key, 'hidden')"
+                (ngModelChange)="setMapEntryBoolean('agents', key, 'hidden', $event)"
+              />
+            </agenstra-agent-config-settings-row>
+          </ng-template>
+        </fpc-tab>
+
+        <fpc-tab
+          id="references"
+          i18n-label="@@featureAgentConfig-tabReferences"
+          label="References"
+          section="Extensions"
+        >
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-referencesHeading">References</h3>
+          <agenstra-agent-config-map-list
+            [entries]="referenceEntries()"
+            [entryTemplate]="referenceEntryTpl"
+            emptyLabel="No references yet."
+            addLabel="Reference"
+            i18n-addLabel="@@featureAgentConfig-addReferenceLabel"
+            ariaLabel="References"
+            (add)="addMapEntry('references', $event, { path: '' })"
+            (remove)="removeMapEntry('references', $event)"
+          />
+          <ng-template #referenceEntryTpl let-key>
+            <agenstra-agent-config-settings-row
+              title="Local path"
+              description="Use path or repository, not both"
+              [dirty]="isMapEntryFieldDirty('references', key, 'path')"
+            >
+              <div class="d-flex gap-2 align-items-start w-100">
+                <fpc-form-control
+                  class="flex-grow-1"
+                  [ngModel]="mapEntryString('references', key, 'path')"
+                  (ngModelChange)="setMapEntryString('references', key, 'path', $event)"
+                />
+                @if (isLocalEditorPathValue(mapEntryString('references', key, 'path'))) {
+                  <fpc-button
+                    variant="secondary"
+                    size="sm"
+                    iconOnly
+                    [disabled]="isMapEntryInherited('references', key)"
+                    (clicked)="onEditPathFile(mapEntryString('references', key, 'path'))"
+                    i18n-ariaLabel="@@featureAgentConfig-openPath"
+                    ariaLabel="Open"
+                    title="Open"
+                  >
+                    <i class="bi bi-folder2-open" aria-hidden="true"></i>
+                  </fpc-button>
+                }
+              </div>
+            </agenstra-agent-config-settings-row>
+            <agenstra-agent-config-settings-row
+              title="Git repository"
+              description="Remote git URL for the reference"
+              [dirty]="isMapEntryFieldDirty('references', key, 'repository')"
+            >
+              <div class="d-flex gap-2 align-items-start w-100">
+                <fpc-form-control
+                  class="flex-grow-1"
+                  [ngModel]="mapEntryString('references', key, 'repository')"
+                  (ngModelChange)="setMapEntryString('references', key, 'repository', $event)"
+                />
+                @if (pathValueKind(mapEntryString('references', key, 'repository')) === 'url') {
+                  <fpc-button
+                    variant="secondary"
+                    size="sm"
+                    iconOnly
+                    (clicked)="onOpenExternalUrl(mapEntryString('references', key, 'repository'))"
+                    i18n-ariaLabel="@@featureAgentConfig-openUrl"
+                    ariaLabel="Open URL"
+                    title="Open URL"
+                  >
+                    <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                  </fpc-button>
+                }
+              </div>
+            </agenstra-agent-config-settings-row>
+            <agenstra-agent-config-settings-row
+              title="Branch"
+              description="Git branch or tag to check out"
+              [dirty]="isMapEntryFieldDirty('references', key, 'branch')"
+            >
+              <fpc-form-control
+                [ngModel]="mapEntryString('references', key, 'branch')"
+                (ngModelChange)="setMapEntryString('references', key, 'branch', $event)"
+              />
+            </agenstra-agent-config-settings-row>
+            <agenstra-agent-config-settings-row
+              title="Description"
+              description="Short help text shown in the UI"
+              [dirty]="isMapEntryFieldDirty('references', key, 'description')"
+            >
+              <fpc-form-control
+                [ngModel]="mapEntryString('references', key, 'description')"
+                (ngModelChange)="setMapEntryString('references', key, 'description', $event)"
+              />
+            </agenstra-agent-config-settings-row>
+            <agenstra-agent-config-settings-row
+              title="Hidden"
+              description="Hide from pickers but keep callable"
+              [dirty]="isMapEntryFieldDirty('references', key, 'hidden')"
+            >
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [ngModel]="mapEntryBoolean('references', key, 'hidden')"
+                (ngModelChange)="setMapEntryBoolean('references', key, 'hidden', $event)"
+              />
+            </agenstra-agent-config-settings-row>
+          </ng-template>
+        </fpc-tab>
+
+        <fpc-tab
+          id="permissions"
+          i18n-label="@@featureAgentConfig-tabPermissions"
+          label="Permissions & policies"
+          i18n-section="@@featureAgentConfig-sectionSecurity"
+          section="Security"
+        >
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-permissionsHeading">
+            Permissions
+          </h3>
+          <div class="agent-config-editor__section-toolbar">
+            <fpc-button
+              variant="secondary"
+              size="sm"
+              iconOnly
+              [disabled]="isLocked('/permissions')"
+              (clicked)="addPermissionRule()"
+              ariaLabel="Add permission"
+              i18n-ariaLabel="@@featureAgentConfig-addPermission"
+            >
+              <i class="bi bi-plus" aria-hidden="true"></i>
+            </fpc-button>
+          </div>
+          @if (permissionRules().length === 0) {
+            <div class="agent-config-editor__empty">
+              <fpc-empty-state
+                size="sm"
+                message="No permission rules yet."
+                i18n-message="@@featureAgentConfig-permissionsEmpty"
+              />
+            </div>
+          } @else {
+            <fpc-list [flush]="true" ariaLabel="Permissions">
+              @for (rule of permissionRules(); track rule.__index) {
+                <fpc-list-item variant="condensed" [dirty]="rule.__dirty">
+                  <span fpcListItemTitle>
+                    {{ rule['action'] }} · {{ rule['resource'] }}
+                    @if (rule.__deleted) {
+                      <span class="badge text-bg-warning ms-2" i18n="@@featureAgentConfig-removedBadge">Removed</span>
+                    }
+                  </span>
+                  <span fpcListItemMeta>{{ rule['effect'] }}</span>
+                  <div fpcListItemActions class="d-flex gap-1">
+                    <fpc-button
+                      variant="secondary"
+                      size="sm"
+                      iconOnly
+                      [disabled]="isLocked('/permissions') || rule.__deleted || rule.__index === 0"
+                      (clicked)="moveRule('permissions', rule.__index, -1)"
+                      ariaLabel="Move up"
+                    >
+                      <i class="bi bi-arrow-up" aria-hidden="true"></i>
+                    </fpc-button>
+                    <fpc-button
+                      variant="secondary"
+                      size="sm"
+                      iconOnly
+                      [disabled]="
+                        isLocked('/permissions') ||
+                        rule.__deleted ||
+                        rule.__index >= objectArray('permissions').length - 1
+                      "
+                      (clicked)="moveRule('permissions', rule.__index, 1)"
+                      ariaLabel="Move down"
+                    >
+                      <i class="bi bi-arrow-down" aria-hidden="true"></i>
+                    </fpc-button>
+                    <fpc-button
+                      variant="danger"
+                      size="sm"
+                      iconOnly
+                      [disabled]="isLocked('/permissions') || rule.__deleted"
+                      (clicked)="removeRule('permissions', rule.__index)"
+                      ariaLabel="Remove"
+                    >
+                      <i class="bi bi-trash" aria-hidden="true"></i>
+                    </fpc-button>
+                  </div>
+                  @if (!rule.__deleted) {
+                    <div class="w-100">
+                      <agenstra-agent-config-settings-row
+                        title="Action"
+                        description="Tool or capability name to match"
+                        [dirty]="isRuleFieldDirty('permissions', rule.__index, 'action')"
+                      >
+                        <fpc-form-control
+                          [ngModel]="$any(rule['action'])"
+                          (ngModelChange)="updateRuleField('permissions', rule.__index, 'action', $event)"
+                          [disabled]="isLocked('/permissions')"
+                        />
+                      </agenstra-agent-config-settings-row>
+                      <agenstra-agent-config-settings-row
+                        title="Resource"
+                        description="Resource pattern this rule applies to"
+                        [dirty]="isRuleFieldDirty('permissions', rule.__index, 'resource')"
+                      >
+                        <fpc-form-control
+                          [ngModel]="$any(rule['resource'])"
+                          (ngModelChange)="updateRuleField('permissions', rule.__index, 'resource', $event)"
+                          [disabled]="isLocked('/permissions')"
+                        />
+                      </agenstra-agent-config-settings-row>
+                      <agenstra-agent-config-settings-row
+                        title="Effect"
+                        description="allow or deny"
+                        [dirty]="isRuleFieldDirty('permissions', rule.__index, 'effect')"
+                      >
+                        <fpc-form-control
+                          controlType="select"
+                          [ngModel]="$any(rule['effect'])"
+                          (ngModelChange)="updateRuleField('permissions', rule.__index, 'effect', $event)"
+                          [disabled]="isLocked('/permissions')"
+                        >
+                          @for (effect of permissionEffects; track effect) {
+                            <option [value]="effect">{{ effect }}</option>
+                          }
+                        </fpc-form-control>
+                      </agenstra-agent-config-settings-row>
+                    </div>
+                  }
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-policiesHeading">Policies</h3>
+          <div class="agent-config-editor__section-toolbar">
+            <fpc-button
+              variant="secondary"
+              size="sm"
+              iconOnly
+              [disabled]="isLocked('/experimental') || isLocked('/experimental/policies')"
+              (clicked)="addPolicyRule()"
+              ariaLabel="Add policy"
+              i18n-ariaLabel="@@featureAgentConfig-addPolicy"
+            >
+              <i class="bi bi-plus" aria-hidden="true"></i>
+            </fpc-button>
+          </div>
+          @if (policyRules().length === 0) {
+            <div class="agent-config-editor__empty">
+              <fpc-empty-state
+                size="sm"
+                message="No policy rules yet."
+                i18n-message="@@featureAgentConfig-policiesEmpty"
+              />
+            </div>
+          } @else {
+            <fpc-list [flush]="true" ariaLabel="Policies">
+              @for (rule of policyRules(); track rule.__index) {
+                <fpc-list-item variant="condensed" [dirty]="rule.__dirty">
+                  <span fpcListItemTitle>
+                    {{ rule['action'] }} · {{ rule['resource'] }}
+                    @if (rule.__deleted) {
+                      <span class="badge text-bg-warning ms-2" i18n="@@featureAgentConfig-removedBadge">Removed</span>
+                    }
+                  </span>
+                  <span fpcListItemMeta>{{ rule['effect'] }}</span>
+                  <div fpcListItemActions class="d-flex gap-1">
+                    <fpc-button
+                      variant="secondary"
+                      size="sm"
+                      iconOnly
+                      [disabled]="
+                        isLocked('/experimental') ||
+                        isLocked('/experimental/policies') ||
+                        rule.__deleted ||
+                        rule.__index === 0
+                      "
+                      (clicked)="moveRule('experimental.policies', rule.__index, -1)"
+                      ariaLabel="Move up"
+                    >
+                      <i class="bi bi-arrow-up" aria-hidden="true"></i>
+                    </fpc-button>
+                    <fpc-button
+                      variant="secondary"
+                      size="sm"
+                      iconOnly
+                      [disabled]="
+                        isLocked('/experimental') ||
+                        isLocked('/experimental/policies') ||
+                        rule.__deleted ||
+                        rule.__index >= objectArray('experimental.policies').length - 1
+                      "
+                      (clicked)="moveRule('experimental.policies', rule.__index, 1)"
+                      ariaLabel="Move down"
+                    >
+                      <i class="bi bi-arrow-down" aria-hidden="true"></i>
+                    </fpc-button>
+                    <fpc-button
+                      variant="danger"
+                      size="sm"
+                      iconOnly
+                      [disabled]="isLocked('/experimental') || isLocked('/experimental/policies') || rule.__deleted"
+                      (clicked)="removeRule('experimental.policies', rule.__index)"
+                      ariaLabel="Remove"
+                    >
+                      <i class="bi bi-trash" aria-hidden="true"></i>
+                    </fpc-button>
+                  </div>
+                  @if (!rule.__deleted) {
+                    <div class="w-100">
+                      <agenstra-agent-config-settings-row
+                        title="Action"
+                        description="Tool or capability name to match"
+                        [dirty]="isRuleFieldDirty('experimental.policies', rule.__index, 'action')"
+                      >
+                        <fpc-form-control
+                          controlType="select"
+                          [ngModel]="$any(rule['action'])"
+                          (ngModelChange)="updateRuleField('experimental.policies', rule.__index, 'action', $event)"
+                          [disabled]="isLocked('/experimental') || isLocked('/experimental/policies')"
+                        >
+                          @for (action of policyActions; track action) {
+                            <option [value]="action">{{ action }}</option>
+                          }
+                        </fpc-form-control>
+                      </agenstra-agent-config-settings-row>
+                      <agenstra-agent-config-settings-row
+                        title="Resource"
+                        description="Resource pattern this rule applies to"
+                        [dirty]="isRuleFieldDirty('experimental.policies', rule.__index, 'resource')"
+                      >
+                        <fpc-form-control
+                          [ngModel]="$any(rule['resource'])"
+                          (ngModelChange)="updateRuleField('experimental.policies', rule.__index, 'resource', $event)"
+                          [disabled]="isLocked('/experimental') || isLocked('/experimental/policies')"
+                        />
+                      </agenstra-agent-config-settings-row>
+                      <agenstra-agent-config-settings-row
+                        title="Effect"
+                        description="allow or deny"
+                        [dirty]="isRuleFieldDirty('experimental.policies', rule.__index, 'effect')"
+                      >
+                        <fpc-form-control
+                          controlType="select"
+                          [ngModel]="$any(rule['effect'])"
+                          (ngModelChange)="updateRuleField('experimental.policies', rule.__index, 'effect', $event)"
+                          [disabled]="isLocked('/experimental') || isLocked('/experimental/policies')"
+                        >
+                          @for (effect of policyEffects; track effect) {
+                            <option [value]="effect">{{ effect }}</option>
+                          }
+                        </fpc-form-control>
+                      </agenstra-agent-config-settings-row>
+                    </div>
+                  }
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-toolOutputHeading">
+            Tool output
+          </h3>
+          <agenstra-agent-config-settings-row
+            i18n-title="@@featureAgentConfig-fieldToolOutputLines"
+            title="Tool output max lines"
+            i18n-description="@@featureAgentConfig-fieldToolOutputLinesHelp"
+            description="Truncate tool stdout/stderr after this many lines"
+            [dirty]="isConfigPathDirty('tool_output.max_lines')"
+          >
+            <fpc-form-control
+              controlId="agentConfigToolOutputLines"
+              controlType="input"
+              inputType="number"
+              [ngModel]="numberValue('tool_output.max_lines') ?? ''"
+              (ngModelChange)="setNumber('tool_output.max_lines', $event)"
+              [disabled]="isLocked('/tool_output')"
+            />
+          </agenstra-agent-config-settings-row>
+          <agenstra-agent-config-settings-row
+            i18n-title="@@featureAgentConfig-fieldToolOutputBytes"
+            title="Tool output max bytes"
+            i18n-description="@@featureAgentConfig-fieldToolOutputBytesHelp"
+            description="Truncate tool output after this many bytes"
+            [dirty]="isConfigPathDirty('tool_output.max_bytes')"
+          >
+            <fpc-form-control
+              controlId="agentConfigToolOutputBytes"
+              controlType="input"
+              inputType="number"
+              [ngModel]="numberValue('tool_output.max_bytes') ?? ''"
+              (ngModelChange)="setNumber('tool_output.max_bytes', $event)"
+              [disabled]="isLocked('/tool_output')"
+            />
+          </agenstra-agent-config-settings-row>
+        </fpc-tab>
+
+        <fpc-tab
+          id="websearch"
+          i18n-label="@@featureAgentConfig-tabWebsearch"
+          label="Websearch & network"
+          i18n-section="@@featureAgentConfig-sectionRuntime"
+          section="Runtime"
+        >
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-websearchHeading">Websearch</h3>
+          <agenstra-agent-config-settings-row
+            title="Enable websearch"
+            description="Allow the agent to use web search tools"
+            [dirty]="isWebsearchEnabledDirty()"
+          >
+            <input
+              type="checkbox"
+              class="form-check-input"
+              [ngModel]="websearchEnabled()"
+              (ngModelChange)="setWebsearchEnabled($event)"
+              [disabled]="isLocked('/websearch')"
+            />
+          </agenstra-agent-config-settings-row>
+          @if (websearchEnabled()) {
+            <agenstra-agent-config-settings-row
+              title="Provider"
+              description="Search backend provider id"
+              [dirty]="isConfigPathDirty('websearch.provider')"
+            >
+              <fpc-form-control
+                controlType="select"
+                [ngModel]="stringValue('websearch.provider')"
+                (ngModelChange)="setWebsearchProvider($event)"
+                [disabled]="isLocked('/websearch')"
+              >
+                <option value=""></option>
+                @for (provider of websearchProviders; track provider) {
+                  <option [value]="provider">{{ provider }}</option>
+                }
+              </fpc-form-control>
+            </agenstra-agent-config-settings-row>
+          }
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-networkHeading">
+            Network (secrets)
+          </h3>
+          @for (key of ['HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'NODE_EXTRA_CA_CERTS']; track key) {
+            <agenstra-agent-config-settings-row
+              [title]="key"
+              [description]="networkSecretSet(key) ? 'Set (enter new value to rotate, clear to remove)' : 'Not set'"
+              [dirty]="isNetworkSecretDirty($any(key))"
+            >
+              <fpc-form-control
+                [controlId]="'agentConfigNetwork_' + key"
+                inputType="password"
+                [ngModel]="secretDrafts()[$any(key)] ?? ''"
+                (ngModelChange)="setNetworkSecret($any(key), $event)"
+              />
+            </agenstra-agent-config-settings-row>
+          }
+        </fpc-tab>
+
+        <fpc-tab id="compaction" i18n-label="@@featureAgentConfig-tabCompaction" label="Compaction" section="Runtime">
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-compactionHeading">Compaction</h3>
+          <agenstra-agent-config-settings-row
+            title="Auto compact"
+            description="Compact chat context automatically near limits"
+            [dirty]="isConfigPathDirty('compaction.auto')"
+          >
+            <input
+              type="checkbox"
+              class="form-check-input"
+              [ngModel]="booleanValue('compaction.auto')"
+              (ngModelChange)="setBoolean('compaction.auto', $event)"
+              [disabled]="isLocked('/compaction')"
+            />
+          </agenstra-agent-config-settings-row>
+          <agenstra-agent-config-settings-row
+            title="Prune"
+            description="Drop old tool outputs during compaction"
+            [dirty]="isConfigPathDirty('compaction.prune')"
+          >
+            <input
+              type="checkbox"
+              class="form-check-input"
+              [ngModel]="booleanValue('compaction.prune')"
+              (ngModelChange)="setBoolean('compaction.prune', $event)"
+              [disabled]="isLocked('/compaction')"
+            />
+          </agenstra-agent-config-settings-row>
+          <agenstra-agent-config-settings-row
+            title="Keep tokens"
+            description="Recent history budget"
+            [dirty]="isConfigPathDirty('compaction.keep.tokens')"
+          >
+            <fpc-form-control
+              controlType="input"
+              inputType="number"
+              [ngModel]="numberValue('compaction.keep.tokens') ?? ''"
+              (ngModelChange)="setNumber('compaction.keep.tokens', $event)"
+              [disabled]="isLocked('/compaction')"
+            />
+          </agenstra-agent-config-settings-row>
+          <agenstra-agent-config-settings-row
+            title="Buffer tokens"
+            description="Headroom before auto-compact"
+            [dirty]="isConfigPathDirty('compaction.buffer')"
+          >
+            <fpc-form-control
+              controlType="input"
+              inputType="number"
+              [ngModel]="numberValue('compaction.buffer') ?? ''"
+              (ngModelChange)="setNumber('compaction.buffer', $event)"
+              [disabled]="isLocked('/compaction')"
+            />
+          </agenstra-agent-config-settings-row>
+        </fpc-tab>
+
+        <fpc-tab
+          id="formatters"
+          i18n-label="@@featureAgentConfig-tabFormatters"
+          label="Formatters & attachments"
+          section="Runtime"
+        >
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-formattersHeading">Formatters</h3>
+          <agenstra-agent-config-settings-row
+            title="Enable formatters"
+            description="Run formatters after file edits"
+            [dirty]="isFormatterEnabledDirty()"
+          >
+            <input
+              type="checkbox"
+              class="form-check-input"
+              [ngModel]="formatterEnabled()"
+              (ngModelChange)="setFormatterEnabled($event)"
+              [disabled]="isLocked('/formatter') || inheritedKeys('/formatter').length > 0"
+            />
+          </agenstra-agent-config-settings-row>
+          @if (formatterEnabled()) {
+            <agenstra-agent-config-map-list
+              [entries]="formatterEntries()"
+              [entryTemplate]="formatterEntryTpl"
+              [disabled]="isLocked('/formatter')"
+              emptyLabel="No formatter overrides yet."
+              addLabel="Formatter"
+              i18n-addLabel="@@featureAgentConfig-addFormatterLabel"
+              ariaLabel="Formatters"
+              (add)="addMapEntry('formatter', $event, {})"
+              (remove)="removeMapEntry('formatter', $event)"
+            />
+            <ng-template #formatterEntryTpl let-key>
+              <agenstra-agent-config-settings-row
+                title="Disabled"
+                description="Skip this formatter"
+                [dirty]="isMapEntryFieldDirty('formatter', key, 'disabled')"
+              >
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  [ngModel]="mapEntryBoolean('formatter', key, 'disabled')"
+                  (ngModelChange)="setMapEntryBoolean('formatter', key, 'disabled', $event)"
+                />
+              </agenstra-agent-config-settings-row>
+              <agenstra-agent-config-settings-row
+                title="Command"
+                description="One argv part per line"
+                [dirty]="isMapEntryFieldDirty('formatter', key, 'command')"
+              >
+                <fpc-form-control
+                  controlType="textarea"
+                  [rows]="3"
+                  [ngModel]="mapEntryStringList('formatter', key, 'command')"
+                  (ngModelChange)="setMapEntryStringList('formatter', key, 'command', $event)"
+                />
+              </agenstra-agent-config-settings-row>
+              <agenstra-agent-config-settings-row
+                title="Extensions"
+                description="One extension per line"
+                [dirty]="isMapEntryFieldDirty('formatter', key, 'extensions')"
+              >
+                <fpc-form-control
+                  controlType="textarea"
+                  [rows]="3"
+                  [ngModel]="mapEntryStringList('formatter', key, 'extensions')"
+                  (ngModelChange)="setMapEntryStringList('formatter', key, 'extensions', $event)"
+                />
+              </agenstra-agent-config-settings-row>
+              <agenstra-agent-config-settings-row
+                title="Environment"
+                description="KEY=value per line"
+                [dirty]="isMapEntryFieldDirty('formatter', key, 'environment')"
+              >
+                <fpc-form-control
+                  controlType="textarea"
+                  [rows]="3"
+                  [ngModel]="mapEntryStringList('formatter', key, 'environment')"
+                  (ngModelChange)="setMapEntryStringList('formatter', key, 'environment', $event, true)"
+                />
+              </agenstra-agent-config-settings-row>
+            </ng-template>
+          }
+
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-mediaHeading">
+            Media / attachments
+          </h3>
+          <agenstra-agent-config-settings-row
+            title="Auto-resize images"
+            description="Downscale large images before sending"
+            [dirty]="isConfigPathDirty('media.image.auto_resize')"
+          >
+            <input
+              type="checkbox"
+              class="form-check-input"
+              [ngModel]="booleanValue('media.image.auto_resize')"
+              (ngModelChange)="setBoolean('media.image.auto_resize', $event)"
+              [disabled]="isLocked('/media')"
+            />
+          </agenstra-agent-config-settings-row>
+          <agenstra-agent-config-settings-row
+            title="Max width"
+            description="Maximum image width in pixels"
+            [dirty]="isConfigPathDirty('media.image.max_width')"
+          >
+            <fpc-form-control
+              controlType="input"
+              inputType="number"
+              [ngModel]="numberValue('media.image.max_width') ?? ''"
+              (ngModelChange)="setNumber('media.image.max_width', $event)"
+              [disabled]="isLocked('/media')"
+            />
+          </agenstra-agent-config-settings-row>
+          <agenstra-agent-config-settings-row
+            title="Max height"
+            description="Maximum image height in pixels"
+            [dirty]="isConfigPathDirty('media.image.max_height')"
+          >
+            <fpc-form-control
+              controlType="input"
+              inputType="number"
+              [ngModel]="numberValue('media.image.max_height') ?? ''"
+              (ngModelChange)="setNumber('media.image.max_height', $event)"
+              [disabled]="isLocked('/media')"
+            />
+          </agenstra-agent-config-settings-row>
+          <agenstra-agent-config-settings-row
+            title="Max base64 bytes"
+            description="Limit for encoded image payload size"
+            [dirty]="isConfigPathDirty('media.image.max_base64_bytes')"
+          >
+            <fpc-form-control
+              controlType="input"
+              inputType="number"
+              [ngModel]="numberValue('media.image.max_base64_bytes') ?? ''"
+              (ngModelChange)="setNumber('media.image.max_base64_bytes', $event)"
+              [disabled]="isLocked('/media')"
+            />
+          </agenstra-agent-config-settings-row>
+        </fpc-tab>
+
+        <fpc-tab id="warming" i18n-label="@@featureAgentConfig-tabWarming" label="Warming" section="Runtime">
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-warmingHeading">Warming</h3>
+          <agenstra-agent-config-settings-row
+            title="Prompt"
+            description="Empty disables warming"
+            [dirty]="isConfigPathDirty('warming.prompt')"
+          >
+            <fpc-form-control
+              controlType="textarea"
+              [rows]="4"
+              [ngModel]="stringValue('warming.prompt')"
+              (ngModelChange)="setString('warming.prompt', $event)"
+              [disabled]="isLocked('/warming')"
+            />
+          </agenstra-agent-config-settings-row>
+          <agenstra-agent-config-settings-row
+            title="Interval"
+            description="Duration string, e.g. 30m"
+            [dirty]="isConfigPathDirty('warming.interval')"
+          >
+            <fpc-form-control
+              [ngModel]="stringValue('warming.interval')"
+              (ngModelChange)="setString('warming.interval', $event)"
+              [disabled]="isLocked('/warming')"
+            />
+          </agenstra-agent-config-settings-row>
+          <agenstra-agent-config-settings-row
+            title="Duration"
+            description="Duration string, e.g. 5m"
+            [dirty]="isConfigPathDirty('warming.duration')"
+          >
+            <fpc-form-control
+              [ngModel]="stringValue('warming.duration')"
+              (ngModelChange)="setString('warming.duration', $event)"
+              [disabled]="isLocked('/warming')"
+            />
+          </agenstra-agent-config-settings-row>
+        </fpc-tab>
+
+        <fpc-tab
+          id="overrides"
+          i18n-label="@@featureAgentConfig-tabOverrides"
+          label="Overrides"
+          i18n-section="@@featureAgentConfig-sectionAdvanced"
+          section="Advanced"
+        >
+          <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-overridesHeading">
+            Raw overrides
+          </h3>
+          <p class="agent-config-editor__note" i18n="@@featureAgentConfig-overridesHelp">
+            Optional JSON merged over the structured settings for this layer. Same heredity locks apply. Included in
+            Configuration JSON.
+          </p>
+          <agenstra-agent-config-settings-row
+            i18n-title="@@featureAgentConfig-overridesJsonTitle"
+            title="Overrides JSON"
+            [dirty]="isOverridesDirty()"
+          >
+            <fpc-form-control
+              controlId="agentConfigOverridesJson"
+              controlType="textarea"
+              [rows]="16"
+              [ngModel]="overridesJson()"
+              (ngModelChange)="onOverridesJsonChange($event)"
+              [disabled]="isFullyLocked()"
+            />
+          </agenstra-agent-config-settings-row>
+          @if (overridesError(); as overridesErr) {
+            <fpc-alert variant="warning" class="mt-2">{{ overridesErr }}</fpc-alert>
+          }
+        </fpc-tab>
+      </fpc-tab-group>
+    }
+  </div>
+
+  @if (showSave()) {
+    <div class="agent-config-editor__actions mt-3 d-flex gap-2 justify-content-end">
+      <fpc-button
+        variant="primary"
+        [loading]="saving()"
+        [disabled]="!canSave()"
+        i18n="@@featureAgentConfig-save"
+        (clicked)="onSave()"
+      >
+        Save
+      </fpc-button>
+    </div>
+  }
+}

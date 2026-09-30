@@ -129,9 +129,8 @@ GIT_REPOSITORY_URL=https://github.com/user/repo.git
 GIT_USERNAME=your-username
 GIT_TOKEN=your-git-token
 
-# Cursor Agent
-CURSOR_API_KEY=your-cursor-api-key
-CURSOR_AGENT_DOCKER_IMAGE=ghcr.io/forepath/agenstra-manager-worker:latest
+# OpenCode Agent
+OPENCODE_AGENT_DOCKER_IMAGE=ghcr.io/forepath/agenstra-manager-worker:latest
 
 # CORS
 CORS_ORIGIN=http://localhost:4200
@@ -181,7 +180,6 @@ A client represents a connection to a remote agent-manager service. You can eith
    - **Name**: Server name (auto-generated if not provided)
    - **Authentication**: Configure authentication for the agent-manager
    - **Git Repository**: Optional Git repository URL for agent workspace
-   - **Cursor API Key**: Your Cursor API key for agent configuration
 5. Click "Provision"
 
 The system will:
@@ -201,7 +199,7 @@ Once you have a client, you can create agents:
 3. Fill in agent details:
    - **Name**: A descriptive name for the agent
    - **Description**: Optional description
-   - **Agent Type**: Choose an agent type (e.g., `cursor`)
+   - **Agent Type**: Choose an agent type (e.g., `opencode`)
 4. Click "Create"
 
 The system will:

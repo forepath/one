@@ -13,8 +13,8 @@ module.exports = composePlugins(
       }),
     };
     config.devtool = 'source-map';
-    // Update the webpack config as needed here.
-    // e.g. `config.plugins.push(new MyPlugin())`
+    // Leave `@opencode-ai/sdk` as a runtime ESM import (see OpenCodeClientFactory webpackIgnore).
+    // Do not externalize as commonjs — the package only declares "import" exports.
     return config;
   },
 );

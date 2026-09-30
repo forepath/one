@@ -8,7 +8,7 @@ Agents are AI-powered entities that run in Docker containers. Each agent has:
 
 - **Unique ID** (UUID)
 - **Name** and optional description
-- **Agent Type** (e.g., `cursor` for cursor-agent)
+- **Agent Type** (e.g., `opencode`)
 - **Container** Docker container for agent execution
 - **Credentials** Password for WebSocket authentication
 - **Workspace** Git repository cloned into the container (bind-mounted from host `/opt/agents/{uuid}`; path depends on agent type, see [Container image security](../security/container-images.md))
@@ -21,7 +21,7 @@ Agents are AI-powered entities that run in Docker containers. Each agent has:
 3. Fill in agent details:
    - **Name**: A descriptive name for the agent
    - **Description**: Optional description
-   - **Agent Type**: Choose an agent type (e.g., `cursor`)
+   - **Agent Type**: Choose an agent type (e.g., `opencode`)
 4. Click "Create"
 
 The system will:
@@ -93,26 +93,17 @@ When an agent is deleted:
 
 ## Agent Types
 
-Agenstra uses a plugin-based agent provider system. Each agent has an `agentType` field that determines which provider implementation is used.
+Agenstra uses **OpenCode** exclusively as the agent harness. Each agent stores `agentType: opencode` for metrics/history.
 
 ### Available Types
 
-- **`cursor`** (default) — Cursor agent via [Agent Client Protocol (ACP)](../ai-agents/agent-client-protocol.md) (`cursor-agent acp`)
-- **`opencode`** — OpenCode via ACP (`opencode acp`)
+- **`opencode`** (only) — OpenCode via HTTP API (`opencode serve` in the worker container)
 
-Both providers advertise capabilities (including `transport: acp`) on manager config and agent profile responses.
+The provider advertises capabilities (including chat/streaming/tools/questions) on manager config and agent profile responses.
 
 ### Adding New Agent Types
 
-Built-in agent providers are registered in `AgentsModule`. To add types **without rebuilding** the manager image, use [Dynamic provider plugins](./dynamic-provider-plugins.md) (`DYNAMIC_AGENT_PROVIDERS`).
-
-To add a provider in source, implement the `AgentProvider` interface:
-
-1. Create a provider class implementing `AgentProvider`
-2. Register the provider in `AgentsModule`
-3. Update DTO validation to include the new type
-
-See the application and feature docs linked below for details.
+Harness plugins (`DYNAMIC_AGENT_PROVIDERS`) are no longer supported. Pipeline and chat-filter dynamic plugins remain available — see [Dynamic provider plugins](./dynamic-provider-plugins.md).
 
 ## Agent Operations
 
@@ -126,10 +117,8 @@ See the application and feature docs linked below for details.
 
 1. Select an agent from the list
 2. Click "Update Agent"
-3. Modify agent details (name, description, agent type)
+3. Modify agent details (name, description)
 4. Click "Save"
-
-**Note**: Changing the agent type may require container recreation.
 
 ### Delete Agent
 
@@ -143,7 +132,11 @@ See the application and feature docs linked below for details.
 
 ### Chat
 
-Send messages to agents via the chat interface. The console uses WebSocket chat events unchanged. Internally, the agent-manager speaks [ACP](../ai-agents/agent-client-protocol.md) (JSON-RPC over stdio) to `cursor-agent acp` / `opencode acp` inside the worker container and maps session updates to the existing chat event model.
+Send messages to agents via the chat interface. The console uses WebSocket chat events unchanged. Internally, the agent-manager speaks OpenCode’s HTTP API (`opencode serve`) inside the worker container and maps session/events to the existing chat event model.
+
+### Terminal
+
+The editor terminal uses the same Socket.IO forward events (`createTerminal`, `terminalInput`, `terminalOutput`, `terminalResize`, `closeTerminal`). The agent-manager creates an OpenCode PTY in the worker (not Docker exec TTY), streams I/O over the OpenCode WebSocket, and forwards bytes to the console xterm instance without client-side line buffering. When `createTerminal` omits `shell`, OpenCode chooses the shell from worker `config.shell` (or its preferred detected shell); an explicit `shell` value overrides that.
 
 ### File Operations
 

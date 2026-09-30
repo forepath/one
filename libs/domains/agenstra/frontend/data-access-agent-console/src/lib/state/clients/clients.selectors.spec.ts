@@ -35,7 +35,7 @@ describe('Clients Selectors', () => {
       gitRepositoryUrl: 'https://github.com/user/repo.git',
       agentTypes: [
         {
-          type: 'cursor',
+          type: 'opencode',
           displayName: 'Cursor',
           capabilities: {
             transport: 'acp',
@@ -61,7 +61,7 @@ describe('Clients Selectors', () => {
       gitRepositoryUrl: 'https://github.com/user2/repo2.git',
       agentTypes: [
         {
-          type: 'cursor',
+          type: 'opencode',
           displayName: 'Cursor',
           capabilities: {
             transport: 'acp',

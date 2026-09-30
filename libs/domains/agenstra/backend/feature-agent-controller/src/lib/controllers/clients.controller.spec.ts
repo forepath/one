@@ -42,6 +42,8 @@ import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { ClientsService } from '../services/clients.service';
+import { OpencodeConfigSyncTargetsService } from '../services/opencode-config-sync-targets.service';
+import { OpencodeLayerFilesService } from '../services/opencode-layer-files.service';
 import { ProvisioningService } from '../services/provisioning.service';
 import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 
@@ -57,6 +59,10 @@ describe('ClientsController', () => {
   let clientUsersService: jest.Mocked<ClientUsersService>;
   let clientsRepository: jest.Mocked<ClientsRepository>;
   let clientUsersRepository: jest.Mocked<ClientUsersRepository>;
+  let opencodeLayerFilesService: { resetFailedAndEmitAllForAgent: jest.Mock };
+  let configSyncTargets: {
+    markAndProcessAgent: jest.Mock;
+  };
   const mockClientResponse: ClientResponseDto = {
     id: 'test-uuid',
     name: 'Test Client',
@@ -69,7 +75,7 @@ describe('ClientsController', () => {
       gitRepositoryUrl: 'https://github.com/user/repo.git',
       agentTypes: [
         {
-          type: 'cursor',
+          type: 'opencode',
           displayName: 'Cursor',
           capabilities: {
             transport: 'acp',
@@ -92,7 +98,7 @@ describe('ClientsController', () => {
     id: 'agent-uuid',
     name: 'Test Agent',
     description: 'Test Agent Description',
-    agentType: 'cursor',
+    agentType: 'opencode',
     containerType: ContainerType.GENERIC,
     chats: [],
     primaryChatId: 'primary-chat-uuid',
@@ -222,6 +228,18 @@ describe('ClientsController', () => {
             getStatus: jest.fn().mockReturnValue({ status: 'missing', docCount: 0 }),
           },
         },
+        {
+          provide: OpencodeLayerFilesService,
+          useValue: {
+            resetFailedAndEmitAllForAgent: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: OpencodeConfigSyncTargetsService,
+          useValue: {
+            markAndProcessAgent: jest.fn().mockResolvedValue({ syncStatus: 'synced' }),
+          },
+        },
       ],
     }).compile();
 
@@ -234,6 +252,8 @@ describe('ClientsController', () => {
     clientUsersService = module.get(ClientUsersService);
     clientsRepository = module.get(ClientsRepository);
     clientUsersRepository = module.get(ClientUsersRepository);
+    opencodeLayerFilesService = module.get(OpencodeLayerFilesService);
+    configSyncTargets = module.get(OpencodeConfigSyncTargetsService);
   });
 
   afterEach(() => {
@@ -443,6 +463,8 @@ describe('ClientsController', () => {
 
       expect(result).toEqual(mockCreateAgentResponse);
       expect(proxyService.createClientAgent).toHaveBeenCalledWith('client-uuid', createDto, undefined);
+      expect(opencodeLayerFilesService.resetFailedAndEmitAllForAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
+      expect(configSyncTargets.markAndProcessAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
     });
 
     it('should reject when user is plain workspace member', async () => {
@@ -507,6 +529,8 @@ describe('ClientsController', () => {
 
       expect(result).toEqual(mockAgentResponse);
       expect(proxyService.startClientAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
+      expect(opencodeLayerFilesService.resetFailedAndEmitAllForAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
+      expect(configSyncTargets.markAndProcessAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
     });
   });
 
@@ -537,6 +561,8 @@ describe('ClientsController', () => {
 
       expect(result).toEqual(mockAgentResponse);
       expect(proxyService.restartClientAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
+      expect(opencodeLayerFilesService.resetFailedAndEmitAllForAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
+      expect(configSyncTargets.markAndProcessAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
     });
   });
 
@@ -586,7 +612,7 @@ describe('ClientsController', () => {
       expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'text/plain; charset=utf-8');
     });
 
-    it('should use workspace management access and forward config context', async () => {
+    it('should forward app context for file reads', async () => {
       const mockFileBuffer = Buffer.from('{}', 'utf-8');
       const mockFileResult = {
         buffer: mockFileBuffer,
@@ -602,9 +628,9 @@ describe('ClientsController', () => {
       clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
       fileSystemProxyService.readFile.mockResolvedValue(mockFileResult);
 
-      await controller.readFile('client-uuid', 'agent-uuid', 'cfg.json', res, undefined, 'config', undefined, mockReq);
+      await controller.readFile('client-uuid', 'agent-uuid', 'cfg.json', res, undefined, 'app', undefined, mockReq);
 
-      expect(fileSystemProxyService.readFile).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'cfg.json', 'config', {
+      expect(fileSystemProxyService.readFile).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'cfg.json', 'app', {
         range: undefined,
         download: false,
       });
@@ -645,23 +671,6 @@ describe('ClientsController', () => {
       });
       expect(res.status).toHaveBeenCalledWith(HttpStatus.PARTIAL_CONTENT);
       expect(res.setHeader).toHaveBeenCalledWith('Content-Range', 'bytes 0-4/13');
-    });
-
-    it('should reject config context when user cannot manage workspace configuration', async () => {
-      const mockReq = { apiKeyAuthenticated: false, user: { id: 'user-1', roles: ['user'] } } as any;
-      const res = createMockResponse();
-
-      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: 'other-user' } as any);
-      clientUsersRepository.findUserClientAccess.mockResolvedValue({
-        id: 'rel-1',
-        clientId: 'client-uuid',
-        userId: 'user-1',
-        role: ClientUserRole.USER,
-      } as any);
-
-      await expect(
-        controller.readFile('client-uuid', 'agent-uuid', 'cfg.json', res, undefined, 'config', undefined, mockReq),
-      ).rejects.toThrow(WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE);
     });
   });
 

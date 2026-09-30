@@ -249,6 +249,81 @@ describe('buildAgentTurnView', () => {
       expect(first.row.toolPair?.resultDetailJson).toBeDefined();
     }
   });
+  it('omits step status/thinking and maps other status to structured rows', () => {
+    const view = buildAgentTurnView([
+      chatMsg(
+        'agent',
+        {
+          type: 'agenstra_turn',
+          parts: [
+            { type: 'thinking', phase: 'step' },
+            { type: 'status', subtype: 'step', title: 'Step', message: 'Step finished (stop)' },
+            { type: 'status', subtype: 'todo', title: 'Todos', message: '1. ship' },
+            { type: 'result', result: '<hidden-context>\nx\n</hidden-context>\nDone' },
+          ],
+        },
+        10,
+      ),
+    ]);
+
+    const kinds = view.segments.map((s) => (s.kind === 'row' ? s.row.kind : 'markdown'));
+
+    expect(kinds).toContain('status');
+    expect(kinds).not.toContain('thinking');
+    expect(view.segments.some((s) => s.kind === 'row' && s.row.summaryTitle === 'Step')).toBe(false);
+    expect(view.segments.some((s) => s.kind === 'row' && s.row.summaryTitle === 'Todos')).toBe(true);
+    const md = view.segments.find((s) => s.kind === 'markdown');
+
+    expect(md?.kind === 'markdown' ? md.markdown : '').toContain('Done');
+    expect(md?.kind === 'markdown' ? md.markdown : '').not.toContain('hidden-context');
+  });
+
+  it('omits question tool_call/tool_result parts without falling back to markdown', () => {
+    const view = buildAgentTurnView([
+      chatMsg(
+        'agent',
+        {
+          type: 'agenstra_turn',
+          parts: [
+            {
+              type: 'tool_call',
+              toolCallId: 'call_q',
+              name: 'question',
+              status: 'pending',
+              args: {},
+            },
+            {
+              type: 'question',
+              subtype: 'question',
+              questionId: 'q_1',
+              prompt: 'Pick a color',
+              options: [{ id: 'red', label: 'Red' }],
+            },
+            {
+              type: 'tool_result',
+              toolCallId: 'call_q',
+              name: 'question',
+              result: 'Red',
+              isError: false,
+            },
+            { type: 'result', result: 'Done' },
+          ],
+        },
+        10,
+      ),
+    ]);
+
+    const markdown = view.segments
+      .filter((s): s is Extract<(typeof view.segments)[number], { kind: 'markdown' }> => s.kind === 'markdown')
+      .map((s) => s.markdown)
+      .join('\n');
+
+    expect(markdown).not.toContain('Tool call');
+    expect(markdown).not.toContain('question');
+    expect(markdown).toContain('Done');
+    expect(view.segments.some((s) => s.kind === 'row' && s.row.kind === 'question')).toBe(true);
+    expect(view.segments.some((s) => s.kind === 'row' && s.row.toolName === 'question')).toBe(false);
+  });
 });
 
 function autoPayload(

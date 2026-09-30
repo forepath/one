@@ -88,10 +88,17 @@ export interface AgentQuestionPayload {
   prompt: string;
   options: AgentQuestionOption[];
   allowMultiple?: boolean;
+  /** Distinguishes OpenCode permissions (`permission` / `permission.v2`) from form questions. */
+  subtype?: string;
+  sessionId?: string;
 }
 
 export interface AgentStatusPayload {
   message: string;
+  /** Optional short badge/title override for richer status rows. */
+  title?: string;
+  /** When set (e.g. permission.replied), UI can mark the matching question as answered. */
+  questionId?: string;
 }
 
 export interface AgentErrorPayload {

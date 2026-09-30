@@ -15,6 +15,7 @@ import { AgentMessageEventsService } from '../services/agent-message-events.serv
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
 import { AgentsService } from '../services/agents.service';
+import { OpenCodePtyService } from '../providers/opencode/opencode-pty.service';
 import { DockerService } from '../services/docker.service';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
 
@@ -56,7 +57,7 @@ describe('AgentsGateway', () => {
     description: 'Test Description',
     hashedPassword: 'hashed-password',
     containerId: 'container-123',
-    agentType: 'cursor',
+    agentType: 'opencode',
     containerType: ContainerType.GENERIC,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
@@ -83,6 +84,14 @@ describe('AgentsGateway', () => {
   const mockDockerService = {
     sendCommandToContainer: jest.fn(),
   } as unknown as jest.Mocked<DockerService>;
+  const mockOpenCodePtyService = {
+    open: jest.fn().mockResolvedValue(undefined),
+    write: jest.fn().mockResolvedValue(undefined),
+    resize: jest.fn().mockResolvedValue(undefined),
+    close: jest.fn().mockResolvedValue(undefined),
+    closeAll: jest.fn().mockResolvedValue(undefined),
+    hasSession: jest.fn(),
+  };
   const mockAgentMessagesService = {
     createUserMessage: jest.fn(),
     createAgentMessage: jest.fn(),
@@ -98,7 +107,7 @@ describe('AgentsGateway', () => {
     ensurePrimarySession: jest.fn().mockResolvedValue(mockPrimaryChatSession),
   };
   const mockAgentProvider: jest.Mocked<AgentProvider> = {
-    getType: jest.fn().mockReturnValue('cursor'),
+    getType: jest.fn().mockReturnValue('opencode'),
     getDisplayName: jest.fn().mockReturnValue('Cursor'),
     getCapabilities: jest.fn().mockReturnValue({
       supportsChat: true,
@@ -113,7 +122,7 @@ describe('AgentsGateway', () => {
     sendInitialization: jest.fn(),
     toParseableStrings: jest.fn(),
     toUnifiedResponse: jest.fn(),
-    getModelsListCommand: jest.fn().mockReturnValue('cursor-agent --list-models'),
+    getModelsListCommand: jest.fn().mockReturnValue('opencode models'),
     toModelsList: jest.fn().mockReturnValue({}),
   };
   const mockAgentProviderFactory = {
@@ -164,6 +173,10 @@ describe('AgentsGateway', () => {
         {
           provide: DockerService,
           useValue: mockDockerService,
+        },
+        {
+          provide: OpenCodePtyService,
+          useValue: mockOpenCodePtyService,
         },
         {
           provide: AgentMessagesService,
@@ -1061,7 +1074,7 @@ describe('AgentsGateway', () => {
           timestamp: expect.any(String),
         }),
       );
-      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('cursor');
+      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('opencode');
       expect(mockAgentProvider.sendMessage).toHaveBeenCalledWith(mockAgent.id, 'container-123', 'Hello, world!', {});
       // Check agent response emission with parsed JSON - now uses socket.emit via broadcastToAgent
       expect(mockSocket.emit).toHaveBeenCalledWith(
@@ -3591,7 +3604,7 @@ describe('AgentsGateway', () => {
   });
 
   describe('Connection State Recovery', () => {
-    it('should skip chat history restoration when socket is recovered', async () => {
+    it('should restore chat history when socket is recovered (client clears store on reconnect)', async () => {
       agentsRepository.findById.mockResolvedValue(mockAgent);
       agentsService.verifyCredentials.mockResolvedValue(true);
       agentsService.findOne.mockResolvedValue(mockAgentResponse);
@@ -3629,15 +3642,14 @@ describe('AgentsGateway', () => {
         }),
       );
 
-      // Verify chat history was NOT fetched (should be skipped for recovered sockets)
-      expect(agentMessagesService.getChatHistory).not.toHaveBeenCalled();
+      // Client clears forwardedEvents on reconnect — recovered sockets must still reload from DB.
+      expect(agentMessagesService.getChatHistory).toHaveBeenCalledWith(mockAgent.id, 20, 0, 'primary-chat-id');
 
-      // Verify only loginSuccess was emitted, no chat messages
       const chatMessageCalls = (recoveredSocket.emit as jest.Mock).mock.calls.filter(
         (call: unknown[]) => call[0] === 'chatMessage',
       );
 
-      expect(chatMessageCalls.length).toBe(0);
+      expect(chatMessageCalls.length).toBeGreaterThan(0);
     });
 
     it('should skip chat history restoration when agent is already authenticated', async () => {
@@ -3915,6 +3927,70 @@ describe('AgentsGateway', () => {
 
       expect(parts[0].args).toMatchObject({ autoEnrichmentEnabled: true });
       expect(parts[1].result).toMatchObject({ autoEnrichmentEnabled: true });
+    });
+  });
+
+  describe('terminal (OpenCode PTY)', () => {
+    beforeEach(() => {
+      mockAgentsService.verifyCredentials.mockResolvedValue(true);
+      mockAgentsRepository.findById.mockResolvedValue(mockAgent);
+      (gateway as any).authenticatedClients.set(mockSocket.id, mockAgent.id);
+    });
+
+    it('handleCreateTerminal opens OpenCode PTY and emits terminalCreated', async () => {
+      await gateway.handleCreateTerminal({ sessionId: 'sess-1', shell: 'bash' }, mockSocket as Socket);
+
+      expect(mockOpenCodePtyService.open).toHaveBeenCalledWith(
+        mockAgent.id,
+        mockAgent.containerId,
+        'sess-1',
+        { shell: 'bash' },
+        expect.objectContaining({ onOutput: expect.any(Function), onClosed: expect.any(Function) }),
+      );
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'terminalCreated',
+        expect.objectContaining({ success: true, data: { sessionId: 'sess-1' } }),
+      );
+    });
+
+    it('handleCreateTerminal omits shell so OpenCode can use config default', async () => {
+      await gateway.handleCreateTerminal({ sessionId: 'sess-default' }, mockSocket as Socket);
+
+      expect(mockOpenCodePtyService.open).toHaveBeenCalledWith(
+        mockAgent.id,
+        mockAgent.containerId,
+        'sess-default',
+        { shell: undefined },
+        expect.objectContaining({ onOutput: expect.any(Function), onClosed: expect.any(Function) }),
+      );
+    });
+
+    it('handleTerminalInput writes to PTY when session belongs to socket', async () => {
+      await gateway.handleCreateTerminal({ sessionId: 'sess-2' }, mockSocket as Socket);
+      await gateway.handleTerminalInput({ sessionId: 'sess-2', data: 'ls\n' }, mockSocket as Socket);
+
+      expect(mockOpenCodePtyService.write).toHaveBeenCalledWith('sess-2', 'ls\n');
+    });
+
+    it('handleTerminalResize forwards cols and rows', async () => {
+      await gateway.handleCreateTerminal({ sessionId: 'sess-3' }, mockSocket as Socket);
+      await gateway.handleTerminalResize({ sessionId: 'sess-3', cols: 120, rows: 40 }, mockSocket as Socket);
+
+      expect(mockOpenCodePtyService.resize).toHaveBeenCalledWith('sess-3', 120, 40);
+    });
+
+    it('handleCloseTerminal closes PTY and emits terminalClosed once', async () => {
+      await gateway.handleCreateTerminal({ sessionId: 'sess-4' }, mockSocket as Socket);
+      (mockSocket.emit as jest.Mock).mockClear();
+
+      await gateway.handleCloseTerminal({ sessionId: 'sess-4' }, mockSocket as Socket);
+
+      expect(mockOpenCodePtyService.close).toHaveBeenCalledWith('sess-4');
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'terminalClosed',
+        expect.objectContaining({ success: true, data: { sessionId: 'sess-4' } }),
+      );
+      expect((mockSocket.emit as jest.Mock).mock.calls.filter(([event]) => event === 'terminalClosed')).toHaveLength(1);
     });
   });
 });

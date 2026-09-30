@@ -29,6 +29,8 @@ export class FpcTabComponent {
   readonly id = input('');
   readonly label = input('');
   readonly icon = input<string | null>(null);
+  /** Optional vertical-nav section heading (grouped with consecutive tabs sharing the same value). */
+  readonly section = input<string | null>(null);
   readonly active = model(false);
   readonly disabled = input(false);
 

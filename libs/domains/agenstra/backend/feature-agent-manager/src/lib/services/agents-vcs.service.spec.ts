@@ -30,7 +30,7 @@ describe('AgentsVcsService', () => {
     hashedPassword: 'hashed-password',
     containerId: mockContainerId,
     volumePath: '/opt/agents/test-uuid',
-    agentType: 'cursor',
+    agentType: 'opencode',
     containerType: ContainerType.GENERIC,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),

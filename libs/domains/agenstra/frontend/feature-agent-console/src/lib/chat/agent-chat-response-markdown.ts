@@ -129,19 +129,56 @@ function unknownProp(obj: AgentResponseObject, key: string): unknown {
 
 function formatToolCall(response: AgentResponseObject): string {
   const name = strProp(response, 'name') ?? 'tool';
+
+  // Dedicated interactive Question UI owns this; never dump a technical tool-call fallback.
+  if (name.trim().toLowerCase() === 'question') {
+    return '';
+  }
+
   const toolCallId = strProp(response, 'toolCallId');
   const status = strProp(response, 'status') ?? 'unknown';
   const args = unknownProp(response, 'args');
+  const isSubagent = name === 'subagent' || name === 'task' || strProp(response, 'subtype') === 'subagent';
   const lines: string[] = [];
 
-  lines.push(`**Tool call** · \`${name}\` · ${status}`);
+  lines.push(isSubagent ? `**Subagent** · ${status}` : `**Tool call** · \`${name}\` · ${status}`);
 
   if (toolCallId) {
     lines.push('');
     lines.push(`ID: \`${toolCallId}\``);
   }
 
-  if (args !== undefined) {
+  if (args !== undefined && args && typeof args === 'object') {
+    const record = args as Record<string, unknown>;
+    const agent =
+      typeof record['agent'] === 'string'
+        ? record['agent']
+        : typeof record['subagent_type'] === 'string'
+          ? record['subagent_type']
+          : undefined;
+    const description = typeof record['description'] === 'string' ? record['description'] : undefined;
+    const prompt = typeof record['prompt'] === 'string' ? record['prompt'] : undefined;
+
+    if (isSubagent && (agent || description || prompt)) {
+      lines.push('');
+
+      if (agent) {
+        lines.push(`Agent: \`@${agent}\``);
+      }
+
+      if (description) {
+        lines.push(`Description: ${description}`);
+      }
+
+      if (prompt) {
+        lines.push('');
+        lines.push(prompt);
+      }
+    } else {
+      lines.push('');
+      lines.push(formatUnknownAsMarkdown(args));
+    }
+  } else if (args !== undefined) {
     lines.push('');
     lines.push(formatUnknownAsMarkdown(args));
   }
@@ -151,12 +188,22 @@ function formatToolCall(response: AgentResponseObject): string {
 
 function formatToolResult(response: AgentResponseObject): string {
   const name = strProp(response, 'name') ?? 'tool';
+
+  if (name.trim().toLowerCase() === 'question') {
+    return '';
+  }
+
   const toolCallId = strProp(response, 'toolCallId');
   const isError = Boolean(response['isError']);
   const result = unknownProp(response, 'result');
+  const isSubagent = name === 'subagent' || name === 'task' || strProp(response, 'subtype') === 'subagent';
   const lines: string[] = [];
 
-  lines.push(`**Tool result** · \`${name}\` · ${isError ? '_failed_' : '_success_'}`);
+  lines.push(
+    isSubagent
+      ? `**Subagent result** · ${isError ? '_failed_' : '_success_'}`
+      : `**Tool result** · \`${name}\` · ${isError ? '_failed_' : '_success_'}`,
+  );
 
   if (toolCallId) {
     lines.push('');
@@ -275,6 +322,15 @@ function formatGenericResult(response: AgentResponseObject): string {
 }
 
 /**
+ * Removes Agenstra-injected prompt blocks that must never appear in the chat UI.
+ */
+export function stripHiddenPromptBlocks(text: string): string {
+  return text
+    .replace(/<hidden-context>[\s\S]*?<\/hidden-context>\s*/gi, '')
+    .replace(/\[SYSTEM INTERNAL - HIDDEN HYDRATION CONTEXT\][\s\S]*?\[END HIDDEN HYDRATION CONTEXT\]\s*/gi, '');
+}
+
+/**
  * Turns a persisted or live agent `response` into Markdown suitable for `marked` + sanitization.
  * Avoids raw JSON code fences except when the payload is fundamentally unparsed text.
  */
@@ -288,11 +344,11 @@ export function formatAgentResponseForChatMarkdown(response: AgentResponseObject
 
         return formatAgentResponseForChatMarkdown(parsed);
       } catch {
-        return response;
+        return stripHiddenPromptBlocks(response);
       }
     }
 
-    return response;
+    return stripHiddenPromptBlocks(response);
   }
 
   const type = strProp(response, 'type') ?? '';
@@ -319,7 +375,7 @@ export function formatAgentResponseForChatMarkdown(response: AgentResponseObject
   }
 
   if (type === 'delta') {
-    return formatDelta(response);
+    return stripHiddenPromptBlocks(formatDelta(response));
   }
 
   if (type === 'interaction_query' || type === 'interactionQuery') {
@@ -329,7 +385,30 @@ export function formatAgentResponseForChatMarkdown(response: AgentResponseObject
   if (type === 'thinking') {
     const t = extractThinkingPreviewText(response);
 
+    if (t.trim().toLowerCase() === 'step') {
+      return '';
+    }
+
     return t ? truncate(t.replace(/\s+/g, ' ')) : 'Thinking…';
+  }
+
+  if (type === 'status') {
+    const subtype = strProp(response, 'subtype') ?? '';
+
+    if (subtype === 'step' || subtype.startsWith('step')) {
+      return '';
+    }
+
+    const title = strProp(response, 'title');
+
+    if (title === 'Step') {
+      return '';
+    }
+
+    const message = strProp(response, 'result') ?? strProp(response, 'message') ?? '';
+    const heading = title ? `**${title}**` : '**Status**';
+
+    return message ? `${heading}\n\n${message}` : heading;
   }
 
   if (type === 'error' || response.is_error === true) {
@@ -337,8 +416,8 @@ export function formatAgentResponseForChatMarkdown(response: AgentResponseObject
   }
 
   if (type === 'result' || type === 'assistantMessage') {
-    return formatGenericResult(response);
+    return stripHiddenPromptBlocks(formatGenericResult(response));
   }
 
-  return formatGenericResult(response);
+  return stripHiddenPromptBlocks(formatGenericResult(response));
 }

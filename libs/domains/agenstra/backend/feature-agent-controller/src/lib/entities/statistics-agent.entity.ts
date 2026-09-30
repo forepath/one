@@ -33,7 +33,7 @@ export class StatisticsAgentEntity {
   @JoinColumn({ name: 'statistics_client_id' })
   statisticsClient?: StatisticsClientEntity;
 
-  @Column({ type: 'varchar', length: 50, default: 'cursor', name: 'agent_type' })
+  @Column({ type: 'varchar', length: 50, default: 'opencode', name: 'agent_type' })
   agentType!: string;
 
   @Column({ type: 'varchar', length: 50, default: 'generic', name: 'container_type' })

@@ -39,7 +39,7 @@ export class AgentEntity {
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'volume_path' })
   volumePath?: string;
 
-  @Column({ type: 'varchar', length: 50, default: 'cursor', name: 'agent_type' })
+  @Column({ type: 'varchar', length: 50, default: 'opencode', name: 'agent_type' })
   agentType!: string;
 
   @Column({ type: 'enum', enum: ContainerType, name: 'container_type', default: ContainerType.GENERIC })
@@ -78,6 +78,35 @@ export class AgentEntity {
   })
   sshPassword?: string;
 
+  /**
+   * Basic-auth password for the worker's `opencode serve` HTTP API (`OPENCODE_SERVER_PASSWORD`).
+   */
+  @Column({
+    type: 'varchar',
+    length: 1024,
+    nullable: true,
+    name: 'opencode_server_password',
+    transformer: createAes256GcmTransformer(),
+  })
+  opencodeServerPassword?: string;
+
+  /** Per-agent OpenCode user config overlay (non-secret). */
+  @Column({ type: 'jsonb', nullable: true, name: 'opencode_user_config' })
+  opencodeUserConfig?: Record<string, unknown> | null;
+
+  /** Per-agent raw OpenCode JSON overrides merged over {@link opencodeUserConfig}. */
+  @Column({ type: 'jsonb', nullable: true, name: 'opencode_user_overrides' })
+  opencodeUserOverrides?: Record<string, unknown> | null;
+
+  /** Per-agent OpenCode secrets (JSON), AES-256-GCM encrypted. */
+  @Column({
+    type: 'text',
+    nullable: true,
+    name: 'opencode_user_secrets',
+    transformer: createAes256GcmTransformer(),
+  })
+  opencodeUserSecrets?: string | null;
+
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'git_repository_url' })
   gitRepositoryUrl?: string;
 
@@ -85,8 +114,8 @@ export class AgentEntity {
   gitRepositorySetupMode?: GitRepositorySetupMode;
 
   /**
-   * Agent-issued ACP session ids keyed by resumeSessionSuffix (empty string = primary chat).
-   * Used to call `loadSession` after API restarts for main chat and background automation sessions.
+   * Runtime session ids (OpenCode `ses…`) keyed by resumeSessionSuffix (empty string = primary chat).
+   * Column name retained as `acp_sessions` for migration continuity.
    */
   @Column({ type: 'jsonb', nullable: true, name: 'acp_sessions' })
   acpSessions?: Record<string, string> | null;

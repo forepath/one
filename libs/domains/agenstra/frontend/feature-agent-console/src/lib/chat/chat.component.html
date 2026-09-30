@@ -18,19 +18,11 @@
             </div>
           }
           <span class="fw-bold text-uppercase" i18n="@@featureChat-appName">Agenstra</span>
-          @if (fileManagerContext() === 'config') {
-            <span
-              class="badge bg-transparent border border-2 border-primary text-primary text-uppercase small editor-toolbar-badge fw-bold"
-              i18n="@@featureChat-agentConfigBadge"
-              >Agent config</span
-            >
-          } @else {
-            <span
-              class="badge bg-transparent border border-2 border-primary text-primary text-uppercase small editor-toolbar-badge fw-bold"
-              i18n="@@featureChat-studio"
-              >Studio</span
-            >
-          }
+          <span
+            class="badge bg-transparent border border-2 border-primary text-primary text-uppercase small editor-toolbar-badge fw-bold"
+            i18n="@@featureChat-studio"
+            >Studio</span
+          >
         </div>
         <div class="d-flex align-items-center gap-2">
           <fpc-button-group size="sm">
@@ -76,17 +68,15 @@
                 aria-hidden="true"
               ></i>
             </fpc-button>
-            @if (fileManagerContext() === 'app') {
-              <fpc-button
-                size="sm"
-                iconOnly
-                [variant]="gitManagerVisible() ? 'primary' : 'dark'"
-                (clicked)="onToggleGitManager()"
-                [title]="getGitManagerToggleTitle()"
-              >
-                <i class="bi bi-git" aria-hidden="true"></i>
-              </fpc-button>
-            }
+            <fpc-button
+              size="sm"
+              iconOnly
+              [variant]="gitManagerVisible() ? 'primary' : 'dark'"
+              (clicked)="onToggleGitManager()"
+              [title]="getGitManagerToggleTitle()"
+            >
+              <i class="bi bi-git" aria-hidden="true"></i>
+            </fpc-button>
           </fpc-button-group>
           <fpc-button
             [variant]="shareFileLinkCopied() ? 'success' : 'primary'"
@@ -232,6 +222,16 @@
                             title="Manage workspace configuration"
                           >
                             <i class="bi bi-sliders"></i>
+                          </fpc-button>
+                          <fpc-button
+                            variant="dark"
+                            size="sm"
+                            iconOnly
+                            (clicked)="onManageOpencodeConfigClick(client); $event.stopPropagation()"
+                            i18n-title="@@featureChat-manageOpencodeConfigTitle"
+                            title="Manage agent configuration"
+                          >
+                            <i class="bi bi-cpu"></i>
                           </fpc-button>
                           <fpc-button
                             variant="warning"
@@ -398,17 +398,13 @@
                         @if (agent.description) {
                           <div class="text-truncate mb-1">{{ agent.description }}</div>
                         }
-                        @if ((activeClient$ | async) || agent.vnc || agent.git?.repositoryUrl) {
+                        @if (agent.vnc || agent.ssh || agent.git?.repositoryUrl || agent.containerType) {
                           <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
                             <span class="me-2">
                               <i class="bi bi-box me-1" aria-hidden="true"></i
                               >{{ getContainerTypeDisplayName(agent.containerType) }}
                             </span>
                             @if (activeClient$ | async; as activeClient) {
-                              <span class="me-2">
-                                <i class="bi bi-robot me-1" aria-hidden="true"></i
-                                >{{ getAgentTypeDisplayName(agent.agentType, activeClient) }}
-                              </span>
                               @if (getAgentGitRepositoryLabel(agent, activeClient); as repo) {
                                 <span class="me-2"> <i class="bi bi-git me-1" aria-hidden="true"></i>{{ repo }} </span>
                               }
@@ -428,51 +424,65 @@
                           </div>
                         }
                       </div>
-                      @if ((activeClient$ | async)?.canManageWorkspaceConfiguration) {
-                        <fpc-button-group fpcListItemActions size="sm">
-                          <fpc-button
-                            size="sm"
-                            iconOnly
-                            variant="dark"
-                            (clicked)="onManageTicketAutonomyClick(agent); $event.stopPropagation()"
-                            i18n-title="@@featureChat-ticketAutonomyButtonTitle"
-                            title="Prototype autonomy"
-                          >
-                            <i class="bi bi-lightning-charge" aria-hidden="true"></i>
-                          </fpc-button>
-                          <fpc-button
-                            variant="dark"
-                            size="sm"
-                            iconOnly
-                            (clicked)="onManageEnvironmentVariablesClick(agent); $event.stopPropagation()"
-                            i18n-title="@@featureChat-manageEnvVarsTitle"
-                            title="Manage Environment Variables"
-                          >
-                            <i class="bi bi-sliders"></i>
-                          </fpc-button>
-                          <fpc-button
-                            variant="warning"
-                            size="sm"
-                            iconOnly
-                            (clicked)="onEditAgentClick(agent); $event.stopPropagation()"
-                            [disabled]="(agentsUpdating$ | async) === true"
-                            i18n-title="@@featureChat-editEnvironmentTitle"
-                            title="Edit environment"
-                          >
-                            <i class="bi bi-pencil"></i>
-                          </fpc-button>
-                          <fpc-button
-                            variant="danger"
-                            size="sm"
-                            iconOnly
-                            (clicked)="onDeleteAgentClick(agent.id, agent.name); $event.stopPropagation()"
-                            [disabled]="(agentsDeleting$ | async) === true"
-                            i18n-title="@@featureChat-deleteEnvironmentTitle"
-                            title="Delete Environment"
-                          >
-                            <i class="bi bi-trash"></i>
-                          </fpc-button>
-                        </fpc-button-group>
+                      @if (activeClient$ | async; as opencodeClient) {
+                        @if (opencodeClient.canManageWorkspaceConfiguration) {
+                          <fpc-button-group fpcListItemActions size="sm">
+                            <fpc-button
+                              size="sm"
+                              iconOnly
+                              variant="dark"
+                              (clicked)="onManageTicketAutonomyClick(agent); $event.stopPropagation()"
+                              i18n-title="@@featureChat-ticketAutonomyButtonTitle"
+                              title="Prototype autonomy"
+                            >
+                              <i class="bi bi-lightning-charge" aria-hidden="true"></i>
+                            </fpc-button>
+                            <fpc-button
+                              variant="dark"
+                              size="sm"
+                              iconOnly
+                              (clicked)="onManageEnvironmentVariablesClick(agent); $event.stopPropagation()"
+                              i18n-title="@@featureChat-manageEnvVarsTitle"
+                              title="Manage Environment Variables"
+                            >
+                              <i class="bi bi-sliders"></i>
+                            </fpc-button>
+                            <fpc-button
+                              variant="dark"
+                              size="sm"
+                              iconOnly
+                              (clicked)="
+                                onManageOpencodeConfigClick(opencodeClient, agent.id); $event.stopPropagation()
+                              "
+                              i18n-title="@@featureChat-manageOpencodeConfigEnvironmentTitle"
+                              title="Manage agent configuration"
+                            >
+                              <i class="bi bi-cpu"></i>
+                            </fpc-button>
+                            <fpc-button
+                              variant="warning"
+                              size="sm"
+                              iconOnly
+                              (clicked)="onEditAgentClick(agent); $event.stopPropagation()"
+                              [disabled]="(agentsUpdating$ | async) === true"
+                              i18n-title="@@featureChat-editEnvironmentTitle"
+                              title="Edit environment"
+                            >
+                              <i class="bi bi-pencil"></i>
+                            </fpc-button>
+                            <fpc-button
+                              variant="danger"
+                              size="sm"
+                              iconOnly
+                              (clicked)="onDeleteAgentClick(agent.id, agent.name); $event.stopPropagation()"
+                              [disabled]="(agentsDeleting$ | async) === true"
+                              i18n-title="@@featureChat-deleteEnvironmentTitle"
+                              title="Delete Environment"
+                            >
+                              <i class="bi bi-trash"></i>
+                            </fpc-button>
+                          </fpc-button-group>
+                        }
                       }
                     </fpc-list-item>
                   }
@@ -768,29 +778,16 @@
               }
             </fpc-button-group>
             @if (!editorOpen()) {
-              <fpc-button-group size="sm">
-                <fpc-button
-                  variant="primary"
-                  size="sm"
-                  iconOnly
-                  [class.open-editor-btn--git-dirty]="selectedEnvironmentGitDirty$ | async"
-                  (clicked)="onToggleEditor(true, getOpenInNewWindow())"
-                  [title]="getOpenEditorTitle()"
-                >
-                  <i class="bi bi-code-square" aria-hidden="true"></i>
-                </fpc-button>
-                @if ((activeClient$ | async)?.canManageWorkspaceConfiguration) {
-                  <fpc-button
-                    variant="dark"
-                    size="sm"
-                    iconOnly
-                    (clicked)="onOpenAgentConfigFiles(getOpenInNewWindow())"
-                    [title]="getOpenAgentConfigFilesTitle()"
-                  >
-                    <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
-                  </fpc-button>
-                }
-              </fpc-button-group>
+              <fpc-button
+                variant="primary"
+                size="sm"
+                iconOnly
+                [class.open-editor-btn--git-dirty]="selectedEnvironmentGitDirty$ | async"
+                (clicked)="onToggleEditor(true, getOpenInNewWindow())"
+                [title]="getOpenEditorTitle()"
+              >
+                <i class="bi bi-code-square" aria-hidden="true"></i>
+              </fpc-button>
             }
             @if (activeClient$ | async; as activeClient) {
               @if (selectedAgent$ | async; as selectedAgent) {
@@ -954,7 +951,14 @@
                             }
                             @for (seg of item.view.segments; track seg.kind === 'row' ? seg.row.trackId : seg.trackId) {
                               @if (seg.kind === 'row') {
-                                <framework-agent-chat-event-row [row]="seg.row" />
+                                <framework-agent-chat-event-row
+                                  [row]="seg.row"
+                                  [todosExpandScope]="trackChatDisplayItem(item)"
+                                  [alreadyAnswered]="isQuestionAnswered(seg.row)"
+                                  [replyBusy]="isQuestionReplyBusy(seg.row)"
+                                  [replyFailedMessage]="questionReplyError(seg.row)"
+                                  (questionReply)="onQuestionReply($event)"
+                                />
                               } @else if (seg.kind === 'markdown') {
                                 @if (parseMarkdownFromString(seg.markdown); as turnMarkdownHtml) {
                                   <div
@@ -1018,7 +1022,14 @@
                           @if (pending.stream; as stream) {
                             @for (seg of stream.segments; track seg.kind === 'row' ? seg.row.trackId : seg.trackId) {
                               @if (seg.kind === 'row') {
-                                <framework-agent-chat-event-row [row]="seg.row" />
+                                <framework-agent-chat-event-row
+                                  [row]="seg.row"
+                                  todosExpandScope="pending"
+                                  [alreadyAnswered]="isQuestionAnswered(seg.row)"
+                                  [replyBusy]="isQuestionReplyBusy(seg.row)"
+                                  [replyFailedMessage]="questionReplyError(seg.row)"
+                                  (questionReply)="onQuestionReply($event)"
+                                />
                               } @else if (seg.kind === 'markdown') {
                                 @if (parseMarkdownFromString(seg.markdown); as streamHtml) {
                                   <div
@@ -1115,49 +1126,66 @@
               ></button>
             </div>
           }
-          <div class="chat-commands-select">
-            <fpc-form-control
-              controlId="chatCommandsSelect"
-              controlType="select"
-              size="sm"
-              controlClass="small text-body"
-              name="chatCommandsSelect"
-              [ngModel]="selectedCommand() ?? ''"
-              (ngModelChange)="onCommandChange($event)"
-              [disabled]="
-                !!(
-                  !(socketConnected$ | async) ||
-                  (socketReconnecting$ | async) ||
-                  (remoteReconnecting$ | async) ||
-                  (chatEnhancementPending$ | async) ||
-                  !(selectedAgent$ | async) ||
-                  (commandsLoading$ | async) ||
-                  (commands$ | async)?.length === 0
-                )
-              "
-            >
-              <option value="" i18n="@@featureChat-chat">Chat</option>
-              @if (commands$ | async; as commands) {
-                @if (commands.length > 0) {
-                  <optgroup label="Commands" i18n-label="@@featureChat-commandsLabel">
-                    @for (command of commands; track command) {
-                      <option [value]="command">{{ command }}</option>
-                    }
-                  </optgroup>
-                }
-              }
-            </fpc-form-control>
-          </div>
           <div class="chat-input-group">
-            <div class="form-control chat-textarea-container">
+            <div
+              class="form-control chat-textarea-container"
+              [class.chat-textarea-container--command-marked]="!!selectedCommand()"
+            >
+              @if (selectedCommand(); as markedCommand) {
+                <div class="chat-command-mark">
+                  <fpc-badge variant="info" color="primary" class="chat-command-mark__badge">
+                    <span class="font-monospace">{{ markedCommand }}</span>
+                    <button
+                      type="button"
+                      class="btn-close chat-command-mark__clear"
+                      (click)="clearSelectedCommand()"
+                      i18n-aria-label="@@featureChat-clearCommandAria"
+                      aria-label="Clear command"
+                    ></button>
+                  </fpc-badge>
+                </div>
+              }
+              @if (slashCommandMenuOpen()) {
+                <div
+                  class="dropdown-menu show fpc-typeahead-select__menu chat-command-typeahead"
+                  role="listbox"
+                  id="chatCommandTypeaheadListbox"
+                >
+                  <div class="fpc-typeahead-select__suggestions">
+                    @for (command of filteredSlashCommands(); track command.name; let i = $index) {
+                      <button
+                        type="button"
+                        class="dropdown-item py-2 text-start"
+                        role="option"
+                        [class.active]="i === slashHighlightIndex()"
+                        [attr.aria-selected]="i === slashHighlightIndex()"
+                        (mousedown)="pickSlashCommand(command, $event)"
+                      >
+                        <span class="d-flex align-items-baseline justify-content-between gap-2">
+                          <span class="font-monospace small fw-medium">{{ command.name }}</span>
+                          @if (command.source && command.source !== 'command') {
+                            <span class="text-muted small text-uppercase flex-shrink-0">{{ command.source }}</span>
+                          }
+                        </span>
+                        @if (command.description) {
+                          <span class="d-block text-muted small text-truncate">{{ command.description }}</span>
+                        }
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
               <textarea
                 class="chat-textarea"
                 [rows]="3"
-                placeholder="Type a message..."
+                placeholder="Type a message or /command…"
                 i18n-placeholder="@@featureChat-typeMessagePlaceholder"
                 [value]="chatMessage()"
-                (input)="chatMessage.set($any($event.target).value)"
+                (input)="onChatMessageInput($any($event.target).value)"
                 (keydown)="onChatInputKeydown($event)"
+                [attr.aria-autocomplete]="slashCommandMenuOpen() ? 'list' : null"
+                [attr.aria-controls]="slashCommandMenuOpen() ? 'chatCommandTypeaheadListbox' : null"
+                [attr.aria-expanded]="slashCommandMenuOpen()"
                 [disabled]="
                   !(socketConnected$ | async) ||
                   (socketReconnecting$ | async) ||
@@ -1261,7 +1289,6 @@
                     !!(chatModelSelectDisabled$ | async)
                   "
                 >
-                  <option value="auto" i18n="@@featureChat-modelAuto">Auto</option>
                   @for (model of (chatModelSelectOptions$ | async) ?? []; track model.value) {
                     <option [value]="model.value">{{ model.label }}</option>
                   }
@@ -1850,21 +1877,7 @@
       <div class="border-top pt-3 mt-3">
         <h6 class="mb-3">Additional Configuration</h6>
 
-        <!-- Cursor Agent Configuration -->
-        <fpc-form-field forId="clientCursorApiKey" label="Cursor API Key">
-          <fpc-form-control
-            controlId="clientCursorApiKey"
-            inputType="password"
-            name="cursorApiKey"
-            [ngModel]="newClient().cursorApiKey"
-            (ngModelChange)="updateClientField('cursorApiKey', $event)"
-            i18n-placeholder="@@featureChat-optionalPlaceholder"
-            placeholder="Optional"
-            [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
-          />
-          <small fpcFormFieldHint>API key for Cursor agent integration</small>
-        </fpc-form-field>
-
+        <!-- Agent Configuration -->
         <fpc-form-field forId="clientAgentDefaultImage" label="Agent Default Image">
           <fpc-form-control
             controlId="clientAgentDefaultImage"
@@ -1875,7 +1888,7 @@
             placeholder="ghcr.io/forepath/agenstra-manager-worker:latest"
             [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
           />
-          <small fpcFormFieldHint>Default Docker image for cursor agents</small>
+          <small fpcFormFieldHint>Default Docker image for agents</small>
         </fpc-form-field>
 
         <fpc-form-field
@@ -2076,27 +2089,6 @@
         [disabled]="(agentsCreating$ | async) === true"
       />
     </fpc-form-field>
-    @if (activeClient$ | async; as activeClient) {
-      @if (activeClient.config?.agentTypes; as agentTypes) {
-        @if (agentTypes.length > 0) {
-          <fpc-form-field forId="agentType" i18n-label="@@featureChat-agentTypeLabel" label="Agent Type">
-            <fpc-form-control
-              controlType="select"
-              controlId="agentType"
-              name="agentType"
-              [ngModel]="newAgent().agentType ?? ''"
-              (ngModelChange)="updateAgentField('agentType', $event || undefined)"
-              [disabled]="(agentsCreating$ | async) === true"
-            >
-              <option value="" i18n="@@featureChat-agentTypeDefaultCursor">Default (Cursor)</option>
-              @for (agentType of agentTypes; track agentType.type) {
-                <option [value]="agentType.type">{{ agentType.displayName }}</option>
-              }
-            </fpc-form-control>
-          </fpc-form-field>
-        }
-      }
-    }
     <fpc-form-field forId="agentContainerType" i18n-label="@@featureChat-containerTypeLabel" label="Container Type">
       <fpc-form-control
         controlType="select"
@@ -2567,6 +2559,40 @@
     >
   </div>
 </fpc-modal>
+<!-- Agent configuration modal (workspace or environment layer) -->
+<fpc-modal
+  [(open)]="opencodeConfigModalOpen"
+  [title]="opencodeConfigScope() === 'agent' ? agentConfigEnvironmentTitle : agentConfigWorkspaceTitle"
+  size="xl"
+  (closed)="onCloseOpencodeConfigModal()"
+>
+  @if (opencodeConfigClientId(); as clientId) {
+    <agenstra-agent-config-editor
+      [layer]="opencodeConfigScope() === 'agent' ? 'agent' : 'workspace'"
+      [clientId]="clientId"
+      [agentId]="opencodeConfigAgentId()"
+      presentation="modal"
+      (cancelled)="onCloseOpencodeConfigModal()"
+      (editPathFile)="onEditOpencodeConfigPathFile($event)"
+    />
+  }
+</fpc-modal>
+@if (layerFileEditorOpen() && layerFileEditorPath(); as layerPath) {
+  <fpc-modal
+    [(open)]="layerFileEditorOpen"
+    i18n-title="@@featureAgentConfig-layerFileEditorTitle"
+    title="Edit layer file"
+    size="xl"
+    (closed)="onCloseLayerFileEditor()"
+  >
+    <framework-layer-file-ide
+      [scope]="layerFileEditorScope()"
+      [clientId]="layerFileEditorClientId()"
+      [path]="layerPath"
+      (cancelled)="onCloseLayerFileEditor()"
+    />
+  </fpc-modal>
+}
 <!-- Environment Variables Modal -->
 <fpc-modal
   [(open)]="environmentVariablesModalOpen"

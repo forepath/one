@@ -1,7 +1,7 @@
 <div class="audit-container border-top d-flex flex-column flex-grow-1 min-h-0">
   <fpc-page-header [title]="pageTitle" />
 
-  <fpc-summary-bar [columns]="5">
+  <fpc-summary-bar [columns]="7">
     <fpc-summary-card [label]="totalMessagesLabel">
       <span fpcSummaryCardValue>
         @if (loadingSummary$ | async) {
@@ -26,6 +26,24 @@
           <fpc-spinner size="sm" />
         } @else if (summary(); as summaryData) {
           {{ summaryData.avgWordsPerMessage | number: '1.1-1' }}
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card [label]="totalTokensLabel">
+      <span fpcSummaryCardValue>
+        @if (loadingSummary$ | async) {
+          <fpc-spinner size="sm" />
+        } @else if (summary(); as summaryData) {
+          {{ summaryData.totalTokens ?? 0 }}
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card [label]="totalCostLabel">
+      <span fpcSummaryCardValue>
+        @if (loadingSummary$ | async) {
+          <fpc-spinner size="sm" />
+        } @else if (summary(); as summaryData) {
+          {{ summaryData.totalCostUsd ?? 0 | number: '1.2-4' }}
         }
       </span>
     </fpc-summary-card>

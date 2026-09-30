@@ -52,6 +52,16 @@ Common problems and their solutions in the Agenstra system.
 
 ## Container Issues
 
+### Editor terminal fails while agent container is running
+
+**Symptoms**: `createTerminal` returns `TERMINAL_ERROR` but the agent container is up.
+
+**Solutions**:
+
+- Confirm OpenCode is healthy inside the worker (`GET /global/health` on the OpenCode port, default 4096).
+- Redeploy the worker image if it predates OpenCode PTY support (`/pty` routes).
+- Check agent-manager logs for OpenCode PTY create or WebSocket errors.
+
 ### Docker Socket Permission Denied
 
 **Symptoms**: Agent-manager cannot access Docker socket

@@ -19,6 +19,7 @@
     "@bull-board/nestjs": "7.1.5",
     "@bull-board/ui": "7.1.5",
     "@nestjs/bullmq": "11.0.4",
+    "@opencode-ai/sdk": "1.18.31",
     "@opensearch-project/opensearch": "3.6.0",
     "@opentelemetry/sdk-node": "0.220.0",
     "axios": "1.12.2",

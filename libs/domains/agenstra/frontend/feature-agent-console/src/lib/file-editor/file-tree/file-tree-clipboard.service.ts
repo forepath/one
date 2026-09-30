@@ -290,7 +290,6 @@ export class FileTreeClipboardService {
     const children = await firstValueFrom(
       this.filesService.listDirectory(batch.clientId, batch.agentId, {
         path: entry.path,
-        ...(batch.context === 'config' ? { context: 'config' as const } : {}),
       }),
     );
 
@@ -309,7 +308,6 @@ export class FileTreeClipboardService {
       const nodes = await firstValueFrom(
         this.filesService.listDirectory(batch.clientId, batch.agentId, {
           path: directoryPath === '.' ? undefined : directoryPath,
-          ...(batch.context === 'config' ? { context: 'config' as const } : {}),
         }),
       );
 
@@ -464,10 +462,6 @@ export class FileTreeClipboardService {
   }
 
   private refreshListing(batch: FileTreeBatchContext, path: string): void {
-    this.filesFacade.listDirectory(
-      batch.clientId,
-      batch.agentId,
-      batch.context === 'config' ? { path, context: 'config' } : { path },
-    );
+    this.filesFacade.listDirectory(batch.clientId, batch.agentId, { path });
   }
 }

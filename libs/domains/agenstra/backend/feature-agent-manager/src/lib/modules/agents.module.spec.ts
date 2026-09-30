@@ -17,7 +17,6 @@ import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
 import { WorkspaceConfigurationOverrideEntity } from '../entities/workspace-configuration-override.entity';
 import { AgentsGateway } from '../gateways/agents.gateway';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
-import { CursorAgentProvider } from '../providers/agents/cursor-agent.provider';
 import { OpenCodeAgentProvider } from '../providers/agents/opencode-agent.provider';
 import { ChatFilterFactory } from '../providers/chat-filter.factory';
 import { BidirectionalChatFilter } from '../providers/filters/bidirectional-chat-filter';
@@ -189,13 +188,6 @@ describe('AgentsModule', () => {
     expect(factory).toBeInstanceOf(AgentProviderFactory);
   });
 
-  it('should provide CursorAgentProvider', () => {
-    const provider = module.get<CursorAgentProvider>(CursorAgentProvider);
-
-    expect(provider).toBeDefined();
-    expect(provider).toBeInstanceOf(CursorAgentProvider);
-  });
-
   it('should provide OpenCodeAgentProvider', () => {
     const provider = module.get<OpenCodeAgentProvider>(OpenCodeAgentProvider);
 
@@ -203,15 +195,12 @@ describe('AgentsModule', () => {
     expect(provider).toBeInstanceOf(OpenCodeAgentProvider);
   });
 
-  it('should register CursorAgentProvider and OpenCodeAgentProvider via AGENT_PROVIDER_INIT factory', () => {
+  it('should register OpenCodeAgentProvider via AGENT_PROVIDER_INIT factory', () => {
     const factory = module.get<AgentProviderFactory>(AgentProviderFactory);
-    const cursorProvider = module.get<CursorAgentProvider>(CursorAgentProvider);
     const opencodeProvider = module.get<OpenCodeAgentProvider>(OpenCodeAgentProvider);
 
-    // Verify the provider is registered
+    // Legacy agent types resolve through the OpenCode harness fallback.
     expect(factory.hasProvider('cursor')).toBe(true);
-    expect(factory.getProvider('cursor')).toBe(cursorProvider);
-    expect(cursorProvider.getType()).toBe('cursor');
 
     expect(factory.hasProvider('opencode')).toBe(true);
     expect(factory.getProvider('opencode')).toBe(opencodeProvider);

@@ -105,6 +105,8 @@ export class AuditComponent implements OnInit {
   readonly totalMessagesLabel = $localize`:@@featureAudit-totalMessages:Total messages`;
   readonly totalWordsLabel = $localize`:@@featureAudit-totalWords:Total words`;
   readonly avgWordsPerMessageLabel = $localize`:@@featureAudit-avgWordsPerMessage:Avg words/message`;
+  readonly totalTokensLabel = $localize`:@@featureAudit-totalTokens:Total tokens`;
+  readonly totalCostLabel = $localize`:@@featureAudit-totalCost:Total cost (USD)`;
   readonly filterFlagsLabel = $localize`:@@featureAudit-filterFlags:Filter flags`;
   readonly filterDropsLabel = $localize`:@@featureAudit-filterDrops:Filter drops`;
 

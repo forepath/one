@@ -28,13 +28,6 @@ function drainExecStdoutLines(buffer: string, chunk: string, queue: string[]): s
   return remaining;
 }
 
-interface TerminalSession {
-  exec: Docker.Exec;
-  stream: NodeJS.ReadWriteStream;
-  containerId: string;
-  sessionId: string;
-}
-
 export interface DockerExecSession {
   writeLine(line: string): void;
   closeStdin(): void;
@@ -48,14 +41,12 @@ export class DockerService {
   private readonly docker = new Docker({ socketPath: '/var/run/docker.sock' });
   private static readonly WORKSPACE_CONTEXT_BIND_SOURCE = '/opt/agents';
   private static readonly WORKSPACE_CONTEXT_BIND_TARGET = '/opt/workspace';
-  // Store active terminal sessions: sessionId -> TerminalSession
-  private readonly terminalSessions = new Map<string, TerminalSession>();
 
   async createContainer(options: {
     image?: string;
     env?: Record<string, string | undefined>;
     volumes?: Array<{ hostPath: string; containerPath: string; readOnly?: boolean }>;
-    ports?: Array<{ containerPort: number; hostPort?: number; protocol?: 'tcp' | 'udp' }>;
+    ports?: Array<{ containerPort: number; hostPort?: number; hostIp?: string; protocol?: 'tcp' | 'udp' }>;
     network?: string;
   }): Promise<string> {
     const { image, env, volumes = [], ports = [], network } = options;
@@ -65,7 +56,7 @@ export class DockerService {
     const binds = volumes.map((v) => `${v.hostPath}:${v.containerPath}${v.readOnly ? ':ro' : ''}`);
     // Build ExposedPorts and PortBindings from ports
     const exposedPorts: Record<string, Record<string, never>> = {};
-    const portBindings: Record<string, Array<{ HostPort?: string }>> = {};
+    const portBindings: Record<string, Array<{ HostPort?: string; HostIp?: string }>> = {};
 
     for (const p of ports) {
       const key = `${p.containerPort}/${p.protocol ?? 'tcp'}`;
@@ -74,23 +65,15 @@ export class DockerService {
 
       if (!portBindings[key]) portBindings[key] = [];
 
-      portBindings[key].push({ HostPort: p.hostPort ? String(p.hostPort) : undefined });
+      portBindings[key].push({
+        HostPort: p.hostPort ? String(p.hostPort) : undefined,
+        ...(p.hostIp ? { HostIp: p.hostIp } : {}),
+      });
     }
 
-    // Ensure image is available (pull if necessary)
-    await new Promise<void>((resolve, reject) => {
-      this.docker.pull(resolvedImage, (err: unknown, stream: NodeJS.ReadableStream) => {
-        if (err) return reject(err);
-
-        // followProgress is available via modem (not typed in dockerode)
-        const modem: any = (this.docker as any).modem;
-
-        modem.followProgress(stream, (pullErr: unknown) => (pullErr ? reject(pullErr) : resolve()));
-      });
-    }).catch((e) => {
-      // If pull fails, log and proceed - create might still work if image exists locally
-      this.logger.warn(`Failed to pull image ${resolvedImage}: ${(e as Error).message}`);
-    });
+    // Prefer a local image when present. An unconditional pull of a mutable tag (e.g. :latest)
+    // would overwrite a locally rebuilt worker with a stale registry image and break OpenCode serve.
+    await this.ensureImageExists(resolvedImage);
 
     // Map env object to KEY=VALUE strings as required by Docker API
     // Escape special characters in the value to preserve intent (no quoting)
@@ -114,9 +97,6 @@ export class DockerService {
           return `${key}=${quoted}`;
         })
       : undefined;
-
-    // Ensure the Docker image exists
-    await this.ensureImageExists(resolvedImage);
 
     // Create container
     const container = await this.docker.createContainer({
@@ -597,6 +577,39 @@ export class DockerService {
   }
 
   /**
+   * Ensure a Docker network exists by name (create if missing).
+   * Idempotent: concurrent creates that race to 409 Conflict are treated as success.
+   */
+  async ensureNetworkExists(name: string, driver = 'bridge'): Promise<void> {
+    try {
+      await this.docker.getNetwork(name).inspect();
+
+      return;
+    } catch (error: unknown) {
+      const dockerError = error as { statusCode?: number };
+
+      if (dockerError.statusCode !== 404) {
+        throw error;
+      }
+    }
+
+    try {
+      await this.createNetwork({ name, driver });
+    } catch (error: unknown) {
+      const dockerError = error as { statusCode?: number; message?: string };
+
+      // Another process created the network between inspect and create.
+      if (dockerError.statusCode === 409) {
+        this.logger.debug(`Network ${name} already exists (create race)`);
+
+        return;
+      }
+
+      throw error;
+    }
+  }
+
+  /**
    * Create a Docker network and optionally attach containers to it.
    * @param options - Network creation options
    * @param options.name - The name of the network
@@ -904,6 +917,7 @@ export class DockerService {
     command: string | string[],
     input?: string | string[],
     checkExitCode = false,
+    options?: { user?: string },
   ): Promise<string> {
     try {
       this.logger.debug(
@@ -929,13 +943,15 @@ export class DockerService {
       const commandParts = Array.isArray(command) ? command : this.parseShellCommand(command.trim());
       const executable = commandParts[0];
       const args = commandParts.slice(1);
-      // Create exec instance with stdin enabled for keystrokes
+      // Create exec instance with stdin enabled for keystrokes.
+      // Optional User (e.g. '0') runs as that container UID — used for absolute paths outside /app.
       const execInstance = await container.exec({
         Cmd: [executable, ...args],
         AttachStdin: true,
         AttachStdout: true,
         AttachStderr: true,
         Tty: false, // Disable TTY to properly capture output
+        ...(options?.user ? { User: options.user } : {}),
       });
       // Start the exec
       const stream = (await execInstance.start({
@@ -1722,189 +1738,6 @@ export class DockerService {
   }
 
   /**
-   * Create a new terminal session (TTY) for a container.
-   * Creates a persistent TTY exec instance that can be used for interactive terminal sessions.
-   * @param containerId - The ID of the container
-   * @param sessionId - Unique session identifier (typically socket.id + timestamp or UUID)
-   * @param shell - Shell command to run (default: 'sh')
-   * @returns The terminal session stream
-   * @throws NotFoundException if container is not found
-   */
-  async createTerminalSession(containerId: string, sessionId: string, shell = 'sh'): Promise<NodeJS.ReadWriteStream> {
-    try {
-      const container = this.docker.getContainer(containerId);
-
-      // Check if container exists
-      try {
-        await container.inspect();
-      } catch (error: unknown) {
-        const dockerError = error as { statusCode?: number };
-
-        if (dockerError.statusCode === 404) {
-          throw new NotFoundException(`Container with ID '${containerId}' not found`);
-        }
-
-        throw error;
-      }
-
-      // Check if session already exists
-      if (this.terminalSessions.has(sessionId)) {
-        this.logger.warn(`Terminal session ${sessionId} already exists, closing existing session`);
-        await this.closeTerminalSession(sessionId);
-      }
-
-      // Create exec instance with TTY enabled for proper terminal emulation
-      const exec = await container.exec({
-        Cmd: [shell],
-        AttachStdin: true,
-        AttachStdout: true,
-        AttachStderr: true,
-        Tty: true, // Enable TTY for terminal emulation
-      });
-      // Start the exec with TTY
-      const stream = (await exec.start({
-        hijack: true,
-        stdin: true,
-        Tty: true,
-      })) as NodeJS.ReadWriteStream;
-
-      // Store the session
-      this.terminalSessions.set(sessionId, {
-        exec,
-        stream,
-        containerId,
-        sessionId,
-      });
-
-      // Handle stream end/close to clean up session
-      stream.on('end', () => {
-        this.logger.debug(`Terminal session ${sessionId} ended`);
-        this.terminalSessions.delete(sessionId);
-      });
-
-      stream.on('close', () => {
-        this.logger.debug(`Terminal session ${sessionId} closed`);
-        this.terminalSessions.delete(sessionId);
-      });
-
-      stream.on('error', (error: unknown) => {
-        const err = error as { code?: string; message?: string };
-
-        this.logger.error(`Terminal session ${sessionId} error: ${err.message}`);
-        this.terminalSessions.delete(sessionId);
-      });
-
-      this.logger.log(`Created terminal session ${sessionId} for container ${containerId}`);
-
-      return stream;
-    } catch (error: unknown) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-
-      const err = error as { message?: string; stack?: string };
-
-      this.logger.error(`Error creating terminal session: ${err.message}`, err.stack);
-      throw error;
-    }
-  }
-
-  /**
-   * Send input to a terminal session.
-   * @param sessionId - The session identifier
-   * @param data - The data to send (string or Buffer)
-   * @throws NotFoundException if session is not found
-   */
-  async sendTerminalInput(sessionId: string, data: string | Buffer): Promise<void> {
-    const session = this.terminalSessions.get(sessionId);
-
-    if (!session) {
-      throw new NotFoundException(`Terminal session '${sessionId}' not found`);
-    }
-
-    try {
-      const buffer = typeof data === 'string' ? Buffer.from(data, 'utf-8') : data;
-
-      session.stream.write(buffer);
-    } catch (error: unknown) {
-      const err = error as { message?: string; stack?: string };
-
-      this.logger.error(`Error sending input to terminal session ${sessionId}: ${err.message}`, err.stack);
-      throw error;
-    }
-  }
-
-  /**
-   * Close a terminal session.
-   * @param sessionId - The session identifier
-   * @throws NotFoundException if session is not found
-   */
-  async closeTerminalSession(sessionId: string): Promise<void> {
-    const session = this.terminalSessions.get(sessionId);
-
-    if (!session) {
-      throw new NotFoundException(`Terminal session '${sessionId}' not found`);
-    }
-
-    try {
-      // End the stream
-      session.stream.end();
-      // Remove from map (cleanup handlers will also remove it, but do it explicitly)
-      this.terminalSessions.delete(sessionId);
-      this.logger.log(`Closed terminal session ${sessionId}`);
-    } catch (error: unknown) {
-      const err = error as { message?: string; stack?: string };
-
-      this.logger.error(`Error closing terminal session ${sessionId}: ${err.message}`, err.stack);
-      // Remove from map even if close fails
-      this.terminalSessions.delete(sessionId);
-      throw error;
-    }
-  }
-
-  /**
-   * Get a terminal session stream.
-   * @param sessionId - The session identifier
-   * @returns The terminal session stream
-   * @throws NotFoundException if session is not found
-   */
-  getTerminalSession(sessionId: string): NodeJS.ReadWriteStream {
-    const session = this.terminalSessions.get(sessionId);
-
-    if (!session) {
-      throw new NotFoundException(`Terminal session '${sessionId}' not found`);
-    }
-
-    return session.stream;
-  }
-
-  /**
-   * Check if a terminal session exists.
-   * @param sessionId - The session identifier
-   * @returns True if session exists, false otherwise
-   */
-  hasTerminalSession(sessionId: string): boolean {
-    return this.terminalSessions.has(sessionId);
-  }
-
-  /**
-   * Get all active terminal sessions for a container.
-   * @param containerId - The container ID
-   * @returns Array of session IDs
-   */
-  getTerminalSessionsForContainer(containerId: string): string[] {
-    const sessionIds: string[] = [];
-
-    for (const [sessionId, session] of this.terminalSessions.entries()) {
-      if (session.containerId === containerId) {
-        sessionIds.push(sessionId);
-      }
-    }
-
-    return sessionIds;
-  }
-
-  /**
    * Copy a file from container to host filesystem using docker cp (via getArchive).
    * This method uses Docker's getArchive API to copy files reliably, especially for binary files.
    * @param containerId - The container ID
@@ -2019,6 +1852,71 @@ export class DockerService {
   }
 
   /**
+   * Resolve an HTTP base URL for a container TCP port.
+   *
+   * Order of preference:
+   * 1. IP on `AGENT_DOCKER_NETWORK` (manager and workers share this bridge)
+   * 2. Published host port via `DOCKER_HOST_GATEWAY` / loopback (local/dev without shared network)
+   * 3. Any attached Docker network IP
+   * 4. Legacy top-level bridge IP
+   *
+   * Preferring the agent network first avoids picking a private VNC/sidecar network IP that the
+   * manager cannot route to after `createNetwork` attaches the worker to a second network.
+   */
+  async resolveContainerHttpBaseUrl(containerId: string, containerPort: number): Promise<string> {
+    const container = this.docker.getContainer(containerId);
+    let inspectInfo: Docker.ContainerInspectInfo;
+
+    try {
+      inspectInfo = await container.inspect();
+    } catch (error: unknown) {
+      const err = error as { statusCode?: number };
+
+      if (err.statusCode === 404) {
+        throw new NotFoundException(`Container with ID '${containerId}' not found`);
+      }
+
+      throw error;
+    }
+
+    const networks = inspectInfo.NetworkSettings?.Networks || {};
+    const preferredNetwork = process.env.AGENT_DOCKER_NETWORK?.trim();
+
+    if (preferredNetwork) {
+      const preferredIp = networks[preferredNetwork]?.IPAddress;
+
+      if (preferredIp) {
+        return `http://${preferredIp}:${containerPort}`;
+      }
+    }
+
+    const portKey = `${containerPort}/tcp`;
+    const bindings = inspectInfo.NetworkSettings?.Ports?.[portKey];
+    const hostPort = bindings?.[0]?.HostPort;
+    const gatewayHost = process.env.DOCKER_HOST_GATEWAY || '127.0.0.1';
+
+    if (hostPort) {
+      return `http://${gatewayHost}:${hostPort}`;
+    }
+
+    for (const network of Object.values(networks)) {
+      const ip = network?.IPAddress;
+
+      if (ip) {
+        return `http://${ip}:${containerPort}`;
+      }
+    }
+
+    const bridgeIp = inspectInfo.NetworkSettings?.IPAddress;
+
+    if (bridgeIp) {
+      return `http://${bridgeIp}:${containerPort}`;
+    }
+
+    throw new Error(`Unable to resolve HTTP endpoint for container ${containerId} port ${containerPort}`);
+  }
+
+  /**
    * Get container run status (whether it is started or stopped).
    * @param containerId - The container ID
    * @returns Object with running boolean
@@ -2106,20 +2004,41 @@ export class DockerService {
   }
 
   /**
-   * Ensure a Docker image exists.
-   * @param image - The image name (including tag)
-   * @throws NotFoundException if image is not found
+   * Ensure a Docker image exists locally. Pulls only when the image is missing.
+   * Does not refresh an existing tag from the registry (avoids clobbering local rebuilds).
    */
   async ensureImageExists(image: string): Promise<void> {
     try {
       await this.docker.getImage(image).inspect();
+
+      return;
     } catch (error: unknown) {
       const err = error as { statusCode?: number };
 
-      if (err.statusCode === 404) {
-        await this.docker.pull(image);
+      if (err.statusCode !== 404) {
+        throw error;
       }
     }
+
+    this.logger.log(`Pulling missing Docker image ${image}`);
+
+    await new Promise<void>((resolve, reject) => {
+      this.docker.pull(image, (pullErr: unknown, stream: NodeJS.ReadableStream) => {
+        if (pullErr) {
+          reject(pullErr);
+
+          return;
+        }
+
+        const modem: { followProgress: (s: NodeJS.ReadableStream, cb: (err?: unknown) => void) => void } = (
+          this.docker as unknown as {
+            modem: { followProgress: (s: NodeJS.ReadableStream, cb: (err?: unknown) => void) => void };
+          }
+        ).modem;
+
+        modem.followProgress(stream, (followErr?: unknown) => (followErr ? reject(followErr) : resolve()));
+      });
+    });
   }
 
   /**

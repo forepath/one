@@ -4,8 +4,11 @@ import { Store } from '@ngrx/store';
 import { catchError, exhaustMap, filter, from, map, mergeMap, of, switchMap, withLatestFrom } from 'rxjs';
 
 import { AgentsService } from '../../services/agents.service';
-import { listDirectory, listDirectoryFailure, listDirectorySuccess } from '../files/files.actions';
-import type { FileNodeDto } from '../files/files.types';
+import {
+  OpencodeConfigService,
+  type OpencodeCommandInfoDto,
+  type OpencodeConfigDto,
+} from '../../services/opencode-config.service';
 import { setContainerRunningStatus } from '../stats/stats.actions';
 
 import {
@@ -17,6 +20,7 @@ import {
   deleteClientAgentSuccess,
   loadClientAgent,
   loadClientAgentCommands,
+  loadClientAgentCommandsFailure,
   loadClientAgentCommandsSuccess,
   loadClientAgentFailure,
   loadClientAgentModels,
@@ -42,7 +46,8 @@ import {
   updateClientAgentFailure,
   updateClientAgentSuccess,
 } from './agents.actions';
-import { selectAgentsEntities, selectAgentsState } from './agents.selectors';
+import { selectAgentsState } from './agents.selectors';
+import type { AgentSlashCommand } from './agents.types';
 
 /**
  * Normalizes error messages from HTTP errors.
@@ -61,6 +66,105 @@ function normalizeError(error: unknown): string {
   }
 
   return 'An unexpected error occurred';
+}
+
+/** Normalize slash-command ids for chat typeahead (`ship` → `/ship`). */
+function normalizeCommandName(name: string): string | null {
+  const trimmed = name.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  const withSlash = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+
+  return withSlash.length > 1 ? withSlash : null;
+}
+
+/**
+ * OpenCode built-in prompt commands always registered in its Command service
+ * (see opencode packages/opencode/src/command/index.ts).
+ */
+const OPENCODE_BUILTIN_SLASH_COMMANDS: AgentSlashCommand[] = [
+  { name: '/init', description: 'guided AGENTS.md setup' },
+  { name: '/review', description: 'review changes [commit|branch|pr], defaults to uncommitted' },
+];
+
+function upsertSlashCommand(target: Map<string, AgentSlashCommand>, entry: AgentSlashCommand): void {
+  const normalized = normalizeCommandName(entry.name);
+
+  if (!normalized) {
+    return;
+  }
+
+  const existing = target.get(normalized);
+
+  target.set(normalized, {
+    name: normalized,
+    description: entry.description?.trim() || existing?.description,
+    source: entry.source ?? existing?.source,
+  });
+}
+
+function slashCommandsFromWorker(rows: OpencodeCommandInfoDto[]): AgentSlashCommand[] {
+  const merged = new Map<string, AgentSlashCommand>();
+
+  for (const row of rows) {
+    upsertSlashCommand(merged, {
+      name: row.name,
+      description: row.description,
+      source: row.source,
+    });
+  }
+
+  return [...merged.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+function commandKeysFromMap(value: unknown): Array<{ name: string; description?: string }> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return [];
+  }
+
+  return Object.entries(value as Record<string, unknown>).map(([name, entry]) => {
+    const description =
+      entry &&
+      typeof entry === 'object' &&
+      !Array.isArray(entry) &&
+      typeof (entry as { description?: unknown }).description === 'string'
+        ? (entry as { description: string }).description
+        : undefined;
+
+    return { name, description };
+  });
+}
+
+/**
+ * Offline fallback when the worker `GET /command` list is unavailable.
+ * Mirrors OpenCode's registry shape for config commands + builtins (not filesystem skills).
+ */
+function slashCommandsFromOpencodeConfig(dto: OpencodeConfigDto): AgentSlashCommand[] {
+  const merged = new Map<string, AgentSlashCommand>();
+
+  for (const builtin of OPENCODE_BUILTIN_SLASH_COMMANDS) {
+    upsertSlashCommand(merged, builtin);
+  }
+
+  const inheritedCommands =
+    dto.inheritedAdditive?.find((entry) => entry.path === '/commands' || entry.path === 'commands')?.keys ?? [];
+
+  for (const name of inheritedCommands) {
+    upsertSlashCommand(merged, { name });
+  }
+
+  for (const entry of commandKeysFromMap((dto.effective as Record<string, unknown> | undefined)?.['commands'])) {
+    upsertSlashCommand(merged, entry);
+  }
+
+  for (const entry of commandKeysFromMap((dto.config as Record<string, unknown> | undefined)?.['commands'])) {
+    upsertSlashCommand(merged, entry);
+  }
+
+  return [...merged.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 const BATCH_SIZE = 10;
@@ -163,7 +267,7 @@ export const createClientAgent$ = createEffect(
       ofType(createClientAgent),
       exhaustMap(({ clientId, agent }) =>
         agentsService.createClientAgent(clientId, agent).pipe(
-          map((createdAgent) => createClientAgentSuccess({ clientId, agent: createdAgent })),
+          map((created) => createClientAgentSuccess({ clientId, agent: created })),
           catchError((error) => of(createClientAgentFailure({ clientId, error: normalizeError(error) }))),
         ),
       ),
@@ -178,7 +282,7 @@ export const updateClientAgent$ = createEffect(
       ofType(updateClientAgent),
       exhaustMap(({ clientId, agentId, agent }) =>
         agentsService.updateClientAgent(clientId, agentId, agent).pipe(
-          map((updatedAgent) => updateClientAgentSuccess({ clientId, agent: updatedAgent })),
+          map((updated) => updateClientAgentSuccess({ clientId, agent: updated })),
           catchError((error) => of(updateClientAgentFailure({ clientId, error: normalizeError(error) }))),
         ),
       ),
@@ -263,106 +367,41 @@ export const restartClientAgent$ = createEffect(
 );
 
 /**
- * Effect that sets loading state when directory listing for .cursor/commands starts.
+ * Prefer OpenCode worker `GET /command` (commands + skills + MCP prompts + builtins).
+ * Fall back to effective config + builtins when the worker is offline.
  */
-export const loadClientAgentCommandsLoading$ = createEffect(
-  (actions$ = inject(Actions)) => {
+export const loadClientAgentCommandsFromConfig$ = createEffect(
+  (actions$ = inject(Actions), opencodeConfigService = inject(OpencodeConfigService)) => {
     return actions$.pipe(
-      ofType(listDirectory),
-      filter(({ params }) => {
-        // Normalize path for comparison (handle both '.cursor/commands' and './.cursor/commands')
-        const path = params?.path || '';
-        const normalized = path.replace(/^\.\//, '').replace(/\/$/, '');
-
-        return (
-          normalized === '.cursor/commands' ||
-          normalized === 'cursor/commands' ||
-          normalized === '.opencode/command' ||
-          normalized === 'opencode/command'
-        );
-      }),
-      map(({ clientId, agentId }) => loadClientAgentCommands({ clientId, agentId })),
-    );
-  },
-  { functional: true },
-);
-
-/**
- * Effect that listens to files directory listing success/failure for .cursor/commands
- * and extracts .md files as commands.
- */
-export const loadClientAgentCommandsFromFiles$ = createEffect(
-  (actions$ = inject(Actions), store = inject(Store)) => {
-    return actions$.pipe(
-      ofType(listDirectorySuccess, listDirectoryFailure),
-      withLatestFrom(store.select(selectAgentsEntities)),
-      map(([action, agentsEntities]) => {
-        const agent = agentsEntities[action.clientId]?.find((agent) => agent.id === action.agentId);
-
-        if (!agent) {
-          return action;
-        }
-
-        return {
-          ...action,
-          agentType: agent.agentType,
-        };
-      }),
-      filter((action) => {
-        // Normalize path for comparison (handle both '.cursor/commands' and './.cursor/commands')
-        const normalized = action.directoryPath.replace(/^\.\//, '').replace(/\/$/, '');
-
-        return (
-          normalized === '.cursor/commands' ||
-          normalized === 'cursor/commands' ||
-          normalized === '.opencode/command' ||
-          normalized === 'opencode/command'
-        );
-      }),
-      map((action: any) => {
-        if (action.type === '[Files] List Directory Success') {
-          const { clientId, agentId, agentType, files, directoryPath } = action;
-          // Filter for .md files (type === 'file' and name ends with .md)
-          const commandFiles = files.filter((file: FileNodeDto) => file.type === 'file' && file.name.endsWith('.md'));
-          // Determine agentType from directoryPath
-          const normalizedPath = directoryPath.replace(/^\.\//, '').replace(/\/$/, '');
-          // Extract command names: remove .md extension and prefix with /
-          const commands: { [agentType: string]: string[] } = {
-            cursor: [],
-            opencode: [],
-          };
-
-          if (agentType) {
-            const commandNames = commandFiles.map((file: FileNodeDto) => {
-              const commandName = file.name.replace(/\.md$/, '');
-
-              return `/${commandName}`;
-            });
-
-            if (normalizedPath.includes(normalizedPath)) {
-              commands[agentType] = commandNames;
+      ofType(loadClientAgentCommands),
+      switchMap(({ clientId, agentId }) =>
+        opencodeConfigService.listAgentCommands(clientId, agentId).pipe(
+          map((dto) => slashCommandsFromWorker(dto.commands ?? [])),
+          catchError(() => of([] as AgentSlashCommand[])),
+          switchMap((fromWorker) => {
+            if (fromWorker.length > 0) {
+              return of(
+                loadClientAgentCommandsSuccess({
+                  clientId,
+                  agentId,
+                  commands: fromWorker,
+                }),
+              );
             }
-          } else {
-            // If agentType couldn't be determined, return empty object
-            // This shouldn't happen if the filter is working correctly
-          }
 
-          return loadClientAgentCommandsSuccess({ clientId, agentId, commands });
-        } else {
-          // If directory listing fails, determine agentType from directoryPath and return empty commands
-          const { clientId, agentId, directoryPath } = action;
-          const normalizedPath = directoryPath.replace(/^\.\//, '').replace(/\/$/, '');
-          const commands: { [agentType: string]: string[] } = {};
-
-          if (normalizedPath === '.cursor/commands' || normalizedPath === 'cursor/commands') {
-            commands['cursor'] = [];
-          } else if (normalizedPath === '.opencode/command' || normalizedPath === 'opencode/command') {
-            commands['opencode'] = [];
-          }
-
-          return loadClientAgentCommandsSuccess({ clientId, agentId, commands });
-        }
-      }),
+            return opencodeConfigService.getAgent(clientId, agentId).pipe(
+              map((dto) =>
+                loadClientAgentCommandsSuccess({
+                  clientId,
+                  agentId,
+                  commands: slashCommandsFromOpencodeConfig(dto),
+                }),
+              ),
+              catchError(() => of(loadClientAgentCommandsFailure({ clientId, agentId }))),
+            );
+          }),
+        ),
+      ),
     );
   },
   { functional: true },

@@ -65,7 +65,11 @@
               },
               {
                 "sourceTag": "scope:backend",
-                "onlyDependOnLibsWithTags": ["scope:backend", "domain:shared"]
+                "onlyDependOnLibsWithTags": [
+                  "scope:backend",
+                  "scope:shared",
+                  "domain:shared"
+                ]
               },
               {
                 "sourceTag": "scope:keycloak",

@@ -69,7 +69,7 @@ export class AgentEnvironmentVariablesService {
     ].join('\n');
 
     try {
-      const provider = this.agentProviderFactory.getProvider(agentType || 'cursor');
+      const provider = this.agentProviderFactory.getProvider(agentType || 'opencode');
       const raw = await provider.sendMessage(agentId, containerId, summarizePrompt, model ? { model } : {});
       const parseable = provider.toParseableStrings(raw);
 

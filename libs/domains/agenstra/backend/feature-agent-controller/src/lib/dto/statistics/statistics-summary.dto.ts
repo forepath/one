@@ -6,6 +6,10 @@ export class StatisticsSummaryDto {
   totalWords!: number;
   totalChars!: number;
   avgWordsPerMessage!: number;
+  totalInputTokens!: number;
+  totalOutputTokens!: number;
+  totalTokens!: number;
+  totalCostUsd!: number;
   autoEnrichmentRuns!: number;
   autoEnrichmentContexts!: number;
   autoEnrichmentChars!: number;

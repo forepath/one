@@ -84,10 +84,6 @@ export class ProvisionServerDto {
   gitPrivateKey?: string;
 
   @IsOptional()
-  @IsString({ message: 'Cursor API key must be a string' })
-  cursorApiKey?: string;
-
-  @IsOptional()
   @IsString({ message: 'Agent default image must be a string' })
   agentDefaultImage?: string;
 

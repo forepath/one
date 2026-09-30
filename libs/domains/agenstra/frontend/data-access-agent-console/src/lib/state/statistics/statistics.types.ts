@@ -19,6 +19,10 @@ export interface StatisticsSummaryDto {
   totalWords: number;
   totalChars: number;
   avgWordsPerMessage: number;
+  totalInputTokens?: number;
+  totalOutputTokens?: number;
+  totalTokens?: number;
+  totalCostUsd?: number;
   filterDropCount: number;
   filterTypesBreakdown: StatisticsFilterTypesBreakdownItem[];
   filterFlagCount: number;

@@ -99,30 +99,6 @@ describe('FilesService', () => {
       });
     });
 
-    it('should append context=config for config file manager context', (done) => {
-      const filePath = 'settings.json';
-
-      service.readFile(clientId, agentId, filePath, 'config').subscribe((content) => {
-        expect(content.fileType).toBe('text');
-        done();
-      });
-
-      const req = httpMock.expectOne(
-        `${apiUrl}/clients/${clientId}/agents/${agentId}/files/${filePath}?context=config`,
-      );
-
-      expect(req.request.method).toBe('GET');
-      expect(req.request.params.get('context')).toBe('config');
-      req.flush(textBytes, {
-        status: 200,
-        statusText: 'OK',
-        headers: {
-          'X-File-Type': 'text',
-          'Content-Type': 'application/json',
-        },
-      });
-    });
-
     it('should encode file path segments separately preserving forward slashes', (done) => {
       const filePath = 'folder/sub folder/file with spaces.txt';
       const expectedPath = 'folder/sub%20folder/file%20with%20spaces.txt';
@@ -185,26 +161,6 @@ describe('FilesService', () => {
       expect(req.request.body).toBe(writeDto.bytes);
       expect(req.request.headers.get('Content-Type')).toBe('text/plain; charset=utf-8');
       expect(req.request.headers.get('X-File-Type')).toBe('text');
-      req.flush(null);
-    });
-
-    it('should append context=config on write when requested', (done) => {
-      const filePath = 'settings.json';
-      const writeDto: WriteFileDto = {
-        bytes: utf8ToArrayBuffer('x'),
-        fileType: 'text',
-      };
-
-      service.writeFile(clientId, agentId, filePath, writeDto, 'config').subscribe(() => {
-        done();
-      });
-
-      const req = httpMock.expectOne(
-        `${apiUrl}/clients/${clientId}/agents/${agentId}/files/${filePath}?context=config`,
-      );
-
-      expect(req.request.method).toBe('PUT');
-      expect(req.request.params.get('context')).toBe('config');
       req.flush(null);
     });
 
@@ -328,23 +284,6 @@ describe('FilesService', () => {
       expect(req.request.params.get('path')).toBe('subdirectory');
       req.flush(mockFileNodes);
     });
-
-    it('should include context=config with list when params request config root', (done) => {
-      service.listDirectory(clientId, agentId, { path: '.', context: 'config' }).subscribe((files) => {
-        expect(files).toEqual(mockFileNodes);
-        done();
-      });
-
-      const req = httpMock.expectOne(
-        (r) =>
-          r.url.startsWith(`${apiUrl}/clients/${clientId}/agents/${agentId}/files`) &&
-          r.params.get('context') === 'config' &&
-          r.params.get('path') === '.',
-      );
-
-      expect(req.request.method).toBe('GET');
-      req.flush(mockFileNodes);
-    });
   });
 
   describe('createFileOrDirectory', () => {
@@ -362,25 +301,6 @@ describe('FilesService', () => {
 
       expect(req.request.method).toBe('POST');
       expect(req.request.body).toEqual(createDto);
-      req.flush(null);
-    });
-
-    it('should append context=config on create when requested', (done) => {
-      const filePath = 'rules.md';
-      const createDto: CreateFileDto = {
-        type: 'file',
-      };
-
-      service.createFileOrDirectory(clientId, agentId, filePath, createDto, 'config').subscribe(() => {
-        done();
-      });
-
-      const req = httpMock.expectOne(
-        `${apiUrl}/clients/${clientId}/agents/${agentId}/files/${filePath}?context=config`,
-      );
-
-      expect(req.request.method).toBe('POST');
-      expect(req.request.params.get('context')).toBe('config');
       req.flush(null);
     });
 
@@ -415,22 +335,6 @@ describe('FilesService', () => {
       expect(req.request.method).toBe('DELETE');
       req.flush(null);
     });
-
-    it('should append context=config on delete when requested', (done) => {
-      const filePath = 'old.json';
-
-      service.deleteFileOrDirectory(clientId, agentId, filePath, 'config').subscribe(() => {
-        done();
-      });
-
-      const req = httpMock.expectOne(
-        `${apiUrl}/clients/${clientId}/agents/${agentId}/files/${filePath}?context=config`,
-      );
-
-      expect(req.request.method).toBe('DELETE');
-      expect(req.request.params.get('context')).toBe('config');
-      req.flush(null);
-    });
   });
 
   describe('moveFileOrDirectory', () => {
@@ -448,25 +352,6 @@ describe('FilesService', () => {
 
       expect(req.request.method).toBe('PATCH');
       expect(req.request.body).toEqual(moveDto);
-      req.flush(null);
-    });
-
-    it('should append context=config on move when requested', (done) => {
-      const sourcePath = 'a.txt';
-      const moveDto: MoveFileDto = {
-        destination: 'b.txt',
-      };
-
-      service.moveFileOrDirectory(clientId, agentId, sourcePath, moveDto, 'config').subscribe(() => {
-        done();
-      });
-
-      const req = httpMock.expectOne(
-        `${apiUrl}/clients/${clientId}/agents/${agentId}/files/${sourcePath}?context=config`,
-      );
-
-      expect(req.request.method).toBe('PATCH');
-      expect(req.request.params.get('context')).toBe('config');
       req.flush(null);
     });
 

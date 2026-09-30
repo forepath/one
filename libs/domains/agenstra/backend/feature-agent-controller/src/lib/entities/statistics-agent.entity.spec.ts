@@ -13,7 +13,7 @@ describe('StatisticsAgentEntity', () => {
     entity.id = 'stats-agent-uuid';
     entity.originalAgentId = 'agent-uuid';
     entity.statisticsClientId = 'stats-client-uuid';
-    entity.agentType = 'cursor';
+    entity.agentType = 'opencode';
     entity.containerType = 'generic';
     entity.createdAt = new Date();
     entity.updatedAt = new Date();
@@ -21,7 +21,7 @@ describe('StatisticsAgentEntity', () => {
     expect(entity.id).toBe('stats-agent-uuid');
     expect(entity.originalAgentId).toBe('agent-uuid');
     expect(entity.statisticsClientId).toBe('stats-client-uuid');
-    expect(entity.agentType).toBe('cursor');
+    expect(entity.agentType).toBe('opencode');
     expect(entity.containerType).toBe('generic');
     expect(entity.createdAt).toBeInstanceOf(Date);
     expect(entity.updatedAt).toBeInstanceOf(Date);
@@ -43,10 +43,10 @@ describe('StatisticsAgentEntity', () => {
   it('should use default agentType and containerType when not set', () => {
     const entity = new StatisticsAgentEntity();
 
-    entity.agentType = 'cursor';
+    entity.agentType = 'opencode';
     entity.containerType = 'generic';
 
-    expect(entity.agentType).toBe('cursor');
+    expect(entity.agentType).toBe('opencode');
     expect(entity.containerType).toBe('generic');
   });
 });

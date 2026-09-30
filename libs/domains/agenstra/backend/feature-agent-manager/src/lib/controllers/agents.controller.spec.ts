@@ -17,7 +17,7 @@ describe('AgentsController', () => {
     id: 'test-uuid',
     name: 'Test Agent',
     description: 'Test Description',
-    agentType: 'cursor',
+    agentType: 'opencode',
     containerType: ContainerType.GENERIC,
     chats: [
       {

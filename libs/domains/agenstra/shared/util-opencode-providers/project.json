@@ -1,0 +1,26 @@
+{
+  "name": "agenstra-shared-util-opencode-providers",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/agenstra/shared/util-opencode-providers/src",
+  "projectType": "library",
+  "tags": ["domain:agenstra", "scope:shared", "type:util"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/domains/agenstra/shared/util-opencode-providers",
+        "main": "libs/domains/agenstra/shared/util-opencode-providers/src/index.ts",
+        "tsConfig": "libs/domains/agenstra/shared/util-opencode-providers/tsconfig.lib.json",
+        "assets": ["libs/domains/agenstra/shared/util-opencode-providers/*.md"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/agenstra/shared/util-opencode-providers/jest.config.cts"
+      }
+    }
+  }
+}

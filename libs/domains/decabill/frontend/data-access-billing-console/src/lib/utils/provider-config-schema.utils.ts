@@ -19,7 +19,6 @@ const CONFIG_FIELD_LABEL_OVERRIDES: Record<string, string> = {
   git: 'Git',
   apiKey: 'API key',
   staticApiKey: 'Static API key',
-  cursorApiKey: 'Cursor API key',
   hetznerApiToken: 'Hetzner API token',
   digitaloceanApiToken: 'DigitalOcean API token',
   authenticationMethod: 'Authentication method',

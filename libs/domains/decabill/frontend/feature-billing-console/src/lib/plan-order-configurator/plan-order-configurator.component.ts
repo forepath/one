@@ -580,7 +580,6 @@ export class PlanOrderConfiguratorComponent implements OnInit, OnChanges {
         git && typeof git === 'object' && !Array.isArray(git)
           ? { ...defaults.git, ...(git as Partial<IntegratedOrderFormConfig['git']>) }
           : defaults.git,
-      cursorApiKey: typeof config['cursorApiKey'] === 'string' ? config['cursorApiKey'] : defaults.cursorApiKey,
     };
   }
 

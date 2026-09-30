@@ -31,10 +31,14 @@ export class AgentMessageEventsRepository {
       ...(opts?.since ? { eventTimestamp: MoreThanOrEqual(opts.since) } : {}),
     };
 
-    return await this.repository.find({
+    // Newest-first under the cap so late status markers (e.g. answered questions) survive
+    // tool-heavy windows; reverse to chronological order for restore consumers.
+    const newestFirst = await this.repository.find({
       where,
-      order: { eventTimestamp: 'ASC', sequence: 'ASC' },
+      order: { eventTimestamp: 'DESC', sequence: 'DESC' },
       take: limit,
     });
+
+    return newestFirst.reverse();
   }
 }

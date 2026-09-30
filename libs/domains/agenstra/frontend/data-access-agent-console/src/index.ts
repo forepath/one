@@ -112,6 +112,8 @@ export * from './lib/services/chat-sessions.service';
 export * from './lib/services/files.service';
 export * from './lib/services/agent-file-body.store';
 export * from './lib/services/statistics.service';
+export * from './lib/services/opencode-config.service';
+export * from './lib/services/opencode-layer-files.service';
 export * from './lib/services/tickets.service';
 export * from './lib/services/vcs.service';
 export * from './lib/services/workspace-config.service';

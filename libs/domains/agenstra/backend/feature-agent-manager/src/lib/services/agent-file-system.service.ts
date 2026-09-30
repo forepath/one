@@ -43,7 +43,8 @@ export class AgentFileSystemService {
   /** Maximum assembled size for chunked uploads (100MB). */
   private readonly MAX_ASSEMBLED_FILE_SIZE = 100 * 1024 * 1024;
   private readonly DEFAULT_BASE_PATH = '/app';
-  private static readonly CONFIG_NOT_SUPPORTED = 'Agent provider does not support agent-wide configuration file access';
+  /** Docker exec User for privileged FS ops outside the workspace (worker has no sudo mkdir/tee). */
+  private static readonly ROOT_EXEC_USER = '0';
   private static readonly UPLOAD_TTL_MS = 30 * 60 * 1000;
   private readonly uploadStaging = new Map<string, UploadStagingEntry>();
 
@@ -80,7 +81,7 @@ export class AgentFileSystemService {
    * @returns The sanitized path
    * @throws BadRequestException if path contains invalid characters or traversal attempts
    */
-  private sanitizePath(path: string): string {
+  private sanitizePath(path: string): { absolute: boolean; relative: string } {
     // Validate that path is a string
     if (typeof path !== 'string') {
       throw new BadRequestException(`Path must be a string, got ${typeof path}`);
@@ -90,11 +91,17 @@ export class AgentFileSystemService {
       throw new BadRequestException('Path cannot be empty');
     }
 
-    // Remove leading slashes and normalize
-    const normalized = path.replace(/^\/+/, '').trim();
+    const trimmed = path.trim().replace(/\\/g, '/');
+    // Leading `/` means absolute container path; `./` or bare paths are relative to the IDE workspace root.
+    const absolute = trimmed.startsWith('/');
+    const normalized = trimmed.replace(/^\/+/, '').replace(/^\.\//, '');
+
+    if (!normalized) {
+      throw new BadRequestException('Path cannot be empty');
+    }
 
     // Check for directory traversal attempts
-    if (normalized.includes('..') || normalized.includes('../')) {
+    if (normalized.split('/').includes('..') || normalized.includes('../')) {
       throw new BadRequestException('Path traversal is not allowed');
     }
 
@@ -103,7 +110,7 @@ export class AgentFileSystemService {
       throw new BadRequestException('Path cannot contain null bytes');
     }
 
-    return normalized;
+    return { absolute, relative: normalized };
   }
 
   /**
@@ -144,39 +151,15 @@ export class AgentFileSystemService {
    */
   private async resolveFilesystemRoot(
     agentType: string,
-    context: AgentFileManagerContext,
-    containerId: string,
+    _context: AgentFileManagerContext,
+    _containerId: string,
   ): Promise<string> {
-    if (context === 'app') {
-      return this.getBasePath(agentType);
-    }
-
-    try {
-      const provider = this.agentProviderFactory.getProvider(agentType);
-
-      if (!provider.getConfigBasePath) {
-        throw new BadRequestException(AgentFileSystemService.CONFIG_NOT_SUPPORTED);
-      }
-
-      const raw = provider.getConfigBasePath();
-
-      if (!raw?.trim()) {
-        throw new BadRequestException(AgentFileSystemService.CONFIG_NOT_SUPPORTED);
-      }
-
-      return await this.expandTildeInProviderPath(raw.trim(), containerId);
-    } catch (error: unknown) {
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-
-      this.logger.warn(`Failed to resolve config base for agent type '${agentType}': ${error}`);
-      throw new BadRequestException(AgentFileSystemService.CONFIG_NOT_SUPPORTED);
-    }
+    return this.getBasePath(agentType);
   }
 
   /**
-   * Build the full container path from a relative path and context root.
+   * Build the full container path. Absolute input paths (leading `/`) stay absolute;
+   * relative paths (including `./…`) are joined under the provider workspace root (e.g. `/app`).
    */
   private async buildContainerPath(
     relativePath: string,
@@ -184,10 +167,60 @@ export class AgentFileSystemService {
     context: AgentFileManagerContext,
     containerId: string,
   ): Promise<string> {
-    const sanitized = this.sanitizePath(relativePath);
+    const { absolute, relative } = this.sanitizePath(relativePath);
+
+    if (absolute) {
+      return `/${relative}`;
+    }
+
     const root = (await this.resolveFilesystemRoot(agentType, context, containerId)).replace(/\/+$/, '');
 
-    return `${root}/${sanitized}`;
+    return `${root}/${relative}`;
+  }
+
+  /** True when the resolved path is outside the agent workspace root (needs root install). */
+  private isOutsideWorkspaceRoot(containerPath: string, agentType: string): boolean {
+    const root = this.getBasePath(agentType).replace(/\/+$/, '') || this.DEFAULT_BASE_PATH;
+
+    return containerPath !== root && !containerPath.startsWith(`${root}/`);
+  }
+
+  private escapeForShell(str: string): string {
+    return `'${str.replace(/'/g, "'\\''")}'`;
+  }
+
+  /**
+   * Run a mutating FS command; outside `/app` uses Docker exec as root.
+   */
+  private async runMutatingFsCommand(
+    containerId: string,
+    command: string,
+    options: { input?: string; privileged: boolean },
+  ): Promise<void> {
+    if (options.privileged) {
+      await this.dockerService.sendCommandToContainer(containerId, command, options.input, true, {
+        user: AgentFileSystemService.ROOT_EXEC_USER,
+      });
+
+      return;
+    }
+
+    await this.dockerService.sendCommandToContainer(containerId, command, options.input, true);
+  }
+
+  /**
+   * Keep injected paths outside the workspace root-owned and world-readable but not writable
+   * by the OpenCode runtime user (prevents agent manipulation of VFS context).
+   */
+  private async hardenOutsideWorkspacePath(containerId: string, containerPath: string): Promise<void> {
+    // u=rwX,go=rX → files 644, dirs 755; ownership stays root from privileged install.
+    await this.dockerService.sendCommandToContainer(
+      containerId,
+      `chmod -R u=rwX,go=rX -- ${this.escapeForShell(containerPath)}`,
+      undefined,
+      true,
+      { user: AgentFileSystemService.ROOT_EXEC_USER },
+    );
   }
 
   /**
@@ -550,13 +583,26 @@ export class AgentFileSystemService {
 
     try {
       const escapedPath = this.escapeForShell(containerPath);
+      const parentDir = containerPath.includes('/') ? containerPath.slice(0, containerPath.lastIndexOf('/')) : '';
+      const privileged = this.isOutsideWorkspaceRoot(containerPath, agentEntity.agentType);
+
+      // Ensure parent directories exist (mkdir -p) before writing the file.
+      if (parentDir && parentDir !== '/' && parentDir.length > 0) {
+        await this.runMutatingFsCommand(agentEntity.containerId, `mkdir -p ${this.escapeForShell(parentDir)}`, {
+          privileged,
+        });
+      }
+
       const base64Wire = buffer.toString('base64');
 
-      await this.dockerService.sendCommandToContainer(
-        agentEntity.containerId,
-        `sh -c "base64 -d > ${escapedPath}"`,
-        base64Wire,
-      );
+      await this.runMutatingFsCommand(agentEntity.containerId, `sh -c "base64 -d > ${escapedPath}"`, {
+        input: base64Wire,
+        privileged,
+      });
+
+      if (privileged) {
+        await this.hardenOutsideWorkspacePath(agentEntity.containerId, containerPath);
+      }
 
       this.logger.debug(`File written: ${filePath} for agent ${agentId} (${buffer.length} bytes)`);
       this.notifyGitStateMayHaveChanged(agentId);
@@ -759,16 +805,28 @@ export class AgentFileSystemService {
     );
 
     try {
+      const privileged = this.isOutsideWorkspaceRoot(containerPath, agentEntity.agentType);
+
       if (type === 'directory') {
-        await this.dockerService.sendCommandToContainer(
-          agentEntity.containerId,
-          `mkdir -p ${this.escapeForShell(containerPath)}`,
-        );
+        await this.runMutatingFsCommand(agentEntity.containerId, `mkdir -p ${this.escapeForShell(containerPath)}`, {
+          privileged,
+        });
       } else {
-        await this.dockerService.sendCommandToContainer(
-          agentEntity.containerId,
-          `touch ${this.escapeForShell(containerPath)}`,
-        );
+        const parentDir = containerPath.includes('/') ? containerPath.slice(0, containerPath.lastIndexOf('/')) : '';
+
+        if (parentDir && parentDir !== '/' && parentDir.length > 0) {
+          await this.runMutatingFsCommand(agentEntity.containerId, `mkdir -p ${this.escapeForShell(parentDir)}`, {
+            privileged,
+          });
+        }
+
+        await this.runMutatingFsCommand(agentEntity.containerId, `touch ${this.escapeForShell(containerPath)}`, {
+          privileged,
+        });
+      }
+
+      if (privileged) {
+        await this.hardenOutsideWorkspacePath(agentEntity.containerId, containerPath);
       }
 
       this.logger.debug(`Created ${type}: ${filePath} for agent ${agentId}`);
@@ -810,11 +868,12 @@ export class AgentFileSystemService {
     );
 
     try {
+      const privileged = this.isOutsideWorkspaceRoot(containerPath, agentEntity.agentType);
+
       // Use rm -rf to delete file or directory
-      await this.dockerService.sendCommandToContainer(
-        agentEntity.containerId,
-        `rm -rf ${this.escapeForShell(containerPath)}`,
-      );
+      await this.runMutatingFsCommand(agentEntity.containerId, `rm -rf ${this.escapeForShell(containerPath)}`, {
+        privileged,
+      });
 
       this.logger.debug(`Deleted: ${filePath} for agent ${agentId}`);
       this.notifyGitStateMayHaveChanged(agentId);
@@ -887,14 +946,5 @@ export class AgentFileSystemService {
       this.logger.error(`Error moving ${sourcePath} to ${destinationPath} for agent ${agentId}: ${err.message}`);
       throw error;
     }
-  }
-
-  /**
-   * Escape a string for safe shell usage.
-   * @param str - The string to escape
-   * @returns The escaped string safe for shell usage
-   */
-  private escapeForShell(str: string): string {
-    return `'${str.replace(/'/g, "'\\''")}'`;
   }
 }

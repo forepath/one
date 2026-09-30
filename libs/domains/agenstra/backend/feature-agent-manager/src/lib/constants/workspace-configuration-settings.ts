@@ -5,7 +5,6 @@ export const WORKSPACE_CONFIGURATION_SETTINGS = [
   { settingKey: 'gitToken', envVarName: 'GIT_TOKEN' },
   { settingKey: 'gitPassword', envVarName: 'GIT_PASSWORD' },
   { settingKey: 'gitPrivateKey', envVarName: 'GIT_PRIVATE_KEY' },
-  { settingKey: 'cursorApiKey', envVarName: 'CURSOR_API_KEY' },
   { settingKey: 'agentDefaultImage', envVarName: 'AGENT_DEFAULT_IMAGE' },
   { settingKey: 'autoEnrichEnabledGlobal', envVarName: 'AUTO_ENRICH_ENABLED_GLOBAL' },
   {

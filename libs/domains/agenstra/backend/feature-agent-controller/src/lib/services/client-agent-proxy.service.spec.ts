@@ -53,7 +53,7 @@ describe('ClientAgentProxyService', () => {
     id: 'agent-uuid',
     name: 'Test Agent',
     description: 'Test Agent Description',
-    agentType: 'cursor',
+    agentType: 'opencode',
     containerType: ContainerType.GENERIC,
     chats: [],
     primaryChatId: 'primary-chat-uuid',

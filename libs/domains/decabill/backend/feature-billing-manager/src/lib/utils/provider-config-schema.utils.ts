@@ -139,7 +139,6 @@ export const PRODUCT_FIELD_SERVICES: Record<string, IntegratedProductService[]> 
     IntegratedProvisioningService.DecabillBilling,
   ],
   git: [IntegratedProvisioningService.AgenstraManager],
-  cursorApiKey: [IntegratedProvisioningService.AgenstraManager],
 };
 
 /**

@@ -49,7 +49,7 @@ describe('AgenstraManagerMetricsCollectorService', () => {
       addGroupBy: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
       getCount: jest.fn().mockResolvedValue(2),
-      getRawMany: jest.fn().mockResolvedValue([{ agentType: 'cursor', containerType: 'docker', count: '2' }]),
+      getRawMany: jest.fn().mockResolvedValue([{ agentType: 'opencode', containerType: 'docker', count: '2' }]),
     });
     agentRepository.count.mockResolvedValue(3);
     messageCreateQueryBuilder.mockReturnValue({
@@ -79,7 +79,7 @@ describe('AgenstraManagerMetricsCollectorService', () => {
     await (service as unknown as { collectMetrics: () => Promise<void> }).collectMetrics();
 
     expect(setGauge).toHaveBeenCalledWith('forepath.agenstra', 'agenstra.manager.agents', 2, {
-      agent_type: 'cursor',
+      agent_type: 'opencode',
       container_type: 'docker',
     });
     expect(setGauge).toHaveBeenCalledWith('forepath.agenstra', 'agenstra.manager.agents.total', 3);

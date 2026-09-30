@@ -57,18 +57,21 @@ describe('WorkspaceConfigurationOverridesService', () => {
   it('upserts override and mutates process.env', async () => {
     repository.upsert.mockResolvedValue({
       id: '1',
-      settingKey: 'cursorApiKey',
-      value: 'sk-123',
+      settingKey: 'agentDefaultImage',
+      value: 'ghcr.io/forepath/agenstra-manager-worker:latest',
       createdAt: new Date(),
       updatedAt: new Date(),
     } as any);
 
-    await service.upsertOverride('cursorApiKey', 'sk-123');
+    await service.upsertOverride('agentDefaultImage', 'ghcr.io/forepath/agenstra-manager-worker:latest');
 
-    expect(repository.upsert).toHaveBeenCalledWith('cursorApiKey', 'sk-123');
-    expect(process.env.CURSOR_API_KEY).toBe('sk-123');
+    expect(repository.upsert).toHaveBeenCalledWith(
+      'agentDefaultImage',
+      'ghcr.io/forepath/agenstra-manager-worker:latest',
+    );
+    expect(process.env.AGENT_DEFAULT_IMAGE).toBe('ghcr.io/forepath/agenstra-manager-worker:latest');
     expect(agentEnvironmentVariablesService.reconcileWorkspaceConfigurationOverrides).toHaveBeenCalledWith({
-      CURSOR_API_KEY: 'sk-123',
+      AGENT_DEFAULT_IMAGE: 'ghcr.io/forepath/agenstra-manager-worker:latest',
     });
   });
 
@@ -83,8 +86,8 @@ describe('WorkspaceConfigurationOverridesService', () => {
       } as any,
       {
         id: '2',
-        settingKey: 'cursorApiKey',
-        value: 'boot-cursor-key',
+        settingKey: 'agentDefaultImage',
+        value: 'ghcr.io/forepath/agenstra-manager-worker:boot',
         createdAt: new Date(),
         updatedAt: new Date(),
       } as any,
@@ -93,7 +96,7 @@ describe('WorkspaceConfigurationOverridesService', () => {
     await service.onModuleInit();
 
     expect(process.env.GIT_TOKEN).toBe('boot-token');
-    expect(process.env.CURSOR_API_KEY).toBe('boot-cursor-key');
+    expect(process.env.AGENT_DEFAULT_IMAGE).toBe('ghcr.io/forepath/agenstra-manager-worker:boot');
   });
 
   it('deletes override and removes process env value', async () => {

@@ -6,6 +6,7 @@ This section provides comprehensive documentation for all features in the Agenst
 
 Agenstra provides a complete set of features for managing distributed AI agent infrastructure:
 
+- **[Agent configuration](./agent-configuration.md)** Three-layer runtime settings UI (structured + raw), V2-only overlays, heredity locks
 - **Client Management** Manage multiple remote agent-manager instances
 - **Agent Management** Create, manage, and interact with AI agents
 - **Server Provisioning** Automated cloud server provisioning
@@ -25,6 +26,17 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **OpenTelemetry** Optional Prometheus metrics and OTLP export (disabled by default)
 
 ## Features
+
+### [Agent configuration](./agent-configuration.md)
+
+Three-layer (admin / workspace / environment) runtime settings with a shared structured editor, raw JSON mode, path heredity locks, and V2-only overlays synced to agent workers.
+
+**Key Capabilities**:
+
+- Structured sectioned tabs plus always-available raw JSON
+- Stackable MCP / skills / plugins; replace-and-lock for permissions and policies
+- Network settings stored as layer secrets (`HTTP_PROXY`, …)
+- Console route `/agent-config` and chat workspace/environment modals
 
 ### [Client Management](./client-management.md)
 

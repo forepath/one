@@ -23,6 +23,7 @@ export * from './lib/dto/move-file.dto';
 export * from './lib/dto/prepare-clean-workspace.dto';
 export * from './lib/dto/push-options.dto';
 export * from './lib/dto/rebase.dto';
+export * from './lib/dto/reply-permission.dto';
 export * from './lib/dto/run-verifier-commands.dto';
 export * from './lib/dto/resolve-conflict.dto';
 export * from './lib/dto/stage-files.dto';

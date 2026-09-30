@@ -1,4 +1,5 @@
 import { mapForwardedChatEventToDisplayRow, tryParseChatEventEnvelope } from './agent-chat-event-display';
+import { stripHiddenPromptBlocks } from './agent-chat-response-markdown';
 import { consolidateAgentTurnSegments, type AgentTurnSegment } from './chat-thread-display';
 
 export interface StreamingTurnAccumulated {
@@ -92,7 +93,7 @@ export function accumulateStreamingTurnFromEvents(
             ? (envelope.payload as { delta: string }).delta
             : '';
 
-        appendMarkdownDelta(delta);
+        appendMarkdownDelta(stripHiddenPromptBlocks(delta));
         break;
       }
 
@@ -101,8 +102,12 @@ export function accumulateStreamingTurnFromEvents(
           typeof (envelope.payload as { text?: unknown }).text === 'string'
             ? (envelope.payload as { text: string }).text
             : '';
+        const cleaned = stripHiddenPromptBlocks(full).trim();
 
-        setAssistantMessageText(full);
+        if (cleaned) {
+          setAssistantMessageText(cleaned);
+        }
+
         break;
       }
 

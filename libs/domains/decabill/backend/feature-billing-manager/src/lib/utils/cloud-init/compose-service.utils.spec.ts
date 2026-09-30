@@ -15,6 +15,7 @@ describe('compose-service.utils', () => {
   it('emits a private bridge network', () => {
     expect(buildComposeBridgeNetwork('agent-controller-network')).toBe(`networks:
   agent-controller-network:
+    name: agent-controller-network
     driver: bridge`);
   });
 });

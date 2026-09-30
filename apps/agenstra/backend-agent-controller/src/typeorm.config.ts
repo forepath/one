@@ -30,6 +30,12 @@ import {
   TicketEntity,
   UserChatSessionReadStateEntity,
   UserEnvironmentReadStateEntity,
+  GlobalOpencodeConfigEntity,
+  ClientOpencodeConfigEntity,
+  OpencodeProviderEntity,
+  OpencodeLayerFileEntity,
+  OpencodeLayerFileSyncTargetEntity,
+  OpencodeConfigSyncTargetEntity,
 } from '@forepath/agenstra/backend/feature-agent-controller';
 import { WebhookDeliveryEntity, WebhookEndpointEntity, EmailDeliveryEntity } from '@forepath/shared/backend';
 import { CorrelationAwareTypeOrmLogger } from '@forepath/shared/backend/util-http-context';
@@ -109,6 +115,12 @@ export const typeormConfig: DataSourceOptions = {
     AgentConsoleRegexFilterRuleSyncTargetEntity,
     UserChatSessionReadStateEntity,
     UserEnvironmentReadStateEntity,
+    GlobalOpencodeConfigEntity,
+    ClientOpencodeConfigEntity,
+    OpencodeProviderEntity,
+    OpencodeLayerFileEntity,
+    OpencodeLayerFileSyncTargetEntity,
+    OpencodeConfigSyncTargetEntity,
     WebhookEndpointEntity,
     WebhookDeliveryEntity,
     EmailDeliveryEntity,

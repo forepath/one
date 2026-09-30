@@ -1,7 +1,7 @@
 // Types based on OpenAPI spec - File System Operations
 
-/** Filesystem root for API calls: workspace (`app`) vs provider agent config (`config`). */
-export type FileManagerContext = 'app' | 'config';
+/** Filesystem root for API calls (workspace `/app`). */
+export type FileManagerContext = 'app';
 
 /** Logical file kind returned by the controller (`X-File-Type`). */
 export type AgentFileType = 'text' | 'binary' | 'pdf' | 'image' | 'video' | 'audio';

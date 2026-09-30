@@ -91,6 +91,10 @@ Responses from the agent:
 }
 ```
 
+#### Tool call embeds
+
+Known OpenCode tools (`bash`, `read`, `glob`, `grep`, `edit`, `write`, `apply_patch`, `todowrite`, `webfetch`, `websearch`, `task`, `skill`, `invalid`, and aliases) render as structured inline embeds in the chat timeline (lists, code excerpts, unified diffs, status badges). OpenCode `todo.updated` status rows (title `Todos`) use the same checklist embed, parsed from the structured `todos` payload or checklist text. Tool rows use a flush custom collapse (same left alignment as plain event badges); invocation and result JSON remain available via the terminal/clipboard detail popovers as a fallback for unknown or unparsed tools. Interactive `question` / permission prompts stay on their dedicated reply UI.
+
 ### Chat History
 
 - History is saved per chat session

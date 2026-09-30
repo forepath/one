@@ -234,6 +234,250 @@ paths:
           description: Agent provider does not support listing models
         '404':
           description: Agent not found
+  /agents/{id}/permissions/{permissionId}/reply:
+    post:
+      summary: Reply to an OpenCode permission request
+      operationId: replyAgentPermission
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: permissionId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reply]
+              properties:
+                reply:
+                  type: string
+                  enum: [once, always, reject]
+                sessionId:
+                  type: string
+      responses:
+        '204':
+          description: Permission reply accepted
+        '404':
+          description: Agent not found or not running
+  /agents/{id}/questions/{questionId}/reply:
+    post:
+      summary: Reply to an OpenCode question / form request
+      operationId: replyAgentQuestion
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: questionId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answers:
+                  type: array
+                  items:
+                    type: string
+                  description: Selected option labels for the question
+                reply:
+                  type: string
+                  enum: [reject]
+                sessionId:
+                  type: string
+      responses:
+        '204':
+          description: Question reply accepted
+        '404':
+          description: Agent not found or not running
+  /agents/{id}/opencode-config:
+    get:
+      summary: Get agent OpenCode user config
+      operationId: getAgentOpencodeConfig
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Agent OpenCode config overlay
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [config, overrides, secretKeys]
+                properties:
+                  config:
+                    type: object
+                    additionalProperties: true
+                  overrides:
+                    type: object
+                    additionalProperties: true
+                    description: Raw JSON overrides merged over config for this agent layer
+                  secretKeys:
+                    type: array
+                    items:
+                      type: string
+                  updatedAt:
+                    type: string
+                    format: date-time
+    put:
+      summary: Update agent OpenCode user config
+      operationId: putAgentOpencodeConfig
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                config:
+                  type: object
+                  nullable: true
+                  additionalProperties: true
+                overrides:
+                  type: object
+                  nullable: true
+                  additionalProperties: true
+                  description: Raw JSON patch merged over config; empty object clears
+                secrets:
+                  type: object
+                  nullable: true
+                  additionalProperties:
+                    type: string
+      responses:
+        '200':
+          description: Updated agent OpenCode config
+  /agents/{id}/opencode-config/agents:
+    get:
+      summary: List effective OpenCode agents (primary + subagents) from the worker
+      operationId: listAgentOpencodeAgents
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Effective OpenCode agents available on the worker
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [agents]
+                properties:
+                  agents:
+                    type: array
+                    items:
+                      type: object
+                      required: [name, mode, builtIn]
+                      properties:
+                        name:
+                          type: string
+                        description:
+                          type: string
+                        mode:
+                          type: string
+                          enum: [subagent, primary, all]
+                        builtIn:
+                          type: boolean
+  /agents/{id}/opencode-config/commands:
+    get:
+      summary: List slash-invokable OpenCode commands from the worker
+      description: >
+        Proxies OpenCode `GET /command`. Includes config commands, builtins (`init`, `review`),
+        discovered skills, and MCP prompts registered as slash commands.
+      operationId: listAgentOpencodeCommands
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Slash commands available on the worker
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [commands]
+                properties:
+                  commands:
+                    type: array
+                    items:
+                      type: object
+                      required: [name]
+                      properties:
+                        name:
+                          type: string
+                        description:
+                          type: string
+                        agent:
+                          type: string
+                        model:
+                          type: string
+                        subtask:
+                          type: boolean
+                        source:
+                          type: string
+                          enum: [command, mcp, skill]
+        '404':
+          description: Agent not found
+  /agents/{id}/opencode-config/sync:
+    post:
+      summary: Best-effort sync effective OpenCode config into worker
+      operationId: syncAgentOpencodeConfig
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [config]
+              properties:
+                config:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '200':
+          description: Sync attempted
   /agents-filters:
     get:
       summary: List regex filter rules
@@ -1836,11 +2080,9 @@ components:
       required: false
       schema:
         type: string
-        enum: [app, config]
+        enum: [app]
         default: app
-      description: |
-        Filesystem root for relative paths. `app` (default) uses the provider workspace root (e.g. /app).
-        `config` uses the provider agent configuration directory when implemented (e.g. ~/.cursor, resolved in the container).
+      description: Filesystem root for relative paths. `app` (default) uses the provider workspace root (e.g. /app).
   schemas:
     CreateAgentDto:
       type: object
@@ -1852,8 +2094,8 @@ components:
           type: [string, 'null']
         agentType:
           type: string
-          enum: [cursor, opencode]
-          description: Agent provider type (defaults to 'cursor' if not provided)
+          enum: [opencode]
+          description: Agent provider type (defaults to 'opencode' if not provided)
         gitRepositorySetupMode:
           type: string
           enum: [clone, empty]
@@ -1903,7 +2145,7 @@ components:
           type: [string, 'null']
         agentType:
           type: string
-          enum: [cursor, opencode]
+          enum: [opencode]
           description: Agent provider type
         deploymentConfiguration:
           type: object
@@ -2000,10 +2242,10 @@ components:
       properties:
         type:
           type: string
-          description: The unique type identifier (e.g., 'cursor', 'opencode')
+          description: The unique type identifier (e.g., 'opencode')
         displayName:
           type: string
-          description: Human-readable display name (e.g., 'Cursor', 'OpenCode')
+          description: Human-readable display name (e.g., 'OpenCode')
         capabilities:
           $ref: '#/components/schemas/AgentTypeCapabilities'
     AgentTypeCapabilities:
@@ -2689,7 +2931,6 @@ components:
           gitToken,
           gitPassword,
           gitPrivateKey,
-          cursorApiKey,
           agentDefaultImage,
           autoEnrichEnabledGlobal,
           autoEnrichVectorMaxCosineDistance,

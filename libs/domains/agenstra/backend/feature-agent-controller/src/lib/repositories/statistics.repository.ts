@@ -176,7 +176,7 @@ export class StatisticsRepository {
       entity = this.statisticsAgents.create({
         originalAgentId,
         statisticsClientId,
-        agentType: data?.agentType ?? 'cursor',
+        agentType: data?.agentType ?? 'opencode',
         containerType: data?.containerType ?? 'generic',
         name: data?.name,
         description: data?.description,
@@ -248,11 +248,18 @@ export class StatisticsRepository {
     interactionKind?: StatisticsInteractionKind;
     wordCount: number;
     charCount: number;
+    inputTokens?: number | null;
+    outputTokens?: number | null;
+    reasoningTokens?: number | null;
+    cacheReadTokens?: number | null;
+    cacheWriteTokens?: number | null;
+    costUsd?: number | null;
     occurredAt: Date;
   }): Promise<StatisticsChatIoEntity> {
     const entity = this.statisticsChatIo.create({
       ...data,
       interactionKind: data.interactionKind ?? StatisticsInteractionKind.CHAT,
+      costUsd: data.costUsd != null ? String(data.costUsd) : null,
     });
 
     return await this.statisticsChatIo.save(entity);
@@ -449,6 +456,10 @@ export class StatisticsRepository {
     totalWords: number;
     totalChars: number;
     avgWordsPerMessage: number;
+    totalInputTokens: number;
+    totalOutputTokens: number;
+    totalTokens: number;
+    totalCostUsd: number;
     series?: { period: string; count: number; wordCount: number; charCount: number }[];
   }> {
     const { statisticsClientIds, agentId, from, to, direction, interactionKind, groupBy } = params;
@@ -459,6 +470,10 @@ export class StatisticsRepository {
         totalWords: 0,
         totalChars: 0,
         avgWordsPerMessage: 0,
+        totalInputTokens: 0,
+        totalOutputTokens: 0,
+        totalTokens: 0,
+        totalCostUsd: 0,
         series: [],
       };
     }
@@ -487,11 +502,25 @@ export class StatisticsRepository {
         'COUNT(cio.id) AS count',
         'COALESCE(SUM(cio.word_count), 0) AS word_count',
         'COALESCE(SUM(cio.char_count), 0) AS char_count',
+        'COALESCE(SUM(cio.input_tokens), 0) AS input_tokens',
+        'COALESCE(SUM(cio.output_tokens), 0) AS output_tokens',
+        'COALESCE(SUM(cio.cost_usd), 0) AS cost_usd',
       ])
-      .getRawOne<{ count: string; word_count: string; char_count: string }>();
+      .getRawOne<{
+        count: string;
+        word_count: string;
+        char_count: string;
+        input_tokens: string;
+        output_tokens: string;
+        cost_usd: string;
+      }>();
     const totalMessages = parseInt(raw?.count ?? '0', 10);
     const totalWords = parseInt(raw?.word_count ?? '0', 10);
     const totalChars = parseInt(raw?.char_count ?? '0', 10);
+    const totalInputTokens = parseInt(raw?.input_tokens ?? '0', 10);
+    const totalOutputTokens = parseInt(raw?.output_tokens ?? '0', 10);
+    const totalTokens = totalInputTokens + totalOutputTokens;
+    const totalCostUsd = parseFloat(raw?.cost_usd ?? '0') || 0;
     const avgWordsPerMessage = totalMessages > 0 ? totalWords / totalMessages : 0;
     let series: { period: string; count: number; wordCount: number; charCount: number }[] | undefined;
 
@@ -545,6 +574,10 @@ export class StatisticsRepository {
       totalWords,
       totalChars,
       avgWordsPerMessage,
+      totalInputTokens,
+      totalOutputTokens,
+      totalTokens,
+      totalCostUsd,
       series,
     };
   }

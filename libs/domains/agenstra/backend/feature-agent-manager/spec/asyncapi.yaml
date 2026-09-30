@@ -150,7 +150,7 @@ channels:
     messages:
       createTerminalCommand:
         $ref: '#/components/messages/CreateTerminal'
-    description: Client sends create terminal command (requires prior login). Creates a new TTY session for the agent's container.
+    description: Client sends create terminal command (requires prior login). Creates an OpenCode PTY session in the worker (`opencode serve`).
   agents/terminalCreated:
     address: agents/terminalCreated
     messages:
@@ -169,6 +169,12 @@ channels:
       terminalOutputEvent:
         $ref: '#/components/messages/TerminalOutput'
     description: Server sends terminal output data to the client. Emitted whenever the terminal session produces output.
+  agents/terminalResize:
+    address: agents/terminalResize
+    messages:
+      terminalResizeCommand:
+        $ref: '#/components/messages/TerminalResize'
+    description: Client sends terminal dimensions (requires prior login). Forwarded to OpenCode PTY size update.
   agents/closeTerminal:
     address: agents/closeTerminal
     messages:
@@ -338,6 +344,12 @@ operations:
       $ref: '#/channels/agents~1terminalInput'
     messages:
       - $ref: '#/channels/agents~1terminalInput/messages/terminalInputCommand'
+  clientSendsTerminalResize:
+    action: send
+    channel:
+      $ref: '#/channels/agents~1terminalResize'
+    messages:
+      - $ref: '#/channels/agents~1terminalResize/messages/terminalResizeCommand'
   serverEmitsTerminalOutput:
     action: receive
     channel:
@@ -1077,7 +1089,7 @@ components:
             description: Optional session ID (will be generated if not provided)
           shell:
             type: string
-            description: Optional shell command (defaults to 'sh')
+            description: Optional shell override. When omitted, OpenCode uses `config.shell` or its preferred shell.
     TerminalCreated:
       name: TerminalCreated
       title: Terminal created event
@@ -1113,6 +1125,23 @@ components:
           data:
             type: string
             description: Input data to send to terminal
+    TerminalResize:
+      name: TerminalResize
+      title: Terminal resize command
+      contentType: application/json
+      payload:
+        type: object
+        required: [sessionId, cols, rows]
+        properties:
+          sessionId:
+            type: string
+            description: Terminal session ID
+          cols:
+            type: integer
+            minimum: 1
+          rows:
+            type: integer
+            minimum: 1
     TerminalOutput:
       name: TerminalOutput
       title: Terminal output event

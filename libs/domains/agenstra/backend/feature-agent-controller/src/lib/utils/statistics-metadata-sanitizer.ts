@@ -7,7 +7,6 @@ const SECRET_KEYS = new Set([
   'gitToken',
   'gitPassword',
   'gitPrivateKey',
-  'cursorApiKey',
   'keycloakClientSecret',
   'apiKey',
   'token',

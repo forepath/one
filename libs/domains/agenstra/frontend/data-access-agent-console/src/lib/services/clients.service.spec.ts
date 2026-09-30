@@ -27,7 +27,7 @@ describe('ClientsService', () => {
       gitRepositoryUrl: 'https://github.com/user/repo.git',
       agentTypes: [
         {
-          type: 'cursor',
+          type: 'opencode',
           displayName: 'Cursor',
           capabilities: {
             transport: 'acp',

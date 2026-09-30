@@ -164,13 +164,6 @@ Optional runtime extensions for provisioning and context import. See [Dynamic pr
 
 - `GIT_PRIVATE_KEY` - SSH private key (PEM or OpenSSH format, no passphrase)
 
-### Cursor Agent Configuration
-
-- `CURSOR_API_KEY` - Cursor API key for agent communication
-- `CURSOR_AGENT_DOCKER_IMAGE` - Primary worker image (default: `ghcr.io/forepath/agenstra-manager-worker:latest`)
-- `CURSOR_AGENT_VIRTUAL_WORKSPACE_DOCKER_IMAGE` - VNC image (default: `ghcr.io/forepath/agenstra-manager-vnc:latest`)
-- `CURSOR_AGENT_SSH_CONNECTION_DOCKER_IMAGE` - SSH sidecar image (default: `ghcr.io/forepath/agenstra-manager-ssh:latest`)
-
 ### OpenCode Agent Configuration
 
 - `OPENCODE_AGENT_DOCKER_IMAGE` - Primary worker image (default: `ghcr.io/forepath/agenstra-manager-worker:latest`)
@@ -264,20 +257,26 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 
 Used by **backend agent controller**. See [Background jobs](./background-jobs.md).
 
-| Variable                    | Description                            | Default                             |
-| --------------------------- | -------------------------------------- | ----------------------------------- |
-| `REDIS_HOST`                | Redis host                             | `localhost` (compose: `redis`)      |
-| `REDIS_PORT`                | Redis port                             | `6379`                              |
-| `REDIS_HOST_PORT`           | Host port published by compose         | `6379`                              |
-| `REDIS_PASSWORD`            | Optional password                      | empty                               |
-| `REDIS_DB`                  | Redis DB index                         | `0`                                 |
-| `REDIS_KEY_PREFIX`          | Key prefix                             | `agenstra-controller`               |
-| `QUEUE_ROLE`                | `api`, `scheduler`, `worker`, or `all` | `all` locally                       |
-| `QUEUE_WORKER_CONCURRENCY`  | Worker concurrency                     | `5`                                 |
-| `QUEUE_BULL_BOARD_ENABLED`  | Enable Bull Board                      | `true` in dev for `all`/`scheduler` |
-| `QUEUE_BULL_BOARD_PATH`     | Bull Board path                        | `/admin/queues`                     |
-| `QUEUE_BULL_BOARD_USERNAME` | Bull Board HTTP Basic user             | `admin`                             |
-| `QUEUE_BULL_BOARD_PASSWORD` | Bull Board HTTP Basic password         | required; `bullmq` in local compose |
+| Variable                                 | Description                             | Default                                       |
+| ---------------------------------------- | --------------------------------------- | --------------------------------------------- |
+| `REDIS_HOST`                             | Redis host                              | `localhost` (compose: `redis`)                |
+| `REDIS_PORT`                             | Redis port                              | `6379`                                        |
+| `REDIS_HOST_PORT`                        | Host port published by compose          | `6379`                                        |
+| `REDIS_PASSWORD`                         | Optional password                       | empty                                         |
+| `REDIS_DB`                               | Redis DB index                          | `0`                                           |
+| `REDIS_KEY_PREFIX`                       | Key prefix                              | `agenstra-controller`                         |
+| `QUEUE_ROLE`                             | `api`, `scheduler`, `worker`, or `all`  | `all` locally                                 |
+| `QUEUE_WORKER_CONCURRENCY`               | Worker concurrency                      | `5`                                           |
+| `QUEUE_BULL_BOARD_ENABLED`               | Enable Bull Board                       | `true` in dev for `all`/`scheduler`           |
+| `QUEUE_BULL_BOARD_PATH`                  | Bull Board path                         | `/admin/queues`                               |
+| `QUEUE_BULL_BOARD_USERNAME`              | Bull Board HTTP Basic user              | `admin`                                       |
+| `QUEUE_BULL_BOARD_PASSWORD`              | Bull Board HTTP Basic password          | required; `bullmq` in local compose           |
+| `OPENCODE_PROVIDERS_REFRESH_INTERVAL_MS` | models.dev catalog refresh interval     | `86400000` (24h); `0` disables repeatable job |
+| `OPENCODE_PROVIDERS_MODELS_DEV_URL`      | Catalog JSON URL                        | `https://models.dev/api.json`                 |
+| `OPENCODE_CONFIG_SYNC_INTERVAL_MS`       | Durable OpenCode config sync interval   | `30000`                                       |
+| `OPENCODE_CONFIG_SYNC_BATCH_SIZE`        | Config sync targets per coordinator run | `10`                                          |
+| `OPENCODE_LAYER_FILES_SYNC_INTERVAL_MS`  | Layer-file emit retry interval          | `30000`                                       |
+| `OPENCODE_LAYER_FILES_SYNC_BATCH_SIZE`   | Layer-file targets per coordinator run  | `20`                                          |
 
 ## OpenSearch (search indexes)
 

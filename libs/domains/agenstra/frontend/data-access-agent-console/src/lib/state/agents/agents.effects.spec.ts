@@ -6,8 +6,7 @@ import { provideMockStore } from '@ngrx/store/testing';
 import { of, throwError } from 'rxjs';
 
 import { AgentsService } from '../../services/agents.service';
-import { listDirectory, listDirectoryFailure, listDirectorySuccess } from '../files/files.actions';
-import type { FileNodeDto } from '../files/files.types';
+import { OpencodeConfigService } from '../../services/opencode-config.service';
 
 import {
   createClientAgent,
@@ -18,6 +17,7 @@ import {
   deleteClientAgentSuccess,
   loadClientAgent,
   loadClientAgentCommands,
+  loadClientAgentCommandsFailure,
   loadClientAgentCommandsSuccess,
   loadClientAgentFailure,
   loadClientAgentModels,
@@ -48,8 +48,7 @@ import {
   deleteClientAgent$,
   loadClientAgent$,
   loadClientAgentModels$,
-  loadClientAgentCommandsFromFiles$,
-  loadClientAgentCommandsLoading$,
+  loadClientAgentCommandsFromConfig$,
   loadClientAgents$,
   loadMoreClientAgents$,
   restartClientAgent$,
@@ -69,13 +68,14 @@ import type {
 describe('AgentsEffects', () => {
   let actions$: Actions;
   let agentsService: jest.Mocked<AgentsService>;
+  let opencodeConfigService: jest.Mocked<OpencodeConfigService>;
   let store: jest.Mocked<Store>;
   const clientId = 'client-1';
   const mockAgent: AgentResponseDto = {
     id: 'agent-1',
     name: 'Test Agent',
     description: 'Test Description',
-    agentType: 'cursor',
+    agentType: 'opencode',
     containerType: 'generic' as ContainerType,
     chats: [],
     primaryChatId: 'primary-chat-1',
@@ -105,6 +105,11 @@ describe('AgentsEffects', () => {
       restartClientAgent: jest.fn(),
     } as any;
 
+    opencodeConfigService = {
+      getAgent: jest.fn(),
+      listAgentCommands: jest.fn(),
+    } as any;
+
     store = {
       select: jest.fn().mockReturnValue(
         of({
@@ -129,6 +134,10 @@ describe('AgentsEffects', () => {
         {
           provide: AgentsService,
           useValue: agentsService,
+        },
+        {
+          provide: OpencodeConfigService,
+          useValue: opencodeConfigService,
         },
         {
           provide: Store,
@@ -579,175 +588,117 @@ describe('AgentsEffects', () => {
     });
   });
 
-  describe('loadClientAgentCommandsLoading$', () => {
+  describe('loadClientAgentCommandsFromConfig$', () => {
     const agentId = 'agent-1';
 
-    it('should dispatch loadClientAgentCommands when listing .cursor/commands directory', (done) => {
-      const action = listDirectory({
-        clientId,
-        agentId,
-        params: { path: '.cursor/commands' },
-      });
-      const outcome = loadClientAgentCommands({ clientId, agentId });
-
-      actions$ = of(action);
-
-      loadClientAgentCommandsLoading$(actions$).subscribe((result) => {
-        expect(result).toEqual(outcome);
-        done();
-      });
-    });
-
-    it('should ignore directory listings for other paths', (done) => {
-      const action = listDirectory({
-        clientId,
-        agentId,
-        params: { path: 'other' },
-      });
-
-      actions$ = of(action);
-      let called = false;
-
-      loadClientAgentCommandsLoading$(actions$).subscribe({
-        next: () => {
-          called = true;
-        },
-        complete: () => {
-          expect(called).toBe(false);
-          done();
-        },
-      });
-    });
-  });
-
-  describe('loadClientAgentCommandsFromFiles$', () => {
-    const agentId = 'agent-1';
-
-    it('should extract commands from .md files in .cursor/commands directory', (done) => {
-      const files: FileNodeDto[] = [
-        { name: 'command1.md', type: 'file', path: '.cursor/commands/command1.md' },
-        { name: 'command2.md', type: 'file', path: '.cursor/commands/command2.md' },
-        { name: 'readme.txt', type: 'file', path: '.cursor/commands/readme.txt' },
-        { name: 'subdir', type: 'directory', path: '.cursor/commands/subdir' },
-      ];
-      const action = listDirectorySuccess({
-        clientId,
-        agentId,
-        directoryPath: '.cursor/commands',
-        files,
-      });
+    it('should load slash commands from the OpenCode worker command list', (done) => {
+      const action = loadClientAgentCommands({ clientId, agentId });
       const outcome = loadClientAgentCommandsSuccess({
         clientId,
         agentId,
-        commands: { cursor: ['/command1', '/command2'], opencode: [] },
+        commands: [
+          { name: '/review', description: 'Review', source: 'command' },
+          { name: '/ship', description: 'Ship it', source: 'command' },
+          { name: '/typescript', description: 'TS patterns', source: 'skill' },
+        ],
       });
 
+      opencodeConfigService.listAgentCommands = jest.fn().mockReturnValue(
+        of({
+          commands: [
+            { name: 'ship', description: 'Ship it', source: 'command' },
+            { name: 'review', description: 'Review', source: 'command' },
+            { name: 'typescript', description: 'TS patterns', source: 'skill' },
+          ],
+        }),
+      );
       actions$ = of(action);
 
       TestBed.runInInjectionContext(() => {
-        loadClientAgentCommandsFromFiles$(actions$).subscribe((result) => {
+        loadClientAgentCommandsFromConfig$(actions$).subscribe((result) => {
           expect(result).toEqual(outcome);
           done();
         });
       });
     });
 
-    it('should return empty commands array when no .md files exist', (done) => {
-      const files: FileNodeDto[] = [
-        { name: 'readme.txt', type: 'file', path: '.cursor/commands/readme.txt' },
-        { name: 'subdir', type: 'directory', path: '.cursor/commands/subdir' },
-      ];
-      const action = listDirectorySuccess({
-        clientId,
-        agentId,
-        directoryPath: '.cursor/commands',
-        files,
-      });
+    it('should include inherited additive command keys from higher layers', (done) => {
+      const action = loadClientAgentCommands({ clientId, agentId });
       const outcome = loadClientAgentCommandsSuccess({
         clientId,
         agentId,
-        commands: { cursor: [], opencode: [] },
+        commands: [
+          { name: '/global-cmd' },
+          { name: '/init', description: 'guided AGENTS.md setup' },
+          { name: '/local-cmd' },
+          { name: '/review', description: 'review changes [commit|branch|pr], defaults to uncommitted' },
+          { name: '/workspace-cmd' },
+        ],
       });
 
-      actions$ = of(action);
-
-      TestBed.runInInjectionContext(() => {
-        loadClientAgentCommandsFromFiles$(actions$).subscribe((result) => {
-          expect(result).toEqual(outcome);
-          done();
-        });
-      });
-    });
-
-    it('should return empty commands array when directory listing fails', (done) => {
-      const action = listDirectoryFailure({
-        clientId,
-        agentId,
-        directoryPath: '.cursor/commands',
-        error: 'Directory not found',
-      });
-      const outcome = loadClientAgentCommandsSuccess({
-        clientId,
-        agentId,
-        commands: { cursor: [] },
-      });
-
-      actions$ = of(action);
-
-      TestBed.runInInjectionContext(() => {
-        loadClientAgentCommandsFromFiles$(actions$).subscribe((result) => {
-          expect(result).toEqual(outcome);
-          done();
-        });
-      });
-    });
-
-    it('should ignore non-.cursor/commands directory listings', (done) => {
-      const files: FileNodeDto[] = [{ name: 'command1.md', type: 'file', path: 'other/command1.md' }];
-      const action = listDirectorySuccess({
-        clientId,
-        agentId,
-        directoryPath: 'other',
-        files,
-      });
-
-      actions$ = of(action);
-      let called = false;
-
-      TestBed.runInInjectionContext(() => {
-        loadClientAgentCommandsFromFiles$(actions$).subscribe({
-          next: () => {
-            called = true;
+      opencodeConfigService.listAgentCommands = jest.fn().mockReturnValue(of({ commands: [] }));
+      opencodeConfigService.getAgent.mockReturnValue(
+        of({
+          config: { commands: { 'local-cmd': { template: 'Local' } } },
+          secretKeys: [],
+          effective: {
+            commands: {
+              'local-cmd': { template: 'Local' },
+              'workspace-cmd': { template: 'Workspace' },
+            },
           },
-          complete: () => {
-            expect(called).toBe(false);
-            done();
-          },
+          inheritedAdditive: [{ path: '/commands', keys: ['global-cmd', 'workspace-cmd'] }],
+        }),
+      );
+      actions$ = of(action);
+
+      TestBed.runInInjectionContext(() => {
+        loadClientAgentCommandsFromConfig$(actions$).subscribe((result) => {
+          expect(result).toEqual(outcome);
+          done();
         });
       });
     });
 
-    it('should handle files with .md extension in subdirectories correctly', (done) => {
-      const files: FileNodeDto[] = [
-        { name: 'command1.md', type: 'file', path: '.cursor/commands/command1.md' },
-        { name: 'subdir', type: 'directory', path: '.cursor/commands/subdir' },
-      ];
-      const action = listDirectorySuccess({
-        clientId,
-        agentId,
-        directoryPath: '.cursor/commands',
-        files,
-      });
+    it('should fall back to overlay config commands when effective is absent', (done) => {
+      const action = loadClientAgentCommands({ clientId, agentId });
       const outcome = loadClientAgentCommandsSuccess({
         clientId,
         agentId,
-        commands: { cursor: ['/command1'], opencode: [] },
+        commands: [
+          { name: '/init', description: 'guided AGENTS.md setup' },
+          { name: '/review', description: 'review changes [commit|branch|pr], defaults to uncommitted' },
+          { name: '/ship' },
+        ],
       });
 
+      opencodeConfigService.listAgentCommands = jest.fn().mockReturnValue(throwError(() => new Error('offline')));
+      opencodeConfigService.getAgent.mockReturnValue(
+        of({
+          config: { commands: { ship: { template: 'Ship' } } },
+          secretKeys: [],
+        }),
+      );
       actions$ = of(action);
 
       TestBed.runInInjectionContext(() => {
-        loadClientAgentCommandsFromFiles$(actions$).subscribe((result) => {
+        loadClientAgentCommandsFromConfig$(actions$).subscribe((result) => {
+          expect(result).toEqual(outcome);
+          done();
+        });
+      });
+    });
+
+    it('should return loadClientAgentCommandsFailure on error', (done) => {
+      const action = loadClientAgentCommands({ clientId, agentId });
+      const outcome = loadClientAgentCommandsFailure({ clientId, agentId });
+
+      opencodeConfigService.listAgentCommands = jest.fn().mockReturnValue(of({ commands: [] }));
+      opencodeConfigService.getAgent.mockReturnValue(throwError(() => new Error('Config failed')));
+      actions$ = of(action);
+
+      TestBed.runInInjectionContext(() => {
+        loadClientAgentCommandsFromConfig$(actions$).subscribe((result) => {
           expect(result).toEqual(outcome);
           done();
         });

@@ -39,9 +39,9 @@
 }
 
 :host ::ng-deep .updates-manager__instance-row.fpc-list-item {
-  align-items: stretch;
   padding: 0;
 
+  .fpc-list-item__main,
   .fpc-list-item__body,
   .fpc-list-item__content {
     display: flex;

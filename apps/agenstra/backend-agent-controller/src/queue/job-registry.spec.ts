@@ -40,6 +40,22 @@ describe('controller job-registry', () => {
     delete process.env.UPDATE_CHECK_CRON;
   });
 
+  it('getControllerRepeatableJobs includes opencode providers refresh', () => {
+    const jobs = getControllerRepeatableJobs();
+    const providersJob = jobs.find((job) => job.name === ControllerJobName.OPENCODE_PROVIDERS_REFRESH);
+
+    expect(providersJob).toBeDefined();
+    expect(providersJob?.everyMs).toBe(86_400_000);
+  });
+
+  it('getControllerRepeatableJobs includes opencode config and layer-file sync', () => {
+    const jobs = getControllerRepeatableJobs();
+    const names = jobs.map((job) => job.name);
+
+    expect(names).toContain(ControllerJobName.OPENCODE_CONFIG_SYNC_COORDINATOR);
+    expect(names).toContain(ControllerJobName.OPENCODE_LAYER_FILES_SYNC_COORDINATOR);
+  });
+
   it('coordinator job ids are valid for BullMQ (no colons)', () => {
     for (const job of getControllerRepeatableJobs()) {
       expect(job.coordinatorJobId).not.toContain(':');

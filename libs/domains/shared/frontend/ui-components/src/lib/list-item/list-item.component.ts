@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, HostListener, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, booleanAttribute, input, output } from '@angular/core';
 
 export type FpcListItemVariant = 'default' | 'condensed';
 
@@ -29,19 +29,21 @@ export type FpcListItemVariant = 'default' | 'condensed';
     '[attr.aria-disabled]': 'disabled() ? "true" : null',
   },
   template: `
-    <div class="fpc-list-item__body">
-      <div class="fpc-list-item__title">
-        <ng-content select="[fpcListItemTitle]" />
+    <div class="fpc-list-item__main" [class.fpc-list-item__main--dirty]="dirty()">
+      <div class="fpc-list-item__body">
+        <div class="fpc-list-item__title">
+          <ng-content select="[fpcListItemTitle]" />
+        </div>
+        <div class="fpc-list-item__meta">
+          <ng-content select="[fpcListItemMeta]" />
+        </div>
       </div>
-      <div class="fpc-list-item__meta">
-        <ng-content select="[fpcListItemMeta]" />
-      </div>
-      <div class="fpc-list-item__content">
-        <ng-content />
+      <div class="fpc-list-item__actions">
+        <ng-content select="[fpcListItemActions]" />
       </div>
     </div>
-    <div class="fpc-list-item__actions">
-      <ng-content select="[fpcListItemActions]" />
+    <div class="fpc-list-item__content">
+      <ng-content />
     </div>
   `,
   styleUrl: './list-item.component.scss',
@@ -50,6 +52,8 @@ export class FpcListItemComponent {
   readonly active = input(false);
   readonly disabled = input(false);
   readonly clickable = input(false);
+  /** Unsaved / drifted highlight on the title/actions row (not nested content). */
+  readonly dirty = input(false, { transform: booleanAttribute });
   readonly variant = input<FpcListItemVariant>('default');
 
   readonly selected = output<void>();

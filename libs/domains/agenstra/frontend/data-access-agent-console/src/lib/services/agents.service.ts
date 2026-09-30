@@ -65,6 +65,36 @@ export class AgentsService {
   }
 
   /**
+   * Reply to an OpenCode permission request (`once` | `always` | `reject`).
+   */
+  replyClientAgentPermission(
+    clientId: string,
+    agentId: string,
+    permissionId: string,
+    body: { reply: 'once' | 'always' | 'reject'; sessionId?: string },
+  ): Observable<void> {
+    return this.http.post<void>(
+      `${this.apiUrl}/clients/${clientId}/agents/${agentId}/permissions/${encodeURIComponent(permissionId)}/reply`,
+      body,
+    );
+  }
+
+  /**
+   * Reply to (or reject) an OpenCode question / form request.
+   */
+  replyClientAgentQuestion(
+    clientId: string,
+    agentId: string,
+    questionId: string,
+    body: { answers?: string[]; reply?: 'reject'; sessionId?: string },
+  ): Observable<void> {
+    return this.http.post<void>(
+      `${this.apiUrl}/clients/${clientId}/agents/${agentId}/questions/${encodeURIComponent(questionId)}/reply`,
+      body,
+    );
+  }
+
+  /**
    * Create a new agent for a specific client.
    */
   createClientAgent(clientId: string, agent: CreateAgentDto): Observable<CreateAgentResponseDto> {

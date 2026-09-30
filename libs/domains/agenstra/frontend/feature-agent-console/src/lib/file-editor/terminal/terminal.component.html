@@ -17,17 +17,34 @@
           @for (sessionId of sessionIds(); track sessionId) {
             <fpc-dropdown-item [active]="activeSessionId() === sessionId" (selected)="onSwitchSession(sessionId)">
               {{ getSessionName(sessionId) }}
-              <span
-                fpcDropdownItemEnd
-                role="button"
-                tabindex="0"
-                class="btn-close btn-close-sm terminal-close-btn"
-                [class.active]="activeSessionId() === sessionId"
-                (click)="onCloseTerminal(sessionId, $event)"
-                (keydown.enter)="onCloseTerminal(sessionId, $event)"
-                i18n-aria-label="@@featureTerminal-closeTerminalAriaLabel"
-                aria-label="Close terminal"
-              ></span>
+              @if (sessionIds().length === 1) {
+                <button
+                  fpcDropdownItemEnd
+                  type="button"
+                  class="btn btn-link p-0 border-0 terminal-action-btn"
+                  [class.active]="activeSessionId() === sessionId"
+                  (click)="onRefreshTerminal(sessionId, $event)"
+                  (keydown.enter)="onRefreshTerminal(sessionId, $event)"
+                  i18n-aria-label="@@featureTerminal-refreshTerminalAriaLabel"
+                  aria-label="Refresh terminal"
+                  i18n-title="@@featureTerminal-refreshTerminalAriaLabel"
+                  title="Refresh terminal"
+                >
+                  <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+                </button>
+              } @else {
+                <span
+                  fpcDropdownItemEnd
+                  role="button"
+                  tabindex="0"
+                  class="btn-close btn-close-sm terminal-close-btn"
+                  [class.active]="activeSessionId() === sessionId"
+                  (click)="onCloseTerminal(sessionId, $event)"
+                  (keydown.enter)="onCloseTerminal(sessionId, $event)"
+                  i18n-aria-label="@@featureTerminal-closeTerminalAriaLabel"
+                  aria-label="Close terminal"
+                ></span>
+              }
             </fpc-dropdown-item>
           }
         </fpc-dropdown>

@@ -301,8 +301,7 @@ The provisioning endpoint accepts a `ProvisionServerDto` with the following fiel
 - `gitUsername` - Git username for repository access
 - `gitToken` - Git token/personal access token for repository access
 - `gitPassword` - Git password for repository access (alternative to token)
-- `cursorApiKey` - Cursor API key for agent configuration
-- `agentDefaultImage` - Default Docker image for cursor agents (defaults to `ghcr.io/forepath/agenstra-manager-worker:latest`)
+- `agentDefaultImage` - Default Docker image for agents (defaults to `ghcr.io/forepath/agenstra-manager-worker:latest`)
 
 #### Provisioning Process
 
@@ -315,7 +314,7 @@ When provisioning a server:
    - Authentication configuration (API key or Keycloak)
    - Database connection to PostgreSQL
    - Git repository configuration (if provided)
-   - Cursor agent configuration (if provided)
+   - Agent default image override (if provided)
 5. **Client Creation**: A client entity is created in the database with the server's endpoint
 6. **Reference Storage**: A provisioning reference links the client to the cloud server
 
@@ -335,7 +334,7 @@ All configuration values are properly interpolated into the docker-compose.yml f
 
 - **Authentication**: `STATIC_API_KEY` or Keycloak variables (`KEYCLOAK_AUTH_SERVER_URL`, `KEYCLOAK_REALM`, `KEYCLOAK_CLIENT_ID`, `KEYCLOAK_CLIENT_SECRET`)
 - **Git Configuration**: `GIT_REPOSITORY_URL`, `GIT_USERNAME`, `GIT_TOKEN`, `GIT_PASSWORD`
-- **Cursor Agent**: `CURSOR_API_KEY`, `AGENT_DEFAULT_IMAGE`
+- **Agent Image**: `AGENT_DEFAULT_IMAGE`
 
 Values are securely passed from the frontend through the backend to the user data script, which generates the docker-compose.yml with all environment variables properly set.
 
@@ -345,7 +344,7 @@ Client responses include a `config` field that is automatically fetched from the
 
 - `gitRepositoryUrl` - The Git repository URL configured on the agent-manager instance (if set, clone mode)
 - `gitRepositorySetupMode` - Default setup mode for new agents (`clone` or `empty`)
-- `agentTypes` - Array of available agent provider types registered on the agent-manager instance (e.g., `['cursor']`, `['cursor', 'opencode']`)
+- `agentTypes` - Array of available agent provider types registered on the agent-manager instance (e.g., `['opencode']`)
 
 The config field is optional and may be `undefined` if:
 

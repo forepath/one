@@ -75,7 +75,7 @@ channels:
       payload `{ message, correlationId, model? }`; response `chatEnhanceResult` unicast from
       agent-manager, proxied to this socket only), "generateTicketBody" (ticket body from title;
       payload `{ title, correlationId, model? }`; response `ticketBodyResult` unicast, same envelope
-      shape as `chatEnhanceResult`), "fileUpdate", "logout", "createTerminal", "terminalInput",
+      shape as `chatEnhanceResult`), "fileUpdate", "logout", "createTerminal", "terminalInput", "terminalResize",
       "closeTerminal", etc. The remote agent-manager gateway will process the event and may emit
       response events (e.g., "chatMessage", "chatEnhanceResult", "ticketBodyResult",
       "fileUpdateNotification", "workspaceIndexChanged", "workspaceIndexRebuildRequired",

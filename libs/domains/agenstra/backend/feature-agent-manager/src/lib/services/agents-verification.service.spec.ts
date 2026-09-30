@@ -20,7 +20,7 @@ describe('AgentsVerificationService', () => {
     hashedPassword: 'x',
     containerId: 'c1',
     volumePath: '/v',
-    agentType: 'cursor',
+    agentType: 'opencode',
     containerType: ContainerType.GENERIC,
     createdAt: new Date(),
     updatedAt: new Date(),

@@ -71,8 +71,4 @@ export const HOST_PROVIDER_CONFIG_PROPERTIES: Record<string, Record<string, unkn
       commitAuthorEmail: { type: 'string', description: 'Default commit author email' },
     },
   },
-  cursorApiKey: {
-    type: 'string',
-    description: 'Optional Cursor API key for manager instances (CURSOR_API_KEY env var). Sensitive.',
-  },
 };

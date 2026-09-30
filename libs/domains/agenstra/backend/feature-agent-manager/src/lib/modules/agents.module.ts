@@ -16,6 +16,8 @@ import { AgentsMessagesController } from '../controllers/agents-messages.control
 import { AgentsVcsController } from '../controllers/agents-vcs.controller';
 import { AgentsVerificationController } from '../controllers/agents-verification.controller';
 import { AgentsController } from '../controllers/agents.controller';
+import { AgentsOpencodeConfigController } from '../controllers/agents-opencode-config.controller';
+import { AgentsPermissionsController } from '../controllers/agents-permissions.controller';
 import { AgentsWorkspaceIndexController } from '../controllers/agents-workspace-index.controller';
 import { ConfigController } from '../controllers/config.controller';
 import { WorkspaceConfigurationOverridesController } from '../controllers/workspace-configuration-overrides.controller';
@@ -30,14 +32,23 @@ import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
 import { WorkspaceConfigurationOverrideEntity } from '../entities/workspace-configuration-override.entity';
 import { AgentsGateway } from '../gateways/agents.gateway';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
-import type { AgentProvider } from '../providers/agent-provider.interface';
 import { AcpAgentMessagingService } from '../providers/acp/acp-agent-messaging.service';
 import { AcpClientHostFactory } from '../providers/acp/acp-client-host';
 import { AcpNotificationMapper } from '../providers/acp/acp-notification-mapper';
 import { AcpSessionService } from '../providers/acp/acp-session.service';
 import { DockerAcpTransportFactory } from '../providers/acp/docker-acp-transport';
-import { CursorAgentProvider } from '../providers/agents/cursor-agent.provider';
 import { OpenCodeAgentProvider } from '../providers/agents/opencode-agent.provider';
+import { OpenCodeClientFactory } from '../providers/opencode/opencode-client.factory';
+import { OpenCodeConfigSyncService } from '../providers/opencode/opencode-config-sync.service';
+import { OpenCodeEventBridge } from '../providers/opencode/opencode-event-bridge';
+import { OpenCodeEventMapper } from '../providers/opencode/opencode-event-mapper';
+import { OpenCodePtyService } from '../providers/opencode/opencode-pty.service';
+import { OpenCodeRuntimeService } from '../providers/opencode/opencode-runtime.service';
+import { OpenCodeSessionService } from '../providers/opencode/opencode-session.service';
+import {
+  NoopOutboundAgentEventPublisher,
+  OutboundAgentEventPublisher,
+} from '../providers/outbound-agent-event-publisher';
 import { ChatFilterFactory } from '../providers/chat-filter.factory';
 import { BidirectionalChatFilter } from '../providers/filters/bidirectional-chat-filter';
 import { DatabaseRegexIncomingChatFilter } from '../providers/filters/database-regex-incoming-chat-filter';
@@ -102,6 +113,8 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
   ],
   controllers: [
     AgentsController,
+    AgentsOpencodeConfigController,
+    AgentsPermissionsController,
     AgentsMessagesController,
     AgentsFilesController,
     AgentsWorkspaceIndexController,
@@ -143,13 +156,21 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     DeploymentConfigurationsRepository,
     DeploymentRunsRepository,
     DockerService,
+    // ACP stack retained temporarily; OpenCode chat uses HTTP runtime below.
     AcpNotificationMapper,
     AcpClientHostFactory,
     DockerAcpTransportFactory,
     AcpSessionService,
     AcpAgentMessagingService,
+    OpenCodeClientFactory,
+    OpenCodeSessionService,
+    OpenCodeEventBridge,
+    OpenCodeEventMapper,
+    OpenCodeRuntimeService,
+    OpenCodePtyService,
+    OpenCodeConfigSyncService,
+    { provide: OutboundAgentEventPublisher, useClass: NoopOutboundAgentEventPublisher },
     AgentProviderFactory,
-    CursorAgentProvider,
     OpenCodeAgentProvider,
     PipelineProviderFactory,
     GitHubProvider,
@@ -170,26 +191,12 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     DynamicProviderLoaderService,
     {
       provide: 'AGENT_PROVIDER_INIT',
-      useFactory: async (
-        factory: AgentProviderFactory,
-        cursorProvider: CursorAgentProvider,
-        opencodeProvider: OpenCodeAgentProvider,
-        dynamicLoader: DynamicProviderLoaderService,
-      ) => {
-        factory.registerProvider(cursorProvider);
+      useFactory: (factory: AgentProviderFactory, opencodeProvider: OpenCodeAgentProvider) => {
+        // OpenCode is the only supported harness; do not load DYNAMIC_AGENT_PROVIDERS.
         factory.registerProvider(opencodeProvider);
-
-        await registerDynamicProviders<AgentProvider>({
-          envKey: 'DYNAMIC_AGENT_PROVIDERS',
-          criticality: 'optional',
-          register: (provider) => factory.registerProvider(provider),
-          dynamicLoader,
-          loggerContext: 'AgentProviderFactory',
-        });
-
         return true;
       },
-      inject: [AgentProviderFactory, CursorAgentProvider, OpenCodeAgentProvider, DynamicProviderLoaderService],
+      inject: [AgentProviderFactory, OpenCodeAgentProvider],
     },
     {
       provide: 'PIPELINE_PROVIDER_INIT',

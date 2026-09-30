@@ -1,6 +1,8 @@
 import type { AgentEventEnvelope, SuccessResponse } from '@forepath/agenstra/frontend/data-access-agent-console';
 
 import {
+  collectAnsweredQuestionIdsFromChatEvents,
+  collectAnsweredQuestionIdsFromChatMessages,
   consolidateConsecutiveInteractionQueryTimelineRows,
   consolidateConsecutiveThinkingTimelineRows,
   mapForwardedChatEventToDisplayRow,
@@ -41,7 +43,7 @@ describe('agent-chat-event-display', () => {
       throw new Error('expected row');
     }
 
-    expect(row.summaryTitle).toContain('read');
+    expect(row.summaryTitle).toBe('Read');
     expect(row.summaryBody).toContain('started');
     expect(row.summaryBody).toContain('t1');
     expect(row.summaryBody).toContain('README');
@@ -226,6 +228,119 @@ describe('agent-chat-event-display', () => {
     expect(row.detailJson).toContain('"kind": "interactionQuery"');
   });
 
+  it('maps question chatEvent with prompt, options, and questionInteraction', () => {
+    const row = mapForwardedChatEventToDisplayRow({
+      payload: successEnvelope({
+        eventId: 'ev-q',
+        agentId: 'a1',
+        correlationId: 'c1',
+        sequence: 1,
+        timestamp: '2026-04-08T12:00:00.000Z',
+        kind: 'question',
+        payload: {
+          type: 'question',
+          subtype: 'question',
+          questionId: 'q_1',
+          prompt: 'Pick a color',
+          options: [
+            { id: 'red', label: 'Red' },
+            { id: 'blue', label: 'Blue' },
+          ],
+          session_id: 'ses_1',
+        },
+      }),
+      timestamp: 1000,
+    });
+
+    expect(row).not.toBeNull();
+
+    if (row === null) {
+      throw new Error('expected row');
+    }
+
+    expect(row.summaryBody).toContain('Pick a color');
+    expect(row.questionInteraction).toEqual({
+      questionId: 'q_1',
+      prompt: 'Pick a color',
+      options: [
+        { id: 'red', label: 'Red' },
+        { id: 'blue', label: 'Blue' },
+      ],
+      allowMultiple: false,
+      sessionId: 'ses_1',
+      replyKind: 'question',
+    });
+  });
+
+  it('suppresses duplicate question toolCall/toolResult frames', () => {
+    expect(
+      mapForwardedChatEventToDisplayRow({
+        payload: successEnvelope({
+          eventId: 'ev-qt',
+          agentId: 'a1',
+          correlationId: 'c1',
+          sequence: 1,
+          timestamp: '2026-04-08T12:00:00.000Z',
+          kind: 'toolCall',
+          payload: {
+            type: 'tool_call',
+            toolCallId: 'call_q',
+            name: 'question',
+            status: 'running',
+            args: { questions: [{ question: 'Pick a color' }] },
+          },
+        }),
+        timestamp: 1000,
+      }),
+    ).toBeNull();
+
+    expect(
+      mapForwardedChatEventToDisplayRow({
+        payload: successEnvelope({
+          eventId: 'ev-qr',
+          agentId: 'a1',
+          correlationId: 'c1',
+          sequence: 2,
+          timestamp: '2026-04-08T12:00:01.000Z',
+          kind: 'toolResult',
+          payload: {
+            type: 'tool_result',
+            toolCallId: 'call_q',
+            name: 'question',
+            result: 'Red',
+            isError: false,
+          },
+        }),
+        timestamp: 1001,
+      }),
+    ).toBeNull();
+  });
+
+  it('classifies per_ questionIds as permission replies even without subtype', () => {
+    const row = mapForwardedChatEventToDisplayRow({
+      payload: successEnvelope({
+        eventId: 'ev-per',
+        agentId: 'a1',
+        correlationId: 'c1',
+        sequence: 1,
+        timestamp: '2026-04-08T12:00:00.000Z',
+        kind: 'question',
+        payload: {
+          questionId: 'per_abc123',
+          prompt: 'bash',
+          options: [
+            { id: 'once', label: 'Allow once' },
+            { id: 'always', label: 'Allow always' },
+            { id: 'reject', label: 'Reject' },
+          ],
+        },
+      }),
+      timestamp: 1000,
+    });
+
+    expect(row?.questionInteraction?.replyKind).toBe('permission');
+  });
+
   it('mapForwardedChatEventsToDisplayRows merges consecutive toolCall and toolResult with same id', () => {
     const rows = mapForwardedChatEventsToDisplayRows([
       {
@@ -256,6 +371,7 @@ describe('agent-chat-event-display', () => {
 
     expect(rows).toHaveLength(1);
     expect(rows[0]?.kind).toBe('toolCall');
+    expect(rows[0]?.toolName).toBe('read');
     expect(rows[0]?.badgeColor).toBe('success');
     expect(rows[0]?.toolPair?.callDetailJson).toBeDefined();
     expect(rows[0]?.toolPair?.resultDetailJson).toBeDefined();
@@ -407,5 +523,90 @@ describe('agent-chat-event-display', () => {
 
     expect(rows.length).toBe(1);
     expect(rows[0].kind).toBe('status');
+  });
+
+  it('collectAnsweredQuestionIdsFromChatEvents reads questionId from status frames', () => {
+    const ids = collectAnsweredQuestionIdsFromChatEvents([
+      {
+        payload: successEnvelope({
+          eventId: 'e1',
+          agentId: 'a',
+          correlationId: 'c',
+          sequence: 0,
+          timestamp: '2026-04-08T12:00:00.000Z',
+          kind: 'question',
+          payload: { questionId: 'q_open', prompt: 'still open', options: [] },
+        }),
+      },
+      {
+        payload: successEnvelope({
+          eventId: 'e2',
+          agentId: 'a',
+          correlationId: 'c',
+          sequence: 1,
+          timestamp: '2026-04-08T12:00:01.000Z',
+          kind: 'status',
+          payload: { message: 'Answered q_done', title: 'Answered', questionId: 'q_done' },
+        }),
+      },
+    ]);
+
+    expect(ids).toEqual(['q_done']);
+  });
+
+  it('collectAnsweredQuestionIdsFromChatMessages reads status parts inside agenstra_turn', () => {
+    const ids = collectAnsweredQuestionIdsFromChatMessages([
+      {
+        payload: {
+          success: true,
+          data: {
+            from: 'agent',
+            response: {
+              type: 'agenstra_turn',
+              parts: [
+                { type: 'question', questionId: 'q_open', prompt: 'open' },
+                { type: 'status', questionId: 'per_1', message: 'Permission per_1: always' },
+              ],
+            },
+          },
+        },
+      },
+    ]);
+
+    expect(ids).toEqual(['q_open', 'per_1']);
+  });
+
+  it('collectAnsweredQuestionIdsFromChatMessages marks non-trailing questions as answered', () => {
+    const ids = collectAnsweredQuestionIdsFromChatMessages([
+      {
+        payload: {
+          success: true,
+          data: {
+            from: 'agent',
+            response: {
+              type: 'agenstra_turn',
+              parts: [
+                { type: 'question', questionId: 'q_done', prompt: 'Pick' },
+                { type: 'result', result: 'Continuing…' },
+              ],
+            },
+          },
+        },
+      },
+      {
+        payload: {
+          success: true,
+          data: {
+            from: 'agent',
+            response: {
+              type: 'agenstra_turn',
+              parts: [{ type: 'question', questionId: 'q_still_open', prompt: 'Still waiting' }],
+            },
+          },
+        },
+      },
+    ]);
+
+    expect(ids).toEqual(['q_done']);
   });
 });

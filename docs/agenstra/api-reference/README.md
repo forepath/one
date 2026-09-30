@@ -110,7 +110,7 @@ The Agent Manager WebSocket gateway provides:
 - Real-time chat (`chat`, `chatMessage`, `chatEvent`, `enhanceChat`, `generateTicketBody`, filter results)
 - File update notifications (`fileUpdate`, `fileUpdateNotification`)
 - Git workspace change signal (`gitStateChanged`)
-- Terminal session management (`createTerminal`, `terminalInput`, `terminalOutput`, `closeTerminal`)
+- Terminal session management (`createTerminal`, `terminalInput`, `terminalOutput`, `terminalResize`, `closeTerminal`) via OpenCode PTY in the worker
 - Container statistics broadcasting (`containerStats`; default every 15s on the manager, configurable via `CONTAINER_STATS_SCHEDULER_INTERVAL`)
 
 ## Using the Specifications

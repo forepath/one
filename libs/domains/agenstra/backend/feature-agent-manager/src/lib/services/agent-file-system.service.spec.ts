@@ -27,7 +27,7 @@ describe('AgentFileSystemService', () => {
     id: mockAgentId,
     name: 'Test Agent',
     description: 'Test Description',
-    agentType: 'cursor',
+    agentType: 'opencode',
     containerType: ContainerType.GENERIC,
     chats: [
       {
@@ -61,7 +61,7 @@ describe('AgentFileSystemService', () => {
   };
   const mockProvider = {
     getBasePath: jest.fn().mockReturnValue('/app'),
-    getConfigBasePath: jest.fn().mockReturnValue('~/.cursor'),
+    getConfigBasePath: jest.fn().mockReturnValue('~/.config/opencode'),
   };
   const mockAgentProviderFactory = {
     getProvider: jest.fn().mockReturnValue(mockProvider),
@@ -116,7 +116,7 @@ describe('AgentFileSystemService', () => {
     jest.clearAllMocks();
     jest.restoreAllMocks();
     mockProvider.getBasePath.mockReturnValue('/app');
-    mockProvider.getConfigBasePath = jest.fn().mockReturnValue('~/.cursor');
+    mockProvider.getConfigBasePath = jest.fn().mockReturnValue('~/.config/opencode');
     mockDockerService.getContainerHomeDirectory.mockResolvedValue('/home/agenstra');
     mockAgentProviderFactory.getProvider.mockReturnValue(mockProvider);
   });
@@ -470,6 +470,7 @@ describe('AgentFileSystemService', () => {
         mockContainerId,
         expect.stringContaining('base64 -d'),
         textContent.toString('base64'),
+        true,
       );
       expect(mockGitStateBroadcast.notifyGitStateMayHaveChanged).toHaveBeenCalledWith(mockAgentId);
     });
@@ -489,7 +490,64 @@ describe('AgentFileSystemService', () => {
         mockContainerId,
         expect.stringContaining('base64 -d'),
         binaryContent.toString('base64'),
+        true,
       );
+    });
+
+    it('should write absolute paths outside the workspace root', async () => {
+      const filePath = '/opt/skills/foo.md';
+      const textContent = Buffer.from('skill', 'utf-8');
+
+      agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
+      dockerService.sendCommandToContainer.mockResolvedValue('');
+
+      await service.writeFile(mockAgentId, filePath, textContent);
+
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
+        mockContainerId,
+        expect.stringContaining('mkdir -p'),
+        undefined,
+        true,
+        { user: '0' },
+      );
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
+        mockContainerId,
+        expect.stringContaining('/opt/skills/foo.md'),
+        textContent.toString('base64'),
+        true,
+        { user: '0' },
+      );
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
+        mockContainerId,
+        expect.stringContaining('chmod -R u=rwX,go=rX'),
+        undefined,
+        true,
+        { user: '0' },
+      );
+      expect(dockerService.sendCommandToContainer.mock.calls.some((call) => String(call[1]).includes('chown'))).toBe(
+        false,
+      );
+      expect(
+        dockerService.sendCommandToContainer.mock.calls.some((call) => String(call[1]).includes('/app/opt/')),
+      ).toBe(false);
+    });
+
+    it('should write relative and ./ paths under the workspace root', async () => {
+      const textContent = Buffer.from('rel', 'utf-8');
+
+      agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
+      dockerService.sendCommandToContainer.mockResolvedValue('');
+
+      await service.writeFile(mockAgentId, './skills/a.md', textContent);
+
+      const writeCall = dockerService.sendCommandToContainer.mock.calls.find((call) =>
+        String(call[1]).includes('base64 -d'),
+      );
+
+      expect(writeCall?.[1]).toEqual(expect.stringContaining('/app/skills/a.md'));
+      expect(writeCall?.[4]).toBeUndefined();
     });
 
     it('should throw BadRequestException when content size exceeds limit', async () => {
@@ -531,6 +589,7 @@ describe('AgentFileSystemService', () => {
         mockContainerId,
         expect.stringContaining('base64 -d'),
         Buffer.concat([part1, part2]).toString('base64'),
+        true,
       );
     });
 
@@ -660,6 +719,8 @@ file|Copy (1).md|20|1704067200`;
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
         expect.stringContaining('mkdir -p'),
+        undefined,
+        true,
       );
     });
 
@@ -676,6 +737,8 @@ file|Copy (1).md|20|1704067200`;
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
         expect.stringContaining('touch'),
+        undefined,
+        true,
       );
       expect(mockGitStateBroadcast.notifyGitStateMayHaveChanged).toHaveBeenCalledWith(mockAgentId);
     });
@@ -695,6 +758,8 @@ file|Copy (1).md|20|1704067200`;
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
         expect.stringContaining('rm -rf'),
+        undefined,
+        true,
       );
     });
 
@@ -826,7 +891,7 @@ file|Copy (1).md|20|1704067200`;
 
       await service.readFile(mockAgentId, filePath);
 
-      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('cursor');
+      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('opencode');
       expect(mockProvider.getBasePath).toHaveBeenCalled();
       expect(dockerService.copyFileFromContainer).toHaveBeenCalledWith(
         mockContainerId,
@@ -921,45 +986,6 @@ file|Copy (1).md|20|1704067200`;
         `/app/${filePath}`,
         expect.any(String),
       );
-    });
-  });
-
-  describe('file manager context=config', () => {
-    it('should read file under expanded config root', async () => {
-      const filePath = 'settings.json';
-      const fileContent = '{}';
-
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
-      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
-      dockerService.copyFileFromContainer.mockResolvedValue(undefined);
-
-      const mockTempDir = '/tmp/agent-file-read-abc123';
-
-      jest.spyOn(fs, 'mkdtempSync').mockReturnValue(mockTempDir);
-      jest.spyOn(fs, 'existsSync').mockReturnValue(true);
-      jest.spyOn(fs, 'statSync').mockReturnValue({ size: fileContent.length } as fs.Stats);
-      jest.spyOn(fs, 'readFileSync').mockReturnValue(Buffer.from(fileContent, 'utf-8'));
-      jest.spyOn(fs, 'unlinkSync').mockImplementation(jest.fn());
-      jest.spyOn(fs, 'rmSync').mockImplementation(jest.fn());
-
-      await service.readFile(mockAgentId, filePath, 'config');
-
-      expect(dockerService.getContainerHomeDirectory).toHaveBeenCalledWith(mockContainerId);
-      expect(dockerService.copyFileFromContainer).toHaveBeenCalledWith(
-        mockContainerId,
-        '/home/agenstra/.cursor/settings.json',
-        expect.any(String),
-      );
-    });
-
-    it('should throw BadRequestException when provider has no getConfigBasePath', async () => {
-      const noConfig = { getBasePath: () => '/app' };
-
-      mockAgentProviderFactory.getProvider.mockReturnValue(noConfig as never);
-      agentsService.findOne.mockResolvedValue(mockAgentResponse);
-      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
-
-      await expect(service.readFile(mockAgentId, 'x', 'config')).rejects.toThrow(BadRequestException);
     });
   });
 });

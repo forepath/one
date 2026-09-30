@@ -29,6 +29,7 @@ import { AgentGitStateBroadcastService } from '../services/agent-git-state-broad
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
+import { OpenCodePtyService } from '../providers/opencode/opencode-pty.service';
 import { AgentsService } from '../services/agents.service';
 import { DockerService } from '../services/docker.service';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
@@ -113,6 +114,12 @@ interface TerminalInputPayload {
 
 interface CloseTerminalPayload {
   sessionId: string;
+}
+
+interface TerminalResizePayload {
+  sessionId: string;
+  cols: number;
+  rows: number;
 }
 
 enum ChatActor {
@@ -279,6 +286,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     private readonly agentsService: AgentsService,
     private readonly agentsRepository: AgentsRepository,
     private readonly dockerService: DockerService,
+    private readonly openCodePtyService: OpenCodePtyService,
     private readonly agentMessagesService: AgentMessagesService,
     private readonly agentMessageEventsService: AgentMessageEventsService,
     private readonly agentChatSessionsService: AgentChatSessionsService,
@@ -330,15 +338,11 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     const sessionIds = this.terminalSessionsBySocket.get(socket.id);
 
     if (sessionIds) {
-      for (const sessionId of sessionIds) {
-        try {
-          this.dockerService.closeTerminalSession(sessionId);
-        } catch (error) {
-          const err = error as { message?: string };
+      void this.openCodePtyService.closeAll(sessionIds).catch((error) => {
+        const err = error as { message?: string };
 
-          this.logger.warn(`Failed to close terminal session ${sessionId} on disconnect: ${err.message}`);
-        }
-      }
+        this.logger.warn(`Failed to close terminal sessions on disconnect: ${err.message}`);
+      });
 
       this.terminalSessionsBySocket.delete(socket.id);
     }
@@ -424,6 +428,30 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     if (event.kind === 'toolResult' && !event.payload.isError && toolMayMutateGitWorkspace(event.payload.name)) {
       this.gitStateBroadcast.notifyGitStateMayHaveChanged(agentUuid);
       this.workspaceChangeNotifier.notifyRebuildRequired(agentUuid, `tool:${event.payload.name}`);
+    }
+  }
+
+  /**
+   * Persist + broadcast status frames that mark question/permission prompts as answered.
+   * Required so reload does not re-offer prompts that were already replied via HTTP
+   * (OpenCode does not always emit a durable `*.replied` event for those).
+   */
+  publishInteractionAnswered(agentId: string, questionIds: string[], message?: string): void {
+    const uniqueIds = [...new Set(questionIds.map((id) => id.trim()).filter(Boolean))];
+
+    for (const questionId of uniqueIds) {
+      const base = toAgentEventEnvelopeBase(agentId, `interaction-reply-${questionId}`, 0);
+      const envelope: AgentEventEnvelope = {
+        ...base,
+        kind: 'status',
+        payload: {
+          message: message ?? `Answered ${questionId}`,
+          title: 'Answered',
+          questionId,
+        },
+      };
+
+      this.broadcastChatEvent(agentId, envelope);
     }
   }
 
@@ -518,7 +546,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
   }
 
   /**
-   * Cursor stream-json emits a final `{ type: "result", ... }` line when the model finishes, but the
+   * Agent streams emit a final `{ type: "result", ... }` frame when the model finishes, but the
    * Docker exec stream may stay open until the process exits. We persist as soon as we see that frame
    * so `agent_messages` is written even when stdout/stderr have not ended yet.
    */
@@ -541,6 +569,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       'thinking',
       'interaction_query',
       'interactionQuery',
+      'status',
       // Final NDJSON `result` frame must count as structured so delta+result turns become agenstra_turn
       // instead of collapsing to a lone `result` blob that drops tool history.
       'result',
@@ -728,7 +757,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     }
   }
 
-  /** Cursor stream-json `thinking` lines: derive a short phase string for `chatEvent` payloads. */
+  /** Agent stream `thinking` frames: derive a short phase string for `chatEvent` payloads. */
   private extractThinkingPhaseForChatEvent(response: AgentResponseObject): string | undefined {
     const o = response as Record<string, unknown>;
     const pick = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
@@ -939,6 +968,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
             name,
             result: response.result,
             isError: Boolean(response.isError),
+            ...(response.args !== undefined ? { args: response.args } : {}),
+            ...(typeof response.title === 'string' ? { title: response.title } : {}),
           },
         },
       ];
@@ -966,9 +997,42 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
             prompt: response.prompt,
             options,
             allowMultiple: typeof response.allowMultiple === 'boolean' ? response.allowMultiple : undefined,
+            ...(typeof response.subtype === 'string' ? { subtype: response.subtype } : {}),
+            ...(typeof response.session_id === 'string' ? { sessionId: response.session_id } : {}),
           },
         },
       ];
+    }
+
+    if (response.type === 'status') {
+      const message =
+        typeof response.result === 'string'
+          ? response.result
+          : typeof response.message === 'string'
+            ? response.message
+            : '';
+
+      if (message) {
+        const title = typeof response.title === 'string' ? response.title : undefined;
+        const questionId =
+          typeof response.questionId === 'string'
+            ? response.questionId
+            : typeof response['permissionID'] === 'string'
+              ? (response['permissionID'] as string)
+              : undefined;
+
+        return [
+          {
+            ...base,
+            kind: 'status',
+            payload: {
+              message,
+              ...(title ? { title } : {}),
+              ...(questionId ? { questionId } : {}),
+            },
+          },
+        ];
+      }
     }
 
     const text =
@@ -1018,10 +1082,9 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
         return;
       }
 
-      // Check if socket was already authenticated (e.g., via connection state recovery)
+      // Check if socket was already authenticated (e.g., double login on same connection)
       const wasAlreadyAuthenticated = this.authenticatedClients.has(socket.id);
-      const wasRecovered = socket.recovered;
-
+      const wasRecovered = Boolean(socket.recovered);
       // Store authenticated session
       this.authenticatedClients.set(socket.id, agentUuid);
 
@@ -1038,12 +1101,12 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       );
       this.logger.log(`Agent ${agent.name} (${agentUuid}) authenticated on socket ${socket.id}`);
 
-      // Only restore chat history if:
-      // 1. The socket was not recovered (Socket.IO's connection state recovery already restores messages)
-      // 2. The socket was not already authenticated (to avoid restoring history twice)
-      // This prevents duplicate messages when logging in after reconnection
-      if (!wasRecovered && !wasAlreadyAuthenticated) {
-        // Restore chat history for the requested (or primary) session
+      // Always restore chat from DB on fresh login or recovered reconnect. Socket.IO
+      // `connectionStateRecovery` alone is not enough: the Angular client clears `forwardedEvents`
+      // on reconnect, so skipping DB restore leaves only whatever few recovered packets arrived
+      // (often just recent toolCall/toolResult frames — e.g. bash). Skip only on a duplicate
+      // login on an already-authenticated, non-recovered socket (avoids double-emit).
+      if (!wasAlreadyAuthenticated || wasRecovered) {
         try {
           await this.restoreChatHistory(agentUuid, socket, data.chatId);
         } catch (restoreError) {
@@ -1053,7 +1116,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
         }
       } else {
         this.logger.debug(
-          `Skipping chat history restoration for agent ${agentUuid} on socket ${socket.id} because socket was ${wasRecovered ? 'recovered' : 'already authenticated'}`,
+          `Skipping chat history restoration for agent ${agentUuid} on socket ${socket.id} because socket was already authenticated`,
         );
       }
 
@@ -1132,36 +1195,31 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
             }),
           );
         } else if (messageEntity.actor === 'agent') {
-          // Agent message: apply the same cleaning and parsing logic as live communication
-          // The stored message might be:
-          // 1. A JSON string (from successful parse) - will parse successfully
-          // 2. A cleaned string (toParse from failed parse) - might parse now or remain as string
-          let toParse = messageEntity.message;
-          // Apply the same cleaning logic as in handleChat
-          // Remove everything before the first { in the string
-          const firstBrace = toParse.indexOf('{');
-
-          if (firstBrace !== -1) {
-            toParse = toParse.slice(firstBrace);
-          }
-
-          // Remove everything after the last } in the string
-          const lastBrace = toParse.lastIndexOf('}');
-
-          if (lastBrace !== -1) {
-            toParse = toParse.slice(0, lastBrace + 1);
-          }
-
+          // Prefer a full JSON parse of the stored payload. Brace-slicing is a legacy fallback for
+          // noisy ACP stdout wraps and can truncate nested JSON if mis-applied.
           let response: AgentResponseObject | string;
 
           try {
-            // Try to parse the cleaned string
-            const parsed = JSON.parse(toParse);
-
-            response = parsed;
+            response = JSON.parse(messageEntity.message) as AgentResponseObject;
           } catch {
-            // If parsing fails, use the cleaned string (same as live communication)
-            response = toParse;
+            let toParse = messageEntity.message;
+            const firstBrace = toParse.indexOf('{');
+
+            if (firstBrace !== -1) {
+              toParse = toParse.slice(firstBrace);
+            }
+
+            const lastBrace = toParse.lastIndexOf('}');
+
+            if (lastBrace !== -1) {
+              toParse = toParse.slice(0, lastBrace + 1);
+            }
+
+            try {
+              response = JSON.parse(toParse) as AgentResponseObject;
+            } catch {
+              response = toParse;
+            }
           }
 
           socket.emit(
@@ -1176,11 +1234,11 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
         }
       }
 
-      // Restore persisted tool events for the same visible history window.
-      // This keeps enrichment/tool indicators after reload without duplicating user/assistant chat messages.
+      // Restore persisted structured events for the same visible history window.
+      // Tools are the main supplement; questions/thinking help when an older turn lacked agenstra_turn.
       const since = chatHistory[0]?.createdAt;
       const persistedToolEvents = await this.agentMessageEventsService.listRecentEvents(agentUuid, 400, {
-        kinds: ['toolCall', 'toolResult'],
+        kinds: ['toolCall', 'toolResult', 'question', 'thinking', 'status'],
         chatSessionId: session.id,
         ...(since ? { since } : {}),
       });
@@ -1490,7 +1548,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
           if (containerId) {
             try {
               // Get the appropriate provider based on agent type
-              const provider = this.agentProviderFactory.getProvider(entity.agentType || 'cursor');
+              const provider = this.agentProviderFactory.getProvider(entity.agentType || 'opencode');
 
               await provider.sendInitialization(agent.id, containerId, { model: data.model });
               this.logger.debug(`Sent initialization message to agent ${agentUuid}`);
@@ -1539,7 +1597,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       if (containerId) {
         // Get the appropriate provider based on agent type
         try {
-          const provider = this.agentProviderFactory.getProvider(entity.agentType || 'cursor');
+          const provider = this.agentProviderFactory.getProvider(entity.agentType || 'opencode');
           const supportsStreaming =
             wantsStream &&
             responseMode !== 'sync' &&
@@ -2033,7 +2091,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
         return;
       }
 
-      const provider = this.agentProviderFactory.getProvider(entity.agentType || 'cursor');
+      const provider = this.agentProviderFactory.getProvider(entity.agentType || 'opencode');
       const rawResponse = await runWithTimeout(
         provider.sendMessage(agent.id, containerId, composed, {
           model: data.model,
@@ -2258,7 +2316,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
         return;
       }
 
-      const provider = this.agentProviderFactory.getProvider(entity.agentType || 'cursor');
+      const provider = this.agentProviderFactory.getProvider(entity.agentType || 'opencode');
       const rawResponse = await runWithTimeout(
         provider.sendMessage(agent.id, containerId, composed, {
           model: data.model,
@@ -2529,11 +2587,8 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
         return;
       }
 
-      // Generate session ID: socket.id + timestamp to ensure uniqueness
       const sessionId = data.sessionId || `${socket.id}-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-      // Create terminal session
-      const stream = await this.dockerService.createTerminalSession(containerId, sessionId, data.shell || 'sh');
-      // Track session for this socket
+
       let sessions = this.terminalSessionsBySocket.get(socket.id);
 
       if (!sessions) {
@@ -2543,61 +2598,37 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
 
       sessions.add(sessionId);
 
-      // Set up stream data handler to forward output to client
-      stream.on('data', (chunk: Buffer) => {
-        if (socket.connected) {
-          try {
-            socket.emit('terminalOutput', createSuccessResponse({ sessionId, data: chunk.toString('utf-8') }));
-          } catch (emitError) {
-            this.logger.warn(`Failed to emit terminal output for session ${sessionId}: ${emitError}`);
-          }
-        }
-      });
+      try {
+        await this.openCodePtyService.open(
+          agentUuid,
+          containerId,
+          sessionId,
+          { shell: data.shell?.trim() || undefined },
+          {
+            onOutput: (output) => {
+              if (socket.connected) {
+                try {
+                  socket.emit('terminalOutput', createSuccessResponse({ sessionId, data: output }));
+                } catch (emitError) {
+                  this.logger.warn(`Failed to emit terminal output for session ${sessionId}: ${emitError}`);
+                }
+              }
+            },
+            onClosed: () => {
+              this.notifyTerminalClosed(socket, sessionId);
+            },
+          },
+        );
+      } catch (openError) {
+        sessions.delete(sessionId);
 
-      // Handle stream end/close to notify client
-      stream.on('end', () => {
-        if (socket.connected) {
-          try {
-            socket.emit('terminalClosed', createSuccessResponse({ sessionId }));
-          } catch (emitError) {
-            this.logger.warn(`Failed to emit terminal closed for session ${sessionId}: ${emitError}`);
-          }
-        }
-
-        // Clean up session tracking
-        const socketSessions = this.terminalSessionsBySocket.get(socket.id);
-
-        if (socketSessions) {
-          socketSessions.delete(sessionId);
-
-          if (socketSessions.size === 0) {
-            this.terminalSessionsBySocket.delete(socket.id);
-          }
-        }
-      });
-
-      stream.on('close', () => {
-        if (socket.connected) {
-          try {
-            socket.emit('terminalClosed', createSuccessResponse({ sessionId }));
-          } catch (emitError) {
-            this.logger.warn(`Failed to emit terminal closed for session ${sessionId}: ${emitError}`);
-          }
+        if (sessions.size === 0) {
+          this.terminalSessionsBySocket.delete(socket.id);
         }
 
-        // Clean up session tracking
-        const socketSessions = this.terminalSessionsBySocket.get(socket.id);
+        throw openError;
+      }
 
-        if (socketSessions) {
-          socketSessions.delete(sessionId);
-
-          if (socketSessions.size === 0) {
-            this.terminalSessionsBySocket.delete(socket.id);
-          }
-        }
-      });
-
-      // Emit success response
       socket.emit('terminalCreated', createSuccessResponse({ sessionId }));
       this.logger.log(`Created terminal session ${sessionId} for agent ${agentUuid} on socket ${socket.id}`);
     } catch (error) {
@@ -2643,25 +2674,55 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     }
 
     try {
-      await this.dockerService.sendTerminalInput(sessionId, inputData);
+      await this.openCodePtyService.write(sessionId, inputData);
     } catch (error) {
       const err = error as { message?: string };
 
       if (err.message?.includes('not found')) {
-        // Session was closed, clean up tracking
-        if (socketSessions) {
-          socketSessions.delete(sessionId);
-
-          if (socketSessions.size === 0) {
-            this.terminalSessionsBySocket.delete(socket.id);
-          }
-        }
-
-        socket.emit('terminalClosed', createSuccessResponse({ sessionId }));
+        this.notifyTerminalClosed(socket, sessionId);
       } else {
         socket.emit('error', createErrorResponse('Error sending terminal input', 'TERMINAL_ERROR'));
         this.logger.error(`Terminal input error for session ${sessionId}: ${err.message}`);
       }
+    }
+  }
+
+  /**
+   * Handle terminal resize (cols/rows forwarded to OpenCode PTY).
+   */
+  @SubscribeMessage('terminalResize')
+  async handleTerminalResize(@MessageBody() data: TerminalResizePayload, @ConnectedSocket() socket: Socket) {
+    const agentUuid = this.authenticatedClients.get(socket.id);
+
+    if (!agentUuid) {
+      socket.emit('error', createErrorResponse('Unauthorized. Please login first.', 'UNAUTHORIZED'));
+
+      return;
+    }
+
+    const { sessionId, cols, rows } = data;
+
+    if (!sessionId || !Number.isFinite(cols) || !Number.isFinite(rows) || cols < 1 || rows < 1) {
+      socket.emit('error', createErrorResponse('sessionId, cols, and rows are required', 'INVALID_PAYLOAD'));
+
+      return;
+    }
+
+    const socketSessions = this.terminalSessionsBySocket.get(socket.id);
+
+    if (!socketSessions || !socketSessions.has(sessionId)) {
+      socket.emit('error', createErrorResponse('Terminal session not found or access denied', 'TERMINAL_ERROR'));
+
+      return;
+    }
+
+    try {
+      await this.openCodePtyService.resize(sessionId, cols, rows);
+    } catch (error) {
+      const err = error as { message?: string };
+
+      socket.emit('error', createErrorResponse('Error resizing terminal session', 'TERMINAL_ERROR'));
+      this.logger.error(`Terminal resize error for session ${sessionId}: ${err.message}`);
     }
   }
 
@@ -2700,33 +2761,42 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     }
 
     try {
-      await this.dockerService.closeTerminalSession(sessionId);
-      // Clean up session tracking
-      socketSessions.delete(sessionId);
-
-      if (socketSessions.size === 0) {
-        this.terminalSessionsBySocket.delete(socket.id);
-      }
-
-      socket.emit('terminalClosed', createSuccessResponse({ sessionId }));
+      await this.openCodePtyService.close(sessionId);
+      this.notifyTerminalClosed(socket, sessionId);
       this.logger.log(`Closed terminal session ${sessionId} for agent ${agentUuid} on socket ${socket.id}`);
     } catch (error) {
       const err = error as { message?: string };
 
       if (err.message?.includes('not found')) {
-        // Session already closed, clean up tracking
-        if (socketSessions) {
-          socketSessions.delete(sessionId);
-
-          if (socketSessions.size === 0) {
-            this.terminalSessionsBySocket.delete(socket.id);
-          }
-        }
-
-        socket.emit('terminalClosed', createSuccessResponse({ sessionId }));
+        this.notifyTerminalClosed(socket, sessionId);
       } else {
         socket.emit('error', createErrorResponse('Error closing terminal session', 'TERMINAL_ERROR'));
         this.logger.error(`Terminal close error for session ${sessionId}: ${err.message}`);
+      }
+    }
+  }
+
+  /**
+   * Emit terminalClosed once and drop socket session tracking.
+   */
+  private notifyTerminalClosed(socket: Socket, sessionId: string): void {
+    const socketSessions = this.terminalSessionsBySocket.get(socket.id);
+
+    if (!socketSessions?.has(sessionId)) {
+      return;
+    }
+
+    socketSessions.delete(sessionId);
+
+    if (socketSessions.size === 0) {
+      this.terminalSessionsBySocket.delete(socket.id);
+    }
+
+    if (socket.connected) {
+      try {
+        socket.emit('terminalClosed', createSuccessResponse({ sessionId }));
+      } catch (emitError) {
+        this.logger.warn(`Failed to emit terminal closed for session ${sessionId}: ${emitError}`);
       }
     }
   }

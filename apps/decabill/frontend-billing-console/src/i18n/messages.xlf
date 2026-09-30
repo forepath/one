@@ -3675,12 +3675,6 @@
       <trans-unit id="featureSubscriptions-smtpSection" datatype="html">
         <source> SMTP (optional) </source>
         </trans-unit>
-      <trans-unit id="featureSubscriptions-cursorApiKey" datatype="html">
-        <source> Cursor API key (optional) </source>
-        </trans-unit>
-      <trans-unit id="featureSubscriptions-cursorApiKeyHelp" datatype="html">
-        <source> Used by the manager to communicate with Cursor for agent containers. Leave empty if not using Cursor agents. </source>
-        </trans-unit>
       <trans-unit id="featureSubscriptions-gitSection" datatype="html">
         <source> Git (optional) </source>
         </trans-unit>

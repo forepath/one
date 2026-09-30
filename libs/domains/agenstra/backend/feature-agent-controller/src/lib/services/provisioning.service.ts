@@ -53,8 +53,7 @@ export class ProvisioningService {
    * @param apiKey - The API key (for API_KEY authentication)
    * @param keycloakConfig - Keycloak configuration (for KEYCLOAK authentication)
    * @param gitConfig - Git repository configuration
-   * @param cursorApiKey - Cursor API key for agent configuration
-   * @param agentDefaultImage - Default image for cursor agents
+   * @param agentDefaultImage - Default image for agent containers
    * @param autoEnrichEnabledGlobal - When set, written as AUTO_ENRICH_ENABLED_GLOBAL for agent-manager (`true`|`false`)
    * @param autoEnrichVectorMaxCosineDistance - When set, written as AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE (0–2)
    * @returns User data script string
@@ -71,7 +70,6 @@ export class ProvisioningService {
       password?: string;
       privateKey?: string;
     },
-    cursorApiKey?: string,
     agentDefaultImage?: string,
     autoEnrichEnabledGlobal?: string,
     autoEnrichVectorMaxCosineDistance?: number,
@@ -126,19 +124,15 @@ export class ProvisioningService {
       }
     }
 
-    // Build cursor agent environment variables (only add if provided)
-    const cursorEnvVars: string[] = [];
-
-    if (cursorApiKey) {
-      cursorEnvVars.push(`CURSOR_API_KEY: ${cursorApiKey}`);
-    }
+    // Build optional agent-manager environment variables (only add if provided)
+    const agentEnvVars: string[] = [];
 
     if (agentDefaultImage) {
-      cursorEnvVars.push(`AGENT_DEFAULT_IMAGE: ${agentDefaultImage}`);
+      agentEnvVars.push(`AGENT_DEFAULT_IMAGE: ${agentDefaultImage}`);
     }
 
     if (autoEnrichEnabledGlobal === 'true' || autoEnrichEnabledGlobal === 'false') {
-      cursorEnvVars.push(`AUTO_ENRICH_ENABLED_GLOBAL: ${autoEnrichEnabledGlobal}`);
+      agentEnvVars.push(`AUTO_ENRICH_ENABLED_GLOBAL: ${autoEnrichEnabledGlobal}`);
     }
 
     if (
@@ -147,14 +141,14 @@ export class ProvisioningService {
       autoEnrichVectorMaxCosineDistance >= 0 &&
       autoEnrichVectorMaxCosineDistance <= 2
     ) {
-      cursorEnvVars.push(`AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE: ${autoEnrichVectorMaxCosineDistance}`);
+      agentEnvVars.push(`AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE: ${autoEnrichVectorMaxCosineDistance}`);
     }
 
     // Combine all environment variables (dynamic variables take precedence)
-    const allEnvVars = [...authEnvVars, ...gitEnvVars, ...cursorEnvVars];
+    const allEnvVars = [...authEnvVars, ...gitEnvVars, ...agentEnvVars];
 
     return `
-# Configure agent-manager with authentication, GIT, and cursor agent configuration
+# Configure agent-manager with authentication, GIT, and agent configuration
 # Update docker-compose.yml with environment variables
 
 # Generate self-signed SSL certificate for nginx (if not already generated)
@@ -329,6 +323,7 @@ volumes:
 
 networks:
   agent-manager-network:
+    name: agent-manager-network
     driver: bridge
 DOCKER_COMPOSE_EOF
 `;
@@ -391,7 +386,6 @@ DOCKER_COMPOSE_EOF
               privateKey: provisionServerDto.gitPrivateKey,
             }
           : undefined,
-      provisionServerDto.cursorApiKey,
       provisionServerDto.agentDefaultImage,
       provisionServerDto.autoEnrichEnabledGlobal,
       provisionServerDto.autoEnrichVectorMaxCosineDistance,

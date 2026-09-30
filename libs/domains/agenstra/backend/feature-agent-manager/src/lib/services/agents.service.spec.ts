@@ -9,6 +9,7 @@ import { UpdateAgentDto } from '../dto/update-agent.dto';
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentProvider, AgentProviderModels } from '../providers/agent-provider.interface';
+import { OpenCodeClientFactory } from '../providers/opencode/opencode-client.factory';
 import { AgentsRepository } from '../repositories/agents.repository';
 
 import { AgentChatSessionsService } from './agent-chat-sessions.service';
@@ -48,7 +49,7 @@ describe('AgentsService', () => {
     hashedPassword: 'hashed-password',
     containerId: 'container-id-123',
     volumePath: '/opt/agents/test-volume-uuid',
-    agentType: 'cursor',
+    agentType: 'opencode',
     containerType: ContainerType.GENERIC,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
@@ -71,6 +72,7 @@ describe('AgentsService', () => {
     createContainer: jest.fn(),
     deleteContainer: jest.fn(),
     createNetwork: jest.fn(),
+    ensureNetworkExists: jest.fn().mockResolvedValue(undefined),
     deleteNetwork: jest.fn(),
     sendCommandToContainer: jest.fn(),
     getContainerHomeDirectory: jest.fn().mockResolvedValue('/home/agenstra'),
@@ -80,7 +82,7 @@ describe('AgentsService', () => {
     restartContainer: jest.fn(),
   };
   const mockAgentProvider: jest.Mocked<AgentProvider> = {
-    getType: jest.fn().mockReturnValue('cursor'),
+    getType: jest.fn().mockReturnValue('opencode'),
     getDisplayName: jest.fn().mockReturnValue('Cursor'),
     getCapabilities: jest.fn().mockReturnValue({
       supportsChat: true,
@@ -95,10 +97,10 @@ describe('AgentsService', () => {
     sendInitialization: jest.fn(),
     toParseableStrings: jest.fn(),
     toUnifiedResponse: jest.fn(),
-    getModelsListCommand: jest.fn().mockReturnValue('cursor-agent --list-models'),
+    getModelsListCommand: jest.fn().mockReturnValue('opencode models'),
     toModelsList: jest.fn().mockReturnValue({}),
     getBasePath: jest.fn().mockReturnValue('/app'),
-    getConfigBasePath: jest.fn().mockReturnValue('~/.cursor'),
+    getConfigBasePath: jest.fn().mockReturnValue('~/.config/opencode'),
   };
   const mockAgentProviderFactory = {
     getProvider: jest.fn().mockReturnValue(mockAgentProvider),
@@ -116,7 +118,12 @@ describe('AgentsService', () => {
     getSummariesByAgentIds: jest.fn(),
     mapToSummaryDto: jest.fn(),
   };
-
+  const mockOpenCodeClientFactory = {
+    waitForHealthy: jest.fn().mockResolvedValue(undefined),
+    getClient: jest.fn(),
+    resolveBaseUrl: jest.fn(),
+    invalidate: jest.fn(),
+  };
   beforeEach(async () => {
     mockAgentChatSessionsService.ensurePrimarySession.mockResolvedValue(mockPrimaryChatSession);
     mockAgentChatSessionsService.getSummariesByAgentIds.mockImplementation(async (agentIds: string[]) => {
@@ -160,6 +167,10 @@ describe('AgentsService', () => {
           useValue: mockAgentChatSessionsService,
         },
         {
+          provide: OpenCodeClientFactory,
+          useValue: mockOpenCodeClientFactory,
+        },
+        {
           provide: DeploymentsService,
           useValue: mockDeploymentsService,
         },
@@ -191,7 +202,6 @@ describe('AgentsService', () => {
     delete process.env.GIT_REPOSITORY_URL;
     delete process.env.GIT_REPOSITORY_SETUP_MODE;
     delete process.env.GIT_PRIVATE_KEY;
-    delete process.env.CURSOR_API_KEY;
   });
 
   describe('create', () => {
@@ -206,7 +216,7 @@ describe('AgentsService', () => {
     afterEach(() => {
       // Tests may delete optional provider methods; restore defaults for isolation
       mockAgentProvider.getBasePath = jest.fn().mockReturnValue('/app');
-      mockAgentProvider.getConfigBasePath = jest.fn().mockReturnValue('~/.cursor');
+      mockAgentProvider.getConfigBasePath = jest.fn().mockReturnValue('~/.config/opencode');
       delete (mockAgentProvider as { getRepositoryPath?: () => string }).getRepositoryPath;
     });
 
@@ -249,7 +259,7 @@ describe('AgentsService', () => {
       expect(result.primaryChatId).toBe('primary-chat-id');
       expect(repository.findByName).toHaveBeenCalledWith(createDto.name);
       expect(passwordService.hashPassword).toHaveBeenCalled();
-      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('cursor');
+      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('opencode');
       expect(mockAgentProvider.getDockerImage).toHaveBeenCalled();
       expect(dockerService.ensureImageExists).toHaveBeenCalledTimes(1);
       expect(dockerService.ensureImageExists).toHaveBeenCalledWith('ghcr.io/forepath/agenstra-manager-worker:latest');
@@ -257,7 +267,6 @@ describe('AgentsService', () => {
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
         env: expect.objectContaining({
           AGENT_NAME: createDto.name,
-          CURSOR_API_KEY: process.env.CURSOR_API_KEY,
           GIT_REPOSITORY_URL: process.env.GIT_REPOSITORY_URL,
           GIT_USERNAME: process.env.GIT_USERNAME,
           GIT_TOKEN: process.env.GIT_TOKEN,
@@ -274,6 +283,12 @@ describe('AgentsService', () => {
             hostPath: '/opt/agents',
             containerPath: '/opt/workspace',
             readOnly: true,
+          },
+        ],
+        ports: [
+          {
+            containerPort: 4096,
+            hostIp: '127.0.0.1',
           },
         ],
       });
@@ -293,14 +308,14 @@ describe('AgentsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         3,
         containerId,
-        `sh -c "mkdir -p -- '/home/agenstra/.cursor'"`,
+        `sh -c "mkdir -p -- '/home/agenstra/.config/opencode'"`,
         undefined,
         true,
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         4,
         containerId,
-        `sh -c "sudo chown -R agenstra:agenstra -- '/home/agenstra/.cursor'"`,
+        `sh -c "sudo chown -R agenstra:agenstra -- '/home/agenstra/.config/opencode'"`,
         undefined,
         true,
       );
@@ -316,9 +331,13 @@ describe('AgentsService', () => {
         hashedPassword,
         containerId,
         volumePath: expect.stringMatching(/^\/opt\/agents\/[a-f0-9-]+$/),
-        agentType: 'cursor',
+        agentType: 'opencode',
         containerType: ContainerType.GENERIC,
+        opencodeServerPassword: expect.any(String),
         gitRepositoryUrl: undefined,
+      });
+      expect(mockOpenCodeClientFactory.waitForHealthy).toHaveBeenCalledWith(mockAgent.id, containerId, {
+        password: expect.any(String),
       });
     });
 
@@ -471,7 +490,7 @@ describe('AgentsService', () => {
         hashedPassword,
         containerId,
         volumePath,
-        agentType: 'cursor',
+        agentType: 'opencode',
         containerType: ContainerType.GENERIC,
         createdAt: mockAgent.createdAt,
         updatedAt: mockAgent.updatedAt,
@@ -490,13 +509,12 @@ describe('AgentsService', () => {
 
       expect(result.name).toBe(createDto.name);
       expect(result.description).toBeUndefined();
-      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('cursor');
+      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('opencode');
       expect(mockAgentProvider.getDockerImage).toHaveBeenCalled();
       expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
         env: expect.objectContaining({
           AGENT_NAME: createDto.name,
-          CURSOR_API_KEY: process.env.CURSOR_API_KEY,
           GIT_REPOSITORY_URL: process.env.GIT_REPOSITORY_URL,
           GIT_USERNAME: process.env.GIT_USERNAME,
           GIT_TOKEN: process.env.GIT_TOKEN,
@@ -515,17 +533,24 @@ describe('AgentsService', () => {
             readOnly: true,
           },
         ],
+        ports: [
+          {
+            containerPort: 4096,
+            hostIp: '127.0.0.1',
+          },
+        ],
       });
       // Verify .netrc file creation was called
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(5); // 2 for .netrc + config mkdir + config chown + git clone
       expect(repository.create).toHaveBeenCalledWith({
         name: createDto.name,
         description: undefined,
-        agentType: 'cursor',
+        agentType: 'opencode',
         containerType: ContainerType.GENERIC,
         hashedPassword,
         containerId,
         volumePath: expect.stringMatching(/^\/opt\/agents\/[a-f0-9-]+$/),
+        opencodeServerPassword: expect.any(String),
         gitRepositoryUrl: undefined,
       });
     });
@@ -771,13 +796,12 @@ describe('AgentsService', () => {
       expect(result.name).toBe(createDto.name);
       expect(result.description).toBe(createDto.description);
       expect(result.password).toBeDefined();
-      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('cursor');
+      expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('opencode');
       expect(mockAgentProvider.getDockerImage).toHaveBeenCalled();
       expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
         env: expect.objectContaining({
           AGENT_NAME: createDto.name,
-          CURSOR_API_KEY: process.env.CURSOR_API_KEY,
           GIT_REPOSITORY_URL: process.env.GIT_REPOSITORY_URL,
           GIT_USERNAME: process.env.GIT_USERNAME,
           GIT_TOKEN: process.env.GIT_TOKEN,
@@ -794,6 +818,12 @@ describe('AgentsService', () => {
             hostPath: '/opt/agents',
             containerPath: '/opt/workspace',
             readOnly: true,
+          },
+        ],
+        ports: [
+          {
+            containerPort: 4096,
+            hostIp: '127.0.0.1',
           },
         ],
       });
@@ -832,14 +862,14 @@ describe('AgentsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         7,
         containerId,
-        `sh -c "mkdir -p -- '/home/agenstra/.cursor'"`,
+        `sh -c "mkdir -p -- '/home/agenstra/.config/opencode'"`,
         undefined,
         true,
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         8,
         containerId,
-        `sh -c "sudo chown -R agenstra:agenstra -- '/home/agenstra/.cursor'"`,
+        `sh -c "sudo chown -R agenstra:agenstra -- '/home/agenstra/.config/opencode'"`,
         undefined,
         true,
       );
@@ -1208,7 +1238,6 @@ describe('AgentsService', () => {
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
         env: expect.objectContaining({
           AGENT_NAME: createDto.name,
-          CURSOR_API_KEY: process.env.CURSOR_API_KEY,
           GIT_REPOSITORY_URL: process.env.GIT_REPOSITORY_URL,
           GIT_USERNAME: process.env.GIT_USERNAME,
           GIT_TOKEN: process.env.GIT_TOKEN,
@@ -1225,6 +1254,12 @@ describe('AgentsService', () => {
             hostPath: '/opt/agents',
             containerPath: '/opt/workspace',
             readOnly: true,
+          },
+        ],
+        ports: [
+          {
+            containerPort: 4096,
+            hostIp: '127.0.0.1',
           },
         ],
       });
@@ -1320,7 +1355,6 @@ describe('AgentsService', () => {
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
         env: expect.objectContaining({
           AGENT_NAME: createDto.name,
-          CURSOR_API_KEY: process.env.CURSOR_API_KEY,
           GIT_REPOSITORY_URL: process.env.GIT_REPOSITORY_URL,
           GIT_USERNAME: process.env.GIT_USERNAME,
           GIT_TOKEN: process.env.GIT_TOKEN,
@@ -1337,6 +1371,12 @@ describe('AgentsService', () => {
             hostPath: '/opt/agents',
             containerPath: '/opt/workspace',
             readOnly: true,
+          },
+        ],
+        ports: [
+          {
+            containerPort: 4096,
+            hostIp: '127.0.0.1',
           },
         ],
       });
@@ -1427,7 +1467,6 @@ describe('AgentsService', () => {
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
         env: expect.objectContaining({
           AGENT_NAME: createDto.name,
-          CURSOR_API_KEY: process.env.CURSOR_API_KEY,
           GIT_REPOSITORY_URL: process.env.GIT_REPOSITORY_URL,
           GIT_USERNAME: process.env.GIT_USERNAME,
           GIT_TOKEN: process.env.GIT_TOKEN,
@@ -1444,6 +1483,12 @@ describe('AgentsService', () => {
             hostPath: '/opt/agents',
             containerPath: '/opt/workspace',
             readOnly: true,
+          },
+        ],
+        ports: [
+          {
+            containerPort: 4096,
+            hostIp: '127.0.0.1',
           },
         ],
       });
@@ -1491,7 +1536,6 @@ describe('AgentsService', () => {
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
         env: expect.objectContaining({
           AGENT_NAME: createDto.name,
-          CURSOR_API_KEY: process.env.CURSOR_API_KEY,
           GIT_REPOSITORY_URL: process.env.GIT_REPOSITORY_URL,
           GIT_USERNAME: process.env.GIT_USERNAME,
           GIT_TOKEN: process.env.GIT_TOKEN,
@@ -1508,6 +1552,12 @@ describe('AgentsService', () => {
             hostPath: '/opt/agents',
             containerPath: '/opt/workspace',
             readOnly: true,
+          },
+        ],
+        ports: [
+          {
+            containerPort: 4096,
+            hostIp: '127.0.0.1',
           },
         ],
       });
@@ -1560,7 +1610,6 @@ describe('AgentsService', () => {
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
         env: expect.objectContaining({
           AGENT_NAME: createDto.name,
-          CURSOR_API_KEY: process.env.CURSOR_API_KEY,
           GIT_REPOSITORY_URL: process.env.GIT_REPOSITORY_URL,
           GIT_USERNAME: process.env.GIT_USERNAME,
           GIT_TOKEN: process.env.GIT_TOKEN,
@@ -1578,6 +1627,12 @@ describe('AgentsService', () => {
             hostPath: '/opt/agents',
             containerPath: '/opt/workspace',
             readOnly: true,
+          },
+        ],
+        ports: [
+          {
+            containerPort: 4096,
+            hostIp: '127.0.0.1',
           },
         ],
       });
@@ -1619,15 +1674,16 @@ describe('AgentsService', () => {
       expect(mockAgentProvider.getEnvironmentVariables).toBeUndefined();
       expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
-        env: {
+        env: expect.objectContaining({
           AGENT_NAME: createDto.name,
-          CURSOR_API_KEY: process.env.CURSOR_API_KEY,
           GIT_REPOSITORY_URL: process.env.GIT_REPOSITORY_URL,
           GIT_USERNAME: process.env.GIT_USERNAME,
           GIT_TOKEN: process.env.GIT_TOKEN,
           GIT_PASSWORD: process.env.GIT_PASSWORD,
           GIT_PRIVATE_KEY: process.env.GIT_PRIVATE_KEY,
-        },
+          OPENCODE_SERVER_PASSWORD: expect.any(String),
+          OPENCODE_SERVER_PORT: '4096',
+        }),
         volumes: [
           {
             hostPath: expect.stringMatching(/^\/opt\/agents\/[a-f0-9-]+$/),
@@ -1638,6 +1694,12 @@ describe('AgentsService', () => {
             hostPath: '/opt/agents',
             containerPath: '/opt/workspace',
             readOnly: true,
+          },
+        ],
+        ports: [
+          {
+            containerPort: 4096,
+            hostIp: '127.0.0.1',
           },
         ],
       });
@@ -1734,6 +1796,10 @@ describe('AgentsService', () => {
           {
             provide: AgentChatSessionsService,
             useValue: mockAgentChatSessionsService,
+          },
+          {
+            provide: OpenCodeClientFactory,
+            useValue: mockOpenCodeClientFactory,
           },
           {
             provide: DeploymentsService,
@@ -1905,9 +1971,39 @@ describe('AgentsService', () => {
   describe('listModels', () => {
     const modelsPayload: AgentProviderModels = { 'model-1': 'First Model', 'model-2': 'Second Model' };
 
+    beforeEach(() => {
+      mockOpenCodeClientFactory.getClient.mockRejectedValue(new Error('http unavailable'));
+    });
+
+    it('should return models from OpenCode HTTP provider list when available', async () => {
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      mockOpenCodeClientFactory.getClient.mockResolvedValue({
+        config: {
+          providers: jest.fn().mockResolvedValue({
+            data: {
+              providers: [
+                {
+                  id: 'opencode',
+                  name: 'OpenCode',
+                  models: {
+                    'big-pickle': { id: 'big-pickle', name: 'Big Pickle' },
+                  },
+                },
+              ],
+            },
+          }),
+        },
+      });
+
+      const result = await service.listModels('test-uuid');
+
+      expect(result).toEqual({ 'opencode/big-pickle': 'Big Pickle' });
+      expect(dockerService.sendCommandToContainer).not.toHaveBeenCalled();
+    });
+
     it('should return parsed models when container command succeeds', async () => {
       mockRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
-      mockAgentProvider.getModelsListCommand.mockReturnValue('cursor-agent --list-models');
+      mockAgentProvider.getModelsListCommand.mockReturnValue('opencode models');
       mockAgentProvider.toModelsList.mockReturnValue(modelsPayload);
       dockerService.sendCommandToContainer.mockResolvedValue('raw-output');
 
@@ -1917,10 +2013,7 @@ describe('AgentsService', () => {
       expect(repository.findByIdOrThrow).toHaveBeenCalledWith('test-uuid');
       expect(agentProviderFactory.getProvider).toHaveBeenCalledWith(mockAgent.agentType);
       expect(mockAgentProvider.getModelsListCommand).toHaveBeenCalled();
-      expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
-        mockAgent.containerId,
-        'cursor-agent --list-models',
-      );
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(mockAgent.containerId, 'opencode models');
       expect(mockAgentProvider.toModelsList).toHaveBeenCalledWith('raw-output');
     });
 

@@ -80,6 +80,14 @@ export class StatisticsService {
     charCount: number,
     userId?: string,
     interactionKind: StatisticsInteractionKind = StatisticsInteractionKind.CHAT,
+    usage?: {
+      inputTokens?: number;
+      outputTokens?: number;
+      reasoningTokens?: number;
+      cacheReadTokens?: number;
+      cacheWriteTokens?: number;
+      costUsd?: number;
+    },
   ): Promise<void> {
     try {
       const { statisticsClientId, statisticsAgentId, statisticsUserId } = await this.ensureShadowEntries(
@@ -97,6 +105,12 @@ export class StatisticsService {
           interactionKind,
           wordCount,
           charCount,
+          inputTokens: usage?.inputTokens,
+          outputTokens: usage?.outputTokens,
+          reasoningTokens: usage?.reasoningTokens,
+          cacheReadTokens: usage?.cacheReadTokens,
+          cacheWriteTokens: usage?.cacheWriteTokens,
+          costUsd: usage?.costUsd,
           occurredAt: new Date(),
         })
         .then((row) => {

@@ -2,11 +2,11 @@ sequenceDiagram
     participant User
     participant Controller as Clients Gateway
     participant Manager as Agent Manager Gateway
-    participant Docker as Docker Service
-    participant Container as Agent Container
+    participant Pty as OpenCode PTY Service
+    participant OC as OpenCode serve
 
     rect rgb(220, 255, 220)
-        Note over User,Container: Step 1 - Set Client Context
+        Note over User,OC: Step 1 - Set Client Context
 
         User->>Controller: setClient {clientId}
         Controller->>Controller: Validate client
@@ -17,55 +17,44 @@ sequenceDiagram
     end
 
     rect rgb(220, 255, 220)
-        Note over User,Container: Step 2 - Forward Create Terminal
+        Note over User,OC: Step 2 - Forward Create Terminal
 
         User->>Controller: forward {event: "createTerminal", payload: {sessionId?, shell?}, agentId}
         Controller->>Controller: Check client selected
         Controller->>Controller: Auto-login if needed (using stored credentials)
         Controller->>Manager: createTerminal {sessionId?, shell?}
-        Manager->>Docker: createTerminalSession(containerId, sessionId, shell)
-        Docker->>Container: Create exec with TTY=true
-        Container-->>Docker: TTY stream
-        Docker-->>Manager: Terminal stream
-        Manager->>Manager: Track session and set up handlers
+        Manager->>Pty: open(...)
+        Pty->>OC: POST /pty + WebSocket
         Manager-->>Controller: terminalCreated {sessionId}
         Controller-->>User: terminalCreated {sessionId}
         Controller-->>User: forwardAck {received: true, event: "createTerminal"}
     end
 
     rect rgb(220, 255, 220)
-        Note over User,Container: Step 3 - Forward Terminal Input
+        Note over User,OC: Step 3 - Forward Terminal Input
 
         User->>Controller: forward {event: "terminalInput", payload: {sessionId, data}, agentId}
         Controller->>Manager: terminalInput {sessionId, data}
-        Manager->>Docker: sendTerminalInput(sessionId, data)
-        Docker->>Container: Write data to TTY stream
-        Container-->>Docker: Data written
-        Docker-->>Manager: Success
-        Manager-->>Controller: (no response event for input)
+        Manager->>Pty: write(sessionId, data)
+        Pty->>OC: WebSocket send
         Controller-->>User: forwardAck {received: true, event: "terminalInput"}
     end
 
     rect rgb(220, 255, 220)
-        Note over User,Container: Step 4 - Receive Terminal Output
+        Note over User,OC: Step 4 - Receive Terminal Output
 
-        Container->>Docker: TTY stream data event
-        Docker->>Manager: Stream data chunk
-        Manager->>Manager: Format as terminalOutput event
+        OC->>Pty: WebSocket output
+        Pty->>Manager: onOutput
         Manager-->>Controller: terminalOutput {sessionId, data}
         Controller-->>User: terminalOutput {sessionId, data}
     end
 
     rect rgb(220, 255, 220)
-        Note over User,Container: Step 5 - Forward Close Terminal
+        Note over User,OC: Step 5 - Forward Close Terminal
 
         User->>Controller: forward {event: "closeTerminal", payload: {sessionId}, agentId}
         Controller->>Manager: closeTerminal {sessionId}
-        Manager->>Docker: closeTerminalSession(sessionId)
-        Docker->>Container: End TTY stream
-        Container-->>Docker: Stream closed
-        Docker-->>Manager: Success
-        Manager->>Manager: Remove session tracking
+        Manager->>Pty: close(sessionId)
         Manager-->>Controller: terminalClosed {sessionId}
         Controller-->>User: terminalClosed {sessionId}
         Controller-->>User: forwardAck {received: true, event: "closeTerminal"}

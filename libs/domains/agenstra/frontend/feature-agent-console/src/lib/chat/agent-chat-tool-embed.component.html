@@ -1,0 +1,321 @@
+<div class="agent-chat-tool-embed border rounded p-3" role="group" [attr.aria-label]="embedAriaLabel()">
+  @switch (embed().kind) {
+    @case ('todos') {
+      @if (asTodos(); as view) {
+        <section class="agent-chat-tool-embed__section agent-chat-tool-embed__section--todos">
+          <div class="agent-chat-tool-embed__label">{{ todosLabel }}</div>
+          <fpc-list
+            class="agent-chat-tool-embed__todos-list"
+            [flush]="true"
+            [bordered]="false"
+            [ariaLabel]="todosLabel"
+          >
+            @for (todo of view.todos; track todo.id) {
+              <fpc-list-item class="agent-chat-tool-embed__todo-item">
+                <span fpcListItemTitle>{{ todo.content }}</span>
+                <span fpcListItemMeta>
+                  <fpc-badge [color]="todoStatusColor(todo.status)" size="sm" [pill]="true">
+                    {{ todoStatusLabel(todo.status) }}
+                  </fpc-badge>
+                </span>
+              </fpc-list-item>
+            }
+          </fpc-list>
+        </section>
+      }
+    }
+    @case ('bash') {
+      @if (asBash(); as view) {
+        <section class="agent-chat-tool-embed__section">
+          <div class="agent-chat-tool-embed__label">{{ commandLabel }}</div>
+          <pre class="agent-chat-tool-embed__code agent-chat-tool-embed__code--command">{{ view.command }}</pre>
+          @if (view.workdir) {
+            <div class="agent-chat-tool-embed__meta">{{ workdirLabel }}: {{ view.workdir }}</div>
+          }
+        </section>
+        @if (view.isError) {
+          <fpc-alert variant="warning" [message]="bashFailedLabel" [showIcon]="true" />
+        }
+        @if (view.output) {
+          <section class="agent-chat-tool-embed__section">
+            <div class="agent-chat-tool-embed__label">{{ outputLabel }}</div>
+            <pre class="agent-chat-tool-embed__code">{{ view.output }}</pre>
+          </section>
+        }
+        @if (view.truncated) {
+          <div class="agent-chat-tool-embed__meta">{{ truncatedLabel }}</div>
+        }
+      }
+    }
+    @case ('read') {
+      @if (asRead(); as view) {
+        <section class="agent-chat-tool-embed__section">
+          <div class="agent-chat-tool-embed__label">{{ fileLabel }}</div>
+          <div class="agent-chat-tool-embed__meta-row">
+            <code class="agent-chat-tool-embed__path">{{ view.filePath }}</code>
+            @if (view.offset !== undefined || view.limit !== undefined) {
+              <span class="agent-chat-tool-embed__meta">
+                @if (view.offset !== undefined) {
+                  offset {{ view.offset }}
+                }
+                @if (view.limit !== undefined) {
+                  · limit {{ view.limit }}
+                }
+              </span>
+            }
+          </div>
+          @if (view.content) {
+            <pre class="agent-chat-tool-embed__code">{{ view.content }}</pre>
+          }
+          @if (view.truncated) {
+            <div class="agent-chat-tool-embed__meta">{{ truncatedLabel }}</div>
+          }
+        </section>
+      }
+    }
+    @case ('glob') {
+      @if (asGlob(); as view) {
+        <section class="agent-chat-tool-embed__section">
+          <div class="agent-chat-tool-embed__label">{{ matchesLabel }}</div>
+          <div class="agent-chat-tool-embed__meta-row">
+            <code>{{ view.pattern }}</code>
+            @if (view.path) {
+              <span class="agent-chat-tool-embed__meta">in {{ view.path }}</span>
+            }
+          </div>
+          @if (view.files.length === 0) {
+            <div class="agent-chat-tool-embed__meta">{{ noMatchesLabel }}</div>
+          } @else {
+            <fpc-list [flush]="true" [bordered]="true" [ariaLabel]="matchesLabel">
+              @for (file of view.files; track file) {
+                <fpc-list-item variant="condensed">
+                  <code fpcListItemTitle class="agent-chat-tool-embed__path">{{ file }}</code>
+                </fpc-list-item>
+              }
+            </fpc-list>
+            @if (view.truncated) {
+              <div class="agent-chat-tool-embed__meta">
+                {{ showingOfLabel(view.files.length, view.total) }}
+              </div>
+            }
+          }
+        </section>
+      }
+    }
+    @case ('grep') {
+      @if (asGrep(); as view) {
+        <section class="agent-chat-tool-embed__section">
+          <div class="agent-chat-tool-embed__label">{{ matchesLabel }}</div>
+          <div class="agent-chat-tool-embed__meta-row">
+            <code>{{ view.pattern }}</code>
+            @if (view.path) {
+              <span class="agent-chat-tool-embed__meta">in {{ view.path }}</span>
+            }
+            @if (view.include) {
+              <span class="agent-chat-tool-embed__meta">· {{ view.include }}</span>
+            }
+          </div>
+          @if (view.hits.length === 0) {
+            <div class="agent-chat-tool-embed__meta">{{ noMatchesLabel }}</div>
+          } @else {
+            <fpc-list [flush]="true" [bordered]="true" [ariaLabel]="matchesLabel">
+              @for (hit of view.hits; track $index) {
+                <fpc-list-item variant="condensed">
+                  <span fpcListItemTitle>
+                    <code class="agent-chat-tool-embed__path">{{ hit.path }}</code>
+                    @if (hit.line !== undefined) {
+                      <span class="text-body-secondary">:{{ hit.line }}</span>
+                    }
+                  </span>
+                  @if (hit.snippet) {
+                    <span fpcListItemMeta class="font-monospace">{{ hit.snippet }}</span>
+                  }
+                </fpc-list-item>
+              }
+            </fpc-list>
+            @if (view.truncated) {
+              <div class="agent-chat-tool-embed__meta">
+                {{ showingOfLabel(view.hits.length, view.total) }}
+              </div>
+            }
+          }
+        </section>
+      }
+    }
+    @case ('edit') {
+      @if (asEdit(); as view) {
+        <section class="agent-chat-tool-embed__section">
+          <div class="agent-chat-tool-embed__label">{{ editLabel }}</div>
+          <div class="agent-chat-tool-embed__meta-row">
+            <code class="agent-chat-tool-embed__path">{{ view.filePath }}</code>
+          </div>
+          @if (view.oldString || view.newString) {
+            <div class="agent-chat-tool-embed__diff" role="region" [attr.aria-label]="diffLabel">
+              @if (view.oldString) {
+                @for (line of asDiffLines('-', view.oldString); track $index) {
+                  <div class="agent-chat-tool-embed__diff-line" [ngClass]="diffLineClass(line)">{{ line.text }}</div>
+                }
+              }
+              @if (view.newString) {
+                @for (line of asDiffLines('+', view.newString); track $index) {
+                  <div class="agent-chat-tool-embed__diff-line" [ngClass]="diffLineClass(line)">{{ line.text }}</div>
+                }
+              }
+            </div>
+          } @else if (view.content) {
+            <pre class="agent-chat-tool-embed__code">{{ view.content }}</pre>
+          }
+          @if (view.truncated) {
+            <div class="agent-chat-tool-embed__meta">{{ truncatedLabel }}</div>
+          }
+        </section>
+      }
+    }
+    @case ('write') {
+      @if (asWrite(); as view) {
+        <section class="agent-chat-tool-embed__section">
+          <div class="agent-chat-tool-embed__label">{{ writeLabel }}</div>
+          <div class="agent-chat-tool-embed__meta-row">
+            <code class="agent-chat-tool-embed__path">{{ view.filePath }}</code>
+          </div>
+          @if (view.content) {
+            <div class="agent-chat-tool-embed__label">{{ contentLabel }}</div>
+            <pre class="agent-chat-tool-embed__code">{{ view.content }}</pre>
+          }
+          @if (view.truncated) {
+            <div class="agent-chat-tool-embed__meta">{{ truncatedLabel }}</div>
+          }
+        </section>
+      }
+    }
+    @case ('patch') {
+      @if (asPatch(); as view) {
+        <section class="agent-chat-tool-embed__section">
+          <div class="agent-chat-tool-embed__label">{{ patchLabel }}</div>
+          <div class="agent-chat-tool-embed__diff" role="region" [attr.aria-label]="patchLabel">
+            @for (line of view.lines; track $index) {
+              <div class="agent-chat-tool-embed__diff-line" [ngClass]="diffLineClass(line)">{{ line.text }}</div>
+            }
+          </div>
+          @if (view.truncated) {
+            <div class="agent-chat-tool-embed__meta">{{ truncatedLabel }}</div>
+          }
+        </section>
+      }
+    }
+    @case ('webfetch') {
+      @if (asWebfetch(); as view) {
+        <section class="agent-chat-tool-embed__section">
+          <div class="agent-chat-tool-embed__label">{{ fetchLabel }}</div>
+          <div class="agent-chat-tool-embed__meta-row">
+            <a class="agent-chat-tool-embed__link" [href]="view.url" target="_blank" rel="noopener noreferrer">
+              {{ view.url }}
+            </a>
+            @if (view.format) {
+              <fpc-badge color="secondary" size="sm" [pill]="true">{{ view.format }}</fpc-badge>
+            }
+          </div>
+          @if (view.isError) {
+            <fpc-alert variant="warning" [message]="fetchFailedLabel" [showIcon]="true" />
+          }
+          @if (view.body) {
+            <div class="agent-chat-tool-embed__label">{{ contentLabel }}</div>
+            <pre class="agent-chat-tool-embed__code">{{ view.body }}</pre>
+          }
+          @if (view.truncated) {
+            <div class="agent-chat-tool-embed__meta">{{ truncatedLabel }}</div>
+          }
+        </section>
+      }
+    }
+    @case ('websearch') {
+      @if (asWebsearch(); as view) {
+        <section class="agent-chat-tool-embed__section">
+          <div class="agent-chat-tool-embed__label">{{ searchLabel }}</div>
+          <div class="agent-chat-tool-embed__meta-row">
+            <span>{{ view.query }}</span>
+          </div>
+          @if (view.isError) {
+            <fpc-alert variant="warning" [message]="searchFailedLabel" [showIcon]="true" />
+          }
+          @if (view.hits.length === 0) {
+            <div class="agent-chat-tool-embed__meta">{{ noMatchesLabel }}</div>
+          } @else {
+            <fpc-list [flush]="true" [bordered]="true" [ariaLabel]="searchLabel">
+              @for (hit of view.hits; track $index) {
+                <fpc-list-item variant="condensed">
+                  <span fpcListItemTitle>
+                    @if (hit.url) {
+                      <a class="agent-chat-tool-embed__link" [href]="hit.url" target="_blank" rel="noopener noreferrer">
+                        {{ hit.title }}
+                      </a>
+                    } @else {
+                      {{ hit.title }}
+                    }
+                  </span>
+                  @if (hit.snippet) {
+                    <span fpcListItemMeta>{{ hit.snippet }}</span>
+                  }
+                </fpc-list-item>
+              }
+            </fpc-list>
+            @if (view.truncated) {
+              <div class="agent-chat-tool-embed__meta">
+                {{ showingOfLabel(view.hits.length, view.total) }}
+              </div>
+            }
+          }
+        </section>
+      }
+    }
+    @case ('task') {
+      @if (asTask(); as view) {
+        <section class="agent-chat-tool-embed__section">
+          <div class="agent-chat-tool-embed__label">{{ taskLabel }}</div>
+          <div class="agent-chat-tool-embed__meta-row">
+            <fpc-badge color="info" size="sm" [pill]="true">{{ view.subagentType }}</fpc-badge>
+            <span>{{ view.description }}</span>
+          </div>
+          @if (view.prompt.trim()) {
+            <div class="agent-chat-tool-embed__label">{{ promptLabel }}</div>
+            <pre class="agent-chat-tool-embed__code">{{ view.prompt }}</pre>
+          }
+          @if (view.resultPreview) {
+            <div class="agent-chat-tool-embed__label">{{ resultLabel }}</div>
+            <pre class="agent-chat-tool-embed__code">{{ view.resultPreview }}</pre>
+          }
+          @if (view.truncated) {
+            <div class="agent-chat-tool-embed__meta">{{ truncatedLabel }}</div>
+          }
+        </section>
+      }
+    }
+    @case ('skill') {
+      @if (asSkill(); as view) {
+        <section class="agent-chat-tool-embed__section">
+          <div class="agent-chat-tool-embed__label">{{ skillLabel }}</div>
+          <code class="agent-chat-tool-embed__path">{{ view.name }}</code>
+          @if (view.resultPreview) {
+            <div class="agent-chat-tool-embed__label">{{ resultLabel }}</div>
+            <pre class="agent-chat-tool-embed__code">{{ view.resultPreview }}</pre>
+          }
+          @if (view.truncated) {
+            <div class="agent-chat-tool-embed__meta">{{ truncatedLabel }}</div>
+          }
+        </section>
+      }
+    }
+    @case ('invalid') {
+      @if (asInvalid(); as view) {
+        <section class="agent-chat-tool-embed__section">
+          <fpc-alert
+            variant="danger"
+            [heading]="invalidLabel"
+            [message]="invalidMessage(view.tool, view.error)"
+            [showIcon]="true"
+          />
+        </section>
+      }
+    }
+  }
+</div>

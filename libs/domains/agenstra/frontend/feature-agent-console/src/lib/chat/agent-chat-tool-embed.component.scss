@@ -1,0 +1,127 @@
+.agent-chat-tool-embed {
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.agent-chat-tool-embed__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.agent-chat-tool-embed__section--todos {
+  gap: 0.75rem;
+}
+
+// Bleed the checklist to the embed box edges (parent uses Bootstrap `p-3` = 1rem).
+// Keep the TODOs label inside the padded area.
+.agent-chat-tool-embed__todos-list {
+  margin: 0 -1rem -1rem;
+  border-top: 1px solid var(--bs-border-color);
+  border-bottom-left-radius: var(--bs-border-radius);
+  border-bottom-right-radius: var(--bs-border-radius);
+  overflow: hidden;
+
+  ::ng-deep > .agent-chat-tool-embed__todo-item {
+    padding: 0.75rem 1rem;
+  }
+
+  // Undo fpc-list flush forcing a closing bottom edge on the last row.
+  ::ng-deep > .agent-chat-tool-embed__todo-item:last-child {
+    border-bottom-width: 0;
+  }
+
+  ::ng-deep > .agent-chat-tool-embed__todo-item:last-child::after {
+    content: none;
+  }
+}
+
+.agent-chat-tool-embed__label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--bs-secondary-color);
+}
+
+.agent-chat-tool-embed__meta,
+.agent-chat-tool-embed__meta-row {
+  font-size: 0.8125rem;
+  color: var(--bs-secondary-color);
+}
+
+.agent-chat-tool-embed__meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.agent-chat-tool-embed__path {
+  word-break: break-all;
+  font-size: 0.8125rem;
+}
+
+.agent-chat-tool-embed__link {
+  word-break: break-all;
+  font-size: 0.8125rem;
+}
+
+.agent-chat-tool-embed__code {
+  margin: 0;
+  max-height: 16rem;
+  overflow: auto;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.25rem;
+  background-color: var(--bs-tertiary-bg);
+  color: var(--bs-body-color);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.agent-chat-tool-embed__code--command {
+  max-height: 6rem;
+  font-weight: 500;
+}
+
+.agent-chat-tool-embed__diff {
+  max-height: 18rem;
+  overflow: auto;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.25rem;
+  background-color: var(--bs-tertiary-bg);
+  font-family: var(--bs-font-monospace);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.agent-chat-tool-embed__diff-line {
+  padding: 0 0.5rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.agent-chat-tool-embed__diff-line--add {
+  background-color: rgba(var(--bs-success-rgb), 0.12);
+  color: var(--bs-success-text-emphasis, var(--bs-success));
+}
+
+.agent-chat-tool-embed__diff-line--remove {
+  background-color: rgba(var(--bs-danger-rgb), 0.12);
+  color: var(--bs-danger-text-emphasis, var(--bs-danger));
+}
+
+.agent-chat-tool-embed__diff-line--header {
+  background-color: rgba(var(--bs-info-rgb), 0.1);
+  color: var(--bs-info-text-emphasis, var(--bs-info));
+  font-weight: 600;
+}
+
+.agent-chat-tool-embed__diff-line--context {
+  color: var(--bs-body-color);
+}

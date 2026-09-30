@@ -146,6 +146,9 @@ export const IconOnly: Story = {
             <fpc-button [iconOnly]="true" size="sm" variant="secondary" ariaLabel="Edit">
                 <i class="bi bi-pencil"></i>
             </fpc-button>
+            <fpc-button [iconOnly]="true" [loading]="true" ariaLabel="Saving">
+                <i class="bi bi-check-lg"></i>
+            </fpc-button>
             <fpc-button [iconOnly]="true" size="xs" variant="danger" ariaLabel="Delete">
                 <i class="bi bi-trash"></i>
             </fpc-button>

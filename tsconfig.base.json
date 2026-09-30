@@ -210,6 +210,15 @@
       ],
       "@forepath/shared/frontend/ui-components": [
         "libs/domains/shared/frontend/ui-components/src/index.ts"
+      ],
+      "@forepath/agenstra/shared/util-opencode-config": [
+        "libs/domains/agenstra/shared/util-opencode-config/src/index.ts"
+      ],
+      "@forepath/agenstra/frontend/feature-agent-config": [
+        "libs/domains/agenstra/frontend/feature-agent-config/src/index.ts"
+      ],
+      "@forepath/agenstra/shared/util-opencode-providers": [
+        "libs/domains/agenstra/shared/util-opencode-providers/src/index.ts"
       ]
     }
   },

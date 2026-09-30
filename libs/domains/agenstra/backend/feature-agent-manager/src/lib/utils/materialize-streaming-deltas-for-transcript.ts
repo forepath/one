@@ -111,7 +111,7 @@ const DEFAULT_MIN_UNIT_FOR_WHOLE_STRING_REPEAT = 32;
 const MAX_REPEAT_COPIES_TO_DETECT = 10;
 
 /**
- * Cursor stream-json sometimes repeats the full assistant answer multiple times inside one
+ * Agent streams sometimes repeat the full assistant answer multiple times inside one
  * `result` string (concatenated copies). Detect whole-string repetition (k identical segments) and
  * keep a single copy. Uses a minimum segment length to avoid false positives on short strings.
  */
@@ -175,7 +175,7 @@ function normalizeResultPartRepeatedProse(part: AgentResponseObject): AgentRespo
 }
 
 /**
- * Cursor may emit several NDJSON `result` lines with the same prose (and richer metadata on the
+ * Agents may emit several NDJSON `result` frames with the same prose (and richer metadata on the
  * last). `dropRedundantTrailingStreamResultParts` only removes one layer when the trailing body
  * equals the *concatenation* of all prior results — multiple identical copies break that check.
  * Merge consecutive `result` parts with the same normalized body and keep metadata from the later

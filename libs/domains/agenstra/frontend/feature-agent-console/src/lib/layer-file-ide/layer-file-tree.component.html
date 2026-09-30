@@ -1,0 +1,283 @@
+<div class="layer-file-tree d-flex flex-column h-100" tabindex="0" (keydown)="onTreeKeydown($event)">
+  <div class="layer-file-tree__header p-2 ps-3 border-bottom bg-body-tertiary">
+    <div class="d-flex justify-content-between align-items-center">
+      <h6 class="mb-0 fw-semibold" i18n="@@featureFileTree-filesHeader">Files</h6>
+      <fpc-button-group size="sm">
+        <fpc-button
+          variant="primary"
+          size="sm"
+          iconOnly
+          [class.active]="creatingItem()?.parentPath === treeRoot() && creatingItem()?.type === 'file'"
+          (clicked)="startCreate('file', treeRoot())"
+          i18n-title="@@featureFileTree-newFileTitle"
+          title="New File"
+        >
+          <i class="bi bi-file-earmark-plus" aria-hidden="true"></i>
+        </fpc-button>
+        <fpc-button
+          variant="primary"
+          size="sm"
+          iconOnly
+          [class.active]="creatingItem()?.parentPath === treeRoot() && creatingItem()?.type === 'directory'"
+          (clicked)="startCreate('directory', treeRoot())"
+          i18n-title="@@featureFileTree-newDirectoryTitle"
+          title="New Directory"
+        >
+          <i class="bi bi-folder-plus" aria-hidden="true"></i>
+        </fpc-button>
+        <fpc-button
+          variant="dark"
+          size="sm"
+          iconOnly
+          (clicked)="refreshRoot()"
+          i18n-title="@@featureFileTree-refreshTitle"
+          title="Refresh"
+        >
+          <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+        </fpc-button>
+      </fpc-button-group>
+    </div>
+  </div>
+
+  <div class="layer-file-tree__content flex-grow-1 overflow-auto p-2" (click)="onTreeBackgroundClick($event)">
+    @if (loading()) {
+      <div class="d-flex justify-content-center align-items-center p-4">
+        <fpc-spinner size="sm" variant="primary" />
+      </div>
+    } @else if (treeNodes().length === 0 && !creatingItem()) {
+      <div class="text-center text-muted p-4">
+        <i class="bi bi-folder-x fs-4 d-block mb-2" aria-hidden="true"></i>
+        <p class="mb-0 small" i18n="@@featureFileTree-noFiles">No files</p>
+      </div>
+    } @else {
+      <ul class="file-tree list-unstyled mb-0">
+        @if (creatingItem()?.parentPath === treeRoot()) {
+          <li>
+            <div class="create-item-input px-2 py-1" [style.padding-left.px]="24">
+              <div class="input-group input-group-sm">
+                <fpc-form-control
+                  size="sm"
+                  [ngModel]="newItemName()"
+                  (ngModelChange)="newItemName.set($event)"
+                  (keydown.enter)="confirmCreate()"
+                  (keydown.escape)="cancelCreate()"
+                  [placeholder]="createPlaceholder()"
+                />
+                <fpc-button variant="primary" size="sm" iconOnly (clicked)="confirmCreate()">
+                  <i class="bi bi-check" aria-hidden="true"></i>
+                </fpc-button>
+                <fpc-button variant="dark" size="sm" iconOnly (clicked)="cancelCreate()">
+                  <i class="bi bi-x" aria-hidden="true"></i>
+                </fpc-button>
+              </div>
+            </div>
+          </li>
+        }
+        @for (node of treeNodes(); track node.path; let isLast = $last) {
+          <li>
+            <ng-container
+              *ngTemplateOutlet="
+                treeNodeTemplate;
+                context: { $implicit: node, level: 0, isLast: isLast, hasSiblings: treeNodes().length > 1 }
+              "
+            />
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>
+
+<ng-template #treeNodeTemplate let-node let-level="level" let-isLast="isLast" let-hasSiblings="hasSiblings">
+  <div class="tree-node-wrapper">
+    <div
+      class="tree-node d-flex align-items-center py-1 px-2 rounded"
+      [class.selected]="isPathSelected(node.path)"
+      [class.tree-node-open]="isPathOpen(node.path)"
+      [class.tree-node-clipboard-copy]="clipboardModeFor(node.path) === 'copy'"
+      [class.tree-node-clipboard-cut]="clipboardModeFor(node.path) === 'cut'"
+      [class.expanded]="node.expanded"
+      [class.creating-in]="creatingItem()?.parentPath === node.path"
+      (click)="onNodeClick(node, $event)"
+      (contextmenu)="onContextMenu($event, node)"
+    >
+      @if (level > 0) {
+        <div class="tree-indent" [style.width.px]="level * 20">
+          @for (i of levelArray(level); track i; let idx = $index) {
+            <div class="tree-indent-line" [class.line-visible]="hasSiblings || idx < level - 1"></div>
+          }
+        </div>
+      }
+
+      <div class="tree-node-content d-flex align-items-center flex-grow-1">
+        @if (node.loading) {
+          <fpc-spinner class="me-2" size="sm" variant="primary" />
+        }
+        @if (node.type === 'directory') {
+          <i
+            class="bi me-2 tree-node-icon"
+            [class.bi-chevron-right]="!node.expanded"
+            [class.bi-chevron-down]="node.expanded"
+            [class.bi-folder]="!node.expanded"
+            [class.bi-folder2-open]="node.expanded"
+            aria-hidden="true"
+          ></i>
+        } @else {
+          <i class="bi me-2 tree-node-icon" [ngClass]="fileIcon(node.name)" aria-hidden="true"></i>
+        }
+        <span class="tree-node-name flex-grow-1 text-truncate small" [title]="node.name">{{ node.name }}</span>
+        <fpc-button-group size="sm" class="ms-2">
+          @if (node.type === 'directory') {
+            <fpc-button
+              variant="dark"
+              size="sm"
+              iconOnly
+              (clicked)="startCreate('file', node.path); $event.stopPropagation()"
+              i18n-title="@@featureFileTree-newFileTitle"
+              title="New File"
+            >
+              <i class="bi bi-file-earmark-plus" aria-hidden="true"></i>
+            </fpc-button>
+            <fpc-button
+              variant="dark"
+              size="sm"
+              iconOnly
+              (clicked)="startCreate('directory', node.path); $event.stopPropagation()"
+              i18n-title="@@featureFileTree-newDirectoryTitle"
+              title="New Directory"
+            >
+              <i class="bi bi-folder-plus" aria-hidden="true"></i>
+            </fpc-button>
+          }
+          <fpc-button
+            variant="danger"
+            size="sm"
+            iconOnly
+            (clicked)="requestDelete(node.path); $event.stopPropagation()"
+            i18n-title="@@featureFileTree-deleteTitle"
+            title="Delete"
+          >
+            <i class="bi bi-trash" aria-hidden="true"></i>
+          </fpc-button>
+        </fpc-button-group>
+      </div>
+    </div>
+
+    @if (creatingItem()?.parentPath === node.path) {
+      <div class="create-item-input px-2 py-1" [style.padding-left.px]="(level + 1) * 20 + 24">
+        <div class="input-group input-group-sm">
+          <fpc-form-control
+            size="sm"
+            [ngModel]="newItemName()"
+            (ngModelChange)="newItemName.set($event)"
+            (keydown.enter)="confirmCreate()"
+            (keydown.escape)="cancelCreate()"
+            [placeholder]="createPlaceholder()"
+          />
+          <fpc-button variant="primary" size="sm" iconOnly (clicked)="confirmCreate()">
+            <i class="bi bi-check" aria-hidden="true"></i>
+          </fpc-button>
+          <fpc-button variant="dark" size="sm" iconOnly (clicked)="cancelCreate()">
+            <i class="bi bi-x" aria-hidden="true"></i>
+          </fpc-button>
+        </div>
+      </div>
+    }
+
+    @if (node.expanded && node.children?.length) {
+      <ul class="list-unstyled mb-0 tree-children">
+        @for (child of node.children; track child.path; let childLast = $last) {
+          <li>
+            <ng-container
+              *ngTemplateOutlet="
+                treeNodeTemplate;
+                context: {
+                  $implicit: child,
+                  level: level + 1,
+                  isLast: childLast,
+                  hasSiblings: (node.children?.length || 0) > 1,
+                }
+              "
+            />
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</ng-template>
+
+@if (contextMenuPath() && contextMenuPosition(); as pos) {
+  <div
+    class="context-menu dropdown-menu show"
+    [style.position]="'fixed'"
+    [style.left.px]="pos.x"
+    [style.top.px]="pos.y"
+    (click)="$event.stopPropagation()"
+  >
+    <button
+      type="button"
+      class="dropdown-item"
+      (click)="startCreate('file', contextCreateParent()); closeContextMenu()"
+    >
+      <i class="bi bi-file-earmark-plus me-2" aria-hidden="true"></i>
+      <span i18n="@@featureFileTree-contextNewFile">New File</span>
+    </button>
+    <button
+      type="button"
+      class="dropdown-item"
+      (click)="startCreate('directory', contextCreateParent()); closeContextMenu()"
+    >
+      <i class="bi bi-folder-plus me-2" aria-hidden="true"></i>
+      <span i18n="@@featureFileTree-contextNewDirectory">New Directory</span>
+    </button>
+    @if (contextMenuNode()?.type === 'directory') {
+      <div class="dropdown-divider"></div>
+      <button type="button" class="dropdown-item" (click)="refreshFolder(contextMenuPath()!); closeContextMenu()">
+        <i class="bi bi-arrow-clockwise me-2" aria-hidden="true"></i>
+        <span i18n="@@featureFileTree-contextRefresh">Refresh</span>
+      </button>
+    }
+    <div class="dropdown-divider"></div>
+    <button type="button" class="dropdown-item" (click)="copySelection(); closeContextMenu()">
+      <i class="bi bi-clipboard me-2" aria-hidden="true"></i>
+      <span i18n="@@featureFileTree-contextCopy">Copy</span>
+    </button>
+    <button type="button" class="dropdown-item" (click)="cutSelection(); closeContextMenu()">
+      <i class="bi bi-scissors me-2" aria-hidden="true"></i>
+      <span i18n="@@featureFileTree-contextCut">Cut</span>
+    </button>
+    @if (clipboard()) {
+      <button type="button" class="dropdown-item" (click)="pasteSelection(); closeContextMenu()">
+        <i class="bi bi-clipboard-check me-2" aria-hidden="true"></i>
+        <span i18n="@@featureFileTree-contextPaste">Paste</span>
+      </button>
+    }
+    <div class="dropdown-divider"></div>
+    <button
+      type="button"
+      class="dropdown-item text-danger"
+      (click)="requestDelete(contextMenuPath()!); closeContextMenu()"
+    >
+      <i class="bi bi-trash me-2" aria-hidden="true"></i>
+      <span i18n="@@featureFileTree-contextDelete">Delete</span>
+    </button>
+  </div>
+  <div class="context-menu-overlay" (click)="closeContextMenu()"></div>
+}
+
+<fpc-confirm-dialog
+  [(open)]="deleteModalOpen"
+  i18n-title="@@featureFileTree-delete"
+  title="Delete"
+  i18n-confirmLabel="@@featureFileTree-delete"
+  confirmLabel="Delete"
+  [danger]="true"
+  (confirmed)="confirmDelete()"
+  (cancelled)="pendingDeletePaths.set([])"
+>
+  <p i18n="@@featureAgentConfig-layerFileDeleteConfirm">Delete the selected items from the layer VFS?</p>
+  <p class="text-danger mb-0">
+    <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+    <span i18n="@@featureFileTree-deleteModalWarning">This action cannot be undone.</span>
+  </p>
+</fpc-confirm-dialog>

@@ -75,8 +75,6 @@ export interface AgentManagerCloudInitConfig {
       commitAuthorName?: string;
       commitAuthorEmail?: string;
     };
-    /** Cursor API key for agent-manager (optional). Passed as CURSOR_API_KEY env var. */
-    cursorApiKey?: string;
   };
 }
 
@@ -167,9 +165,6 @@ export function buildAgentManagerCloudInitConfigFromRequest(
           commitAuthorEmail: (git.commitAuthorEmail as string) ?? '',
         },
       }),
-      ...((effectiveConfig.cursorApiKey as string)?.trim()
-        ? { cursorApiKey: (effectiveConfig.cursorApiKey as string).trim() }
-        : {}),
     },
   };
 }
@@ -196,7 +191,6 @@ export function buildAgentManagerCloudInitUserData(config: AgentManagerCloudInit
     `SMTP_PASSWORD: ${config.backend?.smtp?.password ?? ''}`,
     `EMAIL_FROM: ${config.backend?.smtp?.from ?? 'noreply@localhost'}`,
     `CORS_ORIGIN: ${config.backend?.cors?.origin ?? ''}`,
-    ...(config.backend?.cursorApiKey?.trim() ? [`CURSOR_API_KEY: ${config.backend.cursorApiKey.trim()}`] : []),
     ...(config.backend?.git
       ? [
           ...(config.backend.git.setupMode === 'empty'

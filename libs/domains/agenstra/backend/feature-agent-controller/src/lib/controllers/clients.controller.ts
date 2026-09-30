@@ -67,6 +67,8 @@ import { ClientAgentFileSystemProxyService } from '../services/client-agent-file
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 import { ClientsService } from '../services/clients.service';
+import { OpencodeLayerFilesService } from '../services/opencode-layer-files.service';
+import { OpencodeConfigSyncTargetsService } from '../services/opencode-config-sync-targets.service';
 import { ProvisioningService } from '../services/provisioning.service';
 
 /**
@@ -87,7 +89,14 @@ export class ClientsController {
     private readonly clientsRepository: ClientsRepository,
     private readonly clientUsersRepository: ClientUsersRepository,
     private readonly workspaceSearchIndex: WorkspaceSearchIndexService,
+    private readonly opencodeLayerFilesService: OpencodeLayerFilesService,
+    private readonly configSyncTargets: OpencodeConfigSyncTargetsService,
   ) {}
+
+  private syncAgentRuntime(clientId: string, agentId: string): void {
+    void this.opencodeLayerFilesService.resetFailedAndEmitAllForAgent(clientId, agentId).catch(() => undefined);
+    void this.configSyncTargets.markAndProcessAgent(clientId, agentId).catch(() => undefined);
+  }
 
   /**
    * Get all clients with pagination.
@@ -207,6 +216,68 @@ export class ClientsController {
   }
 
   /**
+   * Reply to an OpenCode permission request for an agent (proxied to agent-manager).
+   */
+  @Post(':id/agents/:agentId/permissions/:permissionId/reply')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agents:write')
+  async replyClientAgentPermission(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Param('permissionId') permissionId: string,
+    @Body() body: { reply: 'once' | 'always' | 'reject'; sessionId?: string },
+    @Req() req?: RequestWithUser,
+  ): Promise<void> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    const access = await checkClientAccess(
+      this.clientsRepository,
+      this.clientUsersRepository,
+      id,
+      userInfo.userId,
+      userInfo.userRole,
+      userInfo.isApiKeyAuth,
+      { amr: userInfo.amr },
+    );
+
+    if (!access.hasAccess) {
+      throw new ForbiddenException('You do not have access to this client');
+    }
+
+    await this.clientAgentProxyService.replyClientAgentPermission(id, agentId, permissionId, body);
+  }
+
+  /**
+   * Reply to (or reject) an OpenCode question for an agent (proxied to agent-manager).
+   */
+  @Post(':id/agents/:agentId/questions/:questionId/reply')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequireScopes('agents:write')
+  async replyClientAgentQuestion(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Param('questionId') questionId: string,
+    @Body() body: { answers?: string[]; reply?: 'reject'; sessionId?: string },
+    @Req() req?: RequestWithUser,
+  ): Promise<void> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    const access = await checkClientAccess(
+      this.clientsRepository,
+      this.clientUsersRepository,
+      id,
+      userInfo.userId,
+      userInfo.userRole,
+      userInfo.isApiKeyAuth,
+      { amr: userInfo.amr },
+    );
+
+    if (!access.hasAccess) {
+      throw new ForbiddenException('You do not have access to this client');
+    }
+
+    await this.clientAgentProxyService.replyClientAgentQuestion(id, agentId, questionId, body);
+  }
+
+  /**
    * Get a single agent for a specific client by agent ID.
    * Only accessible if the user has access to the client.
    * @param id - The UUID of the client
@@ -281,7 +352,11 @@ export class ClientsController {
     await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
 
-    return await this.clientAgentProxyService.createClientAgent(id, createAgentDto, userInfo.userId);
+    const created = await this.clientAgentProxyService.createClientAgent(id, createAgentDto, userInfo.userId);
+
+    this.syncAgentRuntime(id, created.id);
+
+    return created;
   }
 
   /**
@@ -323,7 +398,11 @@ export class ClientsController {
   ): Promise<AgentResponseDto> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
 
-    return await this.clientAgentProxyService.startClientAgent(id, agentId);
+    const agent = await this.clientAgentProxyService.startClientAgent(id, agentId);
+
+    this.syncAgentRuntime(id, agentId);
+
+    return agent;
   }
 
   /**
@@ -363,7 +442,11 @@ export class ClientsController {
   ): Promise<AgentResponseDto> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
 
-    return await this.clientAgentProxyService.restartClientAgent(id, agentId);
+    const agent = await this.clientAgentProxyService.restartClientAgent(id, agentId);
+
+    this.syncAgentRuntime(id, agentId);
+
+    return agent;
   }
 
   /**
@@ -454,7 +537,7 @@ export class ClientsController {
   }
 
   /**
-   * Authorize proxied file API access. `context=config` requires workspace management rights.
+   * Authorize proxied file API access (workspace membership).
    */
   private async authorizeFileProxyRequest(
     clientId: string,
@@ -463,11 +546,7 @@ export class ClientsController {
   ): Promise<AgentFileManagerContext> {
     const context = parseAgentFileManagerContext(contextRaw);
 
-    if (context === 'config') {
-      await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
-    } else {
-      await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
-    }
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
 
     return context;
   }
