@@ -21,7 +21,7 @@ import {
   FilesService,
   getSocketInstance,
   moveFileOrDirectorySuccess,
-  SocketsFacade,
+  ContainerSocketFacade,
   VcsFacade,
   WorkspaceSearchFacade,
   type CreateFileDto,
@@ -96,7 +96,7 @@ import { WorkspaceSearchPanelComponent } from './workspace-search-panel/workspac
 export class FileEditorComponent implements OnDestroy, AfterViewInit {
   private readonly filesFacade = inject(FilesFacade);
   private readonly filesService = inject(FilesService);
-  private readonly socketsFacade = inject(SocketsFacade);
+  private readonly socketsFacade = inject(ContainerSocketFacade);
   private readonly vcsFacade = inject(VcsFacade);
   private readonly workspaceSearchFacade = inject(WorkspaceSearchFacade);
   private readonly destroyRef = inject(DestroyRef);
@@ -443,25 +443,11 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     });
 
     // Subscribe to file update notifications
-    this.socketsFacade
-      .getForwardedEventsByEvent$('fileUpdateNotification')
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((events) => {
-        if (events.length === 0) {
-          return;
-        }
-
-        // Get the most recent event
-        const latestEvent = events[events.length - 1];
-        const payload = latestEvent.payload;
-
-        // Check if it's a success response with FileUpdateNotificationData
-        if ('success' in payload && payload.success && 'data' in payload) {
-          const notificationData = payload.data as FileUpdateNotificationData;
-
-          this.handleFileUpdateNotification(notificationData);
-        }
-      });
+    this.filesFacade.lastFileUpdateNotification$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((notification) => {
+      if (notification) {
+        this.handleFileUpdateNotification(notification);
+      }
+    });
 
     // Update query parameter when file path changes (silently, without navigation)
     effect(() => {
@@ -1453,6 +1439,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
     this.showFileUpdateModal.set(false);
     this.fileUpdateNotification.set(null);
+    this.filesFacade.clearFileUpdateNotification();
 
     // Reload git status after accepting file update (workspace only)
     if (this.fileManagerContext() === 'app') {
@@ -1481,6 +1468,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
 
     this.showFileUpdateModal.set(false);
     this.fileUpdateNotification.set(null);
+    this.filesFacade.clearFileUpdateNotification();
   }
 
   /**

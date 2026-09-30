@@ -72,9 +72,33 @@ export interface ChatPayload {
 
 /**
  * Restore a specific chat session history into the viewer timeline.
+ * Omit beforeMessageId for the latest page; set it to load an older batch.
  */
 export interface RestoreChatPayload {
   chatId: string;
+  beforeMessageId?: string;
+  limit?: number;
+}
+
+/**
+ * Batch of chat messages (and related filter/event rows) for restore / older-page load.
+ */
+export interface ChatMessageBatchData {
+  chatId: string;
+  messages: Array<ChatMessageData & { id?: string }>;
+  filterResults?: MessageFilterResultData[];
+  events?: AgentEventEnvelope[];
+  hasMoreOlder: boolean;
+  replace: boolean;
+  oldestMessageId?: string | null;
+}
+
+export interface RestoreChatSuccessData {
+  chatId: string;
+  message: string;
+  hasMoreOlder?: boolean;
+  oldestMessageId?: string | null;
+  messageCount?: number;
 }
 
 export type AgentResponseMode = 'single' | 'stream';
@@ -281,6 +305,8 @@ export interface UserChatMessageData {
   text: string;
   timestamp: string;
   chatId?: string;
+  /** Persisted agent_messages.id when available. */
+  id?: string;
 }
 
 /**
@@ -291,6 +317,8 @@ export interface AgentChatMessageData {
   response: AgentResponseObject | string; // Parsed JSON object or raw string if parsing fails
   timestamp: string;
   chatId?: string;
+  /** Persisted agent_messages.id when available. */
+  id?: string;
 }
 
 /**
@@ -370,6 +398,7 @@ export interface MessageFilterResultData {
   };
   action?: 'drop' | 'flag';
   timestamp: string;
+  chatId?: string;
 }
 
 /**
@@ -377,6 +406,8 @@ export interface MessageFilterResultData {
  * When container is stopped, stats is null but status is always present.
  */
 export interface ContainerStatsPayload {
+  /** Agent these stats belong to (preferred over selectedAgentId for attribution). */
+  agentId?: string;
   status: {
     running: boolean;
   };
@@ -417,7 +448,7 @@ export interface ContainerStatsPayload {
       stats?: Record<string, unknown>;
     };
     networks?: Record<string, unknown>;
-  };
+  } | null;
   timestamp: string;
 }
 
@@ -470,6 +501,8 @@ export type ForwardedEventPayload =
   | SuccessResponse<LoginSuccessData> // loginSuccess
   | ErrorResponse // loginError
   | SuccessResponse<ChatMessageData> // chatMessage
+  | SuccessResponse<ChatMessageBatchData> // chatMessageBatch
+  | SuccessResponse<RestoreChatSuccessData> // restoreChatSuccess
   | SuccessResponse<ChatEnhanceResultPayload> // chatEnhanceResult
   | SuccessResponse<TicketBodyResultPayload> // ticketBodyResult
   | SuccessResponse<MessageFilterResultData> // messageFilterResult

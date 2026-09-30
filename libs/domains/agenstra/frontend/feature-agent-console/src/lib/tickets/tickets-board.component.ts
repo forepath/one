@@ -39,7 +39,8 @@ import {
   migrateTicketSuccess,
   patchTicketAutomationFailure,
   patchTicketAutomationSuccess,
-  SocketsFacade,
+  ContainerSocketFacade,
+  ChatTimelineFacade,
   TicketAutomationFacade,
   TicketsBoardSocketFacade,
   TicketsFacade,
@@ -284,7 +285,8 @@ export class TicketsBoardComponent implements OnInit {
   private readonly knowledgeFacade = inject(KnowledgeFacade);
   private readonly knowledgeService = inject(KnowledgeService);
   private readonly ticketsService = inject(TicketsService);
-  private readonly socketsFacade = inject(SocketsFacade);
+  private readonly socketsFacade = inject(ContainerSocketFacade);
+  private readonly chatTimelineFacade = inject(ChatTimelineFacade);
   private readonly ticketsBoardSocketFacade = inject(TicketsBoardSocketFacade);
   private readonly ticketAutomationFacade = inject(TicketAutomationFacade);
   private readonly route = inject(ActivatedRoute);
@@ -1060,7 +1062,7 @@ export class TicketsBoardComponent implements OnInit {
       )
       .subscribe((r) => this.autonomyEnabledAgentIds.set(r.agentIds));
 
-    this.socketsFacade.ticketBodyLastResult$
+    this.chatTimelineFacade.ticketBodyLastResult$
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         filter(

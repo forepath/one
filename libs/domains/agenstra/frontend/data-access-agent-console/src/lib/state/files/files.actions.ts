@@ -202,3 +202,11 @@ export const clearOpenTabs = createAction(
   '[Files] Clear Open Tabs',
   props<{ clientId: string; agentId: string; context?: FileManagerContext }>(),
 );
+
+/** Latest remote file conflict notification (single slot; history not kept). */
+export const fileUpdateNotificationReceived = createAction(
+  '[Files] File Update Notification Received',
+  props<{ notification: import('../container-socket/container-socket.types').FileUpdateNotificationData }>(),
+);
+
+export const clearFileUpdateNotification = createAction('[Files] Clear File Update Notification');

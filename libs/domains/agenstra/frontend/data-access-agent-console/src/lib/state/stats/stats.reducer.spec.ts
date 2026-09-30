@@ -70,7 +70,7 @@ describe('StatsReducer', () => {
       expect(state.statsByContainer['client-1:agent-1'][0]).toEqual(entry);
     });
 
-    it('should add multiple stats entries for the same container', () => {
+    it('should keep only the latest maxEntriesPerContainer entries for the same container', () => {
       const entry1 = createMockEntry('client-1', 'agent-1', '2024-01-01T00:00:00.000Z', 1000);
       const entry2 = createMockEntry('client-1', 'agent-1', '2024-01-01T00:05:00.000Z', 2000);
       const entry3 = createMockEntry('client-1', 'agent-1', '2024-01-01T00:10:00.000Z', 3000);
@@ -79,10 +79,9 @@ describe('StatsReducer', () => {
       state = statsReducer(state, containerStatsReceived({ entry: entry2 }));
       state = statsReducer(state, containerStatsReceived({ entry: entry3 }));
 
-      expect(state.statsByContainer['client-1:agent-1']).toHaveLength(3);
-      expect(state.statsByContainer['client-1:agent-1'][0]).toEqual(entry1);
-      expect(state.statsByContainer['client-1:agent-1'][1]).toEqual(entry2);
-      expect(state.statsByContainer['client-1:agent-1'][2]).toEqual(entry3);
+      expect(state.statsByContainer['client-1:agent-1']).toHaveLength(2);
+      expect(state.statsByContainer['client-1:agent-1'][0]).toEqual(entry2);
+      expect(state.statsByContainer['client-1:agent-1'][1]).toEqual(entry3);
     });
 
     it('should add stats entries for different containers', () => {

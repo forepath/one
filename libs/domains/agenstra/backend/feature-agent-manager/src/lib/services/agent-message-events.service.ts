@@ -42,7 +42,7 @@ export class AgentMessageEventsService {
   async listRecentEvents(
     agentId: string,
     limit = 200,
-    opts?: { kinds?: string[]; since?: Date; chatSessionId?: string },
+    opts?: { kinds?: string[]; since?: Date; until?: Date; chatSessionId?: string },
   ): Promise<AgentEventEnvelope[]> {
     const chatSessionId =
       opts?.chatSessionId ?? (await this.agentChatSessionsService.resolveSessionForChat(agentId)).id;

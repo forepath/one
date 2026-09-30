@@ -77,7 +77,7 @@ channels:
       payload `{ title, correlationId, model? }`; response `ticketBodyResult` unicast, same envelope
       shape as `chatEnhanceResult`), "fileUpdate", "logout", "createTerminal", "terminalInput", "terminalResize",
       "closeTerminal", etc. The remote agent-manager gateway will process the event and may emit
-      response events (e.g., "chatMessage", "chatEnhanceResult", "ticketBodyResult",
+      response events (e.g., "chatMessage", "chatMessageBatch", "chatEnhanceResult", "ticketBodyResult",
       "fileUpdateNotification", "workspaceIndexChanged", "workspaceIndexRebuildRequired",
       "terminalCreated", "terminalOutput", "terminalClosed", "containerStats")
       which are automatically forwarded back to the client. The "containerStats" event payload
@@ -96,6 +96,9 @@ channels:
       the controller may emit **ticketAutomationRunChatUpsert** (unicast) to hydrate ticket automation runs for that
       `clientId` + `agentId` into the chat timeline (see `clients/ticketAutomationRunChatUpsert`). Live run updates use
       the same event broadcast to room `client:{clientId}` on the **clients** namespace.
+      Login auto-restore from agent-manager emits a single **chatMessageBatch** (latest page) rather than individual
+      chatMessage / messageFilterResult / chatEvent frames; clients should forward that event to the FE. Explicit
+      `restoreChat` forwards also yield chatMessageBatch then restoreChatSuccess (with hasMoreOlder / oldestMessageId).
       When a ticket row is created or updated (REST or internal), the controller also emits **ticketChatTicketUpsert**
       to room `client:{clientId}` on **clients** (same body as `tickets/ticketUpsert`).
       Workspace index events (`workspaceIndexChanged` / `workspaceIndexRebuildRequired`) are also consumed locally
@@ -589,8 +592,10 @@ components:
             description: >
               Agent UUID to target; if provided, the gateway will perform automatic login using stored credentials
               before forwarding the event. After successful login, the agents gateway automatically restores chat
-              history by emitting chatMessage events. When event is "login", the payload field is always ignored
+              history by emitting a chatMessageBatch (latest page). When event is "login", the payload field is always ignored
               and credentials are always loaded from the database, regardless of whether the agent is already logged in.
+              When event is "restoreChat", payload may include { chatId, beforeMessageId?, limit? }; the manager responds
+              with chatMessageBatch then restoreChatSuccess.
           payload:
             description: >
               Arbitrary payload forwarded to the agents namespace. Optional when event is "login" with agentId

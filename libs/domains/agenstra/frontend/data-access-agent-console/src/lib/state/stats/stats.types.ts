@@ -55,7 +55,7 @@ export interface ContainerRunStatus {
  * When container is stopped, stats may be undefined but status is set.
  */
 export interface ContainerStatsEntry {
-  stats: ContainerStats; // Present when container is running
+  stats: ContainerStats | null; // Present when container is running; null for status-only / stopped
   status: ContainerRunStatus; // Present when payload includes status (running/stopped)
   timestamp: string; // ISO timestamp when stats were collected
   receivedAt: number; // Timestamp when stats were received by the client (Date.now())

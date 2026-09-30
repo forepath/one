@@ -30,7 +30,8 @@ import {
   filterTicketsForTicketContextSuggestions,
   KnowledgeFacade,
   NotificationsFacade,
-  SocketsFacade,
+  ContainerSocketFacade,
+  ChatTimelineFacade,
   StatsFacade,
   TicketAutomationFacade,
   TicketsFacade,
@@ -252,7 +253,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly clientsFacade = inject(ClientsFacade);
   private readonly agentsFacade = inject(AgentsFacade);
   private readonly authFacade = inject(AuthenticationFacade);
-  private readonly socketsFacade = inject(SocketsFacade);
+  private readonly socketsFacade = inject(ContainerSocketFacade);
+  private readonly chatTimelineFacade = inject(ChatTimelineFacade);
   private readonly chatSessionsFacade = inject(ChatSessionsFacade);
   protected readonly notificationsFacade = inject(NotificationsFacade);
   private readonly statsFacade = inject(StatsFacade);
@@ -578,8 +580,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly socketReconnecting$: Observable<boolean> = this.socketsFacade.reconnecting$;
   readonly socketReconnectAttempts$: Observable<number> = this.socketsFacade.reconnectAttempts$;
   readonly selectedClientId$: Observable<string | null> = this.socketsFacade.selectedClientId$;
-  readonly chatMessages$ = this.socketsFacade.getForwardedEventsByEvent$('chatMessage');
-  readonly chatEvents$ = this.socketsFacade.getForwardedEventsByEvent$('chatEvent');
+  readonly chatMessages$ = this.chatTimelineFacade.messages$;
+  readonly chatEvents$ = this.chatTimelineFacade.events$;
 
   /** Chat messages limited to the selected session (strict isolation for pending/streaming UI). */
   readonly selectedChatMessages$ = combineLatest([this.chatMessages$, this.selectedChatId$]).pipe(
@@ -591,7 +593,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     map(([events, selectedChatId]) => this.filterForwardedEventsByChatId(events, selectedChatId)),
   );
 
-  readonly messageFilterResults$ = this.socketsFacade.messageFilterResults$;
+  readonly messageFilterResults$ = this.chatTimelineFacade.messageFilterResults$;
 
   readonly recentChatEventRows$ = this.selectedChatEvents$.pipe(
     map((events) => mapForwardedChatEventsToDisplayRows(events.slice(-50))),
@@ -641,7 +643,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   /** User rows, agent turns, and ticket automation run cards merged by semantic timeline order. */
   readonly displayChatThread$ = combineLatest([
-    this.socketsFacade.chatTimelineOrdered$,
+    this.chatTimelineFacade.timelineOrdered$,
     this.chatMessagesWithFilters$,
     this.ticketsFacade.tickets$,
     this.ticketAutomationFacade.runCacheByRunId$,
@@ -664,9 +666,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }),
   );
 
+  readonly chatTimelineLoadingInitial$ = this.chatTimelineFacade.loadingInitial$;
+
   readonly forwarding$: Observable<boolean> = this.socketsFacade.chatForwarding$;
   readonly chatResponseMode$ = this.socketsFacade.chatResponseMode$;
-  readonly chatEnhancementPending$: Observable<boolean> = this.socketsFacade.chatEnhancementPending$;
+  readonly chatEnhancementPending$: Observable<boolean> = this.chatTimelineFacade.chatEnhancementPending$;
   readonly socketError$: Observable<string | null> = this.socketsFacade.error$;
 
   // Remote connection reconnection state (per clientId)
@@ -1031,10 +1035,14 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   );
 
   private activeClientId: string | null = null;
+  /** When true, new timeline growth scrolls the viewport to the bottom. */
+  readonly stickToBottom = signal(true);
   private shouldScrollToBottom = false;
   private previousMessageCount = 0;
   /** Tracks merged chat thread rows (messages + automation cards); grows when hydration adds cards without new `chatMessage` events. */
   private previousDisplayThreadLength = 0;
+  private loadingOlderInFlight = false;
+  private pendingScrollAnchor: { prevHeight: number; prevTop: number } | null = null;
   private readonly destroyRef = inject(DestroyRef);
   private syncAnimationFrameId: number | null = null;
   private syncTimeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -1470,7 +1478,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         this.lastUserMessageTimestamp.set(null);
       });
 
-    this.socketsFacade.chatEnhancementLastResult$
+    this.chatTimelineFacade.chatEnhancementLastResult$
       .pipe(
         takeUntilDestroyed(this.destroyRef),
         filter((r) => r !== null),
@@ -1951,7 +1959,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       }
 
       if (currentMessageCount > this.previousMessageCount) {
-        this.shouldScrollToBottom = true;
+        if (this.stickToBottom()) {
+          this.shouldScrollToBottom = true;
+        }
         this.previousMessageCount = currentMessageCount;
         // Trigger change detection to ensure DOM is updated
         this.cdr.detectChanges();
@@ -1987,7 +1997,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       const len = thread.length;
 
       if (len > this.previousDisplayThreadLength) {
-        this.shouldScrollToBottom = true;
+        if (this.stickToBottom()) {
+          this.shouldScrollToBottom = true;
+        }
         this.previousDisplayThreadLength = len;
         this.cdr.detectChanges();
       } else if (len < this.previousDisplayThreadLength) {
@@ -2039,7 +2051,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         }),
       )
       .subscribe((pending) => {
-        if (pending.isPendingAgentResponse) {
+        if (pending.isPendingAgentResponse && this.stickToBottom()) {
           this.shouldScrollToBottom = true;
           this.cdr.detectChanges();
         }
@@ -2484,7 +2496,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       this.chatSessionsFacade.selectChatSession(clientId, agentId, chatId, true);
       this.notificationsFacade.setActiveEnvironment(clientId, agentId, chatId);
       this.notificationsFacade.markChatSessionRead(clientId, agentId, chatId);
-      this.socketsFacade.clearChatHistory();
+      this.chatTimelineFacade.clear();
+      this.stickToBottom.set(true);
+      this.chatTimelineFacade.restoreRequested(false);
       this.socketsFacade.forwardRestoreChat(chatId, agentId);
       this.previousMessageCount = 0;
       this.previousDisplayThreadLength = 0;
@@ -2511,7 +2525,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           takeUntilDestroyed(this.destroyRef),
         )
         .subscribe((chatId) => {
-          this.socketsFacade.clearChatHistory();
+          this.chatTimelineFacade.clear();
+          this.stickToBottom.set(true);
+          this.chatTimelineFacade.restoreRequested(false);
           this.socketsFacade.forwardRestoreChat(chatId, agentId);
           this.previousMessageCount = 0;
           this.previousDisplayThreadLength = 0;
@@ -2580,7 +2596,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
             takeUntilDestroyed(this.destroyRef),
           )
           .subscribe((nextId) => {
-            this.socketsFacade.clearChatHistory();
+            this.chatTimelineFacade.clear();
+            this.stickToBottom.set(true);
+            this.chatTimelineFacade.restoreRequested(false);
             this.socketsFacade.forwardRestoreChat(nextId, agentId);
             this.previousMessageCount = 0;
             this.previousDisplayThreadLength = 0;
@@ -2827,6 +2845,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     // Clear selected command after sending
     this.selectedCommand.set(null);
     // Trigger scroll after sending message
+    this.stickToBottom.set(true);
     this.shouldScrollToBottom = true;
   }
 
@@ -5721,6 +5740,79 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     });
   }
 
+  /** User clicked the jump-to-bottom control or scrolled to the end. */
+  onScrollToBottomClick(): void {
+    this.stickToBottom.set(true);
+    this.shouldScrollToBottom = true;
+    this.scrollToBottom();
+  }
+
+  onChatMessagesScroll(event: Event): void {
+    const el = event.target as HTMLElement | null;
+
+    if (!el) {
+      return;
+    }
+
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    const nearBottom = distanceFromBottom < 80;
+    const nearTop = el.scrollTop < 80;
+
+    if (nearBottom) {
+      this.stickToBottom.set(true);
+    } else {
+      this.stickToBottom.set(false);
+    }
+
+    if (nearTop) {
+      this.maybeLoadOlderMessages(el);
+    }
+  }
+
+  private maybeLoadOlderMessages(el: HTMLElement): void {
+    const agentId = this.selectedAgentId();
+    const clientId = this.activeClientId;
+
+    if (!agentId || !clientId || this.loadingOlderInFlight) {
+      return;
+    }
+
+    this.chatTimelineFacade.hasMoreOlder$.pipe(take(1)).subscribe((hasMore) => {
+      if (!hasMore) {
+        return;
+      }
+
+      this.chatTimelineFacade.oldestMessageId$.pipe(take(1)).subscribe((oldestId) => {
+        if (!oldestId) {
+          return;
+        }
+
+        this.selectedChatId$.pipe(take(1)).subscribe((chatId) => {
+          if (!chatId) {
+            return;
+          }
+
+          this.loadingOlderInFlight = true;
+          this.pendingScrollAnchor = { prevHeight: el.scrollHeight, prevTop: el.scrollTop };
+          this.chatTimelineFacade.restoreRequested(true);
+          this.socketsFacade.forwardRestoreChat(chatId, agentId, oldestId);
+
+          setTimeout(() => {
+            this.loadingOlderInFlight = false;
+
+            if (this.pendingScrollAnchor && this.chatMessagesContainer?.nativeElement) {
+              const node = this.chatMessagesContainer.nativeElement;
+              const delta = node.scrollHeight - this.pendingScrollAnchor.prevHeight;
+
+              node.scrollTop = this.pendingScrollAnchor.prevTop + delta;
+              this.pendingScrollAnchor = null;
+            }
+          }, 300);
+        });
+      });
+    });
+  }
+
   /**
    * Ensure socket is connected, then set the client
    * @param clientId - The client UUID
@@ -5799,6 +5891,14 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
    * @param agentId - The agent UUID
    */
   private disconnectAndReconnectForAgent(clientId: string, agentId: string): void {
+    // Clear prior thread and show loading until login auto-restore (or empty) arrives.
+    this.chatTimelineFacade.clear();
+    this.chatTimelineFacade.restoreRequested(false);
+    this.stickToBottom.set(true);
+    this.previousMessageCount = 0;
+    this.previousDisplayThreadLength = 0;
+    this.lastUserMessageTimestamp.set(null);
+
     // Check current connection state and handle disconnect/reconnect
     this.socketConnected$
       .pipe(

@@ -26,7 +26,7 @@ channels:
     messages:
       loginSuccessEvent:
         $ref: '#/components/messages/LoginSuccess'
-    description: Server acknowledges successful login. After this event, chat history is automatically restored via chatMessage events.
+    description: Server acknowledges successful login. After this event, chat history is automatically restored via a single chatMessageBatch (latest page, replace=true).
   agents/loginError:
     address: agents/loginError
     messages:
@@ -53,13 +53,25 @@ channels:
         $ref: '#/components/messages/RestoreChat'
     description: >
       Client requests restoration of a specific chat session's history (requires prior login).
-      The client clears its local thread; the server re-emits recent chatMessage / messageFilterResult / chatEvent events for that chatId.
+      Payload may include optional `beforeMessageId` (older page) and `limit` (default 20, max 50).
+      The server emits one `chatMessageBatch`, then `restoreChatSuccess` with pagination metadata.
   agents/restoreChatSuccess:
     address: agents/restoreChatSuccess
     messages:
       restoreChatSuccessEvent:
         $ref: '#/components/messages/RestoreChatSuccess'
-    description: Server acknowledges successful chat history restoration for the requested chatId.
+    description: >
+      Server acknowledges successful chat history restoration for the requested chatId.
+      Includes hasMoreOlder, oldestMessageId, and messageCount for client pagination.
+  agents/chatMessageBatch:
+    address: agents/chatMessageBatch
+    messages:
+      chatMessageBatchEvent:
+        $ref: '#/components/messages/ChatMessageBatch'
+    description: >
+      Batched restore payload (unicast to the requesting socket). Replaces per-message chatMessage /
+      messageFilterResult / chatEvent replay during restore. `replace` is true for the latest page
+      (beforeMessageId omitted) and false when loading older pages.
   agents/enhanceChat:
     address: agents/enhanceChat
     messages:
@@ -96,8 +108,8 @@ channels:
     description: |
       Emits standardized chat line envelopes (`success` + `data` + `timestamp`). Normally broadcast to all clients
       authenticated to the same agent; for a `chat` request with `ephemeral: true`, user/agent lines for that turn are
-      unicast to the requesting socket only. After successful login, chat history is replayed as `chatMessage` events in
-      chronological order to the authenticating client only.
+      unicast to the requesting socket only. Live messages include optional `data.id` (persisted agent_messages UUID)
+      when available. Chat history restore uses `chatMessageBatch` instead of replaying individual `chatMessage` events.
   agents/chatEvent:
     address: agents/chatEvent
     messages:
@@ -192,7 +204,7 @@ channels:
     messages:
       containerStatsEvent:
         $ref: '#/components/messages/ContainerStats'
-    description: Server broadcasts container status (running/stopped) and, when running, container statistics (CPU, memory, network, etc.) periodically to all clients authenticated to the agent. First broadcast is sent immediately after successful login, then every 15 seconds by default (CONTAINER_STATS_SCHEDULER_INTERVAL in milliseconds on the agent-manager) while clients remain authenticated. When the container is stopped, stats is null but status is always present.
+    description: Server broadcasts container status (running/stopped) and, when running, container statistics (CPU, memory, network, etc.) to all clients authenticated to the agent. On login/environment selection a status snapshot is sent immediately (in parallel with chat restore) so console actions can appear ASAP; full stats follow when the container is running. Periodic broadcasts continue every 15 seconds by default (CONTAINER_STATS_SCHEDULER_INTERVAL in milliseconds on the agent-manager) while clients remain authenticated. When the container is stopped, stats is null but status is always present. Payload includes agentId for client attribution.
   agents/gitStateChanged:
     address: agents/gitStateChanged
     messages:
@@ -254,6 +266,12 @@ operations:
       $ref: '#/channels/agents~1restoreChatSuccess'
     messages:
       - $ref: '#/channels/agents~1restoreChatSuccess/messages/restoreChatSuccessEvent'
+  serverEmitsChatMessageBatch:
+    action: receive
+    channel:
+      $ref: '#/channels/agents~1chatMessageBatch'
+    messages:
+      - $ref: '#/channels/agents~1chatMessageBatch/messages/chatMessageBatchEvent'
   clientSendsEnhanceChat:
     action: send
     channel:
@@ -548,7 +566,20 @@ components:
         properties:
           chatId:
             type: string
+            format: uuid
             description: Chat session id whose history should be re-emitted to the requesting socket
+          beforeMessageId:
+            type: string
+            format: uuid
+            description: >
+              Optional cursor. When set, returns up to `limit` messages older than this message
+              (same agent + chat); batch uses replace=false. When omitted, returns the latest page with replace=true.
+          limit:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+            description: Page size (clamped to 1–50; default 20)
     RestoreChatSuccess:
       name: RestoreChatSuccess
       title: Restore chat success event
@@ -562,7 +593,8 @@ components:
             enum: [true]
           data:
             type: object
-            required: [chatId, message]
+            required:
+              [chatId, message, hasMoreOlder, oldestMessageId, messageCount]
             properties:
               chatId:
                 type: string
@@ -570,6 +602,71 @@ components:
               message:
                 type: string
                 description: Human-readable confirmation
+              hasMoreOlder:
+                type: boolean
+                description: True when older messages exist beyond this batch
+              oldestMessageId:
+                type: string
+                nullable: true
+                description: Id of the oldest message in the batch; null when empty
+              messageCount:
+                type: integer
+                description: Number of messages included in the batch
+          timestamp:
+            type: string
+            description: ISO timestamp
+    ChatMessageBatch:
+      name: ChatMessageBatch
+      title: Batched chat restore event
+      contentType: application/json
+      payload:
+        type: object
+        required: [success, data, timestamp]
+        properties:
+          success:
+            type: boolean
+            enum: [true]
+          data:
+            type: object
+            required:
+              [
+                chatId,
+                messages,
+                filterResults,
+                events,
+                hasMoreOlder,
+                replace,
+                oldestMessageId,
+              ]
+            properties:
+              chatId:
+                type: string
+                description: Chat session id for this batch
+              messages:
+                type: array
+                description: Chronological chat lines (same shape as ChatMessage data, including id)
+                items:
+                  type: object
+              filterResults:
+                type: array
+                description: Filter outcomes for filtered messages in this window
+                items:
+                  type: object
+              events:
+                type: array
+                description: >
+                  Structured events (toolCall/toolResult/question/thinking/status) whose timestamps
+                  fall within [firstMessage.createdAt, lastMessage.createdAt]
+                items:
+                  type: object
+              hasMoreOlder:
+                type: boolean
+              replace:
+                type: boolean
+                description: True for latest-page restore; false when paginating older history
+              oldestMessageId:
+                type: string
+                nullable: true
           timestamp:
             type: string
             description: ISO timestamp
@@ -767,6 +864,10 @@ components:
                   text:
                     type: string
                     description: Message text
+                  id:
+                    type: string
+                    format: uuid
+                    description: Persisted agent_messages id when available
                   timestamp:
                     type: string
                     description: ISO timestamp
@@ -817,6 +918,10 @@ components:
                           is created with type: "error", is_error: true, result: "MESSAGE_DROPPED", and message containing the filter reason.
                       - type: string
                         description: Cleaned string response if JSON parsing fails (text before first { and after last } is removed)
+                  id:
+                    type: string
+                    format: uuid
+                    description: Persisted agent_messages id when available
                   timestamp:
                     type: string
                     description: ISO timestamp
@@ -1211,8 +1316,12 @@ components:
             enum: [true]
           data:
             type: object
-            required: [status, timestamp]
+            required: [status, timestamp, agentId]
             properties:
+              agentId:
+                type: string
+                format: uuid
+                description: Agent these container stats belong to
               status:
                 type: object
                 required: [running]

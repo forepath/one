@@ -30,7 +30,8 @@ function getStatsKey(clientId: string, agentId: string): string {
 
 export const initialStatsState: StatsState = {
   statsByContainer: {},
-  maxEntriesPerContainer: 1000, // Keep last 1000 entries per container
+  // Current + previous is enough for CPU delta; no long history is consumed by the UI.
+  maxEntriesPerContainer: 2,
   runningOverrides: {},
 };
 

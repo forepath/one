@@ -174,9 +174,11 @@ This document provides a detailed breakdown of all system components, their resp
 - **State Slices**:
   - `clients` - Client state management
   - `agents` - Agent state management
-  - `sockets` - WebSocket `clients` namespace state
+  - `containerSocket` - WebSocket `clients` namespace connection/context state
+  - `chatTimeline` - Chat messages, events, filters, and pagination
+  - `terminals` - Terminal session registry and output ring
   - `ticketsBoardSocket` - WebSocket `tickets` namespace state
-  - `files` - File system state
+  - `files` - File system state (including latest conflict notification)
   - `env` - Environment variables
   - `vcs` - Version control state
   - `authentication` - Authentication state (identity bundle)
@@ -189,7 +191,9 @@ This document provides a detailed breakdown of all system components, their resp
 - **Facades**:
   - `ClientsFacade` - Client operations
   - `AgentsFacade` - Agent operations
-  - `SocketsFacade` - WebSocket operations
+  - `ContainerSocketFacade` - WebSocket connection and emit helpers
+  - `ChatTimelineFacade` - Chat timeline state
+  - `TerminalsFacade` - Terminal output state
   - `TicketsBoardSocketFacade` - Tickets namespace
   - `FilesFacade` - File operations
   - `EnvFacade` - Environment variables

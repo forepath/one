@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-29T21:46:45.181Z",
+  "generatedAt": "2026-09-30T13:54:46.649Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -3909,6 +3909,24 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/chat-timeline",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/chat-timeline",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console",
+        "sliceName": "chat-timeline",
+        "memberFiles": [
+          "chat-timeline.actions.ts",
+          "chat-timeline.effects.ts",
+          "chat-timeline.facade.ts",
+          "chat-timeline.reducer.ts",
+          "chat-timeline.selectors.ts",
+          "chat-timeline.types.ts"
+        ]
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/client-agent-autonomy",
       "type": "state",
       "attrs": {
@@ -3941,6 +3959,25 @@
           "clients.reducer.ts",
           "clients.selectors.ts",
           "clients.types.ts"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/container-socket",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/container-socket",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console",
+        "sliceName": "container-socket",
+        "memberFiles": [
+          "client-chat-automation.constants.ts",
+          "container-socket.actions.ts",
+          "container-socket.effects.ts",
+          "container-socket.facade.ts",
+          "container-socket.reducer.ts",
+          "container-socket.selectors.ts",
+          "container-socket.types.ts"
         ]
       }
     },
@@ -4092,25 +4129,6 @@
       }
     },
     {
-      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/sockets",
-      "type": "state",
-      "attrs": {
-        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/sockets",
-        "languageOrKind": "ts",
-        "projectName": "agenstra-frontend-data-access-agent-console",
-        "sliceName": "sockets",
-        "memberFiles": [
-          "client-chat-automation.constants.ts",
-          "sockets.actions.ts",
-          "sockets.effects.ts",
-          "sockets.facade.ts",
-          "sockets.reducer.ts",
-          "sockets.selectors.ts",
-          "sockets.types.ts"
-        ]
-      }
-    },
-    {
       "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/statistics",
       "type": "state",
       "attrs": {
@@ -4142,7 +4160,24 @@
           "stats.facade.ts",
           "stats.reducer.ts",
           "stats.selectors.ts",
-          "stats.types.ts"
+          "stats.types.ts",
+          "stats.utils.ts"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/terminals",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/terminals",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console",
+        "sliceName": "terminals",
+        "memberFiles": [
+          "terminals.actions.ts",
+          "terminals.facade.ts",
+          "terminals.reducer.ts",
+          "terminals.selectors.ts"
         ]
       }
     },
@@ -14371,7 +14406,7 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "clients/forward",
-        "summary": "Forward an arbitrary event to the selected client's agents namespace. When `agentId` is provided,\nthe gateway automatically logs in the agent using stored credentials before forwarding the event.\nTo restore chat history for an agent, forward a \"login\" event with `agentId` (the payload is\nautomatically overridden with credentials from the database, triggering login and subsequent\nchat history restoration). Supported events include \"chat\", \"enhanceChat\" (prompt improvement;\npayload `{ message, correlationId, model? }`; response `chatEnhanceResult` unicast from\nagent-manager, proxied to this socket only), \"generateTicketBody\" (ticket body from title;\npayload `{ title, correlationId, model? }`; response `ticketBodyResult` unicast, same envelope\nshape as `chatEnhanceResult`), \"fileUpdate\", \"logout\", \"createTerminal\", \"terminalInput\", \"terminalResize\",\n\"closeTerminal\", etc. The remote agent-manager gateway will process the event and may emit\nresponse events (e.g., \"chatMessage\", \"chatEnhanceResult\", \"ticketBodyResult\",\n\"fileUpdateNotification\", \"workspaceIndexChanged\", \"workspaceIndexRebuildRequired\",\n\"terminalCreated\", \"terminalOutput\", \"terminalClosed\", \"containerStats\")\nwhich are automatically forwarded back to the client. The \"containerStats\" event payload\n(defined in the agent-manager AsyncAPI) includes container status (running/stopped) and, when\nrunning, container statistics. For autonomous ticket runs, proxied `chat` may include\n`responseMode: \"single\" | \"stream\" | \"sync\"`, `ephemeral: true`, `continue`, and `resumeSessionSuffix`;\nthe controller also uses isolated suffixes (e.g. `-ticket-auto-loop`, `-ticket-auto-commit-msg`) for\nimplementation turns vs. post-verify conventional-commit subject generation; statistics on the controller\nside record the latter under interaction kind `autonomous_ticket_commit_message`.\nAfter a successful run, the controller also completes the workflow over HTTP by proxying agent-manager VCS\n`commit` and `push` (see controller OpenAPI under `/clients/{clientId}/agents/{agentId}/vcs/...`).\nagent-manager passes these to `sendMessage` and skips `agent_messages` persistence when `ephemeral` is true.\nWhen `ephemeral` is true, chatMessage / chatEvent traffic for that turn is emitted only to the requesting\nsocket (not broadcast to other viewers on the same agent).\nAfter a successful **login** (explicit `forward` with `event: \"login\"` or first-time auto-login before another event),\nthe controller may emit **ticketAutomationRunChatUpsert** (unicast) to hydrate ticket automation runs for that\n`clientId` + `agentId` into the chat timeline (see `clients/ticketAutomationRunChatUpsert`). Live run updates use\nthe same event broadcast to room `client:{clientId}` on the **clients** namespace.\nWhen a ticket row is created or updated (REST or internal), the controller also emits **ticketChatTicketUpsert**\nto room `client:{clientId}` on **clients** (same body as `tickets/ticketUpsert`).\nWorkspace index events (`workspaceIndexChanged` / `workspaceIndexRebuildRequired`) are also consumed locally\nby the controller to hydrate OpenSearch (`agenstra-workspace-files`) before being forwarded to the FE.\n",
+        "summary": "Forward an arbitrary event to the selected client's agents namespace. When `agentId` is provided,\nthe gateway automatically logs in the agent using stored credentials before forwarding the event.\nTo restore chat history for an agent, forward a \"login\" event with `agentId` (the payload is\nautomatically overridden with credentials from the database, triggering login and subsequent\nchat history restoration). Supported events include \"chat\", \"enhanceChat\" (prompt improvement;\npayload `{ message, correlationId, model? }`; response `chatEnhanceResult` unicast from\nagent-manager, proxied to this socket only), \"generateTicketBody\" (ticket body from title;\npayload `{ title, correlationId, model? }`; response `ticketBodyResult` unicast, same envelope\nshape as `chatEnhanceResult`), \"fileUpdate\", \"logout\", \"createTerminal\", \"terminalInput\", \"terminalResize\",\n\"closeTerminal\", etc. The remote agent-manager gateway will process the event and may emit\nresponse events (e.g., \"chatMessage\", \"chatMessageBatch\", \"chatEnhanceResult\", \"ticketBodyResult\",\n\"fileUpdateNotification\", \"workspaceIndexChanged\", \"workspaceIndexRebuildRequired\",\n\"terminalCreated\", \"terminalOutput\", \"terminalClosed\", \"containerStats\")\nwhich are automatically forwarded back to the client. The \"containerStats\" event payload\n(defined in the agent-manager AsyncAPI) includes container status (running/stopped) and, when\nrunning, container statistics. For autonomous ticket runs, proxied `chat` may include\n`responseMode: \"single\" | \"stream\" | \"sync\"`, `ephemeral: true`, `continue`, and `resumeSessionSuffix`;\nthe controller also uses isolated suffixes (e.g. `-ticket-auto-loop`, `-ticket-auto-commit-msg`) for\nimplementation turns vs. post-verify conventional-commit subject generation; statistics on the controller\nside record the latter under interaction kind `autonomous_ticket_commit_message`.\nAfter a successful run, the controller also completes the workflow over HTTP by proxying agent-manager VCS\n`commit` and `push` (see controller OpenAPI under `/clients/{clientId}/agents/{agentId}/vcs/...`).\nagent-manager passes these to `sendMessage` and skips `agent_messages` persistence when `ephemeral` is true.\nWhen `ephemeral` is true, chatMessage / chatEvent traffic for that turn is emitted only to the requesting\nsocket (not broadcast to other viewers on the same agent).\nAfter a successful **login** (explicit `forward` with `event: \"login\"` or first-time auto-login before another event),\nthe controller may emit **ticketAutomationRunChatUpsert** (unicast) to hydrate ticket automation runs for that\n`clientId` + `agentId` into the chat timeline (see `clients/ticketAutomationRunChatUpsert`). Live run updates use\nthe same event broadcast to room `client:{clientId}` on the **clients** namespace.\nLogin auto-restore from agent-manager emits a single **chatMessageBatch** (latest page) rather than individual\nchatMessage / messageFilterResult / chatEvent frames; clients should forward that event to the FE. Explicit\n`restoreChat` forwards also yield chatMessageBatch then restoreChatSuccess (with hasMoreOlder / oldestMessageId).\nWhen a ticket row is created or updated (REST or internal), the controller also emits **ticketChatTicketUpsert**\nto room `client:{clientId}` on **clients** (same body as `tickets/ticketUpsert`).\nWorkspace index events (`workspaceIndexChanged` / `workspaceIndexRebuildRequired`) are also consumed locally\nby the controller to hydrate OpenSearch (`agenstra-workspace-files`) before being forwarded to the FE.\n",
         "specKind": "asyncapi"
       }
     },
@@ -21177,7 +21212,7 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "agents/loginSuccess",
-        "summary": "Server acknowledges successful login. After this event, chat history is automatically restored via chatMessage events.",
+        "summary": "Server acknowledges successful login. After this event, chat history is automatically restored via a single chatMessageBatch (latest page, replace=true).",
         "specKind": "asyncapi"
       }
     },
@@ -21204,7 +21239,7 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "agents/restoreChat",
-        "summary": "Client requests restoration of a specific chat session's history (requires prior login). The client clears its local thread; the server re-emits recent chatMessage / messageFilterResult / chatEvent events for that chatId.\n",
+        "summary": "Client requests restoration of a specific chat session's history (requires prior login). Payload may include optional `beforeMessageId` (older page) and `limit` (default 20, max 50). The server emits one `chatMessageBatch`, then `restoreChatSuccess` with pagination metadata.\n",
         "specKind": "asyncapi"
       }
     },
@@ -21213,7 +21248,16 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "agents/restoreChatSuccess",
-        "summary": "Server acknowledges successful chat history restoration for the requested chatId.",
+        "summary": "Server acknowledges successful chat history restoration for the requested chatId. Includes hasMoreOlder, oldestMessageId, and messageCount for client pagination.\n",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:agents/chatMessageBatch",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "agents/chatMessageBatch",
+        "summary": "Batched restore payload (unicast to the requesting socket). Replaces per-message chatMessage / messageFilterResult / chatEvent replay during restore. `replace` is true for the latest page (beforeMessageId omitted) and false when loading older pages.\n",
         "specKind": "asyncapi"
       }
     },
@@ -21258,7 +21302,7 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "agents/chatMessage",
-        "summary": "Emits standardized chat line envelopes (`success` + `data` + `timestamp`). Normally broadcast to all clients\nauthenticated to the same agent; for a `chat` request with `ephemeral: true`, user/agent lines for that turn are\nunicast to the requesting socket only. After successful login, chat history is replayed as `chatMessage` events in\nchronological order to the authenticating client only.\n",
+        "summary": "Emits standardized chat line envelopes (`success` + `data` + `timestamp`). Normally broadcast to all clients\nauthenticated to the same agent; for a `chat` request with `ephemeral: true`, user/agent lines for that turn are\nunicast to the requesting socket only. Live messages include optional `data.id` (persisted agent_messages UUID)\nwhen available. Chat history restore uses `chatMessageBatch` instead of replaying individual `chatMessage` events.\n",
         "specKind": "asyncapi"
       }
     },
@@ -21393,7 +21437,7 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "agents/containerStats",
-        "summary": "Server broadcasts container status (running/stopped) and, when running, container statistics (CPU, memory, network, etc.) periodically to all clients authenticated to the agent. First broadcast is sent immediately after successful login, then every 15 seconds by default (CONTAINER_STATS_SCHEDULER_INTERVAL in milliseconds on the agent-manager) while clients remain authenticated. When the container is stopped, stats is null but status is always present.",
+        "summary": "Server broadcasts container status (running/stopped) and, when running, container statistics (CPU, memory, network, etc.) to all clients authenticated to the agent. On login/environment selection a status snapshot is sent immediately (in parallel with chat restore) so console actions can appear ASAP; full stats follow when the container is running. Periodic broadcasts continue every 15 seconds by default (CONTAINER_STATS_SCHEDULER_INTERVAL in milliseconds on the agent-manager) while clients remain authenticated. When the container is stopped, stats is null but status is always present. Payload includes agentId for client attribution.",
         "specKind": "asyncapi"
       }
     },
@@ -35907,12 +35951,22 @@
     },
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/chat-timeline",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/client-agent-autonomy",
       "type": "contains"
     },
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/clients",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/container-socket",
       "type": "contains"
     },
     {
@@ -35957,17 +36011,17 @@
     },
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
-      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/sockets",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/statistics",
       "type": "contains"
     },
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/stats",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/terminals",
       "type": "contains"
     },
     {
@@ -44328,6 +44382,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
       "to": "api:channel:agents/restoreChatSuccess",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
+      "to": "api:channel:agents/chatMessageBatch",
       "type": "contains"
     },
     {
@@ -59418,6 +59477,16 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "api:channel:agents/restoreChatSuccess",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "api:channel:agents/chatMessageBatch",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:channel:agents/chatMessageBatch",
       "type": "implements"
     },
     {

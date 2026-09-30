@@ -27,6 +27,8 @@ import {
   writeFile,
   writeFileFailure,
   writeFileSuccess,
+  clearFileUpdateNotification,
+  fileUpdateNotificationReceived,
 } from './files.actions';
 import type { FileContentDto, FileManagerContext, FileNodeDto } from './files.types';
 
@@ -51,6 +53,8 @@ export interface FilesState {
   errors: Record<string, string | null>;
   // Open tabs keyed by clientId:agentId
   openTabs: Record<string, OpenTab[]>;
+  /** Latest remote conflict notification only (no history). */
+  lastFileUpdateNotification: import('../container-socket/container-socket.types').FileUpdateNotificationData | null;
 }
 
 export const initialFilesState: FilesState = {
@@ -64,6 +68,7 @@ export const initialFilesState: FilesState = {
   moving: {},
   errors: {},
   openTabs: {},
+  lastFileUpdateNotification: null,
 };
 
 function resolveFileContext(context?: FileManagerContext): FileManagerContext {
@@ -486,4 +491,12 @@ export const filesReducer = createReducer(
       openTabs,
     };
   }),
+  on(fileUpdateNotificationReceived, (state, { notification }) => ({
+    ...state,
+    lastFileUpdateNotification: notification,
+  })),
+  on(clearFileUpdateNotification, (state) => ({
+    ...state,
+    lastFileUpdateNotification: null,
+  })),
 );
