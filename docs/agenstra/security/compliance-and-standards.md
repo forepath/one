@@ -53,7 +53,7 @@ Understanding where data and credentials move supports both CRA-style technical 
 1. **Browser / Electron** to **Express frontend** to **backend APIs** (`/api`).
 2. **Browser** to **Agent Controller WebSocket** to **remote agent-manager WebSocket** (`/agents`) using **client-stored** credentials toward the remote host (not the end-user's controller JWT merged into HTTP proxy headers for those paths).
 3. **Controller** to **customer `client.endpoint`** (SSRF and misconfiguration risk; mitigated by allowlists, TLS policy, DNS checks).
-4. **Agent Manager** to **Docker / containers** (execution and file operations; non-root `agenstra` user, bind mounts under `/opt/agents`, restricted `sudo`).
+4. **Agent Manager** to **Docker / containers** (execution and file operations; non-root `agenstra` user, bind mounts under `/opt/agents`, root entrypoint privilege drop without `sudo`).
 
 Detail: **[Container image security](./container-images.md)**, **[Operational hardening](./operational-hardening.md)**.
 
@@ -61,7 +61,7 @@ Detail: **[Container image security](./container-images.md)**, **[Operational ha
 
 - **[Accepted risks](./accepted-risks.md)** Documented residual risks and mitigations
 - **[Operational hardening](./operational-hardening.md)** Implemented controls and operator notes
-- **[Container image security](./container-images.md)** Non-root users, bind mounts, and sudo policy
+- **[Container image security](./container-images.md)** Non-root users, bind mounts, and privilege-drop policy
 - **[Vulnerability reporting and artifacts](./vulnerability-reporting-and-artifacts.md)** Disclosure process and SBOM paths
 - **[Environment configuration](../deployment/environment-configuration.md)** Security-related environment variables
 

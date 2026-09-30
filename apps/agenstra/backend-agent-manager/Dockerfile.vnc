@@ -3,13 +3,15 @@
 # Project:    backend-agent-manager — Nx target `vnc-container-image`
 # Registry:   ghcr.io/forepath/agenstra-manager-vnc
 # Base:       debian:trixie (desktop stack)
-# User:       agenstra (APP_UID / APP_GID, default 10001); sudo: chown only (context bind mount)
+# User:       agenstra (APP_UID / APP_GID, default 10001); entrypoint starts as root,
+#             chowns environment bind mount, then drops via setpriv (no sudo)
 # Exposes:    6080 (noVNC / websockify; TigerVNC on display :1 internally)
 # Build:      npx nx run backend-agent-manager:vnc-container-image
 # Run:        nx docker:run agenstra-backend-agent-manager -p 6080:6080
 # Notes:      Required runtime env: VNC_PASSWORD
 #              Optional: VNC_DISPLAY, VNC_RESOLUTION, VNC_DEPTH
 #              Agent workspace mount path: /home/agenstra/environment
+#              Home: /home/agenstra (credentials / desktop config; not the git workspace)
 # -----------------------------------------------------------------------------
 #
 FROM docker.io/debian:trixie
@@ -18,6 +20,7 @@ ARG APP_UID=10001
 ARG APP_GID=10001
 ARG VERSION=0.0.0
 ENV VERSION=${VERSION}
+ENV HOME=/home/agenstra
 
 WORKDIR /home/agenstra/environment
 
@@ -27,7 +30,7 @@ RUN apt-get update && \
     curl \
     bash \
     ca-certificates \
-    sudo \
+    util-linux \
     tigervnc-standalone-server \
     tigervnc-common \
     tigervnc-tools \
@@ -49,8 +52,6 @@ RUN apt-get update && \
     git && \
     groupadd --gid "${APP_GID}" agenstra && \
     useradd --uid "${APP_UID}" --gid "${APP_GID}" --create-home --home-dir /home/agenstra --shell /bin/bash agenstra && \
-    echo 'agenstra ALL=(ALL) NOPASSWD: /usr/bin/chown' > /etc/sudoers.d/agenstra && \
-    chmod 0440 /etc/sudoers.d/agenstra && \
     mkdir -p /home/agenstra/environment && \
     chown -R agenstra:agenstra /home/agenstra && \
     apt-get clean && \
@@ -118,7 +119,7 @@ RUN mkdir -p /home/agenstra/.novnc/ssl && \
 RUN printf '%s\n' \
     '#!/bin/bash' \
     'set -euo pipefail' \
-    'sudo chown -R agenstra:agenstra /home/agenstra/environment 2>/dev/null || true' \
+    'export HOME=/home/agenstra' \
     'export VNC_DISPLAY="${VNC_DISPLAY:-:1}"' \
     'export VNC_SETUP_DISPLAY="${VNC_SETUP_DISPLAY:-:99}"' \
     'export VNC_RESOLUTION="${VNC_RESOLUTION:-1920x1080}"' \
@@ -147,12 +148,21 @@ RUN printf '%s\n' \
     'vncserver "${VNC_DISPLAY}" -geometry "${VNC_RESOLUTION}" -depth "${VNC_DEPTH}" -localhost no -SecurityTypes VncAuth' \
     'websockify -D --web /usr/share/novnc/ --cert "$HOME/.novnc/ssl/novnc.crt" --key "$HOME/.novnc/ssl/novnc.key" 6080 localhost:5901' \
     'exec tail -f /dev/null' \
+    > /usr/local/bin/vnc-start.sh && \
+    chmod 755 /usr/local/bin/vnc-start.sh && \
+    chown agenstra:agenstra /usr/local/bin/vnc-start.sh
+
+RUN printf '%s\n' \
+    '#!/bin/bash' \
+    'set -euo pipefail' \
+    'chown -R agenstra:agenstra /home/agenstra/environment 2>/dev/null || true' \
+    'exec setpriv --reuid=agenstra --regid=agenstra --init-groups -- /usr/local/bin/vnc-start.sh' \
     > /usr/local/bin/docker-entrypoint.sh && \
-    chmod 755 /usr/local/bin/docker-entrypoint.sh && \
-    chown agenstra:agenstra /usr/local/bin/docker-entrypoint.sh
+    chmod 755 /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 6080
 
-USER ${APP_UID}:${APP_GID}
+# Entrypoint runs as root for bind-mount chown, then drops to agenstra via setpriv.
+USER root
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

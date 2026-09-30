@@ -44,6 +44,8 @@ export class AgentsService implements OnApplicationBootstrap {
   private static readonly WORKSPACE_CONTEXT_CONTAINER_PATH = '/opt/workspace';
   private static readonly CONTAINER_RUNTIME_USER = 'agenstra';
   private static readonly CONTAINER_RUNTIME_GROUP = 'agenstra';
+  /** Docker exec User for privileged mkdir/chown (worker images have no sudo). */
+  private static readonly ROOT_EXEC_USER = '0';
 
   constructor(
     private readonly agentsRepository: AgentsRepository,
@@ -104,7 +106,7 @@ export class AgentsService implements OnApplicationBootstrap {
 
   /**
    * Ensure the provider agent config directory exists inside the container when the provider defines one.
-   * Uses `mkdir -p` so nested paths (e.g. ~/.config/opencode) are created idempotently.
+   * Uses Docker exec as UID 0 for mkdir/chown (worker images have no sudo).
    */
   private async ensureProviderConfigBaseDirectoryExists(containerId: string, agentType: string): Promise<void> {
     const provider = this.agentProviderFactory.getProvider(agentType);
@@ -124,12 +126,12 @@ export class AgentsService implements OnApplicationBootstrap {
     );
     const escaped = this.escapeForShell(expanded);
 
-    await this.dockerService.sendCommandToContainer(containerId, `sh -c "mkdir -p -- ${escaped}"`, undefined, true);
     await this.dockerService.sendCommandToContainer(
       containerId,
-      `sh -c "sudo chown -R ${AgentsService.CONTAINER_RUNTIME_USER}:${AgentsService.CONTAINER_RUNTIME_GROUP} -- ${escaped}"`,
+      `sh -c "mkdir -p -- ${escaped} && chown -R ${AgentsService.CONTAINER_RUNTIME_USER}:${AgentsService.CONTAINER_RUNTIME_GROUP} -- ${escaped}"`,
       undefined,
       true,
+      { user: AgentsService.ROOT_EXEC_USER },
     );
   }
 

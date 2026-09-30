@@ -76,7 +76,7 @@ Public security and compliance-oriented documentation:
 
 - [Compliance and standards](./security/compliance-and-standards.md) EU CRA and BSI IT-Grundschutz documentation themes (informative)
 - [Accepted risks](./security/accepted-risks.md) Register AR-001 through AR-005 with mitigations and review dates
-- [Container image security](./security/container-images.md) Non-root users, bind mounts, restricted sudo
+- [Container image security](./security/container-images.md) Non-root users, bind mounts, root entrypoint privilege drop (no sudo)
 - [Operational hardening](./security/operational-hardening.md) Implemented controls (including container image hardening) and operator notes
 - [Vulnerability reporting and artifacts](./security/vulnerability-reporting-and-artifacts.md) Disclosure process (no bug bounty), SBOM paths, desktop integrity
 

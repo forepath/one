@@ -304,7 +304,7 @@ Treat socket access as **high privilege** on the host. The API image runs as **`
 
 | Image                            | User               | Registry (default)                         | Notes                                                                                 |
 | -------------------------------- | ------------------ | ------------------------------------------ | ------------------------------------------------------------------------------------- |
-| **API** (`Dockerfile.api`)       | `agenstra` (10001) | `ghcr.io/forepath/agenstra-manager-api`    | HTTP + WebSocket; Docker CLI + socket mount; restricted `sudo` for GID sync           |
+| **API** (`Dockerfile.api`)       | `agenstra` (10001) | `ghcr.io/forepath/agenstra-manager-api`    | HTTP + WebSocket; Docker CLI + socket mount; root entrypoint GID sync then `setpriv` |
 | **Worker** (`Dockerfile.worker`) | `agenstra`         | `ghcr.io/forepath/agenstra-manager-worker` | OpenCode workloads; workspace at `/app`; credentials in `/home/agenstra`              |
 | **VNC** (`Dockerfile.vnc`)       | `agenstra`         | `ghcr.io/forepath/agenstra-manager-vnc`    | Desktop browser; shared repo at `/home/agenstra/environment`; `VNC_PASSWORD` required |
 | **SSH** (`Dockerfile.ssh`)       | `agenstra`         | `ghcr.io/forepath/agenstra-manager-ssh`    | Optional shell; `SSH_PASSWORD` required; workspace at provider `basePath`             |

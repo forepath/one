@@ -20,7 +20,7 @@ Register **AR-001** through **AR-005**: native desktop signing and update postur
 
 ### [Container image security](./container-images.md)
 
-Runtime users (`agenstra` / `node`), agent bind mounts under `/opt/agents`, entrypoint layout, and **restricted passwordless `sudo`** (no membership in the `sudo` group).
+Runtime users (`agenstra` / `node`), agent bind mounts under `/opt/agents`, workspace vs `$HOME`, and **root entrypoint + `setpriv` privilege drop** (no in-container `sudo`).
 
 ### [Operational hardening](./operational-hardening.md)
 

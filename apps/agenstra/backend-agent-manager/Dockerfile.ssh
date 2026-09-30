@@ -3,11 +3,13 @@
 # Project:    backend-agent-manager — Nx target `ssh-container-image`
 # Registry:   ghcr.io/forepath/agenstra-manager-ssh
 # Base:       debian:trixie-slim
-# User:       agenstra (APP_UID / APP_GID, default 10001); sudo: chown, chpasswd, sshd
+# User:       agenstra (APP_UID / APP_GID, default 10001); entrypoint starts as root,
+#             chowns /app, sets password, starts sshd, then drops via setpriv (no sudo)
 # Exposes:    22 (SSH)
 # Build:      npx nx run backend-agent-manager:ssh-container-image
 # Run:        —
-# Notes:      Required runtime env: SSH_PASSWORD; sshd started via sudo from entrypoint
+# Notes:      Required runtime env: SSH_PASSWORD
+#             Workspace: /app (bind mount). Home: /home/agenstra (credentials).
 # -----------------------------------------------------------------------------
 #
 FROM docker.io/debian:trixie-slim
@@ -16,6 +18,7 @@ ARG APP_UID=10001
 ARG APP_GID=10001
 ARG VERSION=0.0.0
 ENV VERSION=${VERSION}
+ENV HOME=/home/agenstra
 
 WORKDIR /app
 
@@ -26,13 +29,11 @@ RUN apt-get update && \
     bash \
     ca-certificates \
     openssh-server \
-    sudo \
+    util-linux \
     sshpass && \
     groupadd --gid "${APP_GID}" agenstra && \
     useradd --uid "${APP_UID}" --gid "${APP_GID}" --create-home --home-dir /home/agenstra --shell /bin/bash agenstra && \
     chown agenstra:agenstra /app /home/agenstra && \
-    echo 'agenstra ALL=(ALL) NOPASSWD: /usr/bin/chown, /usr/sbin/chpasswd, /usr/sbin/sshd' > /etc/sudoers.d/agenstra && \
-    chmod 0440 /etc/sudoers.d/agenstra && \
     mkdir -p /var/run/sshd && \
     sed -i -E 's/^#?PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config && \
     sed -i -E 's/^#?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config && \
@@ -42,20 +43,20 @@ RUN apt-get update && \
 RUN printf '%s\n' \
     '#!/bin/bash' \
     'set -euo pipefail' \
-    'sudo chown -R agenstra:agenstra /app 2>/dev/null || true' \
+    'chown -R agenstra:agenstra /app 2>/dev/null || true' \
     'if [ -z "${SSH_PASSWORD:-}" ]; then' \
     '  echo "SSH_PASSWORD is required" >&2' \
     '  exit 1' \
     'fi' \
-    'echo "agenstra:${SSH_PASSWORD}" | sudo chpasswd' \
-    'sudo /usr/sbin/sshd' \
-    'exec tail -f /dev/null' \
+    'echo "agenstra:${SSH_PASSWORD}" | chpasswd' \
+    '/usr/sbin/sshd' \
+    'exec setpriv --reuid=agenstra --regid=agenstra --init-groups -- tail -f /dev/null' \
     > /usr/local/bin/docker-entrypoint.sh && \
-    chmod 755 /usr/local/bin/docker-entrypoint.sh && \
-    chown agenstra:agenstra /usr/local/bin/docker-entrypoint.sh
+    chmod 755 /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 22
 
-USER ${APP_UID}:${APP_GID}
+# Entrypoint runs as root for chown/chpasswd/sshd, then drops to agenstra via setpriv.
+USER root
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

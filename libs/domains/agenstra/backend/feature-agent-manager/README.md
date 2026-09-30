@@ -691,7 +691,9 @@ nx test agenstra-backend-feature-agent-manager --coverage
 - **WebSocket Authentication**: WebSocket authentication validates credentials against the database
 - **Error Messages**: Generic error messages are used to prevent information disclosure
 - **Session Management**: WebSocket sessions are stored in memory and cleaned up on disconnect
-- **Container credentials**: Git HTTPS (`.netrc`) and SSH keys are written under the worker container’s **`$HOME`** (resolved via `DockerService.getContainerHomeDirectory`), not as root. On current worker images that is typically **`/home/agenstra`**. Shell paths are quoted and permissions are set with `chmod` before use.
+- **Container credentials**: Git HTTPS (`.netrc`) and SSH keys are written under the worker container’s **`$HOME`** (resolved via `DockerService.getContainerHomeDirectory`), not as root and **not** under the workspace bind mount (`/app`). On current worker images that is **`/home/agenstra`**. Shell paths are quoted and permissions are set with `chmod` before use.
+- **Workspace vs home**: Provider workspace stays at **`/app`** (may be a git repo). OpenCode CLI and credentials stay under **`$HOME`**. Project-level `.opencode/` under `/app` is intentional agent context in the repo; `$HOME/.opencode` is the CLI install.
+- **No in-container sudo**: Worker/VNC/SSH/API images do not install `sudo`. Entrypoints bootstrap as root then drop via `setpriv`. Provider config directory ownership is fixed with Docker exec as UID 0.
 - **VNC context volume**: Browser workspace context is mounted at **`/home/agenstra/environment`** in the VNC image; deploy manager API and VNC images together when upgrading paths.
 
 ## Environment Variables
