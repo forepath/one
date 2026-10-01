@@ -2175,6 +2175,32 @@ paths:
           description: Pipeline cancelled successfully
         '404':
           description: Agent, deployment configuration, or run not found
+  /agents/{agentId}/vnc/sessions:
+    post:
+      summary: Create a short-lived VNC desktop session ticket
+      description: |
+        Mints a single-use ticket for the raw VNC WebSocket gateway on `WEBSOCKET_PORT` path `/vnc` (default 8080).
+        The ticket is bound to the agent container and expires quickly. The browser must never connect
+        to the worker websockify port directly — only through controller/manager VNC gateways.
+      operationId: createAgentVncSession
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: VNC session ticket created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateVncSessionResponseDto'
+        '404':
+          description: Agent or container not found
+        '503':
+          description: Agent container is not running
   /otel/metrics:
     get:
       summary: Prometheus metrics scrape
@@ -3189,3 +3215,14 @@ components:
           format: uri
         oauthState:
           type: string
+    CreateVncSessionResponseDto:
+      type: object
+      required: [ticket, expiresIn]
+      properties:
+        ticket:
+          type: string
+          description: Single-use opaque ticket for the VNC WebSocket gateway
+        expiresIn:
+          type: integer
+          minimum: 1
+          description: Ticket lifetime in seconds

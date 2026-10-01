@@ -31,6 +31,9 @@ export const environment: Environment = {
   deployment: {
     openInNewWindow: true,
   },
+  vnc: {
+    openInNewWindow: true,
+  },
   cookieConsent: {
     enabled: false,
     domain: '.decabill.com',

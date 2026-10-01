@@ -87,6 +87,9 @@ describe('SocketsEffects', () => {
       deployment: {
         openInNewWindow: true,
       },
+      vnc: {
+        openInNewWindow: true,
+      },
     };
 
     mockKeycloakService = {

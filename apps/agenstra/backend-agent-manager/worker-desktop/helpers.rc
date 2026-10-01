@@ -1,0 +1,7 @@
+#
+# Preferred Applications for the Agenstra worker desktop.
+# WebBrowser uses the container-safe Chromium wrapper; no mail client is installed.
+#
+WebBrowser=chromium-agenstra
+TerminalEmulator=xfce4-terminal
+FileManager=thunar

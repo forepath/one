@@ -92,6 +92,16 @@ Accepted risk: **AR-002** in **[Accepted risks](./accepted-risks.md)**.
 - **`WEBSOCKET_CORS_ORIGIN`**: comma-separated allowed origins for the Socket.IO server.
 - In **production**, if unset, the allowed origin list is **empty** (fail closed). Set explicitly to your frontend origins.
 
+## Agent virtual desktop (VNC)
+
+- Worker image runs TigerVNC (loopback only) + authenticated websockify edge on container port **6080** (not published on the host when `AGENT_DOCKER_NETWORK` is set; same policy as OpenCode :4096). The edge requires HTTP Basic auth using the worker OpenCode credentials (manager-only). Entrypoint **fails closed** if TigerVNC does not bind within timeout.
+- Browser never talks to the worker. Flow: authenticated REST mint (`agents:vnc` + `ensureClientAccess`) → short-lived ticket → raw WebSocket on controller **`WEBSOCKET_PORT`** path **`/vnc`** (default **8081**) → manager **`WEBSOCKET_PORT`** path **`/vnc`** (default **8080**) → authenticated worker edge.
+- Tickets are single-use and bound to client/agent/caller. They travel in **`Sec-WebSocket-Protocol`** (`agenstra.vnc.<ticket>`), not URL query strings. Manager/worker URLs are not returned to the browser.
+- Controller `/vnc` upgrades enforce the same **`WEBSOCKET_CORS_ORIGIN`** allowlist as Socket.IO (production fails closed when unset for browser `Origin`s). Manager `/vnc` applies the same check.
+- Controller tickets are stored in **Redis** (with in-process fallback) so REST mint and WebSocket consume work across controller replicas. Manager tickets are **process-local** — run a **single agent-manager replica** (or sticky sessions) per client endpoint.
+- The agent console connects using `controller.vncWebsocketUrl`, or derives `ws(s)://…/vnc` from `controller.websocketUrl` (same host as Socket.IO).
+- Desktop session starts as non-privileged user **`agenstra`** (no greeter). Worker image is larger due to XFCE + Chromium.
+
 ## Origin allowlist (unsafe HTTP methods)
 
 Browser-originated **state-changing** requests can be restricted by origin allowlist middleware on backends (see `origin-allowlist.middleware.ts` in identity util-auth). Configure per deployment expectations.

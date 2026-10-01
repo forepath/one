@@ -107,6 +107,7 @@ export * from './lib/utils/ticket-automation-chat-run-mapper';
 export * from './lib/services/agents.service';
 export * from './lib/services/clients.service';
 export * from './lib/services/deployments.service';
+export * from './lib/services/vnc-sessions.service';
 export * from './lib/services/env.service';
 export * from './lib/services/chat-sessions.service';
 export * from './lib/services/files.service';

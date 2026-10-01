@@ -201,4 +201,5 @@ export async function bootstrap(): Promise<void> {
   Logger.log(
     `🔌 Socket.IO WebSocket gateway is running on: http://localhost:${process.env.WEBSOCKET_PORT || '8080'}/agents`,
   );
+  Logger.log(`🖥️  VNC WebSocket gateway is running on: ws://localhost:${process.env.WEBSOCKET_PORT || '8080'}/vnc`);
 }

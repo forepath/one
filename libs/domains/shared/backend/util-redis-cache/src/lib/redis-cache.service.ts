@@ -88,22 +88,70 @@ export class RedisCacheService implements OnModuleDestroy {
     }
   }
 
-  async setJson<T>(key: string, value: T, ttlSeconds: number): Promise<void> {
+  async setJson<T>(key: string, value: T, ttlSeconds: number): Promise<boolean> {
     const startedAt = Date.now();
     const client = await this.ensureConnected();
 
     if (!client) {
       this.recordCacheOperation('set', 'disabled', Date.now() - startedAt);
 
-      return;
+      return false;
     }
 
     try {
       await client.set(key, JSON.stringify(value), 'EX', ttlSeconds);
       this.recordCacheOperation('set', 'hit', Date.now() - startedAt);
+
+      return true;
     } catch (error) {
       this.logger.warn(`Redis cache set failed for key ${key}: ${(error as Error).message}`);
       this.recordCacheOperation('set', 'error', Date.now() - startedAt);
+
+      return false;
+    }
+  }
+
+  /**
+   * Atomically read and delete a JSON value (GETDEL when available, else GET+DEL).
+   * Returns null on miss, disabled Redis, or errors (same fail-open posture as {@link getJson}).
+   */
+  async takeJson<T>(key: string): Promise<T | null> {
+    const startedAt = Date.now();
+    const client = await this.ensureConnected();
+
+    if (!client) {
+      this.recordCacheOperation('get', 'disabled', Date.now() - startedAt);
+
+      return null;
+    }
+
+    try {
+      let raw: string | null = null;
+
+      if (typeof (client as Redis & { getdel?: (k: string) => Promise<string | null> }).getdel === 'function') {
+        raw = await (client as Redis & { getdel: (k: string) => Promise<string | null> }).getdel(key);
+      } else {
+        raw = await client.get(key);
+
+        if (raw) {
+          await client.del(key);
+        }
+      }
+
+      if (!raw) {
+        this.recordCacheOperation('get', 'miss', Date.now() - startedAt);
+
+        return null;
+      }
+
+      this.recordCacheOperation('get', 'hit', Date.now() - startedAt);
+
+      return JSON.parse(raw) as T;
+    } catch (error) {
+      this.logger.warn(`Redis cache take failed for key ${key}: ${(error as Error).message}`);
+      this.recordCacheOperation('get', 'error', Date.now() - startedAt);
+
+      return null;
     }
   }
 

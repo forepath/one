@@ -1,0 +1,93 @@
+#!/bin/bash
+set -euo pipefail
+
+unset SESSION_MANAGER
+unset DBUS_SESSION_BUS_ADDRESS
+
+export HOME="${HOME:-/home/agenstra}"
+export USER="${USER:-agenstra}"
+export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-${HOME}/.config}"
+export XDG_CACHE_HOME="${XDG_CACHE_HOME:-${HOME}/.cache}"
+export XDG_DATA_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}"
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp/runtime-agenstra}"
+export XDG_CONFIG_DIRS="${XDG_CONFIG_DIRS:-/etc/xdg}"
+export XDG_DATA_DIRS="${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+
+mkdir -p \
+  "${XDG_RUNTIME_DIR}" \
+  "${XDG_CONFIG_HOME}" \
+  "${XDG_CACHE_HOME}" \
+  "${XDG_DATA_HOME}" \
+  "${XDG_CONFIG_HOME}/xfce4/xfconf/xfce-perchannel-xml" \
+  "${HOME}/Desktop" \
+  "${XDG_CONFIG_HOME}/chromium"
+chmod 700 "${XDG_RUNTIME_DIR}"
+
+# Always seed top-panel-only config before startxfce4 so Panel 2 never starts.
+# Do not call `xfce4-panel -r` afterward — that triggers a "Failed to restart the panel" dialog.
+install -m 644 /etc/agenstra/desktop/xfce4-panel.xml \
+  "${XDG_CONFIG_HOME}/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml"
+install -m 644 /etc/agenstra/desktop/xsettings.xml \
+  "${XDG_CONFIG_HOME}/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml"
+install -m 644 /etc/agenstra/desktop/xfce4-desktop.xml \
+  "${XDG_CONFIG_HOME}/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml"
+
+# Keep the Desktop clean — no launcher icons (apps remain in the applications menu).
+find "${HOME}/Desktop" -mindepth 1 -delete 2>/dev/null || true
+
+# Keep Chromium as the default browser for XDG / exo helpers.
+install -m 644 /etc/agenstra/desktop/mimeapps.list "${XDG_CONFIG_HOME}/mimeapps.list"
+install -d "${XDG_CONFIG_HOME}/xfce4"
+install -m 644 /etc/agenstra/desktop/helpers.rc "${XDG_CONFIG_HOME}/xfce4/helpers.rc"
+export BROWSER=/usr/local/bin/chromium-agenstra
+
+if command -v dbus-launch >/dev/null 2>&1; then
+  eval "$(dbus-launch --sh-syntax)"
+fi
+
+# Apply branded wallpaper and preferred browser after xfconfd is up.
+(
+  for _ in $(seq 1 30); do
+    if xfconf-query -c xfce4-desktop -l >/dev/null 2>&1; then
+      break
+    fi
+    sleep 0.2
+  done
+
+  wallpaper=/usr/share/backgrounds/agenstra/wallpaper.jpg
+  xfconf-query -c xsettings -p /Net/ThemeName -s Adwaita-dark 2>/dev/null || true
+  xfconf-query -c xsettings -p /Net/IconThemeName -s Adwaita 2>/dev/null || true
+  xfconf-query -c xfwm4 -p /general/theme -s Default-hdpi 2>/dev/null || true
+  # Hide default Home / Filesystem desktop icons.
+  xfconf-query -c xfce4-desktop -p /desktop-icons/file-icons/show-home \
+    -n -t bool -s false 2>/dev/null || \
+    xfconf-query -c xfce4-desktop -p /desktop-icons/file-icons/show-home \
+      -s false 2>/dev/null || true
+  xfconf-query -c xfce4-desktop -p /desktop-icons/file-icons/show-filesystem \
+    -n -t bool -s false 2>/dev/null || \
+    xfconf-query -c xfce4-desktop -p /desktop-icons/file-icons/show-filesystem \
+      -s false 2>/dev/null || true
+  for monitor in monitorVNC-0 monitorscreen monitor0; do
+    xfconf-query -c xfce4-desktop -p "/backdrop/screen0/${monitor}/workspace0/last-image" \
+      -n -t string -s "${wallpaper}" 2>/dev/null || \
+      xfconf-query -c xfce4-desktop -p "/backdrop/screen0/${monitor}/workspace0/last-image" \
+        -s "${wallpaper}" 2>/dev/null || true
+    xfconf-query -c xfce4-desktop -p "/backdrop/screen0/${monitor}/workspace0/image-style" \
+      -n -t int -s 5 2>/dev/null || \
+      xfconf-query -c xfce4-desktop -p "/backdrop/screen0/${monitor}/workspace0/image-style" \
+        -s 5 2>/dev/null || true
+  done
+
+  # Preferred web browser for XFCE helpers (exo-open, preferred applications).
+  if command -v xdg-settings >/dev/null 2>&1; then
+    xdg-settings set default-web-browser chromium-agenstra.desktop 2>/dev/null || true
+  fi
+  if command -v xfconf-query >/dev/null 2>&1; then
+    xfconf-query -c xfce4-mime-settings -p /web/browser \
+      -n -t string -s chromium-agenstra.desktop 2>/dev/null || \
+      xfconf-query -c xfce4-mime-settings -p /web/browser \
+        -s chromium-agenstra.desktop 2>/dev/null || true
+  fi
+) &
+
+exec startxfce4

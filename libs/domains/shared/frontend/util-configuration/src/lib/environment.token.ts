@@ -31,6 +31,7 @@ function mergeEnvironmentOverrides(base: Environment, overrides: Partial<Environ
       : base.chatModelOptions,
     editor: overrides.editor ? { ...base.editor, ...overrides.editor } : base.editor,
     deployment: overrides.deployment ? { ...base.deployment, ...overrides.deployment } : base.deployment,
+    vnc: overrides.vnc ? { ...base.vnc, ...overrides.vnc } : base.vnc,
     cookieConsent: overrides.cookieConsent ? { ...base.cookieConsent, ...overrides.cookieConsent } : base.cookieConsent,
     socialPreview: overrides.socialPreview ? { ...base.socialPreview, ...overrides.socialPreview } : base.socialPreview,
     docs: overrides.docs ? { ...base.docs, ...overrides.docs } : base.docs,

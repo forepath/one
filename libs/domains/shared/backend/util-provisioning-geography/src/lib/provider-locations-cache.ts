@@ -7,7 +7,7 @@ export const DEFAULT_PROVIDER_LOCATIONS_CACHE_TTL_SECONDS = 24 * 60 * 60;
 
 export interface ProviderLocationsCacheClient {
   getJson<T>(key: string): Promise<T | null>;
-  setJson<T>(key: string, value: T, ttlSeconds: number): Promise<void>;
+  setJson<T>(key: string, value: T, ttlSeconds: number): Promise<boolean | void>;
 }
 
 export function readProviderLocationsCacheTtlSeconds(env: NodeJS.ProcessEnv = process.env): number {

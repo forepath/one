@@ -228,7 +228,7 @@ export class AgentConsoleContainerComponent implements OnInit {
     return $localize`:@@featureContainer-ariaLabelRole:Role ${role}:role:`;
   }
 
-  /** Main nav routes that keep the app sidebar (excludes agent editor/config/deployments). */
+  /** Main nav routes that keep the app sidebar (excludes agent editor/deployments/vnc). */
   private shouldShowMainSidebar(url: string): boolean {
     const path = url.split(/[?#]/)[0] ?? url;
     const onMainRoute =
@@ -249,7 +249,7 @@ export class AgentConsoleContainerComponent implements OnInit {
       return false;
     }
 
-    return !path.includes('/editor') && !path.includes('/deployments');
+    return !path.includes('/editor') && !path.includes('/deployments') && !path.includes('/vnc');
   }
 
   private isAdminNavUrl(url: string): boolean {

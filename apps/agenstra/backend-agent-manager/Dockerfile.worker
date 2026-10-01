@@ -4,12 +4,12 @@
 # Registry:   ghcr.io/forepath/agenstra-manager-worker
 # Base:       debian:trixie-slim
 # User:       agenstra (APP_UID / APP_GID, default 10001)
-# Exposes:    4096 (opencode serve HTTP API)
-# Build:      npx nx run backend-agent-manager:worker-container-image
+# Exposes:    4096 (opencode serve HTTP API), 6080 (websockify → TigerVNC)
+# Build:      npx nx run agenstra-backend-agent-manager:worker-container-image
 # Run:        —
-# Notes:      Includes Node.js, Nx, and opencode for agent workloads.
-#             Entrypoint runs as root to chown bind-mounted /app, then drops to agenstra for opencode serve.
-#             Set OPENCODE_SERVER_PASSWORD for Basic auth.
+# Notes:      Includes Node.js, Nx, opencode, Python (pip + uv), XFCE desktop, Chromium, TigerVNC, websockify.
+#             Entrypoint runs as root to chown bind-mounted /app, then starts desktop + opencode as agenstra.
+#             Set OPENCODE_SERVER_PASSWORD for Basic auth. VNC has no password; access is ticket-proxied.
 # -----------------------------------------------------------------------------
 #
 FROM docker.io/debian:trixie-slim
@@ -18,6 +18,8 @@ ARG APP_UID=10001
 ARG APP_GID=10001
 ARG VERSION=0.0.0
 ENV VERSION=${VERSION}
+ENV APP_UID=${APP_UID}
+ENV APP_GID=${APP_GID}
 
 ENV NVM_DIR=/home/agenstra/.nvm
 ENV NODE_VERSION=24.14.1
@@ -25,7 +27,13 @@ ENV HOME=/home/agenstra
 ENV PATH="/home/agenstra/.opencode/bin:/home/agenstra/.nvm/versions/node/v${NODE_VERSION}/bin:${PATH}"
 ENV OPENCODE_SERVER_PORT=4096
 ENV OPENCODE_SERVER_HOSTNAME=0.0.0.0
-EXPOSE 4096
+ENV VNC_DISPLAY=:1
+ENV VNC_PORT=5901
+ENV VNC_WEBSOCKIFY_PORT=6080
+ENV VNC_GEOMETRY=1920x1080
+ENV VNC_DEPTH=24
+ENV DEBIAN_FRONTEND=noninteractive
+EXPOSE 4096 6080
 
 WORKDIR /app
 
@@ -38,12 +46,31 @@ RUN apt-get update && \
     git \
     inotify-tools \
     openssh-client \
-    util-linux && \
+    util-linux \
+    procps \
+    python3 \
+    python3-pip \
+    python3-venv \
+    python-is-python3 \
+    dbus-x11 \
+    xfce4 \
+    xfce4-terminal \
+    xfce4-settings \
+    tigervnc-standalone-server \
+    tigervnc-common \
+    websockify \
+    chromium \
+    fonts-dejavu-core \
+    fonts-liberation && \
     groupadd --gid "${APP_GID}" agenstra && \
     useradd --uid "${APP_UID}" --gid "${APP_GID}" --create-home --home-dir /home/agenstra --shell /bin/bash agenstra && \
     chown "${APP_UID}:${APP_GID}" /app && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# Astral uv (fast Python package/tool installer); system-wide for agenstra + root.
+RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh && \
+    uv --version
 
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | PROFILE=/dev/null bash && \
     . "${NVM_DIR}/nvm.sh" && \
@@ -69,15 +96,81 @@ RUN install -d -o "${APP_UID}" -g "${APP_GID}" /home/agenstra/.opencode/bin /hom
 RUN env -u VERSION HOME=/home/agenstra bash -c 'curl -fsSL https://opencode.ai/install | bash' && \
     chown -R "${APP_UID}:${APP_GID}" /home/agenstra/.opencode
 
-# Expand APP_UID/APP_GID into the entrypoint at build time (runtime has no ARG).
-RUN printf '%s\n' \
-    '#!/bin/bash' \
-    'set -euo pipefail' \
-    "chown -R ${APP_UID}:${APP_GID} /app 2>/dev/null || true" \
-    'hostname="${OPENCODE_SERVER_HOSTNAME:-0.0.0.0}"' \
-    'port="${OPENCODE_SERVER_PORT:-4096}"' \
-    'exec runuser -u agenstra -g agenstra -- opencode serve --hostname "${hostname}" --port "${port}"' \
-    > /usr/local/bin/docker-entrypoint.sh && \
-    chmod 755 /usr/local/bin/docker-entrypoint.sh
+# Desktop branding + helpers (copied from Nx build context: dist/.../worker-desktop).
+COPY worker-desktop/wallpaper.jpg /usr/share/backgrounds/agenstra/wallpaper.jpg
+COPY worker-desktop/xstartup /etc/agenstra/vnc/xstartup
+COPY worker-desktop/xfce4-panel.xml /etc/agenstra/desktop/xfce4-panel.xml
+COPY worker-desktop/xfce4-desktop.xml /etc/agenstra/desktop/xfce4-desktop.xml
+COPY worker-desktop/xsettings.xml /etc/agenstra/desktop/xsettings.xml
+COPY worker-desktop/mimeapps.list /etc/agenstra/desktop/mimeapps.list
+COPY worker-desktop/helpers.rc /etc/agenstra/desktop/helpers.rc
+COPY worker-desktop/chromium-agenstra-helper.desktop /etc/agenstra/desktop/chromium-agenstra-helper.desktop
+COPY worker-desktop/xfce-applications.menu /etc/agenstra/desktop/xfce-applications.menu
+COPY worker-desktop/chromium-agenstra /usr/local/bin/chromium-agenstra
+COPY worker-desktop/chromium.desktop /usr/share/applications/chromium-agenstra.desktop
+COPY worker-desktop/terminal.desktop /usr/share/applications/agenstra-terminal.desktop
+COPY worker-desktop/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+COPY worker-desktop/vnc-auth-proxy.js /usr/local/bin/vnc-auth-proxy.js
 
+RUN chmod 755 /etc/agenstra/vnc/xstartup /usr/local/bin/chromium-agenstra /usr/local/bin/docker-entrypoint.sh \
+      /usr/local/bin/vnc-auth-proxy.js && \
+    install -d -o "${APP_UID}" -g "${APP_GID}" \
+      /home/agenstra/.vnc \
+      /home/agenstra/Desktop \
+      /home/agenstra/.config \
+      /home/agenstra/.config/chromium \
+      /home/agenstra/.config/xfce4 \
+      /home/agenstra/.config/xfce4/xfconf/xfce-perchannel-xml \
+      /home/agenstra/.cache \
+      /home/agenstra/.local/share && \
+    # System + user defaults: top panel only (no bottom launcher panel).
+    install -D -m 644 /etc/agenstra/desktop/xfce4-panel.xml \
+      /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml && \
+    install -m 644 -o "${APP_UID}" -g "${APP_GID}" /etc/agenstra/desktop/xfce4-panel.xml \
+      /home/agenstra/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml && \
+    install -m 644 -o "${APP_UID}" -g "${APP_GID}" /etc/agenstra/desktop/xsettings.xml \
+      /home/agenstra/.config/xfce4/xfconf/xfce-perchannel-xml/xsettings.xml && \
+    install -D -m 644 /etc/agenstra/desktop/xfce4-desktop.xml \
+      /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml && \
+    install -m 644 -o "${APP_UID}" -g "${APP_GID}" /etc/agenstra/desktop/xfce4-desktop.xml \
+      /home/agenstra/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml && \
+    # Preferred apps: Chromium wrapper as browser; no mail client in the menu.
+    install -D -m 644 /etc/agenstra/desktop/helpers.rc /etc/xdg/xfce4/helpers.rc && \
+    install -m 644 -o "${APP_UID}" -g "${APP_GID}" /etc/agenstra/desktop/helpers.rc \
+      /home/agenstra/.config/xfce4/helpers.rc && \
+    install -D -m 644 /etc/agenstra/desktop/chromium-agenstra-helper.desktop \
+      /usr/share/xfce4/helpers/chromium-agenstra.desktop && \
+    install -D -m 644 /etc/agenstra/desktop/xfce-applications.menu \
+      /etc/xdg/menus/xfce-applications.menu && \
+    # Hide the stock Mail Reader launcher (no mail client is installed).
+    if [ -f /usr/share/applications/xfce4-mail-reader.desktop ]; then \
+      printf '\nNoDisplay=true\nHidden=true\n' >> /usr/share/applications/xfce4-mail-reader.desktop; \
+    fi && \
+    # Keep the Desktop folder empty (apps stay available via the menu).
+    find /home/agenstra/Desktop -mindepth 1 -delete && \
+    # Route the packaged Chromium menu entry through the container-safe wrapper.
+    if [ -f /usr/share/applications/chromium.desktop ]; then \
+      sed -i 's|^Exec=/usr/bin/chromium|Exec=/usr/local/bin/chromium-agenstra|' \
+        /usr/share/applications/chromium.desktop; \
+    fi && \
+    # Point the stock XFCE Chromium helper at the sandbox-safe wrapper too.
+    if [ -f /usr/share/xfce4/helpers/chromium.desktop ]; then \
+      sed -i \
+        -e 's|^X-XFCE-Binaries=.*|X-XFCE-Binaries=chromium-agenstra;|' \
+        -e 's|^X-XFCE-Commands=.*|X-XFCE-Commands=/usr/local/bin/chromium-agenstra;|' \
+        -e 's|^X-XFCE-CommandsWithParameter=.*|X-XFCE-CommandsWithParameter=/usr/local/bin/chromium-agenstra "%s";|' \
+        /usr/share/xfce4/helpers/chromium.desktop; \
+    fi && \
+    # Make chromium-agenstra the default browser (MIME + alternatives + BROWSER).
+    install -D -m 644 /etc/agenstra/desktop/mimeapps.list /etc/xdg/mimeapps.list && \
+    install -m 644 -o "${APP_UID}" -g "${APP_GID}" /etc/agenstra/desktop/mimeapps.list \
+      /home/agenstra/.config/mimeapps.list && \
+    update-alternatives --install /usr/bin/x-www-browser x-www-browser /usr/local/bin/chromium-agenstra 200 && \
+    update-alternatives --install /usr/bin/gnome-www-browser gnome-www-browser /usr/local/bin/chromium-agenstra 200 && \
+    update-alternatives --set x-www-browser /usr/local/bin/chromium-agenstra && \
+    update-alternatives --set gnome-www-browser /usr/local/bin/chromium-agenstra && \
+    chown -R "${APP_UID}:${APP_GID}" /home/agenstra && \
+    update-desktop-database /usr/share/applications 2>/dev/null || true
+
+ENV BROWSER=/usr/local/bin/chromium-agenstra
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

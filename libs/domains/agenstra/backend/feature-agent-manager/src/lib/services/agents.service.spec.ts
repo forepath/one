@@ -284,6 +284,10 @@ describe('AgentsService', () => {
             containerPort: 4096,
             hostIp: '127.0.0.1',
           },
+          {
+            containerPort: 6080,
+            hostIp: '127.0.0.1',
+          },
         ],
       });
       // Verify .netrc file creation commands were called (2 commands: base64 write + chmod), then config dir, chown, then git clone
@@ -392,6 +396,10 @@ describe('AgentsService', () => {
         ports: [
           {
             containerPort: 4096,
+            hostIp: '127.0.0.1',
+          },
+          {
+            containerPort: 6080,
             hostIp: '127.0.0.1',
           },
         ],
@@ -675,6 +683,10 @@ describe('AgentsService', () => {
         ports: [
           {
             containerPort: 4096,
+            hostIp: '127.0.0.1',
+          },
+          {
+            containerPort: 6080,
             hostIp: '127.0.0.1',
           },
         ],
@@ -1092,6 +1104,10 @@ describe('AgentsService', () => {
             containerPort: 4096,
             hostIp: '127.0.0.1',
           },
+          {
+            containerPort: 6080,
+            hostIp: '127.0.0.1',
+          },
         ],
       });
       // Verify git clone uses the custom base path (escaped for shell)
@@ -1205,6 +1221,10 @@ describe('AgentsService', () => {
             containerPort: 4096,
             hostIp: '127.0.0.1',
           },
+          {
+            containerPort: 6080,
+            hostIp: '127.0.0.1',
+          },
         ],
       });
       // Verify git clone uses basePath + repositoryPath
@@ -1313,6 +1333,10 @@ describe('AgentsService', () => {
             containerPort: 4096,
             hostIp: '127.0.0.1',
           },
+          {
+            containerPort: 6080,
+            hostIp: '127.0.0.1',
+          },
         ],
       });
       // Verify git clone uses '/app' (escaped) when getRepositoryPath is not defined
@@ -1378,6 +1402,10 @@ describe('AgentsService', () => {
         ports: [
           {
             containerPort: 4096,
+            hostIp: '127.0.0.1',
+          },
+          {
+            containerPort: 6080,
             hostIp: '127.0.0.1',
           },
         ],
@@ -1453,6 +1481,10 @@ describe('AgentsService', () => {
             containerPort: 4096,
             hostIp: '127.0.0.1',
           },
+          {
+            containerPort: 6080,
+            hostIp: '127.0.0.1',
+          },
         ],
       });
     });
@@ -1516,6 +1548,10 @@ describe('AgentsService', () => {
         ports: [
           {
             containerPort: 4096,
+            hostIp: '127.0.0.1',
+          },
+          {
+            containerPort: 6080,
             hostIp: '127.0.0.1',
           },
         ],

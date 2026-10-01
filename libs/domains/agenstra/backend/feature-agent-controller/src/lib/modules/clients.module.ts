@@ -73,6 +73,7 @@ import { ClientsGateway } from '../gateways/clients.gateway';
 import { KnowledgeBoardGateway } from '../gateways/knowledge-board.gateway';
 import { StatusGateway } from '../gateways/status.gateway';
 import { TicketsBoardGateway } from '../gateways/tickets-board.gateway';
+import { VncGateway } from '../gateways/vnc.gateway';
 import { DigitalOceanProvider } from '../providers/provisioning/digital-ocean.provider';
 import { HetznerProvider } from '../providers/provisioning/hetzner.provider';
 import { ProvisioningProviderFactory } from '../providers/provisioning-provider.factory';
@@ -95,6 +96,8 @@ import { ClientAgentFileSystemProxyService } from '../services/client-agent-file
 import { ClientAgentMessagesProxyService } from '../services/client-agent-messages-proxy.service';
 import { ClientAgentOpencodeConfigProxyService } from '../services/client-agent-opencode-config-proxy.service';
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
+import { ClientAgentVncProxyService } from '../services/client-agent-vnc-proxy.service';
+import { ControllerVncTicketService } from '../services/controller-vnc-ticket.service';
 import { ClientAgentVcsProxyService } from '../services/client-agent-vcs-proxy.service';
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
@@ -225,6 +228,8 @@ const authMethod = getAuthenticationMethod();
     ClientAgentDeploymentsProxyService,
     ClientAgentEnvironmentVariablesProxyService,
     ClientAgentChatsProxyService,
+    ClientAgentVncProxyService,
+    ControllerVncTicketService,
     ClientWorkspaceConfigurationOverridesProxyService,
     ClientAgentOpencodeConfigProxyService,
     OpencodeConfigService,
@@ -245,6 +250,7 @@ const authMethod = getAuthenticationMethod();
     UserEnvironmentReadStateRepository,
     TicketAutomationRunsStatusRepository,
     ClientsGateway,
+    VncGateway,
     TicketBoardRealtimeService,
     KnowledgeBoardRealtimeService,
     ClientAutomationChatRealtimeService,

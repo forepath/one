@@ -1,0 +1,18 @@
+<div class="virtual-desktop d-flex flex-column h-100">
+  <div class="virtual-desktop__body flex-grow-1 position-relative overflow-hidden bg-dark">
+    @if (connecting()) {
+      <div class="virtual-desktop__status text-body-secondary" role="status">{{ connectingLabel }}</div>
+    }
+    @if (errorMessage(); as message) {
+      <div class="virtual-desktop__status">
+        <fpc-empty-state [title]="errorTitle" [message]="message"></fpc-empty-state>
+      </div>
+    }
+    <div
+      #screenHost
+      class="virtual-desktop__screen"
+      [class.d-none]="!!errorMessage()"
+      aria-label="Remote desktop"
+    ></div>
+  </div>
+</div>

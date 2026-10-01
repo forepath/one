@@ -63,6 +63,20 @@
   }
 }
 
+.section__column--virtual-desktop {
+  flex: 5;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  @media (max-width: 767.98px) {
+    &.mobile-hidden {
+      display: none !important;
+    }
+  }
+}
+
 .section__row {
   flex-wrap: nowrap;
   min-height: 0;
