@@ -19,7 +19,7 @@ Map your intended profile to **[System Requirements](./system-requirements.md)**
 
 - [ ] Host OS is Linux **amd64** or **arm64** with a current kernel (LTS preferred for production)
 - [ ] Docker **20.10+** (recommended **24+**) and Compose **2.0+** [ ] Node.js **24.14.1** only if running local Nx (containers already pin this version)
-- [ ] Images planned as non-root `agenstra` (UID **10001**) for API/worker and `node` (UID **1000**) for frontends
+- [ ] Images planned as non-root `decabill` (UID **10001**) for the billing API and `node` (UID **1000**) for frontends
 
 ### Data services
 

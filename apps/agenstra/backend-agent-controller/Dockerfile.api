@@ -8,7 +8,7 @@
 # Build:      npx nx run backend-agent-controller:api-container-image
 # Run:        nx docker:run agenstra-backend-agent-controller -p 3100:3100 -p 8081:8081
 # Notes:      Mount Docker socket: -v /var/run/docker.sock:/var/run/docker.sock
-#              Entrypoint (agenstra) uses sudo to sync socket GID, then sg docker for socket access
+#              Entrypoint runs as root to sync socket GID, then drops to agenstra via runuser/sg
 # -----------------------------------------------------------------------------
 #
 FROM docker.io/debian:trixie-slim
@@ -41,14 +41,11 @@ RUN apt-get update && \
     ca-certificates \
     gnupg \
     lsb-release \
-    util-linux \
-    sudo && \
+    util-linux && \
     groupadd --gid "${APP_GID}" agenstra && \
     useradd --uid "${APP_UID}" --gid "${APP_GID}" --create-home --home-dir /home/agenstra --shell /bin/bash agenstra && \
-    echo 'agenstra ALL=(ALL) NOPASSWD: /usr/sbin/groupmod, /usr/sbin/groupadd, /usr/sbin/usermod' > /etc/sudoers.d/agenstra && \
-    chmod 0440 /etc/sudoers.d/agenstra && \
     (groupadd --gid "${DOCKER_GID}" docker || groupmod -o -g "${DOCKER_GID}" docker) && \
-    chown agenstra:agenstra /app && \
+    chown "${APP_UID}:${APP_GID}" /app && \
     mkdir -p /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
@@ -65,17 +62,17 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | P
     nvm alias default "${NODE_VERSION}" && \
     npm install -g npm@11.18.0 && \
     npm cache clean --force && \
-    chown -R agenstra:agenstra /home/agenstra
+    chown -R "${APP_UID}:${APP_GID}" /home/agenstra
 
-COPY --chown=agenstra:agenstra package*.json ./
+COPY --chown=${APP_UID}:${APP_GID} package*.json ./
 
 RUN . "${NVM_DIR}/nvm.sh" && npm i && npm cache clean --force && \
-    chown -R agenstra:agenstra /app
+    chown -R "${APP_UID}:${APP_GID}" /app
 
-COPY --chown=agenstra:agenstra . /app
+COPY --chown=${APP_UID}:${APP_GID} . /app
 
 RUN mkdir -p /var/lib/forepath/provider-plugins && \
-    chown agenstra:agenstra /var/lib/forepath/provider-plugins
+    chown "${APP_UID}:${APP_GID}" /var/lib/forepath/provider-plugins
 
 RUN printf '%s\n' \
     '#!/bin/bash' \
@@ -83,24 +80,16 @@ RUN printf '%s\n' \
     'if [ -e /var/run/docker.sock ]; then' \
     '  docker_sock_gid="$(stat -c "%g" /var/run/docker.sock)"' \
     '  if getent group docker >/dev/null 2>&1; then' \
-    '    sudo groupmod -o -g "${docker_sock_gid}" docker' \
+    '    groupmod -o -g "${docker_sock_gid}" docker' \
     '  else' \
-    '    sudo groupadd -g "${docker_sock_gid}" docker' \
+    '    groupadd -g "${docker_sock_gid}" docker' \
     '  fi' \
-    '  sudo usermod -aG docker agenstra' \
-    '  exec sg docker -c '"'"'set -euo pipefail; . "${NVM_DIR}/nvm.sh"; if [ -n "${DYNAMIC_PROVIDER_PLUGIN_PATH:-}" ]; then node install-provider-plugins.js; fi; exec node main.js'"'"'' \
+    '  usermod -aG docker agenstra' \
+    '  exec runuser -u agenstra -g agenstra -- sg docker -c '"'"'set -euo pipefail; . "${NVM_DIR}/nvm.sh"; if [ -n "${DYNAMIC_PROVIDER_PLUGIN_PATH:-}" ]; then node install-provider-plugins.js; fi; exec node main.js'"'"'' \
     'fi' \
-    'if [ -n "${DYNAMIC_PROVIDER_PLUGIN_PATH:-}" ]; then' \
-    '  . "${NVM_DIR}/nvm.sh"' \
-    '  node install-provider-plugins.js' \
-    'fi' \
-    '. "${NVM_DIR}/nvm.sh"' \
-    'exec node main.js' \
+    'exec runuser -u agenstra -g agenstra -- bash -c '"'"'set -euo pipefail; . "${NVM_DIR}/nvm.sh"; if [ -n "${DYNAMIC_PROVIDER_PLUGIN_PATH:-}" ]; then node install-provider-plugins.js; fi; exec node main.js'"'"'' \
     > /usr/local/bin/docker-entrypoint.sh && \
-    chmod 755 /usr/local/bin/docker-entrypoint.sh && \
-    chown agenstra:agenstra /usr/local/bin/docker-entrypoint.sh
-
-USER ${APP_UID}:${APP_GID}
+    chmod 755 /usr/local/bin/docker-entrypoint.sh
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD curl -f "http://localhost:${PORT}/api/health" || exit 1

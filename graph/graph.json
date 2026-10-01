@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-01T05:25:58.508Z",
+  "generatedAt": "2026-10-01T05:46:05.408Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -26462,12 +26462,22 @@
       }
     },
     {
-      "id": "concept:agenstra-restricted-sudo",
+      "id": "concept:agenstra-privilege-model-no-sudo",
       "type": "concept",
       "attrs": {
-        "title": "Restricted `sudo`",
+        "title": "Privilege model (no sudo)",
         "docPath": "docs/agenstra/security/container-images.md",
-        "sectionAnchor": "restricted-sudo",
+        "sectionAnchor": "privilege-model-no-sudo",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-confirm-opencode-node-runs-as-agenstra-e-g-ps-inside-a-ready-container",
+      "type": "concept",
+      "attrs": {
+        "title": "Confirm OpenCode/Node runs as agenstra (e.g. ps inside a ready container)",
+        "docPath": "docs/agenstra/security/container-images.md",
+        "sectionAnchor": "confirm-opencode-node-runs-as-agenstra-e-g-ps-inside-a-ready-container",
         "domain": "agenstra"
       }
     },
@@ -48035,7 +48045,12 @@
     },
     {
       "from": "file:docs/agenstra/security/container-images.md",
-      "to": "concept:agenstra-restricted-sudo",
+      "to": "concept:agenstra-privilege-model-no-sudo",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/security/container-images.md",
+      "to": "concept:agenstra-confirm-opencode-node-runs-as-agenstra-e-g-ps-inside-a-ready-container",
       "type": "contains"
     },
     {
@@ -71714,6 +71729,11 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-manager-and-controller-api-images",
+      "to": "api:HTTP:POST:/auth/login",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-container-images-docker",
       "to": "api:HTTP:GET:/config",
       "type": "documents"
@@ -79859,7 +79879,12 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-restricted-sudo",
+      "from": "concept:agenstra-privilege-model-no-sudo",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-confirm-opencode-node-runs-as-agenstra-e-g-ps-inside-a-ready-container",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

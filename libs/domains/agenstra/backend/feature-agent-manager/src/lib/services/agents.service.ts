@@ -127,9 +127,10 @@ export class AgentsService implements OnApplicationBootstrap {
     await this.dockerService.sendCommandToContainer(containerId, `sh -c "mkdir -p -- ${escaped}"`, undefined, true);
     await this.dockerService.sendCommandToContainer(
       containerId,
-      `sh -c "sudo chown -R ${AgentsService.CONTAINER_RUNTIME_USER}:${AgentsService.CONTAINER_RUNTIME_GROUP} -- ${escaped}"`,
+      `sh -c "chown -R ${AgentsService.CONTAINER_RUNTIME_USER}:${AgentsService.CONTAINER_RUNTIME_GROUP} -- ${escaped}"`,
       undefined,
       true,
+      { user: '0' },
     );
   }
 

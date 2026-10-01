@@ -125,7 +125,7 @@ nx docker:server decabill-frontend-docs
 
 First-party Decabill images follow a common hardening baseline:
 
-- **Non-root**: Billing API runs as `agenstra` (UID/GID **10001** by default). Frontend server images run as `node` (**1000**).
+- **Non-root**: Billing API runs as `decabill` (UID/GID **10001** by default) after the entrypoint drops privileges. Frontend server images run as `node` (**1000**).
 - **Secrets at runtime**: Database, Stripe, encryption keys, and API keys are supplied at deploy time, not baked into images.
 - **No Docker socket**: The billing manager does not mount `/var/run/docker.sock` (unlike agent orchestration stacks).
 

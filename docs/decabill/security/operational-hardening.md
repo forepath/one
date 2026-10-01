@@ -8,7 +8,7 @@ First-party Decabill images are hardened for production use. Full detail: **[Con
 
 | Practice                | Detail                                                                                                                      |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| **Non-root runtime**    | Billing API runs as **`agenstra`** (UID/GID **10001** by default); frontend servers run as **`node`** (**1000**).           |
+| **Non-root runtime**    | Billing API runs as **`decabill`** (UID/GID **10001** by default); frontend servers run as **`node`** (**1000**).           |
 | **No baked-in secrets** | Database, Stripe, encryption keys, and API keys are **not** defaulted in image `ENV`; operators supply them at deploy time. |
 | **No Docker socket**    | Billing manager does not mount `/var/run/docker.sock`; provisioning uses cloud APIs and SSH from worker processes.          |
 | **Image scanning**      | Repository `trivy.yaml` configures filesystem/config/image scans; CI fails on fixable CRITICAL findings.                    |
