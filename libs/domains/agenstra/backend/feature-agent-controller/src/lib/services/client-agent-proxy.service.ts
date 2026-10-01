@@ -387,7 +387,7 @@ export class ClientAgentProxyService {
   }
 
   /**
-   * Start all Docker containers for an agent (main, VNC, SSH).
+   * Start the agent Docker container.
    * @param clientId - The UUID of the client
    * @param agentId - The UUID of the agent
    * @returns The agent response DTO
@@ -400,7 +400,7 @@ export class ClientAgentProxyService {
   }
 
   /**
-   * Stop all Docker containers for an agent (main, VNC, SSH).
+   * Stop the agent Docker container.
    * @param clientId - The UUID of the client
    * @param agentId - The UUID of the agent
    * @returns The agent response DTO
@@ -413,7 +413,7 @@ export class ClientAgentProxyService {
   }
 
   /**
-   * Restart all Docker containers for an agent (main, VNC, SSH).
+   * Restart the agent Docker container.
    * @param clientId - The UUID of the client
    * @param agentId - The UUID of the agent
    * @returns The agent response DTO

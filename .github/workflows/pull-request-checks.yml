@@ -413,90 +413,6 @@ jobs:
           project-version: 0.0.0-SNAPSHOT
           artifact-name: sbom-container-images-worker
 
-  build-vnc-container-images:
-    name: Build VNC Container Images
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      contents: read
-      actions: read
-      packages: read
-      security-events: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - name: Set nx shas
-        uses: nrwl/nx-set-shas@v5
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v8
-        with:
-          name: build-artifacts
-          path: .
-
-      - name: Setup environment
-        uses: ./.github/actions/setup-env
-
-      - name: Build VNC container images
-        run: |
-          npx nx affected --target=vnc-container-image --configuration=test --parallel=3
-
-      - name: Scan VNC container images with Trivy
-        uses: ./.github/actions/trivy-scan-local-images
-        with:
-          sarif-category: trivy-images-vnc
-
-      - name: Generate container image SBOMs
-        uses: ./.github/actions/generate-container-image-sboms
-        with:
-          project-version: 0.0.0-SNAPSHOT
-          artifact-name: sbom-container-images-vnc
-
-  build-ssh-container-images:
-    name: Build SSH Container Images
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      contents: read
-      actions: read
-      packages: read
-      security-events: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - name: Set nx shas
-        uses: nrwl/nx-set-shas@v5
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v8
-        with:
-          name: build-artifacts
-          path: .
-
-      - name: Setup environment
-        uses: ./.github/actions/setup-env
-
-      - name: Build SSH container images
-        run: |
-          npx nx affected --target=ssh-container-image --configuration=test --parallel=3
-
-      - name: Scan SSH container images with Trivy
-        uses: ./.github/actions/trivy-scan-local-images
-        with:
-          sarif-category: trivy-images-ssh
-
-      - name: Generate container image SBOMs
-        uses: ./.github/actions/generate-container-image-sboms
-        with:
-          project-version: 0.0.0-SNAPSHOT
-          artifact-name: sbom-container-images-ssh
-
   build-server-container-images:
     name: Build Server Container Images
     runs-on: ubuntu-latest
@@ -547,8 +463,6 @@ jobs:
       - build
       - build-api-container-images
       - build-worker-container-images
-      - build-vnc-container-images
-      - build-ssh-container-images
       - build-server-container-images
     if: always() && needs.detect-affected.outputs.has_affected == 'true'
     steps:
@@ -590,11 +504,9 @@ jobs:
           BUILD: ${{ needs.build.result }}
           API: ${{ needs.build-api-container-images.result }}
           WORKER: ${{ needs.build-worker-container-images.result }}
-          VNC: ${{ needs.build-vnc-container-images.result }}
-          SSH: ${{ needs.build-ssh-container-images.result }}
           SERVER: ${{ needs.build-server-container-images.result }}
         run: |
-          for result in "$BUILD" "$API" "$WORKER" "$VNC" "$SSH" "$SERVER"; do
+          for result in "$BUILD" "$API" "$WORKER" "$SERVER"; do
             if [ "$result" = "failure" ]; then
               echo "::error::An upstream SBOM build job failed"
               exit 1

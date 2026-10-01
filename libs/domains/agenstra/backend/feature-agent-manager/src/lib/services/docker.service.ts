@@ -734,6 +734,41 @@ export class DockerService {
   }
 
   /**
+   * Stop and remove containers whose image name contains any of the given substrings.
+   * Used to clean up legacy SSH/VNC sidecars after feature removal.
+   * @returns Number of containers removed
+   */
+  async removeContainersByImageNameSubstring(imageSubstrings: string[]): Promise<number> {
+    if (imageSubstrings.length === 0) {
+      return 0;
+    }
+
+    const containers = await this.docker.listContainers({ all: true });
+    let removed = 0;
+
+    for (const summary of containers) {
+      const image = summary.Image || '';
+      const matches = imageSubstrings.some((substring) => image.includes(substring));
+
+      if (!matches) {
+        continue;
+      }
+
+      try {
+        await this.deleteContainer(summary.Id);
+        removed += 1;
+        this.logger.log(`Removed legacy sidecar container ${summary.Id} (image: ${image})`);
+      } catch (error: unknown) {
+        const err = error as { message?: string };
+
+        this.logger.warn(`Failed to remove legacy sidecar container ${summary.Id}: ${err.message}`);
+      }
+    }
+
+    return removed;
+  }
+
+  /**
    * Get container logs as a stream of lines.
    * First returns historical logs, then tails live logs.
    * @param containerId - The ID of the container
@@ -1860,7 +1895,7 @@ export class DockerService {
    * 3. Any attached Docker network IP
    * 4. Legacy top-level bridge IP
    *
-   * Preferring the agent network first avoids picking a private VNC/sidecar network IP that the
+   * Preferring the agent network first avoids picking a secondary Docker network IP that the
    * manager cannot route to after `createNetwork` attaches the worker to a second network.
    */
   async resolveContainerHttpBaseUrl(containerId: string, containerPort: number): Promise<string> {

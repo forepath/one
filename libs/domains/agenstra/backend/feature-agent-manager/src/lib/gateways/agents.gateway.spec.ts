@@ -118,8 +118,6 @@ describe('AgentsGateway', () => {
       supportsQuestions: false,
     }),
     getDockerImage: jest.fn().mockReturnValue('ghcr.io/forepath/agenstra-manager-worker:latest'),
-    getVirtualWorkspaceDockerImage: jest.fn().mockReturnValue('ghcr.io/forepath/agenstra-manager-vnc:latest'),
-    getSshConnectionDockerImage: jest.fn().mockReturnValue('ghcr.io/forepath/agenstra-manager-ssh:latest'),
     sendMessage: jest.fn(),
     sendInitialization: jest.fn(),
     toParseableStrings: jest.fn(),

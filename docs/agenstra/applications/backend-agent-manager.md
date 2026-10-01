@@ -13,7 +13,6 @@ This application provides:
 - **HTTP REST API** Full CRUD operations for agent management
 - **WebSocket Gateway** Real-time bidirectional communication with agents
 - **Container Integration** Docker container management for agent execution
-- **VNC Browser Access** Virtual workspace containers with XFCE4 desktop and Chromium browser
 - **Secure Authentication** Keycloak integration for HTTP endpoints and database-backed authentication for WebSocket
 - **Database Support** PostgreSQL with TypeORM for data persistence
 - **Auto Migrations** Automatic database schema migrations on startup
@@ -243,13 +242,6 @@ See the application docs and environment configuration for complete environment 
 
 **OpenCode Agent:** `OPENCODE_AGENT_DOCKER_IMAGE` - Docker image for opencode agent containers (default: `ghcr.io/forepath/agenstra-manager-worker:latest`)
 
-- `OPENCODE_AGENT_VIRTUAL_WORKSPACE_DOCKER_IMAGE` - VNC image override
-- `OPENCODE_AGENT_SSH_CONNECTION_DOCKER_IMAGE` - SSH sidecar image override
-
-**VNC Browser Access:** `VNC_SERVER_DOCKER_IMAGE` - Docker image for VNC containers (default: `ghcr.io/forepath/agenstra-manager-vnc:latest`)
-
-- `VNC_SERVER_PUBLIC_PORTS` - Port range for VNC host port allocation (e.g., `"6080-6180"`)
-
 **Dynamic provider plugins (optional):** `DYNAMIC_AGENT_PROVIDERS` - Extra agent backend packages
 
 - `DYNAMIC_PIPELINE_PROVIDERS` - Extra CI/CD provider packages
@@ -273,8 +265,6 @@ nx docker:api agenstra-backend-agent-manager
 # Build worker container
 nx docker:worker agenstra-backend-agent-manager
 
-# Build VNC container
-nx docker:vnc-container-image agenstra-backend-agent-manager
 ```
 
 ### Running the Container
@@ -302,16 +292,14 @@ Treat socket access as **high privilege** on the host. The API image runs as **`
 
 ### Container images and security
 
-| Image                            | User               | Registry (default)                         | Notes                                                                                 |
-| -------------------------------- | ------------------ | ------------------------------------------ | ------------------------------------------------------------------------------------- |
-| **API** (`Dockerfile.api`)       | `agenstra` (10001) | `ghcr.io/forepath/agenstra-manager-api`    | HTTP + WebSocket; Docker CLI + socket mount; restricted `sudo` for GID sync           |
-| **Worker** (`Dockerfile.worker`) | `agenstra`         | `ghcr.io/forepath/agenstra-manager-worker` | OpenCode workloads; workspace at `/app`; credentials in `/home/agenstra`              |
-| **VNC** (`Dockerfile.vnc`)       | `agenstra`         | `ghcr.io/forepath/agenstra-manager-vnc`    | Desktop browser; shared repo at `/home/agenstra/environment`; `VNC_PASSWORD` required |
-| **SSH** (`Dockerfile.ssh`)       | `agenstra`         | `ghcr.io/forepath/agenstra-manager-ssh`    | Optional shell; `SSH_PASSWORD` required; workspace at provider `basePath`             |
+| Image                            | User               | Registry (default)                         | Notes                                                                       |
+| -------------------------------- | ------------------ | ------------------------------------------ | --------------------------------------------------------------------------- |
+| **API** (`Dockerfile.api`)       | `agenstra` (10001) | `ghcr.io/forepath/agenstra-manager-api`    | HTTP + WebSocket; Docker CLI + socket mount; restricted `sudo` for GID sync |
+| **Worker** (`Dockerfile.worker`) | `agenstra`         | `ghcr.io/forepath/agenstra-manager-worker` | OpenCode workloads; workspace at `/app`; credentials in `/home/agenstra`    |
 
 Per-agent bind mounts (host `/opt/agents/{uuid}`) and read-only `/opt/agents` → `/opt/workspace` are documented in **[Container image security](../security/container-images.md)**.
 
-Configuration secrets belong in the environment at deploy time, not in image defaults. Override images via `OPENCODE_AGENT_*` variables (see [Environment configuration](../deployment/environment-configuration.md)). When upgrading, deploy API, worker, VNC, and SSH tags from the **same release**.
+Configuration secrets belong in the environment at deploy time, not in image defaults. Override images via `OPENCODE_AGENT_*` variables (see [Environment configuration](../deployment/environment-configuration.md)). When upgrading, deploy API and worker tags from the **same release**.
 
 ## Production Deployment Checklist
 
@@ -324,14 +312,13 @@ Before deploying to production, ensure:
 - `STATIC_API_KEY` or Keycloak credentials are configured
 - Database credentials are secure
 - Docker socket is properly mounted for container management
-- Manager API, worker, VNC, and SSH images are on matching release tags
+- Manager API and worker images are on matching release tags
 - Host `/opt/agents` permissions are suitable for UID **10001** (see [Container image security](../security/container-images.md))
 - Host `docker` group GID matches image `DOCKER_GID` (or image rebuilt with correct `--build-arg`)
 
 ## Related documentation
 
 - **[Agent Management Feature](../features/agent-management.md)** Agent management guide
-- **[VNC Browser Access Feature](../features/vnc-browser-access.md)** VNC browser access guide
 - **[WebSocket Communication Feature](../features/websocket-communication.md)** WebSocket communication guide
 - **[Deployment Feature](../features/deployment.md)** CI/CD configuration and operations
 - **[Message Filter Rules](../features/message-filter-rules.md)** Per-agent regex filters

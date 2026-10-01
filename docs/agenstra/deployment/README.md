@@ -37,7 +37,7 @@ Containerized deployment using Docker:
 CPU, memory, and disk guidance by deployment role:
 
 - Controller API, worker, and scheduler sizing
-- Manager host and per-agent workload containers (worker, VNC, SSH)
+- Manager host and per-agent workload containers (worker)
 - PostgreSQL (pgvector) and Redis baselines
 - Frontend hosts and mixed local-development hosts
 

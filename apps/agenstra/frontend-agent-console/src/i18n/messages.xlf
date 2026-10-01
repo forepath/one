@@ -656,9 +656,6 @@
       <trans-unit id="featureChat-virtualDesktop" datatype="html">
         <source>Virtual Desktop</source>
         </trans-unit>
-      <trans-unit id="featureChat-sshAccess" datatype="html">
-        <source>SSH Access</source>
-        </trans-unit>
       <trans-unit id="featureChat-ticketAutonomyButtonTitle" datatype="html">
         <source>Prototype autonomy</source>
         </trans-unit>
@@ -721,9 +718,6 @@
         </trans-unit>
       <trans-unit id="featureChat-disconnected" datatype="html">
         <source>Disconnected</source>
-        </trans-unit>
-      <trans-unit id="featureChat-sshCommand" datatype="html">
-        <source>SSH Command</source>
         </trans-unit>
       <trans-unit id="featureChat-remoteWorkspaceConfig" datatype="html">
         <source>Remote Workspace Configuration</source>
@@ -1002,24 +996,6 @@
         </trans-unit>
       <trans-unit id="featureChat-agentGitRepoUrlHint" datatype="html">
         <source>Optional. Defaults to workspace Git repository URL if not specified.</source>
-        </trans-unit>
-      <trans-unit id="featureChat-dangerZoneLabel" datatype="html">
-        <source>Danger Zone</source>
-        </trans-unit>
-      <trans-unit id="featureChat-dangerZoneDescription" datatype="html">
-        <source> These features partially ignore the internal permissions and may allow users to modify the agent container files without any restrictions. </source>
-        </trans-unit>
-      <trans-unit id="featureChat-createVirtualWorkspaceLabel" datatype="html">
-        <source> Create Virtual Workspace (VNC) </source>
-        </trans-unit>
-      <trans-unit id="featureChat-createVirtualWorkspaceHint" datatype="html">
-        <source>Enable VNC access to the environment&apos;s virtual workspace. Defaults to disabled.</source>
-        </trans-unit>
-      <trans-unit id="featureChat-createSshConnectionLabel" datatype="html">
-        <source> Create SSH Connection </source>
-        </trans-unit>
-      <trans-unit id="featureChat-createSshConnectionHint" datatype="html">
-        <source>Enable SSH access to the environment container. Defaults to disabled.</source>
         </trans-unit>
       <trans-unit id="featureChat-createEnvironment" datatype="html">
         <source>Create</source>

@@ -162,67 +162,8 @@
       },
       "defaultConfiguration": "test"
     },
-    "vnc-container-image": {
-      "dependsOn": ["prune"],
-      "cache": false,
-      "executor": "@nx-tools/nx-container:build",
-      "options": {
-        "engine": "docker",
-        "file": "apps/agenstra/backend-agent-manager/Dockerfile.vnc",
-        "context": "dist/apps/agenstra/backend-agent-manager",
-        "build-args": ["VERSION"]
-      },
-      "configurations": {
-        "test": {
-          "load": true,
-          "tags": [
-            "registry.forenet.internal/forepath/agenstra-manager-vnc:test"
-          ]
-        },
-        "release": {
-          "push": true,
-          "tags": [
-            "ghcr.io/forepath/agenstra-manager-vnc:latest",
-            "ghcr.io/forepath/agenstra-manager-vnc:$VERSION"
-          ]
-        }
-      },
-      "defaultConfiguration": "test"
-    },
-    "ssh-container-image": {
-      "dependsOn": ["prune"],
-      "cache": false,
-      "executor": "@nx-tools/nx-container:build",
-      "options": {
-        "engine": "docker",
-        "file": "apps/agenstra/backend-agent-manager/Dockerfile.ssh",
-        "context": "dist/apps/agenstra/backend-agent-manager",
-        "build-args": ["VERSION"]
-      },
-      "configurations": {
-        "test": {
-          "load": true,
-          "tags": [
-            "registry.forenet.internal/forepath/agenstra-manager-ssh:test"
-          ]
-        },
-        "release": {
-          "push": true,
-          "tags": [
-            "ghcr.io/forepath/agenstra-manager-ssh:latest",
-            "ghcr.io/forepath/agenstra-manager-ssh:$VERSION"
-          ]
-        }
-      },
-      "defaultConfiguration": "test"
-    },
     "start-containers": {
-      "dependsOn": [
-        "api-container-image",
-        "worker-container-image",
-        "vnc-container-image",
-        "ssh-container-image"
-      ],
+      "dependsOn": ["api-container-image", "worker-container-image"],
       "cache": false,
       "executor": "nx:run-commands",
       "options": {

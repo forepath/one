@@ -692,7 +692,6 @@ nx test agenstra-backend-feature-agent-manager --coverage
 - **Error Messages**: Generic error messages are used to prevent information disclosure
 - **Session Management**: WebSocket sessions are stored in memory and cleaned up on disconnect
 - **Container credentials**: Git HTTPS (`.netrc`) and SSH keys are written under the worker container’s **`$HOME`** (resolved via `DockerService.getContainerHomeDirectory`), not as root. On current worker images that is typically **`/home/agenstra`**. Shell paths are quoted and permissions are set with `chmod` before use.
-- **VNC context volume**: Browser workspace context is mounted at **`/home/agenstra/environment`** in the VNC image; deploy manager API and VNC images together when upgrading paths.
 
 ## Environment Variables
 
@@ -705,8 +704,6 @@ nx test agenstra-backend-feature-agent-manager --coverage
 - `KEYCLOAK_CLIENT_SECRET` - Keycloak client secret (required for HTTP authentication when `STATIC_API_KEY` is not set)
 - `STATIC_API_KEY` - Static API key for HTTP authentication (optional). If set, the API uses API key authentication only (no Keycloak fallback, no anonymous access). If not set, Keycloak authentication is used. The API key can be provided in the `Authorization` header using either `Bearer <key>` or `ApiKey <key>` format.
 - `OPENCODE_AGENT_DOCKER_IMAGE` - Docker image (including tag) for opencode agent containers (optional, defaults to `ghcr.io/forepath/agenstra-manager-worker:latest`)
-- `OPENCODE_AGENT_VIRTUAL_WORKSPACE_DOCKER_IMAGE` - VNC image override (optional)
-- `OPENCODE_AGENT_SSH_CONNECTION_DOCKER_IMAGE` - SSH sidecar image override (optional)
 - `GIT_AUTHOR_NAME` - Git commit author name (optional, defaults to 'Agenstra')
 - `GIT_AUTHOR_EMAIL` - Git commit author email (optional, defaults to 'noreply@agenstra.com')
 

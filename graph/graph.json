@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-30T18:09:54.069Z",
+  "generatedAt": "2026-10-01T05:25:58.508Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -1426,8 +1426,6 @@
           "test",
           "api-container-image",
           "worker-container-image",
-          "vnc-container-image",
-          "ssh-container-image",
           "start-containers",
           "openapi-client-js",
           "sbom"
@@ -10117,15 +10115,6 @@
       }
     },
     {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/docs/architecture-vnc.mmd",
-      "type": "diagram",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/docs/architecture-vnc.mmd",
-        "languageOrKind": "mmd",
-        "projectName": "agenstra-backend-feature-agent-manager"
-      }
-    },
-    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/docs/deployment-architecture.mmd",
       "type": "diagram",
       "attrs": {
@@ -10211,15 +10200,6 @@
       "type": "diagram",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/docs/sequence-http.mmd",
-        "languageOrKind": "mmd",
-        "projectName": "agenstra-backend-feature-agent-manager"
-      }
-    },
-    {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/docs/sequence-vnc-setup.mmd",
-      "type": "diagram",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/docs/sequence-vnc-setup.mmd",
         "languageOrKind": "mmd",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -13675,14 +13655,6 @@
       "type": "doc",
       "attrs": {
         "path": "docs/agenstra/features/version-control.md",
-        "languageOrKind": "md"
-      }
-    },
-    {
-      "id": "file:docs/agenstra/features/vnc-browser-access.md",
-      "type": "doc",
-      "attrs": {
-        "path": "docs/agenstra/features/vnc-browser-access.md",
         "languageOrKind": "md"
       }
     },
@@ -23430,16 +23402,6 @@
       }
     },
     {
-      "id": "concept:agenstra-build-vnc-container",
-      "type": "concept",
-      "attrs": {
-        "title": "Build VNC container",
-        "docPath": "docs/agenstra/applications/backend-agent-manager.md",
-        "sectionAnchor": "build-vnc-container",
-        "domain": "agenstra"
-      }
-    },
-    {
       "id": "concept:agenstra-or-run-directly-with-docker-socket-mount",
       "type": "concept",
       "attrs": {
@@ -25840,26 +25802,6 @@
       }
     },
     {
-      "id": "concept:agenstra-vnc-browser-access",
-      "type": "concept",
-      "attrs": {
-        "title": "VNC Browser Access",
-        "docPath": "docs/agenstra/features/vnc-browser-access.md",
-        "sectionAnchor": "vnc-browser-access",
-        "domain": "agenstra"
-      }
-    },
-    {
-      "id": "concept:agenstra-vnc-container-lifecycle",
-      "type": "concept",
-      "attrs": {
-        "title": "VNC Container Lifecycle",
-        "docPath": "docs/agenstra/features/vnc-browser-access.md",
-        "sectionAnchor": "vnc-container-lifecycle",
-        "domain": "agenstra"
-      }
-    },
-    {
       "id": "concept:agenstra-web-ide",
       "type": "concept",
       "attrs": {
@@ -26536,26 +26478,6 @@
         "title": "Manager and controller API images",
         "docPath": "docs/agenstra/security/container-images.md",
         "sectionAnchor": "manager-and-controller-api-images",
-        "domain": "agenstra"
-      }
-    },
-    {
-      "id": "concept:agenstra-ssh-sidecar-image",
-      "type": "concept",
-      "attrs": {
-        "title": "SSH sidecar image",
-        "docPath": "docs/agenstra/security/container-images.md",
-        "sectionAnchor": "ssh-sidecar-image",
-        "domain": "agenstra"
-      }
-    },
-    {
-      "id": "concept:agenstra-vnc-image",
-      "type": "concept",
-      "attrs": {
-        "title": "VNC image",
-        "docPath": "docs/agenstra/security/container-images.md",
-        "sectionAnchor": "vnc-image",
         "domain": "agenstra"
       }
     },
@@ -39503,11 +39425,6 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/docs/architecture-vnc.mmd",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/docs/deployment-architecture.mmd",
       "type": "contains"
     },
@@ -39554,11 +39471,6 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/docs/sequence-http.mmd",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/docs/sequence-vnc-setup.mmd",
       "type": "contains"
     },
     {
@@ -45893,11 +45805,6 @@
     },
     {
       "from": "file:docs/agenstra/applications/backend-agent-manager.md",
-      "to": "concept:agenstra-build-vnc-container",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/agenstra/applications/backend-agent-manager.md",
       "to": "concept:agenstra-run-with-docker-compose-recommended",
       "type": "contains"
     },
@@ -47637,46 +47544,6 @@
       "type": "contains"
     },
     {
-      "from": "file:docs/agenstra/features/vnc-browser-access.md",
-      "to": "concept:agenstra-vnc-browser-access",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/agenstra/features/vnc-browser-access.md",
-      "to": "concept:agenstra-overview",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/agenstra/features/vnc-browser-access.md",
-      "to": "concept:agenstra-architecture",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/agenstra/features/vnc-browser-access.md",
-      "to": "concept:agenstra-vnc-container-lifecycle",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/agenstra/features/vnc-browser-access.md",
-      "to": "concept:agenstra-configuration",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/agenstra/features/vnc-browser-access.md",
-      "to": "concept:agenstra-usage",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/agenstra/features/vnc-browser-access.md",
-      "to": "concept:agenstra-troubleshooting",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/agenstra/features/vnc-browser-access.md",
-      "to": "concept:agenstra-related-documentation",
-      "type": "contains"
-    },
-    {
       "from": "file:docs/agenstra/features/web-ide.md",
       "to": "concept:agenstra-web-ide",
       "type": "contains"
@@ -48174,16 +48041,6 @@
     {
       "from": "file:docs/agenstra/security/container-images.md",
       "to": "concept:agenstra-manager-and-controller-api-images",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/agenstra/security/container-images.md",
-      "to": "concept:agenstra-ssh-sidecar-image",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/agenstra/security/container-images.md",
-      "to": "concept:agenstra-vnc-image",
       "type": "contains"
     },
     {
@@ -70262,11 +70119,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-build-vnc-container",
-      "to": "project:agenstra-backend-agent-manager",
-      "type": "documents"
-    },
-    {
       "from": "concept:agenstra-or-run-directly-with-docker-socket-mount",
       "to": "project:agenstra-backend-agent-manager",
       "type": "documents"
@@ -71662,21 +71514,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-vnc-container-lifecycle",
-      "to": "api:HTTP:POST:/auth/login",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-vnc-container-lifecycle",
-      "to": "api:HTTP:GET:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-vnc-container-lifecycle",
-      "to": "api:HTTP:POST:/agents",
-      "type": "documents"
-    },
-    {
       "from": "concept:agenstra-webhooks-agenstra",
       "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
@@ -71874,21 +71711,6 @@
     {
       "from": "concept:agenstra-agent-workload-bind-mounts",
       "to": "api:HTTP:POST:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-restricted-sudo",
-      "to": "api:HTTP:POST:/auth/login",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-ssh-sidecar-image",
-      "to": "api:HTTP:POST:/auth/login",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-container-images-docker",
-      "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
     },
     {
@@ -77652,11 +77474,6 @@
       "type": "belongs_to"
     },
     {
-      "from": "file:docs/agenstra/features/vnc-browser-access.md",
-      "to": "domain:agenstra",
-      "type": "belongs_to"
-    },
-    {
       "from": "file:docs/agenstra/features/web-ide.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -78508,11 +78325,6 @@
     },
     {
       "from": "concept:agenstra-build-worker-container",
-      "to": "domain:agenstra",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:agenstra-build-vnc-container",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -79717,16 +79529,6 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-vnc-browser-access",
-      "to": "domain:agenstra",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:agenstra-vnc-container-lifecycle",
-      "to": "domain:agenstra",
-      "type": "belongs_to"
-    },
-    {
       "from": "concept:agenstra-web-ide",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -80063,16 +79865,6 @@
     },
     {
       "from": "concept:agenstra-manager-and-controller-api-images",
-      "to": "domain:agenstra",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:agenstra-ssh-sidecar-image",
-      "to": "domain:agenstra",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:agenstra-vnc-image",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

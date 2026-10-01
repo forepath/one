@@ -31,8 +31,6 @@ describe('OpenCodeAgentProvider', () => {
   afterEach(() => {
     jest.clearAllMocks();
     delete process.env.OPENCODE_AGENT_DOCKER_IMAGE;
-    delete process.env.OPENCODE_AGENT_VIRTUAL_WORKSPACE_DOCKER_IMAGE;
-    delete process.env.OPENCODE_AGENT_SSH_CONNECTION_DOCKER_IMAGE;
   });
 
   it('reports OpenCode HTTP chat capabilities', () => {
@@ -51,8 +49,6 @@ describe('OpenCodeAgentProvider', () => {
     expect(provider.getBasePath()).toBe('/app');
     expect(provider.getConfigBasePath()).toBe('~/.config/opencode');
     expect(provider.getDockerImage()).toBe('ghcr.io/forepath/agenstra-manager-worker:latest');
-    expect(provider.getVirtualWorkspaceDockerImage()).toBe('ghcr.io/forepath/agenstra-manager-vnc:latest');
-    expect(provider.getSshConnectionDockerImage()).toBe('ghcr.io/forepath/agenstra-manager-ssh:latest');
     expect(provider.getModelsListCommand()).toBe('opencode models');
     expect(provider.buildModelsCommand()).toBe('opencode models');
   });

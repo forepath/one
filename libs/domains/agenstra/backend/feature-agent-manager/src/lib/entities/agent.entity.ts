@@ -45,39 +45,6 @@ export class AgentEntity {
   @Column({ type: 'enum', enum: ContainerType, name: 'container_type', default: ContainerType.GENERIC })
   containerType!: ContainerType;
 
-  @Column({ type: 'varchar', length: 255, nullable: true, name: 'vnc_container_id' })
-  vncContainerId?: string;
-
-  @Column({ type: 'integer', nullable: true, name: 'vnc_host_port' })
-  vncHostPort?: number;
-
-  @Column({ type: 'varchar', length: 255, nullable: true, name: 'vnc_network_id' })
-  vncNetworkId?: string;
-
-  @Column({
-    type: 'varchar',
-    length: 1024,
-    nullable: true,
-    name: 'vnc_password',
-    transformer: createAes256GcmTransformer(),
-  })
-  vncPassword?: string;
-
-  @Column({ type: 'varchar', length: 255, nullable: true, name: 'ssh_container_id' })
-  sshContainerId?: string;
-
-  @Column({ type: 'integer', nullable: true, name: 'ssh_host_port' })
-  sshHostPort?: number;
-
-  @Column({
-    type: 'varchar',
-    length: 1024,
-    nullable: true,
-    name: 'ssh_password',
-    transformer: createAes256GcmTransformer(),
-  })
-  sshPassword?: string;
-
   /**
    * Basic-auth password for the worker's `opencode serve` HTTP API (`OPENCODE_SERVER_PASSWORD`).
    */
