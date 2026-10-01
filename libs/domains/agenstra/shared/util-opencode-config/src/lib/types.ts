@@ -11,6 +11,12 @@ export interface HeredityMetadata {
   inheritedAdditive: InheritedAdditiveEntry[];
 }
 
+/** One parent layer for heredity: composed overlay + optional explicit locks. */
+export interface HeredityParentLayer {
+  overlay?: JsonObject | null;
+  locks?: readonly string[] | null;
+}
+
 export const FORBIDDEN_V1_ROOT_KEYS = [
   'provider',
   'permission',

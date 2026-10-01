@@ -7,6 +7,7 @@ import {
 import {
   assertNoV1RootKeys,
   assertOverlayRespectsHeredity,
+  assertSecretsRespectLocks,
   OpencodeConfigValidationError,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import {
@@ -97,16 +98,21 @@ export class ClientOpencodeConfigController {
   ): Promise<OpencodeConfigResponseDto> {
     await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
     const agentConfig = await this.agentProxy.get(clientId, agentId);
-    const layers = await this.opencodeConfigService.getLayerConfigs(clientId);
+    const layers = await this.opencodeConfigService.getLayerParents(clientId);
     const heredity = this.opencodeConfigService.computeHeredity(layers.global, layers.workspace);
     const agentOverlay = this.opencodeConfigService.composeStoredLayer(agentConfig.config, agentConfig.overrides);
-    const effective = this.opencodeConfigService.mergeEffective(agentOverlay, layers.workspace, layers.global);
+    const effective = this.opencodeConfigService.mergeEffective(
+      agentOverlay,
+      layers.workspace.overlay,
+      layers.global.overlay,
+    );
     const sync = await this.configSyncTargets.getSummaryForAgent(agentId);
 
     return {
       ...agentConfig,
       config: agentConfig.config ?? {},
       overrides: agentConfig.overrides ?? {},
+      locks: [],
       effective,
       lockedPaths: heredity.lockedPaths,
       inheritedAdditive: heredity.inheritedAdditive,
@@ -123,10 +129,15 @@ export class ClientOpencodeConfigController {
     @Req() req?: RequestWithUser,
   ): Promise<OpencodeConfigResponseDto> {
     await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
+    if (dto.locks !== undefined && dto.locks !== null && dto.locks.length > 0) {
+      throw new BadRequestException('Explicit locks are not supported on the Environment layer');
+    }
+
     assertNoCredentialKeysInConfig(dto.config ?? undefined);
     assertNoCredentialKeysInConfig(dto.overrides ?? undefined);
 
-    const layers = await this.opencodeConfigService.getLayerConfigs(clientId);
+    const layers = await this.opencodeConfigService.getLayerParents(clientId);
     const heredity = this.opencodeConfigService.computeHeredity(layers.global, layers.workspace);
 
     try {
@@ -134,6 +145,7 @@ export class ClientOpencodeConfigController {
       assertNoV1RootKeys(dto.overrides ?? undefined);
       assertOverlayRespectsHeredity(dto.config ?? undefined, heredity.lockedPaths, heredity.inheritedAdditive);
       assertOverlayRespectsHeredity(dto.overrides ?? undefined, heredity.lockedPaths, heredity.inheritedAdditive);
+      assertSecretsRespectLocks(dto.secrets ?? undefined, heredity.lockedPaths);
     } catch (error) {
       if (error instanceof OpencodeConfigValidationError) {
         throw new BadRequestException(error.message);
@@ -142,14 +154,20 @@ export class ClientOpencodeConfigController {
       throw error;
     }
 
-    const agentConfig = await this.agentProxy.put(clientId, agentId, dto);
+    const agentPayload = { ...dto, locks: undefined };
+    const agentConfig = await this.agentProxy.put(clientId, agentId, agentPayload);
     const agentOverlay = this.opencodeConfigService.composeStoredLayer(agentConfig.config, agentConfig.overrides);
-    const effective = this.opencodeConfigService.mergeEffective(agentOverlay, layers.workspace, layers.global);
+    const effective = this.opencodeConfigService.mergeEffective(
+      agentOverlay,
+      layers.workspace.overlay,
+      layers.global.overlay,
+    );
     const sync = await this.configSyncTargets.markAndProcessAgent(clientId, agentId);
 
     return {
       ...agentConfig,
       overrides: agentConfig.overrides ?? {},
+      locks: [],
       effective,
       lockedPaths: heredity.lockedPaths,
       inheritedAdditive: heredity.inheritedAdditive,

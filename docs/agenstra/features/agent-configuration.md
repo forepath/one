@@ -41,10 +41,13 @@ Within a layer, the editable surface is `compose(config, overrides)` — structu
 ## Heredity
 
 - **Replace + lock:** `permissions`, provider allow/deny lists, model allow/deny lists, `experimental.policies`, and similar security roots. Parent presence locks the path for children.
-- **Map merge:** `providers`, `mcp.servers`, `commands`, `agents`, `references`, `formatter` (object) — parent entry keys are inherited; children may add new keys and may set `disabled` / `hidden` on inherited keys (deep-merged). Parent `formatter: false` fully locks formatters.
-- **Array concat:** `skills`, `instructions`, `plugins` — parent items stack; children append (skills are converted to OpenCode `{ paths, urls }` on worker sync).
-- Responses expose `lockedPaths` (JSON Pointers) and `inheritedAdditive`.
-- Raw JSON mode and Advanced overrides validate overlays with the same rules (`validateOverlayAgainstHeredity`).
+- **Explicit locks (Global / Workspace):** each layer may store a `locks` array of JSON Pointers (e.g. `/model`, `/skills`, `/tabs/mcp`). Locks apply to **this layer and** lower layers **even when the parent value is unset**. Tab locks use `/tabs/{id}` and expand to all fields owned by that tab. Environment cannot author locks.
+- **Map merge:** `providers`, `mcp.servers`, `commands`, `agents`, `references`, `formatter` (object) — parent entry keys are inherited; children may add new keys and may set `disabled` / `hidden` on inherited keys (deep-merged), unless the map root is explicitly locked. Parent `formatter: false` fully locks formatters.
+- **Array concat:** `skills`, `instructions`, `plugins` — parent items stack; children append (skills are converted to OpenCode `{ paths, urls }` on worker sync), unless the array root is explicitly locked.
+- Responses expose `locks` (this layer), `lockedPaths` (from higher layers, presence + expanded explicit locks), and `inheritedAdditive`.
+- Locked fields/lists/tabs stay **visible** and **read-only** on the locking layer and on children (same presentation as presence-locks when a parent set a value). Environment can still Authenticate MCP servers when MCP is locked. Applying an explicit lock first **resets** the path to the inherited/default value (clears this layer’s overlay), so the lock freezes the original rather than a pending edit.
+- Section headings vanish only when no controls remain in that section for other reasons (not because of locks).
+- Raw JSON mode and Advanced overrides validate overlays with the same rules (`validateOverlayAgainstHeredity`). Network secret keys honor `/secrets/{KEY}` locks.
 
 Worker sync applies effective config via `PATCH /global/config` (durable OpenCode global config). Immediate on save for agent PUT; workspace/global cascade processes a first batch immediately; BullMQ retries pending/failed about every `OPENCODE_CONFIG_SYNC_INTERVAL_MS` (default 30s).
 

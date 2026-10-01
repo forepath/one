@@ -3,13 +3,16 @@ import {
   assertNoCredentialKeysInConfig,
   assertNoV1RootKeys,
   assertOverlayRespectsHeredity,
+  assertSecretsRespectLocks,
   composeLayerOverlay,
   computeHeredityMetadata,
   mergeConfigs,
   mergeSecrets as mergeSecretMaps,
   migrateConfigV1ToV2,
+  normalizeStoredLocks,
   OpencodeConfigValidationError,
   prepareConfigForSync,
+  type HeredityParentLayer,
   type InheritedAdditiveEntry,
   type JsonObject,
 } from '@forepath/agenstra/shared/util-opencode-config';
@@ -89,7 +92,7 @@ export class OpencodeConfigService {
   async getGlobal(): Promise<OpencodeConfigResponseDto> {
     const row = await this.globalRepo.find({ take: 1, order: { updatedAt: 'DESC' } }).then((r) => r[0]);
 
-    return this.toResponse(row?.config, row?.overrides, row?.secrets, row?.updatedAt);
+    return this.toResponse(row?.config, row?.overrides, row?.locks, row?.secrets, row?.updatedAt);
   }
 
   async putGlobal(dto: UpsertOpencodeConfigDto): Promise<OpencodeConfigResponseDto> {
@@ -110,6 +113,10 @@ export class OpencodeConfigService {
       row.overrides = dto.overrides ?? {};
     }
 
+    if (dto.locks !== undefined) {
+      row.locks = normalizeStoredLocks(dto.locks);
+    }
+
     const nextSecrets = persistSecrets(row.secrets, dto.secrets);
 
     if (nextSecrets !== undefined) {
@@ -118,18 +125,18 @@ export class OpencodeConfigService {
 
     const saved = await this.globalRepo.save(row);
 
-    return this.toResponse(saved.config, saved.overrides, saved.secrets, saved.updatedAt);
+    return this.toResponse(saved.config, saved.overrides, saved.locks, saved.secrets, saved.updatedAt);
   }
 
   async getClient(clientId: string): Promise<OpencodeConfigResponseDto> {
     const row = await this.clientRepo.findOne({ where: { clientId } });
     const globalRow = await this.globalRepo.find({ take: 1, order: { updatedAt: 'DESC' } }).then((r) => r[0]);
     const overlay = this.composeStoredLayer(row?.config, row?.overrides);
-    const globalOverlay = this.composeStoredLayer(globalRow?.config, globalRow?.overrides);
-    const heredity = computeHeredityMetadata(globalOverlay);
-    const response = this.toResponse(row?.config, row?.overrides, row?.secrets, row?.updatedAt);
+    const globalLayer = this.toHeredityParent(globalRow);
+    const heredity = computeHeredityMetadata(globalLayer);
+    const response = this.toResponse(row?.config, row?.overrides, row?.locks, row?.secrets, row?.updatedAt);
 
-    response.effective = this.mergeEffective(null, overlay, globalOverlay);
+    response.effective = this.mergeEffective(null, overlay, globalLayer.overlay);
     response.lockedPaths = heredity.lockedPaths;
     response.inheritedAdditive = heredity.inheritedAdditive;
 
@@ -138,11 +145,12 @@ export class OpencodeConfigService {
 
   async putClient(clientId: string, dto: UpsertOpencodeConfigDto): Promise<OpencodeConfigResponseDto> {
     const globalRow = await this.globalRepo.find({ take: 1, order: { updatedAt: 'DESC' } }).then((r) => r[0]);
-    const globalOverlay = this.composeStoredLayer(globalRow?.config, globalRow?.overrides);
-    const heredity = computeHeredityMetadata(globalOverlay);
+    const globalLayer = this.toHeredityParent(globalRow);
+    const heredity = computeHeredityMetadata(globalLayer);
 
     this.assertWritableOverlay(dto.config ?? undefined, heredity.lockedPaths, heredity.inheritedAdditive);
     this.assertWritableOverlay(dto.overrides ?? undefined, heredity.lockedPaths, heredity.inheritedAdditive);
+    this.assertWritableSecrets(dto.secrets, heredity.lockedPaths);
 
     let row = await this.clientRepo.findOne({ where: { clientId } });
 
@@ -158,6 +166,10 @@ export class OpencodeConfigService {
       row.overrides = dto.overrides ?? {};
     }
 
+    if (dto.locks !== undefined) {
+      row.locks = normalizeStoredLocks(dto.locks);
+    }
+
     const nextSecrets = persistSecrets(row.secrets, dto.secrets);
 
     if (nextSecrets !== undefined) {
@@ -166,9 +178,9 @@ export class OpencodeConfigService {
 
     const saved = await this.clientRepo.save(row);
     const overlay = this.composeStoredLayer(saved.config, saved.overrides);
-    const response = this.toResponse(saved.config, saved.overrides, saved.secrets, saved.updatedAt);
+    const response = this.toResponse(saved.config, saved.overrides, saved.locks, saved.secrets, saved.updatedAt);
 
-    response.effective = this.mergeEffective(null, overlay, globalOverlay);
+    response.effective = this.mergeEffective(null, overlay, globalLayer.overlay);
     response.lockedPaths = heredity.lockedPaths;
     response.inheritedAdditive = heredity.inheritedAdditive;
 
@@ -210,11 +222,11 @@ export class OpencodeConfigService {
     return mergeSecretMaps(agentSecrets, workspaceSecrets, globalSecrets);
   }
 
-  computeHeredity(...parents: Array<Record<string, unknown> | null | undefined>): {
+  computeHeredity(...parents: Array<HeredityParentLayer | null | undefined>): {
     lockedPaths: string[];
     inheritedAdditive: InheritedAdditiveEntry[];
   } {
-    return computeHeredityMetadata(...(parents as Array<JsonObject | null | undefined>));
+    return computeHeredityMetadata(...parents);
   }
 
   composeStoredLayer(
@@ -228,12 +240,24 @@ export class OpencodeConfigService {
     global: Record<string, unknown>;
     workspace: Record<string, unknown>;
   }> {
+    const layers = await this.getLayerParents(clientId);
+
+    return {
+      global: layers.global.overlay ?? {},
+      workspace: layers.workspace.overlay ?? {},
+    };
+  }
+
+  async getLayerParents(clientId?: string): Promise<{
+    global: HeredityParentLayer;
+    workspace: HeredityParentLayer;
+  }> {
     const globalRow = await this.globalRepo.find({ take: 1, order: { updatedAt: 'DESC' } }).then((r) => r[0]);
     const workspaceRow = clientId ? await this.clientRepo.findOne({ where: { clientId } }) : null;
 
     return {
-      global: this.composeStoredLayer(globalRow?.config, globalRow?.overrides),
-      workspace: this.composeStoredLayer(workspaceRow?.config, workspaceRow?.overrides),
+      global: this.toHeredityParent(globalRow),
+      workspace: this.toHeredityParent(workspaceRow),
     };
   }
 
@@ -247,6 +271,18 @@ export class OpencodeConfigService {
     return {
       global: parseSecrets(globalRow?.secrets),
       workspace: parseSecrets(workspaceRow?.secrets),
+    };
+  }
+
+  private toHeredityParent(
+    row:
+      | { config?: Record<string, unknown> | null; overrides?: Record<string, unknown> | null; locks?: string[] | null }
+      | null
+      | undefined,
+  ): HeredityParentLayer {
+    return {
+      overlay: this.composeStoredLayer(row?.config, row?.overrides),
+      locks: normalizeStoredLocks(row?.locks),
     };
   }
 
@@ -264,9 +300,22 @@ export class OpencodeConfigService {
     }
   }
 
+  private assertWritableSecrets(secrets: Record<string, string> | null | undefined, lockedPaths: string[]): void {
+    if (secrets === undefined || secrets === null) {
+      return;
+    }
+
+    try {
+      assertSecretsRespectLocks(secrets, lockedPaths);
+    } catch (error) {
+      toBadRequest(error);
+    }
+  }
+
   private toResponse(
     config: Record<string, unknown> | null | undefined,
     overrides: Record<string, unknown> | null | undefined,
+    locks: string[] | null | undefined,
     secretsRaw: string | null | undefined,
     updatedAt?: Date,
   ): OpencodeConfigResponseDto {
@@ -275,6 +324,7 @@ export class OpencodeConfigService {
     return {
       config: asOverlay(config),
       overrides: asOverlay(overrides),
+      locks: normalizeStoredLocks(locks),
       secretKeys: Object.keys(secrets),
       updatedAt,
     };

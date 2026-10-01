@@ -24,8 +24,21 @@ import {
   composeLayerOverlay,
   validateOverlayAgainstHeredity,
   INHERITED_MAP_ENTRY_OVERRIDE_KEYS,
+  AGENT_CONFIG_TAB_LOCK_PATHS,
+  isPathLocked,
+  normalizeStoredLocks,
+  parseTabIdFromLock,
+  tabLockPointer,
+  type AgentConfigTabId,
   type JsonObject,
 } from '@forepath/agenstra/shared/util-opencode-config';
+import {
+  isDraftLockActive,
+  isRowVisible as computeRowVisible,
+  isTabLockedByParent as computeTabLockedByParent,
+  isTabVisible as computeTabVisible,
+  sectionVisible as computeSectionVisible,
+} from './lock-visibility.util';
 import {
   filterBuiltinProvidersByAllowDeny,
   formatProviderModelRef,
@@ -158,6 +171,8 @@ export class AgentConfigEditorComponent implements OnInit {
   readonly overridesJson = signal('{}');
   readonly overridesError = signal<string | null>(null);
   readonly lockedPaths = signal<string[]>([]);
+  /** Explicit locks authored on this layer (global / workspace). */
+  readonly locks = signal<string[]>([]);
   readonly inheritedAdditive = signal<InheritedAdditiveDto[]>([]);
   readonly secretKeys = signal<string[]>([]);
   /** Draft password values for layer secrets (network + provider credentials). Never prefilled from API. */
@@ -170,6 +185,9 @@ export class AgentConfigEditorComponent implements OnInit {
   readonly baselineConfig = signal<JsonObject>({});
   /** Overrides object captured with the baseline. */
   readonly baselineOverrides = signal<JsonObject>({});
+  /** Locks captured with the baseline. */
+  readonly baselineLocks = signal<string[]>([]);
+  readonly canManageLocks = computed(() => this.layer() !== 'agent');
   readonly draftBuiltinProviderId = signal('');
   readonly draftCustomProviderId = signal('');
   readonly draftAllowModelProviderId = signal('');
@@ -930,10 +948,144 @@ export class AgentConfigEditorComponent implements OnInit {
     );
   }
 
+  /**
+   * True when the control must be read-only: locked by a higher layer, or explicitly locked
+   * on this Global/Workspace layer (authoring a lock freezes the value here too).
+   */
   isLocked(pointer: string): boolean {
-    const normalized = pointer.startsWith('/') ? pointer : `/${pointer}`;
+    if (isPathLocked(this.lockedPaths(), pointer)) {
+      return true;
+    }
 
-    return this.lockedPaths().some((locked) => normalized === locked || normalized.startsWith(`${locked}/`));
+    return this.canManageLocks() && isDraftLockActive(this.locks(), pointer);
+  }
+
+  /** True when this layer's draft locks include the pointer (or an expanded tab lock covering it). */
+  isDraftLocked(pointer: string): boolean {
+    return isDraftLockActive(this.locks(), pointer);
+  }
+
+  setDraftLock(pointer: string, locked: boolean): void {
+    if (!this.canManageLocks()) {
+      return;
+    }
+
+    const normalized = pointer.startsWith('/') ? pointer : `/${pointer}`;
+    const current = new Set(this.locks());
+
+    if (locked) {
+      // Freeze the inherited/default value — discard local overlay edits for this path first.
+      if (!isDraftLockActive([...current], normalized)) {
+        this.resetLocalValuesForLock(normalized);
+      }
+
+      current.add(normalized);
+    } else {
+      current.delete(normalized);
+    }
+
+    this.locks.set(normalizeStoredLocks([...current]));
+    this.rawJson.set(JSON.stringify(composeLayerOverlay(this.config(), this.overrides()), null, 2));
+    this.overridesJson.set(JSON.stringify(this.overrides(), null, 2));
+    this.syncDefaultModelDraftsFromConfig();
+    this.validateRaw();
+    this.validateOverrides();
+  }
+
+  toggleDraftLock(pointer: string): void {
+    if (!this.canToggleLock(pointer)) {
+      return;
+    }
+
+    this.setDraftLock(pointer, !this.isDraftLocked(pointer));
+  }
+
+  /** Locked by a higher layer's presence or explicit locks (not this layer's draft). */
+  isParentLocked(pointer: string): boolean {
+    return isPathLocked(this.lockedPaths(), pointer);
+  }
+
+  /** Show lock chrome on every controlled path (authors toggle; children display state only). */
+  showLockControl(_pointer: string): boolean {
+    return true;
+  }
+
+  /** Authors may toggle only locks they own — not parent-enforced locks. */
+  canToggleLock(pointer: string): boolean {
+    return this.canManageLocks() && !this.isParentLocked(pointer);
+  }
+
+  tabLockPath(tabId: AgentConfigTabId | string): string {
+    return tabLockPointer(tabId);
+  }
+
+  /** Icon for the tab-bar lock action (always shown; read-only when not toggleable). */
+  tabLockActionIcon(tabId: AgentConfigTabId | string): string | null {
+    return this.tabLockActionPressed(tabId) ? 'lock-fill' : 'unlock';
+  }
+
+  tabLockActionPressed(tabId: AgentConfigTabId | string): boolean {
+    return this.isTabLockedByParent(tabId) || this.isDraftLocked(this.tabLockPath(tabId));
+  }
+
+  tabLockActionLabel(tabId: AgentConfigTabId | string): string {
+    if (!this.canToggleLock(this.tabLockPath(tabId))) {
+      return this.tabLockActionPressed(tabId)
+        ? $localize`:@@featureAgentConfig-lockedByHigherLayer:Locked by a higher layer`
+        : $localize`:@@featureAgentConfig-unlockedInherited:Not locked by a higher layer`;
+    }
+
+    return this.isDraftLocked(this.tabLockPath(tabId))
+      ? $localize`:@@featureAgentConfig-unlockTabAria:Unlock entire tab for lower layers`
+      : $localize`:@@featureAgentConfig-lockTabAria:Lock entire tab for lower layers`;
+  }
+
+  tabLockActionTitle(tabId: AgentConfigTabId | string): string {
+    return this.tabLockActionLabel(tabId);
+  }
+
+  onTabLockAction(tabId: AgentConfigTabId | string): void {
+    this.toggleDraftLock(this.tabLockPath(tabId));
+  }
+
+  listLockAria(pointer: string): string {
+    if (!this.canToggleLock(pointer)) {
+      return this.listLockIconLocked(pointer)
+        ? $localize`:@@featureAgentConfig-lockedByHigherLayer:Locked by a higher layer`
+        : $localize`:@@featureAgentConfig-unlockedInherited:Not locked by a higher layer`;
+    }
+
+    return this.isDraftLocked(pointer)
+      ? $localize`:@@featureAgentConfig-unlockList:Unlock list for lower layers`
+      : $localize`:@@featureAgentConfig-lockList:Lock list for lower layers`;
+  }
+
+  listLockIconLocked(pointer: string): boolean {
+    return this.isParentLocked(pointer) || this.isDraftLocked(pointer);
+  }
+
+  isTabLockedByParent(tabId: AgentConfigTabId | string): boolean {
+    return computeTabLockedByParent(this.lockedPaths(), tabId);
+  }
+
+  /**
+   * Lower layers hide rows locked by parents. Authors always see their own fields.
+   */
+  isRowVisible(pointer: string): boolean {
+    return computeRowVisible(this.lockedPaths(), pointer);
+  }
+
+  isTabVisible(tabId: AgentConfigTabId | string): boolean {
+    return computeTabVisible(this.layer(), this.lockedPaths(), tabId);
+  }
+
+  /** Section heading stays when at least one owned path is still visible. */
+  sectionVisible(...pointers: string[]): boolean {
+    return computeSectionVisible(this.lockedPaths(), ...pointers);
+  }
+
+  isSecretRowVisible(key: string): boolean {
+    return this.isRowVisible(`/secrets/${key}`);
   }
 
   inheritedKeys(path: string): string[] {
@@ -1398,7 +1550,21 @@ export class AgentConfigEditorComponent implements OnInit {
   }
 
   mcpAuthButtonDisabled(configKey: string): boolean {
-    return this.mcpAuthBusyKey() === configKey || this.mcpRuntimeStatusFor(configKey)?.status === 'connected';
+    return this.mcpAuthBusyKey() === configKey || this.mcpAuthConnected(configKey);
+  }
+
+  mcpAuthConnected(configKey: string): boolean {
+    return this.mcpRuntimeStatusFor(configKey)?.status === 'connected';
+  }
+
+  mcpAuthButtonVariant(configKey: string): 'secondary' | 'success' {
+    return this.mcpAuthConnected(configKey) ? 'success' : 'secondary';
+  }
+
+  mcpAuthButtonTitle(configKey: string): string {
+    return this.mcpAuthConnected(configKey)
+      ? $localize`:@@featureAgentConfig-mcpAuthConnected:Connected — no authentication needed`
+      : $localize`:@@featureAgentConfig-mcpAuthStart:Authenticate`;
   }
 
   refreshMcpRuntimeStatuses(): void {
@@ -2564,6 +2730,7 @@ export class AgentConfigEditorComponent implements OnInit {
     const payload = {
       config: overlay,
       overrides: overridesOverlay,
+      ...(this.canManageLocks() ? { locks: this.locks() } : {}),
       ...(secrets ? { secrets } : {}),
     };
 
@@ -2612,6 +2779,7 @@ export class AgentConfigEditorComponent implements OnInit {
     return JSON.stringify({
       config: configValue,
       overrides: overridesValue,
+      locks: this.locks(),
       secretDrafts: this.secretDrafts(),
       clearSecretKeys: [...this.clearSecretKeys()].sort(),
     });
@@ -2620,6 +2788,7 @@ export class AgentConfigEditorComponent implements OnInit {
   private captureBaseline(): void {
     this.baselineConfig.set(structuredClone(this.config()));
     this.baselineOverrides.set(structuredClone(this.overrides()));
+    this.baselineLocks.set([...this.locks()]);
     this.baselineSnapshot.set(this.currentSnapshot());
   }
 
@@ -2702,7 +2871,12 @@ export class AgentConfigEditorComponent implements OnInit {
     return this.opencodeConfigService.getAgent(clientId, agentId);
   }
 
-  private saveRequest(payload: { config: JsonObject; overrides: JsonObject; secrets?: Record<string, string> | null }) {
+  private saveRequest(payload: {
+    config: JsonObject;
+    overrides: JsonObject;
+    locks?: string[] | null;
+    secrets?: Record<string, string> | null;
+  }) {
     const layer = this.layer();
 
     if (layer === 'global') {
@@ -2738,6 +2912,7 @@ export class AgentConfigEditorComponent implements OnInit {
     this.rawJson.set(JSON.stringify(composeLayerOverlay(migrated, migratedOverrides), null, 2));
     this.overridesJson.set(JSON.stringify(migratedOverrides, null, 2));
     this.lockedPaths.set(dto.lockedPaths ?? []);
+    this.locks.set(normalizeStoredLocks(dto.locks ?? []));
     this.inheritedAdditive.set(dto.inheritedAdditive ?? []);
     this.secretKeys.set(dto.secretKeys ?? []);
     this.secretDrafts.set({});
@@ -3169,6 +3344,80 @@ export class AgentConfigEditorComponent implements OnInit {
 
     this.pruneEmpty(root);
     this.config.set(root);
+  }
+
+  /**
+   * Drop local overlay values for a lock pointer so the locked snapshot is the inherited/default
+   * value (effective), not an in-progress edit on this layer.
+   */
+  private resetLocalValuesForLock(pointer: string): void {
+    const tabId = parseTabIdFromLock(pointer);
+
+    if (tabId) {
+      for (const owned of AGENT_CONFIG_TAB_LOCK_PATHS[tabId]) {
+        this.resetLocalValuesForLock(owned);
+      }
+
+      return;
+    }
+
+    if (pointer === '/overrides') {
+      this.overrides.set({});
+
+      return;
+    }
+
+    if (pointer.startsWith('/secrets/')) {
+      const key = pointer.slice('/secrets/'.length);
+
+      if (!key) {
+        return;
+      }
+
+      this.secretDrafts.update((current) => {
+        const next = { ...current };
+
+        delete next[key];
+
+        return next;
+      });
+
+      if (this.secretKeys().includes(key)) {
+        this.clearSecretKeys.update((current) => new Set(current).add(key));
+      }
+
+      return;
+    }
+
+    const dotPath = pointer.replace(/^\//, '').replace(/\//g, '.');
+
+    if (!dotPath) {
+      return;
+    }
+
+    this.clearPathInObject(this.config, dotPath);
+    this.clearPathInObject(this.overrides, dotPath);
+  }
+
+  private clearPathInObject(target: { (): JsonObject; set(value: JsonObject): void }, path: string): void {
+    const segments = path.split('.');
+    const root = structuredClone(target());
+    let cursor: JsonObject = root;
+
+    for (let index = 0; index < segments.length - 1; index++) {
+      const segment = segments[index];
+      const next = cursor[segment];
+
+      if (!next || typeof next !== 'object' || Array.isArray(next)) {
+        return;
+      }
+
+      cursor = next as JsonObject;
+    }
+
+    delete cursor[segments[segments.length - 1]];
+    this.pruneEmpty(root);
+    target.set(root);
   }
 
   private pruneEmpty(node: JsonObject): void {

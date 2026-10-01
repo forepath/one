@@ -8936,7 +8936,7 @@ components:
           enum: [file, directory]
     OpencodeConfigResponseDto:
       type: object
-      required: [config, overrides, secretKeys]
+      required: [config, overrides, locks, secretKeys]
       properties:
         config:
           type: object
@@ -8947,6 +8947,13 @@ components:
           description: >
             Raw JSON overrides for this layer, merged over `config` before
             cross-layer merge (same heredity locks as `config`).
+        locks:
+          type: array
+          items:
+            type: string
+          description: >
+            Explicit JSON Pointer locks authored on this layer (global / workspace).
+            Empty on Environment responses. Lower layers receive these via expanded lockedPaths.
         secretKeys:
           type: array
           items:
@@ -8964,7 +8971,9 @@ components:
           type: array
           items:
             type: string
-          description: JSON Pointer paths locked by a higher layer
+          description: >
+            JSON Pointer paths locked by a higher layer (presence-derived and explicit locks,
+            including expanded /tabs/{id} locks)
         inheritedAdditive:
           type: array
           items:
@@ -9192,6 +9201,14 @@ components:
             Raw JSON patch merged over `config` for this layer.
             Same credential, v1-key, and heredity checks as `config`.
             Empty object clears overrides when provided.
+        locks:
+          type: array
+          nullable: true
+          items:
+            type: string
+          description: >
+            Explicit JSON Pointer locks for lower layers (global / workspace only).
+            Empty array clears locks. Rejected on Environment PUT when non-empty.
         secrets:
           type: object
           nullable: true
