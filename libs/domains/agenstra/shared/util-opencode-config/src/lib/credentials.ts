@@ -1,6 +1,12 @@
 import { NETWORK_SECRET_KEYS, OpencodeConfigValidationError, type JsonObject } from './types';
+import { sanitizeMcpWireServer } from './mcp-wire';
 
 const CREDENTIAL_KEY_PATTERN = /(password|secret|token|apikey|api_key|accesskey|private[_-]?key|credential)/i;
+/**
+ * UI-only MCP name lists stored in overlays. They match {@link CREDENTIAL_KEY_PATTERN}
+ * (`secret*`) but hold secret *names*, not values — values live in the encrypted secrets map.
+ */
+const MCP_SECRET_NAME_LIST_KEYS = new Set(['secretEnv', 'secretHeaders']);
 const NETWORK_SECRET_KEY_SET = new Set<string>(NETWORK_SECRET_KEYS);
 
 /** Primary credential env names used as OpenCode ApiAuth `key`. */
@@ -271,6 +277,162 @@ export function extractProviderEnvSecrets(
   return { values, managedKeys: [...managed].sort() };
 }
 
+/**
+ * Resolve MCP servers map from either V2 UI shape (`mcp.servers`) or OpenCode wire (`mcp` flat).
+ */
+function resolveMcpServersMap(effectiveConfig: JsonObject | null | undefined): JsonObject {
+  if (!effectiveConfig) {
+    return {};
+  }
+
+  const mcp = effectiveConfig['mcp'];
+
+  if (!isPlainObject(mcp)) {
+    return {};
+  }
+
+  if (isPlainObject(mcp['servers'])) {
+    return mcp['servers'] as JsonObject;
+  }
+
+  const out: JsonObject = {};
+
+  for (const [key, value] of Object.entries(mcp)) {
+    if (key === 'timeout' || key === 'servers' || !isPlainObject(value)) {
+      continue;
+    }
+
+    out[key] = value;
+  }
+
+  return out;
+}
+
+/** Layer-secrets key for an MCP OAuth client secret (matches shared util helper). */
+export function mcpOAuthClientSecretKey(serverKey: string): string {
+  return `mcp.${serverKey.trim()}.oauth.client_secret`;
+}
+
+/**
+ * Maps layer secrets onto MCP `secretEnv` names for Docker container Env.
+ * Local MCP child processes inherit these when OpenCode spawns them.
+ */
+export function extractMcpEnvSecrets(
+  secrets: Record<string, string>,
+  effectiveConfig: JsonObject | null | undefined,
+): { values: Record<string, string>; managedKeys: string[] } {
+  const servers = resolveMcpServersMap(effectiveConfig);
+  const managed = new Set<string>();
+  const values: Record<string, string> = {};
+
+  for (const entry of Object.values(servers)) {
+    if (!isPlainObject(entry)) {
+      continue;
+    }
+
+    for (const name of ensureStringList(entry['secretEnv'])) {
+      managed.add(name);
+
+      const value = secrets[name];
+
+      if (typeof value === 'string' && value.trim()) {
+        values[name] = value;
+      }
+    }
+  }
+
+  return { values, managedKeys: [...managed].sort() };
+}
+
+/**
+ * Injects MCP secret env/header/OAuth values into a wire (or V2) config clone.
+ * Strips UI-only `secretEnv` / `secretHeaders` lists. Mutates and returns `config`.
+ *
+ * Call after `assertNoCredentialKeysInConfig` so credential-like env/header **keys**
+ * appear only in the patched wire payload, never in stored overlays.
+ */
+export function injectMcpSecretsIntoWire(config: JsonObject, secrets: Record<string, string>): JsonObject {
+  const mcp = config['mcp'];
+
+  if (!isPlainObject(mcp)) {
+    return config;
+  }
+
+  const isV2 = isPlainObject(mcp['servers']);
+  const servers = isV2 ? (mcp['servers'] as JsonObject) : mcp;
+  const nextServers: JsonObject = {};
+
+  for (const [serverKey, raw] of Object.entries(servers)) {
+    if (serverKey === 'timeout' || serverKey === 'servers' || !isPlainObject(raw)) {
+      continue;
+    }
+
+    const entry = { ...raw } as JsonObject;
+    const secretEnvNames = ensureStringList(entry['secretEnv']);
+    const secretHeaderNames = ensureStringList(entry['secretHeaders']);
+
+    delete entry['secretEnv'];
+    delete entry['secretHeaders'];
+
+    if (secretEnvNames.length > 0) {
+      const environment = isPlainObject(entry['environment'])
+        ? { ...(entry['environment'] as JsonObject) }
+        : isPlainObject(entry['env'])
+          ? { ...(entry['env'] as JsonObject) }
+          : {};
+
+      for (const name of secretEnvNames) {
+        const value = secrets[name];
+
+        if (typeof value === 'string' && value.trim()) {
+          environment[name] = value;
+        }
+      }
+
+      if (Object.keys(environment).length > 0) {
+        entry['environment'] = environment;
+      }
+
+      delete entry['env'];
+    }
+
+    if (secretHeaderNames.length > 0) {
+      const headers = isPlainObject(entry['headers']) ? { ...(entry['headers'] as JsonObject) } : {};
+
+      for (const name of secretHeaderNames) {
+        const value = secrets[name];
+
+        if (typeof value === 'string' && value.trim()) {
+          headers[name] = value;
+        }
+      }
+
+      if (Object.keys(headers).length > 0) {
+        entry['headers'] = headers;
+      }
+    }
+
+    const oauthSecret = secrets[mcpOAuthClientSecretKey(serverKey)];
+
+    if (typeof oauthSecret === 'string' && oauthSecret.trim()) {
+      const oauth = isPlainObject(entry['oauth']) ? { ...(entry['oauth'] as JsonObject) } : {};
+
+      oauth['clientSecret'] = oauthSecret;
+      entry['oauth'] = oauth;
+    }
+
+    nextServers[serverKey] = sanitizeMcpWireServer(entry);
+  }
+
+  if (isV2) {
+    config['mcp'] = { ...mcp, servers: nextServers };
+  } else {
+    config['mcp'] = nextServers;
+  }
+
+  return config;
+}
+
 export function assertNoCredentialKeysInConfig(config: JsonObject | null | undefined): void {
   if (!config) {
     return;
@@ -300,6 +462,11 @@ export function assertNoCredentialKeysInConfig(config: JsonObject | null | undef
 
     for (const [key, value] of Object.entries(current.value as JsonObject)) {
       const path = current.path ? `${current.path}.${key}` : key;
+
+      // MCP UI metadata: arrays of secret *names* (values are in layer secrets).
+      if (MCP_SECRET_NAME_LIST_KEYS.has(key)) {
+        continue;
+      }
 
       if (CREDENTIAL_KEY_PATTERN.test(key)) {
         throw new OpencodeConfigValidationError(`Credential-like key '${path}' must be stored in secrets, not config`);

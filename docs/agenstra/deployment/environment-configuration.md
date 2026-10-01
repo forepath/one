@@ -257,26 +257,30 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 
 Used by **backend agent controller**. See [Background jobs](./background-jobs.md).
 
-| Variable                                 | Description                             | Default                                       |
-| ---------------------------------------- | --------------------------------------- | --------------------------------------------- |
-| `REDIS_HOST`                             | Redis host                              | `localhost` (compose: `redis`)                |
-| `REDIS_PORT`                             | Redis port                              | `6379`                                        |
-| `REDIS_HOST_PORT`                        | Host port published by compose          | `6379`                                        |
-| `REDIS_PASSWORD`                         | Optional password                       | empty                                         |
-| `REDIS_DB`                               | Redis DB index                          | `0`                                           |
-| `REDIS_KEY_PREFIX`                       | Key prefix                              | `agenstra-controller`                         |
-| `QUEUE_ROLE`                             | `api`, `scheduler`, `worker`, or `all`  | `all` locally                                 |
-| `QUEUE_WORKER_CONCURRENCY`               | Worker concurrency                      | `5`                                           |
-| `QUEUE_BULL_BOARD_ENABLED`               | Enable Bull Board                       | `true` in dev for `all`/`scheduler`           |
-| `QUEUE_BULL_BOARD_PATH`                  | Bull Board path                         | `/admin/queues`                               |
-| `QUEUE_BULL_BOARD_USERNAME`              | Bull Board HTTP Basic user              | `admin`                                       |
-| `QUEUE_BULL_BOARD_PASSWORD`              | Bull Board HTTP Basic password          | required; `bullmq` in local compose           |
-| `OPENCODE_PROVIDERS_REFRESH_INTERVAL_MS` | models.dev catalog refresh interval     | `86400000` (24h); `0` disables repeatable job |
-| `OPENCODE_PROVIDERS_MODELS_DEV_URL`      | Catalog JSON URL                        | `https://models.dev/api.json`                 |
-| `OPENCODE_CONFIG_SYNC_INTERVAL_MS`       | Durable OpenCode config sync interval   | `30000`                                       |
-| `OPENCODE_CONFIG_SYNC_BATCH_SIZE`        | Config sync targets per coordinator run | `10`                                          |
-| `OPENCODE_LAYER_FILES_SYNC_INTERVAL_MS`  | Layer-file emit retry interval          | `30000`                                       |
-| `OPENCODE_LAYER_FILES_SYNC_BATCH_SIZE`   | Layer-file targets per coordinator run  | `20`                                          |
+| Variable                                   | Description                                                            | Default                                                                       |
+| ------------------------------------------ | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `REDIS_HOST`                               | Redis host                                                             | `localhost` (compose: `redis`)                                                |
+| `REDIS_PORT`                               | Redis port                                                             | `6379`                                                                        |
+| `REDIS_HOST_PORT`                          | Host port published by compose                                         | `6379`                                                                        |
+| `REDIS_PASSWORD`                           | Optional password                                                      | empty                                                                         |
+| `REDIS_DB`                                 | Redis DB index                                                         | `0`                                                                           |
+| `REDIS_KEY_PREFIX`                         | Key prefix                                                             | `agenstra-controller`                                                         |
+| `QUEUE_ROLE`                               | `api`, `scheduler`, `worker`, or `all`                                 | `all` locally                                                                 |
+| `QUEUE_WORKER_CONCURRENCY`                 | Worker concurrency                                                     | `5`                                                                           |
+| `QUEUE_BULL_BOARD_ENABLED`                 | Enable Bull Board                                                      | `true` in dev for `all`/`scheduler`                                           |
+| `QUEUE_BULL_BOARD_PATH`                    | Bull Board path                                                        | `/admin/queues`                                                               |
+| `QUEUE_BULL_BOARD_USERNAME`                | Bull Board HTTP Basic user                                             | `admin`                                                                       |
+| `QUEUE_BULL_BOARD_PASSWORD`                | Bull Board HTTP Basic password                                         | required; `bullmq` in local compose                                           |
+| `OPENCODE_PROVIDERS_REFRESH_INTERVAL_MS`   | models.dev catalog refresh interval                                    | `86400000` (24h); `0` disables repeatable job                                 |
+| `OPENCODE_PROVIDERS_MODELS_DEV_URL`        | Catalog JSON URL                                                       | `https://models.dev/api.json`                                                 |
+| `OPENCODE_MCP_SERVERS_REFRESH_INTERVAL_MS` | MCP Registry catalog refresh interval                                  | `86400000` (24h); `0` disables repeatable job                                 |
+| `OPENCODE_MCP_REGISTRY_BASE_URL`           | Official MCP Registry base URL                                         | `https://registry.modelcontextprotocol.io`                                    |
+| `OPENCODE_CONFIG_SYNC_INTERVAL_MS`         | Durable OpenCode config sync interval                                  | `30000`                                                                       |
+| `OPENCODE_CONFIG_SYNC_BATCH_SIZE`          | Config sync targets per coordinator run                                | `10`                                                                          |
+| `OPENCODE_LAYER_FILES_SYNC_INTERVAL_MS`    | Layer-file emit retry interval                                         | `30000`                                                                       |
+| `OPENCODE_LAYER_FILES_SYNC_BATCH_SIZE`     | Layer-file targets per coordinator run                                 | `20`                                                                          |
+| `MCP_OAUTH_CALLBACK_SECRET`                | HMAC secret for public MCP OAuth callbacks                             | required for Environment MCP Authenticate; Decabill provisions a random value |
+| `MCP_OAUTH_PUBLIC_BASE_URL`                | Public controller origin for MCP OAuth redirects (non-privileged port) | e.g. `http://localhost:3100`; Decabill uses `http://{fqdn}:3100`              |
 
 ## OpenSearch (search indexes)
 

@@ -38,19 +38,19 @@ export class OpencodeLayerFilesService {
   }
 
   listGlobal(path = '.'): Observable<OpencodeLayerFileListDto> {
-    return this.http.get<OpencodeLayerFileListDto>(`${this.apiUrl}/admin/opencode-config/files`, {
+    return this.http.get<OpencodeLayerFileListDto>(`${this.apiUrl}/admin/opencode/config/files`, {
       params: new HttpParams().set('path', path),
     });
   }
 
   listWorkspace(clientId: string, path = '.'): Observable<OpencodeLayerFileListDto> {
-    return this.http.get<OpencodeLayerFileListDto>(`${this.apiUrl}/clients/${clientId}/opencode-config/files`, {
+    return this.http.get<OpencodeLayerFileListDto>(`${this.apiUrl}/clients/${clientId}/opencode/config/files`, {
       params: new HttpParams().set('path', path),
     });
   }
 
   createGlobal(path: string, entryKind: OpencodeLayerFileEntryKind, content = ''): Observable<OpencodeLayerFileDto> {
-    return this.http.post<OpencodeLayerFileDto>(`${this.apiUrl}/admin/opencode-config/files`, {
+    return this.http.post<OpencodeLayerFileDto>(`${this.apiUrl}/admin/opencode/config/files`, {
       path,
       entryKind,
       content,
@@ -63,7 +63,7 @@ export class OpencodeLayerFilesService {
     entryKind: OpencodeLayerFileEntryKind,
     content = '',
   ): Observable<OpencodeLayerFileDto> {
-    return this.http.post<OpencodeLayerFileDto>(`${this.apiUrl}/clients/${clientId}/opencode-config/files`, {
+    return this.http.post<OpencodeLayerFileDto>(`${this.apiUrl}/clients/${clientId}/opencode/config/files`, {
       path,
       entryKind,
       content,
@@ -77,7 +77,7 @@ export class OpencodeLayerFilesService {
       body.entryKind = entryKind;
     }
 
-    return this.http.post<OpencodeLayerFileDto>(`${this.apiUrl}/admin/opencode-config/files/ensure`, body);
+    return this.http.post<OpencodeLayerFileDto>(`${this.apiUrl}/admin/opencode/config/files/ensure`, body);
   }
 
   ensureWorkspace(
@@ -92,41 +92,41 @@ export class OpencodeLayerFilesService {
     }
 
     return this.http.post<OpencodeLayerFileDto>(
-      `${this.apiUrl}/clients/${clientId}/opencode-config/files/ensure`,
+      `${this.apiUrl}/clients/${clientId}/opencode/config/files/ensure`,
       body,
     );
   }
 
   getGlobal(path: string): Observable<OpencodeLayerFileDto> {
-    return this.http.get<OpencodeLayerFileDto>(`${this.apiUrl}/admin/opencode-config/files/${this.encode(path)}`);
+    return this.http.get<OpencodeLayerFileDto>(`${this.apiUrl}/admin/opencode/config/files/${this.encode(path)}`);
   }
 
   putGlobal(path: string, content: string): Observable<OpencodeLayerFileDto> {
-    return this.http.put<OpencodeLayerFileDto>(`${this.apiUrl}/admin/opencode-config/files/${this.encode(path)}`, {
+    return this.http.put<OpencodeLayerFileDto>(`${this.apiUrl}/admin/opencode/config/files/${this.encode(path)}`, {
       content,
     });
   }
 
   deleteGlobal(path: string): Observable<{ ok: true }> {
-    return this.http.delete<{ ok: true }>(`${this.apiUrl}/admin/opencode-config/files/${this.encode(path)}`);
+    return this.http.delete<{ ok: true }>(`${this.apiUrl}/admin/opencode/config/files/${this.encode(path)}`);
   }
 
   getWorkspace(clientId: string, path: string): Observable<OpencodeLayerFileDto> {
     return this.http.get<OpencodeLayerFileDto>(
-      `${this.apiUrl}/clients/${clientId}/opencode-config/files/${this.encode(path)}`,
+      `${this.apiUrl}/clients/${clientId}/opencode/config/files/${this.encode(path)}`,
     );
   }
 
   putWorkspace(clientId: string, path: string, content: string): Observable<OpencodeLayerFileDto> {
     return this.http.put<OpencodeLayerFileDto>(
-      `${this.apiUrl}/clients/${clientId}/opencode-config/files/${this.encode(path)}`,
+      `${this.apiUrl}/clients/${clientId}/opencode/config/files/${this.encode(path)}`,
       { content },
     );
   }
 
   deleteWorkspace(clientId: string, path: string): Observable<{ ok: true }> {
     return this.http.delete<{ ok: true }>(
-      `${this.apiUrl}/clients/${clientId}/opencode-config/files/${this.encode(path)}`,
+      `${this.apiUrl}/clients/${clientId}/opencode/config/files/${this.encode(path)}`,
     );
   }
 

@@ -10,17 +10,20 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   OpencodeConfigService,
   type InheritedAdditiveDto,
   type OpencodeConfigDto,
+  type OpencodeMcpRuntimeStatus,
+  type OpencodeMcpServerStatusDto,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import {
   migrateConfigV1ToV2,
   composeLayerOverlay,
   validateOverlayAgainstHeredity,
+  INHERITED_MAP_ENTRY_OVERRIDE_KEYS,
   type JsonObject,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import {
@@ -34,6 +37,17 @@ import {
   type OpencodeBuiltinProvider,
 } from '@forepath/agenstra/shared/util-opencode-providers';
 import {
+  builtinMcpServerLabel,
+  getBuiltinMcpServer,
+  mcpOAuthClientSecretKey,
+  mcpServerConfigKey,
+  seedMcpServerFromCatalog,
+  unusedBuiltinMcpServers,
+  type OpencodeBuiltinMcpPackage,
+  type OpencodeBuiltinMcpRemote,
+  type OpencodeBuiltinMcpServer,
+} from '@forepath/agenstra/shared/util-opencode-mcp-servers';
+import {
   FpcAlertComponent,
   FpcButtonComponent,
   FpcEmptyStateComponent,
@@ -45,11 +59,16 @@ import {
   FpcSpinnerComponent,
   FpcTabComponent,
   FpcTabGroupComponent,
+  FpcTypeaheadSelectComponent,
 } from '@forepath/shared/frontend/ui-components';
-import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Subject, forkJoin, of } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, skip, switchMap, tap } from 'rxjs/operators';
 
-import { AgentConfigMapListComponent, type ConfigMapEntryView } from '../map-list/agent-config-map-list.component';
+import {
+  AgentConfigMapListComponent,
+  type ConfigMapEntryBadge,
+  type ConfigMapEntryView,
+} from '../map-list/agent-config-map-list.component';
 import { AgentConfigPathListComponent, type PathListEntryView } from '../path-list/agent-config-path-list.component';
 import {
   classifyPathListValue,
@@ -75,6 +94,8 @@ const POLICY_EFFECTS: PolicyEffect[] = ['allow', 'deny'];
 const POLICY_ACTIONS = ['provider.use', 'permission'] as const;
 /** Select sentinel that reveals the free-text custom provider id field. */
 const CUSTOM_PROVIDER_SELECT_VALUE = '__custom__';
+/** Select sentinel that reveals the free-text custom MCP server id field. */
+const CUSTOM_MCP_SELECT_VALUE = '__custom__';
 
 function isPlainObject(value: unknown): value is JsonObject {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -98,6 +119,7 @@ function isPlainObject(value: unknown): value is JsonObject {
     FpcSpinnerComponent,
     FpcTabComponent,
     FpcTabGroupComponent,
+    FpcTypeaheadSelectComponent,
     AgentConfigMapListComponent,
     AgentConfigPathListComponent,
     AgentConfigSettingsRowComponent,
@@ -150,8 +172,6 @@ export class AgentConfigEditorComponent implements OnInit {
   readonly baselineOverrides = signal<JsonObject>({});
   readonly draftBuiltinProviderId = signal('');
   readonly draftCustomProviderId = signal('');
-  readonly draftEnabledProviderId = signal('');
-  readonly draftDisabledProviderId = signal('');
   readonly draftAllowModelProviderId = signal('');
   readonly draftAllowModelId = signal('');
   readonly draftDenyModelProviderId = signal('');
@@ -160,8 +180,102 @@ export class AgentConfigEditorComponent implements OnInit {
   readonly draftDefaultModelId = signal('');
   readonly draftProviderEnvName = signal('');
   readonly providerMapExpandedKey = signal<string | null>(null);
-  /** Live catalog from GET /opencode-providers (empty until load). */
-  readonly builtinProvidersCatalog = signal<readonly OpencodeBuiltinProvider[]>([]);
+  private readonly providerCatalogCache = signal(new Map<string, OpencodeBuiltinProvider>());
+  /** Providers loaded on demand (config references + typeahead picks). */
+  readonly builtinProvidersCatalog = computed(() =>
+    [...this.providerCatalogCache().values()].sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id)),
+  );
+  /** Shared OpenSearch-backed provider catalog search (all provider typeaheads). */
+  private readonly providerSearchRequest$ = new Subject<string>();
+  private readonly providerSearchActiveTarget = signal<
+    'override' | 'enabled' | 'disabled' | 'allowModel' | 'denyModel' | null
+  >(null);
+  private readonly providerSearchLoading = signal(false);
+  readonly providerSearchResults = signal<readonly OpencodeBuiltinProvider[]>([]);
+  readonly providerTypeaheadQuery = signal('');
+  readonly providerTypeaheadOpen = signal(false);
+  readonly providerTypeaheadLoading = computed(
+    () => this.providerSearchLoading() && this.providerSearchActiveTarget() === 'override',
+  );
+  readonly filteredProviderTypeaheadResults = computed(() => {
+    const used = new Set(this.providerEntries().map((entry) => entry.key));
+
+    return this.providerSearchResults().filter((provider) => !used.has(provider.id));
+  });
+  readonly enabledProviderTypeaheadQuery = signal('');
+  readonly enabledProviderTypeaheadOpen = signal(false);
+  readonly enabledProviderTypeaheadLoading = computed(
+    () => this.providerSearchLoading() && this.providerSearchActiveTarget() === 'enabled',
+  );
+  readonly filteredEnabledProviderTypeaheadResults = computed(() =>
+    unusedBuiltinProviders(this.providerSearchResults(), this.stringListItems('enabled_providers')),
+  );
+  readonly disabledProviderTypeaheadQuery = signal('');
+  readonly disabledProviderTypeaheadOpen = signal(false);
+  readonly disabledProviderTypeaheadLoading = computed(
+    () => this.providerSearchLoading() && this.providerSearchActiveTarget() === 'disabled',
+  );
+  readonly filteredDisabledProviderTypeaheadResults = computed(() =>
+    unusedBuiltinProviders(this.providerSearchResults(), this.stringListItems('disabled_providers')),
+  );
+  readonly allowModelProviderTypeaheadQuery = signal('');
+  readonly allowModelProviderTypeaheadOpen = signal(false);
+  readonly allowModelProviderTypeaheadLoading = computed(
+    () => this.providerSearchLoading() && this.providerSearchActiveTarget() === 'allowModel',
+  );
+  readonly filteredAllowModelProviderTypeaheadResults = computed(() =>
+    providersForKnownModelPicker(
+      this.providerSearchResults(),
+      this.stringListItems('enabled_providers'),
+      this.stringListItems('disabled_providers'),
+      this.stringListItems('model_allow'),
+    ),
+  );
+  readonly denyModelProviderTypeaheadQuery = signal('');
+  readonly denyModelProviderTypeaheadOpen = signal(false);
+  readonly denyModelProviderTypeaheadLoading = computed(
+    () => this.providerSearchLoading() && this.providerSearchActiveTarget() === 'denyModel',
+  );
+  readonly filteredDenyModelProviderTypeaheadResults = computed(() =>
+    providersForKnownModelPicker(
+      this.providerSearchResults(),
+      this.stringListItems('enabled_providers'),
+      this.stringListItems('disabled_providers'),
+      this.stringListItems('model_deny'),
+    ),
+  );
+  readonly draftBuiltinMcpServerName = signal('');
+  readonly draftCustomMcpServerId = signal('');
+  readonly draftMcpSecretEnvName = signal('');
+  readonly draftMcpSecretHeaderName = signal('');
+  readonly mcpMapExpandedKey = signal<string | null>(null);
+  /** Live OpenCode MCP statuses (Environment layer only). */
+  readonly mcpRuntimeStatuses = signal<Record<string, OpencodeMcpServerStatusDto>>({});
+  readonly mcpRuntimeStatusLoading = signal(false);
+  readonly mcpRuntimeStatusError = signal<string | null>(null);
+  readonly mcpAuthBusyKey = signal<string | null>(null);
+  readonly mcpAuthError = signal<string | null>(null);
+  readonly showMcpRuntimeAuth = computed(() => this.layer() === 'agent');
+  private readonly mcpServerCatalogCache = signal(new Map<string, OpencodeBuiltinMcpServer>());
+  /** MCP registry rows loaded on demand (config references + typeahead picks). */
+  readonly builtinMcpServersCatalog = computed(() =>
+    [...this.mcpServerCatalogCache().values()].sort(
+      (a, b) => a.title.localeCompare(b.title) || a.name.localeCompare(b.name),
+    ),
+  );
+  readonly mcpTypeaheadQuery = signal('');
+  readonly mcpTypeaheadOpen = signal(false);
+  readonly mcpTypeaheadLoading = signal(false);
+  readonly mcpTypeaheadResults = signal<readonly OpencodeBuiltinMcpServer[]>([]);
+  readonly filteredMcpTypeaheadResults = computed(() => {
+    const usedKeys = this.mcpServerEntries().map((entry) => entry.key);
+    const usedRegistryNames = usedKeys
+      .map((key) => this.catalogMcpServerForConfigKey(key)?.name)
+      .filter((name): name is string => !!name);
+
+    return unusedBuiltinMcpServers(this.mcpTypeaheadResults(), [...usedKeys, ...usedRegistryNames]);
+  });
+  private readonly mcpTypeaheadQuery$ = toObservable(this.mcpTypeaheadQuery);
 
   readonly modeToggleTitle = computed(() =>
     this.mode() === 'structured'
@@ -177,6 +291,7 @@ export class AgentConfigEditorComponent implements OnInit {
   readonly policyEffects = POLICY_EFFECTS;
   readonly policyActions = POLICY_ACTIONS;
   readonly customProviderSelectValue = CUSTOM_PROVIDER_SELECT_VALUE;
+  readonly customMcpSelectValue = CUSTOM_MCP_SELECT_VALUE;
   /** Global admin page has no higher layers; workspace/agent show merged effective JSON. */
   readonly showAccumulatedConfig = computed(() => this.layer() !== 'global');
   readonly effectiveJson = computed(() => JSON.stringify(this.effective(), null, 2));
@@ -200,35 +315,7 @@ export class AgentConfigEditorComponent implements OnInit {
   });
 
   readonly providerEntries = computed(() => this.mapEntries('providers', '/providers'));
-  readonly unusedBuiltinProviderOptions = computed(() =>
-    unusedBuiltinProviders(
-      this.builtinProvidersCatalog(),
-      this.providerEntries().map((entry) => entry.key),
-    ),
-  );
   readonly isCustomProviderMode = computed(() => this.draftBuiltinProviderId() === CUSTOM_PROVIDER_SELECT_VALUE);
-  readonly unusedEnabledProviderOptions = computed(() =>
-    unusedBuiltinProviders(this.builtinProvidersCatalog(), this.stringListItems('enabled_providers')),
-  );
-  readonly unusedDisabledProviderOptions = computed(() =>
-    unusedBuiltinProviders(this.builtinProvidersCatalog(), this.stringListItems('disabled_providers')),
-  );
-  readonly unusedAllowModelProviderOptions = computed(() =>
-    providersForKnownModelPicker(
-      this.builtinProvidersCatalog(),
-      this.stringListItems('enabled_providers'),
-      this.stringListItems('disabled_providers'),
-      this.stringListItems('model_allow'),
-    ),
-  );
-  readonly unusedDenyModelProviderOptions = computed(() =>
-    providersForKnownModelPicker(
-      this.builtinProvidersCatalog(),
-      this.stringListItems('enabled_providers'),
-      this.stringListItems('disabled_providers'),
-      this.stringListItems('model_deny'),
-    ),
-  );
   readonly unusedAllowModelOptions = computed(() =>
     unusedBuiltinModelsForProvider(
       this.builtinProvidersCatalog(),
@@ -245,6 +332,12 @@ export class AgentConfigEditorComponent implements OnInit {
   );
   readonly allowModelUsesCatalogSelect = computed(() => this.unusedAllowModelOptions().length > 0);
   readonly denyModelUsesCatalogSelect = computed(() => this.unusedDenyModelOptions().length > 0);
+  readonly allowModelSelectedProvider = computed(() =>
+    getBuiltinProvider(this.builtinProvidersCatalog(), this.draftAllowModelProviderId()),
+  );
+  readonly denyModelSelectedProvider = computed(() =>
+    getBuiltinProvider(this.builtinProvidersCatalog(), this.draftDenyModelProviderId()),
+  );
   readonly defaultModelProviderOptions = computed(() => {
     const scoped = filterBuiltinProvidersByAllowDeny(
       this.builtinProvidersCatalog(),
@@ -282,7 +375,23 @@ export class AgentConfigEditorComponent implements OnInit {
 
     return !!getBuiltinProvider(catalog, draftId);
   });
-  readonly mcpServerEntries = computed(() => this.mapEntries('mcp.servers', '/mcp/servers'));
+  readonly mcpServerEntries = computed(() =>
+    this.mapEntries('mcp.servers', '/mcp/servers').map((entry) => {
+      if (!this.showMcpRuntimeAuth()) {
+        return entry;
+      }
+
+      const status = this.mcpRuntimeStatusFor(entry.key);
+      const badge = this.mcpRuntimeStatusBadge(status?.status);
+
+      if (!badge) {
+        return entry;
+      }
+
+      return { ...entry, badges: [badge] };
+    }),
+  );
+  readonly isCustomMcpMode = computed(() => this.draftBuiltinMcpServerName() === CUSTOM_MCP_SELECT_VALUE);
   readonly commandEntries = computed(() => this.mapEntries('commands', '/commands'));
   readonly agentEntries = computed(() => this.mapEntries('agents', '/agents'));
   readonly referenceEntries = computed(() => this.mapEntries('references', '/references'));
@@ -303,6 +412,71 @@ export class AgentConfigEditorComponent implements OnInit {
     return value !== false;
   });
 
+  constructor() {
+    this.providerSearchRequest$
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        tap(() => this.providerSearchLoading.set(true)),
+        switchMap((query) => {
+          const term = query.trim();
+
+          if (!term) {
+            return of({ providers: [] as OpencodeBuiltinProvider[], total: 0, limit: 20, offset: 0 });
+          }
+
+          return this.opencodeConfigService
+            .listProviders({ search: term, limit: 20 })
+            .pipe(catchError(() => of({ providers: [] as OpencodeBuiltinProvider[], total: 0, limit: 20, offset: 0 })));
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((response) => {
+        const providers = (response.providers ?? []).map((provider) => this.normalizeCatalogProvider(provider));
+
+        for (const provider of providers) {
+          this.cacheProvider(provider);
+        }
+
+        this.providerSearchResults.set(providers);
+        this.providerSearchLoading.set(false);
+        this.syncActiveProviderTypeaheadOpen();
+      });
+
+    this.mcpTypeaheadQuery$
+      .pipe(
+        skip(1),
+        debounceTime(300),
+        distinctUntilChanged(),
+        tap(() => this.mcpTypeaheadLoading.set(true)),
+        switchMap((query) => {
+          const term = query.trim();
+
+          if (!term) {
+            return of({ servers: [] as OpencodeBuiltinMcpServer[], total: 0, limit: 20, offset: 0 });
+          }
+
+          return this.opencodeConfigService
+            .listMcpServers({ search: term, limit: 20 })
+            .pipe(catchError(() => of({ servers: [] as OpencodeBuiltinMcpServer[], total: 0, limit: 20, offset: 0 })));
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((response) => {
+        const servers = (response.servers ?? []).map((server) => this.normalizeCatalogMcpServer(server));
+
+        for (const server of servers) {
+          this.cacheMcpServer(server);
+        }
+
+        this.mcpTypeaheadResults.set(servers);
+        this.mcpTypeaheadLoading.set(false);
+        this.mcpTypeaheadOpen.set(
+          this.mcpTypeaheadQuery().trim().length > 0 && this.filteredMcpTypeaheadResults().length > 0,
+        );
+      });
+  }
+
   ngOnInit(): void {
     this.reload();
   }
@@ -313,29 +487,296 @@ export class AgentConfigEditorComponent implements OnInit {
     this.baselineSnapshot.set('');
     this.baselineConfig.set({});
 
-    forkJoin({
-      config: this.loadRequest(),
-      providers: this.opencodeConfigService
-        .listProviders()
-        .pipe(catchError(() => of({ providers: [] as OpencodeBuiltinProvider[] }))),
-    })
+    this.loadRequest()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: ({ config, providers }) => {
-          this.builtinProvidersCatalog.set(
-            (providers.providers ?? []).map((provider) => ({
-              ...provider,
-              env: provider.env ?? [],
-              models: provider.models ?? [],
-            })),
-          );
+        next: (config) => {
           this.applyDto(config);
+          this.hydrateCatalogEntriesFromConfig();
         },
         error: (err: { message?: string }) => {
           this.error.set(err.message ?? $localize`:@@featureAgentConfig-loadFailed:Failed to load configuration`);
           this.loading.set(false);
         },
       });
+  }
+
+  onProviderTypeaheadQueryChange(value: string): void {
+    this.providerTypeaheadQuery.set(value);
+    this.applyProviderSearchQuery(value, 'override');
+  }
+
+  onProviderTypeaheadOpenChange(open: boolean): void {
+    this.providerTypeaheadOpen.set(open && this.filteredProviderTypeaheadResults().length > 0);
+  }
+
+  pickProviderTypeahead(provider: OpencodeBuiltinProvider, event: Event): void {
+    event.preventDefault();
+    this.cacheProvider(provider);
+    this.draftBuiltinProviderId.set(provider.id);
+    this.clearProviderTypeahead('override');
+    this.addBuiltinProvider();
+  }
+
+  startCustomProviderMode(): void {
+    if (this.isCustomProviderMode()) {
+      this.draftBuiltinProviderId.set('');
+      this.draftCustomProviderId.set('');
+      return;
+    }
+
+    this.draftBuiltinProviderId.set(CUSTOM_PROVIDER_SELECT_VALUE);
+    this.draftCustomProviderId.set('');
+    this.clearProviderTypeahead('override');
+  }
+
+  onEnabledProviderTypeaheadQueryChange(value: string): void {
+    this.enabledProviderTypeaheadQuery.set(value);
+    this.applyProviderSearchQuery(value, 'enabled');
+  }
+
+  onEnabledProviderTypeaheadOpenChange(open: boolean): void {
+    this.enabledProviderTypeaheadOpen.set(open && this.filteredEnabledProviderTypeaheadResults().length > 0);
+  }
+
+  pickEnabledProviderTypeahead(provider: OpencodeBuiltinProvider, event: Event): void {
+    event.preventDefault();
+    this.cacheProvider(provider);
+    this.appendKnownProviderToList('enabled_providers', provider.id);
+    this.clearProviderTypeahead('enabled');
+  }
+
+  onDisabledProviderTypeaheadQueryChange(value: string): void {
+    this.disabledProviderTypeaheadQuery.set(value);
+    this.applyProviderSearchQuery(value, 'disabled');
+  }
+
+  onDisabledProviderTypeaheadOpenChange(open: boolean): void {
+    this.disabledProviderTypeaheadOpen.set(open && this.filteredDisabledProviderTypeaheadResults().length > 0);
+  }
+
+  pickDisabledProviderTypeahead(provider: OpencodeBuiltinProvider, event: Event): void {
+    event.preventDefault();
+    this.cacheProvider(provider);
+    this.appendKnownProviderToList('disabled_providers', provider.id);
+    this.clearProviderTypeahead('disabled');
+  }
+
+  onAllowModelProviderTypeaheadQueryChange(value: string): void {
+    this.allowModelProviderTypeaheadQuery.set(value);
+    this.applyProviderSearchQuery(value, 'allowModel');
+  }
+
+  onAllowModelProviderTypeaheadOpenChange(open: boolean): void {
+    this.allowModelProviderTypeaheadOpen.set(open && this.filteredAllowModelProviderTypeaheadResults().length > 0);
+  }
+
+  pickAllowModelProviderTypeahead(provider: OpencodeBuiltinProvider, event: Event): void {
+    event.preventDefault();
+    this.cacheProvider(provider);
+    this.draftAllowModelProviderId.set(provider.id);
+    this.draftAllowModelId.set('');
+    this.clearProviderTypeahead('allowModel');
+  }
+
+  clearAllowModelProviderSelection(): void {
+    this.draftAllowModelProviderId.set('');
+    this.draftAllowModelId.set('');
+  }
+
+  onDenyModelProviderTypeaheadQueryChange(value: string): void {
+    this.denyModelProviderTypeaheadQuery.set(value);
+    this.applyProviderSearchQuery(value, 'denyModel');
+  }
+
+  onDenyModelProviderTypeaheadOpenChange(open: boolean): void {
+    this.denyModelProviderTypeaheadOpen.set(open && this.filteredDenyModelProviderTypeaheadResults().length > 0);
+  }
+
+  pickDenyModelProviderTypeahead(provider: OpencodeBuiltinProvider, event: Event): void {
+    event.preventDefault();
+    this.cacheProvider(provider);
+    this.draftDenyModelProviderId.set(provider.id);
+    this.draftDenyModelId.set('');
+    this.clearProviderTypeahead('denyModel');
+  }
+
+  clearDenyModelProviderSelection(): void {
+    this.draftDenyModelProviderId.set('');
+    this.draftDenyModelId.set('');
+  }
+
+  private applyProviderSearchQuery(
+    value: string,
+    target: 'override' | 'enabled' | 'disabled' | 'allowModel' | 'denyModel',
+  ): void {
+    const term = value.trim();
+
+    this.providerSearchActiveTarget.set(target);
+    this.closeInactiveProviderTypeaheads(target);
+
+    if (term.length > 0) {
+      this.setProviderTypeaheadOpen(target, false);
+      this.providerSearchLoading.set(true);
+      this.providerSearchResults.set([]);
+      this.providerSearchRequest$.next(term);
+    } else {
+      this.setProviderTypeaheadOpen(target, false);
+      this.providerSearchLoading.set(false);
+      this.providerSearchResults.set([]);
+      this.providerSearchRequest$.next('');
+    }
+  }
+
+  private syncActiveProviderTypeaheadOpen(): void {
+    const target = this.providerSearchActiveTarget();
+
+    if (!target) {
+      return;
+    }
+
+    const hasQuery = this.providerTypeaheadQueryFor(target).trim().length > 0;
+    this.setProviderTypeaheadOpen(target, hasQuery && this.filteredProviderTypeaheadResultsFor(target).length > 0);
+  }
+
+  private providerTypeaheadQueryFor(target: 'override' | 'enabled' | 'disabled' | 'allowModel' | 'denyModel'): string {
+    switch (target) {
+      case 'override':
+        return this.providerTypeaheadQuery();
+      case 'enabled':
+        return this.enabledProviderTypeaheadQuery();
+      case 'disabled':
+        return this.disabledProviderTypeaheadQuery();
+      case 'allowModel':
+        return this.allowModelProviderTypeaheadQuery();
+      case 'denyModel':
+        return this.denyModelProviderTypeaheadQuery();
+    }
+  }
+
+  private filteredProviderTypeaheadResultsFor(
+    target: 'override' | 'enabled' | 'disabled' | 'allowModel' | 'denyModel',
+  ): readonly OpencodeBuiltinProvider[] {
+    switch (target) {
+      case 'override':
+        return this.filteredProviderTypeaheadResults();
+      case 'enabled':
+        return this.filteredEnabledProviderTypeaheadResults();
+      case 'disabled':
+        return this.filteredDisabledProviderTypeaheadResults();
+      case 'allowModel':
+        return this.filteredAllowModelProviderTypeaheadResults();
+      case 'denyModel':
+        return this.filteredDenyModelProviderTypeaheadResults();
+    }
+  }
+
+  private setProviderTypeaheadOpen(
+    target: 'override' | 'enabled' | 'disabled' | 'allowModel' | 'denyModel',
+    open: boolean,
+  ): void {
+    switch (target) {
+      case 'override':
+        this.providerTypeaheadOpen.set(open);
+        break;
+      case 'enabled':
+        this.enabledProviderTypeaheadOpen.set(open);
+        break;
+      case 'disabled':
+        this.disabledProviderTypeaheadOpen.set(open);
+        break;
+      case 'allowModel':
+        this.allowModelProviderTypeaheadOpen.set(open);
+        break;
+      case 'denyModel':
+        this.denyModelProviderTypeaheadOpen.set(open);
+        break;
+    }
+  }
+
+  private closeInactiveProviderTypeaheads(
+    active: 'override' | 'enabled' | 'disabled' | 'allowModel' | 'denyModel',
+  ): void {
+    for (const target of ['override', 'enabled', 'disabled', 'allowModel', 'denyModel'] as const) {
+      if (target !== active) {
+        this.setProviderTypeaheadOpen(target, false);
+      }
+    }
+  }
+
+  private clearProviderTypeahead(target: 'override' | 'enabled' | 'disabled' | 'allowModel' | 'denyModel'): void {
+    switch (target) {
+      case 'override':
+        this.providerTypeaheadQuery.set('');
+        this.providerTypeaheadOpen.set(false);
+        break;
+      case 'enabled':
+        this.enabledProviderTypeaheadQuery.set('');
+        this.enabledProviderTypeaheadOpen.set(false);
+        break;
+      case 'disabled':
+        this.disabledProviderTypeaheadQuery.set('');
+        this.disabledProviderTypeaheadOpen.set(false);
+        break;
+      case 'allowModel':
+        this.allowModelProviderTypeaheadQuery.set('');
+        this.allowModelProviderTypeaheadOpen.set(false);
+        break;
+      case 'denyModel':
+        this.denyModelProviderTypeaheadQuery.set('');
+        this.denyModelProviderTypeaheadOpen.set(false);
+        break;
+    }
+
+    if (this.providerSearchActiveTarget() === target) {
+      this.providerSearchActiveTarget.set(null);
+    }
+
+    this.providerSearchResults.set([]);
+    this.providerSearchLoading.set(false);
+  }
+
+  onMcpTypeaheadQueryChange(value: string): void {
+    this.mcpTypeaheadQuery.set(value);
+    const term = value.trim();
+
+    if (term.length > 0) {
+      this.mcpTypeaheadOpen.set(false);
+      this.mcpTypeaheadLoading.set(true);
+      this.mcpTypeaheadResults.set([]);
+    } else {
+      this.mcpTypeaheadOpen.set(false);
+      this.mcpTypeaheadLoading.set(false);
+      this.mcpTypeaheadResults.set([]);
+    }
+  }
+
+  onMcpTypeaheadOpenChange(open: boolean): void {
+    this.mcpTypeaheadOpen.set(open && this.filteredMcpTypeaheadResults().length > 0);
+  }
+
+  pickMcpTypeahead(server: OpencodeBuiltinMcpServer, event: Event): void {
+    event.preventDefault();
+    this.cacheMcpServer(server);
+    this.draftBuiltinMcpServerName.set(server.name);
+    this.mcpTypeaheadQuery.set('');
+    this.mcpTypeaheadResults.set([]);
+    this.mcpTypeaheadOpen.set(false);
+    this.addBuiltinMcpServer();
+  }
+
+  startCustomMcpMode(): void {
+    if (this.isCustomMcpMode()) {
+      this.draftBuiltinMcpServerName.set('');
+      this.draftCustomMcpServerId.set('');
+      return;
+    }
+
+    this.draftBuiltinMcpServerName.set(CUSTOM_MCP_SELECT_VALUE);
+    this.draftCustomMcpServerId.set('');
+    this.mcpTypeaheadQuery.set('');
+    this.mcpTypeaheadResults.set([]);
+    this.mcpTypeaheadOpen.set(false);
   }
 
   onModeChange(modeId: string | null): void {
@@ -754,9 +1195,11 @@ export class AgentConfigEditorComponent implements OnInit {
       .sort((a, b) => a.localeCompare(b));
 
     const active = activeKeys.map((key) => {
-      const value = key in local ? local[key] : effectiveMap?.[key];
+      const localEntry = key in local ? local[key] : undefined;
+      const value = localEntry !== undefined ? localEntry : effectiveMap?.[key];
       const isInherited = inherited.has(key) || (pathLocked && !(key in local));
-      const dirty = !isInherited && this.isMapEntryDirty(path, key);
+      // Local stubs (e.g. `{ disabled: true }` on an inherited MCP) must mark dirty/saveable.
+      const dirty = this.isMapEntryDirty(path, key);
 
       return {
         key,
@@ -765,7 +1208,7 @@ export class AgentConfigEditorComponent implements OnInit {
         deleted: false,
         summary:
           value !== undefined
-            ? this.summarizeMapEntry(path, key, value)
+            ? this.summarizeMapEntry(path, key, this.mapEntryObject(path, key))
             : $localize`:@@featureAgentConfig-inheritedEntrySummary:Inherited from a higher layer`,
       };
     });
@@ -854,6 +1297,595 @@ export class AgentConfigEditorComponent implements OnInit {
     this.providerMapExpandedKey.set(id);
   }
 
+  builtinMcpServerOptionLabel(server: OpencodeBuiltinMcpServer): string {
+    const label = builtinMcpServerLabel(server);
+
+    return server.status === 'deprecated' ? `${label} (deprecated)` : label;
+  }
+
+  catalogMcpServerForConfigKey(configKey: string): OpencodeBuiltinMcpServer | undefined {
+    const trimmed = configKey.trim();
+
+    if (!trimmed) {
+      return undefined;
+    }
+
+    const byName = getBuiltinMcpServer(this.builtinMcpServersCatalog(), trimmed);
+
+    if (byName) {
+      return byName;
+    }
+
+    return this.builtinMcpServersCatalog().find((server) => mcpServerConfigKey(server.name) === trimmed);
+  }
+
+  isCatalogMcpServer(configKey: string): boolean {
+    return !!this.catalogMcpServerForConfigKey(configKey);
+  }
+
+  mcpSecretEnvKeys(configKey: string): string[] {
+    return this.mapEntryStringListItems('mcp.servers', configKey, 'secretEnv');
+  }
+
+  mcpSecretHeaderKeys(configKey: string): string[] {
+    return this.mapEntryStringListItems('mcp.servers', configKey, 'secretHeaders');
+  }
+
+  mcpOAuthSecretKey(configKey: string): string {
+    return mcpOAuthClientSecretKey(configKey);
+  }
+
+  /**
+   * OAuth client fields only matter for remotes that already have oauth config,
+   * editable custom remotes (user may need them), or catalog remotes that advertise OAuth.
+   * Inherited entries are display-only: show OAuth only when parent already configured it.
+   */
+  showMcpOauthFields(configKey: string): boolean {
+    if (this.mapEntryString('mcp.servers', configKey, 'type') !== 'remote') {
+      return false;
+    }
+
+    if (this.mcpOauthHasConfiguredValues(configKey)) {
+      return true;
+    }
+
+    // Inherited rows cannot be edited; empty OAuth chrome is noise.
+    if (this.isMapEntryInherited('mcp.servers', configKey)) {
+      return false;
+    }
+
+    if (!this.isCatalogMcpServer(configKey)) {
+      return true;
+    }
+
+    return this.catalogMcpServerSuggestsOauth(configKey);
+  }
+
+  mcpRuntimeStatusFor(configKey: string): OpencodeMcpServerStatusDto | null {
+    return this.mcpRuntimeStatuses()[configKey] ?? null;
+  }
+
+  mcpRuntimeStatusLabel(status: OpencodeMcpRuntimeStatus | undefined): string {
+    switch (status) {
+      case 'connected':
+        return $localize`:@@featureAgentConfig-mcpStatusConnected:Connected`;
+      case 'disabled':
+        return $localize`:@@featureAgentConfig-mcpStatusDisabled:Disabled`;
+      case 'failed':
+        return $localize`:@@featureAgentConfig-mcpStatusFailed:Failed`;
+      case 'needs_auth':
+        return $localize`:@@featureAgentConfig-mcpStatusNeedsAuth:Needs authentication`;
+      case 'needs_client_registration':
+        return $localize`:@@featureAgentConfig-mcpStatusNeedsClientRegistration:Needs OAuth client registration`;
+      default:
+        return $localize`:@@featureAgentConfig-mcpStatusUnknown:Unknown`;
+    }
+  }
+
+  mcpRuntimeStatusBadge(status: OpencodeMcpRuntimeStatus | undefined): ConfigMapEntryBadge | null {
+    if (!status) {
+      return null;
+    }
+
+    const color =
+      status === 'connected'
+        ? 'success'
+        : status === 'needs_auth' || status === 'needs_client_registration' || status === 'disabled'
+          ? 'warning'
+          : 'danger';
+
+    return { label: this.mcpRuntimeStatusLabel(status), color };
+  }
+
+  mcpAuthButtonDisabled(configKey: string): boolean {
+    return this.mcpAuthBusyKey() === configKey || this.mcpRuntimeStatusFor(configKey)?.status === 'connected';
+  }
+
+  refreshMcpRuntimeStatuses(): void {
+    if (!this.showMcpRuntimeAuth()) {
+      return;
+    }
+
+    const clientId = this.clientId();
+    const agentId = this.agentId();
+
+    if (!clientId || !agentId) {
+      return;
+    }
+
+    this.mcpRuntimeStatusLoading.set(true);
+    this.mcpRuntimeStatusError.set(null);
+
+    this.opencodeConfigService
+      .listAgentMcpStatuses(clientId, agentId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          const next: Record<string, OpencodeMcpServerStatusDto> = {};
+
+          for (const server of response.servers ?? []) {
+            if (server?.name) {
+              next[server.name] = server;
+            }
+          }
+
+          this.mcpRuntimeStatuses.set(next);
+          this.mcpRuntimeStatusLoading.set(false);
+        },
+        error: (err: { message?: string; error?: { message?: string } }) => {
+          this.mcpRuntimeStatusError.set(
+            err.error?.message ??
+              err.message ??
+              $localize`:@@featureAgentConfig-mcpStatusLoadFailed:Failed to load MCP runtime status`,
+          );
+          this.mcpRuntimeStatusLoading.set(false);
+        },
+      });
+  }
+
+  startMcpInteractiveAuth(configKey: string): void {
+    if (!this.showMcpRuntimeAuth() || this.mcpAuthButtonDisabled(configKey)) {
+      return;
+    }
+
+    const clientId = this.clientId();
+    const agentId = this.agentId();
+
+    if (!clientId || !agentId) {
+      return;
+    }
+
+    this.mcpAuthBusyKey.set(configKey);
+    this.mcpAuthError.set(null);
+
+    this.opencodeConfigService
+      .startAgentMcpAuth(clientId, agentId, configKey)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (started) => {
+          this.mcpAuthBusyKey.set(null);
+
+          if (started.authorizationUrl && typeof window !== 'undefined') {
+            window.open(started.authorizationUrl, '_blank', 'noopener,noreferrer');
+          }
+
+          this.pollMcpRuntimeStatusAfterAuth(configKey);
+        },
+        error: (err: { message?: string; error?: { message?: string } }) => {
+          this.mcpAuthError.set(
+            err.error?.message ??
+              err.message ??
+              $localize`:@@featureAgentConfig-mcpAuthStartFailed:Failed to start MCP authentication`,
+          );
+          this.mcpAuthBusyKey.set(null);
+        },
+      });
+  }
+
+  private pollMcpRuntimeStatusAfterAuth(configKey: string): void {
+    const clientId = this.clientId();
+    const agentId = this.agentId();
+
+    if (!clientId || !agentId || typeof window === 'undefined') {
+      return;
+    }
+
+    let attempts = 0;
+    const maxAttempts = 40;
+    const handle = window.setInterval(() => {
+      attempts += 1;
+      this.opencodeConfigService
+        .listAgentMcpStatuses(clientId, agentId)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (response) => {
+            const next: Record<string, OpencodeMcpServerStatusDto> = {};
+
+            for (const server of response.servers ?? []) {
+              if (server?.name) {
+                next[server.name] = server;
+              }
+            }
+
+            this.mcpRuntimeStatuses.set(next);
+
+            if (next[configKey]?.status === 'connected' || attempts >= maxAttempts) {
+              window.clearInterval(handle);
+            }
+          },
+          error: () => {
+            if (attempts >= maxAttempts) {
+              window.clearInterval(handle);
+            }
+          },
+        });
+    }, 3000);
+  }
+
+  private mcpOauthHasConfiguredValues(configKey: string): boolean {
+    if (this.mapEntryString('mcp.servers', configKey, 'oauth.client_id').trim()) {
+      return true;
+    }
+
+    if (this.mapEntryString('mcp.servers', configKey, 'oauth.scope').trim()) {
+      return true;
+    }
+
+    if (this.mapEntryNumber('mcp.servers', configKey, 'oauth.callback_port') != null) {
+      return true;
+    }
+
+    if (this.mapEntryString('mcp.servers', configKey, 'oauth.redirect_uri').trim()) {
+      return true;
+    }
+
+    const secretKey = this.mcpOAuthSecretKey(configKey);
+
+    return this.secretSet(secretKey) || !!this.secretDrafts()[secretKey]?.trim();
+  }
+
+  private catalogMcpServerSuggestsOauth(configKey: string): boolean {
+    const catalog = this.catalogMcpServerForConfigKey(configKey);
+
+    if (!catalog) {
+      return false;
+    }
+
+    for (const remote of catalog.remotes ?? []) {
+      const url = typeof remote.url === 'string' ? remote.url : '';
+
+      if (/oauth/i.test(url)) {
+        return true;
+      }
+
+      for (const header of remote.headers ?? []) {
+        const description = typeof header.description === 'string' ? header.description : '';
+        const name = typeof header.name === 'string' ? header.name : '';
+
+        if (/oauth/i.test(description) || /oauth/i.test(name)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  canEditMcpTransport(configKey: string): boolean {
+    return !this.isCatalogMcpServer(configKey);
+  }
+
+  canAddMcpSecretEnv(configKey: string): boolean {
+    return !this.isCatalogMcpServer(configKey);
+  }
+
+  canAddMcpSecretHeader(configKey: string): boolean {
+    return !this.isCatalogMcpServer(configKey);
+  }
+
+  onMcpSelectChange(value: string): void {
+    this.draftBuiltinMcpServerName.set(value);
+
+    if (value !== CUSTOM_MCP_SELECT_VALUE) {
+      this.draftCustomMcpServerId.set('');
+    }
+  }
+
+  addBuiltinMcpServer(): void {
+    const registryName = this.draftBuiltinMcpServerName().trim();
+
+    if (!registryName || registryName === CUSTOM_MCP_SELECT_VALUE || this.isLocked('/mcp/servers')) {
+      return;
+    }
+
+    const catalog = getBuiltinMcpServer(this.builtinMcpServersCatalog(), registryName);
+
+    if (!catalog) {
+      return;
+    }
+
+    const seed = seedMcpServerFromCatalog(catalog);
+
+    if (!seed) {
+      this.error.set(
+        $localize`:@@featureAgentConfig-mcpSeedFailed:Could not seed this MCP server from the registry catalog`,
+      );
+
+      return;
+    }
+
+    const configKey = mcpServerConfigKey(catalog.name);
+    const entry: JsonObject = {
+      type: seed.type,
+      secretEnv: [...seed.secretEnv],
+      secretHeaders: [...seed.secretHeaders],
+    };
+
+    if (seed.type === 'local') {
+      entry['command'] = [...(seed.command ?? [])];
+
+      if (seed.environment && Object.keys(seed.environment).length > 0) {
+        entry['environment'] = { ...seed.environment };
+      }
+    } else {
+      entry['url'] = seed.url ?? '';
+
+      if (seed.headers && Object.keys(seed.headers).length > 0) {
+        entry['headers'] = { ...seed.headers };
+      }
+    }
+
+    this.addMapEntry('mcp.servers', configKey, entry);
+    this.draftBuiltinMcpServerName.set('');
+    this.mcpMapExpandedKey.set(configKey);
+  }
+
+  addCustomMcpServer(): void {
+    const id = this.draftCustomMcpServerId().trim();
+
+    if (!id || this.isLocked('/mcp/servers') || !this.isCustomMcpMode()) {
+      return;
+    }
+
+    this.addMapEntry('mcp.servers', id, {
+      type: 'local',
+      command: [],
+      secretEnv: [],
+      secretHeaders: [],
+    });
+    this.draftCustomMcpServerId.set('');
+    this.draftBuiltinMcpServerName.set('');
+    this.mcpMapExpandedKey.set(id);
+  }
+
+  addMcpSecretEnvKey(configKey: string): void {
+    if (!this.canAddMcpSecretEnv(configKey) || this.isLocked('/mcp/servers')) {
+      return;
+    }
+
+    const name = this.draftMcpSecretEnvName().trim();
+
+    if (!name) {
+      return;
+    }
+
+    const existing = this.mcpSecretEnvKeys(configKey);
+
+    if (existing.includes(name)) {
+      this.draftMcpSecretEnvName.set('');
+
+      return;
+    }
+
+    this.patchMapEntryField('mcp.servers', configKey, 'secretEnv', [...existing, name]);
+    this.draftMcpSecretEnvName.set('');
+  }
+
+  removeMcpSecretEnvKey(configKey: string, envKey: string): void {
+    if (!this.canAddMcpSecretEnv(configKey) || this.isLocked('/mcp/servers')) {
+      return;
+    }
+
+    this.patchMapEntryField(
+      'mcp.servers',
+      configKey,
+      'secretEnv',
+      this.mcpSecretEnvKeys(configKey).filter((item) => item !== envKey),
+    );
+  }
+
+  addMcpSecretHeaderKey(configKey: string): void {
+    if (!this.canAddMcpSecretHeader(configKey) || this.isLocked('/mcp/servers')) {
+      return;
+    }
+
+    const name = this.draftMcpSecretHeaderName().trim();
+
+    if (!name) {
+      return;
+    }
+
+    const existing = this.mcpSecretHeaderKeys(configKey);
+
+    if (existing.includes(name)) {
+      this.draftMcpSecretHeaderName.set('');
+
+      return;
+    }
+
+    this.patchMapEntryField('mcp.servers', configKey, 'secretHeaders', [...existing, name]);
+    this.draftMcpSecretHeaderName.set('');
+  }
+
+  removeMcpSecretHeaderKey(configKey: string, headerKey: string): void {
+    if (!this.canAddMcpSecretHeader(configKey) || this.isLocked('/mcp/servers')) {
+      return;
+    }
+
+    this.patchMapEntryField(
+      'mcp.servers',
+      configKey,
+      'secretHeaders',
+      this.mcpSecretHeaderKeys(configKey).filter((item) => item !== headerKey),
+    );
+  }
+
+  private normalizeCatalogProvider(provider: {
+    id: string;
+    name: string;
+    env?: string[];
+    models?: Array<{ id: string; name: string }>;
+    npm?: string;
+    api?: string;
+  }): OpencodeBuiltinProvider {
+    return {
+      id: provider.id,
+      name: provider.name,
+      env: provider.env ?? [],
+      models: provider.models ?? [],
+      npm: provider.npm,
+      api: provider.api,
+    };
+  }
+
+  private cacheProvider(provider: OpencodeBuiltinProvider): void {
+    const next = new Map(this.providerCatalogCache());
+
+    next.set(provider.id, this.normalizeCatalogProvider(provider));
+    this.providerCatalogCache.set(next);
+  }
+
+  private cacheMcpServer(server: OpencodeBuiltinMcpServer): void {
+    const normalized = this.normalizeCatalogMcpServer(server);
+    const next = new Map(this.mcpServerCatalogCache());
+
+    next.set(normalized.name, normalized);
+    this.mcpServerCatalogCache.set(next);
+  }
+
+  private hydrateCatalogEntriesFromConfig(): void {
+    const providerIds = this.collectReferencedProviderIds();
+    const mcpNames = this.collectReferencedMcpRegistryNames();
+    const providerDetails$ =
+      providerIds.length > 0
+        ? forkJoin(providerIds.map((id) => this.opencodeConfigService.getProvider(id).pipe(catchError(() => of(null)))))
+        : of([] as Array<OpencodeBuiltinProvider | null>);
+    const mcpDetails$ =
+      mcpNames.length > 0
+        ? forkJoin(
+            mcpNames.map((name) => this.opencodeConfigService.getMcpServer(name).pipe(catchError(() => of(null)))),
+          )
+        : of([] as Array<OpencodeBuiltinMcpServer | null>);
+    // Seed default-model picker (native select) with a capped page.
+    const seedProviders$ = this.opencodeConfigService
+      .listProviders({ limit: 100 })
+      .pipe(catchError(() => of({ providers: [] as OpencodeBuiltinProvider[], total: 0, limit: 100, offset: 0 })));
+
+    forkJoin({
+      providers: providerDetails$,
+      mcpServers: mcpDetails$,
+      seed: seedProviders$,
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ providers, mcpServers, seed }) => {
+        for (const provider of providers) {
+          if (provider) {
+            this.cacheProvider(this.normalizeCatalogProvider(provider));
+          }
+        }
+
+        for (const server of mcpServers) {
+          if (server) {
+            this.cacheMcpServer(this.normalizeCatalogMcpServer(server));
+          }
+        }
+
+        for (const provider of seed.providers ?? []) {
+          this.cacheProvider(this.normalizeCatalogProvider(provider));
+        }
+      });
+  }
+
+  private collectReferencedProviderIds(): string[] {
+    const ids = new Set<string>();
+    const providers = this.readPath(this.config(), 'providers');
+
+    if (isPlainObject(providers)) {
+      for (const key of Object.keys(providers)) {
+        if (key.trim()) {
+          ids.add(key.trim());
+        }
+      }
+    }
+
+    for (const path of ['enabled_providers', 'disabled_providers'] as const) {
+      for (const id of this.stringListItems(path)) {
+        ids.add(id);
+      }
+    }
+
+    for (const path of ['model_allow', 'model_deny'] as const) {
+      for (const entry of this.stringListItems(path)) {
+        const parsed = parseProviderModelRef(entry);
+
+        if (parsed?.providerId) {
+          ids.add(parsed.providerId);
+        }
+      }
+    }
+
+    const defaultModel = parseProviderModelRef(this.stringValue('model'));
+
+    if (defaultModel?.providerId) {
+      ids.add(defaultModel.providerId);
+    }
+
+    return [...ids];
+  }
+
+  private collectReferencedMcpRegistryNames(): string[] {
+    const names = new Set<string>();
+    const servers = this.readPath(this.config(), 'mcp.servers');
+
+    if (!isPlainObject(servers)) {
+      return [];
+    }
+
+    for (const key of Object.keys(servers)) {
+      const trimmed = key.trim();
+
+      if (!trimmed) {
+        continue;
+      }
+
+      names.add(trimmed.includes('/') ? trimmed : trimmed.replace(/__/g, '/'));
+    }
+
+    return [...names];
+  }
+
+  private normalizeCatalogMcpServer(server: {
+    name: string;
+    title: string;
+    description: string;
+    version: string;
+    status: string;
+    websiteUrl?: string;
+    packages?: unknown[];
+    remotes?: unknown[];
+  }): OpencodeBuiltinMcpServer {
+    return {
+      name: server.name,
+      title: server.title || server.name,
+      description: server.description || server.title || server.name,
+      version: server.version,
+      status: server.status,
+      websiteUrl: server.websiteUrl,
+      packages: Array.isArray(server.packages) ? (server.packages as OpencodeBuiltinMcpPackage[]) : [],
+      remotes: Array.isArray(server.remotes) ? (server.remotes as OpencodeBuiltinMcpRemote[]) : [],
+    };
+  }
+
   appendKnownProviderToList(path: 'enabled_providers' | 'disabled_providers', id: string): void {
     const trimmed = id.trim();
 
@@ -871,26 +1903,6 @@ export class AgentConfigEditorComponent implements OnInit {
     }
 
     this.setStringList(path, [...existing, trimmed].join('\n'));
-  }
-
-  addKnownEnabledProvider(): void {
-    this.appendKnownProviderToList('enabled_providers', this.draftEnabledProviderId());
-    this.draftEnabledProviderId.set('');
-  }
-
-  addKnownDisabledProvider(): void {
-    this.appendKnownProviderToList('disabled_providers', this.draftDisabledProviderId());
-    this.draftDisabledProviderId.set('');
-  }
-
-  onAllowModelProviderChange(providerId: string): void {
-    this.draftAllowModelProviderId.set(providerId);
-    this.draftAllowModelId.set('');
-  }
-
-  onDenyModelProviderChange(providerId: string): void {
-    this.draftDenyModelProviderId.set(providerId);
-    this.draftDenyModelId.set('');
   }
 
   onDefaultModelProviderChange(providerId: string): void {
@@ -948,7 +1960,7 @@ export class AgentConfigEditorComponent implements OnInit {
     this.draftAllowModelId.set('');
 
     if (this.unusedAllowModelOptions().length === 0) {
-      this.draftAllowModelProviderId.set('');
+      this.clearAllowModelProviderSelection();
     }
   }
 
@@ -957,7 +1969,7 @@ export class AgentConfigEditorComponent implements OnInit {
     this.draftDenyModelId.set('');
 
     if (this.unusedDenyModelOptions().length === 0) {
-      this.draftDenyModelProviderId.set('');
+      this.clearDenyModelProviderSelection();
     }
   }
 
@@ -981,15 +1993,22 @@ export class AgentConfigEditorComponent implements OnInit {
 
   mapEntryObject(path: string, key: string): JsonObject {
     const localValue = this.getPath(path);
+    const localEntry =
+      isPlainObject(localValue) && isPlainObject(localValue[key]) ? (localValue[key] as JsonObject) : null;
+    const effectiveMap = this.getEffectiveMap(path);
+    const effectiveEntry = effectiveMap && isPlainObject(effectiveMap[key]) ? (effectiveMap[key] as JsonObject) : null;
 
-    if (isPlainObject(localValue) && isPlainObject(localValue[key])) {
-      return localValue[key] as JsonObject;
+    // Inherited disable/hidden stubs live only in the child overlay; merge onto parent for display.
+    if (localEntry && effectiveEntry && this.isMapKeyInherited(path, key)) {
+      return { ...effectiveEntry, ...localEntry };
     }
 
-    const effectiveMap = this.getEffectiveMap(path);
+    if (localEntry) {
+      return localEntry;
+    }
 
-    if (effectiveMap && isPlainObject(effectiveMap[key])) {
-      return effectiveMap[key] as JsonObject;
+    if (effectiveEntry) {
+      return effectiveEntry;
     }
 
     return {};
@@ -1105,6 +2124,10 @@ export class AgentConfigEditorComponent implements OnInit {
   }
 
   setMcpType(key: string, type: string): void {
+    if (!this.canEditMcpTransport(key)) {
+      return;
+    }
+
     const entry: JsonObject = { ...this.mapEntryObject('mcp.servers', key), type };
 
     if (type === 'local') {
@@ -1123,6 +2146,14 @@ export class AgentConfigEditorComponent implements OnInit {
       if (typeof entry['url'] !== 'string') {
         entry['url'] = '';
       }
+    }
+
+    if (!Array.isArray(entry['secretEnv'])) {
+      entry['secretEnv'] = [];
+    }
+
+    if (!Array.isArray(entry['secretHeaders'])) {
+      entry['secretHeaders'] = [];
     }
 
     this.replaceMapEntry('mcp.servers', key, entry);
@@ -1717,6 +2748,7 @@ export class AgentConfigEditorComponent implements OnInit {
     this.validateRaw();
     this.validateOverrides();
     this.captureBaseline();
+    this.refreshMcpRuntimeStatuses();
   }
 
   private syncDefaultModelDraftsFromConfig(): void {
@@ -2018,7 +3050,37 @@ export class AgentConfigEditorComponent implements OnInit {
   }
 
   private patchMapEntryField(path: string, key: string, field: string, value: unknown): void {
-    if (this.isPathMutationLocked(path) || this.isMapKeyInherited(path, key)) {
+    if (this.isPathMutationLocked(path)) {
+      return;
+    }
+
+    const rootField = field.split('.')[0] ?? field;
+    const inherited = this.isMapKeyInherited(path, key);
+
+    if (inherited && !(INHERITED_MAP_ENTRY_OVERRIDE_KEYS as readonly string[]).includes(rootField)) {
+      return;
+    }
+
+    // Child layers may only stub `disabled` / `hidden` onto inherited entries — never copy the parent body.
+    if (inherited) {
+      const localMap = isPlainObject(this.getPath(path)) ? { ...(this.getPath(path) as JsonObject) } : {};
+      const priorLocal = isPlainObject(localMap[key]) ? { ...(localMap[key] as JsonObject) } : {};
+      this.setNested(priorLocal, field, value);
+
+      for (const entryKey of Object.keys(priorLocal)) {
+        if (!(INHERITED_MAP_ENTRY_OVERRIDE_KEYS as readonly string[]).includes(entryKey)) {
+          delete priorLocal[entryKey];
+        }
+      }
+
+      if (Object.keys(priorLocal).length === 0) {
+        delete localMap[key];
+        this.patchPath(path, Object.keys(localMap).length ? localMap : undefined);
+        return;
+      }
+
+      localMap[key] = priorLocal;
+      this.patchPath(path, localMap);
       return;
     }
 

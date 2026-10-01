@@ -1,4 +1,4 @@
-import { IsArray, IsObject, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsObject, IsOptional, IsString, MinLength } from 'class-validator';
 
 /**
  * PUT body for OpenCode config overlays (global / workspace / agent).
@@ -98,4 +98,28 @@ export class OpencodeCommandInfoDto {
 
 export class OpencodeCommandsListResponseDto {
   commands!: OpencodeCommandInfoDto[];
+}
+
+/** OpenCode `MCPStatus` for one configured MCP server on a running Environment. */
+export type OpencodeMcpRuntimeStatus = 'connected' | 'disabled' | 'failed' | 'needs_auth' | 'needs_client_registration';
+
+export class OpencodeMcpServerStatusDto {
+  name!: string;
+  status!: OpencodeMcpRuntimeStatus;
+  error?: string;
+}
+
+export class OpencodeMcpStatusListResponseDto {
+  servers!: OpencodeMcpServerStatusDto[];
+}
+
+export class OpencodeMcpAuthStartResponseDto {
+  authorizationUrl!: string;
+  oauthState?: string;
+}
+
+export class OpencodeMcpAuthCallbackDto {
+  @IsString()
+  @MinLength(1)
+  code!: string;
 }

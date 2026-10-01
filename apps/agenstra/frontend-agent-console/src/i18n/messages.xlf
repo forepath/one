@@ -1615,6 +1615,96 @@
       <trans-unit id="featureAgentConfig-mcpServersHeading" datatype="html">
         <source>Servers</source>
         </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpServersHelp" datatype="html">
+        <source>Pick a registry MCP server to seed command/URL and secret names, or add a custom id. Secret values are stored in layer secrets, not in config JSON.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpRuntimeStatusTitle" datatype="html">
+        <source>Runtime status</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpRuntimeStatusHelp" datatype="html">
+        <source>Live OpenCode MCP connection state for this Environment</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpStatusConnected" datatype="html">
+        <source>Connected</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpStatusDisabled" datatype="html">
+        <source>Disabled</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpStatusFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpStatusNeedsAuth" datatype="html">
+        <source>Needs authentication</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpStatusNeedsClientRegistration" datatype="html">
+        <source>Needs OAuth client registration</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpStatusUnknown" datatype="html">
+        <source>Unknown</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpStatusLoadFailed" datatype="html">
+        <source>Failed to load MCP runtime status</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpAuthStart" datatype="html">
+        <source>Authenticate</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpAuthRemove" datatype="html">
+        <source>Remove auth</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpAuthOpenUrl" datatype="html">
+        <source>Open authorization URL</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpAuthCodePlaceholder" datatype="html">
+        <source>Authorization code</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpAuthComplete" datatype="html">
+        <source>Complete</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpAuthStartFailed" datatype="html">
+        <source>Failed to start MCP authentication</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpAuthCompleteFailed" datatype="html">
+        <source>Failed to complete MCP authentication</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpAuthRemoveFailed" datatype="html">
+        <source>Failed to remove MCP authentication</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpAuthCodeRequired" datatype="html">
+        <source>Paste the authorization code to continue</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpSelectLabel" datatype="html">
+        <source>MCP server</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-customMcpOption" datatype="html">
+        <source>Custom</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-customMcpLabel" datatype="html">
+        <source>Custom MCP server id</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-customMcpPlaceholder" datatype="html">
+        <source>my-mcp-server</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpSecretsHeading" datatype="html">
+        <source>Secrets</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpOauthSecretTitle" datatype="html">
+        <source>OAuth client secret</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addMcpSecretEnvTitle" datatype="html">
+        <source>Add secret env</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addMcpSecretEnvHelp" datatype="html">
+        <source>Env var name for this MCP server (value stored as a secret)</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addMcpSecretHeaderTitle" datatype="html">
+        <source>Add secret header</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addMcpSecretHeaderHelp" datatype="html">
+        <source>Header name for this remote MCP server (value stored as a secret)</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpSeedFailed" datatype="html">
+        <source>Could not seed this MCP server from the registry catalog</source>
+        </trans-unit>
       <trans-unit id="featureAgentConfig-skillsHeading" datatype="html">
         <source>Skills</source>
         </trans-unit>

@@ -39,6 +39,8 @@ import { AdminOpencodeConfigController } from '../controllers/admin-opencode-con
 import { AdminOpencodeLayerFilesController } from '../controllers/admin-opencode-layer-files.controller';
 import { ClientOpencodeLayerFilesController } from '../controllers/client-opencode-layer-files.controller';
 import { ClientOpencodeConfigController } from '../controllers/client-opencode-config.controller';
+import { McpOAuthCallbackController } from '../controllers/mcp-oauth-callback.controller';
+import { OpencodeMcpServersController } from '../controllers/opencode-mcp-servers.controller';
 import { OpencodeProvidersController } from '../controllers/opencode-providers.controller';
 import { KnowledgeTreeController } from '../controllers/knowledge-tree.controller';
 import { StatisticsController } from '../controllers/statistics.controller';
@@ -47,6 +49,7 @@ import { TicketsController } from '../controllers/tickets.controller';
 import { ClientAgentAutonomyEntity } from '../entities/client-agent-autonomy.entity';
 import { ClientOpencodeConfigEntity } from '../entities/client-opencode-config.entity';
 import { GlobalOpencodeConfigEntity } from '../entities/global-opencode-config.entity';
+import { OpencodeMcpServerEntity } from '../entities/opencode-mcp-server.entity';
 import { OpencodeProviderEntity } from '../entities/opencode-provider.entity';
 import { OpencodeLayerFileEntity } from '../entities/opencode-layer-file.entity';
 import { OpencodeLayerFileSyncTargetEntity } from '../entities/opencode-layer-file-sync-target.entity';
@@ -97,6 +100,8 @@ import { ClientAutomationChatRealtimeService } from '../services/client-automati
 import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
 import { ClientsService } from '../services/clients.service';
 import { OpencodeConfigService } from '../services/opencode-config.service';
+import { OpencodeMcpServersBootstrapService } from '../services/opencode-mcp-servers-bootstrap.service';
+import { OpencodeMcpServersCatalogService } from '../services/opencode-mcp-servers-catalog.service';
 import { OpencodeProvidersBootstrapService } from '../services/opencode-providers-bootstrap.service';
 import { OpencodeProvidersCatalogService } from '../services/opencode-providers-catalog.service';
 import { OpencodeEffectiveConfigSyncService } from '../services/opencode-effective-config-sync.service';
@@ -157,6 +162,7 @@ const authMethod = getAuthenticationMethod();
       GlobalOpencodeConfigEntity,
       ClientOpencodeConfigEntity,
       OpencodeProviderEntity,
+      OpencodeMcpServerEntity,
       OpencodeLayerFileEntity,
       OpencodeLayerFileSyncTargetEntity,
       OpencodeConfigSyncTargetEntity,
@@ -189,8 +195,10 @@ const authMethod = getAuthenticationMethod();
     AdminOpencodeConfigController,
     AdminOpencodeLayerFilesController,
     ClientOpencodeConfigController,
+    McpOAuthCallbackController,
     ClientOpencodeLayerFilesController,
     OpencodeProvidersController,
+    OpencodeMcpServersController,
   ],
   providers: [
     AgenstraMetricsCollectorService,
@@ -222,6 +230,8 @@ const authMethod = getAuthenticationMethod();
     OpencodeConfigService,
     OpencodeProvidersCatalogService,
     OpencodeProvidersBootstrapService,
+    OpencodeMcpServersCatalogService,
+    OpencodeMcpServersBootstrapService,
     OpencodeEffectiveConfigSyncService,
     OpencodeConfigSyncTargetsService,
     OpencodeLayerFilesService,
@@ -296,6 +306,7 @@ const authMethod = getAuthenticationMethod();
     KnowledgeEmbeddingIndexService,
     AutonomousRunOrchestratorService,
     OpencodeProvidersCatalogService,
+    OpencodeMcpServersCatalogService,
     OpencodeConfigSyncTargetsService,
     OpencodeLayerFilesService,
   ],

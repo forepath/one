@@ -1,6 +1,7 @@
 import { Repository } from 'typeorm';
 
 import { OpencodeProviderEntity } from '../entities/opencode-provider.entity';
+import type { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
 import { OpencodeProvidersCatalogService } from './opencode-providers-catalog.service';
 
 describe('OpencodeProvidersCatalogService', () => {
@@ -8,27 +9,56 @@ describe('OpencodeProvidersCatalogService', () => {
   let repository: {
     count: jest.Mock;
     find: jest.Mock;
+    findBy: jest.Mock;
+    findOne: jest.Mock;
+    findAndCount: jest.Mock;
     create: jest.Mock;
     upsert: jest.Mock;
     createQueryBuilder: jest.Mock;
   };
   let deleteExecute: jest.Mock;
+  let searchIndex: {
+    isEnabled: jest.Mock;
+    searchIds: jest.Mock;
+    bulkUpsertSafe: jest.Mock;
+    deleteSafe: jest.Mock;
+  };
 
   beforeEach(() => {
     deleteExecute = jest.fn().mockResolvedValue({ affected: 1 });
     repository = {
       count: jest.fn(),
       find: jest.fn(),
+      findBy: jest.fn(),
+      findOne: jest.fn(),
+      findAndCount: jest.fn(),
       create: jest.fn((value: unknown) => value),
       upsert: jest.fn().mockResolvedValue(undefined),
       createQueryBuilder: jest.fn(() => ({
         delete: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
         execute: deleteExecute,
+        getMany: jest.fn().mockResolvedValue([{ id: 'stale' }]),
+        orderBy: jest.fn().mockReturnThis(),
+        addOrderBy: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
       })),
     };
+    searchIndex = {
+      isEnabled: jest.fn().mockReturnValue(false),
+      searchIds: jest.fn(),
+      bulkUpsertSafe: jest.fn().mockResolvedValue(undefined),
+      deleteSafe: jest.fn().mockResolvedValue(undefined),
+    };
 
-    service = new OpencodeProvidersCatalogService(repository as unknown as Repository<OpencodeProviderEntity>);
+    service = new OpencodeProvidersCatalogService(
+      repository as unknown as Repository<OpencodeProviderEntity>,
+      searchIndex as unknown as AgenstraSearchIndexService,
+    );
   });
 
   afterEach(() => {
@@ -41,30 +71,83 @@ describe('OpencodeProvidersCatalogService', () => {
     await expect(service.isEmpty()).resolves.toBe(true);
   });
 
-  it('listProviders_mapsRowsOrdered', async () => {
-    repository.find.mockResolvedValue([
+  it('listProviders_returnsPagedDtoWithoutSearch', async () => {
+    repository.findAndCount.mockResolvedValue([
+      [
+        {
+          id: 'anthropic',
+          name: 'Anthropic',
+          env: ['ANTHROPIC_API_KEY'],
+          models: [{ id: 'claude-haiku-4-5', name: 'Claude Haiku 4.5' }],
+          npm: '@ai-sdk/anthropic',
+          api: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+      1,
+    ]);
+
+    await expect(service.listProviders({ limit: 20, offset: 0 })).resolves.toEqual({
+      providers: [
+        {
+          id: 'anthropic',
+          name: 'Anthropic',
+          env: ['ANTHROPIC_API_KEY'],
+          models: [{ id: 'claude-haiku-4-5', name: 'Claude Haiku 4.5' }],
+          npm: '@ai-sdk/anthropic',
+        },
+      ],
+      total: 1,
+      limit: 20,
+      offset: 0,
+    });
+    expect(repository.findAndCount).toHaveBeenCalledWith({
+      order: { name: 'ASC', id: 'ASC' },
+      take: 20,
+      skip: 0,
+    });
+  });
+
+  it('listProviders_hydratesOpenSearchHitsInOrder', async () => {
+    searchIndex.isEnabled.mockReturnValue(true);
+    searchIndex.searchIds.mockResolvedValue({ ids: ['openai', 'anthropic'], total: 2 });
+    repository.findBy.mockResolvedValue([
       {
         id: 'anthropic',
         name: 'Anthropic',
-        env: ['ANTHROPIC_API_KEY'],
-        models: [{ id: 'claude-haiku-4-5', name: 'Claude Haiku 4.5' }],
-        npm: '@ai-sdk/anthropic',
+        env: [],
+        models: [],
+        npm: null,
+        api: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'openai',
+        name: 'OpenAI',
+        env: [],
+        models: [],
+        npm: null,
         api: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
     ]);
 
-    await expect(service.listProviders()).resolves.toEqual([
-      {
-        id: 'anthropic',
-        name: 'Anthropic',
-        env: ['ANTHROPIC_API_KEY'],
-        models: [{ id: 'claude-haiku-4-5', name: 'Claude Haiku 4.5' }],
-        npm: '@ai-sdk/anthropic',
-      },
-    ]);
-    expect(repository.find).toHaveBeenCalledWith({ order: { name: 'ASC', id: 'ASC' } });
+    const result = await service.listProviders({ search: 'ai', limit: 20, offset: 0 });
+
+    expect(result.total).toBe(2);
+    expect(result.providers.map((p) => p.id)).toEqual(['openai', 'anthropic']);
+    expect(searchIndex.searchIds).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entityType: 'opencode-providers',
+        query: 'ai',
+        instanceScoped: true,
+        limit: 20,
+        offset: 0,
+      }),
+    );
   });
 
   it('refreshFromModelsDev_upsertsAndRemovesStale', async () => {
@@ -103,6 +186,8 @@ describe('OpencodeProvidersCatalogService', () => {
       { conflictPaths: ['id'], skipUpdateIfNoValuesChanged: false },
     );
     expect(deleteExecute).toHaveBeenCalled();
+    expect(searchIndex.bulkUpsertSafe).toHaveBeenCalledWith('opencode-providers', expect.any(Array));
+    expect(searchIndex.deleteSafe).toHaveBeenCalledWith('opencode-providers', 'stale');
   });
 
   it('refreshFromModelsDev_throwsWhenFetchFails', async () => {

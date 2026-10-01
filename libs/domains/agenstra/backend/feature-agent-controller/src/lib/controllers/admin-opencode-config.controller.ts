@@ -5,7 +5,7 @@ import { OpencodeConfigResponseDto, UpsertOpencodeConfigDto } from '../dto/openc
 import { OpencodeConfigService } from '../services/opencode-config.service';
 import { OpencodeConfigSyncTargetsService } from '../services/opencode-config-sync-targets.service';
 
-@Controller('admin/opencode-config')
+@Controller('admin/opencode/config')
 @RequireScopes('clients:write')
 export class AdminOpencodeConfigController {
   private readonly logger = new Logger(AdminOpencodeConfigController.name);

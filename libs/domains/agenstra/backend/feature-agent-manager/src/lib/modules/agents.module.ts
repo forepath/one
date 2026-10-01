@@ -17,6 +17,7 @@ import { AgentsVcsController } from '../controllers/agents-vcs.controller';
 import { AgentsVerificationController } from '../controllers/agents-verification.controller';
 import { AgentsController } from '../controllers/agents.controller';
 import { AgentsOpencodeConfigController } from '../controllers/agents-opencode-config.controller';
+import { AgentsOpencodeMcpController } from '../controllers/agents-opencode-mcp.controller';
 import { AgentsPermissionsController } from '../controllers/agents-permissions.controller';
 import { AgentsWorkspaceIndexController } from '../controllers/agents-workspace-index.controller';
 import { ConfigController } from '../controllers/config.controller';
@@ -114,6 +115,7 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
   controllers: [
     AgentsController,
     AgentsOpencodeConfigController,
+    AgentsOpencodeMcpController,
     AgentsPermissionsController,
     AgentsMessagesController,
     AgentsFilesController,

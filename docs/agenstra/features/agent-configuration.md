@@ -8,11 +8,11 @@ Precedence for **replace** semantics (later wins): environment (agent) → works
 
 | Layer          | UI                                                | API                                                    |
 | -------------- | ------------------------------------------------- | ------------------------------------------------------ |
-| Admin (global) | Console **Agent configuration** (`/agent-config`) | `GET/PUT /admin/opencode-config`                       |
-| Workspace      | Chat modal **Workspace agent configuration**      | `GET/PUT /clients/:id/opencode-config`                 |
-| Environment    | Chat modal **Environment agent configuration**    | `GET/PUT /clients/:id/agents/:agentId/opencode-config` |
+| Admin (global) | Console **Agent configuration** (`/agent-config`) | `GET/PUT /admin/opencode/config`                       |
+| Workspace      | Chat modal **Workspace agent configuration**      | `GET/PUT /clients/:id/opencode/config`                 |
+| Environment    | Chat modal **Environment agent configuration**    | `GET/PUT /clients/:id/agents/:agentId/opencode/config` |
 
-Frontend copy never uses the vendor name “OpenCode”; APIs and worker sync keep technical path names (`/opencode-config`).
+Frontend copy never uses the vendor name “OpenCode”; APIs and worker sync keep technical path names (`/opencode/config`).
 
 ## UI tabs ↔ config fields
 
@@ -21,7 +21,7 @@ Frontend copy never uses the vendor name “OpenCode”; APIs and worker sync ke
 | Core       | General                  | `username`, `theme`, `model` (known provider/model picker), `share`, `keybinds`, `tui`, `server`                         |
 | Core       | Models                   | UI allow/deny + known provider/model pickers → `enabled_providers` / `disabled_providers` / `model_allow` / `model_deny` |
 | Core       | Providers                | `providers` + credential secrets; catalog models locked read-only for built-ins                                          |
-| Extensions | MCP                      | `mcp.servers` (incl. OAuth snake_case fields)                                                                            |
+| Extensions | MCP                      | `mcp.servers` + secret env/headers/OAuth; registry catalog picker (built-in vs custom)                                   |
 | Extensions | Skills & instructions    | `skills`, `instructions`                                                                                                 |
 | Extensions | Commands & plugins       | `commands`, `plugins`                                                                                                    |
 | Extensions | Agents                   | `agents`                                                                                                                 |
@@ -41,7 +41,7 @@ Within a layer, the editable surface is `compose(config, overrides)` — structu
 ## Heredity
 
 - **Replace + lock:** `permissions`, provider allow/deny lists, model allow/deny lists, `experimental.policies`, and similar security roots. Parent presence locks the path for children.
-- **Map merge:** `providers`, `mcp.servers`, `commands`, `agents`, `references`, `formatter` (object) — parent entry keys are inherited (read-only); children may add new keys. Parent `formatter: false` fully locks formatters.
+- **Map merge:** `providers`, `mcp.servers`, `commands`, `agents`, `references`, `formatter` (object) — parent entry keys are inherited; children may add new keys and may set `disabled` / `hidden` on inherited keys (deep-merged). Parent `formatter: false` fully locks formatters.
 - **Array concat:** `skills`, `instructions`, `plugins` — parent items stack; children append (skills are converted to OpenCode `{ paths, urls }` on worker sync).
 - Responses expose `lockedPaths` (JSON Pointers) and `inheritedAdditive`.
 - Raw JSON mode and Advanced overrides validate overlays with the same rules (`validateOverlayAgainstHeredity`).
@@ -90,6 +90,51 @@ Provider API keys are also layer **secrets**, not OpenCode config. Built-in prov
 
 Network keys are skipped for auth.set (proxy/CA stay Env-only). PUT secrets are merged as a patch: empty string clears a key; omitted keys are left unchanged.
 
+## MCP servers and credentials
+
+MCP servers live under `mcp.servers`. Built-in entries can be seeded from the official
+[MCP Registry](https://registry.modelcontextprotocol.io/docs) catalog (`GET /opencode/mcp-servers`).
+Catalog seed writes `command` / `url`, non-secret `environment` / `headers`, and `secretEnv` /
+`secretHeaders` **name lists**. Secret **values** (env, headers, OAuth `client_secret`) live in the
+layer secrets map — never in config JSON (credential-like keys are rejected there).
+
+Worker sync:
+
+- Merges secret values into wire `mcp.<name>.environment` / `headers` / `oauth.clientSecret` before `PATCH /global/config`
+- Remaps UI snake_case OAuth (`client_id`, …) to OpenCode camelCase and allowlists MCP fields
+  (`additionalProperties: false` on OpenCode `McpLocalConfig` / `McpRemoteConfig`)
+- Applies `secretEnv` names as Docker container `Env` (local MCP children inherit them)
+- OAuth client secrets use namespaced keys `mcp.<serverKey>.oauth.client_secret`
+
+### Interactive MCP auth (Environment only)
+
+OpenCode exposes live MCP connection state via `GET /mcp` (`connected` | `disabled` | `failed` |
+`needs_auth` | `needs_client_registration`). Environment (agent) config can start interactive OAuth:
+
+| Controller                                                                                        | Manager                    | OpenCode                                                |
+| ------------------------------------------------------------------------------------------------- | -------------------------- | ------------------------------------------------------- |
+| `GET …/agents/:agentId/opencode/mcp`                                                              | `GET …/opencode/mcp`       | `GET /mcp`                                              |
+| `POST …/opencode/mcp/:name/auth`                                                                  | same (+ `{ redirectUri }`) | patch `oauth.redirectUri`, then `POST /mcp/{name}/auth` |
+| `POST …/opencode/mcp/:name/auth/callback`                                                         | same                       | `POST /mcp/{name}/auth/callback` `{ code }`             |
+| `DELETE …/opencode/mcp/:name/auth`                                                                | same                       | `DELETE /mcp/{name}/auth`                               |
+| **Public** `GET /clients/:clientId/agents/:agentId/opencode/mcp/:name/oauth/callback` (no `/api`) | —                          | verifies HMAC, proxies `code` to worker `auth/callback` |
+
+On Authenticate, the controller builds a signed redirect URL (`exp` + HMAC `sig` via
+`MCP_OAUTH_CALLBACK_SECRET`), sets that as the worker `oauth.redirectUri`, then opens the
+IdP. The IdP returns to the public callback (not OpenCode’s default `127.0.0.1:19876`). Env:
+
+- `MCP_OAUTH_CALLBACK_SECRET` — required HMAC secret
+- `MCP_OAUTH_PUBLIC_BASE_URL` — controller public origin with a **non-privileged** port
+  (OpenCode binds it inside the agent). Example: `http://localhost:3100`.
+  Decabill-provisioned controllers set `http://{fqdn}:3100` and a random callback secret.
+
+The Environment editor shows runtime status as a line-item badge and an Authenticate button in the
+expanded row (disabled when connected).
+
+The `opencode-mcp-servers.refresh` job walks **all** upstream cursor pages of
+`GET /v0.1/servers?version=latest`, then upserts and deletes stale rows. Bootstrap enqueues when the
+table is empty.
+
 ## Provider models
 
 The `opencode-providers.refresh` job stores each provider’s models.dev model id/name list on `opencode_providers.models`. Built-in providers with a non-empty catalog list show a locked Models panel in the Providers tab. Custom providers (and catalog entries without models) keep the free-text “one model id per line” editor writing `providers.<id>.models`. On startup, if the catalog table is empty **or** all rows have empty `models`, a one-shot bootstrap refresh is enqueued.
@@ -100,7 +145,7 @@ The `opencode-providers.refresh` job stores each provider’s models.dev model i
 - Agent GET/PUT also includes `sync`: durable per-agent sync target status (`pending` | `synced` | `failed`), revisions, and last error.
 - Config/secrets PUTs mark affected agents’ sync targets `pending` (desired revision hash of effective config + secrets), then attempt an immediate apply for running agents.
 - BullMQ `opencode-config-sync.coordinator` / `.unit` retry `pending` and `failed` targets (e.g. container stopped or OpenCode `/config` blip).
-- Manager `POST …/opencode-config/sync` returns `{ ok, defer?, error? }` — never silent success when apply did not happen. Missing container keeps the target `pending` (`defer: true`).
+- Manager `POST …/opencode/config/sync` returns `{ ok, defer?, error? }` — never silent success when apply did not happen. Missing container keeps the target `pending` (`defer: true`).
 - Workspace/global PUT cascade marks all affected agents pending (paged; no hard agent cap) and processes a first batch immediately.
 - Agent create/start/restart mark config + layer-file targets pending, emit layer VFS files, and run the full three-layer merge + secrets sync (controller-owned; manager no longer pushes agent-only platform defaults).
 - Layer-file emit failures are stored as `failed` and retried by `opencode-layer-files-sync` (pending + failed).
@@ -109,8 +154,8 @@ The `opencode-providers.refresh` job stores each provider’s models.dev model i
 
 Typing `/` in chat opens a typeahead fed by the worker’s OpenCode command registry (`GET /command`), proxied as:
 
-- Manager: `GET /agents/:id/opencode-config/commands`
-- Controller: `GET /clients/:id/agents/:agentId/opencode-config/commands`
+- Manager: `GET /agents/:id/opencode/config/commands`
+- Controller: `GET /clients/:id/agents/:agentId/opencode/config/commands`
 
 That registry merges (OpenCode priority):
 
@@ -142,10 +187,10 @@ Skills, instructions, references (local path), and plugin packages use structure
 
 APIs:
 
-- `GET /admin/opencode-config/files?path=` — list children
-- `POST /admin/opencode-config/files` — create file or directory
-- `GET/PUT/DELETE /admin/opencode-config/files/*path`
-- Same under `/clients/:id/opencode-config/files` for workspace
+- `GET /admin/opencode/config/files?path=` — list children
+- `POST /admin/opencode/config/files` — create file or directory
+- `GET/PUT/DELETE /admin/opencode/config/files/*path`
+- Same under `/clients/:id/opencode/config/files` for workspace
 
 Saving a layer **file** fans out via the agent file proxy (`context=app`); parents are created with `mkdir -p` on write. Directory markers emit via `createFileOrDirectory` (`mkdir -p`). Opening / ensuring a config path calls `POST .../files/ensure` (mkdir -p ancestors + leaf), then **resets that path on agent containers**: if no other VFS occupies the path/subpaths, the folder is deleted and recreated from VFS; if another VFS defines paths underneath, those are preserved and only orphans are removed. Applicable layer entries under the path are then re-emitted. Agent create/start/restart also pulls applicable layer entries and pushes the full merged OpenCode config (global → workspace → agent). Global and workspace config PUTs cascade that same effective config to all affected agents.
 
@@ -157,15 +202,29 @@ The legacy provider config file tree (`/clients/…/config`, `context=config`) h
 - Structured lists/forms for providers, MCP, commands, plugins, agents, references, permissions/policies, formatters, compaction, warming, media, websearch; raw JSON remains a full-overlay mode
 - Shared merge/heredity util: `@forepath/agenstra/shared/util-opencode-config`
 - Built-in LLM provider catalog: Postgres table `opencode_providers`, served by authenticated
-  `GET /opencode-providers` (`clients:read`). Refreshed from [models.dev](https://models.dev/)
-  via BullMQ job `opencode-providers.refresh` (`OPENCODE_PROVIDERS_REFRESH_INTERVAL_MS`, default 24h).
-  On startup, if the table is empty, a one-shot bootstrap job is enqueued. The Providers tab and
-  Models allow/deny helpers load this catalog; custom provider ids remain free-text.
+  `GET /opencode/providers` (`clients:read`, optional `search` / `limit` / `offset`) and
+  `GET /opencode/providers/{id}`. Refreshed from [models.dev](https://models.dev/) via BullMQ job
+  `opencode-providers.refresh` (`OPENCODE_PROVIDERS_REFRESH_INTERVAL_MS`, default 24h). On startup,
+  if the table is empty, a one-shot bootstrap job is enqueued. The Providers tab typeahead searches
+  the catalog; ids referenced in the layer are loaded with `GET …/{id}`. Models allow/deny pickers
+  use the same on-demand cache; custom provider ids remain free-text.
+- Built-in MCP Registry catalog: Postgres table `opencode_mcp_servers`, served by authenticated
+  `GET /opencode/mcp-servers` (`clients:read`, optional `search` / `limit` / `offset`) and
+  `GET /opencode/mcp-servers/{name}`. Refreshed from the
+  [official MCP Registry](https://registry.modelcontextprotocol.io/docs) via BullMQ job
+  `opencode-mcp-servers.refresh` (full `nextCursor` walk). On startup, if the table is empty, a
+  one-shot bootstrap job is enqueued. The MCP tab typeahead searches the registry; configured servers
+  are hydrated by registry name on load.
+- Environment interactive MCP auth: `GET/POST/DELETE …/agents/:agentId/opencode/mcp…` proxies
+  OpenCode `/mcp` status and OAuth start/callback/remove (agent-config editor, Environment layer only).
 
 ## References
 
 - [OpenCode V2 config](https://opencode.ai/v2/docs/config/)
 - [OpenCode Providers](https://opencode.ai/docs/providers/)
+- [MCP Registry](https://registry.modelcontextprotocol.io/docs)
 - Shared util: `libs/domains/agenstra/shared/util-opencode-config`
 - Provider catalog: `libs/domains/agenstra/shared/util-opencode-providers` (types/helpers only)
-- Backend catalog: `OpencodeProvidersCatalogService` + `opencode_providers` table
+- MCP catalog: `libs/domains/agenstra/shared/util-opencode-mcp-servers` (types/helpers / seed)
+- Backend catalogs: `OpencodeProvidersCatalogService` + `opencode_providers`;
+  `OpencodeMcpServersCatalogService` + `opencode_mcp_servers`

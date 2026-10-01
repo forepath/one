@@ -1,4 +1,4 @@
-import { IsObject, IsOptional } from 'class-validator';
+import { IsObject, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class UpsertAgentOpencodeConfigDto {
   @IsOptional()
@@ -61,4 +61,35 @@ export class OpencodeCommandInfoDto {
 
 export class OpencodeCommandsListResponseDto {
   commands!: OpencodeCommandInfoDto[];
+}
+
+/** OpenCode `MCPStatus` for one configured MCP server. */
+export type OpencodeMcpRuntimeStatus = 'connected' | 'disabled' | 'failed' | 'needs_auth' | 'needs_client_registration';
+
+export class OpencodeMcpServerStatusDto {
+  name!: string;
+  status!: OpencodeMcpRuntimeStatus;
+  error?: string;
+}
+
+export class OpencodeMcpStatusListResponseDto {
+  servers!: OpencodeMcpServerStatusDto[];
+}
+
+export class OpencodeMcpAuthStartResponseDto {
+  authorizationUrl!: string;
+  oauthState?: string;
+}
+
+export class OpencodeMcpAuthCallbackDto {
+  @IsString()
+  @MinLength(1)
+  code!: string;
+}
+
+export class OpencodeMcpAuthStartDto {
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  redirectUri?: string;
 }

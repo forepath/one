@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-30T13:54:46.649Z",
+  "generatedAt": "2026-09-30T18:09:54.069Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -218,6 +218,29 @@
         "domain": "agenstra",
         "context": "backend",
         "featureGroup": "feature"
+      }
+    },
+    {
+      "id": "project:agenstra-shared-util-opencode-mcp-servers",
+      "type": "lib",
+      "attrs": {
+        "name": "agenstra-shared-util-opencode-mcp-servers",
+        "root": "libs/domains/agenstra/shared/util-opencode-mcp-servers",
+        "tags": [
+          "npm:private",
+          "domain:agenstra",
+          "scope:shared",
+          "type:util"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "build",
+          "test"
+        ],
+        "domain": "agenstra",
+        "context": "shared",
+        "featureGroup": "util"
       }
     },
     {
@@ -4707,6 +4730,24 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/mcp-oauth-callback.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/mcp-oauth-callback.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-mcp-servers.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-mcp-servers.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-providers.controller.ts",
       "type": "controller",
       "attrs": {
@@ -4936,6 +4977,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/opencode-layer-file.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/opencode-mcp-servers.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/opencode-mcp-servers.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -5287,6 +5337,15 @@
       "type": "entity",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/opencode-layer-file.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/opencode-mcp-server.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/opencode-mcp-server.entity.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -6012,6 +6071,24 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-mcp-servers-bootstrap.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-mcp-servers-bootstrap.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-mcp-servers-catalog.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-mcp-servers-catalog.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-providers-bootstrap.service.ts",
       "type": "service",
       "attrs": {
@@ -6126,6 +6203,15 @@
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/tickets.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/shared/util-opencode-mcp-servers/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/agenstra/shared/util-opencode-mcp-servers/README.md",
+        "languageOrKind": "md",
+        "projectName": "agenstra-shared-util-opencode-mcp-servers"
       }
     },
     {
@@ -10260,6 +10346,15 @@
       "type": "controller",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-opencode-config.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-opencode-mcp.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-opencode-mcp.controller.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -16703,211 +16798,299 @@
       }
     },
     {
-      "id": "api:HTTP:GET:/opencode-providers",
+      "id": "api:HTTP:GET:/opencode/providers",
       "type": "endpoint",
       "attrs": {
         "method": "GET",
-        "pathOrChannel": "/opencode-providers",
+        "pathOrChannel": "/opencode/providers",
         "operationId": "listOpencodeProviders",
         "summary": "List cached built-in OpenCode LLM providers",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:GET:/admin/opencode-config",
+      "id": "api:HTTP:GET:/opencode/providers/{id}",
       "type": "endpoint",
       "attrs": {
         "method": "GET",
-        "pathOrChannel": "/admin/opencode-config",
+        "pathOrChannel": "/opencode/providers/{id}",
+        "operationId": "getOpencodeProvider",
+        "summary": "Get a cached OpenCode LLM provider",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/opencode/mcp-servers",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/opencode/mcp-servers",
+        "operationId": "listOpencodeMcpServers",
+        "summary": "List cached MCP Registry servers",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/opencode/mcp-servers/{name}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/opencode/mcp-servers/{name}",
+        "operationId": "getOpencodeMcpServer",
+        "summary": "Get a cached MCP Registry server",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/opencode/config",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/opencode/config",
         "operationId": "getGlobalOpencodeConfig",
         "summary": "Get global OpenCode config",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:PUT:/admin/opencode-config",
+      "id": "api:HTTP:PUT:/admin/opencode/config",
       "type": "endpoint",
       "attrs": {
         "method": "PUT",
-        "pathOrChannel": "/admin/opencode-config",
+        "pathOrChannel": "/admin/opencode/config",
         "operationId": "putGlobalOpencodeConfig",
         "summary": "Update global OpenCode config",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:GET:/admin/opencode-config/files",
+      "id": "api:HTTP:GET:/admin/opencode/config/files",
       "type": "endpoint",
       "attrs": {
         "method": "GET",
-        "pathOrChannel": "/admin/opencode-config/files",
+        "pathOrChannel": "/admin/opencode/config/files",
         "operationId": "listGlobalOpencodeLayerFiles",
         "summary": "List children under a global layer path",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:POST:/admin/opencode-config/files",
+      "id": "api:HTTP:POST:/admin/opencode/config/files",
       "type": "endpoint",
       "attrs": {
         "method": "POST",
-        "pathOrChannel": "/admin/opencode-config/files",
+        "pathOrChannel": "/admin/opencode/config/files",
         "operationId": "createGlobalOpencodeLayerFile",
         "summary": "Create a global layer file or directory",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:GET:/admin/opencode-config/files/{path}",
+      "id": "api:HTTP:GET:/admin/opencode/config/files/{path}",
       "type": "endpoint",
       "attrs": {
         "method": "GET",
-        "pathOrChannel": "/admin/opencode-config/files/{path}",
+        "pathOrChannel": "/admin/opencode/config/files/{path}",
         "operationId": "getGlobalOpencodeLayerFile",
         "summary": "Get a global OpenCode layer file",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:PUT:/admin/opencode-config/files/{path}",
+      "id": "api:HTTP:PUT:/admin/opencode/config/files/{path}",
       "type": "endpoint",
       "attrs": {
         "method": "PUT",
-        "pathOrChannel": "/admin/opencode-config/files/{path}",
+        "pathOrChannel": "/admin/opencode/config/files/{path}",
         "operationId": "putGlobalOpencodeLayerFile",
         "summary": "Create or update a global OpenCode layer file",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:DELETE:/admin/opencode-config/files/{path}",
+      "id": "api:HTTP:DELETE:/admin/opencode/config/files/{path}",
       "type": "endpoint",
       "attrs": {
         "method": "DELETE",
-        "pathOrChannel": "/admin/opencode-config/files/{path}",
+        "pathOrChannel": "/admin/opencode/config/files/{path}",
         "operationId": "deleteGlobalOpencodeLayerFile",
         "summary": "Delete a global OpenCode layer file",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:GET:/clients/{id}/opencode-config",
+      "id": "api:HTTP:GET:/clients/{id}/opencode/config",
       "type": "endpoint",
       "attrs": {
         "method": "GET",
-        "pathOrChannel": "/clients/{id}/opencode-config",
+        "pathOrChannel": "/clients/{id}/opencode/config",
         "operationId": "getClientOpencodeConfig",
         "summary": "Get workspace OpenCode config",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:PUT:/clients/{id}/opencode-config",
+      "id": "api:HTTP:PUT:/clients/{id}/opencode/config",
       "type": "endpoint",
       "attrs": {
         "method": "PUT",
-        "pathOrChannel": "/clients/{id}/opencode-config",
+        "pathOrChannel": "/clients/{id}/opencode/config",
         "operationId": "putClientOpencodeConfig",
         "summary": "Update workspace OpenCode config",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:GET:/clients/{id}/opencode-config/files",
+      "id": "api:HTTP:GET:/clients/{id}/opencode/config/files",
       "type": "endpoint",
       "attrs": {
         "method": "GET",
-        "pathOrChannel": "/clients/{id}/opencode-config/files",
+        "pathOrChannel": "/clients/{id}/opencode/config/files",
         "operationId": "listClientOpencodeLayerFiles",
         "summary": "List children under a workspace layer path",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:POST:/clients/{id}/opencode-config/files",
+      "id": "api:HTTP:POST:/clients/{id}/opencode/config/files",
       "type": "endpoint",
       "attrs": {
         "method": "POST",
-        "pathOrChannel": "/clients/{id}/opencode-config/files",
+        "pathOrChannel": "/clients/{id}/opencode/config/files",
         "operationId": "createClientOpencodeLayerFile",
         "summary": "Create a workspace layer file or directory",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:GET:/clients/{id}/opencode-config/files/{path}",
+      "id": "api:HTTP:GET:/clients/{id}/opencode/config/files/{path}",
       "type": "endpoint",
       "attrs": {
         "method": "GET",
-        "pathOrChannel": "/clients/{id}/opencode-config/files/{path}",
+        "pathOrChannel": "/clients/{id}/opencode/config/files/{path}",
         "operationId": "getClientOpencodeLayerFile",
         "summary": "Get a workspace OpenCode layer file",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:PUT:/clients/{id}/opencode-config/files/{path}",
+      "id": "api:HTTP:PUT:/clients/{id}/opencode/config/files/{path}",
       "type": "endpoint",
       "attrs": {
         "method": "PUT",
-        "pathOrChannel": "/clients/{id}/opencode-config/files/{path}",
+        "pathOrChannel": "/clients/{id}/opencode/config/files/{path}",
         "operationId": "putClientOpencodeLayerFile",
         "summary": "Create or update a workspace OpenCode layer file",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:DELETE:/clients/{id}/opencode-config/files/{path}",
+      "id": "api:HTTP:DELETE:/clients/{id}/opencode/config/files/{path}",
       "type": "endpoint",
       "attrs": {
         "method": "DELETE",
-        "pathOrChannel": "/clients/{id}/opencode-config/files/{path}",
+        "pathOrChannel": "/clients/{id}/opencode/config/files/{path}",
         "operationId": "deleteClientOpencodeLayerFile",
         "summary": "Delete a workspace OpenCode layer file",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config",
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/config",
       "type": "endpoint",
       "attrs": {
         "method": "GET",
-        "pathOrChannel": "/clients/{id}/agents/{agentId}/opencode-config",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/opencode/config",
         "operationId": "getClientAgentOpencodeConfig",
         "summary": "Get agent OpenCode config",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:PUT:/clients/{id}/agents/{agentId}/opencode-config",
+      "id": "api:HTTP:PUT:/clients/{id}/agents/{agentId}/opencode/config",
       "type": "endpoint",
       "attrs": {
         "method": "PUT",
-        "pathOrChannel": "/clients/{id}/agents/{agentId}/opencode-config",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/opencode/config",
         "operationId": "putClientAgentOpencodeConfig",
         "summary": "Update agent OpenCode config",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/agents",
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/config/agents",
       "type": "endpoint",
       "attrs": {
         "method": "GET",
-        "pathOrChannel": "/clients/{id}/agents/{agentId}/opencode-config/agents",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/opencode/config/agents",
         "operationId": "listClientAgentOpencodeAgents",
         "summary": "List effective OpenCode agents for a remote worker",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/commands",
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/config/commands",
       "type": "endpoint",
       "attrs": {
         "method": "GET",
-        "pathOrChannel": "/clients/{id}/agents/{agentId}/opencode-config/commands",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/opencode/config/commands",
         "operationId": "listClientAgentOpencodeCommands",
         "summary": "List slash-invokable OpenCode commands for a remote worker",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/mcp",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/opencode/mcp",
+        "operationId": "listClientAgentOpencodeMcpStatuses",
+        "summary": "List live MCP server statuses for an Environment",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth",
+        "operationId": "startClientAgentOpencodeMcpAuth",
+        "summary": "Start interactive MCP OAuth for an Environment MCP server",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth",
+        "operationId": "removeClientAgentOpencodeMcpAuth",
+        "summary": "Remove MCP OAuth credentials for an Environment MCP server",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth/callback",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth/callback",
+        "operationId": "completeClientAgentOpencodeMcpAuth",
+        "summary": "Complete MCP OAuth with authorization code",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{clientId}/agents/{agentId}/opencode/mcp/{name}/oauth/callback",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{clientId}/agents/{agentId}/opencode/mcp/{name}/oauth/callback",
+        "operationId": "publicClientAgentOpencodeMcpOAuthCallback",
+        "summary": "Public MCP OAuth redirect callback (no /api prefix)",
         "specKind": "openapi"
       }
     },
@@ -21601,57 +21784,101 @@
       }
     },
     {
-      "id": "api:HTTP:GET:/agents/{id}/opencode-config",
+      "id": "api:HTTP:GET:/agents/{id}/opencode/config",
       "type": "endpoint",
       "attrs": {
         "method": "GET",
-        "pathOrChannel": "/agents/{id}/opencode-config",
+        "pathOrChannel": "/agents/{id}/opencode/config",
         "operationId": "getAgentOpencodeConfig",
         "summary": "Get agent OpenCode user config",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:PUT:/agents/{id}/opencode-config",
+      "id": "api:HTTP:PUT:/agents/{id}/opencode/config",
       "type": "endpoint",
       "attrs": {
         "method": "PUT",
-        "pathOrChannel": "/agents/{id}/opencode-config",
+        "pathOrChannel": "/agents/{id}/opencode/config",
         "operationId": "putAgentOpencodeConfig",
         "summary": "Update agent OpenCode user config",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:GET:/agents/{id}/opencode-config/agents",
+      "id": "api:HTTP:GET:/agents/{id}/opencode/config/agents",
       "type": "endpoint",
       "attrs": {
         "method": "GET",
-        "pathOrChannel": "/agents/{id}/opencode-config/agents",
+        "pathOrChannel": "/agents/{id}/opencode/config/agents",
         "operationId": "listAgentOpencodeAgents",
         "summary": "List effective OpenCode agents (primary + subagents) from the worker",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:GET:/agents/{id}/opencode-config/commands",
+      "id": "api:HTTP:GET:/agents/{id}/opencode/config/commands",
       "type": "endpoint",
       "attrs": {
         "method": "GET",
-        "pathOrChannel": "/agents/{id}/opencode-config/commands",
+        "pathOrChannel": "/agents/{id}/opencode/config/commands",
         "operationId": "listAgentOpencodeCommands",
         "summary": "List slash-invokable OpenCode commands from the worker",
         "specKind": "openapi"
       }
     },
     {
-      "id": "api:HTTP:POST:/agents/{id}/opencode-config/sync",
+      "id": "api:HTTP:POST:/agents/{id}/opencode/config/sync",
       "type": "endpoint",
       "attrs": {
         "method": "POST",
-        "pathOrChannel": "/agents/{id}/opencode-config/sync",
+        "pathOrChannel": "/agents/{id}/opencode/config/sync",
         "operationId": "syncAgentOpencodeConfig",
         "summary": "Best-effort sync effective OpenCode config into worker",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agents/{id}/opencode/mcp",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agents/{id}/opencode/mcp",
+        "operationId": "listAgentOpencodeMcpStatuses",
+        "summary": "List live MCP server statuses from the OpenCode worker",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/agents/{id}/opencode/mcp/{name}/auth",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/agents/{id}/opencode/mcp/{name}/auth",
+        "operationId": "startAgentOpencodeMcpAuth",
+        "summary": "Start interactive MCP OAuth for a server",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/agents/{id}/opencode/mcp/{name}/auth",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/agents/{id}/opencode/mcp/{name}/auth",
+        "operationId": "removeAgentOpencodeMcpAuth",
+        "summary": "Remove MCP OAuth credentials",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/agents/{id}/opencode/mcp/{name}/auth/callback",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/agents/{id}/opencode/mcp/{name}/auth/callback",
+        "operationId": "completeAgentOpencodeMcpAuth",
+        "summary": "Complete MCP OAuth with authorization code",
         "specKind": "openapi"
       }
     },
@@ -24539,6 +24766,16 @@
         "title": "Provider credentials",
         "docPath": "docs/agenstra/features/agent-configuration.md",
         "sectionAnchor": "provider-credentials",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-mcp-servers-and-credentials",
+      "type": "concept",
+      "attrs": {
+        "title": "MCP servers and credentials",
+        "docPath": "docs/agenstra/features/agent-configuration.md",
+        "sectionAnchor": "mcp-servers-and-credentials",
         "domain": "agenstra"
       }
     },
@@ -32741,6 +32978,11 @@
     },
     {
       "from": "project:agenstra-frontend-feature-agent-config",
+      "to": "project:agenstra-shared-util-opencode-mcp-servers",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-config",
       "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
     },
@@ -36286,6 +36528,16 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/mcp-oauth-callback.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-mcp-servers.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-providers.controller.ts",
       "type": "contains"
     },
@@ -36412,6 +36664,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/opencode-layer-file.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/opencode-mcp-servers.dto.ts",
       "type": "contains"
     },
     {
@@ -36607,6 +36864,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/opencode-layer-file.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/opencode-mcp-server.entity.ts",
       "type": "contains"
     },
     {
@@ -37011,6 +37273,16 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-mcp-servers-bootstrap.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-mcp-servers-catalog.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-providers-bootstrap.service.ts",
       "type": "contains"
     },
@@ -37072,6 +37344,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/tickets.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-shared-util-opencode-mcp-servers",
+      "to": "file:libs/domains/agenstra/shared/util-opencode-mcp-servers/README.md",
       "type": "contains"
     },
     {
@@ -39352,6 +39629,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-opencode-config.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-opencode-mcp.controller.ts",
       "type": "contains"
     },
     {
@@ -42011,97 +42293,137 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/opencode-providers",
+      "to": "api:HTTP:GET:/opencode/providers",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/admin/opencode-config",
+      "to": "api:HTTP:GET:/opencode/providers/{id}",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:PUT:/admin/opencode-config",
+      "to": "api:HTTP:GET:/opencode/mcp-servers",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/admin/opencode-config/files",
+      "to": "api:HTTP:GET:/opencode/mcp-servers/{name}",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:POST:/admin/opencode-config/files",
+      "to": "api:HTTP:GET:/admin/opencode/config",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/admin/opencode-config/files/{path}",
+      "to": "api:HTTP:PUT:/admin/opencode/config",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:PUT:/admin/opencode-config/files/{path}",
+      "to": "api:HTTP:GET:/admin/opencode/config/files",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:DELETE:/admin/opencode-config/files/{path}",
+      "to": "api:HTTP:POST:/admin/opencode/config/files",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/clients/{id}/opencode-config",
+      "to": "api:HTTP:GET:/admin/opencode/config/files/{path}",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:PUT:/clients/{id}/opencode-config",
+      "to": "api:HTTP:PUT:/admin/opencode/config/files/{path}",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/clients/{id}/opencode-config/files",
+      "to": "api:HTTP:DELETE:/admin/opencode/config/files/{path}",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:POST:/clients/{id}/opencode-config/files",
+      "to": "api:HTTP:GET:/clients/{id}/opencode/config",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/clients/{id}/opencode-config/files/{path}",
+      "to": "api:HTTP:PUT:/clients/{id}/opencode/config",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:PUT:/clients/{id}/opencode-config/files/{path}",
+      "to": "api:HTTP:GET:/clients/{id}/opencode/config/files",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:DELETE:/clients/{id}/opencode-config/files/{path}",
+      "to": "api:HTTP:POST:/clients/{id}/opencode/config/files",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config",
+      "to": "api:HTTP:GET:/clients/{id}/opencode/config/files/{path}",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:PUT:/clients/{id}/agents/{agentId}/opencode-config",
+      "to": "api:HTTP:PUT:/clients/{id}/opencode/config/files/{path}",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/agents",
+      "to": "api:HTTP:DELETE:/clients/{id}/opencode/config/files/{path}",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/commands",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/config",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:PUT:/clients/{id}/agents/{agentId}/opencode/config",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/config/agents",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/config/commands",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/mcp",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth/callback",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{clientId}/agents/{agentId}/opencode/mcp/{name}/oauth/callback",
       "type": "contains"
     },
     {
@@ -44566,27 +44888,47 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/agents/{id}/opencode-config",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/config",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
-      "to": "api:HTTP:PUT:/agents/{id}/opencode-config",
+      "to": "api:HTTP:PUT:/agents/{id}/opencode/config",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/agents/{id}/opencode-config/agents",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/config/agents",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
-      "to": "api:HTTP:GET:/agents/{id}/opencode-config/commands",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/config/commands",
       "type": "contains"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
-      "to": "api:HTTP:POST:/agents/{id}/opencode-config/sync",
+      "to": "api:HTTP:POST:/agents/{id}/opencode/config/sync",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/mcp",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/agents/{id}/opencode/mcp/{name}/auth",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/agents/{id}/opencode/mcp/{name}/auth",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/agents/{id}/opencode/mcp/{name}/auth/callback",
       "type": "contains"
     },
     {
@@ -46457,6 +46799,11 @@
     {
       "from": "file:docs/agenstra/features/agent-configuration.md",
       "to": "concept:agenstra-provider-credentials",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-configuration.md",
+      "to": "concept:agenstra-mcp-servers-and-credentials",
       "type": "contains"
     },
     {
@@ -51806,97 +52153,97 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
-      "to": "api:HTTP:GET:/admin/opencode-config",
+      "to": "api:HTTP:GET:/admin/opencode/config",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/admin/opencode-config",
+      "to": "api:HTTP:GET:/admin/opencode/config",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
-      "to": "api:HTTP:PUT:/admin/opencode-config",
+      "to": "api:HTTP:PUT:/admin/opencode/config",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:PUT:/admin/opencode-config",
+      "to": "api:HTTP:PUT:/admin/opencode/config",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
-      "to": "api:HTTP:GET:/admin/opencode-config/files",
+      "to": "api:HTTP:GET:/admin/opencode/config/files",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/admin/opencode-config/files",
+      "to": "api:HTTP:GET:/admin/opencode/config/files",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
-      "to": "api:HTTP:POST:/admin/opencode-config/files",
+      "to": "api:HTTP:POST:/admin/opencode/config/files",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:POST:/admin/opencode-config/files",
+      "to": "api:HTTP:POST:/admin/opencode/config/files",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
-      "to": "api:HTTP:GET:/admin/opencode-config/files/{path}",
+      "to": "api:HTTP:GET:/admin/opencode/config/files/{path}",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/admin/opencode-config/files/{path}",
+      "to": "api:HTTP:GET:/admin/opencode/config/files/{path}",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
-      "to": "api:HTTP:PUT:/admin/opencode-config/files/{path}",
+      "to": "api:HTTP:PUT:/admin/opencode/config/files/{path}",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:PUT:/admin/opencode-config/files/{path}",
+      "to": "api:HTTP:PUT:/admin/opencode/config/files/{path}",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-config.controller.ts",
-      "to": "api:HTTP:DELETE:/admin/opencode-config/files/{path}",
+      "to": "api:HTTP:DELETE:/admin/opencode/config/files/{path}",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:DELETE:/admin/opencode-config/files/{path}",
+      "to": "api:HTTP:DELETE:/admin/opencode/config/files/{path}",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
-      "to": "api:HTTP:GET:/admin/opencode-config/files",
+      "to": "api:HTTP:GET:/admin/opencode/config/files",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
-      "to": "api:HTTP:POST:/admin/opencode-config/files",
+      "to": "api:HTTP:POST:/admin/opencode/config/files",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
-      "to": "api:HTTP:GET:/admin/opencode-config/files/{path}",
+      "to": "api:HTTP:GET:/admin/opencode/config/files/{path}",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
-      "to": "api:HTTP:PUT:/admin/opencode-config/files/{path}",
+      "to": "api:HTTP:PUT:/admin/opencode/config/files/{path}",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
-      "to": "api:HTTP:DELETE:/admin/opencode-config/files/{path}",
+      "to": "api:HTTP:DELETE:/admin/opencode/config/files/{path}",
       "type": "implements"
     },
     {
@@ -52761,112 +53108,162 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:GET:/clients/{id}/opencode-config",
+      "to": "api:HTTP:GET:/clients/{id}/opencode/config",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/clients/{id}/opencode-config",
+      "to": "api:HTTP:GET:/clients/{id}/opencode/config",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:PUT:/clients/{id}/opencode-config",
+      "to": "api:HTTP:PUT:/clients/{id}/opencode/config",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:PUT:/clients/{id}/opencode-config",
+      "to": "api:HTTP:PUT:/clients/{id}/opencode/config",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:GET:/clients/{id}/opencode-config/files",
+      "to": "api:HTTP:GET:/clients/{id}/opencode/config/files",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/clients/{id}/opencode-config/files",
+      "to": "api:HTTP:GET:/clients/{id}/opencode/config/files",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:POST:/clients/{id}/opencode-config/files",
+      "to": "api:HTTP:POST:/clients/{id}/opencode/config/files",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:POST:/clients/{id}/opencode-config/files",
+      "to": "api:HTTP:POST:/clients/{id}/opencode/config/files",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:GET:/clients/{id}/opencode-config/files/{path}",
+      "to": "api:HTTP:GET:/clients/{id}/opencode/config/files/{path}",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/clients/{id}/opencode-config/files/{path}",
+      "to": "api:HTTP:GET:/clients/{id}/opencode/config/files/{path}",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:PUT:/clients/{id}/opencode-config/files/{path}",
+      "to": "api:HTTP:PUT:/clients/{id}/opencode/config/files/{path}",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:PUT:/clients/{id}/opencode-config/files/{path}",
+      "to": "api:HTTP:PUT:/clients/{id}/opencode/config/files/{path}",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:DELETE:/clients/{id}/opencode-config/files/{path}",
+      "to": "api:HTTP:DELETE:/clients/{id}/opencode/config/files/{path}",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:DELETE:/clients/{id}/opencode-config/files/{path}",
+      "to": "api:HTTP:DELETE:/clients/{id}/opencode/config/files/{path}",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/config",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/config",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:PUT:/clients/{id}/agents/{agentId}/opencode-config",
+      "to": "api:HTTP:PUT:/clients/{id}/agents/{agentId}/opencode/config",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:PUT:/clients/{id}/agents/{agentId}/opencode-config",
+      "to": "api:HTTP:PUT:/clients/{id}/agents/{agentId}/opencode/config",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/agents",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/config/agents",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/agents",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/config/agents",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/commands",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/config/commands",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/commands",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/config/commands",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/mcp",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/mcp",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:DELETE:/clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:DELETE:/clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth/callback",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth/callback",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{clientId}/agents/{agentId}/opencode/mcp/{name}/oauth/callback",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{clientId}/agents/{agentId}/opencode/mcp/{name}/oauth/callback",
       "type": "implements"
     },
     {
@@ -53197,16 +53594,46 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "api:HTTP:POST:/knowledge/{id}/duplicate",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-mcp-servers.controller.ts",
+      "to": "api:HTTP:GET:/opencode/mcp-servers",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/opencode/mcp-servers",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-mcp-servers.controller.ts",
+      "to": "api:HTTP:GET:/opencode/mcp-servers/{name}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/opencode/mcp-servers/{name}",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-providers.controller.ts",
-      "to": "api:HTTP:GET:/opencode-providers",
+      "to": "api:HTTP:GET:/opencode/providers",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:HTTP:GET:/opencode-providers",
+      "to": "api:HTTP:GET:/opencode/providers",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-providers.controller.ts",
+      "to": "api:HTTP:GET:/opencode/providers/{id}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/opencode/providers/{id}",
       "type": "implements"
     },
     {
@@ -57226,52 +57653,92 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
-      "to": "api:HTTP:GET:/agents/{id}/opencode-config",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/config",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:HTTP:GET:/agents/{id}/opencode-config",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/config",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
-      "to": "api:HTTP:PUT:/agents/{id}/opencode-config",
+      "to": "api:HTTP:PUT:/agents/{id}/opencode/config",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:HTTP:PUT:/agents/{id}/opencode-config",
+      "to": "api:HTTP:PUT:/agents/{id}/opencode/config",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
-      "to": "api:HTTP:GET:/agents/{id}/opencode-config/agents",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/config/agents",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:HTTP:GET:/agents/{id}/opencode-config/agents",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/config/agents",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
-      "to": "api:HTTP:GET:/agents/{id}/opencode-config/commands",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/config/commands",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:HTTP:GET:/agents/{id}/opencode-config/commands",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/config/commands",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
-      "to": "api:HTTP:POST:/agents/{id}/opencode-config/sync",
+      "to": "api:HTTP:POST:/agents/{id}/opencode/config/sync",
       "type": "implements"
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:HTTP:POST:/agents/{id}/opencode-config/sync",
+      "to": "api:HTTP:POST:/agents/{id}/opencode/config/sync",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/mcp",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/mcp",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:POST:/agents/{id}/opencode/mcp/{name}/auth",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:POST:/agents/{id}/opencode/mcp/{name}/auth",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:DELETE:/agents/{id}/opencode/mcp/{name}/auth",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:DELETE:/agents/{id}/opencode/mcp/{name}/auth",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:POST:/agents/{id}/opencode/mcp/{name}/auth/callback",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:POST:/agents/{id}/opencode/mcp/{name}/auth/callback",
       "type": "implements"
     },
     {
@@ -57826,27 +58293,47 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
-      "to": "api:HTTP:GET:/agents/{id}/opencode-config",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/config",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
-      "to": "api:HTTP:PUT:/agents/{id}/opencode-config",
+      "to": "api:HTTP:PUT:/agents/{id}/opencode/config",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
-      "to": "api:HTTP:GET:/agents/{id}/opencode-config/agents",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/config/agents",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
-      "to": "api:HTTP:GET:/agents/{id}/opencode-config/commands",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/config/commands",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
-      "to": "api:HTTP:POST:/agents/{id}/opencode-config/sync",
+      "to": "api:HTTP:POST:/agents/{id}/opencode/config/sync",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/mcp",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{id}/opencode/mcp/{name}/auth",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:DELETE:/agents/{id}/opencode/mcp/{name}/auth",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{id}/opencode/mcp/{name}/auth/callback",
       "type": "implements"
     },
     {
@@ -58156,27 +58643,47 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
-      "to": "api:HTTP:GET:/agents/{id}/opencode-config",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/config",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
-      "to": "api:HTTP:PUT:/agents/{id}/opencode-config",
+      "to": "api:HTTP:PUT:/agents/{id}/opencode/config",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
-      "to": "api:HTTP:GET:/agents/{id}/opencode-config/agents",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/config/agents",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
-      "to": "api:HTTP:GET:/agents/{id}/opencode-config/commands",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/config/commands",
       "type": "implements"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
-      "to": "api:HTTP:POST:/agents/{id}/opencode-config/sync",
+      "to": "api:HTTP:POST:/agents/{id}/opencode/config/sync",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:GET:/agents/{id}/opencode/mcp",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:POST:/agents/{id}/opencode/mcp/{name}/auth",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:DELETE:/agents/{id}/opencode/mcp/{name}/auth",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:POST:/agents/{id}/opencode/mcp/{name}/auth/callback",
       "type": "implements"
     },
     {
@@ -60005,6 +60512,16 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/mcp-oauth-callback.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-opencode-config-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-mcp-servers.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-mcp-servers-catalog.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-providers.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-providers-catalog.service.ts",
       "type": "injects"
@@ -60610,8 +61127,23 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-mcp-servers-bootstrap.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-mcp-servers-catalog.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-mcp-servers-catalog.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/agenstra-search-index.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-providers-bootstrap.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-providers-catalog.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-providers-catalog.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/agenstra-search-index.service.ts",
       "type": "injects"
     },
     {
@@ -64240,6 +64772,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-opencode-mcp.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-config-sync.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agents.repository.ts",
       "type": "injects"
@@ -64841,6 +65378,11 @@
     },
     {
       "from": "file:apps/agenstra/backend-agent-controller/src/queue/processors/controller-jobs.processor.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-mcp-servers-catalog.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:apps/agenstra/backend-agent-controller/src/queue/processors/controller-jobs.processor.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config-sync-targets.service.ts",
       "type": "injects"
     },
@@ -65106,12 +65648,22 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/mcp-oauth-callback.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-layer-files.controller.ts",
       "type": "provides"
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-providers.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/opencode-mcp-servers.controller.ts",
       "type": "provides"
     },
     {
@@ -65257,6 +65809,16 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-providers-bootstrap.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-mcp-servers-catalog.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-mcp-servers-bootstrap.service.ts",
       "type": "provides"
     },
     {
@@ -66802,6 +67364,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-opencode-config.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-opencode-mcp.controller.ts",
       "type": "provides"
     },
     {
@@ -68496,97 +69063,132 @@
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
-      "to": "api:HTTP:GET:/opencode-providers",
+      "to": "api:HTTP:GET:/opencode/providers",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
-      "to": "api:HTTP:GET:/admin/opencode-config",
+      "to": "api:HTTP:GET:/opencode/providers/{id}",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
-      "to": "api:HTTP:PUT:/admin/opencode-config",
+      "to": "api:HTTP:GET:/opencode/mcp-servers",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
-      "to": "api:HTTP:GET:/clients/{id}/opencode-config",
+      "to": "api:HTTP:GET:/opencode/mcp-servers/{name}",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
-      "to": "api:HTTP:PUT:/clients/{id}/opencode-config",
+      "to": "api:HTTP:GET:/admin/opencode/config",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config",
+      "to": "api:HTTP:PUT:/admin/opencode/config",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
-      "to": "api:HTTP:PUT:/clients/{id}/agents/{agentId}/opencode-config",
+      "to": "api:HTTP:GET:/clients/{id}/opencode/config",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/agents",
+      "to": "api:HTTP:PUT:/clients/{id}/opencode/config",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode-config/commands",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/config",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
+      "to": "api:HTTP:PUT:/clients/{id}/agents/{agentId}/opencode/config",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/config/agents",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/config/commands",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/opencode/mcp",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth/callback",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
+      "to": "api:HTTP:DELETE:/clients/{id}/agents/{agentId}/opencode/mcp/{name}/auth",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
-      "to": "api:HTTP:GET:/admin/opencode-config/files",
+      "to": "api:HTTP:GET:/admin/opencode/config/files",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
-      "to": "api:HTTP:GET:/clients/{id}/opencode-config/files",
+      "to": "api:HTTP:GET:/clients/{id}/opencode/config/files",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
-      "to": "api:HTTP:POST:/admin/opencode-config/files",
+      "to": "api:HTTP:POST:/admin/opencode/config/files",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
-      "to": "api:HTTP:POST:/clients/{id}/opencode-config/files",
+      "to": "api:HTTP:POST:/clients/{id}/opencode/config/files",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
-      "to": "api:HTTP:GET:/admin/opencode-config/files/{path}",
+      "to": "api:HTTP:GET:/admin/opencode/config/files/{path}",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
-      "to": "api:HTTP:PUT:/admin/opencode-config/files/{path}",
+      "to": "api:HTTP:PUT:/admin/opencode/config/files/{path}",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
-      "to": "api:HTTP:DELETE:/admin/opencode-config/files/{path}",
+      "to": "api:HTTP:DELETE:/admin/opencode/config/files/{path}",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
-      "to": "api:HTTP:GET:/clients/{id}/opencode-config/files/{path}",
+      "to": "api:HTTP:GET:/clients/{id}/opencode/config/files/{path}",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
-      "to": "api:HTTP:PUT:/clients/{id}/opencode-config/files/{path}",
+      "to": "api:HTTP:PUT:/clients/{id}/opencode/config/files/{path}",
       "type": "calls"
     },
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-layer-files.service.ts",
-      "to": "api:HTTP:DELETE:/clients/{id}/opencode-config/files/{path}",
+      "to": "api:HTTP:DELETE:/clients/{id}/opencode/config/files/{path}",
       "type": "calls"
     },
     {
@@ -69346,7 +69948,32 @@
     },
     {
       "from": "concept:agenstra-implementation",
-      "to": "api:HTTP:GET:/opencode-providers",
+      "to": "api:HTTP:GET:/opencode/providers",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-implementation",
+      "to": "api:HTTP:GET:/opencode/providers/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-implementation",
+      "to": "api:HTTP:GET:/opencode/mcp-servers",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-implementation",
+      "to": "api:HTTP:GET:/opencode/mcp-servers/{name}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-implementation",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-implementation",
+      "to": "api:HTTP:POST:/agents",
       "type": "documents"
     },
     {
@@ -70066,12 +70693,12 @@
     },
     {
       "from": "concept:agenstra-layers",
-      "to": "api:HTTP:GET:/admin/opencode-config",
+      "to": "api:HTTP:GET:/admin/opencode/config",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-layers",
-      "to": "api:HTTP:PUT:/admin/opencode-config",
+      "to": "api:HTTP:PUT:/admin/opencode/config",
       "type": "documents"
     },
     {
@@ -70085,7 +70712,42 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-layers",
+      "to": "api:HTTP:GET:/config",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-heredity",
+      "to": "api:HTTP:GET:/config",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-mcp-servers-and-credentials",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-mcp-servers-and-credentials",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-mcp-servers-and-credentials",
+      "to": "api:HTTP:GET:/opencode/mcp-servers",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-mcp-servers-and-credentials",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-mcp-servers-and-credentials",
+      "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-mcp-servers-and-credentials",
       "to": "api:HTTP:GET:/config",
       "type": "documents"
     },
@@ -70120,6 +70782,11 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-chat-slash-typeahead",
+      "to": "api:HTTP:GET:/config",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-path-lists-and-layer-files",
       "to": "api:HTTP:GET:/clients",
       "type": "documents"
@@ -70131,22 +70798,22 @@
     },
     {
       "from": "concept:agenstra-path-lists-and-layer-files",
-      "to": "api:HTTP:GET:/admin/opencode-config",
+      "to": "api:HTTP:GET:/admin/opencode/config",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-path-lists-and-layer-files",
-      "to": "api:HTTP:PUT:/admin/opencode-config",
+      "to": "api:HTTP:PUT:/admin/opencode/config",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-path-lists-and-layer-files",
-      "to": "api:HTTP:GET:/admin/opencode-config/files",
+      "to": "api:HTTP:GET:/admin/opencode/config/files",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-path-lists-and-layer-files",
-      "to": "api:HTTP:POST:/admin/opencode-config/files",
+      "to": "api:HTTP:POST:/admin/opencode/config/files",
       "type": "documents"
     },
     {
@@ -75790,6 +76457,21 @@
       "type": "belongs_to"
     },
     {
+      "from": "project:agenstra-shared-util-opencode-mcp-servers",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:agenstra-shared-util-opencode-mcp-servers",
+      "to": "context:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:agenstra-shared-util-opencode-mcp-servers",
+      "to": "feature-group:util",
+      "type": "belongs_to"
+    },
+    {
       "from": "project:decabill-frontend-feature-billing-console",
       "to": "domain:decabill",
       "type": "belongs_to"
@@ -78496,6 +79178,11 @@
     },
     {
       "from": "concept:agenstra-provider-credentials",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-mcp-servers-and-credentials",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

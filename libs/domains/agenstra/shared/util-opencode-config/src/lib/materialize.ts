@@ -1,5 +1,6 @@
 import type { JsonObject } from './types';
 import { migrateConfigV1ToV2 } from './migrate-v1-to-v2';
+import { wireMcpOauthForOpenCode } from './mcp-wire';
 
 /** Platform / UI-only roots that OpenCode Config rejects or silently drops. */
 const UNSUPPORTED_WIRE_ROOTS = [
@@ -339,6 +340,39 @@ function wireMcpServer(server: JsonObject): JsonObject {
     next['headers'] = headers;
   } else {
     delete next['headers'];
+  }
+
+  // Preserve secretEnv / secretHeaders name lists for sync-time injection; stripped in injectMcpSecretsIntoWire.
+  const secretEnv = ensureStringList(next['secretEnv']);
+
+  if (secretEnv.length) {
+    next['secretEnv'] = secretEnv;
+  } else {
+    delete next['secretEnv'];
+  }
+
+  const secretHeaders = ensureStringList(next['secretHeaders']);
+
+  if (secretHeaders.length) {
+    next['secretHeaders'] = secretHeaders;
+  } else {
+    delete next['secretHeaders'];
+  }
+
+  // OpenCode McpOAuthConfig is camelCase + additionalProperties:false. UI stores snake_case.
+  // Never emit client_secret / clientSecret here — those come from layer secrets after assert.
+  if (next['oauth'] === false) {
+    // keep explicit disable
+  } else if (isPlainObject(next['oauth'])) {
+    const oauth = wireMcpOauthForOpenCode(next['oauth'] as JsonObject, { includeClientSecret: false });
+
+    if (oauth && Object.keys(oauth).length > 0) {
+      next['oauth'] = oauth;
+    } else {
+      delete next['oauth'];
+    }
+  } else {
+    delete next['oauth'];
   }
 
   const serverTimeout = next['timeout'];

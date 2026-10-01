@@ -36,6 +36,7 @@ import { OpencodeLayerFileEntity } from '../entities/opencode-layer-file.entity'
 import { OpencodeLayerFileSyncTargetEntity } from '../entities/opencode-layer-file-sync-target.entity';
 import { OpencodeConfigSyncTargetEntity } from '../entities/opencode-config-sync-target.entity';
 import { ClientOpencodeConfigEntity } from '../entities/client-opencode-config.entity';
+import { OpencodeMcpServerEntity } from '../entities/opencode-mcp-server.entity';
 import { OpencodeProviderEntity } from '../entities/opencode-provider.entity';
 import { StatisticsClientUserEntity } from '../entities/statistics-client-user.entity';
 import { StatisticsClientEntity } from '../entities/statistics-client.entity';
@@ -256,6 +257,8 @@ describe('ClientsModule', () => {
       .overrideProvider(getRepositoryToken(ClientOpencodeConfigEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(OpencodeProviderEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(OpencodeMcpServerEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(OpencodeLayerFileEntity))
       .useValue(mockRepository)

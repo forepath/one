@@ -3,7 +3,7 @@
 Shared types and pure helpers for OpenCode LLM provider catalogs.
 
 The live catalog is stored in Postgres (`opencode_providers`) and exposed via
-`GET /opencode-providers` on the agent controller. Refresh runs through BullMQ
+`GET /opencode/providers` on the agent controller. Refresh runs through BullMQ
 (`opencode-providers.refresh`) from models.dev — there is no committed snapshot.
 
 ## Exports

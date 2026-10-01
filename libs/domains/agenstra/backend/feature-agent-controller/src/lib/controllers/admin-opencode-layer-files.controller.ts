@@ -9,7 +9,7 @@ import {
 } from '../dto/opencode-layer-file.dto';
 import { OpencodeLayerFilesService } from '../services/opencode-layer-files.service';
 
-@Controller('admin/opencode-config/files')
+@Controller('admin/opencode/config/files')
 @RequireScopes('clients:write')
 export class AdminOpencodeLayerFilesController {
   constructor(private readonly layerFilesService: OpencodeLayerFilesService) {}

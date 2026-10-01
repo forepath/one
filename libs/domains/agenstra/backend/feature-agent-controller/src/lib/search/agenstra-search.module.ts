@@ -15,6 +15,8 @@ import { StatisticsClientEntity } from '../entities/statistics-client.entity';
 import { StatisticsEntityEventEntity } from '../entities/statistics-entity-event.entity';
 import { StatisticsUserEntity } from '../entities/statistics-user.entity';
 import { TicketEntity } from '../entities/ticket.entity';
+import { OpencodeMcpServerEntity } from '../entities/opencode-mcp-server.entity';
+import { OpencodeProviderEntity } from '../entities/opencode-provider.entity';
 
 import { AgenstraSearchIndexService } from './agenstra-search-index.service';
 
@@ -35,6 +37,8 @@ import { AgenstraSearchIndexService } from './agenstra-search-index.service';
       StatisticsChatFilterFlagEntity,
       StatisticsEntityEventEntity,
       StatisticsUserEntity,
+      OpencodeProviderEntity,
+      OpencodeMcpServerEntity,
     ]),
   ],
   providers: [AgenstraSearchIndexService],

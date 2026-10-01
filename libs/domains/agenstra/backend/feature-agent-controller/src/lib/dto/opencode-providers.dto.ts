@@ -14,4 +14,7 @@ export class OpencodeProviderDto {
 
 export class OpencodeProvidersListDto {
   providers!: OpencodeProviderDto[];
+  total!: number;
+  limit!: number;
+  offset!: number;
 }

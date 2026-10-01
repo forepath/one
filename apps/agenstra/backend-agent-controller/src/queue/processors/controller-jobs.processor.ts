@@ -12,6 +12,7 @@ import {
   OpencodeConfigSyncTargetsService,
   OpencodeLayerFilesService,
   OpencodeProvidersCatalogService,
+  OpencodeMcpServersCatalogService,
 } from '@forepath/agenstra/backend/feature-agent-controller';
 import {
   EMAIL_DELIVER_JOB_NAME,
@@ -67,6 +68,7 @@ export class ControllerJobsProcessor extends WorkerHost {
     private readonly searchIndex: AgenstraSearchIndexService,
     private readonly notificationPublisher: AgenstraNotificationPublisher,
     private readonly opencodeProvidersCatalog: OpencodeProvidersCatalogService,
+    private readonly opencodeMcpServersCatalog: OpencodeMcpServersCatalogService,
     private readonly opencodeConfigSyncTargets: OpencodeConfigSyncTargetsService,
     private readonly opencodeLayerFiles: OpencodeLayerFilesService,
   ) {
@@ -155,6 +157,9 @@ export class ControllerJobsProcessor extends WorkerHost {
         break;
       case ControllerJobName.OPENCODE_PROVIDERS_REFRESH:
         await this.opencodeProvidersCatalog.refreshFromModelsDev();
+        break;
+      case ControllerJobName.OPENCODE_MCP_SERVERS_REFRESH:
+        await this.opencodeMcpServersCatalog.refreshFromOfficialRegistry();
         break;
       default:
         this.logger.warn(`Unknown controller job name: ${job.name}`);

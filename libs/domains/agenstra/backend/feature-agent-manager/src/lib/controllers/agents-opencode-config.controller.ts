@@ -9,7 +9,7 @@ import {
 } from '../dto/agent-opencode-config.dto';
 import { OpenCodeConfigSyncService } from '../providers/opencode/opencode-config-sync.service';
 
-@Controller('agents/:id/opencode-config')
+@Controller('agents/:id/opencode/config')
 export class AgentsOpencodeConfigController {
   constructor(private readonly syncService: OpenCodeConfigSyncService) {}
 

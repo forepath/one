@@ -80,6 +80,14 @@ export interface AgentControllerCloudInitConfig {
       jwtSecret: string;
       encryptionKey: string;
     };
+    /**
+     * Public MCP OAuth callback origin (non-privileged port) + HMAC secret.
+     * Written as `MCP_OAUTH_PUBLIC_BASE_URL` / `MCP_OAUTH_CALLBACK_SECRET`.
+     */
+    mcpOAuth?: {
+      publicBaseUrl: string;
+      callbackSecret: string;
+    };
     smtp: {
       host: string;
       port: number;
@@ -179,7 +187,9 @@ export function buildAgentControllerCloudInitConfigFromRequest(
 ): AgentControllerCloudInitConfig {
   const encryptionKey = randomBytes(32).toString('base64');
   const jwtSecret = randomBytes(32).toString('hex');
+  const mcpOAuthCallbackSecret = randomBytes(32).toString('hex');
   const fqdn = `${hostname}.${baseDomain}`;
+  const backendPort = 3100;
   const smtp = effectiveConfig.smtp as Record<string, unknown> | undefined;
   const keycloak = effectiveConfig.keycloak as Record<string, unknown> | undefined;
 
@@ -201,7 +211,7 @@ export function buildAgentControllerCloudInitConfigFromRequest(
     },
     backend: {
       host: '0.0.0.0',
-      port: 3100,
+      port: backendPort,
       websocketPort: 8081,
       websocketNamespace: 'websocket',
       nodeEnv: 'production',
@@ -229,6 +239,11 @@ export function buildAgentControllerCloudInitConfigFromRequest(
         }),
       },
       encryption: { encryptionKey, jwtSecret },
+      // Non-privileged published API port (OpenCode rejects privileged redirect ports).
+      mcpOAuth: {
+        publicBaseUrl: `http://${fqdn}:${backendPort}`,
+        callbackSecret: mcpOAuthCallbackSecret,
+      },
       smtp: {
         host: (smtp?.host as string) ?? 'mailhog',
         port: (smtp?.port as number) ?? 1025,
@@ -309,6 +324,12 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     `CLIENT_ENDPOINT_ALLOWED_HOSTS: ${
       config.backend?.clientEndpoint?.allowedHosts?.trim() ? config.backend.clientEndpoint.allowedHosts : '*'
     }`,
+    // Environment MCP OAuth: signed public callback (IdP → controller → worker)
+    `MCP_OAUTH_PUBLIC_BASE_URL: ${
+      config.backend?.mcpOAuth?.publicBaseUrl?.trim() ||
+      `http://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}:${config.backend?.port ?? 3100}`
+    }`,
+    `MCP_OAUTH_CALLBACK_SECRET: ${config.backend?.mcpOAuth?.callbackSecret ?? ''}`,
   ];
   const backendApiEnv = formatEnv([...backendEnvBaseLines, `QUEUE_ROLE: api`]);
   const backendWorkerEnv = formatEnv([...backendEnvBaseLines, `QUEUE_ROLE: worker`]);

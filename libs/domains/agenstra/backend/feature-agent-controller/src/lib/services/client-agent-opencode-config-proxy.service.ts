@@ -7,6 +7,9 @@ import {
   OpencodeAgentsListResponseDto,
   OpencodeCommandsListResponseDto,
   OpencodeConfigResponseDto,
+  OpencodeMcpAuthStartResponseDto,
+  OpencodeMcpServerStatusDto,
+  OpencodeMcpStatusListResponseDto,
   UpsertOpencodeConfigDto,
 } from '../dto/opencode-config.dto';
 import { ClientsRepository } from '../repositories/clients.repository';
@@ -44,12 +47,17 @@ export class ClientAgentOpencodeConfigProxyService {
     throw new BadRequestException(`Unsupported authentication type: ${clientEntity.authenticationType}`);
   }
 
-  private async makeRequest<T>(clientId: string, agentId: string, config: AxiosRequestConfig): Promise<T> {
+  private async makeRequest<T>(
+    clientId: string,
+    agentId: string,
+    config: AxiosRequestConfig,
+    resource: 'opencode/config' | 'opencode/mcp' = 'opencode/config',
+  ): Promise<T> {
     const clientEntity = await this.clientsRepository.findByIdOrThrow(clientId);
 
     await validateClientEndpointWithDnsOrThrow(clientEntity.endpoint);
     const authHeader = await this.getAuthHeader(clientId);
-    const baseUrl = `${clientEntity.endpoint.replace(/\/$/, '')}/api/agents/${agentId}/opencode-config`;
+    const baseUrl = `${clientEntity.endpoint.replace(/\/$/, '')}/api/agents/${agentId}/${resource}`;
     const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
 
     try {
@@ -128,5 +136,57 @@ export class ClientAgentOpencodeConfigProxyService {
       method: 'GET',
       url: '/commands',
     });
+  }
+
+  async listMcpStatuses(clientId: string, agentId: string): Promise<OpencodeMcpStatusListResponseDto> {
+    return await this.makeRequest(clientId, agentId, { method: 'GET' }, 'opencode/mcp');
+  }
+
+  async startMcpAuth(
+    clientId: string,
+    agentId: string,
+    name: string,
+    redirectUri?: string,
+  ): Promise<OpencodeMcpAuthStartResponseDto> {
+    return await this.makeRequest(
+      clientId,
+      agentId,
+      {
+        method: 'POST',
+        url: `/${encodeURIComponent(name)}/auth`,
+        data: redirectUri ? { redirectUri } : {},
+      },
+      'opencode/mcp',
+    );
+  }
+
+  async completeMcpAuth(
+    clientId: string,
+    agentId: string,
+    name: string,
+    code: string,
+  ): Promise<OpencodeMcpServerStatusDto> {
+    return await this.makeRequest(
+      clientId,
+      agentId,
+      {
+        method: 'POST',
+        url: `/${encodeURIComponent(name)}/auth/callback`,
+        data: { code },
+      },
+      'opencode/mcp',
+    );
+  }
+
+  async removeMcpAuth(clientId: string, agentId: string, name: string): Promise<{ success: true }> {
+    return await this.makeRequest(
+      clientId,
+      agentId,
+      {
+        method: 'DELETE',
+        url: `/${encodeURIComponent(name)}/auth`,
+      },
+      'opencode/mcp',
+    );
   }
 }
