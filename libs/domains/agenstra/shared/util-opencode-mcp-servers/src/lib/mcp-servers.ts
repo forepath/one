@@ -51,6 +51,100 @@ export function mcpServerConfigKey(serverName: string): string {
   return serverName.trim().replace(/\//g, '__');
 }
 
+/** Platform allow/deny list token for non-catalog (custom) MCP servers. */
+export const CUSTOM_MCP_ALLOW_DENY_TOKEN = 'custom';
+
+function normalizeAllowDenyIds(ids: readonly string[]): string[] {
+  return ids.map((id) => id.trim()).filter((id) => id.length > 0);
+}
+
+/**
+ * Whether an MCP identity (registry name or {@link CUSTOM_MCP_ALLOW_DENY_TOKEN}) is allowed.
+ * Empty allowlist → no allow restriction; empty denylist → no deny restriction.
+ * When both are set, denylist wins for overlapping ids.
+ */
+export function isMcpServerAllowed(identity: string, allow: readonly string[], deny: readonly string[]): boolean {
+  const normalized = identity.trim();
+
+  if (!normalized) {
+    return false;
+  }
+
+  const allowed = normalizeAllowDenyIds(allow);
+  const denied = new Set(normalizeAllowDenyIds(deny));
+
+  if (denied.has(normalized)) {
+    return false;
+  }
+
+  if (allowed.length > 0 && !allowed.includes(normalized)) {
+    return false;
+  }
+
+  return true;
+}
+
+/** Whether custom (non-catalog) MCP servers are permitted by the allow/deny lists. */
+export function isCustomMcpAllowed(allow: readonly string[], deny: readonly string[]): boolean {
+  return isMcpServerAllowed(CUSTOM_MCP_ALLOW_DENY_TOKEN, allow, deny);
+}
+
+/**
+ * Applies MCP allow/deny lists to a catalog.
+ * Empty allowlist → no allow restriction; empty denylist → no deny restriction.
+ * When both are set, denylist wins for overlapping ids. Skips `deleted` entries.
+ */
+export function filterBuiltinMcpServersByAllowDeny(
+  catalog: readonly OpencodeBuiltinMcpServer[],
+  allow: readonly string[],
+  deny: readonly string[],
+): OpencodeBuiltinMcpServer[] {
+  return catalog.filter((server) => server.status !== 'deleted' && isMcpServerAllowed(server.name, allow, deny));
+}
+
+/**
+ * Resolves the allow/deny identity for a configured `mcp.servers` map key.
+ * Prefers the UI-only `registry` field; otherwise matches `mcpServerConfigKey` against
+ * known market ids from allow∪deny (and optional `knownRegistryNames`); else `custom`.
+ */
+export function resolveMcpAllowDenyIdentity(
+  configKey: string,
+  entry: { registry?: unknown } | null | undefined,
+  allow: readonly string[],
+  deny: readonly string[],
+  knownRegistryNames: readonly string[] = [],
+): string {
+  if (entry && typeof entry.registry === 'string' && entry.registry.trim()) {
+    return entry.registry.trim();
+  }
+
+  const key = configKey.trim();
+  const candidates = new Set([
+    ...normalizeAllowDenyIds(allow),
+    ...normalizeAllowDenyIds(deny),
+    ...knownRegistryNames.map((name) => name.trim()).filter((name) => name.length > 0),
+  ]);
+
+  candidates.delete(CUSTOM_MCP_ALLOW_DENY_TOKEN);
+
+  for (const name of candidates) {
+    if (mcpServerConfigKey(name) === key) {
+      return name;
+    }
+  }
+
+  // Hydration convention: config keys reverse `__` → `/` for catalog lookup.
+  if (key.includes('__')) {
+    const reversed = key.replace(/__/g, '/');
+
+    if (reversed !== key) {
+      return reversed;
+    }
+  }
+
+  return CUSTOM_MCP_ALLOW_DENY_TOKEN;
+}
+
 function resolveInputValue(input: {
   value?: string;
   default?: string;
@@ -314,13 +408,18 @@ function seedFromRemote(remote: OpencodeBuiltinMcpRemote): OpencodeMcpServerSeed
  * Returns `null` when neither a usable package nor remote can be materialized.
  */
 export function seedMcpServerFromCatalog(entry: OpencodeBuiltinMcpServer): OpencodeMcpServerSeed | null {
+  const attachRegistry = (seed: OpencodeMcpServerSeed): OpencodeMcpServerSeed => ({
+    ...seed,
+    registry: entry.name,
+  });
+
   const preferred = selectPreferredPackage(entry.packages ?? []);
 
   if (preferred) {
     const fromPackage = seedFromPackage(preferred);
 
     if (fromPackage) {
-      return fromPackage;
+      return attachRegistry(fromPackage);
     }
   }
 
@@ -329,7 +428,7 @@ export function seedMcpServerFromCatalog(entry: OpencodeBuiltinMcpServer): Openc
     const fromPackage = seedFromPackage(pkg);
 
     if (fromPackage) {
-      return fromPackage;
+      return attachRegistry(fromPackage);
     }
   }
 
@@ -337,7 +436,7 @@ export function seedMcpServerFromCatalog(entry: OpencodeBuiltinMcpServer): Openc
     const fromRemote = seedFromRemote(remote);
 
     if (fromRemote) {
-      return fromRemote;
+      return attachRegistry(fromRemote);
     }
   }
 

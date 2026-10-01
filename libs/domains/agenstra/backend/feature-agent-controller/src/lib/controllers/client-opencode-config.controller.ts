@@ -139,13 +139,20 @@ export class ClientOpencodeConfigController {
 
     const layers = await this.opencodeConfigService.getLayerParents(clientId);
     const heredity = this.opencodeConfigService.computeHeredity(layers.global, layers.workspace);
+    const existing = await this.agentProxy.get(clientId, agentId);
+    const sanitized = this.opencodeConfigService.sanitizeUpsertAgainstAllowDeny(dto, {
+      parentOverlaysLowToHigh: [layers.workspace.overlay ?? {}, layers.global.overlay ?? {}],
+      inheritedAdditive: heredity.inheritedAdditive,
+      existingConfig: existing.config,
+      existingOverrides: existing.overrides,
+    });
 
     try {
-      assertNoV1RootKeys(dto.config ?? undefined);
-      assertNoV1RootKeys(dto.overrides ?? undefined);
-      assertOverlayRespectsHeredity(dto.config ?? undefined, heredity.lockedPaths, heredity.inheritedAdditive);
-      assertOverlayRespectsHeredity(dto.overrides ?? undefined, heredity.lockedPaths, heredity.inheritedAdditive);
-      assertSecretsRespectLocks(dto.secrets ?? undefined, heredity.lockedPaths);
+      assertNoV1RootKeys(sanitized.config ?? undefined);
+      assertNoV1RootKeys(sanitized.overrides ?? undefined);
+      assertOverlayRespectsHeredity(sanitized.config ?? undefined, heredity.lockedPaths, heredity.inheritedAdditive);
+      assertOverlayRespectsHeredity(sanitized.overrides ?? undefined, heredity.lockedPaths, heredity.inheritedAdditive);
+      assertSecretsRespectLocks(sanitized.secrets ?? undefined, heredity.lockedPaths);
     } catch (error) {
       if (error instanceof OpencodeConfigValidationError) {
         throw new BadRequestException(error.message);
@@ -154,7 +161,7 @@ export class ClientOpencodeConfigController {
       throw error;
     }
 
-    const agentPayload = { ...dto, locks: undefined };
+    const agentPayload = { ...sanitized, locks: undefined };
     const agentConfig = await this.agentProxy.put(clientId, agentId, agentPayload);
     const agentOverlay = this.opencodeConfigService.composeStoredLayer(agentConfig.config, agentConfig.overrides);
     const effective = this.opencodeConfigService.mergeEffective(

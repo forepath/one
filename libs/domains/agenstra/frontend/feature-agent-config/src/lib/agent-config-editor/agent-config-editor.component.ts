@@ -10,7 +10,7 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   OpencodeConfigService,
@@ -23,6 +23,7 @@ import {
   migrateConfigV1ToV2,
   composeLayerOverlay,
   validateOverlayAgainstHeredity,
+  enforceAllowDenyOnOverlay,
   INHERITED_MAP_ENTRY_OVERRIDE_KEYS,
   AGENT_CONFIG_TAB_LOCK_PATHS,
   isPathLocked,
@@ -30,6 +31,7 @@ import {
   parseTabIdFromLock,
   tabLockPointer,
   type AgentConfigTabId,
+  type EnforceAllowDenyContext,
   type JsonObject,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import {
@@ -43,6 +45,7 @@ import {
   filterBuiltinProvidersByAllowDeny,
   formatProviderModelRef,
   getBuiltinProvider,
+  isProviderAllowed,
   parseProviderModelRef,
   providersForKnownModelPicker,
   unusedBuiltinModelsForProvider,
@@ -50,10 +53,15 @@ import {
   type OpencodeBuiltinProvider,
 } from '@forepath/agenstra/shared/util-opencode-providers';
 import {
+  CUSTOM_MCP_ALLOW_DENY_TOKEN,
   builtinMcpServerLabel,
+  filterBuiltinMcpServersByAllowDeny,
   getBuiltinMcpServer,
+  isCustomMcpAllowed,
+  isMcpServerAllowed,
   mcpOAuthClientSecretKey,
   mcpServerConfigKey,
+  resolveMcpAllowDenyIdentity,
   seedMcpServerFromCatalog,
   unusedBuiltinMcpServers,
   type OpencodeBuiltinMcpPackage,
@@ -75,7 +83,7 @@ import {
   FpcTypeaheadSelectComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { Subject, forkJoin, of } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, skip, switchMap, tap } from 'rxjs/operators';
+import { catchError, debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
 
 import {
   AgentConfigMapListComponent,
@@ -283,17 +291,48 @@ export class AgentConfigEditorComponent implements OnInit {
   );
   readonly mcpTypeaheadQuery = signal('');
   readonly mcpTypeaheadOpen = signal(false);
-  readonly mcpTypeaheadLoading = signal(false);
-  readonly mcpTypeaheadResults = signal<readonly OpencodeBuiltinMcpServer[]>([]);
+  readonly allowMcpTypeaheadQuery = signal('');
+  readonly allowMcpTypeaheadOpen = signal(false);
+  readonly denyMcpTypeaheadQuery = signal('');
+  readonly denyMcpTypeaheadOpen = signal(false);
+  private readonly mcpSearchActiveTarget = signal<'servers' | 'allow' | 'deny' | null>(null);
+  private readonly mcpSearchLoading = signal(false);
+  readonly mcpSearchResults = signal<readonly OpencodeBuiltinMcpServer[]>([]);
+  readonly mcpTypeaheadLoading = computed(() => this.mcpSearchLoading() && this.mcpSearchActiveTarget() === 'servers');
+  readonly allowMcpTypeaheadLoading = computed(
+    () => this.mcpSearchLoading() && this.mcpSearchActiveTarget() === 'allow',
+  );
+  readonly denyMcpTypeaheadLoading = computed(() => this.mcpSearchLoading() && this.mcpSearchActiveTarget() === 'deny');
   readonly filteredMcpTypeaheadResults = computed(() => {
+    const scoped = filterBuiltinMcpServersByAllowDeny(
+      this.mcpSearchResults(),
+      this.stringListItems('mcp_allow'),
+      this.stringListItems('mcp_deny'),
+    );
     const usedKeys = this.mcpServerEntries().map((entry) => entry.key);
     const usedRegistryNames = usedKeys
       .map((key) => this.catalogMcpServerForConfigKey(key)?.name)
       .filter((name): name is string => !!name);
 
-    return unusedBuiltinMcpServers(this.mcpTypeaheadResults(), [...usedKeys, ...usedRegistryNames]);
+    return unusedBuiltinMcpServers(scoped, [...usedKeys, ...usedRegistryNames]);
   });
-  private readonly mcpTypeaheadQuery$ = toObservable(this.mcpTypeaheadQuery);
+  readonly filteredAllowMcpTypeaheadResults = computed(() =>
+    unusedBuiltinMcpServers(this.mcpSearchResults(), this.stringListItems('mcp_allow')),
+  );
+  readonly filteredDenyMcpTypeaheadResults = computed(() =>
+    unusedBuiltinMcpServers(this.mcpSearchResults(), this.stringListItems('mcp_deny')),
+  );
+  readonly customMcpAllowed = computed(() =>
+    isCustomMcpAllowed(this.stringListItems('mcp_allow'), this.stringListItems('mcp_deny')),
+  );
+  readonly customMcpAllowDenyToken = CUSTOM_MCP_ALLOW_DENY_TOKEN;
+  private readonly mcpSearchRequest$ = new Subject<string>();
+  /** Entries auto-removed by allow/deny so they can be restored when lists change again. */
+  private readonly mcpAllowDenyRemovalStash = signal(new Map<string, JsonObject>());
+  private readonly providerAllowDenyRemovalStash = signal(new Map<string, JsonObject>());
+  /** Inherited map keys auto-disabled by allow/deny (cleared when lists allow them again). */
+  private readonly mcpAllowDenyAutoDisabledKeys = signal(new Set<string>());
+  private readonly providerAllowDenyAutoDisabledKeys = signal(new Set<string>());
 
   readonly modeToggleTitle = computed(() =>
     this.mode() === 'structured'
@@ -461,12 +500,11 @@ export class AgentConfigEditorComponent implements OnInit {
         this.syncActiveProviderTypeaheadOpen();
       });
 
-    this.mcpTypeaheadQuery$
+    this.mcpSearchRequest$
       .pipe(
-        skip(1),
         debounceTime(300),
         distinctUntilChanged(),
-        tap(() => this.mcpTypeaheadLoading.set(true)),
+        tap(() => this.mcpSearchLoading.set(true)),
         switchMap((query) => {
           const term = query.trim();
 
@@ -487,11 +525,9 @@ export class AgentConfigEditorComponent implements OnInit {
           this.cacheMcpServer(server);
         }
 
-        this.mcpTypeaheadResults.set(servers);
-        this.mcpTypeaheadLoading.set(false);
-        this.mcpTypeaheadOpen.set(
-          this.mcpTypeaheadQuery().trim().length > 0 && this.filteredMcpTypeaheadResults().length > 0,
-        );
+        this.mcpSearchResults.set(servers);
+        this.mcpSearchLoading.set(false);
+        this.syncActiveMcpTypeaheadOpen();
       });
   }
 
@@ -756,17 +792,7 @@ export class AgentConfigEditorComponent implements OnInit {
 
   onMcpTypeaheadQueryChange(value: string): void {
     this.mcpTypeaheadQuery.set(value);
-    const term = value.trim();
-
-    if (term.length > 0) {
-      this.mcpTypeaheadOpen.set(false);
-      this.mcpTypeaheadLoading.set(true);
-      this.mcpTypeaheadResults.set([]);
-    } else {
-      this.mcpTypeaheadOpen.set(false);
-      this.mcpTypeaheadLoading.set(false);
-      this.mcpTypeaheadResults.set([]);
-    }
+    this.applyMcpSearchQuery(value, 'servers');
   }
 
   onMcpTypeaheadOpenChange(open: boolean): void {
@@ -777,13 +803,51 @@ export class AgentConfigEditorComponent implements OnInit {
     event.preventDefault();
     this.cacheMcpServer(server);
     this.draftBuiltinMcpServerName.set(server.name);
-    this.mcpTypeaheadQuery.set('');
-    this.mcpTypeaheadResults.set([]);
-    this.mcpTypeaheadOpen.set(false);
+    this.clearMcpTypeahead('servers');
     this.addBuiltinMcpServer();
   }
 
+  onAllowMcpTypeaheadQueryChange(value: string): void {
+    this.allowMcpTypeaheadQuery.set(value);
+    this.applyMcpSearchQuery(value, 'allow');
+  }
+
+  onAllowMcpTypeaheadOpenChange(open: boolean): void {
+    this.allowMcpTypeaheadOpen.set(open && this.filteredAllowMcpTypeaheadResults().length > 0);
+  }
+
+  pickAllowMcpTypeahead(server: OpencodeBuiltinMcpServer, event: Event): void {
+    event.preventDefault();
+    this.cacheMcpServer(server);
+    this.appendKnownMcpToList('mcp_allow', server.name);
+    this.clearMcpTypeahead('allow');
+  }
+
+  onDenyMcpTypeaheadQueryChange(value: string): void {
+    this.denyMcpTypeaheadQuery.set(value);
+    this.applyMcpSearchQuery(value, 'deny');
+  }
+
+  onDenyMcpTypeaheadOpenChange(open: boolean): void {
+    this.denyMcpTypeaheadOpen.set(open && this.filteredDenyMcpTypeaheadResults().length > 0);
+  }
+
+  pickDenyMcpTypeahead(server: OpencodeBuiltinMcpServer, event: Event): void {
+    event.preventDefault();
+    this.cacheMcpServer(server);
+    this.appendKnownMcpToList('mcp_deny', server.name);
+    this.clearMcpTypeahead('deny');
+  }
+
+  appendCustomMcpAllowDenyToken(path: 'mcp_allow' | 'mcp_deny'): void {
+    this.appendKnownMcpToList(path, CUSTOM_MCP_ALLOW_DENY_TOKEN);
+  }
+
   startCustomMcpMode(): void {
+    if (!this.customMcpAllowed() || this.isLocked('/mcp/servers')) {
+      return;
+    }
+
     if (this.isCustomMcpMode()) {
       this.draftBuiltinMcpServerName.set('');
       this.draftCustomMcpServerId.set('');
@@ -792,9 +856,105 @@ export class AgentConfigEditorComponent implements OnInit {
 
     this.draftBuiltinMcpServerName.set(CUSTOM_MCP_SELECT_VALUE);
     this.draftCustomMcpServerId.set('');
-    this.mcpTypeaheadQuery.set('');
-    this.mcpTypeaheadResults.set([]);
-    this.mcpTypeaheadOpen.set(false);
+    this.clearMcpTypeahead('servers');
+  }
+
+  private applyMcpSearchQuery(value: string, target: 'servers' | 'allow' | 'deny'): void {
+    const term = value.trim();
+
+    this.mcpSearchActiveTarget.set(target);
+    this.closeInactiveMcpTypeaheads(target);
+
+    if (term.length > 0) {
+      this.setMcpTypeaheadOpen(target, false);
+      this.mcpSearchLoading.set(true);
+      this.mcpSearchResults.set([]);
+      this.mcpSearchRequest$.next(term);
+    } else {
+      this.setMcpTypeaheadOpen(target, false);
+      this.mcpSearchLoading.set(false);
+      this.mcpSearchResults.set([]);
+      this.mcpSearchRequest$.next('');
+    }
+  }
+
+  private syncActiveMcpTypeaheadOpen(): void {
+    const target = this.mcpSearchActiveTarget();
+
+    if (!target) {
+      return;
+    }
+
+    const hasQuery = this.mcpTypeaheadQueryFor(target).trim().length > 0;
+    this.setMcpTypeaheadOpen(target, hasQuery && this.filteredMcpTypeaheadResultsFor(target).length > 0);
+  }
+
+  private mcpTypeaheadQueryFor(target: 'servers' | 'allow' | 'deny'): string {
+    switch (target) {
+      case 'servers':
+        return this.mcpTypeaheadQuery();
+      case 'allow':
+        return this.allowMcpTypeaheadQuery();
+      case 'deny':
+        return this.denyMcpTypeaheadQuery();
+    }
+  }
+
+  private filteredMcpTypeaheadResultsFor(target: 'servers' | 'allow' | 'deny'): readonly OpencodeBuiltinMcpServer[] {
+    switch (target) {
+      case 'servers':
+        return this.filteredMcpTypeaheadResults();
+      case 'allow':
+        return this.filteredAllowMcpTypeaheadResults();
+      case 'deny':
+        return this.filteredDenyMcpTypeaheadResults();
+    }
+  }
+
+  private setMcpTypeaheadOpen(target: 'servers' | 'allow' | 'deny', open: boolean): void {
+    switch (target) {
+      case 'servers':
+        this.mcpTypeaheadOpen.set(open);
+        break;
+      case 'allow':
+        this.allowMcpTypeaheadOpen.set(open);
+        break;
+      case 'deny':
+        this.denyMcpTypeaheadOpen.set(open);
+        break;
+    }
+  }
+
+  private closeInactiveMcpTypeaheads(active: 'servers' | 'allow' | 'deny'): void {
+    for (const target of ['servers', 'allow', 'deny'] as const) {
+      if (target !== active) {
+        this.setMcpTypeaheadOpen(target, false);
+      }
+    }
+  }
+
+  private clearMcpTypeahead(target: 'servers' | 'allow' | 'deny'): void {
+    switch (target) {
+      case 'servers':
+        this.mcpTypeaheadQuery.set('');
+        this.mcpTypeaheadOpen.set(false);
+        break;
+      case 'allow':
+        this.allowMcpTypeaheadQuery.set('');
+        this.allowMcpTypeaheadOpen.set(false);
+        break;
+      case 'deny':
+        this.denyMcpTypeaheadQuery.set('');
+        this.denyMcpTypeaheadOpen.set(false);
+        break;
+    }
+
+    if (this.mcpSearchActiveTarget() === target) {
+      this.mcpSearchActiveTarget.set(null);
+    }
+
+    this.mcpSearchResults.set([]);
+    this.mcpSearchLoading.set(false);
   }
 
   onModeChange(modeId: string | null): void {
@@ -990,6 +1150,20 @@ export class AgentConfigEditorComponent implements OnInit {
     this.syncDefaultModelDraftsFromConfig();
     this.validateRaw();
     this.validateOverrides();
+
+    if (normalized === '/mcp_allow' || normalized === '/mcp_deny') {
+      this.reconcileMcpServersWithAllowDeny();
+    }
+
+    if (normalized === '/enabled_providers' || normalized === '/disabled_providers') {
+      this.reconcileProvidersWithAllowDeny();
+      this.reconcileModelListsWithProviderAllowDeny();
+      this.reconcileDefaultModelsWithAllowDeny();
+    }
+
+    if (normalized === '/model_allow' || normalized === '/model_deny') {
+      this.reconcileDefaultModelsWithAllowDeny();
+    }
   }
 
   toggleDraftLock(pointer: string): void {
@@ -1169,6 +1343,20 @@ export class AgentConfigEditorComponent implements OnInit {
       .filter(Boolean);
 
     this.patchPath(path, items.length ? items : undefined);
+
+    if (path === 'mcp_allow' || path === 'mcp_deny') {
+      this.reconcileMcpServersWithAllowDeny();
+    }
+
+    if (path === 'enabled_providers' || path === 'disabled_providers') {
+      this.reconcileProvidersWithAllowDeny();
+      this.reconcileModelListsWithProviderAllowDeny();
+      this.reconcileDefaultModelsWithAllowDeny();
+    }
+
+    if (path === 'model_allow' || path === 'model_deny') {
+      this.reconcileDefaultModelsWithAllowDeny();
+    }
   }
 
   setSubtreeJson(path: string, value: string): void {
@@ -1462,6 +1650,16 @@ export class AgentConfigEditorComponent implements OnInit {
       return undefined;
     }
 
+    const registry = this.mapEntryString('mcp.servers', trimmed, 'registry').trim();
+
+    if (registry) {
+      const byRegistry = getBuiltinMcpServer(this.builtinMcpServersCatalog(), registry);
+
+      if (byRegistry) {
+        return byRegistry;
+      }
+    }
+
     const byName = getBuiltinMcpServer(this.builtinMcpServersCatalog(), trimmed);
 
     if (byName) {
@@ -1472,7 +1670,11 @@ export class AgentConfigEditorComponent implements OnInit {
   }
 
   isCatalogMcpServer(configKey: string): boolean {
-    return !!this.catalogMcpServerForConfigKey(configKey);
+    if (this.catalogMcpServerForConfigKey(configKey)) {
+      return true;
+    }
+
+    return this.mapEntryString('mcp.servers', configKey.trim(), 'registry').trim().length > 0;
   }
 
   mcpSecretEnvKeys(configKey: string): string[] {
@@ -1764,6 +1966,10 @@ export class AgentConfigEditorComponent implements OnInit {
       return;
     }
 
+    if (!isMcpServerAllowed(registryName, this.stringListItems('mcp_allow'), this.stringListItems('mcp_deny'))) {
+      return;
+    }
+
     const catalog = getBuiltinMcpServer(this.builtinMcpServersCatalog(), registryName);
 
     if (!catalog) {
@@ -1783,6 +1989,7 @@ export class AgentConfigEditorComponent implements OnInit {
     const configKey = mcpServerConfigKey(catalog.name);
     const entry: JsonObject = {
       type: seed.type,
+      registry: seed.registry ?? catalog.name,
       secretEnv: [...seed.secretEnv],
       secretHeaders: [...seed.secretHeaders],
     };
@@ -1809,7 +2016,7 @@ export class AgentConfigEditorComponent implements OnInit {
   addCustomMcpServer(): void {
     const id = this.draftCustomMcpServerId().trim();
 
-    if (!id || this.isLocked('/mcp/servers') || !this.isCustomMcpMode()) {
+    if (!id || this.isLocked('/mcp/servers') || !this.isCustomMcpMode() || !this.customMcpAllowed()) {
       return;
     }
 
@@ -2013,18 +2220,31 @@ export class AgentConfigEditorComponent implements OnInit {
     const names = new Set<string>();
     const servers = this.readPath(this.config(), 'mcp.servers');
 
-    if (!isPlainObject(servers)) {
-      return [];
+    if (isPlainObject(servers)) {
+      for (const [key, value] of Object.entries(servers)) {
+        const trimmed = key.trim();
+
+        if (!trimmed) {
+          continue;
+        }
+
+        if (isPlainObject(value) && typeof value['registry'] === 'string' && value['registry'].trim()) {
+          names.add(value['registry'].trim());
+          continue;
+        }
+
+        names.add(trimmed.includes('/') ? trimmed : trimmed.replace(/__/g, '/'));
+      }
     }
 
-    for (const key of Object.keys(servers)) {
-      const trimmed = key.trim();
+    for (const path of ['mcp_allow', 'mcp_deny'] as const) {
+      for (const id of this.stringListItems(path)) {
+        const trimmed = id.trim();
 
-      if (!trimmed) {
-        continue;
+        if (trimmed && trimmed !== CUSTOM_MCP_ALLOW_DENY_TOKEN) {
+          names.add(trimmed);
+        }
       }
-
-      names.add(trimmed.includes('/') ? trimmed : trimmed.replace(/__/g, '/'));
     }
 
     return [...names];
@@ -2063,6 +2283,22 @@ export class AgentConfigEditorComponent implements OnInit {
       .split('\n')
       .map((line) => line.trim())
       .filter(Boolean);
+
+    if (existing.includes(trimmed)) {
+      return;
+    }
+
+    this.setStringList(path, [...existing, trimmed].join('\n'));
+  }
+
+  appendKnownMcpToList(path: 'mcp_allow' | 'mcp_deny', id: string): void {
+    const trimmed = id.trim();
+
+    if (!trimmed || this.isLocked(`/${path}`)) {
+      return;
+    }
+
+    const existing = this.stringListItems(path);
 
     if (existing.includes(trimmed)) {
       return;
@@ -2155,6 +2391,256 @@ export class AgentConfigEditorComponent implements OnInit {
     const current = isPlainObject(this.getPath(path)) ? { ...(this.getPath(path) as JsonObject) } : {};
     delete current[key];
     this.patchPath(path, Object.keys(current).length ? current : undefined);
+
+    if (path === 'mcp.servers') {
+      // Manual remove should not be auto-restored by allow/deny reconcile.
+      const stash = new Map(this.mcpAllowDenyRemovalStash());
+      stash.delete(key);
+      this.mcpAllowDenyRemovalStash.set(stash);
+    }
+
+    if (path === 'providers') {
+      const stash = new Map(this.providerAllowDenyRemovalStash());
+      stash.delete(key);
+      this.providerAllowDenyRemovalStash.set(stash);
+    }
+  }
+
+  /**
+   * Keep editable map / model fields aligned with allow/deny lists.
+   * Local prohibited entries are deleted (stashed for restore); inherited ones are force-disabled.
+   * Matches backend {@link enforceAllowDenyOnOverlay}.
+   */
+  private reconcileMcpServersWithAllowDeny(): void {
+    this.reconcileMapAllowDeny('mcp.servers');
+  }
+
+  private reconcileProvidersWithAllowDeny(): void {
+    this.reconcileMapAllowDeny('providers');
+  }
+
+  private buildEditorAllowDenyContext(): EnforceAllowDenyContext {
+    return {
+      mcpAllow: this.stringListItems('mcp_allow'),
+      mcpDeny: this.stringListItems('mcp_deny'),
+      enabledProviders: this.stringListItems('enabled_providers'),
+      disabledProviders: this.stringListItems('disabled_providers'),
+      modelAllow: this.stringListItems('model_allow'),
+      modelDeny: this.stringListItems('model_deny'),
+      inheritedMcpServerKeys: this.inheritedKeys('/mcp/servers'),
+      inheritedProviderKeys: this.inheritedKeys('/providers'),
+      effectiveMcpServers: this.getEffectiveMap('mcp.servers'),
+    };
+  }
+
+  private reconcileMapAllowDeny(path: 'mcp.servers' | 'providers'): void {
+    if (this.isPathMutationLocked(path)) {
+      return;
+    }
+
+    const context = this.buildEditorAllowDenyContext();
+    const inheritedPath = path === 'mcp.servers' ? '/mcp/servers' : '/providers';
+    const beforeValue = this.getPath(path);
+    const before = isPlainObject(beforeValue) ? { ...(beforeValue as JsonObject) } : {};
+    const stash =
+      path === 'mcp.servers' ? new Map(this.mcpAllowDenyRemovalStash()) : new Map(this.providerAllowDenyRemovalStash());
+    const autoDisabled =
+      path === 'mcp.servers'
+        ? new Set(this.mcpAllowDenyAutoDisabledKeys())
+        : new Set(this.providerAllowDenyAutoDisabledKeys());
+
+    for (const key of Object.keys(before)) {
+      if (this.isMapKeyInherited(path, key)) {
+        continue;
+      }
+
+      if (this.isMapEntryAllowedByAllowDeny(path, key, before[key], context)) {
+        continue;
+      }
+
+      if (isPlainObject(before[key])) {
+        stash.set(key, structuredClone(before[key] as JsonObject));
+      }
+    }
+
+    const enforced = enforceAllowDenyOnOverlay(this.config(), context, {
+      seedMissingInheritedDisables: true,
+      skipMcpServers: path !== 'mcp.servers',
+      skipProviders: path !== 'providers',
+      skipModelLists: true,
+      skipDefaultModels: true,
+    });
+    const enforcedMapValue =
+      path === 'mcp.servers' ? this.readPath(enforced, 'mcp.servers') : this.readPath(enforced, 'providers');
+    const next = isPlainObject(enforcedMapValue) ? { ...(enforcedMapValue as JsonObject) } : {};
+
+    for (const [key, entry] of [...stash.entries()]) {
+      if (key in next || this.isMapKeyInherited(path, key)) {
+        stash.delete(key);
+        continue;
+      }
+
+      if (!this.isMapEntryAllowedByAllowDeny(path, key, entry, context)) {
+        continue;
+      }
+
+      next[key] = structuredClone(entry);
+      stash.delete(key);
+    }
+
+    for (const key of this.inheritedKeys(inheritedPath)) {
+      const allowed = this.isMapEntryAllowedByAllowDeny(path, key, next[key], context);
+
+      if (!allowed) {
+        autoDisabled.add(key);
+        continue;
+      }
+
+      if (!autoDisabled.has(key)) {
+        continue;
+      }
+
+      const localEntry = isPlainObject(next[key]) ? (next[key] as JsonObject) : null;
+      const cleared = this.withInheritedMapOverride(localEntry, { disabled: false });
+
+      if (cleared) {
+        next[key] = cleared;
+      } else {
+        delete next[key];
+      }
+
+      autoDisabled.delete(key);
+    }
+
+    if (path === 'mcp.servers') {
+      this.mcpAllowDenyRemovalStash.set(stash);
+      this.mcpAllowDenyAutoDisabledKeys.set(autoDisabled);
+    } else {
+      this.providerAllowDenyRemovalStash.set(stash);
+      this.providerAllowDenyAutoDisabledKeys.set(autoDisabled);
+    }
+
+    const beforeJson = JSON.stringify(before);
+    const nextJson = JSON.stringify(next);
+
+    if (beforeJson !== nextJson) {
+      this.patchPath(path, Object.keys(next).length ? next : undefined);
+    }
+  }
+
+  private isMapEntryAllowedByAllowDeny(
+    path: 'mcp.servers' | 'providers',
+    key: string,
+    entry: unknown,
+    context: EnforceAllowDenyContext,
+  ): boolean {
+    if (path === 'providers') {
+      return isProviderAllowed(key, context.enabledProviders, context.disabledProviders);
+    }
+
+    const localEntry = isPlainObject(entry) ? entry : null;
+    const effectiveMap = context.effectiveMcpServers ?? {};
+    const effectiveEntry = isPlainObject(effectiveMap[key]) ? (effectiveMap[key] as JsonObject) : null;
+    const identitySource =
+      localEntry && typeof localEntry['registry'] === 'string' ? localEntry : (effectiveEntry ?? localEntry);
+    const identity = resolveMcpAllowDenyIdentity(key, identitySource, context.mcpAllow, context.mcpDeny);
+
+    return isMcpServerAllowed(identity, context.mcpAllow, context.mcpDeny);
+  }
+
+  /** True when allow/deny prohibits this inherited/local entry (forced disable / delete). */
+  isMapEntryForcedByAllowDeny(path: 'mcp.servers' | 'providers', key: string): boolean {
+    return !this.isMapEntryAllowedByAllowDeny(
+      path,
+      key,
+      this.mapEntryObject(path, key),
+      this.buildEditorAllowDenyContext(),
+    );
+  }
+
+  /** Build an inherited map stub limited to `disabled` / `hidden` override keys. */
+  private withInheritedMapOverride(entry: JsonObject | null, patch: { disabled: boolean }): JsonObject | undefined {
+    const next: JsonObject = {};
+
+    if (entry) {
+      for (const key of INHERITED_MAP_ENTRY_OVERRIDE_KEYS) {
+        if (entry[key] !== undefined) {
+          next[key] = entry[key];
+        }
+      }
+    }
+
+    if (patch.disabled) {
+      next['disabled'] = true;
+    } else {
+      delete next['disabled'];
+    }
+
+    return Object.keys(next).length ? next : undefined;
+  }
+
+  /** Drop model allow/deny refs whose provider is outside provider allow/deny. */
+  private reconcileModelListsWithProviderAllowDeny(): void {
+    const context = this.buildEditorAllowDenyContext();
+    const skipAllow = this.isLocked('/model_allow');
+    const skipDeny = this.isLocked('/model_deny');
+
+    if (skipAllow && skipDeny) {
+      return;
+    }
+
+    const enforced = enforceAllowDenyOnOverlay(this.config(), context, {
+      skipMcpServers: true,
+      skipProviders: true,
+      skipDefaultModels: true,
+      skipModelLists: false,
+    });
+
+    for (const path of ['model_allow', 'model_deny'] as const) {
+      if (this.isLocked(`/${path}`)) {
+        continue;
+      }
+
+      const next = this.readPath(enforced, path);
+      const current = this.getPath(path);
+
+      if (JSON.stringify(current) !== JSON.stringify(next)) {
+        this.patchPath(path, next === undefined ? undefined : next);
+      }
+    }
+  }
+
+  /** Clear default / small model when they fall outside provider or model allow/deny. */
+  private reconcileDefaultModelsWithAllowDeny(): void {
+    const context = this.buildEditorAllowDenyContext();
+    const skipModel = this.isLocked('/model');
+    const skipSmall = this.isLocked('/small_model');
+
+    if (skipModel && skipSmall) {
+      return;
+    }
+
+    const enforced = enforceAllowDenyOnOverlay(this.config(), context, {
+      skipMcpServers: true,
+      skipProviders: true,
+      skipModelLists: true,
+      skipDefaultModels: false,
+    });
+
+    for (const path of ['model', 'small_model'] as const) {
+      if (this.isLocked(`/${path}`)) {
+        continue;
+      }
+
+      const next = this.readPath(enforced, path);
+      const current = this.getPath(path);
+
+      if (JSON.stringify(current ?? null) !== JSON.stringify(next ?? null)) {
+        this.patchPath(path, next === undefined ? undefined : next);
+      }
+    }
+
+    this.syncDefaultModelDraftsFromConfig();
   }
 
   mapEntryObject(path: string, key: string): JsonObject {
@@ -2223,7 +2709,29 @@ export class AgentConfigEditorComponent implements OnInit {
   }
 
   setMapEntryBoolean(path: string, key: string, field: string, value: boolean): void {
+    if (field === 'disabled') {
+      if (path === 'mcp.servers') {
+        const autoDisabled = new Set(this.mcpAllowDenyAutoDisabledKeys());
+        autoDisabled.delete(key);
+        this.mcpAllowDenyAutoDisabledKeys.set(autoDisabled);
+      }
+
+      if (path === 'providers') {
+        const autoDisabled = new Set(this.providerAllowDenyAutoDisabledKeys());
+        autoDisabled.delete(key);
+        this.providerAllowDenyAutoDisabledKeys.set(autoDisabled);
+      }
+    }
+
     this.patchMapEntryField(path, key, field, value || undefined);
+
+    if (field === 'disabled' && path === 'mcp.servers') {
+      this.reconcileMcpServersWithAllowDeny();
+    }
+
+    if (field === 'disabled' && path === 'providers') {
+      this.reconcileProvidersWithAllowDeny();
+    }
   }
 
   setMapEntryNumber(path: string, key: string, field: string, value: string): void {
@@ -2714,6 +3222,12 @@ export class AgentConfigEditorComponent implements OnInit {
       return;
     }
 
+    // Ensure allow/deny constraints are present in the overlay before PUT (backend re-checks too).
+    this.reconcileMcpServersWithAllowDeny();
+    this.reconcileProvidersWithAllowDeny();
+    this.reconcileModelListsWithProviderAllowDeny();
+    this.reconcileDefaultModelsWithAllowDeny();
+
     const overlay = this.config();
     const overridesOverlay = this.overrides();
     const heredityError =
@@ -2917,13 +3431,80 @@ export class AgentConfigEditorComponent implements OnInit {
     this.secretKeys.set(dto.secretKeys ?? []);
     this.secretDrafts.set({});
     this.clearSecretKeys.set(new Set());
+    this.mcpAllowDenyRemovalStash.set(new Map());
+    this.providerAllowDenyRemovalStash.set(new Map());
+    this.mcpAllowDenyAutoDisabledKeys.set(new Set());
+    this.providerAllowDenyAutoDisabledKeys.set(new Set());
     this.draftProviderEnvName.set('');
     this.syncDefaultModelDraftsFromConfig();
     this.loading.set(false);
     this.validateRaw();
     this.validateOverrides();
     this.captureBaseline();
+    // Seed inherited disable stubs only — do not delete owning-layer entries or clear
+    // models on load (that emptied fields / marked dirty). Destructive reconcile runs
+    // when allow/deny lists change and again on save; backend also enforces on PUT.
+    this.seedInheritedAllowDenyDisablesOnLoad();
     this.refreshMcpRuntimeStatuses();
+  }
+
+  /** Additive-only hydrate: force `{ disabled: true }` on prohibited inherited map keys. */
+  private seedInheritedAllowDenyDisablesOnLoad(): void {
+    const context = this.buildEditorAllowDenyContext();
+
+    if (!this.isPathMutationLocked('mcp.servers')) {
+      const beforeValue = this.getPath('mcp.servers');
+      const before = isPlainObject(beforeValue) ? { ...(beforeValue as JsonObject) } : {};
+      const enforced = enforceAllowDenyOnOverlay(this.config(), context, {
+        seedMissingInheritedDisables: true,
+        seedInheritedDisablesOnly: true,
+        skipProviders: true,
+        skipModelLists: true,
+        skipDefaultModels: true,
+      });
+      const nextValue = this.readPath(enforced, 'mcp.servers');
+      const next = isPlainObject(nextValue) ? { ...(nextValue as JsonObject) } : {};
+      const autoDisabled = new Set(this.mcpAllowDenyAutoDisabledKeys());
+
+      for (const key of this.inheritedKeys('/mcp/servers')) {
+        if (!this.isMapEntryAllowedByAllowDeny('mcp.servers', key, next[key] ?? before[key], context)) {
+          autoDisabled.add(key);
+        }
+      }
+
+      this.mcpAllowDenyAutoDisabledKeys.set(autoDisabled);
+
+      if (JSON.stringify(before) !== JSON.stringify(next)) {
+        this.patchPath('mcp.servers', Object.keys(next).length ? next : undefined);
+      }
+    }
+
+    if (!this.isPathMutationLocked('providers')) {
+      const beforeValue = this.getPath('providers');
+      const before = isPlainObject(beforeValue) ? { ...(beforeValue as JsonObject) } : {};
+      const enforced = enforceAllowDenyOnOverlay(this.config(), context, {
+        seedMissingInheritedDisables: true,
+        seedInheritedDisablesOnly: true,
+        skipMcpServers: true,
+        skipModelLists: true,
+        skipDefaultModels: true,
+      });
+      const nextValue = this.readPath(enforced, 'providers');
+      const next = isPlainObject(nextValue) ? { ...(nextValue as JsonObject) } : {};
+      const autoDisabled = new Set(this.providerAllowDenyAutoDisabledKeys());
+
+      for (const key of this.inheritedKeys('/providers')) {
+        if (!this.isMapEntryAllowedByAllowDeny('providers', key, next[key] ?? before[key], context)) {
+          autoDisabled.add(key);
+        }
+      }
+
+      this.providerAllowDenyAutoDisabledKeys.set(autoDisabled);
+
+      if (JSON.stringify(before) !== JSON.stringify(next)) {
+        this.patchPath('providers', Object.keys(next).length ? next : undefined);
+      }
+    }
   }
 
   private syncDefaultModelDraftsFromConfig(): void {

@@ -46,7 +46,7 @@ export const AGENT_CONFIG_TAB_LOCK_PATHS: Record<AgentConfigTabId, readonly stri
   ],
   models: ['/enabled_providers', '/disabled_providers', '/model_allow', '/model_deny'],
   providers: ['/providers'],
-  mcp: ['/mcp', '/mcp/timeout', '/mcp/servers'],
+  mcp: ['/mcp', '/mcp/timeout', '/mcp/servers', '/mcp_allow', '/mcp_deny'],
   skills: ['/skills', '/instructions'],
   commands: ['/commands', '/plugins'],
   agents: ['/agents'],

@@ -6,6 +6,8 @@
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
   "dependencies": {
+    "@forepath/agenstra/shared/util-opencode-mcp-servers": "*",
+    "@forepath/agenstra/shared/util-opencode-providers": "*",
     "tslib": "^2.3.0"
   }
 }
