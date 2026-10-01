@@ -325,6 +325,11 @@ export const agentConsoleRoutes: Route[] = [
             component: AgentConsoleChatComponent,
             pathMatch: 'full',
           },
+          {
+            path: ':clientId/agents/:agentId/vnc',
+            component: AgentConsoleChatComponent,
+            pathMatch: 'full',
+          },
         ],
       },
       {

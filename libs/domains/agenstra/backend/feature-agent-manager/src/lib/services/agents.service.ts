@@ -24,6 +24,7 @@ import { AgentProvider } from '../providers/agent-provider.interface';
 import { AgentProviderModels } from '../providers/agent-provider.interface';
 import { OpenCodeClientFactory } from '../providers/opencode/opencode-client.factory';
 import { OPENCODE_SERVER_PORT, OPENCODE_SERVER_USERNAME_DEFAULT } from '../providers/opencode/opencode-provider.config';
+import { VNC_WEBSOCKIFY_PORT } from '../constants/vnc.constants';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { expandProviderPathTildeInContainer } from '../utils/provider-container-path.utils';
 
@@ -454,14 +455,18 @@ export class AgentsService implements OnApplicationBootstrap {
       ],
       ...(agentDockerNetwork
         ? {
-            // Reach OpenCode via container IP on the agent network — do not publish :4096 on the host.
+            // Reach OpenCode/VNC via container IP on the agent network — do not publish ports on the host.
             network: agentDockerNetwork,
           }
         : {
-            // Local/dev without AGENT_DOCKER_NETWORK: bind OpenCode to loopback only.
+            // Local/dev without AGENT_DOCKER_NETWORK: bind OpenCode + websockify to loopback only.
             ports: [
               {
                 containerPort: OPENCODE_SERVER_PORT,
+                hostIp: '127.0.0.1',
+              },
+              {
+                containerPort: VNC_WEBSOCKIFY_PORT,
                 hostIp: '127.0.0.1',
               },
             ],

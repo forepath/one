@@ -59,7 +59,7 @@ describe('RedisCacheService', () => {
   });
 
   it('stores JSON with TTL', async () => {
-    await service.setJson('test:key', [{ id: 'fra1' }], 3600);
+    await expect(service.setJson('test:key', [{ id: 'fra1' }], 3600)).resolves.toBe(true);
 
     expect(redisInstance.set).toHaveBeenCalledWith('test:key', JSON.stringify([{ id: 'fra1' }]), 'EX', 3600);
   });

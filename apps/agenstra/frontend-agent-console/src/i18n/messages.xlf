@@ -1222,6 +1222,33 @@
       <trans-unit id="featureChat-openDeploymentManager" datatype="html">
         <source>Open Deployment Manager</source>
         </trans-unit>
+      <trans-unit id="featureChat-openVirtualDesktop" datatype="html">
+        <source>Open Virtual Desktop</source>
+        </trans-unit>
+      <trans-unit id="featureChat-openVirtualDesktopNewWindow" datatype="html">
+        <source>Open Virtual Desktop in New Window</source>
+        </trans-unit>
+      <trans-unit id="featureChat-closeVirtualDesktop" datatype="html">
+        <source>Close Virtual Desktop</source>
+        </trans-unit>
+      <trans-unit id="featureVirtualDesktop-header" datatype="html">
+        <source>Virtual Desktop</source>
+        </trans-unit>
+      <trans-unit id="featureVirtualDesktop-reconnectTitle" datatype="html">
+        <source>Reconnect</source>
+        </trans-unit>
+      <trans-unit id="featureVirtualDesktop-connecting" datatype="html">
+        <source>Connecting to desktop…</source>
+        </trans-unit>
+      <trans-unit id="featureVirtualDesktop-errorTitle" datatype="html">
+        <source>Desktop unavailable</source>
+        </trans-unit>
+      <trans-unit id="featureVirtualDesktop-securityFailure" datatype="html">
+        <source>Desktop authentication failed</source>
+        </trans-unit>
+      <trans-unit id="featureVirtualDesktop-genericError" datatype="html">
+        <source>Failed to open virtual desktop</source>
+        </trans-unit>
       <trans-unit id="featureChat-workspaceSettingTitleGitSetupMode" datatype="html">
         <source>Git repository setup mode</source>
         </trans-unit>

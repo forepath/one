@@ -41,6 +41,7 @@ import { ClientAgentChatsProxyService } from '../services/client-agent-chats-pro
 import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
+import { ClientAgentVncProxyService } from '../services/client-agent-vnc-proxy.service';
 import { ClientsService } from '../services/clients.service';
 import { OpencodeConfigSyncTargetsService } from '../services/opencode-config-sync-targets.service';
 import { OpencodeLayerFilesService } from '../services/opencode-layer-files.service';
@@ -200,6 +201,12 @@ describe('ClientsController', () => {
         {
           provide: ClientAgentChatsProxyService,
           useValue: mockChatsProxyService,
+        },
+        {
+          provide: ClientAgentVncProxyService,
+          useValue: {
+            createSession: jest.fn(),
+          },
         },
         {
           provide: ProvisioningService,

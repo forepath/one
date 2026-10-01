@@ -4557,6 +4557,39 @@ paths:
           description: Pipeline cancelled successfully
         '404':
           description: Client, agent, deployment configuration, or run not found
+  /clients/{id}/agents/{agentId}/vnc/sessions:
+    post:
+      summary: Create a short-lived VNC desktop session ticket
+      description: |
+        Mints a controller-side ticket after ensureClientAccess. The ticket is single-use and
+        bound to the caller, client, and agent. Connect noVNC to the controller WEBSOCKET_PORT
+        path /vnc using Sec-WebSocket-Protocol tokens `binary` and `agenstra.vnc.<ticket>`
+        (do not put the ticket in the URL). Upstream manager/worker addresses are never returned to the browser.
+      operationId: createClientAgentVncSession
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: VNC session ticket created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateClientVncSessionResponseDto'
+        '403':
+          description: Access denied
+        '404':
+          description: Client or agent not found
   /clients/{id}/statistics/summary:
     get:
       summary: Get statistics summary for a client
@@ -9206,3 +9239,14 @@ components:
           nullable: true
           additionalProperties:
             type: string
+    CreateClientVncSessionResponseDto:
+      type: object
+      required: [ticket, expiresIn]
+      properties:
+        ticket:
+          type: string
+          description: Single-use opaque ticket for the controller VNC WebSocket gateway
+        expiresIn:
+          type: integer
+          minimum: 1
+          description: Ticket lifetime in seconds

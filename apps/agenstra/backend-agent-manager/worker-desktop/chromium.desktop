@@ -1,0 +1,21 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Chromium
+Comment=Web browser
+Exec=/usr/local/bin/chromium-agenstra %U
+Icon=chromium
+Terminal=false
+Categories=Network;WebBrowser;
+StartupNotify=true
+StartupWMClass=Chromium
+MimeType=text/html;text/xml;application/xhtml+xml;x-scheme-handler/http;x-scheme-handler/https;
+Actions=new-window;new-private-window;
+
+[Desktop Action new-window]
+Name=New Window
+Exec=/usr/local/bin/chromium-agenstra
+
+[Desktop Action new-private-window]
+Name=New Incognito Window
+Exec=/usr/local/bin/chromium-agenstra --incognito

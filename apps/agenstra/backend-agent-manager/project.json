@@ -21,7 +21,12 @@
         "tsConfig": "apps/agenstra/backend-agent-manager/tsconfig.app.json",
         "assets": [
           "apps/agenstra/backend-agent-manager/src/assets",
-          "apps/agenstra/backend-agent-manager/src/migrations"
+          "apps/agenstra/backend-agent-manager/src/migrations",
+          {
+            "glob": "**/*",
+            "input": "apps/agenstra/backend-agent-manager/worker-desktop",
+            "output": "worker-desktop"
+          }
         ],
         "webpackConfig": "apps/agenstra/backend-agent-manager/webpack.config.cjs",
         "generatePackageJson": true

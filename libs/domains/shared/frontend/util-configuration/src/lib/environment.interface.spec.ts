@@ -38,6 +38,9 @@ describe('Environment interfaces', () => {
         deployment: {
           openInNewWindow: false,
         },
+        vnc: {
+          openInNewWindow: false,
+        },
         cookieConsent: {
           enabled: true,
           domain: 'localhost',
@@ -87,6 +90,9 @@ describe('Environment interfaces', () => {
           openInNewWindow: false,
         },
         deployment: {
+          openInNewWindow: false,
+        },
+        vnc: {
           openInNewWindow: false,
         },
         cookieConsent: {
@@ -141,6 +147,9 @@ describe('Environment interfaces', () => {
         deployment: {
           openInNewWindow: false,
         },
+        vnc: {
+          openInNewWindow: false,
+        },
         cookieConsent: {
           enabled: true,
           domain: 'localhost',
@@ -192,6 +201,9 @@ describe('Environment interfaces', () => {
           openInNewWindow: false,
         },
         deployment: {
+          openInNewWindow: false,
+        },
+        vnc: {
           openInNewWindow: false,
         },
         cookieConsent: {

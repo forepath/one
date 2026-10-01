@@ -56,6 +56,7 @@ import type { Response } from 'express';
 import { ClientResponseDto } from '../dto/client-response.dto';
 import { CreateClientResponseDto } from '../dto/create-client-response.dto';
 import { CreateClientDto } from '../dto/create-client.dto';
+import { CreateClientVncSessionResponseDto } from '../dto/create-client-vnc-session-response.dto';
 import { ProvisionServerDto } from '../dto/provision-server.dto';
 import { ProvisionedServerResponseDto } from '../dto/provisioned-server-response.dto';
 import { UpdateClientDto } from '../dto/update-client.dto';
@@ -65,6 +66,7 @@ import { ChatSessionMessageResponse, ClientAgentChatsProxyService } from '../ser
 import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-agent-environment-variables-proxy.service';
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
+import { ClientAgentVncProxyService } from '../services/client-agent-vnc-proxy.service';
 import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 import { ClientsService } from '../services/clients.service';
 import { OpencodeLayerFilesService } from '../services/opencode-layer-files.service';
@@ -83,6 +85,7 @@ export class ClientsController {
     private readonly clientAgentFileSystemProxyService: ClientAgentFileSystemProxyService,
     private readonly clientAgentEnvironmentVariablesProxyService: ClientAgentEnvironmentVariablesProxyService,
     private readonly clientAgentChatsProxyService: ClientAgentChatsProxyService,
+    private readonly clientAgentVncProxyService: ClientAgentVncProxyService,
     private readonly provisioningService: ProvisioningService,
     private readonly provisioningProviderFactory: ProvisioningProviderFactory,
     private readonly clientUsersService: ClientUsersService,
@@ -447,6 +450,33 @@ export class ClientsController {
     this.syncAgentRuntime(id, agentId);
 
     return agent;
+  }
+
+  /**
+   * Mint a short-lived VNC desktop session ticket for an agent.
+   */
+  @Post(':id/agents/:agentId/vnc/sessions')
+  @HttpCode(HttpStatus.CREATED)
+  @RequireScopes('agents:vnc')
+  async createClientAgentVncSession(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<CreateClientVncSessionResponseDto> {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
+
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    const subject = userInfo.isApiKeyAuth ? 'api-key' : userInfo.userId;
+
+    if (!subject) {
+      throw new ForbiddenException('You do not have access to this client');
+    }
+
+    return await this.clientAgentVncProxyService.createSession(id, agentId, {
+      subject,
+      isApiKeyAuth: userInfo.isApiKeyAuth,
+      userRole: userInfo.userRole,
+    });
   }
 
   /**

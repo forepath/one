@@ -1,0 +1,15 @@
+#!/bin/bash
+set -euo pipefail
+
+# Container-safe Chromium flags for the agenstra desktop session.
+# Containers typically lack a usable Chromium sandbox (no setuid helper / userns).
+exec /usr/bin/chromium \
+  --no-sandbox \
+  --disable-setuid-sandbox \
+  --disable-dev-shm-usage \
+  --disable-gpu \
+  --no-first-run \
+  --no-default-browser-check \
+  --password-store=basic \
+  --user-data-dir="${HOME:-/home/agenstra}/.config/chromium" \
+  "$@"

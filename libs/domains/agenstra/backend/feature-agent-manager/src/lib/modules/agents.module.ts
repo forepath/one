@@ -15,6 +15,7 @@ import { AgentsFiltersController } from '../controllers/agents-filters.controlle
 import { AgentsMessagesController } from '../controllers/agents-messages.controller';
 import { AgentsVcsController } from '../controllers/agents-vcs.controller';
 import { AgentsVerificationController } from '../controllers/agents-verification.controller';
+import { AgentsVncController } from '../controllers/agents-vnc.controller';
 import { AgentsController } from '../controllers/agents.controller';
 import { AgentsOpencodeConfigController } from '../controllers/agents-opencode-config.controller';
 import { AgentsOpencodeMcpController } from '../controllers/agents-opencode-mcp.controller';
@@ -32,6 +33,7 @@ import { DeploymentRunEntity } from '../entities/deployment-run.entity';
 import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
 import { WorkspaceConfigurationOverrideEntity } from '../entities/workspace-configuration-override.entity';
 import { AgentsGateway } from '../gateways/agents.gateway';
+import { VncGateway } from '../gateways/vnc.gateway';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AcpAgentMessagingService } from '../providers/acp/acp-agent-messaging.service';
 import { AcpClientHostFactory } from '../providers/acp/acp-client-host';
@@ -90,6 +92,9 @@ import { DockerService } from '../services/docker.service';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
 import { RegexFilterRulesCacheService } from '../services/regex-filter-rules-cache.service';
 import { RegexFilterRulesEvaluateService } from '../services/regex-filter-rules-evaluate.service';
+import { VncBridgeService } from '../services/vnc-bridge.service';
+import { VncSessionsService } from '../services/vnc-sessions.service';
+import { VncTicketService } from '../services/vnc-ticket.service';
 import { WorkspaceConfigurationOverridesService } from '../services/workspace-configuration-overrides.service';
 import { WorkspaceChangeNotifierService } from '../services/workspace-change-notifier.service';
 import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-supervisor.service';
@@ -123,6 +128,7 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     AgentsVcsController,
     AgentsVerificationController,
     AgentsDeploymentsController,
+    AgentsVncController,
     AgentsEnvironmentVariablesController,
     AgentsChatSessionsController,
     AgentsFiltersController,
@@ -133,6 +139,10 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
   providers: [
     AgenstraManagerMetricsCollectorService,
     AgentsGateway,
+    VncGateway,
+    VncTicketService,
+    VncBridgeService,
+    VncSessionsService,
     AgentsService,
     AgentMessagesService,
     PromptContextComposerService,

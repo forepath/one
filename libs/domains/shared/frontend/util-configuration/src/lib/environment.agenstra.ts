@@ -8,6 +8,7 @@ export const environment: Environment = {
   controller: {
     restApiUrl: 'http://localhost:3100/api',
     websocketUrl: 'http://localhost:8081/clients',
+    vncWebsocketUrl: 'ws://localhost:8081/vnc',
   },
   billing: {
     restApiUrl: 'http://localhost:3200/api',
@@ -38,6 +39,9 @@ export const environment: Environment = {
     openInNewWindow: true,
   },
   deployment: {
+    openInNewWindow: true,
+  },
+  vnc: {
     openInNewWindow: true,
   },
   cookieConsent: {

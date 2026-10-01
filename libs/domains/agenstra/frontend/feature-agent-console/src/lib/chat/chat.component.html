@@ -112,8 +112,8 @@
     </div>
   }
   <section class="section__row flex-grow-1">
-    <!-- Column 1: Workspace list (hidden when editor is open or deployment manager in standalone mode) -->
-    @if (!editorOpen() && !(deploymentManagerOpen() && standaloneMode())) {
+    <!-- Column 1: Workspace list (hidden when editor is open or a side panel is in standalone mode) -->
+    @if (!editorOpen() && !((deploymentManagerOpen() || virtualDesktopOpen()) && standaloneMode())) {
       <div class="section__column d-flex flex-column border-end" [class.active-column]="!(activeClientId$ | async)">
         <fpc-page-header [title]="workspacesHeaderTitle">
           <fpc-button
@@ -285,8 +285,12 @@
       </div>
     }
 
-    <!-- Column 2: Agent list (hidden when editor is open or deployment manager in standalone mode) -->
-    @if (!editorOpen() && !(deploymentManagerOpen() && standaloneMode()) && (activeClientId$ | async)) {
+    <!-- Column 2: Agent list (hidden when editor is open or a side panel is in standalone mode) -->
+    @if (
+      !editorOpen() &&
+      !((deploymentManagerOpen() || virtualDesktopOpen()) && standaloneMode()) &&
+      (activeClientId$ | async)
+    ) {
       <div
         class="section__column d-flex flex-column border-end"
         [class.active-column]="(activeClientId$ | async) && !(selectedAgent$ | async)"
@@ -553,6 +557,59 @@
       </div>
     }
 
+    @if (virtualDesktopOpen() && (activeClientId$ | async) && (selectedAgent$ | async)) {
+      <div
+        class="section__column section__column--virtual-desktop d-flex flex-column"
+        [class.border-end]="!standaloneMode()"
+        [class.mobile-hidden]="chatVisible() || editorOpen() || deploymentManagerOpen()"
+      >
+        <div class="editor-toolbar-container border-bottom bg-body-tertiary">
+          <div class="editor-toolbar ps-2 pe-3 py-3 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+              @if (standaloneMode()) {
+                <div
+                  class="brand-icon-container me-2 fs-3 bg-primary p-3"
+                  style="margin-left: -0.5rem; margin-top: -1rem; margin-bottom: -1rem"
+                >
+                  <img
+                    src="assets/images/icon_light.svg"
+                    alt="Agenstra"
+                    i18n-alt="@@featureChat-brandAlt"
+                    class="brand-icon"
+                  />
+                </div>
+              }
+              <span class="fw-bold text-uppercase" i18n="@@featureChat-appName">Agenstra</span>
+              <span
+                class="badge bg-transparent border border-2 border-primary text-primary text-uppercase small editor-toolbar-badge fw-bold"
+                i18n="@@featureVirtualDesktop-header"
+                >Virtual Desktop</span
+              >
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <fpc-button
+                size="sm"
+                variant="dark"
+                iconOnly
+                i18n-title="@@featureVirtualDesktop-reconnectTitle"
+                title="Reconnect"
+                i18n-ariaLabel="@@featureVirtualDesktop-reconnectTitle"
+                ariaLabel="Reconnect"
+                (clicked)="virtualDesktop.onReconnect()"
+              >
+                <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+              </fpc-button>
+            </div>
+          </div>
+        </div>
+        <framework-virtual-desktop
+          #virtualDesktop
+          [clientId]="(activeClientId$ | async)!"
+          [agentId]="(selectedAgent$ | async)!.id"
+        ></framework-virtual-desktop>
+      </div>
+    }
+
     <!-- Column: Agent chat controls -->
     @if (shouldShowChat$ | async) {
       <div
@@ -787,6 +844,15 @@
                   [title]="getDeploymentManagerToggleTitle()"
                 >
                   <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>
+                </fpc-button>
+                <fpc-button
+                  size="sm"
+                  iconOnly
+                  [variant]="virtualDesktopOpen() ? 'primary' : 'dark'"
+                  (clicked)="onToggleVirtualDesktop(true, getVncOpenInNewWindow())"
+                  [title]="getVirtualDesktopToggleTitle()"
+                >
+                  <i class="bi bi-display" aria-hidden="true"></i>
                 </fpc-button>
               }
             }

@@ -170,6 +170,7 @@ export async function bootstrap(): Promise<void> {
 
   await app.listen(port);
   Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix} (QUEUE_ROLE=${role})`);
+  Logger.log(`🖥️  VNC WebSocket gateway is running on: ws://localhost:${process.env.WEBSOCKET_PORT || '8081'}/vnc`);
 
   if (shouldEnableBullBoard(role)) {
     const { username } = readBullBoardAuthConfig();

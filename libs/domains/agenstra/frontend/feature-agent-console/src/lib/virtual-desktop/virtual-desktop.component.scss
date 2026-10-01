@@ -1,0 +1,35 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.virtual-desktop {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.virtual-desktop__body {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.virtual-desktop__screen {
+  position: absolute;
+  inset: 0;
+}
+
+.virtual-desktop__status {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  pointer-events: none;
+}

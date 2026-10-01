@@ -121,6 +121,7 @@ import {
 } from 'rxjs';
 
 import { DeploymentManagerComponent } from '../deployment-manager/deployment-manager.component';
+import { VirtualDesktopComponent } from '../virtual-desktop/virtual-desktop.component';
 import { resolveNamedDisplayLabel } from '../display-name.util';
 import { ContainerStatsStatusBarComponent } from '../file-editor/container-stats-status-bar/container-stats-status-bar.component';
 import { FileEditorComponent } from '../file-editor/file-editor.component';
@@ -202,6 +203,7 @@ type ChatMessageWithFilter = {
     AgentConfigEditorComponent,
     LayerFileIdeComponent,
     DeploymentManagerComponent,
+    VirtualDesktopComponent,
     ContainerStatsStatusBarComponent,
     AgentChatEventRowComponent,
     FpcAlertComponent,
@@ -755,6 +757,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   /** Workspace file editor root (`/app`). */
   fileManagerContext = signal<FileManagerContext>('app');
   deploymentManagerOpen = signal<boolean>(false);
+  virtualDesktopOpen = signal<boolean>(false);
   chatVisible = signal<boolean>(false);
   private previousAgentId: string | null = null;
   readonly fileOnlyMode = signal<boolean>(false);
@@ -934,14 +937,15 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.selectedAgent$,
     toObservable(this.editorOpen),
     toObservable(this.deploymentManagerOpen),
+    toObservable(this.virtualDesktopOpen),
     toObservable(this.chatVisible),
   ]).pipe(
-    map(([selectedAgent, editorOpen, deploymentManagerOpen, chatVisible]) => {
+    map(([selectedAgent, editorOpen, deploymentManagerOpen, virtualDesktopOpen, chatVisible]) => {
       if (!selectedAgent) {
         return false;
       }
 
-      const sidePanelOpen = deploymentManagerOpen;
+      const sidePanelOpen = deploymentManagerOpen || virtualDesktopOpen;
 
       return (!editorOpen && !sidePanelOpen) || chatVisible;
     }),
@@ -1762,6 +1766,34 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           }
 
           this.initialRouting['deployments'] = true;
+        }
+
+        if (
+          !this.initialRouting['vnc'] &&
+          agents.length > 0 &&
+          this.router.url.includes('/vnc') &&
+          !this.virtualDesktopOpen()
+        ) {
+          const isStandaloneMode = !!queryParams['standalone'];
+
+          this.standaloneMode.set(isStandaloneMode);
+
+          if (!isStandaloneMode && this.editorOpen()) {
+            this.editorOpen.set(false);
+          }
+
+          if (!isStandaloneMode && this.deploymentManagerOpen()) {
+            this.deploymentManagerOpen.set(false);
+          }
+
+          this.virtualDesktopOpen.set(true);
+          this.standaloneLoadingService.setLoading(false);
+
+          if (isStandaloneMode || this.isMobile()) {
+            this.chatVisible.set(false);
+          }
+
+          this.initialRouting['vnc'] = true;
         }
       });
 
@@ -3178,6 +3210,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       this.deploymentManagerOpen.set(false);
     }
 
+    if (!wasOpen && this.virtualDesktopOpen() && !this.standaloneMode()) {
+      this.virtualDesktopOpen.set(false);
+    }
+
     this.editorOpen.update((open) => !open);
 
     if (navigate) {
@@ -3224,6 +3260,89 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   /**
    * Open virtual desktop for the selected agent
    */
+  onToggleVirtualDesktop(navigate = true, openInNewWindow = false): void {
+    const wasOpen = this.virtualDesktopOpen();
+
+    if (openInNewWindow && !wasOpen) {
+      this.openVirtualDesktopInNewWindow();
+
+      return;
+    }
+
+    if (!wasOpen && this.editorOpen() && !this.standaloneMode()) {
+      this.editorOpen.set(false);
+    }
+
+    if (!wasOpen && this.deploymentManagerOpen() && !this.standaloneMode()) {
+      this.deploymentManagerOpen.set(false);
+    }
+
+    this.virtualDesktopOpen.set(!wasOpen);
+
+    if (!wasOpen) {
+      this.standaloneLoadingService.setLoading(false);
+    }
+
+    if (navigate) {
+      this.router.navigate(
+        wasOpen
+          ? ['/clients', this.activeClientId, 'agents', this.selectedAgentId()]
+          : ['/clients', this.activeClientId, 'agents', this.selectedAgentId(), 'vnc'],
+      );
+    }
+  }
+
+  private openVirtualDesktopInNewWindow(): void {
+    const clientId = this.activeClientId;
+    const agentId = this.selectedAgentId();
+
+    if (!clientId || !agentId) {
+      return;
+    }
+
+    const baseUrl = window.location.origin;
+    const vncPath = `/clients/${clientId}/agents/${agentId}/vnc`;
+    const queryParams = new URLSearchParams();
+
+    queryParams.set('standalone', 'true');
+
+    const url = `${baseUrl}${vncPath}?${queryParams.toString()}`;
+    const screenWidth = window.screen.availWidth || window.screen.width;
+    const screenHeight = window.screen.availHeight || window.screen.height;
+    const windowFeatures = [
+      'menubar=no',
+      'toolbar=no',
+      'location=no',
+      'status=no',
+      'resizable=yes',
+      'scrollbars=yes',
+      `width=${screenWidth}`,
+      `height=${screenHeight}`,
+      `left=0`,
+      `top=0`,
+    ].join(',');
+    const newWindow = window.open(url, '_blank', windowFeatures);
+
+    if (newWindow) {
+      setTimeout(() => {
+        try {
+          newWindow.moveTo(0, 0);
+          newWindow.resizeTo(screenWidth, screenHeight);
+
+          if (newWindow.screen && 'availWidth' in newWindow.screen) {
+            const availWidth = (newWindow.screen as Screen & { availWidth?: number }).availWidth;
+            const availHeight = (newWindow.screen as Screen & { availHeight?: number }).availHeight;
+
+            if (availWidth && availHeight) {
+              newWindow.resizeTo(availWidth, availHeight);
+            }
+          }
+        } catch (e) {
+          console.warn('Could not maximize window:', e);
+        }
+      }, 100);
+    }
+  }
 
   /**
    * Get whether to open editor in new window from environment configuration
@@ -3234,6 +3353,23 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   getDeploymentOpenInNewWindow(): boolean {
     return this.environment.deployment?.openInNewWindow ?? false;
+  }
+
+  getVncOpenInNewWindow(): boolean {
+    return this.environment.vnc?.openInNewWindow ?? false;
+  }
+
+  getVirtualDesktopToggleTitle(): string {
+    const openInNew = this.getVncOpenInNewWindow();
+    const isOpen = this.virtualDesktopOpen();
+
+    if (openInNew && !isOpen) {
+      return $localize`:@@featureChat-openVirtualDesktopNewWindow:Open Virtual Desktop in New Window`;
+    }
+
+    return isOpen
+      ? $localize`:@@featureChat-closeVirtualDesktop:Close Virtual Desktop`
+      : $localize`:@@featureChat-openVirtualDesktop:Open Virtual Desktop`;
   }
 
   getFileTreeToggleTitle(): string {
@@ -3393,6 +3529,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     // Close editor if opening deployment manager (unless in standalone mode)
     if (!wasOpen && this.editorOpen() && !this.standaloneMode()) {
       this.editorOpen.set(false);
+    }
+
+    if (!wasOpen && this.virtualDesktopOpen() && !this.standaloneMode()) {
+      this.virtualDesktopOpen.set(false);
     }
 
     this.deploymentManagerOpen.set(!wasOpen);

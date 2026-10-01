@@ -8,6 +8,7 @@ export const environment: Environment = {
   controller: {
     restApiUrl: 'http://host.docker.internal:3100/api',
     websocketUrl: 'http://host.docker.internal:8081/clients',
+    vncWebsocketUrl: 'ws://host.docker.internal:8081/vnc',
   },
   billing: {
     restApiUrl: 'http://host.docker.internal:3200/api',
@@ -37,6 +38,9 @@ export const environment: Environment = {
     openInNewWindow: true,
   },
   deployment: {
+    openInNewWindow: true,
+  },
+  vnc: {
     openInNewWindow: true,
   },
   cookieConsent: {

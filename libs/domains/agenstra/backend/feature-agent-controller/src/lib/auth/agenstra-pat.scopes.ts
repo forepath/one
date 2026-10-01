@@ -20,6 +20,7 @@ export const AGENSTRA_PAT_SCOPES = [
   'agents:chats',
   'agents:vcs',
   'agents:deployments',
+  'agents:vnc',
   'imports:write',
   'statistics:read',
   ...IDENTITY_PAT_SCOPES,

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-01T05:46:05.408Z",
+  "generatedAt": "2026-10-01T18:15:39.740Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -2278,6 +2278,14 @@
       }
     },
     {
+      "id": "package:ws",
+      "type": "package",
+      "attrs": {
+        "name": "ws",
+        "version": "8.20.0"
+      }
+    },
+    {
       "id": "package:zod",
       "type": "package",
       "attrs": {
@@ -2531,6 +2539,14 @@
       "attrs": {
         "name": "xmlbuilder2",
         "version": "4.0.3"
+      }
+    },
+    {
+      "id": "package:@novnc/novnc",
+      "type": "package",
+      "attrs": {
+        "name": "@novnc/novnc",
+        "version": "1.5.0"
       }
     },
     {
@@ -3876,6 +3892,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/vnc-sessions.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/vnc-sessions.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/workspace-config.service.ts",
       "type": "service",
       "attrs": {
@@ -4863,6 +4888,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/create-client-vnc-session-response.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/create-client-vnc-session-response.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/create-client.dto.ts",
       "type": "dto",
       "attrs": {
@@ -5574,6 +5608,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/vnc.gateway.ts",
+      "type": "gateway",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/vnc.gateway.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/agenstra-notifications.module.ts",
       "type": "module",
       "attrs": {
@@ -5925,6 +5968,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-vnc-proxy.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-vnc-proxy.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-automation-chat-realtime.service.ts",
       "type": "service",
       "attrs": {
@@ -5956,6 +6008,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/context-import-orchestrator.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/controller-vnc-ticket.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/controller-vnc-ticket.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -10367,6 +10428,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-vnc.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-vnc.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-workspace-index.controller.ts",
       "type": "controller",
       "attrs": {
@@ -10524,6 +10594,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/create-regex-filter-rule.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/create-vnc-session-response.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/create-vnc-session-response.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -10839,6 +10918,15 @@
       "type": "gateway",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/vnc.gateway.ts",
+      "type": "gateway",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/vnc.gateway.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -11199,6 +11287,33 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/regex-filter-rules-evaluate.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-bridge.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-bridge.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-sessions.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-sessions.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-ticket.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-ticket.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -16535,6 +16650,17 @@
         "pathOrChannel": "/clients/{id}/agents/{agentId}/deployments/runs/{runId}/cancel",
         "operationId": "cancelClientAgentDeploymentRun",
         "summary": "Cancel a running pipeline (proxied)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{id}/agents/{agentId}/vnc/sessions",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/vnc/sessions",
+        "operationId": "createClientAgentVncSession",
+        "summary": "Create a short-lived VNC desktop session ticket",
         "specKind": "openapi"
       }
     },
@@ -22515,6 +22641,17 @@
       }
     },
     {
+      "id": "api:HTTP:POST:/agents/{agentId}/vnc/sessions",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/agents/{agentId}/vnc/sessions",
+        "operationId": "createAgentVncSession",
+        "summary": "Create a short-lived VNC desktop session ticket",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "webhook-event:identity-backend-util-auth:user.created",
       "type": "webhook-event",
       "attrs": {
@@ -26588,6 +26725,16 @@
         "title": "WebSocket CORS (Agent Controller)",
         "docPath": "docs/agenstra/security/operational-hardening.md",
         "sectionAnchor": "websocket-cors-agent-controller",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-agent-virtual-desktop-vnc",
+      "type": "concept",
+      "attrs": {
+        "title": "Agent virtual desktop (VNC)",
+        "docPath": "docs/agenstra/security/operational-hardening.md",
+        "sectionAnchor": "agent-virtual-desktop-vnc",
         "domain": "agenstra"
       }
     },
@@ -33795,6 +33942,11 @@
     },
     {
       "from": "project:agenstra-backend-agent-controller",
+      "to": "package:ws",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-agent-controller",
       "to": "package:zod",
       "type": "depends_on"
     },
@@ -34560,6 +34712,11 @@
     },
     {
       "from": "project:agenstra-frontend-agent-console",
+      "to": "package:@novnc/novnc",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-agent-console",
       "to": "package:@xterm/xterm",
       "type": "depends_on"
     },
@@ -34861,6 +35018,11 @@
     {
       "from": "project:agenstra-backend-agent-manager",
       "to": "package:uuid",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-agent-manager",
+      "to": "package:ws",
       "type": "depends_on"
     },
     {
@@ -36105,6 +36267,11 @@
     },
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/vnc-sessions.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/workspace-config.service.ts",
       "type": "contains"
     },
@@ -36535,6 +36702,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/create-client-vnc-session-response.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/create-client.dto.ts",
       "type": "contains"
     },
@@ -36930,6 +37102,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/vnc.gateway.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/agenstra-notifications.module.ts",
       "type": "contains"
     },
@@ -37125,6 +37302,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-vnc-proxy.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-automation-chat-realtime.service.ts",
       "type": "contains"
     },
@@ -37141,6 +37323,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/context-import-orchestrator.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/controller-vnc-ticket.service.ts",
       "type": "contains"
     },
     {
@@ -39575,6 +39762,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-vnc.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-workspace-index.controller.ts",
       "type": "contains"
     },
@@ -39661,6 +39853,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/create-regex-filter-rule.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/create-vnc-session-response.dto.ts",
       "type": "contains"
     },
     {
@@ -39836,6 +40033,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/vnc.gateway.ts",
       "type": "contains"
     },
     {
@@ -40036,6 +40238,21 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/regex-filter-rules-evaluate.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-bridge.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-sessions.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-ticket.service.ts",
       "type": "contains"
     },
     {
@@ -42106,6 +42323,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/deployments/runs/{runId}/cancel",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/vnc/sessions",
       "type": "contains"
     },
     {
@@ -45155,6 +45377,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/agents/{agentId}/vnc/sessions",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/otel/metrics",
       "type": "contains"
     },
@@ -48111,6 +48338,11 @@
     {
       "from": "file:docs/agenstra/security/operational-hardening.md",
       "to": "concept:agenstra-websocket-cors-agent-controller",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/security/operational-hardening.md",
+      "to": "concept:agenstra-agent-virtual-desktop-vnc",
       "type": "contains"
     },
     {
@@ -52930,6 +53162,16 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/vnc/sessions",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/vnc/sessions",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
       "to": "api:HTTP:GET:/clients/{id}/statistics/summary",
       "type": "implements"
     },
@@ -58104,6 +58346,16 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/vnc/sessions",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:POST:/agents/{agentId}/vnc/sessions",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
       "to": "api:HTTP:GET:/agents",
       "type": "implements"
@@ -58454,6 +58706,11 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/vnc/sessions",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
       "to": "api:HTTP:GET:/agents",
       "type": "implements"
@@ -58801,6 +59058,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
       "to": "api:HTTP:POST:/agents/{agentId}/deployments/runs/{runId}/cancel",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/vnc/sessions",
       "type": "implements"
     },
     {
@@ -60315,6 +60577,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-vnc-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/provisioning.service.ts",
       "type": "injects"
     },
@@ -60536,6 +60803,26 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/tickets-board.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/ticket-board-realtime.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/vnc.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/vnc.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/controller-vnc-ticket.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/vnc.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/vnc.gateway.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
       "type": "injects"
     },
     {
@@ -60824,6 +61111,21 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-vnc-proxy.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/clients.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-vnc-proxy.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-vnc-proxy.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/controller-vnc-ticket.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-workspace-configuration-overrides-proxy.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/clients.service.ts",
       "type": "injects"
@@ -60871,6 +61173,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/context-import-orchestrator.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/external-import-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/controller-vnc-ticket.service.ts",
+      "to": "file:libs/domains/shared/backend/util-redis-cache/src/lib/redis-cache.service.ts",
       "type": "injects"
     },
     {
@@ -64674,6 +64981,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-vnc.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-sessions.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-workspace-index.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-change-notifier.service.ts",
       "type": "injects"
@@ -64756,6 +65068,21 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-change-notifier.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/vnc.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/vnc.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-ticket.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/vnc.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-bridge.service.ts",
       "type": "injects"
     },
     {
@@ -64986,6 +65313,26 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/regex-filter-rules-evaluate.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/regex-filter-rules-cache.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-bridge.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/docker.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-sessions.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agents.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-sessions.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/docker.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-sessions.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-ticket.service.ts",
       "type": "injects"
     },
     {
@@ -65660,6 +66007,16 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-vnc-proxy.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/controller-vnc-ticket.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-workspace-configuration-overrides-proxy.service.ts",
       "type": "provides"
     },
@@ -65746,6 +66103,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/vnc.gateway.ts",
       "type": "provides"
     },
     {
@@ -67280,6 +67642,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-vnc.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-environment-variables.controller.ts",
       "type": "provides"
     },
@@ -67316,6 +67683,26 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/vnc.gateway.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-ticket.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-bridge.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-sessions.service.ts",
       "type": "provides"
     },
     {
@@ -69276,6 +69663,11 @@
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/vcs.service.ts",
       "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/vcs/conflicts/resolve",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/vnc-sessions.service.ts",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/vnc/sessions",
       "type": "calls"
     },
     {
@@ -79940,6 +80332,11 @@
     },
     {
       "from": "concept:agenstra-websocket-cors-agent-controller",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-agent-virtual-desktop-vnc",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

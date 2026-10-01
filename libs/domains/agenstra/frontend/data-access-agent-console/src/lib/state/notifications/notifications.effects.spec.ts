@@ -47,6 +47,7 @@ const testEnvironment = {
   chatModelOptions: {},
   editor: { openInNewWindow: false },
   deployment: { openInNewWindow: false },
+  vnc: { openInNewWindow: false },
   cookieConsent: { domain: '', privacyPolicyUrl: '', termsUrl: '' },
 };
 

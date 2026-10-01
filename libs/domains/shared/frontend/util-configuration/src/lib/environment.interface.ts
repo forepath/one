@@ -36,6 +36,8 @@ export interface Environment {
     ticketsWebsocketUrl?: string;
     /** When unset, derived from `websocketUrl` by swapping the `/clients` suffix for `/status`. */
     statusWebsocketUrl?: string;
+    /** When unset, derived from `websocketUrl` by swapping the `/clients` suffix for `/vnc`. */
+    vncWebsocketUrl?: string;
   };
   billing: {
     restApiUrl: string;
@@ -56,6 +58,9 @@ export interface Environment {
     openInNewWindow: boolean;
   };
   deployment: {
+    openInNewWindow: boolean;
+  };
+  vnc: {
     openInNewWindow: boolean;
   };
   cookieConsent: {

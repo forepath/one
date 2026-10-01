@@ -1,0 +1,15 @@
+[Default Applications]
+text/html=chromium-agenstra.desktop
+text/xml=chromium-agenstra.desktop
+application/xhtml+xml=chromium-agenstra.desktop
+x-scheme-handler/http=chromium-agenstra.desktop
+x-scheme-handler/https=chromium-agenstra.desktop
+x-scheme-handler/about=chromium-agenstra.desktop
+x-scheme-handler/unknown=chromium-agenstra.desktop
+
+[Added Associations]
+text/html=chromium-agenstra.desktop;
+text/xml=chromium-agenstra.desktop;
+application/xhtml+xml=chromium-agenstra.desktop;
+x-scheme-handler/http=chromium-agenstra.desktop;
+x-scheme-handler/https=chromium-agenstra.desktop;
