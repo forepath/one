@@ -1,13 +1,14 @@
 # -----------------------------------------------------------------------------
-# Image:      agenstra-billing-api
+# Image:      decabill-billing-api
 # Project:    backend-billing-manager — Nx target `api-container-image`
-# Registry:   ghcr.io/forepath/agenstra-billing-api
+# Registry:   ghcr.io/forepath/decabill-billing-api
 # Base:       debian:trixie-slim
-# User:       agenstra (APP_UID / APP_GID, default 10001)
+# User:       decabill (APP_UID / APP_GID, default 10001)
 # Exposes:    3200 (HTTP API), 8082 (WebSocket)
 # Build:      npx nx run backend-billing-manager:api-container-image
 # Run:        nx docker:run decabill-backend-billing-manager -p 3200:3200 -p 8082:8082
-# Notes:      Configure via runtime env; see docs/agenstra/deployment/
+# Notes:      Configure via runtime env; see docs/decabill/deployment/
+#             Entrypoint runs as root for storage chown, then drops to decabill via runuser.
 #             Playwright Chromium is baked in for HTML invoice PDF rendering.
 # -----------------------------------------------------------------------------
 #
@@ -21,10 +22,10 @@ ARG VERSION=0.0.0
 ENV HOST=0.0.0.0
 ENV PORT=3200
 ENV WEBSOCKET_PORT=8082
-ENV NVM_DIR=/home/agenstra/.nvm
+ENV NVM_DIR=/home/decabill/.nvm
 ENV NODE_VERSION=24.14.1
-ENV HOME=/home/agenstra
-ENV PATH="/home/agenstra/.nvm/versions/node/v${NODE_VERSION}/bin:${PATH}"
+ENV HOME=/home/decabill
+ENV PATH="/home/decabill/.nvm/versions/node/v${NODE_VERSION}/bin:${PATH}"
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 ENV VERSION=${VERSION}
 
@@ -40,10 +41,11 @@ RUN apt-get update && \
     bash \
     ca-certificates \
     gnupg \
-    lsb-release && \
-    groupadd --gid "${APP_GID}" agenstra && \
-    useradd --uid "${APP_UID}" --gid "${APP_GID}" --create-home --home-dir /home/agenstra --shell /bin/bash agenstra && \
-    chown agenstra:agenstra /app && \
+    lsb-release \
+    util-linux && \
+    groupadd --gid "${APP_GID}" decabill && \
+    useradd --uid "${APP_UID}" --gid "${APP_GID}" --create-home --home-dir /home/decabill --shell /bin/bash decabill && \
+    chown "${APP_UID}:${APP_GID}" /app && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -53,9 +55,9 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | P
     nvm alias default "${NODE_VERSION}" && \
     npm install -g npm@11.18.0 && \
     npm cache clean --force && \
-    chown -R agenstra:agenstra /home/agenstra
+    chown -R "${APP_UID}:${APP_GID}" /home/decabill
 
-COPY --chown=agenstra:agenstra package*.json ./
+COPY --chown=${APP_UID}:${APP_GID} package*.json ./
 
 RUN . "${NVM_DIR}/nvm.sh" && \
     npm i && \
@@ -65,24 +67,25 @@ RUN . "${NVM_DIR}/nvm.sh" && \
     apt-get upgrade -y --no-install-recommends && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
-    chown -R agenstra:agenstra /app "${PLAYWRIGHT_BROWSERS_PATH}"
+    chown -R "${APP_UID}:${APP_GID}" /app "${PLAYWRIGHT_BROWSERS_PATH}"
 
-COPY --chown=agenstra:agenstra . /app
+COPY --chown=${APP_UID}:${APP_GID} . /app
 
 RUN mkdir -p /data/invoices /var/lib/forepath/provider-plugins && \
-    chown -R agenstra:agenstra /data /var/lib/forepath/provider-plugins
+    chown -R "${APP_UID}:${APP_GID}" /data /var/lib/forepath/provider-plugins
 
+# Expand APP_UID/APP_GID into the entrypoint at build time (runtime has no ARG).
 RUN printf '%s\n' \
     '#!/bin/bash' \
     'set -euo pipefail' \
     'storage_path="${BILLING_INVOICE_PDF_STORAGE_PATH:-/data/invoices}"' \
     'mkdir -p "${storage_path}"' \
-    'chown -R agenstra:agenstra /data "${storage_path}"' \
+    "chown -R ${APP_UID}:${APP_GID} /data \"\${storage_path}\"" \
     '. "${NVM_DIR}/nvm.sh"' \
     'if [ -n "${DYNAMIC_PROVIDER_PLUGIN_PATH:-}" ]; then' \
-    '  runuser -u agenstra -g agenstra -- node install-provider-plugins.js' \
+    '  runuser -u decabill -g decabill -- node install-provider-plugins.js' \
     'fi' \
-    'exec runuser -u agenstra -g agenstra -- node main.js' \
+    'exec runuser -u decabill -g decabill -- node main.js' \
     > /usr/local/bin/docker-entrypoint.sh && \
     chmod 755 /usr/local/bin/docker-entrypoint.sh
 

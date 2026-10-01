@@ -54,7 +54,7 @@ Workers and the API share the same image, which includes **Playwright Chromium**
 | **Node.js** (local Nx dev only) | 24.14.1                                    | Match container `NODE_VERSION`             |
 | **Architecture**                | 64-bit                                     | 64-bit                                     |
 
-Container images target **Node.js 24.14.1** on **debian:trixie-slim**. Billing API and worker images run as non-root user `agenstra` (UID **10001**). Frontend server images run as `node` (UID **1000**).
+Container images target **Node.js 24.14.1** on **debian:trixie-slim**. Billing API images run as non-root user `decabill` (UID **10001**). Frontend server images run as `node` (UID **1000**).
 
 ## Data Services
 

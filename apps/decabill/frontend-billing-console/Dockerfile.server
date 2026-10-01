@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------
-# Image:      agenstra-billing-console-server
+# Image:      decabill-billing-console-server
 # Project:    frontend-billing-console — Nx target `server-container-image`
-# Registry:   ghcr.io/forepath/agenstra-billing-console-server
+# Registry:   ghcr.io/forepath/decabill-billing-console-server
 # Base:       node:24.14.1-alpine
 # User:       node (APP_UID / APP_GID, default 1000)
 # Exposes:    4500 (Express static server)

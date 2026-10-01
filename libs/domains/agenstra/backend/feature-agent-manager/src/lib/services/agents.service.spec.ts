@@ -309,9 +309,10 @@ describe('AgentsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         4,
         containerId,
-        `sh -c "sudo chown -R agenstra:agenstra -- '/home/agenstra/.config/opencode'"`,
+        `sh -c "chown -R agenstra:agenstra -- '/home/agenstra/.config/opencode'"`,
         undefined,
         true,
+        { user: '0' },
       );
       expect(dockerService.getContainerHomeDirectory).toHaveBeenCalledWith(containerId);
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
@@ -720,9 +721,10 @@ describe('AgentsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         8,
         containerId,
-        `sh -c "sudo chown -R agenstra:agenstra -- '/home/agenstra/.config/opencode'"`,
+        `sh -c "chown -R agenstra:agenstra -- '/home/agenstra/.config/opencode'"`,
         undefined,
         true,
+        { user: '0' },
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         9,
@@ -1720,9 +1722,10 @@ describe('AgentsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         4,
         containerId,
-        `sh -c "sudo chown -R agenstra:agenstra -- '/var/my-agent-config'"`,
+        `sh -c "chown -R agenstra:agenstra -- '/var/my-agent-config'"`,
         undefined,
         true,
+        { user: '0' },
       );
     });
   });

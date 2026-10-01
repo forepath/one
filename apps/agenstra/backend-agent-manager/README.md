@@ -261,7 +261,7 @@ docker run -v /var/run/docker.sock:/var/run/docker.sock \
 
 **Important**: The `/var/run/docker.sock` mount is required for the application to manage agent containers. Without this mount, the Docker CLI installed in the container will not be able to communicate with the host Docker daemon.
 
-The API container runs as **`agenstra`** (UID/GID 10001), not root. At startup the entrypoint syncs the in-container `docker` group to the socket’s GID, then starts Node. If Docker commands fail with permission errors, rebuild with `--build-arg DOCKER_GID=$(stat -c '%g' /var/run/docker.sock)`.
+The API entrypoint starts as root only long enough to sync the in-container `docker` group to the socket’s GID, then drops to **`agenstra`** (UID/GID 10001) via `runuser`/`sg` before Node. If Docker commands fail with permission errors, rebuild with `--build-arg DOCKER_GID=$(stat -c '%g' /var/run/docker.sock)`.
 
 Worker images use the same non-root user; private Git credentials are written under the worker’s `$HOME` (typically `/home/agenstra`). See **[Operational hardening](../../docs/agenstra/security/operational-hardening.md#container-images-docker)** in the docs site.
 

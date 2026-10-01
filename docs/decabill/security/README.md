@@ -20,7 +20,7 @@ Register **DR-001** through **DR-005**: provisioning SSH posture, billing multi-
 
 ### [Container image security](./container-images.md)
 
-Runtime users (`agenstra` / `node`) for `decabill-billing-api`, `decabill-billing-console-server`, and `decabill-docs-server`.
+Runtime users (`decabill` / `node`) for `decabill-billing-api`, `decabill-billing-console-server`, and `decabill-docs-server`.
 
 ### [Operational hardening](./operational-hardening.md)
 

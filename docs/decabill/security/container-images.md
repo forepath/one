@@ -20,13 +20,13 @@ nx docker:server decabill-frontend-docs
 
 ## Runtime users
 
-| Image family               | User       | Default UID/GID | Notes                              |
-| -------------------------- | ---------- | --------------- | ---------------------------------- |
-| **decabill-billing-api**   | `agenstra` | **10001**       | `ARG APP_UID` / `APP_GID` at build |
-| **billing-console-server** | `node`     | **1000**        | Alpine-based SSR image             |
-| **docs-server**            | `node`     | **1000**        | Alpine-based SSR image             |
+| Image family               | User       | Default UID/GID | Notes                                                     |
+| -------------------------- | ---------- | --------------- | --------------------------------------------------------- |
+| **decabill-billing-api**   | `decabill` | **10001**       | `ARG APP_UID` / `APP_GID` at build; home `/home/decabill` |
+| **billing-console-server** | `node`     | **1000**        | Alpine-based SSR image                                    |
+| **docs-server**            | `node`     | **1000**        | Alpine-based SSR image                                    |
 
-Processes do **not** run as root after container start.
+Entrypoint may start as root for storage `chown`, then **`runuser`** drops to `decabill` before Node. Application processes do **not** run as root.
 
 ## Billing API image (`decabill-billing-api`)
 
@@ -50,8 +50,8 @@ Source: `apps/decabill/backend-billing-manager/Dockerfile.api`
 
 | Argument  | Purpose                     | Default   |
 | --------- | --------------------------- | --------- |
-| `APP_UID` | Runtime user `agenstra` UID | **10001** |
-| `APP_GID` | Runtime user `agenstra` GID | **10001** |
+| `APP_UID` | Runtime user `decabill` UID | **10001** |
+| `APP_GID` | Runtime user `decabill` GID | **10001** |
 
 Unlike agent orchestration API images, the billing API image does **not** require `DOCKER_GID` because it does not access `/var/run/docker.sock`.
 

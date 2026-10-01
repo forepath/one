@@ -37,7 +37,7 @@ RUN apt-get update && \
     util-linux && \
     groupadd --gid "${APP_GID}" agenstra && \
     useradd --uid "${APP_UID}" --gid "${APP_GID}" --create-home --home-dir /home/agenstra --shell /bin/bash agenstra && \
-    chown agenstra:agenstra /app && \
+    chown "${APP_UID}:${APP_GID}" /app && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -47,16 +47,16 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | P
     nvm alias default "${NODE_VERSION}" && \
     npm install -g npm@11.18.0 && \
     npm cache clean --force && \
-    chown -R agenstra:agenstra /home/agenstra
+    chown -R "${APP_UID}:${APP_GID}" /home/agenstra
 
-COPY --chown=agenstra:agenstra package*.json ./
+COPY --chown=${APP_UID}:${APP_GID} package*.json ./
 
 RUN . "${NVM_DIR}/nvm.sh" && \
     npm i && \
     npm cache clean --force && \
-    chown -R agenstra:agenstra /app
+    chown -R "${APP_UID}:${APP_GID}" /app
 
-COPY --chown=agenstra:agenstra . /app
+COPY --chown=${APP_UID}:${APP_GID} . /app
 
 RUN printf '%s\n' \
     '#!/bin/bash' \

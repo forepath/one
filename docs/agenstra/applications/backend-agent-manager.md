@@ -292,10 +292,10 @@ Treat socket access as **high privilege** on the host. The API image runs as **`
 
 ### Container images and security
 
-| Image                            | User               | Registry (default)                         | Notes                                                                       |
-| -------------------------------- | ------------------ | ------------------------------------------ | --------------------------------------------------------------------------- |
-| **API** (`Dockerfile.api`)       | `agenstra` (10001) | `ghcr.io/forepath/agenstra-manager-api`    | HTTP + WebSocket; Docker CLI + socket mount; restricted `sudo` for GID sync |
-| **Worker** (`Dockerfile.worker`) | `agenstra`         | `ghcr.io/forepath/agenstra-manager-worker` | OpenCode workloads; workspace at `/app`; credentials in `/home/agenstra`    |
+| Image                            | User               | Registry (default)                         | Notes                                                                           |
+| -------------------------------- | ------------------ | ------------------------------------------ | ------------------------------------------------------------------------------- |
+| **API** (`Dockerfile.api`)       | `agenstra` (10001) | `ghcr.io/forepath/agenstra-manager-api`    | HTTP + WebSocket; Docker CLI + socket mount; root entrypoint GID sync then drop |
+| **Worker** (`Dockerfile.worker`) | `agenstra`         | `ghcr.io/forepath/agenstra-manager-worker` | OpenCode workloads; workspace at `/app`; credentials in `/home/agenstra`        |
 
 Per-agent bind mounts (host `/opt/agents/{uuid}`) and read-only `/opt/agents` → `/opt/workspace` are documented in **[Container image security](../security/container-images.md)**.
 
