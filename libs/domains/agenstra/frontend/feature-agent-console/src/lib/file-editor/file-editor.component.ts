@@ -49,6 +49,7 @@ import {
   FpcTabComponent,
   FpcTabGroupComponent,
 } from '@forepath/shared/frontend/ui-components';
+import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import { LocaleService } from '@forepath/shared/frontend/util-configuration';
 import { Actions, ofType } from '@ngrx/effects';
 import { combineLatest, debounceTime, filter, map, Observable, of, Subject, switchMap, take } from 'rxjs';
@@ -95,6 +96,7 @@ import { WorkspaceSearchPanelComponent } from './workspace-search-panel/workspac
 })
 export class FileEditorComponent implements OnDestroy, AfterViewInit {
   private readonly filesFacade = inject(FilesFacade);
+  private readonly loadingOverlayService = inject(StandaloneLoadingService);
   private readonly filesService = inject(FilesService);
   private readonly socketsFacade = inject(ContainerSocketFacade);
   private readonly vcsFacade = inject(VcsFacade);
@@ -115,6 +117,9 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   chatVisible = input<boolean>(true);
   /** Files API root: workspace (`app`) or provider agent config (`config`). */
   fileManagerContext = input<FileManagerContext>('app');
+
+  /** Hide the in-panel file spinner while the container boot overlay is covering the tool window. */
+  readonly showBootOverlay = this.loadingOverlayService.isLoading;
 
   // Internal state
   selectedFilePath = signal<string | null>(null);
@@ -1030,7 +1035,6 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     const editorPath = `/clients/${clientId}/agents/${agentId}/editor`;
     const queryParams = new URLSearchParams();
 
-    queryParams.set('standalone', 'true');
     queryParams.set('file', encodeURIComponent(filePath));
     const url = `${baseUrl}${editorPath}?${queryParams.toString()}`;
     // Open new window with minimal controls and maximize if possible

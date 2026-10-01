@@ -862,7 +862,6 @@ export class FileTreeComponent implements OnInit {
     const editorPath = `/clients/${clientId}/agents/${agentId}/editor`;
     const queryParams = new URLSearchParams();
 
-    queryParams.set('standalone', 'true');
     queryParams.set('file', encodeURIComponent(path));
     const url = `${baseUrl}${editorPath}?${queryParams.toString()}`;
 
@@ -923,7 +922,6 @@ export class FileTreeComponent implements OnInit {
     const editorPath = `/clients/${clientId}/agents/${agentId}/editor`;
     const queryParams = new URLSearchParams();
 
-    queryParams.set('standalone', 'true');
     queryParams.set('file', encodeURIComponent(path));
     const url = `${baseUrl}${editorPath}?${queryParams.toString()}`;
     // Open new window with minimal controls and maximize if possible

@@ -795,10 +795,6 @@
         <source>Link copied</source>
         <target>Link kopiert</target>
       </trans-unit>
-      <trans-unit id="featureChat-closeEditor" datatype="html">
-        <source>Close Editor</source>
-        <target>Editor schließen</target>
-      </trans-unit>
       <trans-unit id="featureChat-workspaces" datatype="html">
         <source>Workspaces</source>
         <target>Arbeitsbereiche</target>
@@ -926,10 +922,6 @@
       <trans-unit id="featureChat-disconnected" datatype="html">
         <source>Disconnected</source>
         <target>Getrennt</target>
-      </trans-unit>
-      <trans-unit id="featureChat-openEditor" datatype="html">
-        <source>Open Editor</source>
-        <target>Editor öffnen</target>
       </trans-unit>
       <trans-unit id="featureChat-remoteWorkspaceConfig" datatype="html">
         <source>Remote Workspace Configuration</source>
@@ -1546,13 +1538,9 @@
         <source>Open Deployment Manager in New Window</source>
         <target>Deployment Manager in neuem Fenster öffnen</target>
       </trans-unit>
-      <trans-unit id="featureChat-closeDeploymentManager" datatype="html">
-        <source>Close Deployment Manager</source>
-        <target>Deployment Manager schließen</target>
-      </trans-unit>
-      <trans-unit id="featureChat-openDeploymentManager" datatype="html">
-        <source>Open Deployment Manager</source>
-        <target>Deployment Manager öffnen</target>
+      <trans-unit id="featureChat-openVirtualDesktopNewWindow" datatype="html">
+        <source>Open Virtual Desktop in New Window</source>
+        <target>Virtuellen Desktop in neuem Fenster öffnen</target>
       </trans-unit>
       <trans-unit id="featureChat-workspaceSettingTitleGitSetupMode" datatype="html">
         <source>Git repository setup mode</source>

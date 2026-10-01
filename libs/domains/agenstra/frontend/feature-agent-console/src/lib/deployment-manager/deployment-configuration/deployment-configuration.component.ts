@@ -22,7 +22,8 @@ import {
   FpcModalFooterDirective,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
-import { take } from 'rxjs';
+import { StandaloneLoadingService } from '@forepath/shared/frontend';
+import { filter, skipWhile, take, timer } from 'rxjs';
 
 @Component({
   selector: 'framework-deployment-configuration',
@@ -48,6 +49,8 @@ import { take } from 'rxjs';
 export class DeploymentConfigurationComponent {
   private readonly deploymentsFacade = inject(DeploymentsFacade);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly loadingOverlayService = inject(StandaloneLoadingService);
+  private bootOverlayCleared = false;
 
   readonly configurationModalOpen = signal(false);
   readonly deleteConfigurationConfirmModalOpen = signal(false);
@@ -127,6 +130,9 @@ export class DeploymentConfigurationComponent {
     return this.selectedWorkflow() !== null;
   });
 
+  /** Hide the in-panel boot spinner while the container overlay is still covering the tool window. */
+  readonly showBootOverlay = this.loadingOverlayService.isLoading;
+
   // Filter out 404 errors (not found) since we have a "Create Configuration" button
   readonly filteredError = computed(() => {
     const error = this.error();
@@ -146,6 +152,27 @@ export class DeploymentConfigurationComponent {
   });
 
   constructor() {
+    // Clear the tool-window boot overlay once configuration loading settles.
+    this.loadingConfiguration$
+      .pipe(
+        skipWhile((loading) => !loading),
+        filter((loading) => !loading),
+        take(1),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => this.clearBootOverlay());
+
+    // Fallback when configuration was already cached (load never flips to true).
+    timer(400)
+      .pipe(take(1), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.loadingConfiguration$.pipe(take(1)).subscribe((loading) => {
+          if (!loading) {
+            this.clearBootOverlay();
+          }
+        });
+      });
+
     // Initialize form when configuration is loaded
     effect(() => {
       const config = this.configuration();
@@ -274,6 +301,15 @@ export class DeploymentConfigurationComponent {
         }
       }
     });
+  }
+
+  private clearBootOverlay(): void {
+    if (this.bootOverlayCleared) {
+      return;
+    }
+
+    this.bootOverlayCleared = true;
+    this.loadingOverlayService.setLoading(false);
   }
 
   onShowConfigurationForm(): void {

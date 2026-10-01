@@ -54,15 +54,6 @@ export interface Environment {
   /** Layout options for login, registration, and related public auth screens. */
   authLayout?: AuthLayoutConfig;
   chatModelOptions: { [provider: string]: Record<string, string> };
-  editor: {
-    openInNewWindow: boolean;
-  };
-  deployment: {
-    openInNewWindow: boolean;
-  };
-  vnc: {
-    openInNewWindow: boolean;
-  };
   cookieConsent: {
     /** When false, cookie consent UI and providers are omitted (e.g. Decabill billing console). */
     enabled: boolean;

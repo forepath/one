@@ -1,22 +1,20 @@
-<div class="section__content-wrapper d-flex flex-column" [class.border-top]="!standaloneMode()">
+<div class="section__content-wrapper d-flex flex-column">
   <!-- Toolbar (shown when editor is open, spans editor and chat) -->
   @if (editorOpen() && (activeClientId$ | async) && (selectedAgent$ | async)) {
     <div class="editor-toolbar-container border-bottom bg-body-tertiary">
       <div class="editor-toolbar ps-2 pe-3 py-3 d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
-          @if (standaloneMode()) {
-            <div
-              class="brand-icon-container me-2 fs-3 bg-primary p-3"
-              style="margin-left: -0.5rem; margin-top: -1rem; margin-bottom: -1rem"
-            >
-              <img
-                src="assets/images/icon_light.svg"
-                alt="Agenstra"
-                i18n-alt="@@featureChat-brandAlt"
-                class="brand-icon"
-              />
-            </div>
-          }
+          <div
+            class="brand-icon-container me-2 fs-3 bg-primary p-3"
+            style="margin-left: -0.5rem; margin-top: -1rem; margin-bottom: -1rem"
+          >
+            <img
+              src="assets/images/icon_light.svg"
+              alt="Agenstra"
+              i18n-alt="@@featureChat-brandAlt"
+              class="brand-icon"
+            />
+          </div>
           <span class="fw-bold text-uppercase" i18n="@@featureChat-appName">Agenstra</span>
           <span
             class="badge bg-transparent border border-2 border-primary text-primary text-uppercase small editor-toolbar-badge fw-bold"
@@ -93,27 +91,13 @@
               aria-hidden="true"
             ></i>
           </fpc-button>
-          @if (!fileOnlyMode() && !standaloneMode()) {
-            <fpc-button-group size="sm">
-              <fpc-button
-                variant="primary"
-                size="sm"
-                iconOnly
-                (clicked)="onToggleEditor()"
-                i18n-title="@@featureChat-closeEditor"
-                title="Close Editor"
-              >
-                <i class="bi bi-x-lg" aria-hidden="true"></i>
-              </fpc-button>
-            </fpc-button-group>
-          }
         </div>
       </div>
     </div>
   }
   <section class="section__row flex-grow-1">
-    <!-- Column 1: Workspace list (hidden when editor is open or a side panel is in standalone mode) -->
-    @if (!editorOpen() && !((deploymentManagerOpen() || virtualDesktopOpen()) && standaloneMode())) {
+    <!-- Column 1: Workspace list (hidden when a tool window panel is open) -->
+    @if (!editorOpen() && !deploymentManagerOpen() && !virtualDesktopOpen() && !isToolWindowRoute()) {
       <div class="section__column d-flex flex-column border-end" [class.active-column]="!(activeClientId$ | async)">
         <fpc-page-header [title]="workspacesHeaderTitle">
           <fpc-button
@@ -285,10 +269,12 @@
       </div>
     }
 
-    <!-- Column 2: Agent list (hidden when editor is open or a side panel is in standalone mode) -->
+    <!-- Column 2: Agent list (hidden when a tool window panel is open) -->
     @if (
       !editorOpen() &&
-      !((deploymentManagerOpen() || virtualDesktopOpen()) && standaloneMode()) &&
+      !deploymentManagerOpen() &&
+      !virtualDesktopOpen() &&
+      !isToolWindowRoute() &&
       (activeClientId$ | async)
     ) {
       <div
@@ -416,9 +402,9 @@
                           </div>
                         }
                       </div>
-                      @if (activeClient$ | async; as opencodeClient) {
-                        @if (opencodeClient.canManageWorkspaceConfiguration) {
-                          <fpc-button-group fpcListItemActions size="sm">
+                      <fpc-button-group fpcListItemActions size="sm">
+                        @if (activeClient$ | async; as opencodeClient) {
+                          @if (opencodeClient.canManageWorkspaceConfiguration) {
                             <fpc-button
                               size="sm"
                               iconOnly
@@ -473,9 +459,9 @@
                             >
                               <i class="bi bi-trash"></i>
                             </fpc-button>
-                          </fpc-button-group>
+                          }
                         }
-                      }
+                      </fpc-button-group>
                     </fpc-list-item>
                   }
                 </fpc-list>
@@ -525,29 +511,25 @@
     @if (deploymentManagerOpen() && (activeClientId$ | async) && (selectedAgent$ | async)) {
       <div
         class="section__column section__column--deployment-manager d-flex flex-column"
-        [class.border-end]="!standaloneMode()"
         [class.mobile-hidden]="chatVisible() || editorOpen()"
       >
-        <!-- Toolbar (shown when deployment manager is open in standalone mode) -->
-        @if (standaloneMode()) {
-          <div class="editor-toolbar-container border-bottom bg-body-tertiary">
-            <div class="editor-toolbar ps-2 pe-3 py-3 d-flex justify-content-between align-items-center">
-              <div class="d-flex align-items-center gap-2">
-                <div
-                  class="brand-icon-container me-2 fs-3 bg-primary p-3"
-                  style="margin-left: -0.5rem; margin-top: -1rem; margin-bottom: -1rem"
-                >
-                  <img src="assets/images/icon_light.svg" alt="Agenstra" class="brand-icon" />
-                </div>
-                <span class="fw-bold text-uppercase">Agenstra</span>
-                <span
-                  class="badge bg-transparent border border-2 border-primary text-primary text-uppercase small editor-toolbar-badge fw-bold"
-                  >Deployment Manager</span
-                >
+        <div class="editor-toolbar-container border-bottom bg-body-tertiary">
+          <div class="editor-toolbar ps-2 pe-3 py-3 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+              <div
+                class="brand-icon-container me-2 fs-3 bg-primary p-3"
+                style="margin-left: -0.5rem; margin-top: -1rem; margin-bottom: -1rem"
+              >
+                <img src="assets/images/icon_light.svg" alt="Agenstra" class="brand-icon" />
               </div>
+              <span class="fw-bold text-uppercase">Agenstra</span>
+              <span
+                class="badge bg-transparent border border-2 border-primary text-primary text-uppercase small editor-toolbar-badge fw-bold"
+                >Deployment Manager</span
+              >
             </div>
           </div>
-        }
+        </div>
         <framework-deployment-manager
           #deploymentManager
           [clientId]="(activeClientId$ | async)!"
@@ -560,25 +542,22 @@
     @if (virtualDesktopOpen() && (activeClientId$ | async) && (selectedAgent$ | async)) {
       <div
         class="section__column section__column--virtual-desktop d-flex flex-column"
-        [class.border-end]="!standaloneMode()"
         [class.mobile-hidden]="chatVisible() || editorOpen() || deploymentManagerOpen()"
       >
         <div class="editor-toolbar-container border-bottom bg-body-tertiary">
           <div class="editor-toolbar ps-2 pe-3 py-3 d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-2">
-              @if (standaloneMode()) {
-                <div
-                  class="brand-icon-container me-2 fs-3 bg-primary p-3"
-                  style="margin-left: -0.5rem; margin-top: -1rem; margin-bottom: -1rem"
-                >
-                  <img
-                    src="assets/images/icon_light.svg"
-                    alt="Agenstra"
-                    i18n-alt="@@featureChat-brandAlt"
-                    class="brand-icon"
-                  />
-                </div>
-              }
+              <div
+                class="brand-icon-container me-2 fs-3 bg-primary p-3"
+                style="margin-left: -0.5rem; margin-top: -1rem; margin-bottom: -1rem"
+              >
+                <img
+                  src="assets/images/icon_light.svg"
+                  alt="Agenstra"
+                  i18n-alt="@@featureChat-brandAlt"
+                  class="brand-icon"
+                />
+              </div>
               <span class="fw-bold text-uppercase" i18n="@@featureChat-appName">Agenstra</span>
               <span
                 class="badge bg-transparent border border-2 border-primary text-primary text-uppercase small editor-toolbar-badge fw-bold"
@@ -828,7 +807,7 @@
                 size="sm"
                 iconOnly
                 [class.open-editor-btn--git-dirty]="selectedEnvironmentGitDirty$ | async"
-                (clicked)="onToggleEditor(true, getOpenInNewWindow())"
+                (clicked)="onOpenEditor()"
                 [title]="getOpenEditorTitle()"
               >
                 <i class="bi bi-code-square" aria-hidden="true"></i>
@@ -840,8 +819,8 @@
                   size="sm"
                   iconOnly
                   [variant]="deploymentManagerOpen() ? 'primary' : 'dark'"
-                  (clicked)="onToggleDeploymentManager(true, getDeploymentOpenInNewWindow())"
-                  [title]="getDeploymentManagerToggleTitle()"
+                  (clicked)="onOpenDeploymentManager()"
+                  [title]="getOpenDeploymentManagerTitle()"
                 >
                   <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>
                 </fpc-button>
@@ -849,8 +828,8 @@
                   size="sm"
                   iconOnly
                   [variant]="virtualDesktopOpen() ? 'primary' : 'dark'"
-                  (clicked)="onToggleVirtualDesktop(true, getVncOpenInNewWindow())"
-                  [title]="getVirtualDesktopToggleTitle()"
+                  (clicked)="onOpenVirtualDesktop()"
+                  [title]="getOpenVirtualDesktopTitle()"
                 >
                   <i class="bi bi-display" aria-hidden="true"></i>
                 </fpc-button>
@@ -2711,8 +2690,8 @@
                   } @else {
                     <div fpcListItemMeta class="small font-monospace">{{ envVar.content }}</div>
                   }
-                  @if (editingEnvVarId() !== envVar.id) {
-                    <fpc-button-group fpcListItemActions size="sm">
+                  <fpc-button-group fpcListItemActions size="sm">
+                    @if (editingEnvVarId() !== envVar.id) {
                       <fpc-button
                         variant="warning"
                         size="sm"
@@ -2733,8 +2712,8 @@
                       >
                         <i class="bi bi-trash"></i>
                       </fpc-button>
-                    </fpc-button-group>
-                  }
+                    }
+                  </fpc-button-group>
                 </fpc-list-item>
               }
             </fpc-list>

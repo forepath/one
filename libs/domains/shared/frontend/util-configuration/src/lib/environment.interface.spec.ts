@@ -32,15 +32,6 @@ describe('Environment interfaces', () => {
             'gpt-4o': 'GPT-4o',
           },
         },
-        editor: {
-          openInNewWindow: false,
-        },
-        deployment: {
-          openInNewWindow: false,
-        },
-        vnc: {
-          openInNewWindow: false,
-        },
         cookieConsent: {
           enabled: true,
           domain: 'localhost',
@@ -85,15 +76,6 @@ describe('Environment interfaces', () => {
           opencode: {
             'gpt-4o': 'GPT-4o',
           },
-        },
-        editor: {
-          openInNewWindow: false,
-        },
-        deployment: {
-          openInNewWindow: false,
-        },
-        vnc: {
-          openInNewWindow: false,
         },
         cookieConsent: {
           enabled: true,
@@ -141,15 +123,6 @@ describe('Environment interfaces', () => {
             'gpt-4o': 'GPT-4o',
           },
         },
-        editor: {
-          openInNewWindow: false,
-        },
-        deployment: {
-          openInNewWindow: false,
-        },
-        vnc: {
-          openInNewWindow: false,
-        },
         cookieConsent: {
           enabled: true,
           domain: 'localhost',
@@ -196,15 +169,6 @@ describe('Environment interfaces', () => {
           opencode: {
             'gpt-4o': 'GPT-4o',
           },
-        },
-        editor: {
-          openInNewWindow: false,
-        },
-        deployment: {
-          openInNewWindow: false,
-        },
-        vnc: {
-          openInNewWindow: false,
         },
         cookieConsent: {
           enabled: true,

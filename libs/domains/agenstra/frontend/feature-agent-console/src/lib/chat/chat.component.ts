@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   AfterViewChecked,
+  afterNextRender,
   ChangeDetectorRef,
   Component,
   computed,
@@ -8,6 +9,7 @@ import {
   effect,
   ElementRef,
   inject,
+  Injector,
   OnDestroy,
   OnInit,
   signal,
@@ -274,7 +276,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly environment = inject<Environment>(ENVIRONMENT);
-  private readonly standaloneLoadingService = inject(StandaloneLoadingService);
+  private readonly loadingOverlayService = inject(StandaloneLoadingService);
+  private readonly injector = inject(Injector);
 
   @ViewChild('chatMessagesContainer', { static: false })
   private chatMessagesContainer!: ElementRef<HTMLDivElement>;
@@ -761,8 +764,17 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   chatVisible = signal<boolean>(false);
   private previousAgentId: string | null = null;
   readonly fileOnlyMode = signal<boolean>(false);
-  readonly standaloneMode = signal<boolean>(false);
-  private standaloneFileLoaded = false;
+  private deepLinkFileLoaded = false;
+
+  /** True on /editor|/deployments|/vnc so workspace lists stay hidden during pop-out boot. */
+  readonly isToolWindowRoute = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map((e) => this.isToolWindowUrl(e.urlAfterRedirects)),
+      startWith(this.isToolWindowUrl(this.router.url)),
+    ),
+    { initialValue: this.isToolWindowUrl(this.router.url) },
+  );
 
   // Local signals to mirror fileEditor's visibility states
   // These prevent ExpressionChangedAfterItHasBeenCheckedError by avoiding direct access
@@ -775,7 +787,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private shareFileLinkCopiedReset: ReturnType<typeof setTimeout> | null = null;
 
   // Convert signals to observables (must be in field initializer for injection context)
-  private readonly standaloneMode$ = toObservable(this.standaloneMode);
+  private readonly editorOpen$ = toObservable(this.editorOpen);
   private readonly fileManagerContext$ = toObservable(this.fileManagerContext);
   private readonly ticketsSnapshot = toSignal(this.ticketsFacade.tickets$, {
     initialValue: [] as TicketResponseDto[],
@@ -1670,14 +1682,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
           this.fileOnlyMode.set(isFileOnlyMode);
 
-          // Check if standalone query parameter is set
-          const isStandaloneMode = !!queryParams['standalone'];
-
-          this.standaloneMode.set(isStandaloneMode);
-
-          if (isStandaloneMode && isFileOnlyMode) {
+          if (isFileOnlyMode) {
             // Loading spinner is shown by container component
-            this.standaloneFileLoaded = false;
+            this.deepLinkFileLoaded = false;
           }
 
           // Open editor if route has /editor but editor is closed
@@ -1707,6 +1714,16 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
               this.fileEditor.terminalVisible.set(false);
               this.fileEditor.autosaveEnabled.set(false);
             }
+
+            // Keep the boot overlay up until the editor chrome has painted (avoids blank gap).
+            afterNextRender(
+              () => {
+                if (this.editorOpen() && !this.fileOnlyMode()) {
+                  this.loadingOverlayService.setLoading(false);
+                }
+              },
+              { injector: this.injector },
+            );
           }
 
           // Sync visibility signals after editor opens
@@ -1737,33 +1754,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           this.router.url.includes('/deployments') &&
           !this.deploymentManagerOpen()
         ) {
-          // Check if standalone query parameter is set
-          const isStandaloneMode = !!queryParams['standalone'];
-
-          this.standaloneMode.set(isStandaloneMode);
-
           // Note: run query parameter is handled by the deployment manager component itself
-
-          // Close editor if opening deployment manager (unless in standalone mode)
-          if (!isStandaloneMode && this.editorOpen()) {
-            this.editorOpen.set(false);
-          }
 
           // Open deployment manager if route has /deployments but manager is closed
           this.deploymentManagerOpen.set(true);
-
-          // Clear standalone loading when deployment manager is opened via route
-          this.standaloneLoadingService.setLoading(false);
-
-          // In standalone mode, hide chat and other panels
-          if (isStandaloneMode) {
-            this.chatVisible.set(false);
-          }
-
-          // Hide chat on mobile when deployment manager is open
-          if (this.isMobile()) {
-            this.chatVisible.set(false);
-          }
+          this.chatVisible.set(false);
 
           this.initialRouting['deployments'] = true;
         }
@@ -1774,24 +1769,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           this.router.url.includes('/vnc') &&
           !this.virtualDesktopOpen()
         ) {
-          const isStandaloneMode = !!queryParams['standalone'];
-
-          this.standaloneMode.set(isStandaloneMode);
-
-          if (!isStandaloneMode && this.editorOpen()) {
-            this.editorOpen.set(false);
-          }
-
-          if (!isStandaloneMode && this.deploymentManagerOpen()) {
-            this.deploymentManagerOpen.set(false);
-          }
-
           this.virtualDesktopOpen.set(true);
-          this.standaloneLoadingService.setLoading(false);
-
-          if (isStandaloneMode || this.isMobile()) {
-            this.chatVisible.set(false);
-          }
+          this.chatVisible.set(false);
 
           this.initialRouting['vnc'] = true;
         }
@@ -1809,11 +1788,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         const isFileOnlyMode = !!filePath;
 
         this.fileOnlyMode.set(isFileOnlyMode);
-
-        // Check if standalone query parameter is set
-        const isStandaloneMode = !!queryParams['standalone'];
-
-        this.standaloneMode.set(isStandaloneMode);
 
         // If file query parameter is set and editor is open, open the file
         if (isFileOnlyMode && filePath && this.editorOpen()) {
@@ -1892,11 +1866,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           // Reset file opened flag when agent changes in file-only mode
           // This allows the file to be opened again for the new agent
           this.fileOpenedFromQuery = false;
-          // Reset standalone loading state when switching agents
-          this.standaloneFileLoaded = false;
+          this.deepLinkFileLoaded = false;
 
-          if (this.standaloneMode() && this.route.snapshot.queryParams['file']) {
-            this.standaloneLoadingService.setLoading(true);
+          if (this.route.snapshot.queryParams['file']) {
+            this.loadingOverlayService.setLoading(true);
           }
 
           // Check if we still have a file query parameter and open it
@@ -2091,19 +2064,17 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       // Silently fail - will use plain text fallback
     });
 
-    // Watch for file content loading in standalone mode (must use same file API context as the editor route)
+    // Watch for deep-linked file content loading on the editor route
     combineLatest([
-      this.standaloneMode$,
+      this.editorOpen$,
       this.selectedAgent$,
       this.activeClientId$,
       this.route.queryParams,
       this.fileManagerContext$,
     ])
       .pipe(
-        filter(([standalone, agent, clientId]) => {
-          // Show loading if standalone mode is active and we have agent/client
-          // If no file is specified, we'll hide loading immediately
-          return standalone && !!agent && !!clientId && !this.standaloneFileLoaded;
+        filter(([editorOpen, agent, clientId, queryParams]) => {
+          return editorOpen && !!queryParams?.['file'] && !!agent && !!clientId && !this.deepLinkFileLoaded;
         }),
         switchMap(([, agent, clientId, queryParams, fileContext]) => {
           // TypeScript guard: agent and clientId are checked in filter, but we need to assert here
@@ -2175,7 +2146,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       )
       .subscribe((result) => {
         // File content is loaded (or no file to load), hide the loading spinner (only on initial load)
-        if (!this.standaloneFileLoaded) {
+        if (!this.deepLinkFileLoaded) {
           // If file was not found (error occurred), unselect the file and close the tab
           if (result?.error && result.filePath && result.clientId && result.agentId) {
             // Close the tab
@@ -2198,8 +2169,15 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
             this.fileOpenedFromQuery = false;
           }
 
-          this.standaloneLoadingService.setLoading(false);
-          this.standaloneFileLoaded = true;
+          this.deepLinkFileLoaded = true;
+
+          // Keep the boot overlay until the editor has painted file content (avoids blank → second spinner).
+          afterNextRender(
+            () => {
+              this.loadingOverlayService.setLoading(false);
+            },
+            { injector: this.injector },
+          );
         }
       });
 
@@ -2410,11 +2388,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       this.lastUserMessageTimestamp.set(null);
       // Reset file opened flag when switching clients
       this.fileOpenedFromQuery = false;
-      // Reset standalone loading state when switching clients
-      this.standaloneFileLoaded = false;
+      this.deepLinkFileLoaded = false;
 
-      if (this.standaloneMode() && this.route.snapshot.queryParams['file']) {
-        this.standaloneLoadingService.setLoading(true);
+      if (this.editorOpen() && this.route.snapshot.queryParams['file']) {
+        this.loadingOverlayService.setLoading(true);
       }
 
       this.notificationsFacade.setActiveEnvironment(clientId, null);
@@ -3195,101 +3172,18 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.socketsFacade.disconnect();
   }
 
-  onToggleEditor(navigate = true, openInNewWindow = false): void {
-    const wasOpen = this.editorOpen();
-
-    // If opening in new window and editor is not open, open new window
-    if (openInNewWindow && !wasOpen) {
-      this.openEditorInNewWindow();
-
-      return;
-    }
-
-    // Close deployment manager if opening editor (unless in standalone mode)
-    if (!wasOpen && this.deploymentManagerOpen() && !this.standaloneMode()) {
-      this.deploymentManagerOpen.set(false);
-    }
-
-    if (!wasOpen && this.virtualDesktopOpen() && !this.standaloneMode()) {
-      this.virtualDesktopOpen.set(false);
-    }
-
-    this.editorOpen.update((open) => !open);
-
-    if (navigate) {
-      // Check if we're in file-only mode
-      const filePath = this.route.snapshot.queryParams['file'];
-
-      if (filePath && !wasOpen) {
-        // Navigate with file query parameter
-        this.router.navigate(['/clients', this.activeClientId, 'agents', this.selectedAgentId(), 'editor'], {
-          queryParams: { file: filePath },
-        });
-      } else {
-        this.router.navigate(
-          wasOpen
-            ? ['/clients', this.activeClientId, 'agents', this.selectedAgentId()]
-            : ['/clients', this.activeClientId, 'agents', this.selectedAgentId(), 'editor'],
-        );
-      }
-    }
-
-    // Reset visibility when opening editor for a new agent (unless in file-only mode)
-    if (!wasOpen && this.editorOpen() && !this.fileOnlyMode()) {
-      // Only show chat and file tree on desktop, hide on mobile by default
-      if (!this.isMobile()) {
-        this.chatVisible.set(true);
-
-        if (this.fileEditor) {
-          this.fileEditor.fileTreeVisible.set(true);
-        }
-      }
-
-      if (this.fileEditor) {
-        this.fileEditor.terminalVisible.set(false);
-        this.fileEditor.autosaveEnabled.set(false);
-      }
-
-      setTimeout(() => this.syncFileEditorVisibility(), 0);
-    }
-
-    // Sync visibility signals after editor toggles
-    setTimeout(() => this.syncFileEditorVisibility(), 0);
+  onOpenEditor(): void {
+    this.openEditorInNewWindow();
   }
 
-  /**
-   * Open virtual desktop for the selected agent
-   */
-  onToggleVirtualDesktop(navigate = true, openInNewWindow = false): void {
-    const wasOpen = this.virtualDesktopOpen();
+  private isToolWindowUrl(url: string): boolean {
+    const path = url.split(/[?#]/)[0] ?? url;
 
-    if (openInNewWindow && !wasOpen) {
-      this.openVirtualDesktopInNewWindow();
+    return path.includes('/editor') || path.includes('/deployments') || path.includes('/vnc');
+  }
 
-      return;
-    }
-
-    if (!wasOpen && this.editorOpen() && !this.standaloneMode()) {
-      this.editorOpen.set(false);
-    }
-
-    if (!wasOpen && this.deploymentManagerOpen() && !this.standaloneMode()) {
-      this.deploymentManagerOpen.set(false);
-    }
-
-    this.virtualDesktopOpen.set(!wasOpen);
-
-    if (!wasOpen) {
-      this.standaloneLoadingService.setLoading(false);
-    }
-
-    if (navigate) {
-      this.router.navigate(
-        wasOpen
-          ? ['/clients', this.activeClientId, 'agents', this.selectedAgentId()]
-          : ['/clients', this.activeClientId, 'agents', this.selectedAgentId(), 'vnc'],
-      );
-    }
+  onOpenVirtualDesktop(): void {
+    this.openVirtualDesktopInNewWindow();
   }
 
   private openVirtualDesktopInNewWindow(): void {
@@ -3301,12 +3195,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
 
     const baseUrl = window.location.origin;
-    const vncPath = `/clients/${clientId}/agents/${agentId}/vnc`;
-    const queryParams = new URLSearchParams();
-
-    queryParams.set('standalone', 'true');
-
-    const url = `${baseUrl}${vncPath}?${queryParams.toString()}`;
+    const url = `${baseUrl}/clients/${clientId}/agents/${agentId}/vnc`;
     const screenWidth = window.screen.availWidth || window.screen.width;
     const screenHeight = window.screen.availHeight || window.screen.height;
     const windowFeatures = [
@@ -3344,32 +3233,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
   }
 
-  /**
-   * Get whether to open editor in new window from environment configuration
-   */
-  getOpenInNewWindow(): boolean {
-    return this.environment.editor?.openInNewWindow ?? false;
-  }
-
-  getDeploymentOpenInNewWindow(): boolean {
-    return this.environment.deployment?.openInNewWindow ?? false;
-  }
-
-  getVncOpenInNewWindow(): boolean {
-    return this.environment.vnc?.openInNewWindow ?? false;
-  }
-
-  getVirtualDesktopToggleTitle(): string {
-    const openInNew = this.getVncOpenInNewWindow();
-    const isOpen = this.virtualDesktopOpen();
-
-    if (openInNew && !isOpen) {
-      return $localize`:@@featureChat-openVirtualDesktopNewWindow:Open Virtual Desktop in New Window`;
-    }
-
-    return isOpen
-      ? $localize`:@@featureChat-closeVirtualDesktop:Close Virtual Desktop`
-      : $localize`:@@featureChat-openVirtualDesktop:Open Virtual Desktop`;
+  getOpenVirtualDesktopTitle(): string {
+    return $localize`:@@featureChat-openVirtualDesktopNewWindow:Open Virtual Desktop in New Window`;
   }
 
   getFileTreeToggleTitle(): string {
@@ -3415,26 +3280,15 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   getOpenEditorTitle(): string {
-    return this.getOpenInNewWindow()
-      ? $localize`:@@featureChat-openEditorNewWindow:Open Editor in New Window`
-      : $localize`:@@featureChat-openEditor:Open Editor`;
+    return $localize`:@@featureChat-openEditorNewWindow:Open Editor in New Window`;
   }
 
-  getDeploymentManagerToggleTitle(): string {
-    const openInNew = this.getDeploymentOpenInNewWindow();
-    const isOpen = this.deploymentManagerOpen();
-
-    if (openInNew && !isOpen) {
-      return $localize`:@@featureChat-openDeploymentManagerNewWindow:Open Deployment Manager in New Window`;
-    }
-
-    return isOpen
-      ? $localize`:@@featureChat-closeDeploymentManager:Close Deployment Manager`
-      : $localize`:@@featureChat-openDeploymentManager:Open Deployment Manager`;
+  getOpenDeploymentManagerTitle(): string {
+    return $localize`:@@featureChat-openDeploymentManagerNewWindow:Open Deployment Manager in New Window`;
   }
 
   /**
-   * Open editor in a new window with minimal browser controls in standalone mode
+   * Open editor in a new window with minimal browser controls.
    */
   private openEditorInNewWindow(): void {
     const clientId = this.activeClientId;
@@ -3456,13 +3310,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     const editorPath = `/clients/${clientId}/agents/${agentId}/editor`;
     const queryParams = new URLSearchParams();
 
-    queryParams.set('standalone', 'true');
-
     if (filePath) {
       queryParams.set('file', encodeURIComponent(filePath));
     }
 
-    const url = `${baseUrl}${editorPath}?${queryParams.toString()}`;
+    const query = queryParams.toString();
+    const url = query ? `${baseUrl}${editorPath}?${query}` : `${baseUrl}${editorPath}`;
     // Open new window with minimal controls and maximize if possible
     // Note: Modern browsers have restrictions on window features, but we try to minimize what's possible
     // Use screen dimensions to maximize the window
@@ -3516,39 +3369,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
   }
 
-  onToggleDeploymentManager(navigate = true, openInNewWindow = false): void {
-    const wasOpen = this.deploymentManagerOpen();
-
-    // If opening in new window and deployment manager is not open, open new window
-    if (openInNewWindow && !wasOpen) {
-      this.openDeploymentManagerInNewWindow();
-
-      return;
-    }
-
-    // Close editor if opening deployment manager (unless in standalone mode)
-    if (!wasOpen && this.editorOpen() && !this.standaloneMode()) {
-      this.editorOpen.set(false);
-    }
-
-    if (!wasOpen && this.virtualDesktopOpen() && !this.standaloneMode()) {
-      this.virtualDesktopOpen.set(false);
-    }
-
-    this.deploymentManagerOpen.set(!wasOpen);
-
-    // Clear standalone loading when opening deployment manager
-    if (!wasOpen) {
-      this.standaloneLoadingService.setLoading(false);
-    }
-
-    if (navigate) {
-      this.router.navigate(
-        wasOpen
-          ? ['/clients', this.activeClientId, 'agents', this.selectedAgentId()]
-          : ['/clients', this.activeClientId, 'agents', this.selectedAgentId(), 'deployments'],
-      );
-    }
+  onOpenDeploymentManager(): void {
+    this.openDeploymentManagerInNewWindow();
   }
 
   onCloseDeploymentManager(): void {
@@ -3618,7 +3440,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   /**
-   * Open deployment manager in a new standalone window
+   * Open deployment manager in a new window.
    */
   private openDeploymentManagerInNewWindow(): void {
     const clientId = this.activeClientId;
@@ -3645,13 +3467,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     const deploymentsPath = `/clients/${clientId}/agents/${agentId}/deployments`;
     const queryParams = new URLSearchParams();
 
-    queryParams.set('standalone', 'true');
-
     if (runId) {
       queryParams.set('run', encodeURIComponent(runId));
     }
 
-    const url = `${baseUrl}${deploymentsPath}?${queryParams.toString()}`;
+    const query = queryParams.toString();
+    const url = query ? `${baseUrl}${deploymentsPath}?${query}` : `${baseUrl}${deploymentsPath}`;
     // Open new window with minimal controls and maximize if possible
     const screenWidth = window.screen.availWidth || window.screen.width;
     const screenHeight = window.screen.availHeight || window.screen.height;
@@ -3727,7 +3548,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     const editorPath = `/clients/${clientId}/agents/${agentId}/editor`;
     const queryParams = new URLSearchParams();
 
-    queryParams.set('standalone', 'true');
     queryParams.set('file', encodeURIComponent(filePath));
     const url = `${baseUrl}${editorPath}?${queryParams.toString()}`;
 

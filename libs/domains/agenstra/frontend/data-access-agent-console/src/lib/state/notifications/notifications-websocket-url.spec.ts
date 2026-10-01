@@ -6,9 +6,6 @@ describe('resolveStatusWebsocketUrl', () => {
     billing: { restApiUrl: '', frontendUrl: '' },
     authentication: { type: 'api-key' as const, apiKey: 'k' },
     chatModelOptions: {},
-    editor: { openInNewWindow: false },
-    deployment: { openInNewWindow: false },
-    vnc: { openInNewWindow: false },
     cookieConsent: { domain: '', privacyPolicyUrl: '', termsUrl: '' },
   };
 
