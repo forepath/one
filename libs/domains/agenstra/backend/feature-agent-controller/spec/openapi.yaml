@@ -2279,7 +2279,7 @@ paths:
     post:
       summary: Start agent environment for a client
       operationId: startClientAgent
-      description: Start all Docker containers for the agent (main, VNC, SSH). Proxied to agent-manager.
+      description: Start the agent Docker container. Proxied to agent-manager.
       parameters:
         - in: path
           name: id
@@ -2310,7 +2310,7 @@ paths:
     post:
       summary: Stop agent environment for a client
       operationId: stopClientAgent
-      description: Stop all Docker containers for the agent (main, VNC, SSH). Proxied to agent-manager.
+      description: Stop the agent Docker container. Proxied to agent-manager.
       parameters:
         - in: path
           name: id
@@ -2341,7 +2341,7 @@ paths:
     post:
       summary: Restart agent environment for a client
       operationId: restartClientAgent
-      description: Restart all Docker containers for the agent (main, VNC, SSH). Proxied to agent-manager.
+      description: Restart the agent Docker container. Proxied to agent-manager.
       parameters:
         - in: path
           name: id
@@ -6504,14 +6504,6 @@ components:
         gitRepositoryUrl:
           type: [string, 'null']
           description: Git repository URL to clone when creating the agent
-        createVirtualWorkspace:
-          type: boolean
-          default: true
-          description: Whether to create a VNC virtual workspace container (defaults to true)
-        createSshConnection:
-          type: boolean
-          default: true
-          description: Whether to create an SSH connection container (defaults to true)
     UpdateAgentDto:
       type: object
       properties:

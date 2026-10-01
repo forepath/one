@@ -18,14 +18,6 @@ export class AgentResponseDto {
    * Capabilities of the agent's provider (mirrors config agentTypes capabilities).
    */
   capabilities?: AgentTypeCapabilities;
-  vnc?: {
-    port: number;
-    password: string;
-  };
-  ssh?: {
-    port: number;
-    password: string;
-  };
   git?: {
     repositoryUrl?: string;
     setupMode: GitRepositorySetupMode;

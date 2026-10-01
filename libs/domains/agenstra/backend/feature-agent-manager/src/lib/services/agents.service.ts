@@ -414,8 +414,6 @@ export class AgentsService implements OnApplicationBootstrap {
     // Get the provider for this agent type to retrieve the Docker image
     const provider = this.agentProviderFactory.getProvider(agentType);
     const dockerImage = provider.getDockerImage();
-    const virtualWorkspaceDockerImage = provider.getVirtualWorkspaceDockerImage();
-    const sshConnectionDockerImage = provider.getSshConnectionDockerImage();
     const basePath = provider.getBasePath?.() || '/app';
     const opencodeServerPassword = this.generateRandomPassword();
     const opencodeServerUsername = process.env.OPENCODE_SERVER_USERNAME || OPENCODE_SERVER_USERNAME_DEFAULT;
@@ -479,208 +477,60 @@ export class AgentsService implements OnApplicationBootstrap {
         basePath,
       );
 
-      // Create SSH connection container
-      let sshConnection:
-        | {
-            containerId: string;
-            hostPort: number;
-            password: string;
-          }
-        | undefined;
+      // Create the agent entity
+      const agent = await this.agentsRepository.create({
+        name: createAgentDto.name,
+        description: createAgentDto.description,
+        hashedPassword,
+        containerId: containerId,
+        volumePath: agentVolumePath,
+        agentType: createAgentDto.agentType || 'opencode',
+        containerType: createAgentDto.containerType || ContainerType.GENERIC,
+        opencodeServerPassword,
+        gitRepositoryUrl:
+          gitRepositorySetupMode === GitRepositorySetupMode.CLONE ? createAgentDto.gitRepositoryUrl : undefined,
+        gitRepositorySetupMode:
+          gitRepositorySetupMode === GitRepositorySetupMode.EMPTY
+            ? GitRepositorySetupMode.EMPTY
+            : createAgentDto.gitRepositorySetupMode,
+      });
 
-      if (createAgentDto.createSshConnection && sshConnectionDockerImage) {
-        const sshConnectionHostPort = await this.generateRandomSSHPort();
-        const sshConnectionPassword = this.generateRandomPassword();
+      await this.openCodeClientFactory.waitForHealthy(agent.id, containerId, {
+        password: opencodeServerPassword,
+      });
 
-        await this.dockerService.ensureImageExists(sshConnectionDockerImage);
+      // Full three-layer OpenCode config + secrets are applied by the controller
+      // via durable sync targets after create/start/restart (not agent-only defaults).
 
-        const sshConnectionContainerId = await this.dockerService.createContainer({
-          image: sshConnectionDockerImage,
-          env: {
-            AGENT_NAME: createAgentDto.name,
-            SSH_PASSWORD: sshConnectionPassword,
-          },
-          volumes: [
-            {
-              hostPath: agentVolumePath,
-              containerPath: basePath,
-              readOnly: false,
-            },
-            {
-              hostPath: AgentsService.WORKSPACE_CONTEXT_HOST_PATH,
-              containerPath: AgentsService.WORKSPACE_CONTEXT_CONTAINER_PATH,
-              readOnly: true,
-            },
-          ],
-          ports: [
-            {
-              containerPort: 22,
-              hostPort: sshConnectionHostPort,
-            },
-          ],
-        });
+      await this.agentChatSessionsService.ensurePrimarySession(agent.id);
 
-        sshConnection = {
-          containerId: sshConnectionContainerId,
-          hostPort: sshConnectionHostPort,
-          password: sshConnectionPassword,
-        };
-      }
+      void this.workspaceInotifySupervisor?.onWorkspaceReady(agent.id, basePath).catch((error: unknown) => {
+        this.logger.warn(`Failed to start workspace watcher for agent ${agent.id}: ${(error as Error).message}`);
+      });
 
-      // Create VNC container
-      let virtualWorkspace:
-        | {
-            containerId: string;
-            hostPort: number;
-            password: string;
-          }
-        | undefined;
-
-      if (createAgentDto.createVirtualWorkspace && virtualWorkspaceDockerImage) {
-        const virtualWorkspaceHostPort = await this.generateRandomVNCPort();
-        const virtualWorkspacePassword = this.generateRandomPassword();
-
-        await this.dockerService.ensureImageExists(virtualWorkspaceDockerImage);
-
-        const virtualWorkspaceContainerId = await this.dockerService.createContainer({
-          image: virtualWorkspaceDockerImage,
-          env: {
-            AGENT_NAME: createAgentDto.name,
-            ...this.buildGitContainerEnv(gitRepositorySetupMode, repositoryUrl),
-            VNC_PASSWORD: virtualWorkspacePassword,
-          },
-          volumes: [
-            {
-              hostPath: agentVolumePath,
-              containerPath: '/home/agenstra/environment',
-              readOnly: false,
-            },
-            {
-              hostPath: AgentsService.WORKSPACE_CONTEXT_HOST_PATH,
-              containerPath: AgentsService.WORKSPACE_CONTEXT_CONTAINER_PATH,
-              readOnly: true,
-            },
-          ],
-          ports: [
-            {
-              containerPort: 6080,
-              hostPort: virtualWorkspaceHostPort,
-            },
-          ],
-        });
-
-        virtualWorkspace = {
-          containerId: virtualWorkspaceContainerId,
-          hostPort: virtualWorkspaceHostPort,
-          password: virtualWorkspacePassword,
-        };
-      }
-
-      try {
-        let networkId: string | undefined;
-
-        if (createAgentDto.createVirtualWorkspace && virtualWorkspace) {
-          networkId = await this.dockerService.createNetwork({
-            name: uuidv4(),
-            containerIds: [
-              containerId,
-              ...(virtualWorkspace ? [virtualWorkspace.containerId] : []),
-              ...(sshConnection ? [sshConnection.containerId] : []),
-            ],
-          });
-        }
-
-        // Create the agent entity
-        const agent = await this.agentsRepository.create({
-          name: createAgentDto.name,
-          description: createAgentDto.description,
-          hashedPassword,
-          containerId: containerId,
-          volumePath: agentVolumePath,
-          agentType: createAgentDto.agentType || 'opencode',
-          containerType: createAgentDto.containerType || ContainerType.GENERIC,
-          opencodeServerPassword,
-          ...(createAgentDto.createVirtualWorkspace &&
-            virtualWorkspace && {
-              vncContainerId: virtualWorkspace.containerId,
-              vncHostPort: virtualWorkspace.hostPort,
-              vncNetworkId: networkId,
-              vncPassword: virtualWorkspace.password,
-            }),
-          ...(createAgentDto.createSshConnection &&
-            sshConnection && {
-              sshContainerId: sshConnection.containerId,
-              sshHostPort: sshConnection.hostPort,
-              sshPassword: sshConnection.password,
-            }),
-          gitRepositoryUrl:
-            gitRepositorySetupMode === GitRepositorySetupMode.CLONE ? createAgentDto.gitRepositoryUrl : undefined,
-          gitRepositorySetupMode:
-            gitRepositorySetupMode === GitRepositorySetupMode.EMPTY
-              ? GitRepositorySetupMode.EMPTY
-              : createAgentDto.gitRepositorySetupMode,
-        });
-
-        await this.openCodeClientFactory.waitForHealthy(agent.id, containerId, {
-          password: opencodeServerPassword,
-        });
-
-        // Full three-layer OpenCode config + secrets are applied by the controller
-        // via durable sync targets after create/start/restart (not agent-only defaults).
-
-        await this.agentChatSessionsService.ensurePrimarySession(agent.id);
-
-        void this.workspaceInotifySupervisor?.onWorkspaceReady(agent.id, basePath).catch((error: unknown) => {
-          this.logger.warn(`Failed to start workspace watcher for agent ${agent.id}: ${(error as Error).message}`);
-        });
-
-        // Create deployment configuration if provided
-        if (createAgentDto.deploymentConfiguration && this.deploymentsService) {
-          try {
-            await this.deploymentsService.upsertConfiguration(agent.id, {
-              providerType: createAgentDto.deploymentConfiguration.providerType,
-              repositoryId: createAgentDto.deploymentConfiguration.repositoryId,
-              defaultBranch: createAgentDto.deploymentConfiguration.defaultBranch,
-              workflowId: createAgentDto.deploymentConfiguration.workflowId,
-              providerToken: createAgentDto.deploymentConfiguration.providerToken,
-              providerBaseUrl: createAgentDto.deploymentConfiguration.providerBaseUrl,
-            });
-          } catch (error) {
-            this.logger.warn(
-              `Failed to create deployment configuration for agent ${agent.id}: ${(error as Error).message}`,
-            );
-            // Don't fail agent creation if deployment config fails
-          }
-        }
-
-        return {
-          ...(await this.mapToResponseDto(agent)),
-          password: generatedPassword,
-        };
-      } catch (error) {
-        // Clean up the container if any step after creation fails
+      // Create deployment configuration if provided
+      if (createAgentDto.deploymentConfiguration && this.deploymentsService) {
         try {
-          if (createAgentDto.createVirtualWorkspace && virtualWorkspace) {
-            await this.dockerService.deleteContainer(virtualWorkspace.containerId);
-          }
-
-          if (createAgentDto.createSshConnection && sshConnection) {
-            await this.dockerService.deleteContainer(sshConnection.containerId);
-          }
-        } catch (cleanupError) {
-          // Log cleanup error but don't mask the original error
-          // The original error is more important for debugging
-          const err = cleanupError as { message?: string; stack?: string };
-
-          this.logger.error(
-            `Failed to clean up container ${containerId} after agent creation failure: ${err.message}`,
-            err.stack,
+          await this.deploymentsService.upsertConfiguration(agent.id, {
+            providerType: createAgentDto.deploymentConfiguration.providerType,
+            repositoryId: createAgentDto.deploymentConfiguration.repositoryId,
+            defaultBranch: createAgentDto.deploymentConfiguration.defaultBranch,
+            workflowId: createAgentDto.deploymentConfiguration.workflowId,
+            providerToken: createAgentDto.deploymentConfiguration.providerToken,
+            providerBaseUrl: createAgentDto.deploymentConfiguration.providerBaseUrl,
+          });
+        } catch (error) {
+          this.logger.warn(
+            `Failed to create deployment configuration for agent ${agent.id}: ${(error as Error).message}`,
           );
+          // Don't fail agent creation if deployment config fails
         }
-
-        // Re-throw the original error
-        throw error;
       }
+
+      return {
+        ...(await this.mapToResponseDto(agent)),
+        password: generatedPassword,
+      };
     } catch (error) {
       // Clean up the container if any step after creation fails
       try {
@@ -806,35 +656,11 @@ export class AgentsService implements OnApplicationBootstrap {
       }
     }
 
-    if (agent.sshContainerId) {
-      try {
-        await this.dockerService.deleteContainer(agent.sshContainerId);
-      } catch (error) {
-        this.logger.error(`Failed to delete container ${agent.sshContainerId}: ${error}`);
-      }
-    }
-
-    if (agent.vncContainerId) {
-      try {
-        await this.dockerService.deleteContainer(agent.vncContainerId);
-      } catch (error) {
-        this.logger.error(`Failed to delete container ${agent.vncContainerId}: ${error}`);
-      }
-    }
-
-    if (agent.vncNetworkId) {
-      try {
-        await this.dockerService.deleteNetwork(agent.vncNetworkId);
-      } catch (error) {
-        this.logger.error(`Failed to delete network ${agent.vncNetworkId}: ${error}`);
-      }
-    }
-
     await this.agentsRepository.delete(id);
   }
 
   /**
-   * Start all Docker containers for an agent (main, VNC, SSH).
+   * Start the agent Docker container.
    * @param id - The UUID of the agent
    * @returns The agent response DTO
    * @throws NotFoundException if agent is not found
@@ -856,30 +682,6 @@ export class AgentsService implements OnApplicationBootstrap {
       }
     }
 
-    if (agent.vncContainerId) {
-      try {
-        await this.dockerService.startContainer(agent.vncContainerId);
-      } catch (error: unknown) {
-        const err = error as { message?: string; stack?: string };
-
-        this.logger.warn(
-          `Failed to start VNC container ${agent.vncContainerId} for agent ${agent.name}: ${err.message}`,
-        );
-      }
-    }
-
-    if (agent.sshContainerId) {
-      try {
-        await this.dockerService.startContainer(agent.sshContainerId);
-      } catch (error: unknown) {
-        const err = error as { message?: string; stack?: string };
-
-        this.logger.warn(
-          `Failed to start SSH container ${agent.sshContainerId} for agent ${agent.name}: ${err.message}`,
-        );
-      }
-    }
-
     if (agent.containerId) {
       try {
         await this.openCodeClientFactory.waitForHealthy(agent.id, agent.containerId);
@@ -894,7 +696,7 @@ export class AgentsService implements OnApplicationBootstrap {
   }
 
   /**
-   * Stop all Docker containers for an agent (main, VNC, SSH).
+   * Stop the agent Docker container.
    * @param id - The UUID of the agent
    * @returns The agent response DTO
    * @throws NotFoundException if agent is not found
@@ -916,35 +718,11 @@ export class AgentsService implements OnApplicationBootstrap {
       }
     }
 
-    if (agent.vncContainerId) {
-      try {
-        await this.dockerService.stopContainer(agent.vncContainerId);
-      } catch (error: unknown) {
-        const err = error as { message?: string; stack?: string };
-
-        this.logger.warn(
-          `Failed to stop VNC container ${agent.vncContainerId} for agent ${agent.name}: ${err.message}`,
-        );
-      }
-    }
-
-    if (agent.sshContainerId) {
-      try {
-        await this.dockerService.stopContainer(agent.sshContainerId);
-      } catch (error: unknown) {
-        const err = error as { message?: string; stack?: string };
-
-        this.logger.warn(
-          `Failed to stop SSH container ${agent.sshContainerId} for agent ${agent.name}: ${err.message}`,
-        );
-      }
-    }
-
     return await this.mapToResponseDto(agent);
   }
 
   /**
-   * Restart all Docker containers for an agent (main, VNC, SSH).
+   * Restart the agent Docker container.
    * @param id - The UUID of the agent
    * @returns The agent response DTO
    * @throws NotFoundException if agent is not found
@@ -963,30 +741,6 @@ export class AgentsService implements OnApplicationBootstrap {
           err.stack,
         );
         throw error;
-      }
-    }
-
-    if (agent.vncContainerId) {
-      try {
-        await this.dockerService.restartContainer(agent.vncContainerId);
-      } catch (error: unknown) {
-        const err = error as { message?: string; stack?: string };
-
-        this.logger.warn(
-          `Failed to restart VNC container ${agent.vncContainerId} for agent ${agent.name}: ${err.message}`,
-        );
-      }
-    }
-
-    if (agent.sshContainerId) {
-      try {
-        await this.dockerService.restartContainer(agent.sshContainerId);
-      } catch (error: unknown) {
-        const err = error as { message?: string; stack?: string };
-
-        this.logger.warn(
-          `Failed to restart SSH container ${agent.sshContainerId} for agent ${agent.name}: ${err.message}`,
-        );
       }
     }
 
@@ -1087,18 +841,6 @@ export class AgentsService implements OnApplicationBootstrap {
       agentType: agent.agentType,
       containerType: agent.containerType,
       capabilities,
-      vnc: agent.vncHostPort
-        ? {
-            port: agent.vncHostPort,
-            password: agent.vncPassword,
-          }
-        : undefined,
-      ssh: agent.sshHostPort
-        ? {
-            port: agent.sshHostPort,
-            password: agent.sshPassword,
-          }
-        : undefined,
       git: this.mapAgentGit(agent),
       chats,
       primaryChatId: primary.id,
@@ -1108,41 +850,7 @@ export class AgentsService implements OnApplicationBootstrap {
   }
 
   /**
-   * Generate a random public port from a range of ports.
-   * @param range - The range of ports to generate a random port from
-   * @returns A random public port
-   */
-  private async generateRandomVNCPort(): Promise<number> {
-    const range = process.env.VNC_SERVER_PUBLIC_PORTS || '49152-57343';
-    const [start, end] = range.split('-').map(Number);
-    const prosedPort = Math.floor(Math.random() * (end - start + 1)) + start;
-
-    if (await this.agentsRepository.findPortInUse(prosedPort)) {
-      return await this.generateRandomVNCPort();
-    }
-
-    return prosedPort;
-  }
-
-  /**
-   * Generate a random public port from a range of ports.
-   * @param range - The range of ports to generate a random port from
-   * @returns A random public port
-   */
-  private async generateRandomSSHPort(): Promise<number> {
-    const range = process.env.SSH_SERVER_PUBLIC_PORTS || '57344-65535';
-    const [start, end] = range.split('-').map(Number);
-    const prosedPort = Math.floor(Math.random() * (end - start + 1)) + start;
-
-    if (await this.agentsRepository.findPortInUse(prosedPort)) {
-      return await this.generateRandomSSHPort();
-    }
-
-    return prosedPort;
-  }
-
-  /**
-   * Restart all Docker containers associated with agents (agent containers and VNC containers).
+   * Restart all Docker containers associated with agents.
    * This ensures volume mounts are set correctly based on the current context.
    * Called automatically on service startup after the module has been initialized.
    */
@@ -1164,7 +872,7 @@ export class AgentsService implements OnApplicationBootstrap {
       // Track containers we've already restarted to avoid duplicates
       const restartedContainers = new Set<string>();
 
-      // Restart all agent containers and VNC containers
+      // Restart all agent containers
       for (const agent of agents) {
         // Restart agent container if it exists
         if (agent.containerId && !restartedContainers.has(agent.containerId)) {
@@ -1178,42 +886,6 @@ export class AgentsService implements OnApplicationBootstrap {
 
             this.logger.error(
               `Failed to restart agent container ${agent.containerId} for agent ${agent.name}: ${err.message}`,
-              err.stack,
-            );
-            // Continue with other containers even if one fails
-          }
-        }
-
-        // Restart VNC container if it exists
-        if (agent.vncContainerId && !restartedContainers.has(agent.vncContainerId)) {
-          try {
-            this.logger.log(`Restarting VNC container ${agent.vncContainerId} for agent ${agent.name}`);
-            await this.dockerService.restartContainer(agent.vncContainerId);
-            restartedContainers.add(agent.vncContainerId);
-            this.logger.log(`✅ Successfully restarted VNC container ${agent.vncContainerId}`);
-          } catch (error: unknown) {
-            const err = error as { message?: string; stack?: string };
-
-            this.logger.error(
-              `Failed to restart VNC container ${agent.vncContainerId} for agent ${agent.name}: ${err.message}`,
-              err.stack,
-            );
-            // Continue with other containers even if one fails
-          }
-        }
-
-        // Restart SSH container if it exists
-        if (agent.sshContainerId && !restartedContainers.has(agent.sshContainerId)) {
-          try {
-            this.logger.log(`Restarting SSH container ${agent.sshContainerId} for agent ${agent.name}`);
-            await this.dockerService.restartContainer(agent.sshContainerId);
-            restartedContainers.add(agent.sshContainerId);
-            this.logger.log(`✅ Successfully restarted SSH container ${agent.sshContainerId}`);
-          } catch (error: unknown) {
-            const err = error as { message?: string; stack?: string };
-
-            this.logger.error(
-              `Failed to restart SSH container ${agent.sshContainerId} for agent ${agent.name}: ${err.message}`,
               err.stack,
             );
             // Continue with other containers even if one fails
@@ -1323,8 +995,30 @@ export class AgentsService implements OnApplicationBootstrap {
    * This fires after all modules are initialized, migrations have run, and the HTTP server is ready.
    * Restarts all Docker containers to ensure volume mounts are set correctly.
    */
+  /**
+   * Remove leftover SSH/VNC sidecar containers from previous releases.
+   * Matches by image name so cleanup still works after DB columns are dropped.
+   */
+  private async removeLegacySidecarContainers(): Promise<void> {
+    try {
+      const removed = await this.dockerService.removeContainersByImageNameSubstring([
+        'agenstra-manager-vnc',
+        'agenstra-manager-ssh',
+      ]);
+
+      if (removed > 0) {
+        this.logger.log(`Removed ${removed} legacy SSH/VNC sidecar container(s)`);
+      }
+    } catch (error: unknown) {
+      const err = error as { message?: string; stack?: string };
+
+      this.logger.warn(`Failed to remove legacy SSH/VNC sidecar containers: ${err.message}`, err.stack);
+    }
+  }
+
   async onApplicationBootstrap(): Promise<void> {
-    this.logger.log('🚀 Application fully bootstrapped, restarting containers...');
+    this.logger.log('🚀 Application fully bootstrapped, cleaning up legacy sidecars and restarting containers...');
+    await this.removeLegacySidecarContainers();
     await this.restartAllContainers();
   }
 }

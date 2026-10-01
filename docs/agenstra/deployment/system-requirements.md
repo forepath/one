@@ -7,7 +7,7 @@ Hardware and software requirements for running Agenstra components in developmen
 Agenstra has two backend stacks and the agent console frontend:
 
 1. **Agent controller** control plane with BullMQ roles (`api`, `worker`, `scheduler`), PostgreSQL with **pgvector**, Redis, and **OpenSearch**.
-2. **Agent manager** per-workspace runtime on a **Docker host** that spawns agent workload containers (worker, VNC, SSH).
+2. **Agent manager** per-workspace runtime on a **Docker host** that spawns agent workload containers (worker).
 
 The console talks only to the controller. The controller proxies agent operations to one or more manager instances.
 
@@ -31,7 +31,6 @@ graph TB
         M_PG[(PostgreSQL)]
         DOCKER[Docker daemon]
         AW[Agent worker]
-        VNC[VNC desktop]
     end
 
     FE --> C_API
@@ -44,10 +43,9 @@ graph TB
     M_API --> M_PG
     M_API --> DOCKER
     DOCKER --> AW
-    DOCKER --> VNC
 ```
 
-Agent **worker** and **VNC** containers dominate manager-host sizing. The manager API itself is modest; plan the host for concurrent agents.
+Agent **worker** containers dominate manager-host sizing. The manager API itself is modest; plan the host for concurrent agents.
 
 ## Platform Prerequisites
 
@@ -59,7 +57,7 @@ Agent **worker** and **VNC** containers dominate manager-host sizing. The manage
 | **Node.js** (local Nx dev only) | 24.14.1                                                        | Match container `NODE_VERSION`                                                        |
 | **Docker socket**               | Required on manager (and controller when provisioning locally) | Restrict permissions; see [Container image security](../security/container-images.md) |
 
-Container images use **Node.js 24.14.1** on **debian:trixie-slim** (VNC image uses full **debian:trixie** for the desktop stack). API images run as `agenstra` (UID **10001**). Frontend servers run as `node` (UID **1000**).
+Container images use **Node.js 24.14.1** on **debian:trixie-slim**. API images run as `agenstra` (UID **10001**). Frontend servers run as `node` (UID **1000**).
 
 Host path **`/opt/agents`** must exist and be writable by UID **10001** on manager hosts (or rely on entrypoint `chown` after bind mount).
 
@@ -151,13 +149,11 @@ Align image **`DOCKER_GID`** with the host `docker` group GID at build time.
 
 ### Per-Agent Workload Containers
 
-Spawned dynamically per agent. Typical agents use a **worker** container; VNC is optional.
+Spawned dynamically per agent. Typical agents use a **worker** container.
 
 | Container image           | vCPU (per agent) | Memory limit (per agent) | Disk (per agent)                               | Notes                                                            |
 | ------------------------- | ---------------- | ------------------------ | ---------------------------------------------- | ---------------------------------------------------------------- |
 | `agenstra-manager-worker` | 2                | 2-4 GiB                  | 10-50 GiB workspace under `/opt/agents/{uuid}` | Includes OpenCode, Nx, Git; builds and `npm install` spike usage |
-| `agenstra-manager-vnc`    | 2                | 2-4 GiB                  | 5 GiB                                          | XFCE4 + Chromium at default **1920×1080**                        |
-| `agenstra-manager-ssh`    | 0.25             | 256-512 MiB              | -                                              | SSH sidecar                                                      |
 
 Idle agent workers still consume baseline memory; stop agents when not in use.
 
@@ -165,13 +161,13 @@ Idle agent workers still consume baseline memory; stop agents when not in use.
 
 Add manager API, manager Postgres, and Docker overhead (~1-2 GiB) to per-agent totals.
 
-| Agents (worker + VNC each) | Host vCPU | Host memory | Host disk |
-| -------------------------- | --------- | ----------- | --------- |
-| 1                          | 4-6       | 12-16 GiB   | 50 GiB    |
-| 3                          | 8-12      | 24-32 GiB   | 120 GiB   |
-| 5                          | 12-16     | 32-48 GiB   | 200 GiB   |
+| Agents (worker each) | Host vCPU | Host memory | Host disk |
+| -------------------- | --------- | ----------- | --------- |
+| 1                    | 4-6       | 12-16 GiB   | 50 GiB    |
+| 3                    | 8-12      | 24-32 GiB   | 120 GiB   |
+| 5                    | 12-16     | 32-48 GiB   | 200 GiB   |
 
-For production manager-only hosts, cloud sizes such as Hetzner **`cx21`** (2 vCPU, 4 GiB) fit **API + Postgres only**; add agents only on larger instances (for example **`cx31`** or above per active agent with VNC). See **[Server Provisioning](../features/server-provisioning.md)** for provider size labels.
+For production manager-only hosts, cloud sizes such as Hetzner **`cx21`** (2 vCPU, 4 GiB) fit **API + Postgres only**; add agents only on larger instances (for example **`cx31`** or above per active agent). See **[Server Provisioning](../features/server-provisioning.md)** for provider size labels.
 
 ## Frontend Agent Console
 
@@ -185,7 +181,7 @@ Monaco Editor and chat run in the **browser**. Recommend **4 GiB+** client RAM f
 
 ## Mixed and Local Development Host
 
-Full local stack: controller Compose (API, worker, scheduler, Postgres, Redis), manager Compose (API, Postgres, Docker socket), frontend console, and **one** agent with VNC:
+Full local stack: controller Compose (API, worker, scheduler, Postgres, Redis), manager Compose (API, Postgres, Docker socket), frontend console, and **one** agent:
 
 | Resource | Minimum     | Comfortable  |
 | -------- | ----------- | ------------ |
@@ -210,7 +206,7 @@ Use **`QUEUE_ROLE=all`** on the controller only for lightweight API testing; pre
 
 Managers run on separately provisioned hosts per client/workspace.
 
-### Single manager host with two active agents (worker + VNC)
+### Single manager host with two active agents
 
 | Service                | vCPU      | Memory        |
 | ---------------------- | --------- | ------------- |

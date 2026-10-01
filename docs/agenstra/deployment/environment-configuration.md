@@ -167,14 +167,10 @@ Optional runtime extensions for provisioning and context import. See [Dynamic pr
 ### OpenCode Agent Configuration
 
 - `OPENCODE_AGENT_DOCKER_IMAGE` - Primary worker image (default: `ghcr.io/forepath/agenstra-manager-worker:latest`)
-- `OPENCODE_AGENT_VIRTUAL_WORKSPACE_DOCKER_IMAGE` - VNC image (default: `ghcr.io/forepath/agenstra-manager-vnc:latest`)
-- `OPENCODE_AGENT_SSH_CONNECTION_DOCKER_IMAGE` - SSH sidecar image (default: `ghcr.io/forepath/agenstra-manager-ssh:latest`)
 
 ### Agent Client Protocol (ACP)
 
 - `ACP_AUTO_APPROVE` - When not `false`, auto-select the first option on `session/request_permission` (default: enabled for headless agents). See [Agent Client Protocol](../ai-agents/agent-client-protocol.md).
-
-Sidecar containers require runtime passwords where applicable: **`VNC_PASSWORD`** and **`SSH_PASSWORD`** (set by the manager when creating agents; not image defaults). See **[Container image security](../security/container-images.md)**.
 
 ### API image build arguments (manager / controller)
 

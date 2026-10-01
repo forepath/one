@@ -398,7 +398,7 @@
                         @if (agent.description) {
                           <div class="text-truncate mb-1">{{ agent.description }}</div>
                         }
-                        @if (agent.vnc || agent.ssh || agent.git?.repositoryUrl || agent.containerType) {
+                        @if (agent.git?.repositoryUrl || agent.containerType) {
                           <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
                             <span class="me-2">
                               <i class="bi bi-box me-1" aria-hidden="true"></i
@@ -408,18 +408,6 @@
                               @if (getAgentGitRepositoryLabel(agent, activeClient); as repo) {
                                 <span class="me-2"> <i class="bi bi-git me-1" aria-hidden="true"></i>{{ repo }} </span>
                               }
-                            }
-                            @if (agent.vnc?.port) {
-                              <span class="me-2">
-                                <i class="bi bi-window-desktop me-1" aria-hidden="true"></i>
-                                <ng-container i18n="@@featureChat-virtualDesktop">Virtual Desktop</ng-container>
-                              </span>
-                            }
-                            @if (agent.ssh?.port) {
-                              <span class="me-2">
-                                <i class="bi bi-terminal me-1" aria-hidden="true"></i>
-                                <ng-container i18n="@@featureChat-sshAccess">SSH Access</ng-container>
-                              </span>
                             }
                           </div>
                         }
@@ -791,21 +779,6 @@
             }
             @if (activeClient$ | async; as activeClient) {
               @if (selectedAgent$ | async; as selectedAgent) {
-                @if (selectedAgent.vnc?.port && (activeClient$ | async)) {
-                  <fpc-button variant="primary" size="sm" iconOnly (clicked)="onToggleVNC(activeClient, selectedAgent)">
-                    <i class="bi bi-window-desktop" aria-hidden="true"></i>
-                  </fpc-button>
-                }
-                @if (selectedAgent.ssh?.port) {
-                  <fpc-button
-                    size="sm"
-                    iconOnly
-                    [variant]="showSSHCommand() ? 'primary' : 'dark'"
-                    (clicked)="onToggleSSHCommand()"
-                  >
-                    <i class="bi bi-terminal" aria-hidden="true"></i>
-                  </fpc-button>
-                }
                 <fpc-button
                   size="sm"
                   iconOnly
@@ -818,59 +791,6 @@
               }
             }
           </div>
-          @if (showSSHCommand()) {
-            @if (selectedAgent$ | async; as selectedAgent) {
-              @if (activeClient$ | async; as activeClient) {
-                @if (activeClient?.endpoint && selectedAgent.ssh?.port) {
-                  <div class="d-flex justify-content-between mb-0 mt-3 flex-column gap-2">
-                    <div class="border bg-body rounded small p-3 fw-normal text-wrap text-start d-block w-100">
-                      <p class="d-block mb-2 fw-bold" i18n="@@featureChat-sshCommand">SSH Command</p>
-                      <div class="code-block border">
-                        {{
-                          buildSSHCommand(
-                            activeClient?.endpoint || '',
-                            selectedAgent.ssh?.port || 22,
-                            undefined,
-                            selectedAgent.ssh?.password
-                          )
-                        }}
-                      </div>
-                    </div>
-                    <div class="border bg-body rounded small p-3 fw-normal text-wrap text-start d-block w-100">
-                      <p class="d-block mb-2 fw-bold" i18n="@@featureChat-remoteWorkspaceConfig">
-                        Remote Workspace Configuration
-                      </p>
-                      If you want to connect to this workspace with an editor like Cursor or VS Code via SSH, add the
-                      following lines to your
-                      <code class="text-primary d-inline-block border border-primary rounded px-1">~/.ssh/config</code>
-                      file:
-                      <div class="code-block border mb-3">
-                        Host remote-workspace<br />
-                        &nbsp;&nbsp;&nbsp;&nbsp;HostName {{ getHostname(activeClient?.endpoint || '', false) }}<br />
-                        &nbsp;&nbsp;&nbsp;&nbsp;User agenstra<br />
-                        &nbsp;&nbsp;&nbsp;&nbsp;Port {{ selectedAgent.ssh?.port }}<br />
-                        &nbsp;&nbsp;&nbsp;&nbsp;StrictHostKeyChecking no
-                      </div>
-                      <div class="alert alert-primary mb-0 d-flex align-items-center gap-2">
-                        <i class="bi bi-info-circle" aria-hidden="true"></i>
-                        <span
-                          >The password for the
-                          <code class="text-primary d-inline-block border border-primary rounded px-1">agenstra</code>
-                          user is
-                          <code class="text-primary d-inline-block border border-primary rounded px-1">{{
-                            selectedAgent.ssh?.password
-                          }}</code
-                          >. The repository path is
-                          <code class="text-primary d-inline-block border border-primary rounded px-1">/app</code
-                          >.</span
-                        >
-                      </div>
-                    </div>
-                  </div>
-                }
-              }
-            }
-          }
         </fpc-page-header>
 
         <!-- Chat messages -->
@@ -2195,41 +2115,6 @@
         >
       </fpc-form-field>
     }
-    <div class="p-3 border border-warning rounded">
-      <p class="fw-bold mb-2 text-warning" i18n="@@featureChat-dangerZoneLabel">Danger Zone</p>
-      <p class="small text-warning mb-3" i18n="@@featureChat-dangerZoneDescription">
-        These features partially ignore the internal permissions and may allow users to modify the agent container files
-        without any restrictions.
-      </p>
-      <div class="mb-3">
-        <fpc-form-check
-          checkId="createVirtualWorkspace"
-          name="createVirtualWorkspace"
-          [ngModel]="!!newAgent().createVirtualWorkspace"
-          (ngModelChange)="updateAgentField('createVirtualWorkspace', $event)"
-          [disabled]="(agentsCreating$ | async) === true"
-          i18n-label="@@featureChat-createVirtualWorkspaceLabel"
-          label="Create Virtual Workspace (VNC)"
-        />
-        <small class="form-text text-muted d-block mt-1" i18n="@@featureChat-createVirtualWorkspaceHint"
-          >Enable VNC access to the environment's virtual workspace. Defaults to disabled.</small
-        >
-      </div>
-      <div>
-        <fpc-form-check
-          checkId="createSshConnection"
-          name="createSshConnection"
-          [ngModel]="!!newAgent().createSshConnection"
-          (ngModelChange)="updateAgentField('createSshConnection', $event)"
-          [disabled]="(agentsCreating$ | async) === true"
-          i18n-label="@@featureChat-createSshConnectionLabel"
-          label="Create SSH Connection"
-        />
-        <small class="form-text text-muted d-block mt-1" i18n="@@featureChat-createSshConnectionHint"
-          >Enable SSH access to the environment container. Defaults to disabled.</small
-        >
-      </div>
-    </div>
     <div *fpcModalFooter>
       <fpc-button
         variant="primary"

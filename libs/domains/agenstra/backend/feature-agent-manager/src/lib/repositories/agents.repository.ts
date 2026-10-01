@@ -64,25 +64,14 @@ export class AgentsRepository {
   }
 
   /**
-   * Find all agents that have container IDs (agent containers and VNC containers).
+   * Find all agents that have a worker container ID.
    * Used for restarting containers on service startup.
-   * @returns Array of agent entities with containerId or vncContainerId
+   * @returns Array of agent entities with containerId
    */
   async findAllWithContainers(): Promise<AgentEntity[]> {
     return await this.repository.find({
-      where: [{ containerId: Not(IsNull()) }, { vncContainerId: Not(IsNull()) }, { sshContainerId: Not(IsNull()) }],
+      where: [{ containerId: Not(IsNull()) }],
     });
-  }
-
-  /**
-   * Check if a port is in use by an agent.
-   * @param port - The port to check
-   * @returns True if the port is in use, false otherwise
-   */
-  async findPortInUse(port: number): Promise<boolean> {
-    const agent = await this.repository.findOne({ where: [{ vncHostPort: port }, { sshHostPort: port }] });
-
-    return agent !== null;
   }
 
   /**

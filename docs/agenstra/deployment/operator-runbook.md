@@ -33,10 +33,10 @@ Map your intended profile to **[System Requirements](./system-requirements.md)**
 ### Manager host and agents
 
 - [ ] Manager API + Postgres capacity reserved separately from agent workloads
-- [ ] Per concurrent agent (worker + VNC): plan ~4 vCPU and 4-8 GiB plus disk under `/opt/agents/{uuid}`
+- [ ] Per concurrent agent (worker): plan ~2-4 vCPU and 2-4 GiB plus disk under `/opt/agents/{uuid}`
 - [ ] Host totals match expected concurrent agents (see manager host totals table in system requirements)
 - [ ] Image **`DOCKER_GID`** matches host `docker` group GID at build time
-- [ ] Manager **API, worker, VNC, and SSH** images planned on the **same release tag**
+- [ ] Manager **API and worker** images planned on the **same release tag**
 
 ### Frontend and network
 
@@ -59,7 +59,7 @@ Run after Compose or orchestrated bring-up. Prefer staging before production.
 
 ### Smoke checks
 
-- [ ] Create or open a client/workspace and spawn one agent worker (no VNC if capacity is tight)
+- [ ] Create or open a client/workspace and spawn one agent worker
 - [ ] Confirm agent workspace path under `/opt/agents` is writable
 - [ ] Confirm WebSocket namespaces used by the console stay connected under normal load
 - [ ] Confirm BullMQ jobs appear for controller background work when triggered

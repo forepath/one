@@ -148,7 +148,7 @@ paths:
     post:
       summary: Start agent environment
       operationId: startAgent
-      description: Start all Docker containers for the agent (main, VNC, SSH).
+      description: Start the agent Docker container.
       parameters:
         - in: path
           name: id
@@ -169,7 +169,7 @@ paths:
     post:
       summary: Stop agent environment
       operationId: stopAgent
-      description: Stop all Docker containers for the agent (main, VNC, SSH).
+      description: Stop the agent Docker container.
       parameters:
         - in: path
           name: id
@@ -190,7 +190,7 @@ paths:
     post:
       summary: Restart agent environment
       operationId: restartAgent
-      description: Restart all Docker containers for the agent (main, VNC, SSH).
+      description: Restart the agent Docker container.
       parameters:
         - in: path
           name: id
@@ -2237,14 +2237,6 @@ components:
         gitRepositoryUrl:
           type: [string, 'null']
           description: Git repository URL to clone when creating the agent (required for clone mode unless GIT_REPOSITORY_URL is set on the instance)
-        createVirtualWorkspace:
-          type: boolean
-          default: true
-          description: Whether to create a VNC virtual workspace container (defaults to true)
-        createSshConnection:
-          type: boolean
-          default: true
-          description: Whether to create an SSH connection container (defaults to true)
         deploymentConfiguration:
           type: object
           description: CI/CD deployment configuration (optional). If provided, a deployment configuration will be created for this agent.

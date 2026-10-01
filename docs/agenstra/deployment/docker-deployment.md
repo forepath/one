@@ -222,12 +222,12 @@ This allows the container to communicate with the host Docker daemon. Restrict w
 
 First-party images follow a common hardening baseline:
 
-- **Non-root**: API, worker, VNC, and SSH images run as `agenstra` (UID/GID **10001** by default), not root. Frontend server images run as `node` (**1000**). Billing API uses the same `agenstra` pattern.
-- **Secrets at runtime**: Do not rely on default `ENV` values in images for databases, Keycloak, or VNC/SSH passwords; set variables in Compose or your orchestrator.
+- **Non-root**: API and worker images run as `agenstra` (UID/GID **10001** by default), not root. Frontend server images run as `node` (**1000**). Billing API uses the same `agenstra` pattern.
+- **Secrets at runtime**: Do not rely on default `ENV` values in images for databases, Keycloak, ; set variables in Compose or your orchestrator.
 - **Restricted `sudo`**: `agenstra` is not in the Debian `sudo` group. Only explicit binaries in `/etc/sudoers.d/agenstra` may run via passwordless `sudo` (workspace `chown`, SSH `sshd`/`chpasswd`, API socket GID sync). See **[Container image security](../security/container-images.md#restricted-sudo)**.
 - **Agent volumes**: Per-agent data under host `/opt/agents/{uuid}`; shared read-only context at `/opt/agents` → `/opt/workspace`. Provision `/opt/agents` with ownership compatible with UID **10001** where possible.
 - **Docker socket GID**: Manager/controller API images declare `ARG DOCKER_GID=995` and align the in-container `docker` group at startup with the mounted socket’s GID. If your host `docker` group differs, rebuild with `--build-arg DOCKER_GID=$(stat -c '%g' /var/run/docker.sock)` or ensure the default matches your host.
-- **Coordinated upgrades**: Upgrade manager API, worker, VNC, and SSH images together on the same release tag when user or mount paths change.
+- **Coordinated upgrades**: Upgrade manager API and worker images together on the same release tag when user or mount paths change.
 
 See **[Container image security](../security/container-images.md)** and **[Operational hardening (Container images)](../security/operational-hardening.md#container-images-docker)**.
 

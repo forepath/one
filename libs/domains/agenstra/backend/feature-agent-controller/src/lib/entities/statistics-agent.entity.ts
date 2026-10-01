@@ -13,7 +13,7 @@ import { StatisticsClientEntity } from './statistics-client.entity';
 
 /**
  * Shadow table for agents. Stores references to original agents for statistics
- * correlation. Does not contain secrets (password, vnc_password, ssh_password).
+ * correlation. Does not contain secrets (password).
  * Created on agent create via proxy or on first chat from unknown agent.
  */
 @Entity('statistics_agents')

@@ -16,14 +16,6 @@ export interface AgentResponseDto {
   agentType: string;
   containerType: ContainerType;
   capabilities?: AgentTypeCapabilities;
-  vnc?: {
-    port: number;
-    password: string;
-  };
-  ssh?: {
-    port: number;
-    password: string;
-  };
   git?: {
     repositoryUrl?: string;
     setupMode: 'clone' | 'empty';
@@ -43,8 +35,6 @@ export interface CreateAgentDto {
   containerType?: ContainerType;
   gitRepositorySetupMode?: 'clone' | 'empty';
   gitRepositoryUrl?: string;
-  createVirtualWorkspace?: boolean;
-  createSshConnection?: boolean;
 }
 
 export interface UpdateAgentDto {

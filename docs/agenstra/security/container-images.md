@@ -8,7 +8,7 @@ For image build targets and registry names, see **[Backend Agent Manager](../app
 
 | Image family                                             | User       | Default UID/GID | Notes                                   |
 | -------------------------------------------------------- | ---------- | --------------- | --------------------------------------- |
-| Manager/controller **API**, **worker**, **VNC**, **SSH** | `agenstra` | **10001**       | `ARG APP_UID` / `APP_GID` at build time |
+| Manager/controller **API**, **worker**                   | `agenstra` | **10001**       | `ARG APP_UID` / `APP_GID` at build time |
 | Frontend **server** images (agent console, portal, docs) | `node`     | **1000**        | Alpine-based SSR images                 |
 
 Processes do **not** run as root after container start. The optional SSH image still starts **`sshd`** via a single allowed `sudo` invocation in the entrypoint.
@@ -17,11 +17,10 @@ Processes do **not** run as root after container start. The optional SSH image s
 
 When the agent manager creates an agent, it bind-mounts host paths into child containers (`AgentsService`):
 
-| Host path            | Container path                      | Access        | Used by                              |
-| -------------------- | ----------------------------------- | ------------- | ------------------------------------ |
-| `/opt/agents/{uuid}` | Provider **`basePath`** (see below) | Read/write    | Primary worker, optional SSH sidecar |
-| `/opt/agents/{uuid}` | `/home/agenstra/environment`        | Read/write    | VNC virtual workspace only           |
-| `/opt/agents`        | `/opt/workspace`                    | **Read-only** | All of the above                     |
+| Host path            | Container path                      | Access        | Used by          |
+| -------------------- | ----------------------------------- | ------------- | ---------------- |
+| `/opt/agents/{uuid}` | Provider **`basePath`** (see below) | Read/write    | Primary worker   |
+| `/opt/agents`        | `/opt/workspace`                    | **Read-only** | All of the above |
 
 **Provider `basePath`:**
 
@@ -29,7 +28,7 @@ When the agent manager creates an agent, it bind-mounts host paths into child co
 | ---------- | ------------------------- | ---------- | ---------------- |
 | `opencode` | `agenstra-manager-worker` | `/app`     | `/app`           |
 
-The same host directory is shared across the worker, SSH, and VNC containers for one agent; only the **in-container mount point** differs (for example worker `/app` vs VNC `/home/agenstra/environment`).
+Each agent worker mounts its host directory at the provider **`basePath`** (typically `/app`).
 
 ### Host directory ownership
 
@@ -46,8 +45,6 @@ Entrypoint scripts live under **`/usr/local/bin/docker-entrypoint.sh`**, not und
 | Image                               | Allowed commands (passwordless only)                            | Purpose                                                                                        |
 | ----------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | **worker**                          | `/usr/bin/chown`                                                | Fix ownership on `/app` bind mount at startup                                                  |
-| **VNC**                             | `/usr/bin/chown`                                                | Fix ownership on `/home/agenstra/environment` bind mount                                       |
-| **SSH**                             | `/usr/bin/chown`, `/usr/sbin/chpasswd`, `/usr/sbin/sshd`        | Workspace ownership, set login password from `SSH_PASSWORD`, start SSH daemon                  |
 | **Manager API**, **controller API** | `/usr/sbin/groupmod`, `/usr/sbin/groupadd`, `/usr/sbin/usermod` | Align in-container `docker` group GID with mounted `/var/run/docker.sock` before starting Node |
 
 Any other `sudo` attempt (for example `sudo bash`, `sudo apt`) should **fail** with “not allowed” and must not prompt for a password.
@@ -58,7 +55,7 @@ Any other `sudo` attempt (for example `sudo bash`, `sudo apt`) should **fail** w
 
 ```bash
 docker exec -u agenstra <container> sudo id          # expect: not allowed
-docker exec -u agenstra <container> sudo /usr/bin/chown --version   # expect: success (worker/vnc/ssh)
+docker exec -u agenstra <container> sudo /usr/bin/chown --version   # expect: success (worker)
 ```
 
 ## Manager and controller API images
@@ -69,28 +66,15 @@ docker exec -u agenstra <container> sudo /usr/bin/chown --version   # expect: su
 - Entrypoint: if the socket is present, sync the `docker` group GID, add `agenstra` to `docker`, then start Node with **`sg docker`** so socket access is effective without running Node as root.
 - Secrets (database, Keycloak, `STATIC_API_KEY`, etc.) are supplied at **deploy time**, not as default `ENV` in the image.
 - **`VERSION`** is baked at image build time (`ARG`/`ENV`, `--build-arg VERSION=$VERSION`). Release sets it from semantic-release (`release.yml` after `needs: publish`). Runtime `VERSION` / `APP_VERSION` may override.
-- Debian-based images (`Dockerfile.api`, worker, SSH, VNC) run `apt-get upgrade` after `apt-get update` so OS packages such as `perl-base` pick up Debian security fixes newer than the published base tag.
-
-## SSH sidecar image
-
-- Runtime **`SSH_PASSWORD`** is **required** (no default in the image).
-- Interactive login user: **`agenstra`** (console SSH URLs use `agenstra@` by default).
-- **`PermitRootLogin no`** in `sshd_config`.
-
-## VNC image
-
-- Runtime **`VNC_PASSWORD`** is **required**.
-- Shared agent repo is mounted at **`/home/agenstra/environment`**, not `/app`.
-- TigerVNC / XFCE / websockify run as `agenstra` without `sudo` after startup `chown`.
+- Debian-based images (`Dockerfile.api`, worker) run `apt-get upgrade` after `apt-get update` so OS packages such as `perl-base` pick up Debian security fixes newer than the published base tag.
 
 ## Coordinated upgrades
 
-Deploy **manager API, worker, VNC, and SSH** images from the **same release tag** when user IDs, home paths, or mount layouts change. Mismatched tags can break shared volumes or console SSH/VNC URLs.
+Deploy **manager API and worker** images from the **same release tag** when user IDs, home paths, or mount layouts change. Mismatched tags can break shared volumes.
 
 ## Related documentation
 
 - **[Operational hardening](./operational-hardening.md)** Summary table and cross-links
 - **[Docker deployment](../deployment/docker-deployment.md#container-security-images)** Compose and `DOCKER_GID`
 - **[Production checklist](../deployment/production-checklist.md)** Pre-flight checks
-- **[VNC browser access](../features/vnc-browser-access.md)** Feature architecture
 - **[Environment configuration](../deployment/environment-configuration.md)** Per-provider image env vars

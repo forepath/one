@@ -263,7 +263,7 @@ docker run -v /var/run/docker.sock:/var/run/docker.sock \
 
 The API container runs as **`agenstra`** (UID/GID 10001), not root. At startup the entrypoint syncs the in-container `docker` group to the socket’s GID, then starts Node. If Docker commands fail with permission errors, rebuild with `--build-arg DOCKER_GID=$(stat -c '%g' /var/run/docker.sock)`.
 
-Worker, VNC, and SSH images use the same non-root user; private Git credentials are written under the worker’s `$HOME` (typically `/home/agenstra`). See **[Operational hardening](../../docs/agenstra/security/operational-hardening.md#container-images-docker)** in the docs site.
+Worker images use the same non-root user; private Git credentials are written under the worker’s `$HOME` (typically `/home/agenstra`). See **[Operational hardening](../../docs/agenstra/security/operational-hardening.md#container-images-docker)** in the docs site.
 
 ### Production Deployment Checklist
 
@@ -276,7 +276,7 @@ Before deploying to production, ensure:
 - ✅ `STATIC_API_KEY` or Keycloak credentials are configured
 - ✅ Database credentials are secure
 - ✅ Docker socket is properly mounted for container management
-- ✅ API, worker, VNC, and SSH image tags match the same release
+- ✅ API and worker image tags match the same release
 
 ## License
 

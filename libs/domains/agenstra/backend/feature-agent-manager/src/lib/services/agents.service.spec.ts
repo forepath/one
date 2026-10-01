@@ -59,7 +59,6 @@ describe('AgentsService', () => {
     findById: jest.fn(),
     findByName: jest.fn(),
     findAll: jest.fn(),
-    findPortInUse: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
@@ -80,6 +79,7 @@ describe('AgentsService', () => {
     startContainer: jest.fn(),
     stopContainer: jest.fn(),
     restartContainer: jest.fn(),
+    removeContainersByImageNameSubstring: jest.fn().mockResolvedValue(0),
   };
   const mockAgentProvider: jest.Mocked<AgentProvider> = {
     getType: jest.fn().mockReturnValue('opencode'),
@@ -91,8 +91,6 @@ describe('AgentsService', () => {
       supportsQuestions: false,
     }),
     getDockerImage: jest.fn().mockReturnValue('ghcr.io/forepath/agenstra-manager-worker:latest'),
-    getVirtualWorkspaceDockerImage: jest.fn().mockReturnValue('ghcr.io/forepath/agenstra-manager-vnc:latest'),
-    getSshConnectionDockerImage: jest.fn().mockReturnValue('ghcr.io/forepath/agenstra-manager-ssh:latest'),
     sendMessage: jest.fn(),
     sendInitialization: jest.fn(),
     toParseableStrings: jest.fn(),
@@ -237,10 +235,6 @@ describe('AgentsService', () => {
         containerId,
         volumePath,
       };
-
-      // Disable VNC for this test
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -341,141 +335,6 @@ describe('AgentsService', () => {
       });
     });
 
-    it('should mount agent workspace at /home/agenstra/environment on VNC container', async () => {
-      const createDto: CreateAgentDto = {
-        name: 'VNC Agent',
-        createVirtualWorkspace: true,
-        createSshConnection: false,
-        containerType: ContainerType.GENERIC,
-      };
-      const hashedPassword = 'hashed-password';
-      const workerContainerId = 'worker-container-id';
-      const vncContainerId = 'vnc-container-id';
-      const createdAgent = {
-        ...mockAgent,
-        name: createDto.name,
-        hashedPassword,
-        containerId: workerContainerId,
-        volumePath: '/opt/agents/test-volume-uuid',
-        vncContainerId,
-        vncHostPort: 50000,
-        vncNetworkId: 'network-id',
-        vncPassword: 'vnc-password',
-      };
-
-      repository.findByName.mockResolvedValue(null);
-      repository.findPortInUse.mockResolvedValue(null);
-      passwordService.hashPassword.mockResolvedValue(hashedPassword);
-      dockerService.createContainer.mockResolvedValueOnce(workerContainerId).mockResolvedValueOnce(vncContainerId);
-      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
-      dockerService.createNetwork.mockResolvedValue('network-id');
-      repository.create.mockResolvedValue(createdAgent);
-
-      await service.create(createDto);
-
-      expect(dockerService.ensureImageExists).toHaveBeenCalledTimes(2);
-      expect(dockerService.ensureImageExists).toHaveBeenNthCalledWith(
-        1,
-        'ghcr.io/forepath/agenstra-manager-worker:latest',
-      );
-      expect(dockerService.ensureImageExists).toHaveBeenNthCalledWith(
-        2,
-        'ghcr.io/forepath/agenstra-manager-vnc:latest',
-      );
-      expect(dockerService.createContainer).toHaveBeenCalledTimes(2);
-      expect(dockerService.createContainer).toHaveBeenNthCalledWith(
-        2,
-        expect.objectContaining({
-          image: 'ghcr.io/forepath/agenstra-manager-vnc:latest',
-          env: expect.objectContaining({
-            AGENT_NAME: createDto.name,
-            VNC_PASSWORD: expect.any(String),
-          }),
-          volumes: [
-            {
-              hostPath: expect.stringMatching(/^\/opt\/agents\/[a-f0-9-]+$/),
-              containerPath: '/home/agenstra/environment',
-              readOnly: false,
-            },
-            {
-              hostPath: '/opt/agents',
-              containerPath: '/opt/workspace',
-              readOnly: true,
-            },
-          ],
-          ports: [
-            {
-              containerPort: 6080,
-              hostPort: expect.any(Number),
-            },
-          ],
-        }),
-      );
-      expect(dockerService.createNetwork).toHaveBeenCalledWith(
-        expect.objectContaining({
-          containerIds: [workerContainerId, vncContainerId],
-        }),
-      );
-    });
-
-    it('should ensure docker images exist before creating SSH connection container', async () => {
-      const createDto: CreateAgentDto = {
-        name: 'SSH Agent',
-        createSshConnection: true,
-        createVirtualWorkspace: false,
-        containerType: ContainerType.GENERIC,
-      };
-      const hashedPassword = 'hashed-password';
-      const workerContainerId = 'worker-container-id';
-      const sshContainerId = 'ssh-container-id';
-      const createdAgent = {
-        ...mockAgent,
-        name: createDto.name,
-        hashedPassword,
-        containerId: workerContainerId,
-        volumePath: '/opt/agents/test-volume-uuid',
-        sshContainerId,
-        sshHostPort: 40000,
-        sshPassword: 'ssh-password',
-      };
-
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockRepository.findByName.mockResolvedValue(null);
-      mockRepository.findPortInUse.mockResolvedValue(null);
-      passwordService.hashPassword.mockResolvedValue(hashedPassword);
-      dockerService.createContainer.mockResolvedValueOnce(workerContainerId).mockResolvedValueOnce(sshContainerId);
-      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
-      repository.create.mockResolvedValue(createdAgent);
-
-      await service.create(createDto);
-
-      expect(dockerService.ensureImageExists).toHaveBeenCalledTimes(2);
-      expect(dockerService.ensureImageExists).toHaveBeenNthCalledWith(
-        1,
-        'ghcr.io/forepath/agenstra-manager-worker:latest',
-      );
-      expect(dockerService.ensureImageExists).toHaveBeenNthCalledWith(
-        2,
-        'ghcr.io/forepath/agenstra-manager-ssh:latest',
-      );
-      expect(dockerService.createContainer).toHaveBeenNthCalledWith(
-        2,
-        expect.objectContaining({
-          image: 'ghcr.io/forepath/agenstra-manager-ssh:latest',
-          env: expect.objectContaining({
-            AGENT_NAME: createDto.name,
-            SSH_PASSWORD: expect.any(String),
-          }),
-          ports: [
-            {
-              containerPort: 22,
-              hostPort: expect.any(Number),
-            },
-          ],
-        }),
-      );
-    });
-
     it('should create agent without description', async () => {
       const createDto: CreateAgentDto = {
         name: 'New Agent',
@@ -495,10 +354,6 @@ describe('AgentsService', () => {
         createdAt: mockAgent.createdAt,
         updatedAt: mockAgent.updatedAt,
       };
-
-      // Disable VNC for this test
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -780,10 +635,6 @@ describe('AgentsService', () => {
 
       process.env.GIT_REPOSITORY_URL = 'git@github.com:user/repo.git';
       process.env.GIT_PRIVATE_KEY = privateKeyPem;
-
-      // Disable VNC for this test
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -909,8 +760,6 @@ describe('AgentsService', () => {
 
       mockAgentProvider.getBasePath = jest.fn().mockReturnValue(basePath);
       mockAgentProvider.getRepositoryPath = jest.fn().mockReturnValue(repositoryPath);
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -992,8 +841,6 @@ describe('AgentsService', () => {
       const createDto: CreateAgentDto = {
         name: 'Empty Agent',
         gitRepositorySetupMode: GitRepositorySetupMode.EMPTY,
-        createVirtualWorkspace: false,
-        createSshConnection: false,
       };
       const hashedPassword = 'hashed-password';
       const containerId = 'container-id-empty';
@@ -1004,9 +851,6 @@ describe('AgentsService', () => {
         containerId,
         gitRepositorySetupMode: GitRepositorySetupMode.EMPTY,
       };
-
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -1068,12 +912,7 @@ describe('AgentsService', () => {
 
       const createDto: CreateAgentDto = {
         name: 'Empty Agent Env Default',
-        createVirtualWorkspace: false,
-        createSshConnection: false,
       };
-
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue('hashed-password');
       dockerService.createContainer.mockResolvedValue('container-id-empty-env');
@@ -1105,13 +944,8 @@ describe('AgentsService', () => {
       const createDto: CreateAgentDto = {
         name: 'Empty Agent Failure',
         gitRepositorySetupMode: GitRepositorySetupMode.EMPTY,
-        createVirtualWorkspace: false,
-        createSshConnection: false,
       };
       const containerId = 'container-id-init-fail';
-
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue('hashed-password');
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -1171,9 +1005,6 @@ describe('AgentsService', () => {
         containerId,
         volumePath,
       };
-
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -1223,8 +1054,6 @@ describe('AgentsService', () => {
       mockAgentProvider.getBasePath = jest.fn().mockReturnValue(customBasePath);
       // Remove getRepositoryPath to ensure it's not defined from previous tests
       delete (mockAgentProvider as { getRepositoryPath?: () => string }).getRepositoryPath;
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -1294,8 +1123,6 @@ describe('AgentsService', () => {
 
       mockAgentProvider.getBasePath = jest.fn().mockReturnValue(basePath);
       mockAgentProvider.getRepositoryPath = jest.fn().mockReturnValue(repositoryPath);
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -1338,8 +1165,6 @@ describe('AgentsService', () => {
 
       mockAgentProvider.getBasePath = jest.fn().mockReturnValue(customBasePath);
       mockAgentProvider.getRepositoryPath = jest.fn().mockReturnValue(repositoryPath);
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -1412,8 +1237,6 @@ describe('AgentsService', () => {
       mockAgentProvider.getBasePath = jest.fn().mockReturnValue(customBasePath);
       // Remove getRepositoryPath to simulate provider without the method
       delete (mockAgentProvider as { getRepositoryPath?: () => string }).getRepositoryPath;
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -1453,8 +1276,6 @@ describe('AgentsService', () => {
       delete (mockAgentProvider as { getBasePath?: () => string }).getBasePath;
       // Also remove getRepositoryPath to ensure it's not defined from previous tests
       delete (mockAgentProvider as { getRepositoryPath?: () => string }).getRepositoryPath;
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -1521,8 +1342,6 @@ describe('AgentsService', () => {
       mockAgentProvider.getBasePath = jest.fn().mockReturnValue(undefined);
       // Remove getRepositoryPath to ensure it's not defined from previous tests
       delete (mockAgentProvider as { getRepositoryPath?: () => string }).getRepositoryPath;
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -1595,8 +1414,6 @@ describe('AgentsService', () => {
       mockAgentProvider.getEnvironmentVariables = jest.fn().mockReturnValue(customEnvVars);
       // Remove getRepositoryPath to ensure it's not defined from previous tests
       delete (mockAgentProvider as { getRepositoryPath?: () => string }).getRepositoryPath;
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -1660,8 +1477,6 @@ describe('AgentsService', () => {
       delete (mockAgentProvider as { getEnvironmentVariables?: () => Record<string, string> }).getEnvironmentVariables;
       // Remove getRepositoryPath to ensure it's not defined from previous tests
       delete (mockAgentProvider as { getRepositoryPath?: () => string }).getRepositoryPath;
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -1724,9 +1539,6 @@ describe('AgentsService', () => {
         containerId,
         volumePath,
       };
-
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -1757,9 +1569,6 @@ describe('AgentsService', () => {
         containerId,
         volumePath,
       };
-
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -1834,9 +1643,6 @@ describe('AgentsService', () => {
         containerId,
         volumePath,
       };
-
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -1866,8 +1672,6 @@ describe('AgentsService', () => {
       };
 
       delete (mockAgentProvider as { getConfigBasePath?: () => string }).getConfigBasePath;
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -1897,8 +1701,6 @@ describe('AgentsService', () => {
       };
 
       mockAgentProvider.getConfigBasePath = jest.fn().mockReturnValue('/var/my-agent-config');
-      mockAgentProvider.getVirtualWorkspaceDockerImage.mockReturnValueOnce(undefined);
-      mockAgentProvider.getSshConnectionDockerImage.mockReturnValueOnce(undefined);
       mockRepository.findByName.mockResolvedValue(null);
       passwordService.hashPassword.mockResolvedValue(hashedPassword);
       dockerService.createContainer.mockResolvedValue(containerId);
@@ -2224,25 +2026,6 @@ describe('AgentsService', () => {
       expect(dockerService.startContainer).toHaveBeenCalledTimes(1);
     });
 
-    it('should start agent with VNC and SSH containers', async () => {
-      const agentWithVncSsh = {
-        ...mockAgent,
-        vncContainerId: 'vnc-container-id',
-        sshContainerId: 'ssh-container-id',
-      };
-
-      mockRepository.findByIdOrThrow.mockResolvedValue(agentWithVncSsh);
-      dockerService.startContainer.mockResolvedValue(undefined);
-
-      const result = await service.start('test-uuid');
-
-      expect(result.id).toBe(agentWithVncSsh.id);
-      expect(dockerService.startContainer).toHaveBeenCalledWith(agentWithVncSsh.containerId);
-      expect(dockerService.startContainer).toHaveBeenCalledWith(agentWithVncSsh.vncContainerId);
-      expect(dockerService.startContainer).toHaveBeenCalledWith(agentWithVncSsh.sshContainerId);
-      expect(dockerService.startContainer).toHaveBeenCalledTimes(3);
-    });
-
     it('should throw when agent not found', async () => {
       const notFoundError = new Error('Agent not found');
 
@@ -2274,25 +2057,6 @@ describe('AgentsService', () => {
       expect(dockerService.stopContainer).toHaveBeenCalledTimes(1);
     });
 
-    it('should stop agent with VNC and SSH containers', async () => {
-      const agentWithVncSsh = {
-        ...mockAgent,
-        vncContainerId: 'vnc-container-id',
-        sshContainerId: 'ssh-container-id',
-      };
-
-      mockRepository.findByIdOrThrow.mockResolvedValue(agentWithVncSsh);
-      dockerService.stopContainer.mockResolvedValue(undefined);
-
-      const result = await service.stop('test-uuid');
-
-      expect(result.id).toBe(agentWithVncSsh.id);
-      expect(dockerService.stopContainer).toHaveBeenCalledWith(agentWithVncSsh.containerId);
-      expect(dockerService.stopContainer).toHaveBeenCalledWith(agentWithVncSsh.vncContainerId);
-      expect(dockerService.stopContainer).toHaveBeenCalledWith(agentWithVncSsh.sshContainerId);
-      expect(dockerService.stopContainer).toHaveBeenCalledTimes(3);
-    });
-
     it('should throw when agent not found', async () => {
       mockRepository.findByIdOrThrow.mockRejectedValue(new Error('Agent not found'));
 
@@ -2320,25 +2084,6 @@ describe('AgentsService', () => {
       expect(repository.findByIdOrThrow).toHaveBeenCalledWith('test-uuid');
       expect(dockerService.restartContainer).toHaveBeenCalledWith(mockAgent.containerId);
       expect(dockerService.restartContainer).toHaveBeenCalledTimes(1);
-    });
-
-    it('should restart agent with VNC and SSH containers', async () => {
-      const agentWithVncSsh = {
-        ...mockAgent,
-        vncContainerId: 'vnc-container-id',
-        sshContainerId: 'ssh-container-id',
-      };
-
-      mockRepository.findByIdOrThrow.mockResolvedValue(agentWithVncSsh);
-      dockerService.restartContainer.mockResolvedValue(undefined);
-
-      const result = await service.restart('test-uuid');
-
-      expect(result.id).toBe(agentWithVncSsh.id);
-      expect(dockerService.restartContainer).toHaveBeenCalledWith(agentWithVncSsh.containerId);
-      expect(dockerService.restartContainer).toHaveBeenCalledWith(agentWithVncSsh.vncContainerId);
-      expect(dockerService.restartContainer).toHaveBeenCalledWith(agentWithVncSsh.sshContainerId);
-      expect(dockerService.restartContainer).toHaveBeenCalledTimes(3);
     });
 
     it('should throw when agent not found', async () => {

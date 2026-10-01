@@ -760,7 +760,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly fileOnlyMode = signal<boolean>(false);
   readonly standaloneMode = signal<boolean>(false);
   private standaloneFileLoaded = false;
-  readonly showSSHCommand = signal<boolean>(false);
 
   // Local signals to mirror fileEditor's visibility states
   // These prevent ExpressionChangedAfterItHasBeenCheckedError by avoiding direct access
@@ -1179,8 +1178,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     containerType: undefined,
     gitRepositorySetupMode: 'clone',
     gitRepositoryUrl: undefined,
-    createVirtualWorkspace: false,
-    createSshConnection: false,
   });
 
   // Edit state
@@ -3227,59 +3224,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   /**
    * Open virtual desktop for the selected agent
    */
-  onToggleVNC(client: ClientResponseDto, agent: AgentResponseDto): void {
-    const vncPort = agent.vnc?.port;
-
-    if (!vncPort) {
-      return;
-    }
-
-    // Build the URL
-    const urlObj = new URL(client.endpoint);
-    const url = `${urlObj.protocol}//${urlObj.hostname}:${vncPort}/vnc.html?resize=scale&autoconnect=1&reconnect=1&password=${encodeURIComponent(agent.vnc?.password || '')}`;
-    // Open new window with minimal controls and maximize if possible
-    // Note: Modern browsers have restrictions on window features, but we try to minimize what's possible
-    // Use screen dimensions to maximize the window
-    const screenWidth = window.screen.availWidth || window.screen.width;
-    const screenHeight = window.screen.availHeight || window.screen.height;
-    const windowFeatures = [
-      'menubar=no',
-      'toolbar=no',
-      'location=no', // Attempts to hide address bar (may be ignored by browsers)
-      'status=no',
-      'resizable=yes',
-      'scrollbars=yes',
-      `width=${screenWidth}`,
-      `height=${screenHeight}`,
-      `left=0`,
-      `top=0`,
-    ].join(',');
-    const newWindow = window.open(url, '_blank', windowFeatures);
-
-    // Try to maximize after window opens (may be blocked by browser security)
-    if (newWindow) {
-      // Use setTimeout to ensure window is fully loaded before attempting to maximize
-      setTimeout(() => {
-        try {
-          newWindow.moveTo(0, 0);
-          newWindow.resizeTo(screenWidth, screenHeight);
-
-          // Try to maximize if the browser supports it
-          if (newWindow.screen && 'availWidth' in newWindow.screen) {
-            const availWidth = (newWindow.screen as Screen & { availWidth?: number }).availWidth;
-            const availHeight = (newWindow.screen as Screen & { availHeight?: number }).availHeight;
-
-            if (availWidth && availHeight) {
-              newWindow.resizeTo(availWidth, availHeight);
-            }
-          }
-        } catch (e) {
-          // Browser may block window manipulation for security reasons
-          console.warn('Could not maximize window:', e);
-        }
-      }, 100);
-    }
-  }
 
   /**
    * Get whether to open editor in new window from environment configuration
@@ -3805,8 +3749,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       containerType: undefined,
       gitRepositorySetupMode: this.getDefaultAgentGitRepositorySetupMode(),
       gitRepositoryUrl: undefined,
-      createVirtualWorkspace: false,
-      createSshConnection: false,
     });
   }
 
@@ -3898,8 +3840,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           containerType: undefined,
           gitRepositorySetupMode: this.getDefaultAgentGitRepositorySetupMode(),
           gitRepositoryUrl: undefined,
-          createVirtualWorkspace: false,
-          createSshConnection: false,
         });
       },
     });
@@ -4264,8 +4204,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
 
     // Include boolean fields (default to true if not set)
-    createDto.createVirtualWorkspace = agentData.createVirtualWorkspace ?? false;
-    createDto.createSshConnection = agentData.createSshConnection ?? false;
 
     this.agentsFacade.createClientAgent(clientId, createDto);
   }
@@ -5218,22 +5156,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     return parseGitRepositoryLabel(gitUrl);
   }
 
-  buildSSHCommand(clientEndpoint: string, port: number, username?: string, password?: string): string | null {
-    const hostname = this.getHostname(clientEndpoint, false);
-
-    if (!hostname) {
-      return null;
-    }
-
-    const sshUser = username ?? 'agenstra';
-
-    if (!password) {
-      return `ssh -o StrictHostKeyChecking=no ${port ? `-p ${port} ` : ''}${sshUser}@${hostname}`;
-    }
-
-    return `SSHPASS='${password}' sshpass -e ssh -o StrictHostKeyChecking=no ${port ? `-p ${port} ` : ''}${sshUser}@${hostname}`;
-  }
-
   /**
    * Earliest client timestamp that bounds the current turn's `chatEvent` stream: min(send time, echoed user row).
    * Avoids dropping deltas that arrive before the echoed `chatMessage` user row (which has a later timestamp).
@@ -5958,9 +5880,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   /**
    * Toggle the SSH command visibility
    */
-  onToggleSSHCommand(): void {
-    this.showSSHCommand.set(!this.showSSHCommand());
-  }
 
   /**
    * Get the display name for a container type

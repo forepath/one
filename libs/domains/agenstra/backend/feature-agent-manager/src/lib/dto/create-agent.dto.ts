@@ -1,4 +1,4 @@
-import { IsBoolean, IsEnum, IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 import { ContainerType } from '../entities/agent.entity';
@@ -34,14 +34,6 @@ export class CreateAgentDto {
   @IsOptional()
   @IsString({ message: 'Git repository URL must be a string' })
   gitRepositoryUrl?: string;
-
-  @IsOptional()
-  @IsBoolean({ message: 'Create virtual workspace must be a boolean' })
-  createVirtualWorkspace?: boolean = true;
-
-  @IsOptional()
-  @IsBoolean({ message: 'Create SSH connection must be a boolean' })
-  createSshConnection?: boolean = true;
 
   /**
    * CI/CD deployment configuration (optional).

@@ -82,18 +82,6 @@ export interface AgentProvider {
   getDockerImage(): string;
 
   /**
-   * Get the Docker image (including tag) to use for virtual workspace containers created for this provider.
-   * @returns The Docker image string (e.g., 'ghcr.io/forepath/agenstra-manager-vnc:latest')
-   */
-  getVirtualWorkspaceDockerImage(): string | undefined;
-
-  /**
-   * Get the Docker image (including tag) to use for SSH connection containers created for this provider.
-   * @returns The Docker image string (e.g., 'ghcr.io/forepath/agenstra-manager-ssh:latest')
-   */
-  getSshConnectionDockerImage(): string | undefined;
-
-  /**
    * Get the base path for the provider.
    * This is used to construct file system paths within agent containers.
    * @returns The base path string (e.g., '/app'). Defaults to '/app' if not implemented.

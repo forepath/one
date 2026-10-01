@@ -867,10 +867,6 @@
         <source>Virtual Desktop</source>
         <target>Virtueller Desktop</target>
       </trans-unit>
-      <trans-unit id="featureChat-sshAccess" datatype="html">
-        <source>SSH Access</source>
-        <target>SSH-Zugang</target>
-      </trans-unit>
       <trans-unit id="featureChat-ticketAutonomyButtonTitle" datatype="html">
         <source>Prototype autonomy</source>
         <target>Prototyp-Autonomie</target>
@@ -934,10 +930,6 @@
       <trans-unit id="featureChat-openEditor" datatype="html">
         <source>Open Editor</source>
         <target>Editor öffnen</target>
-      </trans-unit>
-      <trans-unit id="featureChat-sshCommand" datatype="html">
-        <source>SSH Command</source>
-        <target>SSH-Befehl</target>
       </trans-unit>
       <trans-unit id="featureChat-remoteWorkspaceConfig" datatype="html">
         <source>Remote Workspace Configuration</source>
@@ -1281,32 +1273,6 @@
       <trans-unit id="featureChat-gitPrivateKeyHint" datatype="html">
         <source>SSH private key for cloning repositories via SSH (alternative to username/token)</source>
         <target>SSH-Privatschlüssel zum Klonen von Repositories per SSH (Alternative zu Benutzername/Token)</target>
-      </trans-unit>
-      <trans-unit id="featureChat-dangerZoneLabel" datatype="html">
-        <source>Danger Zone</source>
-        <target>Gefahrenbereich</target>
-      </trans-unit>
-      <trans-unit id="featureChat-dangerZoneDescription" datatype="html">
-        <source> These features partially ignore the internal permissions and may allow users to modify the agent container files without any restrictions. </source>
-        <target>Diese Funktionen ignorieren teilweise die internen Berechtigungen und können es Benutzern erlauben, die Dateien des Agenten-Containers ohne Einschränkungen zu ändern.</target>
-      </trans-unit>
-      <trans-unit id="featureChat-createVirtualWorkspaceLabel" datatype="html">
-        <source> Create Virtual Workspace (VNC) </source>
-        <target>Virtuellen Workspace erstellen (VNC)</target>
-      </trans-unit>
-      
-      <trans-unit id="featureChat-createVirtualWorkspaceHint" datatype="html">
-        <source>Enable VNC access to the environment&apos;s virtual workspace. Defaults to disabled.</source>
-        <target>VNC-Zugang zum virtuellen Workspace der Umgebung aktivieren. Standardmäßig deaktiviert.</target>
-      </trans-unit>
-      <trans-unit id="featureChat-createSshConnectionLabel" datatype="html">
-        <source> Create SSH Connection </source>
-        <target>SSH-Verbindung erstellen</target>
-      </trans-unit>
-      
-      <trans-unit id="featureChat-createSshConnectionHint" datatype="html">
-        <source>Enable SSH access to the environment container. Defaults to disabled.</source>
-        <target>SSH-Zugang zum Umgebungscontainer aktivieren. Standardmäßig deaktiviert.</target>
       </trans-unit>
       <trans-unit id="featureChat-createEnvironment" datatype="html">
         <source>Create</source>
