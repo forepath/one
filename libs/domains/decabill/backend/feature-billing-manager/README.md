@@ -68,9 +68,10 @@ When **`AUTHENTICATION_METHOD=api-key`** (or api-key is inferred from **`STATIC_
 - SUBSCRIPTION_UPDATE_SCHEDULER_INTERVAL (optional; default 86400000 ms = 24 hours; SSH update scheduler)
 - CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID (for DNS A record creation on provisioned servers)
 - DNS_BASE_DOMAIN (optional; default `spirde.com`) – base domain for FQDN in SSL certificates and CORS
-- `WEBSOCKET_PORT` (optional; default `8082`) – Socket.IO port for the billing status gateway (HTTP REST stays on `PORT`, default 3200)
-- `WEBSOCKET_NAMESPACE` (optional; default `billing`) – Socket.IO namespace path segment
-- `PROJECTS_WEBSOCKET_NAMESPACE` (optional; default `projects`) – Project board Socket.IO namespace path segment
+- `PORT` (optional; default `3200`) – HTTP REST, Socket.IO, and Engine.IO on one port
+- `WEBSOCKET_NAMESPACE` (optional; default `socket/billing`) – Dashboard status Socket.IO namespace
+- `PROJECTS_WEBSOCKET_NAMESPACE` (optional; default `socket/projects`) – Project board Socket.IO namespace
+- **Migration:** `WEBSOCKET_PORT` removed; re-provision stacks so nginx proxies `/api/`, `/socket/`, and `/socket.io/` to `PORT`
 - `STATUS_POLL_INTERVAL` (optional; default `15000`) – default dashboard status poll interval in **milliseconds**; optional `subscribeDashboardStatus` body field `pollIntervalMs` is clamped between 10s and 120s
 - `WEBSOCKET_CORS_ORIGIN` (optional; default `*`) – Socket.IO CORS `origin` (same pattern as agent controller / agent manager)
 

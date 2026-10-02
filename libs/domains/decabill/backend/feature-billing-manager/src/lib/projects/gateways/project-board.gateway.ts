@@ -24,8 +24,8 @@ interface SetProjectPayload {
 
 type ProjectSocket = Socket & { data: { userInfo?: SocketUserInfo; tenantId?: string } };
 
-@WebSocketGateway(parseInt(process.env.WEBSOCKET_PORT || '8082', 10), {
-  namespace: process.env.PROJECTS_WEBSOCKET_NAMESPACE || 'projects',
+@WebSocketGateway({
+  namespace: process.env.PROJECTS_WEBSOCKET_NAMESPACE || 'socket/projects',
   cors: {
     origin: process.env.WEBSOCKET_CORS_ORIGIN || '*',
   },

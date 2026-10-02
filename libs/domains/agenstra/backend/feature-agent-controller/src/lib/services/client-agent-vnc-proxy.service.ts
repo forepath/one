@@ -3,11 +3,11 @@ import { AuthenticationType } from '@forepath/identity/backend';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
 
-import { DEFAULT_MANAGER_WEBSOCKET_PORT, VNC_WEBSOCKET_PATH } from '../constants/vnc.constants';
 import { CreateClientVncSessionResponseDto } from '../dto/create-client-vnc-session-response.dto';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
 import { buildClientProxyRequestHeaders } from '../utils/client-proxy-request-headers';
+import { buildRemoteVncWsUrl } from '../utils/remote-manager-url.utils';
 
 import { ClientsService } from './clients.service';
 import { ControllerVncTicketService } from './controller-vnc-ticket.service';
@@ -76,7 +76,7 @@ export class ClientAgentVncProxyService {
       throw new BadRequestException('Failed to create VNC session');
     }
 
-    const managerWsUrl = this.buildManagerVncWsUrl(clientEntity.endpoint, clientEntity.agentWsPort);
+    const managerWsUrl = this.buildManagerVncWsUrl(clientEntity.endpoint);
     const minted = await this.controllerVncTicketService.mint({
       clientId,
       agentId,
@@ -95,15 +95,8 @@ export class ClientAgentVncProxyService {
     };
   }
 
-  buildManagerVncWsUrl(endpoint: string, overridePort?: number | null): string {
-    const parsed = new URL(endpoint);
-    const port = parseInt(
-      String(overridePort || process.env.CLIENTS_REMOTE_WS_PORT || DEFAULT_MANAGER_WEBSOCKET_PORT),
-      10,
-    );
-    const protocol = parsed.protocol === 'https:' ? 'wss:' : 'ws:';
-
-    return `${protocol}//${parsed.hostname}:${port}${VNC_WEBSOCKET_PATH}`;
+  buildManagerVncWsUrl(endpoint: string): string {
+    return buildRemoteVncWsUrl(endpoint);
   }
 
   private buildAgentApiUrl(endpoint: string): string {

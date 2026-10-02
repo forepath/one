@@ -36,7 +36,7 @@ sequenceDiagram
     RT-->>UI: ticketUpsert to room client
 ```
 
-After `setClient` on namespace **`tickets`**, the socket joins room `client:{clientId}`. Typical server events include:
+After `setClient` on namespace **`socket/tickets`**, the socket joins room `client:{clientId}`. Typical server events include:
 
 - `ticketUpsert`. Full ticket row after create or update
 - `ticketRemoved`. Deleted or removed from a workspace (e.g. after migrate)

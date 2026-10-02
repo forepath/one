@@ -24,8 +24,8 @@ interface SetClientPayload {
   clientId?: string;
 }
 
-@WebSocketGateway(parseInt(process.env.WEBSOCKET_PORT || '8081', 10), {
-  namespace: process.env.TICKETS_WEBSOCKET_NAMESPACE || 'tickets',
+@WebSocketGateway({
+  namespace: process.env.TICKETS_WEBSOCKET_NAMESPACE || 'socket/tickets',
   cors: {
     origin: process.env.WEBSOCKET_CORS_ORIGIN || '*',
   },

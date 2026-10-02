@@ -7,12 +7,12 @@ export const environment: Environment = {
   productName: 'Agenstra',
   controller: {
     restApiUrl: 'http://host.docker.internal:3100/api',
-    websocketUrl: 'http://host.docker.internal:8081/clients',
+    websocketUrl: 'http://host.docker.internal:3100/socket/clients',
   },
   billing: {
     restApiUrl: 'http://host.docker.internal:3200/api',
     frontendUrl: 'http://host.docker.internal:4500',
-    websocketUrl: 'http://host.docker.internal:8082/billing',
+    websocketUrl: 'http://host.docker.internal:3200/socket/billing',
   },
   authentication: {
     /*

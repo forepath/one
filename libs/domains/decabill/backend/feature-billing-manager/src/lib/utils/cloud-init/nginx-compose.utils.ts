@@ -9,14 +9,12 @@ export interface NginxComposeServiceParams extends CloudInitComposeServiceParams
   stackDir: string;
   httpPort: number | string;
   httpsPort: number | string;
-  websocketPort: number | string;
   dependsOn: string[];
 }
 
 export function buildNginxComposeService(params: NginxComposeServiceParams): string {
   const httpPort = String(params.httpPort);
   const httpsPort = String(params.httpsPort);
-  const websocketPort = String(params.websocketPort);
   const dependsOn = params.dependsOn.map((service) => `      - ${service}`).join('\n');
 
   return `  nginx:
@@ -25,7 +23,6 @@ export function buildNginxComposeService(params: NginxComposeServiceParams): str
     ports:
       - '${httpPort}:${httpPort}'
       - '${httpsPort}:${httpsPort}'
-      - '${websocketPort}:${websocketPort}'
     depends_on:
 ${dependsOn}
     volumes:

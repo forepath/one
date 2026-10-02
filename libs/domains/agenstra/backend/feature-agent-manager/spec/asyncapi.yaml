@@ -3,17 +3,18 @@ info:
   title: Agent Gateway
   version: 1.0.0
   description: |
-    WebSocket events for the agents chat gateway. Socket.IO namespace from env `WEBSOCKET_NAMESPACE` (default `agents`);
-    listen port from env `WEBSOCKET_PORT` (default 8080). CORS for the gateway from `WEBSOCKET_CORS_ORIGIN` (default `*`).
+    WebSocket events for the agents chat gateway. Socket.IO namespace from env `WEBSOCKET_NAMESPACE`
+    (default `socket/agents`). Socket.IO and raw VNC (`/socket/vnc`) share the HTTP `PORT` (default 3000);
+    Engine.IO path is `/socket.io/`; REST remains under `/api/`. CORS from `WEBSOCKET_CORS_ORIGIN` (default `*`).
     Connection state recovery uses `SOCKET_MAX_DISCONNECTION_DURATION` ms (default 120000) per NestJS `connectionStateRecovery`.
-    The REST API runs on a separate HTTP port (`PORT`, default 3000); see the Agent Manager OpenAPI spec.
+    See the Agent Manager OpenAPI spec for REST.
 servers:
   local:
-    host: localhost:8080
+    host: localhost:3000
     protocol: ws
     description: |
-      Socket.IO server; path `/socket.io` with namespace `/agents` (e.g. `ws://localhost:8080/agents` depending on client).
-      Port defaults to 8080 unless `WEBSOCKET_PORT` is set.
+      Socket.IO on shared HTTP PORT (env `PORT`, default 3000); Engine.IO path `/socket.io/`;
+      namespace `/socket/agents` (e.g. `http://localhost:3000/socket/agents`). VNC path `/socket/vnc`.
 channels:
   agents/login:
     address: agents/login

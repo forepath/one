@@ -33,7 +33,7 @@ export function resolveVncWebsocketUrl(environment: Environment): string | null 
       return `${protocol}//${u.host}${path}/vnc`;
     }
 
-    return `${protocol}//${u.host}/vnc`;
+    return `${protocol}//${u.host}/socket/vnc`;
   } catch {
     if (base.endsWith('/clients')) {
       const withoutClients = base.slice(0, -'/clients'.length);

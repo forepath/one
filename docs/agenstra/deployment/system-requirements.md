@@ -97,7 +97,7 @@ Controller API and worker roles both query and update indexes. Periodic `search-
 
 ### Controller API (`QUEUE_ROLE=api`)
 
-HTTP **3100**, WebSocket **8081** (`clients` and `tickets` namespaces), migrations, optional Bull Board.
+HTTP **3100** (REST `/api/`, Socket.IO namespaces under `/socket/`, VNC `/socket/vnc`, Engine.IO `/socket.io/`), migrations, optional Bull Board.
 
 | Profile         | vCPU | Memory limit | Notes                                                |
 | --------------- | ---- | ------------ | ---------------------------------------------------- |
@@ -138,7 +138,7 @@ Agent metadata, chat history, deployment runs, and filter rules.
 
 ### Manager API
 
-HTTP **3000**, WebSocket **8080**, Docker socket mount.
+HTTP **3000** (REST `/api/`, Socket.IO `/socket/agents`, VNC `/socket/vnc`, Engine.IO `/socket.io/`), Docker socket mount.
 
 | Profile         | vCPU | Memory limit | Notes                                          |
 | --------------- | ---- | ------------ | ---------------------------------------------- |
@@ -227,7 +227,7 @@ Managers run on separately provisioned hosts per client/workspace.
 | Provider API keys          |     -      | Optional | Agent workload credentials as required by OpenCode / plugins |
 | Outbound HTTPS             |    Yes     |   Yes    | Proxied agent and provider traffic                           |
 
-Ingress: expose console (**4200** or TLS terminator), controller API (**3100**) and WebSocket (**8081**), and manager API (**3000**) / WebSocket (**8080**) on manager hosts. Restrict Bull Board (`/admin/queues` on controller **3100**) to operations networks.
+Ingress: expose console (**4200** or TLS terminator), controller (**3100**) and manager (**3000**) with `/api/`, `/socket/`, and `/socket.io/` proxied to each service `PORT`. Restrict Bull Board (`/admin/queues` on controller **3100**) to operations networks.
 
 ## Related documentation
 

@@ -1,7 +1,7 @@
 import { GitRepositorySetupMode } from '@forepath/agenstra/backend/feature-agent-manager';
 import { AuthenticationType } from '@forepath/identity/backend';
 import { Type } from 'class-transformer';
-import { IsEnum, IsIn, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsEnum, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 
 /**
  * DTO for provisioning a new server through a cloud provider.
@@ -50,12 +50,6 @@ export class ProvisionServerDto {
   @IsOptional()
   @IsString({ message: 'Keycloak auth server URL must be a string' })
   keycloakAuthServerUrl?: string;
-
-  @IsOptional()
-  @IsInt({ message: 'Agent WebSocket port must be an integer' })
-  @Min(1)
-  @Max(65535)
-  agentWsPort?: number;
 
   @IsOptional()
   @IsEnum(GitRepositorySetupMode, {

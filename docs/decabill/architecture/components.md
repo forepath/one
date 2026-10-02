@@ -35,11 +35,11 @@ This document describes the major runtime components in Decabill, their responsi
 
 ### Ports and endpoints
 
-| Surface    | Default         | Notes                                        |
-| ---------- | --------------- | -------------------------------------------- |
-| HTTP API   | **3200**        | Global prefix `/api`                         |
-| WebSocket  | **8082**        | Namespace `/billing` (`WEBSOCKET_NAMESPACE`) |
-| Bull Board | `/admin/queues` | Optional on API or `all` role                |
+| Surface    | Default           | Notes                                            |
+| ---------- | ----------------- | ------------------------------------------------ |
+| HTTP API   | **3200**          | Global prefix `/api`                             |
+| Socket.IO  | **3200** (shared) | Namespaces `/socket/billing`, `/socket/projects` |
+| Bull Board | `/admin/queues`   | Optional on API or `all` role                    |
 
 ### Queue roles (same image, different `QUEUE_ROLE`)
 
@@ -69,7 +69,7 @@ This document describes the major runtime components in Decabill, their responsi
 - Routed UI for dashboard, subscriptions, invoices, and admin catalog or billing pages
 - Identity auth UI from `@forepath/identity/frontend` (login, register, users)
 - HTTP client to billing manager REST API with tenant and auth interceptors
-- Socket.IO client connecting to `WEBSOCKET_URL` (default `http://localhost:8082/billing`)
+- Socket.IO client connecting to `WEBSOCKET_URL` (default `http://localhost:3200/socket/billing`)
 - Cookie consent, Bootstrap layout, and ApexCharts where used in admin views
 
 ### Dependencies

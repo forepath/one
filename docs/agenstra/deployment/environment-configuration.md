@@ -6,9 +6,13 @@ Complete reference for all environment variables used in Agenstra.
 
 ### Application Configuration
 
-- `PORT` - HTTP API port (default: `3100`)
-- `WEBSOCKET_PORT` - WebSocket gateway port (default: `8081`)
+- `PORT` - HTTP API / Socket.IO / VNC port (default: `3100`). Socket.IO namespaces and `/socket/vnc` share this port; Engine.IO path `/socket.io/`; REST `/api/`.
+- `WEBSOCKET_NAMESPACE` - Clients gateway namespace (default: `socket/clients`)
+- `TICKETS_WEBSOCKET_NAMESPACE` - Tickets board namespace (default: `socket/tickets`)
+- `KNOWLEDGE_WEBSOCKET_NAMESPACE` - Knowledge board namespace (default: `socket/pages`)
+- `STATUS_WEBSOCKET_NAMESPACE` - Status notifications namespace (default: `socket/status`)
 - `NODE_ENV` - Environment mode (`development` or `production`)
+- **Migration:** `WEBSOCKET_PORT` is removed. Operators must re-provision existing stacks so nginx proxies `/api/`, `/socket/`, and `/socket.io/` to a single `PORT`.
 
 ### Database Configuration
 
@@ -110,9 +114,10 @@ Optional runtime extensions for provisioning and context import. See [Dynamic pr
 
 ### Application Configuration
 
-- `PORT` - HTTP API port (default: `3000`)
-- `WEBSOCKET_PORT` - WebSocket gateway port (default: `8080`)
+- `PORT` - HTTP API / Socket.IO / VNC port (default: `3000`). Namespace default `socket/agents`; VNC path `/socket/vnc`; Engine.IO `/socket.io/`.
+- `WEBSOCKET_NAMESPACE` - Agents gateway namespace (default: `socket/agents`)
 - `NODE_ENV` - Environment mode (`development` or `production`)
+- **Migration:** `WEBSOCKET_PORT` is removed; re-provision stacks that still expose a separate WebSocket port.
 
 ### Database Configuration
 
@@ -150,7 +155,7 @@ Optional runtime extensions for provisioning and context import. See [Dynamic pr
 
 ### Container stats broadcasting (WebSocket)
 
-- `CONTAINER_STATS_SCHEDULER_INTERVAL` - Milliseconds between periodic `containerStats` broadcasts per authenticated agent on the `/agents` gateway (default: `15000`). The first snapshot is sent immediately after successful `login`; subsequent updates use this interval while at least one client remains authenticated for that agent.
+- `CONTAINER_STATS_SCHEDULER_INTERVAL` - Milliseconds between periodic `containerStats` broadcasts per authenticated agent on the `/socket/agents` gateway (default: `15000`). The first snapshot is sent immediately after successful `login`; subsequent updates use this interval while at least one client remains authenticated for that agent.
 
 ### Git Repository Configuration
 
@@ -241,7 +246,7 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 ### API Configuration
 
 - `API_URL` - Backend API endpoint (default: `http://localhost:3100`)
-- `WEBSOCKET_URL` - WebSocket endpoint (default: `http://localhost:8081`)
+- `WEBSOCKET_URL` - Socket.IO clients namespace URL (default: `http://localhost:3100/socket/clients`). Tickets/status/VNC URLs derive by swapping the `/socket/clients` suffix when unset.
 
 ### Keycloak Configuration
 

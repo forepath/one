@@ -39,7 +39,7 @@ This starts:
 
 - PostgreSQL 16
 - Redis 7 (host port **6380** by default)
-- Billing API (`QUEUE_ROLE=api`, HTTP **3200**, WebSocket **8082**)
+- Billing API (`QUEUE_ROLE=api`, HTTP **3200** including Socket.IO `/socket/billing` and `/socket/projects`)
 - Billing worker (`QUEUE_ROLE=worker`)
 - Billing scheduler (`QUEUE_ROLE=scheduler`)
 - Mailhog for local email capture
@@ -147,7 +147,8 @@ STATIC_API_KEY=dev-api-key-123
 
 # Ports
 PORT=3200
-WEBSOCKET_PORT=8082
+WEBSOCKET_NAMESPACE=socket/billing
+PROJECTS_WEBSOCKET_NAMESPACE=socket/projects
 
 # Multi-tenancy and console URL
 TENANTS=decabill
@@ -171,7 +172,7 @@ The full variable list is in **[Environment Configuration](./deployment/environm
 Local Angular builds use `environment.decabill.ts`, which points the console at:
 
 - REST API: `http://localhost:3200/api`
-- WebSocket: `http://localhost:8082/billing`
+- WebSocket: `http://localhost:3200/socket/billing`
 - Frontend URL: `http://localhost:4500`
 - Default tenant id: `decabill`
 
@@ -238,7 +239,7 @@ Confirm WebSocket dashboard updates on the overview page when logged in as an en
 ## Troubleshooting
 
 - Database or Redis errors: see **[Local Development](./deployment/local-development.md)**.
-- Port conflicts: billing API **3200**, WebSocket **8082**, console **4500**, Redis host **6380**.
+- Port conflicts: billing API **3200**, console **4500**, Redis host **6380**.
 - Migrations run only when `QUEUE_ROLE` is `api` or `all`. Ensure at least one API role process has started.
 
 ---

@@ -7,6 +7,7 @@ import type { Socket as ClientSocket } from 'socket.io-client';
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
+import { buildRemoteAgentsSocketUrl } from '../utils/remote-manager-url.utils';
 
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
@@ -44,13 +45,8 @@ export class RemoteAgentsSessionService {
     private readonly statisticsService: StatisticsService,
   ) {}
 
-  private buildAgentsWsUrl(endpoint: string, overridePort?: number): string {
-    const url = new URL(endpoint);
-    const effectivePort = (overridePort && String(overridePort)) || process.env.CLIENTS_REMOTE_WS_PORT || '8080';
-    const protocol = url.protocol === 'https:' ? 'https' : 'http';
-    const host = url.hostname;
-
-    return `${protocol}://${host}:${effectivePort}/agents`;
+  private buildAgentsWsUrl(endpoint: string): string {
+    return buildRemoteAgentsSocketUrl(endpoint);
   }
 
   private async getAuthHeader(clientId: string): Promise<string> {
@@ -108,7 +104,7 @@ export class RemoteAgentsSessionService {
 
     await validateClientEndpointWithDnsOrThrow(client.endpoint);
     const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
-    const remoteUrl = this.buildAgentsWsUrl(client.endpoint, client.agentWsPort);
+    const remoteUrl = this.buildAgentsWsUrl(client.endpoint);
     const remote: ClientSocket = createCorrelationAwareSocketIoClient(remoteUrl, {
       transports: ['websocket'],
       extraHeaders: { Authorization: authHeader },

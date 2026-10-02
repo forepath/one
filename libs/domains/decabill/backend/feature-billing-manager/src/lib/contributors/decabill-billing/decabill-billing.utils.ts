@@ -35,7 +35,6 @@ export interface DecabillBillingCloudInitConfig {
   proxy: {
     httpPort: number;
     httpsPort: number;
-    websocketPort: number;
   };
   frontend: {
     host: string;
@@ -47,7 +46,6 @@ export interface DecabillBillingCloudInitConfig {
   backend: {
     host: string;
     port: number;
-    websocketPort: number;
     websocketNamespace: string;
     nodeEnv: string;
     defaultLocale: string;
@@ -123,7 +121,6 @@ export function buildDecabillBillingCloudInitConfigFromRequest(
     proxy: {
       httpPort: 80,
       httpsPort: 443,
-      websocketPort: 8443,
     },
     frontend: {
       host: '0.0.0.0',
@@ -134,8 +131,7 @@ export function buildDecabillBillingCloudInitConfigFromRequest(
     backend: {
       host: '0.0.0.0',
       port: 3200,
-      websocketPort: 8082,
-      websocketNamespace: 'billing',
+      websocketNamespace: 'socket/billing',
       nodeEnv: 'production',
       defaultLocale: 'en',
       database: {
@@ -184,8 +180,7 @@ export function buildDecabillBillingCloudInitUserData(config: DecabillBillingClo
   const backendEnvBaseLines = [
     `HOST: ${config.backend?.host ?? '0.0.0.0'}`,
     `PORT: ${config.backend?.port ?? '3200'}`,
-    `WEBSOCKET_PORT: ${config.backend?.websocketPort ?? '8082'}`,
-    `WEBSOCKET_NAMESPACE: ${config.backend?.websocketNamespace ?? 'billing'}`,
+    `WEBSOCKET_NAMESPACE: ${config.backend?.websocketNamespace ?? 'socket/billing'}`,
     `NODE_ENV: ${config.backend?.nodeEnv ?? 'production'}`,
     ...buildPostgresBackendEnvLines(config.backend?.database),
     ...buildRedisBackendEnvLines('decabill-billing'),
@@ -249,7 +244,7 @@ export function buildDecabillBillingCloudInitUserData(config: DecabillBillingClo
     billing: {
       restApiUrl: `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}:${config.proxy?.httpsPort ?? '443'}/api`,
       frontendUrl: `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}`,
-      websocketUrl: `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}:${config.proxy?.httpsPort ?? '443'}/${config.backend?.websocketNamespace ?? 'billing'}`,
+      websocketUrl: `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}/${config.backend?.websocketNamespace ?? 'socket/billing'}`,
       tenantId: 'default',
     },
     authentication: {
@@ -291,7 +286,6 @@ ${backendApiEnv}
       - billing_file_data:/data
     ports:
       - '${config.backend?.port ?? '3200'}:${config.backend?.port ?? '3200'}'
-      - '${config.backend?.websocketPort ?? '8082'}:${config.backend?.websocketPort ?? '8082'}'
     depends_on:
 ${POSTGRES_COMPOSE_DEPENDS_ON}
 ${REDIS_COMPOSE_DEPENDS_ON}
@@ -351,7 +345,6 @@ ${buildNginxComposeService({
   stackDir: DECABILL_BILLING_STACK_DIR,
   httpPort: config.proxy?.httpPort ?? 80,
   httpsPort: config.proxy?.httpsPort ?? 443,
-  websocketPort: config.proxy?.websocketPort ?? 8443,
   dependsOn: ['frontend-billing-console-server', 'backend-billing-manager'],
 })}
 
@@ -401,11 +394,11 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /${config.backend?.websocketNamespace ?? 'billing'} {
-        proxy_pass http://decabill-billing-api:${config.backend?.websocketPort ?? '8082'};
+    location /socket/ {
+        proxy_pass http://decabill-billing-api:${config.backend?.port ?? '3200'};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
+        proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -414,10 +407,10 @@ server {
     }
 
     location /socket.io/ {
-        proxy_pass http://decabill-billing-api:${config.backend?.websocketPort ?? '8082'};
+        proxy_pass http://decabill-billing-api:${config.backend?.port ?? '3200'};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
+        proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -472,11 +465,11 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /${config.backend?.websocketNamespace ?? 'billing'} {
-        proxy_pass http://decabill-billing-api:${config.backend?.websocketPort ?? '8082'};
+    location /socket/ {
+        proxy_pass http://decabill-billing-api:${config.backend?.port ?? '3200'};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
+        proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -485,10 +478,10 @@ server {
     }
 
     location /socket.io/ {
-        proxy_pass http://decabill-billing-api:${config.backend?.websocketPort ?? '8082'};
+        proxy_pass http://decabill-billing-api:${config.backend?.port ?? '3200'};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
+        proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

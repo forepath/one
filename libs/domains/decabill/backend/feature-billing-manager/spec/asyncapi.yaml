@@ -3,9 +3,10 @@ info:
   title: Billing Manager WebSocket Gateways
   version: 1.0.0
   description: |
-    Socket.IO events for billing-manager gateways on port 8082.
+    Socket.IO events for billing-manager gateways on the shared HTTP `PORT` (default 3200).
+    Engine.IO path is `/socket.io/`; REST remains under `/api/`.
 
-    **Namespaces:** `billing` (dashboard status polling) and `projects` (live project board).
+    **Namespaces:** `socket/billing` (dashboard status polling) and `socket/projects` (live project board).
 
     All connections require authentication via `Authorization` in the handshake. Pass `X-Tenant` in handshake
     `extraHeaders` or `auth.tenantId`. Static API key auth is not sufficient for end-user streams.
@@ -19,13 +20,13 @@ info:
     so clients can adopt push when the gateway emits it; until then, treat REST as the source of truth.
 servers:
   billing:
-    host: localhost:8082
+    host: localhost:3200
     protocol: ws
-    description: Socket.IO namespace /billing
+    description: Socket.IO namespace /socket/billing (WEBSOCKET_NAMESPACE) on shared PORT
   projects:
-    host: localhost:8082
+    host: localhost:3200
     protocol: ws
-    description: Socket.IO namespace /projects (PROJECTS_WEBSOCKET_NAMESPACE)
+    description: Socket.IO namespace /socket/projects (PROJECTS_WEBSOCKET_NAMESPACE) on shared PORT
 channels:
   billing/subscribeDashboardStatus:
     address: billing/subscribeDashboardStatus

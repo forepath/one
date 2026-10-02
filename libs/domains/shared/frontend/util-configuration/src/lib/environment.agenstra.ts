@@ -7,13 +7,13 @@ export const environment: Environment = {
   productName: 'Agenstra',
   controller: {
     restApiUrl: 'http://localhost:3100/api',
-    websocketUrl: 'http://localhost:8081/clients',
-    vncWebsocketUrl: 'ws://localhost:8081/vnc',
+    websocketUrl: 'http://localhost:3100/socket/clients',
+    vncWebsocketUrl: 'ws://localhost:3100/socket/vnc',
   },
   billing: {
     restApiUrl: 'http://localhost:3200/api',
     frontendUrl: 'http://localhost:4500',
-    websocketUrl: 'http://localhost:8082/billing',
+    websocketUrl: 'http://localhost:3200/socket/billing',
     tenantId: 'agenstra',
   },
   authentication: {

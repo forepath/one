@@ -1861,21 +1861,6 @@
       }
     }
 
-    <fpc-form-field forId="clientAgentWsPort" label="Agent WebSocket Port">
-      <fpc-form-control
-        controlId="clientAgentWsPort"
-        inputType="number"
-        name="agentWsPort"
-        [ngModel]="newClient().agentWsPort"
-        (ngModelChange)="updateClientFieldNumber('agentWsPort', $event)"
-        min="1"
-        max="65535"
-        [placeholder]="useProvisioning() ? '8443' : '8080'"
-        [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
-      />
-      <small fpcFormFieldHint>Optional. Defaults to {{ useProvisioning() ? '8443' : '8080' }} if not specified.</small>
-    </fpc-form-field>
-
     <!-- Provisioning-specific configuration fields -->
     @if (useProvisioning()) {
       <div class="border-top pt-3 mt-3">
@@ -2282,21 +2267,6 @@
       </fpc-form-field>
     }
 
-    <fpc-form-field forId="updateClientAgentWsPort" label="Agent WebSocket Port">
-      <fpc-form-control
-        controlId="updateClientAgentWsPort"
-        inputType="number"
-        name="agentWsPort"
-        [ngModel]="editingClient().agentWsPort"
-        (ngModelChange)="updateEditingClientFieldNumber('agentWsPort', $event)"
-        min="1"
-        max="65535"
-        i18n-placeholder="@@featureChat-portPlaceholder"
-        placeholder="8080"
-        [disabled]="(clientsUpdating$ | async) === true"
-      />
-      <small fpcFormFieldHint>Optional. Defaults to 8080 if not specified.</small>
-    </fpc-form-field>
     <div *fpcModalFooter>
       <fpc-button
         variant="primary"

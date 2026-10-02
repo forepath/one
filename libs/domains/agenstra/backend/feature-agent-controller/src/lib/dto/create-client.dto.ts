@@ -1,5 +1,5 @@
 import { AuthenticationType } from '@forepath/identity/backend';
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUrl, Max, Min } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator';
 
 /**
  * DTO for creating a new client.
@@ -38,10 +38,4 @@ export class CreateClientDto {
   @IsOptional()
   @IsString({ message: 'Keycloak realm must be a string' })
   keycloakRealm?: string;
-
-  @IsOptional()
-  @IsInt({ message: 'Agent WebSocket port must be an integer' })
-  @Min(1)
-  @Max(65535)
-  agentWsPort?: number;
 }

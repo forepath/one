@@ -21,7 +21,7 @@ Common problems and their solutions in the Agenstra system.
 
 **Solutions**:
 
-- Verify WebSocket URL: `WEBSOCKET_URL=http://localhost:8081`
+- Verify WebSocket URL: `WEBSOCKET_URL=http://localhost:3100/socket/clients`
 - Check WebSocket port is not blocked
 - Verify CORS allows WebSocket connections
 - Check network connectivity

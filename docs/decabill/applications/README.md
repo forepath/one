@@ -53,7 +53,7 @@ Backend service for all billing business logic, persistence, and async processin
 - Stripe checkout and webhooks
 - Cloud provisioning and backorder retry
 
-**Default ports**: HTTP **3200**, WebSocket **8082**
+**Default ports**: HTTP / Socket.IO **3200**
 
 **Docker image**: `ghcr.io/forepath/decabill-billing-api:latest`
 

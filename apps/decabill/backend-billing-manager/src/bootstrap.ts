@@ -133,6 +133,7 @@ export async function bootstrap(): Promise<void> {
 
   await app.listen(port);
   Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix} (QUEUE_ROLE=${role})`);
+  Logger.log(`🔌 Socket.IO WebSocket gateways are running on: http://localhost:${port}/socket/*`);
 
   if (shouldEnableBullBoard(role)) {
     const { username } = readBullBoardAuthConfig();

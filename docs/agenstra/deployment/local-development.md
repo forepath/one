@@ -86,7 +86,10 @@ STATIC_API_KEY=dev-api-key-123
 
 # Ports
 PORT=3100
-WEBSOCKET_PORT=8081
+WEBSOCKET_NAMESPACE=socket/clients
+TICKETS_WEBSOCKET_NAMESPACE=socket/tickets
+KNOWLEDGE_WEBSOCKET_NAMESPACE=socket/pages
+STATUS_WEBSOCKET_NAMESPACE=socket/status
 
 # CORS (for development)
 CORS_ORIGIN=*
@@ -112,7 +115,7 @@ STATIC_API_KEY=dev-api-key-123
 
 # Ports
 PORT=3000
-WEBSOCKET_PORT=8080
+WEBSOCKET_NAMESPACE=socket/agents
 
 # CORS
 CORS_ORIGIN=*
@@ -135,7 +138,7 @@ Create `.env` file in `apps/agenstra/frontend-agent-console`:
 
 ```bash
 API_URL=http://localhost:3100
-WEBSOCKET_URL=http://localhost:8081
+WEBSOCKET_URL=http://localhost:3100/socket/clients
 KEYCLOAK_AUTH_SERVER_URL=http://localhost:8380
 KEYCLOAK_REALM=agenstra
 KEYCLOAK_CLIENT_ID=agent-manager

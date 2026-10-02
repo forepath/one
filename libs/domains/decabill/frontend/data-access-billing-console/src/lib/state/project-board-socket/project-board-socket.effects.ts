@@ -66,7 +66,7 @@ export function resolveProjectBoardWebsocketUrl(environment: Environment): strin
   try {
     const u = new URL(base);
 
-    return `${u.protocol}//${u.host}/projects`;
+    return `${u.protocol}//${u.host}/socket/projects`;
   } catch {
     return `${base.replace(/\/$/, '').replace(/\/billing$/, '')}/projects`;
   }

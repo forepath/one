@@ -13,9 +13,9 @@ describe('resolveStatusWebsocketUrl', () => {
     expect(
       resolveStatusWebsocketUrl({
         ...baseEnvironment,
-        controller: { restApiUrl: 'http://localhost:3000', websocketUrl: 'http://localhost:8081/clients' },
+        controller: { restApiUrl: 'http://localhost:3000', websocketUrl: 'http://localhost:3100/socket/clients' },
       }),
-    ).toBe('http://localhost:8081/status');
+    ).toBe('http://localhost:3100/socket/status');
   });
 
   it('uses explicit statusWebsocketUrl when set', () => {
@@ -24,7 +24,7 @@ describe('resolveStatusWebsocketUrl', () => {
         ...baseEnvironment,
         controller: {
           restApiUrl: 'http://localhost:3000',
-          websocketUrl: 'http://localhost:8081/clients',
+          websocketUrl: 'http://localhost:3100/socket/clients',
           statusWebsocketUrl: 'ws://custom/status',
         },
       }),
@@ -44,9 +44,9 @@ describe('resolveStatusWebsocketUrl', () => {
     expect(
       resolveStatusWebsocketUrl({
         ...baseEnvironment,
-        controller: { restApiUrl: 'http://localhost:3000', websocketUrl: 'ws://localhost:8081/ws' },
+        controller: { restApiUrl: 'http://localhost:3000', websocketUrl: 'ws://localhost:3100/ws' },
       }),
-    ).toBe('ws://localhost:8081/status');
+    ).toBe('ws://localhost:3100/socket/status');
   });
 
   it('appends /status when websocket url is not a valid URL', () => {
@@ -55,7 +55,7 @@ describe('resolveStatusWebsocketUrl', () => {
         ...baseEnvironment,
         controller: { restApiUrl: 'http://localhost:3000', websocketUrl: 'not-a-valid-url' },
       }),
-    ).toBe('not-a-valid-url/status');
+    ).toBe('not-a-valid-url/socket/status');
   });
 
   it('strips trailing slash before appending /status for invalid URLs', () => {
@@ -64,6 +64,6 @@ describe('resolveStatusWebsocketUrl', () => {
         ...baseEnvironment,
         controller: { restApiUrl: 'http://localhost:3000', websocketUrl: 'not-a-valid-url/' },
       }),
-    ).toBe('not-a-valid-url/status');
+    ).toBe('not-a-valid-url/socket/status');
   });
 });

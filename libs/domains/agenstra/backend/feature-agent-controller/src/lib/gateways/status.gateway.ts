@@ -35,8 +35,8 @@ function defaultPollIntervalMs(): number {
 
 type StatusSocket = Socket & { data: { userInfo?: SocketUserInfo } };
 
-@WebSocketGateway(parseInt(process.env.WEBSOCKET_PORT || '8081', 10), {
-  namespace: process.env.STATUS_WEBSOCKET_NAMESPACE || 'status',
+@WebSocketGateway({
+  namespace: process.env.STATUS_WEBSOCKET_NAMESPACE || 'socket/status',
   cors: {
     origin: process.env.WEBSOCKET_CORS_ORIGIN || '*',
   },

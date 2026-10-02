@@ -26,11 +26,11 @@ jest.mock('keycloak-angular', () => ({
 describe('resolveKnowledgeBoardWebsocketUrl', () => {
   it('derives /pages from /clients websocket URL', () => {
     const url = resolveKnowledgeBoardWebsocketUrl({
-      controller: { websocketUrl: 'http://localhost:8081/clients' },
+      controller: { websocketUrl: 'http://localhost:3100/socket/clients' },
       authentication: { type: 'api-key', apiKey: 'x' },
     } as never);
 
-    expect(url).toBe('http://localhost:8081/pages');
+    expect(url).toBe('http://localhost:3100/socket/pages');
   });
 });
 
@@ -63,7 +63,7 @@ describe('KnowledgeBoardSocketEffects', () => {
     connectKnowledgeBoardSocket$(
       actions$ as never,
       {
-        controller: { websocketUrl: 'http://localhost:8081/clients' },
+        controller: { websocketUrl: 'http://localhost:3100/socket/clients' },
         authentication: { type: 'api-key', apiKey: 'x' },
       } as never,
       null,
@@ -82,7 +82,7 @@ describe('KnowledgeBoardSocketEffects', () => {
     const sub = connectKnowledgeBoardSocket$(
       actions$ as never,
       {
-        controller: { websocketUrl: 'http://localhost:8081/clients' },
+        controller: { websocketUrl: 'http://localhost:3100/socket/clients' },
         authentication: { type: 'api-key', apiKey: 'x' },
       } as never,
       null,
@@ -113,7 +113,7 @@ describe('KnowledgeBoardSocketEffects', () => {
     const sub = connectKnowledgeBoardSocket$(
       actions$ as never,
       {
-        controller: { websocketUrl: 'http://localhost:8081/clients' },
+        controller: { websocketUrl: 'http://localhost:3100/socket/clients' },
         authentication: { type: 'api-key', apiKey: 'x' },
       } as never,
       null,
@@ -153,7 +153,7 @@ describe('KnowledgeBoardSocketEffects', () => {
     connectKnowledgeBoardSocket$(
       actions$ as never,
       {
-        controller: { websocketUrl: 'http://localhost:8081/clients' },
+        controller: { websocketUrl: 'http://localhost:3100/socket/clients' },
         authentication: { type: 'api-key', apiKey: 'x' },
       } as never,
       null,

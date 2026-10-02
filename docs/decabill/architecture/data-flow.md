@@ -64,7 +64,7 @@ The overview page connects to the billing namespace and subscribes to periodic s
 ```mermaid
 sequenceDiagram
     participant C as Billing Console
-    participant W as Status Gateway :8082/billing
+    participant W as Status Gateway :3200/socket/billing
     participant S as Domain Services
     participant DB as PostgreSQL
     participant H as Provisioned Host

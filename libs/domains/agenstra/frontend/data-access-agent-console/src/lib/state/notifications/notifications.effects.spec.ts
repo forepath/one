@@ -41,7 +41,7 @@ jest.mock('keycloak-angular', () => ({
 
 const testEnvironment = {
   production: false,
-  controller: { restApiUrl: 'http://localhost:3000', websocketUrl: 'http://localhost:8081/clients' },
+  controller: { restApiUrl: 'http://localhost:3000', websocketUrl: 'http://localhost:3100/socket/clients' },
   billing: { restApiUrl: '', frontendUrl: '' },
   authentication: { type: 'api-key' as const, apiKey: 'test-key' },
   chatModelOptions: {},
@@ -230,7 +230,7 @@ describe('NotificationsEffects', () => {
     await Promise.resolve();
 
     expect(io).toHaveBeenCalledWith(
-      'http://localhost:8081/status',
+      'http://localhost:3100/socket/status',
       expect.objectContaining({
         auth: { Authorization: 'Bearer stored-key' },
       }),
@@ -255,7 +255,7 @@ describe('NotificationsEffects', () => {
 
     expect(keycloak.getToken).toHaveBeenCalled();
     expect(io).toHaveBeenCalledWith(
-      'http://localhost:8081/status',
+      'http://localhost:3100/socket/status',
       expect.objectContaining({
         auth: { Authorization: 'Bearer kc-token' },
       }),

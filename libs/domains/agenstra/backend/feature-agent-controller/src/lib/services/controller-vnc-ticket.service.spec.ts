@@ -23,7 +23,7 @@ describe('ControllerVncTicketService', () => {
       subject: 'user-1',
       isApiKeyAuth: false,
       managerTicket: 'mgr-ticket',
-      managerWsUrl: 'ws://manager:8080/vnc',
+      managerWsUrl: 'ws://manager:3000/socket/vnc',
       clientAuthHeader: 'Bearer abc',
     });
 
@@ -45,7 +45,7 @@ describe('ControllerVncTicketService', () => {
       subject: 'user-1',
       isApiKeyAuth: false,
       managerTicket: 'mgr-ticket',
-      managerWsUrl: 'ws://manager:8080/vnc',
+      managerWsUrl: 'ws://manager:3000/socket/vnc',
       clientAuthHeader: 'Bearer abc',
     });
 
@@ -60,7 +60,7 @@ describe('ControllerVncTicketService', () => {
       subject: 'user-1',
       isApiKeyAuth: false,
       managerTicket: 'mgr-ticket',
-      managerWsUrl: 'ws://manager:8080/vnc',
+      managerWsUrl: 'ws://manager:3000/socket/vnc',
       clientAuthHeader: 'Bearer abc',
       expiresAt: Date.now() + 60_000,
       consumed: false,

@@ -20,7 +20,7 @@ describe('decabill-billing.utils', () => {
       expect(config.backend.billingFrontendUrl).toBe('https://awesome-armadillo-abc12.spirde.com');
       expect(config.backend.port).toBe(3200);
       expect(config.frontend.port).toBe(4500);
-      expect(config.backend.websocketNamespace).toBe('billing');
+      expect(config.backend.websocketNamespace).toBe('socket/billing');
     });
 
     it('generates random encryptionKey, jwtSecret, and database password', () => {
@@ -82,6 +82,11 @@ describe('decabill-billing.utils', () => {
       expect(script).toContain(DECABILL_BILLING_STACK_DIR);
       expect(script).toContain('REDIS_KEY_PREFIX: decabill-billing');
       expect(script).toContain('BILLING_FRONTEND_URL:');
+      expect(script).toContain('location /socket/');
+      expect(script).toContain('location /socket.io/');
+      expect(script).toContain("WEBSOCKET_NAMESPACE: 'socket/billing'");
+      expect(script).not.toContain('WEBSOCKET_PORT');
+      expect(script).toContain('"websocketUrl":"https://host1.example.com/socket/billing"');
     });
   });
 

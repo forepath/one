@@ -71,7 +71,7 @@ For complete API endpoint documentation, request/response schemas, and authentic
 
 ## WebSocket Gateway
 
-The Socket.IO WebSocket gateway is available at `http://localhost:8081/clients` (or configured `WEBSOCKET_PORT`).
+The Socket.IO gateway shares HTTP `PORT` (default 3100) at `http://localhost:3100/socket/clients` (override via `WEBSOCKET_NAMESPACE`). VNC `/socket/vnc`; Engine.IO `/socket.io/`.
 
 For complete WebSocket event specifications, authentication flow, and usage examples, see the [library documentation](../../libs/domains/agenstra/backend/feature-agent-controller/README.md#websocket-gateway).
 
@@ -202,7 +202,10 @@ See the [library documentation](../../libs/domains/agenstra/backend/feature-agen
 **Application-specific:**
 
 - `PORT` - HTTP API port (default: `3100`)
-- `WEBSOCKET_PORT` - WebSocket gateway port (default: `8081`)
+- `WEBSOCKET_NAMESPACE` - Clients namespace (default: `socket/clients`)
+- `TICKETS_WEBSOCKET_NAMESPACE` - Tickets namespace (default: `socket/tickets`)
+- `KNOWLEDGE_WEBSOCKET_NAMESPACE` - Knowledge namespace (default: `socket/pages`)
+- `STATUS_WEBSOCKET_NAMESPACE` - Status namespace (default: `socket/status`)
 - `NODE_ENV` - Environment mode (`development` or `production`)
 
 **CORS Configuration:**
@@ -279,7 +282,6 @@ docker compose up -d
 # Or run directly
 docker run \
   -p 3100:3100 \
-  -p 8081:8081 \
   -e CORS_ORIGIN="https://agenstra.com" \
   -e RATE_LIMIT_ENABLED=true \
   -e RATE_LIMIT_LIMIT=100 \

@@ -13,7 +13,7 @@ The app module in `apps/decabill/backend-billing-manager` bootstraps shared queu
 This application provides:
 
 - **HTTP REST API** Subscriptions, invoices, catalog, customer profile, admin billing, public offerings
-- **WebSocket gateway** Dashboard server status on namespace **`billing`**; project board on namespace **`projects`**
+- **WebSocket gateway** Dashboard server status on namespace **`socket/billing`**; project board on namespace **`socket/projects`** (shared HTTP `PORT`)
 - **Background jobs** Billing cycles, expiration, reminders, overdue handling, backorder retry, SSH stack updates
 - **Stripe integration** Checkout sessions and signed webhooks
 - **Invoice PDFs** ZUGFeRD-style generation and filesystem storage
@@ -30,7 +30,7 @@ Built with:
 - **NestJS** Modules, controllers, guards, and gateways
 - **TypeORM** Entities and migrations (app migrations plus identity migrations)
 - **BullMQ** Queue name **`billing`** with coordinator and unit jobs
-- **Socket.IO** Separate WebSocket listener on `WEBSOCKET_PORT`
+- **Socket.IO** Shared with HTTP `PORT` (namespaces under `/socket/`)
 - **PostgreSQL** Primary datastore
 - **Redis** BullMQ connection
 
@@ -38,13 +38,12 @@ Domain logic, OpenAPI source, and AsyncAPI source live in `libs/domains/decabill
 
 ## Ports and Network Surfaces
 
-| Variable                       | Default    | Description                     |
-| ------------------------------ | ---------- | ------------------------------- |
-| `PORT`                         | **3200**   | HTTP API (global prefix `/api`) |
-| `WEBSOCKET_PORT`               | **8082**   | Socket.IO server                |
-| `WEBSOCKET_NAMESPACE`          | `billing`  | Dashboard status namespace      |
-| `PROJECTS_WEBSOCKET_NAMESPACE` | `projects` | Project board namespace         |
-| `HOST`                         | `0.0.0.0`  | Bind address                    |
+| Variable                       | Default           | Description                                           |
+| ------------------------------ | ----------------- | ----------------------------------------------------- |
+| `PORT`                         | **3200**          | HTTP + Socket.IO (`/api/`, `/socket/`, `/socket.io/`) |
+| `WEBSOCKET_NAMESPACE`          | `socket/billing`  | Dashboard status namespace                            |
+| `PROJECTS_WEBSOCKET_NAMESPACE` | `socket/projects` | Project board namespace                               |
+| `HOST`                         | `0.0.0.0`         | Bind address                                          |
 
 Health and monitoring endpoints are provided through shared backend utilities where enabled.
 
@@ -137,7 +136,7 @@ Send `X-Tenant` on every request when using multi-tenancy.
 
 ## WebSocket Gateways
 
-Both gateways listen on **`WEBSOCKET_PORT`** (default **8082**) as separate Socket.IO namespaces.
+Both gateways share HTTP **`PORT`** (default **3200**) as separate Socket.IO namespaces.
 
 ### Dashboard status (`billing`)
 
@@ -146,13 +145,13 @@ AsyncAPI documents the **`billing`** namespace:
 - Client: `subscribeDashboardStatus`, `unsubscribeDashboardStatus`
 - Server: `dashboardStatusUpdate`, `error`
 
-Requires the same user JWT or Keycloak session as interactive REST calls. Connect to `http://<host>:8082/billing` with authorization in the handshake.
+Requires the same user JWT or Keycloak session as interactive REST calls. Connect to `http://<host>:3200/socket/billing` with authorization in the handshake.
 
 See **[Real-time Status](../features/real-time-status.md)**.
 
 ### Project board (`projects`)
 
-AsyncAPI documents the **`projects`** namespace (env: `PROJECTS_WEBSOCKET_NAMESPACE`):
+AsyncAPI documents the **`socket/projects`** namespace (env: `PROJECTS_WEBSOCKET_NAMESPACE`):
 
 - Client: `setProject` with `{ projectId }`
 - Server: `setProjectSuccess`, board mutation events (`ticketUpsert`, `milestoneUpsert`, `timeEntryUpsert`, `projectSummaryChanged`, …), `error`

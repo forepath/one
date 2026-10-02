@@ -179,10 +179,6 @@ http {
         server backend-agent-manager:3000;
     }
 
-    upstream websocket {
-        server backend-agent-manager:8080;
-    }
-
     # HTTP to HTTPS redirect
     server {
         listen 80;
@@ -190,7 +186,7 @@ http {
         return 301 https://$host$request_uri;
     }
 
-    # HTTPS server for API (port 3000)
+    # HTTPS server for API + WebSocket (shared PORT)
     server {
         listen 3000 ssl http2;
         server_name _;
@@ -213,36 +209,37 @@ http {
             proxy_cache_bypass $http_upgrade;
         }
 
+        # Socket.IO namespaces under /socket/
+        location /socket/ {
+            proxy_pass http://backend;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_cache_bypass $http_upgrade;
+        }
+
+        # Socket.IO Engine.IO protocol
+        location /socket.io/ {
+            proxy_pass http://backend;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_cache_bypass $http_upgrade;
+        }
+
         # Health check
         location /health {
             access_log off;
             return 200 "healthy\\n";
             add_header Content-Type text/plain;
-        }
-    }
-
-    # HTTPS server for Socket.IO WebSocket (port 8443)
-    server {
-        listen 8443 ssl http2;
-        server_name _;
-
-        ssl_certificate /etc/nginx/ssl/nginx-selfsigned.crt;
-        ssl_certificate_key /etc/nginx/ssl/nginx-selfsigned.key;
-        ssl_protocols TLSv1.2 TLSv1.3;
-        ssl_ciphers HIGH:!aNULL:!MD5;
-
-        location ~* \\.io {
-          proxy_set_header X-Real-IP $remote_addr;
-          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          proxy_set_header Host $http_host;
-          proxy_set_header X-NginX-Proxy false;
-
-          proxy_pass http://websocket;
-          proxy_redirect off;
-
-          proxy_http_version 1.1;
-          proxy_set_header Upgrade $http_upgrade;
-          proxy_set_header Connection "upgrade";
         }
     }
 }
@@ -276,7 +273,6 @@ services:
       # Backend API configuration
       HOST: 0.0.0.0
       PORT: 3000
-      WEBSOCKET_PORT: 8080
       NODE_ENV: production
       # Database configuration
       DB_HOST: postgres
@@ -292,7 +288,6 @@ ${allEnvVars.map((line) => `      ${line}`).join('\n')}`
 }
     expose:
       - "3000"
-      - "8080"
     volumes:
       # Mount Docker socket for Docker-in-Docker functionality
       - /var/run/docker.sock:/var/run/docker.sock
@@ -308,7 +303,6 @@ ${allEnvVars.map((line) => `      ${line}`).join('\n')}`
     container_name: agent-manager-nginx
     ports:
       - "3000:3000"
-      - "8443:8443"
     volumes:
       - /opt/agent-manager/ssl:/etc/nginx/ssl:ro
       - /opt/agent-manager/nginx.conf:/etc/nginx/nginx.conf:ro
@@ -416,7 +410,6 @@ DOCKER_COMPOSE_EOF
         keycloakClientId: provisionServerDto.keycloakClientId,
         keycloakClientSecret: provisionServerDto.keycloakClientSecret,
         keycloakRealm: provisionServerDto.keycloakRealm,
-        agentWsPort: provisionServerDto.agentWsPort || 8443,
       },
       userId,
       userRole,

@@ -15,8 +15,8 @@ This document provides a detailed breakdown of all system components, their resp
 - `ClientsController` - HTTP REST API for clients, proxy paths, tickets, statistics, filter rules, provisioning
 - `ClientsService` - Business logic for clients with permission checks
 - `ClientUsersService` - Manages client-user relationships and per-client roles
-- `ClientsGateway` - WebSocket `clients` namespace (manager proxy, ticket hints for chat)
-- `TicketsBoardGateway` - WebSocket `tickets` namespace (ticket board realtime)
+- `ClientsGateway` - WebSocket `socket/clients` namespace (manager proxy, ticket hints for chat)
+- `TicketsBoardGateway` - WebSocket `socket/tickets` namespace (ticket board realtime)
 - `ClientAgentProxyService` - Proxies HTTP requests to remote agent-managers
 - `ProvisioningService` - Automated cloud server provisioning
 - Ticket, automation, statistics, and filter-rule services and repositories (see library source)
@@ -30,7 +30,7 @@ This document provides a detailed breakdown of all system components, their resp
 **Ports**:
 
 - HTTP API: `3100` (default)
-- WebSocket: `8081` (default; namespaces `clients` and `tickets`)
+- Socket.IO / VNC: same HTTP port `3100` (namespaces `socket/clients`, `socket/tickets`, `socket/pages`, `socket/status`; VNC `/socket/vnc`)
 
 **Documentation**: [Backend Agent Controller Application](../applications/backend-agent-controller.md)
 
@@ -60,7 +60,7 @@ This document provides a detailed breakdown of all system components, their resp
 **Ports**:
 
 - HTTP API: `3000` (default)
-- WebSocket: `8080` (default)
+- Socket.IO / VNC: same HTTP port `3000` (namespace `socket/agents`; VNC `/socket/vnc`)
 
 **Documentation**: [Backend Agent Manager Application](../applications/backend-agent-manager.md)
 
@@ -117,8 +117,8 @@ This document provides a detailed breakdown of all system components, their resp
 - `ClientsService` - Business logic with permission checks
 - `ClientUsersService` - Client-user relationship management
 - `ClientAgentProxyService` - HTTP request proxying
-- `ClientsGateway` - WebSocket `clients` namespace
-- `TicketsBoardGateway` - WebSocket `tickets` namespace
+- `ClientsGateway` - WebSocket `socket/clients` namespace
+- `TicketsBoardGateway` - WebSocket `socket/tickets` namespace
 - `ProvisioningService` - Server provisioning (Hetzner, DigitalOcean)
 
 **Implementation**: Backend Agent Controller library
@@ -174,10 +174,10 @@ This document provides a detailed breakdown of all system components, their resp
 - **State Slices**:
   - `clients` - Client state management
   - `agents` - Agent state management
-  - `containerSocket` - WebSocket `clients` namespace connection/context state
+  - `containerSocket` - WebSocket `socket/clients` namespace connection/context state
   - `chatTimeline` - Chat messages, events, filters, and pagination
   - `terminals` - Terminal session registry and output ring
-  - `ticketsBoardSocket` - WebSocket `tickets` namespace state
+  - `ticketsBoardSocket` - WebSocket `socket/tickets` namespace state
   - `files` - File system state (including latest conflict notification)
   - `env` - Environment variables
   - `vcs` - Version control state
@@ -272,9 +272,9 @@ graph TB
 
 ### WebSocket
 
-- Frontend ↔ Agent Controller (`clients`): Workspace context, `forward` to manager, proxied events by name
-- Frontend ↔ Agent Controller (`tickets`): Ticket board and automation realtime
-- Agent Controller ↔ Agent Manager: Event forwarding, agent communication
+- Frontend ↔ Agent Controller (`socket/clients`): Workspace context, `forward` to manager, proxied events by name
+- Frontend ↔ Agent Controller (`socket/tickets`): Ticket board and automation realtime
+- Agent Controller ↔ Agent Manager (`socket/agents`): Event forwarding, agent communication
 
 ### Database
 

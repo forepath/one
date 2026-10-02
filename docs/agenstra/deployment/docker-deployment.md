@@ -184,7 +184,6 @@ docker compose down -v
 docker run -d \
   --name agent-controller \
   -p 3100:3100 \
-  -p 8081:8081 \
   -e DB_HOST=postgres \
   -e STATIC_API_KEY=your-api-key \
   backend-agent-controller:api
@@ -194,7 +193,6 @@ docker run -d \
   --name agent-manager \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -p 3000:3000 \
-  -p 8080:8080 \
   -e DB_HOST=postgres \
   -e STATIC_API_KEY=your-api-key \
   backend-agent-manager:api

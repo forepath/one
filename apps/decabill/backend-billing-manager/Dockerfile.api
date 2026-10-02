@@ -4,9 +4,9 @@
 # Registry:   ghcr.io/forepath/decabill-billing-api
 # Base:       debian:trixie-slim
 # User:       decabill (APP_UID / APP_GID, default 10001)
-# Exposes:    3200 (HTTP API), 8082 (WebSocket)
+# Exposes:    3200 (HTTP API + WebSocket)
 # Build:      npx nx run backend-billing-manager:api-container-image
-# Run:        nx docker:run decabill-backend-billing-manager -p 3200:3200 -p 8082:8082
+# Run:        nx docker:run decabill-backend-billing-manager -p 3200:3200
 # Notes:      Configure via runtime env; see docs/decabill/deployment/
 #             Entrypoint runs as root for storage chown, then drops to decabill via runuser.
 #             Playwright Chromium is baked in for HTML invoice PDF rendering.
@@ -21,7 +21,6 @@ ARG VERSION=0.0.0
 
 ENV HOST=0.0.0.0
 ENV PORT=3200
-ENV WEBSOCKET_PORT=8082
 ENV NVM_DIR=/home/decabill/.nvm
 ENV NODE_VERSION=24.14.1
 ENV HOME=/home/decabill
@@ -32,7 +31,6 @@ ENV VERSION=${VERSION}
 WORKDIR /app
 
 EXPOSE ${PORT}
-EXPOSE ${WEBSOCKET_PORT}
 
 RUN apt-get update && \
     apt-get upgrade -y --no-install-recommends && \

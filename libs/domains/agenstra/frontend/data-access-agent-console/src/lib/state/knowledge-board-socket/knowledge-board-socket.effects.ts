@@ -71,9 +71,9 @@ export function resolveKnowledgeBoardWebsocketUrl(environment: Environment): str
   try {
     const u = new URL(base);
 
-    return `${u.protocol}//${u.host}/pages`;
+    return `${u.protocol}//${u.host}/socket/pages`;
   } catch {
-    return `${base.replace(/\/$/, '')}/pages`;
+    return `${base.replace(/\/$/, '')}/socket/pages`;
   }
 }
 
