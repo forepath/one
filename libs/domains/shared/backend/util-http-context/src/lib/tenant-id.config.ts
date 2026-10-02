@@ -112,6 +112,18 @@ export function resolveTenantIdFromHeader(
   return raw;
 }
 
+function readRawTenantHeaderValue(headers: Record<string, unknown> | undefined): string | undefined {
+  if (!headers) {
+    return undefined;
+  }
+
+  const raw = headers[TENANT_ID_HEADER];
+  const value = typeof raw === 'string' ? raw : Array.isArray(raw) ? raw[0] : undefined;
+  const trimmed = typeof value === 'string' ? value.trim() : '';
+
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
 export function readIncomingTenantIdFromHeaders(headers: Record<string, unknown> | undefined): string | undefined {
   if (!headers) {
     return undefined;
@@ -123,14 +135,22 @@ export function readIncomingTenantIdFromHeaders(headers: Record<string, unknown>
   return resolveTenantIdFromHeader(value);
 }
 
+/**
+ * Resolves tenant id for Socket.IO handshakes.
+ *
+ * Prefer an **explicit** `x-tenant` header when present. A missing header must not
+ * fall back to {@link DEFAULT_TENANT} before checking `auth.tenantId` / `auth['X-Tenant']`:
+ * browser clients cannot set custom headers on the WebSocket transport and rely on auth.
+ * Only when both header and auth omit a tenant does resolution default (same rules as HTTP).
+ */
 export function readIncomingTenantIdFromHandshake(
   headers: Record<string, unknown> | undefined,
   auth?: Record<string, unknown>,
 ): string | undefined {
-  const fromHeader = readIncomingTenantIdFromHeaders(headers);
+  const explicitHeader = readRawTenantHeaderValue(headers);
 
-  if (fromHeader) {
-    return fromHeader;
+  if (explicitHeader) {
+    return resolveTenantIdFromHeader(explicitHeader);
   }
 
   const authValue = auth?.['tenantId'] ?? auth?.['X-Tenant'];
