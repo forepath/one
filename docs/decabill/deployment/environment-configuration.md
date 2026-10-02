@@ -6,15 +6,16 @@ Complete reference for environment variables used in Decabill.
 
 ### Application Configuration
 
-| Variable                       | Description                              | Default        |
-| ------------------------------ | ---------------------------------------- | -------------- |
-| `HOST`                         | HTTP bind address                        | `0.0.0.0`      |
-| `PORT`                         | HTTP API port                            | `3200`         |
-| `WEBSOCKET_PORT`               | WebSocket gateway port                   | `8082`         |
-| `WEBSOCKET_NAMESPACE`          | Dashboard status Socket.IO namespace     | `billing`      |
-| `PROJECTS_WEBSOCKET_NAMESPACE` | Project board Socket.IO namespace        | `projects`     |
-| `WEBSOCKET_CORS_ORIGIN`        | WebSocket CORS origins (comma-separated) | `*` in compose |
-| `NODE_ENV`                     | `development` or `production`            | `development`  |
+| Variable                       | Description                                                | Default           |
+| ------------------------------ | ---------------------------------------------------------- | ----------------- |
+| `HOST`                         | HTTP bind address                                          | `0.0.0.0`         |
+| `PORT`                         | HTTP / Socket.IO port (`/api/`, `/socket/`, `/socket.io/`) | `3200`            |
+| `WEBSOCKET_NAMESPACE`          | Dashboard status Socket.IO namespace                       | `socket/billing`  |
+| `PROJECTS_WEBSOCKET_NAMESPACE` | Project board Socket.IO namespace                          | `socket/projects` |
+| `WEBSOCKET_CORS_ORIGIN`        | WebSocket CORS origins (comma-separated)                   | `*` in compose    |
+| `NODE_ENV`                     | `development` or `production`                              | `development`     |
+
+**Migration:** `WEBSOCKET_PORT` is removed. Socket.IO shares `PORT`. Operators must re-provision existing stacks so nginx proxies `/api/`, `/socket/`, and `/socket.io/` to that port.
 
 ### Database Configuration
 
@@ -278,15 +279,15 @@ Billing console compose default: `CSP_CONNECT_SRC_EXTRA=http://host.docker.inter
 
 ### Billing Console Server
 
-| Variable         | Description              | Default                |
-| ---------------- | ------------------------ | ---------------------- |
-| `PORT`           | HTTP port                | `4500` (console image) |
-| `HOST`           | Bind address             | `0.0.0.0`              |
-| `DEFAULT_LOCALE` | Default locale           | `en`                   |
-| `API_URL`        | Build-time API URL       | See app config         |
-| `WEBSOCKET_URL`  | Build-time WebSocket URL | See app config         |
+| Variable         | Description                                                            | Default                |
+| ---------------- | ---------------------------------------------------------------------- | ---------------------- |
+| `PORT`           | HTTP port                                                              | `4500` (console image) |
+| `HOST`           | Bind address                                                           | `0.0.0.0`              |
+| `DEFAULT_LOCALE` | Default locale                                                         | `en`                   |
+| `API_URL`        | Build-time API URL                                                     | See app config         |
+| `WEBSOCKET_URL`  | Build-time Socket.IO URL (e.g. `http://localhost:3200/socket/billing`) | See app config         |
 
-Runtime `/config` JSON may include `billing.projectsWebsocketUrl` (for example `ws://localhost:8082/projects`). When omitted, the billing console derives the projects URL from `billing.websocketUrl`.
+Runtime `/config` JSON may include `billing.projectsWebsocketUrl` (for example `http://localhost:3200/socket/projects`). When omitted, the billing console derives the projects URL from `billing.websocketUrl` by swapping `/socket/billing` for `/socket/projects`.
 
 ### Docs Server
 

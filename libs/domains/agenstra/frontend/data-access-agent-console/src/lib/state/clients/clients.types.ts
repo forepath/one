@@ -21,7 +21,6 @@ export interface ClientResponseDto {
   description?: string;
   endpoint: string;
   authenticationType: ClientAuthenticationType;
-  agentWsPort?: number;
   config?: ConfigResponseDto;
   isAutoProvisioned: boolean;
   /** True if the current user may change autonomy, env vars, agents, and workspace settings. */
@@ -40,7 +39,6 @@ export interface CreateClientDto {
   keycloakClientSecret?: string;
   keycloakRealm?: string;
   keycloakAuthServerUrl?: string;
-  agentWsPort?: number;
   gitRepositorySetupMode?: 'clone' | 'empty';
   gitRepositoryUrl?: string;
   gitUsername?: string;
@@ -63,7 +61,6 @@ export interface UpdateClientDto {
   keycloakClientId?: string;
   keycloakClientSecret?: string;
   keycloakRealm?: string;
-  agentWsPort?: number;
 }
 
 export interface CreateClientResponseDto extends ClientResponseDto {
@@ -112,7 +109,6 @@ export interface ProvisionServerDto {
   keycloakClientSecret?: string;
   keycloakRealm?: string;
   keycloakAuthServerUrl?: string;
-  agentWsPort?: number;
   gitRepositorySetupMode?: 'clone' | 'empty';
   gitRepositoryUrl?: string;
   gitUsername?: string;

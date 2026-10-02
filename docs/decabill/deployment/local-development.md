@@ -94,7 +94,8 @@ STATIC_API_KEY=dev-api-key-123
 
 # Ports
 PORT=3200
-WEBSOCKET_PORT=8082
+WEBSOCKET_NAMESPACE=socket/billing
+PROJECTS_WEBSOCKET_NAMESPACE=socket/projects
 
 # Multi-tenancy
 TENANTS=default
@@ -130,7 +131,7 @@ Typical local values:
 
 ```bash
 API_URL=http://localhost:3200
-WEBSOCKET_URL=http://localhost:8082
+WEBSOCKET_URL=http://localhost:3200/socket/billing
 ```
 
 Express server variables (when running the SSR server locally):
@@ -224,7 +225,7 @@ See **[Background Jobs](./background-jobs.md)**.
 
 ### Port Conflicts
 
-- Billing API: **3200**, WebSocket: **8082**, console: **4500**, docs: **4200**, Redis host port: **6380** Change ports in `.env` if needed: `lsof -i :3200`
+- Billing API: **3200** (REST + Socket.IO), console: **4500**, docs: **4200**, Redis host port: **6380**. Change ports in `.env` if needed: `lsof -i :3200`
 
 ## Related documentation
 

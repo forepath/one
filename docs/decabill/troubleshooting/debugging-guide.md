@@ -123,7 +123,7 @@ Set `STRIPE_WEBHOOK_SECRET` to the signing secret from `stripe listen`.
 
 ## WebSocket Testing
 
-Billing WebSocket gateway listens on port **8082** with namespace **`billing`**.
+Billing Socket.IO shares HTTP port **3200** with namespace **`socket/billing`**.
 
 Use browser DevTools Network tab or a Socket.IO client with:
 

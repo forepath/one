@@ -4,9 +4,9 @@
 # Registry:   ghcr.io/forepath/agenstra-controller-api
 # Base:       debian:trixie-slim
 # User:       agenstra (APP_UID / APP_GID, default 10001); member of `docker` group
-# Exposes:    3100 (HTTP API), 8081 (WebSocket)
+# Exposes:    3100 (HTTP API + WebSocket)
 # Build:      npx nx run backend-agent-controller:api-container-image
-# Run:        nx docker:run agenstra-backend-agent-controller -p 3100:3100 -p 8081:8081
+# Run:        nx docker:run agenstra-backend-agent-controller -p 3100:3100
 # Notes:      Mount Docker socket: -v /var/run/docker.sock:/var/run/docker.sock
 #              Entrypoint runs as root to sync socket GID, then drops to agenstra via runuser/sg
 # -----------------------------------------------------------------------------
@@ -21,7 +21,6 @@ ARG VERSION=0.0.0
 
 ENV HOST=0.0.0.0
 ENV PORT=3100
-ENV WEBSOCKET_PORT=8081
 ENV NVM_DIR=/home/agenstra/.nvm
 ENV NODE_VERSION=24.14.1
 ENV HOME=/home/agenstra
@@ -31,7 +30,6 @@ ENV VERSION=${VERSION}
 WORKDIR /app
 
 EXPOSE ${PORT}
-EXPOSE ${WEBSOCKET_PORT}
 
 RUN apt-get update && \
     apt-get upgrade -y --no-install-recommends && \

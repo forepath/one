@@ -32,18 +32,18 @@ export interface Environment {
   controller: {
     restApiUrl: string;
     websocketUrl: string;
-    /** When unset, derived from `websocketUrl` by swapping the `/clients` suffix for `/tickets`. */
+    /** When unset, derived from `websocketUrl` by swapping the `/socket/clients` suffix for `/socket/tickets`. */
     ticketsWebsocketUrl?: string;
-    /** When unset, derived from `websocketUrl` by swapping the `/clients` suffix for `/status`. */
+    /** When unset, derived from `websocketUrl` by swapping the `/socket/clients` suffix for `/socket/status`. */
     statusWebsocketUrl?: string;
-    /** When unset, derived from `websocketUrl` by swapping the `/clients` suffix for `/vnc`. */
+    /** When unset, derived from `websocketUrl` by swapping the `/socket/clients` suffix for `/socket/vnc`. */
     vncWebsocketUrl?: string;
   };
   billing: {
     restApiUrl: string;
     frontendUrl: string;
     websocketUrl?: string;
-    /** When unset, derived from `websocketUrl` host with `/projects` namespace. */
+    /** When unset, derived from `websocketUrl` host with `/socket/projects` namespace. */
     projectsWebsocketUrl?: string;
     /** Optional tenant id sent as `X-Tenant` on billing API requests; defaults to `default`. */
     tenantId?: string;

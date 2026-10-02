@@ -124,22 +124,22 @@ Configure the billing console runtime config:
 ```json
 {
   "billing": {
-    "websocketUrl": "ws://localhost:8082/billing",
-    "projectsWebsocketUrl": "ws://localhost:8082/projects",
+    "websocketUrl": "http://localhost:3200/socket/billing",
+    "projectsWebsocketUrl": "http://localhost:3200/socket/projects",
     "tenantId": "default"
   }
 }
 ```
 
-When `projectsWebsocketUrl` is omitted, the client derives it from `websocketUrl` by replacing the `/billing` path segment with `/projects`.
+When `projectsWebsocketUrl` is omitted, the client derives it from `websocketUrl` by replacing the `/socket/billing` path segment with `/socket/projects`.
 
 Backend environment variables:
 
-| Variable                       | Default    | Purpose                                            |
-| ------------------------------ | ---------- | -------------------------------------------------- |
-| `WEBSOCKET_PORT`               | `8082`     | Socket.IO TCP port (shared with dashboard gateway) |
-| `PROJECTS_WEBSOCKET_NAMESPACE` | `projects` | Namespace path segment                             |
-| `WEBSOCKET_CORS_ORIGIN`        | `*`        | CORS origin for browser clients                    |
+| Variable                       | Default           | Purpose                                               |
+| ------------------------------ | ----------------- | ----------------------------------------------------- |
+| `PORT`                         | `3200`            | HTTP + Socket.IO port (shared with dashboard gateway) |
+| `PROJECTS_WEBSOCKET_NAMESPACE` | `socket/projects` | Namespace path segment                                |
+| `WEBSOCKET_CORS_ORIGIN`        | `*`               | CORS origin for browser clients                       |
 
 ### Authentication
 

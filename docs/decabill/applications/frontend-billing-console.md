@@ -117,8 +117,8 @@ Development builds replace `environment.ts` with `environment.decabill.ts`:
 billing: {
   restApiUrl: 'http://localhost:3200/api',
   frontendUrl: 'http://localhost:4500',
-  websocketUrl: 'http://localhost:8082/billing',
-  projectsWebsocketUrl: 'http://localhost:8082/projects',
+  websocketUrl: 'http://localhost:3200/socket/billing',
+  projectsWebsocketUrl: 'http://localhost:3200/socket/projects',
   tenantId: 'decabill',
 },
 authentication: {
@@ -129,7 +129,7 @@ authentication: {
 
 Production uses `environment.decabill.production.ts`. Align `authentication.type` with backend `AUTHENTICATION_METHOD`.
 
-When `projectsWebsocketUrl` is omitted, the console derives it from `websocketUrl` by swapping the `/billing` path for `/projects`.
+When `projectsWebsocketUrl` is omitted, the console derives it from `websocketUrl` by swapping the `/socket/billing` path for `/socket/projects`.
 
 ### Docker image
 

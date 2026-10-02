@@ -25,8 +25,7 @@ services:
       # Backend API configuration
       HOST: ${HOST:-0.0.0.0}
       PORT: ${PORT:-3000}
-      WEBSOCKET_PORT: ${WEBSOCKET_PORT:-8080}
-      WEBSOCKET_NAMESPACE: ${WEBSOCKET_NAMESPACE:-agents}
+      WEBSOCKET_NAMESPACE: ${WEBSOCKET_NAMESPACE:-socket/agents}
       WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-*}
       NODE_ENV: ${NODE_ENV:-development}
       # Agent configuration
@@ -82,7 +81,6 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
     ports:
       - '${PORT:-3000}:${PORT:-3000}'
-      - '${WEBSOCKET_PORT:-8080}:${WEBSOCKET_PORT:-8080}'
     volumes:
       # Mount Docker socket for Docker-in-Docker functionality
       - /var/run/docker.sock:/var/run/docker.sock

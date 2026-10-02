@@ -250,7 +250,7 @@ When `CONFIG` is set, the frontend server fetches and validates the remote JSON 
 ### API Configuration
 
 - `API_URL` - Backend API endpoint (default: `http://localhost:3100`)
-- `WEBSOCKET_URL` - WebSocket endpoint (default: `http://localhost:8081`)
+- `WEBSOCKET_URL` - Socket.IO clients URL (default: `http://localhost:3100/socket/clients`)
 
 ### Keycloak Configuration (Keycloak mode)
 

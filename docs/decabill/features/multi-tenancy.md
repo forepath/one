@@ -12,7 +12,7 @@ Multi-tenancy is enforced on:
 
 - HTTP REST API via the `X-Tenant` header
 - Socket.IO dashboard status via handshake `extraHeaders` or `auth.tenantId`
-- Socket.IO project board via the same handshake rules on namespace **`projects`** Background jobs that iterate all configured tenants
+- Socket.IO project board via the same handshake rules on namespace **`socket/projects`** Background jobs that iterate all configured tenants
 - Stripe webhook handling that resolves tenant from checkout session metadata
 
 ## Tenant Selection

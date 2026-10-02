@@ -1,8 +1,7 @@
 x-backend-billing-manager-environment: &backend-billing-manager-environment
   HOST: ${HOST:-0.0.0.0}
   PORT: ${PORT:-3200}
-  WEBSOCKET_PORT: ${WEBSOCKET_PORT:-8082}
-  WEBSOCKET_NAMESPACE: ${WEBSOCKET_NAMESPACE:-billing}
+  WEBSOCKET_NAMESPACE: ${WEBSOCKET_NAMESPACE:-socket/billing}
   WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-*}
   NODE_ENV: ${NODE_ENV:-development}
   DB_HOST: ${DB_HOST:-postgres}
@@ -216,7 +215,6 @@ services:
       - ./provider-plugins:/var/lib/forepath/provider-plugins
     ports:
       - '${PORT:-3200}:${PORT:-3200}'
-      - '${WEBSOCKET_PORT:-8082}:${WEBSOCKET_PORT:-8082}'
     depends_on:
       postgres:
         condition: service_healthy

@@ -185,7 +185,7 @@ See the [OpenAPI specification](./spec/openapi.yaml) for detailed request/respon
 The `AgentsGateway` provides WebSocket-based real-time communication with database-backed authentication:
 
 - **Namespace**: `/agents`
-- **Port**: `8080` (configurable via `WEBSOCKET_PORT` environment variable)
+- **Port**: shared HTTP `PORT` (default `3000`); namespace `/socket/agents`
 - **Container stats interval**: `CONTAINER_STATS_SCHEDULER_INTERVAL` in milliseconds (default `15000`); first `containerStats` after login is immediate, then periodic while clients stay authenticated
 - **CORS**: Configured for development (adjust for production)
 
@@ -322,7 +322,7 @@ Agents authenticate using their UUID or name along with their password. The gate
 ```typescript
 import { io } from 'socket.io-client';
 
-const socket = io('http://localhost:8080/agents');
+const socket = io('http://localhost:3000/socket/agents');
 
 socket.on('connect', () => {
   // Login with agent ID (UUID or name) and password
@@ -697,7 +697,7 @@ nx test agenstra-backend-feature-agent-manager --coverage
 
 ### Backend API Environment Variables
 
-- `WEBSOCKET_PORT` - Port for WebSocket gateway (default: `8080`)
+- `WEBSOCKET_NAMESPACE` - Agents namespace (default: `socket/agents`)
 - `KEYCLOAK_AUTH_SERVER_URL` - Keycloak server URL (required for HTTP authentication when `STATIC_API_KEY` is not set)
 - `KEYCLOAK_REALM` - Keycloak realm (required for HTTP authentication when `STATIC_API_KEY` is not set)
 - `KEYCLOAK_CLIENT_ID` - Keycloak client ID (required for HTTP authentication when `STATIC_API_KEY` is not set)

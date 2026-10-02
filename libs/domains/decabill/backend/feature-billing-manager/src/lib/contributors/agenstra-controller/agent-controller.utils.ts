@@ -36,7 +36,6 @@ export interface AgentControllerCloudInitConfig {
   proxy: {
     httpPort: number;
     httpsPort: number;
-    websocketPort: number;
   };
   frontend: {
     host: string;
@@ -48,7 +47,6 @@ export interface AgentControllerCloudInitConfig {
   backend: {
     host: string;
     port: number;
-    websocketPort: number;
     websocketNamespace: string;
     nodeEnv: string;
     defaultLocale: string;
@@ -201,7 +199,6 @@ export function buildAgentControllerCloudInitConfigFromRequest(
     proxy: {
       httpPort: 80,
       httpsPort: 443,
-      websocketPort: 8443,
     },
     frontend: {
       host: '0.0.0.0',
@@ -212,8 +209,7 @@ export function buildAgentControllerCloudInitConfigFromRequest(
     backend: {
       host: '0.0.0.0',
       port: backendPort,
-      websocketPort: 8081,
-      websocketNamespace: 'websocket',
+      websocketNamespace: 'socket/clients',
       nodeEnv: 'production',
       defaultLocale: 'en',
       database: {
@@ -267,8 +263,7 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     // Backend web server configuration
     `HOST: ${config.backend?.host ?? '0.0.0.0'}`,
     `PORT: ${config.backend?.port ?? '3100'}`,
-    `WEBSOCKET_PORT: ${config.backend?.websocketPort ?? '8081'}`,
-    `WEBSOCKET_NAMESPACE: ${config.backend?.websocketNamespace ?? 'websocket'}`,
+    `WEBSOCKET_NAMESPACE: ${config.backend?.websocketNamespace ?? 'socket/clients'}`,
     `NODE_ENV: ${config.backend?.nodeEnv ?? 'production'}`,
     ...buildPostgresBackendEnvLines(config.backend?.database),
     ...buildRedisBackendEnvLines('agenstra-controller'),
@@ -349,7 +344,7 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     production: true,
     controller: {
       restApiUrl: `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}:${config.proxy?.httpsPort ?? '443'}/api`,
-      websocketUrl: `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}:${config.proxy?.httpsPort ?? '443'}/${config.backend?.websocketNamespace ?? 'websocket'}`,
+      websocketUrl: `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}/${config.backend?.websocketNamespace ?? 'socket/clients'}`,
     },
     billing: {
       restApiUrl: '',
@@ -396,7 +391,6 @@ ${buildOpenSearchComposeService({
 ${backendApiEnv}
     ports:
       - '${config.backend?.port ?? '3100'}:${config.backend?.port ?? '3100'}'
-      - '${config.backend?.websocketPort ?? '8081'}:${config.backend?.websocketPort ?? '8081'}'
     depends_on:
 ${POSTGRES_COMPOSE_DEPENDS_ON}
 ${REDIS_COMPOSE_DEPENDS_ON}
@@ -452,7 +446,6 @@ ${buildNginxComposeService({
   stackDir: '/opt/agent-controller',
   httpPort: config.proxy?.httpPort ?? 80,
   httpsPort: config.proxy?.httpsPort ?? 443,
-  websocketPort: config.proxy?.websocketPort ?? 8443,
   dependsOn: ['frontend-agent-console-server', 'backend-agent-controller'],
 })}
 
@@ -502,11 +495,11 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /${config.backend?.websocketNamespace ?? 'websocket'} {
-        proxy_pass http://agent-controller-api:${config.backend?.websocketPort ?? '8081'};
+    location /socket/ {
+        proxy_pass http://agent-controller-api:${config.backend?.port ?? '3100'};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
+        proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -515,10 +508,10 @@ server {
     }
 
     location /socket.io/ {
-        proxy_pass http://agent-controller-api:${config.backend?.websocketPort ?? '8081'};
+        proxy_pass http://agent-controller-api:${config.backend?.port ?? '3100'};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
+        proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -573,11 +566,11 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /${config.backend?.websocketNamespace ?? 'websocket'} {
-        proxy_pass http://agent-controller-api:${config.backend?.websocketPort ?? '8081'};
+    location /socket/ {
+        proxy_pass http://agent-controller-api:${config.backend?.port ?? '3100'};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
+        proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -586,10 +579,10 @@ server {
     }
 
     location /socket.io/ {
-        proxy_pass http://agent-controller-api:${config.backend?.websocketPort ?? '8081'};
+        proxy_pass http://agent-controller-api:${config.backend?.port ?? '3100'};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
+        proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

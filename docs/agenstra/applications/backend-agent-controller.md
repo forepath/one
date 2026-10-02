@@ -128,7 +128,7 @@ Tickets live on the controller database (not on the remote manager). See [Ticket
 
 ### Knowledge tree (controller-native)
 
-Workspace knowledge folders/pages and relations. See OpenAPI `/knowledge/*` and Socket.IO namespace **pages**.
+Workspace knowledge folders/pages and relations. See OpenAPI `/knowledge/*` and Socket.IO namespace **socket/pages**.
 
 - `GET/POST /api/knowledge` - List and create nodes (`clientId` query on list)
 - `POST /api/knowledge/upload` - Upload `.md` / `.mmd` / `.txt` as pages (`onConflict`: reject | replace | number)
@@ -219,14 +219,14 @@ For complete API endpoint documentation, request/response schemas, and authentic
 
 ## WebSocket Gateway
 
-Socket.IO listens on **`WEBSOCKET_PORT`** (default `8081`). Namespaces share the same port and CORS settings (`WEBSOCKET_CORS_ORIGIN`):
+Socket.IO shares HTTP **`PORT`** (default `3100`) with REST (`/api/`) and VNC (`/socket/vnc`). Engine.IO path is `/socket.io/`. CORS via `WEBSOCKET_CORS_ORIGIN`.
 
-- **`clients`** (default `WEBSOCKET_NAMESPACE` = `clients`), proxy to the selected workspace’s agent-manager; chat, terminals, stats, and controller-originated ticket hints for the chat UI
-- **`tickets`** (default `TICKETS_WEBSOCKET_NAMESPACE` = `tickets`), ticket board and automation realtime (see [Tickets and Workspaces](../features/tickets-and-workspaces.md))
-- **`pages`** knowledge board realtime (`knowledgeTreeChanged`, `knowledgeRelationChanged`, `knowledgePageActivityCreated`)
-- **`status`** per-user notification snapshots/patches (see [WebSocket Communication](../features/websocket-communication.md))
+- **`socket/clients`** (default `WEBSOCKET_NAMESPACE`), proxy to the selected workspace’s agent-manager; chat, terminals, stats, and controller-originated ticket hints for the chat UI
+- **`socket/tickets`** (default `TICKETS_WEBSOCKET_NAMESPACE`), ticket board and automation realtime (see [Tickets and Workspaces](../features/tickets-and-workspaces.md))
+- **`socket/pages`** (default `KNOWLEDGE_WEBSOCKET_NAMESPACE`) knowledge board realtime (`knowledgeTreeChanged`, `knowledgeRelationChanged`, `knowledgePageActivityCreated`)
+- **`socket/status`** (default `STATUS_WEBSOCKET_NAMESPACE`) per-user notification snapshots/patches (see [WebSocket Communication](../features/websocket-communication.md))
 
-Connect to each namespace explicitly in the client library (e.g. `io(url + '/clients', options)` and `io(url + '/tickets', options)`).
+Connect with full namespace paths (e.g. `io('http://localhost:3100/socket/clients', options)`).
 
 ### Authentication
 
@@ -238,7 +238,7 @@ WebSocket connections require authentication via the `Authorization` header (pol
 
 Unauthenticated connections are rejected with `connect_error` "Unauthorized". The `setClient` operation enforces per-client authorization: only users with access to the requested client can set that client context. Unauthorized attempts emit an `error` event with message "You do not have access to this client".
 
-### Namespace `clients` (events)
+### Namespace `socket/clients` (events)
 
 #### Client → Server
 
@@ -254,9 +254,9 @@ Unauthenticated connections are rejected with `connect_error` "Unauthorized". Th
 - `ticketAutomationRunChatUpsert`, `ticketChatTicketUpsert` - Controller-originated ticket timeline and metadata for chat clients (see AsyncAPI)
 - `error` - Error messages
 
-### Namespace `tickets` (events)
+### Namespace `socket/tickets` (events)
 
-Same handshake auth as `clients`. After `setClient` with a workspace id, the socket joins room `client:{clientId}`.
+Same handshake auth as `socket/clients`. After `setClient` with a workspace id, the socket joins room `client:{clientId}`.
 
 #### Client → Server
 
@@ -370,13 +370,15 @@ Requests and WebSocket handshakes to each workspace’s **stored agent-manager b
 
 See the application docs and environment configuration for complete environment variable documentation.
 
-**Application-specific:** `PORT` - HTTP API port (default: `3100`)
+**Application-specific:** `PORT` - HTTP / Socket.IO / VNC port (default: `3100`)
 
-- `WEBSOCKET_PORT` - WebSocket gateway port (default: `8081`; shared by `clients` and `tickets` namespaces)
-- `WEBSOCKET_NAMESPACE` - Socket.IO namespace for agent proxying (default: `clients`)
-- `TICKETS_WEBSOCKET_NAMESPACE` - Socket.IO namespace for ticket board realtime (default: `tickets`)
+- `WEBSOCKET_NAMESPACE` - Socket.IO namespace for agent proxying (default: `socket/clients`)
+- `TICKETS_WEBSOCKET_NAMESPACE` - Ticket board namespace (default: `socket/tickets`)
+- `KNOWLEDGE_WEBSOCKET_NAMESPACE` - Knowledge board namespace (default: `socket/pages`)
+- `STATUS_WEBSOCKET_NAMESPACE` - Status notifications namespace (default: `socket/status`)
 - `WEBSOCKET_CORS_ORIGIN` - CORS origin(s) for WebSocket (see framework docs)
 - `NODE_ENV` - Environment mode (`development` or `production`)
+- **Migration:** `WEBSOCKET_PORT` and `CLIENTS_REMOTE_WS_PORT` are removed; re-provision existing stacks.
 
 **CORS Configuration:** `CORS_ORIGIN` - Allowed CORS origins (comma-separated list)
 
@@ -443,7 +445,6 @@ docker compose up -d
 # Or run directly
 docker run \
   -p 3100:3100 \
-  -p 8081:8081 \
   -e CORS_ORIGIN="https://agenstra.com" \
   -e RATE_LIMIT_ENABLED=true \
   -e RATE_LIMIT_LIMIT=100 \

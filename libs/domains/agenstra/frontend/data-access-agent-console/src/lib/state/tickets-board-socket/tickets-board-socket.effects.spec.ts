@@ -37,7 +37,7 @@ jest.mock('keycloak-angular', () => ({
 describe('resolveTicketsBoardWebsocketUrl', () => {
   const mockEnvironment = {
     controller: {
-      websocketUrl: 'http://localhost:8081/clients',
+      websocketUrl: 'http://localhost:3100/socket/clients',
     },
     authentication: {
       type: 'api-key',
@@ -48,7 +48,7 @@ describe('resolveTicketsBoardWebsocketUrl', () => {
   it('derives /tickets from /clients websocket URL', () => {
     const url = resolveTicketsBoardWebsocketUrl(mockEnvironment as never);
 
-    expect(url).toBe('http://localhost:8081/tickets');
+    expect(url).toBe('http://localhost:3100/socket/tickets');
   });
 
   it('uses explicit ticketsWebsocketUrl when set', () => {
@@ -63,10 +63,10 @@ describe('resolveTicketsBoardWebsocketUrl', () => {
   it('derives /tickets from host when websocket path is not /clients', () => {
     const url = resolveTicketsBoardWebsocketUrl({
       ...mockEnvironment,
-      controller: { websocketUrl: 'http://localhost:8081/custom-ns' },
+      controller: { websocketUrl: 'http://localhost:3100/custom-ns' },
     } as never);
 
-    expect(url).toBe('http://localhost:8081/tickets');
+    expect(url).toBe('http://localhost:3100/socket/tickets');
   });
 
   it('returns null when websocketUrl is missing or blank', () => {
@@ -103,7 +103,7 @@ describe('TicketsBoardSocketEffects', () => {
 
     mockEnvironment = {
       controller: {
-        websocketUrl: 'http://localhost:8081/clients',
+        websocketUrl: 'http://localhost:3100/socket/clients',
       },
       authentication: {
         type: 'api-key',
@@ -165,7 +165,7 @@ describe('TicketsBoardSocketEffects', () => {
       });
 
       connectTicketsBoardSocket$(actions$ as never, TestBed.inject(ENVIRONMENT), null).subscribe((result) => {
-        expect(io).toHaveBeenCalledWith('http://localhost:8081/tickets', {
+        expect(io).toHaveBeenCalledWith('http://localhost:3100/socket/tickets', {
           transports: ['websocket'],
           rejectUnauthorized: false,
           reconnection: true,

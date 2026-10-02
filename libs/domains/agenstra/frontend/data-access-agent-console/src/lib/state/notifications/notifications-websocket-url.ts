@@ -20,8 +20,8 @@ export function resolveStatusWebsocketUrl(environment: Environment): string | nu
   try {
     const u = new URL(base);
 
-    return `${u.protocol}//${u.host}/status`;
+    return `${u.protocol}//${u.host}/socket/status`;
   } catch {
-    return `${base.replace(/\/$/, '')}/status`;
+    return `${base.replace(/\/$/, '')}/socket/status`;
   }
 }

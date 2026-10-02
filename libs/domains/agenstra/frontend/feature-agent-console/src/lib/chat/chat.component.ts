@@ -1139,7 +1139,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     keycloakClientId: undefined,
     keycloakClientSecret: undefined,
     keycloakRealm: undefined,
-    agentWsPort: undefined,
   });
 
   // Provisioning state
@@ -1207,7 +1206,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     keycloakClientId: undefined,
     keycloakClientSecret: undefined,
     keycloakRealm: undefined,
-    agentWsPort: undefined,
   });
   readonly editingAgentId = signal<string | null>(null);
   readonly editingAgent = signal<Partial<UpdateAgentDto>>({
@@ -3724,7 +3722,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       keycloakClientId: undefined,
       keycloakClientSecret: undefined,
       keycloakRealm: undefined,
-      agentWsPort: undefined,
     });
   }
 
@@ -3819,7 +3816,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           keycloakClientId: undefined,
           keycloakClientSecret: undefined,
           keycloakRealm: undefined,
-          agentWsPort: undefined,
         });
       },
     });
@@ -3857,7 +3853,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       keycloakClientSecret: undefined,
       keycloakRealm: undefined,
       keycloakAuthServerUrl: undefined,
-      agentWsPort: undefined,
       gitRepositorySetupMode: 'clone',
       gitRepositoryUrl: undefined,
       gitUsername: undefined,
@@ -3909,11 +3904,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (enabled) {
       // Auto-fill name when provisioning is enabled
       this.autoFillProvisioningName();
-
-      // Set default WebSocket port to 8443 for provisioned servers
-      if (!this.newClient().agentWsPort) {
-        this.updateClientFieldNumber('agentWsPort', 8443);
-      }
     }
   }
 
@@ -4018,10 +4008,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         }
       }
 
-      if (clientData.agentWsPort) {
-        provisionDto.agentWsPort = clientData.agentWsPort;
-      }
-
       // GIT configuration
       const gitSetupMode = clientData.gitRepositorySetupMode ?? 'clone';
 
@@ -4101,10 +4087,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         }
       }
 
-      if (clientData.agentWsPort) {
-        createDto.agentWsPort = clientData.agentWsPort;
-      }
-
       this.clientsFacade.createClient(createDto);
     }
   }
@@ -4119,7 +4101,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       keycloakClientId: undefined,
       keycloakClientSecret: undefined,
       keycloakRealm: undefined,
-      agentWsPort: undefined,
       autoEnrichEnabledGlobal: 'true',
       autoEnrichVectorMaxCosineDistance: 1,
     });
@@ -4250,12 +4231,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.newClient.update((current) => ({ ...current, [field]: value }));
   }
 
-  updateClientFieldNumber(field: 'agentWsPort', value: string | number | null | undefined): void {
-    const numValue = value === '' || value === null || value === undefined ? undefined : Number(value);
-
-    this.newClient.update((current) => ({ ...current, [field]: numValue }));
-  }
-
   updateClientProvisioningVectorMaxCos(value: string | number | null | undefined): void {
     const numValue = value === '' || value === null || value === undefined ? 1 : Number(value);
 
@@ -4269,12 +4244,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   // Helper methods to update editing signal values for form binding
   updateEditingClientField<K extends keyof UpdateClientDto>(field: K, value: UpdateClientDto[K]): void {
     this.editingClient.update((current) => ({ ...current, [field]: value }));
-  }
-
-  updateEditingClientFieldNumber(field: 'agentWsPort', value: string | number | null | undefined): void {
-    const numValue = value === '' || value === null || value === undefined ? undefined : Number(value);
-
-    this.editingClient.update((current) => ({ ...current, [field]: numValue }));
   }
 
   updateEditingAgentField<K extends keyof UpdateAgentDto>(field: K, value: UpdateAgentDto[K]): void {
@@ -4295,7 +4264,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       keycloakClientId: undefined,
       keycloakClientSecret: undefined,
       keycloakRealm: undefined,
-      agentWsPort: client.agentWsPort,
     });
     showAgentModal(this.updateClientModalOpen);
   }
@@ -4379,10 +4347,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       if (clientData.keycloakRealm !== undefined) {
         updateDto.keycloakRealm = clientData.keycloakRealm;
       }
-    }
-
-    if (clientData.agentWsPort !== undefined) {
-      updateDto.agentWsPort = clientData.agentWsPort;
     }
 
     this.clientsFacade.updateClient(clientId, updateDto);

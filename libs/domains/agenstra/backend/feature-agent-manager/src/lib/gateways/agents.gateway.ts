@@ -279,8 +279,8 @@ function toAgentEventEnvelopeBase(
  * Handles WebSocket connections, authentication, and chat message broadcasting.
  * Authenticates sessions exclusively against the database-backed agent management system.
  */
-@WebSocketGateway(parseInt(process.env.WEBSOCKET_PORT || '8080'), {
-  namespace: process.env.WEBSOCKET_NAMESPACE || 'agents',
+@WebSocketGateway({
+  namespace: process.env.WEBSOCKET_NAMESPACE || 'socket/agents',
   cors: {
     origin: process.env.WEBSOCKET_CORS_ORIGIN || '*',
   },

@@ -92,8 +92,8 @@ type BillingSocket = Socket & {
  * Handles WebSocket connections, authentication, and billing status updates.
  * Authenticates sessions exclusively against the database-backed billing management system.
  */
-@WebSocketGateway(parseInt(process.env.WEBSOCKET_PORT || '8082', 10), {
-  namespace: process.env.WEBSOCKET_NAMESPACE || 'billing',
+@WebSocketGateway({
+  namespace: process.env.WEBSOCKET_NAMESPACE || 'socket/billing',
   cors: {
     origin: process.env.WEBSOCKET_CORS_ORIGIN || '*',
   },

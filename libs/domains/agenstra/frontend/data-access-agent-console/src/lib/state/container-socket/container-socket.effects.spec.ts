@@ -75,7 +75,7 @@ describe('SocketsEffects', () => {
 
     mockEnvironment = {
       controller: {
-        websocketUrl: 'http://localhost:8081/clients',
+        websocketUrl: 'http://localhost:3100/socket/clients',
       },
       authentication: {
         type: 'api-key',
@@ -166,7 +166,7 @@ describe('SocketsEffects', () => {
       });
 
       connectSocket$(actions$, TestBed.inject(ENVIRONMENT), null, TestBed.inject(Store)).subscribe((result) => {
-        expect(io).toHaveBeenCalledWith('http://localhost:8081/clients', {
+        expect(io).toHaveBeenCalledWith('http://localhost:3100/socket/clients', {
           transports: ['websocket'],
           rejectUnauthorized: false,
           reconnection: true,
@@ -232,7 +232,7 @@ describe('SocketsEffects', () => {
         TestBed.inject(KeycloakService),
         TestBed.inject(Store),
       ).subscribe((result) => {
-        expect(io).toHaveBeenCalledWith('http://localhost:8081/clients', {
+        expect(io).toHaveBeenCalledWith('http://localhost:3100/socket/clients', {
           transports: ['websocket'],
           rejectUnauthorized: false,
           reconnection: true,

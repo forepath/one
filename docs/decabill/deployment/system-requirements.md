@@ -98,7 +98,7 @@ All roles use image `ghcr.io/forepath/decabill-billing-api`. Set container limit
 
 ### API (`QUEUE_ROLE=api`)
 
-Serves HTTP **3200**, WebSocket **8082**, runs migrations, and may expose Bull Board. Holds Playwright Chromium in memory even when PDF work runs on workers.
+Serves HTTP **3200** (REST `/api/`, Socket.IO `/socket/billing` and `/socket/projects`, Engine.IO `/socket.io/`), runs migrations, and may expose Bull Board. Holds Playwright Chromium in memory even when PDF work runs on workers.
 
 | Profile         | vCPU | Memory limit | Notes                                                   |
 | --------------- | ---- | ------------ | ------------------------------------------------------- |
@@ -193,7 +193,7 @@ Acceptable for staging or a single-tenant pilot. Split worker from API before pr
 | Hetzner / DigitalOcean API | Optional   | When service plans include infrastructure           |
 | Outbound HTTPS             | Yes        | Payment, cloud, and email providers                 |
 
-Ingress: expose console (**4500** or behind TLS terminator), API (**3200**), and WebSocket (**8082**). Restrict Bull Board (`/admin/queues`) to operations networks.
+Ingress: expose console (**4500** or behind TLS terminator) and API (**3200**) with `/api/`, `/socket/`, and `/socket.io/` proxied to `PORT`. Restrict Bull Board (`/admin/queues`) to operations networks.
 
 ## Related documentation
 

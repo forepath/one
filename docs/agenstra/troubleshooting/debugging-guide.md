@@ -146,7 +146,7 @@ curl -H "Authorization: Bearer <token>" http://localhost:3100/api/clients
 
 ```bash
 # Using wscat
-wscat -c ws://localhost:8081/clients
+wscat -c ws://localhost:3100/socket/clients
 
 # Send event
 {"event":"setClient","data":{"clientId":"client-uuid"}}

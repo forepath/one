@@ -77,9 +77,9 @@ export function resolveTicketsBoardWebsocketUrl(environment: Environment): strin
     const u = new URL(base);
     const root = `${u.protocol}//${u.host}`;
 
-    return `${root}/tickets`;
+    return `${root}/socket/tickets`;
   } catch {
-    return `${base.replace(/\/$/, '')}/tickets`;
+    return `${base.replace(/\/$/, '')}/socket/tickets`;
   }
 }
 

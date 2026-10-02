@@ -295,7 +295,6 @@ The provisioning endpoint accepts a `ProvisionServerDto` with the following fiel
 - `keycloakClientSecret` - Keycloak client secret (required for KEYCLOAK authentication)
 - `keycloakRealm` - Keycloak realm (optional, defaults to environment variable)
 - `keycloakAuthServerUrl` - Keycloak auth server URL (optional, defaults to environment variable)
-- `agentWsPort` - Agent WebSocket port (defaults to 8080)
 - `gitRepositorySetupMode` - `clone` (default) or `empty` (git init without remote)
 - `gitRepositoryUrl` - Git repository URL for agent workspace (clone mode)
 - `gitUsername` - Git username for repository access
@@ -325,8 +324,7 @@ When provisioning a server:
 
 The provisioned server exposes:
 
-- **HTTP API**: Port 3000 (agent-manager REST API)
-- **WebSocket**: Port 8080 (agent-manager WebSocket gateway)
+- **HTTP / Socket.IO / VNC**: Port 3000 (`/api/`, `/socket/agents`, `/socket/vnc`, `/socket.io/`)
 
 #### Environment Variables Interpolation
 
@@ -360,8 +358,8 @@ See the [OpenAPI specification](./spec/openapi.yaml) for detailed request/respon
 
 ### Status notifications (`StatusGateway`)
 
-- **Namespace**: `/status` (`STATUS_WEBSOCKET_NAMESPACE`, default `status`)
-- **Port**: same as other controller namespaces (`WEBSOCKET_PORT`, default `8081`)
+- **Namespace**: `/socket/status` (`STATUS_WEBSOCKET_NAMESPACE`, default `socket/status`)
+- **Port**: shared HTTP `PORT` (default `3100`)
 - **Auth**: handshake `Authorization` (no `setClient`)
 - **On connect**: `statusSnapshot` (git dirty + unread per environment for all accessible workspaces)
 - **Updates**: `statusPatch`; background poll via `STATUS_POLL_INTERVAL_MS` (default `30000`)
@@ -372,8 +370,8 @@ See the [OpenAPI specification](./spec/openapi.yaml) for detailed request/respon
 
 The `ClientsGateway` provides WebSocket-based real-time event forwarding to remote agent-manager WebSocket endpoints:
 
-- **Namespace**: `/clients`
-- **Port**: `8081` (configurable via `WEBSOCKET_PORT` environment variable)
+- **Namespace**: `/socket/clients` (`WEBSOCKET_NAMESPACE`, default `socket/clients`)
+- **Port**: shared HTTP `PORT` (default `3100`)
 - **CORS**: Configured for development (adjust for production)
 
 ### Events
@@ -524,7 +522,7 @@ When forwarding events with an `agentId`, the gateway automatically logs in the 
 ```typescript
 import { io } from 'socket.io-client';
 
-const socket = io('http://localhost:8081/clients');
+const socket = io('http://localhost:3100/socket/clients');
 
 socket.on('connect', () => {
   // Set client context
@@ -655,7 +653,6 @@ The `ClientEntity` includes:
 - `keycloakClientId` (string, optional - for KEYCLOAK authentication)
 - `keycloakClientSecret` (string, optional - for KEYCLOAK authentication)
 - `keycloakRealm` (string, optional - for KEYCLOAK authentication)
-- `agentWsPort` (integer, optional - WebSocket port for remote agent-manager, defaults to `CLIENTS_REMOTE_WS_PORT` env var or 8080)
 - `createdAt` (timestamp)
 - `updatedAt` (timestamp)
 
@@ -704,8 +701,11 @@ nx test agenstra-backend-feature-agent-controller --coverage
 - `JWT_SECRET` - JWT signing secret (required when `AUTHENTICATION_METHOD=users`)
 - `DISABLE_FORCE_LOGIN_2FA` - When `true`, login 2FA is opt-in only (default: `false`, force email OTP / TOTP)
 - `PRODUCT_NAME` - TOTP issuer label in authenticator apps (default: `Forepath`)
-- `WEBSOCKET_PORT` - Port for WebSocket gateway (default: `8081`)
-- `CLIENTS_REMOTE_WS_PORT` - Default WebSocket port for remote agent-manager services (default: `8080`, can be overridden per client via `agentWsPort`)
+- `WEBSOCKET_NAMESPACE` - Clients namespace (default: `socket/clients`)
+- `TICKETS_WEBSOCKET_NAMESPACE` - Tickets namespace (default: `socket/tickets`)
+- `KNOWLEDGE_WEBSOCKET_NAMESPACE` - Knowledge namespace (default: `socket/pages`)
+- `STATUS_WEBSOCKET_NAMESPACE` - Status namespace (default: `socket/status`)
+- **Migration:** `WEBSOCKET_PORT` and `CLIENTS_REMOTE_WS_PORT` removed; re-provision existing stacks
 - `KEYCLOAK_AUTH_SERVER_URL` - Keycloak server URL (required when `AUTHENTICATION_METHOD=keycloak`)
 - `KEYCLOAK_REALM` - Keycloak realm (required when `AUTHENTICATION_METHOD=keycloak`)
 - `KEYCLOAK_CLIENT_ID` - Keycloak client ID (required when `AUTHENTICATION_METHOD=keycloak`)

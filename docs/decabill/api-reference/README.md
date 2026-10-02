@@ -83,7 +83,7 @@ Product guides: **[Projects](../features/projects.md)** and **[Project Board](..
 
 ## Billing Manager WebSocket Gateways
 
-The billing manager runs a Socket.IO server on port **8082** (default) with two namespaces, separate from the HTTP listener.
+The billing manager runs Socket.IO on the shared HTTP port **3200** (default) with two namespaces (`/socket/billing`, `/socket/projects`). Engine.IO path `/socket.io/`; REST `/api/`.
 
 Static API key authentication is **not** sufficient for dashboard or project board streams. Connections require an end-user JWT or Keycloak identity, matching REST billing rules.
 
@@ -105,7 +105,7 @@ Canonical source in the monorepo: `libs/domains/decabill/backend/feature-billing
 | Server to client | `dashboardStatusUpdate`      | Periodic status payload (same shape as REST server-info)           |
 | Server to client | `error`                      | Application errors scoped to the initiating socket                 |
 
-Namespace: **`billing`** (env: `WEBSOCKET_NAMESPACE`).
+Namespace: **`socket/billing`** (env: `WEBSOCKET_NAMESPACE`).
 
 Pass **`X-Tenant`** in handshake metadata (`auth.tenantId` in browser clients, `extraHeaders` in Node clients).
 
@@ -120,7 +120,7 @@ See **[Real-time Status](../features/real-time-status.md)**.
 | Server to client | `ticketUpsert`, `ticketRemoved`, `ticketCommentCreated`, `ticketActivityCreated`, `milestoneUpsert`, `milestoneRemoved`, `timeEntryUpsert`, `timeEntryRemoved`, `projectSummaryChanged` | Room broadcasts after REST mutations               |
 | Server to client | `error`                                                                                                                                                                                 | Application errors scoped to the initiating socket |
 
-Namespace: **`projects`** (env: `PROJECTS_WEBSOCKET_NAMESPACE`).
+Namespace: **`socket/projects`** (env: `PROJECTS_WEBSOCKET_NAMESPACE`).
 
 See **[Project Board](../features/project-board.md)**.
 

@@ -4,7 +4,7 @@ Socket.IO dashboard status stream for provisioned subscription items in the bill
 
 ## Overview
 
-The billing manager exposes a dedicated WebSocket gateway (default TCP port **8082**, namespace **`billing`**) separate from the HTTP REST API (default port **3200**). Authenticated users subscribe to periodic server status snapshots for all active subscription items they own.
+The billing manager exposes Socket.IO on the same HTTP port as REST (default **3200**, namespace **`socket/billing`**). Authenticated users subscribe to periodic server status snapshots for all active subscription items they own.
 
 Specification: [Billing Manager AsyncAPI](/spec/billing-manager/asyncapi.yaml).
 
@@ -17,7 +17,7 @@ Configure the billing console runtime config:
 ```json
 {
   "billing": {
-    "websocketUrl": "ws://localhost:8082/billing",
+    "websocketUrl": "http://localhost:3200/socket/billing",
     "tenantId": "default"
   }
 }
@@ -25,12 +25,12 @@ Configure the billing console runtime config:
 
 Environment variables on the backend:
 
-| Variable                | Default   | Purpose                         |
-| ----------------------- | --------- | ------------------------------- |
-| `WEBSOCKET_PORT`        | `8082`    | Socket.IO TCP port              |
-| `WEBSOCKET_NAMESPACE`   | `billing` | Namespace path segment          |
-| `WEBSOCKET_CORS_ORIGIN` | `*`       | CORS origin for browser clients |
-| `STATUS_POLL_INTERVAL`  | `15000`   | Default poll interval in ms     |
+| Variable                | Default          | Purpose                         |
+| ----------------------- | ---------------- | ------------------------------- |
+| `PORT`                  | `3200`           | HTTP + Socket.IO port           |
+| `WEBSOCKET_NAMESPACE`   | `socket/billing` | Namespace path segment          |
+| `WEBSOCKET_CORS_ORIGIN` | `*`              | CORS origin for browser clients |
+| `STATUS_POLL_INTERVAL`  | `15000`          | Default poll interval in ms     |
 
 ### Authentication
 

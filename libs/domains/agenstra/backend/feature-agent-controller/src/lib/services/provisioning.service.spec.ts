@@ -137,7 +137,6 @@ describe('ProvisioningService', () => {
       description: 'Test server',
       location: 'fsn1',
       authenticationType: AuthenticationType.API_KEY,
-      agentWsPort: 8080,
     };
 
     it('should provision a server with API_KEY authentication and create client', async () => {
@@ -179,7 +178,6 @@ describe('ProvisioningService', () => {
           endpoint: 'http://1.2.3.4:3100',
           authenticationType: AuthenticationType.API_KEY,
           apiKey: expect.any(String),
-          agentWsPort: 8080,
         }),
         undefined, // userId
         undefined, // userRole

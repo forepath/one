@@ -92,7 +92,10 @@ DISABLE_SIGNUP=false  # Set to true to disable self-registration
 
 # Ports
 PORT=3100
-WEBSOCKET_PORT=8081
+WEBSOCKET_NAMESPACE=socket/clients
+TICKETS_WEBSOCKET_NAMESPACE=socket/tickets
+KNOWLEDGE_WEBSOCKET_NAMESPACE=socket/pages
+STATUS_WEBSOCKET_NAMESPACE=socket/status
 
 # CORS (for production)
 CORS_ORIGIN=https://your-frontend-domain.com
@@ -122,7 +125,7 @@ STATIC_API_KEY=your-secure-api-key-here
 
 # Ports
 PORT=3000
-WEBSOCKET_PORT=8080
+WEBSOCKET_NAMESPACE=socket/agents
 
 # Git Repository (for agent workspace)
 GIT_REPOSITORY_URL=https://github.com/user/repo.git
@@ -145,7 +148,7 @@ Configure the frontend:
 API_URL=http://localhost:3100
 
 # WebSocket Endpoint
-WEBSOCKET_URL=http://localhost:8081
+WEBSOCKET_URL=http://localhost:3100/socket/clients
 ```
 
 ## Creating Your First Client

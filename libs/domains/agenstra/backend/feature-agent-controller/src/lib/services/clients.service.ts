@@ -121,7 +121,6 @@ export class ClientsService {
       keycloakClientId: createClientDto.keycloakClientId,
       keycloakClientSecret: createClientDto.keycloakClientSecret,
       keycloakRealm: createClientDto.keycloakRealm,
-      agentWsPort: createClientDto.agentWsPort,
       userId: userId ?? null,
     });
     const response = await this.mapToResponseDto(client, { userId, userRole, isApiKeyAuth });
@@ -402,7 +401,6 @@ export class ClientsService {
       keycloakClientId: updateClientDto.keycloakClientId,
       keycloakClientSecret: updateClientDto.keycloakClientSecret,
       keycloakRealm: updateClientDto.keycloakRealm,
-      agentWsPort: updateClientDto.agentWsPort,
     };
 
     // If Keycloak credentials are being updated, clear the token cache

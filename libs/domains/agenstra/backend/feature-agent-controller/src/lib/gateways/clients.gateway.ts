@@ -38,6 +38,7 @@ import { TicketAutomationChatSyncService } from '../services/ticket-automation-c
 import { TicketBoardRealtimeService } from '../services/ticket-board-realtime.service';
 import { TicketsService } from '../services/tickets.service';
 import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
+import { buildRemoteAgentsSocketUrl } from '../utils/remote-manager-url.utils';
 
 type ChatOutputUsage = {
   inputTokens?: number;
@@ -112,8 +113,8 @@ interface ContextInjectionPayload {
  * Handles WebSocket connections, authentication, and client context setup.
  * Authenticates sessions exclusively against the database-backed client management system.
  */
-@WebSocketGateway(parseInt(process.env.WEBSOCKET_PORT || '8081'), {
-  namespace: process.env.WEBSOCKET_NAMESPACE || 'clients',
+@WebSocketGateway({
+  namespace: process.env.WEBSOCKET_NAMESPACE || 'socket/clients',
   cors: {
     origin: process.env.WEBSOCKET_CORS_ORIGIN || '*',
   },
@@ -323,7 +324,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
       await validateClientEndpointWithDnsOrThrow(client.endpoint);
       const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
-      const remoteUrl = this.buildAgentsWsUrl(client.endpoint, client.agentWsPort);
+      const remoteUrl = this.buildAgentsWsUrl(client.endpoint);
       const remote = createCorrelationAwareSocketIoClient(remoteUrl, {
         transports: ['websocket'],
         extraHeaders: { Authorization: authHeader },
@@ -1530,13 +1531,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     throw new BadRequestException(`Unsupported authentication type`);
   }
 
-  private buildAgentsWsUrl(endpoint: string, overridePort?: number): string {
-    const url = new URL(endpoint);
-    const effectivePort = (overridePort && String(overridePort)) || process.env.CLIENTS_REMOTE_WS_PORT || '8080';
-    // Use HTTP(S) scheme for Socket.IO client, not WS(S)
-    const protocol = url.protocol === 'https:' ? 'https' : 'http';
-    const host = url.hostname;
-
-    return `${protocol}://${host}:${effectivePort}/agents`;
+  private buildAgentsWsUrl(endpoint: string): string {
+    return buildRemoteAgentsSocketUrl(endpoint);
   }
 }

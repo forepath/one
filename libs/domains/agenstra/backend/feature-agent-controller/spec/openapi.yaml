@@ -4562,8 +4562,8 @@ paths:
       summary: Create a short-lived VNC desktop session ticket
       description: |
         Mints a controller-side ticket after ensureClientAccess. The ticket is single-use and
-        bound to the caller, client, and agent. Connect noVNC to the controller WEBSOCKET_PORT
-        path /vnc using Sec-WebSocket-Protocol tokens `binary` and `agenstra.vnc.<ticket>`
+        bound to the caller, client, and agent. Connect noVNC to the controller HTTP PORT
+        path /socket/vnc using Sec-WebSocket-Protocol tokens `binary` and `agenstra.vnc.<ticket>`
         (do not put the ticket in the URL). Upstream manager/worker addresses are never returned to the browser.
       operationId: createClientAgentVncSession
       parameters:
@@ -6432,11 +6432,6 @@ components:
           format: uri
         authenticationType:
           $ref: '#/components/schemas/AuthenticationType'
-        agentWsPort:
-          type: integer
-          minimum: 1
-          maximum: 65535
-          description: Optional Socket.IO port for the client's agents gateway
         config:
           $ref: '#/components/schemas/ConfigResponseDto'
           description: Configuration from the agent-manager instance (optional, may be undefined if agent-manager is unreachable)
@@ -6480,11 +6475,6 @@ components:
         keycloakRealm:
           type: string
           description: Keycloak realm (optional, uses environment default if not provided)
-        agentWsPort:
-          type: integer
-          minimum: 1
-          maximum: 65535
-          description: Optional Socket.IO port for the client's agents gateway (defaults to 8080 if not set)
     UpdateClientDto:
       type: object
       properties:
@@ -6509,11 +6499,6 @@ components:
         keycloakRealm:
           type: string
           description: Keycloak realm
-        agentWsPort:
-          type: integer
-          minimum: 1
-          maximum: 65535
-          description: Optional Socket.IO port for the client's agents gateway
     CreateClientResponseDto:
       allOf:
         - $ref: '#/components/schemas/ClientResponseDto'
@@ -6949,11 +6934,6 @@ components:
         keycloakRealm:
           type: string
           description: Keycloak realm (optional, uses environment default if not provided)
-        agentWsPort:
-          type: integer
-          minimum: 1
-          maximum: 65535
-          description: Optional Socket.IO port for the client's agents gateway (defaults to 8080 if not set)
         gitRepositorySetupMode:
           type: string
           enum: [clone, empty]

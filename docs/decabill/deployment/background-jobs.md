@@ -119,7 +119,7 @@ Scheduler interval variables (`BILLING_SCHEDULER_INTERVAL`, `EXPIRATION_SCHEDULE
 `apps/decabill/backend-billing-manager/docker-compose.yaml` defines:
 
 - `redis` (host port **6380** by default)
-- `backend-billing-manager` (API, `QUEUE_ROLE=api`, ports **3200** and **8082**)
+- `backend-billing-manager` (API, `QUEUE_ROLE=api`, port **3200**)
 - `backend-billing-manager-scheduler` (`QUEUE_ROLE=scheduler`)
 - `backend-billing-manager-worker` (`QUEUE_ROLE=worker`)
 

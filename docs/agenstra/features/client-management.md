@@ -19,11 +19,10 @@ When using keycloak or users authentication, Agenstra supports **per-client perm
 2. Click "Add Client"
 3. Fill in the client details:
    - **Name**: A descriptive name for this client
-   - **Endpoint**: The HTTP API endpoint of your agent-manager (e.g., `http://localhost:3000`)
+   - **Endpoint**: The HTTP API endpoint of your agent-manager (e.g., `http://localhost:3000`). Socket.IO and VNC use the same origin (`/socket/agents`, `/socket/vnc`).
    - **Authentication Type**: Choose `api_key` or `keycloak`
    - **API Key** (if using API key): The API key for authentication
    - **Keycloak Configuration** (if using Keycloak): Client ID, secret, realm, and auth server URL
-   - **Agent WebSocket Port**: Port for agent WebSocket connections (default: `8080`)
 4. Click "Create"
 
 The system will:

@@ -198,8 +198,6 @@ export async function bootstrap(): Promise<void> {
 
   await app.listen(port);
   Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
-  Logger.log(
-    `🔌 Socket.IO WebSocket gateway is running on: http://localhost:${process.env.WEBSOCKET_PORT || '8080'}/agents`,
-  );
-  Logger.log(`🖥️  VNC WebSocket gateway is running on: ws://localhost:${process.env.WEBSOCKET_PORT || '8080'}/vnc`);
+  Logger.log(`🔌 Socket.IO WebSocket gateway is running on: http://localhost:${port}/socket/agents`);
+  Logger.log(`🖥️  VNC WebSocket gateway is running on: ws://localhost:${port}/socket/vnc`);
 }

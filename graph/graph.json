@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-01T18:15:39.740Z",
+  "generatedAt": "2026-10-02T07:12:36.807Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -14822,7 +14822,7 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "status/statusSnapshot",
-        "summary": "Full per-user notification state on connect (git dirty + unread per environment, nested `chats[]`\nfor visible primary/user sessions, client rollups, spacesHasAttention).\nUnicast to the connecting socket only. Namespace **status** (STATUS_WEBSOCKET_NAMESPACE, default \"status\").\n",
+        "summary": "Full per-user notification state on connect (git dirty + unread per environment, nested `chats[]`\nfor visible primary/user sessions, client rollups, spacesHasAttention).\nUnicast to the connecting socket only. Namespace **socket/status** (STATUS_WEBSOCKET_NAMESPACE, default \"socket/status\").\n",
         "specKind": "asyncapi"
       }
     },
@@ -59511,856 +59511,6 @@
       "type": "implements"
     },
     {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
-      "to": "api:channel:clients/setClient",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:clients/setClient",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
-      "to": "api:channel:clients/setClientSuccess",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:clients/setClientSuccess",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
-      "to": "api:channel:clients/error",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:clients/error",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
-      "to": "api:channel:clients/forward",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:clients/forward",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
-      "to": "api:channel:clients/ticketAutomationRunChatUpsert",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:clients/ticketAutomationRunChatUpsert",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
-      "to": "api:channel:clients/ticketChatTicketUpsert",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:clients/ticketChatTicketUpsert",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
-      "to": "api:channel:clients/forwardAck",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:clients/forwardAck",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
-      "to": "api:channel:clients/remoteDisconnected",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:clients/remoteDisconnected",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
-      "to": "api:channel:clients/remoteReconnecting",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:clients/remoteReconnecting",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
-      "to": "api:channel:clients/remoteReconnected",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:clients/remoteReconnected",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
-      "to": "api:channel:clients/remoteReconnectError",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:clients/remoteReconnectError",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
-      "to": "api:channel:clients/remoteReconnectFailed",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:clients/remoteReconnectFailed",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/knowledge-board.gateway.ts",
-      "to": "api:channel:pages/setClient",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:pages/setClient",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/knowledge-board.gateway.ts",
-      "to": "api:channel:pages/setClientSuccess",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:pages/setClientSuccess",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/knowledge-board.gateway.ts",
-      "to": "api:channel:pages/error",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:pages/error",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/knowledge-board.gateway.ts",
-      "to": "api:channel:pages/knowledgeTreeChanged",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:pages/knowledgeTreeChanged",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/knowledge-board.gateway.ts",
-      "to": "api:channel:pages/knowledgeRelationChanged",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:pages/knowledgeRelationChanged",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/knowledge-board.gateway.ts",
-      "to": "api:channel:pages/knowledgePageActivityCreated",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:pages/knowledgePageActivityCreated",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/status.gateway.ts",
-      "to": "api:channel:status/statusSnapshot",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:status/statusSnapshot",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/status.gateway.ts",
-      "to": "api:channel:status/statusPatch",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:status/statusPatch",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/status.gateway.ts",
-      "to": "api:channel:status/markEnvironmentRead",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:status/markEnvironmentRead",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/status.gateway.ts",
-      "to": "api:channel:status/markChatSessionRead",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:status/markChatSessionRead",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/status.gateway.ts",
-      "to": "api:channel:status/setActiveEnvironment",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:status/setActiveEnvironment",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/status.gateway.ts",
-      "to": "api:channel:status/error",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:status/error",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/tickets-board.gateway.ts",
-      "to": "api:channel:tickets/setClient",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:tickets/setClient",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/tickets-board.gateway.ts",
-      "to": "api:channel:tickets/setClientSuccess",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:tickets/setClientSuccess",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/tickets-board.gateway.ts",
-      "to": "api:channel:tickets/error",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:tickets/error",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/tickets-board.gateway.ts",
-      "to": "api:channel:tickets/ticketUpsert",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:tickets/ticketUpsert",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/tickets-board.gateway.ts",
-      "to": "api:channel:tickets/ticketRemoved",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:tickets/ticketRemoved",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/tickets-board.gateway.ts",
-      "to": "api:channel:tickets/ticketCommentCreated",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:tickets/ticketCommentCreated",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/tickets-board.gateway.ts",
-      "to": "api:channel:tickets/ticketActivityCreated",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:tickets/ticketActivityCreated",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/tickets-board.gateway.ts",
-      "to": "api:channel:tickets/ticketAutomationUpsert",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:tickets/ticketAutomationUpsert",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/tickets-board.gateway.ts",
-      "to": "api:channel:tickets/ticketAutomationRunUpsert",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:tickets/ticketAutomationRunUpsert",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/tickets-board.gateway.ts",
-      "to": "api:channel:tickets/ticketAutomationRunStepAppended",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:tickets/ticketAutomationRunStepAppended",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/tickets-board.gateway.ts",
-      "to": "api:channel:tickets/knowledgeRelationChanged",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "api:channel:tickets/knowledgeRelationChanged",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/gateways/billing-status.gateway.ts",
-      "to": "api:channel:billing/subscribeDashboardStatus",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:billing/subscribeDashboardStatus",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/gateways/billing-status.gateway.ts",
-      "to": "api:channel:billing/unsubscribeDashboardStatus",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:billing/unsubscribeDashboardStatus",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/gateways/billing-status.gateway.ts",
-      "to": "api:channel:billing/subscribeSubscriptionMeters",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:billing/subscribeSubscriptionMeters",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/gateways/billing-status.gateway.ts",
-      "to": "api:channel:billing/unsubscribeSubscriptionMeters",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:billing/unsubscribeSubscriptionMeters",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/gateways/billing-status.gateway.ts",
-      "to": "api:channel:billing/dashboardStatusUpdate",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:billing/dashboardStatusUpdate",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/gateways/billing-status.gateway.ts",
-      "to": "api:channel:billing/meterSummaryUpdate",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:billing/meterSummaryUpdate",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/gateways/billing-status.gateway.ts",
-      "to": "api:channel:billing/containerManagerUpdate",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:billing/containerManagerUpdate",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/gateways/billing-status.gateway.ts",
-      "to": "api:channel:billing/error",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:billing/error",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/gateways/project-board.gateway.ts",
-      "to": "api:channel:projects/setProject",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:projects/setProject",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/gateways/project-board.gateway.ts",
-      "to": "api:channel:projects/setProjectSuccess",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:projects/setProjectSuccess",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/gateways/project-board.gateway.ts",
-      "to": "api:channel:projects/ticketUpsert",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:projects/ticketUpsert",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/gateways/project-board.gateway.ts",
-      "to": "api:channel:projects/ticketRemoved",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:projects/ticketRemoved",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/gateways/project-board.gateway.ts",
-      "to": "api:channel:projects/ticketCommentCreated",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:projects/ticketCommentCreated",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/gateways/project-board.gateway.ts",
-      "to": "api:channel:projects/ticketActivityCreated",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:projects/ticketActivityCreated",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/gateways/project-board.gateway.ts",
-      "to": "api:channel:projects/milestoneUpsert",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:projects/milestoneUpsert",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/gateways/project-board.gateway.ts",
-      "to": "api:channel:projects/milestoneRemoved",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:projects/milestoneRemoved",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/gateways/project-board.gateway.ts",
-      "to": "api:channel:projects/timeEntryUpsert",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:projects/timeEntryUpsert",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/gateways/project-board.gateway.ts",
-      "to": "api:channel:projects/timeEntryRemoved",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:projects/timeEntryRemoved",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/gateways/project-board.gateway.ts",
-      "to": "api:channel:projects/projectSummaryChanged",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:projects/projectSummaryChanged",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/gateways/project-board.gateway.ts",
-      "to": "api:channel:projects/error",
-      "type": "implements"
-    },
-    {
-      "from": "project:decabill-backend-feature-billing-manager",
-      "to": "api:channel:projects/error",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/login",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/login",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/loginSuccess",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/loginSuccess",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/loginError",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/loginError",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/chat",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/chat",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/restoreChat",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/restoreChat",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/restoreChatSuccess",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/restoreChatSuccess",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/chatMessageBatch",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/chatMessageBatch",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/enhanceChat",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/enhanceChat",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/chatEnhanceResult",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/chatEnhanceResult",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/generateTicketBody",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/generateTicketBody",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/ticketBodyResult",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/ticketBodyResult",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/chatMessage",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/chatMessage",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/chatEvent",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/chatEvent",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/messageFilterResult",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/messageFilterResult",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/error",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/error",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/fileUpdate",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/fileUpdate",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/fileUpdateNotification",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/fileUpdateNotification",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/logout",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/logout",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/logoutSuccess",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/logoutSuccess",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/createTerminal",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/createTerminal",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/terminalCreated",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/terminalCreated",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/terminalInput",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/terminalInput",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/terminalOutput",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/terminalOutput",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/terminalResize",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/terminalResize",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/closeTerminal",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/closeTerminal",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/terminalClosed",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/terminalClosed",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/containerStats",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/containerStats",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/gitStateChanged",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/gitStateChanged",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/workspaceIndexChanged",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/workspaceIndexChanged",
-      "type": "implements"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
-      "to": "api:channel:agents/workspaceIndexRebuildRequired",
-      "type": "implements"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "api:channel:agents/workspaceIndexRebuildRequired",
-      "type": "implements"
-    },
-    {
       "from": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/controllers/public-contact-requests.controller.ts",
       "to": "file:libs/domains/forepath/backend/feature-communication-manager/src/lib/services/contact-request.service.ts",
       "type": "injects"
@@ -70511,6 +69661,16 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-environment-variables",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-environment-variables",
+      "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-build-api-container",
       "to": "project:agenstra-backend-agent-manager",
       "type": "documents"
@@ -70607,6 +69767,26 @@
     },
     {
       "from": "concept:agenstra-backend-applications",
+      "to": "api:HTTP:GET:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-backend-applications",
+      "to": "api:HTTP:POST:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-backend-applications",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-backend-applications",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-backend-applications",
       "to": "api:HTTP:GET:/agents",
       "type": "documents"
     },
@@ -70623,6 +69803,76 @@
     {
       "from": "concept:agenstra-backend-applications",
       "to": "api:HTTP:POST:/agents-filters",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-backend-libraries",
+      "to": "api:HTTP:GET:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-backend-libraries",
+      "to": "api:HTTP:POST:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-backend-libraries",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-backend-libraries",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-frontend-libraries",
+      "to": "api:HTTP:GET:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-frontend-libraries",
+      "to": "api:HTTP:POST:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-frontend-libraries",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-frontend-libraries",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-component-communication",
+      "to": "api:HTTP:GET:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-component-communication",
+      "to": "api:HTTP:POST:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-component-communication",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-component-communication",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-component-communication",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-component-communication",
+      "to": "api:HTTP:POST:/agents",
       "type": "documents"
     },
     {
@@ -70842,7 +70092,37 @@
     },
     {
       "from": "concept:agenstra-frontend-applications-express-ssr",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-frontend-applications-express-ssr",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-frontend-applications-express-ssr",
       "to": "api:HTTP:GET:/config",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-ports",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-ports",
+      "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-opencode-agent-docker-image-ghcr-io-forepath-agenstra-manager-worker-latest",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-opencode-agent-docker-image-ghcr-io-forepath-agenstra-manager-worker-latest",
+      "to": "api:HTTP:POST:/clients",
       "type": "documents"
     },
     {
@@ -71571,6 +70851,16 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-creating-a-client",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-creating-a-client",
+      "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-supported-providers",
       "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
@@ -71738,6 +71028,16 @@
     {
       "from": "concept:agenstra-provisioning-request",
       "to": "api:HTTP:POST:/clients/provisioning/provision",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-server-configuration",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-server-configuration",
+      "to": "api:HTTP:POST:/agents",
       "type": "documents"
     },
     {
@@ -72056,6 +71356,16 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-websocket-endpoint",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-websocket-endpoint",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-creating-your-first-agent",
       "to": "api:HTTP:POST:/auth/login",
       "type": "documents"
@@ -72168,6 +71478,16 @@
     {
       "from": "concept:agenstra-connection-issues",
       "to": "project:agenstra-backend-agent-controller",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-connection-issues",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-connection-issues",
+      "to": "api:HTTP:POST:/clients",
       "type": "documents"
     },
     {
@@ -72386,6 +71706,11 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-billing-manager-websocket-gateways",
+      "to": "api:HTTP:GET:/projects",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-generated-client-package",
       "to": "project:decabill-backend-billing-manager",
       "type": "documents"
@@ -72438,6 +71763,11 @@
     {
       "from": "concept:decabill-backend-billing-manager",
       "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-backend-billing-manager",
+      "to": "api:HTTP:GET:/projects",
       "type": "documents"
     },
     {
@@ -72526,6 +71856,11 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-ports-and-network-surfaces",
+      "to": "api:HTTP:GET:/projects",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-queue-roles",
       "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
@@ -72608,6 +71943,11 @@
     {
       "from": "concept:decabill-major-api-areas",
       "to": "api:HTTP:POST:/admin/billing/projects",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-websocket-gateways",
+      "to": "api:HTTP:GET:/projects",
       "type": "documents"
     },
     {
@@ -72796,6 +72136,11 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-two-tier-architecture",
+      "to": "api:HTTP:GET:/projects",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-start-billing-manager",
       "to": "project:decabill-backend-billing-manager",
       "type": "documents"
@@ -72876,6 +72221,11 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-ports",
+      "to": "api:HTTP:GET:/projects",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-terminal-1-billing-manager-queue-role-all-for-local-jobs",
       "to": "project:decabill-backend-billing-manager",
       "type": "documents"
@@ -72953,6 +72303,11 @@
     {
       "from": "concept:decabill-backend-billing-manager-by-queue-role",
       "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-backend-billing-manager-by-queue-role",
+      "to": "api:HTTP:GET:/projects",
       "type": "documents"
     },
     {
@@ -76328,6 +75683,11 @@
     {
       "from": "concept:decabill-edit-env-set-static-api-key-encryption-key-issuer-fields-and-tenants-as-needed",
       "to": "project:decabill-backend-billing-manager",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-edit-env-set-static-api-key-encryption-key-issuer-fields-and-tenants-as-needed",
+      "to": "api:HTTP:GET:/projects",
       "type": "documents"
     },
     {

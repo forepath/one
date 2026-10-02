@@ -55,9 +55,6 @@ export class ClientEntity {
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'keycloak_realm' })
   keycloakRealm?: string;
 
-  @Column({ type: 'int', nullable: true, name: 'agent_ws_port' })
-  agentWsPort?: number;
-
   @Column({ type: 'uuid', nullable: true, name: 'user_id' })
   userId?: string;
 

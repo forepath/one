@@ -6,13 +6,13 @@ Real-time bidirectional communication between frontend, controller, and manager 
 
 Agenstra uses WebSocket (Socket.IO) for real-time bidirectional communication. The architecture supports:
 
-- **Frontend ↔ Controller (`clients` namespace)**: Workspace selection (`setClient`), `forward` to remote agent-managers, and controller-originated ticket hints for chat
-- **Frontend ↔ Controller (`tickets` namespace)**: Ticket board and automation realtime for subscribers
-- **Frontend ↔ Controller (`status` namespace)**: Per-user workspace/environment notification state (git dirty, unread chat) without `setClient`
+- **Frontend ↔ Controller (`socket/clients` namespace)**: Workspace selection (`setClient`), `forward` to remote agent-managers, and controller-originated ticket hints for chat
+- **Frontend ↔ Controller (`socket/tickets` namespace)**: Ticket board and automation realtime for subscribers
+- **Frontend ↔ Controller (`socket/status` namespace)**: Per-user workspace/environment notification state (git dirty, unread chat) without `setClient`
 - **Controller ↔ Manager**: Event forwarding to remote agent-managers
 - **Manager ↔ Agent Containers**: Real-time chat and container communication
 
-On the controller, **`clients`**, **`tickets`**, **`pages`** (knowledge), and **`status`** share the same TCP port (`WEBSOCKET_PORT`); namespaces are selected in the Socket.IO client path.
+On the controller, Socket.IO namespaces **`socket/clients`**, **`socket/tickets`**, **`socket/pages`** (knowledge), and **`socket/status`** share the HTTP **`PORT`** (default 3100) with REST (`/api/`) and VNC (`/socket/vnc`). Engine.IO path is `/socket.io/`.
 
 ## Authentication
 
@@ -24,14 +24,14 @@ WebSocket connections to the controller require authentication. Pass the `Author
 
 Unauthenticated connections are rejected with `connect_error` "Unauthorized". The `setClient` operation enforces per-client authorization: only users with access to the requested client (global admin, client creator, or client_users entry) can set that client context. Unauthorized attempts emit an `error` event with message "You do not have access to this client".
 
-### Agent console status (`status` namespace)
+### Agent console status (`socket/status` namespace)
 
-The agent console opens a dedicated Socket.IO connection to **`status`** (derived from `controller.websocketUrl` by replacing `/clients` with `/status`, or via `controller.statusWebsocketUrl`). Handshake auth matches other controller namespaces.
+The agent console opens a dedicated Socket.IO connection to **`socket/status`** (derived from `controller.websocketUrl` by replacing `/socket/clients` with `/socket/status`, or via `controller.statusWebsocketUrl`). Handshake auth matches other controller namespaces.
 
 - **No `setClient`**: the stream is scoped to the authenticated user only.
 - **On connect**: server emits **`statusSnapshot`** with all accessible workspaces/environments (git dirty + unread flags, including nested `chats[]` for visible primary/user sessions).
-- **While connected**: server emits **`statusPatch`** for deltas; background polling (`STATUS_POLL_INTERVAL_MS`, default 30s) refreshes git state and catches unread when no `clients` socket is active. Successful VCS mutations proxied through the controller (stage, commit, fetch, pull, push including force, branch operations, conflict resolve, prepare-clean workspace) also emit **`statusPatch`** immediately to every user with access to that workspace.
-- **Agent workspace changes**: agent-manager broadcasts **`gitStateChanged`** on the agents namespace after file writes, file-update notifications, workspace-affecting agent tool results, and local VCS/file mutations. The controller **`clients`** gateway listens for **`gitStateChanged`** and **`fileUpdateNotification`**, then pushes **`statusPatch`** on the **`status`** namespace to users with workspace access (same security model as VCS proxy hooks).
+- **While connected**: server emits **`statusPatch`** for deltas; background polling (`STATUS_POLL_INTERVAL_MS`, default 30s) refreshes git state and catches unread when no `socket/clients` socket is active. Successful VCS mutations proxied through the controller (stage, commit, fetch, pull, push including force, branch operations, conflict resolve, prepare-clean workspace) also emit **`statusPatch`** immediately to every user with access to that workspace.
+- **Agent workspace changes**: agent-manager broadcasts **`gitStateChanged`** on the **`socket/agents`** namespace after file writes, file-update notifications, workspace-affecting agent tool results, and local VCS/file mutations. The controller **`socket/clients`** gateway listens for **`gitStateChanged`** and **`fileUpdateNotification`**, then pushes **`statusPatch`** on the **`socket/status`** namespace to users with workspace access (same security model as VCS proxy hooks).
 - **Client → server**: `markEnvironmentRead` `{ clientId, agentId, chatSessionId? }`, `markChatSessionRead` `{ clientId, agentId, chatSessionId }`, `setActiveEnvironment` `{ clientId, agentId | null, chatSessionId? }`.
 - **Unread** is computed per visible chat session (latest agent message in that session; automation activity attributes to the primary session only). Environment `hasUnreadMessages` is the OR of those sessions. Per-session cursors live in `user_chat_session_read_state`; `user_environment_read_state` remains for env-level helpers.
 
@@ -182,7 +182,7 @@ Client requests history for a session; server acknowledges after replaying event
 
 ## Tickets board realtime (`tickets` namespace)
 
-Use a second Socket.IO connection to the same controller WebSocket origin with namespace **`tickets`** (override via `TICKETS_WEBSOCKET_NAMESPACE` on the server).
+Use a second Socket.IO connection to the same controller origin with namespace **`socket/tickets`** (override via `TICKETS_WEBSOCKET_NAMESPACE` on the server).
 
 ### Flow
 
@@ -211,7 +211,7 @@ See **[Tickets and Workspaces](./tickets-and-workspaces.md)** for product contex
 
 ## Knowledge board realtime (`pages` namespace)
 
-Use namespace **`pages`** on the same controller WebSocket origin. After `setClient`, room broadcasts include `knowledgeTreeChanged`, `knowledgeRelationChanged`, and `knowledgePageActivityCreated`. Errors use `error`.
+Use namespace **`socket/pages`** on the same controller origin. After `setClient`, room broadcasts include `knowledgeTreeChanged`, `knowledgeRelationChanged`, and `knowledgePageActivityCreated`. Errors use `error`.
 
 REST source of truth: OpenAPI `/knowledge/*` on the agent-controller.
 

@@ -161,13 +161,12 @@ describe('cloud-init.utils', () => {
       const config: CloudInitConfig = {
         ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
-        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        proxy: { httpPort: 80, httpsPort: 443 },
         frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
         backend: {
           host: '0.0.0.0',
           port: 3100,
-          websocketPort: 8081,
-          websocketNamespace: 'websocket',
+          websocketNamespace: 'socket/clients',
           nodeEnv: 'production',
           defaultLocale: 'en',
           database: {
@@ -197,7 +196,12 @@ describe('cloud-init.utils', () => {
       const script = Buffer.from(b64, 'base64').toString('utf-8');
 
       expect(script).toContain('location /api/');
+      expect(script).toContain('location /socket/');
+      expect(script).toContain('location /socket.io/');
       expect(script).toContain('agent-controller-api');
+      expect(script).toContain("WEBSOCKET_NAMESPACE: 'socket/clients'");
+      expect(script).not.toContain('WEBSOCKET_PORT');
+      expect(script).toContain('"websocketUrl":"https://test.spirde.com/socket/clients"');
       expect(script).toContain('CONFIG_ALLOWED_HOSTS: test.spirde.com');
       expect(script).toContain('CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED: true');
       expect(script).toContain('CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP: false');
@@ -210,13 +214,12 @@ describe('cloud-init.utils', () => {
       const config: CloudInitConfig = {
         ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
-        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        proxy: { httpPort: 80, httpsPort: 443 },
         frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
         backend: {
           host: '0.0.0.0',
           port: 3100,
-          websocketPort: 8081,
-          websocketNamespace: 'websocket',
+          websocketNamespace: 'socket/clients',
           nodeEnv: 'production',
           defaultLocale: 'en',
           database: {
@@ -257,13 +260,12 @@ describe('cloud-init.utils', () => {
       const config: CloudInitConfig = {
         ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
-        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        proxy: { httpPort: 80, httpsPort: 443 },
         frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
         backend: {
           host: '0.0.0.0',
           port: 3100,
-          websocketPort: 8081,
-          websocketNamespace: 'websocket',
+          websocketNamespace: 'socket/clients',
           nodeEnv: 'production',
           defaultLocale: 'en',
           database: {
@@ -317,13 +319,12 @@ describe('cloud-init.utils', () => {
       const config: CloudInitConfig = {
         ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
-        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        proxy: { httpPort: 80, httpsPort: 443 },
         frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
         backend: {
           host: '0.0.0.0',
           port: 3100,
-          websocketPort: 8081,
-          websocketNamespace: 'websocket',
+          websocketNamespace: 'socket/clients',
           nodeEnv: 'production',
           defaultLocale: 'en',
           database: {
@@ -363,13 +364,12 @@ describe('cloud-init.utils', () => {
       const config: CloudInitConfig = {
         ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
-        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        proxy: { httpPort: 80, httpsPort: 443 },
         frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
         backend: {
           host: '0.0.0.0',
           port: 3100,
-          websocketPort: 8081,
-          websocketNamespace: 'websocket',
+          websocketNamespace: 'socket/clients',
           nodeEnv: 'production',
           defaultLocale: 'en',
           database: {
@@ -411,13 +411,12 @@ describe('cloud-init.utils', () => {
       const config: CloudInitConfig = {
         ssh: { publicKey: '' },
         host: { hostname: 'my-instance', fqdn: 'my-instance.example.com' },
-        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        proxy: { httpPort: 80, httpsPort: 443 },
         frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
         backend: {
           host: '0.0.0.0',
           port: 3100,
-          websocketPort: 8081,
-          websocketNamespace: 'websocket',
+          websocketNamespace: 'socket/clients',
           nodeEnv: 'production',
           defaultLocale: 'en',
           database: {
@@ -456,13 +455,12 @@ describe('cloud-init.utils', () => {
       const config: CloudInitConfig = {
         ssh: { publicKey: key },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
-        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        proxy: { httpPort: 80, httpsPort: 443 },
         frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
         backend: {
           host: '0.0.0.0',
           port: 3100,
-          websocketPort: 8081,
-          websocketNamespace: 'websocket',
+          websocketNamespace: 'socket/clients',
           nodeEnv: 'production',
           defaultLocale: 'en',
           database: {
@@ -490,13 +488,12 @@ describe('cloud-init.utils', () => {
       const config: CloudInitConfig = {
         ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
-        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        proxy: { httpPort: 80, httpsPort: 443 },
         frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
         backend: {
           host: '0.0.0.0',
           port: 3100,
-          websocketPort: 8081,
-          websocketNamespace: 'websocket',
+          websocketNamespace: 'socket/clients',
           nodeEnv: 'production',
           defaultLocale: 'en',
           database: {

@@ -9,7 +9,6 @@ describe('nginx-compose.utils', () => {
         stackDir: '/opt/decabill-billing',
         httpPort: 80,
         httpsPort: 443,
-        websocketPort: 8443,
         dependsOn: ['frontend-billing-console-server', 'backend-billing-manager'],
       });
 
@@ -17,7 +16,7 @@ describe('nginx-compose.utils', () => {
       expect(yaml).toContain('container_name: decabill-billing-nginx');
       expect(yaml).toContain("'80:80'");
       expect(yaml).toContain("'443:443'");
-      expect(yaml).toContain("'8443:8443'");
+      expect(yaml).not.toContain('8443');
       expect(yaml).toContain('- frontend-billing-console-server');
       expect(yaml).toContain('- backend-billing-manager');
       expect(yaml).toContain('/opt/decabill-billing/sites-enabled:/etc/nginx/conf.d:ro');

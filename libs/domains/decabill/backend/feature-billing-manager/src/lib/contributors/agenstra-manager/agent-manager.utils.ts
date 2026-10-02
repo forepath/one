@@ -22,12 +22,10 @@ export interface AgentManagerCloudInitConfig {
   proxy: {
     httpPort: number;
     httpsPort: number;
-    websocketPort: number;
   };
   backend: {
     host: string;
     port: number;
-    websocketPort: number;
     websocketNamespace?: string;
     nodeEnv: string;
     database?: {
@@ -115,13 +113,11 @@ export function buildAgentManagerCloudInitConfigFromRequest(
     proxy: {
       httpPort: 80,
       httpsPort: 443,
-      websocketPort: 8443,
     },
     backend: {
       host: '0.0.0.0',
       port: 3000,
-      websocketPort: 8080,
-      websocketNamespace: 'websocket',
+      websocketNamespace: 'socket/agents',
       nodeEnv: 'production',
       database: {
         host: 'postgres',
@@ -173,7 +169,7 @@ export function buildAgentManagerCloudInitUserData(config: AgentManagerCloudInit
   const backendEnv = formatEnvLines([
     `HOST: ${config.backend?.host ?? '0.0.0.0'}`,
     `PORT: ${config.backend?.port ?? '3000'}`,
-    `WEBSOCKET_PORT: ${config.backend?.websocketPort ?? '8080'}`,
+    `WEBSOCKET_NAMESPACE: ${config.backend?.websocketNamespace ?? 'socket/agents'}`,
     `NODE_ENV: ${config.backend?.nodeEnv ?? 'production'}`,
     ...buildPostgresBackendEnvLines(config.backend?.database),
     `AUTHENTICATION_METHOD: ${config.backend?.authentication?.authenticationMethod ?? 'api-key'}`,
@@ -231,7 +227,6 @@ ${buildPostgresComposeService({
 ${backendEnv}
     ports:
       - '${config.backend?.port ?? '3000'}:${config.backend?.port ?? '3000'}'
-      - '${config.backend?.websocketPort ?? '8080'}:${config.backend?.websocketPort ?? '8080'}'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
@@ -246,7 +241,6 @@ ${buildNginxComposeService({
   stackDir: '/opt/agent-manager',
   httpPort: config.proxy?.httpPort ?? 80,
   httpsPort: config.proxy?.httpsPort ?? 443,
-  websocketPort: config.proxy?.websocketPort ?? 8443,
   dependsOn: ['backend-agent-manager'],
 })}
 
@@ -287,11 +281,11 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /${config.backend?.websocketNamespace ?? 'websocket'} {
-        proxy_pass http://agent-manager-api:${config.backend?.websocketPort ?? '8080'};
+    location /socket/ {
+        proxy_pass http://agent-manager-api:${config.backend?.port ?? '3000'};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
+        proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -300,10 +294,10 @@ server {
     }
 
     location /socket.io/ {
-        proxy_pass http://agent-manager-api:${config.backend?.websocketPort ?? '8080'};
+        proxy_pass http://agent-manager-api:${config.backend?.port ?? '3000'};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
+        proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -345,11 +339,11 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /${config.backend?.websocketNamespace ?? 'websocket'} {
-        proxy_pass http://agent-manager-api:${config.backend?.websocketPort ?? '8080'};
+    location /socket/ {
+        proxy_pass http://agent-manager-api:${config.backend?.port ?? '3000'};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
+        proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -358,10 +352,10 @@ server {
     }
 
     location /socket.io/ {
-        proxy_pass http://agent-manager-api:${config.backend?.websocketPort ?? '8080'};
+        proxy_pass http://agent-manager-api:${config.backend?.port ?? '3000'};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
+        proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

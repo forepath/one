@@ -1145,7 +1145,6 @@ describe('ClientsController', () => {
         description: 'Test server',
         location: 'fsn1',
         authenticationType: AuthenticationType.API_KEY,
-        agentWsPort: 8080,
       };
       const mockResponse: ProvisionedServerResponseDto = {
         ...mockClientResponse,

@@ -28,7 +28,7 @@ Centralized control plane that enables you to manage multiple distributed agent-
 **Ports**:
 
 - HTTP API: `3100` (default)
-- WebSocket: `8081` (default)
+- Socket.IO / VNC: same as HTTP `3100` (`/socket/clients`, `/socket/vnc`, …)
 
 ### [Backend Agent Manager](./backend-agent-manager.md)
 
@@ -46,7 +46,7 @@ Agent management system that handles agent lifecycle, container management, and 
 **Ports**:
 
 - HTTP API: `3000` (default)
-- WebSocket: `8080` (default)
+- Socket.IO / VNC: same as HTTP `3000` (`/socket/agents`, `/socket/vnc`)
 
 ### [Frontend Agent Console](./frontend-agent-console.md)
 

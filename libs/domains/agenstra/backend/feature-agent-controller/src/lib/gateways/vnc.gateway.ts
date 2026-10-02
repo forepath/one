@@ -18,7 +18,7 @@ import { ClientsGateway } from './clients.gateway';
 
 /**
  * Raw WebSocket gateway that proxies noVNC traffic to the manager VNC gateway.
- * Shares `WEBSOCKET_PORT` with Socket.IO via path {@link VNC_WEBSOCKET_PATH}.
+ * Shares the Nest HTTP `PORT` with Socket.IO via path {@link VNC_WEBSOCKET_PATH}.
  * Auth is ticket-based; tickets are minted only after ensureClientAccess on REST.
  */
 @Injectable()
@@ -76,7 +76,7 @@ export class VncGateway implements OnApplicationBootstrap, OnModuleDestroy {
     };
 
     httpServer.on('upgrade', this.upgradeListener);
-    this.logger.log(`Controller VNC WebSocket gateway attached at path ${VNC_WEBSOCKET_PATH} on WEBSOCKET_PORT`);
+    this.logger.log(`Controller VNC WebSocket gateway attached at path ${VNC_WEBSOCKET_PATH} on PORT`);
   }
 
   onModuleDestroy(): void {

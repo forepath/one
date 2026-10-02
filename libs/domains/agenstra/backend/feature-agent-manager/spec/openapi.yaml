@@ -11,7 +11,7 @@ servers:
   - url: http://localhost:3000/api
     description: |
       HTTP API (global prefix `/api`). Listen port from env `PORT` (default 3000).
-      WebSocket gateway for agents is separate; see the Agent Manager AsyncAPI (port `WEBSOCKET_PORT`, default 8080).
+      Socket.IO (`/socket/agents`) and VNC (`/socket/vnc`) share this port; Engine.IO path `/socket.io/`. See AsyncAPI.
   - url: http://localhost:3000
     description: Root (OpenTelemetry metrics; outside /api prefix)
 security:
@@ -2179,7 +2179,7 @@ paths:
     post:
       summary: Create a short-lived VNC desktop session ticket
       description: |
-        Mints a single-use ticket for the raw VNC WebSocket gateway on `WEBSOCKET_PORT` path `/vnc` (default 8080).
+        Mints a single-use ticket for the raw VNC WebSocket gateway on HTTP `PORT` path `/socket/vnc` (default 3000).
         The ticket is bound to the agent container and expires quickly. The browser must never connect
         to the worker websockify port directly — only through controller/manager VNC gateways.
       operationId: createAgentVncSession

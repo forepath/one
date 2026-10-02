@@ -4,8 +4,8 @@ describe('VncSessionsService', () => {
   it('builds websocket url without embedding the ticket', () => {
     const service = Object.create(VncSessionsService.prototype) as VncSessionsService;
 
-    expect(service.buildWebsocketUrl('ws://localhost:8081/vnc')).toBe('ws://localhost:8081/vnc');
-    expect(service.buildWebsocketUrl('ws://localhost:8081/vnc/')).toBe('ws://localhost:8081/vnc');
+    expect(service.buildWebsocketUrl('ws://localhost:3100/socket/vnc')).toBe('ws://localhost:3100/socket/vnc');
+    expect(service.buildWebsocketUrl('ws://localhost:3100/socket/vnc/')).toBe('ws://localhost:3100/socket/vnc');
   });
 
   it('builds websocket protocols with binary and ticket token', () => {
@@ -21,11 +21,11 @@ describe('resolveVncWebsocketUrl', () => {
       resolveVncWebsocketUrl({
         controller: {
           restApiUrl: 'http://localhost:3100/api',
-          websocketUrl: 'http://localhost:8081/clients',
-          vncWebsocketUrl: 'wss://vnc.example.com/vnc',
+          websocketUrl: 'http://localhost:3100/socket/clients',
+          vncWebsocketUrl: 'wss://vnc.example.com/socket/vnc',
         },
       } as never),
-    ).toBe('wss://vnc.example.com/vnc');
+    ).toBe('wss://vnc.example.com/socket/vnc');
   });
 
   it('derives ws URL from controller.websocketUrl /clients path', () => {
@@ -33,10 +33,10 @@ describe('resolveVncWebsocketUrl', () => {
       resolveVncWebsocketUrl({
         controller: {
           restApiUrl: 'http://localhost:3100/api',
-          websocketUrl: 'http://localhost:8081/clients',
+          websocketUrl: 'http://localhost:3100/socket/clients',
         },
       } as never),
-    ).toBe('ws://localhost:8081/vnc');
+    ).toBe('ws://localhost:3100/socket/vnc');
   });
 
   it('derives wss URL from https websocketUrl with prefix path', () => {
@@ -44,9 +44,9 @@ describe('resolveVncWebsocketUrl', () => {
       resolveVncWebsocketUrl({
         controller: {
           restApiUrl: 'https://cloud.example.com/v1/api',
-          websocketUrl: 'https://cloud.example.com/v1/clients',
+          websocketUrl: 'https://cloud.example.com/v1/socket/clients',
         },
       } as never),
-    ).toBe('wss://cloud.example.com/v1/vnc');
+    ).toBe('wss://cloud.example.com/v1/socket/vnc');
   });
 });

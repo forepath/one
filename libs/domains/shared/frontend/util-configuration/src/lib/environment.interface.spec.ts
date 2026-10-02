@@ -14,7 +14,7 @@ describe('Environment interfaces', () => {
         productName: 'Agenstra',
         controller: {
           restApiUrl: 'http://localhost:3100/api',
-          websocketUrl: 'ws://localhost:8081/clients',
+          websocketUrl: 'ws://localhost:3100/socket/clients',
         },
         billing: {
           restApiUrl: 'http://localhost:3200/api',
@@ -59,7 +59,7 @@ describe('Environment interfaces', () => {
         productName: 'Agenstra',
         controller: {
           restApiUrl: 'http://localhost:3100/api',
-          websocketUrl: 'ws://localhost:8081/clients',
+          websocketUrl: 'ws://localhost:3100/socket/clients',
         },
         billing: {
           restApiUrl: 'http://localhost:3200/api',
@@ -105,7 +105,7 @@ describe('Environment interfaces', () => {
         productName: 'Agenstra',
         controller: {
           restApiUrl: 'http://localhost:3100/api',
-          websocketUrl: 'ws://localhost:8081/clients',
+          websocketUrl: 'ws://localhost:3100/socket/clients',
         },
         billing: {
           restApiUrl: 'http://localhost:3200/api',
@@ -143,7 +143,7 @@ describe('Environment interfaces', () => {
 
       expect(envWithController.controller).toBeDefined();
       expect(envWithController.controller?.restApiUrl).toBe('http://localhost:3100/api');
-      expect(envWithController.controller?.websocketUrl).toBe('ws://localhost:8081/clients');
+      expect(envWithController.controller?.websocketUrl).toBe('ws://localhost:3100/socket/clients');
     });
 
     it('should require chatModelOptions map', () => {
@@ -152,7 +152,7 @@ describe('Environment interfaces', () => {
         productName: 'Agenstra',
         controller: {
           restApiUrl: 'http://localhost:3100/api',
-          websocketUrl: 'ws://localhost:8081/clients',
+          websocketUrl: 'ws://localhost:3100/socket/clients',
         },
         billing: {
           restApiUrl: 'http://localhost:3200/api',

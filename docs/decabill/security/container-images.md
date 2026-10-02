@@ -32,7 +32,7 @@ Entrypoint may start as root for storage `chown`, then **`runuser`** drops to `d
 
 Source: `apps/decabill/backend-billing-manager/Dockerfile.api`
 
-- Exposes **3200** (HTTP API) and **8082** (WebSocket)
+- Exposes **3200** (HTTP API, Socket.IO, and Engine.IO on one port)
 - Health check: `GET /api/health`
 - **No Docker socket mount** (billing does not orchestrate agent containers on the host)
 - Secrets (database, Stripe, `ENCRYPTION_KEY`, `STATIC_API_KEY`, cloud API tokens) are supplied at **deploy time**, not as default `ENV` in the image

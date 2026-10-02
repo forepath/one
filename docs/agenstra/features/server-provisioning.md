@@ -74,7 +74,6 @@ The provisioning endpoint accepts a `ProvisionServerDto` with the following fiel
 - **`keycloakClientSecret`** Keycloak client secret (required for KEYCLOAK authentication)
 - **`keycloakRealm`** Keycloak realm (optional, defaults to environment variable)
 - **`keycloakAuthServerUrl`** Keycloak auth server URL (optional, defaults to environment variable)
-- **`agentWsPort`** Agent WebSocket port (defaults to 8080)
 - **`gitRepositoryUrl`** Git repository URL for agent workspace
 - **`gitUsername`** Git username for repository access
 - **`gitToken`** Git token/personal access token for repository access
@@ -98,8 +97,7 @@ The provisioning endpoint accepts a `ProvisionServerDto` with the following fiel
 
 The provisioned server exposes:
 
-- **HTTP API**: Port 3000 (agent-manager REST API)
-- **WebSocket**: Port 8080 (agent-manager WebSocket gateway)
+- **HTTP / Socket.IO / VNC**: Port 3000 (`/api/`, `/socket/agents`, `/socket/vnc`, `/socket.io/`)
 
 ## Environment Variables Interpolation
 

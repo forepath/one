@@ -248,7 +248,6 @@ describe('ClientsGateway', () => {
       endpoint: 'http://localhost:3100/api',
       authenticationType: 'api_key',
       apiKey: 'x',
-      agentWsPort: 8099,
     } as any);
     await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
     expect(clientsRepository.findByIdOrThrow).toHaveBeenCalledWith('client-uuid');
@@ -256,7 +255,7 @@ describe('ClientsGateway', () => {
     const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
 
     expect(io).toHaveBeenCalledWith(
-      'http://localhost:8099/agents',
+      'http://localhost:3100/socket/agents',
       expect.objectContaining({
         extraHeaders: expect.objectContaining({ Authorization: expect.stringMatching(/^Bearer /) }),
       }),
@@ -273,7 +272,6 @@ describe('ClientsGateway', () => {
       endpoint: 'http://localhost:3100/api',
       authenticationType: 'api_key',
       apiKey: 'x',
-      agentWsPort: 8099,
     } as any);
     mockCredentialsRepo.findByClientAndAgent.mockResolvedValue({ password: 'pw' });
     mockTicketsService.getPrototypePromptByClientSha.mockResolvedValue({
@@ -332,7 +330,6 @@ describe('ClientsGateway', () => {
       endpoint: 'http://localhost:3100/api',
       authenticationType: 'api_key',
       apiKey: 'x',
-      agentWsPort: 8099,
     } as any);
     await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
     expect(socket.emit).toHaveBeenCalledWith('error', { message: 'Unauthorized' });
@@ -384,7 +381,6 @@ describe('ClientsGateway', () => {
       endpoint: 'http://localhost:3100/api',
       authenticationType: 'api_key',
       apiKey: 'x',
-      agentWsPort: 8099,
     } as any);
     await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
     const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
@@ -405,7 +401,6 @@ describe('ClientsGateway', () => {
       endpoint: 'http://localhost:3100/api',
       authenticationType: 'api_key',
       apiKey: 'x',
-      agentWsPort: 8099,
     } as any);
     mockCredentialsRepo.findByClientAndAgent.mockResolvedValue({
       id: 'cred-1',
@@ -440,7 +435,6 @@ describe('ClientsGateway', () => {
       endpoint: 'http://localhost:3100/api',
       authenticationType: 'api_key',
       apiKey: 'x',
-      agentWsPort: 8099,
     } as any);
     await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
     const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
@@ -479,7 +473,6 @@ describe('ClientsGateway', () => {
       endpoint: 'http://localhost:3100/api',
       authenticationType: 'api_key',
       apiKey: 'x',
-      agentWsPort: 8099,
     } as any);
     await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
     const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
@@ -524,7 +517,6 @@ describe('ClientsGateway', () => {
       endpoint: 'http://localhost:3100/api',
       authenticationType: 'api_key',
       apiKey: 'x',
-      agentWsPort: 8099,
     } as any);
     await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
     const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
@@ -574,7 +566,6 @@ describe('ClientsGateway', () => {
       endpoint: 'http://localhost:3100/api',
       authenticationType: 'api_key',
       apiKey: 'x',
-      agentWsPort: 8099,
     } as any);
     mockCredentialsRepo.findByClientAndAgent.mockResolvedValue({
       id: 'cred-1',
@@ -608,7 +599,6 @@ describe('ClientsGateway', () => {
       endpoint: 'http://localhost:3100/api',
       authenticationType: 'api_key',
       apiKey: 'x',
-      agentWsPort: 8099,
     } as any);
     mockCredentialsRepo.findByClientAndAgent.mockResolvedValue({
       id: 'cred-1',
@@ -642,7 +632,6 @@ describe('ClientsGateway', () => {
       endpoint: 'http://localhost:3100/api',
       authenticationType: 'api_key',
       apiKey: 'x',
-      agentWsPort: 8099,
     } as any);
     mockCredentialsRepo.findByClientAndAgent.mockResolvedValue({
       id: 'cred-1',
@@ -684,7 +673,6 @@ describe('ClientsGateway', () => {
       endpoint: 'http://localhost:3100/api',
       authenticationType: 'api_key',
       apiKey: 'x',
-      agentWsPort: 8099,
     } as any);
     mockCredentialsRepo.findByClientAndAgent.mockResolvedValue({
       id: 'cred-1',
@@ -728,7 +716,6 @@ describe('ClientsGateway', () => {
       endpoint: 'http://localhost:3100/api',
       authenticationType: 'api_key',
       apiKey: 'x',
-      agentWsPort: 8099,
     } as any);
     await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
     // Wait for remote connection to be established and onAny handler to be registered
@@ -775,7 +762,6 @@ describe('ClientsGateway', () => {
       endpoint: 'http://localhost:3100/api',
       authenticationType: 'api_key',
       apiKey: 'x',
-      agentWsPort: 8099,
     } as any);
     await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
     await new Promise((resolve) => setImmediate(resolve));
@@ -810,7 +796,6 @@ describe('ClientsGateway', () => {
       endpoint: 'http://localhost:3100/api',
       authenticationType: 'api_key',
       apiKey: 'x',
-      agentWsPort: 8099,
     } as any);
     await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
     await new Promise((resolve) => setImmediate(resolve));
@@ -848,7 +833,6 @@ describe('ClientsGateway', () => {
         endpoint: 'http://localhost:3100/api',
         authenticationType: 'api_key',
         apiKey: 'x',
-        agentWsPort: 8099,
       } as any);
 
       await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
@@ -878,7 +862,6 @@ describe('ClientsGateway', () => {
         endpoint: 'http://localhost:3100/api',
         authenticationType: 'api_key',
         apiKey: 'x',
-        agentWsPort: 8099,
       } as any);
 
       await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
@@ -906,7 +889,6 @@ describe('ClientsGateway', () => {
         endpoint: 'http://localhost:3100/api',
         authenticationType: 'api_key',
         apiKey: 'x',
-        agentWsPort: 8099,
       } as any);
 
       await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
@@ -937,7 +919,6 @@ describe('ClientsGateway', () => {
         endpoint: 'http://localhost:3100/api',
         authenticationType: 'api_key',
         apiKey: 'x',
-        agentWsPort: 8099,
       } as any);
 
       await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
@@ -971,7 +952,6 @@ describe('ClientsGateway', () => {
         endpoint: 'http://localhost:3100/api',
         authenticationType: 'api_key',
         apiKey: 'x',
-        agentWsPort: 8099,
       } as any);
 
       // Set client for both sockets
@@ -1009,7 +989,6 @@ describe('ClientsGateway', () => {
         endpoint: 'http://localhost:3100/api',
         authenticationType: 'api_key',
         apiKey: 'x',
-        agentWsPort: 8099,
       } as any);
 
       await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
@@ -1040,7 +1019,6 @@ describe('ClientsGateway', () => {
         endpoint: 'http://localhost:3100/api',
         authenticationType: 'api_key',
         apiKey: 'x',
-        agentWsPort: 8099,
       } as any);
 
       // Set remote socket to disconnected initially
@@ -1077,7 +1055,6 @@ describe('ClientsGateway', () => {
         endpoint: 'http://localhost:3100/api',
         authenticationType: 'api_key',
         apiKey: 'x',
-        agentWsPort: 8099,
       } as any);
 
       // Set remote socket to disconnected
@@ -1124,7 +1101,6 @@ describe('ClientsGateway', () => {
         endpoint: 'http://localhost:3100/api',
         authenticationType: 'api_key',
         apiKey: 'x',
-        agentWsPort: 8099,
       } as any);
 
       await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
@@ -1175,7 +1151,6 @@ describe('ClientsGateway', () => {
         endpoint: 'http://localhost:3100/api',
         authenticationType: 'api_key',
         apiKey: 'x',
-        agentWsPort: 8099,
       } as any);
 
       // Mock credentials for agent
@@ -1297,7 +1272,6 @@ describe('ClientsGateway', () => {
         endpoint: 'http://localhost:3100/api',
         authenticationType: 'api_key',
         apiKey: 'x',
-        agentWsPort: 8099,
       } as any);
 
       // Mock credentials for multiple agents

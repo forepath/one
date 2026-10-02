@@ -282,7 +282,7 @@ Customer-assigned project tracking with admin CRUD, time entries, KPI summaries,
 
 ### [Project Board](./project-board.md)
 
-Live Kanban board for project tickets with Socket.IO on namespace **`projects`**.
+Live Kanban board for project tickets with Socket.IO on namespace **`socket/projects`**.
 
 **Key Capabilities**:
 

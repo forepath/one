@@ -143,11 +143,10 @@ describe('agent-manager.utils', () => {
       const config: AgentManagerCloudInitConfig = {
         ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
-        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        proxy: { httpPort: 80, httpsPort: 443 },
         backend: {
           host: '0.0.0.0',
           port: 3000,
-          websocketPort: 8080,
           nodeEnv: 'production',
           database: {
             host: 'postgres',
@@ -166,18 +165,21 @@ describe('agent-manager.utils', () => {
       const script = Buffer.from(b64, 'base64').toString('utf-8');
 
       expect(script).toContain('location /');
+      expect(script).toContain('location /socket/');
+      expect(script).toContain('location /socket.io/');
       expect(script).toContain('agent-manager-api');
+      expect(script).toContain("WEBSOCKET_NAMESPACE: 'socket/agents'");
+      expect(script).not.toContain('WEBSOCKET_PORT');
     });
 
     it('returns base64-encoded script containing agent-manager and docker compose', () => {
       const config: AgentManagerCloudInitConfig = {
         ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
-        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        proxy: { httpPort: 80, httpsPort: 443 },
         backend: {
           host: '0.0.0.0',
           port: 3000,
-          websocketPort: 8080,
           nodeEnv: 'production',
           database: {
             host: 'postgres',
@@ -212,11 +214,10 @@ describe('agent-manager.utils', () => {
       const config: AgentManagerCloudInitConfig = {
         ssh: { publicKey: '' },
         host: { hostname: 'my-instance', fqdn: 'my-instance.example.com' },
-        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        proxy: { httpPort: 80, httpsPort: 443 },
         backend: {
           host: '0.0.0.0',
           port: 3000,
-          websocketPort: 8080,
           nodeEnv: 'production',
           authentication: { authenticationMethod: 'api-key' },
           encryption: { encryptionKey: 'k', jwtSecret: 's' },
@@ -241,11 +242,10 @@ describe('agent-manager.utils', () => {
       const config: AgentManagerCloudInitConfig = {
         ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
-        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        proxy: { httpPort: 80, httpsPort: 443 },
         backend: {
           host: '0.0.0.0',
           port: 3000,
-          websocketPort: 8080,
           nodeEnv: 'production',
           database: {
             host: 'postgres',
@@ -281,11 +281,10 @@ describe('agent-manager.utils', () => {
       const config: AgentManagerCloudInitConfig = {
         ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
-        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        proxy: { httpPort: 80, httpsPort: 443 },
         backend: {
           host: '0.0.0.0',
           port: 3000,
-          websocketPort: 8080,
           nodeEnv: 'production',
           database: {
             host: 'postgres',
@@ -314,11 +313,10 @@ describe('agent-manager.utils', () => {
       const config: AgentManagerCloudInitConfig = {
         ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
-        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        proxy: { httpPort: 80, httpsPort: 443 },
         backend: {
           host: '0.0.0.0',
           port: 3000,
-          websocketPort: 8080,
           nodeEnv: 'production',
           database: {
             host: 'postgres',
@@ -345,11 +343,10 @@ describe('agent-manager.utils', () => {
       const config: AgentManagerCloudInitConfig = {
         ssh: { publicKey: key },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
-        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        proxy: { httpPort: 80, httpsPort: 443 },
         backend: {
           host: '0.0.0.0',
           port: 3000,
-          websocketPort: 8080,
           nodeEnv: 'production',
           database: {
             host: 'postgres',
@@ -375,11 +372,10 @@ describe('agent-manager.utils', () => {
       const config: AgentManagerCloudInitConfig = {
         ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
-        proxy: { httpPort: 80, httpsPort: 443, websocketPort: 8443 },
+        proxy: { httpPort: 80, httpsPort: 443 },
         backend: {
           host: '0.0.0.0',
           port: 3000,
-          websocketPort: 8080,
           nodeEnv: 'production',
           database: {
             host: 'postgres',

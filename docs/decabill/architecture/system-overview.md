@@ -21,7 +21,7 @@ graph TB
     end
 
     FE -->|HTTP REST /api| BM
-    FE -->|WebSocket /billing| BM
+    FE -->|WebSocket /socket/billing| BM
     BM --> PG
     BM --> RD
     BM --> ST
@@ -41,7 +41,7 @@ graph TB
 #### Application Tier (Backend Billing Manager)
 
 - HTTP REST API under `/api` (OpenAPI documented)
-- WebSocket gateway on port **8082**, namespace **`billing`** PostgreSQL persistence with TypeORM migrations on API startup
+- Socket.IO on shared HTTP port **3200**, namespaces **`socket/billing`** and **`socket/projects`**. PostgreSQL persistence with TypeORM migrations on API startup
 - BullMQ schedulers and workers for billing cycles, reminders, backorders, and provisioning updates
 - Stripe checkout session creation and webhook handling
 - Optional cloud server provisioning via provider APIs and cloud-init
@@ -95,7 +95,7 @@ See **[API Reference](../api-reference/README.md)**.
 
 ### WebSocket Dashboard Status
 
-The billing manager exposes a Socket.IO namespace separate from the HTTP port. Authenticated users subscribe with `subscribeDashboardStatus`. The server polls provisioned subscription items on an interval and emits `dashboardStatusUpdate` events scoped to the connecting socket only.
+The billing manager exposes Socket.IO namespaces on the same HTTP port as REST. Authenticated users subscribe with `subscribeDashboardStatus`. The server polls provisioned subscription items on an interval and emits `dashboardStatusUpdate` events scoped to the connecting socket only.
 
 Static API key clients cannot use this stream because there is no end-user subscription scope. See **[Real-time Status](../features/real-time-status.md)**.
 

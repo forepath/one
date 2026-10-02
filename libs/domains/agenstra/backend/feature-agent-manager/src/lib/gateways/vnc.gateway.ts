@@ -17,7 +17,7 @@ import { AgentsGateway } from './agents.gateway';
 
 /**
  * Raw WebSocket gateway for VNC/websockify binary proxying.
- * Shares `WEBSOCKET_PORT` with Socket.IO via path {@link VNC_WEBSOCKET_PATH}.
+ * Shares the Nest HTTP `PORT` with Socket.IO via path {@link VNC_WEBSOCKET_PATH}.
  * Separate protocol from Socket.IO — noVNC expects websockify framing.
  *
  * Ticket store is process-local: deploy a single manager replica (or sticky sessions)
@@ -77,7 +77,7 @@ export class VncGateway implements OnApplicationBootstrap, OnModuleDestroy {
     };
 
     httpServer.on('upgrade', this.upgradeListener);
-    this.logger.log(`VNC WebSocket gateway attached at path ${VNC_WEBSOCKET_PATH} on WEBSOCKET_PORT`);
+    this.logger.log(`VNC WebSocket gateway attached at path ${VNC_WEBSOCKET_PATH} on PORT`);
   }
 
   onModuleDestroy(): void {

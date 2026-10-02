@@ -27,7 +27,7 @@ docker compose up -d
 The `docker-compose.yaml` includes:
 
 - **postgres** PostgreSQL 16
-- **redis** Redis 7 with persistence; host port **6380** maps to container **6379** **backend-billing-manager** API (`QUEUE_ROLE=api`, port **3200**, WebSocket **8082**)
+- **redis** Redis 7 with persistence; host port **6380** maps to container **6379** **backend-billing-manager** API (`QUEUE_ROLE=api`, port **3200** including Socket.IO)
 - **backend-billing-manager-scheduler** Coordinator registration (`QUEUE_ROLE=scheduler`)
 - **backend-billing-manager-worker** Job processing (`QUEUE_ROLE=worker`)
 - **mailhog** Local SMTP capture for invoice and reminder emails

@@ -3,14 +3,16 @@ info:
   title: Agent controller WebSocket (clients + tickets + pages)
   version: 1.0.0
   description: |
-    Socket.IO events for the agent-controller WebSocket port: namespace **clients** (proxy to agent-manager)
-    and namespace **tickets** (ticket board / automation realtime), plus namespace **pages** for knowledge board realtime.
+    Socket.IO events for the agent-controller on the shared HTTP `PORT` (default 3100). Engine.IO path is
+    `/socket.io/`; REST remains under `/api/`. Namespaces: **socket/clients** (proxy to agent-manager),
+    **socket/tickets** (ticket board / automation realtime), **socket/pages** (knowledge board), and
+    **socket/status** (per-user notification state). Raw VNC WebSocket is path `/socket/vnc` on the same port.
     See channel `tickets/*` and `pages/*` for board coherence.
-    Namespace **clients** also emits controller-originated `ticketAutomationRunChatUpsert` for chat UI timeline
+    Namespace **socket/clients** also emits controller-originated `ticketAutomationRunChatUpsert` for chat UI timeline
     (see `clients/ticketAutomationRunChatUpsert` and OpenAPI `TicketAutomationRunChatEventDto`), and
     `ticketChatTicketUpsert` with the same payload shape as tickets-board `ticketUpsert` so chat clients can refresh
-    ticket fields on automation cards without joining namespace **tickets**.
-    For **clients**, all connections require authentication via the `Authorization` header in the handshake
+    ticket fields on automation cards without joining namespace **socket/tickets**.
+    For **socket/clients**, all connections require authentication via the `Authorization` header in the handshake
     (same as HTTP API: `Bearer <jwt-token>` or `Bearer <api-key>` / `ApiKey <api-key>`).
     Unauthenticated connections are rejected with connect_error "Unauthorized".
     The `setClient` operation enforces per-client authorization: only users with access to
@@ -21,12 +23,13 @@ info:
     workspace-manager rules; see OpenAPI spec (ClientResponseDto.canManageWorkspaceConfiguration and 403 descriptions).
 servers:
   local:
-    host: localhost:8081
+    host: localhost:3100
     protocol: ws
     description: |
-      Socket.IO server (port from env WEBSOCKET_PORT, default 8081). Namespaces: **clients** (WEBSOCKET_NAMESPACE, default "clients")
-      **tickets** (TICKETS_WEBSOCKET_NAMESPACE, default "tickets"), and
-      **pages** (KNOWLEDGE_WEBSOCKET_NAMESPACE, default "pages") on the same port and CORS (WEBSOCKET_CORS_ORIGIN).
+      Socket.IO on shared HTTP PORT (env `PORT`, default 3100); Engine.IO path `/socket.io/`.
+      Namespaces: **socket/clients** (WEBSOCKET_NAMESPACE), **socket/tickets** (TICKETS_WEBSOCKET_NAMESPACE),
+      **socket/pages** (KNOWLEDGE_WEBSOCKET_NAMESPACE), **socket/status** (STATUS_WEBSOCKET_NAMESPACE).
+      VNC raw WebSocket: `/socket/vnc`. CORS via WEBSOCKET_CORS_ORIGIN.
       Pass Authorization header in handshake (or handshake.auth.Authorization for browser WebSockets).
 channels:
   clients/setClient:
@@ -277,7 +280,7 @@ channels:
     description: |
       Full per-user notification state on connect (git dirty + unread per environment, nested `chats[]`
       for visible primary/user sessions, client rollups, spacesHasAttention).
-      Unicast to the connecting socket only. Namespace **status** (STATUS_WEBSOCKET_NAMESPACE, default "status").
+      Unicast to the connecting socket only. Namespace **socket/status** (STATUS_WEBSOCKET_NAMESPACE, default "socket/status").
   status/statusPatch:
     address: status/statusPatch
     description: Incremental notification deltas after connect (unicast), including nested `chats[]` when unread changes.

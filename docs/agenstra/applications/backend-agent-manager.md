@@ -143,7 +143,7 @@ For complete API endpoint documentation, request/response schemas, and authentic
 
 ## WebSocket Gateway
 
-The Socket.IO WebSocket gateway is available at `http://localhost:8080/agents` (or configured `WEBSOCKET_PORT`).
+The Socket.IO gateway shares HTTP `PORT` (default 3000) at `http://localhost:3000/socket/agents` (override namespace via `WEBSOCKET_NAMESPACE`). VNC path `/socket/vnc`; Engine.IO `/socket.io/`.
 
 ### Events
 
@@ -230,7 +230,7 @@ See the application docs and environment configuration for complete environment 
 
 **Application-specific:** `PORT` - HTTP API port (default: `3000`)
 
-- `WEBSOCKET_PORT` - WebSocket gateway port (default: `8080`)
+- `WEBSOCKET_NAMESPACE` - Socket.IO namespace (default: `socket/agents`)
 - `NODE_ENV` - Environment mode (`development` or `production`)
 
 **Git Repository:** `GIT_REPOSITORY_URL` - Git repository URL for agent workspace
@@ -279,7 +279,6 @@ docker compose up -d
 # Or run directly with Docker socket mount
 docker run -v /var/run/docker.sock:/var/run/docker.sock \
   -p 3000:3000 \
-  -p 8080:8080 \
   -e CORS_ORIGIN="https://agenstra.com" \
   -e RATE_LIMIT_ENABLED=true \
   -e RATE_LIMIT_LIMIT=100 \
