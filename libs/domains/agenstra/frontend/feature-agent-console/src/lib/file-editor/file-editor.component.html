@@ -266,7 +266,14 @@
           @if (selectedFilePath()) {
             @if (isReadingFile$ | async) {
               <div class="editor-loading d-flex justify-content-center align-items-center flex-grow-1">
-                <fpc-spinner variant="primary" i18n-label="@@featureFileEditor-loadingFile" label="Loading file..." />
+                @if (!showBootOverlay()) {
+                  <fpc-spinner
+                    [size]="'lg'"
+                    [variant]="'primary'"
+                    i18n-label="@@featureFileEditor-loadingFile"
+                    label="Loading file..."
+                  />
+                }
               </div>
             } @else {
               <framework-monaco-editor-wrapper

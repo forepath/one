@@ -33,15 +33,6 @@ export const environment: Environment = {
     cursor: {},
     opencode: {},
   },
-  editor: {
-    openInNewWindow: true,
-  },
-  deployment: {
-    openInNewWindow: true,
-  },
-  vnc: {
-    openInNewWindow: true,
-  },
   cookieConsent: {
     enabled: true,
     domain: '.agenstra.com',

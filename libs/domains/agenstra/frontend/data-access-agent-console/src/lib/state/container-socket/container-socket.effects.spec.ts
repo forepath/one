@@ -81,15 +81,6 @@ describe('SocketsEffects', () => {
         type: 'api-key',
         apiKey: 'test-api-key',
       },
-      editor: {
-        openInNewWindow: true,
-      },
-      deployment: {
-        openInNewWindow: true,
-      },
-      vnc: {
-        openInNewWindow: true,
-      },
     };
 
     mockKeycloakService = {

@@ -1,6 +1,12 @@
-<fpc-loading-overlay [loading]="showStandaloneLoading()" [fixed]="true" spinnerSize="lg" [label]="loadingFileLabel" />
+<fpc-loading-overlay
+  [loading]="showLoadingOverlay()"
+  [fixed]="true"
+  [spinnerSize]="'lg'"
+  [spinnerVariant]="'primary'"
+  [label]="loadingFileLabel"
+/>
 
-@if (!fileOnlyMode()) {
+@if (!isToolWindowRoute()) {
   <fpc-top-bar brandSrc="assets/images/icon_light.svg" brandAlt="Agenstra" i18n-brandAlt="@@featureContainer-brandAlt">
     @if (isUsersAuth && (isAuthenticated$ | async)) {
       <fpc-button

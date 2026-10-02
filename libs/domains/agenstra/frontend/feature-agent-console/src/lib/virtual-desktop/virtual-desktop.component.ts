@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, effect, inject, input, signal, viewChild } from '@angular/core';
 import { VncSessionsService } from '@forepath/agenstra/frontend/data-access-agent-console';
+import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import { FpcEmptyStateComponent } from '@forepath/shared/frontend/ui-components';
 
 import { loadNovncRfb, type NovncRfbInstance } from './load-novnc-rfb';
@@ -14,6 +15,7 @@ import { loadNovncRfb, type NovncRfbInstance } from './load-novnc-rfb';
 })
 export class VirtualDesktopComponent implements OnDestroy {
   private readonly vncSessionsService = inject(VncSessionsService);
+  private readonly loadingOverlayService = inject(StandaloneLoadingService);
 
   clientId = input.required<string>();
   agentId = input.required<string>();
@@ -101,6 +103,7 @@ export class VirtualDesktopComponent implements OnDestroy {
         this.connecting.set(false);
         this.connected.set(true);
         this.errorMessage.set(null);
+        this.loadingOverlayService.setLoading(false);
       });
 
       this.rfb.addEventListener('disconnect', () => {
@@ -110,6 +113,7 @@ export class VirtualDesktopComponent implements OnDestroy {
 
         this.connecting.set(false);
         this.connected.set(false);
+        this.loadingOverlayService.setLoading(false);
       });
 
       this.rfb.addEventListener('securityfailure', () => {
@@ -120,6 +124,7 @@ export class VirtualDesktopComponent implements OnDestroy {
         this.connecting.set(false);
         this.connected.set(false);
         this.errorMessage.set($localize`:@@featureVirtualDesktop-securityFailure:Desktop authentication failed`);
+        this.loadingOverlayService.setLoading(false);
       });
     } catch (error) {
       if (generation !== this.connectGeneration) {
@@ -132,6 +137,7 @@ export class VirtualDesktopComponent implements OnDestroy {
         (error as { message?: string })?.message ||
           $localize`:@@featureVirtualDesktop-genericError:Failed to open virtual desktop`,
       );
+      this.loadingOverlayService.setLoading(false);
     }
   }
 

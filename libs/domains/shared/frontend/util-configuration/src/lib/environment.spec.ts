@@ -13,8 +13,6 @@ describe('environment', () => {
       billing: expect.any(Object),
       authentication: expect.any(Object),
       chatModelOptions: expect.any(Object),
-      editor: expect.any(Object),
-      deployment: expect.any(Object),
       cookieConsent: expect.any(Object),
     });
   });

@@ -22,7 +22,7 @@ import { FpcSpinnerComponent } from '../spinner/spinner.component';
   template: `
     @if (loading()) {
       <div class="fpc-loading-overlay__backdrop" [class.fpc-loading-overlay__backdrop--dim]="dim()">
-        <fpc-spinner [size]="spinnerSize()" [label]="label()" />
+        <fpc-spinner [size]="spinnerSize()" [variant]="spinnerVariant()" [label]="label()" />
         @if (message()) {
           <p class="fpc-loading-overlay__message mb-0">{{ message() }}</p>
         }
@@ -36,6 +36,8 @@ export class FpcLoadingOverlayComponent {
   readonly message = input<string | null>(null);
   readonly label = input('Loading');
   readonly spinnerSize = input<'sm' | 'md' | 'lg'>('md');
+  /** Bootstrap text color utility suffix, e.g. `primary`. */
+  readonly spinnerVariant = input<string | null>('primary');
   /** Tints the backdrop; disable for a transparent overlay that only blocks interaction. */
   readonly dim = input(true);
   /** Pin the overlay to the viewport instead of a relative ancestor. */

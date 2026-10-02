@@ -602,9 +602,6 @@
       <trans-unit id="featureChat-shareFileLinkCopied" datatype="html">
         <source>Link copied</source>
         </trans-unit>
-      <trans-unit id="featureChat-closeEditor" datatype="html">
-        <source>Close Editor</source>
-        </trans-unit>
       <trans-unit id="featureChat-workspaces" datatype="html">
         <source>Workspaces</source>
         </trans-unit>
@@ -1210,26 +1207,11 @@
       <trans-unit id="featureChat-openEditorNewWindow" datatype="html">
         <source>Open Editor in New Window</source>
         </trans-unit>
-      <trans-unit id="featureChat-openEditor" datatype="html">
-        <source>Open Editor</source>
-        </trans-unit>
       <trans-unit id="featureChat-openDeploymentManagerNewWindow" datatype="html">
         <source>Open Deployment Manager in New Window</source>
         </trans-unit>
-      <trans-unit id="featureChat-closeDeploymentManager" datatype="html">
-        <source>Close Deployment Manager</source>
-        </trans-unit>
-      <trans-unit id="featureChat-openDeploymentManager" datatype="html">
-        <source>Open Deployment Manager</source>
-        </trans-unit>
-      <trans-unit id="featureChat-openVirtualDesktop" datatype="html">
-        <source>Open Virtual Desktop</source>
-        </trans-unit>
       <trans-unit id="featureChat-openVirtualDesktopNewWindow" datatype="html">
         <source>Open Virtual Desktop in New Window</source>
-        </trans-unit>
-      <trans-unit id="featureChat-closeVirtualDesktop" datatype="html">
-        <source>Close Virtual Desktop</source>
         </trans-unit>
       <trans-unit id="featureVirtualDesktop-header" datatype="html">
         <source>Virtual Desktop</source>

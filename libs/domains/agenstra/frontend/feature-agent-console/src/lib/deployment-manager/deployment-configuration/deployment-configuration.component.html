@@ -2,17 +2,20 @@
   @if (loadingConfiguration$ | async) {
     <!-- Loading State -->
     <div class="d-flex justify-content-center align-items-center flex-grow-1 p-4">
-      <div class="text-center">
-        <fpc-spinner
-          class="mb-3"
-          variant="primary"
-          i18n-label="@@featureDeploymentConfig-loadingConfig"
-          label="Loading configuration..."
-        />
-        <p class="text-muted small mb-0" i18n="@@featureDeploymentConfig-loadingMessage">
-          Loading deployment configuration...
-        </p>
-      </div>
+      @if (!showBootOverlay()) {
+        <div class="text-center">
+          <fpc-spinner
+            class="mb-3"
+            [size]="'lg'"
+            [variant]="'primary'"
+            i18n-label="@@featureDeploymentConfig-loadingConfig"
+            label="Loading configuration..."
+          />
+          <p class="text-muted small mb-0" i18n="@@featureDeploymentConfig-loadingMessage">
+            Loading deployment configuration...
+          </p>
+        </div>
+      }
     </div>
   } @else if (hasConfiguration()) {
     <!-- Existing Configuration View -->

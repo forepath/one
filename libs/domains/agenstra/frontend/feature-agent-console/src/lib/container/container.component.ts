@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit, ViewChild } from '@angular/core';
+import { afterNextRender, Component, DestroyRef, inject, OnInit, ViewChild } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import {
   AuthenticationFacade,
   ClientsFacade,
@@ -22,7 +22,7 @@ import {
 } from '@forepath/shared/frontend/ui-components';
 import { LocaleService } from '@forepath/shared/frontend/util-configuration';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
-import { combineLatest, filter, map, startWith } from 'rxjs';
+import { combineLatest, distinctUntilChanged, filter, map, pairwise, startWith } from 'rxjs';
 
 import { ThemeService } from '../theme.service';
 
@@ -61,12 +61,24 @@ export class AgentConsoleContainerComponent implements OnInit {
   protected readonly notificationsFacade = inject(NotificationsFacade);
   private readonly adminUpdatesFacade = inject(AdminUpdatesFacade);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly standaloneLoadingService = inject(StandaloneLoadingService);
+  private readonly loadingOverlayService = inject(StandaloneLoadingService);
   protected readonly themeService = inject(ThemeService);
   protected readonly localeService = inject(LocaleService);
   private readonly authEnvironment = inject(IDENTITY_AUTH_ENVIRONMENT);
+
+  constructor() {
+    // Show overlay before the first paint of Workspaces/Environments on tool-window pop-outs.
+    if (this.isToolWindowUrl(this.router.url)) {
+      this.loadingOverlayService.setLoading(true);
+    }
+
+    // index.html #app-boot-loader survives Angular bootstrap; remove it only after this
+    // container (and any tool-window overlay) has painted so there is no blank gap.
+    afterNextRender(() => {
+      document.getElementById('app-boot-loader')?.remove();
+    });
+  }
 
   readonly languageSwitcherAriaLabel = $localize`:@@featureContainer-languageSwitcherAriaLabel:Select language`;
   readonly toggleDarkModeTitle = $localize`:@@featureContainer-toggleDarkMode:Toggle dark mode`;
@@ -213,16 +225,21 @@ export class AgentConsoleContainerComponent implements OnInit {
   );
 
   /**
-   * Signal indicating if we're in file-only mode (file query parameter is set)
+   * True on editor / deployments / VNC tool window routes (compact chrome, no main sidebar).
    */
-  readonly fileOnlyMode = toSignal(this.route.queryParams.pipe(map((params) => !!params['standalone'])), {
-    initialValue: false,
-  });
+  readonly isToolWindowRoute = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      map(() => this.isToolWindowUrl(this.router.url)),
+      startWith(this.isToolWindowUrl(this.router.url)),
+    ),
+    { initialValue: this.isToolWindowUrl(this.router.url) },
+  );
 
   /**
-   * Signal indicating if standalone loading spinner should be shown
+   * Signal indicating if the loading overlay should be shown.
    */
-  readonly showStandaloneLoading = this.standaloneLoadingService.isLoading;
+  readonly showLoadingOverlay = this.loadingOverlayService.isLoading;
 
   getRoleAriaLabel(role: string): string {
     return $localize`:@@featureContainer-ariaLabelRole:Role ${role}:role:`;
@@ -249,7 +266,13 @@ export class AgentConsoleContainerComponent implements OnInit {
       return false;
     }
 
-    return !path.includes('/editor') && !path.includes('/deployments') && !path.includes('/vnc');
+    return !this.isToolWindowUrl(url);
+  }
+
+  private isToolWindowUrl(url: string): boolean {
+    const path = url.split(/[?#]/)[0] ?? url;
+
+    return path.includes('/editor') || path.includes('/deployments') || path.includes('/vnc');
   }
 
   private isAdminNavUrl(url: string): boolean {
@@ -302,24 +325,28 @@ export class AgentConsoleContainerComponent implements OnInit {
       }
     });
 
-    // Check initial query params immediately
-    const initialParams = this.route.snapshot.queryParams;
-    const isStandalone = !!initialParams['standalone'];
-
-    if (isStandalone) {
-      this.standaloneLoadingService.setLoading(true);
+    // Mask tool-window boot so Workspaces/Environments never flash before the panel opens.
+    // Content panels clear the overlay when ready; only toggle on enter/leave here.
+    if (this.isToolWindowUrl(this.router.url)) {
+      this.loadingOverlayService.setLoading(true);
     }
 
-    // Watch for query parameter changes
-    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
-      const isStandalone = !!params['standalone'];
-
-      if (isStandalone) {
-        this.standaloneLoadingService.setLoading(true);
-      } else {
-        this.standaloneLoadingService.setLoading(false);
-      }
-    });
+    this.router.events
+      .pipe(
+        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+        map(() => this.isToolWindowUrl(this.router.url)),
+        startWith(this.isToolWindowUrl(this.router.url)),
+        distinctUntilChanged(),
+        pairwise(),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(([wasToolWindow, isToolWindow]) => {
+        if (!wasToolWindow && isToolWindow) {
+          this.loadingOverlayService.setLoading(true);
+        } else if (wasToolWindow && !isToolWindow) {
+          this.loadingOverlayService.setLoading(false);
+        }
+      });
   }
 
   /**

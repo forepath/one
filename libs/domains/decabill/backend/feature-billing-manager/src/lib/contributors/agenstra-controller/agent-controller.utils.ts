@@ -362,12 +362,6 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
       cursor: {},
       opencode: {},
     },
-    editor: {
-      openInNewWindow: true,
-    },
-    deployment: {
-      openInNewWindow: true,
-    },
     cookieConsent: {
       domain: `.${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}`,
       privacyPolicyUrl: 'https://agenstra.com/legal/privacy',

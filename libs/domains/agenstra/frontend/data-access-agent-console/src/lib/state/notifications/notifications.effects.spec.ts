@@ -45,9 +45,6 @@ const testEnvironment = {
   billing: { restApiUrl: '', frontendUrl: '' },
   authentication: { type: 'api-key' as const, apiKey: 'test-key' },
   chatModelOptions: {},
-  editor: { openInNewWindow: false },
-  deployment: { openInNewWindow: false },
-  vnc: { openInNewWindow: false },
   cookieConsent: { domain: '', privacyPolicyUrl: '', termsUrl: '' },
 };
 
