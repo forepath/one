@@ -110,17 +110,21 @@ describe('tenant-id.config', () => {
     expect(readIncomingTenantIdFromHeaders({ 'x-tenant': 'unknown' })).toBeUndefined();
   });
 
-  it('readIncomingTenantIdFromHandshake prefers header over auth payload', () => {
+  it('readIncomingTenantIdFromHandshake prefers explicit header over auth payload', () => {
     expect(readIncomingTenantIdFromHandshake({ 'x-tenant': 'default' }, { tenantId: 'acme' })).toBe('default');
 
     const originalTenants = process.env['TENANTS'];
 
-    process.env['TENANTS'] = 'acme';
+    process.env['TENANTS'] = 'acme,decabill';
 
     try {
       expect(readIncomingTenantIdFromHandshake(undefined, { tenantId: 'acme' })).toBe('acme');
       expect(readIncomingTenantIdFromHandshake(undefined, { 'X-Tenant': 'acme' })).toBe('acme');
       expect(readIncomingTenantIdFromHandshake(undefined, { tenantId: 'not-configured' })).toBeUndefined();
+      // Missing/blank x-tenant must not invent "default" before auth.tenantId (browser WS path).
+      expect(readIncomingTenantIdFromHandshake({}, { tenantId: 'decabill' })).toBe('decabill');
+      expect(readIncomingTenantIdFromHandshake({ 'x-tenant': '   ' }, { tenantId: 'decabill' })).toBe('decabill');
+      expect(readIncomingTenantIdFromHandshake({ other: '1' }, { tenantId: 'decabill' })).toBe('decabill');
     } finally {
       if (originalTenants === undefined) {
         delete process.env['TENANTS'];
@@ -128,5 +132,11 @@ describe('tenant-id.config', () => {
         process.env['TENANTS'] = originalTenants;
       }
     }
+  });
+
+  it('readIncomingTenantIdFromHandshake defaults only when header and auth omit tenant', () => {
+    expect(readIncomingTenantIdFromHandshake({}, undefined)).toBe('default');
+    expect(readIncomingTenantIdFromHandshake(undefined, {})).toBe('default');
+    expect(readIncomingTenantIdFromHandshake({}, { Authorization: 'Bearer x' })).toBe('default');
   });
 });
