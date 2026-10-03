@@ -1,12 +1,17 @@
 import {
   applySecretsPatch,
   assertNoCredentialKeysInConfig,
+  buildAllowDenyContext,
+  composeLayerOverlay,
+  enforceAllowDenyOnOverlay,
   extractMcpEnvSecrets,
   extractNetworkSecrets,
   extractProviderEnvSecrets,
   injectMcpSecretsIntoWire,
   isPemCertificateMaterial,
+  migrateConfigV1ToV2,
   resolveProviderAuthSecrets,
+  type JsonObject,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 
@@ -151,14 +156,36 @@ export class OpenCodeConfigSyncService {
       throw new NotFoundException(`Agent with ID '${agentId}' not found`);
     }
 
+    // Defense in depth when called without controller parents: enforce against this layer's lists.
+    const nextConfig =
+      dto.config !== undefined
+        ? migrateConfigV1ToV2(dto.config as JsonObject)
+        : migrateConfigV1ToV2((agent.opencodeUserConfig as JsonObject) ?? {});
+    const nextOverrides =
+      dto.overrides !== undefined
+        ? migrateConfigV1ToV2(dto.overrides as JsonObject)
+        : migrateConfigV1ToV2((agent.opencodeUserOverrides as JsonObject) ?? {});
+    const composed = composeLayerOverlay(nextConfig, nextOverrides);
+    const context = buildAllowDenyContext(composed, []);
+    const sanitizedConfig =
+      dto.config !== undefined
+        ? enforceAllowDenyOnOverlay(dto.config as JsonObject, context, { seedMissingInheritedDisables: true })
+        : undefined;
+    const sanitizedOverrides =
+      dto.overrides !== undefined
+        ? enforceAllowDenyOnOverlay(dto.overrides as JsonObject, context, {
+            seedMissingInheritedDisables: dto.config === undefined,
+          })
+        : undefined;
+
     const patch: Partial<typeof agent> = {};
 
-    if (dto.config !== undefined) {
-      patch.opencodeUserConfig = dto.config;
+    if (sanitizedConfig !== undefined) {
+      patch.opencodeUserConfig = sanitizedConfig;
     }
 
-    if (dto.overrides !== undefined) {
-      patch.opencodeUserOverrides = dto.overrides;
+    if (sanitizedOverrides !== undefined) {
+      patch.opencodeUserOverrides = sanitizedOverrides;
     }
 
     if (dto.secrets !== undefined) {

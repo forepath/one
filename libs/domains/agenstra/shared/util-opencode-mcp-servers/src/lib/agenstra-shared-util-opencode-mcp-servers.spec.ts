@@ -1,8 +1,13 @@
 import {
+  CUSTOM_MCP_ALLOW_DENY_TOKEN,
   builtinMcpServerLabel,
+  filterBuiltinMcpServersByAllowDeny,
   getBuiltinMcpServer,
+  isCustomMcpAllowed,
+  isMcpServerAllowed,
   mcpOAuthClientSecretKey,
   mcpServerConfigKey,
+  resolveMcpAllowDenyIdentity,
   seedMcpServerFromCatalog,
   selectPreferredPackage,
   unusedBuiltinMcpServers,
@@ -125,6 +130,7 @@ describe('util-opencode-mcp-servers', () => {
       environment: { LOG_LEVEL: 'info' },
       secretEnv: ['API_TOKEN'],
       secretHeaders: [],
+      registry: 'io.modelcontextprotocol/filesystem',
     });
   });
 
@@ -137,6 +143,50 @@ describe('util-opencode-mcp-servers', () => {
       headers: { 'X-Public': '1' },
       secretEnv: [],
       secretHeaders: ['Authorization'],
+      registry: 'com.example/remote-only',
     });
+  });
+
+  it('filterBuiltinMcpServersByAllowDeny_emptyListsUnrestricted', () => {
+    const filtered = filterBuiltinMcpServersByAllowDeny(SAMPLE, [], []);
+
+    expect(filtered.map((server) => server.name)).toEqual([
+      'io.modelcontextprotocol/filesystem',
+      'com.example/remote-only',
+    ]);
+  });
+
+  it('filterBuiltinMcpServersByAllowDeny_allowAndDenyWins', () => {
+    const filtered = filterBuiltinMcpServersByAllowDeny(
+      SAMPLE,
+      ['io.modelcontextprotocol/filesystem', 'com.example/remote-only'],
+      ['com.example/remote-only'],
+    );
+
+    expect(filtered.map((server) => server.name)).toEqual(['io.modelcontextprotocol/filesystem']);
+  });
+
+  it('isMcpServerAllowed_denyWinsOverAllow', () => {
+    expect(isMcpServerAllowed('a', ['a'], ['a'])).toBe(false);
+    expect(isCustomMcpAllowed(['custom'], ['custom'])).toBe(false);
+    expect(isCustomMcpAllowed(['io.modelcontextprotocol/filesystem'], [])).toBe(false);
+    expect(isCustomMcpAllowed([], [])).toBe(true);
+  });
+
+  it('resolveMcpAllowDenyIdentity_prefersRegistryThenKeyThenCustom', () => {
+    expect(resolveMcpAllowDenyIdentity('ignored', { registry: 'io.modelcontextprotocol/filesystem' }, [], [])).toBe(
+      'io.modelcontextprotocol/filesystem',
+    );
+
+    expect(
+      resolveMcpAllowDenyIdentity(
+        'io.modelcontextprotocol__filesystem',
+        {},
+        ['io.modelcontextprotocol/filesystem'],
+        [],
+      ),
+    ).toBe('io.modelcontextprotocol/filesystem');
+
+    expect(resolveMcpAllowDenyIdentity('my-custom', {}, [], [])).toBe(CUSTOM_MCP_ALLOW_DENY_TOKEN);
   });
 });

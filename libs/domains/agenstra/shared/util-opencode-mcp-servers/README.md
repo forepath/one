@@ -10,8 +10,10 @@ The live catalog is stored in Postgres (`opencode_mcp_servers`) and exposed via
 ## Exports
 
 - `OpencodeBuiltinMcpServer` — registry server metadata (name, title, packages, remotes, …)
-- `OpencodeMcpServerSeed` — seeded `mcp.servers` overlay (`secretEnv` / `secretHeaders` lists)
+- `OpencodeMcpServerSeed` — seeded `mcp.servers` overlay (`secretEnv` / `secretHeaders` / `registry`)
 - `getBuiltinMcpServer` / `unusedBuiltinMcpServers` / `builtinMcpServerLabel`
+- `filterBuiltinMcpServersByAllowDeny` / `isMcpServerAllowed` / `isCustomMcpAllowed` / `resolveMcpAllowDenyIdentity`
+- `CUSTOM_MCP_ALLOW_DENY_TOKEN` (`custom`) for non-catalog allow/deny entries
 - `seedMcpServerFromCatalog` / `selectPreferredPackage` / `mcpServerConfigKey` / `mcpOAuthClientSecretKey`
 
 ## Building / tests

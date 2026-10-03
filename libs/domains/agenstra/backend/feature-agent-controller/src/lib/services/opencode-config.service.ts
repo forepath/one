@@ -4,8 +4,10 @@ import {
   assertNoV1RootKeys,
   assertOverlayRespectsHeredity,
   assertSecretsRespectLocks,
+  buildAllowDenyContext,
   composeLayerOverlay,
   computeHeredityMetadata,
+  enforceAllowDenyOnOverlay,
   mergeConfigs,
   mergeSecrets as mergeSecretMaps,
   migrateConfigV1ToV2,
@@ -91,41 +93,54 @@ export class OpencodeConfigService {
 
   async getGlobal(): Promise<OpencodeConfigResponseDto> {
     const row = await this.globalRepo.find({ take: 1, order: { updatedAt: 'DESC' } }).then((r) => r[0]);
+    const response = this.toResponse(row?.config, row?.overrides, row?.locks, row?.secrets, row?.updatedAt);
+    // Owning (global) layer still needs `effective` for draft-lock display fallbacks.
+    response.effective = this.composeStoredLayer(row?.config, row?.overrides);
 
-    return this.toResponse(row?.config, row?.overrides, row?.locks, row?.secrets, row?.updatedAt);
+    return response;
   }
 
   async putGlobal(dto: UpsertOpencodeConfigDto): Promise<OpencodeConfigResponseDto> {
-    this.assertWritableOverlay(dto.config ?? undefined, [], []);
-    this.assertWritableOverlay(dto.overrides ?? undefined, [], []);
-
     let row = await this.globalRepo.find({ take: 1, order: { updatedAt: 'DESC' } }).then((r) => r[0]);
+
+    const sanitized = this.sanitizeUpsertAgainstAllowDeny(dto, {
+      parentOverlaysLowToHigh: [],
+      inheritedAdditive: [],
+      existingConfig: row?.config,
+      existingOverrides: row?.overrides,
+    });
+
+    this.assertWritableOverlay(sanitized.config ?? undefined, [], []);
+    this.assertWritableOverlay(sanitized.overrides ?? undefined, [], []);
 
     if (!row) {
       row = this.globalRepo.create({});
     }
 
-    if (dto.config !== undefined) {
-      row.config = dto.config ?? {};
+    if (sanitized.config !== undefined) {
+      row.config = sanitized.config ?? {};
     }
 
-    if (dto.overrides !== undefined) {
-      row.overrides = dto.overrides ?? {};
+    if (sanitized.overrides !== undefined) {
+      row.overrides = sanitized.overrides ?? {};
     }
 
-    if (dto.locks !== undefined) {
-      row.locks = normalizeStoredLocks(dto.locks);
+    if (sanitized.locks !== undefined) {
+      row.locks = normalizeStoredLocks(sanitized.locks);
     }
 
-    const nextSecrets = persistSecrets(row.secrets, dto.secrets);
+    const nextSecrets = persistSecrets(row.secrets, sanitized.secrets);
 
     if (nextSecrets !== undefined) {
       row.secrets = nextSecrets;
     }
 
     const saved = await this.globalRepo.save(row);
+    const response = this.toResponse(saved.config, saved.overrides, saved.locks, saved.secrets, saved.updatedAt);
 
-    return this.toResponse(saved.config, saved.overrides, saved.locks, saved.secrets, saved.updatedAt);
+    response.effective = this.composeStoredLayer(saved.config, saved.overrides);
+
+    return response;
   }
 
   async getClient(clientId: string): Promise<OpencodeConfigResponseDto> {
@@ -148,29 +163,36 @@ export class OpencodeConfigService {
     const globalLayer = this.toHeredityParent(globalRow);
     const heredity = computeHeredityMetadata(globalLayer);
 
-    this.assertWritableOverlay(dto.config ?? undefined, heredity.lockedPaths, heredity.inheritedAdditive);
-    this.assertWritableOverlay(dto.overrides ?? undefined, heredity.lockedPaths, heredity.inheritedAdditive);
-    this.assertWritableSecrets(dto.secrets, heredity.lockedPaths);
-
     let row = await this.clientRepo.findOne({ where: { clientId } });
+
+    const sanitized = this.sanitizeUpsertAgainstAllowDeny(dto, {
+      parentOverlaysLowToHigh: [globalLayer.overlay ?? {}],
+      inheritedAdditive: heredity.inheritedAdditive,
+      existingConfig: row?.config,
+      existingOverrides: row?.overrides,
+    });
+
+    this.assertWritableOverlay(sanitized.config ?? undefined, heredity.lockedPaths, heredity.inheritedAdditive);
+    this.assertWritableOverlay(sanitized.overrides ?? undefined, heredity.lockedPaths, heredity.inheritedAdditive);
+    this.assertWritableSecrets(sanitized.secrets, heredity.lockedPaths);
 
     if (!row) {
       row = this.clientRepo.create({ clientId });
     }
 
-    if (dto.config !== undefined) {
-      row.config = dto.config ?? {};
+    if (sanitized.config !== undefined) {
+      row.config = sanitized.config ?? {};
     }
 
-    if (dto.overrides !== undefined) {
-      row.overrides = dto.overrides ?? {};
+    if (sanitized.overrides !== undefined) {
+      row.overrides = sanitized.overrides ?? {};
     }
 
-    if (dto.locks !== undefined) {
-      row.locks = normalizeStoredLocks(dto.locks);
+    if (sanitized.locks !== undefined) {
+      row.locks = normalizeStoredLocks(sanitized.locks);
     }
 
-    const nextSecrets = persistSecrets(row.secrets, dto.secrets);
+    const nextSecrets = persistSecrets(row.secrets, sanitized.secrets);
 
     if (nextSecrets !== undefined) {
       row.secrets = nextSecrets;
@@ -283,6 +305,45 @@ export class OpencodeConfigService {
     return {
       overlay: this.composeStoredLayer(row?.config, row?.overrides),
       locks: normalizeStoredLocks(row?.locks),
+    };
+  }
+
+  /**
+   * Force allow/deny constraints onto an upsert DTO before persist.
+   * Deletes prohibited local map entries; writes `{ disabled: true }` stubs for prohibited inherited keys.
+   * Clears prohibited default models and model allow/deny refs whose provider is outside provider lists.
+   */
+  sanitizeUpsertAgainstAllowDeny(
+    dto: UpsertOpencodeConfigDto,
+    options: {
+      parentOverlaysLowToHigh: JsonObject[];
+      inheritedAdditive: InheritedAdditiveEntry[];
+      existingConfig?: Record<string, unknown> | null;
+      existingOverrides?: Record<string, unknown> | null;
+    },
+  ): UpsertOpencodeConfigDto {
+    const nextConfig = dto.config !== undefined ? asOverlay(dto.config) : asOverlay(options.existingConfig);
+    const nextOverrides = dto.overrides !== undefined ? asOverlay(dto.overrides) : asOverlay(options.existingOverrides);
+    const composed = this.composeStoredLayer(nextConfig, nextOverrides);
+    const effective = mergeConfigs(composed, ...options.parentOverlaysLowToHigh);
+    const context = buildAllowDenyContext(effective, options.inheritedAdditive);
+
+    return {
+      ...dto,
+      ...(dto.config !== undefined
+        ? {
+            config: enforceAllowDenyOnOverlay(dto.config as JsonObject, context, {
+              seedMissingInheritedDisables: true,
+            }),
+          }
+        : {}),
+      ...(dto.overrides !== undefined
+        ? {
+            overrides: enforceAllowDenyOnOverlay(dto.overrides as JsonObject, context, {
+              seedMissingInheritedDisables: dto.config === undefined,
+            }),
+          }
+        : {}),
     };
   }
 

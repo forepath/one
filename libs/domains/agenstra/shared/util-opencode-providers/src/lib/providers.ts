@@ -61,22 +61,77 @@ export function filterBuiltinProvidersByAllowDeny(
   enabledProviders: string[],
   disabledProviders: string[],
 ): OpencodeBuiltinProvider[] {
-  const enabled = enabledProviders.map((id) => id.trim()).filter((id) => id.length > 0);
-  const disabled = new Set(disabledProviders.map((id) => id.trim()).filter((id) => id.length > 0));
+  return catalog.filter((provider) => isProviderAllowed(provider.id, enabledProviders, disabledProviders));
+}
 
-  let result = catalog.slice();
+function normalizeAllowDenyIds(ids: readonly string[]): string[] {
+  return ids.map((id) => id.trim()).filter((id) => id.length > 0);
+}
 
-  if (enabled.length > 0) {
-    const allowed = new Set(enabled);
+/**
+ * Whether a provider id is allowed by enable/disable lists.
+ * Empty allowlist → no allow restriction; empty denylist → no deny restriction; deny wins.
+ */
+export function isProviderAllowed(
+  providerId: string,
+  enabledProviders: readonly string[],
+  disabledProviders: readonly string[],
+): boolean {
+  const normalized = providerId.trim();
 
-    result = result.filter((provider) => allowed.has(provider.id));
+  if (!normalized) {
+    return false;
   }
 
-  if (disabled.size > 0) {
-    result = result.filter((provider) => !disabled.has(provider.id));
+  const enabled = normalizeAllowDenyIds(enabledProviders);
+  const disabled = new Set(normalizeAllowDenyIds(disabledProviders));
+
+  if (disabled.has(normalized)) {
+    return false;
   }
 
-  return result;
+  if (enabled.length > 0 && !enabled.includes(normalized)) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Whether a `provider/model` ref is allowed by provider + model allow/deny lists.
+ * Empty model allowlist → no model allow restriction; empty model denylist → no model deny restriction;
+ * model deny wins. Provider allow/deny is applied first.
+ */
+export function isModelRefAllowed(
+  ref: string,
+  enabledProviders: readonly string[],
+  disabledProviders: readonly string[],
+  modelAllow: readonly string[],
+  modelDeny: readonly string[],
+): boolean {
+  const parsed = parseProviderModelRef(ref);
+
+  if (!parsed) {
+    return false;
+  }
+
+  if (!isProviderAllowed(parsed.providerId, enabledProviders, disabledProviders)) {
+    return false;
+  }
+
+  const normalizedRef = formatProviderModelRef(parsed.providerId, parsed.modelId);
+  const allow = normalizeAllowDenyIds(modelAllow);
+  const deny = new Set(normalizeAllowDenyIds(modelDeny));
+
+  if (deny.has(normalizedRef) || deny.has(ref.trim())) {
+    return false;
+  }
+
+  if (allow.length > 0 && !allow.includes(normalizedRef) && !allow.includes(ref.trim())) {
+    return false;
+  }
+
+  return true;
 }
 
 /**
