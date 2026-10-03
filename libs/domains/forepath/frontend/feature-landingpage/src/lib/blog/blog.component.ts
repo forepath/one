@@ -9,7 +9,7 @@ import {
   FpcButtonComponent,
   FpcSearchFieldComponent,
 } from '@forepath/shared/frontend/ui-components';
-import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { Subject, catchError, debounceTime, distinctUntilChanged, finalize, of, switchMap, tap } from 'rxjs';
 
@@ -44,7 +44,7 @@ import type { GhostPagination, GhostPost, GhostTag } from './ghost.types';
 export class ForepathBlogComponent implements OnInit {
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
-  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
   private readonly ghostApi = inject(GhostContentApiService);
@@ -157,9 +157,9 @@ export class ForepathBlogComponent implements OnInit {
           canonicalUrl: 'https://forepath.io/blog',
           socialTitle: metaTitle,
           socialDescription: metaDescription,
-          socialImageUrl: this.environment.socialPreview.imageUrl,
+          socialImageUrl: this.environment.socialPreview.urls.image,
           localeId: this.locale,
-          localizeCanonicalUrl: this.environment.production,
+          localizeCanonicalUrl: this.environment.application.production,
           siteName: 'ForePath',
         }),
       ),

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-03T08:30:52.466Z",
+  "generatedAt": "2026-10-03T13:27:31.768Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -541,6 +541,27 @@
       }
     },
     {
+      "id": "project:agenstra-frontend-util-configuration",
+      "type": "lib",
+      "attrs": {
+        "name": "agenstra-frontend-util-configuration",
+        "root": "libs/domains/agenstra/frontend/util-configuration",
+        "tags": [
+          "domain:agenstra",
+          "scope:frontend",
+          "type:util"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "test"
+        ],
+        "domain": "agenstra",
+        "context": "frontend",
+        "featureGroup": "util"
+      }
+    },
+    {
       "id": "project:agenstra-shared-util-opencode-config",
       "type": "lib",
       "attrs": {
@@ -582,6 +603,48 @@
         "domain": "decabill",
         "context": "frontend",
         "featureGroup": "data-access"
+      }
+    },
+    {
+      "id": "project:decabill-frontend-util-configuration",
+      "type": "lib",
+      "attrs": {
+        "name": "decabill-frontend-util-configuration",
+        "root": "libs/domains/decabill/frontend/util-configuration",
+        "tags": [
+          "domain:decabill",
+          "scope:frontend",
+          "type:util"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "test"
+        ],
+        "domain": "decabill",
+        "context": "frontend",
+        "featureGroup": "util"
+      }
+    },
+    {
+      "id": "project:forepath-frontend-util-configuration",
+      "type": "lib",
+      "attrs": {
+        "name": "forepath-frontend-util-configuration",
+        "root": "libs/domains/forepath/frontend/util-configuration",
+        "tags": [
+          "domain:forepath",
+          "scope:frontend",
+          "type:util"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "test"
+        ],
+        "domain": "forepath",
+        "context": "frontend",
+        "featureGroup": "util"
       }
     },
     {
@@ -11471,6 +11534,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/frontend/util-configuration/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/util-configuration/README.md",
+        "languageOrKind": "md",
+        "projectName": "agenstra-frontend-util-configuration"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/shared/util-opencode-config/README.md",
       "type": "readme",
       "attrs": {
@@ -11512,6 +11584,24 @@
           "service-plans.reducer.ts",
           "service-plans.selectors.ts"
         ]
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/frontend/util-configuration/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/decabill/frontend/util-configuration/README.md",
+        "languageOrKind": "md",
+        "projectName": "decabill-frontend-util-configuration"
+      }
+    },
+    {
+      "id": "file:libs/domains/forepath/frontend/util-configuration/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/forepath/frontend/util-configuration/README.md",
+        "languageOrKind": "md",
+        "projectName": "forepath-frontend-util-configuration"
       }
     },
     {
@@ -24129,12 +24219,12 @@
       }
     },
     {
-      "id": "concept:agenstra-run-frontend-agent-console",
+      "id": "concept:agenstra-run-frontend-agent-console-optional-per-deployment-config-with-nested-console-section",
       "type": "concept",
       "attrs": {
-        "title": "Run frontend agent console",
+        "title": "Run frontend agent console (optional per-deployment CONFIG with nested console section)",
         "docPath": "docs/agenstra/deployment/docker-deployment.md",
-        "sectionAnchor": "run-frontend-agent-console",
+        "sectionAnchor": "run-frontend-agent-console-optional-per-deployment-config-with-nested-console-section",
         "domain": "agenstra"
       }
     },
@@ -32797,7 +32887,7 @@
     },
     {
       "from": "project:decabill-frontend-data-access-billing-console",
-      "to": "project:shared-frontend-util-configuration",
+      "to": "project:decabill-frontend-util-configuration",
       "type": "depends_on"
     },
     {
@@ -32808,6 +32898,11 @@
     {
       "from": "project:shared-backend-util-dynamic-provider-registry",
       "to": "project:shared-backend-util-otel",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "project:agenstra-frontend-util-configuration",
       "type": "depends_on"
     },
     {
@@ -32887,7 +32982,7 @@
     },
     {
       "from": "project:decabill-frontend-feature-billing-console",
-      "to": "project:shared-frontend-util-configuration",
+      "to": "project:decabill-frontend-util-configuration",
       "type": "depends_on"
     },
     {
@@ -33012,7 +33107,7 @@
     },
     {
       "from": "project:agenstra-frontend-feature-agent-console",
-      "to": "project:shared-frontend-util-configuration",
+      "to": "project:agenstra-frontend-util-configuration",
       "type": "depends_on"
     },
     {
@@ -33137,6 +33232,11 @@
     },
     {
       "from": "project:forepath-frontend-feature-landingpage",
+      "to": "project:forepath-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:forepath-frontend-feature-landingpage",
       "to": "project:forepath-frontend-data-access-project-estimator",
       "type": "depends_on"
     },
@@ -33171,7 +33271,22 @@
       "type": "depends_on"
     },
     {
+      "from": "project:agenstra-frontend-util-configuration",
+      "to": "project:shared-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
       "from": "project:decabill-frontend-data-access-portal",
+      "to": "project:shared-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-util-configuration",
+      "to": "project:shared-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:forepath-frontend-util-configuration",
       "to": "project:shared-frontend-util-configuration",
       "type": "depends_on"
     },
@@ -33387,7 +33502,7 @@
     },
     {
       "from": "project:agenstra-frontend-billing-console",
-      "to": "project:shared-frontend-util-configuration",
+      "to": "project:agenstra-frontend-util-configuration",
       "type": "depends_on"
     },
     {
@@ -33407,7 +33522,7 @@
     },
     {
       "from": "project:decabill-frontend-billing-console",
-      "to": "project:shared-frontend-util-configuration",
+      "to": "project:decabill-frontend-util-configuration",
       "type": "depends_on"
     },
     {
@@ -33452,7 +33567,7 @@
     },
     {
       "from": "project:forepath-frontend-billing-console",
-      "to": "project:shared-frontend-util-configuration",
+      "to": "project:forepath-frontend-util-configuration",
       "type": "depends_on"
     },
     {
@@ -33512,7 +33627,7 @@
     },
     {
       "from": "project:agenstra-frontend-agent-console",
-      "to": "project:shared-frontend-util-configuration",
+      "to": "project:agenstra-frontend-util-configuration",
       "type": "depends_on"
     },
     {
@@ -33587,12 +33702,12 @@
     },
     {
       "from": "project:agenstra-frontend-landingpage",
-      "to": "project:shared-frontend-util-cookie-consent",
+      "to": "project:agenstra-frontend-util-configuration",
       "type": "depends_on"
     },
     {
       "from": "project:agenstra-frontend-landingpage",
-      "to": "project:shared-frontend-util-configuration",
+      "to": "project:shared-frontend-util-cookie-consent",
       "type": "depends_on"
     },
     {
@@ -33617,12 +33732,12 @@
     },
     {
       "from": "project:decabill-frontend-landingpage",
-      "to": "project:shared-frontend-util-cookie-consent",
+      "to": "project:decabill-frontend-util-configuration",
       "type": "depends_on"
     },
     {
       "from": "project:decabill-frontend-landingpage",
-      "to": "project:shared-frontend-util-configuration",
+      "to": "project:shared-frontend-util-cookie-consent",
       "type": "depends_on"
     },
     {
@@ -33647,7 +33762,7 @@
     },
     {
       "from": "project:forepath-frontend-landingpage",
-      "to": "project:shared-frontend-util-configuration",
+      "to": "project:forepath-frontend-util-configuration",
       "type": "depends_on"
     },
     {
@@ -33661,13 +33776,23 @@
       "type": "depends_on"
     },
     {
-      "from": "project:shared-frontend-docs",
-      "to": "project:shared-frontend-util-cookie-consent",
+      "from": "project:agenstra-frontend-docs",
+      "to": "project:agenstra-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-docs",
+      "to": "project:decabill-frontend-util-configuration",
       "type": "depends_on"
     },
     {
       "from": "project:shared-frontend-docs",
       "to": "project:shared-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:shared-frontend-docs",
+      "to": "project:shared-frontend-util-cookie-consent",
       "type": "depends_on"
     },
     {
@@ -35507,6 +35632,56 @@
     },
     {
       "from": "project:forepath-frontend-landingpage",
+      "to": "package:zone.js",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-docs",
+      "to": "package:@angular/common",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-docs",
+      "to": "package:@angular/compiler",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-docs",
+      "to": "package:@angular/core",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-docs",
+      "to": "package:rxjs",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-docs",
+      "to": "package:zone.js",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-docs",
+      "to": "package:@angular/common",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-docs",
+      "to": "package:@angular/compiler",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-docs",
+      "to": "package:@angular/core",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-docs",
+      "to": "package:rxjs",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-frontend-docs",
       "to": "package:zone.js",
       "type": "depends_on"
     },
@@ -40341,6 +40516,11 @@
       "type": "contains"
     },
     {
+      "from": "project:agenstra-frontend-util-configuration",
+      "to": "file:libs/domains/agenstra/frontend/util-configuration/README.md",
+      "type": "contains"
+    },
+    {
       "from": "project:agenstra-shared-util-opencode-config",
       "to": "file:libs/domains/agenstra/shared/util-opencode-config/README.md",
       "type": "contains"
@@ -40358,6 +40538,16 @@
     {
       "from": "project:decabill-frontend-data-access-portal",
       "to": "file:libs/domains/decabill/frontend/data-access-portal/src/lib/state/service-plans",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-frontend-util-configuration",
+      "to": "file:libs/domains/decabill/frontend/util-configuration/README.md",
+      "type": "contains"
+    },
+    {
+      "from": "project:forepath-frontend-util-configuration",
+      "to": "file:libs/domains/forepath/frontend/util-configuration/README.md",
       "type": "contains"
     },
     {
@@ -46477,7 +46667,7 @@
     },
     {
       "from": "file:docs/agenstra/deployment/docker-deployment.md",
-      "to": "concept:agenstra-run-frontend-agent-console",
+      "to": "concept:agenstra-run-frontend-agent-console-optional-per-deployment-config-with-nested-console-section",
       "type": "contains"
     },
     {
@@ -70061,11 +70251,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-run-frontend-agent-console",
-      "to": "api:HTTP:GET:/config",
-      "type": "documents"
-    },
-    {
       "from": "concept:agenstra-docker-socket-mount",
       "to": "api:HTTP:GET:/agents",
       "type": "documents"
@@ -76281,6 +76466,21 @@
       "type": "belongs_to"
     },
     {
+      "from": "project:agenstra-frontend-util-configuration",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:agenstra-frontend-util-configuration",
+      "to": "context:frontend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:agenstra-frontend-util-configuration",
+      "to": "feature-group:util",
+      "type": "belongs_to"
+    },
+    {
       "from": "project:agenstra-shared-util-opencode-config",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -76308,6 +76508,36 @@
     {
       "from": "project:decabill-frontend-data-access-portal",
       "to": "feature-group:data-access",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:decabill-frontend-util-configuration",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:decabill-frontend-util-configuration",
+      "to": "context:frontend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:decabill-frontend-util-configuration",
+      "to": "feature-group:util",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:forepath-frontend-util-configuration",
+      "to": "domain:forepath",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:forepath-frontend-util-configuration",
+      "to": "context:frontend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:forepath-frontend-util-configuration",
+      "to": "feature-group:util",
       "type": "belongs_to"
     },
     {
@@ -78401,7 +78631,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-run-frontend-agent-console",
+      "from": "concept:agenstra-run-frontend-agent-console-optional-per-deployment-config-with-nested-console-section",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

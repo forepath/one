@@ -23,9 +23,9 @@ export interface NotificationAdminEnvironment {
  * {
  *   provide: NOTIFICATION_ADMIN_ENVIRONMENT,
  *   useFactory: (env: Environment) => ({
- *     apiUrl: env.controller.restApiUrl,
+ *     apiUrl: env.console.urls.restApi,
  *     webhooksBasePath: 'admin/webhooks',
- *     applicationId: env.productName,
+ *     applicationId: env.application.productName,
  *     clientFilterEnabled: true,
  *   }),
  *   deps: [ENVIRONMENT],

@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import type { Environment } from '@forepath/shared/frontend/util-configuration';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import type { Environment } from '@forepath/agenstra/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/agenstra/frontend/util-configuration';
 import { Observable } from 'rxjs';
 
 import type {
@@ -16,7 +16,7 @@ export class WorkspaceSearchService {
   private readonly environment = inject<Environment>(ENVIRONMENT);
 
   private get apiUrl(): string {
-    return this.environment.controller.restApiUrl;
+    return this.environment.console.urls.restApi;
   }
 
   getStatus(clientId: string, agentId: string): Observable<WorkspaceIndexStatusDto> {

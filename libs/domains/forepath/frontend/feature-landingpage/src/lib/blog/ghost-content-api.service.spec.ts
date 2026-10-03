@@ -76,7 +76,7 @@ describe('GhostContentApiService', () => {
 
     const service = configureService({
       blog: {
-        contentApiUrl: 'https://blog.forepath.io',
+        urls: { contentApi: 'https://blog.forepath.io' },
         contentApiKey: 'test-key',
       },
     });
@@ -98,7 +98,7 @@ describe('GhostContentApiService', () => {
 
     const service = configureService({
       blog: {
-        contentApiUrl: 'https://blog.forepath.io/',
+        urls: { contentApi: 'https://blog.forepath.io/' },
         contentApiKey: 'test-key',
       },
     });
@@ -117,7 +117,7 @@ describe('GhostContentApiService', () => {
 
     const service = configureService({
       blog: {
-        contentApiUrl: 'https://blog.forepath.io',
+        urls: { contentApi: 'https://blog.forepath.io' },
         contentApiKey: 'test-key',
       },
     });
@@ -133,7 +133,7 @@ describe('GhostContentApiService', () => {
 
     const service = configureService({
       blog: {
-        contentApiUrl: 'https://blog.forepath.io',
+        urls: { contentApi: 'https://blog.forepath.io' },
         contentApiKey: 'test-key',
       },
     });
@@ -149,7 +149,7 @@ describe('GhostContentApiService', () => {
 
     const service = configureService({
       blog: {
-        contentApiUrl: 'https://blog.forepath.io',
+        urls: { contentApi: 'https://blog.forepath.io' },
         contentApiKey: 'test-key',
       },
     });
@@ -175,7 +175,7 @@ describe('GhostContentApiService', () => {
 
     const service = configureService({
       blog: {
-        contentApiUrl: 'https://blog.forepath.io',
+        urls: { contentApi: 'https://blog.forepath.io' },
         contentApiKey: 'bad-key',
       },
     });

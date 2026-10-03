@@ -235,26 +235,33 @@ export function buildDecabillBillingCloudInitUserData(config: DecabillBillingClo
     `CSP_ENFORCE: ${config.frontend?.cspEnforce ?? 'true'}`,
   ]);
   const authMethod = config.backend?.authentication?.authenticationMethod ?? 'users';
+  const provisionHost = config.host?.fqdn ?? config.host?.hostname ?? 'localhost';
+  const provisionHttpsPort = config.proxy?.httpsPort ?? '443';
+  const provisionWebsocketNamespace = config.backend?.websocketNamespace ?? 'socket/billing';
+  /** Runtime `/config` overlay for billing-console (`billing` section; deep-merged onto baked env). */
   const frontendConfig = {
-    production: true,
-    controller: {
-      restApiUrl: '',
-      websocketUrl: 'not_applicable',
+    application: {
+      production: true,
     },
     billing: {
-      restApiUrl: `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}:${config.proxy?.httpsPort ?? '443'}/api`,
-      frontendUrl: `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}`,
-      websocketUrl: `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}/${config.backend?.websocketNamespace ?? 'socket/billing'}`,
       tenantId: 'default',
+      urls: {
+        restApi: `https://${provisionHost}:${provisionHttpsPort}/api`,
+        websocket: `https://${provisionHost}/${provisionWebsocketNamespace}`,
+      },
     },
     authentication: {
-      type: authMethod === 'api-key' ? 'api-key' : authMethod === 'keycloak' ? 'keycloak' : 'users',
-      disableSignup: config.backend?.authentication?.disableSignup ?? false,
+      config: {
+        type: authMethod === 'api-key' ? 'api-key' : authMethod === 'keycloak' ? 'keycloak' : 'users',
+        disableSignup: config.backend?.authentication?.disableSignup ?? false,
+      },
     },
     cookieConsent: {
-      domain: `.${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}`,
-      privacyPolicyUrl: 'https://decabill.com/legal/privacy',
-      termsUrl: 'https://decabill.com/legal/terms',
+      domain: `.${provisionHost}`,
+      urls: {
+        privacyPolicy: 'https://decabill.com/legal/privacy',
+        terms: 'https://decabill.com/legal/terms',
+      },
     },
   };
   const dockerCompose = `services:

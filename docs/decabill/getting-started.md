@@ -169,7 +169,7 @@ The full variable list is in **[Environment Configuration](./deployment/environm
 
 ### Frontend billing console
 
-Local Angular builds use `environment.decabill.ts`, which points the console at:
+Local Angular builds use `environment.billing-console.ts` in `@forepath/decabill/frontend/util-configuration`, which points the console at:
 
 - REST API: `http://localhost:3200/api`
 - WebSocket: `http://localhost:3200/socket/billing`

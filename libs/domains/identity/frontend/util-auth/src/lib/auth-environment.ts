@@ -59,12 +59,12 @@ export interface IdentityAuthEnvironment {
    */
   controllerApiUrl?: string;
   /**
-   * Optional: Terms of service URL (e.g. {@code environment.cookieConsent.termsUrl}).
+   * Optional: Terms of service URL (e.g. {@code environment.cookieConsent.urls.terms}).
    * Used by registration UI when both this and {@link privacyPolicyUrl} are set.
    */
   termsUrl?: string;
   /**
-   * Optional: Privacy policy URL (e.g. {@code environment.cookieConsent.privacyPolicyUrl}).
+   * Optional: Privacy policy URL (e.g. {@code environment.cookieConsent.urls.privacyPolicy}).
    * Used by registration UI when both this and {@link termsUrl} are set.
    */
   privacyPolicyUrl?: string;
@@ -82,10 +82,10 @@ export interface IdentityAuthEnvironment {
  * {
  *   provide: IDENTITY_AUTH_ENVIRONMENT,
  *   useFactory: (env: Environment) => ({
- *     apiUrl: env.controller.restApiUrl,
- *     authentication: env.authentication,
- *     termsUrl: env.cookieConsent.termsUrl,
- *     privacyPolicyUrl: env.cookieConsent.privacyPolicyUrl,
+ *     apiUrl: env.console.urls.restApi,
+ *     authentication: env.authentication.config,
+ *     termsUrl: env.cookieConsent.urls.terms,
+ *     privacyPolicyUrl: env.cookieConsent.urls.privacyPolicy,
  *   }),
  *   deps: [ENVIRONMENT],
  * }

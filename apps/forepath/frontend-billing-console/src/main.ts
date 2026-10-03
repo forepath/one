@@ -1,5 +1,5 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { ENVIRONMENT, loadRuntimeEnvironment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, loadRuntimeEnvironment } from '@forepath/forepath/frontend/util-configuration';
 
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { AppComponent } from '../../../decabill/frontend-billing-console/src/app/app.component';

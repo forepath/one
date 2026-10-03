@@ -17,7 +17,9 @@ describe('ContentReportService', () => {
           provide: ENVIRONMENT,
           useValue: {
             communication: {
-              restApiUrl: 'https://api.example.com/api',
+              urls: {
+                restApi: 'https://api.example.com/api',
+              },
             },
           },
         },

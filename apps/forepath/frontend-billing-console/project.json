@@ -88,8 +88,8 @@
           "outputHashing": "all",
           "fileReplacements": [
             {
-              "replace": "libs/domains/shared/frontend/util-configuration/src/lib/environment.ts",
-              "with": "libs/domains/shared/frontend/util-configuration/src/lib/environment.forepath.production.ts"
+              "replace": "libs/domains/forepath/frontend/util-configuration/src/lib/environment.ts",
+              "with": "libs/domains/forepath/frontend/util-configuration/src/lib/environment.billing-console.production.ts"
             }
           ]
         },
@@ -99,8 +99,8 @@
           "sourceMap": true,
           "fileReplacements": [
             {
-              "replace": "libs/domains/shared/frontend/util-configuration/src/lib/environment.ts",
-              "with": "libs/domains/shared/frontend/util-configuration/src/lib/environment.forepath.ts"
+              "replace": "libs/domains/forepath/frontend/util-configuration/src/lib/environment.ts",
+              "with": "libs/domains/forepath/frontend/util-configuration/src/lib/environment.billing-console.ts"
             }
           ]
         },

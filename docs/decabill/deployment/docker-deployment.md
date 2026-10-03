@@ -92,7 +92,7 @@ Frontend server images support runtime configuration via the `CONFIG` environmen
 services:
   frontend-billing-console-server:
     environment:
-      - CONFIG=https://config.example.com/decabill-billing-config.json
+      - CONFIG=https://config.example.com/decabill/billing.json
       - CONFIG_ALLOWED_HOSTS=config.example.com
       - CSP_ENFORCE=true
       - CSP_CONNECT_SRC_EXTRA=https://api.billing.example.com

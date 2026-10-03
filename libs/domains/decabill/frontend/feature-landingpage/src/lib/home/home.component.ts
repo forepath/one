@@ -14,7 +14,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import type { PublicServicePlanOffering } from '@forepath/decabill/frontend/data-access-portal';
 import { formatPublicOfferingPrice, ServicePlansFacade } from '@forepath/decabill/frontend/data-access-portal';
-import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
@@ -30,7 +30,7 @@ export class PortalHomeComponent implements OnInit {
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
   private readonly servicePlansFacade = inject(ServicePlansFacade);
-  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
   private readonly platformId = inject(PLATFORM_ID);
@@ -50,9 +50,9 @@ export class PortalHomeComponent implements OnInit {
     initialValue: false,
   });
 
-  readonly billingBaseUrl = this.environment.production
-    ? `${this.environment.billing.frontendUrl}/${this.locale}/subscriptions?order=true`
-    : `${this.environment.billing.frontendUrl}/subscriptions?order=true`;
+  readonly billingBaseUrl = this.environment.application.production
+    ? `${this.environment.landing.urls.portal}/${this.locale}/subscriptions?order=true`
+    : `${this.environment.landing.urls.portal}/subscriptions?order=true`;
 
   readonly billingIntegrations: ReadonlyArray<{
     id: string;
@@ -98,7 +98,7 @@ export class PortalHomeComponent implements OnInit {
     }
 
     const pageTitle = $localize`:@@featureDecabillHome-metaTitlePage:Billing for agencies and digital products`;
-    const metaTitle = formatProductMetaTitle(pageTitle, this.environment.productName);
+    const metaTitle = formatProductMetaTitle(pageTitle, this.environment.application.productName);
     const metaDescription = $localize`:@@featureDecabillHome-metaDescription:Decabill helps agencies and digital product teams bill services, projects, SaaS subscriptions, and hosting. Invoicing, payments, and customer self-service in one multi-tenant platform.`;
 
     this.titleService.setTitle(metaTitle);
@@ -113,10 +113,10 @@ export class PortalHomeComponent implements OnInit {
           canonicalUrl: 'https://decabill.com',
           socialTitle: metaTitle,
           socialDescription: metaDescription,
-          socialImageUrl: this.environment.socialPreview.imageUrl,
+          socialImageUrl: this.environment.socialPreview.urls.image,
           localeId: this.locale,
-          localizeCanonicalUrl: this.environment.production,
-          siteName: this.environment.productName,
+          localizeCanonicalUrl: this.environment.application.production,
+          siteName: this.environment.application.productName,
         }),
       ),
     );

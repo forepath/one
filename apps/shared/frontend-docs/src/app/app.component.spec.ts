@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
+import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import { provideNgcCookieConsent } from 'ngx-cookieconsent';
 
+import { environment } from '../docs-environment';
 import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {
@@ -8,6 +10,7 @@ describe('AppComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AppComponent],
       providers: [
+        { provide: ENVIRONMENT, useValue: environment },
         provideNgcCookieConsent({
           cookie: {
             domain: 'localhost',

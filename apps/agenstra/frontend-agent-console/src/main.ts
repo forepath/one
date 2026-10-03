@@ -1,5 +1,5 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { ENVIRONMENT, loadRuntimeEnvironment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, loadRuntimeEnvironment } from '@forepath/agenstra/frontend/util-configuration';
 
 import { AppComponent } from './app/app.component';
 import { appConfig } from './app/app.config';

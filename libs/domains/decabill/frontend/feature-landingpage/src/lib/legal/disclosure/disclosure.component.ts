@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnIn
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
-import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@forepath/shared/frontend/util-meta';
 
 @Component({
@@ -17,13 +17,13 @@ import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@for
 export class PortalLegalDisclosureComponent implements OnInit {
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
-  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
     const pageTitle = $localize`:@@featureDecabillLegalDisclosure-metaTitlePage:Legal Disclosure`;
-    const metaTitle = formatProductMetaTitle(pageTitle, this.environment.productName);
+    const metaTitle = formatProductMetaTitle(pageTitle, this.environment.application.productName);
     const metaDescription = $localize`:@@featureDecabillLegalDisclosure-metaDescription:Imprint and legal disclosure for Decabill by IPvX UG (haftungsbeschränkt). Company details, representation, and regulatory information for Germany.`;
 
     this.titleService.setTitle(metaTitle);
@@ -38,10 +38,10 @@ export class PortalLegalDisclosureComponent implements OnInit {
           canonicalUrl: 'https://decabill.com/legal/disclosure',
           socialTitle: metaTitle,
           socialDescription: metaDescription,
-          socialImageUrl: this.environment.socialPreview.imageUrl,
+          socialImageUrl: this.environment.socialPreview.urls.image,
           localeId: this.locale,
-          localizeCanonicalUrl: this.environment.production,
-          siteName: this.environment.productName,
+          localizeCanonicalUrl: this.environment.application.production,
+          siteName: this.environment.application.productName,
         }),
       ),
     );

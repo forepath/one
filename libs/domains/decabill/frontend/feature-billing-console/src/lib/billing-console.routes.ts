@@ -289,7 +289,7 @@ import {
   notificationAdminProviders,
 } from '@forepath/shared/frontend/feature-notifications';
 import { createUpdatesAdminRoutes, updatesAdminProviders } from '@forepath/shared/frontend/feature-updates';
-import { buildPageTitle } from '@forepath/shared/frontend/util-configuration';
+import { buildPageTitle } from '@forepath/decabill/frontend/util-configuration';
 import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 import { provideMonacoEditor } from 'ngx-monaco-editor-v2';

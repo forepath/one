@@ -124,14 +124,18 @@ Configure the billing console runtime config:
 ```json
 {
   "billing": {
-    "websocketUrl": "http://localhost:3200/socket/billing",
-    "projectsWebsocketUrl": "http://localhost:3200/socket/projects",
-    "tenantId": "default"
+    "tenantId": "default",
+    "urls": {
+      "websocket": {
+        "default": "http://localhost:3200/socket/billing",
+        "projects": "http://localhost:3200/socket/projects"
+      }
+    }
   }
 }
 ```
 
-When `projectsWebsocketUrl` is omitted, the client derives it from `websocketUrl` by replacing the `/socket/billing` path segment with `/socket/projects`.
+When `projects` is omitted, the client derives it from the primary websocket URL via `resolveApiWebsocketUrl`.
 
 Backend environment variables:
 

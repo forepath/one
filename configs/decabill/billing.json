@@ -1,0 +1,25 @@
+{
+  "application": {
+    "production": true
+  },
+  "authentication": {
+    "config": {
+      "type": "users",
+      "disableSignup": false
+    }
+  },
+  "cookieConsent": {
+    "domain": ".decabill.com",
+    "urls": {
+      "privacyPolicy": "https://decabill.com/legal/privacy",
+      "terms": "https://decabill.com/legal/terms"
+    }
+  },
+  "billing": {
+    "tenantId": "decabill",
+    "urls": {
+      "restApi": "https://backend.forepath.io/api",
+      "websocket": "https://backend.forepath.io/billing"
+    }
+  }
+}

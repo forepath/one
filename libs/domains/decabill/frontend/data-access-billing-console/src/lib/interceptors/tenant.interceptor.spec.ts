@@ -3,7 +3,7 @@ import { Injector, runInInjectionContext } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
 
 import {
   BILLING_TENANT_HEADER,
@@ -18,7 +18,7 @@ describe('billingTenantInterceptor', () => {
     return of(new HttpResponse({ body: null, status: 200, url: req.url, headers: req.headers }));
   });
 
-  const setupTestBed = (billing: { restApiUrl: string; frontendUrl: string; tenantId?: string }): Injector => {
+  const setupTestBed = (billing: { urls: { restApi: string; frontend: string }; tenantId?: string }): Injector => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
@@ -41,7 +41,12 @@ describe('billingTenantInterceptor', () => {
   it('resolveBillingTenantId defaults to default', () => {
     expect(
       resolveBillingTenantId({
-        billing: { restApiUrl: 'http://localhost:3200/api', frontendUrl: 'http://localhost:4500' },
+        billing: {
+          urls: {
+            restApi: 'http://localhost:3200/api',
+            frontend: 'http://localhost:4500',
+          },
+        },
       } as never),
     ).toBe(DEFAULT_BILLING_TENANT_ID);
   });
@@ -49,7 +54,13 @@ describe('billingTenantInterceptor', () => {
   it('resolveBillingTenantId uses configured tenant', () => {
     expect(
       resolveBillingTenantId({
-        billing: { restApiUrl: 'http://localhost:3200/api', frontendUrl: 'http://localhost:4500', tenantId: 'one' },
+        billing: {
+          urls: {
+            restApi: 'http://localhost:3200/api',
+            frontend: 'http://localhost:4500',
+          },
+          tenantId: 'one',
+        },
       } as never),
     ).toBe('one');
   });
@@ -58,23 +69,32 @@ describe('billingTenantInterceptor', () => {
     expect(
       resolveBillingTenantDisplayName({
         billing: {
-          restApiUrl: 'http://localhost:3200/api',
-          frontendUrl: 'http://localhost:4500',
+          urls: {
+            restApi: 'http://localhost:3200/api',
+            frontend: 'http://localhost:4500',
+          },
           tenantId: 'decabill',
         },
       } as never),
     ).toBe('Decabill');
     expect(
       resolveBillingTenantDisplayName({
-        billing: { restApiUrl: 'http://localhost:3200/api', frontendUrl: 'http://localhost:4500' },
+        billing: {
+          urls: {
+            restApi: 'http://localhost:3200/api',
+            frontend: 'http://localhost:4500',
+          },
+        },
       } as never),
     ).toBe('Default');
   });
 
   it('does not modify unrelated requests', (done) => {
     const injector = setupTestBed({
-      restApiUrl: 'http://localhost:3200/api',
-      frontendUrl: 'http://localhost:4500',
+      urls: {
+        restApi: 'http://localhost:3200/api',
+        frontend: 'http://localhost:4500',
+      },
     });
     const req = new HttpRequest('GET', 'http://other.example/api/data');
     const result = runInInjectionContext(injector, () => billingTenantInterceptor(req, mockNext));
@@ -87,8 +107,10 @@ describe('billingTenantInterceptor', () => {
 
   it('adds X-Tenant default header for billing API requests', (done) => {
     const injector = setupTestBed({
-      restApiUrl: 'http://localhost:3200/api',
-      frontendUrl: 'http://localhost:4500',
+      urls: {
+        restApi: 'http://localhost:3200/api',
+        frontend: 'http://localhost:4500',
+      },
     });
     const req = new HttpRequest('GET', 'http://localhost:3200/api/subscriptions');
     const result = runInInjectionContext(injector, () => billingTenantInterceptor(req, mockNext));
@@ -101,7 +123,7 @@ describe('billingTenantInterceptor', () => {
     });
   });
 
-  it('adds X-Tenant default header when tenantId is unset but restApiUrl comes from merged config', (done) => {
+  it('adds X-Tenant default header when tenantId is unset but restApi comes from merged config', (done) => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
@@ -109,8 +131,10 @@ describe('billingTenantInterceptor', () => {
           provide: ENVIRONMENT,
           useValue: {
             billing: {
-              restApiUrl: 'http://localhost:3200/api',
-              frontendUrl: 'http://localhost:4500',
+              urls: {
+                restApi: 'http://localhost:3200/api',
+                frontend: 'http://localhost:4500',
+              },
             },
           },
         },
@@ -130,8 +154,10 @@ describe('billingTenantInterceptor', () => {
 
   it('adds configured tenant header for billing API requests', (done) => {
     const injector = setupTestBed({
-      restApiUrl: 'http://localhost:3200/api',
-      frontendUrl: 'http://localhost:4500',
+      urls: {
+        restApi: 'http://localhost:3200/api',
+        frontend: 'http://localhost:4500',
+      },
       tenantId: 'acme',
     });
     const req = new HttpRequest('GET', 'http://localhost:3200/api/invoices');
@@ -141,6 +167,36 @@ describe('billingTenantInterceptor', () => {
       const httpResponse = response as HttpResponse<unknown>;
 
       expect(httpResponse.headers.get(BILLING_TENANT_HEADER)).toBe('acme');
+      done();
+    });
+  });
+
+  it('adds X-Tenant from landing env when billing is absent', (done) => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: ENVIRONMENT,
+          useValue: {
+            landing: {
+              tenantId: 'agenstra',
+              urls: {
+                restApi: 'http://localhost:3200/api',
+                portal: 'http://localhost:4500',
+              },
+            },
+          },
+        },
+      ],
+    });
+    const injector = TestBed.inject(Injector);
+    const req = new HttpRequest('GET', 'http://localhost:3200/api/public/service-plan-offerings');
+    const result = runInInjectionContext(injector, () => billingTenantInterceptor(req, mockNext));
+
+    result.subscribe((response) => {
+      const httpResponse = response as HttpResponse<unknown>;
+
+      expect(httpResponse.headers.get(BILLING_TENANT_HEADER)).toBe('agenstra');
       done();
     });
   });

@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import type { Environment } from '@forepath/shared/frontend/util-configuration';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import type { Environment } from '@forepath/decabill/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { of, throwError } from 'rxjs';
@@ -33,7 +33,15 @@ import {
 } from './subscription-server-info.effects';
 
 function mockBillingEnvironment(websocketUrl?: string): Environment {
-  return { billing: { restApiUrl: '', frontendUrl: '', websocketUrl } } as Environment;
+  return {
+    billing: {
+      urls: {
+        restApi: '',
+        frontend: '',
+        ...(websocketUrl !== undefined ? { websocket: websocketUrl } : {}),
+      },
+    },
+  } as Environment;
 }
 
 describe('Subscription Server Info Effects', () => {

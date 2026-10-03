@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
-import type { Environment } from '@forepath/shared/frontend/util-configuration';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import type { Environment } from '@forepath/decabill/frontend/util-configuration';
+import { ENVIRONMENT, resolveApiWebsocketUrl } from '@forepath/decabill/frontend/util-configuration';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Action, Store } from '@ngrx/store';
 import { Observable, catchError, forkJoin, from, map, mergeMap, of, switchMap, take } from 'rxjs';
@@ -192,7 +192,7 @@ function serverControlEffect(
   adminServerInfoCall: (subscriptionId: string, itemId: string) => Observable<ServerInfoResponse>,
   environment: Environment,
 ) {
-  const clearActionInProgressOnRefresh = !environment.billing.websocketUrl?.trim();
+  const clearActionInProgressOnRefresh = !resolveApiWebsocketUrl(environment.billing.urls.websocket, 'default');
 
   return (actions$: Actions) =>
     actions$.pipe(

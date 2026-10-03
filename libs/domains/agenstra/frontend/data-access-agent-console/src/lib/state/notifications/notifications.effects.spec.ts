@@ -40,12 +40,32 @@ jest.mock('keycloak-angular', () => ({
 }));
 
 const testEnvironment = {
-  production: false,
-  controller: { restApiUrl: 'http://localhost:3000', websocketUrl: 'http://localhost:3100/socket/clients' },
-  billing: { restApiUrl: '', frontendUrl: '' },
-  authentication: { type: 'api-key' as const, apiKey: 'test-key' },
+  application: { production: false, productName: 'Agenstra' },
+  console: {
+    urls: {
+      restApi: 'http://localhost:3000',
+      websocket: 'http://localhost:3100/socket/clients',
+    },
+  },
+  authentication: {
+    config: { type: 'api-key' as const, apiKey: 'test-key' },
+    marketing: {
+      loginDescription: '',
+      registerDescription: '',
+      requestPasswordResetDescription: '',
+      resetPasswordConfirmationDescription: '',
+      resetPasswordDescription: '',
+      confirmEmailDescription: '',
+      features: [],
+    },
+  },
   chatModelOptions: {},
-  cookieConsent: { domain: '', privacyPolicyUrl: '', termsUrl: '' },
+  cookieConsent: {
+    enabled: true,
+    domain: '',
+    urls: { privacyPolicy: '', terms: '' },
+  },
+  socialPreview: { urls: { image: '' } },
 };
 
 describe('NotificationsEffects', () => {
@@ -76,7 +96,11 @@ describe('NotificationsEffects', () => {
       actions$ as never,
       {
         ...testEnvironment,
-        controller: { restApiUrl: 'http://localhost:3000' },
+        console: {
+          urls: {
+            restApi: 'http://localhost:3000',
+          },
+        },
       } as never,
       null,
     ).subscribe((action) => {
@@ -221,7 +245,11 @@ describe('NotificationsEffects', () => {
       actions$ as never,
       {
         ...testEnvironment,
-        authentication: { type: 'api-key' as const },
+        authentication: {
+          config: {
+            type: 'api-key' as const,
+          },
+        },
       } as never,
       null,
     ).subscribe();
@@ -245,7 +273,11 @@ describe('NotificationsEffects', () => {
       actions$ as never,
       {
         ...testEnvironment,
-        authentication: { type: 'keycloak' as const },
+        authentication: {
+          config: {
+            type: 'keycloak' as const,
+          },
+        },
       } as never,
       keycloak,
     ).subscribe();

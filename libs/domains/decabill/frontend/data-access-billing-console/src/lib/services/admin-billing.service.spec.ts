@@ -1,6 +1,6 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
 
 import { AdminBillingService } from './admin-billing.service';
 
@@ -12,7 +12,19 @@ describe('AdminBillingService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [AdminBillingService, { provide: ENVIRONMENT, useValue: { billing: { restApiUrl: apiUrl } } }],
+      providers: [
+        AdminBillingService,
+        {
+          provide: ENVIRONMENT,
+          useValue: {
+            billing: {
+              urls: {
+                restApi: apiUrl,
+              },
+            },
+          },
+        },
+      ],
     });
     service = TestBed.inject(AdminBillingService);
     httpMock = TestBed.inject(HttpTestingController);

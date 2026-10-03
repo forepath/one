@@ -1,0 +1,24 @@
+{
+  "application": {
+    "production": true
+  },
+  "cookieConsent": {
+    "domain": ".agenstra.com",
+    "urls": {
+      "privacyPolicy": "https://agenstra.com/legal/privacy"
+    }
+  },
+  "landing": {
+    "tenantId": "agenstra",
+    "urls": {
+      "restApi": "https://backend.forepath.io/api",
+      "portal": "https://portal.agenstra.com"
+    }
+  },
+  "communication": {
+    "urls": {
+      "restApi": "https://communication.forepath.io/api"
+    },
+    "turnstileSiteKey": "0x4AAAAAADvf6PCeLddoJ7Ur"
+  }
+}

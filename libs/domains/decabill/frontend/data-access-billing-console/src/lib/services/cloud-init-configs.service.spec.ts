@@ -1,6 +1,6 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
 
 import type {
   CloudInitConfigResponse,
@@ -35,7 +35,13 @@ describe('CloudInitConfigsService', () => {
       providers: [
         {
           provide: ENVIRONMENT,
-          useValue: { billing: { restApiUrl: apiUrl } },
+          useValue: {
+            billing: {
+              urls: {
+                restApi: apiUrl,
+              },
+            },
+          },
         },
       ],
     });

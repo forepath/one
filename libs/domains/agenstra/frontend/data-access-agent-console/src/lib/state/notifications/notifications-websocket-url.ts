@@ -1,27 +1,6 @@
-import type { Environment } from '@forepath/shared/frontend/util-configuration';
+import type { Environment } from '@forepath/agenstra/frontend/util-configuration';
+import { resolveApiWebsocketUrl } from '@forepath/agenstra/frontend/util-configuration';
 
 export function resolveStatusWebsocketUrl(environment: Environment): string | null {
-  const explicit = environment.controller.statusWebsocketUrl?.trim();
-
-  if (explicit) {
-    return explicit;
-  }
-
-  const base = environment.controller.websocketUrl?.trim();
-
-  if (!base) {
-    return null;
-  }
-
-  if (base.endsWith('/clients')) {
-    return `${base.slice(0, -'/clients'.length)}/status`;
-  }
-
-  try {
-    const u = new URL(base);
-
-    return `${u.protocol}//${u.host}/socket/status`;
-  } catch {
-    return `${base.replace(/\/$/, '')}/socket/status`;
-  }
+  return resolveApiWebsocketUrl(environment.console.urls.websocket, 'status');
 }

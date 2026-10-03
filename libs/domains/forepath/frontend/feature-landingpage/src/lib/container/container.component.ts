@@ -2,7 +2,11 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostListener, computed, inject, LOCALE_ID, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
-import { ENVIRONMENT, LocaleService, type Environment } from '@forepath/shared/frontend/util-configuration';
+import {
+  ENVIRONMENT,
+  LocaleService,
+  type EnvironmentWithLandingAndCommunication,
+} from '@forepath/shared/frontend/util-configuration';
 import {
   FpcButtonComponent,
   FpcDropdownComponent,
@@ -53,17 +57,17 @@ export class ForepathContainerComponent {
   protected readonly contact = FOREPATH_CONTACT;
   protected readonly socialLinks = FOREPATH_SOCIAL_LINKS;
 
-  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
   private readonly router = inject(Router);
 
-  readonly portalUrl = this.environment.production
-    ? `${this.environment.billing.frontendUrl}/${this.locale}`
-    : this.environment.billing.frontendUrl;
+  readonly portalUrl = this.environment.application.production
+    ? `${this.environment.landing.urls.portal}/${this.locale}`
+    : this.environment.landing.urls.portal;
 
-  readonly withdrawalUrl = this.environment.production
-    ? `${this.environment.billing.frontendUrl}/${this.locale}/withdrawal`
-    : `${this.environment.billing.frontendUrl}/withdrawal`;
+  readonly withdrawalUrl = this.environment.application.production
+    ? `${this.environment.landing.urls.portal}/${this.locale}/withdrawal`
+    : `${this.environment.landing.urls.portal}/withdrawal`;
 
   readonly footerLocales: readonly FpcLocaleOption[] = this.localeService.getAvailableLocales().map((locale) => ({
     ...locale,

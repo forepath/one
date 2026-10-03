@@ -14,7 +14,7 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, type EnvironmentWithDocs } from '@forepath/shared/frontend/util-configuration';
 import { DocMetadata } from '@forepath/shared/frontend/util-docs-parser';
 import { catchError, map, of } from 'rxjs';
 
@@ -36,7 +36,7 @@ export class DocsContentComponent implements AfterViewInit {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly viewContainer = inject(ViewContainerRef);
   private readonly http = inject(HttpClient);
-  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly environment = inject<EnvironmentWithDocs>(ENVIRONMENT);
 
   private get contentRoot(): string {
     return this.environment.docs.contentRoot;

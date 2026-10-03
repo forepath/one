@@ -103,8 +103,12 @@
           "outputHashing": "all",
           "fileReplacements": [
             {
-              "replace": "libs/domains/shared/frontend/util-configuration/src/lib/environment.ts",
-              "with": "libs/domains/shared/frontend/util-configuration/src/lib/environment.decabill.production.ts"
+              "replace": "apps/shared/frontend-docs/src/runtime-environment.ts",
+              "with": "apps/decabill/frontend-docs/src/runtime-environment.ts"
+            },
+            {
+              "replace": "libs/domains/decabill/frontend/util-configuration/src/lib/environment.ts",
+              "with": "libs/domains/decabill/frontend/util-configuration/src/lib/environment.docs.production.ts"
             }
           ]
         },
@@ -114,8 +118,12 @@
           "sourceMap": true,
           "fileReplacements": [
             {
-              "replace": "libs/domains/shared/frontend/util-configuration/src/lib/environment.ts",
-              "with": "libs/domains/shared/frontend/util-configuration/src/lib/environment.decabill.ts"
+              "replace": "apps/shared/frontend-docs/src/runtime-environment.ts",
+              "with": "apps/decabill/frontend-docs/src/runtime-environment.ts"
+            },
+            {
+              "replace": "libs/domains/decabill/frontend/util-configuration/src/lib/environment.ts",
+              "with": "libs/domains/decabill/frontend/util-configuration/src/lib/environment.docs.ts"
             }
           ]
         },

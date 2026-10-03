@@ -24,7 +24,7 @@ import {
   FpcFormControlComponent,
   FpcFormFieldComponent,
 } from '@forepath/shared/frontend/ui-components';
-import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { NgxTurnstileComponent, NgxTurnstileModule } from 'ngx-turnstile';
 
@@ -78,7 +78,7 @@ export class SharedContactPageComponent implements OnInit {
 
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
-  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
@@ -93,7 +93,7 @@ export class SharedContactPageComponent implements OnInit {
 
   ngOnInit(): void {
     const pageConfig = this.pageConfig;
-    const productName = this.environment.productName;
+    const productName = this.environment.application.productName;
     const metaTitle = $localize`:@@sharedFeatureLandingpageContact-metaTitle:Contact :: ${productName}:productName:`;
     const metaDescription = $localize`:@@sharedFeatureLandingpageContact-metaDescription:Send us a message. We typically reply within one business day.`;
 
@@ -109,9 +109,9 @@ export class SharedContactPageComponent implements OnInit {
           canonicalUrl: pageConfig.canonicalUrl,
           socialTitle: metaTitle,
           socialDescription: metaDescription,
-          socialImageUrl: this.environment.socialPreview.imageUrl,
+          socialImageUrl: this.environment.socialPreview.urls.image,
           localeId: this.locale,
-          localizeCanonicalUrl: this.environment.production,
+          localizeCanonicalUrl: this.environment.application.production,
         }),
       ),
     );

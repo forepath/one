@@ -1,6 +1,6 @@
 # agenstra-frontend-data-access-portal
 
-NgRx data access for the public marketing portal. Uses the billing API base URL from `@forepath/shared/frontend/util-configuration` (`environment.billing.restApiUrl`).
+NgRx data access for the public marketing landing page. Uses the landing REST API base URL from the app environment (`environment.landing.urls.restApi`).
 
 ## Service plans feature
 

@@ -111,25 +111,26 @@ Local `nx serve` uses the Angular dev server on port **4500** without Express un
 
 ### Build-time environment
 
-Development builds replace `environment.ts` with `environment.decabill.ts`:
+Development builds replace `environment.ts` with `environment.billing-console.ts` in `@forepath/decabill/frontend/util-configuration`:
 
 ```typescript
 billing: {
-  restApiUrl: 'http://localhost:3200/api',
-  frontendUrl: 'http://localhost:4500',
-  websocketUrl: 'http://localhost:3200/socket/billing',
-  projectsWebsocketUrl: 'http://localhost:3200/socket/projects',
   tenantId: 'decabill',
+  urls: {
+    restApi: 'http://localhost:3200/api',
+    frontend: 'http://localhost:4500',
+    websocket: 'http://localhost:3200/socket/billing', // or { default, projects }
+  },
 },
 authentication: {
-  type: 'users',
-  disableSignup: false,
+  config: { type: 'users', disableSignup: false },
+  marketing: /* brand copy */,
 },
 ```
 
-Production uses `environment.decabill.production.ts`. Align `authentication.type` with backend `AUTHENTICATION_METHOD`.
+Production uses `environment.billing-console.production.ts`. Align `authentication.config.type` with backend `AUTHENTICATION_METHOD`.
 
-When `projectsWebsocketUrl` is omitted, the console derives it from `websocketUrl` by swapping the `/socket/billing` path for `/socket/projects`.
+When `billing.urls.websocket.projects` is omitted, the console derives it from the primary websocket URL via `resolveApiWebsocketUrl` (swapping `/socket/billing` for `/socket/projects`).
 
 ### Docker image
 

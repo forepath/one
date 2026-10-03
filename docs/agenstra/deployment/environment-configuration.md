@@ -216,7 +216,7 @@ The Angular apps **agenstra-frontend-agent-console**, **agenstra-frontend-landin
   - If set, the application will fetch this configuration during initialization via `/config` endpoint
   - The remote configuration takes precedence over build-time defaults
   - If not set or fetch fails, the application falls back to build-time defaults
-  - Example: `CONFIG=https://config.example.com/agenstra-config.json`
+  - Example: `CONFIG=https://config.example.com/agenstra/billing.json` (billing console) or `…/agenstra/landingpage.json` (landing). Agent-console overlays are per-deployment (nested `console` section; no shared file under `configs/`).
   - For users auth, include `authentication: { type: "users", disableSignup: true }` to hide the signup link and disable registration when backend has DISABLE_SIGNUP=true
 
 #### Runtime config proxy hardening (`/config`)

@@ -26,7 +26,7 @@ import {
   FpcSidebarPopoverComponent,
   FpcThemeSwitcherComponent,
 } from '@forepath/shared/frontend/ui-components';
-import { ENVIRONMENT, LocaleService } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, LocaleService } from '@forepath/decabill/frontend/util-configuration';
 import { combineLatest, distinctUntilChanged, filter, map, startWith } from 'rxjs';
 
 import { ThemeService } from '../theme.service';
@@ -67,7 +67,7 @@ export class BillingConsoleContainerComponent implements OnInit {
   private readonly standaloneLoadingService = inject(StandaloneLoadingService);
   protected readonly themeService = inject(ThemeService);
   protected readonly localeService = inject(LocaleService);
-  protected readonly productName = inject(ENVIRONMENT).productName;
+  protected readonly productName = inject(ENVIRONMENT).application.productName;
   private readonly authEnvironment = inject(IDENTITY_AUTH_ENVIRONMENT);
 
   readonly languageSwitcherAriaLabel = $localize`:@@featureContainer-languageSwitcherAriaLabel:Select language`;

@@ -248,7 +248,7 @@ See **[Background Jobs](./background-jobs.md)** for queue roles and job names.
 
 | Variable                     | Description                                                                                                                                |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `CONFIG`                     | URL to remote JSON merged at runtime via `/config`                                                                                         |
+| `CONFIG`                     | URL to remote JSON merged at runtime via `/config` (repo examples: `configs/<domain>/billing.json`, `landingpage.json`)                    |
 | `CONFIG_ALLOWED_HOSTS`       | Hostname allowlist for `CONFIG`. **Required in production** when `CONFIG` is set                                                           |
 | `CONFIG_ALLOW_INSECURE_HTTP` | Allow `http://` CONFIG URLs in production when `true` (default `false`)                                                                    |
 | `CONFIG_ALLOW_INTERNAL_HOST` | Allow private/loopback CONFIG targets when `true` (default `false`)                                                                        |
@@ -287,7 +287,7 @@ Billing console compose default: `CSP_CONNECT_SRC_EXTRA=http://host.docker.inter
 | `API_URL`        | Build-time API URL                                                     | See app config         |
 | `WEBSOCKET_URL`  | Build-time Socket.IO URL (e.g. `http://localhost:3200/socket/billing`) | See app config         |
 
-Runtime `/config` JSON may include `billing.projectsWebsocketUrl` (for example `http://localhost:3200/socket/projects`). When omitted, the billing console derives the projects URL from `billing.websocketUrl` by swapping `/socket/billing` for `/socket/projects`.
+Runtime `/config` JSON may include `billing.urls.websocket` as a string or `{ default, projects }` object (for example `projects: http://localhost:3200/socket/projects`). When `projects` is omitted, the billing console derives it from the primary websocket URL via `resolveApiWebsocketUrl`.
 
 ### Docs Server
 

@@ -56,7 +56,7 @@ import {
   type ProviderLocationCatalog,
   type ValidatePromotionRequest,
 } from '@forepath/decabill/frontend/data-access-billing-console';
-import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, type Environment } from '@forepath/decabill/frontend/util-configuration';
 import {
   FpcAlertComponent,
   FpcBadgeComponent,
@@ -284,8 +284,8 @@ export class SubscriptionsComponent implements OnInit {
   readonly customerProfileError$ = this.customerProfileFacade.getCustomerProfileError$();
   readonly isCustomerProfileComplete$ = this.customerProfileFacade.isCustomerProfileComplete$();
 
-  readonly termsUrl = this.environment.cookieConsent.termsUrl;
-  readonly privacyUrl = this.environment.cookieConsent.privacyPolicyUrl;
+  readonly termsUrl = this.environment.cookieConsent.urls.terms;
+  readonly privacyUrl = this.environment.cookieConsent.urls.privacyPolicy;
 
   readonly countryOptions: BillingCountryOption[] = BILLING_COUNTRY_OPTIONS;
 

@@ -21,7 +21,7 @@ export interface UpdatesAdminEnvironment {
  * {
  *   provide: UPDATES_ADMIN_ENVIRONMENT,
  *   useFactory: (env: Environment) => ({
- *     apiUrl: env.controller.restApiUrl,
+ *     apiUrl: env.console.urls.restApi,
  *     updatesBasePath: 'admin/updates',
  *     frontendVersion: env.appVersion,
  *   }),

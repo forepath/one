@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import type { Environment } from '@forepath/shared/frontend/util-configuration';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, type EnvironmentWithCommunication } from '@forepath/shared/frontend/util-configuration';
 import { Observable } from 'rxjs';
 
 import { PUBLIC_CONTACT_REQUESTS_PATH } from '../constants/contact-request.constants';
@@ -12,10 +11,10 @@ import type { ContactRequestResponse, SubmitContactRequestPayload } from '../typ
 })
 export class ContactRequestService {
   private readonly http = inject(HttpClient);
-  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly environment = inject<EnvironmentWithCommunication>(ENVIRONMENT);
 
   private get apiUrl(): string {
-    return this.environment.communication.restApiUrl;
+    return this.environment.communication.urls.restApi;
   }
 
   submit(payload: SubmitContactRequestPayload): Observable<ContactRequestResponse> {

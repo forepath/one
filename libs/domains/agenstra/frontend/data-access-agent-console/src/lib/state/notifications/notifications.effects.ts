@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
-import type { Environment } from '@forepath/shared/frontend/util-configuration';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import type { Environment } from '@forepath/agenstra/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/agenstra/frontend/util-configuration';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { KeycloakService } from 'keycloak-angular';
@@ -38,22 +38,22 @@ const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
 const NOTIFICATION_SOUND_URL = '/audio/notification-pling.wav';
 
 function getAuthHeader(environment: Environment, keycloakService: KeycloakService | null): Observable<string | null> {
-  if (environment.authentication.type === 'api-key') {
+  if (environment.authentication.config.type === 'api-key') {
     const apiKey =
-      environment.authentication.apiKey ??
+      environment.authentication.config.apiKey ??
       (typeof localStorage !== 'undefined' ? localStorage.getItem(API_KEY_STORAGE_KEY) : null);
 
     return of(apiKey ? `Bearer ${apiKey}` : null);
   }
 
-  if (environment.authentication.type === 'keycloak' && keycloakService) {
+  if (environment.authentication.config.type === 'keycloak' && keycloakService) {
     return from(keycloakService.getToken()).pipe(
       map((token) => (token ? `Bearer ${token}` : null)),
       catchError(() => of(null)),
     );
   }
 
-  if (environment.authentication.type === 'users') {
+  if (environment.authentication.config.type === 'users') {
     const jwt = typeof localStorage !== 'undefined' ? localStorage.getItem(USERS_JWT_STORAGE_KEY) : null;
 
     return of(jwt ? `Bearer ${jwt}` : null);

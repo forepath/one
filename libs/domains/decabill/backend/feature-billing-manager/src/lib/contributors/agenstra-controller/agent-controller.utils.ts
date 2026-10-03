@@ -340,27 +340,36 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     // Frontend security headers: enforce CSP by default for provisioned instances.
     `CSP_ENFORCE: ${config.frontend?.cspEnforce ?? 'true'}`,
   ]);
-  const frontendConfig: any = {
-    production: true,
-    controller: {
-      restApiUrl: `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}:${config.proxy?.httpsPort ?? '443'}/api`,
-      websocketUrl: `https://${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}/${config.backend?.websocketNamespace ?? 'socket/clients'}`,
+  const provisionHost = config.host?.fqdn ?? config.host?.hostname ?? 'localhost';
+  const provisionHttpsPort = config.proxy?.httpsPort ?? '443';
+  const provisionWebsocketNamespace = config.backend?.websocketNamespace ?? 'socket/clients';
+  /** Runtime `/config` overlay for agent-console (`console` section; deep-merged onto baked env). */
+  const frontendConfig = {
+    application: {
+      production: true,
     },
-    billing: {
-      restApiUrl: '',
+    console: {
+      urls: {
+        restApi: `https://${provisionHost}:${provisionHttpsPort}/api`,
+        websocket: `https://${provisionHost}/${provisionWebsocketNamespace}`,
+      },
     },
     authentication: {
-      type: 'users',
-      disableSignup: false,
+      config: {
+        type: 'users',
+        disableSignup: false,
+      },
     },
     chatModelOptions: {
       cursor: {},
       opencode: {},
     },
     cookieConsent: {
-      domain: `.${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}`,
-      privacyPolicyUrl: 'https://agenstra.com/legal/privacy',
-      termsUrl: 'https://agenstra.com/legal/terms',
+      domain: `.${provisionHost}`,
+      urls: {
+        privacyPolicy: 'https://agenstra.com/legal/privacy',
+        terms: 'https://agenstra.com/legal/terms',
+      },
     },
   };
   const dockerCompose = `services:

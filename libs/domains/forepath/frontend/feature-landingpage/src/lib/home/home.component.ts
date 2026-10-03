@@ -13,7 +13,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
-import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 import { catchError, of } from 'rxjs';
@@ -78,7 +78,7 @@ export class ForepathHomeComponent implements OnInit {
 
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
-  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
   private readonly platformId = inject(PLATFORM_ID);
@@ -101,9 +101,9 @@ export class ForepathHomeComponent implements OnInit {
           canonicalUrl: 'https://forepath.io',
           socialTitle: metaTitle,
           socialDescription: metaDescription,
-          socialImageUrl: this.environment.socialPreview.imageUrl,
+          socialImageUrl: this.environment.socialPreview.urls.image,
           localeId: this.locale,
-          localizeCanonicalUrl: this.environment.production,
+          localizeCanonicalUrl: this.environment.application.production,
         }),
       ),
     );

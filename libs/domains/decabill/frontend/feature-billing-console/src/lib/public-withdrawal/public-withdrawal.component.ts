@@ -19,7 +19,7 @@ import {
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { isAuthMarketingPanelVisible } from '@forepath/identity/frontend';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
 import type { Observable } from 'rxjs';
 
 type DetailsForm = {
@@ -69,9 +69,9 @@ export class PublicWithdrawalComponent implements OnInit {
   acknowledgeForm!: FormGroup;
   formSubmitted = false;
 
-  protected readonly productName = this.environment.productName;
-  protected readonly authMarketing = this.environment.authMarketing;
-  protected readonly showAuthMarketingPanel = isAuthMarketingPanelVisible(this.environment.authLayout);
+  protected readonly productName = this.environment.application.productName;
+  protected readonly authMarketing = this.environment.authentication.marketing;
+  protected readonly showAuthMarketingPanel = isAuthMarketingPanelVisible(this.environment.authentication.layout);
   protected readonly requestId = toSignal(this.publicWithdrawalFacade.requestId$, { initialValue: null });
 
   readonly step$: Observable<PublicWithdrawalStep> = this.publicWithdrawalFacade.step$;

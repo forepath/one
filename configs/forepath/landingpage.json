@@ -1,0 +1,22 @@
+{
+  "application": {
+    "production": true
+  },
+  "cookieConsent": {
+    "domain": ".forepath.io",
+    "urls": {
+      "privacyPolicy": "https://forepath.io/legal/privacy"
+    }
+  },
+  "landing": {
+    "urls": {
+      "portal": "https://portal.forepath.io"
+    }
+  },
+  "communication": {
+    "urls": {
+      "restApi": "https://communication.forepath.io/api"
+    },
+    "turnstileSiteKey": "0x4AAAAAADvf6PCeLddoJ7Ur"
+  }
+}

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import type { Environment } from '@forepath/shared/frontend/util-configuration';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import type { Environment } from '@forepath/agenstra/frontend/util-configuration';
+import { ENVIRONMENT, resolveApiWebsocketUrl } from '@forepath/agenstra/frontend/util-configuration';
 import { Observable } from 'rxjs';
 
 export interface CreateVncSessionResponse {
@@ -11,13 +11,16 @@ export interface CreateVncSessionResponse {
 
 /** Resolves the raw VNC WebSocket base URL from frontend environment config. */
 export function resolveVncWebsocketUrl(environment: Environment): string | null {
-  const explicit = environment.controller.vncWebsocketUrl?.trim();
+  const websocket = environment.console.urls.websocket;
+
+  // Only the object-form `vnc` key is an explicit override; string-form derivation still needs http→ws.
+  const explicit = typeof websocket === 'object' && typeof websocket.vnc === 'string' ? websocket.vnc.trim() : '';
 
   if (explicit) {
     return explicit.replace(/\/$/, '');
   }
 
-  const base = environment.controller.websocketUrl?.trim();
+  const base = resolveApiWebsocketUrl(websocket, 'default');
 
   if (!base) {
     return null;
@@ -54,7 +57,7 @@ export class VncSessionsService {
   private readonly environment = inject<Environment>(ENVIRONMENT);
 
   private get apiUrl(): string {
-    return this.environment.controller.restApiUrl;
+    return this.environment.console.urls.restApi;
   }
 
   createSession(clientId: string, agentId: string): Observable<CreateVncSessionResponse> {

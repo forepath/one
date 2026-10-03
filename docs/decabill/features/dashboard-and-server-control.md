@@ -49,7 +49,7 @@ Buttons are disabled while an action is in progress. After a successful action, 
 
 ### With WebSocket
 
-When `billing.websocketUrl` is set in frontend runtime config:
+When `billing.urls.websocket` is set in frontend runtime config:
 
 1. NgRx effects connect to the billing status gateway
 2. On connect, client emits `subscribeDashboardStatus`
@@ -106,4 +106,4 @@ sequenceDiagram
 
 ---
 
-_Configure `billing.websocketUrl` in the billing console runtime config for live status without manual refresh._
+_Configure `billing.urls.websocket` in the billing console runtime config for live status without manual refresh._

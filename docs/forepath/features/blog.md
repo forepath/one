@@ -13,11 +13,11 @@ Canonical URLs use `https://forepath.io/blog/...` (not the private Ghost fronten
 
 ## Configuration
 
-Set on the ForePath environments (`environment.forepath.ts` / `environment.forepath.production.ts`):
+Set on the ForePath landing environment (`environment.landingpage.ts` / `.production.ts` in `@forepath/forepath/frontend/util-configuration`):
 
 ```ts
 blog: {
-  contentApiUrl: 'https://blog.forepath.io',
+  urls: { contentApi: 'https://blog.forepath.io' },
   contentApiKey: '<Ghost Content API key>',
 }
 ```

@@ -42,8 +42,10 @@ describe('PublicServicePlanOfferingsService', () => {
         {
           provide: ENVIRONMENT,
           useValue: {
-            billing: {
-              restApiUrl: apiUrl,
+            landing: {
+              urls: {
+                restApi: apiUrl,
+              },
             },
           },
         },

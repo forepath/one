@@ -20,7 +20,7 @@ import {
   FpcSidebarPopoverComponent,
   FpcThemeSwitcherComponent,
 } from '@forepath/shared/frontend/ui-components';
-import { LocaleService } from '@forepath/shared/frontend/util-configuration';
+import { LocaleService } from '@forepath/agenstra/frontend/util-configuration';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import { combineLatest, distinctUntilChanged, filter, map, pairwise, startWith } from 'rxjs';
 

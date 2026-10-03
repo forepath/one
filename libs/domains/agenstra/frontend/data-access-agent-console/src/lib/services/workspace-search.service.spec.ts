@@ -1,6 +1,6 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/agenstra/frontend/util-configuration';
 
 import { WorkspaceSearchService } from './workspace-search.service';
 
@@ -15,7 +15,13 @@ describe('WorkspaceSearchService', () => {
         WorkspaceSearchService,
         {
           provide: ENVIRONMENT,
-          useValue: { controller: { restApiUrl: 'http://controller.test/api' } },
+          useValue: {
+            console: {
+              urls: {
+                restApi: 'http://controller.test/api',
+              },
+            },
+          },
         },
       ],
     });

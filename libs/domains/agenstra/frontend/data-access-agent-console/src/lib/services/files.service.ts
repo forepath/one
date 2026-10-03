@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import type { Environment } from '@forepath/shared/frontend/util-configuration';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import type { Environment } from '@forepath/agenstra/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/agenstra/frontend/util-configuration';
 import { Observable, from, map, of, switchMap } from 'rxjs';
 
 import type {
@@ -39,7 +39,7 @@ export class FilesService {
    * Get the base URL for the API.
    */
   private get apiUrl(): string {
-    return this.environment.controller.restApiUrl;
+    return this.environment.console.urls.restApi;
   }
 
   /**
