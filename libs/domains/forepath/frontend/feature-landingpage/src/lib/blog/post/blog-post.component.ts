@@ -4,7 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DomSanitizer, Meta, SafeHtml, Title } from '@angular/platform-browser';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
-import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import {
   addPageMetaTags,
   buildPageMetaTags,
@@ -50,7 +50,7 @@ function isGhostNotFoundError(error: unknown): boolean {
 export class ForepathBlogPostComponent implements OnInit {
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
-  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
   private readonly ghostApi = inject(GhostContentApiService);
@@ -133,12 +133,12 @@ export class ForepathBlogPostComponent implements OnInit {
 
   private applyPostMeta(post: GhostPost): void {
     const pageTitle = (post.meta_title ?? post.title).trim() || post.title;
-    const metaTitle = formatProductMetaTitle(pageTitle, this.environment.productName);
+    const metaTitle = formatProductMetaTitle(pageTitle, this.environment.application.productName);
     const description = formatAgenstraMetaDescription(
       resolveGhostPostDescription(post) ||
         $localize`:@@featureForepathBlogPost-fallbackDescription:Article from the ForePath blog.`,
     );
-    const imageUrl = resolveGhostPostImageUrl(post, this.environment.socialPreview.imageUrl);
+    const imageUrl = resolveGhostPostImageUrl(post, this.environment.socialPreview.urls.image);
     const keywords = resolveGhostPostKeywords(post);
 
     this.titleService.setTitle(metaTitle);
@@ -155,7 +155,7 @@ export class ForepathBlogPostComponent implements OnInit {
         socialDescription: description,
         socialImageUrl: imageUrl,
         localeId: this.locale,
-        localizeCanonicalUrl: this.environment.production,
+        localizeCanonicalUrl: this.environment.application.production,
         socialType: 'article',
         siteName: 'ForePath',
       }),
@@ -177,9 +177,9 @@ export class ForepathBlogPostComponent implements OnInit {
         canonicalUrl: 'https://forepath.io/blog',
         socialTitle: metaTitle,
         socialDescription: metaDescription,
-        socialImageUrl: this.environment.socialPreview.imageUrl,
+        socialImageUrl: this.environment.socialPreview.urls.image,
         localeId: this.locale,
-        localizeCanonicalUrl: this.environment.production,
+        localizeCanonicalUrl: this.environment.application.production,
         siteName: 'ForePath',
       }),
     );

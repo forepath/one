@@ -222,6 +222,15 @@
       ],
       "@forepath/agenstra/shared/util-opencode-mcp-servers": [
         "libs/domains/agenstra/shared/util-opencode-mcp-servers/src/index.ts"
+      ],
+      "@forepath/agenstra/frontend/util-configuration": [
+        "libs/domains/agenstra/frontend/util-configuration/src/index.ts"
+      ],
+      "@forepath/decabill/frontend/util-configuration": [
+        "libs/domains/decabill/frontend/util-configuration/src/index.ts"
+      ],
+      "@forepath/forepath/frontend/util-configuration": [
+        "libs/domains/forepath/frontend/util-configuration/src/index.ts"
       ]
     }
   },

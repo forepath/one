@@ -127,7 +127,7 @@ Frontend containers support runtime configuration via the `CONFIG` environment v
 services:
   frontend:
     environment:
-      - CONFIG=https://config.example.com/agenstra-config.json
+      - CONFIG=https://config.example.com/agenstra/landingpage.json
       # Production hardening (recommended):
       # - CONFIG_ALLOWED_HOSTS=config.example.com
       # - CONFIG_FETCH_TIMEOUT_MS=10000
@@ -197,11 +197,10 @@ docker run -d \
   -e STATIC_API_KEY=your-api-key \
   backend-agent-manager:api
 
-# Run frontend agent console
+# Run frontend agent console (optional per-deployment CONFIG with nested console section)
 docker run -d \
   --name frontend-agent-console \
   -p 4200:4200 \
-  -e CONFIG=https://config.example.com/agenstra-config.json \
   frontend-agent-console:server
 ```
 

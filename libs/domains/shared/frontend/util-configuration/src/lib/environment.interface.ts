@@ -23,64 +23,145 @@ export interface AuthLayoutConfig {
   showMarketingPanel?: boolean;
 }
 
-export interface Environment {
+/** Former top-level production + productName + appVersion. */
+export interface ApplicationEnvironment {
   production: boolean;
-  /** Product name shown in page titles, auth screens, and other branded UI. */
   productName: string;
-  /** Optional frontend build version (e.g. from CI `VERSION` env var). */
-  appVersion?: string;
-  controller: {
-    restApiUrl: string;
-    websocketUrl: string;
-    /** When unset, derived from `websocketUrl` by swapping the `/socket/clients` suffix for `/socket/tickets`. */
-    ticketsWebsocketUrl?: string;
-    /** When unset, derived from `websocketUrl` by swapping the `/socket/clients` suffix for `/socket/status`. */
-    statusWebsocketUrl?: string;
-    /** When unset, derived from `websocketUrl` by swapping the `/socket/clients` suffix for `/socket/vnc`. */
-    vncWebsocketUrl?: string;
-  };
-  billing: {
-    restApiUrl: string;
-    frontendUrl: string;
-    websocketUrl?: string;
-    /** When unset, derived from `websocketUrl` host with `/socket/projects` namespace. */
-    projectsWebsocketUrl?: string;
-    /** Optional tenant id sent as `X-Tenant` on billing API requests; defaults to `default`. */
-    tenantId?: string;
-  };
-  authentication: AuthenticationConfig;
-  /** Brand-specific copy for login, registration, and related auth screens. */
-  authMarketing: AuthMarketing;
-  /** Layout options for login, registration, and related public auth screens. */
-  authLayout?: AuthLayoutConfig;
-  chatModelOptions: { [provider: string]: Record<string, string> };
-  cookieConsent: {
-    /** When false, cookie consent UI and providers are omitted (e.g. Decabill billing console). */
-    enabled: boolean;
-    domain: string;
-    privacyPolicyUrl: string;
-    termsUrl: string;
-  };
-  socialPreview: {
-    imageUrl: string;
-  };
-  docs: {
-    /** Folder name under /docs/ and docs/ repo root, e.g. "agenstra" | "decabill" */
-    contentRoot: string;
-  };
-  /** Public contact form API (Forepath Communication service) and Cloudflare Turnstile site key. */
-  communication: {
-    restApiUrl: string;
-    turnstileSiteKey: string;
-  };
-  /**
-   * Ghost Content API (public, read-only). When set, enables the marketing blog pages.
-   * Content API keys are designed for browser use.
-   */
-  blog?: {
-    /** Ghost site origin, e.g. https://blog.forepath.io */
-    contentApiUrl: string;
-    /** Ghost Content API key */
-    contentApiKey: string;
-  };
+  /** Optional frontend build version (e.g. from CI `VERSION` env var). Former `appVersion`. */
+  version?: string;
 }
+
+/** Former top-level authentication + authMarketing + authLayout. */
+export interface AuthenticationEnvironment {
+  /** Provider/method config (users | keycloak | api-key) — former top-level `authentication`. */
+  config: AuthenticationConfig;
+  /** Brand copy for login/register screens — former `authMarketing`. */
+  marketing: AuthMarketing;
+  /** Optional layout flags for public auth screens — former `authLayout`. */
+  layout?: AuthLayoutConfig;
+}
+
+export interface CookieConsentUrls {
+  privacyPolicy: string;
+  terms: string;
+}
+
+export interface CookieConsentConfig {
+  /** When false, cookie consent UI and providers are omitted (e.g. Decabill billing console). */
+  enabled: boolean;
+  domain: string;
+  urls: CookieConsentUrls;
+}
+
+export interface SocialPreviewUrls {
+  image: string;
+}
+
+export interface SocialPreviewConfig {
+  urls: SocialPreviewUrls;
+}
+
+/** Only fields every product environment shares. No api / websocket / docs / communication. */
+export interface BaseEnvironment {
+  application: ApplicationEnvironment;
+  authentication: AuthenticationEnvironment;
+  cookieConsent: CookieConsentConfig;
+  socialPreview: SocialPreviewConfig;
+}
+
+/** @deprecated Use {@link BaseEnvironment}. Kept as an alias during migration. */
+export type Environment = BaseEnvironment;
+
+export interface ApiUrls {
+  restApi: string;
+  frontend?: string;
+}
+
+export interface ApiConfig {
+  urls: ApiUrls;
+  tenantId?: string;
+}
+
+/** Object form of websocket config; endpoint keys are supplied by the consuming app/domain. */
+export type ApiWebsocketEndpoints<E extends string = string> = {
+  default: string;
+} & Partial<Record<E, string>>;
+
+/** Generic websocket union; endpoint keys are supplied by the consuming app/domain. */
+export type ApiWebsocketConfig<E extends string = string> = string | ApiWebsocketEndpoints<E>;
+
+export interface ApiUrlsWithWebsocket<E extends string = string> extends ApiUrls {
+  websocket: ApiWebsocketConfig<E>;
+}
+
+export interface ApiConfigWithWebsocket<E extends string = string> {
+  urls: ApiUrlsWithWebsocket<E>;
+  tenantId?: string;
+}
+
+export interface CommunicationUrls {
+  restApi: string;
+}
+
+export interface CommunicationConfig {
+  urls: CommunicationUrls;
+  turnstileSiteKey: string;
+}
+
+export interface DocsConfig {
+  /** Folder name under /docs/ and docs/ repo root, e.g. "agenstra" | "decabill" */
+  contentRoot: string;
+}
+
+/** Landing-page cross-link to the billing portal; REST optional (forepath landing often only needs portal). */
+export interface LandingUrls {
+  portal: string;
+  restApi?: string;
+}
+
+export interface LandingConfig {
+  urls: LandingUrls;
+  tenantId?: string;
+}
+
+/** Landing page when public plan REST is required (agenstra/decabill landings). */
+export interface LandingUrlsWithRestApi {
+  portal: string;
+  restApi: string;
+}
+
+export interface LandingConfigWithRestApi {
+  urls: LandingUrlsWithRestApi;
+  tenantId?: string;
+}
+
+/** Chat model picker map (agenstra agent-console). */
+export interface ChatModelOptions {
+  [provider: string]: Record<string, string>;
+}
+
+/** Ghost Content API (forepath landing). Shared exports the shape; only forepath composes it. */
+export interface BlogUrls {
+  contentApi: string;
+}
+
+export interface BlogConfig {
+  urls: BlogUrls;
+  contentApiKey: string;
+}
+
+export type EnvironmentWithCommunication = BaseEnvironment & {
+  communication: CommunicationConfig;
+};
+
+export type EnvironmentWithDocs = BaseEnvironment & {
+  docs: DocsConfig;
+};
+
+export type EnvironmentWithLanding = BaseEnvironment & {
+  landing: LandingConfig;
+};
+
+export type EnvironmentWithLandingAndCommunication = EnvironmentWithLanding & {
+  communication: CommunicationConfig;
+};

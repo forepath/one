@@ -46,8 +46,8 @@ import {
   FpcModalComponent,
   FpcModalFooterDirective,
 } from '@forepath/shared/frontend/ui-components';
-import type { Environment } from '@forepath/shared/frontend/util-configuration';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import type { Environment } from '@forepath/decabill/frontend/util-configuration';
+import { ENVIRONMENT, resolveApiWebsocketUrl } from '@forepath/decabill/frontend/util-configuration';
 import { combineLatest, debounceTime, distinctUntilChanged, filter, finalize, map, skip, take } from 'rxjs';
 
 import {
@@ -135,7 +135,7 @@ export class OverviewComponent implements OnInit {
     this.billingDashboardSocketFacade.getStreamPending$(),
   ]).pipe(
     map(([restLoading, socketPending]) =>
-      this.environment.billing.websocketUrl?.trim() ? socketPending : restLoading,
+      resolveApiWebsocketUrl(this.environment.billing.urls.websocket, 'default') ? socketPending : restLoading,
     ),
     takeUntilDestroyed(this.destroyRef),
   );
@@ -275,7 +275,7 @@ export class OverviewComponent implements OnInit {
         this.subscriptionsFacade.loadSubscriptions({ search: search.trim() || undefined });
       });
 
-    const useBillingSocket = !!this.environment.billing.websocketUrl?.trim();
+    const useBillingSocket = !!resolveApiWebsocketUrl(this.environment.billing.urls.websocket, 'default');
 
     if (useBillingSocket) {
       this.billingDashboardSocketFacade.connect();

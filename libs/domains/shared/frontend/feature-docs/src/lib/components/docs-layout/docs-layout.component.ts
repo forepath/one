@@ -9,7 +9,7 @@ import {
   FpcThemeSwitcherComponent,
   FpcTopBarComponent,
 } from '@forepath/shared/frontend/ui-components';
-import { ENVIRONMENT, LocaleService, type Environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, LocaleService, type EnvironmentWithDocs } from '@forepath/shared/frontend/util-configuration';
 import { NavigationNode } from '@forepath/shared/frontend/util-docs-parser';
 
 import { DocsNavigationService, ThemeService } from '../../services';
@@ -39,7 +39,7 @@ export class DocsLayoutComponent implements AfterViewInit, OnDestroy {
   protected readonly isBrowser = isPlatformBrowser(this.platformId);
   protected readonly themeService = inject(ThemeService);
   protected readonly localeService = inject(LocaleService);
-  protected readonly productName = inject<Environment>(ENVIRONMENT).productName;
+  protected readonly productName = inject<EnvironmentWithDocs>(ENVIRONMENT).application.productName;
 
   readonly languageSwitcherAriaLabel = $localize`:@@featureDocsLayout-languageSwitcherAriaLabel:Select language`;
   readonly toggleDarkModeTitle = $localize`:@@featureDocsLayout-darkModeTitle:Toggle dark mode`;

@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import type { Environment } from '@forepath/shared/frontend/util-configuration';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import type { Environment } from '@forepath/decabill/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
 import { Observable } from 'rxjs';
 
 import type { CreateMeterDto, ListParams, MeterResponse, UpdateMeterDto } from '../types/billing.types';
@@ -14,7 +14,7 @@ export class MetersService {
   private readonly environment = inject<Environment>(ENVIRONMENT);
 
   private get apiUrl(): string {
-    return this.environment.billing.restApiUrl;
+    return this.environment.billing.urls.restApi;
   }
 
   listMeters(params?: ListParams): Observable<MeterResponse[]> {

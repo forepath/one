@@ -1,0 +1,21 @@
+{
+  "name": "forepath-frontend-util-configuration",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/forepath/frontend/util-configuration/src",
+  "prefix": "forepath",
+  "projectType": "library",
+  "tags": ["domain:forepath", "scope:frontend", "type:util"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/forepath/frontend/util-configuration/jest.config.cts",
+        "tsConfig": "libs/domains/forepath/frontend/util-configuration/tsconfig.spec.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

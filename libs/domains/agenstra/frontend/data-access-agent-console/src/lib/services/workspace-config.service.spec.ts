@@ -1,6 +1,6 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/agenstra/frontend/util-configuration';
 
 import { WorkspaceConfigService } from './workspace-config.service';
 
@@ -15,7 +15,13 @@ describe('WorkspaceConfigService', () => {
         WorkspaceConfigService,
         {
           provide: ENVIRONMENT,
-          useValue: { controller: { restApiUrl: 'http://localhost:3000' } },
+          useValue: {
+            console: {
+              urls: {
+                restApi: 'http://localhost:3000',
+              },
+            },
+          },
         },
       ],
     });

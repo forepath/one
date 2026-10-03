@@ -1,4 +1,6 @@
 import { TestBed } from '@angular/core/testing';
+import { ENVIRONMENT, environment } from '@forepath/agenstra/frontend/util-configuration';
+import { createCookieConsentConfig } from '@forepath/shared/frontend/util-cookie-consent';
 import { provideNgcCookieConsent } from 'ngx-cookieconsent';
 
 import { AppComponent } from './app.component';
@@ -8,14 +10,8 @@ describe('AppComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AppComponent],
       providers: [
-        provideNgcCookieConsent({
-          cookie: {
-            domain: 'localhost',
-          },
-          position: 'bottom',
-          theme: 'classic',
-          type: 'opt-in',
-        }),
+        { provide: ENVIRONMENT, useValue: environment },
+        provideNgcCookieConsent(createCookieConsentConfig(environment)),
       ],
     }).compileComponents();
   });

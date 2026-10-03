@@ -17,8 +17,10 @@ Configure the billing console runtime config:
 ```json
 {
   "billing": {
-    "websocketUrl": "http://localhost:3200/socket/billing",
-    "tenantId": "default"
+    "tenantId": "default",
+    "urls": {
+      "websocket": "http://localhost:3200/socket/billing"
+    }
   }
 }
 ```

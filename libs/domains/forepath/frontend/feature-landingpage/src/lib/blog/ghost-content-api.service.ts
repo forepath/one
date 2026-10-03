@@ -1,5 +1,6 @@
 import { Injectable, PendingTasks, inject } from '@angular/core';
-import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import type { ForepathLandingEnvironment } from '@forepath/forepath/frontend/util-configuration';
 import GhostContentAPI from '@tryghost/content-api';
 import { Observable, defer, finalize, from, throwError } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -24,7 +25,7 @@ export function buildGhostTitleSearchFilter(query: string): string | undefined {
 
 @Injectable({ providedIn: 'root' })
 export class GhostContentApiService {
-  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly environment = inject<ForepathLandingEnvironment>(ENVIRONMENT);
   private readonly pendingTasks = inject(PendingTasks);
   private readonly api = this.createApi();
 
@@ -86,13 +87,13 @@ export class GhostContentApiService {
 
   private createApi(): ReturnType<typeof GhostContentAPI> | null {
     const blog = this.environment.blog;
-    if (!blog?.contentApiUrl || !blog.contentApiKey) {
+    if (!blog?.urls.contentApi || !blog.contentApiKey) {
       return null;
     }
 
     try {
       return GhostContentAPI({
-        url: blog.contentApiUrl.replace(/\/$/, ''),
+        url: blog.urls.contentApi.replace(/\/$/, ''),
         key: blog.contentApiKey,
         version: 'v5.0',
       });

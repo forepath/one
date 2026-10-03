@@ -1,6 +1,6 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
 
 import type { CreateUsageRecordDto, UsageRecordResponse, UsageSummary } from '../types/billing.types';
 
@@ -35,7 +35,9 @@ describe('UsageService', () => {
           provide: ENVIRONMENT,
           useValue: {
             billing: {
-              restApiUrl: apiUrl,
+              urls: {
+                restApi: apiUrl,
+              },
             },
           },
         },

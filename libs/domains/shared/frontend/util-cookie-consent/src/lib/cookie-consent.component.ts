@@ -1,9 +1,10 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
+import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
 import { NgcCookieConsentService } from 'ngx-cookieconsent';
 import { Subscription } from 'rxjs';
 
-import { cookieConfig } from './cookie-consent.config';
+import { createCookieConsentConfig } from './cookie-consent.config';
 
 @Component({
   selector: 'framework-cookie-consent',
@@ -14,6 +15,7 @@ import { cookieConfig } from './cookie-consent.config';
 export class CookieConsentComponent implements OnInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly cookieConsentService = inject(NgcCookieConsentService);
+  private readonly environment = inject(ENVIRONMENT);
   private subscriptions = new Subscription();
 
   ngOnInit(): void {
@@ -137,7 +139,7 @@ export class CookieConsentComponent implements OnInit, OnDestroy {
       const cookieconsent = win.cookieconsent;
 
       // Manually initialize with our config that includes callbacks
-      cookieconsent.initialise(cookieConfig);
+      cookieconsent.initialise(createCookieConsentConfig(this.environment));
 
       // After manual initialization, check status and send event
       setTimeout(() => {

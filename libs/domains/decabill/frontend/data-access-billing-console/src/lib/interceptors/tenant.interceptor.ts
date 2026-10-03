@@ -1,20 +1,29 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import type { Environment } from '@forepath/shared/frontend/util-configuration';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
 
 import { isBillingApiRequest } from './billing-api-request.utils';
 
 export const BILLING_TENANT_HEADER = 'X-Tenant';
 export const DEFAULT_BILLING_TENANT_ID = 'default';
 
-export function resolveBillingTenantId(environment: Environment): string {
-  const configured = environment.billing.tenantId?.trim();
+/** Billing console (`billing`) or landing (`landing`) env bags that carry tenant + REST base. */
+type BillingTenantEnvironment = {
+  billing?: { tenantId?: string; urls?: { restApi?: string } };
+  landing?: { tenantId?: string; urls?: { restApi?: string } };
+};
+
+function resolveBillingRestApiUrl(environment: BillingTenantEnvironment): string {
+  return environment.billing?.urls?.restApi?.trim() || environment.landing?.urls?.restApi?.trim() || '';
+}
+
+export function resolveBillingTenantId(environment: BillingTenantEnvironment): string {
+  const configured = environment.billing?.tenantId?.trim() || environment.landing?.tenantId?.trim();
 
   return configured && configured.length > 0 ? configured : DEFAULT_BILLING_TENANT_ID;
 }
 
-export function resolveBillingTenantDisplayName(environment: Environment): string {
+export function resolveBillingTenantDisplayName(environment: BillingTenantEnvironment): string {
   const tenantId = resolveBillingTenantId(environment);
 
   return tenantId.charAt(0).toUpperCase() + tenantId.slice(1);
@@ -22,11 +31,11 @@ export function resolveBillingTenantDisplayName(environment: Environment): strin
 
 /**
  * HTTP interceptor that attaches `X-Tenant` to billing API requests.
- * Uses `environment.billing.tenantId` when set; otherwise sends `default`.
+ * Resolves REST base + tenant from `billing` (billing console) or `landing` (marketing landings).
  */
 export const billingTenantInterceptor: HttpInterceptorFn = (req, next) => {
-  const environment = inject<Environment>(ENVIRONMENT);
-  const apiUrl = environment.billing.restApiUrl;
+  const environment = inject<BillingTenantEnvironment>(ENVIRONMENT);
+  const apiUrl = resolveBillingRestApiUrl(environment);
 
   if (!isBillingApiRequest(req.url, apiUrl)) {
     return next(req);

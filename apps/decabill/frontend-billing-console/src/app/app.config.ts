@@ -3,8 +3,8 @@ import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withRouterConfig } from '@angular/router';
 import { getAuthInterceptor, getUsersSessionInvalidationInterceptor } from '@forepath/identity/frontend';
 import { getBillingTenantInterceptor } from '@forepath/decabill/frontend/data-access-billing-console';
-import { Environment, ENVIRONMENT, environment, provideLocale } from '@forepath/shared/frontend/util-configuration';
-import { cookieConfig } from '@forepath/shared/frontend/util-cookie-consent';
+import { Environment, ENVIRONMENT, environment, provideLocale } from '@forepath/decabill/frontend/util-configuration';
+import { createCookieConsentConfig } from '@forepath/shared/frontend/util-cookie-consent';
 import { NOTIFICATION_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-notifications';
 import { UPDATES_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-updates';
 import { IDENTITY_AUTH_ENVIRONMENT, LOGIN_SUCCESS_REDIRECT_TARGET, provideKeycloak } from '@forepath/identity/frontend';
@@ -20,22 +20,22 @@ export const appConfig: ApplicationConfig = {
     {
       provide: IDENTITY_AUTH_ENVIRONMENT,
       useFactory: (env: Environment) => ({
-        productName: env.productName,
-        authMarketing: env.authMarketing,
-        authLayout: env.authLayout,
-        apiUrl: env.billing.restApiUrl,
+        productName: env.application.productName,
+        authMarketing: env.authentication.marketing,
+        authLayout: env.authentication.layout,
+        apiUrl: env.billing.urls.restApi,
         additionalApiUrls: [],
-        authentication: env.authentication,
-        controllerApiUrl: env.controller.restApiUrl,
-        termsUrl: env.cookieConsent.termsUrl,
-        privacyPolicyUrl: env.cookieConsent.privacyPolicyUrl,
+        authentication: env.authentication.config,
+        controllerApiUrl: env.billing.urls.restApi,
+        termsUrl: env.cookieConsent.urls.terms,
+        privacyPolicyUrl: env.cookieConsent.urls.privacyPolicy,
       }),
       deps: [ENVIRONMENT],
     },
     {
       provide: NOTIFICATION_ADMIN_ENVIRONMENT,
       useFactory: (env: Environment) => ({
-        apiUrl: env.billing.restApiUrl,
+        apiUrl: env.billing.urls.restApi,
         webhooksBasePath: 'admin/billing/webhooks',
         applicationId: 'decabill' as const,
         clientFilterEnabled: false,
@@ -45,9 +45,9 @@ export const appConfig: ApplicationConfig = {
     {
       provide: UPDATES_ADMIN_ENVIRONMENT,
       useFactory: (env: Environment) => ({
-        apiUrl: env.billing.restApiUrl,
+        apiUrl: env.billing.urls.restApi,
         updatesBasePath: 'admin/billing/updates',
-        frontendVersion: env.appVersion,
+        frontendVersion: env.application.version,
       }),
       deps: [ENVIRONMENT],
     },
@@ -56,7 +56,7 @@ export const appConfig: ApplicationConfig = {
       useValue: ['/dashboard'],
     },
     // Provide KeycloakService before HTTP client so interceptor can inject it
-    ...(environment.authentication.type === 'keycloak' ? provideKeycloak() : []),
+    ...(environment.authentication.config.type === 'keycloak' ? provideKeycloak() : []),
     // Provide HTTP client with auth interceptor (KeycloakService must be available)
     provideHttpClient(
       withInterceptors([getBillingTenantInterceptor(), getAuthInterceptor(), getUsersSessionInvalidationInterceptor()]),
@@ -64,7 +64,7 @@ export const appConfig: ApplicationConfig = {
     // NgRx Store - base store required at root level
     provideStore(),
     // NgRx Store DevTools - only enabled in non-production environments
-    ...(environment.production
+    ...(environment.application.production
       ? []
       : [
           provideStoreDevtools({
@@ -78,7 +78,7 @@ export const appConfig: ApplicationConfig = {
           loadChildren: () =>
             import('@forepath/decabill/frontend/feature-billing-console').then((app) => app.billingConsoleRoutes),
         },
-        ...(environment.production
+        ...(environment.application.production
           ? [
               {
                 path: 'de',
@@ -95,7 +95,7 @@ export const appConfig: ApplicationConfig = {
       ],
       withRouterConfig({ paramsInheritanceStrategy: 'always' }),
     ),
-    ...(environment.cookieConsent.enabled ? [provideNgcCookieConsent(cookieConfig)] : []),
+    ...(environment.cookieConsent.enabled ? [provideNgcCookieConsent(createCookieConsentConfig(environment))] : []),
     provideLocale(),
   ],
 };

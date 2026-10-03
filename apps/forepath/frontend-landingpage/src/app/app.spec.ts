@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { cookieConfig } from '@forepath/shared/frontend/util-cookie-consent';
+import { ENVIRONMENT, environment } from '@forepath/forepath/frontend/util-configuration';
+import { createCookieConsentConfig } from '@forepath/shared/frontend/util-cookie-consent';
 import { provideNgcCookieConsent } from 'ngx-cookieconsent';
 
 import { AppComponent } from './app.component';
@@ -9,7 +10,11 @@ describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppComponent],
-      providers: [provideRouter([]), provideNgcCookieConsent(cookieConfig)],
+      providers: [
+        provideRouter([]),
+        { provide: ENVIRONMENT, useValue: environment },
+        provideNgcCookieConsent(createCookieConsentConfig(environment)),
+      ],
     }).compileComponents();
   });
 

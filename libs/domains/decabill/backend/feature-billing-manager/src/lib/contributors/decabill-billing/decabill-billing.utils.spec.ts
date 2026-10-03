@@ -86,7 +86,12 @@ describe('decabill-billing.utils', () => {
       expect(script).toContain('location /socket.io/');
       expect(script).toContain("WEBSOCKET_NAMESPACE: 'socket/billing'");
       expect(script).not.toContain('WEBSOCKET_PORT');
-      expect(script).toContain('"websocketUrl":"https://host1.example.com/socket/billing"');
+      expect(script).toContain('"billing"');
+      expect(script).toContain('"websocket":"https://host1.example.com/socket/billing"');
+      expect(script).toContain('"restApi":"https://host1.example.com:443/api"');
+      expect(script).toContain('"authentication":{"config"');
+      expect(script).not.toContain('"restApiUrl"');
+      expect(script).not.toContain('"websocketUrl"');
     });
   });
 

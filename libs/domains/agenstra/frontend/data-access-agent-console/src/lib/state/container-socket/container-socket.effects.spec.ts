@@ -74,12 +74,17 @@ describe('SocketsEffects', () => {
     (io as jest.Mock).mockReturnValue(mockSocket as any);
 
     mockEnvironment = {
-      controller: {
-        websocketUrl: 'http://localhost:3100/socket/clients',
+      console: {
+        urls: {
+          restApi: 'http://localhost:3100/api',
+          websocket: 'http://localhost:3100/socket/clients',
+        },
       },
       authentication: {
-        type: 'api-key',
-        apiKey: 'test-api-key',
+        config: {
+          type: 'api-key',
+          apiKey: 'test-api-key',
+        },
       },
     };
 
@@ -119,7 +124,11 @@ describe('SocketsEffects', () => {
     it('should return connectSocketFailure when websocketUrl is not configured', (done) => {
       const environmentWithoutUrl = {
         ...mockEnvironment,
-        controller: {},
+        console: {
+          urls: {
+            restApi: 'http://localhost:3100/api',
+          },
+        },
       };
 
       TestBed.resetTestingModule();
@@ -185,7 +194,9 @@ describe('SocketsEffects', () => {
       const keycloakEnvironment = {
         ...mockEnvironment,
         authentication: {
-          type: 'keycloak',
+          config: {
+            type: 'keycloak',
+          },
         },
       };
 

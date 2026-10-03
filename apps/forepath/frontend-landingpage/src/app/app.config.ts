@@ -3,8 +3,8 @@ import { provideHttpClient, withFetch } from '@angular/common/http';
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideRouter, withInMemoryScrolling, withRouterConfig } from '@angular/router';
-import { environment, provideLocale } from '@forepath/shared/frontend/util-configuration';
-import { cookieConfig } from '@forepath/shared/frontend/util-cookie-consent';
+import { environment, provideLocale } from '@forepath/forepath/frontend/util-configuration';
+import { createCookieConsentConfig } from '@forepath/shared/frontend/util-cookie-consent';
 import { provideStore } from '@ngrx/store';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { provideNgcCookieConsent } from 'ngx-cookieconsent';
@@ -16,7 +16,7 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideStore(),
-    ...(environment.production
+    ...(environment.application.production
       ? []
       : [
           provideStoreDevtools({
@@ -36,7 +36,7 @@ export const appConfig: ApplicationConfig = {
     ),
     { provide: ViewportScroller, useClass: ViewportScrollerOffset },
     provideHttpClient(withFetch()),
-    provideNgcCookieConsent(cookieConfig),
+    provideNgcCookieConsent(createCookieConsentConfig(environment)),
     provideLocale(),
   ],
 };

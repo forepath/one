@@ -17,7 +17,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import type { PublicServicePlanOffering } from '@forepath/agenstra/frontend/data-access-portal';
 import { formatPublicOfferingPrice, ServicePlansFacade } from '@forepath/agenstra/frontend/data-access-portal';
-import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
@@ -41,7 +41,7 @@ export interface CloudInfrastructureProvider {
 export class PortalCloudComponent implements OnInit, AfterViewInit {
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
-  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly servicePlansFacade = inject(ServicePlansFacade);
   private readonly locale = inject(LOCALE_ID);
   private readonly platformId = inject(PLATFORM_ID);
@@ -49,9 +49,9 @@ export class PortalCloudComponent implements OnInit, AfterViewInit {
 
   @ViewChild('plansCarousel') plansCarousel!: ElementRef<HTMLDivElement>;
 
-  readonly billingBaseUrl = this.environment.production
-    ? `${this.environment.billing.frontendUrl}/${this.locale}/subscriptions?order=true`
-    : `${this.environment.billing.frontendUrl}/subscriptions?order=true`;
+  readonly billingBaseUrl = this.environment.application.production
+    ? `${this.environment.landing.urls.portal}/${this.locale}/subscriptions?order=true`
+    : `${this.environment.landing.urls.portal}/subscriptions?order=true`;
 
   readonly cheapestOffering = toSignal(this.servicePlansFacade.getCheapestServicePlanOffering$(), {
     initialValue: null,
@@ -121,9 +121,9 @@ export class PortalCloudComponent implements OnInit, AfterViewInit {
           canonicalUrl: 'https://agenstra.com/cloud',
           socialTitle: metaTitle,
           socialDescription: metaDescription,
-          socialImageUrl: this.environment.socialPreview.imageUrl,
+          socialImageUrl: this.environment.socialPreview.urls.image,
           localeId: this.locale,
-          localizeCanonicalUrl: this.environment.production,
+          localizeCanonicalUrl: this.environment.application.production,
         }),
       ),
     );

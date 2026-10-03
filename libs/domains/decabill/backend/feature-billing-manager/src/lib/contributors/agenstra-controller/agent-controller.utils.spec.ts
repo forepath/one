@@ -201,7 +201,13 @@ describe('cloud-init.utils', () => {
       expect(script).toContain('agent-controller-api');
       expect(script).toContain("WEBSOCKET_NAMESPACE: 'socket/clients'");
       expect(script).not.toContain('WEBSOCKET_PORT');
-      expect(script).toContain('"websocketUrl":"https://test.spirde.com/socket/clients"');
+      expect(script).toContain('"console"');
+      expect(script).toContain('"websocket":"https://test.spirde.com/socket/clients"');
+      expect(script).toContain('"restApi":"https://test.spirde.com:443/api"');
+      expect(script).toContain('"authentication":{"config"');
+      expect(script).not.toContain('"controller"');
+      expect(script).not.toContain('"restApiUrl"');
+      expect(script).not.toContain('"websocketUrl"');
       expect(script).toContain('CONFIG_ALLOWED_HOSTS: test.spirde.com');
       expect(script).toContain('CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED: true');
       expect(script).toContain('CLIENT_ENDPOINT_ALLOW_INSECURE_HTTP: false');

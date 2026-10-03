@@ -80,10 +80,10 @@ describe('runtime-config-html', () => {
   describe('injectRuntimeConfigIntoHtml', () => {
     it('injects before </head> with the shared element id', () => {
       const html = '<html><head><title>t</title></head><body></body></html>';
-      const out = injectRuntimeConfigIntoHtml(html, { billing: { frontendUrl: 'https://x' } });
+      const out = injectRuntimeConfigIntoHtml(html, { api: { urls: { frontend: 'https://x' } } });
 
       expect(out).toContain(`id="${RUNTIME_CONFIG_ELEMENT_ID}"`);
-      expect(out).toContain('"frontendUrl":"https://x"');
+      expect(out).toContain('"frontend":"https://x"');
       expect(out.indexOf('runtime-config')).toBeLessThan(out.toLowerCase().indexOf('</head>'));
     });
 
@@ -151,7 +151,7 @@ describe('runtime-config-html', () => {
       );
       mockedFetchRuntimeConfigFromEnv.mockResolvedValue({
         kind: 'ok',
-        value: { billing: { frontendUrl: 'https://inline.example' } },
+        value: { api: { urls: { frontend: 'https://inline.example' } } },
       });
     });
 
@@ -195,7 +195,7 @@ describe('runtime-config-html', () => {
 
       mockedFetchRuntimeConfigFromEnv.mockResolvedValue({
         kind: 'ok',
-        value: { billing: { frontendUrl: 'https://changed.example' } },
+        value: { api: { urls: { frontend: 'https://changed.example' } } },
       });
 
       const second = mockRes();
@@ -211,7 +211,7 @@ describe('runtime-config-html', () => {
     beforeEach(() => {
       mockedFetchRuntimeConfigFromEnv.mockResolvedValue({
         kind: 'ok',
-        value: { billing: { frontendUrl: 'https://ssr.example' } },
+        value: { api: { urls: { frontend: 'https://ssr.example' } } },
       });
     });
 

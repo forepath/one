@@ -41,8 +41,8 @@ import {
   type ServiceDetailTabDto,
   type SubscriptionItemDetailResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
-import type { Environment } from '@forepath/shared/frontend/util-configuration';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import type { Environment } from '@forepath/decabill/frontend/util-configuration';
+import { ENVIRONMENT, resolveApiWebsocketUrl } from '@forepath/decabill/frontend/util-configuration';
 import {
   FpcAlertComponent,
   FpcBadgeComponent,
@@ -323,7 +323,7 @@ export class ServiceDetailPageComponent implements OnInit {
       );
     }
 
-    this.socketEnabled = !!this.environment.billing.websocketUrl?.trim();
+    this.socketEnabled = !!resolveApiWebsocketUrl(this.environment.billing.urls.websocket, 'default');
 
     if (this.socketEnabled) {
       this.socketFacade.connect();

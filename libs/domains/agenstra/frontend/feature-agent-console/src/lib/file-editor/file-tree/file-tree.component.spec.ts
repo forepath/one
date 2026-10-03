@@ -6,7 +6,7 @@ import {
   FilesService,
   VcsFacade,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/agenstra/frontend/util-configuration';
 import { Actions } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { of, Subject } from 'rxjs';
@@ -77,7 +77,16 @@ describe('FileTreeComponent selection', () => {
             fileContentToWriteDto: jest.fn(),
           },
         },
-        { provide: ENVIRONMENT, useValue: { controller: { restApiUrl: 'http://localhost' } } },
+        {
+          provide: ENVIRONMENT,
+          useValue: {
+            console: {
+              urls: {
+                restApi: 'http://localhost',
+              },
+            },
+          },
+        },
         { provide: ClientsFacade, useValue: { getClientById$: () => of(null) } },
         {
           provide: AgentsFacade,

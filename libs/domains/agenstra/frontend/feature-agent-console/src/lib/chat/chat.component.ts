@@ -99,7 +99,7 @@ import {
   FpcTypeaheadSelectComponent,
   type FpcBadgeColor,
 } from '@forepath/shared/frontend/ui-components';
-import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, type Environment } from '@forepath/agenstra/frontend/util-configuration';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import {
   catchError,

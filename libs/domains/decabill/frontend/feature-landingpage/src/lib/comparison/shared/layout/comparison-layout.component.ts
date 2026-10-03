@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, Input, LOCALE_ID, OnInit } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
-import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@forepath/shared/frontend/util-meta';
 import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
@@ -23,7 +23,7 @@ export class PortalComparisonLayoutComponent implements OnInit {
 
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
-  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -32,7 +32,7 @@ export class PortalComparisonLayoutComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const metaTitle = formatProductMetaTitle(this.page.metaTitle, this.environment.productName);
+    const metaTitle = formatProductMetaTitle(this.page.metaTitle, this.environment.application.productName);
     this.titleService.setTitle(metaTitle);
     this.destroyRef.onDestroy(
       addPageMetaTags(
@@ -45,10 +45,10 @@ export class PortalComparisonLayoutComponent implements OnInit {
           canonicalUrl: this.page.canonicalUrl,
           socialTitle: metaTitle,
           socialDescription: this.page.metaDescription,
-          socialImageUrl: this.environment.socialPreview.imageUrl,
+          socialImageUrl: this.environment.socialPreview.urls.image,
           localeId: this.locale,
-          localizeCanonicalUrl: this.environment.production,
-          siteName: this.environment.productName,
+          localizeCanonicalUrl: this.environment.application.production,
+          siteName: this.environment.application.productName,
         }),
       ),
     );

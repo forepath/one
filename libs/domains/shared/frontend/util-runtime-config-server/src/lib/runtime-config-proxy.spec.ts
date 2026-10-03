@@ -296,7 +296,7 @@ describe('fetchRuntimeConfigFromEnv', () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       headers: { get: () => 'application/json' },
-      text: async () => JSON.stringify({ controller: { restApiUrl: 'https://api.example.com' } }),
+      text: async () => JSON.stringify({ api: { urls: { restApi: 'https://api.example.com' } } }),
     });
 
     const env = {
@@ -311,7 +311,7 @@ describe('fetchRuntimeConfigFromEnv', () => {
 
     expect(first).toEqual({
       kind: 'ok',
-      value: { controller: { restApiUrl: 'https://api.example.com' } },
+      value: { api: { urls: { restApi: 'https://api.example.com' } } },
     });
     expect(second).toEqual(first);
     expect(global.fetch).toHaveBeenCalledTimes(1);

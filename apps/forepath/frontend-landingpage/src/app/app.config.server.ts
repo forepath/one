@@ -1,6 +1,6 @@
 import { ApplicationConfig, mergeApplicationConfig } from '@angular/core';
 import { provideServerRendering } from '@angular/platform-server';
-import { ENVIRONMENT, environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, environment } from '@forepath/forepath/frontend/util-configuration';
 
 import { appConfig } from './app.config';
 

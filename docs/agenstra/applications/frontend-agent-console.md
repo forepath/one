@@ -217,7 +217,7 @@ Configure the application via environment variables. The **Express** runtime (`/
   - If set, the application will fetch this configuration during initialization via `/config` endpoint
   - The remote configuration takes precedence over build-time defaults
   - If not set or fetch fails, the application falls back to build-time defaults
-  - Example: `CONFIG=https://config.example.com/agenstra-config.json`
+  - Per-deployment only (no shared repo example under `configs/`); JSON uses a nested `console` section (`console.urls.restApi`, `console.urls.websocket`, …)
   - For users auth with signup disabled, include `authentication: { type: "users", disableSignup: true }` to hide the "Create an account" link and redirect direct /register navigation to login
 
 #### Runtime config proxy hardening (`/config`)

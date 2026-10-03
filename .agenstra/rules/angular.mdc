@@ -21,7 +21,7 @@ Use this checklist when adding domain features to Angular apps (for example `app
 6. **Routes:** Register customer and admin routes in the app routing module.
 7. **Navigation:** Add entries to the shell or container navigation where appropriate.
 8. **i18n:** Add translatable strings to `apps/<domain>/frontend-*/src/i18n/messages.xlf`.
-9. **Environment:** Extend `environment.interface.ts` when new URLs or feature flags are required (for example WebSocket base URLs).
+9. **Environment:** Extend the **domain** `util-configuration` app Environment (and shared section types only when truly cross-cutting). Keep `BaseEnvironment` shell-only.
 10. **Tests:** Unit test reducers, effects, selectors, and services; component tests only when they add meaningful coverage.
 11. **Build:** Run `nx run <domain>-frontend-<name>:build` (and data-access test targets) before finishing.
 12. **Documentation:** Update `docs/<domain>/` and app docs when the feature is user-facing.
@@ -52,7 +52,7 @@ When implementing live boards or dashboards:
 - **Reference parity:** Copy structural patterns from an existing board in the monorepo (for example Agenstra tickets board), adapted to the new scope (project instead of workspace).
 - **Socket lifecycle:** Connect on board entry, disconnect on leave, reconnect with restored context (`setProject` / `setClient` equivalent).
 - **Reducer updates:** Apply upsert and remove events from socket payloads; keep REST loads as source of truth on initial entry.
-- **Environment URL:** Add optional `billing.<feature>WebsocketUrl` (or domain equivalent) to `environment.interface.ts`; derive from an existing websocket URL when unset (same path substitution pattern as sibling features).
+- **Environment URL:** Add websocket endpoints on the **console** app env via `console.urls.websocket` (agent-console) or `billing.urls.websocket` (billing-console) (`string | { default, ... }`). Use `resolveApiWebsocketUrl`. Do not put sockets on landings/docs or on shared `BaseEnvironment`.
 
 ## Components and Forms
 
@@ -74,8 +74,11 @@ When implementing live boards or dashboards:
 
 ## Environment and Configuration
 
-- **Shared interface:** Add new optional fields to `libs/domains/shared/frontend/util-configuration/src/lib/environment.interface.ts`.
-- **Per-app values:** Set concrete URLs in each app's `environment*.ts`; document new variables in `docs/<domain>/` environment sections.
+- **Shared shell only:** `BaseEnvironment` = `application` + `authentication` + `cookieConsent` + `socialPreview`. Export named section types (`ApiConfig`, `LandingConfig`, `CommunicationConfig`, `DocsConfig`, …) from `@forepath/shared/frontend/util-configuration` — do not put product APIs/websockets on the base.
+- **Domain util-configuration:** Own brand values and **per-app** Environment compositions under `libs/domains/<domain>/frontend/util-configuration` (`environment.<app>.ts`). Billing console uses `billing`; landing uses `landing`; agent-console uses `console`. Apps must not carry unused sections “for completeness.”
+- **Shared consumers:** Prefer `BaseEnvironment & { communication }` / `& { docs }` / `& { landing }` (or dedicated tokens like `IDENTITY_AUTH_ENVIRONMENT`), not a domain mega-type inside shared libs.
+- **Per-app values:** Set concrete URLs in the domain util-configuration role file; document variables in `docs/<domain>/` environment sections.
+- **Regenerate agent tool configs:** Edit `.agenstra` rules/skills, then run `@forepath/ai` validate/transform — do not hand-edit generated `.cursor` / `AGENTS.md`.
 
 ## Testing
 

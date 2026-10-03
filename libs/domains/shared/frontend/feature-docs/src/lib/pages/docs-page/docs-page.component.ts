@@ -4,7 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import { FpcAlertComponent, FpcSpinnerComponent } from '@forepath/shared/frontend/ui-components';
-import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, type EnvironmentWithDocs } from '@forepath/shared/frontend/util-configuration';
 import { DocMetadata, NavigationNode } from '@forepath/shared/frontend/util-docs-parser';
 import {
   addPageMetaTags,
@@ -44,7 +44,7 @@ export class DocsPageComponent implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
-  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly environment = inject<EnvironmentWithDocs>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
 
   private get contentRoot(): string {
@@ -56,7 +56,7 @@ export class DocsPageComponent implements OnInit {
   }
 
   private buildPageTitle(pageName: string): string {
-    return formatProductMetaTitle(pageName, this.environment.productName);
+    return formatProductMetaTitle(pageName, this.environment.application.productName);
   }
 
   private get metaDescriptionFallback(): string {
@@ -185,8 +185,8 @@ export class DocsPageComponent implements OnInit {
         this.metaService,
         createDocsPageDynamicMetaTagStubs({
           docsSiteOrigin: this.docsSiteOrigin,
-          imageUrl: this.environment.socialPreview.imageUrl,
-          siteName: this.environment.productName,
+          imageUrl: this.environment.socialPreview.urls.image,
+          siteName: this.environment.application.productName,
         }),
       ),
     );
@@ -306,7 +306,7 @@ export class DocsPageComponent implements OnInit {
   private applyPageMeta(metadata: DocMetadata | null, path: string): void {
     const pageTitle = metadata?.title?.trim();
     const title = pageTitle
-      ? formatProductMetaTitle(pageTitle, this.environment.productName)
+      ? formatProductMetaTitle(pageTitle, this.environment.application.productName)
       : this.buildPageTitle($localize`:@@featureDocsPage-metaTitlePrefix:Documentation`);
 
     this.titleService.setTitle(title);
@@ -317,7 +317,7 @@ export class DocsPageComponent implements OnInit {
     const canonicalUrl = resolveSocialCanonicalUrl(
       `${this.docsSiteOrigin}${path}`,
       this.locale,
-      this.environment.production,
+      this.environment.application.production,
     );
 
     this.metaService.updateTag({ name: 'description', content: description });
@@ -326,11 +326,11 @@ export class DocsPageComponent implements OnInit {
       title,
       description: descriptionSource,
       canonicalUrl: `${this.docsSiteOrigin}${path}`,
-      imageUrl: this.environment.socialPreview.imageUrl,
+      imageUrl: this.environment.socialPreview.urls.image,
       localeId: this.locale,
-      localizeCanonicalUrl: this.environment.production,
+      localizeCanonicalUrl: this.environment.application.production,
       type: 'article',
-      siteName: this.environment.productName,
+      siteName: this.environment.application.productName,
     });
   }
 

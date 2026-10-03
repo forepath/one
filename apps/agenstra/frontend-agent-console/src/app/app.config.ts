@@ -5,7 +5,7 @@ import {
   getAuthInterceptor,
   getUsersSessionInvalidationInterceptor,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
-import { Environment, ENVIRONMENT, environment, provideLocale } from '@forepath/shared/frontend/util-configuration';
+import { Environment, ENVIRONMENT, environment, provideLocale } from '@forepath/agenstra/frontend/util-configuration';
 import { NOTIFICATION_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-notifications';
 import { UPDATES_ADMIN_ENVIRONMENT } from '@forepath/shared/frontend/data-access-updates';
 import { IDENTITY_AUTH_ENVIRONMENT, LOGIN_SUCCESS_REDIRECT_TARGET, provideKeycloak } from '@forepath/identity/frontend';
@@ -22,21 +22,21 @@ export const appConfig: ApplicationConfig = {
     {
       provide: IDENTITY_AUTH_ENVIRONMENT,
       useFactory: (env: Environment) => ({
-        productName: env.productName,
-        authMarketing: env.authMarketing,
-        authLayout: env.authLayout,
-        apiUrl: env.controller.restApiUrl,
-        authentication: env.authentication,
-        controllerApiUrl: env.controller.restApiUrl,
-        termsUrl: env.cookieConsent.termsUrl,
-        privacyPolicyUrl: env.cookieConsent.privacyPolicyUrl,
+        productName: env.application.productName,
+        authMarketing: env.authentication.marketing,
+        authLayout: env.authentication.layout,
+        apiUrl: env.console.urls.restApi,
+        authentication: env.authentication.config,
+        controllerApiUrl: env.console.urls.restApi,
+        termsUrl: env.cookieConsent.urls.terms,
+        privacyPolicyUrl: env.cookieConsent.urls.privacyPolicy,
       }),
       deps: [ENVIRONMENT],
     },
     {
       provide: NOTIFICATION_ADMIN_ENVIRONMENT,
       useFactory: (env: Environment) => ({
-        apiUrl: env.controller.restApiUrl,
+        apiUrl: env.console.urls.restApi,
         webhooksBasePath: 'admin/webhooks',
         applicationId: 'agenstra' as const,
         clientFilterEnabled: true,
@@ -46,9 +46,9 @@ export const appConfig: ApplicationConfig = {
     {
       provide: UPDATES_ADMIN_ENVIRONMENT,
       useFactory: (env: Environment) => ({
-        apiUrl: env.controller.restApiUrl,
+        apiUrl: env.console.urls.restApi,
         updatesBasePath: 'admin/updates',
-        frontendVersion: env.appVersion,
+        frontendVersion: env.application.version,
       }),
       deps: [ENVIRONMENT],
     },
@@ -57,13 +57,13 @@ export const appConfig: ApplicationConfig = {
       useValue: ['/clients'],
     },
     // Provide KeycloakService before HTTP client so interceptor can inject it
-    ...(environment.authentication.type === 'keycloak' ? provideKeycloak() : []),
+    ...(environment.authentication.config.type === 'keycloak' ? provideKeycloak() : []),
     // Provide HTTP client with auth interceptor (KeycloakService must be available)
     provideHttpClient(withInterceptors([getAuthInterceptor(), getUsersSessionInvalidationInterceptor()])),
     // NgRx Store - base store required at root level
     provideStore(),
     // NgRx Store DevTools - only enabled in non-production environments
-    ...(environment.production
+    ...(environment.application.production
       ? []
       : [
           provideStoreDevtools({
@@ -72,7 +72,7 @@ export const appConfig: ApplicationConfig = {
         ]),
     provideRouter(
       [
-        ...(environment.production
+        ...(environment.application.production
           ? [
               {
                 path: 'de',

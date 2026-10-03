@@ -2,32 +2,61 @@ import { resolveStatusWebsocketUrl } from './notifications-websocket-url';
 
 describe('resolveStatusWebsocketUrl', () => {
   const baseEnvironment = {
-    production: false,
-    billing: { restApiUrl: '', frontendUrl: '' },
-    authentication: { type: 'api-key' as const, apiKey: 'k' },
+    application: { production: false, productName: 'Agenstra' },
+    console: {
+      urls: {
+        restApi: '',
+      },
+    },
+    authentication: {
+      config: { type: 'api-key' as const, apiKey: 'k' },
+      marketing: {
+        loginDescription: '',
+        registerDescription: '',
+        requestPasswordResetDescription: '',
+        resetPasswordConfirmationDescription: '',
+        resetPasswordDescription: '',
+        confirmEmailDescription: '',
+        features: [],
+      },
+    },
     chatModelOptions: {},
-    cookieConsent: { domain: '', privacyPolicyUrl: '', termsUrl: '' },
-  };
+    cookieConsent: {
+      enabled: true,
+      domain: '',
+      urls: { privacyPolicy: '', terms: '' },
+    },
+    socialPreview: { urls: { image: '' } },
+  } as const;
 
   it('derives /status from clients websocket url', () => {
     expect(
       resolveStatusWebsocketUrl({
         ...baseEnvironment,
-        controller: { restApiUrl: 'http://localhost:3000', websocketUrl: 'http://localhost:3100/socket/clients' },
-      }),
+        console: {
+          urls: {
+            restApi: 'http://localhost:3000',
+            websocket: 'http://localhost:3100/socket/clients',
+          },
+        },
+      } as never),
     ).toBe('http://localhost:3100/socket/status');
   });
 
-  it('uses explicit statusWebsocketUrl when set', () => {
+  it('uses explicit status websocket when set', () => {
     expect(
       resolveStatusWebsocketUrl({
         ...baseEnvironment,
-        controller: {
-          restApiUrl: 'http://localhost:3000',
-          websocketUrl: 'http://localhost:3100/socket/clients',
-          statusWebsocketUrl: 'ws://custom/status',
+        console: {
+          urls: {
+            restApi: 'http://localhost:3000',
+            websocket: {
+              default: 'http://localhost:3100/socket/clients',
+              status: 'ws://custom/status',
+            },
+          },
         },
-      }),
+      } as never),
     ).toBe('ws://custom/status');
   });
 
@@ -35,8 +64,13 @@ describe('resolveStatusWebsocketUrl', () => {
     expect(
       resolveStatusWebsocketUrl({
         ...baseEnvironment,
-        controller: { restApiUrl: 'http://localhost:3000' },
-      }),
+        console: {
+          urls: {
+            restApi: 'http://localhost:3000',
+            websocket: undefined as never,
+          },
+        },
+      } as never),
     ).toBeNull();
   });
 
@@ -44,8 +78,13 @@ describe('resolveStatusWebsocketUrl', () => {
     expect(
       resolveStatusWebsocketUrl({
         ...baseEnvironment,
-        controller: { restApiUrl: 'http://localhost:3000', websocketUrl: 'ws://localhost:3100/ws' },
-      }),
+        console: {
+          urls: {
+            restApi: 'http://localhost:3000',
+            websocket: 'ws://localhost:3100/ws',
+          },
+        },
+      } as never),
     ).toBe('ws://localhost:3100/socket/status');
   });
 
@@ -53,8 +92,13 @@ describe('resolveStatusWebsocketUrl', () => {
     expect(
       resolveStatusWebsocketUrl({
         ...baseEnvironment,
-        controller: { restApiUrl: 'http://localhost:3000', websocketUrl: 'not-a-valid-url' },
-      }),
+        console: {
+          urls: {
+            restApi: 'http://localhost:3000',
+            websocket: 'not-a-valid-url',
+          },
+        },
+      } as never),
     ).toBe('not-a-valid-url/socket/status');
   });
 
@@ -62,8 +106,13 @@ describe('resolveStatusWebsocketUrl', () => {
     expect(
       resolveStatusWebsocketUrl({
         ...baseEnvironment,
-        controller: { restApiUrl: 'http://localhost:3000', websocketUrl: 'not-a-valid-url/' },
-      }),
+        console: {
+          urls: {
+            restApi: 'http://localhost:3000',
+            websocket: 'not-a-valid-url/',
+          },
+        },
+      } as never),
     ).toBe('not-a-valid-url/socket/status');
   });
 });

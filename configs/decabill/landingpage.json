@@ -1,0 +1,24 @@
+{
+  "application": {
+    "production": true
+  },
+  "cookieConsent": {
+    "domain": ".decabill.com",
+    "urls": {
+      "privacyPolicy": "https://decabill.com/legal/privacy"
+    }
+  },
+  "landing": {
+    "tenantId": "decabill",
+    "urls": {
+      "restApi": "https://backend.forepath.io/api",
+      "portal": "https://portal.decabill.com"
+    }
+  },
+  "communication": {
+    "urls": {
+      "restApi": "https://communication.forepath.io/api"
+    },
+    "turnstileSiteKey": "0x4AAAAAADvf6PCeLddoJ7Ur"
+  }
+}

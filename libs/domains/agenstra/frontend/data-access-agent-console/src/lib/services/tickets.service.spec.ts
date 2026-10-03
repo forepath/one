@@ -1,6 +1,6 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/agenstra/frontend/util-configuration';
 
 import { EMPTY_TICKET_TASKS, type TicketResponseDto } from '../state/tickets/tickets.types';
 
@@ -29,7 +29,11 @@ describe('TicketsService', () => {
         {
           provide: ENVIRONMENT,
           useValue: {
-            controller: { restApiUrl: apiUrl },
+            console: {
+              urls: {
+                restApi: apiUrl,
+              },
+            },
           },
         },
       ],

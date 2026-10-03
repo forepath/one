@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnInit } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
-import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
@@ -17,13 +17,13 @@ import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend
 export class PortalLegalTermsComponent implements OnInit {
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
-  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
     const pageTitle = $localize`:@@featureDecabillLegalTerms-metaTitlePage:Terms of Service`;
-    const metaTitle = formatProductMetaTitle(pageTitle, this.environment.productName);
+    const metaTitle = formatProductMetaTitle(pageTitle, this.environment.application.productName);
     const metaDescription = $localize`:@@featureDecabillLegalTerms-metaDescription:Terms governing use of the Decabill platform, websites, and related services. Accounts, licensing, acceptable use, liability, and contact information.`;
 
     this.titleService.setTitle(metaTitle);
@@ -38,10 +38,10 @@ export class PortalLegalTermsComponent implements OnInit {
           canonicalUrl: 'https://decabill.com/legal/terms',
           socialTitle: metaTitle,
           socialDescription: metaDescription,
-          socialImageUrl: this.environment.socialPreview.imageUrl,
+          socialImageUrl: this.environment.socialPreview.urls.image,
           localeId: this.locale,
-          localizeCanonicalUrl: this.environment.production,
-          siteName: this.environment.productName,
+          localizeCanonicalUrl: this.environment.application.production,
+          siteName: this.environment.application.productName,
         }),
       ),
     );

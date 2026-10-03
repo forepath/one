@@ -26,8 +26,13 @@ jest.mock('keycloak-angular', () => ({
 describe('resolveKnowledgeBoardWebsocketUrl', () => {
   it('derives /pages from /clients websocket URL', () => {
     const url = resolveKnowledgeBoardWebsocketUrl({
-      controller: { websocketUrl: 'http://localhost:3100/socket/clients' },
-      authentication: { type: 'api-key', apiKey: 'x' },
+      console: {
+        urls: {
+          restApi: 'http://localhost:3100/api',
+          websocket: 'http://localhost:3100/socket/clients',
+        },
+      },
+      authentication: { config: { type: 'api-key', apiKey: 'x' } },
     } as never);
 
     expect(url).toBe('http://localhost:3100/socket/pages');
@@ -63,8 +68,13 @@ describe('KnowledgeBoardSocketEffects', () => {
     connectKnowledgeBoardSocket$(
       actions$ as never,
       {
-        controller: { websocketUrl: 'http://localhost:3100/socket/clients' },
-        authentication: { type: 'api-key', apiKey: 'x' },
+        console: {
+          urls: {
+            restApi: 'http://localhost:3100/api',
+            websocket: 'http://localhost:3100/socket/clients',
+          },
+        },
+        authentication: { config: { type: 'api-key', apiKey: 'x' } },
       } as never,
       null,
     ).subscribe();
@@ -82,8 +92,13 @@ describe('KnowledgeBoardSocketEffects', () => {
     const sub = connectKnowledgeBoardSocket$(
       actions$ as never,
       {
-        controller: { websocketUrl: 'http://localhost:3100/socket/clients' },
-        authentication: { type: 'api-key', apiKey: 'x' },
+        console: {
+          urls: {
+            restApi: 'http://localhost:3100/api',
+            websocket: 'http://localhost:3100/socket/clients',
+          },
+        },
+        authentication: { config: { type: 'api-key', apiKey: 'x' } },
       } as never,
       null,
     ).subscribe((action) => {
@@ -113,8 +128,13 @@ describe('KnowledgeBoardSocketEffects', () => {
     const sub = connectKnowledgeBoardSocket$(
       actions$ as never,
       {
-        controller: { websocketUrl: 'http://localhost:3100/socket/clients' },
-        authentication: { type: 'api-key', apiKey: 'x' },
+        console: {
+          urls: {
+            restApi: 'http://localhost:3100/api',
+            websocket: 'http://localhost:3100/socket/clients',
+          },
+        },
+        authentication: { config: { type: 'api-key', apiKey: 'x' } },
       } as never,
       null,
     ).subscribe((action) => received.push(action));
@@ -153,8 +173,13 @@ describe('KnowledgeBoardSocketEffects', () => {
     connectKnowledgeBoardSocket$(
       actions$ as never,
       {
-        controller: { websocketUrl: 'http://localhost:3100/socket/clients' },
-        authentication: { type: 'api-key', apiKey: 'x' },
+        console: {
+          urls: {
+            restApi: 'http://localhost:3100/api',
+            websocket: 'http://localhost:3100/socket/clients',
+          },
+        },
+        authentication: { config: { type: 'api-key', apiKey: 'x' } },
       } as never,
       null,
     ).subscribe();

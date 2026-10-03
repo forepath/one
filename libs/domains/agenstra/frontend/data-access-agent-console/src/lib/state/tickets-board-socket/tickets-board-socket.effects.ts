@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
-import type { Environment } from '@forepath/shared/frontend/util-configuration';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import type { Environment } from '@forepath/agenstra/frontend/util-configuration';
+import { ENVIRONMENT, resolveApiWebsocketUrl } from '@forepath/agenstra/frontend/util-configuration';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { KeycloakService } from 'keycloak-angular';
@@ -57,13 +57,13 @@ const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
 const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
 
 export function resolveTicketsBoardWebsocketUrl(environment: Environment): string | null {
-  const explicit = environment.controller.ticketsWebsocketUrl?.trim();
+  const explicit = resolveApiWebsocketUrl(environment.console.urls.websocket, 'tickets')?.trim();
 
   if (explicit) {
     return explicit;
   }
 
-  const base = environment.controller.websocketUrl?.trim();
+  const base = resolveApiWebsocketUrl(environment.console.urls.websocket, 'default');
 
   if (!base) {
     return null;
@@ -84,9 +84,9 @@ export function resolveTicketsBoardWebsocketUrl(environment: Environment): strin
 }
 
 function getAuthHeader(environment: Environment, keycloakService: KeycloakService | null): Observable<string | null> {
-  if (environment.authentication.type === 'api-key') {
+  if (environment.authentication.config.type === 'api-key') {
     const apiKey =
-      environment.authentication.apiKey ??
+      environment.authentication.config.apiKey ??
       (typeof localStorage !== 'undefined' ? localStorage.getItem(API_KEY_STORAGE_KEY) : null);
 
     if (apiKey) {
@@ -96,7 +96,7 @@ function getAuthHeader(environment: Environment, keycloakService: KeycloakServic
     return of(null);
   }
 
-  if (environment.authentication.type === 'keycloak' && keycloakService) {
+  if (environment.authentication.config.type === 'keycloak' && keycloakService) {
     return from(keycloakService.getToken()).pipe(
       map((token) => (token ? `Bearer ${token}` : null)),
       catchError((error) => {
@@ -107,7 +107,7 @@ function getAuthHeader(environment: Environment, keycloakService: KeycloakServic
     );
   }
 
-  if (environment.authentication.type === 'users') {
+  if (environment.authentication.config.type === 'users') {
     const jwt = typeof localStorage !== 'undefined' ? localStorage.getItem(USERS_JWT_STORAGE_KEY) : null;
 
     if (jwt) {

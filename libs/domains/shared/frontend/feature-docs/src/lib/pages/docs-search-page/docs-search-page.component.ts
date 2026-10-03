@@ -11,7 +11,7 @@ import {
   FpcSearchFieldComponent,
   FpcSpinnerComponent,
 } from '@forepath/shared/frontend/ui-components';
-import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, type EnvironmentWithDocs } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@forepath/shared/frontend/util-meta';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 
@@ -40,7 +40,7 @@ export class DocsSearchPageComponent implements OnInit {
   private readonly searchService = inject(DocsSearchService);
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
-  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly environment = inject<EnvironmentWithDocs>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
   protected readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
@@ -87,7 +87,7 @@ export class DocsSearchPageComponent implements OnInit {
   ngOnInit(): void {
     const metaTitle = formatProductMetaTitle(
       $localize`:@@featureDocsSearchPage-metaTitlePrefix:Search Documentation`,
-      this.environment.productName,
+      this.environment.application.productName,
     );
     const metaDescription = getDocsSearchMetaDescription(this.environment.docs.contentRoot);
 
@@ -101,10 +101,10 @@ export class DocsSearchPageComponent implements OnInit {
           canonicalUrl: `${this.docsSiteOrigin}/search`,
           socialTitle: metaTitle,
           socialDescription: metaDescription,
-          socialImageUrl: this.environment.socialPreview.imageUrl,
+          socialImageUrl: this.environment.socialPreview.urls.image,
           localeId: this.locale,
-          localizeCanonicalUrl: this.environment.production,
-          siteName: this.environment.productName,
+          localizeCanonicalUrl: this.environment.application.production,
+          siteName: this.environment.application.productName,
         }),
       ),
     );

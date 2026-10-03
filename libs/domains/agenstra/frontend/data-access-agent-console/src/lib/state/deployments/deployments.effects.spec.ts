@@ -1,7 +1,7 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import type { Environment } from '@forepath/shared/frontend/util-configuration';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import type { Environment } from '@forepath/agenstra/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/agenstra/frontend/util-configuration';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { of } from 'rxjs';
@@ -31,8 +31,10 @@ describe('DeploymentsEffects', () => {
   let deploymentsService: DeploymentsService;
   let httpMock: HttpTestingController;
   const mockEnvironment: Environment = {
-    controller: {
-      restApiUrl: 'https://api.example.com',
+    console: {
+      urls: {
+        restApi: 'https://api.example.com',
+      },
     },
   } as Environment;
 

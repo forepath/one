@@ -13,7 +13,7 @@ import {
   FpcEmptyStateComponent,
   FpcPageHeaderComponent,
 } from '@forepath/shared/frontend/ui-components';
-import { LocaleService } from '@forepath/shared/frontend/util-configuration';
+import { LocaleService } from '@forepath/agenstra/frontend/util-configuration';
 import { Actions, ofType } from '@ngrx/effects';
 import { combineLatest, map, Observable, take } from 'rxjs';
 

@@ -1,6 +1,6 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
 
 import { AdminSupplierProfilesService } from './admin-supplier-profiles.service';
 
@@ -14,7 +14,16 @@ describe('AdminSupplierProfilesService', () => {
       imports: [HttpClientTestingModule],
       providers: [
         AdminSupplierProfilesService,
-        { provide: ENVIRONMENT, useValue: { billing: { restApiUrl: apiUrl } } },
+        {
+          provide: ENVIRONMENT,
+          useValue: {
+            billing: {
+              urls: {
+                restApi: apiUrl,
+              },
+            },
+          },
+        },
       ],
     });
     service = TestBed.inject(AdminSupplierProfilesService);

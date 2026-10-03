@@ -73,8 +73,8 @@
           "outputHashing": "all",
           "fileReplacements": [
             {
-              "replace": "libs/domains/shared/frontend/util-configuration/src/lib/environment.ts",
-              "with": "libs/domains/shared/frontend/util-configuration/src/lib/environment.agenstra.production.ts"
+              "replace": "libs/domains/agenstra/frontend/util-configuration/src/lib/environment.ts",
+              "with": "libs/domains/agenstra/frontend/util-configuration/src/lib/environment.landingpage.production.ts"
             }
           ]
         },
@@ -84,8 +84,8 @@
           "sourceMap": true,
           "fileReplacements": [
             {
-              "replace": "libs/domains/shared/frontend/util-configuration/src/lib/environment.ts",
-              "with": "libs/domains/shared/frontend/util-configuration/src/lib/environment.agenstra.ts"
+              "replace": "libs/domains/agenstra/frontend/util-configuration/src/lib/environment.ts",
+              "with": "libs/domains/agenstra/frontend/util-configuration/src/lib/environment.landingpage.ts"
             }
           ]
         },

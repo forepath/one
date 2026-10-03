@@ -29,7 +29,7 @@ import {
   FpcTabComponent,
   FpcTabGroupComponent,
 } from '@forepath/shared/frontend/ui-components';
-import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, type Environment } from '@forepath/decabill/frontend/util-configuration';
 import { debounceTime, distinctUntilChanged, skip } from 'rxjs';
 
 import {

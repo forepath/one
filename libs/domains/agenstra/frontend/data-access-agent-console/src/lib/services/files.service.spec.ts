@@ -1,6 +1,6 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT } from '@forepath/agenstra/frontend/util-configuration';
 
 import type { CreateFileDto, FileContentDto, FileNodeDto, MoveFileDto, WriteFileDto } from '../state/files/files.types';
 import { AGENT_FILE_MAX_ASSEMBLED_BYTES, AGENT_FILE_MAX_CHUNK_BYTES } from '../state/files/files.types';
@@ -52,8 +52,10 @@ describe('FilesService', () => {
         {
           provide: ENVIRONMENT,
           useValue: {
-            controller: {
-              restApiUrl: apiUrl,
+            console: {
+              urls: {
+                restApi: apiUrl,
+              },
             },
           },
         },

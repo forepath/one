@@ -14,7 +14,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import type { PublicServicePlanOffering } from '@forepath/agenstra/frontend/data-access-portal';
 import { formatPublicOfferingPrice, ServicePlansFacade } from '@forepath/agenstra/frontend/data-access-portal';
-import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
@@ -31,7 +31,7 @@ export class PortalHomeComponent implements OnInit {
   private readonly metaService = inject(Meta);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly servicePlansFacade = inject(ServicePlansFacade);
-  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -50,9 +50,9 @@ export class PortalHomeComponent implements OnInit {
     initialValue: false,
   });
 
-  readonly billingBaseUrl = this.environment.production
-    ? `${this.environment.billing.frontendUrl}/${this.locale}/subscriptions?order=true`
-    : `${this.environment.billing.frontendUrl}/subscriptions?order=true`;
+  readonly billingBaseUrl = this.environment.application.production
+    ? `${this.environment.landing.urls.portal}/${this.locale}/subscriptions?order=true`
+    : `${this.environment.landing.urls.portal}/subscriptions?order=true`;
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -74,9 +74,9 @@ export class PortalHomeComponent implements OnInit {
           canonicalUrl: 'https://agenstra.com',
           socialTitle: metaTitle,
           socialDescription: metaDescription,
-          socialImageUrl: this.environment.socialPreview.imageUrl,
+          socialImageUrl: this.environment.socialPreview.urls.image,
           localeId: this.locale,
-          localizeCanonicalUrl: this.environment.production,
+          localizeCanonicalUrl: this.environment.application.production,
         }),
       ),
     );

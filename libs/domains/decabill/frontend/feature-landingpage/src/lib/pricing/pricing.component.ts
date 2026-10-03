@@ -18,7 +18,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { formatPublicOfferingPrice, ServicePlansFacade } from '@forepath/decabill/frontend/data-access-portal';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
-import { ENVIRONMENT, type Environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@forepath/shared/frontend/util-meta';
 
 @Component({
@@ -32,7 +32,7 @@ import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@for
 export class PortalPricingComponent implements OnInit, AfterViewInit {
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
-  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly servicePlansFacade = inject(ServicePlansFacade);
   private readonly locale = inject(LOCALE_ID);
   private readonly platformId = inject(PLATFORM_ID);
@@ -55,9 +55,9 @@ export class PortalPricingComponent implements OnInit, AfterViewInit {
     initialValue: false,
   });
 
-  readonly billingBaseUrl = this.environment.production
-    ? `${this.environment.billing.frontendUrl}/${this.locale}/subscriptions?order=true`
-    : `${this.environment.billing.frontendUrl}/subscriptions?order=true`;
+  readonly billingBaseUrl = this.environment.application.production
+    ? `${this.environment.landing.urls.portal}/${this.locale}/subscriptions?order=true`
+    : `${this.environment.landing.urls.portal}/subscriptions?order=true`;
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -65,7 +65,7 @@ export class PortalPricingComponent implements OnInit, AfterViewInit {
     }
 
     const pageTitle = $localize`:@@featureDecabillPricing-metaTitlePage:Licensing from open source to enterprise`;
-    const metaTitle = formatProductMetaTitle(pageTitle, this.environment.productName);
+    const metaTitle = formatProductMetaTitle(pageTitle, this.environment.application.productName);
     const metaDescription = $localize`:@@featureDecabillPricing-metaDescription:Compare open-source, team, and enterprise Decabill plans. Flexible licensing for self-hosted or cloud deployments, with scale and compliance when you need it.`;
 
     this.titleService.setTitle(metaTitle);
@@ -80,10 +80,10 @@ export class PortalPricingComponent implements OnInit, AfterViewInit {
           canonicalUrl: 'https://decabill.com/pricing',
           socialTitle: metaTitle,
           socialDescription: metaDescription,
-          socialImageUrl: this.environment.socialPreview.imageUrl,
+          socialImageUrl: this.environment.socialPreview.urls.image,
           localeId: this.locale,
-          localizeCanonicalUrl: this.environment.production,
-          siteName: this.environment.productName,
+          localizeCanonicalUrl: this.environment.application.production,
+          siteName: this.environment.application.productName,
         }),
       ),
     );

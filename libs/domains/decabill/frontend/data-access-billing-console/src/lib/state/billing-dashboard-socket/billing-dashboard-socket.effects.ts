@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
-import type { Environment } from '@forepath/shared/frontend/util-configuration';
-import { ENVIRONMENT } from '@forepath/shared/frontend/util-configuration';
+import type { Environment } from '@forepath/decabill/frontend/util-configuration';
+import { ENVIRONMENT, resolveApiWebsocketUrl } from '@forepath/decabill/frontend/util-configuration';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { KeycloakService } from 'keycloak-angular';
 import type { Observable } from 'rxjs';
@@ -31,9 +31,9 @@ const API_KEY_STORAGE_KEY = 'agent-controller-api-key';
 const USERS_JWT_STORAGE_KEY = 'agent-controller-users-jwt';
 
 function getAuthHeader(environment: Environment, keycloakService: KeycloakService | null): Observable<string | null> {
-  if (environment.authentication.type === 'api-key') {
+  if (environment.authentication.config.type === 'api-key') {
     const apiKey =
-      environment.authentication.apiKey ??
+      environment.authentication.config.apiKey ??
       (typeof localStorage !== 'undefined' ? localStorage.getItem(API_KEY_STORAGE_KEY) : null);
 
     if (apiKey) {
@@ -43,14 +43,14 @@ function getAuthHeader(environment: Environment, keycloakService: KeycloakServic
     return of(null);
   }
 
-  if (environment.authentication.type === 'keycloak' && keycloakService) {
+  if (environment.authentication.config.type === 'keycloak' && keycloakService) {
     return from(keycloakService.getToken()).pipe(
       map((token) => (token ? `Bearer ${token}` : null)),
       catchError(() => of(null)),
     );
   }
 
-  if (environment.authentication.type === 'users') {
+  if (environment.authentication.config.type === 'users') {
     const jwt = typeof localStorage !== 'undefined' ? localStorage.getItem(USERS_JWT_STORAGE_KEY) : null;
 
     if (jwt) {
@@ -78,7 +78,7 @@ export const connectBillingDashboardSocket$ = createEffect(
     return actions$.pipe(
       ofType(connectBillingDashboardSocket),
       switchMap(() => {
-        const websocketUrl = environment.billing.websocketUrl?.trim();
+        const websocketUrl = resolveApiWebsocketUrl(environment.billing.urls.websocket, 'default');
 
         if (!websocketUrl) {
           return of(connectBillingDashboardSocketFailure({ error: 'Billing WebSocket URL not configured' }));
@@ -185,7 +185,7 @@ export const billingDashboardSocketApplicationErrorFallback$ = createEffect(
   (actions$ = inject(Actions), environment = inject<Environment>(ENVIRONMENT)) => {
     return actions$.pipe(
       ofType(billingDashboardSocketApplicationError),
-      filter(() => !!environment.billing.websocketUrl?.trim()),
+      filter(() => !!resolveApiWebsocketUrl(environment.billing.urls.websocket, 'default')),
       mergeMap(() => from([billingDashboardSocketDataReceived(), loadOverviewServerInfo()])),
     );
   },

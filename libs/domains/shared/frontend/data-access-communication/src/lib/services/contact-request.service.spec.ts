@@ -24,7 +24,9 @@ describe('ContactRequestService', () => {
           provide: ENVIRONMENT,
           useValue: {
             communication: {
-              restApiUrl: apiUrl,
+              urls: {
+                restApi: apiUrl,
+              },
               turnstileSiteKey: 'test-site-key',
             },
           },

@@ -2,7 +2,11 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, HostListener, computed, inject, LOCALE_ID, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
-import { ENVIRONMENT, LocaleService, type Environment } from '@forepath/shared/frontend/util-configuration';
+import {
+  ENVIRONMENT,
+  LocaleService,
+  type EnvironmentWithLandingAndCommunication,
+} from '@forepath/shared/frontend/util-configuration';
 import {
   FpcButtonComponent,
   FpcDropdownComponent,
@@ -50,17 +54,17 @@ function isComparisonDropdownRoutePath(path: string): boolean {
 export class PortalContainerComponent {
   protected readonly localeService = inject(LocaleService);
 
-  private readonly environment = inject<Environment>(ENVIRONMENT);
+  private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
   private readonly router = inject(Router);
 
-  readonly portalUrl = this.environment.production
-    ? `${this.environment.billing.frontendUrl}/${this.locale}`
-    : this.environment.billing.frontendUrl;
+  readonly portalUrl = this.environment.application.production
+    ? `${this.environment.landing.urls.portal}/${this.locale}`
+    : this.environment.landing.urls.portal;
 
-  readonly withdrawalUrl = this.environment.production
-    ? `${this.environment.billing.frontendUrl}/${this.locale}/withdrawal`
-    : `${this.environment.billing.frontendUrl}/withdrawal`;
+  readonly withdrawalUrl = this.environment.application.production
+    ? `${this.environment.landing.urls.portal}/${this.locale}/withdrawal`
+    : `${this.environment.landing.urls.portal}/withdrawal`;
 
   readonly comparisonNavItems = PORTAL_COMPARISON_NAV_ITEMS;
 

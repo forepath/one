@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { ENVIRONMENT, environment } from '@forepath/shared/frontend/util-configuration';
+import { ENVIRONMENT, environment } from '@forepath/decabill/frontend/util-configuration';
 import { provideNgcCookieConsent } from 'ngx-cookieconsent';
 
 import { AppComponent } from './app.component';

@@ -50,7 +50,7 @@ import {
   FpcTabGroupComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
-import { LocaleService } from '@forepath/shared/frontend/util-configuration';
+import { LocaleService } from '@forepath/agenstra/frontend/util-configuration';
 import { Actions, ofType } from '@ngrx/effects';
 import { combineLatest, debounceTime, filter, map, Observable, of, Subject, switchMap, take } from 'rxjs';
 

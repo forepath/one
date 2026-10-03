@@ -36,12 +36,17 @@ jest.mock('keycloak-angular', () => ({
 
 describe('resolveTicketsBoardWebsocketUrl', () => {
   const mockEnvironment = {
-    controller: {
-      websocketUrl: 'http://localhost:3100/socket/clients',
+    console: {
+      urls: {
+        restApi: 'http://localhost:3100/api',
+        websocket: 'http://localhost:3100/socket/clients',
+      },
     },
     authentication: {
-      type: 'api-key',
-      apiKey: 'test-api-key',
+      config: {
+        type: 'api-key',
+        apiKey: 'test-api-key',
+      },
     },
   };
 
@@ -54,7 +59,15 @@ describe('resolveTicketsBoardWebsocketUrl', () => {
   it('uses explicit ticketsWebsocketUrl when set', () => {
     const url = resolveTicketsBoardWebsocketUrl({
       ...mockEnvironment,
-      controller: { ...mockEnvironment.controller, ticketsWebsocketUrl: 'http://example/ws' },
+      console: {
+        urls: {
+          restApi: 'http://localhost:3100/api',
+          websocket: {
+            default: 'http://localhost:3100/socket/clients',
+            tickets: 'http://example/ws',
+          },
+        },
+      },
     } as never);
 
     expect(url).toBe('http://example/ws');
@@ -63,7 +76,12 @@ describe('resolveTicketsBoardWebsocketUrl', () => {
   it('derives /tickets from host when websocket path is not /clients', () => {
     const url = resolveTicketsBoardWebsocketUrl({
       ...mockEnvironment,
-      controller: { websocketUrl: 'http://localhost:3100/custom-ns' },
+      console: {
+        urls: {
+          restApi: 'http://localhost:3100/api',
+          websocket: 'http://localhost:3100/custom-ns',
+        },
+      },
     } as never);
 
     expect(url).toBe('http://localhost:3100/socket/tickets');
@@ -73,7 +91,12 @@ describe('resolveTicketsBoardWebsocketUrl', () => {
     expect(
       resolveTicketsBoardWebsocketUrl({
         ...mockEnvironment,
-        controller: { websocketUrl: '   ' },
+        console: {
+          urls: {
+            restApi: 'http://localhost:3100/api',
+            websocket: '   ',
+          },
+        },
       } as never),
     ).toBeNull();
   });
@@ -83,8 +106,8 @@ describe('TicketsBoardSocketEffects', () => {
   let actions$: Subject<ReturnType<typeof connectTicketsBoardSocket>>;
   let mockSocket: jest.Mocked<Partial<Socket>>;
   let mockEnvironment: {
-    controller: { websocketUrl: string; ticketsWebsocketUrl?: string };
-    authentication: { type: string; apiKey?: string };
+    console: { urls: { restApi: string; websocket: string | { default: string; tickets?: string } } };
+    authentication: { config: { type: string; apiKey?: string } };
   };
   let mockKeycloakService: jest.Mocked<Partial<KeycloakService>>;
 
@@ -102,12 +125,17 @@ describe('TicketsBoardSocketEffects', () => {
     (io as jest.Mock).mockReturnValue(mockSocket as Socket);
 
     mockEnvironment = {
-      controller: {
-        websocketUrl: 'http://localhost:3100/socket/clients',
+      console: {
+        urls: {
+          restApi: 'http://localhost:3100/api',
+          websocket: 'http://localhost:3100/socket/clients',
+        },
       },
       authentication: {
-        type: 'api-key',
-        apiKey: 'test-api-key',
+        config: {
+          type: 'api-key',
+          apiKey: 'test-api-key',
+        },
       },
     };
 
@@ -146,7 +174,10 @@ describe('TicketsBoardSocketEffects', () => {
 
   describe('connectTicketsBoardSocket$', () => {
     it('should return connectTicketsBoardSocketFailure when URL cannot be resolved', (done) => {
-      const env = { ...mockEnvironment, controller: { websocketUrl: '' } };
+      const env = {
+        ...mockEnvironment,
+        console: { urls: { restApi: 'http://localhost:3100/api', websocket: '' } },
+      };
 
       connectTicketsBoardSocket$(actions$ as never, env as never, null).subscribe((result) => {
         expect(result).toEqual(connectTicketsBoardSocketFailure({ error: 'Tickets WebSocket URL not configured' }));
