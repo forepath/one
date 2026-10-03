@@ -25,12 +25,12 @@ Configure the billing console runtime config:
 
 Environment variables on the backend:
 
-| Variable                | Default          | Purpose                         |
-| ----------------------- | ---------------- | ------------------------------- |
-| `PORT`                  | `3200`           | HTTP + Socket.IO port           |
-| `WEBSOCKET_NAMESPACE`   | `socket/billing` | Namespace path segment          |
-| `WEBSOCKET_CORS_ORIGIN` | `*`              | CORS origin for browser clients |
-| `STATUS_POLL_INTERVAL`  | `15000`          | Default poll interval in ms     |
+| Variable                | Default               | Purpose                                       |
+| ----------------------- | --------------------- | --------------------------------------------- |
+| `PORT`                  | `3200`                | HTTP + Socket.IO port                         |
+| `WEBSOCKET_NAMESPACE`   | `socket/billing`      | Namespace path segment                        |
+| `WEBSOCKET_CORS_ORIGIN` | → `CORS_ORIGIN` → `*` | CORS origin for browser clients (fallthrough) |
+| `STATUS_POLL_INTERVAL`  | `15000`               | Default poll interval in ms                   |
 
 ### Authentication
 

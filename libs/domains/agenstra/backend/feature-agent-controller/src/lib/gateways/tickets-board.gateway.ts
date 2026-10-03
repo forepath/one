@@ -4,6 +4,7 @@ import {
   buildRequestFromSocketUser,
   ensureClientAccess,
 } from '@forepath/identity/backend';
+import { resolveWebsocketCorsOrigin } from '@forepath/shared/shared/util-network-address';
 import { ForbiddenException, Logger } from '@nestjs/common';
 import {
   ConnectedSocket,
@@ -27,7 +28,7 @@ interface SetClientPayload {
 @WebSocketGateway({
   namespace: process.env.TICKETS_WEBSOCKET_NAMESPACE || 'socket/tickets',
   cors: {
-    origin: process.env.WEBSOCKET_CORS_ORIGIN || '*',
+    origin: resolveWebsocketCorsOrigin(),
   },
 })
 export class TicketsBoardGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {

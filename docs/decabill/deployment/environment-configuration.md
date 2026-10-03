@@ -6,14 +6,14 @@ Complete reference for environment variables used in Decabill.
 
 ### Application Configuration
 
-| Variable                       | Description                                                | Default           |
-| ------------------------------ | ---------------------------------------------------------- | ----------------- |
-| `HOST`                         | HTTP bind address                                          | `0.0.0.0`         |
-| `PORT`                         | HTTP / Socket.IO port (`/api/`, `/socket/`, `/socket.io/`) | `3200`            |
-| `WEBSOCKET_NAMESPACE`          | Dashboard status Socket.IO namespace                       | `socket/billing`  |
-| `PROJECTS_WEBSOCKET_NAMESPACE` | Project board Socket.IO namespace                          | `socket/projects` |
-| `WEBSOCKET_CORS_ORIGIN`        | WebSocket CORS origins (comma-separated)                   | `*` in compose    |
-| `NODE_ENV`                     | `development` or `production`                              | `development`     |
+| Variable                       | Description                                                                     | Default                   |
+| ------------------------------ | ------------------------------------------------------------------------------- | ------------------------- |
+| `HOST`                         | HTTP bind address                                                               | `0.0.0.0`                 |
+| `PORT`                         | HTTP / Socket.IO port (`/api/`, `/socket/`, `/socket.io/`)                      | `3200`                    |
+| `WEBSOCKET_NAMESPACE`          | Dashboard status Socket.IO namespace                                            | `socket/billing`          |
+| `PROJECTS_WEBSOCKET_NAMESPACE` | Project board Socket.IO namespace                                               | `socket/projects`         |
+| `WEBSOCKET_CORS_ORIGIN`        | WebSocket CORS origins (comma-separated); falls back to `CORS_ORIGIN`, then `*` | unset (app falls through) |
+| `NODE_ENV`                     | `development` or `production`                                                   | `development`             |
 
 **Migration:** `WEBSOCKET_PORT` is removed. Socket.IO shares `PORT`. Operators must re-provision existing stacks so nginx proxies `/api/`, `/socket/`, and `/socket.io/` to that port.
 

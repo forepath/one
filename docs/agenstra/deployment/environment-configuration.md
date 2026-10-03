@@ -11,6 +11,7 @@ Complete reference for all environment variables used in Agenstra.
 - `TICKETS_WEBSOCKET_NAMESPACE` - Tickets board namespace (default: `socket/tickets`)
 - `KNOWLEDGE_WEBSOCKET_NAMESPACE` - Knowledge board namespace (default: `socket/pages`)
 - `STATUS_WEBSOCKET_NAMESPACE` - Status notifications namespace (default: `socket/status`)
+- `WEBSOCKET_CORS_ORIGIN` - Socket.IO CORS origins (comma-separated). Falls back to `CORS_ORIGIN`, then `*` when unset.
 - `NODE_ENV` - Environment mode (`development` or `production`)
 - **Migration:** `WEBSOCKET_PORT` is removed. Operators must re-provision existing stacks so nginx proxies `/api/`, `/socket/`, and `/socket.io/` to a single `PORT`.
 
@@ -69,6 +70,8 @@ Transactional identity email via BullMQ (`email-deliver`). See [Email notificati
 - `CORS_ORIGIN` - Allowed CORS origins (comma-separated list)
   - Production: **Required** Set to allow specific origins (CORS disabled if not set)
   - Development: Optional - Defaults to `*` (all origins allowed)
+- `WEBSOCKET_CORS_ORIGIN` - Socket.IO / VNC Origin allowlist (comma-separated)
+  - Resolution: `WEBSOCKET_CORS_ORIGIN` → `CORS_ORIGIN` → `*` (Socket.IO). VNC uses the same chain without defaulting to `*` (production fail-closed when both unset).
 
 ### Rate Limiting
 
@@ -116,6 +119,7 @@ Optional runtime extensions for provisioning and context import. See [Dynamic pr
 
 - `PORT` - HTTP API / Socket.IO / VNC port (default: `3000`). Namespace default `socket/agents`; VNC path `/socket/vnc`; Engine.IO `/socket.io/`.
 - `WEBSOCKET_NAMESPACE` - Agents gateway namespace (default: `socket/agents`)
+- `WEBSOCKET_CORS_ORIGIN` - Socket.IO CORS origins (comma-separated). Falls back to `CORS_ORIGIN`, then `*` when unset.
 - `NODE_ENV` - Environment mode (`development` or `production`)
 - **Migration:** `WEBSOCKET_PORT` is removed; re-provision stacks that still expose a separate WebSocket port.
 
@@ -146,6 +150,8 @@ Optional runtime extensions for provisioning and context import. See [Dynamic pr
 - `CORS_ORIGIN` - Allowed CORS origins (comma-separated list)
   - Production: **Required** Set to allow specific origins (CORS disabled if not set)
   - Development: Optional - Defaults to `*` (all origins allowed)
+- `WEBSOCKET_CORS_ORIGIN` - Socket.IO / VNC Origin allowlist (comma-separated)
+  - Resolution: `WEBSOCKET_CORS_ORIGIN` → `CORS_ORIGIN` → `*` (Socket.IO). VNC uses the same chain without defaulting to `*` (production fail-closed when both unset).
 
 ### Rate Limiting
 

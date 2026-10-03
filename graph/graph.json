@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-02T07:12:36.807Z",
+  "generatedAt": "2026-10-03T08:30:52.466Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -26719,12 +26719,12 @@
       }
     },
     {
-      "id": "concept:agenstra-websocket-cors-agent-controller",
+      "id": "concept:agenstra-websocket-cors-agent-controller-agent-manager",
       "type": "concept",
       "attrs": {
-        "title": "WebSocket CORS (Agent Controller)",
+        "title": "WebSocket CORS (Agent Controller / Agent Manager)",
         "docPath": "docs/agenstra/security/operational-hardening.md",
-        "sectionAnchor": "websocket-cors-agent-controller",
+        "sectionAnchor": "websocket-cors-agent-controller-agent-manager",
         "domain": "agenstra"
       }
     },
@@ -32862,17 +32862,17 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "project:shared-shared-util-network-address",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "project:shared-backend-util-otel",
       "type": "depends_on"
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "project:shared-backend-util-queue",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "project:shared-shared-util-network-address",
       "type": "depends_on"
     },
     {
@@ -33028,6 +33028,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "project:shared-backend-util-dynamic-provider-registry",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "project:shared-shared-util-network-address",
       "type": "depends_on"
     },
     {
@@ -48337,7 +48342,7 @@
     },
     {
       "from": "file:docs/agenstra/security/operational-hardening.md",
-      "to": "concept:agenstra-websocket-cors-agent-controller",
+      "to": "concept:agenstra-websocket-cors-agent-controller-agent-manager",
       "type": "contains"
     },
     {
@@ -79691,7 +79696,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-websocket-cors-agent-controller",
+      "from": "concept:agenstra-websocket-cors-agent-controller-agent-manager",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

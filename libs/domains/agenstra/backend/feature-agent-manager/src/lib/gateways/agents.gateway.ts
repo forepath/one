@@ -1,3 +1,4 @@
+import { resolveWebsocketCorsOrigin } from '@forepath/shared/shared/util-network-address';
 import { BadRequestException, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
 import {
   ConnectedSocket,
@@ -282,7 +283,7 @@ function toAgentEventEnvelopeBase(
 @WebSocketGateway({
   namespace: process.env.WEBSOCKET_NAMESPACE || 'socket/agents',
   cors: {
-    origin: process.env.WEBSOCKET_CORS_ORIGIN || '*',
+    origin: resolveWebsocketCorsOrigin(),
   },
   connectionStateRecovery: {
     maxDisconnectionDuration: parseInt(process.env.SOCKET_MAX_DISCONNECTION_DURATION || '120000'), // 2 minutes default

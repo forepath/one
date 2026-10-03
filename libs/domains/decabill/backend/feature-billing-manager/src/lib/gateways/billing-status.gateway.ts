@@ -1,6 +1,7 @@
 import { SocketAuthService, UserRole, type SocketUserInfo } from '@forepath/identity/backend';
 import { UsersRepository } from '@forepath/identity/backend';
 import { getOrInitSocketTenantId, readIncomingTenantIdFromHandshake, runWithTenantId } from '@forepath/shared/backend';
+import { resolveWebsocketCorsOrigin } from '@forepath/shared/shared/util-network-address';
 import { Logger } from '@nestjs/common';
 import {
   ConnectedSocket,
@@ -95,7 +96,7 @@ type BillingSocket = Socket & {
 @WebSocketGateway({
   namespace: process.env.WEBSOCKET_NAMESPACE || 'socket/billing',
   cors: {
-    origin: process.env.WEBSOCKET_CORS_ORIGIN || '*',
+    origin: resolveWebsocketCorsOrigin(),
   },
 })
 export class BillingStatusGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {

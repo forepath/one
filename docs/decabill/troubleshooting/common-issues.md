@@ -22,7 +22,7 @@ Common problems and their solutions in Decabill.
 **Solutions**:
 
 - Verify WebSocket URL: `http://localhost:3200/socket/billing`
-- Check `WEBSOCKET_CORS_ORIGIN` includes the console origin
+- Check `WEBSOCKET_CORS_ORIGIN` (or fallthrough `CORS_ORIGIN`) includes the console origin
 - Confirm you are using interactive auth (Keycloak/users); API key clients do not receive dashboard streams
 - Ensure **`X-Tenant`** is sent on the handshake when using multi-tenant setups
 

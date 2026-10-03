@@ -1,5 +1,6 @@
 import { SocketAuthService, type SocketUserInfo, UserRole } from '@forepath/identity/backend';
 import { getOrInitSocketTenantId, readIncomingTenantIdFromHandshake, runWithTenantId } from '@forepath/shared/backend';
+import { resolveWebsocketCorsOrigin } from '@forepath/shared/shared/util-network-address';
 import { ForbiddenException, Logger } from '@nestjs/common';
 import {
   ConnectedSocket,
@@ -27,7 +28,7 @@ type ProjectSocket = Socket & { data: { userInfo?: SocketUserInfo; tenantId?: st
 @WebSocketGateway({
   namespace: process.env.PROJECTS_WEBSOCKET_NAMESPACE || 'socket/projects',
   cors: {
-    origin: process.env.WEBSOCKET_CORS_ORIGIN || '*',
+    origin: resolveWebsocketCorsOrigin(),
   },
 })
 export class ProjectBoardGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {

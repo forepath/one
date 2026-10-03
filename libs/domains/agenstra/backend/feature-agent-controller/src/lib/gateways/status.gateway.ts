@@ -1,4 +1,5 @@
 import { SocketAuthService, UserRole, type SocketUserInfo } from '@forepath/identity/backend';
+import { resolveWebsocketCorsOrigin } from '@forepath/shared/shared/util-network-address';
 import { Logger } from '@nestjs/common';
 import {
   ConnectedSocket,
@@ -38,7 +39,7 @@ type StatusSocket = Socket & { data: { userInfo?: SocketUserInfo } };
 @WebSocketGateway({
   namespace: process.env.STATUS_WEBSOCKET_NAMESPACE || 'socket/status',
   cors: {
-    origin: process.env.WEBSOCKET_CORS_ORIGIN || '*',
+    origin: resolveWebsocketCorsOrigin(),
   },
 })
 export class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
