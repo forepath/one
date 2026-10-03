@@ -26,7 +26,7 @@ services:
       HOST: ${HOST:-0.0.0.0}
       PORT: ${PORT:-3000}
       WEBSOCKET_NAMESPACE: ${WEBSOCKET_NAMESPACE:-socket/agents}
-      WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-*}
+      WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-}
       NODE_ENV: ${NODE_ENV:-development}
       # Agent configuration
       AGENT_DEFAULT_IMAGE: ${AGENT_DEFAULT_IMAGE:-ghcr.io/forepath/agenstra-manager-worker:latest}

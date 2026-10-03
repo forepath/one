@@ -87,17 +87,17 @@ See **[Environment configuration (Frontend, all `frontend-*` apps)](../deploymen
 
 Accepted risk: **AR-002** in **[Accepted risks](./accepted-risks.md)**.
 
-## WebSocket CORS (Agent Controller)
+## WebSocket CORS (Agent Controller / Agent Manager)
 
-- **`WEBSOCKET_CORS_ORIGIN`**: comma-separated allowed origins for the Socket.IO server.
-- In **production**, if unset, the allowed origin list is **empty** (fail closed). Set explicitly to your frontend origins.
+- Socket.IO CORS origin resolves as **`WEBSOCKET_CORS_ORIGIN` → `CORS_ORIGIN` → `*`** (empty/whitespace counts as unset).
+- Prefer setting **`WEBSOCKET_CORS_ORIGIN`** (or at least **`CORS_ORIGIN`**) to your frontend origins in production instead of relying on `*`.
 
 ## Agent virtual desktop (VNC)
 
 - Worker image runs TigerVNC (loopback only) + authenticated websockify edge on container port **6080** (not published on the host when `AGENT_DOCKER_NETWORK` is set; same policy as OpenCode :4096). The edge requires HTTP Basic auth using the worker OpenCode credentials (manager-only). Entrypoint **fails closed** if TigerVNC does not bind within timeout.
 - Browser never talks to the worker. Flow: authenticated REST mint (`agents:vnc` + `ensureClientAccess`) → short-lived ticket → raw WebSocket on controller HTTP **`PORT`** path **`/socket/vnc`** (default **3100**) → manager HTTP **`PORT`** path **`/socket/vnc`** (default **3000**) → authenticated worker edge.
 - Tickets are single-use and bound to client/agent/caller. They travel in **`Sec-WebSocket-Protocol`** (`agenstra.vnc.<ticket>`), not URL query strings. Manager/worker URLs are not returned to the browser.
-- Controller `/socket/vnc` upgrades enforce the same **`WEBSOCKET_CORS_ORIGIN`** allowlist as Socket.IO (production fails closed when unset for browser `Origin`s). Manager `/socket/vnc` applies the same check.
+- Controller `/socket/vnc` upgrades use the same **`WEBSOCKET_CORS_ORIGIN` → `CORS_ORIGIN`** allowlist as Socket.IO, but **without** defaulting to `*` — in production, when both are unset, browser `Origin`s are rejected (fail closed). Manager `/socket/vnc` applies the same check.
 - Controller tickets are stored in **Redis** (with in-process fallback) so REST mint and WebSocket consume work across controller replicas. Manager tickets are **process-local** — run a **single agent-manager replica** (or sticky sessions) per client endpoint.
 - The agent console connects using `controller.vncWebsocketUrl`, or derives `ws(s)://…/socket/vnc` from `controller.websocketUrl` (same host/port as Socket.IO).
 - Desktop session starts as non-privileged user **`agenstra`** (no greeter). Worker image is larger due to XFCE + Chromium.

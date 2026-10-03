@@ -2,7 +2,7 @@ x-backend-billing-manager-environment: &backend-billing-manager-environment
   HOST: ${HOST:-0.0.0.0}
   PORT: ${PORT:-3200}
   WEBSOCKET_NAMESPACE: ${WEBSOCKET_NAMESPACE:-socket/billing}
-  WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-*}
+  WEBSOCKET_CORS_ORIGIN: ${WEBSOCKET_CORS_ORIGIN:-}
   NODE_ENV: ${NODE_ENV:-development}
   DB_HOST: ${DB_HOST:-postgres}
   DB_PORT: ${DB_PORT:-5432}

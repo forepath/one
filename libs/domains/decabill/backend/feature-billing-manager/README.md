@@ -73,7 +73,7 @@ When **`AUTHENTICATION_METHOD=api-key`** (or api-key is inferred from **`STATIC_
 - `PROJECTS_WEBSOCKET_NAMESPACE` (optional; default `socket/projects`) – Project board Socket.IO namespace
 - **Migration:** `WEBSOCKET_PORT` removed; re-provision stacks so nginx proxies `/api/`, `/socket/`, and `/socket.io/` to `PORT`
 - `STATUS_POLL_INTERVAL` (optional; default `15000`) – default dashboard status poll interval in **milliseconds**; optional `subscribeDashboardStatus` body field `pollIntervalMs` is clamped between 10s and 120s
-- `WEBSOCKET_CORS_ORIGIN` (optional; default `*`) – Socket.IO CORS `origin` (same pattern as agent controller / agent manager)
+- `WEBSOCKET_CORS_ORIGIN` (optional) – Socket.IO CORS `origin`; falls back to `CORS_ORIGIN`, then `*` (same pattern as agent controller / agent manager)
 
 ## Users Authentication
 

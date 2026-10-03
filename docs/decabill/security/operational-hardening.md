@@ -79,8 +79,8 @@ Accepted risk: **DR-003** in **[Accepted risks](./accepted-risks.md)**.
 
 ## WebSocket CORS (billing manager)
 
-- **`WEBSOCKET_CORS_ORIGIN`**: comma-separated allowed origins for the billing Socket.IO server.
-- In **production**, if unset, behavior follows Nest/Socket.IO configuration; set explicitly to your billing console origins.
+- Socket.IO CORS origin resolves as **`WEBSOCKET_CORS_ORIGIN` → `CORS_ORIGIN` → `*`** (empty/whitespace counts as unset).
+- Prefer setting **`WEBSOCKET_CORS_ORIGIN`** (or at least **`CORS_ORIGIN`**) to your billing console origins in production instead of relying on `*`.
 
 Dashboard status streaming is available to interactive authenticated users, not to API key clients.
 

@@ -135,11 +135,11 @@ When `projectsWebsocketUrl` is omitted, the client derives it from `websocketUrl
 
 Backend environment variables:
 
-| Variable                       | Default           | Purpose                                               |
-| ------------------------------ | ----------------- | ----------------------------------------------------- |
-| `PORT`                         | `3200`            | HTTP + Socket.IO port (shared with dashboard gateway) |
-| `PROJECTS_WEBSOCKET_NAMESPACE` | `socket/projects` | Namespace path segment                                |
-| `WEBSOCKET_CORS_ORIGIN`        | `*`               | CORS origin for browser clients                       |
+| Variable                       | Default               | Purpose                                               |
+| ------------------------------ | --------------------- | ----------------------------------------------------- |
+| `PORT`                         | `3200`                | HTTP + Socket.IO port (shared with dashboard gateway) |
+| `PROJECTS_WEBSOCKET_NAMESPACE` | `socket/projects`     | Namespace path segment                                |
+| `WEBSOCKET_CORS_ORIGIN`        | → `CORS_ORIGIN` → `*` | CORS origin for browser clients (fallthrough)         |
 
 ### Authentication
 

@@ -219,7 +219,7 @@ For complete API endpoint documentation, request/response schemas, and authentic
 
 ## WebSocket Gateway
 
-Socket.IO shares HTTP **`PORT`** (default `3100`) with REST (`/api/`) and VNC (`/socket/vnc`). Engine.IO path is `/socket.io/`. CORS via `WEBSOCKET_CORS_ORIGIN`.
+Socket.IO shares HTTP **`PORT`** (default `3100`) with REST (`/api/`) and VNC (`/socket/vnc`). Engine.IO path is `/socket.io/`. CORS resolves as `WEBSOCKET_CORS_ORIGIN` → `CORS_ORIGIN` → `*`.
 
 - **`socket/clients`** (default `WEBSOCKET_NAMESPACE`), proxy to the selected workspace’s agent-manager; chat, terminals, stats, and controller-originated ticket hints for the chat UI
 - **`socket/tickets`** (default `TICKETS_WEBSOCKET_NAMESPACE`), ticket board and automation realtime (see [Tickets and Workspaces](../features/tickets-and-workspaces.md))
@@ -376,7 +376,7 @@ See the application docs and environment configuration for complete environment 
 - `TICKETS_WEBSOCKET_NAMESPACE` - Ticket board namespace (default: `socket/tickets`)
 - `KNOWLEDGE_WEBSOCKET_NAMESPACE` - Knowledge board namespace (default: `socket/pages`)
 - `STATUS_WEBSOCKET_NAMESPACE` - Status notifications namespace (default: `socket/status`)
-- `WEBSOCKET_CORS_ORIGIN` - CORS origin(s) for WebSocket (see framework docs)
+- `WEBSOCKET_CORS_ORIGIN` - CORS origin(s) for WebSocket; falls back to `CORS_ORIGIN`, then `*` for Socket.IO
 - `NODE_ENV` - Environment mode (`development` or `production`)
 - **Migration:** `WEBSOCKET_PORT` and `CLIENTS_REMOTE_WS_PORT` are removed; re-provision existing stacks.
 

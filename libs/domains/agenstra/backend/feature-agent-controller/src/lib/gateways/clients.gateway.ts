@@ -7,6 +7,7 @@ import {
   buildRequestFromSocketUser,
   ensureClientAccess,
 } from '@forepath/identity/backend';
+import { resolveWebsocketCorsOrigin } from '@forepath/shared/shared/util-network-address';
 import { BadRequestException, Logger } from '@nestjs/common';
 import {
   ConnectedSocket,
@@ -116,7 +117,7 @@ interface ContextInjectionPayload {
 @WebSocketGateway({
   namespace: process.env.WEBSOCKET_NAMESPACE || 'socket/clients',
   cors: {
-    origin: process.env.WEBSOCKET_CORS_ORIGIN || '*',
+    origin: resolveWebsocketCorsOrigin(),
   },
 })
 export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {

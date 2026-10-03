@@ -1,4 +1,5 @@
 import { ClientUsersRepository, ensureClientAccess, type RequestWithUser, UserRole } from '@forepath/identity/backend';
+import { resolveWebsocketCorsOriginEnv } from '@forepath/shared/shared/util-network-address';
 import { Injectable, Logger, OnApplicationBootstrap, OnModuleDestroy } from '@nestjs/common';
 import type { Server as HttpServer } from 'http';
 import type { Server as SocketIoServer } from 'socket.io';
@@ -62,7 +63,7 @@ export class VncGateway implements OnApplicationBootstrap, OnModuleDestroy {
         return;
       }
 
-      if (!isAllowedWebsocketOrigin(request.headers.origin, process.env.WEBSOCKET_CORS_ORIGIN)) {
+      if (!isAllowedWebsocketOrigin(request.headers.origin, resolveWebsocketCorsOriginEnv())) {
         this.logger.warn('Rejected controller VNC upgrade: Origin not allowed');
         socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n');
         socket.destroy();
