@@ -1,10 +1,17 @@
 import {
+  CUSTOM_MCP_ALLOW_DENY_TOKEN,
   builtinMcpServerLabel,
+  filterBuiltinMcpServersByAllowDeny,
   getBuiltinMcpServer,
+  isCustomMcpAllowed,
+  isMcpServerAllowed,
   mcpOAuthClientSecretKey,
   mcpServerConfigKey,
+  mcpServerMatchesCatalogServer,
+  resolveMcpAllowDenyIdentity,
   seedMcpServerFromCatalog,
   selectPreferredPackage,
+  stripUnverifiedMcpRegistryClaims,
   unusedBuiltinMcpServers,
 } from './mcp-servers';
 import type { OpencodeBuiltinMcpServer } from './types';
@@ -125,6 +132,7 @@ describe('util-opencode-mcp-servers', () => {
       environment: { LOG_LEVEL: 'info' },
       secretEnv: ['API_TOKEN'],
       secretHeaders: [],
+      registry: 'io.modelcontextprotocol/filesystem',
     });
   });
 
@@ -137,6 +145,153 @@ describe('util-opencode-mcp-servers', () => {
       headers: { 'X-Public': '1' },
       secretEnv: [],
       secretHeaders: ['Authorization'],
+      registry: 'com.example/remote-only',
     });
+  });
+
+  it('filterBuiltinMcpServersByAllowDeny_emptyListsUnrestricted', () => {
+    const filtered = filterBuiltinMcpServersByAllowDeny(SAMPLE, [], []);
+
+    expect(filtered.map((server) => server.name)).toEqual([
+      'io.modelcontextprotocol/filesystem',
+      'com.example/remote-only',
+    ]);
+  });
+
+  it('filterBuiltinMcpServersByAllowDeny_allowAndDenyWins', () => {
+    const filtered = filterBuiltinMcpServersByAllowDeny(
+      SAMPLE,
+      ['io.modelcontextprotocol/filesystem', 'com.example/remote-only'],
+      ['com.example/remote-only'],
+    );
+
+    expect(filtered.map((server) => server.name)).toEqual(['io.modelcontextprotocol/filesystem']);
+  });
+
+  it('isMcpServerAllowed_denyWinsOverAllow', () => {
+    expect(isMcpServerAllowed('a', ['a'], ['a'])).toBe(false);
+    expect(isCustomMcpAllowed(['custom'], ['custom'])).toBe(false);
+    expect(isCustomMcpAllowed(['io.modelcontextprotocol/filesystem'], [])).toBe(false);
+    expect(isCustomMcpAllowed([], [])).toBe(true);
+  });
+
+  it('resolveMcpAllowDenyIdentity_requiresRegistryMatchingConfigKey', () => {
+    const key = mcpServerConfigKey('io.modelcontextprotocol/filesystem');
+
+    expect(resolveMcpAllowDenyIdentity(key, { registry: 'io.modelcontextprotocol/filesystem' }, [], [])).toBe(
+      'io.modelcontextprotocol/filesystem',
+    );
+
+    // Spoofed registry on a mismatched key must not claim catalog identity.
+    expect(resolveMcpAllowDenyIdentity('ignored', { registry: 'io.modelcontextprotocol/filesystem' }, [], [])).toBe(
+      CUSTOM_MCP_ALLOW_DENY_TOKEN,
+    );
+
+    // Key-only / allow-list inference must not grant catalog identity (bypass vector).
+    expect(
+      resolveMcpAllowDenyIdentity(
+        key,
+        { type: 'local', command: ['npx', '-y', 'malicious'] },
+        ['io.modelcontextprotocol/filesystem'],
+        [],
+      ),
+    ).toBe(CUSTOM_MCP_ALLOW_DENY_TOKEN);
+
+    // `__` → `/` reversal must not grant catalog identity without a verified registry claim.
+    expect(
+      resolveMcpAllowDenyIdentity(
+        'io.modelcontextprotocol__filesystem',
+        {},
+        ['io.modelcontextprotocol/filesystem'],
+        [],
+      ),
+    ).toBe(CUSTOM_MCP_ALLOW_DENY_TOKEN);
+
+    expect(resolveMcpAllowDenyIdentity('my-custom', {}, [], [])).toBe(CUSTOM_MCP_ALLOW_DENY_TOKEN);
+  });
+
+  it('resolveMcpAllowDenyIdentity_withCatalogRequiresTransportMatch', () => {
+    const catalogServer = SAMPLE[0]!;
+    const key = mcpServerConfigKey(catalogServer.name);
+    const seed = seedMcpServerFromCatalog(catalogServer)!;
+    const catalogByName = { [catalogServer.name]: catalogServer };
+
+    expect(
+      resolveMcpAllowDenyIdentity(
+        key,
+        { type: seed.type, command: seed.command, registry: catalogServer.name },
+        [],
+        [],
+        [],
+        catalogByName,
+      ),
+    ).toBe(catalogServer.name);
+
+    expect(
+      resolveMcpAllowDenyIdentity(
+        key,
+        { type: 'local', command: ['npx', '-y', 'malicious-package'], registry: catalogServer.name },
+        [],
+        [],
+        [],
+        catalogByName,
+      ),
+    ).toBe(CUSTOM_MCP_ALLOW_DENY_TOKEN);
+  });
+
+  it('stripUnverifiedMcpRegistryClaims_removesSpoofedRegistry', () => {
+    const catalogServer = SAMPLE[0]!;
+    const key = mcpServerConfigKey(catalogServer.name);
+    const seed = seedMcpServerFromCatalog(catalogServer)!;
+    const catalogByName = { [catalogServer.name]: catalogServer };
+
+    const stripped = stripUnverifiedMcpRegistryClaims(
+      {
+        mcp: {
+          servers: {
+            [key]: {
+              type: 'local',
+              command: ['npx', '-y', 'malicious-package'],
+              registry: catalogServer.name,
+            },
+            wrong_key: {
+              type: seed.type,
+              command: seed.command,
+              registry: catalogServer.name,
+            },
+          },
+        },
+      },
+      catalogByName,
+    );
+
+    const servers = (stripped['mcp'] as { servers: Record<string, Record<string, unknown>> }).servers;
+
+    expect(servers[key]).not.toHaveProperty('registry');
+    expect(servers['wrong_key']).not.toHaveProperty('registry');
+    expect(mcpServerMatchesCatalogServer({ type: seed.type, command: seed.command }, catalogServer)).toBe(true);
+
+    const honestStripped = stripUnverifiedMcpRegistryClaims(
+      {
+        mcp: {
+          servers: {
+            [key]: {
+              type: seed.type,
+              command: seed.command,
+              registry: catalogServer.name,
+              secretEnv: ['API_TOKEN'],
+            },
+          },
+        },
+      },
+      catalogByName,
+    );
+
+    expect((honestStripped['mcp'] as { servers: Record<string, Record<string, unknown>> }).servers[key]).toEqual(
+      expect.objectContaining({
+        registry: catalogServer.name,
+        command: seed.command,
+      }),
+    );
   });
 });

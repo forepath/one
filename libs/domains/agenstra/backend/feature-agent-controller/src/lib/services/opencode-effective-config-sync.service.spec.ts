@@ -15,7 +15,7 @@ describe('OpencodeEffectiveConfigSyncService', () => {
       getLayerConfigs: jest.fn().mockResolvedValue({ global: { a: 1 }, workspace: { b: 2 } }),
       getLayerSecrets: jest.fn().mockResolvedValue({ global: { G: 'g' }, workspace: { W: 'w' } }),
       composeStoredLayer: jest.fn().mockReturnValue({ c: 3, d: 4 }),
-      mergeEffectiveForSync: jest.fn().mockReturnValue({ a: 1, b: 2, c: 3, d: 4 }),
+      mergeEffectiveForSync: jest.fn().mockResolvedValue({ a: 1, b: 2, c: 3, d: 4 }),
       mergeSecrets: jest.fn().mockReturnValue({ G: 'g', W: 'w' }),
     };
     const agentConfigProxy = {

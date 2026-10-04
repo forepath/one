@@ -2,6 +2,8 @@ import {
   filterBuiltinProvidersByAllowDeny,
   formatProviderModelRef,
   getBuiltinProvider,
+  isModelRefAllowed,
+  isProviderAllowed,
   parseProviderModelRef,
   providersForKnownModelPicker,
   unusedBuiltinModelProviders,
@@ -95,6 +97,19 @@ describe('util-opencode-providers', () => {
     expect(
       filterBuiltinProvidersByAllowDeny(SAMPLE, ['anthropic', 'openai'], ['openai']).map((provider) => provider.id),
     ).toEqual(['anthropic']);
+  });
+
+  it('isProviderAllowed_denyWinsAndEmptyAllowIsUnrestricted', () => {
+    expect(isProviderAllowed('openai', [], [])).toBe(true);
+    expect(isProviderAllowed('openai', ['anthropic'], [])).toBe(false);
+    expect(isProviderAllowed('openai', ['openai'], ['openai'])).toBe(false);
+  });
+
+  it('isModelRefAllowed_appliesProviderAndModelLists', () => {
+    expect(isModelRefAllowed('openai/gpt-4o', [], [], [], [])).toBe(true);
+    expect(isModelRefAllowed('openai/gpt-4o', ['anthropic'], [], [], [])).toBe(false);
+    expect(isModelRefAllowed('openai/gpt-4o', [], [], ['openai/gpt-4o'], ['openai/gpt-4o'])).toBe(false);
+    expect(isModelRefAllowed('openai/gpt-4o', [], [], ['anthropic/claude'], [])).toBe(false);
   });
 
   it('providersForKnownModelPicker_returnsFullCatalogWhenListsEmptyAndNoModelMetadata', () => {

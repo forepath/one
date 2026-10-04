@@ -155,6 +155,19 @@ export class OpencodeMcpServersCatalogService {
     return this.toDto(row);
   }
 
+  /** Batch lookup by reverse-DNS registry names (missing names are omitted). */
+  async getServersByNames(names: readonly string[]): Promise<OpencodeMcpServerDto[]> {
+    const normalized = [...new Set(names.map((name) => name.trim()).filter((name) => name.length > 0))];
+
+    if (normalized.length === 0) {
+      return [];
+    }
+
+    const rows = await this.serversRepository.findBy({ name: In(normalized) });
+
+    return rows.map((row) => this.toDto(row));
+  }
+
   /**
    * Walks all cursor pages of the official registry latest-servers list,
    * then upserts and removes stale names. Does not delete on mid-walk failure.

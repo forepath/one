@@ -3,6 +3,8 @@ export {
   filterBuiltinProvidersByAllowDeny,
   formatProviderModelRef,
   getBuiltinProvider,
+  isModelRefAllowed,
+  isProviderAllowed,
   parseProviderModelRef,
   providersForKnownModelPicker,
   unusedBuiltinModelProviders,

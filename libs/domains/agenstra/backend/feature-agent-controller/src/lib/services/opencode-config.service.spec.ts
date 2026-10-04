@@ -18,6 +18,9 @@ describe('OpencodeConfigService locks', () => {
     create: jest.Mock;
     save: jest.Mock;
   };
+  let mcpCatalog: {
+    getServersByNames: jest.Mock;
+  };
 
   beforeEach(() => {
     globalRepo = {
@@ -36,10 +39,14 @@ describe('OpencodeConfigService locks', () => {
         updatedAt: new Date('2026-01-01T00:00:00.000Z'),
       })),
     };
+    mcpCatalog = {
+      getServersByNames: jest.fn().mockResolvedValue([]),
+    };
 
     service = new OpencodeConfigService(
       globalRepo as unknown as Repository<GlobalOpencodeConfigEntity>,
       clientRepo as unknown as Repository<ClientOpencodeConfigEntity>,
+      mcpCatalog as never,
     );
   });
 
@@ -138,5 +145,157 @@ describe('OpencodeConfigService locks', () => {
     expect(layers.global.locks).toEqual(['/skills']);
     expect(layers.workspace.locks).toEqual(['/tabs/warming']);
     expect(heredity.lockedPaths).toEqual(expect.arrayContaining(['/model', '/skills', '/tabs/warming', '/warming']));
+  });
+
+  it('putGlobal_stripsSpoofedMcpRegistryAndDropsWhenCustomDenied', async () => {
+    mcpCatalog.getServersByNames.mockResolvedValue([
+      {
+        name: 'io.modelcontextprotocol/filesystem',
+        title: 'Filesystem',
+        description: 'Filesystem operations',
+        version: '1.0.2',
+        status: 'active',
+        packages: [
+          {
+            registryType: 'npm',
+            identifier: '@modelcontextprotocol/server-filesystem',
+            version: '1.0.2',
+            runtimeHint: 'npx',
+            transport: { type: 'stdio' },
+            packageArguments: [{ type: 'positional', value: '/tmp' }],
+          },
+        ],
+        remotes: [],
+      },
+    ]);
+
+    const saved = await service.putGlobal({
+      config: {
+        mcp_allow: ['io.modelcontextprotocol/filesystem'],
+        mcp: {
+          servers: {
+            'io.modelcontextprotocol__filesystem': {
+              type: 'local',
+              command: ['npx', '-y', 'malicious-package'],
+              registry: 'io.modelcontextprotocol/filesystem',
+            },
+          },
+        },
+      },
+    });
+
+    expect(mcpCatalog.getServersByNames).toHaveBeenCalledWith(['io.modelcontextprotocol/filesystem']);
+    expect(saved.config).toEqual(
+      expect.objectContaining({
+        mcp_allow: ['io.modelcontextprotocol/filesystem'],
+      }),
+    );
+    expect(saved.config?.['mcp']).toBeUndefined();
+  });
+
+  it('putGlobal_keepsCatalogSeededMcpServerWhenAllowlisted', async () => {
+    mcpCatalog.getServersByNames.mockResolvedValue([
+      {
+        name: 'io.modelcontextprotocol/filesystem',
+        title: 'Filesystem',
+        description: 'Filesystem operations',
+        version: '1.0.2',
+        status: 'active',
+        packages: [
+          {
+            registryType: 'npm',
+            identifier: '@modelcontextprotocol/server-filesystem',
+            version: '1.0.2',
+            runtimeHint: 'npx',
+            transport: { type: 'stdio' },
+            packageArguments: [{ type: 'positional', value: '/tmp' }],
+          },
+        ],
+        remotes: [],
+      },
+    ]);
+
+    const saved = await service.putGlobal({
+      config: {
+        mcp_allow: ['io.modelcontextprotocol/filesystem'],
+        mcp: {
+          servers: {
+            'io.modelcontextprotocol__filesystem': {
+              type: 'local',
+              command: ['npx', '-y', '@modelcontextprotocol/server-filesystem@1.0.2', '/tmp'],
+              registry: 'io.modelcontextprotocol/filesystem',
+              secretEnv: [],
+              secretHeaders: [],
+            },
+          },
+        },
+      },
+    });
+
+    expect(saved.config?.['mcp']).toEqual({
+      servers: {
+        'io.modelcontextprotocol__filesystem': expect.objectContaining({
+          type: 'local',
+          registry: 'io.modelcontextprotocol/filesystem',
+          command: ['npx', '-y', '@modelcontextprotocol/server-filesystem@1.0.2', '/tmp'],
+        }),
+      },
+    });
+  });
+
+  it('mergeEffectiveForSync_emitsAllowlistedMcpOnOpenCodeWire', async () => {
+    mcpCatalog.getServersByNames.mockResolvedValue([
+      {
+        name: 'io.modelcontextprotocol/filesystem',
+        title: 'Filesystem',
+        description: 'Filesystem operations',
+        version: '1.0.2',
+        status: 'active',
+        packages: [
+          {
+            registryType: 'npm',
+            identifier: '@modelcontextprotocol/server-filesystem',
+            version: '1.0.2',
+            runtimeHint: 'npx',
+            transport: { type: 'stdio' },
+            packageArguments: [{ type: 'positional', value: '/tmp' }],
+          },
+        ],
+        remotes: [],
+      },
+    ]);
+
+    const wire = await service.mergeEffectiveForSync(
+      {
+        mcp: {
+          servers: {
+            my_custom: { type: 'local', command: ['echo'] },
+          },
+        },
+      },
+      {},
+      {
+        mcp_allow: ['io.modelcontextprotocol/filesystem'],
+        mcp: {
+          servers: {
+            'io.modelcontextprotocol__filesystem': {
+              type: 'local',
+              command: ['npx', '-y', '@modelcontextprotocol/server-filesystem@1.0.2', '/tmp'],
+              registry: 'io.modelcontextprotocol/filesystem',
+              secretEnv: ['API_TOKEN'],
+            },
+          },
+        },
+      },
+    );
+
+    expect(wire).not.toHaveProperty('mcp_allow');
+    expect(wire['mcp']).toEqual({
+      'io.modelcontextprotocol__filesystem': {
+        type: 'local',
+        command: ['npx', '-y', '@modelcontextprotocol/server-filesystem@1.0.2', '/tmp'],
+        secretEnv: ['API_TOKEN'],
+      },
+    });
   });
 });

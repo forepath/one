@@ -1600,6 +1600,24 @@
       <trans-unit id="featureAgentConfig-mcpServersHeading" datatype="html">
         <source>Servers</source>
         </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMcpAllow" datatype="html">
+        <source>MCP allowlist</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMcpAllowHelp" datatype="html">
+        <source>Registry names or custom, one per line</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMcpDeny" datatype="html">
+        <source>MCP denylist</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMcpDenyHelp" datatype="html">
+        <source>Overrides allowlist when both match</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addKnownMcpLabel" datatype="html">
+        <source>Add known MCP server</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addCustomMcpAllowDenyToken" datatype="html">
+        <source>Add “custom”</source>
+        </trans-unit>
       <trans-unit id="featureAgentConfig-mcpServersHelp" datatype="html">
         <source>Pick a registry MCP server to seed command/URL and secret names, or add a custom id. Secret values are stored in layer secrets, not in config JSON.</source>
         </trans-unit>

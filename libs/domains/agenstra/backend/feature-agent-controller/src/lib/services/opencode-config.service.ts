@@ -4,8 +4,10 @@ import {
   assertNoV1RootKeys,
   assertOverlayRespectsHeredity,
   assertSecretsRespectLocks,
+  buildAllowDenyContext,
   composeLayerOverlay,
   computeHeredityMetadata,
+  enforceAllowDenyOnOverlay,
   mergeConfigs,
   mergeSecrets as mergeSecretMaps,
   migrateConfigV1ToV2,
@@ -16,6 +18,11 @@ import {
   type InheritedAdditiveEntry,
   type JsonObject,
 } from '@forepath/agenstra/shared/util-opencode-config';
+import {
+  collectMcpRegistryClaims,
+  stripUnverifiedMcpRegistryClaims,
+  type OpencodeBuiltinMcpServer,
+} from '@forepath/agenstra/shared/util-opencode-mcp-servers';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -23,6 +30,7 @@ import { Repository } from 'typeorm';
 import { OpencodeConfigResponseDto, UpsertOpencodeConfigDto } from '../dto/opencode-config.dto';
 import { ClientOpencodeConfigEntity } from '../entities/client-opencode-config.entity';
 import { GlobalOpencodeConfigEntity } from '../entities/global-opencode-config.entity';
+import { OpencodeMcpServersCatalogService } from './opencode-mcp-servers-catalog.service';
 
 function parseSecrets(raw: string | null | undefined): Record<string, string> {
   if (!raw) {
@@ -87,45 +95,59 @@ export class OpencodeConfigService {
     private readonly globalRepo: Repository<GlobalOpencodeConfigEntity>,
     @InjectRepository(ClientOpencodeConfigEntity)
     private readonly clientRepo: Repository<ClientOpencodeConfigEntity>,
+    private readonly mcpCatalog: OpencodeMcpServersCatalogService,
   ) {}
 
   async getGlobal(): Promise<OpencodeConfigResponseDto> {
     const row = await this.globalRepo.find({ take: 1, order: { updatedAt: 'DESC' } }).then((r) => r[0]);
+    const response = this.toResponse(row?.config, row?.overrides, row?.locks, row?.secrets, row?.updatedAt);
+    // Owning (global) layer still needs `effective` for draft-lock display fallbacks.
+    response.effective = this.composeStoredLayer(row?.config, row?.overrides);
 
-    return this.toResponse(row?.config, row?.overrides, row?.locks, row?.secrets, row?.updatedAt);
+    return response;
   }
 
   async putGlobal(dto: UpsertOpencodeConfigDto): Promise<OpencodeConfigResponseDto> {
-    this.assertWritableOverlay(dto.config ?? undefined, [], []);
-    this.assertWritableOverlay(dto.overrides ?? undefined, [], []);
-
     let row = await this.globalRepo.find({ take: 1, order: { updatedAt: 'DESC' } }).then((r) => r[0]);
+
+    const sanitized = await this.sanitizeUpsertAgainstAllowDeny(dto, {
+      parentOverlaysLowToHigh: [],
+      inheritedAdditive: [],
+      existingConfig: row?.config,
+      existingOverrides: row?.overrides,
+    });
+
+    this.assertWritableOverlay(sanitized.config ?? undefined, [], []);
+    this.assertWritableOverlay(sanitized.overrides ?? undefined, [], []);
 
     if (!row) {
       row = this.globalRepo.create({});
     }
 
-    if (dto.config !== undefined) {
-      row.config = dto.config ?? {};
+    if (sanitized.config !== undefined) {
+      row.config = sanitized.config ?? {};
     }
 
-    if (dto.overrides !== undefined) {
-      row.overrides = dto.overrides ?? {};
+    if (sanitized.overrides !== undefined) {
+      row.overrides = sanitized.overrides ?? {};
     }
 
-    if (dto.locks !== undefined) {
-      row.locks = normalizeStoredLocks(dto.locks);
+    if (sanitized.locks !== undefined) {
+      row.locks = normalizeStoredLocks(sanitized.locks);
     }
 
-    const nextSecrets = persistSecrets(row.secrets, dto.secrets);
+    const nextSecrets = persistSecrets(row.secrets, sanitized.secrets);
 
     if (nextSecrets !== undefined) {
       row.secrets = nextSecrets;
     }
 
     const saved = await this.globalRepo.save(row);
+    const response = this.toResponse(saved.config, saved.overrides, saved.locks, saved.secrets, saved.updatedAt);
 
-    return this.toResponse(saved.config, saved.overrides, saved.locks, saved.secrets, saved.updatedAt);
+    response.effective = this.composeStoredLayer(saved.config, saved.overrides);
+
+    return response;
   }
 
   async getClient(clientId: string): Promise<OpencodeConfigResponseDto> {
@@ -148,29 +170,36 @@ export class OpencodeConfigService {
     const globalLayer = this.toHeredityParent(globalRow);
     const heredity = computeHeredityMetadata(globalLayer);
 
-    this.assertWritableOverlay(dto.config ?? undefined, heredity.lockedPaths, heredity.inheritedAdditive);
-    this.assertWritableOverlay(dto.overrides ?? undefined, heredity.lockedPaths, heredity.inheritedAdditive);
-    this.assertWritableSecrets(dto.secrets, heredity.lockedPaths);
-
     let row = await this.clientRepo.findOne({ where: { clientId } });
+
+    const sanitized = await this.sanitizeUpsertAgainstAllowDeny(dto, {
+      parentOverlaysLowToHigh: [globalLayer.overlay ?? {}],
+      inheritedAdditive: heredity.inheritedAdditive,
+      existingConfig: row?.config,
+      existingOverrides: row?.overrides,
+    });
+
+    this.assertWritableOverlay(sanitized.config ?? undefined, heredity.lockedPaths, heredity.inheritedAdditive);
+    this.assertWritableOverlay(sanitized.overrides ?? undefined, heredity.lockedPaths, heredity.inheritedAdditive);
+    this.assertWritableSecrets(sanitized.secrets, heredity.lockedPaths);
 
     if (!row) {
       row = this.clientRepo.create({ clientId });
     }
 
-    if (dto.config !== undefined) {
-      row.config = dto.config ?? {};
+    if (sanitized.config !== undefined) {
+      row.config = sanitized.config ?? {};
     }
 
-    if (dto.overrides !== undefined) {
-      row.overrides = dto.overrides ?? {};
+    if (sanitized.overrides !== undefined) {
+      row.overrides = sanitized.overrides ?? {};
     }
 
-    if (dto.locks !== undefined) {
-      row.locks = normalizeStoredLocks(dto.locks);
+    if (sanitized.locks !== undefined) {
+      row.locks = normalizeStoredLocks(sanitized.locks);
     }
 
-    const nextSecrets = persistSecrets(row.secrets, dto.secrets);
+    const nextSecrets = persistSecrets(row.secrets, sanitized.secrets);
 
     if (nextSecrets !== undefined) {
       row.secrets = nextSecrets;
@@ -205,13 +234,21 @@ export class OpencodeConfigService {
     );
   }
 
-  /** Worker-ready effective config (V2 migrate + model allow/deny materialization). */
-  mergeEffectiveForSync(
+  /**
+   * Worker-ready effective config:
+   * merge layers → strip unverified MCP registry claims (catalog transport proof) →
+   * prepareConfigForSync (model/MCP allow-deny materialization + OpenCode wire).
+   */
+  async mergeEffectiveForSync(
     agentConfig: Record<string, unknown> | null | undefined,
     workspaceConfig: Record<string, unknown> | null | undefined,
     globalConfig: Record<string, unknown> | null | undefined,
-  ): Record<string, unknown> {
-    return prepareConfigForSync(this.mergeEffective(agentConfig, workspaceConfig, globalConfig));
+  ): Promise<Record<string, unknown>> {
+    const merged = this.mergeEffective(agentConfig, workspaceConfig, globalConfig) as JsonObject;
+    const catalogByName = await this.loadMcpCatalogByNames(collectMcpRegistryClaims(merged));
+    const stripped = stripUnverifiedMcpRegistryClaims(merged, catalogByName) as JsonObject;
+
+    return prepareConfigForSync(stripped);
   }
 
   mergeSecrets(
@@ -284,6 +321,77 @@ export class OpencodeConfigService {
       overlay: this.composeStoredLayer(row?.config, row?.overrides),
       locks: normalizeStoredLocks(row?.locks),
     };
+  }
+
+  /**
+   * Force allow/deny constraints onto an upsert DTO before persist.
+   * Strips unverified MCP `registry` claims (catalog transport must match), then
+   * deletes prohibited local map entries and writes `{ disabled: true }` stubs for prohibited inherited keys.
+   * Clears prohibited default models and model allow/deny refs whose provider is outside provider lists.
+   */
+  async sanitizeUpsertAgainstAllowDeny(
+    dto: UpsertOpencodeConfigDto,
+    options: {
+      parentOverlaysLowToHigh: JsonObject[];
+      inheritedAdditive: InheritedAdditiveEntry[];
+      existingConfig?: Record<string, unknown> | null;
+      existingOverrides?: Record<string, unknown> | null;
+    },
+  ): Promise<UpsertOpencodeConfigDto> {
+    // Always sanitize the composed layer (incoming patch or stored rows) so partial PUTs
+    // and legacy/poisoned MCP registry claims are healed on every write.
+    const claimedNames = [
+      ...collectMcpRegistryClaims(dto.config as JsonObject | undefined),
+      ...collectMcpRegistryClaims(dto.overrides as JsonObject | undefined),
+      ...collectMcpRegistryClaims(options.existingConfig as JsonObject | undefined),
+      ...collectMcpRegistryClaims(options.existingOverrides as JsonObject | undefined),
+    ];
+    const catalogByName = await this.loadMcpCatalogByNames(claimedNames);
+
+    const verifiedConfig = stripUnverifiedMcpRegistryClaims(
+      (dto.config !== undefined ? dto.config : options.existingConfig) as JsonObject,
+      catalogByName,
+    ) as JsonObject;
+    const verifiedOverrides = stripUnverifiedMcpRegistryClaims(
+      (dto.overrides !== undefined ? dto.overrides : options.existingOverrides) as JsonObject,
+      catalogByName,
+    ) as JsonObject;
+
+    const nextConfig = asOverlay(verifiedConfig);
+    const nextOverrides = asOverlay(verifiedOverrides);
+    const composed = this.composeStoredLayer(nextConfig, nextOverrides);
+    const effective = mergeConfigs(composed, ...options.parentOverlaysLowToHigh);
+    const context = buildAllowDenyContext(effective, options.inheritedAdditive);
+
+    return {
+      ...dto,
+      config: enforceAllowDenyOnOverlay(verifiedConfig, context, {
+        seedMissingInheritedDisables: true,
+      }),
+      overrides: enforceAllowDenyOnOverlay(verifiedOverrides, context, {
+        seedMissingInheritedDisables: false,
+      }),
+    };
+  }
+
+  private async loadMcpCatalogByNames(names: readonly string[]): Promise<Record<string, OpencodeBuiltinMcpServer>> {
+    const rows = await this.mcpCatalog.getServersByNames(names);
+    const byName: Record<string, OpencodeBuiltinMcpServer> = {};
+
+    for (const row of rows) {
+      byName[row.name] = {
+        name: row.name,
+        title: row.title,
+        description: row.description,
+        version: row.version,
+        status: row.status,
+        websiteUrl: row.websiteUrl,
+        packages: Array.isArray(row.packages) ? (row.packages as OpencodeBuiltinMcpServer['packages']) : [],
+        remotes: Array.isArray(row.remotes) ? (row.remotes as OpencodeBuiltinMcpServer['remotes']) : [],
+      };
+    }
+
+    return byName;
   }
 
   private assertWritableOverlay(

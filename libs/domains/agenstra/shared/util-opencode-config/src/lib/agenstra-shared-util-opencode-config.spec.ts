@@ -1,17 +1,21 @@
 import {
+  applyMcpRemovalTombstones,
   applySecretsPatch,
   assertNoCredentialKeysInConfig,
   assertNoV1RootKeys,
   assertOverlayRespectsHeredity,
   assertSecretsRespectLocks,
+  buildAllowDenyContext,
   composeLayerOverlay,
   computeHeredityMetadata,
+  enforceAllowDenyOnOverlay,
   expandExplicitLocks,
   extractMcpEnvSecrets,
   extractNetworkSecrets,
   injectMcpSecretsIntoWire,
   isPemCertificateMaterial,
   materializeModelAllowDeny,
+  materializeMcpAllowDeny,
   mergeConfigs,
   migrateConfigV1ToV2,
   OpencodeConfigValidationError,
@@ -159,8 +163,26 @@ describe('computeHeredityMetadata', () => {
     });
 
     expect(meta.lockedPaths).toEqual(
-      expect.arrayContaining(['/model', '/skills', '/tabs/mcp', '/mcp', '/mcp/timeout', '/mcp/servers']),
+      expect.arrayContaining([
+        '/model',
+        '/skills',
+        '/tabs/mcp',
+        '/mcp',
+        '/mcp/timeout',
+        '/mcp/servers',
+        '/mcp_allow',
+        '/mcp_deny',
+      ]),
     );
+  });
+
+  it('locks mcp allow and deny lists when a parent sets them', () => {
+    const meta = computeHeredityMetadata({
+      mcp_allow: ['custom'],
+      mcp_deny: ['io.example/blocked'],
+    });
+
+    expect(meta.lockedPaths).toEqual(expect.arrayContaining(['/mcp_allow', '/mcp_deny']));
   });
 
   it('merges explicit locks from multiple parents with presence locks', () => {
@@ -573,7 +595,141 @@ describe('materializeModelAllowDeny', () => {
     });
     expect((prepared.experimental as { mcp_timeout?: number }).mcp_timeout).toBe(2000);
   });
+});
 
+describe('materializeMcpAllowDeny', () => {
+  it('strips platform keys and filters servers with deny winning', () => {
+    const result = materializeMcpAllowDeny({
+      mcp_allow: ['io.example/allowed', 'custom'],
+      mcp_deny: ['io.example/allowed'],
+      mcp: {
+        timeout: { startup: 1 },
+        servers: {
+          'io.example__allowed': { type: 'local', command: ['a'], registry: 'io.example/allowed' },
+          custom: { type: 'local', command: ['c'] },
+          'io.example__blocked': { type: 'local', command: ['b'], registry: 'io.example/blocked' },
+        },
+      },
+    });
+
+    expect(result).not.toHaveProperty('mcp_allow');
+    expect(result).not.toHaveProperty('mcp_deny');
+    expect(result.mcp).toEqual({
+      timeout: { startup: 1 },
+      servers: {
+        custom: { type: 'local', command: ['c'] },
+      },
+    });
+  });
+
+  it('prepareConfigForSync drops disallowed mcp servers and strips mcp_allow/deny', () => {
+    const prepared = prepareConfigForSync({
+      mcp_allow: ['io.modelcontextprotocol/filesystem'],
+      mcp_deny: [],
+      mcp: {
+        servers: {
+          'io.modelcontextprotocol__filesystem': {
+            type: 'local',
+            command: ['npx'],
+            registry: 'io.modelcontextprotocol/filesystem',
+          },
+          my_custom: { type: 'local', command: ['echo'] },
+        },
+      },
+    });
+
+    expect(prepared).not.toHaveProperty('mcp_allow');
+    expect(prepared).not.toHaveProperty('mcp_deny');
+    expect(prepared.mcp).toEqual({
+      'io.modelcontextprotocol__filesystem': { type: 'local', command: ['npx'] },
+    });
+  });
+
+  it('prepareConfigForSync drops spoofed allowlisted keys without registry proof', () => {
+    const prepared = prepareConfigForSync({
+      mcp_allow: ['io.modelcontextprotocol/filesystem'],
+      mcp_deny: [],
+      mcp: {
+        servers: {
+          'io.modelcontextprotocol__filesystem': {
+            type: 'local',
+            command: ['npx', '-y', 'malicious-package'],
+          },
+        },
+      },
+    });
+
+    expect(prepared.mcp).toBeUndefined();
+  });
+});
+
+describe('applyMcpRemovalTombstones', () => {
+  it('adds enabled-false tombstones for worker mcp keys missing from desired wire', () => {
+    const reconciled = applyMcpRemovalTombstones(
+      {
+        model: 'azure/gpt-5.5',
+        mcp: {
+          keep: { type: 'local', command: ['npx', '-y', 'keep'] },
+        },
+      },
+      {
+        keep: { type: 'local', command: ['npx', '-y', 'keep'] },
+        stale: { type: 'remote', url: 'https://example.com/mcp' },
+        alreadyOff: { enabled: false },
+      },
+    );
+
+    expect(reconciled['mcp']).toEqual({
+      keep: { type: 'local', command: ['npx', '-y', 'keep'] },
+      stale: { enabled: false },
+      alreadyOff: { enabled: false },
+    });
+  });
+
+  it('tombstones all current mcp keys when desired wire has no mcp map', () => {
+    const reconciled = applyMcpRemovalTombstones(
+      { model: 'azure/gpt-5.5' },
+      {
+        stale: { type: 'local', command: ['echo'] },
+      },
+    );
+
+    expect(reconciled['mcp']).toEqual({
+      stale: { enabled: false },
+    });
+  });
+
+  it('re-enables desired mcp keys that were previously tombstoned on the worker', () => {
+    const reconciled = applyMcpRemovalTombstones(
+      {
+        mcp: {
+          restored: { type: 'remote', url: 'https://example.com/mcp' },
+          stillDisabled: { type: 'local', command: ['true'], enabled: false },
+        },
+      },
+      {
+        restored: { enabled: false, type: 'remote', url: 'https://example.com/mcp' },
+        stillDisabled: { enabled: false, type: 'local', command: ['true'] },
+        stale: { type: 'local', command: ['echo'] },
+      },
+    );
+
+    expect(reconciled['mcp']).toEqual({
+      restored: { type: 'remote', url: 'https://example.com/mcp', enabled: true },
+      stillDisabled: { type: 'local', command: ['true'], enabled: false },
+      stale: { enabled: false },
+    });
+  });
+
+  it('is a no-op when the worker has no mcp keys', () => {
+    const wire = { mcp: { keep: { type: 'local', command: ['x'] } } };
+
+    expect(applyMcpRemovalTombstones(wire, null)).toEqual(wire);
+    expect(applyMcpRemovalTombstones(wire, {})).toEqual(wire);
+  });
+});
+
+describe('prepareConfigForSync wire mapping', () => {
   it('prepareConfigForSync maps UI plurals and aliases to OpenCode Config wire', () => {
     const prepared = prepareConfigForSync({
       snapshots: true,
@@ -647,5 +803,227 @@ describe('formatter heredity', () => {
     expect(computeHeredityMetadata({ formatter: { prettier: {} } }).inheritedAdditive).toEqual(
       expect.arrayContaining([expect.objectContaining({ path: '/formatter', keys: ['prettier'] })]),
     );
+  });
+});
+
+describe('enforceAllowDenyOnOverlay', () => {
+  it('deletes local mcp servers prohibited by deny and disables inherited ones', () => {
+    const result = enforceAllowDenyOnOverlay(
+      {
+        mcp_deny: ['io.example/blocked'],
+        mcp: {
+          servers: {
+            'io.example__blocked': { type: 'local', command: ['x'], registry: 'io.example/blocked' },
+            'io.example__keep': { type: 'local', command: ['y'], registry: 'io.example/keep' },
+          },
+        },
+      },
+      buildAllowDenyContext(
+        {
+          mcp_deny: ['io.example/blocked'],
+          mcp: {
+            servers: {
+              'io.example__blocked': { type: 'local', command: ['x'], registry: 'io.example/blocked' },
+              'io.example__keep': { type: 'local', command: ['y'], registry: 'io.example/keep' },
+              'io.example__inherited': {
+                type: 'local',
+                command: ['z'],
+                registry: 'io.example/inherited',
+              },
+            },
+          },
+        },
+        [{ path: '/mcp/servers', keys: ['io.example__inherited'] }],
+      ),
+      { seedMissingInheritedDisables: true },
+    );
+
+    // Local blocked entry is deleted; inherited denied server is force-disabled via parent deny list.
+    // Re-run with inherited identity on the deny list:
+    const withInheritedDeny = enforceAllowDenyOnOverlay(
+      {
+        mcp_deny: ['io.example/inherited'],
+        mcp: {
+          servers: {
+            'io.example__keep': { type: 'local', command: ['y'], registry: 'io.example/keep' },
+          },
+        },
+      },
+      buildAllowDenyContext(
+        {
+          mcp_deny: ['io.example/inherited'],
+          mcp: {
+            servers: {
+              'io.example__keep': { type: 'local', command: ['y'], registry: 'io.example/keep' },
+              'io.example__inherited': {
+                type: 'local',
+                command: ['z'],
+                registry: 'io.example/inherited',
+              },
+            },
+          },
+        },
+        [{ path: '/mcp/servers', keys: ['io.example__inherited'] }],
+      ),
+      { seedMissingInheritedDisables: true },
+    );
+
+    expect(result['mcp']).toEqual({
+      servers: {
+        'io.example__keep': { type: 'local', command: ['y'], registry: 'io.example/keep' },
+      },
+    });
+    expect(withInheritedDeny['mcp']).toEqual({
+      servers: {
+        'io.example__keep': { type: 'local', command: ['y'], registry: 'io.example/keep' },
+        'io.example__inherited': { disabled: true },
+      },
+    });
+  });
+
+  it('deletes local providers prohibited by enable list and disables inherited ones', () => {
+    const result = enforceAllowDenyOnOverlay(
+      {
+        enabled_providers: ['anthropic'],
+        providers: {
+          openai: { name: 'OpenAI' },
+          anthropic: { name: 'Anthropic' },
+        },
+      },
+      buildAllowDenyContext(
+        {
+          enabled_providers: ['anthropic'],
+          providers: {
+            openai: { name: 'OpenAI' },
+            anthropic: { name: 'Anthropic' },
+            google: { name: 'Google' },
+          },
+        },
+        [{ path: '/providers', keys: ['google'] }],
+      ),
+      { seedMissingInheritedDisables: true },
+    );
+
+    expect(result['providers']).toEqual({
+      anthropic: { name: 'Anthropic' },
+      google: { disabled: true },
+    });
+  });
+
+  it('filters model lists and clears default models outside allow/deny', () => {
+    const result = enforceAllowDenyOnOverlay(
+      {
+        enabled_providers: ['openai'],
+        model_allow: ['openai/gpt-4', 'anthropic/claude'],
+        model_deny: ['openai/bad', 'anthropic/x'],
+        model: 'anthropic/claude',
+        small_model: 'openai/gpt-4',
+      },
+      buildAllowDenyContext({
+        enabled_providers: ['openai'],
+        model_allow: ['openai/gpt-4', 'anthropic/claude'],
+        model_deny: ['openai/bad', 'anthropic/x'],
+        model: 'anthropic/claude',
+        small_model: 'openai/gpt-4',
+      }),
+    );
+
+    expect(result['model_allow']).toEqual(['openai/gpt-4']);
+    expect(result['model_deny']).toEqual(['openai/bad']);
+    expect(result).not.toHaveProperty('model');
+    expect(result['small_model']).toBe('openai/gpt-4');
+  });
+
+  it('forces disabled true on inherited stubs even when checkbox was cleared', () => {
+    const result = enforceAllowDenyOnOverlay(
+      {
+        disabled_providers: ['openai'],
+        providers: {
+          openai: { disabled: false, hidden: true },
+        },
+      },
+      buildAllowDenyContext({ disabled_providers: ['openai'] }, [{ path: '/providers', keys: ['openai'] }]),
+    );
+
+    expect(result['providers']).toEqual({
+      openai: { disabled: true, hidden: true },
+    });
+  });
+
+  it('preserves override stubs when inheritedAdditive is empty (agent-manager path)', () => {
+    const result = enforceAllowDenyOnOverlay(
+      {
+        disabled_providers: ['openai'],
+        mcp_deny: ['blocked'],
+        providers: {
+          openai: { disabled: true },
+          anthropic: { name: 'Anthropic' },
+        },
+        mcp: {
+          servers: {
+            blocked: { disabled: true },
+            keep: { type: 'local', command: ['x'], registry: 'keep' },
+          },
+        },
+      },
+      buildAllowDenyContext({
+        disabled_providers: ['openai'],
+        mcp_deny: ['blocked'],
+      }),
+      { seedMissingInheritedDisables: true },
+    );
+
+    expect(result['providers']).toEqual({
+      openai: { disabled: true },
+      anthropic: { name: 'Anthropic' },
+    });
+    expect(result['mcp']).toEqual({
+      servers: {
+        blocked: { disabled: true },
+        keep: { type: 'local', command: ['x'], registry: 'keep' },
+      },
+    });
+  });
+
+  it('seedInheritedDisablesOnly does not delete owning-layer map entries or clear models', () => {
+    const input = {
+      enabled_providers: ['openai'],
+      model: 'anthropic/claude',
+      model_allow: ['anthropic/claude', 'openai/gpt-4'],
+      providers: {
+        openai: { name: 'OpenAI' },
+        anthropic: { name: 'Anthropic' },
+      },
+      mcp_allow: ['keep'],
+      mcp: {
+        servers: {
+          keep: { type: 'local', command: ['a'], registry: 'keep' },
+          drop: { type: 'local', command: ['b'], registry: 'drop' },
+        },
+      },
+    };
+
+    const result = enforceAllowDenyOnOverlay(
+      input,
+      buildAllowDenyContext(input, [{ path: '/providers', keys: ['google'] }]),
+      {
+        seedMissingInheritedDisables: true,
+        seedInheritedDisablesOnly: true,
+      },
+    );
+
+    expect(result['providers']).toEqual({
+      openai: { name: 'OpenAI' },
+      anthropic: { name: 'Anthropic' },
+      google: { disabled: true },
+    });
+    expect(result['mcp']).toEqual({
+      servers: {
+        keep: { type: 'local', command: ['a'], registry: 'keep' },
+        drop: { type: 'local', command: ['b'], registry: 'drop' },
+      },
+    });
+    expect(result['model']).toBe('anthropic/claude');
+    expect(result['model_allow']).toEqual(['anthropic/claude', 'openai/gpt-4']);
   });
 });
