@@ -9,6 +9,9 @@ import {
   downloadAdminFileManagerArchive,
   downloadAdminFileManagerArchiveFailure,
   downloadAdminFileManagerArchiveSuccess,
+  downloadAdminFileManagerByDocumentId,
+  downloadAdminFileManagerByDocumentIdFailure,
+  downloadAdminFileManagerByDocumentIdSuccess,
   downloadAdminFileManagerFile,
   downloadAdminFileManagerFileFailure,
   downloadAdminFileManagerFileSuccess,
@@ -144,6 +147,29 @@ export const verifyAdminFileManagerFile$ = createEffect(
           map((result) => verifyAdminFileManagerFileSuccess({ result })),
           catchError((error: Error) =>
             of(verifyAdminFileManagerFileFailure({ error: error.message ?? 'Failed to verify file' })),
+          ),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const downloadAdminFileManagerByDocumentId$ = createEffect(
+  (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
+    actions$.pipe(
+      ofType(downloadAdminFileManagerByDocumentId),
+      switchMap(({ documentId }) =>
+        service.downloadAdminFileByDocumentId(documentId).pipe(
+          tap(({ blob, fileName }) => {
+            triggerBrowserDownload(blob, fileName);
+          }),
+          map(() => downloadAdminFileManagerByDocumentIdSuccess()),
+          catchError((error: Error) =>
+            of(
+              downloadAdminFileManagerByDocumentIdFailure({
+                error: error.message ?? 'Failed to download file by document ID',
+              }),
+            ),
           ),
         ),
       ),

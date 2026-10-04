@@ -4,9 +4,11 @@ import { Store } from '@ngrx/store';
 import type { AdminFileManagerListParams, AdminFileManagerView } from '../../types/billing.types';
 
 import {
+  clearAdminFileManagerDocumentIdLookup,
   clearAdminFileManagerVerifyResult,
   collapseAdminFileManagerPath,
   downloadAdminFileManagerArchive,
+  downloadAdminFileManagerByDocumentId,
   downloadAdminFileManagerFile,
   expandAdminFileManagerPath,
   listAdminFileManagerDirectory,
@@ -15,6 +17,9 @@ import {
   verifyAdminFileManagerFile,
 } from './admin-file-manager.actions';
 import {
+  selectAdminFileManagerDocumentIdLookupError,
+  selectAdminFileManagerDocumentIdLookupLoading,
+  selectAdminFileManagerDocumentIdLookupSuccess,
   selectAdminFileManagerDownloadLoading,
   selectAdminFileManagerError,
   selectAdminFileManagerExpandedPaths,
@@ -43,6 +48,9 @@ export class AdminFileManagerFacade {
   readonly verifyLoading$ = this.store.select(selectAdminFileManagerVerifyLoading);
   readonly verifyResult$ = this.store.select(selectAdminFileManagerVerifyResult);
   readonly verifyError$ = this.store.select(selectAdminFileManagerVerifyError);
+  readonly documentIdLookupLoading$ = this.store.select(selectAdminFileManagerDocumentIdLookupLoading);
+  readonly documentIdLookupError$ = this.store.select(selectAdminFileManagerDocumentIdLookupError);
+  readonly documentIdLookupSuccess$ = this.store.select(selectAdminFileManagerDocumentIdLookupSuccess);
   readonly state$ = this.store.select(selectAdminFileManagerState);
 
   setView(view: AdminFileManagerView, viewTenantId?: string | null): void {
@@ -79,6 +87,14 @@ export class AdminFileManagerFacade {
 
   clearVerifyResult(): void {
     this.store.dispatch(clearAdminFileManagerVerifyResult());
+  }
+
+  downloadByDocumentId(documentId: string): void {
+    this.store.dispatch(downloadAdminFileManagerByDocumentId({ documentId }));
+  }
+
+  clearDocumentIdLookup(): void {
+    this.store.dispatch(clearAdminFileManagerDocumentIdLookup());
   }
 
   downloadFile(params: AdminFileManagerListParams, fileName?: string): void {

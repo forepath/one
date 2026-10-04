@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import type { Environment } from '@forepath/decabill/frontend/util-configuration';
 import { ENVIRONMENT } from '@forepath/decabill/frontend/util-configuration';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 import type {
   AdminBillNowDto,
@@ -327,6 +327,26 @@ export class AdminBillingService {
       params: httpParams,
       responseType: 'blob',
     });
+  }
+
+  downloadAdminFileByDocumentId(documentId: string): Observable<{ blob: Blob; fileName: string }> {
+    const httpParams = new HttpParams().set('documentId', documentId.trim());
+
+    return this.http
+      .get(`${this.apiUrl}/admin/billing/files/by-document-id`, {
+        params: httpParams,
+        responseType: 'blob',
+        observe: 'response',
+      })
+      .pipe(
+        map((response) => {
+          const disposition = response.headers.get('Content-Disposition') ?? '';
+          const match = /filename="([^"]+)"/i.exec(disposition);
+          const fileName = match?.[1]?.trim() || 'download';
+
+          return { blob: response.body ?? new Blob(), fileName };
+        }),
+      );
   }
 
   downloadAdminFileArchive(params: AdminFileManagerListParams): Observable<Blob> {

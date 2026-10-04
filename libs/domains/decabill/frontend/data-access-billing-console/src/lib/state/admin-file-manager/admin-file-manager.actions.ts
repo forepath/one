@@ -76,3 +76,19 @@ export const verifyAdminFileManagerFileFailure = createAction(
 );
 
 export const clearAdminFileManagerVerifyResult = createAction('[AdminFileManager] Clear Verify Result');
+
+export const downloadAdminFileManagerByDocumentId = createAction(
+  '[AdminFileManager] Download By Document Id',
+  props<{ documentId: string }>(),
+);
+
+export const downloadAdminFileManagerByDocumentIdSuccess = createAction(
+  '[AdminFileManager] Download By Document Id Success',
+);
+
+export const downloadAdminFileManagerByDocumentIdFailure = createAction(
+  '[AdminFileManager] Download By Document Id Failure',
+  props<{ error: string }>(),
+);
+
+export const clearAdminFileManagerDocumentIdLookup = createAction('[AdminFileManager] Clear Document Id Lookup');

@@ -126,6 +126,53 @@ export class AdminFileManagerService {
   }
 
   /**
+   * Look up a managed file by printed document id (short SHA) and download its bytes.
+   */
+  async downloadByDocumentId(
+    rawDocumentId?: string,
+  ): Promise<{ buffer: Buffer; fileName: string; contentType?: string }> {
+    const documentId = (rawDocumentId ?? '').trim().toLowerCase();
+
+    if (!/^[a-f0-9]{7}$/.test(documentId) && !/^[a-f0-9]{40}$/.test(documentId)) {
+      throw new BadRequestException('Document ID must be a 7-character or 40-character hex value');
+    }
+
+    const candidates = await this.storedFileRegistry.findByDocumentId(documentId);
+    const requestTenantId = getTenantIdOrDefault();
+    const allowGlobal = this.tenantsGlobalViewsConfig.isGlobalViewsAllowedForTenant(requestTenantId);
+    const scoped = allowGlobal ? candidates : candidates.filter((row) => row.tenantId === requestTenantId);
+
+    if (scoped.length === 0) {
+      throw new NotFoundException('No file found for this document ID');
+    }
+
+    if (scoped.length > 1) {
+      throw new BadRequestException('Multiple files match this document ID; use the full document hash');
+    }
+
+    const row = scoped[0];
+    const fileName = row.storageKey.split('/').filter(Boolean).pop() || 'download';
+
+    await this.logStoredFileIntegrity({
+      virtualPath: buildTenantVirtualPath(
+        FILE_STORAGE_SCOPE_SEGMENTS[row.scope as FileStorageScopeType] ?? String(row.scope),
+        row.storageKey,
+      ),
+      scope: row.scope as FileStorageScopeType,
+      storageKey: row.storageKey,
+      ownerTenantId: row.tenantId,
+    });
+
+    const buffer = await this.fileStorage.readFile(row.scope as FileStorageScopeType, row.storageKey);
+
+    return {
+      buffer,
+      fileName,
+      contentType: guessContentType(fileName),
+    };
+  }
+
+  /**
    * Authenticity check for an uploaded file. Never persists the upload.
    */
   async verifyUploadedFile(document?: UploadedVerifyDocument): Promise<AdminFileVerifyResponseDto> {

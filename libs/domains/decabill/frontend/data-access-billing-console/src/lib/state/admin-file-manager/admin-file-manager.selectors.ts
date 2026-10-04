@@ -43,6 +43,21 @@ export const selectAdminFileManagerVerifyError = createSelector(
   (state) => state.verifyError,
 );
 
+export const selectAdminFileManagerDocumentIdLookupLoading = createSelector(
+  selectAdminFileManagerState,
+  (state) => state.documentIdLookupLoading,
+);
+
+export const selectAdminFileManagerDocumentIdLookupError = createSelector(
+  selectAdminFileManagerState,
+  (state) => state.documentIdLookupError,
+);
+
+export const selectAdminFileManagerDocumentIdLookupSuccess = createSelector(
+  selectAdminFileManagerState,
+  (state) => state.documentIdLookupSuccess,
+);
+
 export const selectAdminFileManagerEntriesForPath = (path: string) =>
   createSelector(selectAdminFileManagerState, (state) => {
     const cacheKey = buildAdminFileManagerCacheKey(state.view, state.viewTenantId, path);

@@ -1,6 +1,10 @@
 import {
+  clearAdminFileManagerDocumentIdLookup,
   clearAdminFileManagerVerifyResult,
   collapseAdminFileManagerPath,
+  downloadAdminFileManagerByDocumentId,
+  downloadAdminFileManagerByDocumentIdFailure,
+  downloadAdminFileManagerByDocumentIdSuccess,
   expandAdminFileManagerPath,
   listAdminFileManagerDirectorySuccess,
   refreshAdminFileManager,
@@ -93,5 +97,35 @@ describe('adminFileManagerReducer', () => {
 
     expect(cleared.verifyResult).toBeNull();
     expect(cleared.verifyError).toBeNull();
+  });
+
+  it('tracks document id lookup loading success and failure', () => {
+    const loading = adminFileManagerReducer(
+      initialAdminFileManagerState,
+      downloadAdminFileManagerByDocumentId({ documentId: 'abcdef1' }),
+    );
+
+    expect(loading.documentIdLookupLoading).toBe(true);
+    expect(loading.documentIdLookupError).toBeNull();
+    expect(loading.documentIdLookupSuccess).toBe(false);
+
+    const success = adminFileManagerReducer(loading, downloadAdminFileManagerByDocumentIdSuccess());
+
+    expect(success.documentIdLookupLoading).toBe(false);
+    expect(success.documentIdLookupSuccess).toBe(true);
+
+    const failure = adminFileManagerReducer(
+      loading,
+      downloadAdminFileManagerByDocumentIdFailure({ error: 'No file found' }),
+    );
+
+    expect(failure.documentIdLookupLoading).toBe(false);
+    expect(failure.documentIdLookupError).toBe('No file found');
+    expect(failure.documentIdLookupSuccess).toBe(false);
+
+    const cleared = adminFileManagerReducer(failure, clearAdminFileManagerDocumentIdLookup());
+
+    expect(cleared.documentIdLookupError).toBeNull();
+    expect(cleared.documentIdLookupSuccess).toBe(false);
   });
 });

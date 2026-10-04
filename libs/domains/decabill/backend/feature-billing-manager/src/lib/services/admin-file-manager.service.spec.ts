@@ -20,7 +20,7 @@ jest.mock('archiver', () => ({
   }),
 }));
 
-import { ForbiddenException, NotFoundException, PayloadTooLargeException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, NotFoundException, PayloadTooLargeException } from '@nestjs/common';
 import { runWithTenantId } from '@forepath/shared/backend';
 import { FileStorageScope } from '@forepath/shared/backend/util-file-storage';
 
@@ -46,6 +46,7 @@ describe('AdminFileManagerService', () => {
     findMapForKeys: jest.fn().mockResolvedValue(new Map()),
     findByScopeKey: jest.fn().mockResolvedValue(null),
     findByContentSha256: jest.fn().mockResolvedValue([]),
+    findByDocumentId: jest.fn().mockResolvedValue([]),
     verifyFromStorage: jest.fn().mockResolvedValue(true),
     verifyFromBuffer: jest.fn().mockReturnValue(true),
     isSigningEnabled: jest.fn().mockReturnValue(false),
@@ -72,6 +73,7 @@ describe('AdminFileManagerService', () => {
     storedFileRegistry.findMapForKeys.mockResolvedValue(new Map());
     storedFileRegistry.findByScopeKey.mockResolvedValue(null);
     storedFileRegistry.findByContentSha256.mockResolvedValue([]);
+    storedFileRegistry.findByDocumentId.mockResolvedValue([]);
     storedFileRegistry.verifyFromBuffer.mockReturnValue(true);
     storedFileRegistry.isSigningEnabled.mockReturnValue(false);
     storedFileSigningConfig.getSecret.mockReturnValue(null);
@@ -351,5 +353,53 @@ describe('AdminFileManagerService', () => {
 
     expect(result.verdict).toBe('unknown');
     expect(result.contentSha256).toHaveLength(64);
+  });
+
+  it('downloadByDocumentId returns file bytes for a unique short id', async () => {
+    storedFileRegistry.findByDocumentId.mockResolvedValue([
+      {
+        id: '11111111-1111-1111-1111-111111111111',
+        tenantId: 'default',
+        scope: FileStorageScope.customerInvoices,
+        storageKey: 'sub/invoice.pdf',
+        longSha: 'abcdef1' + '0'.repeat(33),
+      },
+    ]);
+    fileStorage.readFile.mockResolvedValue(Buffer.from('pdf-bytes'));
+
+    const result = await runWithTenantId('default', () => service.downloadByDocumentId('abcdef1'));
+
+    expect(result.fileName).toBe('invoice.pdf');
+    expect(result.buffer.toString()).toBe('pdf-bytes');
+    expect(fileStorage.readFile).toHaveBeenCalledWith(FileStorageScope.customerInvoices, 'sub/invoice.pdf');
+  });
+
+  it('downloadByDocumentId rejects ambiguous short ids', async () => {
+    storedFileRegistry.findByDocumentId.mockResolvedValue([
+      {
+        id: '11111111-1111-1111-1111-111111111111',
+        tenantId: 'default',
+        scope: FileStorageScope.customerInvoices,
+        storageKey: 'sub/a.pdf',
+      },
+      {
+        id: '22222222-2222-2222-2222-222222222222',
+        tenantId: 'default',
+        scope: FileStorageScope.customerInvoices,
+        storageKey: 'sub/b.pdf',
+      },
+    ]);
+
+    await expect(runWithTenantId('default', () => service.downloadByDocumentId('abcdef1'))).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+  });
+
+  it('downloadByDocumentId returns not found when no match', async () => {
+    storedFileRegistry.findByDocumentId.mockResolvedValue([]);
+
+    await expect(runWithTenantId('default', () => service.downloadByDocumentId('abcdef1'))).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 });

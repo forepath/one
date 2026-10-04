@@ -1370,6 +1370,24 @@
       <trans-unit id="featureAdminFileExplorer-verify" datatype="html">
         <source>Verify file</source>
         </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-search" datatype="html">
+        <source>Find by document ID</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-searchModalTitle" datatype="html">
+        <source>Find by document ID</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-searchDocumentIdLabel" datatype="html">
+        <source>Document ID</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-searchHint" datatype="html">
+        <source>Enter the 7-character Document ID printed on the PDF, or the full 40-character hash.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-searchSubmit" datatype="html">
+        <source>Download</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-searchSuccess" datatype="html">
+        <source>Download started.</source>
+        </trans-unit>
       <trans-unit id="featureAdminFileExplorer-verifyModalTitle" datatype="html">
         <source>Verify authenticity</source>
         </trans-unit>

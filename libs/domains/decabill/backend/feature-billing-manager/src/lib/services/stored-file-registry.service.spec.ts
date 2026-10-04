@@ -148,6 +148,33 @@ describe('StoredFileRegistryService', () => {
     expect(fileStorage.readFile).not.toHaveBeenCalled();
   });
 
+  it('findByDocumentId looks up by short prefix or full long SHA', async () => {
+    const row = {
+      id: '11111111-1111-1111-1111-111111111111',
+      longSha: 'abcdef1' + '0'.repeat(33),
+      tenantId: 'default',
+    } as StoredFileEntity;
+    const find = jest.fn().mockResolvedValue([row]);
+    const { service } = createService({ find });
+
+    await expect(service.findByDocumentId('abcdef1')).resolves.toEqual([row]);
+    expect(find).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ longSha: expect.anything() }),
+      }),
+    );
+
+    find.mockClear();
+    await expect(service.findByDocumentId(row.longSha)).resolves.toEqual([row]);
+    expect(find).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { longSha: row.longSha },
+      }),
+    );
+
+    await expect(service.findByDocumentId('not-hex')).resolves.toEqual([]);
+  });
+
   it('findByContentSha256 returns matching rows', async () => {
     const row = {
       id: '11111111-1111-1111-1111-111111111111',

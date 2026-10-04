@@ -4,7 +4,7 @@ import {
 } from '@forepath/shared/backend/util-file-storage';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, IsNull, Repository } from 'typeorm';
+import { In, IsNull, Like, Repository } from 'typeorm';
 
 import { StoredFileEntity } from '../entities/stored-file.entity';
 import {
@@ -133,6 +133,29 @@ export class StoredFileRegistryService {
 
     return await this.storedFiles.find({
       where: { contentSha256 },
+      order: { createdAt: 'ASC' },
+    });
+  }
+
+  /**
+   * Resolve registry rows by printed document id (7-char short SHA) or full long SHA.
+   */
+  async findByDocumentId(documentId: string): Promise<StoredFileEntity[]> {
+    const normalized = documentId.trim().toLowerCase();
+
+    if (!/^[a-f0-9]{7}$/.test(normalized) && !/^[a-f0-9]{40}$/.test(normalized)) {
+      return [];
+    }
+
+    if (normalized.length === 40) {
+      return await this.storedFiles.find({
+        where: { longSha: normalized },
+        order: { createdAt: 'ASC' },
+      });
+    }
+
+    return await this.storedFiles.find({
+      where: { longSha: Like(`${normalized}%`) },
       order: { createdAt: 'ASC' },
     });
   }

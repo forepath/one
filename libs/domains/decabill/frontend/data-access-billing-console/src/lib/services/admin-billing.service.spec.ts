@@ -310,6 +310,25 @@ describe('AdminBillingService', () => {
     req.flush({ verdict: 'authentic', contentSha256: 'a'.repeat(64) });
   });
 
+  it('downloads admin file by document id', (done) => {
+    service.downloadAdminFileByDocumentId('abcdef1').subscribe((res) => {
+      expect(res.fileName).toBe('invoice.pdf');
+      expect(res.blob.size).toBeGreaterThan(0);
+      done();
+    });
+
+    const req = httpMock.expectOne(
+      (request) =>
+        request.url === `${apiUrl}/admin/billing/files/by-document-id` &&
+        request.params.get('documentId') === 'abcdef1',
+    );
+
+    expect(req.request.method).toBe('GET');
+    req.flush(new Blob(['pdf']), {
+      headers: { 'Content-Disposition': 'attachment; filename="invoice.pdf"' },
+    });
+  });
+
   it('lists datev exports with query params', (done) => {
     service.listDatevExports({ scope: 'tenant', year: 2026, limit: 10, offset: 0 }).subscribe((res) => {
       expect(res.items).toHaveLength(1);

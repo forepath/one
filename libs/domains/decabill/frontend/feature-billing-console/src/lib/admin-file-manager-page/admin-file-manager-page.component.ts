@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
 import {
   AdminFileManagerFacade,
   BillingCapabilitiesFacade,
@@ -40,6 +41,7 @@ interface TreeNodeView {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     FpcAlertComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
@@ -68,14 +70,18 @@ export class AdminFileManagerPageComponent implements OnInit {
   readonly unifiedTabLabel = $localize`:@@featureAdminFileExplorer-tabUnified:Unified`;
   readonly refreshAriaLabel = $localize`:@@featureAdminFileExplorer-refresh:Refresh`;
   readonly verifyAriaLabel = $localize`:@@featureAdminFileExplorer-verify:Verify file`;
+  readonly searchAriaLabel = $localize`:@@featureAdminFileExplorer-search:Find by document ID`;
   readonly downloadAriaLabel = $localize`:@@featureAdminFileExplorer-download:Download`;
   readonly verifyModalTitle = $localize`:@@featureAdminFileExplorer-verifyModalTitle:Verify authenticity`;
+  readonly searchModalTitle = $localize`:@@featureAdminFileExplorer-searchModalTitle:Find by document ID`;
 
   readonly selectedPath = signal<string | null>(null);
   readonly selectedType = signal<'file' | 'directory' | null>(null);
   readonly verifyModalOpen = signal(false);
+  readonly searchModalOpen = signal(false);
   readonly selectedVerifyFile = signal<File | null>(null);
   readonly verifyFileInputKey = signal(0);
+  readonly documentIdInput = signal('');
 
   readonly view$ = this.facade.view$;
   readonly viewTenantId$ = this.facade.viewTenantId$;
@@ -85,6 +91,9 @@ export class AdminFileManagerPageComponent implements OnInit {
   readonly verifyLoading$ = this.facade.verifyLoading$;
   readonly verifyResult$ = this.facade.verifyResult$;
   readonly verifyError$ = this.facade.verifyError$;
+  readonly documentIdLookupLoading$ = this.facade.documentIdLookupLoading$;
+  readonly documentIdLookupError$ = this.facade.documentIdLookupError$;
+  readonly documentIdLookupSuccess$ = this.facade.documentIdLookupSuccess$;
   readonly globalViewsAllowed$ = this.capabilitiesFacade.globalViewsAllowed$;
   readonly viewableTenants$ = this.capabilitiesFacade.viewableTenants$;
   readonly fileSigningEnabled$ = this.capabilitiesFacade.fileSigningEnabled$;
@@ -301,6 +310,39 @@ export class AdminFileManagerPageComponent implements OnInit {
     }
 
     this.facade.verifyFile(file);
+  }
+
+  openSearchModal(): void {
+    this.documentIdInput.set('');
+    this.facade.clearDocumentIdLookup();
+    showBillingModal(this.searchModalOpen);
+  }
+
+  onSearchModalClosed(): void {
+    hideBillingModal(this.searchModalOpen);
+    this.documentIdInput.set('');
+    this.facade.clearDocumentIdLookup();
+  }
+
+  onDocumentIdInputChange(value: string): void {
+    this.documentIdInput.set(value);
+    this.facade.clearDocumentIdLookup();
+  }
+
+  submitDocumentIdLookup(): void {
+    const documentId = this.documentIdInput().trim();
+
+    if (!documentId) {
+      return;
+    }
+
+    this.facade.downloadByDocumentId(documentId);
+  }
+
+  canSubmitDocumentIdLookup(): boolean {
+    const normalized = this.documentIdInput().trim().toLowerCase();
+
+    return /^[a-f0-9]{7}$/.test(normalized) || /^[a-f0-9]{40}$/.test(normalized);
   }
 
   verdictMessage(result: AdminFileVerifyResponse): string {

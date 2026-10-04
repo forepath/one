@@ -6,6 +6,16 @@
           variant="dark"
           size="sm"
           iconOnly
+          [ariaLabel]="searchAriaLabel"
+          [title]="searchAriaLabel"
+          (clicked)="openSearchModal()"
+        >
+          <i class="bi bi-search" aria-hidden="true"></i>
+        </fpc-button>
+        <fpc-button
+          variant="dark"
+          size="sm"
+          iconOnly
           [ariaLabel]="verifyAriaLabel"
           [title]="verifyAriaLabel"
           (clicked)="openVerifyModal()"
@@ -190,6 +200,54 @@
         <fpc-spinner size="sm" />
       } @else {
         <span i18n="@@featureAdminFileExplorer-verifySubmit">Verify</span>
+      }
+    </fpc-button>
+  </div>
+</fpc-modal>
+
+<fpc-modal [(open)]="searchModalOpen" [title]="searchModalTitle" (closed)="onSearchModalClosed()">
+  <fpc-form-field
+    forId="fileExplorerDocumentId"
+    i18n-label="@@featureAdminFileExplorer-searchDocumentIdLabel"
+    label="Document ID"
+  >
+    <fpc-form-control
+      inputType="text"
+      controlId="fileExplorerDocumentId"
+      name="fileExplorerDocumentId"
+      autocomplete="off"
+      controlClass="font-monospace"
+      [ngModel]="documentIdInput()"
+      (ngModelChange)="onDocumentIdInputChange($event)"
+    />
+    <div fpcFormFieldHint i18n="@@featureAdminFileExplorer-searchHint">
+      Enter the 7-character Document ID printed on the PDF, or the full 40-character hash.
+    </div>
+  </fpc-form-field>
+
+  @if (documentIdLookupError$ | async; as lookupErr) {
+    <fpc-alert class="mt-3" variant="danger" [message]="lookupErr" />
+  }
+
+  @if (documentIdLookupSuccess$ | async) {
+    <fpc-alert
+      class="mt-3"
+      variant="success"
+      i18n-message="@@featureAdminFileExplorer-searchSuccess"
+      message="Download started."
+    />
+  }
+
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button
+      variant="primary"
+      (clicked)="submitDocumentIdLookup()"
+      [disabled]="!canSubmitDocumentIdLookup() || (documentIdLookupLoading$ | async) === true"
+    >
+      @if (documentIdLookupLoading$ | async) {
+        <fpc-spinner size="sm" />
+      } @else {
+        <span i18n="@@featureAdminFileExplorer-searchSubmit">Download</span>
       }
     </fpc-button>
   </div>

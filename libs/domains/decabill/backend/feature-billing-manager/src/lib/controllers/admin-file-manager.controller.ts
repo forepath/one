@@ -27,6 +27,16 @@ export class AdminFileManagerController {
     return await this.adminFileManagerService.verifyUploadedFile(document);
   }
 
+  @Get('by-document-id')
+  async downloadByDocumentId(@Query('documentId') documentId?: string): Promise<StreamableFile> {
+    const { buffer, fileName, contentType } = await this.adminFileManagerService.downloadByDocumentId(documentId);
+
+    return new StreamableFile(buffer, {
+      type: contentType ?? 'application/octet-stream',
+      disposition: `attachment; filename="${fileName}"`,
+    });
+  }
+
   @Get('download')
   async downloadFile(
     @Query('path') path?: string,

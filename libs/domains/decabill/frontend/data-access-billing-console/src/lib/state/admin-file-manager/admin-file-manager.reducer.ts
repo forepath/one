@@ -3,11 +3,15 @@ import { createReducer, on } from '@ngrx/store';
 import type { AdminFileManagerEntry, AdminFileManagerView, AdminFileVerifyResponse } from '../../types/billing.types';
 
 import {
+  clearAdminFileManagerDocumentIdLookup,
   clearAdminFileManagerVerifyResult,
   collapseAdminFileManagerPath,
   downloadAdminFileManagerArchive,
   downloadAdminFileManagerArchiveFailure,
   downloadAdminFileManagerArchiveSuccess,
+  downloadAdminFileManagerByDocumentId,
+  downloadAdminFileManagerByDocumentIdFailure,
+  downloadAdminFileManagerByDocumentIdSuccess,
   downloadAdminFileManagerFile,
   downloadAdminFileManagerFileFailure,
   downloadAdminFileManagerFileSuccess,
@@ -41,6 +45,9 @@ export interface AdminFileManagerState {
   verifyLoading: boolean;
   verifyResult: AdminFileVerifyResponse | null;
   verifyError: string | null;
+  documentIdLookupLoading: boolean;
+  documentIdLookupError: string | null;
+  documentIdLookupSuccess: boolean;
 }
 
 export const initialAdminFileManagerState: AdminFileManagerState = {
@@ -54,6 +61,9 @@ export const initialAdminFileManagerState: AdminFileManagerState = {
   verifyLoading: false,
   verifyResult: null,
   verifyError: null,
+  documentIdLookupLoading: false,
+  documentIdLookupError: null,
+  documentIdLookupSuccess: false,
 };
 
 export function buildAdminFileManagerCacheKey(
@@ -147,5 +157,28 @@ export const adminFileManagerReducer = createReducer(
     verifyLoading: false,
     verifyResult: null,
     verifyError: null,
+  })),
+  on(downloadAdminFileManagerByDocumentId, (state) => ({
+    ...state,
+    documentIdLookupLoading: true,
+    documentIdLookupError: null,
+    documentIdLookupSuccess: false,
+  })),
+  on(downloadAdminFileManagerByDocumentIdSuccess, (state) => ({
+    ...state,
+    documentIdLookupLoading: false,
+    documentIdLookupSuccess: true,
+  })),
+  on(downloadAdminFileManagerByDocumentIdFailure, (state, { error }) => ({
+    ...state,
+    documentIdLookupLoading: false,
+    documentIdLookupError: error,
+    documentIdLookupSuccess: false,
+  })),
+  on(clearAdminFileManagerDocumentIdLookup, (state) => ({
+    ...state,
+    documentIdLookupLoading: false,
+    documentIdLookupError: null,
+    documentIdLookupSuccess: false,
   })),
 );

@@ -5791,6 +5791,29 @@ paths:
           description: Missing document
         '413':
           description: Document exceeds size limit
+  /admin/billing/files/by-document-id:
+    get:
+      tags: [Admin Billing]
+      summary: Download a managed billing file by printed document ID (short or long SHA)
+      operationId: downloadAdminBillingFileByDocumentId
+      parameters:
+        - name: documentId
+          in: query
+          required: true
+          schema: { type: string }
+          description: 7-character short SHA (Document ID) or full 40-character long SHA
+      responses:
+        '200':
+          description: File bytes
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid or ambiguous document ID
+        '404':
+          description: No file found for document ID
   /admin/billing/datev-exports:
     get:
       tags: [Admin Billing]

@@ -11,6 +11,7 @@ Supported actions:
 - Browse folders (lazy expand; refresh keeps open folders and reloads those paths)
 - Download a single file
 - Download a folder (and its subtree) as ZIP
+- Find and download a file by printed Document ID (when signing is enabled)
 - Verify authenticity of an uploaded file against the signed registry (when signing is enabled; upload is never persisted)
 
 Upload, rename, move, and delete are out of scope.
@@ -45,6 +46,10 @@ When signing is enabled, newly generated invoice / void / credit / offer / times
 
 With `BILLING_FILE_SIGNING_SECRET` set, File Explorer shows a verify control before Refresh. Admins upload a file; the API hashes it in memory, looks up `content_sha256`, verifies the HMAC, and returns a verdict (`authentic` / `unknown` / `unsigned` / `signing_disabled`). The upload is never written to storage or the database. Global-view operator tenants may match rows across tenants.
 
+## Find by Document ID
+
+With signing enabled, File Explorer also shows a search control. Admins enter the 7-character Document ID printed on a PDF (or the full 40-character identity hash). The API resolves the registry row, scopes by tenant (or across tenants for global-view operators), and streams the file bytes. Ambiguous short IDs that match more than one row require the full hash.
+
 ## Multi-tenant views
 
 Like DATEV admin exports, File Explorer is tenant-enclosed by default:
@@ -62,6 +67,7 @@ Admin-only (`ADMIN` roles + `billing_admin:read`):
 - `GET /admin/billing/files`
 - `GET /admin/billing/files/download`
 - `GET /admin/billing/files/archive`
+- `GET /admin/billing/files/by-document-id?documentId=`
 - `POST /admin/billing/files/verify` (multipart `document`; never persisted)
 
 ## Security

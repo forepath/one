@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-04T14:54:55.478Z",
+  "generatedAt": "2026-10-04T15:47:00.617Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -19951,6 +19951,17 @@
       }
     },
     {
+      "id": "api:HTTP:GET:/admin/billing/files/by-document-id",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/files/by-document-id",
+        "operationId": "downloadAdminBillingFileByDocumentId",
+        "summary": "Download a managed billing file by printed document ID (short or long SHA)",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/admin/billing/datev-exports",
       "type": "endpoint",
       "attrs": {
@@ -30325,6 +30336,16 @@
         "title": "Authenticity verify",
         "docPath": "docs/decabill/features/file-explorer.md",
         "sectionAnchor": "authenticity-verify",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-find-by-document-id",
+      "type": "concept",
+      "attrs": {
+        "title": "Find by Document ID",
+        "docPath": "docs/decabill/features/file-explorer.md",
+        "sectionAnchor": "find-by-document-id",
         "domain": "decabill"
       }
     },
@@ -44407,6 +44428,11 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/files/by-document-id",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/admin/billing/datev-exports",
       "type": "contains"
     },
@@ -50977,6 +51003,11 @@
     },
     {
       "from": "file:docs/decabill/features/file-explorer.md",
+      "to": "concept:decabill-find-by-document-id",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/file-explorer.md",
       "to": "concept:decabill-multi-tenant-views",
       "type": "contains"
     },
@@ -55402,6 +55433,16 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/files/by-document-id",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/files/by-document-id",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/datev-exports",
       "type": "implements"
     },
@@ -55993,6 +56034,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-file-manager.controller.ts",
       "to": "api:HTTP:POST:/admin/billing/files/verify",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-file-manager.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/files/by-document-id",
       "type": "implements"
     },
     {
@@ -56518,6 +56564,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
       "to": "api:HTTP:POST:/admin/billing/files/verify",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/files/by-document-id",
       "type": "implements"
     },
     {
@@ -82212,6 +82263,11 @@
     },
     {
       "from": "concept:decabill-authenticity-verify",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-find-by-document-id",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
