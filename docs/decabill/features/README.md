@@ -15,7 +15,7 @@ Decabill provides a complete set of capabilities for subscription billing, invoi
 - **Invoices** ZUGFeRD PDFs, open positions, billing-day accumulation, and Stripe checkout
 - **Offers** Admin draft quotations, customer accept/decline, fulfillment into subscriptions/projects/invoices
 - **Service Types and Plans** Admin-managed catalog with provider schemas and pricing
-- **Billing Administration** Manual invoices, customer profiles, KPIs, and bill-now
+- **Billing Administration** Manual invoices, customer profiles, KPIs, bill-now, and admin File Explorer
 - **Customer Profiles** Self-service and admin billing metadata required for ordering
 - **VAT and tax treatment** EU place-of-supply modes, VIES VAT ID validation, OSS threshold, reverse charge
 - **Customer Trust Score** Admin-only traffic-light trust ranking on billing profiles
@@ -142,7 +142,7 @@ Admin-managed catalog of service types, provisioning providers, and priced servi
 
 ### [Billing Administration](./billing-administration.md)
 
-Admin-only features for manual invoices, customer billing profiles, operational dashboards, and bill-now.
+Admin-only features for manual invoices, customer billing profiles, operational dashboards, bill-now, and File Explorer.
 
 **Key Capabilities**:
 
@@ -150,6 +150,11 @@ Admin-only features for manual invoices, customer billing profiles, operational 
 - Customer billing profile CRUD
 - Billing summary, statistics, and open or overdue invoice lists
 - Bill-now to force invoice generation outside the scheduler
+- Read-only [File Explorer](./file-explorer.md) for managed storage downloads
+
+### [File Explorer](./file-explorer.md)
+
+Admin read-only virtual tree of invoice, supplier, and DATEV files with per-tenant and unified views gated by `TENANTS_ALLOW_GLOBAL_VIEWS`.
 
 ### [Webhooks](./webhooks.md)
 

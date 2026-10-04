@@ -30,7 +30,7 @@ import {
   FpcTabGroupComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type Environment } from '@forepath/decabill/frontend/util-configuration';
-import { debounceTime, distinctUntilChanged, skip } from 'rxjs';
+import { combineLatest, debounceTime, distinctUntilChanged, map, skip } from 'rxjs';
 
 import {
   getDatevExportScopeLabel,
@@ -75,7 +75,8 @@ export class AdminDatevExportsPageComponent implements OnInit {
   private readonly datePipe = inject(DatePipe);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly tenantTabLabel = resolveBillingTenantDisplayName(this.environment);
+  readonly homeTenantId = this.environment.billing?.tenantId?.trim() || 'default';
+  readonly homeTenantTabLabel = resolveBillingTenantDisplayName(this.environment);
   readonly pageTitle = $localize`:@@featureAdminDatevExports-title:DATEV exports`;
   readonly unifiedTabLabel = $localize`:@@featureAdminDatevExports-tabUnified:Unified`;
   readonly searchPlaceholder = $localize`:@@featureAdminDatevExports-searchPlaceholder:Search exports`;
@@ -89,28 +90,59 @@ export class AdminDatevExportsPageComponent implements OnInit {
   readonly loading$ = this.facade.loading$;
   readonly error$ = this.facade.error$;
   readonly scope$ = this.facade.scope$;
+  readonly viewTenantId$ = this.facade.viewTenantId$;
   readonly triggerLoading$ = this.facade.triggerLoading$;
   readonly triggerError$ = this.facade.triggerError$;
   readonly unifiedExportAllowed$ = this.capabilitiesFacade.unifiedExportAllowed$;
+  readonly globalViewsAllowed$ = this.capabilitiesFacade.globalViewsAllowed$;
+  readonly viewableTenants$ = this.capabilitiesFacade.viewableTenants$;
+
+  readonly showViewTabs$ = combineLatest([this.globalViewsAllowed$, this.unifiedExportAllowed$]).pipe(
+    map(([globalViewsAllowed, unifiedExportAllowed]) => globalViewsAllowed || unifiedExportAllowed),
+  );
+
+  readonly activeTabId$ = combineLatest([this.scope$, this.viewTenantId$]).pipe(
+    map(([scope, viewTenantId]) => (scope === 'unified' ? 'unified' : (viewTenantId ?? this.homeTenantId))),
+  );
 
   readonly items = toSignal(this.facade.items$, { initialValue: [] as AdminDatevExportListEntry[] });
   readonly scope = toSignal(this.scope$, { initialValue: 'tenant' as DatevExportScope });
+  readonly viewTenantId = toSignal(this.viewTenantId$, { initialValue: null as string | null });
+  readonly viewableTenants = toSignal(this.viewableTenants$, { initialValue: [] as string[] });
   readonly users = toSignal(this.authFacade.users$, { initialValue: [] as UserResponseDto[] });
 
   triggerYear = new Date().getFullYear();
   triggerMonth = new Date().getMonth() === 0 ? 12 : new Date().getMonth();
   triggerScope: DatevExportScope = 'tenant';
+  triggerViewTenantId = this.homeTenantId;
 
   ngOnInit(): void {
-    this.facade.loadExports({ scope: 'tenant' });
+    this.capabilitiesFacade.loadCapabilities();
+    this.facade.loadExports({ scope: 'tenant', viewTenantId: this.homeTenantId });
     this.authFacade.loadUsers();
     this.registerModalCloseWatcher();
 
     this.searchQuery$
       .pipe(skip(1), debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe((search) => {
-        this.facade.loadExports({ scope: this.scope(), search: search.trim() || undefined });
+        this.facade.loadExports({
+          scope: this.scope(),
+          viewTenantId: this.scope() === 'tenant' ? (this.viewTenantId() ?? this.homeTenantId) : undefined,
+          search: search.trim() || undefined,
+        });
       });
+  }
+
+  tenantTabLabel(tenantId: string): string {
+    if (tenantId === this.homeTenantId) {
+      return this.homeTenantTabLabel;
+    }
+
+    if (!tenantId) {
+      return tenantId;
+    }
+
+    return tenantId.charAt(0).toUpperCase() + tenantId.slice(1);
   }
 
   openExportModal(): void {
@@ -118,16 +150,18 @@ export class AdminDatevExportsPageComponent implements OnInit {
     showBillingModal(this.exportModalOpen);
   }
 
-  setScope(scope: DatevExportScope): void {
-    this.facade.loadExports({ scope, search: this.searchQuery().trim() || undefined });
-  }
-
-  onScopeTabChange(scope: string | null): void {
-    if (scope !== 'tenant' && scope !== 'unified') {
+  onScopeTabChange(tabId: string | null): void {
+    if (!tabId) {
       return;
     }
 
-    this.setScope(scope);
+    if (tabId === 'unified') {
+      this.facade.setScope('unified');
+
+      return;
+    }
+
+    this.facade.setScope('tenant', tabId);
   }
 
   submitTriggerExport(): void {
@@ -135,11 +169,15 @@ export class AdminDatevExportsPageComponent implements OnInit {
       year: this.triggerYear,
       month: this.triggerMonth,
       scope: this.triggerScope,
+      viewTenantId: this.triggerScope === 'tenant' ? this.triggerViewTenantId : undefined,
     });
   }
 
   downloadExport(exportId: string): void {
-    this.facade.downloadExport(exportId);
+    this.facade.downloadExport(
+      exportId,
+      this.scope() === 'tenant' ? (this.viewTenantId() ?? this.homeTenantId) : undefined,
+    );
   }
 
   exportPrimaryTitle(item: AdminDatevExportListEntry): string {
@@ -176,7 +214,7 @@ export class AdminDatevExportsPageComponent implements OnInit {
 
   exportScopeLabel(scope: AdminDatevExportListEntry['scope']): string {
     if (scope === 'tenant') {
-      return this.tenantTabLabel;
+      return this.tenantTabLabel(this.viewTenantId() ?? this.homeTenantId);
     }
 
     return getDatevExportScopeLabel(scope);
@@ -222,6 +260,7 @@ export class AdminDatevExportsPageComponent implements OnInit {
     this.triggerYear = new Date().getFullYear();
     this.triggerMonth = new Date().getMonth() === 0 ? 12 : new Date().getMonth();
     this.triggerScope = this.scope();
+    this.triggerViewTenantId = this.viewTenantId() ?? this.homeTenantId;
   }
 
   private registerModalCloseWatcher(): void {

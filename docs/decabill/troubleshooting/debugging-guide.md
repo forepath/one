@@ -143,7 +143,7 @@ Use browser DevTools Network tab or a Socket.IO client with:
 ### Invoice PDF Missing
 
 1. Verify worker and API share `billing_file_data` (`FILE_STORAGE_ROOT`, default `/data`) in compose
-2. Check `FILE_STORAGE_ROOT` and that invoice files exist under `{root}/invoices`
+2. Check `FILE_STORAGE_ROOT` and that invoice files exist under `{root}/customer/invoices` (legacy `{root}/invoices` may still exist during dual-read)
 3. Review worker logs during PDF generation jobs
 
 ### Multi-Tenant Data in Wrong Tenant

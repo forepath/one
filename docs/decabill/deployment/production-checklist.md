@@ -48,7 +48,7 @@ Comprehensive checklist for deploying Decabill to production.
 - [ ] `FILE_STORAGE_ROOT` volume mounted on api, worker, and scheduler (when `FILE_STORAGE_PROVIDER=local`)
 - [ ] Or S3-compatible storage configured (`FILE_STORAGE_PROVIDER=s3` plus `FILE_STORAGE_S3_*`)
 - [ ] `BILLING_DATEV_EXPORT_ENABLED=false` verified if DATEV export is not required (UI hidden via capabilities)
-- [ ] Unified DATEV export allowlist reviewed (`BILLING_DATEV_UNIFIED_EXPORT_ALLOWED_TENANTS`)
+- [ ] Global admin views allowlist reviewed (`TENANTS_ALLOW_GLOBAL_VIEWS` — DATEV unified + File Explorer)
 - [ ] Sample DATEV export validated with DatevFormatPruefProgramm before accountant handoff
 - [ ] Provisioning SSH and cloud API tokens restricted (see **[DR-001](../security/accepted-risks.md#dr-001-provisioning-ssh-cloud-init-templates)**)
 
@@ -148,7 +148,8 @@ Comprehensive checklist for deploying Decabill to production.
 
 ### Billing File Backups
 
-- Backup `FILE_STORAGE_ROOT` volume (invoice PDFs under `invoices/`, DATEV ZIPs under `datev-exports/`) when using `local`, or the S3-compatible bucket when using `s3`
+- Backup `FILE_STORAGE_ROOT` volume (`customer/*`, `supplier/*`, `export/datev/`) when using `local`, or the S3-compatible bucket when using `s3`
+- Set `BILLING_FILE_SIGNING_SECRET` for stored-file HMAC signatures
 - Align PDF and DATEV retention with legal and tax requirements
 - Document whether per-tenant or unified DATEV exports are used in production
 

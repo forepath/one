@@ -14,10 +14,18 @@
     </fpc-button>
   </fpc-page-header>
 
-  @if (unifiedExportAllowed$ | async) {
-    <fpc-tab-group class="flex-shrink-0" [activeId]="scope()" (activeIdChange)="onScopeTabChange($event)">
-      <fpc-tab id="tenant" [label]="tenantTabLabel" />
-      <fpc-tab id="unified" [label]="unifiedTabLabel" />
+  @if (showViewTabs$ | async) {
+    <fpc-tab-group
+      class="flex-shrink-0"
+      [activeId]="(activeTabId$ | async) ?? homeTenantId"
+      (activeIdChange)="onScopeTabChange($event)"
+    >
+      @for (tenantId of viewableTenants(); track tenantId) {
+        <fpc-tab [id]="tenantId" [label]="tenantTabLabel(tenantId)" />
+      }
+      @if (unifiedExportAllowed$ | async) {
+        <fpc-tab id="unified" [label]="unifiedTabLabel" />
+      }
     </fpc-tab-group>
   }
 
@@ -150,13 +158,29 @@
       name="datevMonth"
     />
   </fpc-form-field>
-  @if (unifiedExportAllowed$ | async) {
+  @if (showViewTabs$ | async) {
     <fpc-form-field forId="datevScope" i18n-label="@@featureAdminDatevExports-scope" label="Scope">
       <fpc-form-control controlType="select" controlId="datevScope" [(ngModel)]="triggerScope" name="datevScope">
-        <option value="tenant">{{ tenantTabLabel }}</option>
-        <option value="unified" i18n="@@featureAdminDatevExports-scopeUnified">Unified</option>
+        <option value="tenant" i18n="@@featureAdminDatevExports-scopeTenant">Tenant</option>
+        @if (unifiedExportAllowed$ | async) {
+          <option value="unified" i18n="@@featureAdminDatevExports-scopeUnified">Unified</option>
+        }
       </fpc-form-control>
     </fpc-form-field>
+    @if (triggerScope === 'tenant' && (globalViewsAllowed$ | async) && viewableTenants().length > 1) {
+      <fpc-form-field forId="datevViewTenant" i18n-label="@@featureAdminDatevExports-viewTenant" label="Tenant">
+        <fpc-form-control
+          controlType="select"
+          controlId="datevViewTenant"
+          [(ngModel)]="triggerViewTenantId"
+          name="datevViewTenant"
+        >
+          @for (tenantId of viewableTenants(); track tenantId) {
+            <option [value]="tenantId">{{ tenantTabLabel(tenantId) }}</option>
+          }
+        </fpc-form-control>
+      </fpc-form-field>
+    }
   }
   @if (triggerError$ | async; as triggerErr) {
     <fpc-alert variant="danger" [message]="triggerErr" />

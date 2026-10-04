@@ -73,7 +73,7 @@ List filters: `supplierId`, `status`, `search`, pagination.
 | `uploaded`  | Operator attached PDF/XML at create/update |
 | `generated` | System PDF created at issue when no upload |
 
-Stored under the `supplier-invoices` file-storage scope (`FILE_STORAGE_ROOT` / S3 prefix).
+Stored under the `supplierInvoices` file-storage scope (`supplier/invoices` under `FILE_STORAGE_ROOT` / S3 prefix).
 
 ## Tax Treatment
 

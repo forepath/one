@@ -1544,6 +1544,9 @@ export type DatevExportStatus = 'pending' | 'running' | 'completed' | 'failed';
 export interface BillingCapabilitiesResponse {
   datevExportEnabled: boolean;
   unifiedExportAllowed: boolean;
+  globalViewsAllowed: boolean;
+  viewableTenants: string[];
+  fileSigningEnabled: boolean;
 }
 
 export interface AdminDatevExportListItem {
@@ -1600,13 +1603,79 @@ export interface AdminDatevExportListParams {
   year?: number;
   scope?: DatevExportScope;
   search?: string;
+  viewTenantId?: string;
 }
 
 export interface TriggerDatevExportDto {
   year: number;
   month: number;
   scope?: DatevExportScope;
+  viewTenantId?: string;
   force?: boolean;
+}
+
+export type AdminFileManagerView = 'tenant' | 'unified';
+
+export type AdminFileManagerEntryType = 'file' | 'directory';
+
+export interface AdminFileManagerEntry {
+  name: string;
+  path: string;
+  type: AdminFileManagerEntryType;
+  size?: number;
+  contentType?: string;
+  scope?: string;
+  updatedAt?: string;
+  id?: string;
+  shas?: { short: string; long: string };
+  contentHashes?: { md5: string; sha1: string; sha256: string; sha512: string };
+  byteSize?: number;
+  signature?: {
+    status: 'signed' | 'pending';
+    alg?: string;
+    version?: string;
+    value?: string;
+    signedAt?: string;
+    tenantId?: string;
+  };
+}
+
+export interface AdminFileManagerListResponse {
+  path: string;
+  view: AdminFileManagerView;
+  viewTenantId?: string;
+  entries: AdminFileManagerEntry[];
+}
+
+export interface AdminFileManagerListParams {
+  path?: string;
+  view?: AdminFileManagerView;
+  viewTenantId?: string;
+}
+
+export type AdminFileVerifyVerdict = 'authentic' | 'unknown' | 'unsigned' | 'signing_disabled';
+
+export interface AdminFileVerifyMatch {
+  id: string;
+  shas: { short: string; long: string };
+  tenantId: string;
+  scope: string;
+  storageKey: string;
+  virtualPath: string;
+  signature?: {
+    status: 'signed' | 'pending';
+    alg?: string;
+    version?: string;
+    value?: string;
+    signedAt?: string;
+    tenantId?: string;
+  };
+}
+
+export interface AdminFileVerifyResponse {
+  verdict: AdminFileVerifyVerdict;
+  contentSha256?: string;
+  match?: AdminFileVerifyMatch;
 }
 
 export interface TriggerDatevExportResponse {

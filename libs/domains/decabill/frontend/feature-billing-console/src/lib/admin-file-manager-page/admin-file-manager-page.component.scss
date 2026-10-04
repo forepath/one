@@ -1,0 +1,66 @@
+.admin-file-explorer {
+  min-height: 0;
+}
+
+.file-tree-row {
+  color: inherit;
+  background-color: transparent;
+  height: 32px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--bs-secondary-bg);
+  }
+
+  // Match Agenstra file-tree selection: soft primary wash, no bold / border accent.
+  &.selected {
+    background-color: color-mix(in srgb, var(--bs-primary) 14%, var(--bs-body-bg));
+    color: var(--bs-body-color);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: -2px;
+  }
+
+  fpc-button-group {
+    opacity: 0;
+    transition: opacity 0.15s ease-in-out;
+  }
+
+  &:hover {
+    fpc-button-group {
+      opacity: 1;
+    }
+  }
+}
+
+.file-tree-indent {
+  display: inline-block;
+  min-width: 0;
+}
+
+.file-tree-name {
+  min-width: 0;
+}
+
+.file-tree-meta {
+  max-width: 50%;
+}
+
+.file-tree-hash-badge {
+  font-size: 0.75rem;
+}
+
+.file-tree-lock {
+  font-size: 0.95rem;
+}
+
+.file-tree-chevron,
+.file-tree-chevron-spacer {
+  display: inline-flex;
+  width: 1rem;
+  justify-content: center;
+}

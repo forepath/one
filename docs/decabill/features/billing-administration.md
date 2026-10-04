@@ -145,6 +145,12 @@ Draft → issue workflow mirrors manual AR invoices; supports document upload, E
 
 Monthly DATEV exports include **both** AR customer invoices and AP supplier invoices. Supplier line items book to configured expense accounts with **H** (credit) on the supplier creditor account. Creditor numbers are allocated lazily from `BILLING_DATEV_CREDITOR_ACCOUNT_START`–`END` (defaults `70000`–`99999`). Configure expense GL accounts via `BILLING_DATEV_EXPENSE_ACCOUNT_*` and optional `BILLING_DATEV_EXPENSE_BU_KEY_*`. See [Environment configuration](../deployment/environment-configuration.md) and [Supplier invoices](./supplier-invoices.md).
 
+When the request tenant is listed in `TENANTS_ALLOW_GLOBAL_VIEWS`, the DATEV admin page shows one tab per configured tenant plus Unified (Unified still requires `BILLING_DATEV_UNIFIED_EXPORT_ENABLED`). Cross-tenant listing uses `viewTenantId` while `X-Tenant` stays the operator home tenant.
+
+## File Explorer
+
+Read-only admin browser for managed storage files (invoice PDFs, supplier documents, DATEV ZIPs). Frontend route: `/administration/file-explorer`. API under `/admin/billing/files` (`billing_admin:read`). Tenant enclosure and Unified consolidation use the same `TENANTS_ALLOW_GLOBAL_VIEWS` allowlist as DATEV. See [File Explorer](./file-explorer.md).
+
 ## Admin Projects
 
 Projects are managed under `/admin/billing/projects`. Admins assign each project to a customer user, track time, and bill unbilled hours to an invoice.

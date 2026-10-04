@@ -76,6 +76,8 @@ export interface DecabillBillingCloudInitConfig {
     encryption: {
       jwtSecret: string;
       encryptionKey: string;
+      /** Global HMAC secret for billing_stored_files signatures. */
+      fileSigningSecret: string;
     };
     smtp: {
       host: string;
@@ -98,7 +100,7 @@ export interface DecabillBillingCloudInitConfig {
 
 /**
  * Builds Decabill billing stack cloud-init config from plan defaults + requestedConfig.
- * Generates random encryptionKey and jwtSecret.
+ * Generates random encryptionKey, jwtSecret, and fileSigningSecret.
  */
 export function buildDecabillBillingCloudInitConfigFromRequest(
   effectiveConfig: Record<string, unknown>,
@@ -107,6 +109,7 @@ export function buildDecabillBillingCloudInitConfigFromRequest(
 ): DecabillBillingCloudInitConfig {
   const encryptionKey = randomBytes(32).toString('base64');
   const jwtSecret = randomBytes(32).toString('hex');
+  const fileSigningSecret = randomBytes(32).toString('hex');
   const databasePassword = randomBytes(24).toString('base64url');
   const fqdn = `${hostname}.${baseDomain}`;
   const smtp = effectiveConfig.smtp as Record<string, unknown> | undefined;
@@ -156,7 +159,7 @@ export function buildDecabillBillingCloudInitConfigFromRequest(
           },
         }),
       },
-      encryption: { encryptionKey, jwtSecret },
+      encryption: { encryptionKey, jwtSecret, fileSigningSecret },
       smtp: {
         host: (smtp?.host as string) ?? 'mailhog',
         port: (smtp?.port as number) ?? 1025,
@@ -219,6 +222,9 @@ export function buildDecabillBillingCloudInitUserData(config: DecabillBillingClo
     `FILE_STORAGE_PROVIDER: local`,
     `FILE_STORAGE_ROOT: /data`,
     `FILE_STORAGE_LEGACY_MIGRATION_ENABLED: true`,
+    `FILE_STORAGE_LAYOUT_MIGRATION_ENABLED: true`,
+    `FILE_STORAGE_LAYOUT_DUAL_READ_ENABLED: true`,
+    `BILLING_FILE_SIGNING_SECRET: ${config.backend?.encryption?.fileSigningSecret ?? ''}`,
     `BILLING_DATEV_EXPORT_ENABLED: false`,
     `TENANTS_ALLOW_DEFAULT: true`,
     `DNS_BASE_DOMAIN: ${config.host?.fqdn?.split('.').slice(1).join('.') || 'spirde.com'}`,

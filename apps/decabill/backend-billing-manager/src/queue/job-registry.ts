@@ -53,6 +53,8 @@ export const BillingJobName = {
   SEARCH_REINDEX_COORDINATOR: 'search-reindex.coordinator',
   SEARCH_REINDEX_UNIT: 'search-reindex.unit',
   SEARCH_INDEX_SYNC_UNIT: 'search-index-sync.unit',
+  STORED_FILES_BACKFILL_COORDINATOR: 'stored-files.backfill.coordinator',
+  STORED_FILES_BACKFILL_UNIT: 'stored-files.backfill.unit',
   OFFER_EXPIRATION_COORDINATOR: 'offer-expiration.coordinator',
   OFFER_EXPIRATION_UNIT: 'offer-expiration.unit',
   OFFER_FULFILLMENT_COORDINATOR: 'offer-fulfillment.coordinator',
@@ -243,6 +245,12 @@ export function getBillingRepeatableJobs(): BillingRepeatableJobDefinition[] {
     name: BillingJobName.SEARCH_REINDEX_COORDINATOR,
     coordinatorJobId: buildCoordinatorJobId('search-reindex'),
     everyMs: parseIntervalMs('SEARCH_REINDEX_INTERVAL', 900_000),
+  });
+
+  jobs.push({
+    name: BillingJobName.STORED_FILES_BACKFILL_COORDINATOR,
+    coordinatorJobId: buildCoordinatorJobId('stored-files-backfill'),
+    everyMs: parseIntervalMs('STORED_FILES_BACKFILL_INTERVAL', 300_000),
   });
 
   jobs.push({

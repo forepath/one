@@ -45,6 +45,7 @@ import { AdminSupplierInvoicesController } from './controllers/admin-supplier-in
 import { AdminCustomerProfilesController } from './controllers/admin-customer-profiles.controller';
 import { AdminCustomerAutoBillingController } from './controllers/admin-customer-auto-billing.controller';
 import { AdminDatevExportsController } from './controllers/admin-datev-exports.controller';
+import { AdminFileManagerController } from './controllers/admin-file-manager.controller';
 import { AvailabilityController } from './controllers/availability.controller';
 import { BackordersController } from './controllers/backorders.controller';
 import { CustomerProfilesController } from './controllers/customer-profiles.controller';
@@ -232,6 +233,12 @@ import { BillingAdminService } from './services/billing-admin.service';
 import { BillingMetricsCollectorService } from './services/billing-metrics-collector.service';
 import { BillingAuditLogService } from './services/billing-audit-log.service';
 import { BillingTenantService } from './services/billing-tenant.service';
+import { AdminFileManagerService } from './services/admin-file-manager.service';
+import { StoredFileEntity } from './entities/stored-file.entity';
+import { StoredFileRegistryService } from './services/stored-file-registry.service';
+import { StoredFileSigningConfigService } from './services/stored-file-signing-config.service';
+import { StoredFilesBackfillJobHandler } from './services/stored-files-backfill.job-handler';
+import { TenantsGlobalViewsConfigService } from './services/tenants-global-views-config.service';
 import { BillingIssuerConfigService } from './services/billing-issuer-config.service';
 import { BillingScheduleService } from './services/billing-schedule.service';
 import { BillingStatisticsQueryService } from './services/billing-statistics-query.service';
@@ -399,6 +406,7 @@ const authMethod = getAuthenticationMethod();
       RevokedUserTokenEntity,
       UserPersonalAccessTokenEntity,
       DatevExportEntity,
+      StoredFileEntity,
       DatevDebtorAccountEntity,
       DatevCreditorAccountEntity,
       SupplierProfileEntity,
@@ -449,6 +457,7 @@ const authMethod = getAuthenticationMethod();
     AdminSupplierInvoicesController,
     AdminCustomerAutoBillingController,
     AdminDatevExportsController,
+    AdminFileManagerController,
     PaymentsWebhookController,
     AdminUsageController,
     UsageController,
@@ -523,6 +532,11 @@ const authMethod = getAuthenticationMethod();
     BillingMetricsCollectorService,
     BillingAuditLogService,
     BillingTenantService,
+    TenantsGlobalViewsConfigService,
+    AdminFileManagerService,
+    StoredFileSigningConfigService,
+    StoredFileRegistryService,
+    StoredFilesBackfillJobHandler,
     BillingStatisticsQueryService,
     InvoiceAdminService,
     ManualInvoiceService,
@@ -732,6 +746,7 @@ const authMethod = getAuthenticationMethod();
     BackorderRetryJobHandler,
     BillingScheduleService,
     BillingTenantService,
+    TenantsGlobalViewsConfigService,
     BillingEmailAttachmentResolver,
     EMAIL_ATTACHMENT_RESOLVER,
     EmailDeliveryService,
@@ -794,6 +809,7 @@ const authMethod = getAuthenticationMethod();
     DatevExportConfigService,
     BillingContributorHostModule,
     SearchReindexJobHandler,
+    StoredFilesBackfillJobHandler,
     BillingSearchModule,
     BillingIdentityEmailBridgeModule,
     BillingIdentityNotificationBridgeModule,

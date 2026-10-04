@@ -31,7 +31,7 @@ import {
   triggerDatevExportFailure,
   triggerDatevExportSuccess,
 } from './admin-datev-exports.actions';
-import { selectAdminDatevExportsScope, selectAdminDatevExportsState } from './admin-datev-exports.selectors';
+import { selectAdminDatevExportsState } from './admin-datev-exports.selectors';
 
 const BATCH_SIZE = 10;
 export const QUEUED_POLL_INTERVAL_MS = 3000;
@@ -152,10 +152,15 @@ export const triggerDatevExportSuccessReload$ = createEffect(
   (actions$ = inject(Actions), store = inject(Store)) =>
     actions$.pipe(
       ofType(triggerDatevExportSuccess),
-      withLatestFrom(store.select(selectAdminDatevExportsScope)),
-      map(([, scope]) =>
+      withLatestFrom(store.select(selectAdminDatevExportsState)),
+      map(([, state]) =>
         loadAdminDatevExports({
-          params: { scope, limit: BATCH_SIZE, offset: 0 },
+          params: {
+            scope: state.scope,
+            viewTenantId: state.viewTenantId ?? undefined,
+            limit: BATCH_SIZE,
+            offset: 0,
+          },
           preserveScope: true,
         }),
       ),
@@ -183,7 +188,12 @@ export const pollQueuedDatevExports$ = createEffect(
 
             return scopes.map((scope) =>
               loadAdminDatevExports({
-                params: { scope, limit: BATCH_SIZE, offset: 0 },
+                params: {
+                  scope,
+                  viewTenantId: state.viewTenantId ?? undefined,
+                  limit: BATCH_SIZE,
+                  offset: 0,
+                },
                 preserveScope: true,
               }),
             );
@@ -214,8 +224,8 @@ export const downloadDatevExport$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
     actions$.pipe(
       ofType(downloadDatevExport),
-      switchMap(({ exportId }) =>
-        service.downloadDatevExport(exportId).pipe(
+      switchMap(({ exportId, viewTenantId }) =>
+        service.downloadDatevExport(exportId, viewTenantId).pipe(
           tap((blob) => {
             const url = URL.createObjectURL(blob);
             const anchor = document.createElement('a');

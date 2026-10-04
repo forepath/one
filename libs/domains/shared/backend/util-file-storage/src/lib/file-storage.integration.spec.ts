@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 
+import { FileStorageLayoutMigrationService } from './file-storage-layout-migration.service';
 import { FileStorageLegacyMigrationService } from './file-storage-legacy-migration.service';
 import { FileStorageProviderFactory } from './file-storage-provider.factory';
 import { FileStorageService } from './file-storage.service';
@@ -40,19 +41,22 @@ describe('file-storage integration smoke', () => {
     const local = new LocalFileStorageProvider();
     factory.registerProvider(local);
 
-    const migration = new FileStorageLegacyMigrationService();
-    await migration.migrateAllScopes();
+    await new FileStorageLegacyMigrationService().migrateAllScopes();
+    await new FileStorageLayoutMigrationService().migrateLayout();
 
     const service = new FileStorageService(factory);
     const buffer = await service.readInvoiceFile('sub-1/inv.pdf');
 
     expect(buffer.toString()).toBe('zugferd');
+    expect(await fs.promises.readFile(path.join(storageRoot, 'customer', 'invoices', 'sub-1', 'inv.pdf'), 'utf8')).toBe(
+      'zugferd',
+    );
 
     await service.writeDatevExportFile('tenant/2026/01/export.zip', Buffer.from('zip'));
     expect((await service.readDatevExportFile('tenant/2026/01/export.zip')).toString()).toBe('zip');
   });
 
-  it('default matching layout is a migration no-op and still supports I/O', async () => {
+  it('dual-read serves previous segment when new layout path is missing', async () => {
     const storageRoot = path.join(tempRoot, 'data');
     const invoicesRoot = path.join(storageRoot, 'invoices');
 
@@ -63,6 +67,8 @@ describe('file-storage integration smoke', () => {
       ...originalEnv,
       FILE_STORAGE_ROOT: storageRoot,
       FILE_STORAGE_PROVIDER: 'local',
+      FILE_STORAGE_LAYOUT_MIGRATION_ENABLED: 'false',
+      FILE_STORAGE_LAYOUT_DUAL_READ_ENABLED: 'true',
       BILLING_INVOICE_PDF_STORAGE_PATH: invoicesRoot,
       BILLING_DATEV_EXPORT_STORAGE_PATH: path.join(storageRoot, 'datev-exports'),
     };

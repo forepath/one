@@ -286,7 +286,47 @@ describe('AdminBillingService', () => {
     const req = httpMock.expectOne(`${apiUrl}/admin/billing/capabilities`);
 
     expect(req.request.method).toBe('GET');
-    req.flush({ datevExportEnabled: true, unifiedExportAllowed: false });
+    req.flush({
+      datevExportEnabled: true,
+      unifiedExportAllowed: false,
+      globalViewsAllowed: false,
+      viewableTenants: ['default'],
+      fileSigningEnabled: true,
+    });
+  });
+
+  it('verifies admin file via multipart upload', (done) => {
+    const file = new File([new Uint8Array([1, 2, 3])], 'check.pdf', { type: 'application/pdf' });
+
+    service.verifyAdminFile(file).subscribe((res) => {
+      expect(res.verdict).toBe('authentic');
+      done();
+    });
+
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/files/verify`);
+
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toBeInstanceOf(FormData);
+    req.flush({ verdict: 'authentic', contentSha256: 'a'.repeat(64) });
+  });
+
+  it('downloads admin file by document id', (done) => {
+    service.downloadAdminFileByDocumentId('abcdef1').subscribe((res) => {
+      expect(res.fileName).toBe('invoice.pdf');
+      expect(res.blob.size).toBeGreaterThan(0);
+      done();
+    });
+
+    const req = httpMock.expectOne(
+      (request) =>
+        request.url === `${apiUrl}/admin/billing/files/by-document-id` &&
+        request.params.get('documentId') === 'abcdef1',
+    );
+
+    expect(req.request.method).toBe('GET');
+    req.flush(new Blob(['pdf']), {
+      headers: { 'Content-Disposition': 'attachment; filename="invoice.pdf"' },
+    });
   });
 
   it('lists datev exports with query params', (done) => {

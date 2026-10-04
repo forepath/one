@@ -20,11 +20,15 @@ import type {
 import type { DatevExportEntity } from '../entities/datev-export.entity';
 import { DATEV_EXPORT_ENQUEUE, type DatevExportEnqueuePort } from '../queue/datev-export-enqueue.token';
 import { DatevExportRepository } from '../repositories/datev-export.repository';
+import { resolveAdminViewTenant } from '../utils/admin-view-tenant.util';
 import { DatevExportConfigService } from './datev-export-config.service';
+import { TenantsGlobalViewsConfigService } from './tenants-global-views-config.service';
+
 @Injectable()
 export class DatevExportAdminService {
   constructor(
     private readonly configService: DatevExportConfigService,
+    private readonly tenantsGlobalViewsConfig: TenantsGlobalViewsConfigService,
     private readonly exportRepository: DatevExportRepository,
     private readonly fileStorage: FileStorageService,
     @Optional() @Inject(DATEV_EXPORT_ENQUEUE) private readonly enqueuePort?: DatevExportEnqueuePort,
@@ -44,12 +48,16 @@ export class DatevExportAdminService {
     offset: number,
     year?: number,
     search?: string,
+    viewTenantId?: string,
   ): Promise<PaginatedAdminDatevExportsResponseDto> {
     if (scope === DatevExportScope.UNIFIED) {
       this.assertUnifiedAccessAllowed();
     }
 
-    const tenantId = getTenantIdOrDefault();
+    const tenantId =
+      scope === DatevExportScope.TENANT
+        ? resolveAdminViewTenant(this.tenantsGlobalViewsConfig, viewTenantId)
+        : getTenantIdOrDefault();
     const result = await this.exportRepository.findAllForAdmin({
       scope,
       tenantId: scope === DatevExportScope.TENANT ? tenantId : undefined,
@@ -67,14 +75,14 @@ export class DatevExportAdminService {
     };
   }
 
-  async getExport(exportId: string): Promise<AdminDatevExportListItemDto> {
-    const entity = await this.findAccessibleExport(exportId);
+  async getExport(exportId: string, viewTenantId?: string): Promise<AdminDatevExportListItemDto> {
+    const entity = await this.findAccessibleExport(exportId, viewTenantId);
 
     return this.mapToListItem(entity);
   }
 
-  async downloadExport(exportId: string): Promise<{ buffer: Buffer; fileName: string }> {
-    const entity = await this.findAccessibleExport(exportId);
+  async downloadExport(exportId: string, viewTenantId?: string): Promise<{ buffer: Buffer; fileName: string }> {
+    const entity = await this.findAccessibleExport(exportId, viewTenantId);
 
     if (entity.status !== DatevExportStatus.COMPLETED || !entity.storageKey || !entity.fileName) {
       throw new NotFoundException('Export file is not available');
@@ -91,7 +99,10 @@ export class DatevExportAdminService {
     }
 
     const scope = dto.scope ?? DatevExportScope.TENANT;
-    const tenantId = getTenantIdOrDefault();
+    const tenantId =
+      scope === DatevExportScope.UNIFIED
+        ? getTenantIdOrDefault()
+        : resolveAdminViewTenant(this.tenantsGlobalViewsConfig, dto.viewTenantId);
 
     if (scope === DatevExportScope.UNIFIED) {
       this.assertUnifiedAccessAllowed();
@@ -153,21 +164,23 @@ export class DatevExportAdminService {
     }
   }
 
-  private async findAccessibleExport(exportId: string): Promise<DatevExportEntity> {
+  private async findAccessibleExport(exportId: string, viewTenantId?: string): Promise<DatevExportEntity> {
     const entity = await this.exportRepository.findById(exportId);
 
     if (!entity) {
       throw new NotFoundException('Export not found');
     }
 
-    const requestTenantId = getTenantIdOrDefault();
-
-    if (entity.scope === DatevExportScope.TENANT && entity.tenantId !== requestTenantId) {
-      throw new ForbiddenException('Export belongs to another tenant');
-    }
-
     if (entity.scope === DatevExportScope.UNIFIED) {
       this.assertUnifiedAccessAllowed();
+
+      return entity;
+    }
+
+    const allowedTenantId = resolveAdminViewTenant(this.tenantsGlobalViewsConfig, viewTenantId);
+
+    if (entity.tenantId !== allowedTenantId) {
+      throw new ForbiddenException('Export belongs to another tenant');
     }
 
     return entity;

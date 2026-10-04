@@ -69,16 +69,29 @@ RUN . "${NVM_DIR}/nvm.sh" && \
 
 COPY --chown=${APP_UID}:${APP_GID} . /app
 
-RUN mkdir -p /data/invoices /var/lib/forepath/provider-plugins && \
+RUN mkdir -p \
+      /data/customer/invoices \
+      /data/customer/offers \
+      /data/customer/timesheets \
+      /data/supplier/invoices \
+      /data/export/datev \
+      /data/invoices \
+      /var/lib/forepath/provider-plugins && \
     chown -R "${APP_UID}:${APP_GID}" /data /var/lib/forepath/provider-plugins
 
 # Expand APP_UID/APP_GID into the entrypoint at build time (runtime has no ARG).
 RUN printf '%s\n' \
     '#!/bin/bash' \
     'set -euo pipefail' \
-    'storage_path="${BILLING_INVOICE_PDF_STORAGE_PATH:-/data/invoices}"' \
-    'mkdir -p "${storage_path}"' \
-    "chown -R ${APP_UID}:${APP_GID} /data \"\${storage_path}\"" \
+    'storage_root="${FILE_STORAGE_ROOT:-/data}"' \
+    'mkdir -p \' \
+    '  "${storage_root}/customer/invoices" \' \
+    '  "${storage_root}/customer/offers" \' \
+    '  "${storage_root}/customer/timesheets" \' \
+    '  "${storage_root}/supplier/invoices" \' \
+    '  "${storage_root}/export/datev" \' \
+    '  "${storage_root}/invoices"' \
+    "chown -R ${APP_UID}:${APP_GID} \"\${storage_root}\" /var/lib/forepath/provider-plugins" \
     '. "${NVM_DIR}/nvm.sh"' \
     'if [ -n "${DYNAMIC_PROVIDER_PLUGIN_PATH:-}" ]; then' \
     '  runuser -u decabill -g decabill -- node install-provider-plugins.js' \

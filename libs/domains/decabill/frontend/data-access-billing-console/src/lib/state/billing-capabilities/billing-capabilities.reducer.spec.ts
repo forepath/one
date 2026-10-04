@@ -10,11 +10,18 @@ describe('billingCapabilitiesReducer', () => {
     const state = billingCapabilitiesReducer(
       { ...initialBillingCapabilitiesState, loading: true },
       loadBillingCapabilitiesSuccess({
-        capabilities: { datevExportEnabled: true, unifiedExportAllowed: false },
+        capabilities: {
+          datevExportEnabled: true,
+          unifiedExportAllowed: false,
+          globalViewsAllowed: false,
+          viewableTenants: ['default'],
+          fileSigningEnabled: true,
+        },
       }),
     );
 
     expect(state.capabilities?.datevExportEnabled).toBe(true);
+    expect(state.capabilities?.fileSigningEnabled).toBe(true);
     expect(state.loading).toBe(false);
   });
 

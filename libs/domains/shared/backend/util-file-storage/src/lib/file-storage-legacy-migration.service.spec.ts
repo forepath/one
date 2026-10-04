@@ -3,7 +3,6 @@ import * as os from 'os';
 import * as path from 'path';
 
 import { FileStorageLegacyMigrationService } from './file-storage-legacy-migration.service';
-import { FileStorageScope } from './file-storage-scope.constants';
 
 describe('FileStorageLegacyMigrationService', () => {
   let tempRoot: string;
@@ -59,7 +58,7 @@ describe('FileStorageLegacyMigrationService', () => {
 
   it('skips when legacy and canonical roots match', async () => {
     const storageRoot = path.join(tempRoot, 'data');
-    const invoices = path.join(storageRoot, FileStorageScope.invoices === 'invoices' ? 'invoices' : '');
+    const invoices = path.join(storageRoot, 'invoices');
     const keyPath = path.join(invoices, 'inv.pdf');
 
     await fs.promises.mkdir(invoices, { recursive: true });

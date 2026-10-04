@@ -137,6 +137,7 @@ describe('DatevExportService', () => {
     extfCsvService as never,
     documentArchiveService as never,
     billingNotificationPublisher as never,
+    { registerFromBuffer: jest.fn().mockResolvedValue({}) } as never,
   );
 
   beforeEach(() => {

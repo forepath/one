@@ -31,7 +31,14 @@ describe('AdminDatevExportsController', () => {
     const result = await controller.listExports();
 
     expect(result.total).toBe(0);
-    expect(adminService.listExports).toHaveBeenCalledWith(DatevExportScope.TENANT, 20, 0, undefined, undefined);
+    expect(adminService.listExports).toHaveBeenCalledWith(
+      DatevExportScope.TENANT,
+      20,
+      0,
+      undefined,
+      undefined,
+      undefined,
+    );
   });
 
   it('returns streamable file on download', async () => {
@@ -40,7 +47,7 @@ describe('AdminDatevExportsController', () => {
     const result = await controller.downloadExport('00000000-0000-4000-8000-000000000001');
 
     expect(result).toBeInstanceOf(StreamableFile);
-    expect(adminService.downloadExport).toHaveBeenCalledWith('00000000-0000-4000-8000-000000000001');
+    expect(adminService.downloadExport).toHaveBeenCalledWith('00000000-0000-4000-8000-000000000001', undefined);
   });
 
   it('triggers export', async () => {

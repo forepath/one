@@ -2,7 +2,7 @@ import { ZipArchive } from 'archiver';
 import { PassThrough } from 'stream';
 
 import { DEFAULT_TENANT, runWithTenantId } from '@forepath/shared/backend';
-import { FileStorageService } from '@forepath/shared/backend/util-file-storage';
+import { FileStorageScope, FileStorageService } from '@forepath/shared/backend/util-file-storage';
 import { Injectable, Logger } from '@nestjs/common';
 
 import { DatevExportScope, DatevExportStatus } from '../constants/datev-export.constants';
@@ -28,6 +28,7 @@ import { DatevExportConfigService } from './datev-export-config.service';
 import { DatevExtfCsvService } from './datev-extf-csv.service';
 import { BillingTenantService } from './billing-tenant.service';
 import { InvoicePdfService } from './invoice-pdf.service';
+import { StoredFileRegistryService } from './stored-file-registry.service';
 
 export interface DatevExportRunParams {
   scope: DatevExportScope;
@@ -86,6 +87,7 @@ export class DatevExportService {
     private readonly extfCsvService: DatevExtfCsvService,
     private readonly documentArchiveService: DatevDocumentArchiveService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
+    private readonly storedFileRegistry: StoredFileRegistryService,
   ) {}
 
   async runExport(params: DatevExportRunParams): Promise<DatevExportEntity> {
@@ -135,6 +137,12 @@ export class DatevExportService {
       const zipBuffer = await this.createZipBuffer(result.zipEntries);
 
       await this.fileStorage.writeDatevExportFile(storageKey, zipBuffer);
+      await this.storedFileRegistry.registerFromBuffer({
+        tenantId: storageOwnerTenantId,
+        scope: FileStorageScope.datevExports,
+        storageKey,
+        content: zipBuffer,
+      });
 
       const updated = await this.exportRepository.update(exportRecord.id, {
         status: DatevExportStatus.COMPLETED,

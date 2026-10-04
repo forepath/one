@@ -20,8 +20,13 @@ describe('InvoicePdfService', () => {
     hasApplicationsForInvoice: jest.fn().mockResolvedValue(false),
   };
   const fileStorage = {
-    writeInvoiceFile: jest.fn().mockResolvedValue(undefined),
-    readInvoiceFile: jest.fn(),
+    writeCustomerInvoiceFile: jest.fn().mockResolvedValue(undefined),
+    readCustomerInvoiceFile: jest.fn(),
+  };
+  const storedFileRegistry = {
+    isSigningEnabled: jest.fn().mockReturnValue(false),
+    reserve: jest.fn(),
+    registerFromBuffer: jest.fn().mockResolvedValue({}),
   };
   const service = new InvoicePdfService(
     eInvoiceXmlService,
@@ -30,6 +35,7 @@ describe('InvoicePdfService', () => {
     invoicePdfHtmlRendererService,
     invoicePromotionApplicationsRepository as never,
     fileStorage as never,
+    storedFileRegistry as never,
   );
   const purchaseOrderReference = 'SUB-2026-00001';
   const invoicingPeriod = {
@@ -118,7 +124,7 @@ describe('InvoicePdfService', () => {
 
       expect(storageKey).toBe('sub-1/inv-1.pdf');
       expect(invoicePdfHtmlRendererService.renderHtmlToPdf).toHaveBeenCalled();
-      expect(fileStorage.writeInvoiceFile).toHaveBeenCalledWith('sub-1/inv-1.pdf', expect.any(Buffer));
+      expect(fileStorage.writeCustomerInvoiceFile).toHaveBeenCalledWith('sub-1/inv-1.pdf', expect.any(Buffer));
     });
 
     it('writes PDF with embedded XML via file storage', async () => {
@@ -135,7 +141,7 @@ describe('InvoicePdfService', () => {
       expect(invoicePdfHtmlRendererService.renderHtmlToPdf).toHaveBeenCalledWith(
         expect.stringContaining('INV-2026-00001'),
       );
-      expect(fileStorage.writeInvoiceFile).toHaveBeenCalledWith('sub-1/inv-1.pdf', expect.any(Buffer));
+      expect(fileStorage.writeCustomerInvoiceFile).toHaveBeenCalledWith('sub-1/inv-1.pdf', expect.any(Buffer));
     });
 
     it('writes manual invoice PDF under manual user folder when subscription is missing', async () => {
@@ -147,7 +153,7 @@ describe('InvoicePdfService', () => {
       const storageKey = await service.generateAndStore(manualInvoice, lineItems, issuer, buyer, '', invoicingPeriod);
 
       expect(storageKey).toBe('manual/user-1/inv-1.pdf');
-      expect(fileStorage.writeInvoiceFile).toHaveBeenCalledWith('manual/user-1/inv-1.pdf', expect.any(Buffer));
+      expect(fileStorage.writeCustomerInvoiceFile).toHaveBeenCalledWith('manual/user-1/inv-1.pdf', expect.any(Buffer));
     });
   });
 
@@ -174,7 +180,7 @@ describe('InvoicePdfService', () => {
       expect(invoicePdfHtmlRendererService.renderHtmlToPdf).toHaveBeenCalledWith(
         expect.not.stringContaining('Payment details'),
       );
-      expect(fileStorage.writeInvoiceFile).toHaveBeenCalledWith('sub-1/inv-1-void.pdf', expect.any(Buffer));
+      expect(fileStorage.writeCustomerInvoiceFile).toHaveBeenCalledWith('sub-1/inv-1-void.pdf', expect.any(Buffer));
     });
   });
 
@@ -182,12 +188,12 @@ describe('InvoicePdfService', () => {
     it('reads file via file storage', async () => {
       const buffer = Buffer.from('pdf');
 
-      fileStorage.readInvoiceFile.mockResolvedValue(buffer);
+      fileStorage.readCustomerInvoiceFile.mockResolvedValue(buffer);
 
       const result = await service.readPdf('sub-1/inv-1.pdf');
 
       expect(result).toBe(buffer);
-      expect(fileStorage.readInvoiceFile).toHaveBeenCalledWith('sub-1/inv-1.pdf');
+      expect(fileStorage.readCustomerInvoiceFile).toHaveBeenCalledWith('sub-1/inv-1.pdf');
     });
   });
 });

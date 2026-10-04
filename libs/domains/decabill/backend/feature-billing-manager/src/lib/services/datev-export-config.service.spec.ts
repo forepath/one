@@ -1,10 +1,20 @@
+import { TenantsGlobalViewsConfigService } from './tenants-global-views-config.service';
 import { DatevExportConfigService } from './datev-export-config.service';
 
 describe('DatevExportConfigService', () => {
   const originalEnv = process.env;
 
+  function createService(): DatevExportConfigService {
+    const globalViews = new TenantsGlobalViewsConfigService();
+
+    globalViews.onModuleInit();
+
+    return new DatevExportConfigService(globalViews);
+  }
+
   beforeEach(() => {
     process.env = { ...originalEnv };
+    delete process.env.TENANTS_ALLOW_GLOBAL_VIEWS;
   });
 
   afterAll(() => {
@@ -12,28 +22,28 @@ describe('DatevExportConfigService', () => {
   });
 
   it('isEnabled defaults to true and respects false', () => {
-    const service = new DatevExportConfigService();
+    const service = createService();
 
     service.onModuleInit();
     expect(service.isEnabled()).toBe(true);
 
     process.env.BILLING_DATEV_EXPORT_ENABLED = 'false';
-    const disabled = new DatevExportConfigService();
+    const disabled = createService();
 
     disabled.onModuleInit();
     expect(disabled.isEnabled()).toBe(false);
   });
 
   it('getUnifiedExportAllowedTenants defaults to default tenant', () => {
-    const service = new DatevExportConfigService();
+    const service = createService();
 
     service.onModuleInit();
     expect(service.getUnifiedExportAllowedTenants()).toEqual(['default']);
   });
 
-  it('parses unified export allowlist from CSV env', () => {
-    process.env.BILLING_DATEV_UNIFIED_EXPORT_ALLOWED_TENANTS = 'default,acme';
-    const service = new DatevExportConfigService();
+  it('parses unified export allowlist from TENANTS_ALLOW_GLOBAL_VIEWS', () => {
+    process.env.TENANTS_ALLOW_GLOBAL_VIEWS = 'default,acme';
+    const service = createService();
 
     service.onModuleInit();
     expect(service.getUnifiedExportAllowedTenants()).toEqual(['default', 'acme']);
@@ -42,7 +52,7 @@ describe('DatevExportConfigService', () => {
   it('resolveForTenant returns null when consultant/client missing', () => {
     delete process.env.BILLING_DATEV_CONSULTANT_NUMBER;
     delete process.env.BILLING_DATEV_CLIENT_NUMBER;
-    const service = new DatevExportConfigService();
+    const service = createService();
 
     service.onModuleInit();
     expect(service.resolveForTenant('default')).toBeNull();
@@ -51,7 +61,7 @@ describe('DatevExportConfigService', () => {
   it('resolveForTenant returns config when required env is set', () => {
     process.env.BILLING_DATEV_CONSULTANT_NUMBER = '1234567';
     process.env.BILLING_DATEV_CLIENT_NUMBER = '56789';
-    const service = new DatevExportConfigService();
+    const service = createService();
 
     service.onModuleInit();
     const config = service.resolveForTenant('default');
@@ -65,7 +75,7 @@ describe('DatevExportConfigService', () => {
 
   it('isUnifiedExportEnabled respects unified export flag', () => {
     process.env.BILLING_DATEV_UNIFIED_EXPORT_ENABLED = 'true';
-    const service = new DatevExportConfigService();
+    const service = createService();
 
     service.onModuleInit();
     expect(service.isUnifiedExportEnabled()).toBe(true);
@@ -73,8 +83,8 @@ describe('DatevExportConfigService', () => {
 
   it('isUnifiedExportAllowedForTenant checks allowlist', () => {
     process.env.BILLING_DATEV_UNIFIED_EXPORT_ENABLED = 'true';
-    process.env.BILLING_DATEV_UNIFIED_EXPORT_ALLOWED_TENANTS = 'default,acme';
-    const service = new DatevExportConfigService();
+    process.env.TENANTS_ALLOW_GLOBAL_VIEWS = 'default,acme';
+    const service = createService();
 
     service.onModuleInit();
     expect(service.isUnifiedExportAllowedForTenant('acme')).toBe(true);
@@ -82,7 +92,7 @@ describe('DatevExportConfigService', () => {
   });
 
   it('returns export timezone and cron defaults', () => {
-    const service = new DatevExportConfigService();
+    const service = createService();
 
     service.onModuleInit();
     expect(service.getExportTimezone()).toBe('Europe/Berlin');
@@ -91,7 +101,7 @@ describe('DatevExportConfigService', () => {
 
   it('falls back when BILLING_DATEV_EXPORT_CRON is empty', () => {
     process.env.BILLING_DATEV_EXPORT_CRON = '';
-    const service = new DatevExportConfigService();
+    const service = createService();
 
     service.onModuleInit();
     expect(service.getExportCronPattern()).toBe('0 0 1 * *');
@@ -103,7 +113,7 @@ describe('DatevExportConfigService', () => {
     process.env.BILLING_DATEV_TENANT_CONFIG = JSON.stringify({
       acme: { consultantNumber: '9999999', clientNumber: '33333', chartOfAccounts: 'SKR04' },
     });
-    const service = new DatevExportConfigService();
+    const service = createService();
 
     service.onModuleInit();
     const config = service.resolveForTenant('acme');
@@ -117,7 +127,7 @@ describe('DatevExportConfigService', () => {
     process.env.BILLING_DATEV_EXPORT_ENABLED = 'false';
     process.env.BILLING_DATEV_CONSULTANT_NUMBER = '1234567';
     process.env.BILLING_DATEV_CLIENT_NUMBER = '56789';
-    const service = new DatevExportConfigService();
+    const service = createService();
 
     service.onModuleInit();
     expect(service.resolveForTenant('default')).toBeNull();
@@ -129,7 +139,7 @@ describe('DatevExportConfigService', () => {
     process.env.BILLING_DATEV_TENANT_CONFIG = JSON.stringify({
       unified: { consultantNumber: '7654321', clientNumber: '98765' },
     });
-    const service = new DatevExportConfigService();
+    const service = createService();
 
     service.onModuleInit();
     expect(service.resolveUnified()?.consultantNumber).toBe('7654321');

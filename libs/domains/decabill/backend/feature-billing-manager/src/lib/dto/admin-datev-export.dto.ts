@@ -1,10 +1,13 @@
-import { IsBoolean, IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min, MinLength } from 'class-validator';
 
 import { DatevExportScope, type DatevExportStatus } from '../constants/datev-export.constants';
 
 export interface BillingCapabilitiesResponseDto {
   datevExportEnabled: boolean;
   unifiedExportAllowed: boolean;
+  globalViewsAllowed: boolean;
+  viewableTenants: string[];
+  fileSigningEnabled: boolean;
 }
 
 export interface AdminDatevExportListItemDto {
@@ -47,6 +50,12 @@ export class TriggerDatevExportDto {
   @IsOptional()
   @IsEnum(DatevExportScope, { message: 'Scope must be tenant or unified' })
   scope?: DatevExportScope;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(64)
+  viewTenantId?: string;
 
   @IsOptional()
   @IsBoolean({ message: 'Force must be a boolean' })

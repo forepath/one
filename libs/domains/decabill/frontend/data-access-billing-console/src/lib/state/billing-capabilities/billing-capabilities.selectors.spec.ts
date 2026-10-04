@@ -4,7 +4,9 @@ import {
   selectBillingCapabilitiesLoading,
   selectBillingCapabilitiesState,
   selectDatevExportEnabled,
+  selectGlobalViewsAllowed,
   selectUnifiedExportAllowed,
+  selectViewableTenants,
 } from './billing-capabilities.selectors';
 
 describe('BillingCapabilities Selectors', () => {
@@ -15,7 +17,12 @@ describe('BillingCapabilities Selectors', () => {
 
   it('selects feature state and capabilities', () => {
     const state = createState({
-      capabilities: { datevExportEnabled: true, unifiedExportAllowed: true },
+      capabilities: {
+        datevExportEnabled: true,
+        unifiedExportAllowed: true,
+        globalViewsAllowed: true,
+        viewableTenants: ['default', 'acme'],
+      },
     });
     const rootState = { billingCapabilities: state };
 
@@ -23,6 +30,8 @@ describe('BillingCapabilities Selectors', () => {
     expect(selectBillingCapabilities(rootState as never)).toEqual({
       datevExportEnabled: true,
       unifiedExportAllowed: true,
+      globalViewsAllowed: true,
+      viewableTenants: ['default', 'acme'],
     });
   });
 
@@ -31,6 +40,8 @@ describe('BillingCapabilities Selectors', () => {
 
     expect(selectDatevExportEnabled(rootState as never)).toBe(false);
     expect(selectUnifiedExportAllowed(rootState as never)).toBe(false);
+    expect(selectGlobalViewsAllowed(rootState as never)).toBe(false);
+    expect(selectViewableTenants(rootState as never)).toEqual([]);
   });
 
   it('selects loading state', () => {

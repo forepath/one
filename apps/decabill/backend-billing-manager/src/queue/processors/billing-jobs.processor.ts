@@ -16,6 +16,7 @@ import {
   SearchReindexJobHandler,
   type SearchIndexSyncUnitPayload,
   type SearchReindexUnitPayload,
+  StoredFilesBackfillJobHandler,
   OfferExpirationJobHandler,
   OfferFulfillmentJobHandler,
   SubscriptionBillingJobHandler,
@@ -89,6 +90,7 @@ export class BillingJobsProcessor extends WorkerHost {
     private readonly emailDeliveryService: EmailDeliveryService,
     private readonly updateCheckService: UpdateCheckService,
     private readonly searchReindexJobHandler: SearchReindexJobHandler,
+    private readonly storedFilesBackfillJobHandler: StoredFilesBackfillJobHandler,
     private readonly offerExpiration: OfferExpirationJobHandler,
     private readonly offerFulfillment: OfferFulfillmentJobHandler,
   ) {
@@ -156,6 +158,9 @@ export class BillingJobsProcessor extends WorkerHost {
         break;
       case BillingJobName.SEARCH_REINDEX_COORDINATOR:
         await this.runSearchReindexCoordinator();
+        break;
+      case BillingJobName.STORED_FILES_BACKFILL_COORDINATOR:
+        await this.runStoredFilesBackfillCoordinator();
         break;
       case BillingJobName.OFFER_EXPIRATION_COORDINATOR:
         await this.runOfferExpirationCoordinator();
@@ -266,6 +271,9 @@ export class BillingJobsProcessor extends WorkerHost {
               break;
             case BillingJobName.SEARCH_REINDEX_UNIT:
               await this.runSearchReindexUnit(job.data as SearchReindexUnitPayload);
+              break;
+            case BillingJobName.STORED_FILES_BACKFILL_UNIT:
+              await this.runStoredFilesBackfillUnit(job.data as { offset?: number; limit?: number; tenantId?: string });
               break;
             case BillingJobName.SEARCH_INDEX_SYNC_UNIT:
               await this.searchReindexJobHandler.processSyncUnit(job.data as SearchIndexSyncUnitPayload);
@@ -794,6 +802,46 @@ export class BillingJobsProcessor extends WorkerHost {
     }
 
     await this.contributorCollect.processTenant(data.tenantId);
+  }
+
+  private async runStoredFilesBackfillCoordinator(): Promise<void> {
+    if (!(await this.storedFilesBackfillJobHandler.hasPendingWork())) {
+      return;
+    }
+
+    await this.enqueueBillingUnitJob({
+      queue: this.billingQueue,
+      jobName: BillingJobName.STORED_FILES_BACKFILL_UNIT,
+      payload: { tenantId: DEFAULT_TENANT, offset: 0, limit: 25 },
+      jobIdNamespace: 'stored-files-backfill',
+      jobIdParts: ['offset', '0'],
+    });
+  }
+
+  private async runStoredFilesBackfillUnit(data: {
+    offset?: number;
+    limit?: number;
+    tenantId?: string;
+  }): Promise<void> {
+    const offset = data.offset ?? 0;
+    const limit = data.limit ?? 25;
+    const result = await this.storedFilesBackfillJobHandler.processBackfillUnit(offset, limit);
+
+    if (!result.hasMore) {
+      return;
+    }
+
+    await this.enqueueBillingUnitJob({
+      queue: this.billingQueue,
+      jobName: BillingJobName.STORED_FILES_BACKFILL_UNIT,
+      payload: {
+        tenantId: data.tenantId ?? DEFAULT_TENANT,
+        offset: result.nextOffset,
+        limit,
+      },
+      jobIdNamespace: 'stored-files-backfill',
+      jobIdParts: ['offset', String(result.nextOffset)],
+    });
   }
 
   private async runSearchReindexCoordinator(): Promise<void> {

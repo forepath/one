@@ -44,6 +44,11 @@ export const selectAdminDatevExportsError = createSelector(selectAdminDatevExpor
 
 export const selectAdminDatevExportsScope = createSelector(selectAdminDatevExportsState, (state) => state.scope);
 
+export const selectAdminDatevExportsViewTenantId = createSelector(
+  selectAdminDatevExportsState,
+  (state) => state.viewTenantId,
+);
+
 export const selectAdminDatevExportsTriggerLoading = createSelector(
   selectAdminDatevExportsState,
   (state) => state.triggerLoading,
