@@ -21,7 +21,7 @@ Frontend copy never uses the vendor name “OpenCode”; APIs and worker sync ke
 | Core       | General                  | `username`, `theme`, `model` (known provider/model picker), `share`, `keybinds`, `tui`, `server`                         |
 | Core       | Models                   | UI allow/deny + known provider/model pickers → `enabled_providers` / `disabled_providers` / `model_allow` / `model_deny` |
 | Core       | Providers                | `providers` + credential secrets; catalog models locked read-only for built-ins                                          |
-| Extensions | MCP                      | `mcp.servers` + secret env/headers/OAuth; registry catalog picker (built-in vs custom)                                   |
+| Extensions | MCP                      | `mcp_allow` / `mcp_deny` + `mcp.servers` + secrets/OAuth; registry catalog picker (built-in vs custom)                   |
 | Extensions | Skills & instructions    | `skills`, `instructions`                                                                                                 |
 | Extensions | Commands & plugins       | `commands`, `plugins`                                                                                                    |
 | Extensions | Agents                   | `agents`                                                                                                                 |
@@ -40,9 +40,9 @@ Within a layer, the editable surface is `compose(config, overrides)` — structu
 
 ## Heredity
 
-- **Replace + lock:** `permissions`, provider allow/deny lists, model allow/deny lists, `experimental.policies`, and similar security roots. Parent presence locks the path for children.
+- **Replace + lock:** `permissions`, provider allow/deny lists, model allow/deny lists, MCP allow/deny lists (`mcp_allow` / `mcp_deny`), `experimental.policies`, and similar security roots. Parent presence locks the path for children.
 - **Explicit locks (Global / Workspace):** each layer may store a `locks` array of JSON Pointers (e.g. `/model`, `/skills`, `/tabs/mcp`). Locks apply to **this layer and** lower layers **even when the parent value is unset**. Tab locks use `/tabs/{id}` and expand to all fields owned by that tab. Environment cannot author locks.
-- **Map merge:** `providers`, `mcp.servers`, `commands`, `agents`, `references`, `formatter` (object) — parent entry keys are inherited; children may add new keys and may set `disabled` / `hidden` on inherited keys (deep-merged), unless the map root is explicitly locked. Parent `formatter: false` fully locks formatters.
+- **Map merge:** `providers`, `mcp.servers`, `commands`, `agents`, `references`, `formatter` (object) — parent entry keys are inherited; children may add new keys and may set `disabled` / `hidden` on inherited keys (deep-merged), unless the map root is explicitly locked. Parent `formatter: false` fully locks formatters. When an inherited map entry is prohibited by allow/deny (this layer or a higher layer), the editor and **backend PUT** write a `{ disabled: true }` stub into the overlay (checkbox cannot override). Local prohibited entries are **deleted** from the overlay.
 - **Array concat:** `skills`, `instructions`, `plugins` — parent items stack; children append (skills are converted to OpenCode `{ paths, urls }` on worker sync), unless the array root is explicitly locked.
 - Responses expose `locks` (this layer), `lockedPaths` (from higher layers, presence + expanded explicit locks), and `inheritedAdditive`.
 - Locked fields/lists/tabs stay **visible** and **read-only** on the locking layer and on children (same presentation as presence-locks when a parent set a value). Environment can still Authenticate MCP servers when MCP is locked. Applying an explicit lock first **resets** the path to the inherited/default value (clears this layer’s overlay), so the lock freezes the original rather than a pending edit.
@@ -70,8 +70,10 @@ Stored overlays and worker payloads use OpenCode **V2** field names only.
 
 - **PUT** rejects forbidden V1 roots with a clear error listing keys to rename.
 - **GET / sync** run `migrateConfigV1ToV2` so legacy rows still load; save persists V2.
-- Model allow/deny UI lists materialize to `enabled_providers` / `disabled_providers` / `providers.*.whitelist` / `providers.*.blacklist` (denylist wins). Empty `providers.*.models` stubs become wire `whitelist` ids (OpenCode drops empty model objects).
-- Worker sync (`prepareConfigForSync`) converts the stored V2 overlay into OpenCode Config wire: singular roots (`provider`, `agent`, `command`, `plugin`, `permission`, `snapshot`, `attachment`, `autoupdate`), skills `{paths,urls}`, flat `mcp`, MCP `disabled`→`enabled`, agent `system`/`disabled`→`prompt`/`disable`, command `subagent`→`subtask`, compaction `keep.tokens`/`buffer`→`preserve_recent_tokens`/`reserved`, and strips unsupported roots (`worktree`, `warming`, `websearch`, …).
+- Model allow/deny UI lists materialize to `enabled_providers` / `disabled_providers` / `providers.*.whitelist` / `providers.*.blacklist` (denylist wins). Empty `providers.*.models` stubs become wire `whitelist` ids (OpenCode drops empty model objects). Local disallowed provider map entries are removed from the editable overlay; inherited ones are marked `disabled: true` (stub included in the submitted overlay; wire maps that to `disabled_providers`).
+- MCP allow/deny UI lists (`mcp_allow` / `mcp_deny`) are **platform-only** (OpenCode has no native MCP whitelist/blacklist). On sync they filter `mcp.servers` (denylist wins; empty allow = unrestricted; token `custom` gates non-catalog servers) and are stripped from the wire payload. Catalog seeds store a UI-only `registry` name for classification; allow/deny identity requires `registry` whose `mcpServerConfigKey` equals the map key (key-only / `__` reversal is not trusted). On every controller PUT, overlays are re-sanitized (including stored rows on partial updates): `registry` is stripped unless the entry transport matches a catalog seed. Effective worker sync on the controller re-strips against the catalog before `prepareConfigForSync`. Local disallowed servers are removed from the editable overlay; inherited disallowed servers are marked `disabled: true` instead (stub persists in the submitted config).
+- **Backend always re-applies** the same allow/deny rules on global / workspace / agent PUT via `enforceAllowDenyOnOverlay` (shared util), independent of the UI. That covers MCP servers, providers, model allow/deny list refs, and default `model` / `small_model`. Heredity, V1-key, and credential checks already run on the same path. The editor hydrates inherited disable stubs additively on load (does not wipe owning-layer entries until allow/deny edits or save).
+- Worker sync (`prepareConfigForSync`) converts the stored V2 overlay into OpenCode Config wire: singular roots (`provider`, `agent`, `command`, `plugin`, `permission`, `snapshot`, `attachment`, `autoupdate`), skills `{paths,urls}`, flat `mcp`, MCP `disabled`→`enabled`, agent `system`/`disabled`→`prompt`/`disable`, command `subagent`→`subtask`, compaction `keep.tokens`/`buffer`→`preserve_recent_tokens`/`reserved`, and strips unsupported roots (`worktree`, `warming`, `websearch`, `mcp_allow`, `mcp_deny`, …). Agent-manager `/sync` always re-runs `prepareConfigForSync` and drops `registry` claims (no local catalog). Because OpenCode `PATCH /global/config` merges the `mcp` map (and rejects `null` deletes), sync GETs the current worker config and adds `{ enabled: false }` tombstones for MCP keys that are no longer in the desired wire so allow/deny removals take effect. Desired keys that were previously tombstoned are re-sent with `enabled: true` so PATCH merge resurrects them.
 
 ## Network
 
@@ -97,9 +99,15 @@ Network keys are skipped for auth.set (proxy/CA stay Env-only). PUT secrets are 
 
 MCP servers live under `mcp.servers`. Built-in entries can be seeded from the official
 [MCP Registry](https://registry.modelcontextprotocol.io/docs) catalog (`GET /opencode/mcp-servers`).
-Catalog seed writes `command` / `url`, non-secret `environment` / `headers`, and `secretEnv` /
-`secretHeaders` **name lists**. Secret **values** (env, headers, OAuth `client_secret`) live in the
-layer secrets map — never in config JSON (credential-like keys are rejected there).
+Catalog seed writes `command` / `url`, non-secret `environment` / `headers`, `secretEnv` /
+`secretHeaders` **name lists**, and a UI-only `registry` name (stripped on wire). Secret **values**
+(env, headers, OAuth `client_secret`) live in the layer secrets map — never in config JSON
+(credential-like keys are rejected there).
+
+Platform lists `mcp_allow` / `mcp_deny` (registry names and/or literal `custom`) gate which market
+servers appear in typeaheads and whether Custom MCP is offered. Empty allowlist = unrestricted;
+empty denylist = unrestricted; denylist wins on overlap. On worker sync, disallowed servers are
+removed from the effective MCP map before OpenCode receives it.
 
 Worker sync:
 

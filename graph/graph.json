@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-03T13:27:31.768Z",
+  "generatedAt": "2026-10-04T09:46:19.230Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -32971,6 +32971,11 @@
       "type": "depends_on"
     },
     {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "project:agenstra-shared-util-opencode-mcp-servers",
+      "type": "depends_on"
+    },
+    {
       "from": "project:decabill-frontend-feature-billing-console",
       "to": "project:decabill-frontend-data-access-billing-console",
       "type": "depends_on"
@@ -33141,6 +33146,11 @@
       "type": "depends_on"
     },
     {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "project:agenstra-shared-util-opencode-mcp-servers",
+      "type": "depends_on"
+    },
+    {
       "from": "project:agenstra-frontend-feature-agent-config",
       "to": "project:agenstra-frontend-data-access-agent-console",
       "type": "depends_on"
@@ -33273,6 +33283,16 @@
     {
       "from": "project:agenstra-frontend-util-configuration",
       "to": "project:shared-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-shared-util-opencode-config",
+      "to": "project:agenstra-shared-util-opencode-mcp-servers",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-shared-util-opencode-config",
+      "to": "project:agenstra-shared-util-opencode-providers",
       "type": "depends_on"
     },
     {
@@ -60616,6 +60636,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-mcp-servers-catalog.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-effective-config-sync.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config.service.ts",
       "type": "injects"
@@ -70447,6 +70472,11 @@
     },
     {
       "from": "concept:agenstra-heredity",
+      "to": "api:HTTP:GET:/config",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-v2-only-config",
       "to": "api:HTTP:GET:/config",
       "type": "documents"
     },

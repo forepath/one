@@ -36,6 +36,8 @@ export const REPLACE_LOCK_ROOT_KEYS = [
   'disabled_providers',
   'model_allow',
   'model_deny',
+  'mcp_allow',
+  'mcp_deny',
   'experimental',
 ] as const;
 

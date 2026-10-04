@@ -7,11 +7,20 @@ export type {
   OpencodeMcpServerSeed,
 } from './lib/types';
 export {
+  CUSTOM_MCP_ALLOW_DENY_TOKEN,
   builtinMcpServerLabel,
+  collectMcpRegistryClaims,
+  filterBuiltinMcpServersByAllowDeny,
   getBuiltinMcpServer,
+  isCustomMcpAllowed,
+  isMcpServerAllowed,
   mcpOAuthClientSecretKey,
   mcpServerConfigKey,
+  mcpServerMatchesCatalogServer,
+  mcpServerTransportMatchesSeed,
+  resolveMcpAllowDenyIdentity,
   seedMcpServerFromCatalog,
   selectPreferredPackage,
+  stripUnverifiedMcpRegistryClaims,
   unusedBuiltinMcpServers,
 } from './lib/mcp-servers';

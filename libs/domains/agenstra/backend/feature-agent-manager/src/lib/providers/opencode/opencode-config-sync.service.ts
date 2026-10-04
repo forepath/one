@@ -1,13 +1,21 @@
 import {
   applySecretsPatch,
   assertNoCredentialKeysInConfig,
+  buildAllowDenyContext,
+  composeLayerOverlay,
+  enforceAllowDenyOnOverlay,
   extractMcpEnvSecrets,
   extractNetworkSecrets,
   extractProviderEnvSecrets,
+  applyMcpRemovalTombstones,
   injectMcpSecretsIntoWire,
   isPemCertificateMaterial,
+  migrateConfigV1ToV2,
+  prepareConfigForSync,
   resolveProviderAuthSecrets,
+  type JsonObject,
 } from '@forepath/agenstra/shared/util-opencode-config';
+import { mcpServerConfigKey } from '@forepath/agenstra/shared/util-opencode-mcp-servers';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 
 import {
@@ -34,6 +42,102 @@ export interface OpencodeSyncEffectiveResult {
   /** Keep controller sync target pending (container missing / not ready). */
   defer?: boolean;
   error?: string;
+}
+
+function isPlainJsonObject(value: unknown): value is JsonObject {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+/**
+ * Manager has no MCP catalog DB: drop `registry` when the map key does not match
+ * {@link mcpServerConfigKey}(registry). Controller sync re-verifies transport against the catalog.
+ */
+function stripMismatchedMcpRegistryClaims(overlay: JsonObject | null | undefined): JsonObject {
+  const config = migrateConfigV1ToV2(overlay ?? {});
+  const mcp = isPlainJsonObject(config['mcp']) ? { ...(config['mcp'] as JsonObject) } : null;
+
+  if (!mcp || !isPlainJsonObject(mcp['servers'])) {
+    return config;
+  }
+
+  const servers = { ...(mcp['servers'] as JsonObject) };
+  let changed = false;
+
+  for (const [key, value] of Object.entries(servers)) {
+    if (!isPlainJsonObject(value)) {
+      continue;
+    }
+
+    const entry = { ...value };
+    const registry = typeof entry['registry'] === 'string' ? entry['registry'].trim() : '';
+
+    if (!registry || mcpServerConfigKey(registry) === key.trim()) {
+      continue;
+    }
+
+    delete entry['registry'];
+    servers[key] = entry;
+    changed = true;
+  }
+
+  if (!changed) {
+    return config;
+  }
+
+  mcp['servers'] = servers;
+  config['mcp'] = mcp;
+
+  return config;
+}
+
+/**
+ * Remove every MCP `registry` claim (nested or flat wire). Used before manager /sync prepare so
+ * catalog identity cannot be asserted without controller catalog verification.
+ */
+function stripAllMcpRegistryClaims(overlay: JsonObject | null | undefined): JsonObject {
+  const config = structuredClone(migrateConfigV1ToV2(overlay ?? {}));
+  const mcp = config['mcp'];
+
+  if (!isPlainJsonObject(mcp)) {
+    return config;
+  }
+
+  if (isPlainJsonObject(mcp['servers'])) {
+    const servers = { ...(mcp['servers'] as JsonObject) };
+
+    for (const [key, value] of Object.entries(servers)) {
+      if (!isPlainJsonObject(value) || value['registry'] === undefined) {
+        continue;
+      }
+
+      const entry = { ...value };
+      delete entry['registry'];
+      servers[key] = entry;
+    }
+
+    mcp['servers'] = servers;
+    config['mcp'] = mcp;
+
+    return config;
+  }
+
+  // Flat OpenCode wire shape under mcp.
+  const nextMcp: JsonObject = {};
+
+  for (const [key, value] of Object.entries(mcp)) {
+    if (!isPlainJsonObject(value)) {
+      nextMcp[key] = value;
+      continue;
+    }
+
+    const entry = { ...value };
+    delete entry['registry'];
+    nextMcp[key] = entry;
+  }
+
+  config['mcp'] = nextMcp;
+
+  return config;
 }
 
 function parseSecrets(raw: string | null | undefined): Record<string, string> {
@@ -151,15 +255,27 @@ export class OpenCodeConfigSyncService {
       throw new NotFoundException(`Agent with ID '${agentId}' not found`);
     }
 
-    const patch: Partial<typeof agent> = {};
+    // Defense in depth when called without controller parents: heal stored overlays too,
+    // strip mismatched registry claims, then enforce against this layer's allow/deny lists.
+    const nextConfig = stripMismatchedMcpRegistryClaims(
+      dto.config !== undefined ? (dto.config as JsonObject) : ((agent.opencodeUserConfig as JsonObject) ?? {}),
+    );
+    const nextOverrides = stripMismatchedMcpRegistryClaims(
+      dto.overrides !== undefined ? (dto.overrides as JsonObject) : ((agent.opencodeUserOverrides as JsonObject) ?? {}),
+    );
+    const composed = composeLayerOverlay(nextConfig, nextOverrides);
+    const context = buildAllowDenyContext(composed, []);
+    const sanitizedConfig = enforceAllowDenyOnOverlay(nextConfig, context, {
+      seedMissingInheritedDisables: true,
+    });
+    const sanitizedOverrides = enforceAllowDenyOnOverlay(nextOverrides, context, {
+      seedMissingInheritedDisables: false,
+    });
 
-    if (dto.config !== undefined) {
-      patch.opencodeUserConfig = dto.config;
-    }
-
-    if (dto.overrides !== undefined) {
-      patch.opencodeUserOverrides = dto.overrides;
-    }
+    const patch: Partial<typeof agent> = {
+      opencodeUserConfig: sanitizedConfig,
+      opencodeUserOverrides: sanitizedOverrides,
+    };
 
     if (dto.secrets !== undefined) {
       const next = applySecretsPatch(parseSecrets(agent.opencodeUserSecrets), dto.secrets) ?? {};
@@ -203,8 +319,14 @@ export class OpenCodeConfigSyncService {
     // Agent-layer secrets win over workspace/global for the same key.
     const secrets = { ...parentSecrets, ...agentSecrets };
 
+    // Prepare once and reuse for container Env, auth.set, and OpenCode PATCH so allow/deny
+    // filtering applies before any container-side side effects.
+    // Strip registry first: manager has no catalog, so catalog identity is fail-closed here.
+    // Controller mergeEffectiveForSync already verified transports before sending wire payloads.
+    const prepared = prepareConfigForSync(stripAllMcpRegistryClaims(effective as JsonObject));
+
     try {
-      const envResult = await this.applyEnvSecretsToContainer(agentId, agent.containerId, secrets, effective);
+      const envResult = await this.applyEnvSecretsToContainer(agentId, agent.containerId, secrets, prepared);
 
       if (!envResult.ok) {
         return envResult;
@@ -221,7 +343,7 @@ export class OpenCodeConfigSyncService {
       }
 
       const client = await this.clientFactory.getClient(agentId, containerId);
-      const authSecrets = resolveProviderAuthSecrets(secrets, effective as Record<string, unknown>);
+      const authSecrets = resolveProviderAuthSecrets(secrets, prepared);
 
       for (const [providerId, auth] of Object.entries(authSecrets)) {
         if (!client.auth?.set || !auth.key) {
@@ -254,10 +376,21 @@ export class OpenCodeConfigSyncService {
       // Durable agent settings live in OpenCode global config (`~/.config/opencode`).
       // SDK `config.update` targets `/config` (project), which does not persist for workers.
       // Inject MCP secrets after assert so stored overlays never hold credential-like keys.
-      const wireConfig = injectMcpSecretsIntoWire(
-        structuredClone(effective) as Record<string, unknown>,
-        secrets,
-      ) as Record<string, unknown>;
+      // PATCH merges mcp keys and rejects null deletes — tombstone removed servers with { enabled: false }.
+      const wireConfig = injectMcpSecretsIntoWire(structuredClone(prepared) as JsonObject, secrets) as JsonObject;
+      const currentGlobal = await this.fetchOpenCodeJson<Record<string, unknown>>(
+        agentId,
+        containerId,
+        '/global/config',
+        {
+          method: 'GET',
+        },
+      );
+      const currentMcp =
+        currentGlobal?.['mcp'] && typeof currentGlobal['mcp'] === 'object' && !Array.isArray(currentGlobal['mcp'])
+          ? (currentGlobal['mcp'] as JsonObject)
+          : null;
+      const reconciledWire = applyMcpRemovalTombstones(wireConfig, currentMcp);
       const { baseUrl, authorization } = await this.clientFactory.resolveConnection(agentId, containerId);
       const response = await fetch(`${baseUrl.replace(/\/$/, '')}/global/config`, {
         method: 'PATCH',
@@ -266,7 +399,7 @@ export class OpenCodeConfigSyncService {
           Accept: 'application/json',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(wireConfig),
+        body: JSON.stringify(reconciledWire),
       });
 
       if (!response.ok) {

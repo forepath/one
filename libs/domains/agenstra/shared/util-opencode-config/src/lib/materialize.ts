@@ -1,6 +1,7 @@
 import type { JsonObject } from './types';
 import { migrateConfigV1ToV2 } from './migrate-v1-to-v2';
 import { wireMcpOauthForOpenCode } from './mcp-wire';
+import { isMcpServerAllowed, resolveMcpAllowDenyIdentity } from '@forepath/agenstra/shared/util-opencode-mcp-servers';
 
 /** Platform / UI-only roots that OpenCode Config rejects or silently drops. */
 const UNSUPPORTED_WIRE_ROOTS = [
@@ -12,6 +13,8 @@ const UNSUPPORTED_WIRE_ROOTS = [
   'websearch',
   'model_allow',
   'model_deny',
+  'mcp_allow',
+  'mcp_deny',
 ] as const;
 
 function isPlainObject(value: unknown): value is JsonObject {
@@ -343,6 +346,9 @@ function wireMcpServer(server: JsonObject): JsonObject {
   }
 
   // Preserve secretEnv / secretHeaders name lists for sync-time injection; stripped in injectMcpSecretsIntoWire.
+  // Drop UI-only registry name used for allow/deny classification.
+  delete next['registry'];
+
   const secretEnv = ensureStringList(next['secretEnv']);
 
   if (secretEnv.length) {
@@ -664,6 +670,93 @@ export function materializeModelAllowDeny(input: JsonObject): JsonObject {
   return config;
 }
 
+function ensureStringListFromUnknown(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((item): item is string => typeof item === 'string');
+}
+
+function filterMcpServerMap(servers: JsonObject, allow: readonly string[], deny: readonly string[]): JsonObject {
+  const next: JsonObject = {};
+
+  for (const [key, value] of Object.entries(servers)) {
+    if (key === 'timeout' || key === 'servers') {
+      continue;
+    }
+
+    const entry = isPlainObject(value) ? value : null;
+    const identity = resolveMcpAllowDenyIdentity(key, entry, allow, deny);
+
+    if (!isMcpServerAllowed(identity, allow, deny)) {
+      continue;
+    }
+
+    next[key] = value;
+  }
+
+  return next;
+}
+
+/**
+ * Applies UI MCP allow/deny lists onto configured servers, then strips platform keys.
+ * Empty allowlist → no allow restriction; empty denylist → no deny restriction; deny wins.
+ * OpenCode has no native MCP allow/deny fields — disallowed servers are removed from the overlay.
+ */
+export function materializeMcpAllowDeny(input: JsonObject): JsonObject {
+  const config = migrateConfigV1ToV2(input);
+  const allow = ensureStringListFromUnknown(config['mcp_allow']);
+  const deny = ensureStringListFromUnknown(config['mcp_deny']);
+
+  delete config['mcp_allow'];
+  delete config['mcp_deny'];
+
+  if (allow.length === 0 && deny.length === 0) {
+    return config;
+  }
+
+  if (!isPlainObject(config['mcp'])) {
+    return config;
+  }
+
+  const mcp = { ...(config['mcp'] as JsonObject) };
+  const nestedServers = isPlainObject(mcp['servers']) ? (mcp['servers'] as JsonObject) : null;
+
+  if (nestedServers) {
+    const filtered = filterMcpServerMap(nestedServers, allow, deny);
+
+    if (Object.keys(filtered).length > 0) {
+      mcp['servers'] = filtered;
+    } else {
+      delete mcp['servers'];
+    }
+  } else {
+    // Flat / legacy shape under mcp (non-timeout keys are servers).
+    const timeout = mcp['timeout'];
+    const filtered = filterMcpServerMap(mcp, allow, deny);
+    const rebuilt: JsonObject = { ...filtered };
+
+    if (timeout !== undefined) {
+      rebuilt['timeout'] = timeout;
+    }
+
+    Object.keys(mcp).forEach((key) => {
+      delete mcp[key];
+    });
+
+    Object.assign(mcp, rebuilt);
+  }
+
+  if (Object.keys(mcp).length > 0) {
+    config['mcp'] = mcp;
+  } else {
+    delete config['mcp'];
+  }
+
+  return config;
+}
+
 /**
  * Convert Agenstra V2 overlay shape into OpenCode HTTP Config wire format.
  *
@@ -777,8 +870,64 @@ export function toOpencodeWireConfig(input: JsonObject): JsonObject {
 
 /**
  * Prepare a config document for the OpenCode worker:
- * V2 migrate → model materialization → OpenCode Config wire shape.
+ * V2 migrate → model materialization → MCP allow/deny filter → OpenCode Config wire shape.
  */
 export function prepareConfigForSync(input: JsonObject | null | undefined): JsonObject {
-  return toOpencodeWireConfig(materializeModelAllowDeny(migrateConfigV1ToV2(input ?? {})));
+  return toOpencodeWireConfig(materializeMcpAllowDeny(materializeModelAllowDeny(migrateConfigV1ToV2(input ?? {}))));
+}
+
+/**
+ * OpenCode `PATCH /global/config` merges the `mcp` map and rejects `null` deletions.
+ * For keys present in the worker but absent from the desired wire payload, emit
+ * `{ enabled: false }` tombstones (supported by OpenCode's MCP schema) so allow/deny
+ * removals and overlay deletes actually take effect on the running worker.
+ * Desired keys that were previously tombstoned must send `enabled: true` (unless the
+ * desired entry is already explicitly disabled) so PATCH merge resurrects them.
+ */
+export function applyMcpRemovalTombstones(
+  wireConfig: JsonObject | null | undefined,
+  currentMcp: JsonObject | null | undefined,
+): JsonObject {
+  const wire = isPlainObject(wireConfig) ? { ...wireConfig } : {};
+  const desiredMcp = isPlainObject(wire['mcp']) ? { ...(wire['mcp'] as JsonObject) } : {};
+  const current = isPlainObject(currentMcp) ? currentMcp : {};
+
+  const nextMcp: JsonObject = { ...desiredMcp };
+  let changed = false;
+
+  for (const key of Object.keys(current)) {
+    if (key in nextMcp) {
+      continue;
+    }
+
+    nextMcp[key] = { enabled: false };
+    changed = true;
+  }
+
+  for (const key of Object.keys(desiredMcp)) {
+    const desired = desiredMcp[key];
+    if (!isPlainObject(desired) || desired['enabled'] === false) {
+      continue;
+    }
+
+    const existing = current[key];
+    if (!isPlainObject(existing) || existing['enabled'] !== false) {
+      continue;
+    }
+
+    nextMcp[key] = { ...desired, enabled: true };
+    changed = true;
+  }
+
+  if (!changed) {
+    return wire;
+  }
+
+  if (Object.keys(nextMcp).length > 0) {
+    wire['mcp'] = nextMcp;
+  } else {
+    delete wire['mcp'];
+  }
+
+  return wire;
 }

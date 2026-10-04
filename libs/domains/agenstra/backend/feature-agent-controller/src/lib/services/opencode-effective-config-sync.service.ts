@@ -38,7 +38,11 @@ export class OpencodeEffectiveConfigSyncService {
     const secrets = await this.opencodeConfigService.getLayerSecrets(clientId);
     const agentConfig = await this.agentConfigProxy.get(clientId, agentId);
     const agentOverlay = this.opencodeConfigService.composeStoredLayer(agentConfig.config, agentConfig.overrides);
-    const effective = this.opencodeConfigService.mergeEffectiveForSync(agentOverlay, layers.workspace, layers.global);
+    const effective = await this.opencodeConfigService.mergeEffectiveForSync(
+      agentOverlay,
+      layers.workspace,
+      layers.global,
+    );
     // Agent-layer secrets are merged inside manager syncEffective; pass workspace + global only.
     const workerSecrets = this.opencodeConfigService.mergeSecrets({}, secrets.workspace, secrets.global);
 

@@ -1026,6 +1026,7 @@
                     class="form-check-input"
                     [ngModel]="mapEntryBoolean('providers', key, 'disabled')"
                     (ngModelChange)="setMapEntryBoolean('providers', key, 'disabled', $event)"
+                    [disabled]="isLocked('/providers') || isMapEntryForcedByAllowDeny('providers', key)"
                   />
                 </agenstra-agent-config-settings-row>
               }
@@ -1117,6 +1118,154 @@
                 </button>
               }
             </h3>
+            @if (isRowVisible('/mcp_allow')) {
+              <agenstra-agent-config-settings-row
+                i18n-title="@@featureAgentConfig-fieldMcpAllow"
+                title="MCP allowlist"
+                i18n-description="@@featureAgentConfig-fieldMcpAllowHelp"
+                description="Registry names or custom, one per line"
+                [dirty]="isConfigPathDirty('mcp_allow')"
+                [lockable]="showLockControl('/mcp_allow')"
+                [locked]="isLocked('/mcp_allow')"
+                [lockInteractive]="canToggleLock('/mcp_allow')"
+                (lockChange)="setDraftLock('/mcp_allow', $event)"
+              >
+                <fpc-form-control
+                  controlId="agentConfigMcpAllow"
+                  controlType="textarea"
+                  [rows]="4"
+                  [ngModel]="stringListValue('mcp_allow')"
+                  (ngModelChange)="setStringList('mcp_allow', $event)"
+                  [disabled]="isLocked('/mcp_allow')"
+                />
+                @if (!isLocked('/mcp_allow')) {
+                  <div class="agent-config-editor__known-provider-add mt-2">
+                    <fpc-form-field
+                      forId="agentConfigAllowKnownMcp"
+                      i18n-label="@@featureAgentConfig-addKnownMcpLabel"
+                      label="Add known MCP server"
+                    >
+                      <fpc-typeahead-select
+                        inputId="agentConfigAllowKnownMcp"
+                        listboxId="agentConfigAllowKnownMcp-listbox"
+                        i18n-placeholder="@@featureAgentConfig-mcpTypeaheadPlaceholder"
+                        placeholder="Search MCP registry…"
+                        i18n-ariaLabel="@@featureAgentConfig-mcpTypeaheadAria"
+                        ariaLabel="Search MCP registry servers"
+                        [loading]="allowMcpTypeaheadLoading()"
+                        [openOnFocus]="false"
+                        [query]="allowMcpTypeaheadQuery()"
+                        (queryChange)="onAllowMcpTypeaheadQueryChange($event)"
+                        [open]="allowMcpTypeaheadOpen()"
+                        (openChange)="onAllowMcpTypeaheadOpenChange($event)"
+                      >
+                        <div fpcTypeaheadSuggestions>
+                          @for (server of filteredAllowMcpTypeaheadResults(); track server.name) {
+                            <button
+                              type="button"
+                              class="dropdown-item py-2 text-start"
+                              (mousedown)="pickAllowMcpTypeahead(server, $event)"
+                            >
+                              <span class="d-block small fw-medium text-truncate">{{
+                                builtinMcpServerOptionLabel(server)
+                              }}</span>
+                              <span class="d-block font-monospace text-muted small text-truncate">{{
+                                server.name
+                              }}</span>
+                            </button>
+                          }
+                        </div>
+                      </fpc-typeahead-select>
+                    </fpc-form-field>
+                    <div class="d-flex justify-content-end mt-1">
+                      <fpc-button
+                        size="sm"
+                        variant="secondary"
+                        [disabled]="stringListItems('mcp_allow').includes(customMcpAllowDenyToken)"
+                        (clicked)="appendCustomMcpAllowDenyToken('mcp_allow')"
+                        i18n="@@featureAgentConfig-addCustomMcpAllowDenyToken"
+                      >
+                        Add “custom”
+                      </fpc-button>
+                    </div>
+                  </div>
+                }
+              </agenstra-agent-config-settings-row>
+            }
+            @if (isRowVisible('/mcp_deny')) {
+              <agenstra-agent-config-settings-row
+                i18n-title="@@featureAgentConfig-fieldMcpDeny"
+                title="MCP denylist"
+                i18n-description="@@featureAgentConfig-fieldMcpDenyHelp"
+                description="Overrides allowlist when both match"
+                [dirty]="isConfigPathDirty('mcp_deny')"
+                [lockable]="showLockControl('/mcp_deny')"
+                [locked]="isLocked('/mcp_deny')"
+                [lockInteractive]="canToggleLock('/mcp_deny')"
+                (lockChange)="setDraftLock('/mcp_deny', $event)"
+              >
+                <fpc-form-control
+                  controlId="agentConfigMcpDeny"
+                  controlType="textarea"
+                  [rows]="4"
+                  [ngModel]="stringListValue('mcp_deny')"
+                  (ngModelChange)="setStringList('mcp_deny', $event)"
+                  [disabled]="isLocked('/mcp_deny')"
+                />
+                @if (!isLocked('/mcp_deny')) {
+                  <div class="agent-config-editor__known-provider-add mt-2">
+                    <fpc-form-field
+                      forId="agentConfigDenyKnownMcp"
+                      i18n-label="@@featureAgentConfig-addKnownMcpLabel"
+                      label="Add known MCP server"
+                    >
+                      <fpc-typeahead-select
+                        inputId="agentConfigDenyKnownMcp"
+                        listboxId="agentConfigDenyKnownMcp-listbox"
+                        i18n-placeholder="@@featureAgentConfig-mcpTypeaheadPlaceholder"
+                        placeholder="Search MCP registry…"
+                        i18n-ariaLabel="@@featureAgentConfig-mcpTypeaheadAria"
+                        ariaLabel="Search MCP registry servers"
+                        [loading]="denyMcpTypeaheadLoading()"
+                        [openOnFocus]="false"
+                        [query]="denyMcpTypeaheadQuery()"
+                        (queryChange)="onDenyMcpTypeaheadQueryChange($event)"
+                        [open]="denyMcpTypeaheadOpen()"
+                        (openChange)="onDenyMcpTypeaheadOpenChange($event)"
+                      >
+                        <div fpcTypeaheadSuggestions>
+                          @for (server of filteredDenyMcpTypeaheadResults(); track server.name) {
+                            <button
+                              type="button"
+                              class="dropdown-item py-2 text-start"
+                              (mousedown)="pickDenyMcpTypeahead(server, $event)"
+                            >
+                              <span class="d-block small fw-medium text-truncate">{{
+                                builtinMcpServerOptionLabel(server)
+                              }}</span>
+                              <span class="d-block font-monospace text-muted small text-truncate">{{
+                                server.name
+                              }}</span>
+                            </button>
+                          }
+                        </div>
+                      </fpc-typeahead-select>
+                    </fpc-form-field>
+                    <div class="d-flex justify-content-end mt-1">
+                      <fpc-button
+                        size="sm"
+                        variant="secondary"
+                        [disabled]="stringListItems('mcp_deny').includes(customMcpAllowDenyToken)"
+                        (clicked)="appendCustomMcpAllowDenyToken('mcp_deny')"
+                        i18n="@@featureAgentConfig-addCustomMcpAllowDenyToken"
+                      >
+                        Add “custom”
+                      </fpc-button>
+                    </div>
+                  </div>
+                }
+              </agenstra-agent-config-settings-row>
+            }
             <p class="agent-config-editor__note" i18n="@@featureAgentConfig-mcpServersHelp">
               Pick a registry MCP server to seed command/URL and secret names, or add a custom id. Secret values are
               stored in layer secrets, not in config JSON.
@@ -1158,17 +1307,19 @@
                     </div>
                   </fpc-typeahead-select>
                   <div class="d-flex justify-content-end mt-1">
-                    <fpc-button
-                      size="sm"
-                      variant="secondary"
-                      (clicked)="startCustomMcpMode()"
-                      i18n="@@featureAgentConfig-customMcpOption"
-                    >
-                      Custom MCP server
-                    </fpc-button>
+                    @if (customMcpAllowed()) {
+                      <fpc-button
+                        size="sm"
+                        variant="secondary"
+                        (clicked)="startCustomMcpMode()"
+                        i18n="@@featureAgentConfig-customMcpOption"
+                      >
+                        Custom MCP server
+                      </fpc-button>
+                    }
                   </div>
                 </fpc-form-field>
-                @if (isCustomMcpMode()) {
+                @if (isCustomMcpMode() && customMcpAllowed()) {
                   <fpc-form-field
                     forId="agentConfigCustomMcp"
                     i18n-label="@@featureAgentConfig-customMcpLabel"
@@ -1583,6 +1734,9 @@
                     class="form-check-input"
                     [ngModel]="mapEntryBoolean('mcp.servers', key, 'disabled')"
                     (ngModelChange)="setMapEntryBoolean('mcp.servers', key, 'disabled', $event)"
+                    [disabled]="
+                      isLocked('/mcp/servers') || isLocked('/mcp') || isMapEntryForcedByAllowDeny('mcp.servers', key)
+                    "
                   />
                 </agenstra-agent-config-settings-row>
               }

@@ -75,7 +75,7 @@ export interface OpencodeBuiltinMcpServer {
 
 /**
  * Seeded `mcp.servers.<id>` overlay entry produced from a catalog server.
- * `secretEnv` / `secretHeaders` are UI/layer metadata stripped before OpenCode wire.
+ * `secretEnv` / `secretHeaders` / `registry` are UI/layer metadata stripped before OpenCode wire.
  */
 export interface OpencodeMcpServerSeed {
   type: 'local' | 'remote';
@@ -87,4 +87,6 @@ export interface OpencodeMcpServerSeed {
   secretEnv: string[];
   /** Header names whose values live in layer secrets (not config). */
   secretHeaders: string[];
+  /** Catalog reverse-DNS name; used for allow/deny classification (stripped on wire). */
+  registry?: string;
 }
