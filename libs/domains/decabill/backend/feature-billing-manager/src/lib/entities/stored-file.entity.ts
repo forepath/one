@@ -3,6 +3,7 @@ import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, Update
 @Entity('billing_stored_files')
 @Index('UQ_billing_stored_files_scope_key', ['scope', 'storageKey'], { unique: true })
 @Index('IDX_billing_stored_files_long_sha', ['longSha'])
+@Index('IDX_billing_stored_files_content_sha256', ['contentSha256'])
 export class StoredFileEntity {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
   id!: string;

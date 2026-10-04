@@ -26,8 +26,19 @@ export class ProjectTimeReportPdfService {
   }
 
   async generateAndStore(invoice: InvoiceEntity, viewModel: ProjectTimeReportViewModel): Promise<string> {
-    const pdfBytes = await this.renderPdf(viewModel);
     const storageKey = buildProjectTimeReportStorageKey(invoice);
+    const stampedViewModel = { ...viewModel };
+
+    if (this.storedFileRegistry.isSigningEnabled()) {
+      const reserved = await this.storedFileRegistry.reserve(
+        getTenantIdOrDefault(),
+        FileStorageScope.customerTimesheets,
+        storageKey,
+      );
+      stampedViewModel.authenticityShortSha = reserved.shas.short;
+    }
+
+    const pdfBytes = await this.renderPdf(stampedViewModel);
     const content = Buffer.from(pdfBytes);
 
     await this.fileStorage.writeCustomerTimesheetFile(storageKey, content);

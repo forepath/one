@@ -52,6 +52,7 @@ export interface OfferPdfViewModel {
   balanceDue: string;
   taxNote?: string;
   taxModeLabel?: string;
+  authenticityShortSha?: string;
 }
 
 @Injectable()
@@ -64,8 +65,11 @@ export class OfferPdfTemplateService {
     issuer: BillingIssuerConfig,
     buyer: CustomerProfileEntity,
     presentation: OfferPdfPresentationOptions = buildOfferPdfPresentation(offer),
+    authenticityShortSha?: string,
   ): string {
-    return this.compiledTemplate(this.buildViewModel(offer, lineItems, issuer, buyer, presentation));
+    return this.compiledTemplate(
+      this.buildViewModel(offer, lineItems, issuer, buyer, presentation, authenticityShortSha),
+    );
   }
 
   buildViewModel(
@@ -74,6 +78,7 @@ export class OfferPdfTemplateService {
     issuer: BillingIssuerConfig,
     buyer: CustomerProfileEntity,
     presentation: OfferPdfPresentationOptions = buildOfferPdfPresentation(offer),
+    authenticityShortSha?: string,
   ): OfferPdfViewModel {
     return {
       documentTitle: presentation.documentTitle,
@@ -104,6 +109,7 @@ export class OfferPdfTemplateService {
       balanceDue: '0.00',
       taxNote: offer.taxNote?.trim() || undefined,
       taxModeLabel: offer.taxMode?.replace(/_/g, ' ') || undefined,
+      ...(authenticityShortSha ? { authenticityShortSha } : {}),
     };
   }
 

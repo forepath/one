@@ -701,6 +701,54 @@
         <source>Refresh</source>
         <target>Aktualisieren</target>
       </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verify" datatype="html">
+        <source>Verify file</source>
+        <target>Datei prüfen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verifyModalTitle" datatype="html">
+        <source>Verify authenticity</source>
+        <target>Echtheit prüfen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verifyFileLabel" datatype="html">
+        <source>File to verify</source>
+        <target>Zu prüfende Datei</target>
+      </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verifyHint" datatype="html">
+        <source>Upload is checked in memory only and is never stored.</source>
+        <target>Der Upload wird nur im Speicher geprüft und nicht gespeichert.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verifySubmit" datatype="html">
+        <source>Verify</source>
+        <target>Prüfen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verifyDocumentId" datatype="html">
+        <source>Document ID</source>
+        <target>Dokument-ID</target>
+      </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verifyPath" datatype="html">
+        <source>Path</source>
+        <target>Pfad</target>
+      </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verifyTenant" datatype="html">
+        <source>Tenant</source>
+        <target>Tenant</target>
+      </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verdictAuthentic" datatype="html">
+        <source>Authentic. This file matches a signed registry entry.</source>
+        <target>Authentisch. Die Datei entspricht einem signierten Registry-Eintrag.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verdictUnknown" datatype="html">
+        <source>Unknown. No matching signed file was found.</source>
+        <target>Unbekannt. Keine passende signierte Datei gefunden.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verdictUnsigned" datatype="html">
+        <source>Digest matched a registry row, but the signature is missing or invalid.</source>
+        <target>Prüfsumme gefunden, aber Signatur fehlt oder ist ungültig.</target>
+      </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verdictSigningDisabled" datatype="html">
+        <source>File signing is not enabled on this deployment.</source>
+        <target>Dateisignierung ist in dieser Umgebung nicht aktiviert.</target>
+      </trans-unit>
       <trans-unit id="featureAdminFileExplorer-download" datatype="html">
         <source>Download</source>
         <target>Herunterladen</target>

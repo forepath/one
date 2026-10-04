@@ -1,8 +1,9 @@
 import { createReducer, on } from '@ngrx/store';
 
-import type { AdminFileManagerEntry, AdminFileManagerView } from '../../types/billing.types';
+import type { AdminFileManagerEntry, AdminFileManagerView, AdminFileVerifyResponse } from '../../types/billing.types';
 
 import {
+  clearAdminFileManagerVerifyResult,
   collapseAdminFileManagerPath,
   downloadAdminFileManagerArchive,
   downloadAdminFileManagerArchiveFailure,
@@ -16,6 +17,9 @@ import {
   listAdminFileManagerDirectorySuccess,
   refreshAdminFileManager,
   setAdminFileManagerView,
+  verifyAdminFileManagerFile,
+  verifyAdminFileManagerFileFailure,
+  verifyAdminFileManagerFileSuccess,
 } from './admin-file-manager.actions';
 
 function isPathOrDescendant(candidate: string, parent: string): boolean {
@@ -34,6 +38,9 @@ export interface AdminFileManagerState {
   loadingPath: string | null;
   error: string | null;
   downloadLoading: boolean;
+  verifyLoading: boolean;
+  verifyResult: AdminFileVerifyResponse | null;
+  verifyError: string | null;
 }
 
 export const initialAdminFileManagerState: AdminFileManagerState = {
@@ -44,6 +51,9 @@ export const initialAdminFileManagerState: AdminFileManagerState = {
   loadingPath: null,
   error: null,
   downloadLoading: false,
+  verifyLoading: false,
+  verifyResult: null,
+  verifyError: null,
 };
 
 export function buildAdminFileManagerCacheKey(
@@ -115,5 +125,27 @@ export const adminFileManagerReducer = createReducer(
     ...state,
     downloadLoading: false,
     error,
+  })),
+  on(verifyAdminFileManagerFile, (state) => ({
+    ...state,
+    verifyLoading: true,
+    verifyError: null,
+    verifyResult: null,
+  })),
+  on(verifyAdminFileManagerFileSuccess, (state, { result }) => ({
+    ...state,
+    verifyLoading: false,
+    verifyResult: result,
+  })),
+  on(verifyAdminFileManagerFileFailure, (state, { error }) => ({
+    ...state,
+    verifyLoading: false,
+    verifyError: error,
+  })),
+  on(clearAdminFileManagerVerifyResult, (state) => ({
+    ...state,
+    verifyLoading: false,
+    verifyResult: null,
+    verifyError: null,
   })),
 );

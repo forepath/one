@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
   AdminFileManagerFacade,
@@ -7,6 +7,7 @@ import {
   buildAdminFileManagerCacheKey,
   type AdminFileManagerEntry,
   type AdminFileManagerView,
+  type AdminFileVerifyResponse,
 } from '@forepath/decabill/frontend/data-access-billing-console';
 import { ENVIRONMENT, type Environment } from '@forepath/decabill/frontend/util-configuration';
 import {
@@ -15,6 +16,10 @@ import {
   FpcButtonComponent,
   FpcButtonGroupComponent,
   FpcEmptyStateComponent,
+  FpcFormControlComponent,
+  FpcFormFieldComponent,
+  FpcModalComponent,
+  FpcModalFooterDirective,
   FpcPageHeaderComponent,
   FpcSpinnerComponent,
   FpcTabComponent,
@@ -22,6 +27,8 @@ import {
   FpcTooltipComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { combineLatest, map } from 'rxjs';
+
+import { hideBillingModal, showBillingModal } from '../billing-modal';
 
 interface TreeNodeView {
   entry: AdminFileManagerEntry;
@@ -38,6 +45,10 @@ interface TreeNodeView {
     FpcButtonComponent,
     FpcButtonGroupComponent,
     FpcEmptyStateComponent,
+    FpcFormControlComponent,
+    FpcFormFieldComponent,
+    FpcModalComponent,
+    FpcModalFooterDirective,
     FpcPageHeaderComponent,
     FpcSpinnerComponent,
     FpcTabComponent,
@@ -56,18 +67,27 @@ export class AdminFileManagerPageComponent implements OnInit {
   readonly pageTitle = $localize`:@@featureAdminFileExplorer-title:File Explorer`;
   readonly unifiedTabLabel = $localize`:@@featureAdminFileExplorer-tabUnified:Unified`;
   readonly refreshAriaLabel = $localize`:@@featureAdminFileExplorer-refresh:Refresh`;
+  readonly verifyAriaLabel = $localize`:@@featureAdminFileExplorer-verify:Verify file`;
   readonly downloadAriaLabel = $localize`:@@featureAdminFileExplorer-download:Download`;
+  readonly verifyModalTitle = $localize`:@@featureAdminFileExplorer-verifyModalTitle:Verify authenticity`;
 
   readonly selectedPath = signal<string | null>(null);
   readonly selectedType = signal<'file' | 'directory' | null>(null);
+  readonly verifyModalOpen = signal(false);
+  readonly selectedVerifyFile = signal<File | null>(null);
+  readonly verifyFileInputKey = signal(0);
 
   readonly view$ = this.facade.view$;
   readonly viewTenantId$ = this.facade.viewTenantId$;
   readonly error$ = this.facade.error$;
   readonly downloadLoading$ = this.facade.downloadLoading$;
   readonly loadingPath$ = this.facade.loadingPath$;
+  readonly verifyLoading$ = this.facade.verifyLoading$;
+  readonly verifyResult$ = this.facade.verifyResult$;
+  readonly verifyError$ = this.facade.verifyError$;
   readonly globalViewsAllowed$ = this.capabilitiesFacade.globalViewsAllowed$;
   readonly viewableTenants$ = this.capabilitiesFacade.viewableTenants$;
+  readonly fileSigningEnabled$ = this.capabilitiesFacade.fileSigningEnabled$;
 
   readonly showViewTabs$ = this.globalViewsAllowed$;
 
@@ -77,6 +97,18 @@ export class AdminFileManagerPageComponent implements OnInit {
 
   readonly state = toSignal(this.facade.state$, { initialValue: null });
   readonly viewableTenants = toSignal(this.viewableTenants$, { initialValue: [] as string[] });
+  private readonly verifyResult = toSignal(this.verifyResult$, { initialValue: null });
+
+  constructor() {
+    effect(() => {
+      if (!this.verifyResult()) {
+        return;
+      }
+
+      this.selectedVerifyFile.set(null);
+      this.verifyFileInputKey.update((key) => key + 1);
+    });
+  }
 
   readonly treeNodes = computed(() => {
     const state = this.state();
@@ -242,5 +274,60 @@ export class AdminFileManagerPageComponent implements OnInit {
 
   refreshRoot(): void {
     this.facade.refresh();
+  }
+
+  openVerifyModal(): void {
+    this.selectedVerifyFile.set(null);
+    this.facade.clearVerifyResult();
+    showBillingModal(this.verifyModalOpen);
+  }
+
+  onVerifyModalClosed(): void {
+    hideBillingModal(this.verifyModalOpen);
+    this.selectedVerifyFile.set(null);
+    this.facade.clearVerifyResult();
+  }
+
+  onVerifyFileSelected(files: FileList | null): void {
+    this.selectedVerifyFile.set(files?.[0] ?? null);
+    this.facade.clearVerifyResult();
+  }
+
+  submitVerify(): void {
+    const file = this.selectedVerifyFile();
+
+    if (!file) {
+      return;
+    }
+
+    this.facade.verifyFile(file);
+  }
+
+  verdictMessage(result: AdminFileVerifyResponse): string {
+    switch (result.verdict) {
+      case 'authentic':
+        return $localize`:@@featureAdminFileExplorer-verdictAuthentic:Authentic. This file matches a signed registry entry.`;
+      case 'unknown':
+        return $localize`:@@featureAdminFileExplorer-verdictUnknown:Unknown. No matching signed file was found.`;
+      case 'unsigned':
+        return $localize`:@@featureAdminFileExplorer-verdictUnsigned:Digest matched a registry row, but the signature is missing or invalid.`;
+      case 'signing_disabled':
+        return $localize`:@@featureAdminFileExplorer-verdictSigningDisabled:File signing is not enabled on this deployment.`;
+      default:
+        return result.verdict;
+    }
+  }
+
+  verdictVariant(result: AdminFileVerifyResponse): 'success' | 'warning' | 'danger' | 'info' {
+    switch (result.verdict) {
+      case 'authentic':
+        return 'success';
+      case 'unsigned':
+        return 'warning';
+      case 'unknown':
+        return 'danger';
+      default:
+        return 'info';
+    }
   }
 }

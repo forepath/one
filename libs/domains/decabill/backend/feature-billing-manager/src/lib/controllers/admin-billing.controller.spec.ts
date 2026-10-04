@@ -44,6 +44,7 @@ describe('AdminBillingController', () => {
     getConfiguredTenants: jest.fn().mockReturnValue(['default', 'acme']),
   };
   const taxPreviewService = { preview: jest.fn() };
+  const storedFileSigningConfig = { getSecret: jest.fn().mockReturnValue('test-secret') };
   const controller = new AdminBillingController(
     billingAdminService as never,
     adminBillNowService as never,
@@ -57,10 +58,12 @@ describe('AdminBillingController', () => {
     tenantsGlobalViewsConfig as never,
     billingTenantService as never,
     taxPreviewService as never,
+    storedFileSigningConfig as never,
   );
 
   beforeEach(() => {
     jest.resetAllMocks();
+    storedFileSigningConfig.getSecret.mockReturnValue('test-secret');
   });
 
   it('has admin role guards on controller', () => {
@@ -82,6 +85,7 @@ describe('AdminBillingController', () => {
       unifiedExportAllowed: true,
       globalViewsAllowed: true,
       viewableTenants: ['default', 'acme'],
+      fileSigningEnabled: true,
     });
   });
 
@@ -89,12 +93,14 @@ describe('AdminBillingController', () => {
     datevExportConfigService.isEnabled.mockReturnValue(true);
     datevExportConfigService.isUnifiedExportAllowedForTenant.mockReturnValue(false);
     tenantsGlobalViewsConfig.isGlobalViewsAllowedForTenant.mockReturnValue(false);
+    storedFileSigningConfig.getSecret.mockReturnValue(undefined);
 
     expect(controller.getCapabilities()).toEqual({
       datevExportEnabled: true,
       unifiedExportAllowed: false,
       globalViewsAllowed: false,
       viewableTenants: ['default'],
+      fileSigningEnabled: false,
     });
   });
 

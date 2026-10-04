@@ -15,11 +15,13 @@ describe('billingCapabilitiesReducer', () => {
           unifiedExportAllowed: false,
           globalViewsAllowed: false,
           viewableTenants: ['default'],
+          fileSigningEnabled: true,
         },
       }),
     );
 
     expect(state.capabilities?.datevExportEnabled).toBe(true);
+    expect(state.capabilities?.fileSigningEnabled).toBe(true);
     expect(state.loading).toBe(false);
   });
 

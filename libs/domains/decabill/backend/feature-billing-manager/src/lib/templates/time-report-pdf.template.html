@@ -167,6 +167,15 @@
         font-style: italic;
         font-size: 13px;
       }
+
+      .authenticity-mark {
+        margin-top: 28px;
+        font-size: 10px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        color: var(--secondary);
+      }
     </style>
   </head>
   <body>
@@ -229,6 +238,8 @@
       </div>
       {{else}}
       <p class="empty">No time entries in this range.</p>
+      {{/if}} {{#if authenticityShortSha}}
+      <p class="authenticity-mark">Document ID: {{authenticityShortSha}}</p>
       {{/if}}
     </div>
   </body>

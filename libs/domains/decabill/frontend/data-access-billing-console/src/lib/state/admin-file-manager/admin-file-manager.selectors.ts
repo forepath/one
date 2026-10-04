@@ -28,6 +28,21 @@ export const selectAdminFileManagerExpandedPaths = createSelector(
   (state) => state.expandedPaths,
 );
 
+export const selectAdminFileManagerVerifyLoading = createSelector(
+  selectAdminFileManagerState,
+  (state) => state.verifyLoading,
+);
+
+export const selectAdminFileManagerVerifyResult = createSelector(
+  selectAdminFileManagerState,
+  (state) => state.verifyResult,
+);
+
+export const selectAdminFileManagerVerifyError = createSelector(
+  selectAdminFileManagerState,
+  (state) => state.verifyError,
+);
+
 export const selectAdminFileManagerEntriesForPath = (path: string) =>
   createSelector(selectAdminFileManagerState, (state) => {
     const cacheKey = buildAdminFileManagerCacheKey(state.view, state.viewTenantId, path);

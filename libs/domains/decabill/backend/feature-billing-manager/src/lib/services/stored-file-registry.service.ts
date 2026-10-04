@@ -27,6 +27,11 @@ export interface RegisterStoredFileInput {
   content: Buffer;
 }
 
+export interface ReservedStoredFile {
+  id: string;
+  shas: { short: string; long: string };
+}
+
 @Injectable()
 export class StoredFileRegistryService {
   private readonly logger = new Logger(StoredFileRegistryService.name);
@@ -37,6 +42,49 @@ export class StoredFileRegistryService {
     private readonly fileStorage: FileStorageService,
     private readonly signingConfig: StoredFileSigningConfigService,
   ) {}
+
+  isSigningEnabled(): boolean {
+    return Boolean(this.signingConfig.getSecret());
+  }
+
+  /**
+   * Create-or-get a registry row so PDF templates can stamp the identity short SHA
+   * before content digests / HMAC exist.
+   */
+  async reserve(
+    tenantId: string,
+    scope: FileStorageScopeType | string,
+    storageKey: string,
+  ): Promise<ReservedStoredFile> {
+    const normalizedKey = storageKey.replace(/\\/g, '/');
+    let row = await this.storedFiles.findOne({
+      where: { scope, storageKey: normalizedKey },
+    });
+
+    if (!row) {
+      row = this.storedFiles.create({
+        tenantId,
+        scope: String(scope),
+        storageKey: normalizedKey,
+        longSha: '',
+      });
+      row = await this.storedFiles.save(row);
+      row.longSha = deriveStoredFileLongSha(row.id);
+      row = await this.storedFiles.save(row);
+    } else {
+      row.tenantId = tenantId;
+
+      if (!row.longSha) {
+        row.longSha = deriveStoredFileLongSha(row.id);
+        row = await this.storedFiles.save(row);
+      }
+    }
+
+    return {
+      id: row.id,
+      shas: this.toShas(row),
+    };
+  }
 
   async registerFromBuffer(input: RegisterStoredFileInput): Promise<StoredFileEntity> {
     const storageKey = input.storageKey.replace(/\\/g, '/');
@@ -76,6 +124,56 @@ export class StoredFileRegistryService {
     return await this.storedFiles.findOne({
       where: { scope, storageKey: storageKey.replace(/\\/g, '/') },
     });
+  }
+
+  async findByContentSha256(contentSha256: string): Promise<StoredFileEntity[]> {
+    if (!contentSha256) {
+      return [];
+    }
+
+    return await this.storedFiles.find({
+      where: { contentSha256 },
+      order: { createdAt: 'ASC' },
+    });
+  }
+
+  /**
+   * Verify uploaded bytes against a registry row without reading storage or persisting the upload.
+   */
+  verifyFromBuffer(row: StoredFileEntity, content: Buffer): boolean {
+    const secret = this.signingConfig.getSecret();
+
+    if (!secret || !row.signature || !row.contentMd5 || !row.contentSha256) {
+      return false;
+    }
+
+    const hashes = computeStoredFileContentHashes(content);
+
+    if (
+      hashes.md5 !== row.contentMd5 ||
+      hashes.sha1 !== row.contentSha1 ||
+      hashes.sha256 !== row.contentSha256 ||
+      hashes.sha512 !== row.contentSha512 ||
+      String(hashes.byteSize) !== String(row.byteSize ?? '')
+    ) {
+      return false;
+    }
+
+    return verifyStoredFileV1(
+      secret,
+      {
+        tenantId: row.tenantId,
+        scope: row.scope,
+        storageKey: row.storageKey,
+        contentMd5: hashes.md5,
+        contentSha1: hashes.sha1,
+        contentSha256: hashes.sha256,
+        contentSha512: hashes.sha512,
+        byteSize: hashes.byteSize,
+        registryFileId: row.id,
+      },
+      row.signature,
+    );
   }
 
   async findMapForKeys(keys: Array<{ scope: string; storageKey: string }>): Promise<Map<string, StoredFileEntity>> {

@@ -14,4 +14,5 @@ export interface ProjectTimeReportViewModel {
   invoiceNumber?: string;
   entries: ProjectTimeReportEntryView[];
   totalDuration: string;
+  authenticityShortSha?: string;
 }

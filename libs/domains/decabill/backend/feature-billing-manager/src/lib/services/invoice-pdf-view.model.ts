@@ -43,4 +43,6 @@ export interface InvoicePdfViewModel {
   taxNote?: string;
   taxModeLabel?: string;
   paymentDetails?: InvoicePdfPaymentDetailsView;
+  /** Identity short SHA stamped when file signing is enabled. */
+  authenticityShortSha?: string;
 }

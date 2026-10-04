@@ -291,7 +291,23 @@ describe('AdminBillingService', () => {
       unifiedExportAllowed: false,
       globalViewsAllowed: false,
       viewableTenants: ['default'],
+      fileSigningEnabled: true,
     });
+  });
+
+  it('verifies admin file via multipart upload', (done) => {
+    const file = new File([new Uint8Array([1, 2, 3])], 'check.pdf', { type: 'application/pdf' });
+
+    service.verifyAdminFile(file).subscribe((res) => {
+      expect(res.verdict).toBe('authentic');
+      done();
+    });
+
+    const req = httpMock.expectOne(`${apiUrl}/admin/billing/files/verify`);
+
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toBeInstanceOf(FormData);
+    req.flush({ verdict: 'authentic', contentSha256: 'a'.repeat(64) });
   });
 
   it('lists datev exports with query params', (done) => {

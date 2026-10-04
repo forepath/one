@@ -26,6 +26,11 @@ export const selectViewableTenants = createSelector(
   (capabilities) => capabilities?.viewableTenants ?? [],
 );
 
+export const selectFileSigningEnabled = createSelector(
+  selectBillingCapabilities,
+  (capabilities) => capabilities?.fileSigningEnabled ?? false,
+);
+
 export const selectBillingCapabilitiesLoading = createSelector(
   selectBillingCapabilitiesState,
   (state) => state.loading,

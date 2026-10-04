@@ -35,6 +35,7 @@ describe('BillingCapabilitiesEffects', () => {
         unifiedExportAllowed: false,
         globalViewsAllowed: false,
         viewableTenants: ['default'],
+        fileSigningEnabled: true,
       }),
     );
 
@@ -46,6 +47,7 @@ describe('BillingCapabilitiesEffects', () => {
             unifiedExportAllowed: false,
             globalViewsAllowed: false,
             viewableTenants: ['default'],
+            fileSigningEnabled: true,
           },
         }),
       );

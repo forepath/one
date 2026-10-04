@@ -56,6 +56,7 @@ import { DatevExportConfigService } from '../services/datev-export-config.servic
 import { InvoiceAdminService } from '../services/invoice-admin.service';
 import { InvoiceService } from '../services/invoice.service';
 import { ManualInvoiceService } from '../services/manual-invoice.service';
+import { StoredFileSigningConfigService } from '../services/stored-file-signing-config.service';
 import { TaxPreviewService } from '../services/tax-preview.service';
 import { TenantsGlobalViewsConfigService } from '../services/tenants-global-views-config.service';
 import { InvoicesRepository } from '../repositories/invoices.repository';
@@ -79,6 +80,7 @@ export class AdminBillingController {
     private readonly tenantsGlobalViewsConfig: TenantsGlobalViewsConfigService,
     private readonly billingTenantService: BillingTenantService,
     private readonly taxPreviewService: TaxPreviewService,
+    private readonly storedFileSigningConfig: StoredFileSigningConfigService,
   ) {}
 
   @RequireScopes('billing_admin:read')
@@ -98,6 +100,7 @@ export class AdminBillingController {
       unifiedExportAllowed: this.datevExportConfigService.isUnifiedExportAllowedForTenant(tenantId),
       globalViewsAllowed,
       viewableTenants: globalViewsAllowed ? [...this.billingTenantService.getConfiguredTenants()] : [tenantId],
+      fileSigningEnabled: Boolean(this.storedFileSigningConfig.getSecret()),
     };
   }
 

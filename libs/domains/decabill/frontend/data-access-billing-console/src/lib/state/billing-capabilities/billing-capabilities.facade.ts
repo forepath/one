@@ -6,6 +6,7 @@ import {
   selectBillingCapabilities,
   selectBillingCapabilitiesLoading,
   selectDatevExportEnabled,
+  selectFileSigningEnabled,
   selectGlobalViewsAllowed,
   selectUnifiedExportAllowed,
   selectViewableTenants,
@@ -20,6 +21,7 @@ export class BillingCapabilitiesFacade {
   readonly unifiedExportAllowed$ = this.store.select(selectUnifiedExportAllowed);
   readonly globalViewsAllowed$ = this.store.select(selectGlobalViewsAllowed);
   readonly viewableTenants$ = this.store.select(selectViewableTenants);
+  readonly fileSigningEnabled$ = this.store.select(selectFileSigningEnabled);
   readonly loading$ = this.store.select(selectBillingCapabilitiesLoading);
 
   loadCapabilities(): void {

@@ -1,9 +1,11 @@
 import {
+  clearAdminFileManagerVerifyResult,
   collapseAdminFileManagerPath,
   expandAdminFileManagerPath,
   listAdminFileManagerDirectorySuccess,
   refreshAdminFileManager,
   setAdminFileManagerView,
+  verifyAdminFileManagerFileSuccess,
 } from './admin-file-manager.actions';
 import {
   adminFileManagerReducer,
@@ -74,5 +76,22 @@ describe('adminFileManagerReducer', () => {
     const collapsed = adminFileManagerReducer(expanded, collapseAdminFileManagerPath({ path: 'customer' }));
 
     expect(collapsed.expandedPaths).toEqual(['']);
+  });
+
+  it('stores and clears verify results', () => {
+    const withResult = adminFileManagerReducer(
+      initialAdminFileManagerState,
+      verifyAdminFileManagerFileSuccess({
+        result: { verdict: 'authentic', contentSha256: 'a'.repeat(64) },
+      }),
+    );
+
+    expect(withResult.verifyResult?.verdict).toBe('authentic');
+    expect(withResult.verifyLoading).toBe(false);
+
+    const cleared = adminFileManagerReducer(withResult, clearAdminFileManagerVerifyResult());
+
+    expect(cleared.verifyResult).toBeNull();
+    expect(cleared.verifyError).toBeNull();
   });
 });

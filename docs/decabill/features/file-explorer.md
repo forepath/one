@@ -11,6 +11,7 @@ Supported actions:
 - Browse folders (lazy expand; refresh keeps open folders and reloads those paths)
 - Download a single file
 - Download a folder (and its subtree) as ZIP
+- Verify authenticity of an uploaded file against the signed registry (when signing is enabled; upload is never persisted)
 
 Upload, rename, move, and delete are out of scope.
 
@@ -38,6 +39,12 @@ Every managed file has a `billing_stored_files` row with:
 
 BullMQ job `stored-files.backfill.*` fills hashes/signatures for backfilled rows. File Explorer shows a short-hash badge and lock icon with tooltip details.
 
+When signing is enabled, newly generated invoice / void / credit / offer / timesheet PDFs print `Document ID: {shortSha}` (the same identity short SHA as the explorer badge). The content HMAC is not embedded in PDF bytes (that would invalidate the signature).
+
+## Authenticity verify
+
+With `BILLING_FILE_SIGNING_SECRET` set, File Explorer shows a verify control before Refresh. Admins upload a file; the API hashes it in memory, looks up `content_sha256`, verifies the HMAC, and returns a verdict (`authentic` / `unknown` / `unsigned` / `signing_disabled`). The upload is never written to storage or the database. Global-view operator tenants may match rows across tenants.
+
 ## Multi-tenant views
 
 Like DATEV admin exports, File Explorer is tenant-enclosed by default:
@@ -55,6 +62,7 @@ Admin-only (`ADMIN` roles + `billing_admin:read`):
 - `GET /admin/billing/files`
 - `GET /admin/billing/files/download`
 - `GET /admin/billing/files/archive`
+- `POST /admin/billing/files/verify` (multipart `document`; never persisted)
 
 ## Security
 

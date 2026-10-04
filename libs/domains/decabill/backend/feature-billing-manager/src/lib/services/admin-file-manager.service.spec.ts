@@ -45,9 +45,12 @@ describe('AdminFileManagerService', () => {
   const storedFileRegistry = {
     findMapForKeys: jest.fn().mockResolvedValue(new Map()),
     findByScopeKey: jest.fn().mockResolvedValue(null),
+    findByContentSha256: jest.fn().mockResolvedValue([]),
     verifyFromStorage: jest.fn().mockResolvedValue(true),
+    verifyFromBuffer: jest.fn().mockReturnValue(true),
+    isSigningEnabled: jest.fn().mockReturnValue(false),
     cacheKey: (scope: string, storageKey: string) => `${scope}::${storageKey}`,
-    toShas: jest.fn(),
+    toShas: jest.fn().mockReturnValue({ short: 'abcdef1', long: 'a'.repeat(40) }),
   };
   const storedFileSigningConfig = {
     getSecret: jest.fn().mockReturnValue(null),
@@ -68,6 +71,9 @@ describe('AdminFileManagerService', () => {
     dataSource.query.mockResolvedValue([]);
     storedFileRegistry.findMapForKeys.mockResolvedValue(new Map());
     storedFileRegistry.findByScopeKey.mockResolvedValue(null);
+    storedFileRegistry.findByContentSha256.mockResolvedValue([]);
+    storedFileRegistry.verifyFromBuffer.mockReturnValue(true);
+    storedFileRegistry.isSigningEnabled.mockReturnValue(false);
     storedFileSigningConfig.getSecret.mockReturnValue(null);
   });
 
@@ -305,4 +311,45 @@ describe('AdminFileManagerService', () => {
       ([, params]) => Array.isArray(params) && params.includes(DatevExportStatus.COMPLETED),
     );
   }
+
+  it('verifyUploadedFile returns signing_disabled when secret unset', async () => {
+    storedFileRegistry.isSigningEnabled.mockReturnValue(false);
+
+    const result = await runWithTenantId('default', () => service.verifyUploadedFile({ buffer: Buffer.from('pdf') }));
+
+    expect(result.verdict).toBe('signing_disabled');
+  });
+
+  it('verifyUploadedFile returns authentic for matching signed content', async () => {
+    storedFileRegistry.isSigningEnabled.mockReturnValue(true);
+    storedFileRegistry.findByContentSha256.mockResolvedValue([
+      {
+        id: '11111111-1111-1111-1111-111111111111',
+        tenantId: 'default',
+        scope: FileStorageScope.customerInvoices,
+        storageKey: 'sub/a.pdf',
+        signature: 'sig',
+        signatureAlg: 'hmac-sha256',
+        signatureVersion: 'v1',
+        signedAt: new Date('2026-01-01T00:00:00Z'),
+      },
+    ]);
+    storedFileRegistry.verifyFromBuffer.mockReturnValue(true);
+
+    const result = await runWithTenantId('default', () => service.verifyUploadedFile({ buffer: Buffer.from('pdf') }));
+
+    expect(result.verdict).toBe('authentic');
+    expect(result.match?.virtualPath).toBe('customer/invoices/sub/a.pdf');
+    expect(result.match?.shas.short).toBe('abcdef1');
+  });
+
+  it('verifyUploadedFile returns unknown when no digest match', async () => {
+    storedFileRegistry.isSigningEnabled.mockReturnValue(true);
+    storedFileRegistry.findByContentSha256.mockResolvedValue([]);
+
+    const result = await runWithTenantId('default', () => service.verifyUploadedFile({ buffer: Buffer.from('pdf') }));
+
+    expect(result.verdict).toBe('unknown');
+    expect(result.contentSha256).toHaveLength(64);
+  });
 });

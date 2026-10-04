@@ -4,6 +4,7 @@ import { Store } from '@ngrx/store';
 import type { AdminFileManagerListParams, AdminFileManagerView } from '../../types/billing.types';
 
 import {
+  clearAdminFileManagerVerifyResult,
   collapseAdminFileManagerPath,
   downloadAdminFileManagerArchive,
   downloadAdminFileManagerFile,
@@ -11,6 +12,7 @@ import {
   listAdminFileManagerDirectory,
   refreshAdminFileManager,
   setAdminFileManagerView,
+  verifyAdminFileManagerFile,
 } from './admin-file-manager.actions';
 import {
   selectAdminFileManagerDownloadLoading,
@@ -19,6 +21,9 @@ import {
   selectAdminFileManagerLoadingPath,
   selectAdminFileManagerRootEntries,
   selectAdminFileManagerState,
+  selectAdminFileManagerVerifyError,
+  selectAdminFileManagerVerifyLoading,
+  selectAdminFileManagerVerifyResult,
   selectAdminFileManagerView,
   selectAdminFileManagerViewTenantId,
 } from './admin-file-manager.selectors';
@@ -35,6 +40,9 @@ export class AdminFileManagerFacade {
   readonly loadingPath$ = this.store.select(selectAdminFileManagerLoadingPath);
   readonly error$ = this.store.select(selectAdminFileManagerError);
   readonly downloadLoading$ = this.store.select(selectAdminFileManagerDownloadLoading);
+  readonly verifyLoading$ = this.store.select(selectAdminFileManagerVerifyLoading);
+  readonly verifyResult$ = this.store.select(selectAdminFileManagerVerifyResult);
+  readonly verifyError$ = this.store.select(selectAdminFileManagerVerifyError);
   readonly state$ = this.store.select(selectAdminFileManagerState);
 
   setView(view: AdminFileManagerView, viewTenantId?: string | null): void {
@@ -63,6 +71,14 @@ export class AdminFileManagerFacade {
 
   refresh(): void {
     this.store.dispatch(refreshAdminFileManager());
+  }
+
+  verifyFile(file: File): void {
+    this.store.dispatch(verifyAdminFileManagerFile({ file }));
+  }
+
+  clearVerifyResult(): void {
+    this.store.dispatch(clearAdminFileManagerVerifyResult());
   }
 
   downloadFile(params: AdminFileManagerListParams, fileName?: string): void {

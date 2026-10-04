@@ -1367,6 +1367,42 @@
       <trans-unit id="featureAdminFileExplorer-refresh" datatype="html">
         <source>Refresh</source>
         </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verify" datatype="html">
+        <source>Verify file</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verifyModalTitle" datatype="html">
+        <source>Verify authenticity</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verifyFileLabel" datatype="html">
+        <source>File to verify</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verifyHint" datatype="html">
+        <source>Upload is checked in memory only and is never stored.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verifySubmit" datatype="html">
+        <source>Verify</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verifyDocumentId" datatype="html">
+        <source>Document ID</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verifyPath" datatype="html">
+        <source>Path</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verifyTenant" datatype="html">
+        <source>Tenant</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verdictAuthentic" datatype="html">
+        <source>Authentic. This file matches a signed registry entry.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verdictUnknown" datatype="html">
+        <source>Unknown. No matching signed file was found.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verdictUnsigned" datatype="html">
+        <source>Digest matched a registry row, but the signature is missing or invalid.</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-verdictSigningDisabled" datatype="html">
+        <source>File signing is not enabled on this deployment.</source>
+        </trans-unit>
       <trans-unit id="featureAdminFileExplorer-download" datatype="html">
         <source>Download</source>
         </trans-unit>

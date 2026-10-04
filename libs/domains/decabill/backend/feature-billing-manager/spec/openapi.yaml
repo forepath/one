@@ -5763,6 +5763,34 @@ paths:
           description: Folder not found or empty
         '413':
           description: Archive exceeds size or entry limits
+  /admin/billing/files/verify:
+    post:
+      tags: [Admin Billing]
+      summary: Verify an uploaded file against the signed stored-file registry (admin only; never persists upload)
+      operationId: verifyAdminBillingFile
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [document]
+              properties:
+                document:
+                  type: string
+                  format: binary
+                  description: File bytes to verify (not stored)
+      responses:
+        '200':
+          description: Authenticity verdict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminFileVerifyResponse'
+        '400':
+          description: Missing document
+        '413':
+          description: Document exceeds size limit
   /admin/billing/datev-exports:
     get:
       tags: [Admin Billing]
@@ -9642,6 +9670,7 @@ components:
           unifiedExportAllowed,
           globalViewsAllowed,
           viewableTenants,
+          fileSigningEnabled,
         ]
       properties:
         datevExportEnabled:
@@ -9657,6 +9686,9 @@ components:
           type: array
           items: { type: string }
           description: Tenant ids available as admin view tabs; all configured tenants when globalViewsAllowed, else the request tenant only
+        fileSigningEnabled:
+          type: boolean
+          description: True when BILLING_FILE_SIGNING_SECRET is configured
     AdminFileManagerEntry:
       type: object
       required: [name, path, type]
@@ -9708,6 +9740,38 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AdminFileManagerEntry'
+    AdminFileVerifyResponse:
+      type: object
+      required: [verdict]
+      properties:
+        verdict:
+          type: string
+          enum: [authentic, unknown, unsigned, signing_disabled]
+        contentSha256: { type: string }
+        match:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            shas:
+              type: object
+              properties:
+                short: { type: string }
+                long: { type: string }
+            tenantId: { type: string }
+            scope: { type: string }
+            storageKey: { type: string }
+            virtualPath: { type: string }
+            signature:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [signed, pending]
+                alg: { type: string }
+                version: { type: string }
+                value: { type: string }
+                signedAt: { type: string, format: date-time }
+                tenantId: { type: string }
     DatevExportScope:
       type: string
       enum: [tenant, unified]

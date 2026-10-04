@@ -4,6 +4,7 @@ import type {
   AdminFileManagerEntry,
   AdminFileManagerListParams,
   AdminFileManagerView,
+  AdminFileVerifyResponse,
 } from '../../types/billing.types';
 
 export const listAdminFileManagerDirectory = createAction(
@@ -61,3 +62,17 @@ export const downloadAdminFileManagerArchiveFailure = createAction(
   '[AdminFileManager] Download Archive Failure',
   props<{ error: string }>(),
 );
+
+export const verifyAdminFileManagerFile = createAction('[AdminFileManager] Verify File', props<{ file: File }>());
+
+export const verifyAdminFileManagerFileSuccess = createAction(
+  '[AdminFileManager] Verify File Success',
+  props<{ result: AdminFileVerifyResponse }>(),
+);
+
+export const verifyAdminFileManagerFileFailure = createAction(
+  '[AdminFileManager] Verify File Failure',
+  props<{ error: string }>(),
+);
+
+export const clearAdminFileManagerVerifyResult = createAction('[AdminFileManager] Clear Verify Result');

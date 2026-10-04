@@ -1546,6 +1546,7 @@ export interface BillingCapabilitiesResponse {
   unifiedExportAllowed: boolean;
   globalViewsAllowed: boolean;
   viewableTenants: string[];
+  fileSigningEnabled: boolean;
 }
 
 export interface AdminDatevExportListItem {
@@ -1650,6 +1651,31 @@ export interface AdminFileManagerListParams {
   path?: string;
   view?: AdminFileManagerView;
   viewTenantId?: string;
+}
+
+export type AdminFileVerifyVerdict = 'authentic' | 'unknown' | 'unsigned' | 'signing_disabled';
+
+export interface AdminFileVerifyMatch {
+  id: string;
+  shas: { short: string; long: string };
+  tenantId: string;
+  scope: string;
+  storageKey: string;
+  virtualPath: string;
+  signature?: {
+    status: 'signed' | 'pending';
+    alg?: string;
+    version?: string;
+    value?: string;
+    signedAt?: string;
+    tenantId?: string;
+  };
+}
+
+export interface AdminFileVerifyResponse {
+  verdict: AdminFileVerifyVerdict;
+  contentSha256?: string;
+  match?: AdminFileVerifyMatch;
 }
 
 export interface TriggerDatevExportResponse {

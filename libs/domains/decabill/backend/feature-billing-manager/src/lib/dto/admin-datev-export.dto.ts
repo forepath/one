@@ -7,6 +7,7 @@ export interface BillingCapabilitiesResponseDto {
   unifiedExportAllowed: boolean;
   globalViewsAllowed: boolean;
   viewableTenants: string[];
+  fileSigningEnabled: boolean;
 }
 
 export interface AdminDatevExportListItemDto {

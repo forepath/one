@@ -28,8 +28,11 @@ export class InvoicePdfTemplateService {
     issuer: BillingIssuerConfig,
     buyer: CustomerProfileEntity,
     presentation: InvoicePdfPresentationOptions = buildInvoicePdfPresentation(invoice),
+    authenticityShortSha?: string,
   ): string {
-    return this.compiledTemplate(this.buildViewModel(invoice, lineItems, issuer, buyer, presentation));
+    return this.compiledTemplate(
+      this.buildViewModel(invoice, lineItems, issuer, buyer, presentation, authenticityShortSha),
+    );
   }
 
   buildViewModel(
@@ -38,6 +41,7 @@ export class InvoicePdfTemplateService {
     issuer: BillingIssuerConfig,
     buyer: CustomerProfileEntity,
     presentation: InvoicePdfPresentationOptions = buildInvoicePdfPresentation(invoice),
+    authenticityShortSha?: string,
   ): InvoicePdfViewModel {
     const paymentDetails = presentation.includePaymentDetails ? this.buildPaymentDetails(issuer) : undefined;
 
@@ -71,6 +75,7 @@ export class InvoicePdfTemplateService {
       taxNote: invoice.taxNote?.trim() || undefined,
       taxModeLabel: invoice.taxMode?.replace(/_/g, ' ') || undefined,
       ...(paymentDetails ? { paymentDetails } : {}),
+      ...(authenticityShortSha ? { authenticityShortSha } : {}),
     };
   }
 

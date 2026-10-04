@@ -39,6 +39,7 @@ import type {
   AdminDatevExportListParams,
   AdminFileManagerListParams,
   AdminFileManagerListResponse,
+  AdminFileVerifyResponse,
   BillingCapabilitiesResponse,
   PaginatedAdminDatevExportsResponse,
   TriggerDatevExportDto,
@@ -304,6 +305,13 @@ export class AdminBillingService {
     return this.http.get<AdminFileManagerListResponse>(`${this.apiUrl}/admin/billing/files`, {
       params: httpParams,
     });
+  }
+
+  verifyAdminFile(file: File): Observable<AdminFileVerifyResponse> {
+    const formData = new FormData();
+    formData.append('document', file, file.name);
+
+    return this.http.post<AdminFileVerifyResponse>(`${this.apiUrl}/admin/billing/files/verify`, formData);
   }
 
   downloadAdminFile(params: AdminFileManagerListParams): Observable<Blob> {

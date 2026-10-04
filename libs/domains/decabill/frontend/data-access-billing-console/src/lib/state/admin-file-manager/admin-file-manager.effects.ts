@@ -16,6 +16,9 @@ import {
   listAdminFileManagerDirectoryFailure,
   listAdminFileManagerDirectorySuccess,
   refreshAdminFileManager,
+  verifyAdminFileManagerFile,
+  verifyAdminFileManagerFileFailure,
+  verifyAdminFileManagerFileSuccess,
 } from './admin-file-manager.actions';
 import { buildAdminFileManagerCacheKey } from './admin-file-manager.reducer';
 import { selectAdminFileManagerState } from './admin-file-manager.selectors';
@@ -125,6 +128,22 @@ export const downloadAdminFileManagerArchive$ = createEffect(
           map(() => downloadAdminFileManagerArchiveSuccess()),
           catchError((error: Error) =>
             of(downloadAdminFileManagerArchiveFailure({ error: error.message ?? 'Failed to download archive' })),
+          ),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const verifyAdminFileManagerFile$ = createEffect(
+  (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
+    actions$.pipe(
+      ofType(verifyAdminFileManagerFile),
+      switchMap(({ file }) =>
+        service.verifyAdminFile(file).pipe(
+          map((result) => verifyAdminFileManagerFileSuccess({ result })),
+          catchError((error: Error) =>
+            of(verifyAdminFileManagerFileFailure({ error: error.message ?? 'Failed to verify file' })),
           ),
         ),
       ),

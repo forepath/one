@@ -108,4 +108,56 @@ describe('StoredFileRegistryService', () => {
 
     expect(map.get(service.cacheKey(FileStorageScope.customerOffers, 'user/offer.pdf'))).toBe(row);
   });
+
+  it('reserve creates a row and returns identity short SHA', async () => {
+    const { service } = createService({
+      save: jest.fn(async (row: StoredFileEntity) => {
+        if (!row.id) {
+          row.id = '22222222-2222-2222-2222-222222222222';
+        }
+
+        return row;
+      }),
+    });
+
+    const reserved = await service.reserve('default', FileStorageScope.customerInvoices, 'sub/a.pdf');
+
+    expect(reserved.id).toBe('22222222-2222-2222-2222-222222222222');
+    expect(reserved.shas.short).toHaveLength(7);
+    expect(reserved.shas.long).toBe(deriveStoredFileLongSha(reserved.id));
+  });
+
+  it('verifyFromBuffer validates upload digests and HMAC without storage reads', async () => {
+    const content = Buffer.from('pdf-bytes');
+    const { service, fileStorage } = createService({
+      save: jest.fn(async (row: StoredFileEntity) => {
+        row.id = '11111111-1111-1111-1111-111111111111';
+        return row;
+      }),
+    });
+
+    const registered = await service.registerFromBuffer({
+      tenantId: 'default',
+      scope: FileStorageScope.customerInvoices,
+      storageKey: 'sub/a.pdf',
+      content,
+    });
+
+    expect(service.verifyFromBuffer(registered, content)).toBe(true);
+    expect(service.verifyFromBuffer(registered, Buffer.from('tampered'))).toBe(false);
+    expect(fileStorage.readFile).not.toHaveBeenCalled();
+  });
+
+  it('findByContentSha256 returns matching rows', async () => {
+    const row = {
+      id: '11111111-1111-1111-1111-111111111111',
+      contentSha256: 'abc',
+      tenantId: 'default',
+    } as StoredFileEntity;
+    const find = jest.fn().mockResolvedValue([row]);
+    const { service } = createService({ find });
+
+    await expect(service.findByContentSha256('abc')).resolves.toEqual([row]);
+    expect(find).toHaveBeenCalled();
+  });
 });

@@ -24,6 +24,8 @@ describe('InvoicePdfService', () => {
     readCustomerInvoiceFile: jest.fn(),
   };
   const storedFileRegistry = {
+    isSigningEnabled: jest.fn().mockReturnValue(false),
+    reserve: jest.fn(),
     registerFromBuffer: jest.fn().mockResolvedValue({}),
   };
   const service = new InvoicePdfService(

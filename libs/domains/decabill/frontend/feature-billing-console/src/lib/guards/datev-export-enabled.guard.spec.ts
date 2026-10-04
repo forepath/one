@@ -23,6 +23,7 @@ describe('datevExportEnabledGuard', () => {
         unifiedExportAllowed: false,
         globalViewsAllowed: false,
         viewableTenants: ['default'],
+        fileSigningEnabled: false,
       }),
       loading$: of(false),
     };
@@ -50,6 +51,7 @@ describe('datevExportEnabledGuard', () => {
       unifiedExportAllowed: false,
       globalViewsAllowed: false,
       viewableTenants: ['default'],
+      fileSigningEnabled: false,
     });
 
     const result = await TestBed.runInInjectionContext(() =>

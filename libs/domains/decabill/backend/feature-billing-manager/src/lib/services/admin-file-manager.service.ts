@@ -22,11 +22,17 @@ import { DataSource } from 'typeorm';
 import {
   ADMIN_FILE_MANAGER_MAX_ARCHIVE_BYTES,
   ADMIN_FILE_MANAGER_MAX_ARCHIVE_ENTRIES,
+  ADMIN_FILE_MANAGER_MAX_VERIFY_BYTES,
   AdminFileManagerView,
+  AdminFileVerifyVerdict,
   type AdminFileManagerView as AdminFileManagerViewType,
 } from '../constants/admin-file-manager.constants';
 import { DatevExportScope, DatevExportStatus } from '../constants/datev-export.constants';
-import type { AdminFileManagerEntryDto, AdminFileManagerListResponseDto } from '../dto/admin-file-manager.dto';
+import type {
+  AdminFileManagerEntryDto,
+  AdminFileManagerListResponseDto,
+  AdminFileVerifyResponseDto,
+} from '../dto/admin-file-manager.dto';
 import type { StoredFileEntity } from '../entities/stored-file.entity';
 import { resolveAdminViewTenant } from '../utils/admin-view-tenant.util';
 import {
@@ -38,10 +44,18 @@ import {
   resolveScopeFromPathParts,
   structuralChildrenForPath,
 } from '../utils/admin-file-manager-path.util';
+import { computeStoredFileContentHashes } from '../utils/stored-file-hash.util';
 import { BillingTenantService } from './billing-tenant.service';
 import { StoredFileRegistryService } from './stored-file-registry.service';
 import { StoredFileSigningConfigService } from './stored-file-signing-config.service';
 import { TenantsGlobalViewsConfigService } from './tenants-global-views-config.service';
+
+export type UploadedVerifyDocument = {
+  buffer: Buffer;
+  size?: number;
+  originalname?: string;
+  mimetype?: string;
+};
 
 interface StoredFileRef {
   virtualPath: string;
@@ -108,6 +122,54 @@ export class AdminFileManagerService {
       buffer,
       fileName,
       contentType: guessContentType(fileName),
+    };
+  }
+
+  /**
+   * Authenticity check for an uploaded file. Never persists the upload.
+   */
+  async verifyUploadedFile(document?: UploadedVerifyDocument): Promise<AdminFileVerifyResponseDto> {
+    if (!this.storedFileRegistry.isSigningEnabled()) {
+      return { verdict: AdminFileVerifyVerdict.SIGNING_DISABLED };
+    }
+
+    if (!document?.buffer?.length) {
+      throw new BadRequestException('Document file is required');
+    }
+
+    const size = document.size ?? document.buffer.byteLength;
+
+    if (size > ADMIN_FILE_MANAGER_MAX_VERIFY_BYTES) {
+      throw new PayloadTooLargeException('Document exceeds maximum size');
+    }
+
+    const hashes = computeStoredFileContentHashes(document.buffer);
+    const candidates = await this.storedFileRegistry.findByContentSha256(hashes.sha256);
+    const requestTenantId = getTenantIdOrDefault();
+    const allowGlobal = this.tenantsGlobalViewsConfig.isGlobalViewsAllowedForTenant(requestTenantId);
+    const scoped = allowGlobal ? candidates : candidates.filter((row) => row.tenantId === requestTenantId);
+
+    if (scoped.length === 0) {
+      return {
+        verdict: AdminFileVerifyVerdict.UNKNOWN,
+        contentSha256: hashes.sha256,
+      };
+    }
+
+    const authentic = scoped.find((row) => this.storedFileRegistry.verifyFromBuffer(row, document.buffer));
+
+    if (authentic) {
+      return {
+        verdict: AdminFileVerifyVerdict.AUTHENTIC,
+        contentSha256: hashes.sha256,
+        match: this.toVerifyMatchDto(authentic),
+      };
+    }
+
+    return {
+      verdict: AdminFileVerifyVerdict.UNSIGNED,
+      contentSha256: hashes.sha256,
+      match: this.toVerifyMatchDto(scoped[0]),
     };
   }
 
@@ -577,6 +639,30 @@ export class AdminFileManagerService {
       : { status: 'pending' };
 
     return entry;
+  }
+
+  private toVerifyMatchDto(row: StoredFileEntity) {
+    const segment = FILE_STORAGE_SCOPE_SEGMENTS[row.scope as FileStorageScopeType] ?? String(row.scope);
+    const virtualPath = buildTenantVirtualPath(segment, row.storageKey);
+
+    return {
+      id: row.id,
+      shas: this.storedFileRegistry.toShas(row),
+      tenantId: row.tenantId,
+      scope: row.scope,
+      storageKey: row.storageKey,
+      virtualPath,
+      signature: row.signature
+        ? {
+            status: 'signed' as const,
+            alg: row.signatureAlg ?? undefined,
+            version: row.signatureVersion ?? undefined,
+            value: row.signature,
+            signedAt: row.signedAt?.toISOString(),
+            tenantId: row.tenantId,
+          }
+        : { status: 'pending' as const },
+    };
   }
 
   private async createZipBuffer(entries: { name: string; content: Buffer }[]): Promise<Buffer> {

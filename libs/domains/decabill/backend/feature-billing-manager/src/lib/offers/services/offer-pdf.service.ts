@@ -51,10 +51,28 @@ export class OfferPdfService {
       documentOptions,
     );
     const presentation = buildOfferPdfPresentation(offer);
-    const html = this.offerPdfTemplateService.buildHtml(offer, lineItems, issuer, buyer, presentation);
+    const storageKey = buildOfferPdfStorageKey(offer);
+    let authenticityShortSha: string | undefined;
+
+    if (this.storedFileRegistry.isSigningEnabled()) {
+      const reserved = await this.storedFileRegistry.reserve(
+        getTenantIdOrDefault(),
+        FileStorageScope.customerOffers,
+        storageKey,
+      );
+      authenticityShortSha = reserved.shas.short;
+    }
+
+    const html = this.offerPdfTemplateService.buildHtml(
+      offer,
+      lineItems,
+      issuer,
+      buyer,
+      presentation,
+      authenticityShortSha,
+    );
     const pdfBytes = await this.invoicePdfHtmlRendererService.renderHtmlToPdf(html);
     const embedded = await this.eInvoiceEmbedService.embedXmlInPdf(pdfBytes, xml);
-    const storageKey = buildOfferPdfStorageKey(offer);
 
     const content = Buffer.from(embedded);
     await this.fileStorage.writeCustomerOfferFile(storageKey, content);

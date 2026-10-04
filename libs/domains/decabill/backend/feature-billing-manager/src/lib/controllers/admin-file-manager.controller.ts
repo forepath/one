@@ -1,8 +1,9 @@
 import { KeycloakRoles, RequireScopes, UserRole, UsersRoles } from '@forepath/identity/backend';
-import { Controller, Get, Query, StreamableFile } from '@nestjs/common';
+import { Controller, Get, Post, Query, StreamableFile, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 
-import type { AdminFileManagerListResponseDto } from '../dto/admin-file-manager.dto';
-import { AdminFileManagerService } from '../services/admin-file-manager.service';
+import type { AdminFileManagerListResponseDto, AdminFileVerifyResponseDto } from '../dto/admin-file-manager.dto';
+import { AdminFileManagerService, type UploadedVerifyDocument } from '../services/admin-file-manager.service';
 
 @Controller('admin/billing/files')
 @KeycloakRoles(UserRole.ADMIN)
@@ -18,6 +19,12 @@ export class AdminFileManagerController {
     @Query('viewTenantId') viewTenantId?: string,
   ): Promise<AdminFileManagerListResponseDto> {
     return await this.adminFileManagerService.listDirectory(path, view, viewTenantId);
+  }
+
+  @Post('verify')
+  @UseInterceptors(FileInterceptor('document'))
+  async verifyFile(@UploadedFile() document: UploadedVerifyDocument): Promise<AdminFileVerifyResponseDto> {
+    return await this.adminFileManagerService.verifyUploadedFile(document);
   }
 
   @Get('download')
