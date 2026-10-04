@@ -1,0 +1,95 @@
+<div class="admin-file-explorer border-top d-flex flex-column flex-grow-1 min-h-0">
+  <fpc-page-header [title]="pageTitle">
+    <fpc-button-group fpcPageHeaderActions size="sm">
+      <fpc-button
+        variant="dark"
+        size="sm"
+        iconOnly
+        [ariaLabel]="refreshAriaLabel"
+        [title]="refreshAriaLabel"
+        (clicked)="refreshRoot()"
+      >
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+      </fpc-button>
+    </fpc-button-group>
+  </fpc-page-header>
+
+  @if (showViewTabs$ | async) {
+    <fpc-tab-group
+      class="flex-shrink-0"
+      [activeId]="(activeTabId$ | async) ?? homeTenantId"
+      (activeIdChange)="onTabChange($event)"
+    >
+      @for (tenantId of viewableTenants(); track tenantId) {
+        <fpc-tab [id]="tenantId" [label]="tenantTabLabel(tenantId)" />
+      }
+      <fpc-tab id="unified" [label]="unifiedTabLabel" />
+    </fpc-tab-group>
+  }
+
+  <div class="flex-grow-1 overflow-auto min-h-0 d-flex flex-column">
+    @if ((loadingPath$ | async) === '' && treeNodes().length === 0) {
+      <div class="d-flex justify-content-center align-items-center p-4">
+        <fpc-spinner variant="primary" i18n-label="@@featureAdminFileExplorer-loading" label="Loading files…" />
+      </div>
+    } @else {
+      @if (error$ | async; as err) {
+        <fpc-alert class="m-3" variant="danger" [message]="err" />
+      }
+      @if (treeNodes().length === 0) {
+        <fpc-empty-state message="No files" i18n-message="@@featureAdminFileExplorer-empty" />
+      } @else {
+        <ul class="file-tree list-unstyled mb-0 p-2" role="tree">
+          @for (node of treeNodes(); track node.entry.path) {
+            <li
+              role="treeitem"
+              [attr.aria-expanded]="node.entry.type === 'directory' ? isExpanded(node.entry.path) : null"
+              [attr.aria-selected]="isSelected(node.entry.path)"
+            >
+              <div
+                class="file-tree-row d-flex align-items-center gap-2 w-100 text-start py-1 px-2 rounded"
+                [class.selected]="isSelected(node.entry.path)"
+                tabindex="0"
+                (click)="onNodeActivate(node.entry)"
+                (keydown.enter)="onNodeActivate(node.entry)"
+                (keydown.space)="$event.preventDefault(); onNodeActivate(node.entry)"
+              >
+                <span
+                  class="file-tree-indent flex-shrink-0"
+                  [style.width.px]="node.depth * 20"
+                  aria-hidden="true"
+                ></span>
+                @if (node.entry.type === 'directory') {
+                  <i
+                    class="bi file-tree-chevron flex-shrink-0"
+                    [class.bi-chevron-down]="isExpanded(node.entry.path)"
+                    [class.bi-chevron-right]="!isExpanded(node.entry.path)"
+                    aria-hidden="true"
+                  ></i>
+                  <i class="bi bi-folder flex-shrink-0" aria-hidden="true"></i>
+                } @else {
+                  <span class="file-tree-chevron-spacer flex-shrink-0" aria-hidden="true"></span>
+                  <i class="bi bi-file-earmark flex-shrink-0" aria-hidden="true"></i>
+                }
+                <span class="file-tree-name flex-grow-1 text-truncate">{{ node.entry.name }}</span>
+                <fpc-button-group size="sm" class="file-tree-actions flex-shrink-0">
+                  <fpc-button
+                    variant="dark"
+                    size="sm"
+                    iconOnly
+                    [disabled]="(downloadLoading$ | async) === true"
+                    [ariaLabel]="downloadAriaLabel"
+                    [title]="downloadAriaLabel"
+                    (clicked)="onDownloadEntry(node.entry, $event)"
+                  >
+                    <i class="bi bi-download" aria-hidden="true"></i>
+                  </fpc-button>
+                </fpc-button-group>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    }
+  </div>
+</div>

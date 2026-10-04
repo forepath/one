@@ -5670,6 +5670,99 @@ paths:
           description: Unauthorized
         '403':
           description: Admin access required
+  /admin/billing/files:
+    get:
+      tags: [Admin Billing]
+      summary: List virtual storage directory for managed billing files (admin only)
+      operationId: listAdminBillingFiles
+      parameters:
+        - name: path
+          in: query
+          schema: { type: string }
+          description: Virtual path (empty for root)
+        - name: view
+          in: query
+          schema:
+            type: string
+            enum: [tenant, unified]
+            default: tenant
+        - name: viewTenantId
+          in: query
+          schema: { type: string }
+          description: Tenant tab id; foreign ids require TENANTS_ALLOW_GLOBAL_VIEWS
+      responses:
+        '200':
+          description: Directory listing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminFileManagerListResponse'
+        '403':
+          description: Cross-tenant or unified view denied
+  /admin/billing/files/download:
+    get:
+      tags: [Admin Billing]
+      summary: Download a managed billing file (admin only)
+      operationId: downloadAdminBillingFile
+      parameters:
+        - name: path
+          in: query
+          required: true
+          schema: { type: string }
+        - name: view
+          in: query
+          schema:
+            type: string
+            enum: [tenant, unified]
+            default: tenant
+        - name: viewTenantId
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: File bytes
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: Cross-tenant or unified view denied
+        '404':
+          description: File not found in tenant allow-set
+  /admin/billing/files/archive:
+    get:
+      tags: [Admin Billing]
+      summary: Download a folder subtree of managed billing files as ZIP (admin only)
+      operationId: downloadAdminBillingFileArchive
+      parameters:
+        - name: path
+          in: query
+          schema: { type: string }
+          description: Virtual folder path (empty for all visible files)
+        - name: view
+          in: query
+          schema:
+            type: string
+            enum: [tenant, unified]
+            default: tenant
+        - name: viewTenantId
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: ZIP archive
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: Cross-tenant or unified view denied
+        '404':
+          description: Folder not found or empty
+        '413':
+          description: Archive exceeds size or entry limits
   /admin/billing/datev-exports:
     get:
       tags: [Admin Billing]
@@ -5689,6 +5782,10 @@ paths:
             enum: [tenant, unified]
             default: tenant
           description: Unified scope requires allowlisted X-Tenant
+        - name: viewTenantId
+          in: query
+          schema: { type: string }
+          description: Tenant tab id for tenant scope; foreign ids require TENANTS_ALLOW_GLOBAL_VIEWS
       responses:
         '200':
           description: Paginated DATEV export list
@@ -9539,14 +9636,53 @@ components:
         userCount: { type: integer }
     BillingCapabilitiesResponse:
       type: object
-      required: [datevExportEnabled, unifiedExportAllowed]
+      required:
+        [
+          datevExportEnabled,
+          unifiedExportAllowed,
+          globalViewsAllowed,
+          viewableTenants,
+        ]
       properties:
         datevExportEnabled:
           type: boolean
           description: Mirrors BILLING_DATEV_EXPORT_ENABLED
         unifiedExportAllowed:
           type: boolean
-          description: True when unified export is enabled and request tenant is in BILLING_DATEV_UNIFIED_EXPORT_ALLOWED_TENANTS
+          description: True when unified export is enabled and request tenant is in TENANTS_ALLOW_GLOBAL_VIEWS
+        globalViewsAllowed:
+          type: boolean
+          description: True when request tenant is in TENANTS_ALLOW_GLOBAL_VIEWS (cross-tenant admin tabs)
+        viewableTenants:
+          type: array
+          items: { type: string }
+          description: Tenant ids available as admin view tabs; all configured tenants when globalViewsAllowed, else the request tenant only
+    AdminFileManagerEntry:
+      type: object
+      required: [name, path, type]
+      properties:
+        name: { type: string }
+        path: { type: string }
+        type:
+          type: string
+          enum: [file, directory]
+        size: { type: integer }
+        contentType: { type: string }
+        scope: { type: string }
+        updatedAt: { type: string, format: date-time }
+    AdminFileManagerListResponse:
+      type: object
+      required: [path, view, entries]
+      properties:
+        path: { type: string }
+        view:
+          type: string
+          enum: [tenant, unified]
+        viewTenantId: { type: string }
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminFileManagerEntry'
     DatevExportScope:
       type: string
       enum: [tenant, unified]
@@ -9603,6 +9739,9 @@ components:
         year: { type: integer }
         month: { type: integer, minimum: 1, maximum: 12 }
         scope: { $ref: '#/components/schemas/DatevExportScope' }
+        viewTenantId:
+          type: string
+          description: Target tenant for tenant-scoped export; foreign ids require TENANTS_ALLOW_GLOBAL_VIEWS
         force:
           {
             type: boolean,

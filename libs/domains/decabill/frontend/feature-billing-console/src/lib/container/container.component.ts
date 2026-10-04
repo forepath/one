@@ -418,6 +418,13 @@ export class BillingConsoleContainerComponent implements OnInit {
         title: $localize`:@@featureContainer-adminBillingTitle:Billing`,
         label: $localize`:@@featureContainer-adminBilling:Billing`,
       },
+      {
+        routerLink: ['/administration/file-explorer'],
+        activePaths: ['/administration/file-explorer'],
+        icon: 'bi-folder2-open',
+        title: $localize`:@@featureContainer-adminFileExplorerTitle:File Explorer`,
+        label: $localize`:@@featureContainer-adminFileExplorer:Files`,
+      },
     ];
 
     if (this.datevExportEnabled()) {

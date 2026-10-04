@@ -42,7 +42,10 @@ export const triggerDatevExportFailure = createAction(
   props<{ error: string }>(),
 );
 
-export const downloadDatevExport = createAction('[AdminDatevExports] Download', props<{ exportId: string }>());
+export const downloadDatevExport = createAction(
+  '[AdminDatevExports] Download',
+  props<{ exportId: string; viewTenantId?: string }>(),
+);
 export const downloadDatevExportSuccess = createAction('[AdminDatevExports] Download Success');
 export const downloadDatevExportFailure = createAction(
   '[AdminDatevExports] Download Failure',

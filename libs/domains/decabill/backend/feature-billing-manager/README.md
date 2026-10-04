@@ -52,6 +52,7 @@ When **`AUTHENTICATION_METHOD=api-key`** (or api-key is inferred from **`STATIC_
 
 - `TENANTS` (optional; comma-separated tenant ids, e.g. `one,two`) – allowed tenant ids for `X-Tenant` requests. Includes `default` unless `TENANTS_ALLOW_DEFAULT=false`. When unset or empty and default is allowed, only `default` is allowed.
 - `TENANTS_ALLOW_DEFAULT` (optional; default allow) – set to `false` to exclude `default` from the allowlist. Missing, blank, or `default` **`X-Tenant`** values are then rejected.
+- `TENANTS_ALLOW_GLOBAL_VIEWS` (optional; default `default`) – tenant ids allowed to use cross-tenant admin views (DATEV unified + File Explorer tenant tabs / consolidation).
 - `STATIC_API_KEY_TENANT_ID` (optional) – when set, API key auth is only accepted for this tenant id (must match `X-Tenant`). When unset, one **`STATIC_API_KEY`** may access **all** configured tenants via **`X-Tenant`** (accepted risk **AR-007**).
 - Public catalog (`/public/service-plan-offerings`) is unauthenticated; tenant is selected via `X-Tenant` (defaults to `default`). Restrict allowed tenants with `TENANTS`.
 - `BILLING_FRONTEND_URL` (optional; default derived from `STRIPE_CHECKOUT_SUCCESS_URL` origin or `http://localhost:4500`) – billing console base URL for the `default` tenant; used for Stripe success/cancel redirects.

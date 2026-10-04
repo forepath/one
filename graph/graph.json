@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-04T09:46:19.230Z",
+  "generatedAt": "2026-10-04T11:48:09.990Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -3226,6 +3226,23 @@
           "admin-datev-exports.facade.ts",
           "admin-datev-exports.reducer.ts",
           "admin-datev-exports.selectors.ts"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/admin-file-manager",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/admin-file-manager",
+        "languageOrKind": "ts",
+        "projectName": "decabill-frontend-data-access-billing-console",
+        "sliceName": "admin-file-manager",
+        "memberFiles": [
+          "admin-file-manager.actions.ts",
+          "admin-file-manager.effects.ts",
+          "admin-file-manager.facade.ts",
+          "admin-file-manager.reducer.ts",
+          "admin-file-manager.selectors.ts"
         ]
       }
     },
@@ -6936,6 +6953,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-file-manager.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-file-manager.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-promotions.controller.ts",
       "type": "controller",
       "attrs": {
@@ -7174,6 +7200,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/admin-datev-export.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/admin-file-manager.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/admin-file-manager.dto.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -9204,6 +9239,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-file-manager.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-file-manager.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/auto-billing.service.ts",
       "type": "service",
       "attrs": {
@@ -10045,6 +10089,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tax-treatment.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tenants-global-views-config.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tenants-global-views-config.service.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -14252,6 +14305,14 @@
       "type": "doc",
       "attrs": {
         "path": "docs/decabill/features/email-notifications.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
+      "id": "file:docs/decabill/features/file-explorer.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/decabill/features/file-explorer.md",
         "languageOrKind": "md"
       }
     },
@@ -19797,6 +19858,39 @@
         "pathOrChannel": "/admin/billing/tax/preview",
         "operationId": "previewTaxForAdmin",
         "summary": "Preview tax treatment and rates (issuer or customer)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/files",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/files",
+        "operationId": "listAdminBillingFiles",
+        "summary": "List virtual storage directory for managed billing files (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/files/download",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/files/download",
+        "operationId": "downloadAdminBillingFile",
+        "summary": "Download a managed billing file (admin only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/admin/billing/files/archive",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/admin/billing/files/archive",
+        "operationId": "downloadAdminBillingFileArchive",
+        "summary": "Download a folder subtree of managed billing files as ZIP (admin only)",
         "specKind": "openapi"
       }
     },
@@ -29449,6 +29543,16 @@
       }
     },
     {
+      "id": "concept:decabill-file-explorer",
+      "type": "concept",
+      "attrs": {
+        "title": "File Explorer",
+        "docPath": "docs/decabill/features/billing-administration.md",
+        "sectionAnchor": "file-explorer",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-admin-projects",
       "type": "concept",
       "attrs": {
@@ -30125,6 +30229,46 @@
         "title": "Future (webhook-only today)",
         "docPath": "docs/decabill/features/email-notifications.md",
         "sectionAnchor": "future-webhook-only-today",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-admin-file-explorer",
+      "type": "concept",
+      "attrs": {
+        "title": "Admin File Explorer",
+        "docPath": "docs/decabill/features/file-explorer.md",
+        "sectionAnchor": "admin-file-explorer",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-storage-scopes",
+      "type": "concept",
+      "attrs": {
+        "title": "Storage scopes",
+        "docPath": "docs/decabill/features/file-explorer.md",
+        "sectionAnchor": "storage-scopes",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-multi-tenant-views",
+      "type": "concept",
+      "attrs": {
+        "title": "Multi-tenant views",
+        "docPath": "docs/decabill/features/file-explorer.md",
+        "sectionAnchor": "multi-tenant-views",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-api",
+      "type": "concept",
+      "attrs": {
+        "title": "API",
+        "docPath": "docs/decabill/features/file-explorer.md",
+        "sectionAnchor": "api",
         "domain": "decabill"
       }
     },
@@ -31175,16 +31319,6 @@
         "title": "Provider capabilities",
         "docPath": "docs/decabill/features/subscription-config-change.md",
         "sectionAnchor": "provider-capabilities",
-        "domain": "decabill"
-      }
-    },
-    {
-      "id": "concept:decabill-api",
-      "type": "concept",
-      "attrs": {
-        "title": "API",
-        "docPath": "docs/decabill/features/subscription-config-change.md",
-        "sectionAnchor": "api",
         "domain": "decabill"
       }
     },
@@ -36202,6 +36336,11 @@
     },
     {
       "from": "project:decabill-frontend-data-access-billing-console",
+      "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/admin-file-manager",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-frontend-data-access-billing-console",
       "to": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/state/admin-invoice-manager",
       "type": "contains"
     },
@@ -37987,6 +38126,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-file-manager.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-promotions.controller.ts",
       "type": "contains"
     },
@@ -38118,6 +38262,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/admin-datev-export.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/dto/admin-file-manager.dto.ts",
       "type": "contains"
     },
     {
@@ -39247,6 +39396,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-file-manager.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/auto-billing.service.ts",
       "type": "contains"
     },
@@ -39713,6 +39867,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tax-treatment.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tenants-global-views-config.service.ts",
       "type": "contains"
     },
     {
@@ -44123,6 +44282,21 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/admin/billing/tax/preview",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/files",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/files/download",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/admin/billing/files/archive",
       "type": "contains"
     },
     {
@@ -50242,6 +50416,11 @@
     },
     {
       "from": "file:docs/decabill/features/billing-administration.md",
+      "to": "concept:decabill-file-explorer",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/billing-administration.md",
       "to": "concept:decabill-admin-projects",
       "type": "contains"
     },
@@ -50663,6 +50842,36 @@
     {
       "from": "file:docs/decabill/features/email-notifications.md",
       "to": "concept:decabill-future-webhook-only-today",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/file-explorer.md",
+      "to": "concept:decabill-admin-file-explorer",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/file-explorer.md",
+      "to": "concept:decabill-overview",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/file-explorer.md",
+      "to": "concept:decabill-storage-scopes",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/file-explorer.md",
+      "to": "concept:decabill-multi-tenant-views",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/file-explorer.md",
+      "to": "concept:decabill-api",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/file-explorer.md",
+      "to": "concept:decabill-security",
       "type": "contains"
     },
     {
@@ -55037,6 +55246,36 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/files",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/files",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/files/download",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/files/download",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/files/archive",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/admin/billing/files/archive",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/datev-exports",
       "type": "implements"
     },
@@ -55608,6 +55847,21 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-datev-exports.controller.ts",
       "to": "api:HTTP:GET:/admin/billing/datev-exports/{exportId}/download",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-file-manager.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/files",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-file-manager.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/files/download",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-file-manager.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/files/archive",
       "type": "implements"
     },
     {
@@ -56113,6 +56367,21 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
       "to": "api:HTTP:POST:/admin/billing/tax/preview",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/files",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/files/download",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-supplier-invoices.controller.ts",
+      "to": "api:HTTP:GET:/admin/billing/files/archive",
       "type": "implements"
     },
     {
@@ -61022,6 +61291,16 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tenants-global-views-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-tenant.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-billing.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tax-preview.service.ts",
       "type": "injects"
     },
@@ -61043,6 +61322,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-datev-exports.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/datev-export-admin.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-file-manager.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-file-manager.service.ts",
       "type": "injects"
     },
     {
@@ -62126,6 +62410,21 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-file-manager.service.ts",
+      "to": "file:libs/domains/shared/backend/util-file-storage/src/lib/file-storage.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-file-manager.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tenants-global-views-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-file-manager.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-tenant.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/auto-billing.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/customer-profiles.repository.ts",
       "type": "injects"
@@ -62517,12 +62816,22 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/datev-export-admin.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tenants-global-views-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/datev-export-admin.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/datev-export.repository.ts",
       "type": "injects"
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/datev-export-admin.service.ts",
       "to": "file:libs/domains/shared/backend/util-file-storage/src/lib/file-storage.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/datev-export-config.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tenants-global-views-config.service.ts",
       "type": "injects"
     },
     {
@@ -65782,6 +66091,11 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/admin-file-manager.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/controllers/payments-webhook.controller.ts",
       "type": "provides"
     },
@@ -66038,6 +66352,16 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-tenant.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/tenants-global-views-config.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-file-manager.service.ts",
       "type": "provides"
     },
     {
@@ -67558,6 +67882,21 @@
     {
       "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-billing.service.ts",
       "to": "api:HTTP:GET:/admin/billing/datev-exports/{exportId}/download",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-billing.service.ts",
+      "to": "api:HTTP:GET:/admin/billing/files",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-billing.service.ts",
+      "to": "api:HTTP:GET:/admin/billing/files/download",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/decabill/frontend/data-access-billing-console/src/lib/services/admin-billing.service.ts",
+      "to": "api:HTTP:GET:/admin/billing/files/archive",
       "type": "calls"
     },
     {
@@ -73326,6 +73665,11 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-file-explorer",
+      "to": "api:HTTP:GET:/admin/billing/files",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-admin-projects",
       "to": "api:HTTP:GET:/projects",
       "type": "documents"
@@ -73993,6 +74337,26 @@
     {
       "from": "concept:decabill-billing-provider-metadata",
       "to": "api:HTTP:GET:/service-types/providers",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-multi-tenant-views",
+      "to": "api:HTTP:GET:/admin/billing/capabilities",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-api",
+      "to": "api:HTTP:GET:/subscriptions",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-api",
+      "to": "api:HTTP:POST:/subscriptions",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-api",
+      "to": "api:HTTP:GET:/config",
       "type": "documents"
     },
     {
@@ -75153,21 +75517,6 @@
     {
       "from": "concept:decabill-provider-capabilities",
       "to": "api:HTTP:POST:/auth/register",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-api",
-      "to": "api:HTTP:GET:/subscriptions",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-api",
-      "to": "api:HTTP:POST:/subscriptions",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-api",
-      "to": "api:HTTP:GET:/config",
       "type": "documents"
     },
     {
@@ -77752,6 +78101,11 @@
     },
     {
       "from": "file:docs/decabill/features/email-notifications.md",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/decabill/features/file-explorer.md",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -81276,6 +81630,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:decabill-file-explorer",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:decabill-admin-projects",
       "to": "domain:decabill",
       "type": "belongs_to"
@@ -81612,6 +81971,26 @@
     },
     {
       "from": "concept:decabill-future-webhook-only-today",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-admin-file-explorer",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-storage-scopes",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-multi-tenant-views",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-api",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -82137,11 +82516,6 @@
     },
     {
       "from": "concept:decabill-provider-capabilities",
-      "to": "domain:decabill",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:decabill-api",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

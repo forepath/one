@@ -29,11 +29,25 @@ describe('BillingCapabilitiesEffects', () => {
 
   it('loads capabilities on success', (done) => {
     actions$ = of(loadBillingCapabilities());
-    service.getCapabilities.mockReturnValue(of({ datevExportEnabled: true, unifiedExportAllowed: false }));
+    service.getCapabilities.mockReturnValue(
+      of({
+        datevExportEnabled: true,
+        unifiedExportAllowed: false,
+        globalViewsAllowed: false,
+        viewableTenants: ['default'],
+      }),
+    );
 
     loadBillingCapabilities$(actions$, service as AdminBillingService).subscribe((result) => {
       expect(result).toEqual(
-        loadBillingCapabilitiesSuccess({ capabilities: { datevExportEnabled: true, unifiedExportAllowed: false } }),
+        loadBillingCapabilitiesSuccess({
+          capabilities: {
+            datevExportEnabled: true,
+            unifiedExportAllowed: false,
+            globalViewsAllowed: false,
+            viewableTenants: ['default'],
+          },
+        }),
       );
       done();
     });

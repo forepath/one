@@ -5,6 +5,7 @@ import {
   AdminSupplierProfilesFacade,
   AdminSupplierInvoiceManagerFacade,
   AdminDatevExportsFacade,
+  AdminFileManagerFacade,
   AdminInvoiceManagerFacade,
   AdminSubscriptionsFacade,
   BillingCapabilitiesFacade,
@@ -76,6 +77,7 @@ import {
   updateManualInvoice$,
   adminBillingReducer,
   adminDatevExportsReducer,
+  adminFileManagerReducer,
   billingCapabilitiesReducer,
   billNow$,
   loadAdminAuditLogs$,
@@ -192,6 +194,9 @@ import {
   pollQueuedDatevExports$,
   expireQueuedDatevExports$,
   downloadDatevExport$,
+  listAdminFileManagerDirectory$,
+  downloadAdminFileManagerFile$,
+  downloadAdminFileManagerArchive$,
   ProjectsFacade,
   projectsReducer,
   loadProjects$,
@@ -303,6 +308,7 @@ import { AdminCustomerProfilesPageComponent } from './admin-customer-profiles-pa
 import { AdminSupplierProfilesPageComponent } from './admin-supplier-profiles-page/admin-supplier-profiles-page.component';
 import { AdminSubscriptionsPageComponent } from './admin-subscriptions-page/admin-subscriptions-page.component';
 import { AdminDatevExportsPageComponent } from './admin-datev-exports-page/admin-datev-exports-page.component';
+import { AdminFileManagerPageComponent } from './admin-file-manager-page/admin-file-manager-page.component';
 import { BillingConsoleContainerComponent } from './container/container.component';
 import { billingAdminGuard } from './guards/billing-admin.guard';
 import { datevExportEnabledGuard } from './guards/datev-export-enabled.guard';
@@ -555,6 +561,12 @@ export const billingConsoleRoutes: Route[] = [
             component: AdminDatevExportsPageComponent,
             title: () => buildPageTitle($localize`:@@featureContainer-adminDatevExportsPage:DATEV Exports`),
           },
+          {
+            path: 'file-explorer',
+            canActivate: [authGuard, billingAdminGuard],
+            component: AdminFileManagerPageComponent,
+            title: () => buildPageTitle($localize`:@@featureContainer-adminFileExplorerPage:File Explorer`),
+          },
           ...contributorRoutes.admin,
         ],
       },
@@ -582,6 +594,7 @@ export const billingConsoleRoutes: Route[] = [
       InvoicesFacade,
       AdminBillingFacade,
       AdminDatevExportsFacade,
+      AdminFileManagerFacade,
       BillingCapabilitiesFacade,
       AdminInvoiceManagerFacade,
       AdminCustomerProfilesFacade,
@@ -614,6 +627,7 @@ export const billingConsoleRoutes: Route[] = [
       provideState('adminBilling', adminBillingReducer),
       provideState('billingCapabilities', billingCapabilitiesReducer),
       provideState('adminDatevExports', adminDatevExportsReducer),
+      provideState('adminFileManager', adminFileManagerReducer),
       provideState('adminInvoiceManager', adminInvoiceManagerReducer),
       provideState('adminCustomerProfiles', adminCustomerProfilesReducer),
       provideState('adminSupplierProfiles', adminSupplierProfilesReducer),
@@ -761,6 +775,9 @@ export const billingConsoleRoutes: Route[] = [
         pollQueuedDatevExports$,
         expireQueuedDatevExports$,
         downloadDatevExport$,
+        listAdminFileManagerDirectory$,
+        downloadAdminFileManagerFile$,
+        downloadAdminFileManagerArchive$,
         createAdminCustomerProfile$,
         updateAdminCustomerProfile$,
         deleteAdminCustomerProfile$,

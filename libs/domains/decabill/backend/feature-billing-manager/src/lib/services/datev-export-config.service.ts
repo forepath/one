@@ -1,7 +1,8 @@
 import { DEFAULT_TENANT, areTenantsNumbersShared, envCronOrDefault } from '@forepath/shared/backend';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 
-import { parseBooleanEnv, parseCsvTenantIds } from '../utils/datev-format.util';
+import { parseBooleanEnv } from '../utils/datev-format.util';
+import { TenantsGlobalViewsConfigService } from './tenants-global-views-config.service';
 
 export interface DatevTenantExportConfig {
   consultantNumber: string;
@@ -69,13 +70,11 @@ interface DatevTenantConfigOverrides {
 export class DatevExportConfigService implements OnModuleInit {
   private readonly logger = new Logger(DatevExportConfigService.name);
   private tenantOverrides: Record<string, DatevTenantConfigOverrides> = {};
-  private unifiedExportAllowedTenants: readonly string[] = [DEFAULT_TENANT];
+
+  constructor(private readonly tenantsGlobalViewsConfig: TenantsGlobalViewsConfigService) {}
 
   onModuleInit(): void {
     this.tenantOverrides = this.parseTenantConfigJson(process.env.BILLING_DATEV_TENANT_CONFIG);
-    this.unifiedExportAllowedTenants = parseCsvTenantIds('BILLING_DATEV_UNIFIED_EXPORT_ALLOWED_TENANTS', [
-      DEFAULT_TENANT,
-    ]);
     this.validateDebtorRanges();
   }
 
@@ -88,11 +87,11 @@ export class DatevExportConfigService implements OnModuleInit {
   }
 
   getUnifiedExportAllowedTenants(): readonly string[] {
-    return this.unifiedExportAllowedTenants;
+    return this.tenantsGlobalViewsConfig.getAllowedTenants();
   }
 
   isUnifiedExportAllowedForTenant(tenantId: string): boolean {
-    return this.isUnifiedExportEnabled() && this.unifiedExportAllowedTenants.includes(tenantId);
+    return this.isUnifiedExportEnabled() && this.tenantsGlobalViewsConfig.isGlobalViewsAllowedForTenant(tenantId);
   }
 
   getExportTimezone(): string {

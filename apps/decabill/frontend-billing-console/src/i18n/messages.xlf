@@ -1349,6 +1349,39 @@
       <trans-unit id="featureContainer-adminDatevExportsPage" datatype="html">
         <source>DATEV Exports</source>
         </trans-unit>
+      <trans-unit id="featureContainer-adminFileExplorerPage" datatype="html">
+        <source>File Explorer</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminFileExplorerTitle" datatype="html">
+        <source>File Explorer</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-adminFileExplorer" datatype="html">
+        <source>Files</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-title" datatype="html">
+        <source>File Explorer</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-tabUnified" datatype="html">
+        <source>Unified</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-refresh" datatype="html">
+        <source>Refresh</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-download" datatype="html">
+        <source>Download</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-loading" datatype="html">
+        <source>Loading files…</source>
+        </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-empty" datatype="html">
+        <source>No files</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-scopeTenant" datatype="html">
+        <source>Tenant</source>
+        </trans-unit>
+      <trans-unit id="featureAdminDatevExports-viewTenant" datatype="html">
+        <source>Tenant</source>
+        </trans-unit>
       <trans-unit id="featureBilling-countryNotAvailable" datatype="html">
         <source>N/A</source>
         </trans-unit>

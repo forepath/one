@@ -23,6 +23,7 @@ export interface AdminDatevExportsState {
   limit: number;
   offset: number;
   scope: DatevExportScope;
+  viewTenantId: string | null;
   loading: boolean;
   error: string | null;
   triggerLoading: boolean;
@@ -37,6 +38,7 @@ export const initialAdminDatevExportsState: AdminDatevExportsState = {
   limit: 20,
   offset: 0,
   scope: 'tenant',
+  viewTenantId: null,
   loading: false,
   error: null,
   triggerLoading: false,
@@ -71,14 +73,21 @@ export const adminDatevExportsReducer = createReducer(
   initialAdminDatevExportsState,
   on(loadAdminDatevExports, (state, { params, preserveScope }) => {
     const nextScope = preserveScope ? state.scope : (params.scope ?? state.scope);
+    const nextViewTenantId = preserveScope
+      ? state.viewTenantId
+      : params.scope === 'unified'
+        ? null
+        : (params.viewTenantId ?? state.viewTenantId);
     const scopeChanged = !preserveScope && nextScope !== state.scope;
+    const viewTenantChanged = !preserveScope && nextViewTenantId !== state.viewTenantId;
 
     return {
       ...state,
-      items: scopeChanged ? [] : state.items,
+      items: scopeChanged || viewTenantChanged ? [] : state.items,
       loading: true,
       error: null,
       scope: nextScope,
+      viewTenantId: nextViewTenantId,
     };
   }),
   on(loadAdminDatevExportsBatch, (state, { accumulatedItems }) => ({

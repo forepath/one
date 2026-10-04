@@ -106,39 +106,39 @@ Per-plan opt-in remains `autoRecalculatePriceDaily` (default `false`) on the ser
 
 Monthly DATEV Buchungsstapel exports (category 21) with optional PDF document bundle. Disabled entirely when `BILLING_DATEV_EXPORT_ENABLED=false` (no jobs, admin routes return 404, billing console hides the DATEV page via capabilities).
 
-| Variable                                       | Description                                                                 | Default              |
-| ---------------------------------------------- | --------------------------------------------------------------------------- | -------------------- |
-| `BILLING_DATEV_EXPORT_ENABLED`                 | Master kill switch                                                          | `true`               |
-| `BILLING_DATEV_EXPORT_STORAGE_PATH`            | **Deprecated.** Legacy migration source for DATEV ZIPs                      | _(unset)_            |
-| `BILLING_DATEV_EXPORT_CRON`                    | BullMQ cron for monthly coordinator (1st of month)                          | `0 0 1 * *`          |
-| `BILLING_DATEV_EXPORT_TIMEZONE`                | Timezone for cron and previous-month period calculation                     | `Europe/Berlin`      |
-| `BILLING_DATEV_CONSULTANT_NUMBER`              | DATEV Beraternummer (required per tenant for export)                        | -                    |
-| `BILLING_DATEV_CLIENT_NUMBER`                  | DATEV Mandantennummer (required per tenant for export)                      | -                    |
-| `BILLING_DATEV_CHART_OF_ACCOUNTS`              | `SKR03` or `SKR04`                                                          | `SKR03`              |
-| `BILLING_DATEV_ACCOUNT_LENGTH`                 | Sachkontenlänge in EXTF header                                              | `4`                  |
-| `BILLING_DATEV_REVENUE_ACCOUNT_STANDARD`       | Revenue account for 19% (SKR03 default `8400`, SKR04 `4400`)                | env / chart default  |
-| `BILLING_DATEV_REVENUE_ACCOUNT_REDUCED`        | Revenue account for 7% (SKR03 default `8300`, SKR04 `4300`)                 | env / chart default  |
-| `BILLING_DATEV_DEBTOR_ACCOUNT_START`           | First debtor number in range                                                | `10000`              |
-| `BILLING_DATEV_DEBTOR_ACCOUNT_END`             | Last debtor number in range                                                 | `69999`              |
-| `BILLING_DATEV_CREDITOR_ACCOUNT_START`         | First creditor number in range                                              | `70000`              |
-| `BILLING_DATEV_CREDITOR_ACCOUNT_END`           | Last creditor number in range                                               | `99999`              |
-| `BILLING_DATEV_EXPENSE_ACCOUNT_STANDARD`       | Expense G/L for standard tax (SKR03 default `4900`)                         | env / chart default  |
-| `BILLING_DATEV_EXPENSE_ACCOUNT_REDUCED`        | Expense G/L for reduced tax                                                 | env / chart default  |
-| `BILLING_DATEV_EXPENSE_ACCOUNT_REVERSE_CHARGE` | Expense G/L for reverse charge                                              | env / chart default  |
-| `BILLING_DATEV_EXPENSE_ACCOUNT_OSS`            | Expense G/L for OSS                                                         | env / chart default  |
-| `BILLING_DATEV_EXPENSE_ACCOUNT_THIRD_COUNTRY`  | Expense G/L for third country                                               | env / chart default  |
-| `BILLING_DATEV_EXPENSE_BU_KEY_STANDARD`        | Override BU-Schlüssel for expense standard                                  | empty                |
-| `BILLING_DATEV_EXPENSE_BU_KEY_REDUCED`         | Override BU-Schlüssel for expense reduced                                   | empty                |
-| `BILLING_DATEV_BU_KEY_STANDARD`                | Override BU-Schlüssel for standard tax (empty for Automatikkonten)          | empty                |
-| `BILLING_DATEV_BU_KEY_REDUCED`                 | Override BU-Schlüssel for reduced tax                                       | empty                |
-| `BILLING_DATEV_EXPORT_INCLUDE_DOCUMENTS`       | Include PDF bundle + Beleglink in Buchungsstapel                            | `true`               |
-| `BILLING_DATEV_EXPORT_DICTATION_ABBR`          | Diktatkürzel in EXTF header                                                 | `DEC`                |
-| `BILLING_DATEV_FISCAL_YEAR_START_MONTH`        | Wirtschaftsjahresbeginn (1-12)                                              | `1`                  |
-| `BILLING_DATEV_TENANT_CONFIG`                  | JSON map of per-tenant (and optional `unified`) DATEV overrides             | -                    |
-| `BILLING_DATEV_UNIFIED_EXPORT_ENABLED`         | Enable cross-tenant consolidated monthly export                             | `false`              |
-| `BILLING_DATEV_UNIFIED_EXPORT_ALLOWED_TENANTS` | Comma-separated tenant ids allowed to list/trigger/download unified exports | `default` when unset |
+| Variable                                       | Description                                                                                                                           | Default              |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| `BILLING_DATEV_EXPORT_ENABLED`                 | Master kill switch                                                                                                                    | `true`               |
+| `BILLING_DATEV_EXPORT_STORAGE_PATH`            | **Deprecated.** Legacy migration source for DATEV ZIPs                                                                                | _(unset)_            |
+| `BILLING_DATEV_EXPORT_CRON`                    | BullMQ cron for monthly coordinator (1st of month)                                                                                    | `0 0 1 * *`          |
+| `BILLING_DATEV_EXPORT_TIMEZONE`                | Timezone for cron and previous-month period calculation                                                                               | `Europe/Berlin`      |
+| `BILLING_DATEV_CONSULTANT_NUMBER`              | DATEV Beraternummer (required per tenant for export)                                                                                  | -                    |
+| `BILLING_DATEV_CLIENT_NUMBER`                  | DATEV Mandantennummer (required per tenant for export)                                                                                | -                    |
+| `BILLING_DATEV_CHART_OF_ACCOUNTS`              | `SKR03` or `SKR04`                                                                                                                    | `SKR03`              |
+| `BILLING_DATEV_ACCOUNT_LENGTH`                 | Sachkontenlänge in EXTF header                                                                                                        | `4`                  |
+| `BILLING_DATEV_REVENUE_ACCOUNT_STANDARD`       | Revenue account for 19% (SKR03 default `8400`, SKR04 `4400`)                                                                          | env / chart default  |
+| `BILLING_DATEV_REVENUE_ACCOUNT_REDUCED`        | Revenue account for 7% (SKR03 default `8300`, SKR04 `4300`)                                                                           | env / chart default  |
+| `BILLING_DATEV_DEBTOR_ACCOUNT_START`           | First debtor number in range                                                                                                          | `10000`              |
+| `BILLING_DATEV_DEBTOR_ACCOUNT_END`             | Last debtor number in range                                                                                                           | `69999`              |
+| `BILLING_DATEV_CREDITOR_ACCOUNT_START`         | First creditor number in range                                                                                                        | `70000`              |
+| `BILLING_DATEV_CREDITOR_ACCOUNT_END`           | Last creditor number in range                                                                                                         | `99999`              |
+| `BILLING_DATEV_EXPENSE_ACCOUNT_STANDARD`       | Expense G/L for standard tax (SKR03 default `4900`)                                                                                   | env / chart default  |
+| `BILLING_DATEV_EXPENSE_ACCOUNT_REDUCED`        | Expense G/L for reduced tax                                                                                                           | env / chart default  |
+| `BILLING_DATEV_EXPENSE_ACCOUNT_REVERSE_CHARGE` | Expense G/L for reverse charge                                                                                                        | env / chart default  |
+| `BILLING_DATEV_EXPENSE_ACCOUNT_OSS`            | Expense G/L for OSS                                                                                                                   | env / chart default  |
+| `BILLING_DATEV_EXPENSE_ACCOUNT_THIRD_COUNTRY`  | Expense G/L for third country                                                                                                         | env / chart default  |
+| `BILLING_DATEV_EXPENSE_BU_KEY_STANDARD`        | Override BU-Schlüssel for expense standard                                                                                            | empty                |
+| `BILLING_DATEV_EXPENSE_BU_KEY_REDUCED`         | Override BU-Schlüssel for expense reduced                                                                                             | empty                |
+| `BILLING_DATEV_BU_KEY_STANDARD`                | Override BU-Schlüssel for standard tax (empty for Automatikkonten)                                                                    | empty                |
+| `BILLING_DATEV_BU_KEY_REDUCED`                 | Override BU-Schlüssel for reduced tax                                                                                                 | empty                |
+| `BILLING_DATEV_EXPORT_INCLUDE_DOCUMENTS`       | Include PDF bundle + Beleglink in Buchungsstapel                                                                                      | `true`               |
+| `BILLING_DATEV_EXPORT_DICTATION_ABBR`          | Diktatkürzel in EXTF header                                                                                                           | `DEC`                |
+| `BILLING_DATEV_FISCAL_YEAR_START_MONTH`        | Wirtschaftsjahresbeginn (1-12)                                                                                                        | `1`                  |
+| `BILLING_DATEV_TENANT_CONFIG`                  | JSON map of per-tenant (and optional `unified`) DATEV overrides                                                                       | -                    |
+| `BILLING_DATEV_UNIFIED_EXPORT_ENABLED`         | Enable cross-tenant consolidated monthly export                                                                                       | `false`              |
+| `TENANTS_ALLOW_GLOBAL_VIEWS`                   | Comma-separated tenant ids allowed to use cross-tenant admin views (DATEV unified export + File Explorer tenant tabs / consolidation) | `default` when unset |
 
-Per-tenant exports are scoped to the request **`X-Tenant`**. Unified exports aggregate all configured tenants but are only accessible from allowlisted operator tenants. Validate sample exports with **DatevFormatPruefProgramm** before production handoff.
+Per-tenant exports are scoped to the request **`X-Tenant`** (or admin `viewTenantId` when global views are allowed). Unified exports aggregate all configured tenants but are only accessible from allowlisted operator tenants (`TENANTS_ALLOW_GLOBAL_VIEWS`). The same allowlist gates the admin [File Explorer](../features/file-explorer.md). Validate sample exports with **DatevFormatPruefProgramm** before production handoff.
 
 Debtor account numbers follow **`TENANTS_SHARED_NUMBERS`** (shared by default). Creditor (supplier AP) numbers follow the same scoping rules in `billing_datev_creditor_accounts`. With shared numbers, overlapping per-tenant debtor or creditor ranges do not create uniqueness collisions; with `TENANTS_SHARED_NUMBERS=false`, overlapping ranges can collide in unified exports (startup warning). See [Numbering](../features/numbering.md).
 

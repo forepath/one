@@ -677,6 +677,50 @@
         <source>DATEV Exports</source>
         <target>DATEV-Exporte</target>
       </trans-unit>
+      <trans-unit id="featureContainer-adminFileExplorerPage" datatype="html">
+        <source>File Explorer</source>
+        <target>Datei-Explorer</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminFileExplorerTitle" datatype="html">
+        <source>File Explorer</source>
+        <target>Datei-Explorer</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-adminFileExplorer" datatype="html">
+        <source>Files</source>
+        <target>Dateien</target>
+      </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-title" datatype="html">
+        <source>File Explorer</source>
+        <target>Datei-Explorer</target>
+      </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-tabUnified" datatype="html">
+        <source>Unified</source>
+        <target>Vereinheitlicht</target>
+      </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-refresh" datatype="html">
+        <source>Refresh</source>
+        <target>Aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-download" datatype="html">
+        <source>Download</source>
+        <target>Herunterladen</target>
+      </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-loading" datatype="html">
+        <source>Loading files…</source>
+        <target>Dateien werden geladen…</target>
+      </trans-unit>
+      <trans-unit id="featureAdminFileExplorer-empty" datatype="html">
+        <source>No files</source>
+        <target>Keine Dateien</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-scopeTenant" datatype="html">
+        <source>Tenant</source>
+        <target>Mandant</target>
+      </trans-unit>
+      <trans-unit id="featureAdminDatevExports-viewTenant" datatype="html">
+        <source>Tenant</source>
+        <target>Mandant</target>
+      </trans-unit>
       <trans-unit id="featureBilling-countryNotAvailable" datatype="html">
         <source>N/A</source>
         <target>k. A.</target>

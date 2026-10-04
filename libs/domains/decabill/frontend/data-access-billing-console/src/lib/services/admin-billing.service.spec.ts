@@ -286,7 +286,12 @@ describe('AdminBillingService', () => {
     const req = httpMock.expectOne(`${apiUrl}/admin/billing/capabilities`);
 
     expect(req.request.method).toBe('GET');
-    req.flush({ datevExportEnabled: true, unifiedExportAllowed: false });
+    req.flush({
+      datevExportEnabled: true,
+      unifiedExportAllowed: false,
+      globalViewsAllowed: false,
+      viewableTenants: ['default'],
+    });
   });
 
   it('lists datev exports with query params', (done) => {

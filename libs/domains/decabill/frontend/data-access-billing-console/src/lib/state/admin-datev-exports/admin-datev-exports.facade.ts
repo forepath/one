@@ -11,6 +11,7 @@ import {
   selectAdminDatevExportsScope,
   selectAdminDatevExportsTriggerError,
   selectAdminDatevExportsTriggerLoading,
+  selectAdminDatevExportsViewTenantId,
 } from './admin-datev-exports.selectors';
 
 @Injectable()
@@ -21,6 +22,7 @@ export class AdminDatevExportsFacade {
   readonly loading$ = this.store.select(selectAdminDatevExportsLoading);
   readonly error$ = this.store.select(selectAdminDatevExportsError);
   readonly scope$ = this.store.select(selectAdminDatevExportsScope);
+  readonly viewTenantId$ = this.store.select(selectAdminDatevExportsViewTenantId);
   readonly triggerLoading$ = this.store.select(selectAdminDatevExportsTriggerLoading);
   readonly triggerError$ = this.store.select(selectAdminDatevExportsTriggerError);
 
@@ -28,15 +30,18 @@ export class AdminDatevExportsFacade {
     this.store.dispatch(loadAdminDatevExports({ params }));
   }
 
-  setScope(scope: DatevExportScope): void {
-    this.loadExports({ scope });
+  setScope(scope: DatevExportScope, viewTenantId?: string): void {
+    this.loadExports({
+      scope,
+      viewTenantId: scope === 'tenant' ? viewTenantId : undefined,
+    });
   }
 
   triggerExport(dto: TriggerDatevExportDto): void {
     this.store.dispatch(triggerDatevExport({ dto }));
   }
 
-  downloadExport(exportId: string): void {
-    this.store.dispatch(downloadDatevExport({ exportId }));
+  downloadExport(exportId: string, viewTenantId?: string): void {
+    this.store.dispatch(downloadDatevExport({ exportId, viewTenantId }));
   }
 }

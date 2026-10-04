@@ -48,7 +48,7 @@ Comprehensive checklist for deploying Decabill to production.
 - [ ] `FILE_STORAGE_ROOT` volume mounted on api, worker, and scheduler (when `FILE_STORAGE_PROVIDER=local`)
 - [ ] Or S3-compatible storage configured (`FILE_STORAGE_PROVIDER=s3` plus `FILE_STORAGE_S3_*`)
 - [ ] `BILLING_DATEV_EXPORT_ENABLED=false` verified if DATEV export is not required (UI hidden via capabilities)
-- [ ] Unified DATEV export allowlist reviewed (`BILLING_DATEV_UNIFIED_EXPORT_ALLOWED_TENANTS`)
+- [ ] Global admin views allowlist reviewed (`TENANTS_ALLOW_GLOBAL_VIEWS` — DATEV unified + File Explorer)
 - [ ] Sample DATEV export validated with DatevFormatPruefProgramm before accountant handoff
 - [ ] Provisioning SSH and cloud API tokens restricted (see **[DR-001](../security/accepted-risks.md#dr-001-provisioning-ssh-cloud-init-templates)**)
 

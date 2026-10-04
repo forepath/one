@@ -12,6 +12,9 @@ describe('DatevExportAdminService', () => {
     resolveUnified: jest.fn(),
     isUnifiedExportEnabled: jest.fn(),
   };
+  const tenantsGlobalViewsConfig = {
+    isGlobalViewsAllowedForTenant: jest.fn(),
+  };
   const exportRepository = {
     findAllForAdmin: jest.fn(),
     findById: jest.fn(),
@@ -26,6 +29,7 @@ describe('DatevExportAdminService', () => {
 
   const service = new DatevExportAdminService(
     configService as never,
+    tenantsGlobalViewsConfig as never,
     exportRepository as never,
     fileStorage as never,
     enqueuePort as never,
@@ -37,6 +41,7 @@ describe('DatevExportAdminService', () => {
     configService.resolveForTenant.mockReturnValue({ consultantNumber: '1', clientNumber: '2' });
     configService.resolveUnified.mockReturnValue({ consultantNumber: '1', clientNumber: '2' });
     configService.isUnifiedExportEnabled.mockReturnValue(true);
+    tenantsGlobalViewsConfig.isGlobalViewsAllowedForTenant.mockReturnValue(false);
     exportRepository.findByPeriod.mockResolvedValue(null);
   });
 
@@ -65,6 +70,27 @@ describe('DatevExportAdminService', () => {
     expect(exportRepository.findAllForAdmin).toHaveBeenCalledWith(
       expect.objectContaining({ scope: DatevExportScope.TENANT, tenantId: 'default' }),
     );
+  });
+
+  it('lists another tenant when global views allowed', async () => {
+    tenantsGlobalViewsConfig.isGlobalViewsAllowedForTenant.mockReturnValue(true);
+    exportRepository.findAllForAdmin.mockResolvedValue({ items: [], total: 0 });
+
+    await runWithTenantId('default', () =>
+      service.listExports(DatevExportScope.TENANT, 20, 0, undefined, undefined, 'acme'),
+    );
+
+    expect(exportRepository.findAllForAdmin).toHaveBeenCalledWith(
+      expect.objectContaining({ scope: DatevExportScope.TENANT, tenantId: 'acme' }),
+    );
+  });
+
+  it('rejects foreign viewTenantId when global views disallowed', async () => {
+    await expect(
+      runWithTenantId('default', () =>
+        service.listExports(DatevExportScope.TENANT, 20, 0, undefined, undefined, 'acme'),
+      ),
+    ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
   it('rejects unified list when tenant not in allowlist', async () => {
@@ -126,6 +152,18 @@ describe('DatevExportAdminService', () => {
 
     expect(result.queued).toBe(true);
     expect(enqueuePort.enqueueUnit).toHaveBeenCalled();
+  });
+
+  it('queues trigger for viewTenantId when global views allowed', async () => {
+    tenantsGlobalViewsConfig.isGlobalViewsAllowedForTenant.mockReturnValue(true);
+
+    await runWithTenantId('default', () =>
+      service.triggerExport('admin-user', { year: 2026, month: 1, viewTenantId: 'acme' }),
+    );
+
+    expect(enqueuePort.enqueueUnit).toHaveBeenCalledWith(
+      expect.objectContaining({ tenantId: 'acme', scope: DatevExportScope.TENANT }),
+    );
   });
 
   it('rejects trigger when tenant DATEV configuration is incomplete', async () => {

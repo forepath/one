@@ -16,6 +16,16 @@ export const selectUnifiedExportAllowed = createSelector(
   (capabilities) => capabilities?.unifiedExportAllowed ?? false,
 );
 
+export const selectGlobalViewsAllowed = createSelector(
+  selectBillingCapabilities,
+  (capabilities) => capabilities?.globalViewsAllowed ?? false,
+);
+
+export const selectViewableTenants = createSelector(
+  selectBillingCapabilities,
+  (capabilities) => capabilities?.viewableTenants ?? [],
+);
+
 export const selectBillingCapabilitiesLoading = createSelector(
   selectBillingCapabilitiesState,
   (state) => state.loading,

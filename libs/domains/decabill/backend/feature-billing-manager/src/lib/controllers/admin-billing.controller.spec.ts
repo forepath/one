@@ -37,6 +37,12 @@ describe('AdminBillingController', () => {
     isEnabled: jest.fn().mockReturnValue(true),
     isUnifiedExportAllowedForTenant: jest.fn().mockReturnValue(false),
   };
+  const tenantsGlobalViewsConfig = {
+    isGlobalViewsAllowedForTenant: jest.fn().mockReturnValue(false),
+  };
+  const billingTenantService = {
+    getConfiguredTenants: jest.fn().mockReturnValue(['default', 'acme']),
+  };
   const taxPreviewService = { preview: jest.fn() };
   const controller = new AdminBillingController(
     billingAdminService as never,
@@ -48,6 +54,8 @@ describe('AdminBillingController', () => {
     invoiceService as never,
     invoicesRepository as never,
     datevExportConfigService as never,
+    tenantsGlobalViewsConfig as never,
+    billingTenantService as never,
     taxPreviewService as never,
   );
 
@@ -63,13 +71,30 @@ describe('AdminBillingController', () => {
     expect(usersRoles).toContain(UserRole.ADMIN);
   });
 
-  it('getCapabilities returns datev flags', () => {
+  it('getCapabilities returns datev and global-view flags', () => {
     datevExportConfigService.isEnabled.mockReturnValue(false);
     datevExportConfigService.isUnifiedExportAllowedForTenant.mockReturnValue(true);
+    tenantsGlobalViewsConfig.isGlobalViewsAllowedForTenant.mockReturnValue(true);
+    billingTenantService.getConfiguredTenants.mockReturnValue(['default', 'acme']);
 
     expect(controller.getCapabilities()).toEqual({
       datevExportEnabled: false,
       unifiedExportAllowed: true,
+      globalViewsAllowed: true,
+      viewableTenants: ['default', 'acme'],
+    });
+  });
+
+  it('getCapabilities limits viewableTenants when global views disallowed', () => {
+    datevExportConfigService.isEnabled.mockReturnValue(true);
+    datevExportConfigService.isUnifiedExportAllowedForTenant.mockReturnValue(false);
+    tenantsGlobalViewsConfig.isGlobalViewsAllowedForTenant.mockReturnValue(false);
+
+    expect(controller.getCapabilities()).toEqual({
+      datevExportEnabled: true,
+      unifiedExportAllowed: false,
+      globalViewsAllowed: false,
+      viewableTenants: ['default'],
     });
   });
 

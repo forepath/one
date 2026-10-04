@@ -39,18 +39,25 @@ export class AdminDatevExportsController {
     @Query('year', new ParseIntPipe({ optional: true })) year?: number,
     @Query('scope') scope: DatevExportScope = DatevExportScope.TENANT,
     @Query('search') search?: string,
+    @Query('viewTenantId') viewTenantId?: string,
   ): Promise<PaginatedAdminDatevExportsResponseDto> {
-    return await this.datevExportAdminService.listExports(scope, limit, offset, year, search);
+    return await this.datevExportAdminService.listExports(scope, limit, offset, year, search, viewTenantId);
   }
 
   @Get(':exportId')
-  async getExport(@Param('exportId', ParseUUIDPipe) exportId: string): Promise<AdminDatevExportListItemDto> {
-    return await this.datevExportAdminService.getExport(exportId);
+  async getExport(
+    @Param('exportId', ParseUUIDPipe) exportId: string,
+    @Query('viewTenantId') viewTenantId?: string,
+  ): Promise<AdminDatevExportListItemDto> {
+    return await this.datevExportAdminService.getExport(exportId, viewTenantId);
   }
 
   @Get(':exportId/download')
-  async downloadExport(@Param('exportId', ParseUUIDPipe) exportId: string): Promise<StreamableFile> {
-    const { buffer, fileName } = await this.datevExportAdminService.downloadExport(exportId);
+  async downloadExport(
+    @Param('exportId', ParseUUIDPipe) exportId: string,
+    @Query('viewTenantId') viewTenantId?: string,
+  ): Promise<StreamableFile> {
+    const { buffer, fileName } = await this.datevExportAdminService.downloadExport(exportId, viewTenantId);
 
     return new StreamableFile(buffer, {
       type: 'application/zip',

@@ -67,6 +67,11 @@ describe('AdminDatevExportsEffects', () => {
     actions$ = TestBed.inject(Actions);
     store = TestBed.inject(MockStore);
     store.overrideSelector(selectAdminDatevExportsScope, 'tenant');
+    store.overrideSelector(selectAdminDatevExportsState, {
+      ...initialAdminDatevExportsState,
+      scope: 'tenant',
+      viewTenantId: 'default',
+    });
   });
 
   describe('loadAdminDatevExports$', () => {
@@ -229,7 +234,7 @@ describe('AdminDatevExportsEffects', () => {
       triggerDatevExportSuccessReload$(actions$, store).subscribe((result) => {
         expect(result).toEqual(
           loadAdminDatevExports({
-            params: { scope: 'tenant', limit: 10, offset: 0 },
+            params: { scope: 'tenant', viewTenantId: 'default', limit: 10, offset: 0 },
             preserveScope: true,
           }),
         );

@@ -10,7 +10,12 @@ describe('billingCapabilitiesReducer', () => {
     const state = billingCapabilitiesReducer(
       { ...initialBillingCapabilitiesState, loading: true },
       loadBillingCapabilitiesSuccess({
-        capabilities: { datevExportEnabled: true, unifiedExportAllowed: false },
+        capabilities: {
+          datevExportEnabled: true,
+          unifiedExportAllowed: false,
+          globalViewsAllowed: false,
+          viewableTenants: ['default'],
+        },
       }),
     );
 

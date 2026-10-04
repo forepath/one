@@ -83,6 +83,15 @@ Each tenant has independent:
 
 Admin and user routes filter by the request tenant. Interactive auth (Keycloak or users) additionally requires the authenticated user's `tenant_id` to match the request tenant.
 
+### Global admin views (`TENANTS_ALLOW_GLOBAL_VIEWS`)
+
+Comma-separated tenant ids allowed to use **cross-tenant admin views**:
+
+- DATEV unified export access (also requires `BILLING_DATEV_UNIFIED_EXPORT_ENABLED`)
+- DATEV and File Explorer per-tenant tabs plus Unified consolidation
+
+Default when unset: `default`. Operators keep their console `X-Tenant` as the home tenant; selected tabs send `viewTenantId` (or DATEV body field) which the API accepts only when the home tenant is allowlisted.
+
 ## API Key Auth and Tenant Scope
 
 When `AUTHENTICATION_METHOD=api-key` (or api-key is inferred from `STATIC_API_KEY`):

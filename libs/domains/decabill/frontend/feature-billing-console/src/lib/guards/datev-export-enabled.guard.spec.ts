@@ -18,7 +18,12 @@ describe('datevExportEnabledGuard', () => {
   beforeEach(() => {
     facade = {
       loadCapabilities: jest.fn(),
-      capabilities$: of({ datevExportEnabled: true, unifiedExportAllowed: false }),
+      capabilities$: of({
+        datevExportEnabled: true,
+        unifiedExportAllowed: false,
+        globalViewsAllowed: false,
+        viewableTenants: ['default'],
+      }),
       loading$: of(false),
     };
 
@@ -40,7 +45,12 @@ describe('datevExportEnabledGuard', () => {
   });
 
   it('redirects when datev export is disabled', async () => {
-    facade.capabilities$ = of({ datevExportEnabled: false, unifiedExportAllowed: false });
+    facade.capabilities$ = of({
+      datevExportEnabled: false,
+      unifiedExportAllowed: false,
+      globalViewsAllowed: false,
+      viewableTenants: ['default'],
+    });
 
     const result = await TestBed.runInInjectionContext(() =>
       firstValueFrom(datevExportEnabledGuard({} as never, {} as never)),

@@ -1544,6 +1544,8 @@ export type DatevExportStatus = 'pending' | 'running' | 'completed' | 'failed';
 export interface BillingCapabilitiesResponse {
   datevExportEnabled: boolean;
   unifiedExportAllowed: boolean;
+  globalViewsAllowed: boolean;
+  viewableTenants: string[];
 }
 
 export interface AdminDatevExportListItem {
@@ -1600,13 +1602,42 @@ export interface AdminDatevExportListParams {
   year?: number;
   scope?: DatevExportScope;
   search?: string;
+  viewTenantId?: string;
 }
 
 export interface TriggerDatevExportDto {
   year: number;
   month: number;
   scope?: DatevExportScope;
+  viewTenantId?: string;
   force?: boolean;
+}
+
+export type AdminFileManagerView = 'tenant' | 'unified';
+
+export type AdminFileManagerEntryType = 'file' | 'directory';
+
+export interface AdminFileManagerEntry {
+  name: string;
+  path: string;
+  type: AdminFileManagerEntryType;
+  size?: number;
+  contentType?: string;
+  scope?: string;
+  updatedAt?: string;
+}
+
+export interface AdminFileManagerListResponse {
+  path: string;
+  view: AdminFileManagerView;
+  viewTenantId?: string;
+  entries: AdminFileManagerEntry[];
+}
+
+export interface AdminFileManagerListParams {
+  path?: string;
+  view?: AdminFileManagerView;
+  viewTenantId?: string;
 }
 
 export interface TriggerDatevExportResponse {

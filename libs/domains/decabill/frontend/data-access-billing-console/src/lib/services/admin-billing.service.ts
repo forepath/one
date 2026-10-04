@@ -37,6 +37,8 @@ import type {
 } from '../types/billing.types';
 import type {
   AdminDatevExportListParams,
+  AdminFileManagerListParams,
+  AdminFileManagerListResponse,
   BillingCapabilitiesResponse,
   PaginatedAdminDatevExportsResponse,
   TriggerDatevExportDto,
@@ -266,6 +268,8 @@ export class AdminBillingService {
 
     if (params.search?.trim()) httpParams = httpParams.set('search', params.search.trim());
 
+    if (params.viewTenantId?.trim()) httpParams = httpParams.set('viewTenantId', params.viewTenantId.trim());
+
     return this.http.get<PaginatedAdminDatevExportsResponse>(`${this.apiUrl}/admin/billing/datev-exports`, {
       params: httpParams,
     });
@@ -275,8 +279,59 @@ export class AdminBillingService {
     return this.http.post<TriggerDatevExportResponse>(`${this.apiUrl}/admin/billing/datev-exports`, dto);
   }
 
-  downloadDatevExport(exportId: string): Observable<Blob> {
+  downloadDatevExport(exportId: string, viewTenantId?: string): Observable<Blob> {
+    let httpParams = new HttpParams();
+
+    if (viewTenantId?.trim()) {
+      httpParams = httpParams.set('viewTenantId', viewTenantId.trim());
+    }
+
     return this.http.get(`${this.apiUrl}/admin/billing/datev-exports/${exportId}/download`, {
+      params: httpParams,
+      responseType: 'blob',
+    });
+  }
+
+  listAdminFiles(params: AdminFileManagerListParams): Observable<AdminFileManagerListResponse> {
+    let httpParams = new HttpParams();
+
+    if (params.path != null) httpParams = httpParams.set('path', params.path);
+
+    if (params.view) httpParams = httpParams.set('view', params.view);
+
+    if (params.viewTenantId?.trim()) httpParams = httpParams.set('viewTenantId', params.viewTenantId.trim());
+
+    return this.http.get<AdminFileManagerListResponse>(`${this.apiUrl}/admin/billing/files`, {
+      params: httpParams,
+    });
+  }
+
+  downloadAdminFile(params: AdminFileManagerListParams): Observable<Blob> {
+    let httpParams = new HttpParams();
+
+    if (params.path != null) httpParams = httpParams.set('path', params.path);
+
+    if (params.view) httpParams = httpParams.set('view', params.view);
+
+    if (params.viewTenantId?.trim()) httpParams = httpParams.set('viewTenantId', params.viewTenantId.trim());
+
+    return this.http.get(`${this.apiUrl}/admin/billing/files/download`, {
+      params: httpParams,
+      responseType: 'blob',
+    });
+  }
+
+  downloadAdminFileArchive(params: AdminFileManagerListParams): Observable<Blob> {
+    let httpParams = new HttpParams();
+
+    if (params.path != null) httpParams = httpParams.set('path', params.path);
+
+    if (params.view) httpParams = httpParams.set('view', params.view);
+
+    if (params.viewTenantId?.trim()) httpParams = httpParams.set('viewTenantId', params.viewTenantId.trim());
+
+    return this.http.get(`${this.apiUrl}/admin/billing/files/archive`, {
+      params: httpParams,
       responseType: 'blob',
     });
   }
