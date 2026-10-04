@@ -46,6 +46,18 @@
   min-width: 0;
 }
 
+.file-tree-meta {
+  max-width: 50%;
+}
+
+.file-tree-hash-badge {
+  font-size: 0.75rem;
+}
+
+.file-tree-lock {
+  font-size: 0.95rem;
+}
+
 .file-tree-chevron,
 .file-tree-chevron-spacer {
   display: inline-flex;

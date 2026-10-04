@@ -3,17 +3,28 @@ import { createReducer, on } from '@ngrx/store';
 import type { AdminFileManagerEntry, AdminFileManagerView } from '../../types/billing.types';
 
 import {
+  collapseAdminFileManagerPath,
   downloadAdminFileManagerArchive,
   downloadAdminFileManagerArchiveFailure,
   downloadAdminFileManagerArchiveSuccess,
   downloadAdminFileManagerFile,
   downloadAdminFileManagerFileFailure,
   downloadAdminFileManagerFileSuccess,
+  expandAdminFileManagerPath,
   listAdminFileManagerDirectory,
   listAdminFileManagerDirectoryFailure,
   listAdminFileManagerDirectorySuccess,
+  refreshAdminFileManager,
   setAdminFileManagerView,
 } from './admin-file-manager.actions';
+
+function isPathOrDescendant(candidate: string, parent: string): boolean {
+  if (parent === '') {
+    return candidate !== '';
+  }
+
+  return candidate === parent || candidate.startsWith(`${parent}/`);
+}
 
 export interface AdminFileManagerState {
   view: AdminFileManagerView;
@@ -53,6 +64,21 @@ export const adminFileManagerReducer = createReducer(
     expandedPaths: [''],
     error: null,
   })),
+  on(expandAdminFileManagerPath, (state, { path }) => ({
+    ...state,
+    expandedPaths: state.expandedPaths.includes(path) ? state.expandedPaths : [...state.expandedPaths, path],
+  })),
+  on(collapseAdminFileManagerPath, (state, { path }) => ({
+    ...state,
+    expandedPaths:
+      path === '' ? [''] : state.expandedPaths.filter((expandedPath) => !isPathOrDescendant(expandedPath, path)),
+  })),
+  on(refreshAdminFileManager, (state) => ({
+    ...state,
+    directoriesByPath: {},
+    loadingPath: '',
+    error: null,
+  })),
   on(listAdminFileManagerDirectory, (state, { params }) => ({
     ...state,
     loadingPath: params.path ?? '',
@@ -62,7 +88,7 @@ export const adminFileManagerReducer = createReducer(
   })),
   on(listAdminFileManagerDirectorySuccess, (state, { cacheKey, path, view, viewTenantId, entries }) => ({
     ...state,
-    loadingPath: null,
+    loadingPath: state.loadingPath === path ? null : state.loadingPath,
     view,
     viewTenantId,
     directoriesByPath: {

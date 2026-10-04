@@ -9670,6 +9670,31 @@ components:
         contentType: { type: string }
         scope: { type: string }
         updatedAt: { type: string, format: date-time }
+        id: { type: string, format: uuid }
+        shas:
+          type: object
+          properties:
+            short: { type: string }
+            long: { type: string }
+        contentHashes:
+          type: object
+          properties:
+            md5: { type: string }
+            sha1: { type: string }
+            sha256: { type: string }
+            sha512: { type: string }
+        byteSize: { type: integer }
+        signature:
+          type: object
+          properties:
+            status:
+              type: string
+              enum: [signed, pending]
+            alg: { type: string }
+            version: { type: string }
+            value: { type: string }
+            signedAt: { type: string, format: date-time }
+            tenantId: { type: string }
     AdminFileManagerListResponse:
       type: object
       required: [path, view, entries]

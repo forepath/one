@@ -42,25 +42,49 @@ describe('AdminFileManagerService', () => {
   const billingTenantService = {
     getConfiguredTenants: jest.fn().mockReturnValue(['default', 'acme']),
   };
+  const storedFileRegistry = {
+    findMapForKeys: jest.fn().mockResolvedValue(new Map()),
+    findByScopeKey: jest.fn().mockResolvedValue(null),
+    verifyFromStorage: jest.fn().mockResolvedValue(true),
+    cacheKey: (scope: string, storageKey: string) => `${scope}::${storageKey}`,
+    toShas: jest.fn(),
+  };
+  const storedFileSigningConfig = {
+    getSecret: jest.fn().mockReturnValue(null),
+  };
 
   const service = new AdminFileManagerService(
     dataSource as never,
     fileStorage as never,
     tenantsGlobalViewsConfig as never,
     billingTenantService as never,
+    storedFileRegistry as never,
+    storedFileSigningConfig as never,
   );
 
   beforeEach(() => {
     jest.clearAllMocks();
     tenantsGlobalViewsConfig.isGlobalViewsAllowedForTenant.mockReturnValue(false);
     dataSource.query.mockResolvedValue([]);
+    storedFileRegistry.findMapForKeys.mockResolvedValue(new Map());
+    storedFileRegistry.findByScopeKey.mockResolvedValue(null);
+    storedFileSigningConfig.getSecret.mockReturnValue(null);
   });
 
   it('lists scope roots for tenant view', async () => {
     const result = await runWithTenantId('default', () => service.listDirectory('', AdminFileManagerView.TENANT));
 
-    expect(result.entries.map((entry) => entry.name)).toEqual(['datev-exports', 'invoices', 'supplier-invoices']);
+    expect(result.entries.map((entry) => entry.name)).toEqual(['customer', 'export', 'supplier']);
     expect(result.viewTenantId).toBe('default');
+  });
+
+  it('materializes empty structural folders under customer', async () => {
+    const result = await runWithTenantId('default', () =>
+      service.listDirectory('customer', AdminFileManagerView.TENANT),
+    );
+
+    expect(result.entries.map((entry) => entry.name)).toEqual(['invoices', 'offers', 'timesheets']);
+    expect(result.entries.every((entry) => entry.type === 'directory')).toBe(true);
   });
 
   it('lists nested directories and files from DB keys', async () => {
@@ -73,23 +97,25 @@ describe('AdminFileManagerService', () => {
     });
 
     const result = await runWithTenantId('default', () =>
-      service.listDirectory('invoices', AdminFileManagerView.TENANT),
+      service.listDirectory('customer/invoices', AdminFileManagerView.TENANT),
     );
 
     expect(result.entries).toEqual(
-      expect.arrayContaining([expect.objectContaining({ name: 'sub-1', type: 'directory', path: 'invoices/sub-1' })]),
+      expect.arrayContaining([
+        expect.objectContaining({ name: 'sub-1', type: 'directory', path: 'customer/invoices/sub-1' }),
+      ]),
     );
 
     const nested = await runWithTenantId('default', () =>
-      service.listDirectory('invoices/sub-1', AdminFileManagerView.TENANT),
+      service.listDirectory('customer/invoices/sub-1', AdminFileManagerView.TENANT),
     );
 
     expect(nested.entries).toEqual([
       expect.objectContaining({
         name: 'inv-1.pdf',
         type: 'file',
-        path: 'invoices/sub-1/inv-1.pdf',
-        scope: FileStorageScope.invoices,
+        path: 'customer/invoices/sub-1/inv-1.pdf',
+        scope: FileStorageScope.customerInvoices,
       }),
     ]);
   });
@@ -127,17 +153,59 @@ describe('AdminFileManagerService', () => {
     fileStorage.readFile.mockResolvedValue(Buffer.from('pdf'));
 
     const result = await runWithTenantId('default', () =>
-      service.downloadFile('invoices/sub-1/inv-1.pdf', AdminFileManagerView.TENANT),
+      service.downloadFile('customer/invoices/sub-1/inv-1.pdf', AdminFileManagerView.TENANT),
     );
 
     expect(result.fileName).toBe('inv-1.pdf');
-    expect(fileStorage.readFile).toHaveBeenCalledWith(FileStorageScope.invoices, 'sub-1/inv-1.pdf');
+    expect(fileStorage.readFile).toHaveBeenCalledWith(FileStorageScope.customerInvoices, 'sub-1/inv-1.pdf');
   });
 
   it('rejects download of unknown path', async () => {
     await expect(
-      runWithTenantId('default', () => service.downloadFile('invoices/missing.pdf', AdminFileManagerView.TENANT)),
+      runWithTenantId('default', () =>
+        service.downloadFile('customer/invoices/missing.pdf', AdminFileManagerView.TENANT),
+      ),
     ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('still downloads when stored signature verification fails', async () => {
+    dataSource.query.mockImplementation(async (sql: string) => {
+      if (sql.includes('FROM billing_invoices i')) {
+        return [{ pdf_storage_key: 'sub-1/inv-1.pdf', time_report_storage_key: null, created_at: new Date() }];
+      }
+
+      return [];
+    });
+    storedFileSigningConfig.getSecret.mockReturnValue('secret');
+    storedFileRegistry.findByScopeKey.mockResolvedValue({ signature: 'abc' } as never);
+    storedFileRegistry.verifyFromStorage.mockResolvedValue(false);
+    fileStorage.readFile.mockResolvedValue(Buffer.from('pdf'));
+
+    const result = await runWithTenantId('default', () =>
+      service.downloadFile('customer/invoices/sub-1/inv-1.pdf', AdminFileManagerView.TENANT),
+    );
+
+    expect(result.buffer.toString()).toBe('pdf');
+    expect(storedFileRegistry.verifyFromStorage).toHaveBeenCalled();
+  });
+
+  it('still downloads when signing is enabled but signature is still pending', async () => {
+    dataSource.query.mockImplementation(async (sql: string) => {
+      if (sql.includes('FROM billing_invoices i')) {
+        return [{ pdf_storage_key: 'sub-1/inv-1.pdf', time_report_storage_key: null, created_at: new Date() }];
+      }
+
+      return [];
+    });
+    storedFileSigningConfig.getSecret.mockReturnValue('secret');
+    storedFileRegistry.findByScopeKey.mockResolvedValue({ signature: null } as never);
+    fileStorage.readFile.mockResolvedValue(Buffer.from('pdf'));
+
+    const result = await runWithTenantId('default', () =>
+      service.downloadFile('customer/invoices/sub-1/inv-1.pdf', AdminFileManagerView.TENANT),
+    );
+
+    expect(result.buffer.toString()).toBe('pdf');
   });
 
   it('archives folder subtree from allow-set', async () => {
@@ -154,11 +222,35 @@ describe('AdminFileManagerService', () => {
     fileStorage.readFile.mockResolvedValue(Buffer.from('x'));
 
     const result = await runWithTenantId('default', () =>
-      service.downloadArchive('invoices/sub-1', AdminFileManagerView.TENANT),
+      service.downloadArchive('customer/invoices/sub-1', AdminFileManagerView.TENANT),
     );
 
     expect(result.fileName).toBe('sub-1.zip');
     expect(result.buffer.byteLength).toBeGreaterThan(0);
+  });
+
+  it('still archives when a member signature verification fails', async () => {
+    dataSource.query.mockImplementation(async (sql: string) => {
+      if (sql.includes('FROM billing_invoices i')) {
+        return [
+          { pdf_storage_key: 'sub-1/a.pdf', time_report_storage_key: null, created_at: new Date() },
+          { pdf_storage_key: 'sub-1/b.pdf', time_report_storage_key: null, created_at: new Date() },
+        ];
+      }
+
+      return [];
+    });
+    storedFileSigningConfig.getSecret.mockReturnValue('secret');
+    storedFileRegistry.findByScopeKey.mockResolvedValue({ signature: 'abc' } as never);
+    storedFileRegistry.verifyFromStorage.mockResolvedValueOnce(true).mockResolvedValueOnce(false);
+    fileStorage.readFile.mockResolvedValue(Buffer.from('x'));
+
+    const result = await runWithTenantId('default', () =>
+      service.downloadArchive('customer/invoices/sub-1', AdminFileManagerView.TENANT),
+    );
+
+    expect(result.fileName).toBe('sub-1.zip');
+    expect(storedFileRegistry.verifyFromStorage).toHaveBeenCalled();
   });
 
   it('rejects oversized archives by entry count', async () => {
@@ -175,7 +267,7 @@ describe('AdminFileManagerService', () => {
     });
 
     await expect(
-      runWithTenantId('default', () => service.downloadArchive('invoices/bulk', AdminFileManagerView.TENANT)),
+      runWithTenantId('default', () => service.downloadArchive('customer/invoices/bulk', AdminFileManagerView.TENANT)),
     ).rejects.toBeInstanceOf(PayloadTooLargeException);
   });
 
@@ -195,14 +287,14 @@ describe('AdminFileManagerService', () => {
     });
 
     const result = await runWithTenantId('default', () =>
-      service.listDirectory('datev-exports/default/2026/01', AdminFileManagerView.TENANT),
+      service.listDirectory('export/datev/default/2026/01', AdminFileManagerView.TENANT),
     );
 
     expect(result.entries).toEqual([
       expect.objectContaining({
         name: 'export.zip',
         type: 'file',
-        path: 'datev-exports/default/2026/01/export.zip',
+        path: 'export/datev/default/2026/01/export.zip',
       }),
     ]);
     expect(paramsHasCompletedStatus()).toBe(true);

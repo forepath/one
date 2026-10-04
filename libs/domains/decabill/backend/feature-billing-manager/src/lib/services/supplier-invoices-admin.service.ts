@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { FileStorageService } from '@forepath/shared/backend/util-file-storage';
+import { getTenantIdOrDefault } from '@forepath/shared/backend';
+import { FileStorageScope, FileStorageService } from '@forepath/shared/backend/util-file-storage';
 import { randomUUID } from 'crypto';
 
 import { InvoiceStatus } from '../constants/invoice-status.constants';
@@ -31,6 +32,7 @@ import { buildSupplierInvoicePdfStorageKey } from '../utils/supplier-invoice-pdf
 import { BillingAuditLogService } from './billing-audit-log.service';
 import { BillingIssuerConfigService } from './billing-issuer-config.service';
 import { SupplierContractsService } from './supplier-contracts.service';
+import { StoredFileRegistryService } from './stored-file-registry.service';
 import { SupplierInvoicePdfService } from './supplier-invoice-pdf.service';
 import { SupplierProfilesService } from './supplier-profiles.service';
 import { TaxCalculationService } from './tax-calculation.service';
@@ -69,6 +71,7 @@ export class SupplierInvoicesAdminService {
     private readonly fileStorage: FileStorageService,
     private readonly auditLog: BillingAuditLogService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
+    private readonly storedFileRegistry: StoredFileRegistryService,
   ) {}
 
   async list(params: {
@@ -456,6 +459,12 @@ export class SupplierInvoicesAdminService {
     const storageKey = `${randomUUID()}${this.extensionForMime(document.mimetype)}`;
 
     await this.fileStorage.writeSupplierInvoiceFile(storageKey, document.buffer);
+    await this.storedFileRegistry.registerFromBuffer({
+      tenantId: getTenantIdOrDefault(),
+      scope: FileStorageScope.supplierInvoices,
+      storageKey,
+      content: document.buffer,
+    });
 
     await this.supplierInvoicesRepository.update(invoiceId, {
       documentStorageKey: storageKey,

@@ -234,6 +234,10 @@ import { BillingMetricsCollectorService } from './services/billing-metrics-colle
 import { BillingAuditLogService } from './services/billing-audit-log.service';
 import { BillingTenantService } from './services/billing-tenant.service';
 import { AdminFileManagerService } from './services/admin-file-manager.service';
+import { StoredFileEntity } from './entities/stored-file.entity';
+import { StoredFileRegistryService } from './services/stored-file-registry.service';
+import { StoredFileSigningConfigService } from './services/stored-file-signing-config.service';
+import { StoredFilesBackfillJobHandler } from './services/stored-files-backfill.job-handler';
 import { TenantsGlobalViewsConfigService } from './services/tenants-global-views-config.service';
 import { BillingIssuerConfigService } from './services/billing-issuer-config.service';
 import { BillingScheduleService } from './services/billing-schedule.service';
@@ -402,6 +406,7 @@ const authMethod = getAuthenticationMethod();
       RevokedUserTokenEntity,
       UserPersonalAccessTokenEntity,
       DatevExportEntity,
+      StoredFileEntity,
       DatevDebtorAccountEntity,
       DatevCreditorAccountEntity,
       SupplierProfileEntity,
@@ -529,6 +534,9 @@ const authMethod = getAuthenticationMethod();
     BillingTenantService,
     TenantsGlobalViewsConfigService,
     AdminFileManagerService,
+    StoredFileSigningConfigService,
+    StoredFileRegistryService,
+    StoredFilesBackfillJobHandler,
     BillingStatisticsQueryService,
     InvoiceAdminService,
     ManualInvoiceService,
@@ -801,6 +809,7 @@ const authMethod = getAuthenticationMethod();
     DatevExportConfigService,
     BillingContributorHostModule,
     SearchReindexJobHandler,
+    StoredFilesBackfillJobHandler,
     BillingSearchModule,
     BillingIdentityEmailBridgeModule,
     BillingIdentityNotificationBridgeModule,

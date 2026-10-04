@@ -66,29 +66,32 @@ Billing data and users are partitioned by **`tenant_id`**. HTTP clients send **`
 
 ### Encryption and Issuer Details
 
-| Variable                                   | Description                                                                                                                      |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| `ENCRYPTION_KEY`                           | Encrypts sensitive stored data (API tokens, snapshots, webhook auth/signing secrets)                                             |
-| `BILLING_ISSUER_*`                         | Legal entity on invoices and public withdrawal addressee (name, VAT, address, bank); also fallback for email brand header/footer |
-| `PUBLIC_WITHDRAWAL_CONFIRMATION_TTL_HOURS` | Hours until a public withdrawal confirmation code expires (default `48`)                                                         |
-| `BILLING_TAX_RATE_STANDARD`                | Issuer-country override for standard rate when EU table entry missing (default `19`)                                             |
-| `BILLING_TAX_RATE_REDUCED`                 | Issuer-country override for reduced rate when EU table entry missing (default `7`)                                               |
-| `BILLING_OSS_REGISTERED`                   | When `true`, always use destination-country VAT for EU B2C (skip €10k threshold ledger)                                          |
-| `BILLING_OSS_THRESHOLD_EUR`                | Cross-border EU B2C net threshold (default `10000`)                                                                              |
-| `BILLING_NON_EU_ISSUER_EU_B2B_CHARGE_VAT`  | When `true`, non-EU issuer → EU B2B charges customer-country VAT instead of default no-VAT                                       |
-| `BILLING_STATUTORY_WITHDRAWAL_PERIOD_DAYS` | Days after provisioning (or price-migration restart) during which statutory withdrawal is allowed (default `14`)                 |
-| `FILE_STORAGE_PROVIDER`                    | Active file storage backend: `local` (default) or `s3` (S3-compatible: AWS, R2, B2, Ceph, MinIO, …)                              |
-| `FILE_STORAGE_ROOT`                        | Canonical file root for `local`; scopes live under `{root}/invoices` and `{root}/datev-exports` (compose default `/data`)        |
-| `FILE_STORAGE_LEGACY_MIGRATION_ENABLED`    | When not `false`, startup copies non-empty legacy dirs into the canonical layout (default enabled; `local` only)                 |
-| `FILE_STORAGE_S3_BUCKET`                   | Required when `FILE_STORAGE_PROVIDER=s3`: bucket name                                                                            |
-| `FILE_STORAGE_S3_ACCESS_KEY_ID`            | Required when using `s3`: access key                                                                                             |
-| `FILE_STORAGE_S3_SECRET_ACCESS_KEY`        | Required when using `s3`: secret key                                                                                             |
-| `FILE_STORAGE_S3_REGION`                   | S3 region (default `auto`; follow your provider’s docs)                                                                          |
-| `FILE_STORAGE_S3_ENDPOINT`                 | Custom S3 API endpoint for non-AWS providers (R2, B2, Ceph, MinIO, …)                                                            |
-| `FILE_STORAGE_S3_FORCE_PATH_STYLE`         | `true`/`false`; defaults to `true` when an endpoint is set, otherwise `false`                                                    |
-| `FILE_STORAGE_S3_KEY_PREFIX`               | Optional object key prefix (e.g. `decabill/prod`)                                                                                |
-| `BILLING_INVOICE_PDF_STORAGE_PATH`         | **Deprecated.** Legacy migration source for invoice PDFs (was `/data/invoices`)                                                  |
-| `BILLING_SKIP_FILE_CACHE`                  | Skip PDF file cache when `true`                                                                                                  |
+| Variable                                   | Description                                                                                                                                  |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ENCRYPTION_KEY`                           | Encrypts sensitive stored data (API tokens, snapshots, webhook auth/signing secrets)                                                         |
+| `BILLING_ISSUER_*`                         | Legal entity on invoices and public withdrawal addressee (name, VAT, address, bank); also fallback for email brand header/footer             |
+| `PUBLIC_WITHDRAWAL_CONFIRMATION_TTL_HOURS` | Hours until a public withdrawal confirmation code expires (default `48`)                                                                     |
+| `BILLING_TAX_RATE_STANDARD`                | Issuer-country override for standard rate when EU table entry missing (default `19`)                                                         |
+| `BILLING_TAX_RATE_REDUCED`                 | Issuer-country override for reduced rate when EU table entry missing (default `7`)                                                           |
+| `BILLING_OSS_REGISTERED`                   | When `true`, always use destination-country VAT for EU B2C (skip €10k threshold ledger)                                                      |
+| `BILLING_OSS_THRESHOLD_EUR`                | Cross-border EU B2C net threshold (default `10000`)                                                                                          |
+| `BILLING_NON_EU_ISSUER_EU_B2B_CHARGE_VAT`  | When `true`, non-EU issuer → EU B2B charges customer-country VAT instead of default no-VAT                                                   |
+| `BILLING_STATUTORY_WITHDRAWAL_PERIOD_DAYS` | Days after provisioning (or price-migration restart) during which statutory withdrawal is allowed (default `14`)                             |
+| `FILE_STORAGE_PROVIDER`                    | Active file storage backend: `local` (default) or `s3` (S3-compatible: AWS, R2, B2, Ceph, MinIO, …)                                          |
+| `FILE_STORAGE_ROOT`                        | Canonical file root for `local`; scopes live under `{root}/customer/*`, `{root}/supplier/*`, `{root}/export/datev` (compose default `/data`) |
+| `FILE_STORAGE_LEGACY_MIGRATION_ENABLED`    | When not `false`, startup copies non-empty legacy env roots into previous flat segments (default enabled; `local` only)                      |
+| `FILE_STORAGE_LAYOUT_MIGRATION_ENABLED`    | When not `false`, startup migrates previous segments into customer/supplier/export layout (default enabled; local + S3)                      |
+| `FILE_STORAGE_LAYOUT_DUAL_READ_ENABLED`    | When not `false`, reads fall back to previous segments if the new path is missing (default enabled)                                          |
+| `BILLING_FILE_SIGNING_SECRET`              | Global HMAC secret for stored-file signatures (required in production)                                                                       |
+| `FILE_STORAGE_S3_BUCKET`                   | Required when `FILE_STORAGE_PROVIDER=s3`: bucket name                                                                                        |
+| `FILE_STORAGE_S3_ACCESS_KEY_ID`            | Required when using `s3`: access key                                                                                                         |
+| `FILE_STORAGE_S3_SECRET_ACCESS_KEY`        | Required when using `s3`: secret key                                                                                                         |
+| `FILE_STORAGE_S3_REGION`                   | S3 region (default `auto`; follow your provider’s docs)                                                                                      |
+| `FILE_STORAGE_S3_ENDPOINT`                 | Custom S3 API endpoint for non-AWS providers (R2, B2, Ceph, MinIO, …)                                                                        |
+| `FILE_STORAGE_S3_FORCE_PATH_STYLE`         | `true`/`false`; defaults to `true` when an endpoint is set, otherwise `false`                                                                |
+| `FILE_STORAGE_S3_KEY_PREFIX`               | Optional object key prefix (e.g. `decabill/prod`)                                                                                            |
+| `BILLING_INVOICE_PDF_STORAGE_PATH`         | **Deprecated.** Legacy migration source for invoice PDFs (was `/data/invoices`)                                                              |
+| `BILLING_SKIP_FILE_CACHE`                  | Skip PDF file cache when `true`                                                                                                              |
 
 ### Automatic daily price recalculation
 

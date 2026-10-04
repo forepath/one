@@ -11,6 +11,7 @@ import {
 import { ENVIRONMENT, type Environment } from '@forepath/decabill/frontend/util-configuration';
 import {
   FpcAlertComponent,
+  FpcBadgeComponent,
   FpcButtonComponent,
   FpcButtonGroupComponent,
   FpcEmptyStateComponent,
@@ -18,6 +19,7 @@ import {
   FpcSpinnerComponent,
   FpcTabComponent,
   FpcTabGroupComponent,
+  FpcTooltipComponent,
 } from '@forepath/shared/frontend/ui-components';
 import { combineLatest, map } from 'rxjs';
 
@@ -32,6 +34,7 @@ interface TreeNodeView {
   imports: [
     CommonModule,
     FpcAlertComponent,
+    FpcBadgeComponent,
     FpcButtonComponent,
     FpcButtonGroupComponent,
     FpcEmptyStateComponent,
@@ -39,6 +42,7 @@ interface TreeNodeView {
     FpcSpinnerComponent,
     FpcTabComponent,
     FpcTabGroupComponent,
+    FpcTooltipComponent,
   ],
   templateUrl: './admin-file-manager-page.component.html',
   styleUrl: './admin-file-manager-page.component.scss',
@@ -56,7 +60,6 @@ export class AdminFileManagerPageComponent implements OnInit {
 
   readonly selectedPath = signal<string | null>(null);
   readonly selectedType = signal<'file' | 'directory' | null>(null);
-  readonly localExpanded = signal<Set<string>>(new Set(['']));
 
   readonly view$ = this.facade.view$;
   readonly viewTenantId$ = this.facade.viewTenantId$;
@@ -82,7 +85,7 @@ export class AdminFileManagerPageComponent implements OnInit {
       return [] as TreeNodeView[];
     }
 
-    const expanded = this.localExpanded();
+    const expanded = new Set(state.expandedPaths);
     const nodes: TreeNodeView[] = [];
 
     const walk = (path: string, depth: number): void => {
@@ -124,7 +127,6 @@ export class AdminFileManagerPageComponent implements OnInit {
 
     if (tabId === 'unified') {
       this.facade.setView('unified');
-      this.localExpanded.set(new Set(['']));
       this.selectedPath.set(null);
       this.selectedType.set(null);
       this.facade.listDirectory({ path: '', view: 'unified' });
@@ -133,7 +135,6 @@ export class AdminFileManagerPageComponent implements OnInit {
     }
 
     this.facade.setView('tenant', tabId);
-    this.localExpanded.set(new Set(['']));
     this.selectedPath.set(null);
     this.selectedType.set(null);
     this.facade.listDirectory({ path: '', view: 'tenant', viewTenantId: tabId });
@@ -147,19 +148,17 @@ export class AdminFileManagerPageComponent implements OnInit {
       return;
     }
 
-    const expanded = new Set(this.localExpanded());
+    const state = this.state();
+    const expanded = new Set(state?.expandedPaths ?? ['']);
 
     if (expanded.has(entry.path)) {
-      expanded.delete(entry.path);
-      this.localExpanded.set(expanded);
+      this.facade.collapsePath(entry.path);
 
       return;
     }
 
-    expanded.add(entry.path);
-    this.localExpanded.set(expanded);
+    this.facade.expandPath(entry.path);
 
-    const state = this.state();
     const view = (state?.view ?? 'tenant') as AdminFileManagerView;
     const viewTenantId = state?.viewTenantId ?? this.homeTenantId;
     const cacheKey = buildAdminFileManagerCacheKey(view, view === 'unified' ? null : viewTenantId, entry.path);
@@ -176,11 +175,43 @@ export class AdminFileManagerPageComponent implements OnInit {
   }
 
   isExpanded(path: string): boolean {
-    return this.localExpanded().has(path);
+    return (this.state()?.expandedPaths ?? ['']).includes(path);
   }
 
   isSelected(path: string): boolean {
     return this.selectedPath() === path;
+  }
+
+  contentHashesTooltip(entry: AdminFileManagerEntry): string {
+    const hashes = entry.contentHashes;
+
+    if (!hashes) {
+      return 'Content hashes pending';
+    }
+
+    return [
+      `MD5: ${hashes.md5}`,
+      `SHA-1: ${hashes.sha1}`,
+      `SHA-256: ${hashes.sha256}`,
+      `SHA-512: ${hashes.sha512}`,
+    ].join('\n');
+  }
+
+  signatureTooltip(entry: AdminFileManagerEntry): string {
+    const signature = entry.signature;
+
+    if (!signature || signature.status === 'pending') {
+      return 'Signature pending';
+    }
+
+    return [
+      `Status: ${signature.status}`,
+      `Alg: ${signature.alg ?? '—'}`,
+      `Version: ${signature.version ?? '—'}`,
+      `Tenant: ${signature.tenantId ?? '—'}`,
+      `Signed at: ${signature.signedAt ?? '—'}`,
+      `Signature: ${signature.value ?? '—'}`,
+    ].join('\n');
   }
 
   onDownloadEntry(entry: AdminFileManagerEntry, event?: Event): void {
@@ -210,16 +241,6 @@ export class AdminFileManagerPageComponent implements OnInit {
   }
 
   refreshRoot(): void {
-    const state = this.state();
-    const view = state?.view ?? 'tenant';
-    const viewTenantId = state?.viewTenantId ?? this.homeTenantId;
-
-    this.localExpanded.set(new Set(['']));
-    this.facade.setView(view, view === 'unified' ? null : viewTenantId);
-    this.facade.listDirectory({
-      path: '',
-      view,
-      viewTenantId: view === 'unified' ? undefined : viewTenantId,
-    });
+    this.facade.refresh();
   }
 }

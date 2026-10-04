@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-04T11:48:09.990Z",
+  "generatedAt": "2026-10-04T13:13:38.642Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -8060,6 +8060,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/stored-file.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/stored-file.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/subscription-addon.entity.ts",
       "type": "entity",
       "attrs": {
@@ -9873,6 +9882,33 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/ssh-executor.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-registry.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-registry.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-signing-config.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-signing-config.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-files-backfill.job-handler.ts",
+      "type": "job",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-files-backfill.job-handler.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -11985,6 +12021,15 @@
       "attrs": {
         "path": "libs/domains/shared/backend/util-file-storage/README.md",
         "languageOrKind": "md",
+        "projectName": "shared-backend-util-file-storage"
+      }
+    },
+    {
+      "id": "file:libs/domains/shared/backend/util-file-storage/src/lib/file-storage-layout-migration.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/shared/backend/util-file-storage/src/lib/file-storage-layout-migration.service.ts",
+        "languageOrKind": "ts",
         "projectName": "shared-backend-util-file-storage"
       }
     },
@@ -30243,12 +30288,22 @@
       }
     },
     {
-      "id": "concept:decabill-storage-scopes",
+      "id": "concept:decabill-storage-layout",
       "type": "concept",
       "attrs": {
-        "title": "Storage scopes",
+        "title": "Storage layout",
         "docPath": "docs/decabill/features/file-explorer.md",
-        "sectionAnchor": "storage-scopes",
+        "sectionAnchor": "storage-layout",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-registry-hashes-and-signatures",
+      "type": "concept",
+      "attrs": {
+        "title": "Registry, hashes, and signatures",
+        "docPath": "docs/decabill/features/file-explorer.md",
+        "sectionAnchor": "registry-hashes-and-signatures",
         "domain": "decabill"
       }
     },
@@ -38741,6 +38796,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/stored-file.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/entities/subscription-addon.entity.ts",
       "type": "contains"
     },
@@ -39747,6 +39807,21 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/ssh-executor.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-registry.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-signing-config.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-files-backfill.job-handler.ts",
       "type": "contains"
     },
     {
@@ -40897,6 +40972,11 @@
     {
       "from": "project:shared-backend-util-file-storage",
       "to": "file:libs/domains/shared/backend/util-file-storage/README.md",
+      "type": "contains"
+    },
+    {
+      "from": "project:shared-backend-util-file-storage",
+      "to": "file:libs/domains/shared/backend/util-file-storage/src/lib/file-storage-layout-migration.service.ts",
       "type": "contains"
     },
     {
@@ -50856,7 +50936,12 @@
     },
     {
       "from": "file:docs/decabill/features/file-explorer.md",
-      "to": "concept:decabill-storage-scopes",
+      "to": "concept:decabill-storage-layout",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/file-explorer.md",
+      "to": "concept:decabill-registry-hashes-and-signatures",
       "type": "contains"
     },
     {
@@ -61885,6 +61970,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-pdf.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-registry.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-profile-summary.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/repositories/offers.repository.ts",
       "type": "injects"
@@ -62260,6 +62350,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-time-report-pdf.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-registry.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-time-report.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/repositories/projects.repository.ts",
       "type": "injects"
@@ -62422,6 +62517,16 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-file-manager.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-tenant.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-file-manager.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-registry.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-file-manager.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-signing-config.service.ts",
       "type": "injects"
     },
     {
@@ -62945,6 +63050,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/datev-export.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-registry.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/hostname-reservation.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/reserved-hostnames.repository.ts",
       "type": "injects"
@@ -63162,6 +63272,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-pdf.service.ts",
       "to": "file:libs/domains/shared/backend/util-file-storage/src/lib/file-storage.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/invoice-pdf.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-registry.service.ts",
       "type": "injects"
     },
     {
@@ -63717,6 +63832,21 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/service-plan-price-recalc.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/subscription-config-change-billing.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-registry.service.ts",
+      "to": "file:libs/domains/shared/backend/util-file-storage/src/lib/file-storage.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-registry.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-signing-config.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-files-backfill.job-handler.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-registry.service.ts",
       "type": "injects"
     },
     {
@@ -64315,6 +64445,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/supplier-invoice-pdf.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-registry.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/supplier-invoices-admin.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/repositories/supplier-invoices.repository.ts",
       "type": "injects"
@@ -64367,6 +64502,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/supplier-invoices-admin.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-audit-log.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/supplier-invoices-admin.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-registry.service.ts",
       "type": "injects"
     },
     {
@@ -65411,6 +65551,11 @@
     },
     {
       "from": "file:apps/decabill/backend-billing-manager/src/queue/processors/billing-jobs.processor.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-files-backfill.job-handler.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:apps/decabill/backend-billing-manager/src/queue/processors/billing-jobs.processor.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/offers/services/offer-expiration.job-handler.ts",
       "type": "injects"
     },
@@ -66362,6 +66507,21 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/admin-file-manager.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-signing-config.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-registry.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-files-backfill.job-handler.ts",
       "type": "provides"
     },
     {
@@ -67627,6 +67787,11 @@
     {
       "from": "file:libs/domains/shared/backend/util-file-storage/src/lib/file-storage.module.ts",
       "to": "file:libs/domains/shared/backend/util-file-storage/src/lib/file-storage-legacy-migration.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/shared/backend/util-file-storage/src/lib/file-storage.module.ts",
+      "to": "file:libs/domains/shared/backend/util-file-storage/src/lib/file-storage-layout-migration.service.ts",
       "type": "provides"
     },
     {
@@ -74337,11 +74502,6 @@
     {
       "from": "concept:decabill-billing-provider-metadata",
       "to": "api:HTTP:GET:/service-types/providers",
-      "type": "documents"
-    },
-    {
-      "from": "concept:decabill-multi-tenant-views",
-      "to": "api:HTTP:GET:/admin/billing/capabilities",
       "type": "documents"
     },
     {
@@ -81980,7 +82140,12 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-storage-scopes",
+      "from": "concept:decabill-storage-layout",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-registry-hashes-and-signatures",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

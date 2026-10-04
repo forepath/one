@@ -68,7 +68,7 @@ export class DatevDocumentArchiveService {
 
   async readPdfByStorageKey(storageKey: string): Promise<Buffer | null> {
     try {
-      return await this.fileStorage.readInvoiceFile(storageKey);
+      return await this.fileStorage.readCustomerInvoiceFile(storageKey);
     } catch {
       return null;
     }

@@ -5,7 +5,7 @@ import { DatevDocumentArchiveService } from './datev-document-archive.service';
 
 describe('DatevDocumentArchiveService', () => {
   const fileStorage = {
-    readInvoiceFile: jest.fn(),
+    readCustomerInvoiceFile: jest.fn(),
   };
   const service = new DatevDocumentArchiveService(fileStorage as never);
 
@@ -56,26 +56,26 @@ describe('DatevDocumentArchiveService', () => {
 
   it('returns null when invoice has no pdf storage key', async () => {
     await expect(service.readInvoicePdf({ pdfStorageKey: null } as InvoiceEntity)).resolves.toBeNull();
-    expect(fileStorage.readInvoiceFile).not.toHaveBeenCalled();
+    expect(fileStorage.readCustomerInvoiceFile).not.toHaveBeenCalled();
   });
 
   it('reads invoice pdf from file storage', async () => {
-    fileStorage.readInvoiceFile.mockResolvedValue(Buffer.from('pdf'));
+    fileStorage.readCustomerInvoiceFile.mockResolvedValue(Buffer.from('pdf'));
 
     await expect(service.readInvoicePdf({ pdfStorageKey: 'invoice.pdf' } as InvoiceEntity)).resolves.toEqual(
       Buffer.from('pdf'),
     );
-    expect(fileStorage.readInvoiceFile).toHaveBeenCalledWith('invoice.pdf');
+    expect(fileStorage.readCustomerInvoiceFile).toHaveBeenCalledWith('invoice.pdf');
   });
 
   it('returns null when invoice pdf cannot be read', async () => {
-    fileStorage.readInvoiceFile.mockRejectedValue(new Error('missing'));
+    fileStorage.readCustomerInvoiceFile.mockRejectedValue(new Error('missing'));
 
     await expect(service.readInvoicePdf({ pdfStorageKey: 'missing.pdf' } as InvoiceEntity)).resolves.toBeNull();
   });
 
   it('reads pdf by storage key', async () => {
-    fileStorage.readInvoiceFile.mockResolvedValue(Buffer.from('archive'));
+    fileStorage.readCustomerInvoiceFile.mockResolvedValue(Buffer.from('archive'));
 
     await expect(service.readPdfByStorageKey('archive.pdf')).resolves.toEqual(Buffer.from('archive'));
   });

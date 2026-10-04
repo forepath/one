@@ -23,14 +23,16 @@ describe('decabill-billing.utils', () => {
       expect(config.backend.websocketNamespace).toBe('socket/billing');
     });
 
-    it('generates random encryptionKey, jwtSecret, and database password', () => {
+    it('generates random encryptionKey, jwtSecret, fileSigningSecret, and database password', () => {
       const config1 = buildDecabillBillingCloudInitConfigFromRequest({}, 'host1');
       const config2 = buildDecabillBillingCloudInitConfigFromRequest({}, 'host2');
 
       expect(config1.backend.encryption.encryptionKey).toBeTruthy();
       expect(config1.backend.encryption.jwtSecret).toBeTruthy();
+      expect(config1.backend.encryption.fileSigningSecret).toBeTruthy();
       expect(config1.backend.database?.password).toBeTruthy();
       expect(config1.backend.encryption.encryptionKey).not.toBe(config2.backend.encryption.encryptionKey);
+      expect(config1.backend.encryption.fileSigningSecret).not.toBe(config2.backend.encryption.fileSigningSecret);
       expect(config1.backend.database?.password).not.toBe(config2.backend.database?.password);
       expect(config1.backend.rateLimit.enabled).toBe(true);
     });
@@ -82,6 +84,11 @@ describe('decabill-billing.utils', () => {
       expect(script).toContain(DECABILL_BILLING_STACK_DIR);
       expect(script).toContain('REDIS_KEY_PREFIX: decabill-billing');
       expect(script).toContain('BILLING_FRONTEND_URL:');
+      expect(script).toContain('FILE_STORAGE_PROVIDER: local');
+      expect(script).toContain("FILE_STORAGE_ROOT: '/data'");
+      expect(script).toContain('FILE_STORAGE_LAYOUT_MIGRATION_ENABLED: true');
+      expect(script).toContain('FILE_STORAGE_LAYOUT_DUAL_READ_ENABLED: true');
+      expect(script).toContain(`BILLING_FILE_SIGNING_SECRET: ${config.backend.encryption.fileSigningSecret}`);
       expect(script).toContain('location /socket/');
       expect(script).toContain('location /socket.io/');
       expect(script).toContain("WEBSOCKET_NAMESPACE: 'socket/billing'");

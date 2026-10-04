@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { FileStorageService } from '@forepath/shared/backend/util-file-storage';
+import { getTenantIdOrDefault } from '@forepath/shared/backend';
+import { FileStorageScope, FileStorageService } from '@forepath/shared/backend/util-file-storage';
 
 import type { CustomerProfileEntity } from '../../entities/customer-profile.entity';
 import { EInvoiceEmbedService } from '../../services/e-invoice-embed.service';
@@ -9,6 +10,7 @@ import type { BillingIssuerConfig } from '../../services/billing-issuer-config.s
 import { buildOfferDocumentOptions } from '../../services/e-invoice-document-options';
 import type { OfferEntity } from '../entities/offer.entity';
 import type { OfferLineItemEntity } from '../entities/offer-line-item.entity';
+import { StoredFileRegistryService } from '../../services/stored-file-registry.service';
 import { buildOfferPdfStorageKey } from '../utils/offer-pdf-storage.util';
 
 import {
@@ -26,6 +28,7 @@ export class OfferPdfService {
     private readonly offerPdfTemplateService: OfferPdfTemplateService,
     private readonly invoicePdfHtmlRendererService: InvoicePdfHtmlRendererService,
     private readonly fileStorage: FileStorageService,
+    private readonly storedFileRegistry: StoredFileRegistryService,
   ) {}
 
   async generateAndStore(
@@ -53,12 +56,19 @@ export class OfferPdfService {
     const embedded = await this.eInvoiceEmbedService.embedXmlInPdf(pdfBytes, xml);
     const storageKey = buildOfferPdfStorageKey(offer);
 
-    await this.fileStorage.writeInvoiceFile(storageKey, Buffer.from(embedded));
+    const content = Buffer.from(embedded);
+    await this.fileStorage.writeCustomerOfferFile(storageKey, content);
+    await this.storedFileRegistry.registerFromBuffer({
+      tenantId: getTenantIdOrDefault(),
+      scope: FileStorageScope.customerOffers,
+      storageKey,
+      content,
+    });
 
     return storageKey;
   }
 
   async readPdf(storageKey: string): Promise<Buffer> {
-    return await this.fileStorage.readInvoiceFile(storageKey);
+    return await this.fileStorage.readCustomerOfferFile(storageKey);
   }
 }

@@ -27,17 +27,20 @@ import {
 } from '../constants/admin-file-manager.constants';
 import { DatevExportScope, DatevExportStatus } from '../constants/datev-export.constants';
 import type { AdminFileManagerEntryDto, AdminFileManagerListResponseDto } from '../dto/admin-file-manager.dto';
+import type { StoredFileEntity } from '../entities/stored-file.entity';
 import { resolveAdminViewTenant } from '../utils/admin-view-tenant.util';
 import {
-  ADMIN_FILE_MANAGER_SCOPE_SEGMENTS,
   buildTenantVirtualPath,
   buildUnifiedVirtualPath,
   guessContentType,
   isAdminFileManagerView,
   normalizeAdminFilePath,
-  resolveScopeFromSegment,
+  resolveScopeFromPathParts,
+  structuralChildrenForPath,
 } from '../utils/admin-file-manager-path.util';
 import { BillingTenantService } from './billing-tenant.service';
+import { StoredFileRegistryService } from './stored-file-registry.service';
+import { StoredFileSigningConfigService } from './stored-file-signing-config.service';
 import { TenantsGlobalViewsConfigService } from './tenants-global-views-config.service';
 
 interface StoredFileRef {
@@ -57,6 +60,8 @@ export class AdminFileManagerService {
     private readonly fileStorage: FileStorageService,
     private readonly tenantsGlobalViewsConfig: TenantsGlobalViewsConfigService,
     private readonly billingTenantService: BillingTenantService,
+    private readonly storedFileRegistry: StoredFileRegistryService,
+    private readonly storedFileSigningConfig: StoredFileSigningConfigService,
   ) {}
 
   async listDirectory(
@@ -67,7 +72,10 @@ export class AdminFileManagerService {
     const view = this.resolveView(viewRaw);
     const { path, parts } = normalizeAdminFilePath(rawPath);
     const files = await this.collectFilesForView(view, viewTenantId);
-    const entries = this.listEntriesAtPath(files, path, parts);
+    const registryMap = await this.storedFileRegistry.findMapForKeys(
+      files.map((file) => ({ scope: file.scope, storageKey: file.storageKey })),
+    );
+    const entries = this.listEntriesAtPath(files, path, parts, registryMap, view);
 
     return {
       path,
@@ -90,6 +98,8 @@ export class AdminFileManagerService {
     if (!file) {
       throw new NotFoundException('File not found');
     }
+
+    await this.logStoredFileIntegrity(file);
 
     const buffer = await this.fileStorage.readFile(file.scope, file.storageKey);
     const fileName = path.split('/').pop() || 'download';
@@ -124,6 +134,8 @@ export class AdminFileManagerService {
     let totalBytes = 0;
 
     for (const file of matched) {
+      await this.logStoredFileIntegrity(file);
+
       const content = await this.fileStorage.readFile(file.scope, file.storageKey);
 
       totalBytes += content.byteLength;
@@ -170,6 +182,29 @@ export class AdminFileManagerService {
     return resolveAdminViewTenant(this.tenantsGlobalViewsConfig, viewTenantId);
   }
 
+  /**
+   * Best-effort integrity check for download/archive members.
+   * Never blocks delivery: signing status is surfaced in list metadata and logs.
+   */
+  private async logStoredFileIntegrity(file: StoredFileRef): Promise<void> {
+    const signingEnabled = Boolean(this.storedFileSigningConfig.getSecret());
+    const registryRow = await this.storedFileRegistry.findByScopeKey(file.scope, file.storageKey);
+
+    if (!registryRow?.signature) {
+      if (signingEnabled) {
+        this.logger.warn(`Stored file signature pending for ${file.scope}/${file.storageKey}`);
+      }
+
+      return;
+    }
+
+    const valid = await this.storedFileRegistry.verifyFromStorage(registryRow);
+
+    if (!valid) {
+      this.logger.error(`Stored file signature verification failed for ${file.scope}/${file.storageKey}`);
+    }
+  }
+
   private async collectFilesForView(view: AdminFileManagerViewType, viewTenantId?: string): Promise<StoredFileRef[]> {
     if (view === AdminFileManagerView.TENANT) {
       const tenantId = this.resolveTenantViewId(viewTenantId);
@@ -195,7 +230,9 @@ export class AdminFileManagerService {
 
   private async collectFilesForTenant(tenantId: string, unifiedLayout: boolean): Promise<StoredFileRef[]> {
     const refs: StoredFileRef[] = [];
-    const invoiceSegment = FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.invoices];
+    const invoiceSegment = FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.customerInvoices];
+    const offerSegment = FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.customerOffers];
+    const timesheetSegment = FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.customerTimesheets];
     const supplierSegment = FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.supplierInvoices];
     const datevSegment = FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.datevExports];
 
@@ -221,7 +258,7 @@ export class AdminFileManagerService {
             tenantId,
             unifiedLayout,
             invoiceSegment,
-            FileStorageScope.invoices,
+            FileStorageScope.customerInvoices,
             row.pdf_storage_key,
             row.created_at,
           ),
@@ -233,8 +270,8 @@ export class AdminFileManagerService {
           this.toRef(
             tenantId,
             unifiedLayout,
-            invoiceSegment,
-            FileStorageScope.invoices,
+            timesheetSegment,
+            FileStorageScope.customerTimesheets,
             row.time_report_storage_key,
             row.created_at,
           ),
@@ -259,7 +296,7 @@ export class AdminFileManagerService {
           tenantId,
           unifiedLayout,
           invoiceSegment,
-          FileStorageScope.invoices,
+          FileStorageScope.customerInvoices,
           row.pdf_storage_key,
           row.created_at,
         ),
@@ -283,7 +320,7 @@ export class AdminFileManagerService {
           tenantId,
           unifiedLayout,
           invoiceSegment,
-          FileStorageScope.invoices,
+          FileStorageScope.customerInvoices,
           row.pdf_storage_key,
           row.created_at,
         ),
@@ -306,8 +343,8 @@ export class AdminFileManagerService {
         this.toRef(
           tenantId,
           unifiedLayout,
-          invoiceSegment,
-          FileStorageScope.invoices,
+          offerSegment,
+          FileStorageScope.customerOffers,
           row.pdf_storage_key,
           row.updated_at,
         ),
@@ -411,56 +448,63 @@ export class AdminFileManagerService {
     };
   }
 
-  private listEntriesAtPath(files: StoredFileRef[], path: string, parts: string[]): AdminFileManagerEntryDto[] {
-    if (parts.length === 0) {
-      const names = new Set<string>();
-      const looksLikeTenantView =
-        files.length === 0 ||
-        files.every((file) => {
-          const first = file.virtualPath.split('/')[0] ?? '';
+  private listEntriesAtPath(
+    files: StoredFileRef[],
+    path: string,
+    parts: string[],
+    registryMap: Map<string, StoredFileEntity>,
+    view: AdminFileManagerViewType,
+  ): AdminFileManagerEntryDto[] {
+    const directories = new Map<string, AdminFileManagerEntryDto>();
+    const fileEntries: AdminFileManagerEntryDto[] = [];
+    const structuralChildren = structuralChildrenForPath(parts, view);
 
-          return ADMIN_FILE_MANAGER_SCOPE_SEGMENTS.includes(first);
+    if (structuralChildren) {
+      for (const name of structuralChildren) {
+        const childPath = path.length > 0 ? `${path}/${name}` : name;
+        const childParts = [...parts, name];
+        directories.set(name, {
+          name,
+          path: childPath,
+          type: 'directory',
+          scope: resolveScopeFromPathParts(childParts) ?? undefined,
         });
-
-      if (looksLikeTenantView) {
-        for (const segment of ADMIN_FILE_MANAGER_SCOPE_SEGMENTS) {
-          names.add(segment);
-        }
       }
+    }
 
+    if (parts.length === 0 && view === AdminFileManagerView.UNIFIED) {
       for (const file of files) {
         const first = file.virtualPath.split('/')[0];
 
-        if (first) {
-          names.add(first);
+        if (!first || directories.has(first)) {
+          continue;
         }
-      }
 
-      return [...names]
-        .sort((a, b) => a.localeCompare(b))
-        .map((name) => ({
-          name,
-          path: name,
-          type: 'directory' as const,
-          scope: resolveScopeFromSegment(name) ?? undefined,
-        }));
+        directories.set(first, {
+          name: first,
+          path: first,
+          type: 'directory',
+        });
+      }
     }
 
-    const prefix = `${path}/`;
-    const directories = new Map<string, AdminFileManagerEntryDto>();
-    const fileEntries: AdminFileManagerEntryDto[] = [];
+    const prefix = path.length > 0 ? `${path}/` : '';
 
     for (const file of files) {
       if (file.virtualPath === path) {
-        // Listing a file path is not valid for directory listing.
         continue;
       }
 
-      if (!file.virtualPath.startsWith(prefix)) {
+      if (prefix.length > 0 && !file.virtualPath.startsWith(prefix)) {
         continue;
       }
 
-      const remainder = file.virtualPath.slice(prefix.length);
+      if (prefix.length === 0 && view === AdminFileManagerView.TENANT) {
+        // Root structural folders already seeded; skip re-deriving from files.
+        continue;
+      }
+
+      const remainder = prefix.length > 0 ? file.virtualPath.slice(prefix.length) : file.virtualPath;
       const [name, ...rest] = remainder.split('/');
 
       if (!name) {
@@ -468,20 +512,15 @@ export class AdminFileManagerService {
       }
 
       if (rest.length === 0) {
-        fileEntries.push({
-          name,
-          path: file.virtualPath,
-          type: 'file',
-          scope: file.scope,
-          contentType: guessContentType(name),
-          updatedAt: file.updatedAt?.toISOString(),
-        });
+        const row = registryMap.get(this.storedFileRegistry.cacheKey(file.scope, file.storageKey));
+        fileEntries.push(this.toFileEntryDto(file, name, row));
       } else if (!directories.has(name)) {
+        const childParts = [...parts, name];
         directories.set(name, {
           name,
-          path: `${path}/${name}`,
+          path: path.length > 0 ? `${path}/${name}` : name,
           type: 'directory',
-          scope: file.scope,
+          scope: resolveScopeFromPathParts(childParts) ?? file.scope,
         });
       }
     }
@@ -493,6 +532,51 @@ export class AdminFileManagerService {
 
       return a.name.localeCompare(b.name);
     });
+  }
+
+  private toFileEntryDto(file: StoredFileRef, name: string, row?: StoredFileEntity): AdminFileManagerEntryDto {
+    const entry: AdminFileManagerEntryDto = {
+      name,
+      path: file.virtualPath,
+      type: 'file',
+      scope: file.scope,
+      contentType: guessContentType(name),
+      updatedAt: file.updatedAt?.toISOString(),
+    };
+
+    if (!row) {
+      entry.signature = { status: 'pending' };
+
+      return entry;
+    }
+
+    const shas = this.storedFileRegistry.toShas(row);
+    entry.id = row.id;
+    entry.shas = shas;
+    entry.byteSize = row.byteSize != null ? Number(row.byteSize) : undefined;
+    entry.size = entry.byteSize;
+
+    if (row.contentMd5 && row.contentSha1 && row.contentSha256 && row.contentSha512) {
+      entry.contentHashes = {
+        md5: row.contentMd5,
+        sha1: row.contentSha1,
+        sha256: row.contentSha256,
+        sha512: row.contentSha512,
+      };
+    }
+
+    entry.signature = row.signature
+      ? {
+          status: 'signed',
+          alg: row.signatureAlg ?? undefined,
+          version: row.signatureVersion ?? undefined,
+          value: row.signature,
+          signedAt: row.signedAt?.toISOString(),
+          tenantId: row.tenantId,
+        }
+      : { status: 'pending' };
+
+    return entry;
   }
 
   private async createZipBuffer(entries: { name: string; content: Buffer }[]): Promise<Buffer> {

@@ -72,6 +72,38 @@
                   <i class="bi bi-file-earmark flex-shrink-0" aria-hidden="true"></i>
                 }
                 <span class="file-tree-name flex-grow-1 text-truncate">{{ node.entry.name }}</span>
+                @if (node.entry.type === 'file') {
+                  <span class="file-tree-meta d-flex align-items-center gap-2 flex-shrink-0 ms-auto">
+                    @if (node.entry.shas?.short) {
+                      <fpc-tooltip
+                        [text]="contentHashesTooltip(node.entry)"
+                        placement="top"
+                        appearance="panel"
+                        [nativeTitle]="false"
+                        [tooltipId]="'file-hash-' + node.entry.path"
+                      >
+                        <fpc-badge variant="info" color="secondary" class="font-monospace file-tree-hash-badge">{{
+                          node.entry.shas?.short
+                        }}</fpc-badge>
+                      </fpc-tooltip>
+                    }
+                    <fpc-tooltip
+                      [text]="signatureTooltip(node.entry)"
+                      placement="top"
+                      appearance="panel"
+                      [nativeTitle]="false"
+                      [tooltipId]="'file-sig-' + node.entry.path"
+                    >
+                      <i
+                        class="bi file-tree-lock"
+                        [class.bi-lock-fill]="node.entry.signature?.status === 'signed'"
+                        [class.bi-unlock]="node.entry.signature?.status !== 'signed'"
+                        [class.text-muted]="node.entry.signature?.status !== 'signed'"
+                        aria-hidden="true"
+                      ></i>
+                    </fpc-tooltip>
+                  </span>
+                }
                 <fpc-button-group size="sm" class="file-tree-actions flex-shrink-0">
                   <fpc-button
                     variant="dark"

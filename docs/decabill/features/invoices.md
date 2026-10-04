@@ -93,7 +93,7 @@ Admin routes under `/admin/billing/invoices`:
 
 ## PDF Generation
 
-PDFs are stored under `{FILE_STORAGE_ROOT}/invoices` when using the local provider (compose default `/data/invoices`), or as S3 object keys `invoices/...` when `FILE_STORAGE_PROVIDER=s3`. Issuer details come from environment:
+PDFs are stored under `{FILE_STORAGE_ROOT}/customer/invoices` when using the local provider (compose default `/data/customer/invoices`), or as S3 object keys `customer/invoices/...` when `FILE_STORAGE_PROVIDER=s3`. Issuer details come from environment:
 
 - `BILLING_ISSUER_*` (name, VAT ID, address, email, IBAN)
 - `BILLING_TAX_RATE_STANDARD` and `BILLING_TAX_RATE_REDUCED`

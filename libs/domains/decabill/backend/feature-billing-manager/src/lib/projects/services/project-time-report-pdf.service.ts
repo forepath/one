@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { FileStorageService } from '@forepath/shared/backend/util-file-storage';
+import { getTenantIdOrDefault } from '@forepath/shared/backend';
+import { FileStorageScope, FileStorageService } from '@forepath/shared/backend/util-file-storage';
 
 import type { InvoiceEntity } from '../../entities/invoice.entity';
 import { InvoicePdfHtmlRendererService } from '../../services/invoice-pdf-html-renderer.service';
+import { StoredFileRegistryService } from '../../services/stored-file-registry.service';
 import { buildProjectTimeReportStorageKey } from '../../utils/project-time-report-storage.util';
 
 import { ProjectTimeReportPdfTemplateService } from './project-time-report-pdf-template.service';
@@ -14,6 +16,7 @@ export class ProjectTimeReportPdfService {
     private readonly templateService: ProjectTimeReportPdfTemplateService,
     private readonly htmlRenderer: InvoicePdfHtmlRendererService,
     private readonly fileStorage: FileStorageService,
+    private readonly storedFileRegistry: StoredFileRegistryService,
   ) {}
 
   async renderPdf(viewModel: ProjectTimeReportViewModel): Promise<Uint8Array> {
@@ -25,13 +28,20 @@ export class ProjectTimeReportPdfService {
   async generateAndStore(invoice: InvoiceEntity, viewModel: ProjectTimeReportViewModel): Promise<string> {
     const pdfBytes = await this.renderPdf(viewModel);
     const storageKey = buildProjectTimeReportStorageKey(invoice);
+    const content = Buffer.from(pdfBytes);
 
-    await this.fileStorage.writeInvoiceFile(storageKey, Buffer.from(pdfBytes));
+    await this.fileStorage.writeCustomerTimesheetFile(storageKey, content);
+    await this.storedFileRegistry.registerFromBuffer({
+      tenantId: getTenantIdOrDefault(),
+      scope: FileStorageScope.customerTimesheets,
+      storageKey,
+      content,
+    });
 
     return storageKey;
   }
 
   async readPdf(storageKey: string): Promise<Buffer> {
-    return await this.fileStorage.readInvoiceFile(storageKey);
+    return await this.fileStorage.readCustomerTimesheetFile(storageKey);
   }
 }

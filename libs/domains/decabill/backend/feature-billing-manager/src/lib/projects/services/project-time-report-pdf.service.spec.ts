@@ -6,13 +6,17 @@ describe('ProjectTimeReportPdfService', () => {
   const templateService = { buildHtml: jest.fn().mockReturnValue('<html></html>') };
   const htmlRenderer = { renderHtmlToPdf: jest.fn().mockResolvedValue(new Uint8Array([1, 2, 3])) };
   const fileStorage = {
-    writeInvoiceFile: jest.fn().mockResolvedValue(undefined),
-    readInvoiceFile: jest.fn(),
+    writeCustomerTimesheetFile: jest.fn().mockResolvedValue(undefined),
+    readCustomerTimesheetFile: jest.fn(),
+  };
+  const storedFileRegistry = {
+    registerFromBuffer: jest.fn().mockResolvedValue({}),
   };
   const service = new ProjectTimeReportPdfService(
     templateService as never,
     htmlRenderer as never,
     fileStorage as never,
+    storedFileRegistry as never,
   );
   const invoice = {
     id: 'inv-1',
@@ -37,15 +41,18 @@ describe('ProjectTimeReportPdfService', () => {
     const storageKey = await service.generateAndStore(invoice, viewModel);
 
     expect(storageKey).toBe('sub-1/inv-1-time-report.pdf');
-    expect(fileStorage.writeInvoiceFile).toHaveBeenCalledWith('sub-1/inv-1-time-report.pdf', expect.any(Buffer));
+    expect(fileStorage.writeCustomerTimesheetFile).toHaveBeenCalledWith(
+      'sub-1/inv-1-time-report.pdf',
+      expect.any(Buffer),
+    );
   });
 
   it('readPdf reads via file storage', async () => {
-    fileStorage.readInvoiceFile.mockResolvedValue(Buffer.from('pdf'));
+    fileStorage.readCustomerTimesheetFile.mockResolvedValue(Buffer.from('pdf'));
 
     const buffer = await service.readPdf('sub-1/inv-1-time-report.pdf');
 
     expect(buffer).toEqual(Buffer.from('pdf'));
-    expect(fileStorage.readInvoiceFile).toHaveBeenCalledWith('sub-1/inv-1-time-report.pdf');
+    expect(fileStorage.readCustomerTimesheetFile).toHaveBeenCalledWith('sub-1/inv-1-time-report.pdf');
   });
 });

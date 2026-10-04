@@ -1,6 +1,7 @@
 import * as path from 'path';
 
 import {
+  isLayoutMigrationEnabled,
   isLegacyMigrationEnabled,
   readActiveFileStorageProviderType,
   readFileStorageRoot,
@@ -26,18 +27,18 @@ describe('file-storage-path.config', () => {
     expect(readFileStorageRoot({})).toBe(path.join('/workspace', 'data'));
   });
 
-  it('resolveCanonicalScopeRoot joins root and segment', () => {
-    expect(resolveCanonicalScopeRoot(FileStorageScope.invoices, { FILE_STORAGE_ROOT: '/data' })).toBe(
-      path.join('/data', 'invoices'),
+  it('resolveCanonicalScopeRoot joins root and nested segment', () => {
+    expect(resolveCanonicalScopeRoot(FileStorageScope.customerInvoices, { FILE_STORAGE_ROOT: '/data' })).toBe(
+      path.join('/data', 'customer', 'invoices'),
     );
     expect(resolveCanonicalScopeRoot(FileStorageScope.datevExports, { FILE_STORAGE_ROOT: '/data' })).toBe(
-      path.join('/data', 'datev-exports'),
+      path.join('/data', 'export', 'datev'),
     );
   });
 
   it('resolveLegacyScopeRoot uses BILLING_* when set', () => {
     expect(
-      resolveLegacyScopeRoot(FileStorageScope.invoices, {
+      resolveLegacyScopeRoot(FileStorageScope.customerInvoices, {
         BILLING_INVOICE_PDF_STORAGE_PATH: '/legacy/invoices',
       }),
     ).toBe('/legacy/invoices');
@@ -51,13 +52,20 @@ describe('file-storage-path.config', () => {
   it('resolveLegacyScopeRoot falls back to cwd layout', () => {
     process.cwd = () => '/workspace';
 
-    expect(resolveLegacyScopeRoot(FileStorageScope.invoices, {})).toBe(path.join('/workspace', 'data', 'invoices'));
+    expect(resolveLegacyScopeRoot(FileStorageScope.customerInvoices, {})).toBe(
+      path.join('/workspace', 'data', 'invoices'),
+    );
   });
 
   it('isLegacyMigrationEnabled defaults to true and disables on false', () => {
     expect(isLegacyMigrationEnabled({})).toBe(true);
     expect(isLegacyMigrationEnabled({ FILE_STORAGE_LEGACY_MIGRATION_ENABLED: 'false' })).toBe(false);
     expect(isLegacyMigrationEnabled({ FILE_STORAGE_LEGACY_MIGRATION_ENABLED: 'TRUE' })).toBe(true);
+  });
+
+  it('isLayoutMigrationEnabled defaults to true and disables on false', () => {
+    expect(isLayoutMigrationEnabled({})).toBe(true);
+    expect(isLayoutMigrationEnabled({ FILE_STORAGE_LAYOUT_MIGRATION_ENABLED: 'false' })).toBe(false);
   });
 
   it('readActiveFileStorageProviderType defaults to local', () => {

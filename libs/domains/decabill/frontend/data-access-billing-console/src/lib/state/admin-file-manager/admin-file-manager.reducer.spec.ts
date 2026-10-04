@@ -1,4 +1,10 @@
-import { listAdminFileManagerDirectorySuccess, setAdminFileManagerView } from './admin-file-manager.actions';
+import {
+  collapseAdminFileManagerPath,
+  expandAdminFileManagerPath,
+  listAdminFileManagerDirectorySuccess,
+  refreshAdminFileManager,
+  setAdminFileManagerView,
+} from './admin-file-manager.actions';
 import {
   adminFileManagerReducer,
   buildAdminFileManagerCacheKey,
@@ -36,5 +42,37 @@ describe('adminFileManagerReducer', () => {
 
     expect(next.directoriesByPath[cacheKey]).toEqual(entries);
     expect(next.viewTenantId).toBe('default');
+  });
+
+  it('keeps expanded paths when refreshing', () => {
+    const seeded = {
+      ...initialAdminFileManagerState,
+      view: 'tenant' as const,
+      viewTenantId: 'default',
+      directoriesByPath: { 'tenant|default|': [], 'tenant|default|customer': [] },
+      expandedPaths: ['', 'customer', 'customer/invoices'],
+    };
+
+    const next = adminFileManagerReducer(seeded, refreshAdminFileManager());
+
+    expect(next.directoriesByPath).toEqual({});
+    expect(next.expandedPaths).toEqual(['', 'customer', 'customer/invoices']);
+    expect(next.loadingPath).toBe('');
+  });
+
+  it('expands and collapses paths including descendants', () => {
+    const expanded = adminFileManagerReducer(
+      {
+        ...initialAdminFileManagerState,
+        expandedPaths: ['', 'customer'],
+      },
+      expandAdminFileManagerPath({ path: 'customer/invoices' }),
+    );
+
+    expect(expanded.expandedPaths).toEqual(['', 'customer', 'customer/invoices']);
+
+    const collapsed = adminFileManagerReducer(expanded, collapseAdminFileManagerPath({ path: 'customer' }));
+
+    expect(collapsed.expandedPaths).toEqual(['']);
   });
 });

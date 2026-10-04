@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { FileStorageService } from '@forepath/shared/backend/util-file-storage';
+import { getTenantIdOrDefault } from '@forepath/shared/backend';
+import { FileStorageScope, FileStorageService } from '@forepath/shared/backend/util-file-storage';
 
 import { SupplierDocumentSource } from '../constants/supplier-document-source.constants';
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
@@ -14,6 +15,7 @@ import type { BillingIssuerConfig } from './billing-issuer-config.service';
 import { InvoicePdfHtmlRendererService } from './invoice-pdf-html-renderer.service';
 import { buildInvoicePdfPresentation } from './invoice-pdf-presentation.util';
 import { InvoicePdfTemplateService } from './invoice-pdf-template.service';
+import { StoredFileRegistryService } from './stored-file-registry.service';
 
 @Injectable()
 export class SupplierInvoicePdfService {
@@ -21,6 +23,7 @@ export class SupplierInvoicePdfService {
     private readonly invoicePdfTemplateService: InvoicePdfTemplateService,
     private readonly invoicePdfHtmlRendererService: InvoicePdfHtmlRendererService,
     private readonly fileStorage: FileStorageService,
+    private readonly storedFileRegistry: StoredFileRegistryService,
   ) {}
 
   async generateAndStore(
@@ -31,8 +34,15 @@ export class SupplierInvoicePdfService {
   ): Promise<string> {
     const pdfBytes = await this.renderPdf(invoice, lineItems, supplier, recipient);
     const storageKey = buildSupplierInvoicePdfStorageKey(invoice, '.pdf');
+    const content = Buffer.from(pdfBytes);
 
-    await this.fileStorage.writeSupplierInvoiceFile(storageKey, Buffer.from(pdfBytes));
+    await this.fileStorage.writeSupplierInvoiceFile(storageKey, content);
+    await this.storedFileRegistry.registerFromBuffer({
+      tenantId: supplier.tenantId || getTenantIdOrDefault(),
+      scope: FileStorageScope.supplierInvoices,
+      storageKey,
+      content,
+    });
 
     return storageKey;
   }

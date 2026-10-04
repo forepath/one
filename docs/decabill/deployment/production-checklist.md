@@ -148,7 +148,8 @@ Comprehensive checklist for deploying Decabill to production.
 
 ### Billing File Backups
 
-- Backup `FILE_STORAGE_ROOT` volume (invoice PDFs under `invoices/`, DATEV ZIPs under `datev-exports/`) when using `local`, or the S3-compatible bucket when using `s3`
+- Backup `FILE_STORAGE_ROOT` volume (`customer/*`, `supplier/*`, `export/datev/`) when using `local`, or the S3-compatible bucket when using `s3`
+- Set `BILLING_FILE_SIGNING_SECRET` for stored-file HMAC signatures
 - Align PDF and DATEV retention with legal and tax requirements
 - Document whether per-tenant or unified DATEV exports are used in production
 

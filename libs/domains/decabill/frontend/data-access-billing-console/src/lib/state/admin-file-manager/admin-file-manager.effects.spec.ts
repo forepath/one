@@ -1,7 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
-import { of, throwError } from 'rxjs';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { of, throwError, toArray } from 'rxjs';
 
 import { AdminBillingService } from '../../services/admin-billing.service';
 
@@ -9,9 +10,11 @@ import {
   listAdminFileManagerDirectory,
   listAdminFileManagerDirectoryFailure,
   listAdminFileManagerDirectorySuccess,
+  refreshAdminFileManager,
 } from './admin-file-manager.actions';
-import { listAdminFileManagerDirectory$ } from './admin-file-manager.effects';
-import { buildAdminFileManagerCacheKey } from './admin-file-manager.reducer';
+import { listAdminFileManagerDirectory$, refreshAdminFileManager$ } from './admin-file-manager.effects';
+import { buildAdminFileManagerCacheKey, initialAdminFileManagerState } from './admin-file-manager.reducer';
+import { selectAdminFileManagerState } from './admin-file-manager.selectors';
 
 describe('AdminFileManagerEffects', () => {
   let actions$: Actions;
@@ -23,7 +26,20 @@ describe('AdminFileManagerEffects', () => {
     };
 
     TestBed.configureTestingModule({
-      providers: [provideMockActions(() => actions$), { provide: AdminBillingService, useValue: service }],
+      providers: [
+        provideMockActions(() => actions$),
+        provideMockStore({
+          initialState: {
+            adminFileManager: {
+              ...initialAdminFileManagerState,
+              view: 'tenant',
+              viewTenantId: 'default',
+              expandedPaths: ['', 'customer', 'customer/invoices'],
+            },
+          },
+        }),
+        { provide: AdminBillingService, useValue: service },
+      ],
     });
     actions$ = TestBed.inject(Actions);
   });
@@ -61,5 +77,32 @@ describe('AdminFileManagerEffects', () => {
       expect(result).toEqual(listAdminFileManagerDirectoryFailure({ error: 'boom' }));
       done();
     });
+  });
+
+  it('relists expanded paths on refresh in depth order', (done) => {
+    const store = TestBed.inject(MockStore);
+
+    store.overrideSelector(selectAdminFileManagerState, {
+      ...initialAdminFileManagerState,
+      view: 'tenant',
+      viewTenantId: 'default',
+      expandedPaths: ['customer/invoices', '', 'customer'],
+    });
+    store.refreshState();
+
+    actions$ = of(refreshAdminFileManager());
+
+    refreshAdminFileManager$(actions$, store)
+      .pipe(toArray())
+      .subscribe((results) => {
+        expect(results).toEqual([
+          listAdminFileManagerDirectory({ params: { path: '', view: 'tenant', viewTenantId: 'default' } }),
+          listAdminFileManagerDirectory({ params: { path: 'customer', view: 'tenant', viewTenantId: 'default' } }),
+          listAdminFileManagerDirectory({
+            params: { path: 'customer/invoices', view: 'tenant', viewTenantId: 'default' },
+          }),
+        ]);
+        done();
+      });
   });
 });

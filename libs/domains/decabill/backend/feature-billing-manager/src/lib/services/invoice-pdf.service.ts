@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { FileStorageService } from '@forepath/shared/backend/util-file-storage';
+import { FileStorageScope, FileStorageService } from '@forepath/shared/backend/util-file-storage';
+import { getTenantIdOrDefault } from '@forepath/shared/backend';
 
 import type { CustomerProfileEntity } from '../entities/customer-profile.entity';
 import type { InvoiceLineItemEntity } from '../entities/invoice-line-item.entity';
@@ -27,6 +28,7 @@ import { InvoicePdfTemplateService } from './invoice-pdf-template.service';
 import type { InvoicingPeriod } from './invoicing-period.util';
 import { buildInvoicePdfStorageKey } from '../utils/invoice-pdf-storage.util';
 import { InvoicePromotionApplicationsRepository } from '../repositories/invoice-promotion-applications.repository';
+import { StoredFileRegistryService } from './stored-file-registry.service';
 
 export interface VoidDocumentGenerationResult {
   storageKey: string;
@@ -42,6 +44,7 @@ export class InvoicePdfService {
     private readonly invoicePdfHtmlRendererService: InvoicePdfHtmlRendererService,
     private readonly invoicePromotionApplicationsRepository: InvoicePromotionApplicationsRepository,
     private readonly fileStorage: FileStorageService,
+    private readonly storedFileRegistry: StoredFileRegistryService,
   ) {}
 
   async generateAndStore(
@@ -78,7 +81,14 @@ export class InvoicePdfService {
     const embedded = await this.eInvoiceEmbedService.embedXmlInPdf(pdfBytes, xml);
     const storageKey = buildInvoicePdfStorageKey(invoice, '.pdf');
 
-    await this.fileStorage.writeInvoiceFile(storageKey, Buffer.from(embedded));
+    const content = Buffer.from(embedded);
+    await this.fileStorage.writeCustomerInvoiceFile(storageKey, content);
+    await this.storedFileRegistry.registerFromBuffer({
+      tenantId: getTenantIdOrDefault(),
+      scope: FileStorageScope.customerInvoices,
+      storageKey,
+      content,
+    });
 
     return storageKey;
   }
@@ -114,7 +124,14 @@ export class InvoicePdfService {
     const embedded = await this.eInvoiceEmbedService.embedXmlInPdf(pdfBytes, xml);
     const storageKey = buildInvoicePdfStorageKey(invoice, '-void.pdf');
 
-    await this.fileStorage.writeInvoiceFile(storageKey, Buffer.from(embedded));
+    const content = Buffer.from(embedded);
+    await this.fileStorage.writeCustomerInvoiceFile(storageKey, content);
+    await this.storedFileRegistry.registerFromBuffer({
+      tenantId: getTenantIdOrDefault(),
+      scope: FileStorageScope.customerInvoices,
+      storageKey,
+      content,
+    });
 
     return { storageKey, documentNumber };
   }
@@ -177,13 +194,20 @@ export class InvoicePdfService {
     const embedded = await this.eInvoiceEmbedService.embedXmlInPdf(pdfBytes, xml);
     const storageKey = buildInvoicePdfStorageKey(invoice, `-credit-${suffix}.pdf`);
 
-    await this.fileStorage.writeInvoiceFile(storageKey, Buffer.from(embedded));
+    const content = Buffer.from(embedded);
+    await this.fileStorage.writeCustomerInvoiceFile(storageKey, content);
+    await this.storedFileRegistry.registerFromBuffer({
+      tenantId: getTenantIdOrDefault(),
+      scope: FileStorageScope.customerInvoices,
+      storageKey,
+      content,
+    });
 
     return { storageKey, documentNumber };
   }
 
   async readPdf(storageKey: string): Promise<Buffer> {
-    return await this.fileStorage.readInvoiceFile(storageKey);
+    return await this.fileStorage.readCustomerInvoiceFile(storageKey);
   }
 
   private async renderPdf(

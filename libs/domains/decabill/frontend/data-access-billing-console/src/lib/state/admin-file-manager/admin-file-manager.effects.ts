@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, of, switchMap, tap } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { catchError, from, map, mergeMap, of, switchMap, tap, withLatestFrom } from 'rxjs';
 
 import { AdminBillingService } from '../../services/admin-billing.service';
 
@@ -14,8 +15,10 @@ import {
   listAdminFileManagerDirectory,
   listAdminFileManagerDirectoryFailure,
   listAdminFileManagerDirectorySuccess,
+  refreshAdminFileManager,
 } from './admin-file-manager.actions';
 import { buildAdminFileManagerCacheKey } from './admin-file-manager.reducer';
+import { selectAdminFileManagerState } from './admin-file-manager.selectors';
 
 function triggerBrowserDownload(blob: Blob, fileName: string): void {
   const url = URL.createObjectURL(blob);
@@ -27,11 +30,19 @@ function triggerBrowserDownload(blob: Blob, fileName: string): void {
   URL.revokeObjectURL(url);
 }
 
+function pathDepth(path: string): number {
+  if (!path) {
+    return 0;
+  }
+
+  return path.split('/').filter(Boolean).length;
+}
+
 export const listAdminFileManagerDirectory$ = createEffect(
   (actions$ = inject(Actions), service = inject(AdminBillingService)) =>
     actions$.pipe(
       ofType(listAdminFileManagerDirectory),
-      switchMap(({ params }) => {
+      mergeMap(({ params }) => {
         const path = params.path ?? '';
         const view = params.view ?? 'tenant';
         const viewTenantId = view === 'unified' ? null : (params.viewTenantId ?? null);
@@ -48,6 +59,30 @@ export const listAdminFileManagerDirectory$ = createEffect(
           ),
           catchError((error: Error) =>
             of(listAdminFileManagerDirectoryFailure({ error: error.message ?? 'Failed to list files' })),
+          ),
+        );
+      }),
+    ),
+  { functional: true },
+);
+
+export const refreshAdminFileManager$ = createEffect(
+  (actions$ = inject(Actions), store = inject(Store)) =>
+    actions$.pipe(
+      ofType(refreshAdminFileManager),
+      withLatestFrom(store.select(selectAdminFileManagerState)),
+      switchMap(([, state]) => {
+        const paths = [...state.expandedPaths].sort((left, right) => pathDepth(left) - pathDepth(right));
+
+        return from(paths).pipe(
+          map((path) =>
+            listAdminFileManagerDirectory({
+              params: {
+                path,
+                view: state.view,
+                viewTenantId: state.view === 'unified' ? undefined : (state.viewTenantId ?? undefined),
+              },
+            }),
           ),
         );
       }),

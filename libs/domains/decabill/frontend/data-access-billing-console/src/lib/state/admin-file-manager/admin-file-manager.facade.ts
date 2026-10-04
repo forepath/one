@@ -4,9 +4,12 @@ import { Store } from '@ngrx/store';
 import type { AdminFileManagerListParams, AdminFileManagerView } from '../../types/billing.types';
 
 import {
+  collapseAdminFileManagerPath,
   downloadAdminFileManagerArchive,
   downloadAdminFileManagerFile,
+  expandAdminFileManagerPath,
   listAdminFileManagerDirectory,
+  refreshAdminFileManager,
   setAdminFileManagerView,
 } from './admin-file-manager.actions';
 import {
@@ -42,12 +45,24 @@ export class AdminFileManagerFacade {
     this.store.dispatch(listAdminFileManagerDirectory({ params }));
   }
 
+  expandPath(path: string): void {
+    this.store.dispatch(expandAdminFileManagerPath({ path }));
+  }
+
+  collapsePath(path: string): void {
+    this.store.dispatch(collapseAdminFileManagerPath({ path }));
+  }
+
   ensureDirectoryLoaded(params: AdminFileManagerListParams, cached: boolean): void {
     if (cached) {
       return;
     }
 
     this.listDirectory(params);
+  }
+
+  refresh(): void {
+    this.store.dispatch(refreshAdminFileManager());
   }
 
   downloadFile(params: AdminFileManagerListParams, fileName?: string): void {

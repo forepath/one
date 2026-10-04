@@ -41,10 +41,10 @@ Source: `apps/decabill/backend-billing-manager/Dockerfile.api`
 
 ### Volumes (typical compose)
 
-| Mount                | Purpose                                                 |
-| -------------------- | ------------------------------------------------------- |
-| `billing_file_data`  | Shared files at `/data` (`invoices/`, `datev-exports/`) |
-| `./provider-plugins` | Optional dynamic payment/provider plugins               |
+| Mount                | Purpose                                                             |
+| -------------------- | ------------------------------------------------------------------- |
+| `billing_file_data`  | Shared files at `/data` (`customer/`, `supplier/`, `export/datev/`) |
+| `./provider-plugins` | Optional dynamic payment/provider plugins                           |
 
 ### Build arguments
 

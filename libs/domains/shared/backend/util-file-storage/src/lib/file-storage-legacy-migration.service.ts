@@ -6,23 +6,29 @@ import { Injectable, Logger } from '@nestjs/common';
 import {
   isLegacyMigrationEnabled,
   readActiveFileStorageProviderType,
-  resolveCanonicalScopeRoot,
-  resolveLegacyScopeRoot,
+  resolvePreviousSegmentRoot,
 } from './file-storage-path.config';
 import { FILE_STORAGE_LOCAL_PROVIDER } from './file-storage.constants';
-import { FILE_STORAGE_SCOPES, type FileStorageScope } from './file-storage-scope.constants';
+import { FILE_STORAGE_PREVIOUS_SCOPE_SEGMENTS } from './file-storage-scope.constants';
 
 interface ScopeMigrationSummary {
-  scope: FileStorageScope;
+  segment: string;
   copied: number;
   skipped: number;
   errors: number;
 }
 
+interface LegacySource {
+  segment: string;
+  resolveSource: (env: NodeJS.ProcessEnv) => string;
+}
+
 /**
- * Copies files from deprecated per-scope roots into the canonical
- * `{FILE_STORAGE_ROOT}/{segment}/` layout. Enabled by default; disable with
- * `FILE_STORAGE_LEGACY_MIGRATION_ENABLED=false`. Never deletes legacy sources.
+ * Copies files from deprecated per-scope env roots into the previous flat
+ * segments under `{FILE_STORAGE_ROOT}/` (`invoices`, `supplier-invoices`, `datev-exports`).
+ * Layout migrator then moves those into customer/supplier/export.
+ * Enabled by default; disable with `FILE_STORAGE_LEGACY_MIGRATION_ENABLED=false`.
+ * Never deletes legacy sources. Local provider only.
  */
 @Injectable()
 export class FileStorageLegacyMigrationService {
@@ -41,35 +47,60 @@ export class FileStorageLegacyMigrationService {
       return;
     }
 
-    for (const scope of FILE_STORAGE_SCOPES) {
-      await this.migrateScope(scope, env);
+    for (const source of this.sources()) {
+      await this.migrateSegment(source, env);
     }
   }
 
-  private async migrateScope(scope: FileStorageScope, env: NodeJS.ProcessEnv): Promise<void> {
-    const legacyRoot = path.resolve(resolveLegacyScopeRoot(scope, env));
-    const canonicalRoot = path.resolve(resolveCanonicalScopeRoot(scope, env));
-    const summary: ScopeMigrationSummary = { scope, copied: 0, skipped: 0, errors: 0 };
+  private sources(): LegacySource[] {
+    return [
+      {
+        segment: FILE_STORAGE_PREVIOUS_SCOPE_SEGMENTS.invoices,
+        resolveSource: (e) =>
+          e.BILLING_INVOICE_PDF_STORAGE_PATH?.trim() || path.join(process.cwd(), 'data', 'invoices'),
+      },
+      {
+        segment: FILE_STORAGE_PREVIOUS_SCOPE_SEGMENTS.supplierInvoices,
+        resolveSource: (e) =>
+          e.BILLING_SUPPLIER_INVOICE_STORAGE_PATH?.trim() || path.join(process.cwd(), 'data', 'supplier-invoices'),
+      },
+      {
+        segment: FILE_STORAGE_PREVIOUS_SCOPE_SEGMENTS.datevExports,
+        resolveSource: (e) =>
+          e.BILLING_DATEV_EXPORT_STORAGE_PATH?.trim() || path.join(process.cwd(), 'data', 'datev-exports'),
+      },
+    ];
+  }
 
-    if (legacyRoot === canonicalRoot) {
-      this.logger.log(`Legacy migration skip for ${scope}: legacy and canonical roots match (${canonicalRoot})`);
+  private async migrateSegment(source: LegacySource, env: NodeJS.ProcessEnv): Promise<void> {
+    const legacyRoot = path.resolve(source.resolveSource(env));
+    const previousRoot = path.resolve(resolvePreviousSegmentRoot(source.segment, env));
+    const summary: ScopeMigrationSummary = {
+      segment: source.segment,
+      copied: 0,
+      skipped: 0,
+      errors: 0,
+    };
+
+    if (legacyRoot === previousRoot) {
+      this.logger.log(`Legacy migration skip for ${source.segment}: legacy and previous roots match (${previousRoot})`);
 
       return;
     }
 
     if (!(await this.isNonEmptyDirectory(legacyRoot))) {
-      this.logger.log(`Legacy migration skip for ${scope}: source missing or empty (${legacyRoot})`);
+      this.logger.log(`Legacy migration skip for ${source.segment}: source missing or empty (${legacyRoot})`);
 
       return;
     }
 
-    this.logger.log(`Migrating file storage scope ${scope}: ${legacyRoot} -> ${canonicalRoot}`);
+    this.logger.log(`Migrating file storage segment ${source.segment}: ${legacyRoot} -> ${previousRoot}`);
 
-    await fs.promises.mkdir(canonicalRoot, { recursive: true });
-    await this.copyDirectoryRecursive(legacyRoot, canonicalRoot, legacyRoot, summary);
+    await fs.promises.mkdir(previousRoot, { recursive: true });
+    await this.copyDirectoryRecursive(legacyRoot, previousRoot, legacyRoot, summary);
 
     this.logger.log(
-      `Legacy migration for ${scope}: copied=${summary.copied} skipped=${summary.skipped} errors=${summary.errors}`,
+      `Legacy migration for ${source.segment}: copied=${summary.copied} skipped=${summary.skipped} errors=${summary.errors}`,
     );
   }
 

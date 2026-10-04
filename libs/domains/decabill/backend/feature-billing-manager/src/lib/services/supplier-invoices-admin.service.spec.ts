@@ -68,6 +68,7 @@ describe('SupplierInvoicesAdminService', () => {
     fileStorage as never,
     auditLog as never,
     billingNotificationPublisher as never,
+    { registerFromBuffer: jest.fn().mockResolvedValue({}) } as never,
   );
 
   const draftInvoice = {

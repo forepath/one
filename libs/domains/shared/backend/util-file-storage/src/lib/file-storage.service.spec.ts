@@ -10,7 +10,12 @@ describe('FileStorageService', () => {
   let service: FileStorageService;
 
   beforeEach(() => {
-    process.env = { ...originalEnv, FILE_STORAGE_ROOT: '/data', FILE_STORAGE_PROVIDER: 'local' };
+    process.env = {
+      ...originalEnv,
+      FILE_STORAGE_ROOT: '/data',
+      FILE_STORAGE_PROVIDER: 'local',
+      FILE_STORAGE_LAYOUT_DUAL_READ_ENABLED: 'false',
+    };
     factory = new FileStorageProviderFactory();
     provider = {
       getType: () => 'local',
@@ -26,21 +31,31 @@ describe('FileStorageService', () => {
     process.env = originalEnv;
   });
 
-  it('delegates invoice helpers to invoices scope under canonical root', async () => {
+  it('delegates invoice helpers to customer invoices scope under canonical root', async () => {
     await service.writeInvoiceFile('sub/a.pdf', Buffer.from('x'));
     await service.readInvoiceFile('sub/a.pdf');
     await service.invoiceFileExists('sub/a.pdf');
 
-    expect(provider.writeFile).toHaveBeenCalledWith(expect.stringContaining('invoices'), 'sub/a.pdf', Buffer.from('x'));
-    expect(provider.readFile).toHaveBeenCalledWith(expect.stringContaining('invoices'), 'sub/a.pdf');
-    expect(provider.fileExists).toHaveBeenCalledWith(expect.stringContaining('invoices'), 'sub/a.pdf');
+    expect(provider.writeFile).toHaveBeenCalledWith(
+      expect.stringContaining(pathJoin('customer', 'invoices')),
+      'sub/a.pdf',
+      Buffer.from('x'),
+    );
+    expect(provider.readFile).toHaveBeenCalledWith(
+      expect.stringContaining(pathJoin('customer', 'invoices')),
+      'sub/a.pdf',
+    );
+    expect(provider.fileExists).toHaveBeenCalledWith(
+      expect.stringContaining(pathJoin('customer', 'invoices')),
+      'sub/a.pdf',
+    );
   });
 
-  it('delegates datev helpers to datev-exports scope', async () => {
+  it('delegates datev helpers to export/datev scope', async () => {
     await service.writeDatevExportFile('t/2026/01/e.zip', Buffer.from('z'));
 
     expect(provider.writeFile).toHaveBeenCalledWith(
-      expect.stringContaining('datev-exports'),
+      expect.stringContaining(pathJoin('export', 'datev')),
       't/2026/01/e.zip',
       Buffer.from('z'),
     );
@@ -50,7 +65,7 @@ describe('FileStorageService', () => {
     await service.writeFile(FileStorageScope.datevExports, 'k.zip', Buffer.from('z'));
 
     expect(provider.writeFile).toHaveBeenCalledWith(
-      expect.stringContaining('datev-exports'),
+      expect.stringContaining(pathJoin('export', 'datev')),
       'k.zip',
       Buffer.from('z'),
     );
@@ -64,3 +79,7 @@ describe('FileStorageService', () => {
     );
   });
 });
+
+function pathJoin(...parts: string[]): string {
+  return parts.join('/');
+}

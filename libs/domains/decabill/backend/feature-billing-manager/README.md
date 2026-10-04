@@ -59,7 +59,8 @@ When **`AUTHENTICATION_METHOD=api-key`** (or api-key is inferred from **`STATIC_
 - `TENANT_FRONTEND_URLS` (optional; `tenantId=https://billing.example.com` pairs, comma-separated) – per-tenant billing console base URLs for Stripe return redirects.
 - BILLING*ISSUER*\* (name, VAT ID, address, email, IBAN) and BILLING_TAX_RATE_STANDARD / BILLING_TAX_RATE_REDUCED
 - BILLING_STATUTORY_WITHDRAWAL_PERIOD_DAYS (default 14) — statutory withdrawal window after provisioning
-- FILE*STORAGE_PROVIDER (`local` | `s3`), FILE_STORAGE_ROOT, FILE_STORAGE_LEGACY_MIGRATION_ENABLED, FILE_STORAGE_S3*\* (shared file storage; deprecated BILLING_INVOICE_PDF_STORAGE_PATH / BILLING_DATEV_EXPORT_STORAGE_PATH as migration sources)
+- FILE*STORAGE_PROVIDER (`local` | `s3`), FILE_STORAGE_ROOT, FILE_STORAGE_LEGACY_MIGRATION_ENABLED, FILE_STORAGE_LAYOUT_MIGRATION_ENABLED, FILE_STORAGE_LAYOUT_DUAL_READ_ENABLED, FILE_STORAGE_S3*\* (shared file storage; deprecated BILLING_INVOICE_PDF_STORAGE_PATH / BILLING_DATEV_EXPORT_STORAGE_PATH as migration sources)
+- `BILLING_FILE_SIGNING_SECRET` (required in production) – global HMAC secret for `billing_stored_files` signatures
 - BILLING_DEFAULT_PAYMENT_PROCESSOR
 - STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_CHECKOUT_SUCCESS_URL, STRIPE_CHECKOUT_CANCEL_URL (path portion used with tenant frontend base; legacy full URL still sets default-tenant origin)
 - DB_HOST, DB_PORT, DB_USERNAME, DB_PASSWORD, DB_DATABASE

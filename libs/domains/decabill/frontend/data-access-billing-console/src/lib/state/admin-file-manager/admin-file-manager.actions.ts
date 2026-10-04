@@ -32,6 +32,12 @@ export const setAdminFileManagerView = createAction(
   props<{ view: AdminFileManagerView; viewTenantId?: string | null }>(),
 );
 
+export const expandAdminFileManagerPath = createAction('[AdminFileManager] Expand Path', props<{ path: string }>());
+
+export const collapseAdminFileManagerPath = createAction('[AdminFileManager] Collapse Path', props<{ path: string }>());
+
+export const refreshAdminFileManager = createAction('[AdminFileManager] Refresh');
+
 export const downloadAdminFileManagerFile = createAction(
   '[AdminFileManager] Download File',
   props<{ params: AdminFileManagerListParams; fileName?: string }>(),
