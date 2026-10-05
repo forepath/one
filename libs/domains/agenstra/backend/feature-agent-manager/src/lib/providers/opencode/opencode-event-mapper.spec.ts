@@ -102,6 +102,37 @@ describe('OpenCodeEventMapper', () => {
       session_id: 'ses_1',
       usage: { inputTokens: 1, costUsd: 0.01 },
     });
+    expect(mapper.buildFinalResult('done', 'ses_1', undefined, 'complete')).toEqual({
+      type: 'result',
+      subtype: 'success',
+      result: 'done',
+      session_id: 'ses_1',
+      automationTurnStatus: 'complete',
+    });
+  });
+
+  it('maps structured_output on message.updated into automationTurnStatus', () => {
+    const events = mapper.mapEvent({
+      type: 'message.updated',
+      properties: {
+        info: {
+          id: 'msg_1',
+          sessionID: 'ses_1',
+          role: 'assistant',
+          structured_output: { status: 'complete', summary: 'ready' },
+        },
+      },
+    });
+
+    expect(events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: 'status',
+          subtype: 'structured_output',
+          automationTurnStatus: 'complete',
+        }),
+      ]),
+    );
   });
 
   it('maps permission.updated to question with options', () => {

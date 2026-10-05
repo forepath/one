@@ -25,6 +25,7 @@ export function routeAutomationFailure(code: TicketAutomationFailureCode): Autom
       return { runStatus: 'failed', ticketStatus: TicketStatus.IN_PROGRESS, requeue: false };
     case TicketAutomationFailureCode.AGENT_PROVIDER_ERROR:
       return { runStatus: 'failed', ticketStatus: TicketStatus.IN_PROGRESS, requeue: true };
+    case TicketAutomationFailureCode.AGENT_NO_COMPLETION_STATUS:
     case TicketAutomationFailureCode.AGENT_NO_COMPLETION_MARKER:
       return { runStatus: 'timed_out', ticketStatus: TicketStatus.TODO, requeue: true };
     case TicketAutomationFailureCode.MARKER_WITHOUT_VERIFY:

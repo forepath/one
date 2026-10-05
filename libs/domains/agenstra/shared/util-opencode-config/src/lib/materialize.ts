@@ -2,6 +2,7 @@ import type { JsonObject } from './types';
 import { migrateConfigV1ToV2 } from './migrate-v1-to-v2';
 import { wireMcpOauthForOpenCode } from './mcp-wire';
 import { isMcpServerAllowed, resolveMcpAllowDenyIdentity } from '@forepath/agenstra/shared/util-opencode-mcp-servers';
+import { injectPlatformAutomationConfig } from './automation-platform';
 
 /** Platform / UI-only roots that OpenCode Config rejects or silently drops. */
 const UNSUPPORTED_WIRE_ROOTS = [
@@ -220,10 +221,14 @@ function wireAgentEntry(agent: JsonObject): JsonObject {
   delete next['disabled'];
 
   if ('permissions' in next && !('permission' in next)) {
-    const permission = permissionsRulesToWire(next['permissions']);
+    if (typeof next['permissions'] === 'string') {
+      next['permission'] = next['permissions'];
+    } else {
+      const permission = permissionsRulesToWire(next['permissions']);
 
-    if (permission) {
-      next['permission'] = permission;
+      if (permission) {
+        next['permission'] = permission;
+      }
     }
   }
 
@@ -870,10 +875,15 @@ export function toOpencodeWireConfig(input: JsonObject): JsonObject {
 
 /**
  * Prepare a config document for the OpenCode worker:
- * V2 migrate → model materialization → MCP allow/deny filter → OpenCode Config wire shape.
+ * V2 migrate → model materialization → MCP allow/deny filter → platform automation inject → OpenCode Config wire.
+ * Platform automation is injected after migrate/materialize so a second migrate pass cannot strip it.
  */
 export function prepareConfigForSync(input: JsonObject | null | undefined): JsonObject {
-  return toOpencodeWireConfig(materializeMcpAllowDeny(materializeModelAllowDeny(migrateConfigV1ToV2(input ?? {}))));
+  return toOpencodeWireConfig(
+    injectPlatformAutomationConfig(
+      materializeMcpAllowDeny(materializeModelAllowDeny(migrateConfigV1ToV2(input ?? {}))),
+    ),
+  );
 }
 
 /**

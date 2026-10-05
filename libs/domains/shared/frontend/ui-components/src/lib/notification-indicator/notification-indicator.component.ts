@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 /**
- * `default` / `unread` — primary dot, `security-warning` — small warning dot,
- * `git` — info dot for repository activity, `both` — unread and security warning together.
+ * `default` / `unread` — primary dot, `security-warning` — warning dot (e.g. MFA),
+ * `git` — info dot for repository activity, `both` — unread and git together.
  */
 export type FpcNotificationIndicatorKind = 'default' | 'security-warning' | 'git' | 'unread' | 'both';
 
@@ -47,11 +47,11 @@ export class FpcNotificationIndicatorComponent {
     return kind === 'default' || kind === 'unread' || kind === 'both';
   });
 
-  protected readonly showGit = computed(() => this.kind() === 'git');
-
-  protected readonly showSecurityWarning = computed(() => {
+  protected readonly showGit = computed(() => {
     const kind = this.kind();
 
-    return kind === 'security-warning' || kind === 'both';
+    return kind === 'git' || kind === 'both';
   });
+
+  protected readonly showSecurityWarning = computed(() => this.kind() === 'security-warning');
 }

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-04T15:47:00.617Z",
+  "generatedAt": "2026-10-05T19:13:17.421Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -60819,6 +60819,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/autonomous-run-orchestrator.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/ticket-automation.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/autonomous-run-orchestrator.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/knowledge-tree.service.ts",
       "type": "injects"
     },
     {

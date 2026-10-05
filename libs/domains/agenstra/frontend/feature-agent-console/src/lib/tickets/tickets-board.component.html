@@ -392,6 +392,30 @@
                     placeholder="Select agent…"
                   />
                 </dd>
+                <dt class="col-sm-3 mt-2" id="ticketModelSelectLabel" i18n="@@featureTicketsBoard-modelLabel">
+                  Model for chat / AI
+                </dt>
+                <dd class="col-sm-9 mt-2 mb-0">
+                  <fpc-form-control
+                    controlId="ticketModelSelect"
+                    controlType="select"
+                    size="sm"
+                    name="ticketModelSelect"
+                    [ngModel]="selectedModelForAi() ?? ''"
+                    (ngModelChange)="onPreferredChatModelChange(d, $event || null)"
+                    [disabled]="!selectedAgentForAi() || ticketAiModelsLoading() || ticketAiModelOptions().length === 0"
+                    [attr.aria-labelledby]="'ticketModelSelectLabel'"
+                  >
+                    @if (ticketAiModelOptions().length === 0) {
+                      <option value="" i18n="@@featureTicketsBoard-modelPlaceholder">
+                        {{ ticketAiModelsLoading() ? 'Loading models…' : 'Select agent to load models…' }}
+                      </option>
+                    }
+                    @for (model of ticketAiModelOptions(); track model.value) {
+                      <option [value]="model.value">{{ model.label }}</option>
+                    }
+                  </fpc-form-control>
+                </dd>
                 @let total = d.tasks.open + d.tasks.children.open + d.tasks.done + d.tasks.children.done;
                 @if (total > 0) {
                   <dt class="col-sm-3 mt-2" id="ticketAcceptanceLabel" i18n="@@featureTicketsBoard-acceptanceLabel">
@@ -830,6 +854,36 @@
                                 }
                               </fpc-alert>
                             }
+                          </div>
+                          <div class="mb-3">
+                            <span
+                              class="fw-semibold d-block mb-1"
+                              id="ticketAutomationModelLabel"
+                              i18n="@@featureTicketsBoard-automationPreferredModel"
+                              >Model for automation</span
+                            >
+                            <p class="text-muted small mb-2" i18n="@@featureTicketsBoard-automationPreferredModelHint">
+                              Required when automation is enabled. OpenCode has no auto model selection.
+                            </p>
+                            <fpc-form-control
+                              controlId="ticketAutomationModelSelect"
+                              controlType="select"
+                              size="sm"
+                              name="ticketAutomationModelSelect"
+                              [ngModel]="automationDraftPreferredModel() ?? ''"
+                              (ngModelChange)="onAutomationPreferredModelChange($event || null)"
+                              [disabled]="ticketAiModelsLoading() || ticketAiModelOptions().length === 0"
+                              [attr.aria-labelledby]="'ticketAutomationModelLabel'"
+                            >
+                              @if (ticketAiModelOptions().length === 0) {
+                                <option value="" i18n="@@featureTicketsBoard-automationModelPlaceholder">
+                                  {{ ticketAiModelsLoading() ? 'Loading models…' : 'Select an agent to load models…' }}
+                                </option>
+                              }
+                              @for (model of ticketAiModelOptions(); track model.value) {
+                                <option [value]="model.value">{{ model.label }}</option>
+                              }
+                            </fpc-form-control>
                           </div>
                           <div class="mb-3">
                             <span

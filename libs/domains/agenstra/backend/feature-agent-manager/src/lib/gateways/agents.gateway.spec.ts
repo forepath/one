@@ -2244,6 +2244,7 @@ describe('AgentsGateway', () => {
           {
             message: 'Improve ticket',
             resumeSessionSuffix: '-ticket-auto-loop',
+            unattendedAutomation: true,
             // Intentionally omit ephemeral; reserved must still be hidden.
             chatId: '11111111-2222-4333-8444-555555555555',
             responseMode: 'sync',
@@ -2266,6 +2267,30 @@ describe('AgentsGateway', () => {
           expect.any(String),
           expect.objectContaining({ resumeSessionSuffix: '-ticket-auto-loop' }),
         );
+      });
+
+      it('rejects ticket-auto resumeSessionSuffix without unattendedAutomation trust marker', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (gateway as any).authenticatedClients.set(mockSocket.id || 'test-socket-id', mockAgent.id);
+
+        await gateway.handleChat(
+          {
+            message: 'spoof',
+            resumeSessionSuffix: '-ticket-auto-loop',
+            responseMode: 'sync',
+            correlationId: 'spoof-corr-1',
+          },
+          mockSocket as Socket,
+        );
+
+        expect(mockSocket.emit).toHaveBeenCalledWith(
+          'error',
+          expect.objectContaining({
+            success: false,
+            error: expect.objectContaining({ code: 'AUTOMATION_TRUST_REQUIRED' }),
+          }),
+        );
+        expect(mockAgentProvider.sendMessage).not.toHaveBeenCalled();
       });
 
       it('rejects invalid chatId UUID before processing', async () => {

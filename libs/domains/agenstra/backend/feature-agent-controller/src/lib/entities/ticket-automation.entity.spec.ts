@@ -16,6 +16,7 @@ describe('TicketAutomationEntity', () => {
     entity.ticketId = 'ticket-uuid';
     entity.eligible = true;
     entity.allowedAgentIds = ['agent-uuid'];
+    entity.preferredModel = 'opencode/test-model';
     entity.includeWorkspaceContext = true;
     entity.contextEnvironmentIds = ['context-agent-uuid'];
     entity.autoEnrichmentEnabled = true;
@@ -33,6 +34,7 @@ describe('TicketAutomationEntity', () => {
     expect(entity.ticketId).toBe('ticket-uuid');
     expect(entity.eligible).toBe(true);
     expect(entity.allowedAgentIds).toEqual(['agent-uuid']);
+    expect(entity.preferredModel).toBe('opencode/test-model');
     expect(entity.includeWorkspaceContext).toBe(true);
     expect(entity.contextEnvironmentIds).toEqual(['context-agent-uuid']);
     expect(entity.autoEnrichmentEnabled).toBe(true);

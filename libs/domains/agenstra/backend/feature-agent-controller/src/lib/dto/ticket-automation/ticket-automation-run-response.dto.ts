@@ -25,7 +25,7 @@ export class TicketAutomationRunResponseDto {
   finishedAt!: Date | null;
   updatedAt!: Date;
   iterationCount!: number;
-  completionMarkerSeen!: boolean;
+  completionSignalSeen!: boolean;
   verificationPassed!: boolean | null;
   failureCode!: string | null;
   summary!: Record<string, unknown> | null;

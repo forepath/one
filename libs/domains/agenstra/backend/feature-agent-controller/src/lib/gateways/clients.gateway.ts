@@ -1204,9 +1204,10 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       }
 
       if (event === 'chat' && agentId) {
+        const sanitizedPayload = this.sanitizeForwardedChatPayload(payloadWithContext);
         const message =
-          (payloadWithContext as { message?: string; contextInjection?: ContextInjectionPayload })?.message ?? '';
-        const chatId = (payloadWithContext as { chatId?: string })?.chatId;
+          (sanitizedPayload as { message?: string; contextInjection?: ContextInjectionPayload })?.message ?? '';
+        const chatId = (sanitizedPayload as { chatId?: string })?.chatId;
         const wordCount = message.trim().split(/\s+/).filter(Boolean).length;
         const charCount = message.length;
         const userInfo = (socket as Socket & { data?: { userInfo?: { userId?: string } } }).data?.userInfo;
@@ -1224,6 +1225,11 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         });
         this.lastAgentIdBySocket.set(socket.id, agentId);
         this.lastChatMessageBySocket.set(socket.id, message);
+        remote.emit(event, sanitizedPayload);
+        // SECURITY: Acknowledgement sent only to the initiating socket
+        socket.emit('forwardAck', { received: true, event });
+
+        return;
       } else if (event === 'enhanceChat' && agentId) {
         const message = (payloadWithContext as { message?: string })?.message ?? '';
         const wordCount = message.trim().split(/\s+/).filter(Boolean).length;
@@ -1271,6 +1277,28 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       // SECURITY: Error sent only to the initiating socket
       socket.emit('error', { message });
     }
+  }
+
+  /**
+   * Interactive console forwards must never carry ticket-automation allow-all suffixes
+   * or the orchestrator trust marker.
+   */
+  private sanitizeForwardedChatPayload(payload: unknown): unknown {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+      return payload;
+    }
+
+    const next = { ...(payload as Record<string, unknown>) };
+    const suffix = typeof next['resumeSessionSuffix'] === 'string' ? next['resumeSessionSuffix'] : undefined;
+    const ticketAutomationSuffixes = new Set(['-ticket-auto-pre', '-ticket-auto-loop', '-ticket-auto-commit-msg']);
+
+    if (suffix && ticketAutomationSuffixes.has(suffix)) {
+      delete next['resumeSessionSuffix'];
+    }
+
+    delete next['unattendedAutomation'];
+
+    return next;
   }
 
   private async resolveWorkspaceAutoEnrichSettings(clientId: string): Promise<{

@@ -331,7 +331,13 @@ export class ControllerJobsProcessor extends WorkerHost {
   }
 
   private async runOpencodeConfigSyncCoordinator(): Promise<void> {
-    const targetIds = await this.opencodeConfigSyncTargets.findPendingTargetIds(getOpencodeConfigSyncBatchSize());
+    const batchSize = getOpencodeConfigSyncBatchSize();
+    // Prefer already-pending/failed targets so reconcile rollouts cannot starve retries.
+    const pending = await this.opencodeConfigSyncTargets.findPendingTargetIds(batchSize);
+    const remaining = Math.max(0, batchSize - pending.length);
+    const reconciled =
+      remaining > 0 ? await this.opencodeConfigSyncTargets.reconcileOutdatedSyncedTargets(remaining) : [];
+    const targetIds = [...new Set([...pending, ...reconciled])].slice(0, batchSize);
 
     for (const targetId of targetIds) {
       await enqueueUnitJob({

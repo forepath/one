@@ -26,9 +26,9 @@ flowchart TD
     workspacePrep -- "No" --> failProvider["Fail run: AGENT_PROVIDER_ERROR"]
     workspacePrep -- "Yes" --> loopStart["Agent loop (maxIterations)"]
 
-    loopStart --> markerSeen{"Completion marker seen?"}
-    markerSeen -- "No, iterations exhausted" --> failNoMarker["Fail run: AGENT_NO_COMPLETION_MARKER (timed_out)"]
-    markerSeen -- "Yes" --> verifierConfigured{"Verifier commands configured?"}
+    loopStart --> signalSeen{"Structured status complete?"}
+    signalSeen -- "No, iterations exhausted" --> failNoSignal["Fail run: AGENT_NO_COMPLETION_STATUS (timed_out)"]
+    signalSeen -- "Yes" --> verifierConfigured{"Verifier commands configured?"}
 
     verifierConfigured -- "No" --> verifySkipped["Skip verify"]
     verifierConfigured -- "Yes" --> verifyResult{"All verifier commands exit 0?"}

@@ -30,6 +30,13 @@ export class TicketAutomationEntity {
   allowedAgentIds!: string[];
 
   /**
+   * OpenCode `provider/model` used for autonomous chat turns on this ticket.
+   * Required when eligible is true (validated on write); OpenCode has no auto model.
+   */
+  @Column({ type: 'varchar', length: 256, name: 'preferred_model', nullable: true })
+  preferredModel?: string | null;
+
+  /**
    * Adds shared workspace context (`/opt/workspace`) for autonomous prompt enrichment when true.
    */
   @Column({ type: 'boolean', name: 'include_workspace_context', default: true })

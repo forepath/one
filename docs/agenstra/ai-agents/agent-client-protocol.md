@@ -42,7 +42,7 @@ Built-in provider:
   - **User chats** — `-chat-{uuid}` where `{uuid}` is the chat session id (one ACP session per user-created thread)
   - **Reserved / hidden** — not listed in agent `chats` / UI: `-prompt-enhance`, `-ticket-body`, and `-ticket-auto-*` (for example `-ticket-auto-pre`, `-ticket-auto-loop`, `-ticket-auto-commit-msg`)
     After an API restart, the manager opens a new stdio transport and calls `session/load` when the container id still matches. That covers primary, user, and background sessions the same way in-memory reuse already did within a process.
-- **Permissions:** `session/request_permission` is auto-approved when `ACP_AUTO_APPROVE` is not `false` (default for headless agents)
+- **Permissions:** `session/request_permission` is auto-approved when `ACP_AUTO_APPROVE` is not `false` (default for headless agents). **OpenCode ticket automation does not use this flag** — reserved `-ticket-auto-*` sessions use OpenCode session permission rulesets and runtime auto-reply instead (see [Ticket automation](../features/ticket-automation.md)).
 
 ## Configuration
 

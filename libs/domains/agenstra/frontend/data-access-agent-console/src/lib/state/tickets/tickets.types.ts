@@ -44,6 +44,8 @@ export interface TicketResponseDto {
   createdByEmail?: string | null;
   /** Preferred workspace agent for chat/AI when viewing this ticket. */
   preferredChatAgentId?: string | null;
+  /** Preferred OpenCode `provider/model` for chat/AI on this ticket. */
+  preferredChatModel?: string | null;
   /** True when autonomous prototyping is enabled for this ticket. */
   automationEligible: boolean;
   createdAt: string;
@@ -77,6 +79,7 @@ export interface UpdateTicketDto {
   priority?: TicketPriority;
   status?: TicketStatus;
   preferredChatAgentId?: string | null;
+  preferredChatModel?: string | null;
 }
 
 export interface MigrateTicketDto {

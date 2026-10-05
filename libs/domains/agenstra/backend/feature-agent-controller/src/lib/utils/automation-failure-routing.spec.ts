@@ -30,6 +30,11 @@ describe('routeAutomationFailure', () => {
       ticketStatus: TicketStatus.IN_PROGRESS,
       requeue: true,
     },
+    [TicketAutomationFailureCode.AGENT_NO_COMPLETION_STATUS]: {
+      runStatus: 'timed_out',
+      ticketStatus: TicketStatus.TODO,
+      requeue: true,
+    },
     [TicketAutomationFailureCode.AGENT_NO_COMPLETION_MARKER]: {
       runStatus: 'timed_out',
       ticketStatus: TicketStatus.TODO,

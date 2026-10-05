@@ -17,7 +17,7 @@ import {
 } from '../entities/ticket-automation.enums';
 import { TicketEntity } from '../entities/ticket.entity';
 import { TicketActionType, TicketActorType, TicketStatus } from '../entities/ticket.enums';
-import { AGENSTRA_AUTOMATION_COMPLETE } from '../utils/automation-completion.constants';
+import { AGENSTRA_AUTOMATION_TURN_STATUS } from '../utils/automation-turn-status';
 import { routeAutomationFailure } from '../utils/automation-failure-routing';
 import { isUsablePartialPrototype } from '../utils/automation-usable-partial';
 import {
@@ -37,9 +37,13 @@ import {
   ticketAutomationRunEntityToDto,
   ticketAutomationRunStepEntityToDto,
 } from '../utils/ticket-board-realtime-mappers';
-import { buildAutonomousTicketRunPreamble } from '../utils/tickets-prototype-prompt.utils';
+import {
+  buildAutonomousTicketRunPreamble,
+  appendRelatedContextSections,
+} from '../utils/tickets-prototype-prompt.utils';
 
 import { ClientAgentVcsProxyService } from './client-agent-vcs-proxy.service';
+import { KnowledgeTreeService } from './knowledge-tree.service';
 import { RemoteAgentsSessionService } from './remote-agents-session.service';
 import { TicketAutomationChatSyncService } from './ticket-automation-chat-sync.service';
 import { TicketAutomationService } from './ticket-automation.service';
@@ -80,7 +84,24 @@ export class AutonomousRunOrchestratorService {
     private readonly ticketAutomationChatSync: TicketAutomationChatSyncService,
     private readonly ticketsService: TicketsService,
     private readonly ticketAutomationService: TicketAutomationService,
+    private readonly knowledgeTreeService: KnowledgeTreeService,
   ) {}
+
+  /**
+   * Ticket tree (parents + nested subtasks) plus relation-linked knowledge/tickets at the same scope depth.
+   */
+  private async buildAutomationRunPrompt(ticket: TicketEntity): Promise<string> {
+    const ticketPrompt = await this.ticketsService.buildAutomationTicketPromptBody(ticket);
+    const ticketIds = await this.ticketsService.listAutomationRelationSourceTicketIds(ticket);
+    const excludeShas = await this.ticketsService.listAutomationPromptTicketLongShas(ticket);
+    const relationSections = await this.knowledgeTreeService.collectAutomationRelationPromptSections(
+      ticket.clientId,
+      ticketIds,
+      excludeShas,
+    );
+
+    return appendRelatedContextSections(ticketPrompt, relationSections);
+  }
 
   async processBatch(batchSize: number): Promise<void> {
     const candidates = await this.findCandidates(batchSize);
@@ -113,6 +134,7 @@ export class AutonomousRunOrchestratorService {
       INNER JOIN ticket_automation ta ON ta.ticket_id = t.id
       INNER JOIN client_agent_autonomy caa ON caa.client_id = t.client_id AND caa.enabled = true
       WHERE ta.eligible = true
+        AND NULLIF(BTRIM(COALESCE(ta.preferred_model, t.preferred_chat_model, '')), '') IS NOT NULL
         AND t.status IN ('todo', 'in_progress')
         AND (
           COALESCE(jsonb_array_length(COALESCE(ta.allowed_agent_ids, '[]'::jsonb)), 0) = 0
@@ -156,6 +178,16 @@ export class AutonomousRunOrchestratorService {
       return;
     }
 
+    const preferredModel = (automation.preferredModel ?? ticket.preferredChatModel ?? '').trim();
+
+    if (!preferredModel) {
+      this.logger.warn(
+        `Orchestrator skip ticket ${c.ticket_id}: preferredModel is required (OpenCode has no auto model)`,
+      );
+
+      return;
+    }
+
     const allowedAgentIds = automation.allowedAgentIds ?? [];
 
     if (allowedAgentIds.length > 0 && !allowedAgentIds.includes(c.agent_id)) {
@@ -172,7 +204,7 @@ export class AutonomousRunOrchestratorService {
     await this.emitRunSummaryNow(ticket.clientId, run.id);
 
     try {
-      await this.executeRunWorkflow(run, ticket, automation, autonomy, c.agent_id);
+      await this.executeRunWorkflow(run, ticket, automation, autonomy, c.agent_id, preferredModel);
     } catch (error: unknown) {
       this.logOrchestratorError(run.id, error);
       await this.failRun(run.id, TicketAutomationFailureCode.AGENT_PROVIDER_ERROR);
@@ -206,7 +238,7 @@ export class AutonomousRunOrchestratorService {
           ticketStatusBefore: ticket.status,
           startedAt: new Date(),
           iterationCount: 0,
-          completionMarkerSeen: false,
+          completionSignalSeen: false,
         }),
       );
 
@@ -234,6 +266,7 @@ export class AutonomousRunOrchestratorService {
     automation: TicketAutomationEntity,
     autonomy: ClientAgentAutonomyEntity,
     agentId: string,
+    preferredModel: string,
   ): Promise<void> {
     const branchesInitial = await this.vcsProxy.getBranches(ticket.clientId, agentId);
     const baseBranch =
@@ -298,54 +331,68 @@ export class AutonomousRunOrchestratorService {
       includeWorkspace: automation.includeWorkspaceContext !== false,
       environmentIds: [...new Set([agentId, ...(automation.contextEnvironmentIds ?? [])])],
       autoEnrichmentEnabled: automation.autoEnrichmentEnabled !== false,
+      ...(ticket.longSha ? { ticketShas: [ticket.longSha] } : {}),
     };
 
     if (autonomy.preImproveTicket) {
+      const ticketPrompt = await this.buildAutomationRunPrompt(ticket);
+
       await this.remoteChat.sendChatSync({
         clientId: ticket.clientId,
         agentId,
-        message: `${buildAutonomousTicketRunPreamble()}Improve ticket clarity only; do not implement code yet.`,
+        message: `${buildAutonomousTicketRunPreamble()}${ticketPrompt}\n\nImprove ticket clarity only; do not implement code yet.`,
         correlationId: `${run.id}:pre-improve`,
         continue: false,
         resumeSessionSuffix: '-ticket-auto-pre',
+        model: preferredModel,
         statisticsInteractionKind: StatisticsInteractionKind.AUTONOMOUS_TICKET_RUN_TURN,
         contextInjection,
       });
     }
 
     let iteration = 0;
-    let sawMarker = false;
+    let sawCompletion = false;
+    const ticketPrompt = await this.buildAutomationRunPrompt(ticket);
 
     while (iteration < autonomy.maxIterations) {
       iteration += 1;
-      const text = await this.remoteChat.sendChatSync({
+      const turn = await this.remoteChat.sendChatSync({
         clientId: ticket.clientId,
         agentId,
         message:
           iteration === 1
-            ? `${buildAutonomousTicketRunPreamble()}Implement the ticket in the repository.`
-            : 'Continue the implementation until the completion marker is present.',
+            ? `${buildAutonomousTicketRunPreamble()}${ticketPrompt}\n\nImplement this ticket in the repository. Stay scoped to the ticket content above.`
+            : `${ticketPrompt}\n\nContinue implementing this ticket. Finish the scoped work when possible; the platform will collect turn status after this turn.`,
         correlationId: `${run.id}:turn:${iteration}`,
         continue: iteration > 1,
         resumeSessionSuffix: '-ticket-auto-loop',
+        model: preferredModel,
         statisticsInteractionKind: StatisticsInteractionKind.AUTONOMOUS_TICKET_RUN_TURN,
         contextInjection,
+        expectAutomationTurnStatus: true,
       });
 
-      await this.persistStep(run.id, stepIdx++, TicketAutomationRunPhase.AGENT_LOOP, 'agent_turn', { iteration }, text);
+      await this.persistStep(
+        run.id,
+        stepIdx++,
+        TicketAutomationRunPhase.AGENT_LOOP,
+        'agent_turn',
+        { iteration, turnStatus: turn.turnStatus ?? null },
+        turn.text,
+      );
       await this.runRepo.update(run.id, { iterationCount: iteration, phase: TicketAutomationRunPhase.AGENT_LOOP });
       this.emitRunSummaryThrottled(ticket.clientId, run.id);
 
-      if (text.includes(AGENSTRA_AUTOMATION_COMPLETE)) {
-        sawMarker = true;
-        await this.runRepo.update(run.id, { completionMarkerSeen: true });
+      if (turn.turnStatus === AGENSTRA_AUTOMATION_TURN_STATUS.COMPLETE) {
+        sawCompletion = true;
+        await this.runRepo.update(run.id, { completionSignalSeen: true });
         await this.emitRunSummaryNow(ticket.clientId, run.id);
         break;
       }
     }
 
-    if (!sawMarker) {
-      await this.failRun(run.id, TicketAutomationFailureCode.AGENT_NO_COMPLETION_MARKER);
+    if (!sawCompletion) {
+      await this.failRun(run.id, TicketAutomationFailureCode.AGENT_NO_COMPLETION_STATUS);
 
       return;
     }
@@ -375,7 +422,7 @@ export class AutonomousRunOrchestratorService {
       this.logger.log(`Run ${run.id}: no verifier commands configured, skipping verification`);
     }
 
-    const finalized = await this.finalizeGitCommitStep(run, ticket, agentId, stepIdx, contextInjection);
+    const finalized = await this.finalizeGitCommitStep(run, ticket, agentId, stepIdx, contextInjection, preferredModel);
 
     if (!finalized.ok) {
       return;
@@ -430,7 +477,13 @@ export class AutonomousRunOrchestratorService {
     ticket: TicketEntity,
     agentId: string,
     stepIdx: number,
-    contextInjection: { includeWorkspace: boolean; environmentIds: string[]; autoEnrichmentEnabled: boolean },
+    contextInjection: {
+      includeWorkspace: boolean;
+      environmentIds: string[];
+      autoEnrichmentEnabled: boolean;
+      ticketShas?: string[];
+    },
+    preferredModel: string,
   ): Promise<{ ok: true; nextStepIndex: number } | { ok: false }> {
     await this.runRepo.update(run.id, { phase: TicketAutomationRunPhase.FINALIZE });
     const status = await this.vcsProxy.getStatus(ticket.clientId, agentId);
@@ -446,7 +499,13 @@ export class AutonomousRunOrchestratorService {
     }
 
     await this.vcsProxy.stageFiles(ticket.clientId, agentId, { files: [] });
-    const { message, source } = await this.resolveCommitMessageWithAiFallback(run, ticket, agentId, contextInjection);
+    const { message, source } = await this.resolveCommitMessageWithAiFallback(
+      run,
+      ticket,
+      agentId,
+      contextInjection,
+      preferredModel,
+    );
 
     try {
       await this.vcsProxy.commit(ticket.clientId, agentId, { message });
@@ -484,7 +543,13 @@ export class AutonomousRunOrchestratorService {
     run: TicketAutomationRunEntity,
     ticket: TicketEntity,
     agentId: string,
-    contextInjection: { includeWorkspace: boolean; environmentIds: string[]; autoEnrichmentEnabled: boolean },
+    contextInjection: {
+      includeWorkspace: boolean;
+      environmentIds: string[];
+      autoEnrichmentEnabled: boolean;
+      ticketShas?: string[];
+    },
+    preferredModel: string,
   ): Promise<{ message: string; source: 'ai' | 'fallback' }> {
     const timeoutMs = parseInt(process.env.REMOTE_AGENT_COMMIT_MESSAGE_TIMEOUT_MS || '120000', 10);
 
@@ -496,11 +561,12 @@ export class AutonomousRunOrchestratorService {
         correlationId: `${run.id}:commit-msg`,
         continue: false,
         resumeSessionSuffix: '-ticket-auto-commit-msg',
+        model: preferredModel,
         statisticsInteractionKind: StatisticsInteractionKind.AUTONOMOUS_TICKET_COMMIT_MESSAGE,
         chatTimeoutMs: timeoutMs,
         contextInjection,
       });
-      const sanitized = sanitizeConventionalCommitSubject(raw);
+      const sanitized = sanitizeConventionalCommitSubject(raw.text);
 
       if (sanitized) {
         return { message: sanitized, source: 'ai' };
@@ -541,7 +607,7 @@ export class AutonomousRunOrchestratorService {
     const runTerminal =
       code === TicketAutomationFailureCode.HUMAN_ESCALATION
         ? TicketAutomationRunStatus.ESCALATED
-        : code === TicketAutomationFailureCode.AGENT_NO_COMPLETION_MARKER
+        : code === TicketAutomationFailureCode.AGENT_NO_COMPLETION_STATUS
           ? TicketAutomationRunStatus.TIMED_OUT
           : TicketAutomationRunStatus.FAILED;
     let nextStatus: TicketStatus;

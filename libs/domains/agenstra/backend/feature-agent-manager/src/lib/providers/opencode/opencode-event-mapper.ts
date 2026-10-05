@@ -68,13 +68,19 @@ export class OpenCodeEventMapper {
     return mapped;
   }
 
-  buildFinalResult(aggregatedText: string, sessionId?: string, usage?: OpenCodeUsagePayload): AgentResponseObject {
+  buildFinalResult(
+    aggregatedText: string,
+    sessionId?: string,
+    usage?: OpenCodeUsagePayload,
+    automationTurnStatus?: string,
+  ): AgentResponseObject {
     return {
       type: 'result',
       subtype: 'success',
       result: aggregatedText,
       ...(sessionId ? { session_id: sessionId } : {}),
       ...(usage ? { usage } : {}),
+      ...(automationTurnStatus ? { automationTurnStatus } : {}),
     };
   }
 
@@ -376,9 +382,29 @@ export class OpenCodeEventMapper {
         }
       | undefined;
     const cost = typeof info.cost === 'number' ? info.cost : undefined;
+    const structured =
+      info['structured_output'] !== undefined
+        ? info['structured_output']
+        : info['structuredOutput'] !== undefined
+          ? info['structuredOutput']
+          : undefined;
+    const events: AgentResponseObject[] = [];
+
+    if (structured !== undefined) {
+      events.push({
+        type: 'status',
+        subtype: 'structured_output',
+        result: structured,
+        automationTurnStatus:
+          typeof structured === 'object' && structured && 'status' in (structured as object)
+            ? (structured as { status?: unknown }).status
+            : structured,
+        session_id: typeof info.sessionID === 'string' ? info.sessionID : undefined,
+      });
+    }
 
     if (!tokens && cost === undefined) {
-      return [];
+      return events;
     }
 
     toolState.lastUsage = {
@@ -390,7 +416,7 @@ export class OpenCodeEventMapper {
       ...(cost !== undefined ? { costUsd: cost } : {}),
     };
 
-    return [];
+    return events;
   }
 
   private mapPermissionQuestion(args: {
@@ -729,6 +755,25 @@ export class OpenCodeEventMapper {
         : undefined;
 
     if (state.status === 'completed' || state.status === 'error') {
+      const isStructuredOutput =
+        displayName.toLowerCase() === 'structuredoutput' || displayName.toLowerCase() === 'structured_output';
+      const structuredPayload =
+        state.status === 'completed'
+          ? (() => {
+              const fromOutput =
+                typeof state.output === 'string' && state.output.trim().startsWith('{')
+                  ? (() => {
+                      try {
+                        return JSON.parse(state.output) as unknown;
+                      } catch {
+                        return state.output;
+                      }
+                    })()
+                  : state.output;
+              return fromOutput ?? enrichedArgs;
+            })()
+          : undefined;
+
       return [
         {
           type: 'tool_result',
@@ -740,6 +785,16 @@ export class OpenCodeEventMapper {
           // Keep input on the result so UI embeds work when the call frame was skipped or dropped.
           ...(enrichedArgs !== undefined ? { args: enrichedArgs } : {}),
           ...('title' in state && typeof state.title === 'string' ? { title: state.title } : {}),
+          ...(isStructuredOutput && structuredPayload !== undefined
+            ? {
+                automationTurnStatus:
+                  typeof structuredPayload === 'object' &&
+                  structuredPayload &&
+                  'status' in (structuredPayload as object)
+                    ? (structuredPayload as { status?: unknown }).status
+                    : structuredPayload,
+              }
+            : {}),
         },
       ];
     }

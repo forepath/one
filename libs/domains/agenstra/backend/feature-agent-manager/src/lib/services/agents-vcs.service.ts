@@ -97,7 +97,8 @@ export class AgentsVcsService {
   }
 
   /**
-   * Execute a git command in the agent's container.
+   * Execute a git command in the agent's container as the runtime user (`agenstra`).
+   * Marks `/app` safe in-process so root-created `.git` metadata does not trip dubious-ownership checks.
    * @param containerId - The container ID
    * @param command - Git command (without 'git' prefix)
    * @param workingDir - Working directory (defaults to BASE_PATH)
@@ -127,15 +128,86 @@ export class AgentsVcsService {
     // Pass argv directly so parseShellCommand cannot eat escapes or split on spaces
     // inside the -c script (e.g. paths like `src/my file.ts`).
     const safeWorkingDir = workingDir.replace(/'/g, `'\\''`);
-    const script = `cd '${safeWorkingDir}' && ${envPrefix}git ${command}`;
+    // Runtime processes use agenstra; manager historically exec'd as root and hit "dubious ownership".
+    const script =
+      `cd '${safeWorkingDir}' && ${envPrefix}` + `git -c safe.directory=/app -c safe.directory='*' ${command}`;
     const output = await this.dockerService.sendCommandToContainer(
       containerId,
       ['sh', '-c', script],
       undefined,
       checkExitCode,
+      { user: 'agenstra' },
     );
 
     return this.cleanOutput(output, !preserveLeadingSpaces);
+  }
+
+  /** True when `origin` is configured (empty workspaces have no remote). */
+  private async hasOriginRemote(containerId: string): Promise<boolean> {
+    try {
+      const url = await this.executeGitCommand(
+        containerId,
+        'remote get-url origin 2>/dev/null || echo ""',
+        this.BASE_PATH,
+        false,
+        false,
+        false,
+      );
+
+      return url.trim().length > 0;
+    } catch {
+      return false;
+    }
+  }
+
+  /** Ensure `/app` is a git repo (empty environment may only have an unborn init, or none). */
+  private async ensureGitRepository(containerId: string): Promise<void> {
+    const inside = await this.executeGitCommand(
+      containerId,
+      'rev-parse --is-inside-work-tree 2>/dev/null || echo "false"',
+      this.BASE_PATH,
+      false,
+      false,
+      false,
+    );
+
+    if (inside.trim() === 'true') {
+      return;
+    }
+
+    await this.executeGitCommand(containerId, 'init', this.BASE_PATH, false, false, true);
+  }
+
+  /**
+   * Ensure `baseBranch` exists locally with at least one commit (empty / local-only workspaces).
+   */
+  private async ensureLocalBranchWithCommit(containerId: string, escapedBranch: string): Promise<void> {
+    const headOk = await this.executeGitCommand(
+      containerId,
+      'rev-parse --verify HEAD 2>/dev/null || echo ""',
+      this.BASE_PATH,
+      false,
+      false,
+      false,
+    );
+
+    if (!headOk.trim()) {
+      await this.executeGitCommand(containerId, `checkout -B ${escapedBranch}`, this.BASE_PATH, false, false, true);
+      await this.executeGitCommand(
+        containerId,
+        `-c user.name='${this.commitAuthorName.replace(/'/g, `'\\''`)}' ` +
+          `-c user.email='${this.commitAuthorEmail.replace(/'/g, `'\\''`)}' ` +
+          `commit --allow-empty -m 'Initial commit'`,
+        this.BASE_PATH,
+        false,
+        false,
+        true,
+      );
+
+      return;
+    }
+
+    await this.executeGitCommand(containerId, `checkout -B ${escapedBranch}`, this.BASE_PATH, false, false, true);
   }
 
   /**
@@ -871,6 +943,14 @@ export class AgentsVcsService {
     }
 
     try {
+      // Empty / local-only workspaces have no origin — skip push rather than failing automation finalize.
+      if (!(await this.hasOriginRemote(agentEntity.containerId))) {
+        this.logger.log(`Skipping push for agent ${agentId}: no origin remote`);
+        this.notifyGitStateMayHaveChanged(agentId);
+
+        return;
+      }
+
       // Get current branch
       const currentBranchOutput = await this.executeGitCommand(agentEntity.containerId, 'rev-parse --abbrev-ref HEAD');
       const currentBranch = this.cleanBranchName(currentBranchOutput);
@@ -989,6 +1069,14 @@ export class AgentsVcsService {
     }
 
     try {
+      // Empty / local-only workspaces have no origin — treat as no-op.
+      if (!(await this.hasOriginRemote(agentEntity.containerId))) {
+        this.logger.debug(`Skipping fetch for agent ${agentId}: no origin remote`);
+        this.notifyGitStateMayHaveChanged(agentId);
+
+        return;
+      }
+
       // Execute fetch with disablePrompts=true to prevent interactive credential prompts
       // Also enable exit code checking to properly detect and report fetch failures
       await this.executeGitCommand(agentEntity.containerId, 'fetch origin', this.BASE_PATH, false, true, true);
@@ -1204,8 +1292,9 @@ export class AgentsVcsService {
   }
 
   /**
-   * Fetch, checkout `baseBranch`, hard-reset to `origin/baseBranch`, and clean untracked files.
-   * Intended for autonomous ticket orchestration after access checks upstream.
+   * Prepare a clean working tree on `baseBranch` for autonomous ticket orchestration.
+   * With `origin`: fetch + hard-reset to `origin/baseBranch`.
+   * Without `origin` (empty / local-only workspace): ensure a local branch + commit, reset to HEAD.
    */
   async prepareCleanWorkspace(agentId: string, baseBranch: string): Promise<void> {
     await this.agentsService.findOne(agentId);
@@ -1225,9 +1314,48 @@ export class AgentsVcsService {
     const escaped = this.escapePath(b);
 
     try {
-      await this.executeGitCommand(containerId, 'fetch origin', this.BASE_PATH, false, true, true);
-      await this.executeGitCommand(containerId, `checkout ${escaped}`, this.BASE_PATH, false, true, true);
-      await this.executeGitCommand(containerId, `reset --hard origin/${escaped}`, this.BASE_PATH, false, true, true);
+      await this.ensureGitRepository(containerId);
+      const hasOrigin = await this.hasOriginRemote(containerId);
+
+      if (hasOrigin) {
+        await this.executeGitCommand(containerId, 'fetch origin', this.BASE_PATH, false, true, true);
+        const remoteRef = await this.executeGitCommand(
+          containerId,
+          `rev-parse --verify origin/${escaped} 2>/dev/null || echo ""`,
+          this.BASE_PATH,
+          false,
+          false,
+          false,
+        );
+
+        if (remoteRef.trim()) {
+          await this.executeGitCommand(
+            containerId,
+            `checkout -B ${escaped} origin/${escaped}`,
+            this.BASE_PATH,
+            false,
+            true,
+            true,
+          );
+          await this.executeGitCommand(
+            containerId,
+            `reset --hard origin/${escaped}`,
+            this.BASE_PATH,
+            false,
+            true,
+            true,
+          );
+        } else {
+          await this.ensureLocalBranchWithCommit(containerId, escaped);
+          await this.executeGitCommand(containerId, `checkout ${escaped}`, this.BASE_PATH, false, true, true);
+          await this.executeGitCommand(containerId, 'reset --hard HEAD', this.BASE_PATH, false, true, true);
+        }
+      } else {
+        await this.ensureLocalBranchWithCommit(containerId, escaped);
+        await this.executeGitCommand(containerId, `checkout ${escaped}`, this.BASE_PATH, false, true, true);
+        await this.executeGitCommand(containerId, 'reset --hard HEAD', this.BASE_PATH, false, true, true);
+      }
+
       await this.executeGitCommand(containerId, 'clean -fd', this.BASE_PATH, false, true, true);
       this.notifyGitStateMayHaveChanged(agentId);
       this.notifyWorkspaceRebuild(agentId, 'git-prepare-clean');

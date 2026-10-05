@@ -7,3 +7,4 @@ export * from './mcp-wire';
 export * from './credentials';
 export * from './materialize';
 export * from './enforce-allow-deny';
+export * from './automation-platform';

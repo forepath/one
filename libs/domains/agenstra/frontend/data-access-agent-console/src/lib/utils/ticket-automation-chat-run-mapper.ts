@@ -24,7 +24,7 @@ export function ticketAutomationRunChatSummaryToResponseDto(
     finishedAt: summary.finishedAt,
     updatedAt: summary.updatedAt,
     iterationCount: summary.iterationCount ?? 0,
-    completionMarkerSeen: false,
+    completionSignalSeen: false,
     verificationPassed: null,
     failureCode: null,
     summary: null,

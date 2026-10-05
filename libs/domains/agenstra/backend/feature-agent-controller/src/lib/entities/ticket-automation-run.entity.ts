@@ -64,8 +64,8 @@ export class TicketAutomationRunEntity {
   @Column({ type: 'int', name: 'iteration_count', default: 0 })
   iterationCount!: number;
 
-  @Column({ type: 'boolean', name: 'completion_marker_seen', default: false })
-  completionMarkerSeen!: boolean;
+  @Column({ type: 'boolean', name: 'completion_signal_seen', default: false })
+  completionSignalSeen!: boolean;
 
   @Column({ type: 'boolean', name: 'verification_passed', nullable: true })
   verificationPassed?: boolean | null;

@@ -40,6 +40,7 @@ import {
 } from '../utils/ticket-automation-branch.constants';
 import { ticketActivityEntityToDto } from '../utils/ticket-board-realtime-mappers';
 import { parseAndValidateVerifierProfile } from '../utils/verifier-profile.validation';
+import { assertValidPreferredModel } from '../utils/preferred-model.utils';
 
 import { TicketAutomationChatSyncService } from './ticket-automation-chat-sync.service';
 import { TICKETS_BOARD_EVENTS } from './ticket-board-realtime.constants';
@@ -49,6 +50,7 @@ import { TicketsService } from './tickets.service';
 const APPROVAL_RELEVANT_AUTOMATION_FIELDS = new Set([
   'eligible',
   'allowedAgentIds',
+  'preferredModel',
   'includeWorkspaceContext',
   'contextEnvironmentIds',
   'autoEnrichmentEnabled',
@@ -158,6 +160,7 @@ export class TicketAutomationService {
       ticketId: row.ticketId,
       eligible: row.eligible,
       allowedAgentIds: row.allowedAgentIds ?? [],
+      preferredModel: row.preferredModel ?? null,
       includeWorkspaceContext: row.includeWorkspaceContext !== false,
       contextEnvironmentIds: sortUuidList(row.contextEnvironmentIds ?? []),
       autoEnrichmentEnabled: row.autoEnrichmentEnabled !== false,
@@ -195,6 +198,7 @@ export class TicketAutomationService {
     const prevRequiresApproval = row.requiresApproval;
     const prevApprovedAt = row.approvedAt;
     const prevAllowedSorted = sortUuidList(row.allowedAgentIds ?? []);
+    const prevPreferredModel = row.preferredModel ?? null;
     const prevIncludeWorkspace = row.includeWorkspaceContext !== false;
     const prevContextEnvSorted = sortUuidList(row.contextEnvironmentIds ?? []);
     const prevAutoEnrichmentEnabled = row.autoEnrichmentEnabled !== false;
@@ -222,6 +226,22 @@ export class TicketAutomationService {
         row.allowedAgentIds = dto.allowedAgentIds;
         actuallyChanged.push('allowedAgentIds');
       }
+    }
+
+    if (dto.preferredModel !== undefined) {
+      const nextModel = assertValidPreferredModel(dto.preferredModel);
+
+      if (nextModel !== prevPreferredModel) {
+        row.preferredModel = nextModel;
+        actuallyChanged.push('preferredModel');
+      }
+    }
+
+    const nextEligible = dto.eligible !== undefined ? dto.eligible : row.eligible;
+    const nextPreferredModel = row.preferredModel ?? null;
+
+    if (nextEligible === true && !nextPreferredModel) {
+      throw new BadRequestException('preferredModel is required when automation is eligible');
     }
 
     if (dto.includeWorkspaceContext !== undefined && dto.includeWorkspaceContext !== prevIncludeWorkspace) {
@@ -312,6 +332,7 @@ export class TicketAutomationService {
     const settingsDetailFields = actuallyChanged.filter(
       (k) =>
         k === 'allowedAgentIds' ||
+        k === 'preferredModel' ||
         k === 'includeWorkspaceContext' ||
         k === 'contextEnvironmentIds' ||
         k === 'autoEnrichmentEnabled' ||
@@ -638,7 +659,7 @@ export class TicketAutomationService {
       finishedAt: r.finishedAt ?? null,
       updatedAt: r.updatedAt,
       iterationCount: r.iterationCount,
-      completionMarkerSeen: r.completionMarkerSeen,
+      completionSignalSeen: r.completionSignalSeen,
       verificationPassed: r.verificationPassed ?? null,
       failureCode: r.failureCode ?? null,
       summary: r.summary ?? null,

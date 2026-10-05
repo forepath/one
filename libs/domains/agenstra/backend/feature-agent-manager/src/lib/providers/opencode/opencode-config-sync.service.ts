@@ -13,6 +13,9 @@ import {
   migrateConfigV1ToV2,
   prepareConfigForSync,
   resolveProviderAuthSecrets,
+  AGENSTRA_TICKET_AUTOMATION_SKILL_ABS_DIR,
+  AGENSTRA_TICKET_AUTOMATION_SKILL_MD,
+  AGENSTRA_TICKET_AUTOMATION_SKILL_REL_DIR,
   type JsonObject,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { mcpServerConfigKey } from '@forepath/agenstra/shared/util-opencode-mcp-servers';
@@ -419,6 +422,8 @@ export class OpenCodeConfigSyncService {
         return { ok: false, error: message };
       }
 
+      await this.ensurePlatformAutomationSkillFiles(containerId);
+
       return { ok: true };
     } catch (error) {
       const message = formatOpenCodeError(error);
@@ -426,6 +431,31 @@ export class OpenCodeConfigSyncService {
       this.logger.warn(`OpenCode config sync failed for ${agentId}: ${message}`);
 
       return { ok: false, error: message };
+    }
+  }
+
+  /** Install the platform ticket-automation skill so OpenCode can load it regardless of UI overlays. */
+  private async ensurePlatformAutomationSkillFiles(containerId: string): Promise<void> {
+    const targets = [
+      `${AGENSTRA_TICKET_AUTOMATION_SKILL_ABS_DIR}/SKILL.md`,
+      `/app/${AGENSTRA_TICKET_AUTOMATION_SKILL_REL_DIR}/SKILL.md`,
+    ];
+    const base64 = Buffer.from(AGENSTRA_TICKET_AUTOMATION_SKILL_MD, 'utf8').toString('base64');
+
+    for (const filePath of targets) {
+      const dir = filePath.includes('/') ? filePath.slice(0, filePath.lastIndexOf('/')) : '.';
+
+      try {
+        await this.dockerService.sendCommandToContainer(containerId, [
+          'sh',
+          '-c',
+          `mkdir -p ${JSON.stringify(dir)} && printf '%s' ${JSON.stringify(base64)} | base64 -d > ${JSON.stringify(filePath)}`,
+        ]);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+
+        this.logger.warn(`Failed to install platform automation skill at ${filePath}: ${message}`);
+      }
     }
   }
 

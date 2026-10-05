@@ -10,7 +10,6 @@ import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketAutomationFailureCode } from '../entities/ticket-automation.enums';
 import { TicketEntity } from '../entities/ticket.entity';
 import { TicketActionType, TicketStatus } from '../entities/ticket.enums';
-import { AGENSTRA_AUTOMATION_COMPLETE } from '../utils/automation-completion.constants';
 import {
   ephemeralAutomationBranchNameForRun,
   stableAutomationBranchNameForTicket,
@@ -18,6 +17,7 @@ import {
 
 import { AutonomousRunOrchestratorService } from './autonomous-run-orchestrator.service';
 import { ClientAgentVcsProxyService } from './client-agent-vcs-proxy.service';
+import { KnowledgeTreeService } from './knowledge-tree.service';
 import { RemoteAgentsSessionService } from './remote-agents-session.service';
 import { TicketAutomationChatSyncService } from './ticket-automation-chat-sync.service';
 import { TicketAutomationService } from './ticket-automation.service';
@@ -28,7 +28,23 @@ function realtimeSideProviders(ticketIdForBoard: string) {
   return [
     { provide: TicketBoardRealtimeService, useValue: { emitToClient: jest.fn() } },
     { provide: TicketAutomationChatSyncService, useValue: { emitLiveRunUpdateFromEntity: jest.fn() } },
-    { provide: TicketsService, useValue: { emitBoardTicketSnapshotInternal: jest.fn().mockResolvedValue(undefined) } },
+    {
+      provide: TicketsService,
+      useValue: {
+        emitBoardTicketSnapshotInternal: jest.fn().mockResolvedValue(undefined),
+        buildAutomationTicketPromptBody: jest
+          .fn()
+          .mockResolvedValue('- [ticket] Test ticket (todo, medium)\n  Content:\n  Do the work\n'),
+        listAutomationRelationSourceTicketIds: jest.fn().mockResolvedValue([ticketIdForBoard]),
+        listAutomationPromptTicketLongShas: jest.fn().mockResolvedValue([]),
+      },
+    },
+    {
+      provide: KnowledgeTreeService,
+      useValue: {
+        collectAutomationRelationPromptSections: jest.fn().mockResolvedValue([]),
+      },
+    },
     {
       provide: TicketAutomationService,
       useValue: {
@@ -36,6 +52,7 @@ function realtimeSideProviders(ticketIdForBoard: string) {
           ticketId: ticketIdForBoard,
           eligible: false,
           allowedAgentIds: [],
+          preferredModel: 'opencode/test-model',
           verifierProfile: null,
           requiresApproval: false,
           approvedAt: null,
@@ -121,7 +138,7 @@ describe('AutonomousRunOrchestratorService', () => {
     await module.close();
   });
 
-  it('processBatch completes a run when agent returns completion marker and verifier passes', async () => {
+  it('processBatch completes a run when agent returns structured complete status and verifier passes', async () => {
     const ticketRepo = {
       manager: {
         query: jest.fn().mockResolvedValue([{ ticket_id: ticketId, client_id: clientId, agent_id: agentId }]),
@@ -138,6 +155,7 @@ describe('AutonomousRunOrchestratorService', () => {
       findOne: jest.fn().mockResolvedValue({
         ticketId,
         allowedAgentIds: [agentId],
+        preferredModel: 'opencode/test-model',
         verifierProfile: { commands: [{ cmd: 'echo ok' }] },
       }),
       update: jest.fn().mockResolvedValue({ affected: 1 }),
@@ -169,8 +187,8 @@ describe('AutonomousRunOrchestratorService', () => {
     const remoteChat = {
       sendChatSync: jest
         .fn()
-        .mockResolvedValueOnce(`Done.\n${AGENSTRA_AUTOMATION_COMPLETE}\n`)
-        .mockResolvedValueOnce('feat(automation): implement ticket'),
+        .mockResolvedValueOnce({ text: 'Done.', turnStatus: 'complete' })
+        .mockResolvedValueOnce({ text: 'feat(automation): implement ticket' }),
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
@@ -258,6 +276,7 @@ describe('AutonomousRunOrchestratorService', () => {
       findOne: jest.fn().mockResolvedValue({
         ticketId,
         allowedAgentIds: [agentId],
+        preferredModel: 'opencode/test-model',
         verifierProfile: { commands: [{ cmd: 'echo ok' }] },
         approvedAt,
       }),
@@ -290,8 +309,8 @@ describe('AutonomousRunOrchestratorService', () => {
     const remoteChat = {
       sendChatSync: jest
         .fn()
-        .mockResolvedValueOnce(`Done.\n${AGENSTRA_AUTOMATION_COMPLETE}\n`)
-        .mockResolvedValueOnce('feat(automation): implement ticket'),
+        .mockResolvedValueOnce({ text: 'Done.', turnStatus: 'complete' })
+        .mockResolvedValueOnce({ text: 'feat(automation): implement ticket' }),
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
@@ -352,6 +371,7 @@ describe('AutonomousRunOrchestratorService', () => {
       findOne: jest.fn().mockResolvedValue({
         ticketId,
         allowedAgentIds: [],
+        preferredModel: 'opencode/test-model',
         verifierProfile: { commands: [{ cmd: 'echo ok' }] },
       }),
       update: jest.fn().mockResolvedValue({ affected: 1 }),
@@ -383,8 +403,8 @@ describe('AutonomousRunOrchestratorService', () => {
     const remoteChat = {
       sendChatSync: jest
         .fn()
-        .mockResolvedValueOnce(`Done.\n${AGENSTRA_AUTOMATION_COMPLETE}\n`)
-        .mockResolvedValueOnce('feat(automation): implement ticket'),
+        .mockResolvedValueOnce({ text: 'Done.', turnStatus: 'complete' })
+        .mockResolvedValueOnce({ text: 'feat(automation): implement ticket' }),
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
@@ -437,6 +457,7 @@ describe('AutonomousRunOrchestratorService', () => {
       findOne: jest.fn().mockResolvedValue({
         ticketId,
         allowedAgentIds: ['99999999-9999-4999-8999-999999999999'],
+        preferredModel: 'opencode/test-model',
         verifierProfile: { commands: [{ cmd: 'echo ok' }] },
       }),
     };
@@ -476,7 +497,7 @@ describe('AutonomousRunOrchestratorService', () => {
     await module.close();
   });
 
-  it('processBatch fails run with timed_out when agent never emits completion marker', async () => {
+  it('processBatch fails run with timed_out when agent never emits completion status', async () => {
     const ticketRepo = {
       manager: {
         query: jest.fn().mockResolvedValue([{ ticket_id: ticketId, client_id: clientId, agent_id: agentId }]),
@@ -488,6 +509,7 @@ describe('AutonomousRunOrchestratorService', () => {
       findOne: jest.fn().mockResolvedValue({
         ticketId,
         allowedAgentIds: [agentId],
+        preferredModel: 'opencode/test-model',
         verifierProfile: { commands: [{ cmd: 'echo ok' }] },
         consecutiveFailureCount: 0,
       }),
@@ -524,7 +546,7 @@ describe('AutonomousRunOrchestratorService', () => {
     };
     const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
     const remoteChat = {
-      sendChatSync: jest.fn().mockResolvedValue('still working, no marker yet'),
+      sendChatSync: jest.fn().mockResolvedValue({ text: 'still working', turnStatus: 'continue' }),
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
@@ -556,7 +578,7 @@ describe('AutonomousRunOrchestratorService', () => {
     expect(activityRepo.save).toHaveBeenCalledWith(
       expect.objectContaining({
         actionType: TicketActionType.AUTOMATION_TIMED_OUT,
-        payload: { runId, code: TicketAutomationFailureCode.AGENT_NO_COMPLETION_MARKER },
+        payload: { runId, code: TicketAutomationFailureCode.AGENT_NO_COMPLETION_STATUS },
       }),
     );
     expect(leaseRepo.update).toHaveBeenCalled();
@@ -575,6 +597,7 @@ describe('AutonomousRunOrchestratorService', () => {
       findOne: jest.fn().mockResolvedValue({
         ticketId,
         allowedAgentIds: [agentId],
+        preferredModel: 'opencode/test-model',
         verifierProfile: { commands: [{ cmd: 'npm test' }] },
         consecutiveFailureCount: 0,
       }),
@@ -611,7 +634,7 @@ describe('AutonomousRunOrchestratorService', () => {
     };
     const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
     const remoteChat = {
-      sendChatSync: jest.fn().mockResolvedValue(`ok\n${AGENSTRA_AUTOMATION_COMPLETE}\n`),
+      sendChatSync: jest.fn().mockResolvedValue({ text: 'ok', turnStatus: 'complete' }),
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
@@ -677,6 +700,7 @@ describe('AutonomousRunOrchestratorService', () => {
       findOne: jest.fn().mockResolvedValue({
         ticketId,
         allowedAgentIds: [agentId],
+        preferredModel: 'opencode/test-model',
         verifierProfile: { commands: [{ cmd: 'npm test' }] },
         consecutiveFailureCount: 1,
         approvedAt,
@@ -715,7 +739,7 @@ describe('AutonomousRunOrchestratorService', () => {
     };
     const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
     const remoteChat = {
-      sendChatSync: jest.fn().mockResolvedValue(`ok\n${AGENSTRA_AUTOMATION_COMPLETE}\n`),
+      sendChatSync: jest.fn().mockResolvedValue({ text: 'ok', turnStatus: 'complete' }),
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
@@ -769,6 +793,7 @@ describe('AutonomousRunOrchestratorService', () => {
       findOne: jest.fn().mockResolvedValue({
         ticketId,
         allowedAgentIds: [agentId],
+        preferredModel: 'opencode/test-model',
         verifierProfile: { commands: [{ cmd: 'echo ok' }] },
         consecutiveFailureCount: 0,
       }),
@@ -838,7 +863,7 @@ describe('AutonomousRunOrchestratorService', () => {
     await module.close();
   });
 
-  it('processBatch succeeds run when completion marker is seen but verifier profile has no commands', async () => {
+  it('processBatch succeeds run when completion status is seen but verifier profile has no commands', async () => {
     const ticketRepo = {
       manager: {
         query: jest.fn().mockResolvedValue([{ ticket_id: ticketId, client_id: clientId, agent_id: agentId }]),
@@ -850,6 +875,7 @@ describe('AutonomousRunOrchestratorService', () => {
       findOne: jest.fn().mockResolvedValue({
         ticketId,
         allowedAgentIds: [agentId],
+        preferredModel: 'opencode/test-model',
         verifierProfile: { commands: [] },
         consecutiveFailureCount: 0,
       }),
@@ -886,7 +912,7 @@ describe('AutonomousRunOrchestratorService', () => {
     };
     const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
     const remoteChat = {
-      sendChatSync: jest.fn().mockResolvedValue(`done\n${AGENSTRA_AUTOMATION_COMPLETE}\n`),
+      sendChatSync: jest.fn().mockResolvedValue({ text: 'done', turnStatus: 'complete' }),
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
@@ -950,6 +976,7 @@ describe('AutonomousRunOrchestratorService', () => {
       findOne: jest.fn().mockResolvedValue({
         ticketId,
         allowedAgentIds: [agentId],
+        preferredModel: 'opencode/test-model',
         verifierProfile: { commands: [{ cmd: 'echo ok' }] },
       }),
       update: jest.fn().mockResolvedValue({ affected: 1 }),
@@ -979,9 +1006,9 @@ describe('AutonomousRunOrchestratorService', () => {
     const remoteChat = {
       sendChatSync: jest
         .fn()
-        .mockResolvedValueOnce('pre-improve done')
-        .mockResolvedValueOnce(`done\n${AGENSTRA_AUTOMATION_COMPLETE}\n`)
-        .mockResolvedValueOnce('feat(automation): after pre-improve'),
+        .mockResolvedValueOnce({ text: 'pre-improve done' })
+        .mockResolvedValueOnce({ text: 'done', turnStatus: 'complete' })
+        .mockResolvedValueOnce({ text: 'feat(automation): after pre-improve' }),
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
@@ -1016,7 +1043,8 @@ describe('AutonomousRunOrchestratorService', () => {
 
     expect(remoteChat.sendChatSync).toHaveBeenCalledTimes(3);
     expect(remoteChat.sendChatSync.mock.calls[0][0].message).toContain('Improve ticket clarity only');
-    expect(remoteChat.sendChatSync.mock.calls[1][0].message).toContain('Implement the ticket');
+    expect(remoteChat.sendChatSync.mock.calls[1][0].message).toContain('Implement this ticket');
+    expect(remoteChat.sendChatSync.mock.calls[1][0].message).toContain('Test ticket');
     expect(vcsProxy.push).toHaveBeenCalledWith(clientId, agentId, {});
     await module.close();
   });
@@ -1038,6 +1066,7 @@ describe('AutonomousRunOrchestratorService', () => {
       findOne: jest.fn().mockResolvedValue({
         ticketId,
         allowedAgentIds: [agentId],
+        preferredModel: 'opencode/test-model',
         verifierProfile: { commands: [{ cmd: 'echo ok' }] },
       }),
       update: jest.fn().mockResolvedValue({ affected: 1 }),
@@ -1065,7 +1094,7 @@ describe('AutonomousRunOrchestratorService', () => {
     };
     const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
     const remoteChat = {
-      sendChatSync: jest.fn().mockResolvedValueOnce(`Done.\n${AGENSTRA_AUTOMATION_COMPLETE}\n`),
+      sendChatSync: jest.fn().mockResolvedValueOnce({ text: 'Done.', turnStatus: 'complete' }),
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
@@ -1129,6 +1158,7 @@ describe('AutonomousRunOrchestratorService', () => {
       findOne: jest.fn().mockResolvedValue({
         ticketId,
         allowedAgentIds: [agentId],
+        preferredModel: 'opencode/test-model',
         verifierProfile: { commands: [{ cmd: 'echo ok' }] },
         consecutiveFailureCount: 0,
       }),
@@ -1167,8 +1197,8 @@ describe('AutonomousRunOrchestratorService', () => {
     const remoteChat = {
       sendChatSync: jest
         .fn()
-        .mockResolvedValueOnce(`Done.\n${AGENSTRA_AUTOMATION_COMPLETE}\n`)
-        .mockResolvedValueOnce('feat(automation): ok'),
+        .mockResolvedValueOnce({ text: 'Done.', turnStatus: 'complete' })
+        .mockResolvedValueOnce({ text: 'feat(automation): ok' }),
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
@@ -1228,6 +1258,7 @@ describe('AutonomousRunOrchestratorService', () => {
       findOne: jest.fn().mockResolvedValue({
         ticketId,
         allowedAgentIds: [agentId],
+        preferredModel: 'opencode/test-model',
         verifierProfile: { commands: [{ cmd: 'echo ok' }] },
         consecutiveFailureCount: 0,
       }),
@@ -1266,8 +1297,8 @@ describe('AutonomousRunOrchestratorService', () => {
     const remoteChat = {
       sendChatSync: jest
         .fn()
-        .mockResolvedValueOnce(`Done.\n${AGENSTRA_AUTOMATION_COMPLETE}\n`)
-        .mockResolvedValueOnce('feat(automation): ok'),
+        .mockResolvedValueOnce({ text: 'Done.', turnStatus: 'complete' })
+        .mockResolvedValueOnce({ text: 'feat(automation): ok' }),
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
@@ -1328,6 +1359,7 @@ describe('AutonomousRunOrchestratorService', () => {
       findOne: jest.fn().mockResolvedValue({
         ticketId,
         allowedAgentIds: [agentId],
+        preferredModel: 'opencode/test-model',
         verifierProfile: { commands: [{ cmd: 'echo ok' }] },
         automationBranchStrategy: 'reuse_per_ticket',
         forceNewAutomationBranchNextRun: false,
@@ -1359,8 +1391,8 @@ describe('AutonomousRunOrchestratorService', () => {
     const remoteChat = {
       sendChatSync: jest
         .fn()
-        .mockResolvedValueOnce(`Done.\n${AGENSTRA_AUTOMATION_COMPLETE}\n`)
-        .mockResolvedValueOnce('feat(automation): implement ticket'),
+        .mockResolvedValueOnce({ text: 'Done.', turnStatus: 'complete' })
+        .mockResolvedValueOnce({ text: 'feat(automation): implement ticket' }),
     };
     const mainOnly = [{ name: 'main', isRemote: false }];
     const withStable = [...mainOnly, { name: stable, isRemote: false }];
@@ -1417,6 +1449,7 @@ describe('AutonomousRunOrchestratorService', () => {
       findOne: jest.fn().mockResolvedValue({
         ticketId,
         allowedAgentIds: [agentId],
+        preferredModel: 'opencode/test-model',
         verifierProfile: { commands: [{ cmd: 'echo ok' }] },
         automationBranchStrategy: 'new_per_run',
         forceNewAutomationBranchNextRun: false,
@@ -1448,8 +1481,8 @@ describe('AutonomousRunOrchestratorService', () => {
     const remoteChat = {
       sendChatSync: jest
         .fn()
-        .mockResolvedValueOnce(`Done.\n${AGENSTRA_AUTOMATION_COMPLETE}\n`)
-        .mockResolvedValueOnce('feat(automation): implement ticket'),
+        .mockResolvedValueOnce({ text: 'Done.', turnStatus: 'complete' })
+        .mockResolvedValueOnce({ text: 'feat(automation): implement ticket' }),
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
@@ -1507,6 +1540,7 @@ describe('AutonomousRunOrchestratorService', () => {
       findOne: jest.fn().mockResolvedValue({
         ticketId,
         allowedAgentIds: [agentId],
+        preferredModel: 'opencode/test-model',
         verifierProfile: { commands: [{ cmd: 'echo ok' }] },
         automationBranchStrategy: 'reuse_per_ticket',
         forceNewAutomationBranchNextRun: true,
@@ -1538,8 +1572,8 @@ describe('AutonomousRunOrchestratorService', () => {
     const remoteChat = {
       sendChatSync: jest
         .fn()
-        .mockResolvedValueOnce(`Done.\n${AGENSTRA_AUTOMATION_COMPLETE}\n`)
-        .mockResolvedValueOnce('feat(automation): implement ticket'),
+        .mockResolvedValueOnce({ text: 'Done.', turnStatus: 'complete' })
+        .mockResolvedValueOnce({ text: 'feat(automation): implement ticket' }),
     };
     const vcsProxy = {
       getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
