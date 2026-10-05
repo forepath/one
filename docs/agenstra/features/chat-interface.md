@@ -25,11 +25,13 @@ Background and helper flows use reserved ACP `resumeSessionSuffix` values. Those
 - `-prompt-enhance`
 - `-ticket-body`
 - `-ticket-auto-*` (for example `-ticket-auto-pre`, `-ticket-auto-loop`, `-ticket-auto-commit-msg`)
+- `-plan-{planId}` (chat plan mode explore/refine; explore-only permissions)
 
-See [Agent Client Protocol](../ai-agents/agent-client-protocol.md) for suffix rules.
+See [Agent Client Protocol](../ai-agents/agent-client-protocol.md) for suffix rules and [Chat plan mode](./chat-plan-mode.md) for the plan-mode product flow.
 
 Ticket automation **run cards** in the chat timeline are environment-scoped ACP work, but the console shows those embeddings on the **primary chat session only**. Side (`user`) sessions show that session’s messages without automation cards.
 
+**Chat plan cards** are scoped to the **visible chat** that created them (`plan.chatId`): they appear on primary or user sessions accordingly, and survive hard reload via hydrate.
 Unread badges in the chat session dropdown follow the same rule: each visible session has its own unread flag (shown even when that session is selected); automation activity only marks the primary session unread. Selecting a session marks that session read. The dropdown toggle shows a badge when any visible session for the environment has unread.
 
 ### REST API

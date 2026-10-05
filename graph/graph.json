@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-10T11:35:52.515Z",
+  "generatedAt": "2026-10-10T15:18:53.973Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -4115,6 +4115,7 @@
         "sliceName": "container-socket",
         "memberFiles": [
           "client-chat-automation.constants.ts",
+          "client-chat-plan.constants.ts",
           "container-socket.actions.ts",
           "container-socket.effects.ts",
           "container-socket.facade.ts",
@@ -4581,6 +4582,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/docs/sequence-chat-plan-mode.mmd",
+      "type": "diagram",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/docs/sequence-chat-plan-mode.mmd",
+        "languageOrKind": "mmd",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/docs/sequence-deployment-proxy.mmd",
       "type": "diagram",
       "attrs": {
@@ -4738,6 +4748,15 @@
       "type": "controller",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/chat-plan.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/chat-plan.controller.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -4927,6 +4946,24 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-console-status.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/chat-plan/chat-plan-chat-event.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/chat-plan/chat-plan-chat-event.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/chat-plan/chat-plan-response.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/chat-plan/chat-plan-response.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -5377,6 +5414,15 @@
       "type": "entity",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/atlassian-site-connection.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/chat-plan.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/chat-plan.entity.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -5998,6 +6044,42 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/autonomous-run-orchestrator.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-chat-sync.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-chat-sync.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-orchestrator.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-orchestrator.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-realtime.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-realtime.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -13939,6 +14021,14 @@
       }
     },
     {
+      "id": "file:docs/agenstra/features/chat-plan-mode.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/agenstra/features/chat-plan-mode.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:docs/agenstra/features/client-management.md",
       "type": "doc",
       "attrs": {
@@ -14865,7 +14955,7 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "clients/forward",
-        "summary": "Forward an arbitrary event to the selected client's agents namespace. When `agentId` is provided,\nthe gateway automatically logs in the agent using stored credentials before forwarding the event.\nTo restore chat history for an agent, forward a \"login\" event with `agentId` (the payload is\nautomatically overridden with credentials from the database, triggering login and subsequent\nchat history restoration). Supported events include \"chat\", \"enhanceChat\" (prompt improvement;\npayload `{ message, correlationId, model? }`; response `chatEnhanceResult` unicast from\nagent-manager, proxied to this socket only), \"generateTicketBody\" (ticket body from title;\npayload `{ title, correlationId, model? }`; response `ticketBodyResult` unicast, same envelope\nshape as `chatEnhanceResult`), \"fileUpdate\", \"logout\", \"createTerminal\", \"terminalInput\", \"terminalResize\",\n\"closeTerminal\", etc. The remote agent-manager gateway will process the event and may emit\nresponse events (e.g., \"chatMessage\", \"chatMessageBatch\", \"chatEnhanceResult\", \"ticketBodyResult\",\n\"fileUpdateNotification\", \"workspaceIndexChanged\", \"workspaceIndexRebuildRequired\",\n\"terminalCreated\", \"terminalOutput\", \"terminalClosed\", \"containerStats\", \"environmentProgress\", \"opencodeConfigSynced\")\nwhich are automatically forwarded back to the client. For each new terminal, \"terminalCreated\"\nprecedes \"terminalOutput\", including buffered startup output such as the initial shell prompt.\nThe \"containerStats\" event payload\n(defined in the agent-manager AsyncAPI) includes container status (running/stopped) and, when\nrunning, container statistics. \"environmentProgress\" (agent-manager AsyncAPI `agents/environmentProgress`)\nis broadcast by the agent-manager to every connected socket as soon as a client is selected (no agent login\nrequired) and carries the live step/percentage of environment creates and container-recreating updates;\nthe initial state is available via `GET /clients/{id}/agents/progress`.\n\"opencodeConfigSynced\" (agent-manager AsyncAPI `agents/opencodeConfigSynced`) is forwarded after\neffective config is applied, including updates without container recreation. Its success envelope\ncontains `data: { agentId }`; clients refresh cached models and slash commands for that environment.\nFor autonomous ticket runs, proxied `chat` may include\n`responseMode: \"single\" | \"stream\" | \"sync\"`, `ephemeral: true`, `continue`, and `resumeSessionSuffix`;\nthe controller also uses isolated suffixes (e.g. `-ticket-auto-loop`, `-ticket-auto-commit-msg`) for\nimplementation turns vs. post-verify conventional-commit subject generation; statistics on the controller\nside record the latter under interaction kind `autonomous_ticket_commit_message`.\nAfter a successful run, the controller also completes the workflow over HTTP by proxying agent-manager VCS\n`commit` and `push` (see controller OpenAPI under `/clients/{clientId}/agents/{agentId}/vcs/...`).\nagent-manager passes these to `sendMessage` and skips `agent_messages` persistence when `ephemeral` is true.\nWhen `ephemeral` is true, chatMessage / chatEvent traffic for that turn is emitted only to the requesting\nsocket (not broadcast to other viewers on the same agent).\nAfter a successful **login** (explicit `forward` with `event: \"login\"` or first-time auto-login before another event),\nthe controller may emit **ticketAutomationRunChatUpsert** (unicast) to hydrate ticket automation runs for that\n`clientId` + `agentId` into the chat timeline (see `clients/ticketAutomationRunChatUpsert`). Live run updates use\nthe same event broadcast to room `client:{clientId}` on the **clients** namespace.\nLogin auto-restore from agent-manager emits a single **chatMessageBatch** (latest page) rather than individual\nchatMessage / messageFilterResult / chatEvent frames; clients should forward that event to the FE. Explicit\n`restoreChat` forwards also yield chatMessageBatch then restoreChatSuccess (with hasMoreOlder / oldestMessageId).\nWhen a ticket row is created or updated (REST or internal), the controller also emits **ticketChatTicketUpsert**\nto room `client:{clientId}` on **clients** (same body as `tickets/ticketUpsert`).\nWorkspace index events (`workspaceIndexChanged` / `workspaceIndexRebuildRequired`) are also consumed locally\nby the controller to hydrate OpenSearch (`agenstra-workspace-files`) before being forwarded to the FE.\n",
+        "summary": "Forward an arbitrary event to the selected client's agents namespace. When `agentId` is provided,\nthe gateway automatically logs in the agent using stored credentials before forwarding the event.\nTo restore chat history for an agent, forward a \"login\" event with `agentId` (the payload is\nautomatically overridden with credentials from the database, triggering login and subsequent\nchat history restoration). Supported events include \"chat\", \"enhanceChat\" (prompt improvement;\npayload `{ message, correlationId, model? }`; response `chatEnhanceResult` unicast from\nagent-manager, proxied to this socket only), \"generateTicketBody\" (ticket body from title;\npayload `{ title, correlationId, model? }`; response `ticketBodyResult` unicast, same envelope\nshape as `chatEnhanceResult`), \"fileUpdate\", \"logout\", \"createTerminal\", \"terminalInput\", \"terminalResize\",\n\"closeTerminal\", etc. The remote agent-manager gateway will process the event and may emit\nresponse events (e.g., \"chatMessage\", \"chatMessageBatch\", \"chatEnhanceResult\", \"ticketBodyResult\",\n\"fileUpdateNotification\", \"workspaceIndexChanged\", \"workspaceIndexRebuildRequired\",\n\"terminalCreated\", \"terminalOutput\", \"terminalClosed\", \"containerStats\", \"environmentProgress\", \"opencodeConfigSynced\")\nwhich are automatically forwarded back to the client. For each new terminal, \"terminalCreated\"\nprecedes \"terminalOutput\", including buffered startup output such as the initial shell prompt.\nThe \"containerStats\" event payload\n(defined in the agent-manager AsyncAPI) includes container status (running/stopped) and, when\nrunning, container statistics. \"environmentProgress\" (agent-manager AsyncAPI `agents/environmentProgress`)\nis broadcast by the agent-manager to every connected socket as soon as a client is selected (no agent login\nrequired) and carries the live step/percentage of environment creates and container-recreating updates;\nthe initial state is available via `GET /clients/{id}/agents/progress`.\n\"opencodeConfigSynced\" (agent-manager AsyncAPI `agents/opencodeConfigSynced`) is forwarded after\neffective config is applied, including updates without container recreation. Its success envelope\ncontains `data: { agentId }`; clients refresh cached models and slash commands for that environment.\nFor autonomous ticket runs, proxied `chat` may include\n`responseMode: \"single\" | \"stream\" | \"sync\"`, `ephemeral: true`, `continue`, and `resumeSessionSuffix`;\nthe controller also uses isolated suffixes (e.g. `-ticket-auto-loop`, `-ticket-auto-commit-msg`) for\nimplementation turns vs. post-verify conventional-commit subject generation; statistics on the controller\nside record the latter under interaction kind `autonomous_ticket_commit_message`.\nAfter a successful run, the controller also completes the workflow over HTTP by proxying agent-manager VCS\n`commit` and `push` (see controller OpenAPI under `/clients/{clientId}/agents/{agentId}/vcs/...`).\nagent-manager passes these to `sendMessage` and skips `agent_messages` persistence when `ephemeral` is true.\nWhen `ephemeral` is true, chatMessage / chatEvent traffic for that turn is emitted only to the requesting\nsocket (not broadcast to other viewers on the same agent).\nAfter a successful **login** (explicit `forward` with `event: \"login\"` or first-time auto-login before another event),\nthe controller may emit **ticketAutomationRunChatUpsert** (unicast) to hydrate ticket automation runs for that\n`clientId` + `agentId` into the chat timeline (see `clients/ticketAutomationRunChatUpsert`). Live run updates use\nthe same event broadcast to room `client:{clientId}` on the **clients** namespace.\nThe controller may also emit **chatPlanUpsert** (unicast) to hydrate recent chat plans for that agent into the\ntimeline (see `clients/chatPlanUpsert`); live plan updates broadcast to the same client room.\nLogin auto-restore from agent-manager emits a single **chatMessageBatch** (latest page) rather than individual\nchatMessage / messageFilterResult / chatEvent frames; clients should forward that event to the FE. Explicit\n`restoreChat` forwards also yield chatMessageBatch then restoreChatSuccess (with hasMoreOlder / oldestMessageId).\nWhen a ticket row is created or updated (REST or internal), the controller also emits **ticketChatTicketUpsert**\nto room `client:{clientId}` on **clients** (same body as `tickets/ticketUpsert`).\nWorkspace index events (`workspaceIndexChanged` / `workspaceIndexRebuildRequired`) are also consumed locally\nby the controller to hydrate OpenSearch (`agenstra-workspace-files`) before being forwarded to the FE.\n",
         "specKind": "asyncapi"
       }
     },
@@ -14875,6 +14965,51 @@
       "attrs": {
         "pathOrChannel": "clients/ticketAutomationRunChatUpsert",
         "summary": "Controller-originated ticket automation snapshot for the chat UI (namespace **clients** only; not forwarded from\nagent-manager). Aligns with OpenAPI schema `TicketAutomationRunChatEventDto`. Hydration uses `timelineAt` from\n`run.startedAt`; live updates use `run.updatedAt`.\n",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:clients/createChatPlan",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "clients/createChatPlan",
+        "summary": "Start a chat plan-mode explore turn for the selected client. Controller-handled (not forwarded to agent-manager).\nPayload must include agentId, chatId, message, correlationId; optional model and contextInjection (full composer context).\n",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:clients/refineChatPlan",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "clients/refineChatPlan",
+        "summary": "Continue an existing plan on the same hidden `-plan-{planId}` OpenCode session.",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:clients/executeChatPlan",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "clients/executeChatPlan",
+        "summary": "Inject the ready plan into the visible chat session (normal interactive permissions).",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:clients/cancelChatPlan",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "clients/cancelChatPlan",
+        "summary": "Cancel an exploring/refining chat plan.",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:clients/chatPlanUpsert",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "clients/chatPlanUpsert",
+        "summary": "Controller-originated chat plan snapshot for the chat UI. Aligns with OpenAPI `ChatPlanChatEventDto`.\nHydration uses `plan.startedAt`; live updates use `plan.updatedAt`. Cards are chat-session scoped via `plan.chatId`.\n",
         "specKind": "asyncapi"
       }
     },
@@ -16520,6 +16655,39 @@
         "pathOrChannel": "/clients/{id}/agents/{agentId}/chats/{chatId}/messages",
         "operationId": "listClientAgentChatSessionMessages",
         "summary": "List messages for a chat session (proxied)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/chats/{chatId}/plans",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/chats/{chatId}/plans",
+        "operationId": "listChatPlans",
+        "summary": "List chat plans for a chat session",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/{agentId}/plans/{planId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/plans/{planId}",
+        "operationId": "getChatPlan",
+        "summary": "Get a chat plan by id",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{id}/agents/{agentId}/plans/{planId}/cancel",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{id}/agents/{agentId}/plans/{planId}/cancel",
+        "operationId": "cancelChatPlan",
+        "summary": "Cancel an active chat plan",
         "specKind": "openapi"
       }
     },
@@ -21854,7 +22022,7 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "agents/chat",
-        "summary": "Client sends a chat message (requires prior login). Payload may include `responseMode` \"single\" | \"stream\" | \"sync\",\n`ephemeral` (skip `agent_messages` persistence for the turn), `continue`, `resumeSessionSuffix`, `chatId`, `correlationId`, `model`.\nWhen `chatId` is set (and `resumeSessionSuffix` is not a reserved hidden ACP suffix), messages and events persist and\nemit under that user-visible chat session; otherwise the primary session is used.\nWhen `ephemeral` is true, `chatMessage`, `chatEvent`, and `messageFilterResult` for that turn are emitted only to the\nrequesting socket (not broadcast to other clients on the same agent). Otherwise those events are broadcast to every\nsocket authenticated to the agent. The gateway forwards options to `sendMessage` as implemented in code.\n",
+        "summary": "Client sends a chat message (requires prior login). Payload may include `responseMode` \"single\" | \"stream\" | \"sync\",\n`ephemeral` (skip `agent_messages` persistence for the turn), `suppressUserMessage` (send to agent but hide the user\nbubble; used by chat-plan execute), `continue`, `resumeSessionSuffix`, `chatId`, `correlationId`, `model`.\nWhen `chatId` is set (and `resumeSessionSuffix` is not a reserved hidden ACP suffix), messages and events persist and\nemit under that user-visible chat session; otherwise the primary session is used.\nReserved hidden suffixes include `-prompt-enhance`, `-ticket-body`, `-ticket-auto-*`, and `-plan-{planId}` (explore-only\npermissions; not automation allow-all). Those sessions are ephemeral/hidden and do not persist into `agent_messages`.\nWhen `ephemeral` is true, `chatMessage`, `chatEvent`, and `messageFilterResult` for that turn are emitted only to the\nrequesting socket (not broadcast to other clients on the same agent). Otherwise those events are broadcast to every\nsocket authenticated to the agent. The gateway forwards options to `sendMessage` as implemented in code.\n",
         "specKind": "asyncapi"
       }
     },
@@ -25661,6 +25829,66 @@
       }
     },
     {
+      "id": "concept:agenstra-chat-plan-mode",
+      "type": "concept",
+      "attrs": {
+        "title": "Chat plan mode",
+        "docPath": "docs/agenstra/features/chat-plan-mode.md",
+        "sectionAnchor": "chat-plan-mode",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-context-injection",
+      "type": "concept",
+      "attrs": {
+        "title": "Context injection",
+        "docPath": "docs/agenstra/features/chat-plan-mode.md",
+        "sectionAnchor": "context-injection",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-phases-high-level",
+      "type": "concept",
+      "attrs": {
+        "title": "Phases (high level)",
+        "docPath": "docs/agenstra/features/chat-plan-mode.md",
+        "sectionAnchor": "phases-high-level",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-unattended-opencode-sessions-explore-only",
+      "type": "concept",
+      "attrs": {
+        "title": "Unattended OpenCode sessions (explore-only)",
+        "docPath": "docs/agenstra/features/chat-plan-mode.md",
+        "sectionAnchor": "unattended-opencode-sessions-explore-only",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-persistence-and-restore",
+      "type": "concept",
+      "attrs": {
+        "title": "Persistence and restore",
+        "docPath": "docs/agenstra/features/chat-plan-mode.md",
+        "sectionAnchor": "persistence-and-restore",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-http-and-realtime",
+      "type": "concept",
+      "attrs": {
+        "title": "HTTP and realtime",
+        "docPath": "docs/agenstra/features/chat-plan-mode.md",
+        "sectionAnchor": "http-and-realtime",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-client-management",
       "type": "concept",
       "attrs": {
@@ -26207,16 +26435,6 @@
         "title": "Failures and retries",
         "docPath": "docs/agenstra/features/ticket-automation.md",
         "sectionAnchor": "failures-and-retries",
-        "domain": "agenstra"
-      }
-    },
-    {
-      "id": "concept:agenstra-http-and-realtime",
-      "type": "concept",
-      "attrs": {
-        "title": "HTTP and realtime",
-        "docPath": "docs/agenstra/features/ticket-automation.md",
-        "sectionAnchor": "http-and-realtime",
         "domain": "agenstra"
       }
     },
@@ -37099,6 +37317,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/docs/sequence-chat-plan-mode.mmd",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/docs/sequence-deployment-proxy.mmd",
       "type": "contains"
     },
@@ -37185,6 +37408,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/admin-opencode-layer-files.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/chat-plan.controller.ts",
       "type": "contains"
     },
     {
@@ -37290,6 +37518,16 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-console-status.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/chat-plan/chat-plan-chat-event.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/chat-plan/chat-plan-response.dto.ts",
       "type": "contains"
     },
     {
@@ -37540,6 +37778,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/atlassian-site-connection.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/chat-plan.entity.ts",
       "type": "contains"
     },
     {
@@ -37885,6 +38128,26 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/autonomous-run-orchestrator.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-chat-sync.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-orchestrator.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-realtime.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan.service.ts",
       "type": "contains"
     },
     {
@@ -42084,6 +42347,31 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:clients/createChatPlan",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:clients/refineChatPlan",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:clients/executeChatPlan",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:clients/cancelChatPlan",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:clients/chatPlanUpsert",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
       "to": "api:channel:clients/ticketChatTicketUpsert",
       "type": "contains"
     },
@@ -42855,6 +43143,21 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/chats/{chatId}/messages",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/chats/{chatId}/plans",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/plans/{planId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/plans/{planId}/cancel",
       "type": "contains"
     },
     {
@@ -47999,6 +48302,46 @@
     },
     {
       "from": "file:docs/agenstra/features/chat-interface.md",
+      "to": "concept:agenstra-related-documentation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/chat-plan-mode.md",
+      "to": "concept:agenstra-chat-plan-mode",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/chat-plan-mode.md",
+      "to": "concept:agenstra-prerequisites",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/chat-plan-mode.md",
+      "to": "concept:agenstra-context-injection",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/chat-plan-mode.md",
+      "to": "concept:agenstra-phases-high-level",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/chat-plan-mode.md",
+      "to": "concept:agenstra-unattended-opencode-sessions-explore-only",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/chat-plan-mode.md",
+      "to": "concept:agenstra-persistence-and-restore",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/chat-plan-mode.md",
+      "to": "concept:agenstra-http-and-realtime",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/chat-plan-mode.md",
       "to": "concept:agenstra-related-documentation",
       "type": "contains"
     },
@@ -53625,6 +53968,36 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/chats/{chatId}/messages",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/chats/{chatId}/plans",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/chats/{chatId}/plans",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/plans/{planId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/plans/{planId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/plans/{planId}/cancel",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/plans/{planId}/cancel",
       "type": "implements"
     },
     {
@@ -60523,6 +60896,21 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/chat-plan.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/chat-plan.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/chat-plan.controller.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-agent-autonomy-directory.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-autonomy.service.ts",
       "type": "injects"
@@ -60839,6 +61227,26 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-realtime.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-chat-sync.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-orchestrator.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/tickets.service.ts",
       "type": "injects"
     },
@@ -61120,6 +61528,46 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/autonomous-run-orchestrator.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/knowledge-tree.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-chat-sync.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-realtime.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-chat-sync.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-console-status.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-orchestrator.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-orchestrator.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-chat-sync.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-orchestrator.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan.service.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-chat-sync.service.ts",
       "type": "injects"
     },
     {
@@ -66119,6 +66567,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/chat-plan.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-agent-autonomy.controller.ts",
       "type": "provides"
     },
@@ -66210,6 +66663,16 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/ticket-automation.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-orchestrator.service.ts",
       "type": "provides"
     },
     {
@@ -66415,6 +66878,16 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/ticket-automation-chat-sync.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-realtime.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan-chat-sync.service.ts",
       "type": "provides"
     },
     {
@@ -72108,6 +72581,106 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-phases-high-level",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/plans/{planId}/cancel",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-persistence-and-restore",
+      "to": "api:HTTP:POST:/auth/login",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http-and-realtime",
+      "to": "api:HTTP:GET:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http-and-realtime",
+      "to": "api:HTTP:POST:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http-and-realtime",
+      "to": "api:HTTP:GET:/tickets/{ticketId}/automation",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http-and-realtime",
+      "to": "api:HTTP:PATCH:/tickets/{ticketId}/automation",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http-and-realtime",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/autonomy",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http-and-realtime",
+      "to": "api:HTTP:PUT:/clients/{id}/agents/{agentId}/autonomy",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http-and-realtime",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http-and-realtime",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http-and-realtime",
+      "to": "api:HTTP:GET:/clients/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http-and-realtime",
+      "to": "api:HTTP:POST:/clients/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http-and-realtime",
+      "to": "api:HTTP:DELETE:/clients/{id}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http-and-realtime",
+      "to": "api:HTTP:GET:/clients/{id}/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http-and-realtime",
+      "to": "api:HTTP:POST:/clients/{id}/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http-and-realtime",
+      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http-and-realtime",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http-and-realtime",
+      "to": "api:HTTP:DELETE:/clients/{id}/agents/{agentId}",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http-and-realtime",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-http-and-realtime",
+      "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-creating-a-client",
       "to": "api:HTTP:GET:/agents",
       "type": "documents"
@@ -72218,6 +72791,11 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-events",
+      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/plans/{planId}/cancel",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-why-two-tiers",
       "to": "api:HTTP:POST:/filter-rules",
       "type": "documents"
@@ -72310,96 +72888,6 @@
     {
       "from": "concept:agenstra-run-phases-high-level",
       "to": "api:HTTP:POST:/auth/register",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-http-and-realtime",
-      "to": "api:HTTP:GET:/tickets",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-http-and-realtime",
-      "to": "api:HTTP:POST:/tickets",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-http-and-realtime",
-      "to": "api:HTTP:GET:/tickets/{ticketId}/automation",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-http-and-realtime",
-      "to": "api:HTTP:PATCH:/tickets/{ticketId}/automation",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-http-and-realtime",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/autonomy",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-http-and-realtime",
-      "to": "api:HTTP:PUT:/clients/{id}/agents/{agentId}/autonomy",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-http-and-realtime",
-      "to": "api:HTTP:GET:/clients",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-http-and-realtime",
-      "to": "api:HTTP:POST:/clients",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-http-and-realtime",
-      "to": "api:HTTP:GET:/clients/{id}",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-http-and-realtime",
-      "to": "api:HTTP:POST:/clients/{id}",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-http-and-realtime",
-      "to": "api:HTTP:DELETE:/clients/{id}",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-http-and-realtime",
-      "to": "api:HTTP:GET:/clients/{id}/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-http-and-realtime",
-      "to": "api:HTTP:POST:/clients/{id}/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-http-and-realtime",
-      "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-http-and-realtime",
-      "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-http-and-realtime",
-      "to": "api:HTTP:DELETE:/clients/{id}/agents/{agentId}",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-http-and-realtime",
-      "to": "api:HTTP:GET:/agents",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-http-and-realtime",
-      "to": "api:HTTP:POST:/agents",
       "type": "documents"
     },
     {
@@ -78493,6 +78981,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "file:docs/agenstra/features/chat-plan-mode.md",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "file:docs/agenstra/features/client-management.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -80293,6 +80786,36 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:agenstra-chat-plan-mode",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-context-injection",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-phases-high-level",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-unattended-opencode-sessions-explore-only",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-persistence-and-restore",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-http-and-realtime",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:agenstra-client-management",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -80564,11 +81087,6 @@
     },
     {
       "from": "concept:agenstra-failures-and-retries",
-      "to": "domain:agenstra",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:agenstra-http-and-realtime",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

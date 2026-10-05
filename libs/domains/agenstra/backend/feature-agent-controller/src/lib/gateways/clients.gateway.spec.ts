@@ -14,6 +14,10 @@ import { AutoContextResolverService } from '../services/auto-context-resolver.se
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
 import { ClientsService } from '../services/clients.service';
+import { ChatPlanChatSyncService } from '../services/chat-plan-chat-sync.service';
+import { ChatPlanOrchestratorService } from '../services/chat-plan-orchestrator.service';
+import { ChatPlanRealtimeService } from '../services/chat-plan-realtime.service';
+import { ChatPlanService } from '../services/chat-plan.service';
 import { KnowledgeTreeService } from '../services/knowledge-tree.service';
 import { StatisticsService } from '../services/statistics.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
@@ -208,6 +212,30 @@ describe('ClientsGateway', () => {
         { provide: StatisticsService, useValue: mockStatisticsService },
         { provide: ClientAutomationChatRealtimeService, useValue: mockClientAutomationChatRealtime },
         { provide: TicketAutomationChatSyncService, useValue: mockTicketAutomationChatSync },
+        {
+          provide: ChatPlanRealtimeService,
+          useValue: { attachServer: jest.fn() },
+        },
+        {
+          provide: ChatPlanChatSyncService,
+          useValue: { hydrateForAgentClient: jest.fn().mockResolvedValue(undefined) },
+        },
+        {
+          provide: ChatPlanService,
+          useValue: {
+            create: jest.fn(),
+            cancel: jest.fn(),
+            getEntityOrThrow: jest.fn(),
+          },
+        },
+        {
+          provide: ChatPlanOrchestratorService,
+          useValue: {
+            startExplore: jest.fn(),
+            startRefine: jest.fn(),
+            startExecute: jest.fn(),
+          },
+        },
         { provide: TicketsService, useValue: mockTicketsService },
         { provide: KnowledgeTreeService, useValue: mockKnowledgeTreeService },
         { provide: AutoContextResolverService, useValue: mockAutoContextResolverService },

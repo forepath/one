@@ -45,6 +45,20 @@ describe('buildChatDisplayThread', () => {
       expect(rowCount).toBeGreaterThanOrEqual(1);
     }
   });
+
+  it('hides chat-plan execute trigger user messages', () => {
+    const items = buildChatDisplayThread([
+      chatMsg(
+        'user',
+        'Implement the following plan in the repository. Stay scoped to the plan below.\n\n## Plan\nDo it',
+        1,
+      ),
+      chatMsg('agent', { type: 'result', result: 'done' }, 2),
+    ]);
+
+    expect(items).toHaveLength(1);
+    expect(items[0]?.kind).toBe('agentTurn');
+  });
 });
 
 describe('buildAgentTurnView', () => {
@@ -396,5 +410,54 @@ describe('buildMergedChatDisplayThread', () => {
     const thread = buildMergedChatDisplayThread(ordered, [u]);
 
     expect(thread[1]?.kind).toBe('ticketAutomationRun');
+  });
+
+  it('interleaves chatPlan cards between user and agent by semantic order', () => {
+    const u = chatMsg('user', 'hi', 1);
+    const a = chatMsg('agent', { type: 'result', result: 'ok' }, 4);
+    const planPayload = {
+      timelineAt: new Date(2).toISOString(),
+      hydrate: false,
+      plan: {
+        id: 'p1',
+        clientId: 'c1',
+        agentId: 'aid',
+        chatId: 'chat-1',
+        status: 'ready' as const,
+        phase: 'ready' as const,
+        sourcePrompt: 'plan',
+        planMarkdown: '# Plan',
+        summary: 'Do the thing',
+        contextInjection: null,
+        model: null,
+        resumeSessionSuffix: '-plan-p1',
+        completionSignalSeen: false,
+        failureCode: null,
+        failureMessage: null,
+        createdByUserId: null,
+        startedAt: new Date(2).toISOString(),
+        finishedAt: null,
+        createdAt: new Date(2).toISOString(),
+        updatedAt: new Date(2).toISOString(),
+      },
+      actions: [
+        { type: 'openChatPlan' as const, planId: 'p1', chatId: 'chat-1', label: 'View plan' },
+        { type: 'executeChatPlan' as const, planId: 'p1', chatId: 'chat-1', label: 'Execute plan' },
+      ],
+    };
+    const ordered: ChatTimelineOrderedRowLike[] = [
+      { ...u, semanticTimestamp: 1 },
+      {
+        event: 'chatPlanUpsert',
+        payload: planPayload,
+        timestamp: 2,
+        semanticTimestamp: 2,
+      },
+      { ...a, semanticTimestamp: 4 },
+    ];
+    const thread = buildMergedChatDisplayThread(ordered, [u, a]);
+
+    expect(thread.map((i) => i.kind)).toEqual(['user', 'chatPlan', 'agentTurn']);
+    expect(thread[1]?.kind === 'chatPlan' && thread[1].payload.plan.summary).toBe('Do the thing');
   });
 });

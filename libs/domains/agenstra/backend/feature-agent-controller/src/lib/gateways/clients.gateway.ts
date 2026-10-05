@@ -25,6 +25,7 @@ import type { Socket as ClientSocket } from 'socket.io-client';
 import { FilterDropDirection } from '../entities/statistics-chat-filter-drop.entity';
 import { FilterFlagDirection } from '../entities/statistics-chat-filter-flag.entity';
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
+import type { ChatPlanContextInjectionJson } from '../entities/chat-plan.entity';
 import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
@@ -33,6 +34,11 @@ import { AutoContextResolverService } from '../services/auto-context-resolver.se
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
 import { ClientsService } from '../services/clients.service';
+import { ChatPlanChatSyncService } from '../services/chat-plan-chat-sync.service';
+import { ChatPlanOrchestratorService } from '../services/chat-plan-orchestrator.service';
+import { ChatPlanRealtimeService } from '../services/chat-plan-realtime.service';
+import { ChatPlanService } from '../services/chat-plan.service';
+import { CLIENT_CHAT_PLAN_EVENTS } from '../services/client-chat-plan.constants';
 import { KnowledgeTreeService } from '../services/knowledge-tree.service';
 import { StatisticsService } from '../services/statistics.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
@@ -166,6 +172,10 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     private readonly statisticsService: StatisticsService,
     private readonly clientAutomationChatRealtime: ClientAutomationChatRealtimeService,
     private readonly ticketAutomationChatSync: TicketAutomationChatSyncService,
+    private readonly chatPlanRealtime: ChatPlanRealtimeService,
+    private readonly chatPlanChatSync: ChatPlanChatSyncService,
+    private readonly chatPlanService: ChatPlanService,
+    private readonly chatPlanOrchestrator: ChatPlanOrchestratorService,
     private readonly ticketsService: TicketsService,
     private readonly knowledgeTreeService: KnowledgeTreeService,
     private readonly autoContextResolverService: AutoContextResolverService,
@@ -177,6 +187,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
   afterInit(server: Server): void {
     this.clientAutomationChatRealtime.attachServer(server);
+    this.chatPlanRealtime.attachServer(server);
     // When using namespace: 'clients', NestJS passes the namespace (not root Server) to afterInit.
     // Namespaces don't have .of(); use server directly for middleware.
     server.use(async (socket, next) => {
@@ -1045,6 +1056,188 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     }
   }
 
+  @SubscribeMessage(CLIENT_CHAT_PLAN_EVENTS.createChatPlan)
+  async handleCreateChatPlan(
+    @MessageBody()
+    data: {
+      agentId?: string;
+      chatId?: string;
+      message?: string;
+      correlationId?: string;
+      model?: string;
+      contextInjection?: {
+        includeWorkspace?: boolean;
+        environmentIds?: string[];
+        autoEnrichmentEnabled?: boolean;
+        ticketShas?: string[];
+        knowledgeShas?: string[];
+      };
+    },
+    @ConnectedSocket() socket: Socket,
+  ): Promise<void> {
+    const clientId = this.selectedClientBySocket.get(socket.id);
+
+    if (!clientId) {
+      socket.emit('error', { message: 'No client selected. Call setClient first.' });
+
+      return;
+    }
+
+    const agentId = data?.agentId;
+    const chatId = data?.chatId;
+    const message = data?.message?.trim() ?? '';
+
+    if (!agentId || !chatId || !message) {
+      socket.emit('error', { message: 'agentId, chatId, and message are required' });
+
+      return;
+    }
+
+    try {
+      const userInfo = (socket as Socket & { data?: { userInfo?: Parameters<typeof buildRequestFromSocketUser>[0] } })
+        .data?.userInfo;
+      const enrichedPayload = (await this.enrichForwardPayloadWithTicketContext(clientId, {
+        message,
+        contextInjection: data.contextInjection,
+      })) as {
+        contextInjection?: ChatPlanContextInjectionJson;
+      };
+      const plan = await this.chatPlanService.create(
+        {
+          clientId,
+          agentId,
+          chatId,
+          message,
+          model: data.model,
+          contextInjection: enrichedPayload.contextInjection ?? data.contextInjection ?? null,
+          createdByUserId: userInfo?.userId ?? null,
+        },
+        buildRequestFromSocketUser(userInfo),
+      );
+
+      this.chatPlanOrchestrator.startExplore(plan.id);
+      socket.emit('forwardAck', { received: true, event: CLIENT_CHAT_PLAN_EVENTS.createChatPlan, planId: plan.id });
+    } catch (error: unknown) {
+      this.logger.warn(`createChatPlan failed: ${(error as Error).message}`);
+      socket.emit('error', { message: 'Failed to create chat plan' });
+    }
+  }
+
+  @SubscribeMessage(CLIENT_CHAT_PLAN_EVENTS.refineChatPlan)
+  async handleRefineChatPlan(
+    @MessageBody() data: { agentId?: string; planId?: string; message?: string; correlationId?: string },
+    @ConnectedSocket() socket: Socket,
+  ): Promise<void> {
+    const clientId = this.selectedClientBySocket.get(socket.id);
+
+    if (!clientId) {
+      socket.emit('error', { message: 'No client selected. Call setClient first.' });
+
+      return;
+    }
+
+    const planId = data?.planId;
+    const message = data?.message?.trim() ?? '';
+
+    if (!planId || !message) {
+      socket.emit('error', { message: 'planId and message are required' });
+
+      return;
+    }
+
+    try {
+      const plan = await this.chatPlanService.getEntityOrThrow(planId);
+
+      if (plan.clientId !== clientId || (data.agentId && plan.agentId !== data.agentId)) {
+        socket.emit('error', { message: 'Plan not found' });
+
+        return;
+      }
+
+      this.chatPlanOrchestrator.startRefine(planId, message);
+      socket.emit('forwardAck', { received: true, event: CLIENT_CHAT_PLAN_EVENTS.refineChatPlan, planId });
+    } catch (error: unknown) {
+      socket.emit('error', { message: 'Plan not found' });
+    }
+  }
+
+  @SubscribeMessage(CLIENT_CHAT_PLAN_EVENTS.executeChatPlan)
+  async handleExecuteChatPlan(
+    @MessageBody() data: { agentId?: string; planId?: string; correlationId?: string },
+    @ConnectedSocket() socket: Socket,
+  ): Promise<void> {
+    const clientId = this.selectedClientBySocket.get(socket.id);
+
+    if (!clientId) {
+      socket.emit('error', { message: 'No client selected. Call setClient first.' });
+
+      return;
+    }
+
+    const planId = data?.planId;
+
+    if (!planId) {
+      socket.emit('error', { message: 'planId is required' });
+
+      return;
+    }
+
+    try {
+      const plan = await this.chatPlanService.getEntityOrThrow(planId);
+
+      if (plan.clientId !== clientId || (data.agentId && plan.agentId !== data.agentId)) {
+        socket.emit('error', { message: 'Plan not found' });
+
+        return;
+      }
+
+      this.chatPlanOrchestrator.startExecute(planId, data.correlationId);
+      socket.emit('forwardAck', { received: true, event: CLIENT_CHAT_PLAN_EVENTS.executeChatPlan, planId });
+    } catch (error: unknown) {
+      socket.emit('error', { message: 'Plan not found' });
+    }
+  }
+
+  @SubscribeMessage(CLIENT_CHAT_PLAN_EVENTS.cancelChatPlan)
+  async handleCancelChatPlan(
+    @MessageBody() data: { agentId?: string; planId?: string },
+    @ConnectedSocket() socket: Socket,
+  ): Promise<void> {
+    const clientId = this.selectedClientBySocket.get(socket.id);
+
+    if (!clientId) {
+      socket.emit('error', { message: 'No client selected. Call setClient first.' });
+
+      return;
+    }
+
+    const planId = data?.planId;
+    const agentId = data?.agentId;
+
+    if (!planId || !agentId) {
+      socket.emit('error', { message: 'planId and agentId are required' });
+
+      return;
+    }
+
+    try {
+      const plan = await this.chatPlanService.getEntityOrThrow(planId);
+
+      if (plan.clientId !== clientId || plan.agentId !== agentId) {
+        socket.emit('error', { message: 'Plan not found' });
+
+        return;
+      }
+
+      const userInfo = (socket as Socket & { data?: { userInfo?: { userId?: string; isApiKeyAuth?: boolean } } }).data
+        ?.userInfo;
+      await this.chatPlanService.cancel(clientId, agentId, planId, undefined, userInfo?.userId ?? null);
+      socket.emit('forwardAck', { received: true, event: CLIENT_CHAT_PLAN_EVENTS.cancelChatPlan, planId });
+    } catch (error: unknown) {
+      socket.emit('error', { message: 'Plan not found' });
+    }
+  }
+
   /**
    * Forward generic events to the selected client agent-manager WebSocket.
    * SECURITY: All responses (forwardAck, error) are sent only to the initiating socket.
@@ -1292,7 +1485,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     const suffix = typeof next['resumeSessionSuffix'] === 'string' ? next['resumeSessionSuffix'] : undefined;
     const ticketAutomationSuffixes = new Set(['-ticket-auto-pre', '-ticket-auto-loop', '-ticket-auto-commit-msg']);
 
-    if (suffix && ticketAutomationSuffixes.has(suffix)) {
+    if (suffix && (ticketAutomationSuffixes.has(suffix) || suffix.startsWith('-plan-'))) {
       delete next['resumeSessionSuffix'];
     }
 
@@ -1539,6 +1732,15 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       const message = err instanceof Error ? err.message : String(err);
 
       this.logger.warn(`Ticket automation chat hydrate failed for agent ${agentId}: ${message}`);
+    });
+    this.scheduleChatPlanHydrate(socket, clientId, agentId);
+  }
+
+  private scheduleChatPlanHydrate(socket: Socket, clientId: string, agentId: string): void {
+    void this.chatPlanChatSync.hydrateForAgentClient(socket, clientId, agentId).catch((err) => {
+      const message = err instanceof Error ? err.message : String(err);
+
+      this.logger.warn(`Chat plan hydrate failed for agent ${agentId}: ${message}`);
     });
   }
 

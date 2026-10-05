@@ -18,6 +18,10 @@ export enum StatisticsInteractionKind {
   AUTONOMOUS_TICKET_RUN_TURN = 'autonomous_ticket_run_turn',
   /** Ephemeral remote chat used only to propose a Conventional Commits subject before `git commit`. */
   AUTONOMOUS_TICKET_COMMIT_MESSAGE = 'autonomous_ticket_commit_message',
+  /** Hidden explore/refine turn for chat plan mode (`-plan-{id}` sessions). */
+  CHAT_PLAN_TURN = 'chat_plan_turn',
+  /** Visible-chat execute turn that injects an approved plan into the operator thread. */
+  CHAT_PLAN_EXECUTE = 'chat_plan_execute',
 }
 
 /**

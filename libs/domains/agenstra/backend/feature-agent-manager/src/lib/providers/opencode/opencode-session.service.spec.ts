@@ -60,4 +60,40 @@ describe('OpenCodeSessionService', () => {
       },
     });
   });
+
+  it('creates plan sessions with explore-only permission and platform plan agent', async () => {
+    const create = jest.fn().mockResolvedValue({ data: { id: 'ses_plan' } });
+    const clientFactory = {
+      getClient: jest.fn().mockResolvedValue({
+        session: {
+          get: jest.fn().mockRejectedValue(new Error('missing')),
+          create,
+        },
+      }),
+    };
+    const agentsRepository = {
+      findPersistedAcpSessionId: jest.fn().mockResolvedValue(null),
+      saveAcpSession: jest.fn().mockResolvedValue(undefined),
+    };
+    const service = new OpenCodeSessionService(clientFactory as never, agentsRepository as never);
+
+    await service.getOrCreateSessionId({
+      agentId: 'agent-1',
+      containerId: 'ctr-1',
+      resumeSessionSuffix: '-plan-11111111-2222-4333-8444-555555555555',
+    });
+
+    expect(create).toHaveBeenCalledWith({
+      body: {
+        title: 'agenstra (-plan-11111111-2222-4333-8444-555555555555)',
+        agent: 'agenstra-plan',
+        permission: expect.arrayContaining([
+          { permission: 'read', pattern: '*', action: 'allow' },
+          { permission: 'edit', pattern: '*', action: 'deny' },
+          { permission: 'write', pattern: '*', action: 'deny' },
+          { permission: 'bash', pattern: '*', action: 'deny' },
+        ]),
+      },
+    });
+  });
 });

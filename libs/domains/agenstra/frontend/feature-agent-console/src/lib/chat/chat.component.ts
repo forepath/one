@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
-  AfterViewChecked,
   afterNextRender,
+  AfterViewChecked,
   ChangeDetectorRef,
   Component,
   computed,
@@ -21,10 +21,13 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router, RouterModule } from '@angular/router';
 import {
   AgentsFacade,
+  AgentsService,
   AuthenticationFacade,
   ChatSessionsFacade,
+  ChatTimelineFacade,
   ClientAgentAutonomyFacade,
   ClientsFacade,
+  ContainerSocketFacade,
   ContainerType,
   DeploymentsService,
   EnvFacade,
@@ -33,19 +36,18 @@ import {
   filterTicketsForTicketContextSuggestions,
   KnowledgeFacade,
   NotificationsFacade,
-  ContainerSocketFacade,
-  ChatTimelineFacade,
   StatsFacade,
   TicketAutomationFacade,
   TicketsFacade,
   WorkspaceConfigFacade,
-  AgentsService,
   type AddClientUserDto,
   type AgentModelsMap,
   type AgentResponseDto,
   type AgentResponseObject,
   type AgentSlashCommand,
   type ChatMessageData,
+  type ChatPlanChatEventPayload,
+  type ChatPlanResponse,
   type ChatSessionResponseDto,
   type ClientAgentAutonomyResponseDto,
   type ClientAuthenticationType,
@@ -74,6 +76,8 @@ import {
   type WorkspaceConfigurationSettingResponseDto,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import { AgentConfigEditorComponent } from '@forepath/agenstra/frontend/feature-agent-config';
+import { ENVIRONMENT, type Environment } from '@forepath/agenstra/frontend/util-configuration';
+import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import {
   FpcAlertComponent,
   FpcBadgeComponent,
@@ -105,8 +109,6 @@ import {
   type FpcProgressSegment,
   type FpcProgressVariant,
 } from '@forepath/shared/frontend/ui-components';
-import { ENVIRONMENT, type Environment } from '@forepath/agenstra/frontend/util-configuration';
-import { StandaloneLoadingService } from '@forepath/shared/frontend';
 import {
   catchError,
   combineLatest,
@@ -129,23 +131,23 @@ import {
 } from 'rxjs';
 
 import { DeploymentManagerComponent } from '../deployment-manager/deployment-manager.component';
-import { VirtualDesktopComponent } from '../virtual-desktop/virtual-desktop.component';
 import { resolveNamedDisplayLabel } from '../display-name.util';
 import { ContainerStatsStatusBarComponent } from '../file-editor/container-stats-status-bar/container-stats-status-bar.component';
 import { FileEditorComponent } from '../file-editor/file-editor.component';
-import { LayerFileIdeComponent } from '../layer-file-ide/layer-file-ide.component';
 import {
   getGitRepositoryDisplayLabel,
   isLocalGitRepository as isLocalGitRepositoryMode,
   parseGitRepository as parseGitRepositoryLabel,
   resolveGitRepositorySetupMode,
 } from '../git-repository-display';
+import { LayerFileIdeComponent } from '../layer-file-ide/layer-file-ide.component';
 import { readAndClearAgentConsoleChatDraft } from '../tickets/chat-draft-storage';
 import {
   ticketAutomationRunPhaseLabel as ticketAutomationRunPhaseLabelFn,
   ticketAutomationRunStatusLabel as ticketAutomationRunStatusLabelFn,
 } from '../tickets/ticket-automation-run-labels';
 import { ticketLaneStatusLabel } from '../tickets/ticket-lane-status-label';
+import { VirtualDesktopComponent } from '../virtual-desktop/virtual-desktop.component';
 
 import {
   hideAgentModal,
@@ -170,6 +172,10 @@ import {
 import { accumulateStreamingTurnFromEvents } from './agent-chat-streaming-aggregate';
 import { AgentChatTodosExpandCoordinator } from './agent-chat-todos-expand.coordinator';
 import { mergeTicketAutomationChatCardPayload } from './chat-automation-card-merge';
+import {
+  chatPlanPhaseLabel as chatPlanPhaseLabelFn,
+  chatPlanStatusLabel as chatPlanStatusLabelFn,
+} from './chat-plan-labels';
 import { buildMergedChatDisplayThread, type ChatDisplayThreadItem } from './chat-thread-display';
 
 // Type declaration for marked library
@@ -260,8 +266,16 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly ticketWorkflowLaneLabel = ticketLaneStatusLabel;
   readonly automationRunStatusLabel = ticketAutomationRunStatusLabelFn;
   readonly automationRunPhaseLabel = ticketAutomationRunPhaseLabelFn;
+  readonly chatPlanStatusLabel = chatPlanStatusLabelFn;
+  readonly chatPlanPhaseLabel = chatPlanPhaseLabelFn;
 
   readonly openTicketFromChatButtonLabel = $localize`:@@featureChat-openTicketFromAutomationCard:Open ticket`;
+  readonly chatPlanModalTitle = $localize`:@@featureChat-planModalTitle:Plan`;
+  readonly chatPlanRefinePlaceholder = $localize`:@@featureChat-planRefinePlaceholder:Describe changes to the plan…`;
+  readonly chatPlanRefineSubmitLabel = $localize`:@@featureChat-planRefineSubmit:Refine`;
+  readonly chatPlanExecuteLabel = $localize`:@@featureChat-planExecute:Execute`;
+  readonly chatPlanCancelLabel = $localize`:@@featureChat-planCancel:Cancel plan`;
+  readonly chatPlanEmptyMarkdown = $localize`:@@featureChat-planEmptyMarkdown:Plan content will appear here as the agent explores…`;
   readonly workspacesHeaderTitle = $localize`:@@featureChat-workspaces:Workspaces`;
   readonly environmentsHeaderTitle = $localize`:@@featureChat-environments:Environments`;
   readonly addWorkspaceTitle = $localize`:@@featureChat-addWorkspaceTitle:Add Workspace`;
@@ -693,6 +707,26 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly forwarding$: Observable<boolean> = this.socketsFacade.chatForwarding$;
   readonly chatResponseMode$ = this.socketsFacade.chatResponseMode$;
   readonly chatEnhancementPending$: Observable<boolean> = this.chatTimelineFacade.chatEnhancementPending$;
+  readonly chatPlanBusy$: Observable<boolean> = this.chatTimelineFacade.chatPlanBusy$;
+
+  /** Plan detail modal: selected plan id (live updates via plans$). */
+  readonly planDetailPlanId = signal<string | null>(null);
+  readonly planDetailModalOpen = signal(false);
+  readonly planRefineMessage = signal('');
+
+  /** Live plan entity for the open plan detail modal (updates on chatPlanUpsert). */
+  readonly planDetailPlan$: Observable<ChatPlanResponse | null> = combineLatest([
+    this.chatTimelineFacade.plans$,
+    toObservable(this.planDetailPlanId),
+  ]).pipe(
+    map(([rows, planId]) => {
+      if (!planId) {
+        return null;
+      }
+
+      return rows.find((row) => row.payload.plan.id === planId)?.payload.plan ?? null;
+    }),
+  );
   readonly socketError$: Observable<string | null> = this.socketsFacade.error$;
 
   // Remote connection reconnection state (per clientId)
@@ -3037,6 +3071,94 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     const normalizedModel = model === null || model === '' ? null : model;
 
     this.socketsFacade.forwardEnhanceChat(message, agentId, correlationId, normalizedModel);
+  }
+
+  onPlanMessage(): void {
+    let message = this.chatMessage().trim();
+    const selectedCmd = this.selectedCommand();
+
+    if (selectedCmd) {
+      message = message ? `${selectedCmd}\n${message}` : selectedCmd;
+    }
+
+    if (!message) {
+      return;
+    }
+
+    const agentId = this.selectedAgentId();
+
+    if (!agentId) {
+      return;
+    }
+
+    const correlationId = crypto.randomUUID();
+    const model = this.selectedChatModel();
+    const normalizedModel = model === null || model === '' ? null : model;
+
+    this.selectedChatId$.pipe(take(1), takeUntilDestroyed(this.destroyRef)).subscribe((chatId) => {
+      if (!chatId) {
+        return;
+      }
+
+      this.socketsFacade.createChatPlan(
+        agentId,
+        chatId,
+        message,
+        correlationId,
+        normalizedModel,
+        this.buildContextInjection(agentId),
+      );
+
+      this.chatMessage.set('');
+    });
+  }
+
+  openChatPlanFromChat(payload: ChatPlanChatEventPayload): void {
+    this.planRefineMessage.set('');
+    this.planDetailPlanId.set(payload.plan.id);
+    this.planDetailModalOpen.set(true);
+  }
+
+  onClosePlanDetailModal(): void {
+    this.planDetailModalOpen.set(false);
+    this.planDetailPlanId.set(null);
+    this.planRefineMessage.set('');
+  }
+
+  onExecuteChatPlan(planId: string): void {
+    const agentId = this.selectedAgentId();
+
+    if (!agentId || !planId) {
+      return;
+    }
+
+    this.socketsFacade.executeChatPlan(agentId, planId, crypto.randomUUID());
+  }
+
+  onCancelChatPlan(planId: string): void {
+    const agentId = this.selectedAgentId();
+
+    if (!agentId || !planId) {
+      return;
+    }
+
+    this.socketsFacade.cancelChatPlan(agentId, planId);
+  }
+
+  onRefineChatPlan(planId: string): void {
+    const message = this.planRefineMessage().trim();
+    const agentId = this.selectedAgentId();
+
+    if (!agentId || !planId || !message) {
+      return;
+    }
+
+    this.socketsFacade.refineChatPlan(agentId, planId, message, crypto.randomUUID());
+    this.planRefineMessage.set('');
+  }
+
+  isChatPlanCancellable(status: string): boolean {
+    return status === 'exploring' || status === 'refining' || status === 'pending' || status === 'executing';
   }
 
   onChatInputKeydown(event: KeyboardEvent): void {
@@ -5439,6 +5561,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     if (item.kind === 'ticketAutomationRun') {
       return `ar-${item.payload.run.id}-${item.sortTime}`;
+    }
+
+    if (item.kind === 'chatPlan') {
+      return `cp-${item.payload.plan.id}-${item.sortTime}`;
     }
 
     const firstTs = item.msgs[0]?.timestamp ?? item.view.displayTimestamp;
