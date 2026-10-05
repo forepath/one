@@ -2,6 +2,49 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.0](https://github.com/forepath/one/compare/v2.33.0...v3.0.0) (2026-10-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* **decabill:** file signing is enabled by default and requires a
+  secret key to be set upon rollout of the new application version
+
+* feat(decabill): document signature check
+
+allow checking any document signature by providing any file without
+actually saving it to the archive
+
+* feat(decabill): document download by id
+* **shared:** configuration structure changed causing existing remote configs to break
+* **shared:** port consolidation requires changes to the deployment files
+
+### Features
+
+* **agenstra:** chat restore batching ([#634](https://github.com/forepath/one/issues/634)) ([6e9412d](https://github.com/forepath/one/commit/6e9412db761adc46706fa28d3d17e52a0f475dfc))
+* **agenstra:** empty opencode settings lock ([#637](https://github.com/forepath/one/issues/637)) ([00443fa](https://github.com/forepath/one/commit/00443fa12877f7a4f90126bc0f8aef539d798a40))
+* **agenstra:** mcp market ([#636](https://github.com/forepath/one/issues/636)) ([cb84302](https://github.com/forepath/one/commit/cb8430240c900a85d2e1ca03d60383a708fcc723))
+* **agenstra:** mcp market whitelist and blacklist ([#644](https://github.com/forepath/one/issues/644)) ([18ea9dd](https://github.com/forepath/one/commit/18ea9dd068e1acf77cd81caed45db24a467660b3))
+* **agenstra:** opencode harness lock-in ([#633](https://github.com/forepath/one/issues/633)) ([6d28331](https://github.com/forepath/one/commit/6d283311ef786ed0c32e6a4fe0c7229782d6ed24))
+* **agenstra:** worker vnc sessions ([#645](https://github.com/forepath/one/issues/645)) ([49fc78c](https://github.com/forepath/one/commit/49fc78cc63b910631fe16449e0a802db504e8d00))
+* **decabill:** file manager ([#654](https://github.com/forepath/one/issues/654)) ([d7297df](https://github.com/forepath/one/commit/d7297df43b620c661b4f097b7288e8a8900c2794))
+
+
+### Bug Fixes
+
+* **agenstra:** container image hardening ([#643](https://github.com/forepath/one/issues/643)) ([623e84b](https://github.com/forepath/one/commit/623e84b1fe42e78487642197cf00b4d8a33ea721))
+* **decabill:** websocket tenant id fallback ([#649](https://github.com/forepath/one/issues/649)) ([48b7877](https://github.com/forepath/one/commit/48b7877fc16e9bc1726fa70f424f360cbe7aaa49))
+* **shared:** websocket cors origin fallthrough ([#652](https://github.com/forepath/one/issues/652)) ([0e2570a](https://github.com/forepath/one/commit/0e2570a2137d78eb4fe9f6869d22398f369bfaa6))
+
+
+### Chores
+
+* **agenstra:** remove integrated ui mode ([#646](https://github.com/forepath/one/issues/646)) ([6d70a78](https://github.com/forepath/one/commit/6d70a78b95988fb508b9856582ac3675d58198b1))
+* **agenstra:** remove security-critical docker images ([#642](https://github.com/forepath/one/issues/642)) ([8d83eed](https://github.com/forepath/one/commit/8d83eeddf91ee86dbb5fa20b42949f4f74fd3cf2))
+* **shared:** environment definitions split ([#653](https://github.com/forepath/one/issues/653)) ([75afda8](https://github.com/forepath/one/commit/75afda842e667096ee46c72ccb3bcb322cf5504a))
+* **shared:** remove empty draft file ([#651](https://github.com/forepath/one/issues/651)) ([9eb6b25](https://github.com/forepath/one/commit/9eb6b25269113dc08cefa55ae52d6ef553160f71))
+* **shared:** websocket api consolidation ([#648](https://github.com/forepath/one/issues/648)) ([70a0ae0](https://github.com/forepath/one/commit/70a0ae0cc544114c88bae37d7ed5495fcc5c6385))
+
 ## [2.33.0](https://github.com/forepath/one/compare/v2.32.0...v2.33.0) (2026-09-27)
 
 
