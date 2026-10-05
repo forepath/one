@@ -7660,6 +7660,11 @@ components:
           type: string
           format: uuid
           description: Preferred workspace agent for chat/AI when viewing this ticket (agent-manager agent id).
+        preferredChatModel:
+          type: string
+          maxLength: 256
+          nullable: true
+          description: Preferred OpenCode provider/model for chat/AI on this ticket (e.g. anthropic/claude-sonnet-4).
         automationEligible:
           type: boolean
           description: Whether autonomous prototyping is enabled for this ticket (ticket_automation.eligible).
@@ -7745,6 +7750,11 @@ components:
           type: string
           format: uuid
           description: Persist preferred workspace agent for chat/AI; send null to clear.
+        preferredChatModel:
+          type: string
+          maxLength: 256
+          nullable: true
+          description: Persist preferred OpenCode provider/model for chat/AI; send null to clear.
     TicketCommentResponseDto:
       type: object
       required: [id, ticketId, body, createdAt]
@@ -7829,6 +7839,11 @@ components:
           items:
             type: string
             format: uuid
+        preferredModel:
+          type: string
+          maxLength: 256
+          nullable: true
+          description: OpenCode provider/model for autonomous turns; required when eligible is true.
         includeWorkspaceContext:
           type: boolean
         contextEnvironmentIds:
@@ -7862,6 +7877,7 @@ components:
         - ticketId
         - eligible
         - allowedAgentIds
+        - preferredModel
         - includeWorkspaceContext
         - contextEnvironmentIds
         - autoEnrichmentEnabled
@@ -7888,6 +7904,11 @@ components:
           items:
             type: string
             format: uuid
+        preferredModel:
+          type: string
+          maxLength: 256
+          nullable: true
+          description: OpenCode provider/model used for autonomous turns on this ticket.
         includeWorkspaceContext:
           type: boolean
         contextEnvironmentIds:
@@ -7978,7 +7999,7 @@ components:
         - finishedAt
         - updatedAt
         - iterationCount
-        - completionMarkerSeen
+        - completionSignalSeen
         - verificationPassed
         - failureCode
         - summary
@@ -8021,7 +8042,7 @@ components:
           format: date-time
         iterationCount:
           type: integer
-        completionMarkerSeen:
+        completionSignalSeen:
           type: boolean
         verificationPassed:
           type: boolean
@@ -8030,8 +8051,8 @@ components:
           description: >
             Present when a run ends unsuccessfully. Includes values such as verify_command_failed,
             commit_failed (git commit after successful verification), push_failed (git push after that commit),
-            agent_no_completion_marker, marker_without_verify, agent_provider_error, vcs_dirty_workspace,
-            and others defined by the controller.
+            agent_no_completion_status, agent_no_completion_marker (legacy), marker_without_verify, agent_provider_error,
+            vcs_dirty_workspace, and others defined by the controller.
         summary:
           type: object
           additionalProperties: true

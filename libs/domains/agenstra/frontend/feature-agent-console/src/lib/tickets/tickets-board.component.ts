@@ -173,6 +173,10 @@ function automationDtoMatchesServerConfig(dto: UpdateTicketAutomationDto, cfg: T
     return false;
   }
 
+  if ((dto.preferredModel ?? null) !== (cfg.preferredModel ?? null)) {
+    return false;
+  }
+
   const dContextAgents = normalizeAllowedAgentIdList(dto.contextEnvironmentIds);
   const cContextAgents = normalizeAllowedAgentIdList(cfg.contextEnvironmentIds);
 
@@ -454,6 +458,11 @@ export class TicketsBoardComponent implements OnInit {
 
   selectedLane = signal<BoardLaneStatus>('draft');
   selectedAgentForAi = signal<string | null>(null);
+  /** OpenCode `provider/model` for chat/AI on the open ticket. */
+  selectedModelForAi = signal<string | null>(null);
+  /** Model dropdown options for the selected chat agent (from GET …/models). */
+  ticketAiModelOptions = signal<Array<{ value: string; label: string }>>([]);
+  ticketAiModelsLoading = signal(false);
   newCommentText = signal('');
   prototypeError = signal<string | null>(null);
   bodyGenError = signal<string | null>(null);
@@ -606,6 +615,8 @@ export class TicketsBoardComponent implements OnInit {
   automationDraftRequiresApproval = signal(false);
   /** Sorted unique agent UUIDs allowed to run automation for this ticket. */
   automationDraftAllowedAgentIds = signal<string[]>([]);
+  /** OpenCode `provider/model` for autonomous runs. */
+  automationDraftPreferredModel = signal<string | null>(null);
   automationDraftIncludeWorkspaceContext = signal(true);
   automationDraftAutoEnrichmentEnabled = signal(true);
   automationDraftContextEnvironmentIds = signal<string[]>([]);
@@ -783,6 +794,8 @@ export class TicketsBoardComponent implements OnInit {
         this.chatAgentForAiSyncTicketId = null;
         this.chatAgentForAiLastSyncedDetailUpdatedAt = null;
         this.selectedAgentForAi.set(null);
+        this.selectedModelForAi.set(null);
+        this.ticketAiModelOptions.set([]);
 
         return;
       }
@@ -791,6 +804,7 @@ export class TicketsBoardComponent implements OnInit {
         this.chatAgentForAiSyncTicketId = d.id;
         this.chatAgentForAiLastSyncedDetailUpdatedAt = null;
         this.selectedAgentForAi.set(null);
+        this.selectedModelForAi.set(d.preferredChatModel ?? null);
       }
 
       if (chatAgents.length === 0 && this.chatAgentForAiLastSyncedDetailUpdatedAt === null) {
@@ -808,14 +822,71 @@ export class TicketsBoardComponent implements OnInit {
 
       if (revBumped) {
         this.chatAgentForAiLastSyncedDetailUpdatedAt = rev;
+        this.selectedModelForAi.set(d.preferredChatModel ?? this.selectedModelForAi());
       }
 
       this.selectedAgentForAi.set(pick);
       queueMicrotask(() => {
         this.ensureChatAgentInAutomationAllowedList();
         this.ensureChatAgentInAutomationContextEnvironmentList();
+        this.ensureChatModelInAutomationPreferredModel();
       });
     });
+
+    effect(() => {
+      const clientId = this.effectiveClientId();
+      const agentId = this.selectedAgentForAi();
+
+      if (!clientId || !agentId) {
+        this.ticketAiModelOptions.set([]);
+        this.ticketAiModelsLoading.set(false);
+
+        return;
+      }
+
+      this.ticketAiModelsLoading.set(true);
+      this.agentsFacade.loadClientAgentModels(clientId, agentId);
+    });
+
+    combineLatest([toObservable(this.effectiveClientId), toObservable(this.selectedAgentForAi)])
+      .pipe(
+        switchMap(([clientId, agentId]) => {
+          if (!clientId || !agentId) {
+            return of({ models: null as Record<string, string> | null, loading: false, error: null as string | null });
+          }
+
+          return combineLatest([
+            this.agentsFacade.getClientAgentModels$(clientId, agentId),
+            this.agentsFacade.getClientAgentModelsLoading$(clientId, agentId),
+            this.agentsFacade.getClientAgentModelsError$(clientId, agentId),
+          ]).pipe(map(([models, loading, error]) => ({ models, loading, error })));
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(({ models, loading, error }) => {
+        this.ticketAiModelsLoading.set(loading || (models === null && error === null));
+        const opts = models ? Object.entries(models).map(([value, label]) => ({ value, label })) : [];
+
+        this.ticketAiModelOptions.set(opts);
+        const current = this.selectedModelForAi();
+
+        if (opts.length === 0) {
+          return;
+        }
+
+        if (!current || !opts.some((o) => o.value === current)) {
+          const next = opts[0]?.value ?? null;
+
+          this.selectedModelForAi.set(next);
+          const detail = this.detail();
+
+          if (detail && next && next !== (detail.preferredChatModel ?? null)) {
+            this.ticketsFacade.update(detail.id, { preferredChatModel: next });
+          }
+
+          queueMicrotask(() => this.ensureChatModelInAutomationPreferredModel());
+        }
+      });
 
     effect(() => {
       const d = this.detail()?.id;
@@ -856,6 +927,7 @@ export class TicketsBoardComponent implements OnInit {
 
       this.automationDraftRequiresApproval.set(cfg.requiresApproval);
       this.automationDraftAllowedAgentIds.set(normalizeAllowedAgentIdList(cfg.allowedAgentIds));
+      this.automationDraftPreferredModel.set(cfg.preferredModel ?? null);
       this.automationDraftIncludeWorkspaceContext.set(cfg.includeWorkspaceContext !== false);
       this.automationDraftAutoEnrichmentEnabled.set(cfg.autoEnrichmentEnabled !== false);
       this.automationDraftContextEnvironmentIds.set(normalizeAllowedAgentIdList(cfg.contextEnvironmentIds ?? []));
@@ -870,6 +942,7 @@ export class TicketsBoardComponent implements OnInit {
       queueMicrotask(() => {
         this.ensureChatAgentInAutomationAllowedList();
         this.ensureChatAgentInAutomationContextEnvironmentList();
+        this.ensureChatModelInAutomationPreferredModel();
       });
     });
 
@@ -878,6 +951,7 @@ export class TicketsBoardComponent implements OnInit {
       const cfg = this.ticketAutomationConfig();
 
       this.selectedAgentForAi();
+      this.selectedModelForAi();
       this.automationTicketAutomationAgentChoices();
       this.autonomyEnabledAgentIds();
 
@@ -892,6 +966,7 @@ export class TicketsBoardComponent implements OnInit {
       queueMicrotask(() => {
         this.ensureChatAgentInAutomationAllowedList();
         this.ensureChatAgentInAutomationContextEnvironmentList();
+        this.ensureChatModelInAutomationPreferredModel();
       });
     });
 
@@ -1812,6 +1887,44 @@ export class TicketsBoardComponent implements OnInit {
     this.ticketsFacade.update(ticket.id, { preferredChatAgentId: agentId });
   }
 
+  onPreferredChatModelChange(ticket: TicketResponseDto, model: string | null): void {
+    const next = model?.trim() ? model.trim() : null;
+
+    this.selectedModelForAi.set(next);
+    const current = ticket.preferredChatModel ?? null;
+
+    if (next === current) {
+      queueMicrotask(() => this.ensureChatModelInAutomationPreferredModel());
+
+      return;
+    }
+
+    this.ticketsFacade.update(ticket.id, { preferredChatModel: next });
+    queueMicrotask(() => this.ensureChatModelInAutomationPreferredModel());
+  }
+
+  onAutomationPreferredModelChange(model: string | null): void {
+    const next = model?.trim() ? model.trim() : null;
+
+    this.automationDraftPreferredModel.set(next);
+  }
+
+  /**
+   * When chat has a model selected, keep automation preferredModel aligned so enabling automation
+   * does not leave eligible=true without a model (OpenCode has no auto).
+   */
+  private ensureChatModelInAutomationPreferredModel(): void {
+    const chatModel = this.selectedModelForAi();
+
+    if (!chatModel) {
+      return;
+    }
+
+    if (!this.automationDraftPreferredModel()) {
+      this.automationDraftPreferredModel.set(chatModel);
+    }
+  }
+
   showCreateSubtaskModal(): void {
     const parentId = this.detail()?.id;
 
@@ -2097,6 +2210,7 @@ export class TicketsBoardComponent implements OnInit {
       eligible: this.automationDraftEligible(),
       requiresApproval: this.automationDraftRequiresApproval(),
       allowedAgentIds: this.automationDraftAllowedAgentIds(),
+      preferredModel: this.automationDraftPreferredModel(),
       includeWorkspaceContext: this.automationDraftIncludeWorkspaceContext(),
       autoEnrichmentEnabled: this.automationDraftAutoEnrichmentEnabled(),
       contextEnvironmentIds: this.automationDraftContextEnvironmentIds(),
@@ -2807,7 +2921,7 @@ export class TicketsBoardComponent implements OnInit {
                 d.title,
                 agentId,
                 correlationId,
-                undefined,
+                this.selectedModelForAi() ?? undefined,
                 hierarchyContext || undefined,
               );
             }),

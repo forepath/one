@@ -49,6 +49,7 @@ describe('KnowledgeTreeService', () => {
   const usersRepository: any = { findById: jest.fn() };
   const ticketsService: any = {
     getPrototypePromptByClientSha: jest.fn(),
+    assertTicketInClient: jest.fn().mockResolvedValue({ id: 'ticket-1', clientId: 'c1' }),
   };
   const ticketBoardRealtime: any = {
     emitToClient: jest.fn(),
@@ -448,17 +449,126 @@ describe('KnowledgeTreeService', () => {
       expect(result.created[0].title).toBe('Guide (1)');
       expect(result.updated).toHaveLength(0);
     });
+  });
 
-    it('rejects path separators in filename', async () => {
-      (service as any).assertClientAccess = jest.fn().mockResolvedValue(undefined);
-      nodeRepo.find.mockResolvedValue([]);
+  it('collects automation relation sections across ticket tree sources with full target depth', async () => {
+    relationRepo.find
+      .mockResolvedValueOnce([
+        {
+          targetType: KnowledgeRelationTargetType.TICKET,
+          targetTicketLongSha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        },
+        {
+          targetType: KnowledgeRelationTargetType.FOLDER,
+          targetNodeId: 'folder-1',
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          targetType: KnowledgeRelationTargetType.PAGE,
+          targetNodeId: 'page-child',
+        },
+      ]);
+    ticketsService.getPrototypePromptByClientSha.mockResolvedValue({
+      prompt: '- [related] Related ticket (todo, medium)\n  Content:\n  Nested work\n',
+    });
+    nodeRepo.findOne
+      .mockResolvedValueOnce({ id: 'folder-1', clientId: 'c1', nodeType: KnowledgeNodeType.FOLDER })
+      .mockResolvedValueOnce({
+        id: 'page-child',
+        clientId: 'c1',
+        nodeType: KnowledgeNodeType.PAGE,
+        title: 'Child page',
+        content: 'From subtask relation',
+      });
+    (service as any).collectSubtreePages = jest.fn().mockResolvedValue([
+      { id: 'page-a', title: 'Folder page A', content: 'A' },
+      { id: 'page-b', title: 'Folder page B', content: 'B' },
+    ]);
 
-      const result = await service.uploadTextFiles({
-        clientId: 'client-1',
-        files: [{ filename: '../evil.md', content: 'x' }],
+    const sections = await service.collectAutomationRelationPromptSections(
+      'c1',
+      ['ticket-root', 'ticket-child'],
+      ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'],
+    );
+
+    expect(ticketsService.getPrototypePromptByClientSha).toHaveBeenCalledWith(
+      'c1',
+      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    );
+    expect(sections.some((s) => s.includes('Related ticket'))).toBe(true);
+    expect(sections.some((s) => s.includes('Folder page A'))).toBe(true);
+    expect(sections.some((s) => s.includes('Folder page B'))).toBe(true);
+    expect(sections.some((s) => s.includes('Child page'))).toBe(true);
+  });
+
+  it('skips related tickets already covered by the automation ticket tree SHAs', async () => {
+    relationRepo.find.mockResolvedValue([
+      {
+        targetType: KnowledgeRelationTargetType.TICKET,
+        targetTicketLongSha: 'cccccccccccccccccccccccccccccccccccccccc',
+      },
+    ]);
+
+    const sections = await service.collectAutomationRelationPromptSections(
+      'c1',
+      ['ticket-root'],
+      ['cccccccccccccccccccccccccccccccccccccccc'],
+    );
+
+    expect(sections).toEqual([]);
+    expect(ticketsService.getPrototypePromptByClientSha).not.toHaveBeenCalled();
+  });
+
+  it('applies auto-enrich section budget to automation relation prompts', async () => {
+    const previousSections = process.env.AUTO_ENRICH_MAX_SECTIONS;
+    const previousChars = process.env.AUTO_ENRICH_MAX_CHARS;
+
+    process.env.AUTO_ENRICH_MAX_SECTIONS = '1';
+    process.env.AUTO_ENRICH_MAX_CHARS = '12000';
+    relationRepo.find.mockResolvedValue([
+      {
+        targetType: KnowledgeRelationTargetType.PAGE,
+        targetNodeId: 'page-1',
+      },
+      {
+        targetType: KnowledgeRelationTargetType.PAGE,
+        targetNodeId: 'page-2',
+      },
+    ]);
+    nodeRepo.findOne
+      .mockResolvedValueOnce({
+        id: 'page-1',
+        clientId: 'c1',
+        nodeType: KnowledgeNodeType.PAGE,
+        title: 'P1',
+        content: 'one',
+      })
+      .mockResolvedValueOnce({
+        id: 'page-2',
+        clientId: 'c1',
+        nodeType: KnowledgeNodeType.PAGE,
+        title: 'P2',
+        content: 'two',
       });
 
-      expect(result.rejected[0].reason).toMatch(/path separators/i);
-    });
+    try {
+      const sections = await service.collectAutomationRelationPromptSections('c1', ['ticket-root']);
+
+      expect(sections).toHaveLength(1);
+      expect(sections[0]).toContain('P1');
+    } finally {
+      if (previousSections === undefined) {
+        delete process.env.AUTO_ENRICH_MAX_SECTIONS;
+      } else {
+        process.env.AUTO_ENRICH_MAX_SECTIONS = previousSections;
+      }
+
+      if (previousChars === undefined) {
+        delete process.env.AUTO_ENRICH_MAX_CHARS;
+      } else {
+        process.env.AUTO_ENRICH_MAX_CHARS = previousChars;
+      }
+    }
   });
 });

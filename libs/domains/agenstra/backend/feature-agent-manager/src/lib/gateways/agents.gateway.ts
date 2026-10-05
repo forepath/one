@@ -13,7 +13,10 @@ import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
 import { GIT_STATE_CHANGED_EVENT, toolMayMutateGitWorkspace } from '../constants/agent-git-state.constants';
-import { isReservedChatResumeSessionSuffix } from '../constants/chat-session.constants';
+import {
+  isReservedChatResumeSessionSuffix,
+  isTicketAutomationResumeSessionSuffix,
+} from '../constants/chat-session.constants';
 import { AgentEventEnvelope, AgentInteractionQueryPayload, AgentResponseMode } from '../providers/agent-events.types';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentResponseObject } from '../providers/agent-provider.interface';
@@ -57,6 +60,11 @@ interface ChatPayload {
   ephemeral?: boolean;
   continue?: boolean;
   resumeSessionSuffix?: string;
+  /**
+   * Server-side trust marker for ticket-automation reserved suffixes.
+   * Only the agent-controller orchestrator may set this; interactive clients must not.
+   */
+  unattendedAutomation?: boolean;
   /** User-visible chat session id; defaults to primary when omitted (ignored for reserved ACP suffixes). */
   chatId?: string;
   contextInjection?: ContextInjectionPayload;
@@ -637,7 +645,12 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
 
   private async resolveChatContext(
     agentId: string,
-    data: { chatId?: string; resumeSessionSuffix?: string; ephemeral?: boolean },
+    data: {
+      chatId?: string;
+      resumeSessionSuffix?: string;
+      ephemeral?: boolean;
+      unattendedAutomation?: boolean;
+    },
   ): Promise<{
     resumeSessionSuffix: string | undefined;
     chatSessionId: string | undefined;
@@ -645,6 +658,21 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     /** Hidden ACP suffixes must never persist or broadcast into user-visible chats. */
     hidden: boolean;
   }> {
+    if (isTicketAutomationResumeSessionSuffix(data.resumeSessionSuffix)) {
+      if (data.unattendedAutomation !== true) {
+        throw new BadRequestException(
+          'Ticket automation resumeSessionSuffix requires unattendedAutomation trust marker',
+        );
+      }
+
+      return {
+        resumeSessionSuffix: data.resumeSessionSuffix,
+        chatSessionId: undefined,
+        chatId: undefined,
+        hidden: true,
+      };
+    }
+
     if (isReservedChatResumeSessionSuffix(data.resumeSessionSuffix)) {
       // Ignore chatId: reserved suffixes are isolated ACP sessions, not user chat rows.
       return {
@@ -1567,9 +1595,15 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       chatContext = await this.resolveChatContext(agentUuid, data);
     } catch (error) {
       const err = error as { message?: string };
-      const code = error instanceof BadRequestException ? 'INVALID_CHAT_ID' : 'CHAT_ERROR';
+      const message = err.message || 'Invalid or unknown chat session';
+      const code =
+        error instanceof BadRequestException
+          ? message.includes('unattendedAutomation')
+            ? 'AUTOMATION_TRUST_REQUIRED'
+            : 'INVALID_CHAT_ID'
+          : 'CHAT_ERROR';
 
-      socket.emit('error', createErrorResponse(err.message || 'Invalid or unknown chat session', code));
+      socket.emit('error', createErrorResponse(message, code));
 
       return;
     }

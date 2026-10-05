@@ -7,11 +7,14 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Matches,
   MaxLength,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 
 import { TICKET_AUTOMATION_BRANCH_STRATEGIES } from '../../utils/ticket-automation-branch.constants';
+import { PREFERRED_MODEL_PATTERN } from '../../utils/preferred-model.utils';
 
 /** Single verifier command; mirrors {@link parseAndValidateVerifierProfile} bounds. */
 export class VerifierCommandEntryDto {
@@ -42,6 +45,14 @@ export class UpdateTicketAutomationDto {
   @IsArray()
   @IsUUID('4', { each: true })
   allowedAgentIds?: string[];
+
+  /** OpenCode `provider/model` for autonomous turns; set `null` to clear. Required when eligible. */
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null && v !== undefined)
+  @IsString()
+  @MaxLength(256)
+  @Matches(PREFERRED_MODEL_PATTERN)
+  preferredModel?: string | null;
 
   @IsOptional()
   @IsBoolean()

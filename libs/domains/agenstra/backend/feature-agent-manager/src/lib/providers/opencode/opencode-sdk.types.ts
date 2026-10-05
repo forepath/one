@@ -391,13 +391,22 @@ export type RequestResult<T> = {
 
 export type OpencodeClient = {
   session: {
-    create(options?: { body?: { parentID?: string; title?: string } }): Promise<RequestResult<Session>>;
+    create(options?: {
+      body?: {
+        parentID?: string;
+        title?: string;
+        agent?: string;
+        permission?: Array<{ permission: string; pattern: string; action: 'allow' | 'deny' | 'ask' }>;
+      };
+    }): Promise<RequestResult<Session>>;
     get(options: { path: { id: string } }): Promise<RequestResult<Session>>;
     promptAsync(options: {
       path: { id: string };
       body?: {
         parts: Array<{ type: 'text'; text: string }>;
         model?: { providerID: string; modelID: string };
+        agent?: string;
+        format?: { type: 'text' } | { type: 'json_schema'; schema: Record<string, unknown>; retryCount?: number };
       };
     }): Promise<RequestResult<void>>;
     prompt(options: {
@@ -405,6 +414,8 @@ export type OpencodeClient = {
       body?: {
         parts: Array<{ type: 'text'; text: string }>;
         model?: { providerID: string; modelID: string };
+        agent?: string;
+        format?: { type: 'text' } | { type: 'json_schema'; schema: Record<string, unknown>; retryCount?: number };
       };
     }): Promise<RequestResult<{ info: unknown; parts: Part[] }>>;
   };

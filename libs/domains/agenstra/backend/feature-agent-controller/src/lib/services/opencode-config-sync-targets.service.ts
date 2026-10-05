@@ -1,5 +1,10 @@
 import { createHash } from 'crypto';
 
+import {
+  AGENSTRA_OPENCODE_PLATFORM_WIRE_VERSION,
+  prepareConfigForSync,
+  type JsonObject,
+} from '@forepath/agenstra/shared/util-opencode-config';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -35,6 +40,11 @@ export class OpencodeConfigSyncTargetsService {
     private readonly clientAgentProxy: ClientAgentProxyService,
   ) {}
 
+  /**
+   * Hash desired worker wire + secrets.
+   * Includes platform wire version and prepareConfigForSync output so inject/materialize
+   * deploys rematch even when stored overlays are unchanged.
+   */
   static hashRevision(config: Record<string, unknown>, secrets: Record<string, string>): string {
     const sortedSecrets: Record<string, string> = {};
 
@@ -42,8 +52,16 @@ export class OpencodeConfigSyncTargetsService {
       sortedSecrets[key] = secrets[key];
     }
 
+    const prepared = prepareConfigForSync(config as JsonObject);
+
     return createHash('sha256')
-      .update(JSON.stringify({ config, secrets: sortedSecrets }))
+      .update(
+        JSON.stringify({
+          platformWireVersion: AGENSTRA_OPENCODE_PLATFORM_WIRE_VERSION,
+          config: prepared,
+          secrets: sortedSecrets,
+        }),
+      )
       .digest('hex');
   }
 
@@ -183,6 +201,53 @@ export class OpencodeConfigSyncTargetsService {
     });
 
     return rows.map((row) => row.id);
+  }
+
+  /**
+   * Recompute desired revisions for synced targets; mark pending when platform wire / overlays drift.
+   * Returns ids newly marked pending (capped by max).
+   */
+  async reconcileOutdatedSyncedTargets(max: number): Promise<string[]> {
+    if (max <= 0) {
+      return [];
+    }
+
+    const synced = await this.targetsRepo.find({
+      where: { syncStatus: 'synced' },
+      order: { updatedAt: 'ASC' },
+      take: Math.max(max * 4, max),
+    });
+    const pendingIds: string[] = [];
+
+    for (const target of synced) {
+      if (pendingIds.length >= max) {
+        break;
+      }
+
+      try {
+        const { effective, secrets } = await this.effectiveConfigSync.buildEffectivePayload(
+          target.clientId,
+          target.agentId,
+        );
+        const desiredRevision = OpencodeConfigSyncTargetsService.hashRevision(effective, secrets);
+
+        if (desiredRevision === target.appliedRevision && desiredRevision === target.desiredRevision) {
+          continue;
+        }
+
+        target.desiredRevision = desiredRevision;
+        target.syncStatus = 'pending';
+        target.lastError = null;
+        await this.targetsRepo.save(target);
+        pendingIds.push(target.id);
+      } catch (error: unknown) {
+        const err = error as { message?: string };
+
+        this.logger.warn(`Failed to reconcile OpenCode sync target ${target.id}: ${err.message ?? 'unknown'}`);
+      }
+    }
+
+    return pendingIds;
   }
 
   async findPendingTargetIdsForClient(clientId: string, max: number): Promise<string[]> {

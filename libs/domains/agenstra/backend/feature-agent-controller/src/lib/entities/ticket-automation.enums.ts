@@ -30,7 +30,10 @@ export enum TicketAutomationFailureCode {
   VCS_DIRTY_WORKSPACE = 'vcs_dirty_workspace',
   VCS_BRANCH_EXISTS = 'vcs_branch_exists',
   AGENT_PROVIDER_ERROR = 'agent_provider_error',
+  AGENT_NO_COMPLETION_STATUS = 'agent_no_completion_status',
+  /** @deprecated Retained for historical rows; prefer AGENT_NO_COMPLETION_STATUS. */
   AGENT_NO_COMPLETION_MARKER = 'agent_no_completion_marker',
+  /** @deprecated Unused by current orchestrator. */
   MARKER_WITHOUT_VERIFY = 'marker_without_verify',
   VERIFY_COMMAND_FAILED = 'verify_command_failed',
   /** Git commit after successful verification failed (e.g. empty index, hook, or I/O). */

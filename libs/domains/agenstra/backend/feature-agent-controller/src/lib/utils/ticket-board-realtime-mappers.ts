@@ -37,7 +37,7 @@ export function ticketAutomationRunEntityToDto(r: TicketAutomationRunEntity): Ti
     finishedAt: r.finishedAt ?? null,
     updatedAt: r.updatedAt,
     iterationCount: r.iterationCount,
-    completionMarkerSeen: r.completionMarkerSeen,
+    completionSignalSeen: r.completionSignalSeen,
     verificationPassed: r.verificationPassed ?? null,
     failureCode: r.failureCode ?? null,
     summary: r.summary ?? null,

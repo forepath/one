@@ -581,8 +581,17 @@ describe('materializeModelAllowDeny', () => {
     });
 
     expect(prepared.skills).toEqual({
-      paths: ['/opt/skills/local'],
+      paths: [
+        '/opt/skills/local',
+        '/opt/agenstra/skills/agenstra-ticket-automation',
+        '.opencode/skills/agenstra-ticket-automation',
+      ],
       urls: ['https://example.com/skill'],
+    });
+    expect((prepared.agent as Record<string, unknown>)['agenstra-automation']).toMatchObject({
+      mode: 'primary',
+      hidden: true,
+      permission: 'allow',
     });
     expect(prepared.mcp).toEqual({
       docs: { type: 'local', command: ['echo'], timeout: 1500, enabled: false },
@@ -768,6 +777,12 @@ describe('prepareConfigForSync wire mapping', () => {
     expect(prepared.plugin).toEqual(['@pkg/a']);
     expect(prepared.agent).toEqual({
       build: { description: 'Build', prompt: 'You build', disable: true, mode: 'primary' },
+      'agenstra-automation': {
+        description: 'Unattended Agenstra ticket automation (platform-managed)',
+        mode: 'primary',
+        hidden: true,
+        permission: 'allow',
+      },
     });
     expect(prepared.command).toEqual({
       hello: { template: 'hi', subtask: true },

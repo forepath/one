@@ -70,10 +70,12 @@ export function ticketAutomationFailureCodeLabel(code: string): string {
       return $localize`:@@featureTicketsBoard-runFailureVcsBranchExists:Branch already exists`;
     case 'agent_provider_error':
       return $localize`:@@featureTicketsBoard-runFailureAgentProviderError:Agent provider error`;
+    case 'agent_no_completion_status':
+      return $localize`:@@featureTicketsBoard-runFailureAgentNoCompletionStatus:No completion status`;
     case 'agent_no_completion_marker':
       return $localize`:@@featureTicketsBoard-runFailureAgentNoCompletionMarker:No completion marker`;
     case 'marker_without_verify':
-      return $localize`:@@featureTicketsBoard-runFailureMarkerWithoutVerify:Completion marker without verify profile`;
+      return $localize`:@@featureTicketsBoard-runFailureMarkerWithoutVerify:Completion without verify profile`;
     case 'verify_command_failed':
       return $localize`:@@featureTicketsBoard-runFailureVerifyCommandFailed:Verify command failed`;
     case 'commit_failed':

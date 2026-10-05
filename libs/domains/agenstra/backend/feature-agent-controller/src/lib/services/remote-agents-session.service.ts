@@ -3,11 +3,13 @@ import { AuthenticationType } from '@forepath/identity/backend';
 import { ClientAgentCredentialsRepository } from '@forepath/identity/backend';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import type { Socket as ClientSocket } from 'socket.io-client';
+import type { AgenstraAutomationTurnStatus } from '@forepath/agenstra/shared/util-opencode-config';
 
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
 import { buildRemoteAgentsSocketUrl } from '../utils/remote-manager-url.utils';
+import { extractAutomationTurnStatus } from '../utils/automation-turn-status';
 
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
@@ -19,6 +21,8 @@ export interface RemoteChatSyncParams {
   correlationId: string;
   continue?: boolean;
   resumeSessionSuffix?: string;
+  /** OpenCode `provider/model` — required for automation (no auto model). */
+  model?: string;
   /** When set, records statistics under this kind instead of default chat. */
   statisticsInteractionKind?: StatisticsInteractionKind;
   /** Overrides `REMOTE_AGENT_CHAT_TIMEOUT_MS` for the agent response wait (e.g. shorter commit-message generation). */
@@ -27,7 +31,18 @@ export interface RemoteChatSyncParams {
     includeWorkspace?: boolean;
     environmentIds?: string[];
     autoEnrichmentEnabled?: boolean;
+    ticketShas?: string[];
   };
+  /**
+   * When true, settle only on final `result` frames (ignore intermediate status/question payloads)
+   * and return structured automation turn status when present.
+   */
+  expectAutomationTurnStatus?: boolean;
+}
+
+export interface RemoteChatSyncResult {
+  text: string;
+  turnStatus?: AgenstraAutomationTurnStatus;
 }
 
 /**
@@ -92,13 +107,79 @@ export class RemoteAgentsSessionService {
       return typeof res === 'string' ? res : JSON.stringify(res);
     }
 
+    if (r && typeof r === 'object' && String((r as { type?: unknown }).type) === 'agenstra_turn') {
+      const parts = (r as { parts?: unknown }).parts;
+
+      if (Array.isArray(parts)) {
+        for (let i = parts.length - 1; i >= 0; i--) {
+          const part = parts[i];
+
+          if (part && typeof part === 'object' && String((part as { type?: unknown }).type) === 'result') {
+            const res = (part as { result?: unknown }).result;
+
+            if (typeof res === 'string') {
+              return res;
+            }
+
+            if (res !== undefined) {
+              return JSON.stringify(res);
+            }
+          }
+        }
+      }
+    }
+
     return JSON.stringify(r);
+  }
+
+  private isFinalAgentResult(payload: unknown): boolean {
+    if (!payload || typeof payload !== 'object') {
+      return false;
+    }
+
+    const envelope = payload as { success?: boolean; data?: { from?: string; response?: unknown } };
+
+    if (!envelope.success || !envelope.data || envelope.data.from !== 'agent') {
+      return false;
+    }
+
+    const r = envelope.data.response;
+
+    if (!r || typeof r !== 'object') {
+      return false;
+    }
+
+    const type = String((r as { type?: unknown }).type);
+
+    if (type === 'result') {
+      const record = r as { is_error?: unknown; subtype?: unknown };
+
+      if (record.is_error === true || String(record.subtype ?? '') === 'error') {
+        return false;
+      }
+
+      return true;
+    }
+
+    if (type === 'agenstra_turn' && Array.isArray((r as { parts?: unknown }).parts)) {
+      return (r as { parts: unknown[] }).parts.some((part) => {
+        if (!part || typeof part !== 'object') {
+          return false;
+        }
+
+        const record = part as { type?: unknown; is_error?: unknown; subtype?: unknown };
+
+        return String(record.type) === 'result' && record.is_error !== true && String(record.subtype ?? '') !== 'error';
+      });
+    }
+
+    return false;
   }
 
   /**
    * Connects to the remote agents gateway, logs in, sends one non-streaming `chat`, returns aggregated agent text.
    */
-  async sendChatSync(params: RemoteChatSyncParams): Promise<string> {
+  async sendChatSync(params: RemoteChatSyncParams): Promise<RemoteChatSyncResult> {
     const client = await this.clientsRepository.findByIdOrThrow(params.clientId);
     const authHeader = await this.getAuthHeader(params.clientId);
 
@@ -118,6 +199,7 @@ export class RemoteAgentsSessionService {
     }
 
     const chatTimeoutMs = params.chatTimeoutMs ?? parseInt(process.env.REMOTE_AGENT_CHAT_TIMEOUT_MS || '600000', 10);
+    const expectAutomation = params.expectAutomationTurnStatus === true;
 
     try {
       await new Promise<void>((resolve, reject) => {
@@ -162,8 +244,10 @@ export class RemoteAgentsSessionService {
         kind,
       );
 
-      const output = await new Promise<string>((resolve, reject) => {
+      const output = await new Promise<RemoteChatSyncResult>((resolve, reject) => {
         let settled = false;
+        let lastText = '';
+        let lastStatus: AgenstraAutomationTurnStatus | undefined;
         const t = setTimeout(() => {
           if (!settled) {
             settled = true;
@@ -173,12 +257,36 @@ export class RemoteAgentsSessionService {
         }, chatTimeoutMs);
         const onChatMessage = (msg: unknown) => {
           const text = this.extractAgentText(msg);
+          const turnStatus = extractAutomationTurnStatus(msg);
+
+          if (text) {
+            lastText = text;
+          }
+
+          if (turnStatus) {
+            lastStatus = turnStatus;
+          }
+
+          if (expectAutomation) {
+            if (!this.isFinalAgentResult(msg)) {
+              return;
+            }
+
+            if (!settled) {
+              settled = true;
+              clearTimeout(t);
+              remote.off('chatMessage', onChatMessage);
+              resolve({ text: lastText || text, turnStatus: lastStatus ?? turnStatus });
+            }
+
+            return;
+          }
 
           if (text && !settled) {
             settled = true;
             clearTimeout(t);
             remote.off('chatMessage', onChatMessage);
-            resolve(text);
+            resolve({ text, turnStatus: lastStatus ?? turnStatus });
           }
         };
 
@@ -191,15 +299,18 @@ export class RemoteAgentsSessionService {
           continue: params.continue ?? false,
           resumeSessionSuffix: params.resumeSessionSuffix,
           contextInjection: params.contextInjection,
+          ...(params.model ? { model: params.model } : {}),
+          // Trust marker required by agent-manager for -ticket-auto-* allow-all sessions.
+          unattendedAutomation: true,
         });
       });
-      const outWords = output.trim().split(/\s+/).filter(Boolean).length;
+      const outWords = output.text.trim().split(/\s+/).filter(Boolean).length;
 
       await this.statisticsService.recordChatOutput(
         params.clientId,
         params.agentId,
         outWords,
-        output.length,
+        output.text.length,
         undefined,
         kind,
       );

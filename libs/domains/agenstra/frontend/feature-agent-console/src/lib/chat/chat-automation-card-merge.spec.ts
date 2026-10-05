@@ -70,7 +70,7 @@ describe('mergeTicketAutomationChatCardPayload', () => {
       finishedAt: '2024-01-02T00:00:00Z',
       updatedAt: '2024-01-02T12:00:00Z',
       iterationCount: 2,
-      completionMarkerSeen: true,
+      completionSignalSeen: true,
       verificationPassed: true,
       failureCode: null,
       summary: null,

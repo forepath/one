@@ -41,7 +41,7 @@ export const SecurityWarning: Story = { args: { kind: 'security-warning', ariaLa
 
 export const Git: Story = { args: { kind: 'git', ariaLabel: 'Repository activity' } };
 
-export const Both: Story = { args: { kind: 'both', ariaLabel: 'Unread and security warning' } };
+export const Both: Story = { args: { kind: 'both', ariaLabel: 'Unread and repository activity' } };
 
 export const AbsolutePlacement: Story = {
   args: { placement: 'absolute' },

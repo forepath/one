@@ -24,12 +24,33 @@ export const RESERVED_CHAT_RESUME_SESSION_SUFFIXES = [
   '-ticket-auto-commit-msg',
 ] as const;
 
+/** Reserved suffixes used by autonomous ticket-run OpenCode sessions. */
+export const TICKET_AUTOMATION_RESUME_SESSION_SUFFIXES = [
+  '-ticket-auto-pre',
+  '-ticket-auto-loop',
+  '-ticket-auto-commit-msg',
+] as const;
+
 export function isReservedChatResumeSessionSuffix(suffix: string | undefined): boolean {
   if (suffix === undefined || suffix === PRIMARY_CHAT_RESUME_SESSION_SUFFIX) {
     return false;
   }
 
   return (RESERVED_CHAT_RESUME_SESSION_SUFFIXES as readonly string[]).includes(suffix);
+}
+
+/** True for ticket automation hidden sessions (unattended permission / structured turn status). */
+export function isTicketAutomationResumeSessionSuffix(suffix: string | undefined): boolean {
+  if (suffix === undefined || suffix === PRIMARY_CHAT_RESUME_SESSION_SUFFIX) {
+    return false;
+  }
+
+  return (TICKET_AUTOMATION_RESUME_SESSION_SUFFIXES as readonly string[]).includes(suffix);
+}
+
+/** Implementation-loop sessions request structured continue/complete turn status. */
+export function isTicketAutomationLoopResumeSessionSuffix(suffix: string | undefined): boolean {
+  return suffix === '-ticket-auto-loop';
 }
 
 export function buildUserChatResumeSessionSuffix(chatId: string): string {

@@ -98,6 +98,7 @@ describe('TicketAutomationService', () => {
       Promise.resolve({
         ...row,
         allowedAgentIds: row.allowedAgentIds ?? [],
+        preferredModel: row.preferredModel ?? null,
         requiresApproval: row.requiresApproval ?? false,
         consecutiveFailureCount: 0,
         createdAt: new Date('2020-01-01'),
@@ -122,6 +123,7 @@ describe('TicketAutomationService', () => {
         ticketId: tid,
         eligible: false,
         allowedAgentIds: [] as string[],
+        preferredModel: null as string | null,
         includeWorkspaceContext: true,
         contextEnvironmentIds: [] as string[],
         autoEnrichmentEnabled: true,
@@ -148,10 +150,13 @@ describe('TicketAutomationService', () => {
 
     it('logs eligibility change without approval invalidated when approval is not required', async () => {
       automationRepo.findOne.mockResolvedValue(baseAutomation({ eligible: false, requiresApproval: false }));
-      await service.patchAutomation(tid, { eligible: true }, undefined);
+      await service.patchAutomation(tid, { eligible: true, preferredModel: 'opencode/test-model' }, undefined);
       const types = activityRepo.save.mock.calls.map((c) => (c[0] as { actionType: string }).actionType);
 
-      expect(types).toEqual([TicketActionType.AUTOMATION_ELIGIBILITY_CHANGED]);
+      expect(types).toEqual([
+        TicketActionType.AUTOMATION_ELIGIBILITY_CHANGED,
+        TicketActionType.AUTOMATION_SETTINGS_UPDATED,
+      ]);
     });
 
     it('logs approval requirement change only when turning off requirement (no approval invalidated)', async () => {
@@ -176,6 +181,7 @@ describe('TicketAutomationService', () => {
       automationRepo.findOne.mockResolvedValue(
         baseAutomation({
           eligible: true,
+          preferredModel: 'opencode/test-model',
           requiresApproval: true,
           approvedAt,
           approvedByUserId: 'user-1',
@@ -200,7 +206,11 @@ describe('TicketAutomationService', () => {
 
     it('does not save or log when patch is a no-op', async () => {
       automationRepo.findOne.mockResolvedValue(
-        baseAutomation({ eligible: true, allowedAgentIds: ['00000000-0000-4000-8000-0000000000aa'] }),
+        baseAutomation({
+          eligible: true,
+          preferredModel: 'opencode/test-model',
+          allowedAgentIds: ['00000000-0000-4000-8000-0000000000aa'],
+        }),
       );
       await service.patchAutomation(
         tid,
@@ -313,6 +323,7 @@ describe('TicketAutomationService', () => {
         .mockResolvedValueOnce({
           ticketId: tid,
           eligible: true,
+          preferredModel: 'opencode/test-model',
           allowedAgentIds: [],
           verifierProfile: null,
           requiresApproval: true,
@@ -370,6 +381,7 @@ describe('TicketAutomationService', () => {
       const row = {
         ticketId: tid,
         eligible: true,
+        preferredModel: 'opencode/test-model',
         allowedAgentIds: [],
         verifierProfile: null,
         requiresApproval: true,

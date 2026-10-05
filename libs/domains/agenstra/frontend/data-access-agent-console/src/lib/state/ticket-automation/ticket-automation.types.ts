@@ -8,6 +8,7 @@ export type TicketAutomationBranchStrategy = 'reuse_per_ticket' | 'new_per_run';
 export interface UpdateTicketAutomationDto {
   eligible?: boolean;
   allowedAgentIds?: string[];
+  preferredModel?: string | null;
   includeWorkspaceContext?: boolean;
   contextEnvironmentIds?: string[];
   autoEnrichmentEnabled?: boolean;
@@ -33,6 +34,7 @@ export interface TicketAutomationResponseDto {
   ticketId: string;
   eligible: boolean;
   allowedAgentIds: string[];
+  preferredModel: string | null;
   includeWorkspaceContext: boolean;
   contextEnvironmentIds: string[];
   autoEnrichmentEnabled: boolean;
@@ -75,7 +77,7 @@ export interface TicketAutomationRunResponseDto {
   finishedAt: string | null;
   updatedAt: string;
   iterationCount: number;
-  completionMarkerSeen: boolean;
+  completionSignalSeen: boolean;
   verificationPassed: boolean | null;
   failureCode: string | null;
   summary: Record<string, unknown> | null;

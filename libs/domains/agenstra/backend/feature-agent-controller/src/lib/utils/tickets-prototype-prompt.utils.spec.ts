@@ -1,7 +1,10 @@
 import { TicketPriority, TicketStatus } from '../entities/ticket.enums';
 
-import { AGENSTRA_AUTOMATION_COMPLETE } from './automation-completion.constants';
-import { buildAutonomousTicketRunPreamble, buildPrototypePrompt } from './tickets-prototype-prompt.utils';
+import {
+  appendRelatedContextSections,
+  buildAutonomousTicketRunPreamble,
+  buildPrototypePrompt,
+} from './tickets-prototype-prompt.utils';
 
 describe('tickets-prototype-prompt.utils', () => {
   it('includes nested children in prompt text', () => {
@@ -29,9 +32,26 @@ describe('tickets-prototype-prompt.utils', () => {
     expect(out).toContain('Child');
   });
 
-  it('includes automation completion marker in autonomous preamble', () => {
+  it('includes structured turn-status instructions in autonomous preamble', () => {
     const preamble = buildAutonomousTicketRunPreamble();
 
-    expect(preamble).toContain(AGENSTRA_AUTOMATION_COMPLETE);
+    expect(preamble).toContain('status');
+    expect(preamble).toContain('complete');
+    expect(preamble).toContain('continue');
+    expect(preamble).not.toContain('AGENSTRA_AUTOMATION_COMPLETE');
+  });
+
+  it('appendRelatedContextSections adds labeled related blocks', () => {
+    const out = appendRelatedContextSections('Ticket tree', ['Knowledge Page: A\nBody', '  ']);
+
+    expect(out).toContain('Ticket tree');
+    expect(out).toContain('Related context (from knowledge relations)');
+    expect(out).toContain('### Related context 1');
+    expect(out).toContain('Knowledge Page: A');
+    expect(out).not.toContain('### Related context 2');
+  });
+
+  it('appendRelatedContextSections is a no-op for empty sections', () => {
+    expect(appendRelatedContextSections('Ticket tree', [])).toBe('Ticket tree');
   });
 });

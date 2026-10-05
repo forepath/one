@@ -4,6 +4,7 @@ export class TicketAutomationResponseDto {
   ticketId!: string;
   eligible!: boolean;
   allowedAgentIds!: string[];
+  preferredModel!: string | null;
   includeWorkspaceContext!: boolean;
   contextEnvironmentIds!: string[];
   autoEnrichmentEnabled!: boolean;

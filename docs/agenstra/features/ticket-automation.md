@@ -38,10 +38,21 @@ There is no separate “start run” HTTP call for this path: eligible tickets a
    - `new_per_run`: ephemeral branch `automation/run/{first 8 chars of run UUID}` per run.
    - `force_new_automation_branch_next_run`: with `reuse_per_ticket`, forces one ephemeral branch for the next run, then clears the flag.
 4. **Optional pre-improve** If autonomy `pre_improve_ticket` is true, one chat turn asks the agent to clarify the ticket only (no implementation).
-5. **Implementation loop** Up to `max_iterations` remote chat turns (default `20`). The agent must include the exact completion marker `AGENSTRA_AUTOMATION_COMPLETE` in assistant text to exit the loop successfully.
+5. **Implementation loop** Up to `max_iterations` remote chat turns (default `20`). Each turn uses an OpenCode automation session with session-scoped allow-all permissions and structured `json_schema` turn status. The loop exits successfully only when structured output reports `status: "complete"`.
 6. **Verification** If a `verifier_profile` with `commands` is configured, those commands run in the agent workspace (bounded timeout); any non-zero exit fails the run.
 7. **Finalize** Stage changes, generate a Conventional-Commits-style subject (with fallback), `git commit` and `git push` unless the tree is already clean.
 8. **Success** Run status `succeeded`, ticket status set to **`prototype`**, failure counters cleared, lease released, board and activity events emitted.
+
+### Unattended OpenCode sessions
+
+Reserved resume-session suffixes (`-ticket-auto-pre`, `-ticket-auto-loop`, `-ticket-auto-commit-msg`) create **hidden ephemeral** OpenCode sessions that:
+
+- Apply a session-scoped permission ruleset (`allow` for all actions) so interactive ask/deny from the worker UI config does not block the run.
+- Auto-reply residual permission asks (`always`) and questions on those sessions only; interactive chat suffixes are unchanged.
+- Force the platform agent `agenstra-automation` and skill `agenstra-ticket-automation` (injected at config sync so UI overlays cannot remove them). The skill documents the structured-status protocol; completion detection uses structured output only.
+- Keep transcripts out of the user’s primary chat history; run progress still surfaces via automation chat cards / board events.
+
+Ticket approval and agent autonomy prerequisites still apply. Only reserved automation sessions bypass interactive permission prompts.
 
 Remote chat turns and commit-message generation are recorded in usage statistics as `autonomous_ticket_run_turn` and `autonomous_ticket_commit_message` interaction kinds (see [Usage statistics](./usage-statistics.md)).
 
@@ -49,7 +60,7 @@ Remote chat turns and commit-message generation are recorded in usage statistics
 
 Failures map to a terminal run status (`failed`, `timed_out`, `escalated`, `cancelled`) and may adjust ticket status. When policy says **requeue**, `next_retry_at` is set to approximately **one minute** ahead so the scheduler does not hot-loop; `consecutive_failure_count` increments.
 
-Examples (not exhaustive): missing completion marker or budget-related timeout tend to move the ticket back toward `todo` and requeue; human escalation stops requeue; lease contention skips starting a run but schedules a retry. Product policy is centralized in code (`routeAutomationFailure` in the agent-controller library); adjust there when behavior changes.
+Examples (not exhaustive): missing structured completion status or budget-related timeout tend to move the ticket back toward `todo` and requeue; human escalation stops requeue; lease contention skips starting a run but schedules a retry. Product policy is centralized in code (`routeAutomationFailure` in the agent-controller library); adjust there when behavior changes.
 
 ## HTTP and realtime
 

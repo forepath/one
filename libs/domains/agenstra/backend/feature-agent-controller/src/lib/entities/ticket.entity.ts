@@ -71,6 +71,10 @@ export class TicketEntity {
   @Column({ type: 'uuid', nullable: true, name: 'preferred_chat_agent_id' })
   preferredChatAgentId?: string | null;
 
+  /** OpenCode `provider/model` the user last chose for chat/AI on this ticket. */
+  @Column({ type: 'varchar', length: 256, nullable: true, name: 'preferred_chat_model' })
+  preferredChatModel?: string | null;
+
   @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt!: Date;
 

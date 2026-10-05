@@ -332,9 +332,10 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        shGitScriptContaining("git add -- 'file1.txt' 'file2.txt'"),
+        shGitScriptContaining("add -- 'file1.txt' 'file2.txt'"),
         undefined,
         false,
+        { user: 'agenstra' },
       );
       expect(mockGitStateBroadcast.notifyGitStateMayHaveChanged).toHaveBeenCalledWith(mockAgentId);
     });
@@ -348,9 +349,10 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        shGitScriptContaining("git add -- 'src/my file.ts'"),
+        shGitScriptContaining("add -- 'src/my file.ts'"),
         undefined,
         false,
+        { user: 'agenstra' },
       );
     });
 
@@ -363,9 +365,10 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        shGitScriptContaining('git add -A'),
+        shGitScriptContaining('add -A'),
         undefined,
         false,
+        { user: 'agenstra' },
       );
     });
   });
@@ -382,9 +385,10 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        shGitScriptContaining("git reset -- 'file1.txt'"),
+        shGitScriptContaining("reset -- 'file1.txt'"),
         undefined,
         false,
+        { user: 'agenstra' },
       );
     });
 
@@ -398,7 +402,7 @@ describe('AgentsVcsService', () => {
       const [, cmd] = dockerService.sendCommandToContainer.mock.calls[0];
       const script = Array.isArray(cmd) ? cmd[2] : String(cmd);
 
-      expect(script).toMatch(/git reset$/);
+      expect(script).toMatch(/reset$/);
       expect(script).not.toContain('reset HEAD');
     });
   });
@@ -438,6 +442,7 @@ describe('AgentsVcsService', () => {
       agentsService.findOne.mockResolvedValue({} as any);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.sendCommandToContainer
+        .mockResolvedValueOnce('file:///origin.git') // hasOriginRemote
         .mockResolvedValueOnce('main') // rev-parse --abbrev-ref HEAD
         .mockResolvedValueOnce('') // ls-remote (no remote branch)
         .mockResolvedValueOnce(''); // push command
@@ -446,9 +451,10 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        shGitScriptContaining("git push -u origin 'main'"),
+        shGitScriptContaining("push -u origin 'main'"),
         undefined,
-        true, // checkExitCode=true
+        true,
+        { user: 'agenstra' },
       );
     });
 
@@ -456,6 +462,7 @@ describe('AgentsVcsService', () => {
       agentsService.findOne.mockResolvedValue({} as any);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.sendCommandToContainer
+        .mockResolvedValueOnce('file:///origin.git') // hasOriginRemote
         .mockResolvedValueOnce('main') // rev-parse --abbrev-ref HEAD
         .mockResolvedValueOnce('refs/heads/main') // ls-remote (remote branch exists)
         .mockResolvedValueOnce(''); // push command
@@ -464,10 +471,26 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        shGitScriptContaining("git push --force-with-lease origin 'main'"),
+        shGitScriptContaining("push --force-with-lease origin 'main'"),
         undefined,
         true,
+        { user: 'agenstra' },
       );
+    });
+
+    it('should no-op when origin remote is missing', async () => {
+      agentsService.findOne.mockResolvedValue({} as any);
+      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
+      dockerService.sendCommandToContainer.mockResolvedValueOnce(''); // hasOriginRemote empty
+
+      await service.push(mockAgentId);
+
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(1);
+      const scripts = dockerService.sendCommandToContainer.mock.calls.map((c) =>
+        Array.isArray(c[1]) ? String(c[1][2] ?? '') : String(c[1]),
+      );
+
+      expect(scripts.some((s) => s.includes('push'))).toBe(false);
     });
   });
 
@@ -483,9 +506,10 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        shGitScriptContaining('git pull'),
+        shGitScriptContaining('pull'),
         undefined,
-        true, // checkExitCode=true
+        true,
+        { user: 'agenstra' },
       );
     });
   });
@@ -494,16 +518,29 @@ describe('AgentsVcsService', () => {
     it('should fetch changes from remote', async () => {
       agentsService.findOne.mockResolvedValue({} as any);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
-      dockerService.sendCommandToContainer.mockResolvedValue('');
+      dockerService.sendCommandToContainer
+        .mockResolvedValueOnce('file:///origin.git') // hasOriginRemote
+        .mockResolvedValueOnce(''); // fetch
 
       await service.fetch(mockAgentId);
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        shGitScriptContaining('git fetch'),
+        shGitScriptContaining('fetch'),
         undefined,
-        true, // checkExitCode=true
+        true,
+        { user: 'agenstra' },
       );
+    });
+
+    it('should no-op when origin remote is missing', async () => {
+      agentsService.findOne.mockResolvedValue({} as any);
+      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
+      dockerService.sendCommandToContainer.mockResolvedValueOnce('');
+
+      await service.fetch(mockAgentId);
+
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -526,6 +563,7 @@ describe('AgentsVcsService', () => {
         shGitScriptContaining('feat/new-feature'),
         undefined,
         false,
+        { user: 'agenstra' },
       );
     });
 
@@ -546,6 +584,7 @@ describe('AgentsVcsService', () => {
         shGitScriptContaining('custom-branch'),
         undefined,
         false,
+        { user: 'agenstra' },
       );
     });
   });
@@ -562,9 +601,10 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        shGitScriptContaining(`git checkout '${branchName}'`),
+        shGitScriptContaining(`checkout '${branchName}'`),
         undefined,
         false,
+        { user: 'agenstra' },
       );
     });
   });
@@ -583,9 +623,10 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        shGitScriptContaining(`git branch -D '${branchName}'`),
+        shGitScriptContaining(`branch -D '${branchName}'`),
         undefined,
         false,
+        { user: 'agenstra' },
       );
     });
   });
@@ -602,9 +643,10 @@ describe('AgentsVcsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         mockContainerId,
-        shGitScriptContaining(`git rebase '${branchName}'`),
+        shGitScriptContaining(`rebase '${branchName}'`),
         undefined,
         false,
+        { user: 'agenstra' },
       );
     });
   });
@@ -631,6 +673,7 @@ describe('AgentsVcsService', () => {
         shGitScriptContaining('--theirs'),
         undefined,
         false,
+        { user: 'agenstra' },
       );
     });
 
@@ -655,23 +698,58 @@ describe('AgentsVcsService', () => {
         shGitScriptContaining('--ours'),
         undefined,
         false,
+        { user: 'agenstra' },
       );
     });
   });
 
   describe('prepareCleanWorkspace', () => {
-    it('should fetch, checkout, reset, and clean', async () => {
+    it('should fetch, checkout, reset, and clean when origin exists', async () => {
       agentsService.findOne.mockResolvedValue({} as any);
       agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
       dockerService.sendCommandToContainer
-        .mockResolvedValueOnce('')
-        .mockResolvedValueOnce('')
-        .mockResolvedValueOnce('')
-        .mockResolvedValueOnce('');
+        .mockResolvedValueOnce('true') // ensureGitRepository
+        .mockResolvedValueOnce('file:///origin.git') // hasOriginRemote
+        .mockResolvedValueOnce('') // fetch origin
+        .mockResolvedValueOnce('abc123') // origin/main exists
+        .mockResolvedValueOnce('') // checkout -B
+        .mockResolvedValueOnce('') // reset --hard
+        .mockResolvedValueOnce(''); // clean -fd
 
       await service.prepareCleanWorkspace(mockAgentId, 'main');
 
-      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(4);
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(7);
+      expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
+        mockContainerId,
+        expect.any(Array),
+        undefined,
+        expect.any(Boolean),
+        { user: 'agenstra' },
+      );
+    });
+
+    it('should initialize a local branch without calling fetch when origin is missing', async () => {
+      agentsService.findOne.mockResolvedValue({} as any);
+      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
+      dockerService.sendCommandToContainer
+        .mockResolvedValueOnce('true') // ensureGitRepository
+        .mockResolvedValueOnce('') // hasOriginRemote — no origin
+        .mockResolvedValueOnce('') // rev-parse HEAD (unborn)
+        .mockResolvedValueOnce('') // checkout -B
+        .mockResolvedValueOnce('') // empty commit
+        .mockResolvedValueOnce('') // checkout
+        .mockResolvedValueOnce('') // reset --hard HEAD
+        .mockResolvedValueOnce(''); // clean -fd
+
+      await service.prepareCleanWorkspace(mockAgentId, 'main');
+
+      const scripts = dockerService.sendCommandToContainer.mock.calls.map((c) =>
+        Array.isArray(c[1]) ? String(c[1][2] ?? '') : String(c[1]),
+      );
+
+      expect(scripts.some((s) => s.includes('fetch origin'))).toBe(false);
+      expect(scripts.some((s) => s.includes('reset --hard origin/'))).toBe(false);
+      expect(scripts.some((s) => s.includes('reset --hard HEAD'))).toBe(true);
     });
 
     it('should reject invalid branch names', async () => {

@@ -1012,6 +1012,22 @@ export class KnowledgeTreeService {
       throw new BadRequestException('targetNodeId is required for node relations');
     }
 
+    if (dto.sourceType === KnowledgeRelationSourceType.TICKET) {
+      await this.ticketsService.assertTicketInClient(dto.sourceId, dto.clientId, req);
+    }
+
+    if (dto.sourceType === KnowledgeRelationSourceType.PAGE) {
+      const sourcePage = await this.getNodeOrThrow(dto.sourceId);
+
+      if (sourcePage.clientId !== dto.clientId) {
+        throw new ForbiddenException('Relation source page must belong to same workspace');
+      }
+
+      if (sourcePage.nodeType !== KnowledgeNodeType.PAGE) {
+        throw new BadRequestException('sourceId must reference a page when sourceType is page');
+      }
+    }
+
     if (dto.targetNodeId) {
       const target = await this.getNodeOrThrow(dto.targetNodeId);
 
@@ -1024,6 +1040,14 @@ export class KnowledgeTreeService {
         (dto.targetType === KnowledgeRelationTargetType.PAGE && target.nodeType !== KnowledgeNodeType.PAGE)
       ) {
         throw new BadRequestException('targetType does not match target node type');
+      }
+    }
+
+    if (dto.targetType === KnowledgeRelationTargetType.TICKET && dto.targetTicketSha) {
+      const related = await this.ticketsService.getPrototypePromptByClientSha(dto.clientId, dto.targetTicketSha);
+
+      if (!related?.prompt) {
+        throw new NotFoundException('Relation target ticket was not found in this workspace');
       }
     }
 
@@ -1178,22 +1202,92 @@ export class KnowledgeTreeService {
     req?: RequestWithUser,
   ): Promise<KnowledgePromptContextResponseDto> {
     await this.assertClientAccess(clientId, req);
+
+    return this.collectPromptContextsForSourceInternal(clientId, sourceType, sourceId);
+  }
+
+  /**
+   * System-only: collect relation prompt sections for many ticket sources (unattended automation).
+   * Walks selected ticket + nested subtasks (same depth as subtask injection).
+   * Related tickets are expanded with full prototype trees; related folders expand subtree pages.
+   * Applies the same section/char budget as interactive auto-enrichment.
+   */
+  async collectAutomationRelationPromptSections(
+    clientId: string,
+    ticketIds: string[],
+    excludeTicketLongShas: string[] = [],
+  ): Promise<string[]> {
+    const uniqTicketIds = Array.from(new Set(ticketIds.map((id) => id.trim()).filter((id) => id.length > 0)));
+    const sections: string[] = [];
+    const seenPageIds = new Set<string>();
+    const seenTicketShas = new Set(
+      excludeTicketLongShas.map((sha) => sha.trim().toLowerCase()).filter((sha) => sha.length > 0),
+    );
+
+    for (const ticketId of uniqTicketIds) {
+      const related = await this.collectPromptContextsForSourceInternal(
+        clientId,
+        KnowledgeRelationSourceType.TICKET,
+        ticketId,
+        { seenPageIds, seenTicketShas },
+      );
+
+      sections.push(...related.promptSections);
+    }
+
+    return this.applyAutomationRelationSectionBudget(
+      Array.from(new Set(sections.map((section) => section.trim()).filter((section) => section.length > 0))),
+    );
+  }
+
+  private applyAutomationRelationSectionBudget(sections: string[]): string[] {
+    const maxSections = parseInt(process.env.AUTO_ENRICH_MAX_SECTIONS || '6', 10);
+    const maxChars = parseInt(process.env.AUTO_ENRICH_MAX_CHARS || '12000', 10);
+    const accepted: string[] = [];
+    let totalChars = 0;
+
+    for (const section of sections) {
+      if (accepted.length >= maxSections) {
+        break;
+      }
+
+      const nextChars = totalChars + section.length;
+
+      if (nextChars > maxChars) {
+        break;
+      }
+
+      accepted.push(section);
+      totalChars = nextChars;
+    }
+
+    return accepted;
+  }
+
+  private async collectPromptContextsForSourceInternal(
+    clientId: string,
+    sourceType: KnowledgeRelationSourceType,
+    sourceId: string,
+    dedupe?: { seenPageIds: Set<string>; seenTicketShas: Set<string> },
+  ): Promise<KnowledgePromptContextResponseDto> {
     const relations = await this.knowledgeRelationRepo.find({
       where: { clientId, sourceType, sourceId },
       order: { createdAt: 'ASC' },
     });
     const sections: string[] = [];
-    const seenPageIds = new Set<string>();
-    const seenTicketShas = new Set<string>();
+    const seenPageIds = dedupe?.seenPageIds ?? new Set<string>();
+    const seenTicketShas = dedupe?.seenTicketShas ?? new Set<string>();
 
     for (const rel of relations) {
       if (rel.targetType === KnowledgeRelationTargetType.TICKET && rel.targetTicketLongSha) {
-        if (seenTicketShas.has(rel.targetTicketLongSha)) {
+        const sha = rel.targetTicketLongSha.trim().toLowerCase();
+
+        if (!sha || seenTicketShas.has(sha)) {
           continue;
         }
 
-        seenTicketShas.add(rel.targetTicketLongSha);
-        const ticketPrompt = await this.ticketsService.getPrototypePromptByClientSha(clientId, rel.targetTicketLongSha);
+        seenTicketShas.add(sha);
+        const ticketPrompt = await this.ticketsService.getPrototypePromptByClientSha(clientId, sha);
 
         if (ticketPrompt?.prompt) {
           sections.push(ticketPrompt.prompt);

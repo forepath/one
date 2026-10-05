@@ -2953,11 +2953,14 @@
       <trans-unit id="featureTicketsBoard-runFailureAgentProviderError" datatype="html">
         <source>Agent provider error</source>
         </trans-unit>
+      <trans-unit id="featureTicketsBoard-runFailureAgentNoCompletionStatus" datatype="html">
+        <source>No completion status</source>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-runFailureAgentNoCompletionMarker" datatype="html">
         <source>No completion marker</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-runFailureMarkerWithoutVerify" datatype="html">
-        <source>Completion marker without verify profile</source>
+        <source>Completion without verify profile</source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-runFailureVerifyCommandFailed" datatype="html">
         <source>Verify command failed</source>
@@ -3088,8 +3091,23 @@
       <trans-unit id="featureTicketsBoard-agentLabel" datatype="html">
         <source> Agent for chat / AI </source>
         </trans-unit>
+      <trans-unit id="featureTicketsBoard-modelLabel" datatype="html">
+        <source> Model for chat / AI </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-modelPlaceholder" datatype="html">
+        <source> {{ ticketAiModelsLoading() ? 'Loading models…' : 'Select agent to load models…' }} </source>
+        </trans-unit>
       <trans-unit id="featureTicketsBoard-agentPlaceholder" datatype="html">
         <source>Select agent…</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationPreferredModel" datatype="html">
+        <source>Model for automation</source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationPreferredModelHint" datatype="html">
+        <source> Required when automation is enabled. OpenCode has no auto model selection. </source>
+        </trans-unit>
+      <trans-unit id="featureTicketsBoard-automationModelPlaceholder" datatype="html">
+        <source> {{ ticketAiModelsLoading() ? 'Loading models…' : 'Select an agent to load models…' }} </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-acceptanceLabel" datatype="html">
         <source> Acceptance <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;percentage + &apos;%&apos;&quot;

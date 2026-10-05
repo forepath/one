@@ -59,6 +59,7 @@ import {
 } from '../search/agenstra-search-list.util';
 import { buildSpecificationSubtaskSeeds } from '../utils/specification-ticket-subtasks.utils';
 import { derivePatchActionType, type FieldChange } from '../utils/ticket-activity-payload.utils';
+import { assertValidPreferredModel } from '../utils/preferred-model.utils';
 import {
   buildDescendantCheckboxTaskTotalsByTicketId,
   countMarkdownCheckboxTasks,
@@ -645,6 +646,16 @@ export class TicketsService {
       }
     }
 
+    if (dto.preferredChatModel !== undefined) {
+      const newModel = assertValidPreferredModel(dto.preferredChatModel);
+      const oldModel = ticket.preferredChatModel ?? null;
+
+      if (newModel !== oldModel) {
+        changes.preferredChatModel = { old: oldModel, new: newModel };
+        ticket.preferredChatModel = newModel;
+      }
+    }
+
     if (dto.parentId !== undefined) {
       const newParentId = dto.parentId;
 
@@ -1146,6 +1157,64 @@ export class TicketsService {
     return ticket?.id ?? null;
   }
 
+  /**
+   * Ticket tree prompt body for unattended automation (no activity side effects).
+   */
+  async buildAutomationTicketPromptBody(ticket: TicketEntity): Promise<string> {
+    return this.buildPrototypePromptBody(ticket);
+  }
+
+  /**
+   * Ticket ids used as relation sources for automation: selected ticket + nested subtasks
+   * (same depth as subtask injection; parents are in the tree prompt but not relation-expanded).
+   */
+  async listAutomationRelationSourceTicketIds(ticket: TicketEntity): Promise<string[]> {
+    return [ticket.id, ...(await this.collectDescendantTicketIds(ticket.id))];
+  }
+
+  /**
+   * Ensure a ticket exists in the given workspace (and is readable when {@link req} is present).
+   */
+  async assertTicketInClient(ticketId: string, clientId: string, req?: RequestWithUser): Promise<TicketEntity> {
+    const ticket = req ? await this.assertTicketReadable(ticketId, req) : await this.loadTicketOrThrow(ticketId);
+
+    if (ticket.clientId !== clientId) {
+      throw new ForbiddenException('Relation source ticket must belong to same workspace');
+    }
+
+    return ticket;
+  }
+
+  /**
+   * Long SHAs already covered by the automation ticket tree (skip when expanding related tickets).
+   */
+  async listAutomationPromptTicketLongShas(ticket: TicketEntity): Promise<string[]> {
+    const parentChain = await this.loadParentChainEntities(ticket);
+    const ids = [ticket.id, ...(await this.collectDescendantTicketIds(ticket.id)), ...parentChain.map((row) => row.id)];
+    const rows = ids.length ? await this.ticketRepo.find({ where: { id: In(ids) }, select: ['id', 'longSha'] }) : [];
+    const shas = rows
+      .map((row) => row.longSha?.trim().toLowerCase())
+      .filter((sha): sha is string => !!sha && sha.length > 0);
+
+    return Array.from(new Set(shas));
+  }
+
+  private async collectDescendantTicketIds(ticketId: string): Promise<string[]> {
+    const children = await this.ticketRepo.find({
+      where: { parentId: ticketId },
+      select: ['id'],
+      order: { createdAt: 'ASC' },
+    });
+    const ids: string[] = [];
+
+    for (const child of children) {
+      ids.push(child.id);
+      ids.push(...(await this.collectDescendantTicketIds(child.id)));
+    }
+
+    return ids;
+  }
+
   private async buildPrototypePromptBody(ticket: TicketEntity): Promise<string> {
     const parentChain = await this.loadParentChainEntities(ticket);
     const tree = await this.buildPromptNode(ticket);
@@ -1395,6 +1464,7 @@ export class TicketsService {
       createdByUserId: row.createdByUserId,
       createdByEmail,
       preferredChatAgentId: row.preferredChatAgentId ?? null,
+      preferredChatModel: row.preferredChatModel ?? null,
       automationEligible,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
