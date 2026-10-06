@@ -47,6 +47,7 @@
         "libs/domains/identity/frontend/index.ts"
       ],
       "@forepath/ai": ["tools/ai/src/index.ts"],
+      "@forepath/demo-data": ["tools/demo-data/src/index.ts"],
       "@forepath/release-integrity": ["tools/release-integrity/src/index.ts"],
       "@forepath/sbom": ["tools/sbom/src/index.ts"],
       "@forepath/shared/backend": ["libs/domains/shared/backend/index.ts"],

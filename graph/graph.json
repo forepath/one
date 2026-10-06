@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-05T19:13:17.421Z",
+  "generatedAt": "2026-10-06T20:03:43.002Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -1828,6 +1828,27 @@
         "domain": "shared",
         "context": "backend",
         "featureGroup": "app"
+      }
+    },
+    {
+      "id": "project:demo-data",
+      "type": "tool",
+      "attrs": {
+        "name": "demo-data",
+        "root": "tools/demo-data",
+        "tags": [
+          "npm:private",
+          "type:tool",
+          "scope:repo"
+        ],
+        "type": "tool",
+        "targets": [
+          "lint",
+          "build",
+          "test",
+          "seed",
+          "reset"
+        ]
       }
     },
     {
@@ -13165,6 +13186,24 @@
         "path": "tools/release-integrity/README.md",
         "languageOrKind": "md",
         "projectName": "release-integrity"
+      }
+    },
+    {
+      "id": "file:tools/demo-data/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "tools/demo-data/README.md",
+        "languageOrKind": "md",
+        "projectName": "demo-data"
+      }
+    },
+    {
+      "id": "file:tools/demo-data/src/lib/agenstra/agenstra-controller.builder.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "tools/demo-data/src/lib/agenstra/agenstra-controller.builder.ts",
+        "languageOrKind": "ts",
+        "projectName": "demo-data"
       }
     },
     {
@@ -24830,6 +24869,16 @@
       }
     },
     {
+      "id": "concept:agenstra-demo-data",
+      "type": "concept",
+      "attrs": {
+        "title": "Demo Data",
+        "docPath": "docs/agenstra/deployment/local-development.md",
+        "sectionAnchor": "demo-data",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-operator-runbook",
       "type": "concept",
       "attrs": {
@@ -28736,6 +28785,16 @@
         "title": "Run with coverage",
         "docPath": "docs/decabill/deployment/local-development.md",
         "sectionAnchor": "run-with-coverage",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-demo-data",
+      "type": "concept",
+      "attrs": {
+        "title": "Demo Data",
+        "docPath": "docs/decabill/deployment/local-development.md",
+        "sectionAnchor": "demo-data",
         "domain": "decabill"
       }
     },
@@ -41652,6 +41711,16 @@
       "type": "contains"
     },
     {
+      "from": "project:demo-data",
+      "to": "file:tools/demo-data/README.md",
+      "type": "contains"
+    },
+    {
+      "from": "project:demo-data",
+      "to": "file:tools/demo-data/src/lib/agenstra/agenstra-controller.builder.ts",
+      "type": "contains"
+    },
+    {
       "from": "project:graph",
       "to": "file:tools/graph/README.md",
       "type": "contains"
@@ -47268,6 +47337,11 @@
     },
     {
       "from": "file:docs/agenstra/deployment/local-development.md",
+      "to": "concept:agenstra-demo-data",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/deployment/local-development.md",
       "to": "concept:agenstra-troubleshooting",
       "type": "contains"
     },
@@ -49954,6 +50028,11 @@
     {
       "from": "file:docs/decabill/deployment/local-development.md",
       "to": "concept:decabill-bull-board-local",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/deployment/local-development.md",
+      "to": "concept:decabill-demo-data",
       "type": "contains"
     },
     {
@@ -73107,6 +73186,11 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-demo-data",
+      "to": "project:decabill-backend-billing-manager",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-install-verification-checklist",
       "to": "api:HTTP:GET:/health",
       "type": "documents"
@@ -79517,6 +79601,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:agenstra-demo-data",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:agenstra-operator-runbook",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -81468,6 +81557,11 @@
     },
     {
       "from": "concept:decabill-run-with-coverage",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-demo-data",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

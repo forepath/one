@@ -217,6 +217,17 @@ docker ps
 # Linux: sudo systemctl start docker
 ```
 
+## Demo Data
+
+To fill a local stack with demo workspaces, environments, tickets, automation runs, knowledge and statistics, start both stacks with their `start-containers` targets, wait for the APIs to finish their migrations, and run:
+
+```bash
+nx run demo-data:seed:agenstra   # replaces previously seeded demo data
+nx run demo-data:reset:agenstra  # removes all demo data again
+```
+
+The seeder also connects the controller containers to the agent-manager network so seeded workspaces reach the local manager. Accounts and details are listed in [`tools/demo-data/README.md`](../../../tools/demo-data/README.md).
+
 ## Troubleshooting
 
 ### Database Connection Issues

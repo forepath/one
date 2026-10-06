@@ -1,0 +1,58 @@
+{
+  "name": "demo-data",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "tools/demo-data/src",
+  "tags": ["type:tool", "scope:repo"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "tools/demo-data/dist",
+        "main": "tools/demo-data/src/cli.ts",
+        "tsConfig": "tools/demo-data/tsconfig.lib.json",
+        "generatePackageJson": false
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "tools/demo-data/jest.config.ts"
+      }
+    },
+    "seed": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "cache": false,
+      "options": {
+        "command": "node tools/demo-data/dist/src/cli.js seed all"
+      },
+      "configurations": {
+        "decabill": {
+          "command": "node tools/demo-data/dist/src/cli.js seed decabill"
+        },
+        "agenstra": {
+          "command": "node tools/demo-data/dist/src/cli.js seed agenstra"
+        }
+      }
+    },
+    "reset": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "cache": false,
+      "options": {
+        "command": "node tools/demo-data/dist/src/cli.js reset all"
+      },
+      "configurations": {
+        "decabill": {
+          "command": "node tools/demo-data/dist/src/cli.js reset decabill"
+        },
+        "agenstra": {
+          "command": "node tools/demo-data/dist/src/cli.js reset agenstra"
+        }
+      }
+    }
+  }
+}

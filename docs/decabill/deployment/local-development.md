@@ -210,6 +210,17 @@ When `QUEUE_ROLE=all` or `api` with `QUEUE_BULL_BOARD_ENABLED=true`:
 
 See **[Background Jobs](./background-jobs.md)**.
 
+## Demo Data
+
+To fill a local stack with plausible demo data (every tenant, all account, subscription, invoice and offer states, dummy provisioned servers), start the containers with `nx run decabill-backend-billing-manager:start-containers`, wait for the API to finish its migrations, and run:
+
+```bash
+nx run demo-data:seed:decabill   # replaces previously seeded demo data
+nx run demo-data:reset:decabill  # removes all demo data again
+```
+
+Only rows created by the tool are touched. Accounts, the shared demo password and details are listed in [`tools/demo-data/README.md`](../../../tools/demo-data/README.md).
+
 ## Troubleshooting
 
 ### Database Connection Issues
