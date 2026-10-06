@@ -8,12 +8,6 @@
   isolation: isolate;
   // Native bottom edge stays for spacing; the visible stroke is redrawn above content below.
   border-bottom-color: transparent;
-  // Open-dot fill: soft step below tertiary (light); dark uses shared `.btn-dark` token.
-  --fpc-list-item-open-dot: color-mix(in srgb, var(--bs-tertiary-bg) 88%, black);
-}
-
-:host-context(html[data-bs-theme='dark']) {
-  --fpc-list-item-open-dot: var(--fpc-btn-dark-bg);
 }
 
 // Redraw the separator above in-flow chips so opaque badge fills cannot mask a segment of it
@@ -128,6 +122,7 @@
   color: var(--bs-body-color);
   background-color: transparent;
   border-color: var(--bs-list-group-border-color, var(--bs-border-color));
+  border-left: 2px solid var(--bs-primary);
 }
 
 :host(.active) .fpc-list-item__meta,
@@ -135,23 +130,6 @@
 :host(.active) .text-body-secondary,
 :host(.active) .text-secondary {
   color: var(--bs-secondary-color) !important;
-}
-
-:host(.active)::before {
-  content: '';
-  position: absolute;
-  top: 0.25rem;
-  right: 0.25rem;
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 0.25rem;
-  background-color: var(--fpc-list-item-open-dot);
-  pointer-events: none;
-  z-index: 2;
-}
-
-:host(.active):has(fpc-notification-indicator)::before {
-  content: none;
 }
 
 // Slot wrappers collapse when nothing is projected so rows keep a tight rhythm.
