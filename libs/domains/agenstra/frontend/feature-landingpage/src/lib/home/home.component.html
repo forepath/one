@@ -76,35 +76,50 @@
   </div>
   <div class="container grid-section__container grid-section__container--hero-bottom">
     <div class="row">
-      <div class="col-md-12 intent-cards" (mouseenter)="pauseAutoplay()" (mouseleave)="resumeAutoplay()">
-        <img
-          src="assets/images/screenshots/spaces-dark_framed.png"
-          alt="Agenstra workspaces"
-          class="img-fluid intent-card"
-          [class.d-none]="activeSlide() !== 1"
-          i18n-alt="@@featurePortalHome-heroSlideSpaces"
-        />
-        <img
-          src="assets/images/screenshots/tasks-dark_framed.png"
-          alt="Agenstra tickets board"
-          class="img-fluid intent-card"
-          [class.d-none]="activeSlide() !== 2"
-          i18n-alt="@@featurePortalHome-heroSlideTickets"
-        />
-        <img
-          src="assets/images/screenshots/editor-dark_framed.png"
-          alt="Agenstra web IDE"
-          class="img-fluid intent-card"
-          [class.d-none]="activeSlide() !== 3"
-          i18n-alt="@@featurePortalHome-heroSlideIde"
-        />
-        <img
-          src="assets/images/screenshots/audit-dark_framed.png"
-          alt="Agenstra audit and usage statistics"
-          class="img-fluid intent-card"
-          [class.d-none]="activeSlide() !== 4"
-          i18n-alt="@@featurePortalHome-heroSlideAudit"
-        />
+      <div class="col-md-12 intent-cards mt-10" (mouseenter)="pauseAutoplay()" (mouseleave)="resumeAutoplay()">
+        <div class="browser-frame intent-cards-browser">
+          <div class="browser-frame__toolbar" aria-hidden="true">
+            <span class="browser-frame__lights">
+              <span class="browser-frame__light browser-frame__light--close"></span>
+              <span class="browser-frame__light browser-frame__light--minimize"></span>
+              <span class="browser-frame__light browser-frame__light--zoom"></span>
+            </span>
+            <span class="browser-frame__address">
+              <i class="bi bi-lock-fill"></i>
+              cloud.agenstra.com
+            </span>
+          </div>
+          <div class="browser-frame__viewport">
+            <img
+              src="assets/images/screenshots/spaces-dark_framed.png"
+              alt="Agenstra workspaces"
+              class="browser-frame__screenshot"
+              [class.d-none]="activeSlide() !== 1"
+              i18n-alt="@@featurePortalHome-heroSlideSpaces"
+            />
+            <img
+              src="assets/images/screenshots/tasks-dark_framed.png"
+              alt="Agenstra tickets board"
+              class="browser-frame__screenshot"
+              [class.d-none]="activeSlide() !== 2"
+              i18n-alt="@@featurePortalHome-heroSlideTickets"
+            />
+            <img
+              src="assets/images/screenshots/editor-dark_framed.png"
+              alt="Agenstra web IDE"
+              class="browser-frame__screenshot"
+              [class.d-none]="activeSlide() !== 3"
+              i18n-alt="@@featurePortalHome-heroSlideIde"
+            />
+            <img
+              src="assets/images/screenshots/audit-dark_framed.png"
+              alt="Agenstra audit and usage statistics"
+              class="browser-frame__screenshot"
+              [class.d-none]="activeSlide() !== 4"
+              i18n-alt="@@featurePortalHome-heroSlideAudit"
+            />
+          </div>
+        </div>
         <div
           class="intent-card-indicators"
           role="tablist"
@@ -672,12 +687,29 @@
                 >Web IDE + agent chat</fpc-badge
               >
             </div>
-            <img
-              src="assets/images/screenshots/ide-dark_framed.png"
-              alt="Agenstra web IDE and dashboard"
-              class="img-fluid w-100 home-engineering-screenshot"
-              i18n-alt="@@featurePortalHome-dashboardAlt"
-            />
+            <div class="browser-peek">
+              <div class="browser-frame">
+                <div class="browser-frame__toolbar" aria-hidden="true">
+                  <span class="browser-frame__lights">
+                    <span class="browser-frame__light browser-frame__light--close"></span>
+                    <span class="browser-frame__light browser-frame__light--minimize"></span>
+                    <span class="browser-frame__light browser-frame__light--zoom"></span>
+                  </span>
+                  <span class="browser-frame__address">
+                    <i class="bi bi-lock-fill"></i>
+                    cloud.agenstra.com
+                  </span>
+                </div>
+                <div class="browser-frame__viewport">
+                  <img
+                    src="assets/images/screenshots/ide-dark_framed.png"
+                    alt="Agenstra web IDE and dashboard"
+                    class="browser-frame__screenshot"
+                    i18n-alt="@@featurePortalHome-dashboardAlt"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="col-lg-4 d-flex flex-column gap-3">

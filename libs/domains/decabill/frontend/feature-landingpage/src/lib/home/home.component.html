@@ -64,35 +64,50 @@
   </div>
   <div class="container grid-section__container grid-section__container--hero-bottom">
     <div class="row">
-      <div class="col-md-12 intent-cards" (mouseenter)="pauseAutoplay()" (mouseleave)="resumeAutoplay()">
-        <img
-          src="assets/images/screenshots/overview-dark_framed.png"
-          alt="Decabill overview dashboard with cloud instances"
-          class="img-fluid intent-card"
-          [class.d-none]="activeSlide() !== 1"
-          i18n-alt="@@featureDecabillHome-heroSlideOverview"
-        />
-        <img
-          src="assets/images/screenshots/plans-dark_framed.png"
-          alt="Decabill plans and subscriptions"
-          class="img-fluid intent-card"
-          [class.d-none]="activeSlide() !== 2"
-          i18n-alt="@@featureDecabillHome-heroSlidePlans"
-        />
-        <img
-          src="assets/images/screenshots/billing-dark_framed.png"
-          alt="Decabill customer billing and invoices"
-          class="img-fluid intent-card"
-          [class.d-none]="activeSlide() !== 3"
-          i18n-alt="@@featureDecabillHome-heroSlideBilling"
-        />
-        <img
-          src="assets/images/screenshots/admin-dark_framed.png"
-          alt="Decabill admin billing and revenue statistics"
-          class="img-fluid intent-card"
-          [class.d-none]="activeSlide() !== 4"
-          i18n-alt="@@featureDecabillHome-heroSlideAdmin"
-        />
+      <div class="col-md-12 intent-cards mt-10" (mouseenter)="pauseAutoplay()" (mouseleave)="resumeAutoplay()">
+        <div class="browser-frame intent-cards-browser">
+          <div class="browser-frame__toolbar" aria-hidden="true">
+            <span class="browser-frame__lights">
+              <span class="browser-frame__light browser-frame__light--close"></span>
+              <span class="browser-frame__light browser-frame__light--minimize"></span>
+              <span class="browser-frame__light browser-frame__light--zoom"></span>
+            </span>
+            <span class="browser-frame__address">
+              <i class="bi bi-lock-fill"></i>
+              cloud.decabill.com
+            </span>
+          </div>
+          <div class="browser-frame__viewport">
+            <img
+              src="assets/images/screenshots/overview-dark_framed.png"
+              alt="Decabill overview dashboard with cloud instances"
+              class="browser-frame__screenshot"
+              [class.d-none]="activeSlide() !== 1"
+              i18n-alt="@@featureDecabillHome-heroSlideOverview"
+            />
+            <img
+              src="assets/images/screenshots/plans-dark_framed.png"
+              alt="Decabill plans and subscriptions"
+              class="browser-frame__screenshot"
+              [class.d-none]="activeSlide() !== 2"
+              i18n-alt="@@featureDecabillHome-heroSlidePlans"
+            />
+            <img
+              src="assets/images/screenshots/billing-dark_framed.png"
+              alt="Decabill customer billing and invoices"
+              class="browser-frame__screenshot"
+              [class.d-none]="activeSlide() !== 3"
+              i18n-alt="@@featureDecabillHome-heroSlideBilling"
+            />
+            <img
+              src="assets/images/screenshots/admin-dark_framed.png"
+              alt="Decabill admin billing and revenue statistics"
+              class="browser-frame__screenshot"
+              [class.d-none]="activeSlide() !== 4"
+              i18n-alt="@@featureDecabillHome-heroSlideAdmin"
+            />
+          </div>
+        </div>
         <div
           class="intent-card-indicators"
           role="tablist"
@@ -758,12 +773,29 @@
                 >Configure plans and pricing</fpc-badge
               >
             </div>
-            <img
-              src="assets/images/screenshots/product-config-dark_framed.png"
-              alt="Decabill service plan configuration"
-              class="img-fluid w-100 home-sell-screenshot"
-              i18n-alt="@@featureDecabillHome-sellProductConfigAlt"
-            />
+            <div class="browser-peek">
+              <div class="browser-frame">
+                <div class="browser-frame__toolbar" aria-hidden="true">
+                  <span class="browser-frame__lights">
+                    <span class="browser-frame__light browser-frame__light--close"></span>
+                    <span class="browser-frame__light browser-frame__light--minimize"></span>
+                    <span class="browser-frame__light browser-frame__light--zoom"></span>
+                  </span>
+                  <span class="browser-frame__address">
+                    <i class="bi bi-lock-fill"></i>
+                    cloud.decabill.com
+                  </span>
+                </div>
+                <div class="browser-frame__viewport">
+                  <img
+                    src="assets/images/screenshots/product-config-dark_framed.png"
+                    alt="Decabill service plan configuration"
+                    class="browser-frame__screenshot"
+                    i18n-alt="@@featureDecabillHome-sellProductConfigAlt"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="col-lg-4 d-flex flex-column gap-3">

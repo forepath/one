@@ -48,11 +48,6 @@
   box-shadow: 0 8px 24px rgba(139, 92, 246, 0.25);
 }
 
-.home-engineering-screenshot {
-  display: block;
-  margin-top: -8rem;
-}
-
 .home-engineering-closing {
   background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, #fff 55%);
 }
@@ -143,14 +138,10 @@
 }
 
 .intent-cards {
-  margin-top: -5rem;
   position: relative;
 
   @media (max-width: 768px) {
-    padding-top: 2.5rem;
-    margin-top: 0;
-
-    > .intent-card {
+    .intent-cards-browser {
       display: none;
     }
 
@@ -159,29 +150,28 @@
     }
   }
 
-  @media (max-width: 992px) and (min-width: 768px) {
-    margin-top: -2rem;
-  }
-
-  @media (max-width: 1200px) and (min-width: 992px) {
-    margin-top: -3rem;
-  }
-
-  > .intent-card {
-    position: relative;
+  // Chrome comes from `.browser-frame` in page.component.scss; the hero shows a wider crop of the screenshot
+  .intent-cards-browser {
     z-index: 3;
-    display: block;
+
+    .browser-frame__viewport {
+      aspect-ratio: 16 / 7;
+    }
+
+    .browser-frame__screenshot {
+      object-position: center;
+    }
   }
 
   .intent-card-indicators {
-    position: absolute;
-    left: 50%;
-    bottom: 0.75rem;
-    z-index: 4;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.125rem;
+    bottom: 0.75rem;
+    position: absolute;
+    z-index: 10;
+    left: 50%;
     transform: translateX(-50%);
   }
 
