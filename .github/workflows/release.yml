@@ -79,6 +79,7 @@ jobs:
           path: |
             dist/
             node_modules/
+          include-hidden-files: true
           retention-days: 1
           compression-level: 6
 

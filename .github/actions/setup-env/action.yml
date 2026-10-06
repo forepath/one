@@ -65,6 +65,14 @@ runs:
           exit 1
         fi
 
+    - name: Restore package binary permissions
+      if: inputs.install-dependencies != 'true'
+      shell: bash
+      run: |
+        if [ -d node_modules/.bin ]; then
+          find node_modules/.bin -mindepth 1 -exec chmod +x {} +
+        fi
+
     - name: Apply patches (artifact restore)
       if: inputs.install-dependencies != 'true'
       shell: bash
