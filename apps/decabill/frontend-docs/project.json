@@ -219,6 +219,7 @@
       "configurations": {
         "test": {
           "load": true,
+          "labels": ["io.forepath.one.test-project=decabill-frontend-docs"],
           "tags": ["ghcr.io/forepath/decabill-docs-server:latest"]
         },
         "release": {
@@ -237,7 +238,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/shared/frontend-docs",
-        "command": "DOCS_SERVER_IMAGE=ghcr.io/forepath/decabill-docs-server:latest DOCS_SERVER_CONTAINER_NAME=decabill-docs-server docker compose up -d --force-recreate --remove-orphans"
+        "command": "DOCS_SERVER_IMAGE=ghcr.io/forepath/decabill-docs-server:latest DOCS_SERVER_CONTAINER_NAME=decabill-docs-server docker compose up -d --force-recreate --remove-orphans && docker image prune --force --filter label=io.forepath.one.test-project=decabill-frontend-docs"
       }
     },
     "sbom": {

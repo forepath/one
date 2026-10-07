@@ -128,6 +128,9 @@
       "configurations": {
         "test": {
           "load": true,
+          "labels": [
+            "io.forepath.one.test-project=agenstra-backend-agent-manager"
+          ],
           "tags": ["ghcr.io/forepath/agenstra-manager-api:latest"]
         },
         "release": {
@@ -153,6 +156,9 @@
       "configurations": {
         "test": {
           "load": true,
+          "labels": [
+            "io.forepath.one.test-project=agenstra-backend-agent-manager"
+          ],
           "tags": [
             "registry.forenet.internal/forepath/agenstra-manager-worker:test"
           ]
@@ -173,7 +179,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/agenstra/backend-agent-manager",
-        "command": "docker compose up -d --force-recreate --remove-orphans"
+        "command": "docker compose up -d --force-recreate --remove-orphans && docker image prune --force --filter label=io.forepath.one.test-project=agenstra-backend-agent-manager"
       }
     },
     "openapi-client-js": {

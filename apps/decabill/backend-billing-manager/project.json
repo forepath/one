@@ -160,6 +160,9 @@
       "configurations": {
         "test": {
           "load": true,
+          "labels": [
+            "io.forepath.one.test-project=decabill-backend-billing-manager"
+          ],
           "tags": ["ghcr.io/forepath/decabill-billing-api:latest"]
         },
         "release": {
@@ -178,7 +181,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/decabill/backend-billing-manager",
-        "command": "docker compose up -d --force-recreate --remove-orphans"
+        "command": "docker compose up -d --force-recreate --remove-orphans && docker image prune --force --filter label=io.forepath.one.test-project=decabill-backend-billing-manager"
       }
     },
     "openapi-client-js": {

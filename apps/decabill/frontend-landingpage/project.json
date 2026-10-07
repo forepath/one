@@ -182,6 +182,9 @@
       "configurations": {
         "test": {
           "load": true,
+          "labels": [
+            "io.forepath.one.test-project=decabill-frontend-landingpage"
+          ],
           "tags": ["ghcr.io/forepath/decabill-landingpage-server:latest"]
         },
         "release": {
@@ -200,7 +203,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/decabill/frontend-landingpage",
-        "command": "docker compose up -d --force-recreate --remove-orphans"
+        "command": "docker compose up -d --force-recreate --remove-orphans && docker image prune --force --filter label=io.forepath.one.test-project=decabill-frontend-landingpage"
       }
     },
     "sbom": {

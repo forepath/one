@@ -219,6 +219,9 @@
       "configurations": {
         "test": {
           "load": true,
+          "labels": [
+            "io.forepath.one.test-project=agenstra-frontend-agent-console"
+          ],
           "tags": ["ghcr.io/forepath/agenstra-console-server:latest"]
         },
         "release": {
@@ -237,7 +240,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/agenstra/frontend-agent-console",
-        "command": "docker compose up -d --force-recreate --remove-orphans"
+        "command": "docker compose up -d --force-recreate --remove-orphans && docker image prune --force --filter label=io.forepath.one.test-project=agenstra-frontend-agent-console"
       }
     },
     "sbom": {

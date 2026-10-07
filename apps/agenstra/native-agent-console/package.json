@@ -25,5 +25,8 @@
     "@electron-forge/plugin-auto-unpack-natives": "7.10.2",
     "electron": "39.2.7",
     "electron-builder": "25.1.8"
+  },
+  "overrides": {
+    "proxy-addr": "2.0.8"
   }
 }
