@@ -34,7 +34,7 @@ x-backend-billing-manager-environment: &backend-billing-manager-environment
   DISABLE_FORCE_LOGIN_2FA: ${DISABLE_FORCE_LOGIN_2FA:-false}
   STATIC_API_KEY: ${STATIC_API_KEY:-}
   ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
-  CORS_ORIGIN: ${CORS_ORIGIN:-}
+  CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:4103,http://localhost:4202,http://localhost:4301}
   RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-}
   RATE_LIMIT_TTL: ${RATE_LIMIT_TTL:-60}
   RATE_LIMIT_LIMIT: ${RATE_LIMIT_LIMIT:-100}
@@ -96,15 +96,15 @@ x-backend-billing-manager-environment: &backend-billing-manager-environment
   STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
   STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
   STRIPE_CHECKOUT_FRAUD_PROTECTION_ENABLED: ${STRIPE_CHECKOUT_FRAUD_PROTECTION_ENABLED:-true}
-  STRIPE_CHECKOUT_SUCCESS_URL: ${STRIPE_CHECKOUT_SUCCESS_URL:-http://localhost:4500/invoices?payment=success}
-  STRIPE_CHECKOUT_CANCEL_URL: ${STRIPE_CHECKOUT_CANCEL_URL:-http://localhost:4500/invoices?payment=cancel}
+  STRIPE_CHECKOUT_SUCCESS_URL: ${STRIPE_CHECKOUT_SUCCESS_URL:-http://localhost:4202/invoices?payment=success}
+  STRIPE_CHECKOUT_CANCEL_URL: ${STRIPE_CHECKOUT_CANCEL_URL:-http://localhost:4202/invoices?payment=cancel}
   # Dynamic provider plugins (baked-in runtime deps and/or mounted plugin path)
   DYNAMIC_PAYMENT_PROCESSORS: ${DYNAMIC_PAYMENT_PROCESSORS:-}
   DYNAMIC_BILLING_PROVIDER_METADATA: ${DYNAMIC_BILLING_PROVIDER_METADATA:-}
   DYNAMIC_PROVIDERS_FAIL_FAST: ${DYNAMIC_PROVIDERS_FAIL_FAST:-false}
   DYNAMIC_PROVIDER_PLUGIN_PATH: ${DYNAMIC_PROVIDER_PLUGIN_PATH:-}
   DYNAMIC_PROVIDER_PLUGIN_INSTALL: ${DYNAMIC_PROVIDER_PLUGIN_INSTALL:-}
-  BILLING_FRONTEND_URL: ${BILLING_FRONTEND_URL:-http://localhost:4500}
+  BILLING_FRONTEND_URL: ${BILLING_FRONTEND_URL:-http://localhost:4202}
   TENANT_FRONTEND_URLS: ${TENANT_FRONTEND_URLS:-}
   BILLING_SCHEDULER_INTERVAL: ${BILLING_SCHEDULER_INTERVAL:-60000}
   BILLING_SCHEDULER_BATCH_SIZE: ${BILLING_SCHEDULER_BATCH_SIZE:-100}
@@ -301,8 +301,8 @@ services:
     image: mailhog/mailhog:latest
     container_name: billing-manager-mailhog
     ports:
-      - '${SMTP_PORT:-1026}:${SMTP_PORT:-1025}'
-      - '${MAILHOG_PORT:-8026}:${MAILHOG_PORT:-8025}'
+      - '${SMTP_HOST_PORT:-1026}:${SMTP_PORT:-1025}'
+      - '${MAILHOG_HOST_PORT:-8026}:8025'
     networks:
       - billing-network
     restart: unless-stopped

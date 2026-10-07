@@ -28,11 +28,11 @@ The fastest way to run the full backend stack and the SSR billing console is Doc
 git clone https://github.com/forepath/one.git
 cd one/apps/decabill/backend-billing-manager
 
-cp .start-containers.env.example .env
+cp .start-containers.env.example .start-containers.env
 
-# Edit .env: set STATIC_API_KEY, ENCRYPTION_KEY, issuer fields, and TENANTS as needed
+# Local placeholder credentials are included; replace them before exposing the stack.
 
-docker compose up -d
+docker compose --env-file .start-containers.env up -d
 ```
 
 This starts:
@@ -60,7 +60,7 @@ cd one/apps/decabill/frontend-billing-console
 docker compose up -d
 ```
 
-The console server listens on **4500** by default. Set `CSP_CONNECT_SRC_EXTRA` in compose if the API is not reachable from the browser at the default billing manager URL.
+The console server listens on **4202** by default. Set `CSP_CONNECT_SRC_EXTRA` in compose if the API is not reachable from the browser at the default billing manager URL.
 
 See **[Docker Deployment](./deployment/docker-deployment.md)** for production-oriented compose notes.
 
@@ -85,7 +85,7 @@ cp .start-containers.env.example .env
 
 nx serve decabill-backend-billing-manager
 
-# Terminal 2: billing console (Angular dev server on port 4500)
+# Terminal 2: billing console (Angular dev server on port 4202)
 cd apps/decabill/frontend-billing-console
 nx serve decabill-frontend-billing-console
 ```
@@ -152,7 +152,7 @@ PROJECTS_WEBSOCKET_NAMESPACE=socket/projects
 
 # Multi-tenancy and console URL
 TENANTS=decabill
-BILLING_FRONTEND_URL=http://localhost:4500
+BILLING_FRONTEND_URL=http://localhost:4202
 CORS_ORIGIN=*
 
 # Encryption (set before storing sensitive provider or SSH fields)
@@ -161,8 +161,8 @@ ENCRYPTION_KEY=
 # Stripe (optional)
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
-STRIPE_CHECKOUT_SUCCESS_URL=http://localhost:4500/invoices?payment=success
-STRIPE_CHECKOUT_CANCEL_URL=http://localhost:4500/invoices?payment=cancel
+STRIPE_CHECKOUT_SUCCESS_URL=http://localhost:4202/invoices?payment=success
+STRIPE_CHECKOUT_CANCEL_URL=http://localhost:4202/invoices?payment=cancel
 ```
 
 The full variable list is in **[Environment Configuration](./deployment/environment-configuration.md)**.
@@ -173,7 +173,7 @@ Local Angular builds use `environment.billing-console.ts` in `@forepath/decabill
 
 - REST API: `http://localhost:3200/api`
 - WebSocket: `http://localhost:3200/socket/billing`
-- Frontend URL: `http://localhost:4500`
+- Frontend URL: `http://localhost:4202`
 - Default tenant id: `decabill`
 
 Match `authentication.type` in the environment file to the backend `AUTHENTICATION_METHOD`. The Docker SSR image exposes runtime config via the Express `/config` endpoint. See **[Frontend Billing Console](./applications/frontend-billing-console.md)**.
@@ -201,7 +201,7 @@ Optional: set `STATIC_API_KEY_TENANT_ID` to bind the key to one tenant. See **[M
 1. Run or connect to a Keycloak realm and client for Decabill.
 2. Set `AUTHENTICATION_METHOD=keycloak` and the Keycloak environment variables on the billing manager.
 3. Configure the billing console for Keycloak (runtime config or build-time environment).
-4. Open `http://localhost:4500/login` and complete the OAuth2/OIDC flow.
+4. Open `http://localhost:4202/login` and complete the OAuth2/OIDC flow.
 
 The first user synced into a tenant receives the admin role. Subsequent synced users receive the standard user role.
 
@@ -209,9 +209,9 @@ The first user synced into a tenant receives the admin role. Subsequent synced u
 
 When `AUTHENTICATION_METHOD=users` and the console `authentication.type` is `users`:
 
-1. Open `http://localhost:4500/register` and create an account (unless `DISABLE_SIGNUP=true`).
+1. Open `http://localhost:4202/register` and create an account (unless `DISABLE_SIGNUP=true`).
 2. Confirm email when prompted (Mailhog UI is on port **8026** when using the billing manager compose stack).
-3. Log in at `http://localhost:4500/login`.
+3. Log in at `http://localhost:4202/login`.
 
 The first registered user in each tenant is auto-confirmed and assigned admin. Later users may need email confirmation.
 
@@ -239,7 +239,7 @@ Confirm WebSocket dashboard updates on the overview page when logged in as an en
 ## Troubleshooting
 
 - Database or Redis errors: see **[Local Development](./deployment/local-development.md)**.
-- Port conflicts: billing API **3200**, console **4500**, Redis host **6380**.
+- Port conflicts: billing API **3200**, console **4202**, Redis host **6380**.
 - Migrations run only when `QUEUE_ROLE` is `api` or `all`. Ensure at least one API role process has started.
 
 ---

@@ -173,9 +173,9 @@ For production manager-only hosts, cloud sizes such as Hetzner **`cx21`** (2 vCP
 
 | Application   | Image                     | vCPU | Memory limit   | Default port |
 | ------------- | ------------------------- | ---- | -------------- | ------------ |
-| Agent console | `agenstra-console-server` | 0.5  | 512 MiB, 1 GiB | **4200**     |
+| Agent console | `agenstra-console-server` | 0.5  | 512 MiB, 1 GiB | **4100**     |
 
-Optional branded billing UI (`agenstra-billing-console-server`, **4500**) uses the same sizing when deployed alongside the console; it is not required for core agent workflows.
+Optional branded billing UI (`agenstra-billing-console-server`, **4103**) uses the same sizing when deployed alongside the console; it is not required for core agent workflows.
 
 Monaco Editor and chat run in the **browser**. Recommend **4 GiB+** client RAM for comfortable IDE use. Initial bundle budget warns at **500 KB** (errors at **5 MB**).
 
@@ -227,7 +227,7 @@ Managers run on separately provisioned hosts per client/workspace.
 | Provider API keys          |     -      | Optional | Agent workload credentials as required by OpenCode / plugins |
 | Outbound HTTPS             |    Yes     |   Yes    | Proxied agent and provider traffic                           |
 
-Ingress: expose console (**4200** or TLS terminator), controller (**3100**) and manager (**3000**) with `/api/`, `/socket/`, and `/socket.io/` proxied to each service `PORT`. Restrict Bull Board (`/admin/queues` on controller **3100**) to operations networks.
+Ingress: expose console (**4100** or TLS terminator), controller (**3100**) and manager (**3000**) with `/api/`, `/socket/`, and `/socket.io/` proxied to each service `PORT`. Restrict Bull Board (`/admin/queues` on controller **3100**) to operations networks.
 
 ## Related documentation
 

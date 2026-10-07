@@ -1,6 +1,6 @@
 import { DEFAULT_TENANT } from '@forepath/shared/backend';
 
-const DEFAULT_FRONTEND_BASE_URL = 'http://localhost:4500';
+const DEFAULT_FRONTEND_BASE_URL = 'http://localhost:4202';
 const DEFAULT_SUCCESS_RETURN_PATH = '/invoices?payment=success';
 const DEFAULT_CANCEL_RETURN_PATH = '/invoices?payment=cancel';
 

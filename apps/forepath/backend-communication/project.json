@@ -114,7 +114,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/forepath/backend-communication",
-        "command": "docker compose up -d --force-recreate --remove-orphans && docker image prune --force --filter label=io.forepath.one.test-project=forepath-backend-communication"
+        "command": "docker compose --env-file .start-containers.env up -d --force-recreate --remove-orphans && docker image prune --force --filter label=io.forepath.one.test-project=forepath-backend-communication"
       }
     },
     "openapi-client-js": {

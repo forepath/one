@@ -50,7 +50,7 @@ docker compose up -d
 
 Image: `ghcr.io/forepath/decabill-billing-console-server:latest`
 
-Default port **4500**. Compose sets `CSP_CONNECT_SRC_EXTRA=http://host.docker.internal:3200` so the browser can reach the billing API from the containerized console.
+Default port **4202**. Compose sets `CSP_CONNECT_SRC_EXTRA=http://host.docker.internal:3200` so the browser can reach the billing API from the containerized console.
 
 ### Frontend Docs
 
@@ -61,7 +61,7 @@ docker compose up -d
 
 Image: `ghcr.io/forepath/decabill-docs-server:latest`
 
-Default port **4200**.
+Default port **4201**.
 
 ## Container Configuration
 
@@ -96,7 +96,7 @@ services:
       - CONFIG_ALLOWED_HOSTS=config.example.com
       - CSP_ENFORCE=true
       - CSP_CONNECT_SRC_EXTRA=https://api.billing.example.com
-      - PORT=4500
+      - PORT=4202
 ```
 
 When `CONFIG` is set, the frontend server also supports hardening variables documented in **[Environment Configuration](./environment-configuration.md)** (`CONFIG_ALLOWED_HOSTS`, `CONFIG_FETCH_TIMEOUT_MS`, and related settings).

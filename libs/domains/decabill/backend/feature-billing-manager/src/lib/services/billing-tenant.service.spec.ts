@@ -63,11 +63,11 @@ describe('BillingTenantService', () => {
   });
 
   it('resolves frontend url per tenant', () => {
-    process.env['BILLING_FRONTEND_URL'] = 'http://localhost:4500';
+    process.env['BILLING_FRONTEND_URL'] = 'http://localhost:4202';
     process.env['TENANT_FRONTEND_URLS'] = 'alpha=https://billing.alpha.example';
     const service = new BillingTenantService();
 
-    expect(service.getFrontendUrlForTenant('default')).toBe('http://localhost:4500');
+    expect(service.getFrontendUrlForTenant('default')).toBe('http://localhost:4202');
     expect(service.getFrontendUrlForTenant('alpha')).toBe('https://billing.alpha.example');
   });
 });

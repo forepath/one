@@ -192,7 +192,7 @@ CORS_ORIGIN="https://agenstra.com,https://app.agenstra.com"
 
 # Development: Allow all origins (default, no configuration needed)
 # Or restrict to specific origins:
-CORS_ORIGIN="http://localhost:4200,http://localhost:3000"
+CORS_ORIGIN="http://localhost:4100"
 ```
 
 ## Environment Variables
@@ -246,8 +246,9 @@ When running the API container, you must mount the Docker socket to enable Docke
 
 ```bash
 # Run with docker-compose (recommended)
-cd apps/agenstra-backend-agent-manager
-docker compose up -d
+cd apps/agenstra/backend-agent-manager
+cp .start-containers.env.example .start-containers.env
+docker compose --env-file .start-containers.env up -d
 
 # Or run directly with Docker socket mount
 docker run -v /var/run/docker.sock:/var/run/docker.sock \

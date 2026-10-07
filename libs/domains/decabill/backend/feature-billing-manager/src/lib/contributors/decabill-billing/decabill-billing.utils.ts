@@ -127,7 +127,7 @@ export function buildDecabillBillingCloudInitConfigFromRequest(
     },
     frontend: {
       host: '0.0.0.0',
-      port: 4500,
+      port: 4202,
       nodeEnv: 'production',
       defaultLocale: 'en',
     },
@@ -234,7 +234,7 @@ export function buildDecabillBillingCloudInitUserData(config: DecabillBillingClo
   const backendSchedulerEnv = formatEnv([...backendEnvBaseLines, `QUEUE_ROLE: scheduler`]);
   const frontendEnv = formatEnv([
     `HOST: ${config.frontend?.host ?? '0.0.0.0'}`,
-    `PORT: ${config.frontend?.port ?? '4500'}`,
+    `PORT: ${config.frontend?.port ?? '4202'}`,
     `NODE_ENV: ${config.frontend?.nodeEnv ?? 'production'}`,
     `DEFAULT_LOCALE: ${config.frontend?.defaultLocale ?? 'en'}`,
     `CONFIG_ALLOWED_HOSTS: ${config.host?.fqdn ?? config.host?.hostname ?? 'localhost'}`,
@@ -347,7 +347,7 @@ ${OPENSEARCH_COMPOSE_DEPENDS_ON}
     environment:
 ${frontendEnv}
     ports:
-      - '${config.frontend?.port ?? '4500'}:${config.frontend?.port ?? '4500'}'
+      - '${config.frontend?.port ?? '4202'}:${config.frontend?.port ?? '4202'}'
     networks:
       - decabill-billing-network
     restart: unless-stopped
@@ -390,7 +390,7 @@ server {
     ssl_ciphers HIGH:!aNULL:!MD5;
 
     location / {
-        proxy_pass http://decabill-billing-console-server:${config.frontend?.port ?? '4500'};
+        proxy_pass http://decabill-billing-console-server:${config.frontend?.port ?? '4202'};
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -461,7 +461,7 @@ server {
     ssl_ciphers HIGH:!aNULL:!MD5;
 
     location / {
-        proxy_pass http://decabill-billing-console-server:${config.frontend?.port ?? '4500'};
+        proxy_pass http://decabill-billing-console-server:${config.frontend?.port ?? '4202'};
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;

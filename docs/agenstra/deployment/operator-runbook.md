@@ -41,7 +41,7 @@ Map your intended profile to **[System Requirements](./system-requirements.md)**
 ### Frontend and network
 
 - [ ] Console host sized (≥0.5 vCPU, 512 MiB, 1 GiB)
-- [ ] Ingress plan covers console (**4200**), controller (**3100**: `/api/`, `/socket/`, `/socket.io/`), manager (**3000**: same path layout)
+- [ ] Ingress plan covers console (**4100**), controller (**3100**: `/api/`, `/socket/`, `/socket.io/`), manager (**3000**: same path layout)
 - [ ] Bull Board (`/admin/queues` on controller **3100**) restricted to operations networks
 - [ ] Outbound HTTPS available for provider and proxied agent traffic
 

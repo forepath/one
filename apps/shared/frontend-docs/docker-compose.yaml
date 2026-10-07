@@ -5,12 +5,12 @@ services:
     container_name: ${DOCS_SERVER_CONTAINER_NAME:-docs-server}
     environment:
       HOST: ${HOST:-0.0.0.0}
-      PORT: ${PORT:-4200}
+      PORT: ${PORT:-4400}
       NODE_ENV: ${NODE_ENV:-production}
       DEFAULT_LOCALE: ${DEFAULT_LOCALE:-en}
       CSP_ENFORCE: ${CSP_ENFORCE:-true}
     ports:
-      - '${PORT:-4200}:${PORT:-4200}'
+      - '${PORT:-4400}:${PORT:-4400}'
     networks:
       - docs-network
     restart: unless-stopped

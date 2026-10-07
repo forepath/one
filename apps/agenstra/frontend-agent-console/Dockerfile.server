@@ -4,9 +4,9 @@
 # Registry:   ghcr.io/forepath/agenstra-console-server
 # Base:       node:24.14.1-alpine
 # User:       node (APP_UID / APP_GID, default 1000)
-# Exposes:    4200 (Express static server)
+# Exposes:    4100 (Express static server)
 # Build:      npx nx run frontend-agent-console:server-container-image
-# Run:        nx docker:run agenstra-frontend-agent-console -p 4200:4200
+# Run:        nx docker:run agenstra-frontend-agent-console -p 4100:4100
 # Notes:      —
 # -----------------------------------------------------------------------------
 #
@@ -18,7 +18,7 @@ ARG VERSION=0.0.0
 ENV VERSION=${VERSION}
 
 ENV HOST=0.0.0.0
-ENV PORT=4200
+ENV PORT=4100
 
 WORKDIR /app
 

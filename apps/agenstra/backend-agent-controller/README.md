@@ -192,7 +192,7 @@ CORS_ORIGIN="https://agenstra.com,https://app.agenstra.com"
 
 # Development: Allow all origins (default, no configuration needed)
 # Or restrict to specific origins:
-CORS_ORIGIN="http://localhost:4200,http://localhost:3000"
+CORS_ORIGIN="http://localhost:4100"
 ```
 
 ## Environment Variables
@@ -276,8 +276,9 @@ nx docker:api agenstra-backend-agent-controller
 
 ```bash
 # Run with docker-compose (recommended)
-cd apps/agenstra-backend-agent-controller
-docker compose up -d
+cd apps/agenstra/backend-agent-controller
+cp .start-containers.env.example .start-containers.env
+docker compose --env-file .start-containers.env up -d
 
 # Or run directly
 docker run \

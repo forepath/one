@@ -55,7 +55,7 @@ When **`AUTHENTICATION_METHOD=api-key`** (or api-key is inferred from **`STATIC_
 - `TENANTS_ALLOW_GLOBAL_VIEWS` (optional; default `default`) – tenant ids allowed to use cross-tenant admin views (DATEV unified + File Explorer tenant tabs / consolidation).
 - `STATIC_API_KEY_TENANT_ID` (optional) – when set, API key auth is only accepted for this tenant id (must match `X-Tenant`). When unset, one **`STATIC_API_KEY`** may access **all** configured tenants via **`X-Tenant`** (accepted risk **AR-007**).
 - Public catalog (`/public/service-plan-offerings`) is unauthenticated; tenant is selected via `X-Tenant` (defaults to `default`). Restrict allowed tenants with `TENANTS`.
-- `BILLING_FRONTEND_URL` (optional; default derived from `STRIPE_CHECKOUT_SUCCESS_URL` origin or `http://localhost:4500`) – billing console base URL for the `default` tenant; used for Stripe success/cancel redirects.
+- `BILLING_FRONTEND_URL` (optional; default derived from `STRIPE_CHECKOUT_SUCCESS_URL` origin or `http://localhost:4202`) – billing console base URL for the `default` tenant; used for Stripe success/cancel redirects.
 - `TENANT_FRONTEND_URLS` (optional; `tenantId=https://billing.example.com` pairs, comma-separated) – per-tenant billing console base URLs for Stripe return redirects.
 - BILLING*ISSUER*\* (name, VAT ID, address, email, IBAN) and BILLING_TAX_RATE_STANDARD / BILLING_TAX_RATE_REDUCED
 - BILLING_STATUTORY_WITHDRAWAL_PERIOD_DAYS (default 14) — statutory withdrawal window after provisioning

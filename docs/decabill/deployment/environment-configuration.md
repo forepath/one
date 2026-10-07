@@ -284,7 +284,7 @@ Billing console compose default: `CSP_CONNECT_SRC_EXTRA=http://host.docker.inter
 
 | Variable         | Description                                                            | Default                |
 | ---------------- | ---------------------------------------------------------------------- | ---------------------- |
-| `PORT`           | HTTP port                                                              | `4500` (console image) |
+| `PORT`           | HTTP port                                                              | `4202` (console image) |
 | `HOST`           | Bind address                                                           | `0.0.0.0`              |
 | `DEFAULT_LOCALE` | Default locale                                                         | `en`                   |
 | `API_URL`        | Build-time API URL                                                     | See app config         |
@@ -296,7 +296,7 @@ Runtime `/config` JSON may include `billing.urls.websocket` as a string or `{ de
 
 | Variable         | Description    | Default           |
 | ---------------- | -------------- | ----------------- |
-| `PORT`           | HTTP port      | `4200`            |
+| `PORT`           | HTTP port      | `4201`            |
 | `HOST`           | Bind address   | `0.0.0.0`         |
 | `DEFAULT_LOCALE` | Default locale | `en`              |
 | `CSP_ENFORCE`    | Enforce CSP    | `true` in compose |

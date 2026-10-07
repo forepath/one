@@ -2,7 +2,7 @@
 # Build the docker image with `npx nx docker:build forepath-frontend-landingpage`.
 # Tip: Modify "docker:build" options in project.json to change docker build args.
 #
-# Run the container with `nx docker:run forepath-frontend-landingpage -p 3000:3000`.
+# Run the container with `nx docker:run forepath-frontend-landingpage -p 4300:4300`.
 #
 FROM docker.io/node:lts-alpine
 
@@ -10,7 +10,7 @@ ARG VERSION=0.0.0
 ENV VERSION=${VERSION}
 
 ENV HOST=0.0.0.0
-ENV PORT=4000
+ENV PORT=4300
 
 
 WORKDIR /app

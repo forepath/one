@@ -14,7 +14,7 @@ const { app, warmStaticCache } = createSsrExpressApp({
 });
 
 if (isMainModule(import.meta.url)) {
-  const port = parseInt(process.env['PORT'] || '4000', 10);
+  const port = parseInt(process.env['PORT'] || '4200', 10);
 
   warmStaticCache()
     .then(() => {

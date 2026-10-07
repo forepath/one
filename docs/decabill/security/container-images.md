@@ -59,7 +59,7 @@ Unlike agent orchestration API images, the billing API image does **not** requir
 
 Source: `apps/decabill/frontend-billing-console/Dockerfile.server`
 
-- Default `PORT=4500`
+- Default `PORT=4202`
 - Runs as **`node`** (UID **1000**)
 - Runtime `CONFIG` URL and CSP variables documented in **[Environment configuration](../deployment/environment-configuration.md)** Compose often sets `CSP_CONNECT_SRC_EXTRA` to reach the billing API from the browser
 
@@ -67,7 +67,7 @@ Source: `apps/decabill/frontend-billing-console/Dockerfile.server`
 
 Source: `apps/shared/frontend-docs/Dockerfile.server` (same pattern as billing console)
 
-- Default `PORT=4200`
+- Default `PORT=4201`
 - Runs as **`node`** (UID **1000**)
 - Static documentation content; typically fewer `connect-src` requirements than the billing console
 

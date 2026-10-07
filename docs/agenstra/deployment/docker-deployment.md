@@ -132,7 +132,7 @@ services:
       # - CONFIG_ALLOWED_HOSTS=config.example.com
       # - CONFIG_FETCH_TIMEOUT_MS=10000
       # - CONFIG_FETCH_MAX_BYTES=262144
-      - PORT=4200
+      - PORT=4100
 ```
 
 The `CONFIG` variable specifies a URL to a JSON configuration file that will be fetched at runtime and merged with build-time defaults. This allows you to configure frontend applications without rebuilding containers.
@@ -200,7 +200,7 @@ docker run -d \
 # Run frontend agent console (optional per-deployment CONFIG with nested console section)
 docker run -d \
   --name frontend-agent-console \
-  -p 4200:4200 \
+  -p 4100:4100 \
   frontend-agent-console:server
 ```
 

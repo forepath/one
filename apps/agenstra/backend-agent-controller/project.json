@@ -168,7 +168,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "apps/agenstra/backend-agent-controller",
-        "command": "docker compose up -d --force-recreate --remove-orphans && docker image prune --force --filter label=io.forepath.one.test-project=agenstra-backend-agent-controller"
+        "command": "docker compose --env-file .start-containers.env up -d --force-recreate --remove-orphans && docker image prune --force --filter label=io.forepath.one.test-project=agenstra-backend-agent-controller"
       }
     },
     "openapi-client-js": {

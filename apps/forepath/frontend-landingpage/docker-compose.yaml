@@ -6,11 +6,11 @@ services:
     environment:
       # Frontend server configuration
       HOST: ${HOST:-0.0.0.0}
-      PORT: ${PORT:-4200}
+      PORT: ${PORT:-4300}
       NODE_ENV: ${NODE_ENV:-production}
       DEFAULT_LOCALE: ${DEFAULT_LOCALE:-en}
     ports:
-      - '${PORT:-4200}:${PORT:-4200}'
+      - '${PORT:-4300}:${PORT:-4300}'
     networks:
       - landingpage-network
     restart: unless-stopped

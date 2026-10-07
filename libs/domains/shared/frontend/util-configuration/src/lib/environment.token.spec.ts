@@ -105,7 +105,7 @@ describe('environment.token', () => {
         billing: {
           urls: {
             restApi: 'http://localhost:3200/api',
-            frontend: 'http://localhost:4500',
+            frontend: 'http://localhost:4202',
             websocket: 'http://localhost:3200/socket/billing',
           },
         },
@@ -115,7 +115,7 @@ describe('environment.token', () => {
         landing: {
           urls: {
             restApi: 'http://localhost:3200/api',
-            portal: 'http://localhost:4500',
+            portal: 'http://localhost:4202',
           },
         },
       };
@@ -127,7 +127,7 @@ describe('environment.token', () => {
       expect(billingMerged.billing.tenantId).toBe('acme');
       expect(billingMerged.billing.urls.restApi).toBe('https://backend.example/api');
       expect(billingMerged.billing.urls.websocket).toBe('https://backend.example/socket/billing');
-      expect(billingMerged.billing.urls.frontend).toBe('http://localhost:4500');
+      expect(billingMerged.billing.urls.frontend).toBe('http://localhost:4202');
 
       expect(landingMerged.application.production).toBe(true);
       expect(landingMerged.landing.tenantId).toBe('acme');

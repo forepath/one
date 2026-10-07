@@ -91,7 +91,7 @@ This document provides a detailed breakdown of all system components, their resp
 
 **Ports**:
 
-- Development: `4200` (default)
+- Development: `4100` (default)
 - Production: Configurable
 
 **Documentation**: [Frontend Agent Console Application](../applications/frontend-agent-console.md)

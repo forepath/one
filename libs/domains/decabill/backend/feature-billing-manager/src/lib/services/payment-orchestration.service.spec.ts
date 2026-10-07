@@ -188,7 +188,7 @@ describe('PaymentOrchestrationService', () => {
     });
 
     it('uses tenant-specific stripe return urls', async () => {
-      process.env['BILLING_FRONTEND_URL'] = 'http://localhost:4500';
+      process.env['BILLING_FRONTEND_URL'] = 'http://localhost:4202';
       process.env['TENANT_FRONTEND_URLS'] = 'acme=https://billing.acme.com';
 
       invoicesRepository.findByIdAndSubscriptionId.mockResolvedValue({

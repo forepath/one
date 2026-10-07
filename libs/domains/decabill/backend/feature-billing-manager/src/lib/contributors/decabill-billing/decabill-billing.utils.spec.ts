@@ -19,7 +19,7 @@ describe('decabill-billing.utils', () => {
       expect(config.backend.cors.origin).toBe('https://awesome-armadillo-abc12.spirde.com');
       expect(config.backend.billingFrontendUrl).toBe('https://awesome-armadillo-abc12.spirde.com');
       expect(config.backend.port).toBe(3200);
-      expect(config.frontend.port).toBe(4500);
+      expect(config.frontend.port).toBe(4202);
       expect(config.backend.websocketNamespace).toBe('socket/billing');
     });
 
@@ -75,6 +75,9 @@ describe('decabill-billing.utils', () => {
       expect(script).toContain('nginx:alpine');
       expect(script).toContain('opensearchproject/opensearch:2.19.1');
       expect(script).toContain('container_name: decabill-billing-opensearch');
+      expect(script).toContain('PORT: 4202');
+      expect(script).toContain('4202:4202');
+      expect(script).toContain('proxy_pass http://decabill-billing-console-server:4202;');
       expect(script).toContain('OPENSEARCH_HOST: opensearch');
       expect(script).toContain("OPENSEARCH_NODE: 'http://opensearch:9200'");
       expect(script).toContain('OPENSEARCH_INDEX_PREFIX: decabill');

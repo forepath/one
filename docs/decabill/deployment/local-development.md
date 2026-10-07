@@ -56,8 +56,8 @@ The billing manager `docker-compose.yaml` starts Postgres, Redis (published on *
 
 ```bash
 cd apps/decabill/backend-billing-manager
-cp .start-containers.env.example .env
-docker compose up -d
+cp .start-containers.env.example .start-containers.env
+docker compose --env-file .start-containers.env up -d
 ```
 
 ## Configuration
@@ -99,7 +99,7 @@ PROJECTS_WEBSOCKET_NAMESPACE=socket/projects
 
 # Multi-tenancy
 TENANTS=default
-BILLING_FRONTEND_URL=http://localhost:4500
+BILLING_FRONTEND_URL=http://localhost:4202
 
 # CORS (for development)
 CORS_ORIGIN=*
@@ -113,8 +113,8 @@ ENCRYPTION_KEY=
 # Stripe (optional for local payment flows)
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
-STRIPE_CHECKOUT_SUCCESS_URL=http://localhost:4500/invoices?payment=success
-STRIPE_CHECKOUT_CANCEL_URL=http://localhost:4500/invoices?payment=cancel
+STRIPE_CHECKOUT_SUCCESS_URL=http://localhost:4202/invoices?payment=success
+STRIPE_CHECKOUT_CANCEL_URL=http://localhost:4202/invoices?payment=cancel
 
 # Provisioning (optional)
 HETZNER_API_TOKEN=
@@ -137,7 +137,7 @@ WEBSOCKET_URL=http://localhost:3200/socket/billing
 Express server variables (when running the SSR server locally):
 
 ```bash
-PORT=4500
+PORT=4202
 CSP_ENFORCE=false
 CSP_CONNECT_SRC_EXTRA=http://localhost:3200
 ```
@@ -145,7 +145,7 @@ CSP_CONNECT_SRC_EXTRA=http://localhost:3200
 ### Frontend Docs
 
 ```bash
-PORT=4200
+PORT=4201
 CSP_ENFORCE=false
 ```
 
@@ -225,7 +225,7 @@ See **[Background Jobs](./background-jobs.md)**.
 
 ### Port Conflicts
 
-- Billing API: **3200** (REST + Socket.IO), console: **4500**, docs: **4200**, Redis host port: **6380**. Change ports in `.env` if needed: `lsof -i :3200`
+- Billing API: **3200** (REST + Socket.IO), console: **4202**, docs: **4201**, Redis host port: **6380**. Change ports in `.env` if needed: `lsof -i :3200`
 
 ## Related documentation
 

@@ -69,7 +69,7 @@ const server = createServer(async (req, res) => {
   }
 });
 
-const port = process.env['PORT'] || 4000;
+const port = process.env['PORT'] || 4200;
 
 server.listen(port, () => {
   console.log(`Delegating server running on http://localhost:${port}`);

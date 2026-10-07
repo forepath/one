@@ -4,9 +4,9 @@
 # Registry:   ghcr.io/forepath/decabill-landingpage-server
 # Base:       node:24.14.1-alpine
 # User:       node (APP_UID / APP_GID, default 1000)
-# Exposes:    4000 (Express static server)
+# Exposes:    4200 (Express static server)
 # Build:      npx nx run decabill-frontend-landingpage:server-container-image
-# Run:        nx docker:run decabill-frontend-landingpage -p 4000:4000
+# Run:        nx docker:run decabill-frontend-landingpage -p 4200:4200
 # Notes:      —
 # -----------------------------------------------------------------------------
 #
@@ -18,7 +18,7 @@ ARG VERSION=0.0.0
 ENV VERSION=${VERSION}
 
 ENV HOST=0.0.0.0
-ENV PORT=4000
+ENV PORT=4200
 
 WORKDIR /app
 

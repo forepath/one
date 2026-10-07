@@ -6,12 +6,12 @@ import type { AgenstraLandingEnvironment } from './environment.interface';
 export const environment: AgenstraLandingEnvironment = {
   ...createAgenstraShell({
     production: false,
-    socialPreviewImageUrl: 'http://localhost:4300/assets/images/og-preview.png',
+    socialPreviewImageUrl: 'http://localhost:4101/assets/images/og-preview.png',
   }),
   landing: {
     urls: {
       restApi: 'http://localhost:3200/api',
-      portal: 'http://localhost:4500',
+      portal: 'http://localhost:4103',
     },
   },
   communication: {
