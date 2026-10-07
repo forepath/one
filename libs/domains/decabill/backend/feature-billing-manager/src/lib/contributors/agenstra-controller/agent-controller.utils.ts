@@ -202,7 +202,7 @@ export function buildAgentControllerCloudInitConfigFromRequest(
     },
     frontend: {
       host: '0.0.0.0',
-      port: 4200,
+      port: 4100,
       nodeEnv: 'production',
       defaultLocale: 'en',
     },
@@ -332,7 +332,7 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
   const frontendEnv = formatEnv([
     // Frontend web server configuration
     `HOST: ${config.frontend?.host ?? '0.0.0.0'}`,
-    `PORT: ${config.frontend?.port ?? '4200'}`,
+    `PORT: ${config.frontend?.port ?? '4100'}`,
     `NODE_ENV: ${config.frontend?.nodeEnv ?? 'production'}`,
     `DEFAULT_LOCALE: ${config.frontend?.defaultLocale ?? 'en'}`,
     // Runtime config proxy hardening: CONFIG_ALLOWED_HOSTS is required in production when CONFIG is set.
@@ -444,7 +444,7 @@ ${OPENSEARCH_COMPOSE_DEPENDS_ON}
     environment:
 ${frontendEnv}
     ports:
-      - '${config.frontend?.port ?? '4200'}:${config.frontend?.port ?? '4200'}'
+      - '${config.frontend?.port ?? '4100'}:${config.frontend?.port ?? '4100'}'
     networks:
       - agent-controller-network
     restart: unless-stopped
@@ -487,7 +487,7 @@ server {
     ssl_ciphers HIGH:!aNULL:!MD5;
 
     location / {
-        proxy_pass http://agent-console-server:${config.frontend?.port ?? '4200'};
+        proxy_pass http://agent-console-server:${config.frontend?.port ?? '4100'};
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -558,7 +558,7 @@ server {
     ssl_ciphers HIGH:!aNULL:!MD5;
 
     location / {
-        proxy_pass http://agent-console-server:${config.frontend?.port ?? '4200'};
+        proxy_pass http://agent-console-server:${config.frontend?.port ?? '4100'};
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;

@@ -103,7 +103,7 @@ tabs include when/where guidance (`parameters.docs.description`). Foundation pag
 **Theming** and **Fonts** (under Foundation in the sidebar).
 
 ```sh
-nx run shared-frontend-ui-components:storybook        # dev server on http://localhost:4400
+nx run shared-frontend-ui-components:storybook        # dev server on http://localhost:4401
 nx run shared-frontend-ui-components:build-storybook  # static build
 ```
 

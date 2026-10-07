@@ -81,9 +81,9 @@ This document describes the major runtime components in Decabill, their responsi
 
 | Mode                 | Default  | Notes                               |
 | -------------------- | -------- | ----------------------------------- |
-| `nx serve`           | **4500** | Angular dev server                  |
-| Express SSR / Docker | **4500** | Serves `browser/{locale}` bundles   |
-| `serve-static`       | **4500** | File server for built SPA (non-SSR) |
+| `nx serve`           | **4202** | Angular dev server                  |
+| Express SSR / Docker | **4202** | Serves `browser/{locale}` bundles   |
+| `serve-static`       | **4202** | File server for built SPA (non-SSR) |
 
 **Documentation**: [Frontend Billing Console Application](../applications/frontend-billing-console.md)
 
@@ -107,8 +107,8 @@ This document describes the major runtime components in Decabill, their responsi
 
 | Mode                 | Default  | Notes                             |
 | -------------------- | -------- | --------------------------------- |
-| `nx serve`           | **4302** | Angular dev server                |
-| Express SSR / Docker | **4302** | Serves `browser/{locale}` bundles |
+| `nx serve`           | **4200** | Angular dev server                |
+| Express SSR / Docker | **4200** | Serves `browser/{locale}` bundles |
 
 ## PostgreSQL
 

@@ -10,7 +10,7 @@ const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const { app, warmStaticCache } = createDocsServer(['agenstra.com'], bootstrap, serverDistFolder);
 
 if (isMainModule(import.meta.url)) {
-  const port = parseInt(process.env['PORT'] || '4000', 10);
+  const port = parseInt(process.env['PORT'] || '4102', 10);
 
   warmStaticCache()
     .then(() => {

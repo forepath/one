@@ -20,10 +20,10 @@ const { app, warmStaticCache } = createSsrExpressApp({
 
 /**
  * Start the server if this module is the main entry point.
- * The server listens on the port defined by the `PORT` environment variable, or defaults to 4000.
+ * The server listens on the port defined by the `PORT` environment variable, or defaults to 4300.
  */
 if (isMainModule(import.meta.url)) {
-  const port = parseInt(process.env['PORT'] || '4000', 10);
+  const port = parseInt(process.env['PORT'] || '4300', 10);
 
   warmStaticCache()
     .then(() => {

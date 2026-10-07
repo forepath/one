@@ -57,7 +57,7 @@ services:
       # CORS configuration (comma-separated list of allowed origins)
       # In production: CORS is disabled by default. Set CORS_ORIGIN to allow specific origins.
       # In development: CORS allows all origins by default.
-      CORS_ORIGIN: ${CORS_ORIGIN:-}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:4100}
       # Rate limiting configuration
       RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-}
       RATE_LIMIT_TTL: ${RATE_LIMIT_TTL:-60}

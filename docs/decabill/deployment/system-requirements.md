@@ -133,7 +133,7 @@ Angular SSR Express server. No database or Redis on this host.
 
 | Application     | Image                             | vCPU | Memory limit   | Disk  | Default port |
 | --------------- | --------------------------------- | ---- | -------------- | ----- | ------------ |
-| Billing console | `decabill-billing-console-server` | 0.5  | 512 MiB, 1 GiB | 2 GiB | **4500**     |
+| Billing console | `decabill-billing-console-server` | 0.5  | 512 MiB, 1 GiB | 2 GiB | **4202**     |
 
 Browser clients need a modern evergreen browser. The billing console initial bundle budget warns at **1 MB** (errors at **5 MB**).
 
@@ -193,7 +193,7 @@ Acceptable for staging or a single-tenant pilot. Split worker from API before pr
 | Hetzner / DigitalOcean API | Optional   | When service plans include infrastructure           |
 | Outbound HTTPS             | Yes        | Payment, cloud, and email providers                 |
 
-Ingress: expose console (**4500** or behind TLS terminator) and API (**3200**) with `/api/`, `/socket/`, and `/socket.io/` proxied to `PORT`. Restrict Bull Board (`/admin/queues`) to operations networks.
+Ingress: expose console (**4202** or behind TLS terminator) and API (**3200**) with `/api/`, `/socket/`, and `/socket.io/` proxied to `PORT`. Restrict Bull Board (`/admin/queues`) to operations networks.
 
 ## Related documentation
 

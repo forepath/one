@@ -100,12 +100,12 @@ Production and Docker deployments run the compiled Express server from `src/serv
 | Variable                | Default                                              | Purpose                                    |
 | ----------------------- | ---------------------------------------------------- | ------------------------------------------ |
 | `HOST`                  | `0.0.0.0`                                            | Bind address                               |
-| `PORT`                  | `4200` in generic server; **4500** in Docker compose | Listen port                                |
+| `PORT`                  | `4202` in generic server; **4202** in Docker compose | Listen port                                |
 | `DEFAULT_LOCALE`        | `en`                                                 | Fallback locale                            |
 | `CSP_ENFORCE`           | `true` in compose                                    | Content-Security-Policy enforcement        |
 | `CSP_CONNECT_SRC_EXTRA` | API origin                                           | Allow API and WebSocket in CSP connect-src |
 
-Local `nx serve` uses the Angular dev server on port **4500** without Express unless you build and run `serve-server`.
+Local `nx serve` uses the Angular dev server on port **4202** without Express unless you build and run `serve-server`.
 
 ## Configuration
 
@@ -118,7 +118,7 @@ billing: {
   tenantId: 'decabill',
   urls: {
     restApi: 'http://localhost:3200/api',
-    frontend: 'http://localhost:4500',
+    frontend: 'http://localhost:4202',
     websocket: 'http://localhost:3200/socket/billing', // or { default, projects }
   },
 },
@@ -160,7 +160,7 @@ Effects call the billing manager HTTP client and socket service; see `billing-co
 ## Development Commands
 
 ```bash
-# Dev server (port 4500)
+# Dev server (port 4202)
 nx serve decabill-frontend-billing-console
 
 # Production build (localized)

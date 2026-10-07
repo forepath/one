@@ -36,7 +36,7 @@ Web application for subscription self-service, invoicing, payments, and billing 
 - Admin routes for service catalog, manual billing, and customer profiles
 - Identity integration (login, register, user management)
 
-**Default port**: **4500**
+**Default port**: **4202**
 
 **Docker image**: `ghcr.io/forepath/decabill-billing-console-server:latest`
 

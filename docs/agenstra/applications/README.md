@@ -63,7 +63,7 @@ Web-based IDE and chat interface built with Angular and NgRx.
 
 **Ports**:
 
-- Development: `4200` (default)
+- Development: `4100` (default)
 - Production: Configurable
 
 ## Application Relationships

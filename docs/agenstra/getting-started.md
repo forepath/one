@@ -136,7 +136,7 @@ GIT_TOKEN=your-git-token
 OPENCODE_AGENT_DOCKER_IMAGE=ghcr.io/forepath/agenstra-manager-worker:latest
 
 # CORS
-CORS_ORIGIN=http://localhost:4200
+CORS_ORIGIN=http://localhost:4100
 ```
 
 ### Frontend Agent Console
@@ -160,7 +160,7 @@ A client represents a connection to a remote agent-manager service. You can eith
 
 ### Connect to Existing Agent-Manager
 
-1. Open the frontend console at `http://localhost:4200`
+1. Open the frontend console at `http://localhost:4100`
 2. Log in (if using Keycloak) or use API key authentication
 3. Navigate to the Clients section
 4. Click "Add Client"

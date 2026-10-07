@@ -6,12 +6,12 @@ import type { ForepathLandingEnvironment } from './environment.interface';
 export const environment: ForepathLandingEnvironment = {
   ...createForepathShell({
     production: false,
-    socialPreviewImageUrl: 'http://localhost:4400/assets/images/og-preview.png',
+    socialPreviewImageUrl: 'http://localhost:4300/assets/images/og-preview.png',
   }),
   landing: {
     tenantId: 'forepath',
     urls: {
-      portal: 'http://localhost:4500',
+      portal: 'http://localhost:4301',
       restApi: 'http://localhost:3200/api',
     },
   },

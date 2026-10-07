@@ -38,7 +38,7 @@ Map your intended profile to **[System Requirements](./system-requirements.md)**
 ### Frontend and network
 
 - [ ] Billing console sized (≥0.5 vCPU, 512 MiB, 1 GiB)
-- [ ] Ingress plan covers console (**4500**) and API (**3200**: `/api/`, `/socket/`, `/socket.io/`)
+- [ ] Ingress plan covers console (**4202**) and API (**3200**: `/api/`, `/socket/`, `/socket.io/`)
 - [ ] Bull Board (`/admin/queues`) restricted to operations networks
 - [ ] Production SMTP replaces Mailhog; outbound HTTPS available for Stripe and cloud providers
 

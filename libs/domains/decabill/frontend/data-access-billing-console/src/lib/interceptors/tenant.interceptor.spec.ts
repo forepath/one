@@ -44,7 +44,7 @@ describe('billingTenantInterceptor', () => {
         billing: {
           urls: {
             restApi: 'http://localhost:3200/api',
-            frontend: 'http://localhost:4500',
+            frontend: 'http://localhost:4202',
           },
         },
       } as never),
@@ -57,7 +57,7 @@ describe('billingTenantInterceptor', () => {
         billing: {
           urls: {
             restApi: 'http://localhost:3200/api',
-            frontend: 'http://localhost:4500',
+            frontend: 'http://localhost:4202',
           },
           tenantId: 'one',
         },
@@ -71,7 +71,7 @@ describe('billingTenantInterceptor', () => {
         billing: {
           urls: {
             restApi: 'http://localhost:3200/api',
-            frontend: 'http://localhost:4500',
+            frontend: 'http://localhost:4202',
           },
           tenantId: 'decabill',
         },
@@ -82,7 +82,7 @@ describe('billingTenantInterceptor', () => {
         billing: {
           urls: {
             restApi: 'http://localhost:3200/api',
-            frontend: 'http://localhost:4500',
+            frontend: 'http://localhost:4202',
           },
         },
       } as never),
@@ -93,7 +93,7 @@ describe('billingTenantInterceptor', () => {
     const injector = setupTestBed({
       urls: {
         restApi: 'http://localhost:3200/api',
-        frontend: 'http://localhost:4500',
+        frontend: 'http://localhost:4202',
       },
     });
     const req = new HttpRequest('GET', 'http://other.example/api/data');
@@ -109,7 +109,7 @@ describe('billingTenantInterceptor', () => {
     const injector = setupTestBed({
       urls: {
         restApi: 'http://localhost:3200/api',
-        frontend: 'http://localhost:4500',
+        frontend: 'http://localhost:4202',
       },
     });
     const req = new HttpRequest('GET', 'http://localhost:3200/api/subscriptions');
@@ -133,7 +133,7 @@ describe('billingTenantInterceptor', () => {
             billing: {
               urls: {
                 restApi: 'http://localhost:3200/api',
-                frontend: 'http://localhost:4500',
+                frontend: 'http://localhost:4202',
               },
             },
           },
@@ -156,7 +156,7 @@ describe('billingTenantInterceptor', () => {
     const injector = setupTestBed({
       urls: {
         restApi: 'http://localhost:3200/api',
-        frontend: 'http://localhost:4500',
+        frontend: 'http://localhost:4202',
       },
       tenantId: 'acme',
     });
@@ -182,7 +182,7 @@ describe('billingTenantInterceptor', () => {
               tenantId: 'agenstra',
               urls: {
                 restApi: 'http://localhost:3200/api',
-                portal: 'http://localhost:4500',
+                portal: 'http://localhost:4202',
               },
             },
           },

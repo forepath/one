@@ -17,7 +17,7 @@ import {
 import express from 'express';
 
 const app = express();
-const port = parseInt(process.env['PORT'] || '4200', 10);
+const port = parseInt(process.env['PORT'] || '4202', 10);
 
 app.use(createSecurityHeadersMiddleware());
 registerRuntimeConfigEndpoint(app);

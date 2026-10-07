@@ -4,7 +4,7 @@ import type { AgenstraAgentConsoleEnvironment } from './environment.interface';
 export const environment: AgenstraAgentConsoleEnvironment = {
   ...createAgenstraShell({
     production: false,
-    socialPreviewImageUrl: 'http://localhost:4300/assets/images/og-preview.png',
+    socialPreviewImageUrl: 'http://localhost:4100/assets/images/og-preview.png',
   }),
   console: {
     urls: {

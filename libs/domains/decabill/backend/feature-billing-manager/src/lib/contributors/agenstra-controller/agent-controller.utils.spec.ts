@@ -34,6 +34,7 @@ describe('cloud-init.utils', () => {
       expect(config.host.hostname).toBe('awesome-armadillo-abc12');
       expect(config.host.fqdn).toBe('awesome-armadillo-abc12.spirde.com');
       expect(config.backend.cors.origin).toBe('https://awesome-armadillo-abc12.spirde.com');
+      expect(config.frontend.port).toBe(4100);
     });
 
     it('defaults baseDomain to spirde.com when not provided', () => {
@@ -162,7 +163,7 @@ describe('cloud-init.utils', () => {
         ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
         proxy: { httpPort: 80, httpsPort: 443 },
-        frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
+        frontend: { host: '0.0.0.0', port: 4100, nodeEnv: 'production', defaultLocale: 'en' },
         backend: {
           host: '0.0.0.0',
           port: 3100,
@@ -221,7 +222,7 @@ describe('cloud-init.utils', () => {
         ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
         proxy: { httpPort: 80, httpsPort: 443 },
-        frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
+        frontend: { host: '0.0.0.0', port: 4100, nodeEnv: 'production', defaultLocale: 'en' },
         backend: {
           host: '0.0.0.0',
           port: 3100,
@@ -267,7 +268,7 @@ describe('cloud-init.utils', () => {
         ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
         proxy: { httpPort: 80, httpsPort: 443 },
-        frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
+        frontend: { host: '0.0.0.0', port: 4100, nodeEnv: 'production', defaultLocale: 'en' },
         backend: {
           host: '0.0.0.0',
           port: 3100,
@@ -326,7 +327,7 @@ describe('cloud-init.utils', () => {
         ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
         proxy: { httpPort: 80, httpsPort: 443 },
-        frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
+        frontend: { host: '0.0.0.0', port: 4100, nodeEnv: 'production', defaultLocale: 'en' },
         backend: {
           host: '0.0.0.0',
           port: 3100,
@@ -371,7 +372,7 @@ describe('cloud-init.utils', () => {
         ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
         proxy: { httpPort: 80, httpsPort: 443 },
-        frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
+        frontend: { host: '0.0.0.0', port: 4100, nodeEnv: 'production', defaultLocale: 'en' },
         backend: {
           host: '0.0.0.0',
           port: 3100,
@@ -418,7 +419,7 @@ describe('cloud-init.utils', () => {
         ssh: { publicKey: '' },
         host: { hostname: 'my-instance', fqdn: 'my-instance.example.com' },
         proxy: { httpPort: 80, httpsPort: 443 },
-        frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
+        frontend: { host: '0.0.0.0', port: 4100, nodeEnv: 'production', defaultLocale: 'en' },
         backend: {
           host: '0.0.0.0',
           port: 3100,
@@ -462,7 +463,7 @@ describe('cloud-init.utils', () => {
         ssh: { publicKey: key },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
         proxy: { httpPort: 80, httpsPort: 443 },
-        frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
+        frontend: { host: '0.0.0.0', port: 4100, nodeEnv: 'production', defaultLocale: 'en' },
         backend: {
           host: '0.0.0.0',
           port: 3100,
@@ -495,7 +496,7 @@ describe('cloud-init.utils', () => {
         ssh: { publicKey: '' },
         host: { hostname: 'test', fqdn: 'test.spirde.com' },
         proxy: { httpPort: 80, httpsPort: 443 },
-        frontend: { host: '0.0.0.0', port: 4200, nodeEnv: 'production', defaultLocale: 'en' },
+        frontend: { host: '0.0.0.0', port: 4100, nodeEnv: 'production', defaultLocale: 'en' },
         backend: {
           host: '0.0.0.0',
           port: 3100,

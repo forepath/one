@@ -2,7 +2,7 @@ x-backend-communication-environment: &backend-communication-environment
   HOST: ${HOST:-0.0.0.0}
   PORT: ${PORT:-3300}
   NODE_ENV: ${NODE_ENV:-development}
-  CORS_ORIGIN: ${CORS_ORIGIN:-}
+  CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:4101,http://localhost:4200,http://localhost:4300}
   RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-}
   RATE_LIMIT_TTL: ${RATE_LIMIT_TTL:-60}
   RATE_LIMIT_LIMIT: ${RATE_LIMIT_LIMIT:-100}

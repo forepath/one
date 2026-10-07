@@ -6,13 +6,13 @@ services:
     environment:
       # Frontend server configuration
       HOST: ${HOST:-0.0.0.0}
-      PORT: ${PORT:-4200}
+      PORT: ${PORT:-4100}
       NODE_ENV: ${NODE_ENV:-production}
       DEFAULT_LOCALE: ${DEFAULT_LOCALE:-en}
       CSP_ENFORCE: ${CSP_ENFORCE:-true}
       CSP_CONNECT_SRC_EXTRA: ${CSP_CONNECT_SRC_EXTRA:-http://host.docker.internal:3100}
     ports:
-      - '${PORT:-4200}:${PORT:-4200}'
+      - '${PORT:-4100}:${PORT:-4100}'
     networks:
       - agent-console-network
     restart: unless-stopped

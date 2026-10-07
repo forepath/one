@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-07T14:23:11.162Z",
+  "generatedAt": "2026-10-07T15:39:25.774Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -14658,6 +14658,14 @@
       }
     },
     {
+      "id": "file:docs/port-allocation.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/port-allocation.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:CHANGELOG.md",
       "type": "readme",
       "attrs": {
@@ -27832,12 +27840,12 @@
       }
     },
     {
-      "id": "concept:decabill-dev-server-port-4500",
+      "id": "concept:decabill-dev-server-port-4202",
       "type": "concept",
       "attrs": {
-        "title": "Dev server (port 4500)",
+        "title": "Dev server (port 4202)",
         "docPath": "docs/decabill/applications/frontend-billing-console.md",
-        "sectionAnchor": "dev-server-port-4500",
+        "sectionAnchor": "dev-server-port-4202",
         "domain": "decabill"
       }
     },
@@ -31862,12 +31870,12 @@
       }
     },
     {
-      "id": "concept:decabill-edit-env-set-static-api-key-encryption-key-issuer-fields-and-tenants-as-needed",
+      "id": "concept:decabill-local-placeholder-credentials-are-included-replace-them-before-exposing-the-stack",
       "type": "concept",
       "attrs": {
-        "title": "Edit .env: set STATIC_API_KEY, ENCRYPTION_KEY, issuer fields, and TENANTS as needed",
+        "title": "Local placeholder credentials are included; replace them before exposing the stack.",
         "docPath": "docs/decabill/getting-started.md",
-        "sectionAnchor": "edit-env-set-static-api-key-encryption-key-issuer-fields-and-tenants-as-needed",
+        "sectionAnchor": "local-placeholder-credentials-are-included-replace-them-before-exposing-the-stack",
         "domain": "decabill"
       }
     },
@@ -31892,12 +31900,12 @@
       }
     },
     {
-      "id": "concept:decabill-terminal-2-billing-console-angular-dev-server-on-port-4500",
+      "id": "concept:decabill-terminal-2-billing-console-angular-dev-server-on-port-4202",
       "type": "concept",
       "attrs": {
-        "title": "Terminal 2: billing console (Angular dev server on port 4500)",
+        "title": "Terminal 2: billing console (Angular dev server on port 4202)",
         "docPath": "docs/decabill/getting-started.md",
-        "sectionAnchor": "terminal-2-billing-console-angular-dev-server-on-port-4500",
+        "sectionAnchor": "terminal-2-billing-console-angular-dev-server-on-port-4202",
         "domain": "decabill"
       }
     },
@@ -32962,6 +32970,36 @@
       }
     },
     {
+      "id": "concept:port-allocation.md-application-port-allocation",
+      "type": "concept",
+      "attrs": {
+        "title": "Application Port Allocation",
+        "docPath": "docs/port-allocation.md",
+        "sectionAnchor": "application-port-allocation",
+        "domain": "port-allocation.md"
+      }
+    },
+    {
+      "id": "concept:port-allocation.md-application-listeners",
+      "type": "concept",
+      "attrs": {
+        "title": "Application Listeners",
+        "docPath": "docs/port-allocation.md",
+        "sectionAnchor": "application-listeners",
+        "domain": "port-allocation.md"
+      }
+    },
+    {
+      "id": "concept:port-allocation.md-supporting-services",
+      "type": "concept",
+      "attrs": {
+        "title": "Supporting Services",
+        "docPath": "docs/port-allocation.md",
+        "sectionAnchor": "supporting-services",
+        "domain": "port-allocation.md"
+      }
+    },
+    {
       "id": "domain:shared",
       "type": "domain",
       "attrs": {
@@ -33099,6 +33137,16 @@
         "kind": "context",
         "label": "bounded context",
         "source": "tag"
+      }
+    },
+    {
+      "id": "domain:port-allocation-md",
+      "type": "domain",
+      "attrs": {
+        "name": "port-allocation.md",
+        "kind": "domain",
+        "label": "domain",
+        "source": "docs"
       }
     }
   ],
@@ -49375,7 +49423,7 @@
     },
     {
       "from": "file:docs/decabill/applications/frontend-billing-console.md",
-      "to": "concept:decabill-dev-server-port-4500",
+      "to": "concept:decabill-dev-server-port-4202",
       "type": "contains"
     },
     {
@@ -52130,7 +52178,7 @@
     },
     {
       "from": "file:docs/decabill/getting-started.md",
-      "to": "concept:decabill-edit-env-set-static-api-key-encryption-key-issuer-fields-and-tenants-as-needed",
+      "to": "concept:decabill-local-placeholder-credentials-are-included-replace-them-before-exposing-the-stack",
       "type": "contains"
     },
     {
@@ -52145,7 +52193,7 @@
     },
     {
       "from": "file:docs/decabill/getting-started.md",
-      "to": "concept:decabill-terminal-2-billing-console-angular-dev-server-on-port-4500",
+      "to": "concept:decabill-terminal-2-billing-console-angular-dev-server-on-port-4202",
       "type": "contains"
     },
     {
@@ -52786,6 +52834,21 @@
     {
       "from": "file:docs/forepath/features/opentelemetry.md",
       "to": "concept:forepath-api-reference",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/port-allocation.md",
+      "to": "concept:port-allocation.md-application-port-allocation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/port-allocation.md",
+      "to": "concept:port-allocation.md-application-listeners",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/port-allocation.md",
+      "to": "concept:port-allocation.md-supporting-services",
       "type": "contains"
     },
     {
@@ -72889,7 +72952,7 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-dev-server-port-4500",
+      "from": "concept:decabill-dev-server-port-4202",
       "to": "project:decabill-frontend-billing-console",
       "type": "documents"
     },
@@ -76519,12 +76582,12 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-edit-env-set-static-api-key-encryption-key-issuer-fields-and-tenants-as-needed",
+      "from": "concept:decabill-local-placeholder-credentials-are-included-replace-them-before-exposing-the-stack",
       "to": "project:decabill-backend-billing-manager",
       "type": "documents"
     },
     {
-      "from": "concept:decabill-edit-env-set-static-api-key-encryption-key-issuer-fields-and-tenants-as-needed",
+      "from": "concept:decabill-local-placeholder-credentials-are-included-replace-them-before-exposing-the-stack",
       "to": "api:HTTP:GET:/projects",
       "type": "documents"
     },
@@ -76534,7 +76597,7 @@
       "type": "documents"
     },
     {
-      "from": "concept:decabill-terminal-2-billing-console-angular-dev-server-on-port-4500",
+      "from": "concept:decabill-terminal-2-billing-console-angular-dev-server-on-port-4202",
       "to": "project:decabill-frontend-billing-console",
       "type": "documents"
     },
@@ -81014,7 +81077,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-dev-server-port-4500",
+      "from": "concept:decabill-dev-server-port-4202",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -83029,7 +83092,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-edit-env-set-static-api-key-encryption-key-issuer-fields-and-tenants-as-needed",
+      "from": "concept:decabill-local-placeholder-credentials-are-included-replace-them-before-exposing-the-stack",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -83044,7 +83107,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:decabill-terminal-2-billing-console-angular-dev-server-on-port-4500",
+      "from": "concept:decabill-terminal-2-billing-console-angular-dev-server-on-port-4202",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -83576,6 +83639,21 @@
     {
       "from": "concept:forepath-api-reference",
       "to": "domain:forepath",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:port-allocation.md-application-port-allocation",
+      "to": "domain:port-allocation-md",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:port-allocation.md-application-listeners",
+      "to": "domain:port-allocation-md",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:port-allocation.md-supporting-services",
+      "to": "domain:port-allocation-md",
       "type": "belongs_to"
     }
   ]

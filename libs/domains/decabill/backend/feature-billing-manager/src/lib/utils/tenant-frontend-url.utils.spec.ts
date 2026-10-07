@@ -7,7 +7,7 @@ import {
 
 describe('tenant-frontend-url.utils', () => {
   const env = {
-    billingFrontendUrl: 'http://localhost:4500',
+    billingFrontendUrl: 'http://localhost:4202',
     tenantFrontendUrls: 'acme=https://billing.acme.com,corp=https://billing.corp.example',
     stripeCheckoutSuccessUrl: 'http://legacy.example/invoices?payment=success',
     stripeCheckoutCancelUrl: 'http://legacy.example/invoices?payment=cancel',
@@ -26,7 +26,7 @@ describe('tenant-frontend-url.utils', () => {
 
   it('resolveTenantFrontendBaseUrl uses per-tenant override', () => {
     expect(resolveTenantFrontendBaseUrl('acme', env)).toBe('https://billing.acme.com');
-    expect(resolveTenantFrontendBaseUrl('default', env)).toBe('http://localhost:4500');
+    expect(resolveTenantFrontendBaseUrl('default', env)).toBe('http://localhost:4202');
   });
 
   it('resolveTenantFrontendBaseUrl falls back to legacy success url origin', () => {
@@ -64,7 +64,7 @@ describe('tenant-frontend-url.utils', () => {
       resolveTenantFrontendBaseUrl('default', {
         stripeCheckoutSuccessUrl: 'not-a-valid-url',
       }),
-    ).toBe('http://localhost:4500');
+    ).toBe('http://localhost:4202');
   });
 
   it('buildStripeCheckoutReturnUrl uses fallback paths for invalid configured urls', () => {
@@ -82,6 +82,6 @@ describe('tenant-frontend-url.utils', () => {
   });
 
   it('resolveDefaultTenantFrontendBaseUrl resolves default tenant base url', () => {
-    expect(resolveDefaultTenantFrontendBaseUrl(env)).toBe('http://localhost:4500');
+    expect(resolveDefaultTenantFrontendBaseUrl(env)).toBe('http://localhost:4202');
   });
 });

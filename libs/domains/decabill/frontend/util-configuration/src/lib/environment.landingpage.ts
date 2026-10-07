@@ -6,14 +6,14 @@ import type { DecabillLandingEnvironment } from './environment.interface';
 export const environment: DecabillLandingEnvironment = {
   ...createDecabillShell({
     production: false,
-    socialPreviewImageUrl: 'http://localhost:4302/assets/images/og-preview.png',
+    socialPreviewImageUrl: 'http://localhost:4200/assets/images/og-preview.png',
     cookieConsentEnabled: true,
   }),
   landing: {
     tenantId: 'decabill',
     urls: {
       restApi: 'http://localhost:3200/api',
-      portal: 'http://localhost:4500',
+      portal: 'http://localhost:4202',
     },
   },
   communication: {
