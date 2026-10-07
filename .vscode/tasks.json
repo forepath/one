@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start backend containers",
+      "type": "shell",
+      "command": "NX_TUI=false NX_DAEMON=false bash ./start-backend-containers.sh",
+      "isBackground": false,
+      "problemMatcher": []
+    },
+    {
+      "label": "Check backend container status",
+      "type": "shell",
+      "command": "docker ps --format '{{.Names}} {{.Status}} {{.Ports}}'",
+      "isBackground": false,
+      "problemMatcher": []
+    }
+  ]
+}
