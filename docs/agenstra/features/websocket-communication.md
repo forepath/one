@@ -31,6 +31,7 @@ The agent console opens a dedicated Socket.IO connection to **`socket/status`** 
 - **No `setClient`**: the stream is scoped to the authenticated user only.
 - **On connect**: server emits **`statusSnapshot`** with all accessible workspaces/environments (git dirty + unread flags, including nested `chats[]` for visible primary/user sessions).
 - **While connected**: server emits **`statusPatch`** for deltas; background polling (`STATUS_POLL_INTERVAL_MS`, default 30s) refreshes git state and catches unread when no `socket/clients` socket is active. Successful VCS mutations proxied through the controller (stage, commit, fetch, pull, push including force, branch operations, conflict resolve, prepare-clean workspace) also emit **`statusPatch`** immediately to every user with access to that workspace.
+- **Environment provisioning progress**: `statusSnapshot` / `statusPatch` carry optional `environmentProgress` (`[{ clientId, operations }]`) with running environment create / update operations per workspace; a patch with `operations: []` means the workspace finished. While any accessible workspace has running operations, a progress-only poll runs every `STATUS_PROVISIONING_POLL_INTERVAL_MS` (default 3s). Full and progress-only polls never overlap on the same socket, preventing older results from overwriting newer progress.
 - **Agent workspace changes**: agent-manager broadcasts **`gitStateChanged`** on the **`socket/agents`** namespace after file writes, file-update notifications, workspace-affecting agent tool results, and local VCS/file mutations. The controller **`socket/clients`** gateway listens for **`gitStateChanged`** and **`fileUpdateNotification`**, then pushes **`statusPatch`** on the **`socket/status`** namespace to users with workspace access (same security model as VCS proxy hooks).
 - **Client → server**: `markEnvironmentRead` `{ clientId, agentId, chatSessionId? }`, `markChatSessionRead` `{ clientId, agentId, chatSessionId }`, `setActiveEnvironment` `{ clientId, agentId | null, chatSessionId? }`.
 - **Unread** is computed per visible chat session (latest agent message in that session; automation activity attributes to the primary session only). Environment `hasUnreadMessages` is the OR of those sessions. Per-session cursors live in `user_chat_session_read_state`; `user_environment_read_state` remains for env-level helpers.
@@ -121,7 +122,15 @@ Acknowledgement that a `forward` command was accepted for dispatch to the manage
 
 #### Proxied manager events
 
-The controller re-emits manager events **using their original event names** to the initiating browser socket only (for example `chatMessage`, `containerStats`, `terminalOutput`). Shapes match the agent-manager AsyncAPI.
+The controller re-emits manager events **using their original event names** to the initiating browser socket only (for example `chatMessage`, `containerStats`, `terminalOutput`, `environmentProgress`). Shapes match the agent-manager AsyncAPI.
+
+Terminal startup preserves the initial shell prompt without requiring an Enter keypress: the manager subscribes to PTY output before WebSocket connection completes and buffers startup output until `terminalCreated` is emitted. The console consumes output starting at sequence zero and initializes each terminal only once, so session-state updates do not reset its display.
+
+`environmentProgress` is broadcast by the manager to every connected socket (no agent login required), so the console receives live provisioning progress as soon as a workspace is selected via `setClient`.
+
+`opencodeConfigSynced` is also broadcast without agent login after effective OpenCode config and secrets are successfully applied (`data: { agentId }`). It covers environment, workspace, and global config changes, including updates without container recreation. The console refreshes cached model and slash-command catalogs for that environment; reconnecting/selecting a workspace also refreshes its previously requested catalogs to recover changes missed while disconnected. Failed or deferred config syncs do not emit this event.
+
+Authenticated environments receive an immediate `containerStats` snapshot and periodic updates. Each periodic tick resolves the environment's current container ID, so config or environment-variable provisioning that replaces a container continues reporting its running status and stats without requiring another login or WebSocket reconnect.
 
 #### Controller-originated ticket events (still on `clients`)
 

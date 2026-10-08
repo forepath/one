@@ -52,6 +52,8 @@ This configuration allows you to discover which agent types are available on eac
 - List all clients with their status and configuration
 - View client details including endpoint and authentication type
 - See available agent types for each client
+- See a stacked provisioning progress bar (one segment per environment being created or updated) on workspaces with running environment operations
+- Workspaces that cannot be reached show a warning icon; when selected, the environments list shows an unavailable-content empty state below the search with the connection error, and search/add controls are disabled
 
 ### Update Client
 

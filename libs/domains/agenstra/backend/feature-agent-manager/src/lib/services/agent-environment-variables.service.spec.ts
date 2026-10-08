@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
+import type { EnvironmentProgressDto } from '../dto/environment-progress.dto';
 import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-variable.entity';
 import { AgentEntity } from '../entities/agent.entity';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
@@ -12,9 +13,12 @@ import { AgentEnvironmentVariablesService } from './agent-environment-variables.
 import { AgentMessagesService } from './agent-messages.service';
 import { AgentSessionHydrationService } from './agent-session-hydration.service';
 import { DockerService } from './docker.service';
+import { EnvironmentProgressService } from './environment-progress.service';
 
 describe('AgentEnvironmentVariablesService', () => {
   let service: AgentEnvironmentVariablesService;
+  let progressService: EnvironmentProgressService;
+  let emittedProgress: EnvironmentProgressDto[];
   const mockAgent: AgentEntity = {
     id: 'agent-uuid-123',
     name: 'Test Agent',
@@ -105,10 +109,14 @@ describe('AgentEnvironmentVariablesService', () => {
           provide: DockerService,
           useValue: mockDockerService,
         },
+        EnvironmentProgressService,
       ],
     }).compile();
 
     service = module.get<AgentEnvironmentVariablesService>(AgentEnvironmentVariablesService);
+    progressService = module.get(EnvironmentProgressService);
+    emittedProgress = [];
+    progressService.registerBroadcaster((progress) => emittedProgress.push(progress));
     mockAgentMessagesService.countMessages.mockResolvedValue(0);
     mockAgentMessagesService.getChatHistory.mockResolvedValue([]);
   });
@@ -561,6 +569,97 @@ describe('AgentEnvironmentVariablesService', () => {
       expect(mockAgentsRepository.update).toHaveBeenCalledWith('agent-uuid-123', {
         containerId: 'new-container-id-123',
       });
+    });
+
+    it('queues update progress for every affected agent up front and completes each', async () => {
+      const secondAgent: AgentEntity = {
+        ...mockAgent,
+        id: 'agent-uuid-456',
+        name: 'Second Agent',
+        containerId: 'container-id-456',
+      } as AgentEntity;
+
+      mockAgentsRepository.findAllWithContainers.mockResolvedValue([mockAgent, secondAgent]);
+      mockDockerService.getContainerEnvironmentMap.mockResolvedValue({ GIT_TOKEN: 'old-token' });
+      mockDockerService.updateContainer.mockResolvedValue('new-container');
+      mockAgentsRepository.update.mockResolvedValue(mockAgent);
+
+      await service.reconcileWorkspaceConfigurationOverrides({ GIT_TOKEN: 'new-token' });
+
+      expect(emittedProgress.slice(0, 2)).toEqual([
+        expect.objectContaining({ agentId: 'agent-uuid-123', operation: 'update', step: 'queued', progress: 0 }),
+        expect.objectContaining({ agentId: 'agent-uuid-456', operation: 'update', step: 'queued', progress: 0 }),
+      ]);
+
+      const completed = emittedProgress.filter((e) => e.status === 'completed').map((e) => e.agentId);
+
+      expect(completed).toEqual(['agent-uuid-123', 'agent-uuid-456']);
+      expect(progressService.list()).toEqual([]);
+    });
+
+    it('fails the current and remaining queued operations when one agent fails', async () => {
+      const secondAgent: AgentEntity = {
+        ...mockAgent,
+        id: 'agent-uuid-456',
+        containerId: 'container-id-456',
+      } as AgentEntity;
+
+      mockAgentsRepository.findAllWithContainers.mockResolvedValue([mockAgent, secondAgent]);
+      mockDockerService.getContainerEnvironmentMap.mockResolvedValue({ GIT_TOKEN: 'old-token' });
+      mockDockerService.updateContainer.mockRejectedValueOnce(new Error('docker down'));
+
+      await expect(service.reconcileWorkspaceConfigurationOverrides({ GIT_TOKEN: 'new-token' })).rejects.toThrow(
+        'docker down',
+      );
+
+      const failed = emittedProgress.filter((e) => e.status === 'failed');
+
+      expect(failed).toEqual([
+        expect.objectContaining({ agentId: 'agent-uuid-123', error: 'docker down' }),
+        expect.objectContaining({ agentId: 'agent-uuid-456' }),
+      ]);
+      expect(mockDockerService.updateContainer).toHaveBeenCalledTimes(1);
+      expect(progressService.list()).toEqual([]);
+    });
+
+    it('does not report progress when no agent is affected', async () => {
+      mockAgentsRepository.findAllWithContainers.mockResolvedValue([mockAgent]);
+      mockDockerService.getContainerEnvironmentMap.mockResolvedValue({ OTHER: 'x' });
+
+      await service.reconcileWorkspaceConfigurationOverrides({ GIT_TOKEN: 'new-token' });
+
+      expect(emittedProgress).toEqual([]);
+    });
+  });
+
+  describe('reconcileEnvironmentVariables progress', () => {
+    it('reports update steps and completes', async () => {
+      mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      mockRepository.findAllByAgentId.mockResolvedValue([mockEnvironmentVariable]);
+      mockDockerService.updateContainer.mockResolvedValue('new-container');
+      mockAgentsRepository.update.mockResolvedValue(mockAgent);
+
+      await service.reconcileEnvironmentVariables(mockAgent.id);
+
+      expect([...new Set(emittedProgress.map((e) => e.step))]).toEqual([
+        'queued',
+        'summarizingContext',
+        'recreatingContainer',
+        'finalizing',
+      ]);
+      expect(emittedProgress.at(-1)).toEqual(
+        expect.objectContaining({ agentId: mockAgent.id, agentName: mockAgent.name, status: 'completed' }),
+      );
+    });
+
+    it('reports failure when container recreation fails', async () => {
+      mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      mockRepository.findAllByAgentId.mockResolvedValue([]);
+      mockDockerService.updateContainer.mockRejectedValueOnce(new Error('recreate failed'));
+
+      await expect(service.reconcileEnvironmentVariables(mockAgent.id)).rejects.toThrow('recreate failed');
+
+      expect(emittedProgress.at(-1)).toEqual(expect.objectContaining({ status: 'failed', error: 'recreate failed' }));
     });
   });
 });

@@ -157,10 +157,11 @@ export class AgentsFilesController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Query('path') path?: string,
     @Query('context') contextRaw?: string,
+    @Query('refresh') refresh?: string,
   ): Promise<FileNodeDto[]> {
     const context = parseAgentFileManagerContext(contextRaw);
 
-    return await this.agentFileSystemService.listDirectory(agentId, path || '.', context);
+    return await this.agentFileSystemService.listDirectory(agentId, path || '.', context, refresh === 'true');
   }
 
   /**

@@ -57,6 +57,8 @@ export interface MoveFileDto {
 
 export interface ListDirectoryParams {
   path?: string; // Directory path relative to context root (defaults to '.')
+  /** Bypass the persisted directory index for an explicit refresh. */
+  refresh?: boolean;
   /** When `config`, server requires workspace management rights. */
   context?: FileManagerContext;
 }

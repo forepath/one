@@ -4,12 +4,13 @@ import {
   ClientsFacade,
   FilesFacade,
   FilesService,
+  type FileNodeDto,
   VcsFacade,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import { ENVIRONMENT } from '@forepath/agenstra/frontend/util-configuration';
 import { Actions } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { of, Subject } from 'rxjs';
+import { BehaviorSubject, of, Subject } from 'rxjs';
 
 import { FileTreeClipboardService } from './file-tree-clipboard.service';
 import { FileTreeComponent } from './file-tree.component';
@@ -61,6 +62,8 @@ describe('FileTreeComponent selection', () => {
   }
 
   beforeEach(async () => {
+    filesFacadeStub.getDirectoryListing$.mockReturnValue(of([]));
+    filesFacadeStub.isListingDirectory$.mockReturnValue(of(false));
     await TestBed.configureTestingModule({
       imports: [FileTreeComponent],
       providers: [
@@ -100,14 +103,7 @@ describe('FileTreeComponent selection', () => {
         { provide: Store, useValue: { dispatch: jest.fn() } },
         FileTreeClipboardService,
       ],
-    })
-      .overrideComponent(FileTreeComponent, {
-        set: {
-          template: '<div class="file-tree-host"></div>',
-          imports: [],
-        },
-      })
-      .compileComponents();
+    }).compileComponents();
 
     fixture = TestBed.createComponent(FileTreeComponent);
     component = fixture.componentInstance;
@@ -124,6 +120,49 @@ describe('FileTreeComponent selection', () => {
     directoryExpandSpy = jest.fn();
     component.fileSelect.subscribe(fileSelectSpy);
     component.directoryExpand.subscribe(directoryExpandSpy);
+  });
+
+  it('keeps folder loading state through tree rebuilds and clears it on success', () => {
+    const listing = new BehaviorSubject<FileNodeDto[] | null>(null);
+    const loading = new BehaviorSubject(true);
+    filesFacadeStub.getDirectoryListing$.mockReturnValue(listing);
+    filesFacadeStub.isListingDirectory$.mockReturnValue(loading);
+    component.treeCache.set(new Map([['.', [{ name: 'lib', path: 'lib', type: 'directory' }]]]));
+    component.onDirectoryToggle({ name: 'lib', path: 'lib', type: 'directory' });
+    fixture.componentRef.setInput('expandedPaths', new Set(['src', 'lib']));
+    fixture.detectChanges();
+    expect(component.findNodeByPath('lib')?.loading).toBe(true);
+    expect(fixture.nativeElement.querySelector('fpc-spinner[label="Loading..."]')).not.toBeNull();
+
+    listing.next([{ name: 'main.ts', path: 'lib/main.ts', type: 'file' }]);
+    expect(component.findNodeByPath('lib')?.loading).toBe(true);
+    loading.next(false);
+    expect(component.findNodeByPath('lib')?.loading).toBe(false);
+    expect(component.findNodeByPath('lib/main.ts')).not.toBeNull();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('fpc-spinner[label="Loading..."]')).toBeNull();
+  });
+
+  it('clears the folder spinner when listing fails without producing any data', () => {
+    const loading = new BehaviorSubject(true);
+    filesFacadeStub.getDirectoryListing$.mockReturnValue(of(null));
+    filesFacadeStub.isListingDirectory$.mockReturnValue(loading);
+    component.treeCache.set(new Map([['.', [{ name: 'lib', path: 'lib', type: 'directory' }]]]));
+    component.onDirectoryToggle({ name: 'lib', path: 'lib', type: 'directory' });
+    fixture.componentRef.setInput('expandedPaths', new Set(['src', 'lib']));
+    fixture.detectChanges();
+    expect(component.findNodeByPath('lib')?.loading).toBe(true);
+    loading.next(false);
+    expect(component.findNodeByPath('lib')?.loading).toBe(false);
+  });
+
+  it('does not retain cached tree nodes after switching agents', () => {
+    component.treeCache.set(new Map([['.', [{ name: 'old.ts', path: 'old.ts', type: 'file' }]]]));
+    filesFacadeStub.getDirectoryListing$.mockReturnValue(of(null));
+    fixture.componentRef.setInput('agentId', 'agent-2');
+    fixture.detectChanges();
+    expect(component.treeNodes()).toEqual([]);
+    expect(component.treeCache().size).toBe(0);
   });
 
   it('plain file click selects and emits fileSelect', () => {

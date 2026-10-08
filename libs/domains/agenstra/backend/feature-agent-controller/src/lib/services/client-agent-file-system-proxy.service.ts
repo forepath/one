@@ -517,11 +517,16 @@ export class ClientAgentFileSystemProxyService {
     agentId: string,
     path?: string,
     context: AgentFileManagerContext = 'app',
+    refresh = false,
   ): Promise<FileNodeDto[]> {
     const params: Record<string, string> = {};
 
     if (path) {
       params.path = path;
+    }
+
+    if (refresh) {
+      params.refresh = 'true';
     }
 
     return await this.makeRequest<FileNodeDto[]>(clientId, agentId, {

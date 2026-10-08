@@ -1,3 +1,5 @@
+import type { EnvironmentProgressDto } from '@forepath/agenstra/backend/feature-agent-manager';
+
 export interface ChatSessionStatusPayload {
   chatSessionId: string;
   hasUnreadMessages: boolean;
@@ -19,11 +21,20 @@ export interface ClientStatusPayload {
   gitDirty: boolean;
 }
 
+/** Active environment provisioning operations (create / update) of one workspace (client). */
+export interface ClientEnvironmentProgressPayload {
+  clientId: string;
+  /** Running operations, oldest first; empty in a patch means all operations of the client finished. */
+  operations: EnvironmentProgressDto[];
+}
+
 export interface StatusSnapshotPayload {
   generatedAt: string;
   environments: EnvironmentStatusPayload[];
   clients: ClientStatusPayload[];
   spacesHasAttention: boolean;
+  /** Workspaces with running environment provisioning operations (omitted when none). */
+  environmentProgress?: ClientEnvironmentProgressPayload[];
 }
 
 export interface StatusPatchPayload {
@@ -31,6 +42,8 @@ export interface StatusPatchPayload {
   environments?: EnvironmentStatusPayload[];
   clients?: ClientStatusPayload[];
   spacesHasAttention?: boolean;
+  /** Workspaces whose provisioning operations changed (operations: [] when cleared). */
+  environmentProgress?: ClientEnvironmentProgressPayload[];
 }
 
 export interface MarkEnvironmentReadPayload {

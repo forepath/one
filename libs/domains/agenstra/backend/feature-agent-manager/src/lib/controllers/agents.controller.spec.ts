@@ -7,6 +7,7 @@ import { CreateAgentDto } from '../dto/create-agent.dto';
 import { UpdateAgentDto } from '../dto/update-agent.dto';
 import { ContainerType } from '../entities/agent.entity';
 import { AgentsService } from '../services/agents.service';
+import { EnvironmentProgressService } from '../services/environment-progress.service';
 
 import { AgentsController } from './agents.controller';
 
@@ -46,6 +47,9 @@ describe('AgentsController', () => {
     restart: jest.fn(),
     listModels: jest.fn(),
   };
+  const mockEnvironmentProgressService = {
+    list: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -54,6 +58,10 @@ describe('AgentsController', () => {
         {
           provide: AgentsService,
           useValue: mockService,
+        },
+        {
+          provide: EnvironmentProgressService,
+          useValue: mockEnvironmentProgressService,
         },
       ],
     }).compile();
@@ -64,6 +72,31 @@ describe('AgentsController', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('getEnvironmentProgress', () => {
+    it('should return active environment progress operations', () => {
+      const operations = [
+        {
+          operationId: 'op-1',
+          agentId: null,
+          agentName: 'New Agent',
+          operation: 'create' as const,
+          status: 'running' as const,
+          step: 'pullingImage' as const,
+          stepIndex: 1,
+          stepCount: 7,
+          progress: 12,
+          startedAt: '2024-01-01T00:00:00.000Z',
+          updatedAt: '2024-01-01T00:00:01.000Z',
+        },
+      ];
+
+      mockEnvironmentProgressService.list.mockReturnValue(operations);
+
+      expect(controller.getEnvironmentProgress()).toEqual(operations);
+      expect(mockEnvironmentProgressService.list).toHaveBeenCalled();
+    });
   });
 
   describe('getAgents', () => {

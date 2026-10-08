@@ -28,6 +28,7 @@ import {
   ContainerType,
   DeploymentsService,
   EnvFacade,
+  EnvironmentProgressFacade,
   FilesFacade,
   filterTicketsForTicketContextSuggestions,
   KnowledgeFacade,
@@ -56,6 +57,8 @@ import {
   type CreateClientDto,
   type CreateEnvironmentVariableDto,
   type DeploymentRun,
+  type EnvironmentProgress,
+  type EnvironmentProgressStep,
   type EnvironmentVariableResponseDto,
   type FileManagerContext,
   type ForwardedEventPayload,
@@ -94,10 +97,13 @@ import {
   FpcModalFooterDirective,
   FpcNotificationIndicatorComponent,
   FpcPageHeaderComponent,
+  FpcProgressComponent,
   FpcSearchFieldComponent,
   FpcSpinnerComponent,
   FpcTypeaheadSelectComponent,
   type FpcBadgeColor,
+  type FpcProgressSegment,
+  type FpcProgressVariant,
 } from '@forepath/shared/frontend/ui-components';
 import { ENVIRONMENT, type Environment } from '@forepath/agenstra/frontend/util-configuration';
 import { StandaloneLoadingService } from '@forepath/shared/frontend';
@@ -195,6 +201,15 @@ type ChatMessageWithFilter = {
   } | null;
 };
 
+/** Segment colors of the stacked workspace provisioning bar (cycled per environment). */
+const WORKSPACE_PROGRESS_SEGMENT_VARIANTS: FpcProgressVariant[] = [
+  'primary',
+  'info',
+  'success',
+  'warning',
+  'secondary',
+];
+
 @Component({
   selector: 'framework-agent-console-chat',
   imports: [
@@ -230,6 +245,7 @@ type ChatMessageWithFilter = {
     FpcModalFooterDirective,
     FpcNotificationIndicatorComponent,
     FpcPageHeaderComponent,
+    FpcProgressComponent,
     FpcSearchFieldComponent,
     FpcSpinnerComponent,
     FpcTypeaheadSelectComponent,
@@ -261,6 +277,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private readonly chatTimelineFacade = inject(ChatTimelineFacade);
   private readonly chatSessionsFacade = inject(ChatSessionsFacade);
   protected readonly notificationsFacade = inject(NotificationsFacade);
+  private readonly environmentProgressFacade = inject(EnvironmentProgressFacade);
   private readonly statsFacade = inject(StatsFacade);
   private readonly ticketsFacade = inject(TicketsFacade);
   private readonly ticketAutomationFacade = inject(TicketAutomationFacade);
@@ -698,6 +715,83 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }),
   );
 
+  /** Why the active workspace cannot be reached (environment list load or remote socket failure). */
+  readonly workspaceConnectionError$: Observable<string | null> = this.activeClientId$.pipe(
+    switchMap((clientId) => {
+      if (!clientId) {
+        return of(null);
+      }
+
+      return combineLatest([
+        this.agentsFacade.getClientAgentsListError$(clientId),
+        this.socketsFacade.getRemoteConnectionError$(clientId),
+      ]).pipe(map(([listError, remoteError]) => listError ?? remoteError ?? null));
+    }),
+    distinctUntilChanged(),
+  );
+
+  /** Connection errors per workspace for the workspace list (list load errors + active remote error). */
+  readonly workspaceConnectionErrors$: Observable<Record<string, string>> = combineLatest([
+    this.agentsFacade.getListErrorsByClientId$(),
+    this.activeClientId$,
+    this.workspaceConnectionError$,
+  ]).pipe(
+    map(([listErrors, activeClientId, activeError]) => {
+      const errors: Record<string, string> = {};
+
+      for (const [clientId, error] of Object.entries(listErrors ?? {})) {
+        if (error) {
+          errors[clientId] = error;
+        }
+      }
+
+      if (activeClientId && activeError) {
+        errors[activeClientId] = activeError;
+      }
+
+      return errors;
+    }),
+  );
+
+  /** Running create / update operation per environment of the active workspace. */
+  readonly environmentProgressByAgentId$: Observable<Record<string, EnvironmentProgress>> = this.activeClientId$.pipe(
+    switchMap((clientId) =>
+      clientId ? this.environmentProgressFacade.getClientEnvironmentProgressByAgentId$(clientId) : of({}),
+    ),
+  );
+
+  /** Operations of environments not in the list yet (e.g. creates still provisioning). */
+  readonly pendingEnvironmentProgress$: Observable<EnvironmentProgress[]> = this.activeClientId$.pipe(
+    switchMap((clientId) =>
+      clientId ? this.environmentProgressFacade.getClientPendingEnvironmentProgress$(clientId) : of([]),
+    ),
+  );
+
+  /** Stacked progress bar per workspace with running environment operations. */
+  readonly workspaceProgressBars$: Observable<
+    Record<string, { average: number; count: number; segments: FpcProgressSegment[]; label: string }>
+  > = this.environmentProgressFacade.workspaceProgressByClientId$.pipe(
+    map((byClientId) => {
+      const bars: Record<string, { average: number; count: number; segments: FpcProgressSegment[]; label: string }> =
+        {};
+
+      for (const [clientId, aggregate] of Object.entries(byClientId)) {
+        bars[clientId] = {
+          average: aggregate.average,
+          count: aggregate.operations.length,
+          label: $localize`:@@featureChat-workspaceProvisioningProgress:Provisioning ${aggregate.operations.length}:count: environment(s)`,
+          segments: aggregate.segments.map((segment, index) => ({
+            value: segment.value,
+            variant: WORKSPACE_PROGRESS_SEGMENT_VARIANTS[index % WORKSPACE_PROGRESS_SEGMENT_VARIANTS.length],
+            label: `${segment.agentName}: ${this.environmentProgressStepLabel(segment.step)} (${Math.round(segment.progress)}%)`,
+          })),
+        };
+      }
+
+      return bars;
+    }),
+  );
+
   // Local state
   chatMessage = signal<string>('');
   /** Shown when prompt enhancement fails (success clears it). */
@@ -963,6 +1057,39 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }),
   );
 
+  environmentProgressOperationLabel(progress: Pick<EnvironmentProgress, 'operation'>): string {
+    return progress.operation === 'create'
+      ? $localize`:@@featureChat-environmentProgressCreating:Creating`
+      : $localize`:@@featureChat-environmentProgressUpdating:Updating`;
+  }
+
+  environmentProgressStepLabel(step: EnvironmentProgressStep): string {
+    switch (step) {
+      case 'queued':
+        return $localize`:@@featureChat-environmentProgressStepQueued:Queued`;
+      case 'preparing':
+        return $localize`:@@featureChat-environmentProgressStepPreparing:Preparing`;
+      case 'pullingImage':
+        return $localize`:@@featureChat-environmentProgressStepPullingImage:Pulling image`;
+      case 'creatingContainer':
+        return $localize`:@@featureChat-environmentProgressStepCreatingContainer:Creating container`;
+      case 'preparingRepository':
+        return $localize`:@@featureChat-environmentProgressStepPreparingRepository:Preparing repository`;
+      case 'persisting':
+        return $localize`:@@featureChat-environmentProgressStepPersisting:Saving environment`;
+      case 'waitingForHealthy':
+        return $localize`:@@featureChat-environmentProgressStepWaitingForHealthy:Waiting for container`;
+      case 'summarizingContext':
+        return $localize`:@@featureChat-environmentProgressStepSummarizingContext:Summarizing context`;
+      case 'recreatingContainer':
+        return $localize`:@@featureChat-environmentProgressStepRecreatingContainer:Recreating container`;
+      case 'finalizing':
+        return $localize`:@@featureChat-environmentProgressStepFinalizing:Finalizing`;
+      default:
+        return step;
+    }
+  }
+
   readonly getClientAttentionBadge$ = (clientId: string) => this.notificationsFacade.getClientAttentionBadge$(clientId);
 
   readonly getEnvironmentAttentionBadge$ = (clientId: string, agentId: string) =>
@@ -1213,6 +1340,31 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     description: '',
     containerType: undefined,
   });
+
+  /** Live progress of the environment being created in the add modal (matched by name until it has an id). */
+  readonly addAgentProgress$: Observable<EnvironmentProgress | null> = combineLatest([
+    this.activeClientId$,
+    toObservable(this.newAgent).pipe(
+      map((agent) => agent.name?.trim() ?? ''),
+      distinctUntilChanged(),
+    ),
+  ]).pipe(
+    switchMap(([clientId, name]) =>
+      clientId && name ? this.environmentProgressFacade.getCreateEnvironmentProgress$(clientId, name) : of(null),
+    ),
+  );
+
+  /** Live progress of the environment being edited in the update modal. */
+  readonly updateAgentProgress$: Observable<EnvironmentProgress | null> = combineLatest([
+    this.activeClientId$,
+    toObservable(this.editingAgentId),
+  ]).pipe(
+    switchMap(([clientId, agentId]) =>
+      clientId && agentId
+        ? this.environmentProgressFacade.getEnvironmentProgressForAgent$(clientId, agentId)
+        : of(null),
+    ),
+  );
 
   // Environment variables state
   readonly editingEnvVarId = signal<string | null>(null);

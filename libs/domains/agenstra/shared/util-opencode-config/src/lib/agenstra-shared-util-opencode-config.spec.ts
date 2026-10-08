@@ -581,11 +581,7 @@ describe('materializeModelAllowDeny', () => {
     });
 
     expect(prepared.skills).toEqual({
-      paths: [
-        '/opt/skills/local',
-        '/opt/agenstra/skills/agenstra-ticket-automation',
-        '.opencode/skills/agenstra-ticket-automation',
-      ],
+      paths: ['/opt/skills/local', '/opt/agenstra/skills/agenstra-ticket-automation'],
       urls: ['https://example.com/skill'],
     });
     expect((prepared.agent as Record<string, unknown>)['agenstra-automation']).toMatchObject({

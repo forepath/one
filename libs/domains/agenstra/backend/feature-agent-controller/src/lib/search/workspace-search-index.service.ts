@@ -104,20 +104,11 @@ export class WorkspaceSearchIndexService {
     try {
       await this.ensureIndex();
 
-      const result = await this.openSearch.search({
-        index: this.indexName(),
-        query: '*',
-        fields: ['path'],
-        filters: { clientId, agentId },
-        from: 0,
-        size: 1,
-      });
+      const total = await this.openSearch.count(this.indexName(), { clientId, agentId });
 
-      if (result.total > 0) {
-        this.setStatus(clientId, agentId, { status: 'ready', docCount: result.total, message: null });
-        this.logger.log(
-          `Recovered workspace index status for ${clientId}/${agentId} from OpenSearch (${result.total} docs)`,
-        );
+      if (total > 0) {
+        this.setStatus(clientId, agentId, { status: 'ready', docCount: total, message: null });
+        this.logger.log(`Recovered workspace index status for ${clientId}/${agentId} from OpenSearch (${total} docs)`);
       } else {
         this.setStatus(clientId, agentId, { status: 'missing', docCount: 0, message: null });
       }
@@ -183,11 +174,13 @@ export class WorkspaceSearchIndexService {
 
     try {
       await this.ensureIndex();
-      await this.openSearch.deleteByQuery(this.indexName(), { clientId, agentId });
 
+      // Resolve paths before purging so an unreachable workspace does not wipe the existing corpus.
       const paths = seedPaths?.length
         ? seedPaths.filter((path) => !shouldSkipWorkspaceIndexPath(path))
         : await this.walkAllFilePaths(clientId, agentId);
+
+      await this.openSearch.deleteByQuery(this.indexName(), { clientId, agentId });
 
       for (const path of paths) {
         await this.upsertPath(clientId, agentId, path);
@@ -351,19 +344,12 @@ export class WorkspaceSearchIndexService {
   }
 
   private async refreshDocCount(clientId: string, agentId: string): Promise<void> {
-    const result = await this.openSearch.search({
-      index: this.indexName(),
-      query: '*',
-      fields: ['path'],
-      filters: { clientId, agentId },
-      from: 0,
-      size: 1,
-    });
+    const docCount = await this.openSearch.count(this.indexName(), { clientId, agentId });
     const previous = this.statusByKey.get(this.statusKey(clientId, agentId));
 
     this.setStatus(clientId, agentId, {
       status: previous?.status === 'indexing' ? 'indexing' : 'ready',
-      docCount: result.total,
+      docCount,
     });
   }
 

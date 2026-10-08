@@ -1,5 +1,5 @@
 import { resolveWebsocketCorsOrigin } from '@forepath/shared/shared/util-network-address';
-import { BadRequestException, Logger, NotFoundException, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, Logger, NotFoundException, OnModuleInit, Optional } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -13,6 +13,8 @@ import { Server, Socket } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 
 import { GIT_STATE_CHANGED_EVENT, toolMayMutateGitWorkspace } from '../constants/agent-git-state.constants';
+import { ENVIRONMENT_PROGRESS_EVENT } from '../constants/environment-progress.constants';
+import type { EnvironmentProgressDto } from '../dto/environment-progress.dto';
 import {
   isReservedChatResumeSessionSuffix,
   isTicketAutomationResumeSessionSuffix,
@@ -33,11 +35,13 @@ import { AgentGitStateBroadcastService } from '../services/agent-git-state-broad
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
+import { OpenCodeConfigSyncService } from '../providers/opencode/opencode-config-sync.service';
 import { OpenCodePtyService } from '../providers/opencode/opencode-pty.service';
 import { AgentsService } from '../services/agents.service';
 import { DockerService } from '../services/docker.service';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
 import { WorkspaceChangeNotifierService } from '../services/workspace-change-notifier.service';
+import { EnvironmentProgressService } from '../services/environment-progress.service';
 import { ContextInjectionPayload } from '../types/context-injection.types';
 import { PROMPT_ENHANCEMENT_RESUME_SESSION_SUFFIX } from '../utils/chat-enhancement-prompt.utils';
 import { isNonGenericContainerType } from '../utils/context-injection-prompt.utils';
@@ -336,15 +340,23 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     private readonly agentSessionHydrationService: AgentSessionHydrationService,
     private readonly gitStateBroadcast: AgentGitStateBroadcastService,
     private readonly workspaceChangeNotifier: WorkspaceChangeNotifierService,
+    @Optional() private readonly environmentProgress?: EnvironmentProgressService,
+    @Optional() private readonly openCodeConfigSync?: OpenCodeConfigSyncService,
   ) {}
 
   onModuleInit(): void {
+    this.openCodeConfigSync?.registerConfigSyncedBroadcaster((agentId) => {
+      this.broadcastToAllSockets('opencodeConfigSynced', createSuccessResponse({ agentId }));
+    });
     this.gitStateBroadcast.registerBroadcaster((agentId) => this.broadcastGitStateChanged(agentId));
     this.workspaceChangeNotifier.registerIndexBroadcaster((agentId, event, data) => {
       this.broadcastToAgent(agentId, event, createSuccessResponse(data));
     });
     this.workspaceChangeNotifier.registerFileUpdateBroadcaster((agentId, data) => {
       this.broadcastToAgent(agentId, 'fileUpdateNotification', createSuccessResponse<FileUpdateNotificationData>(data));
+    });
+    this.environmentProgress?.registerBroadcaster((progress) => {
+      this.broadcastToAllSockets(ENVIRONMENT_PROGRESS_EVENT, createSuccessResponse<EnvironmentProgressDto>(progress));
     });
   }
 
@@ -458,6 +470,28 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
 
     if (successCount > 0) {
       this.logger.debug(`Broadcasted ${event} to ${successCount} client(s) for agent ${agentUuid}`);
+    }
+  }
+
+  /**
+   * Broadcast a workspace-level message to every connected socket (authenticated to an agent or not).
+   * Used for events that concern the whole manager instance, e.g. environment provisioning progress.
+   */
+  private broadcastToAllSockets(event: string, data: unknown): void {
+    for (const [socketId, socket] of this.socketById.entries()) {
+      if (!socket.connected) {
+        this.socketById.delete(socketId);
+        this.authenticatedClients.delete(socketId);
+
+        continue;
+      }
+
+      try {
+        socket.emit(event, data);
+      } catch (emitError) {
+        this.logger.warn(`Failed to emit ${event} to socket ${socketId}: ${emitError}`);
+        this.socketById.delete(socketId);
+      }
     }
   }
 
@@ -2723,6 +2757,17 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       }
 
       sessions.add(sessionId);
+      const pendingOutput: string[] = [];
+      let terminalCreated = false;
+      const emitOutput = (output: string) => {
+        if (socket.connected) {
+          try {
+            socket.emit('terminalOutput', createSuccessResponse({ sessionId, data: output }));
+          } catch (emitError) {
+            this.logger.warn(`Failed to emit terminal output for session ${sessionId}: ${emitError}`);
+          }
+        }
+      };
 
       try {
         await this.openCodePtyService.open(
@@ -2732,12 +2777,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
           { shell: data.shell?.trim() || undefined },
           {
             onOutput: (output) => {
-              if (socket.connected) {
-                try {
-                  socket.emit('terminalOutput', createSuccessResponse({ sessionId, data: output }));
-                } catch (emitError) {
-                  this.logger.warn(`Failed to emit terminal output for session ${sessionId}: ${emitError}`);
-                }
+              if (!terminalCreated) {
+                pendingOutput.push(output);
+              } else {
+                emitOutput(output);
               }
             },
             onClosed: () => {
@@ -2756,6 +2799,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       }
 
       socket.emit('terminalCreated', createSuccessResponse({ sessionId }));
+      terminalCreated = true;
+      for (const output of pendingOutput) {
+        emitOutput(output);
+      }
       this.logger.log(`Created terminal session ${sessionId} for agent ${agentUuid} on socket ${socket.id}`);
     } catch (error) {
       socket.emit('error', createErrorResponse('Error creating terminal session', 'TERMINAL_ERROR'));
@@ -2966,7 +3013,16 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       }
 
       try {
-        await this.broadcastContainerStats(agentUuid, containerId);
+        // Config/env updates replace the container while authenticated sockets stay connected.
+        const currentAgent = await this.agentsRepository.findById(agentUuid);
+
+        if (!currentAgent?.containerId) {
+          this.logger.debug(`No container found for agent ${agentUuid}, skipping stats tick`);
+
+          return;
+        }
+
+        await this.broadcastContainerStats(agentUuid, currentAgent.containerId);
       } catch (error) {
         const err = error as { message?: string };
 

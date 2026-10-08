@@ -34,6 +34,20 @@ function defaultPollIntervalMs(): number {
   return Math.min(MAX_POLL_MS, Math.max(MIN_POLL_MS, raw));
 }
 
+const MIN_PROVISIONING_POLL_MS = 1_000;
+const MAX_PROVISIONING_POLL_MS = 30_000;
+
+/** Interval of the progress-only poll that runs while any environment provisioning is active. */
+export function provisioningPollIntervalMs(): number {
+  const raw = parseInt(process.env.STATUS_PROVISIONING_POLL_INTERVAL_MS || '3000', 10);
+
+  if (Number.isNaN(raw)) {
+    return 3_000;
+  }
+
+  return Math.min(MAX_PROVISIONING_POLL_MS, Math.max(MIN_PROVISIONING_POLL_MS, raw));
+}
+
 type StatusSocket = Socket & { data: { userInfo?: SocketUserInfo } };
 
 @WebSocketGateway({
@@ -49,6 +63,8 @@ export class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   private readonly logger = new Logger(StatusGateway.name);
   private readonly pollTimerBySocketId = new Map<string, ReturnType<typeof setInterval>>();
   private readonly tickInFlight = new Set<string>();
+  private readonly progressTimerBySocketId = new Map<string, ReturnType<typeof setInterval>>();
+  private readonly progressTickInFlight = new Set<string>();
 
   constructor(
     private readonly socketAuthService: SocketAuthService,
@@ -92,11 +108,14 @@ export class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
     await this.statusService.emitSnapshotToSocket(socket.id, userInfo);
     this.startPoll(socket as StatusSocket);
+    this.syncProgressPoll(socket as StatusSocket);
   }
 
   handleDisconnect(socket: Socket): void {
     this.clearPollTimer(socket.id);
+    this.clearProgressTimer(socket.id);
     this.tickInFlight.delete(socket.id);
+    this.progressTickInFlight.delete(socket.id);
     this.statusService.clearSocket(socket.id);
     this.statusRealtime.unregisterSocket(socket.id);
     this.logger.debug(`Status client disconnected: ${socket.id}`);
@@ -206,7 +225,7 @@ export class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   }
 
   private async runPollTick(socket: StatusSocket): Promise<void> {
-    if (this.tickInFlight.has(socket.id)) {
+    if (this.tickInFlight.has(socket.id) || this.progressTickInFlight.has(socket.id)) {
       return;
     }
 
@@ -225,6 +244,61 @@ export class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       this.logger.warn(`Status poll failed for socket ${socket.id}: ${(error as Error).message}`);
     } finally {
       this.tickInFlight.delete(socket.id);
+      this.syncProgressPoll(socket);
+    }
+  }
+
+  /** Starts the fast progress-only poll while provisioning is active for this socket; stops it otherwise. */
+  private syncProgressPoll(socket: StatusSocket): void {
+    if (!this.pollTimerBySocketId.has(socket.id)) {
+      this.clearProgressTimer(socket.id);
+
+      return;
+    }
+
+    const active = this.statusService.hasActiveEnvironmentProgress(socket.id);
+    const running = this.progressTimerBySocketId.has(socket.id);
+
+    if (active && !running) {
+      const timer = setInterval(() => {
+        void this.runProgressTick(socket);
+      }, provisioningPollIntervalMs());
+
+      this.progressTimerBySocketId.set(socket.id, timer);
+    } else if (!active && running) {
+      this.clearProgressTimer(socket.id);
+    }
+  }
+
+  private clearProgressTimer(socketId: string): void {
+    const existing = this.progressTimerBySocketId.get(socketId);
+
+    if (existing) {
+      clearInterval(existing);
+      this.progressTimerBySocketId.delete(socketId);
+    }
+  }
+
+  private async runProgressTick(socket: StatusSocket): Promise<void> {
+    if (this.progressTickInFlight.has(socket.id) || this.tickInFlight.has(socket.id)) {
+      return;
+    }
+
+    const userInfo = socket.data?.userInfo;
+
+    if (!userInfo) {
+      return;
+    }
+
+    this.progressTickInFlight.add(socket.id);
+
+    try {
+      await this.statusService.runProgressPollForSocket(socket.id, userInfo);
+    } catch (error: unknown) {
+      this.logger.warn(`Status progress poll failed for socket ${socket.id}: ${(error as Error).message}`);
+    } finally {
+      this.progressTickInFlight.delete(socket.id);
+      this.syncProgressPoll(socket);
     }
   }
 }

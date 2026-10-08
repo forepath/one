@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-07T15:39:25.774Z",
+  "generatedAt": "2026-10-09T15:30:36.111Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -2209,7 +2209,7 @@
       "type": "package",
       "attrs": {
         "name": "handlebars",
-        "version": "4.7.9"
+        "version": "4.7.10"
       }
     },
     {
@@ -2618,6 +2618,14 @@
       "attrs": {
         "name": "@xterm/xterm",
         "version": "5.5.0"
+      }
+    },
+    {
+      "id": "package:bootstrap-icons",
+      "type": "package",
+      "attrs": {
+        "name": "bootstrap-icons",
+        "version": "1.13.1"
       }
     },
     {
@@ -3900,6 +3908,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/environment-progress.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/environment-progress.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/files.service.ts",
       "type": "service",
       "attrs": {
@@ -4158,6 +4175,25 @@
           "env.reducer.ts",
           "env.selectors.ts",
           "env.types.ts"
+        ]
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/environment-progress",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/environment-progress",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console",
+        "sliceName": "environment-progress",
+        "memberFiles": [
+          "environment-progress.actions.ts",
+          "environment-progress.effects.ts",
+          "environment-progress.facade.ts",
+          "environment-progress.reducer.ts",
+          "environment-progress.selectors.ts",
+          "environment-progress.types.ts",
+          "environment-progress.utils.ts"
         ]
       }
     },
@@ -10778,6 +10814,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/environment-progress.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/environment-progress.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/environment-variable-response.dto.ts",
       "type": "dto",
       "attrs": {
@@ -10989,6 +11034,15 @@
       "type": "entity",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/agent-chat-session.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/agent-directory-index.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/agent-directory-index.entity.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -11291,6 +11345,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-directory-index.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-directory-index.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-environment-variables.service.ts",
       "type": "service",
       "attrs": {
@@ -11403,6 +11466,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/docker.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/environment-progress.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/environment-progress.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -14784,7 +14856,7 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "clients/forward",
-        "summary": "Forward an arbitrary event to the selected client's agents namespace. When `agentId` is provided,\nthe gateway automatically logs in the agent using stored credentials before forwarding the event.\nTo restore chat history for an agent, forward a \"login\" event with `agentId` (the payload is\nautomatically overridden with credentials from the database, triggering login and subsequent\nchat history restoration). Supported events include \"chat\", \"enhanceChat\" (prompt improvement;\npayload `{ message, correlationId, model? }`; response `chatEnhanceResult` unicast from\nagent-manager, proxied to this socket only), \"generateTicketBody\" (ticket body from title;\npayload `{ title, correlationId, model? }`; response `ticketBodyResult` unicast, same envelope\nshape as `chatEnhanceResult`), \"fileUpdate\", \"logout\", \"createTerminal\", \"terminalInput\", \"terminalResize\",\n\"closeTerminal\", etc. The remote agent-manager gateway will process the event and may emit\nresponse events (e.g., \"chatMessage\", \"chatMessageBatch\", \"chatEnhanceResult\", \"ticketBodyResult\",\n\"fileUpdateNotification\", \"workspaceIndexChanged\", \"workspaceIndexRebuildRequired\",\n\"terminalCreated\", \"terminalOutput\", \"terminalClosed\", \"containerStats\")\nwhich are automatically forwarded back to the client. The \"containerStats\" event payload\n(defined in the agent-manager AsyncAPI) includes container status (running/stopped) and, when\nrunning, container statistics. For autonomous ticket runs, proxied `chat` may include\n`responseMode: \"single\" | \"stream\" | \"sync\"`, `ephemeral: true`, `continue`, and `resumeSessionSuffix`;\nthe controller also uses isolated suffixes (e.g. `-ticket-auto-loop`, `-ticket-auto-commit-msg`) for\nimplementation turns vs. post-verify conventional-commit subject generation; statistics on the controller\nside record the latter under interaction kind `autonomous_ticket_commit_message`.\nAfter a successful run, the controller also completes the workflow over HTTP by proxying agent-manager VCS\n`commit` and `push` (see controller OpenAPI under `/clients/{clientId}/agents/{agentId}/vcs/...`).\nagent-manager passes these to `sendMessage` and skips `agent_messages` persistence when `ephemeral` is true.\nWhen `ephemeral` is true, chatMessage / chatEvent traffic for that turn is emitted only to the requesting\nsocket (not broadcast to other viewers on the same agent).\nAfter a successful **login** (explicit `forward` with `event: \"login\"` or first-time auto-login before another event),\nthe controller may emit **ticketAutomationRunChatUpsert** (unicast) to hydrate ticket automation runs for that\n`clientId` + `agentId` into the chat timeline (see `clients/ticketAutomationRunChatUpsert`). Live run updates use\nthe same event broadcast to room `client:{clientId}` on the **clients** namespace.\nLogin auto-restore from agent-manager emits a single **chatMessageBatch** (latest page) rather than individual\nchatMessage / messageFilterResult / chatEvent frames; clients should forward that event to the FE. Explicit\n`restoreChat` forwards also yield chatMessageBatch then restoreChatSuccess (with hasMoreOlder / oldestMessageId).\nWhen a ticket row is created or updated (REST or internal), the controller also emits **ticketChatTicketUpsert**\nto room `client:{clientId}` on **clients** (same body as `tickets/ticketUpsert`).\nWorkspace index events (`workspaceIndexChanged` / `workspaceIndexRebuildRequired`) are also consumed locally\nby the controller to hydrate OpenSearch (`agenstra-workspace-files`) before being forwarded to the FE.\n",
+        "summary": "Forward an arbitrary event to the selected client's agents namespace. When `agentId` is provided,\nthe gateway automatically logs in the agent using stored credentials before forwarding the event.\nTo restore chat history for an agent, forward a \"login\" event with `agentId` (the payload is\nautomatically overridden with credentials from the database, triggering login and subsequent\nchat history restoration). Supported events include \"chat\", \"enhanceChat\" (prompt improvement;\npayload `{ message, correlationId, model? }`; response `chatEnhanceResult` unicast from\nagent-manager, proxied to this socket only), \"generateTicketBody\" (ticket body from title;\npayload `{ title, correlationId, model? }`; response `ticketBodyResult` unicast, same envelope\nshape as `chatEnhanceResult`), \"fileUpdate\", \"logout\", \"createTerminal\", \"terminalInput\", \"terminalResize\",\n\"closeTerminal\", etc. The remote agent-manager gateway will process the event and may emit\nresponse events (e.g., \"chatMessage\", \"chatMessageBatch\", \"chatEnhanceResult\", \"ticketBodyResult\",\n\"fileUpdateNotification\", \"workspaceIndexChanged\", \"workspaceIndexRebuildRequired\",\n\"terminalCreated\", \"terminalOutput\", \"terminalClosed\", \"containerStats\", \"environmentProgress\", \"opencodeConfigSynced\")\nwhich are automatically forwarded back to the client. For each new terminal, \"terminalCreated\"\nprecedes \"terminalOutput\", including buffered startup output such as the initial shell prompt.\nThe \"containerStats\" event payload\n(defined in the agent-manager AsyncAPI) includes container status (running/stopped) and, when\nrunning, container statistics. \"environmentProgress\" (agent-manager AsyncAPI `agents/environmentProgress`)\nis broadcast by the agent-manager to every connected socket as soon as a client is selected (no agent login\nrequired) and carries the live step/percentage of environment creates and container-recreating updates;\nthe initial state is available via `GET /clients/{id}/agents/progress`.\n\"opencodeConfigSynced\" (agent-manager AsyncAPI `agents/opencodeConfigSynced`) is forwarded after\neffective config is applied, including updates without container recreation. Its success envelope\ncontains `data: { agentId }`; clients refresh cached models and slash commands for that environment.\nFor autonomous ticket runs, proxied `chat` may include\n`responseMode: \"single\" | \"stream\" | \"sync\"`, `ephemeral: true`, `continue`, and `resumeSessionSuffix`;\nthe controller also uses isolated suffixes (e.g. `-ticket-auto-loop`, `-ticket-auto-commit-msg`) for\nimplementation turns vs. post-verify conventional-commit subject generation; statistics on the controller\nside record the latter under interaction kind `autonomous_ticket_commit_message`.\nAfter a successful run, the controller also completes the workflow over HTTP by proxying agent-manager VCS\n`commit` and `push` (see controller OpenAPI under `/clients/{clientId}/agents/{agentId}/vcs/...`).\nagent-manager passes these to `sendMessage` and skips `agent_messages` persistence when `ephemeral` is true.\nWhen `ephemeral` is true, chatMessage / chatEvent traffic for that turn is emitted only to the requesting\nsocket (not broadcast to other viewers on the same agent).\nAfter a successful **login** (explicit `forward` with `event: \"login\"` or first-time auto-login before another event),\nthe controller may emit **ticketAutomationRunChatUpsert** (unicast) to hydrate ticket automation runs for that\n`clientId` + `agentId` into the chat timeline (see `clients/ticketAutomationRunChatUpsert`). Live run updates use\nthe same event broadcast to room `client:{clientId}` on the **clients** namespace.\nLogin auto-restore from agent-manager emits a single **chatMessageBatch** (latest page) rather than individual\nchatMessage / messageFilterResult / chatEvent frames; clients should forward that event to the FE. Explicit\n`restoreChat` forwards also yield chatMessageBatch then restoreChatSuccess (with hasMoreOlder / oldestMessageId).\nWhen a ticket row is created or updated (REST or internal), the controller also emits **ticketChatTicketUpsert**\nto room `client:{clientId}` on **clients** (same body as `tickets/ticketUpsert`).\nWorkspace index events (`workspaceIndexChanged` / `workspaceIndexRebuildRequired`) are also consumed locally\nby the controller to hydrate OpenSearch (`agenstra-workspace-files`) before being forwarded to the FE.\n",
         "specKind": "asyncapi"
       }
     },
@@ -15018,7 +15090,7 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "status/statusSnapshot",
-        "summary": "Full per-user notification state on connect (git dirty + unread per environment, nested `chats[]`\nfor visible primary/user sessions, client rollups, spacesHasAttention).\nUnicast to the connecting socket only. Namespace **socket/status** (STATUS_WEBSOCKET_NAMESPACE, default \"socket/status\").\n",
+        "summary": "Full per-user notification state on connect (git dirty + unread per environment, nested `chats[]`\nfor visible primary/user sessions, client rollups, spacesHasAttention). Optional `environmentProgress[]`\nlists `{ clientId, operations }` for workspaces with running environment provisioning operations\n(operations use the agent-manager `EnvironmentProgressDto` shape); omitted when nothing is provisioning.\nUnicast to the connecting socket only. Namespace **socket/status** (STATUS_WEBSOCKET_NAMESPACE, default \"socket/status\").\n",
         "specKind": "asyncapi"
       }
     },
@@ -15027,7 +15099,7 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "status/statusPatch",
-        "summary": "Incremental notification deltas after connect (unicast), including nested `chats[]` when unread changes.",
+        "summary": "Incremental notification deltas after connect (unicast), including nested `chats[]` when unread changes.\n`environmentProgress[]` contains workspaces whose provisioning operations changed (`operations: []` once all\nfinished). While any provisioning is active, a progress-only patch is polled every\nSTATUS_PROVISIONING_POLL_INTERVAL_MS (default 3000 ms, clamped 1000–30000) in addition to the regular\nSTATUS_POLL_INTERVAL_MS poll.\n",
         "specKind": "asyncapi"
       }
     },
@@ -16098,6 +16170,17 @@
         "pathOrChannel": "/clients/{id}/agents",
         "operationId": "createClientAgent",
         "summary": "Create agent for a client",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/agents/progress",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/agents/progress",
+        "operationId": "getClientEnvironmentProgress",
+        "summary": "List active environment provisioning operations for a client",
         "specKind": "openapi"
       }
     },
@@ -21915,7 +21998,7 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "agents/terminalCreated",
-        "summary": "Server acknowledges successful terminal creation. Terminal session is client-specific (socket.id based).",
+        "summary": "Server acknowledges successful terminal creation before emitting any terminalOutput for this session. Initial PTY output is buffered during creation. Terminal session is client-specific (socket.id based).",
         "specKind": "asyncapi"
       }
     },
@@ -21983,6 +22066,24 @@
       }
     },
     {
+      "id": "api:channel:agents/environmentProgress",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "agents/environmentProgress",
+        "summary": "Broadcast to every connected socket (no agent login required) whenever an environment create or\ncontainer-recreating update (environment variables, workspace configuration overrides, OpenCode config sync)\nchanges step or percentage. Terminal events (status completed/failed) are emitted once; afterwards the\noperation is no longer listed by `GET /api/agents/progress`.\n",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:agents/opencodeConfigSynced",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "agents/opencodeConfigSynced",
+        "summary": "Broadcast to every connected socket (no agent login required) after effective OpenCode config\nand secrets have successfully been applied to the worker. Includes config-only updates as well\nas container recreation and changes inherited from workspace/global layers. Clients refresh\ncached model and slash-command catalogs for the affected agent. Failed/deferred syncs do not emit.\n",
+        "specKind": "asyncapi"
+      }
+    },
+    {
       "id": "api:channel:agents/workspaceIndexChanged",
       "type": "channel",
       "attrs": {
@@ -22019,6 +22120,17 @@
         "pathOrChannel": "/agents",
         "operationId": "createAgent",
         "summary": "Create agent",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agents/progress",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agents/progress",
+        "operationId": "getEnvironmentProgress",
+        "summary": "List active environment provisioning operations",
         "specKind": "openapi"
       }
     },
@@ -26400,6 +26512,16 @@
       }
     },
     {
+      "id": "concept:agenstra-file-tree-directory-index",
+      "type": "concept",
+      "attrs": {
+        "title": "File tree directory index",
+        "docPath": "docs/agenstra/features/workspace-code-search.md",
+        "sectionAnchor": "file-tree-directory-index",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-getting-started-with-agenstra",
       "type": "concept",
       "attrs": {
@@ -30306,6 +30428,16 @@
         "title": "Admin File Explorer",
         "docPath": "docs/decabill/features/file-explorer.md",
         "sectionAnchor": "admin-file-explorer",
+        "domain": "decabill"
+      }
+    },
+    {
+      "id": "concept:decabill-tree-row-layout",
+      "type": "concept",
+      "attrs": {
+        "title": "Tree row layout",
+        "docPath": "docs/decabill/features/file-explorer.md",
+        "sectionAnchor": "tree-row-layout",
         "domain": "decabill"
       }
     },
@@ -35148,6 +35280,11 @@
     },
     {
       "from": "project:agenstra-frontend-agent-console",
+      "to": "package:bootstrap-icons",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-agent-console",
       "to": "package:express",
       "type": "depends_on"
     },
@@ -36703,6 +36840,11 @@
     },
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/environment-progress.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/files.service.ts",
       "type": "contains"
     },
@@ -36799,6 +36941,11 @@
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/env",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/environment-progress",
       "type": "contains"
     },
     {
@@ -40388,6 +40535,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/environment-progress.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/environment-variable-response.dto.ts",
       "type": "contains"
     },
@@ -40504,6 +40656,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/agent-chat-session.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/entities/agent-directory-index.entity.ts",
       "type": "contains"
     },
     {
@@ -40673,6 +40830,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-directory-index.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-environment-variables.service.ts",
       "type": "contains"
     },
@@ -40734,6 +40896,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/docker.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/environment-progress.service.ts",
       "type": "contains"
     },
     {
@@ -42519,6 +42686,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:POST:/clients/{id}/agents",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/agents/progress",
       "type": "contains"
     },
     {
@@ -45523,6 +45695,16 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
+      "to": "api:channel:agents/environmentProgress",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
+      "to": "api:channel:agents/opencodeConfigSynced",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
       "to": "api:channel:agents/workspaceIndexChanged",
       "type": "contains"
     },
@@ -45539,6 +45721,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/agents",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agents/progress",
       "type": "contains"
     },
     {
@@ -48512,6 +48699,11 @@
       "type": "contains"
     },
     {
+      "from": "file:docs/agenstra/features/workspace-code-search.md",
+      "to": "concept:agenstra-file-tree-directory-index",
+      "type": "contains"
+    },
+    {
       "from": "file:docs/agenstra/getting-started.md",
       "to": "concept:agenstra-getting-started-with-agenstra",
       "type": "contains"
@@ -51028,6 +51220,11 @@
     },
     {
       "from": "file:docs/decabill/features/file-explorer.md",
+      "to": "concept:decabill-tree-row-layout",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/file-explorer.md",
       "to": "concept:decabill-storage-layout",
       "type": "contains"
     },
@@ -53104,6 +53301,16 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "api:HTTP:POST:/clients/{id}/agents",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/progress",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/agents/progress",
       "type": "implements"
     },
     {
@@ -58393,6 +58600,16 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:GET:/agents/progress",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:GET:/agents/progress",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
       "to": "api:HTTP:GET:/agents/{id}",
       "type": "implements"
     },
@@ -59093,6 +59310,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/progress",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
       "to": "api:HTTP:GET:/agents/{id}",
       "type": "implements"
     },
@@ -59444,6 +59666,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
       "to": "api:HTTP:POST:/agents",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:GET:/agents/progress",
       "type": "implements"
     },
     {
@@ -64987,6 +65214,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/environment-progress.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/config.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/config.service.ts",
       "type": "injects"
@@ -65057,6 +65289,16 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/environment-progress.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-config-sync.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/vnc.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
       "type": "injects"
@@ -65097,6 +65339,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-config-sync.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/environment-progress.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-runtime.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-session.service.ts",
       "type": "injects"
@@ -65119,6 +65366,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-chat-sessions.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agent-messages.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-directory-index.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-change-notifier.service.ts",
       "type": "injects"
     },
     {
@@ -65147,6 +65399,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-environment-variables.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/environment-progress.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-file-system.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents.service.ts",
       "type": "injects"
@@ -65169,6 +65426,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-file-system.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-change-notifier.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-file-system.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-directory-index.service.ts",
       "type": "injects"
     },
     {
@@ -65274,6 +65536,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-inotify-supervisor.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/environment-progress.service.ts",
       "type": "injects"
     },
     {
@@ -67768,7 +68035,17 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/environment-progress.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-file-system.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-directory-index.service.ts",
       "type": "provides"
     },
     {
@@ -69282,6 +69559,11 @@
       "type": "calls"
     },
     {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/environment-progress.service.ts",
+      "to": "api:HTTP:GET:/clients/{id}/agents/progress",
+      "type": "calls"
+    },
+    {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/files.service.ts",
       "to": "api:HTTP:GET:/clients/{id}/agents/{agentId}/files",
       "type": "calls"
@@ -70027,6 +70309,11 @@
       "type": "contains"
     },
     {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/environment-progress",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/environment-progress.service.ts",
+      "type": "contains"
+    },
+    {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/files",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/files.service.ts",
       "type": "contains"
@@ -70594,6 +70881,31 @@
     {
       "from": "concept:agenstra-or-run-directly-with-docker-socket-mount",
       "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-state-management-ngrx",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-state-management-ngrx",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-state-management-ngrx",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-state-management-ngrx",
+      "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-state-management-ngrx",
+      "to": "api:HTTP:GET:/agents/progress",
       "type": "documents"
     },
     {
@@ -71278,12 +71590,27 @@
     },
     {
       "from": "concept:agenstra-agent-lifecycle",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-agent-lifecycle",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-agent-lifecycle",
       "to": "api:HTTP:GET:/agents",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-agent-lifecycle",
       "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-agent-lifecycle",
+      "to": "api:HTTP:GET:/agents/progress",
       "type": "documents"
     },
     {
@@ -71944,6 +72271,11 @@
     {
       "from": "concept:agenstra-ticket-automation",
       "to": "api:HTTP:POST:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-run-phases-high-level",
+      "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
     },
     {
@@ -80357,6 +80689,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:agenstra-file-tree-directory-index",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:agenstra-getting-started-with-agenstra",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -82308,6 +82645,11 @@
     },
     {
       "from": "concept:decabill-admin-file-explorer",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-tree-row-layout",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

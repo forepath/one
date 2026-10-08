@@ -11,6 +11,7 @@ Complete reference for all environment variables used in Agenstra.
 - `TICKETS_WEBSOCKET_NAMESPACE` - Tickets board namespace (default: `socket/tickets`)
 - `KNOWLEDGE_WEBSOCKET_NAMESPACE` - Knowledge board namespace (default: `socket/pages`)
 - `STATUS_WEBSOCKET_NAMESPACE` - Status notifications namespace (default: `socket/status`)
+- `STATUS_PROVISIONING_POLL_INTERVAL_MS` - Fast `socket/status` poll interval while environment create / update operations are running (default: `3000`, clamped to 1000–30000)
 - `WEBSOCKET_CORS_ORIGIN` - Socket.IO CORS origins (comma-separated). Falls back to `CORS_ORIGIN`, then `*` when unset.
 - `NODE_ENV` - Environment mode (`development` or `production`)
 - **Migration:** `WEBSOCKET_PORT` is removed. Operators must re-provision existing stacks so nginx proxies `/api/`, `/socket/`, and `/socket.io/` to a single `PORT`.

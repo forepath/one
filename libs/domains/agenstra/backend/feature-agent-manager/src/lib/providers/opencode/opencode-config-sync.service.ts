@@ -15,11 +15,10 @@ import {
   resolveProviderAuthSecrets,
   AGENSTRA_TICKET_AUTOMATION_SKILL_ABS_DIR,
   AGENSTRA_TICKET_AUTOMATION_SKILL_MD,
-  AGENSTRA_TICKET_AUTOMATION_SKILL_REL_DIR,
   type JsonObject,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { mcpServerConfigKey } from '@forepath/agenstra/shared/util-opencode-mcp-servers';
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
 
 import {
   AgentOpencodeConfigResponseDto,
@@ -34,11 +33,22 @@ import {
 } from '../../dto/agent-opencode-config.dto';
 import { AgentsRepository } from '../../repositories/agents.repository';
 import { DockerService } from '../../services/docker.service';
+import {
+  CONFIG_SYNC_ENVIRONMENT_PROGRESS_STEPS,
+  EnvironmentProgressService,
+  EnvironmentProgressTracker,
+} from '../../services/environment-progress.service';
 
 import { OpenCodeClientFactory } from './opencode-client.factory';
 import type { OpenCodeAgentInfo } from './opencode-sdk.types';
 
 const NETWORK_CA_CERT_RELATIVE_PATH = '.agenstra/extra-ca.pem';
+
+/** Carries the progress tracker of a container recreation triggered during config sync. */
+interface ConfigSyncProgressRef {
+  agentName?: string;
+  tracker?: EnvironmentProgressTracker;
+}
 
 export interface OpencodeSyncEffectiveResult {
   ok: boolean;
@@ -224,12 +234,19 @@ function formatOpenCodeError(error: unknown): string {
 @Injectable()
 export class OpenCodeConfigSyncService {
   private readonly logger = new Logger(OpenCodeConfigSyncService.name);
+  private configSyncedBroadcaster?: (agentId: string) => void;
 
   constructor(
     private readonly agentsRepository: AgentsRepository,
     private readonly clientFactory: OpenCodeClientFactory,
     private readonly dockerService: DockerService,
+    @Optional()
+    private readonly environmentProgress?: EnvironmentProgressService,
   ) {}
+
+  registerConfigSyncedBroadcaster(broadcaster: (agentId: string) => void): void {
+    this.configSyncedBroadcaster = broadcaster;
+  }
 
   async get(agentId: string): Promise<AgentOpencodeConfigResponseDto> {
     const agent = await this.agentsRepository.findById(agentId);
@@ -306,6 +323,32 @@ export class OpenCodeConfigSyncService {
     effective: Record<string, unknown>,
     parentSecrets: Record<string, string> = {},
   ): Promise<OpencodeSyncEffectiveResult> {
+    const progressRef: ConfigSyncProgressRef = {};
+
+    try {
+      const result = await this.syncEffectiveInternal(agentId, effective, parentSecrets, progressRef);
+
+      if (result.ok) {
+        progressRef.tracker?.complete();
+        this.configSyncedBroadcaster?.(agentId);
+      } else {
+        progressRef.tracker?.fail(result.error ?? 'OpenCode config sync failed');
+      }
+
+      return result;
+    } catch (error) {
+      progressRef.tracker?.fail(error);
+
+      throw error;
+    }
+  }
+
+  private async syncEffectiveInternal(
+    agentId: string,
+    effective: Record<string, unknown>,
+    parentSecrets: Record<string, string>,
+    progressRef: ConfigSyncProgressRef,
+  ): Promise<OpencodeSyncEffectiveResult> {
     assertNoCredentialKeysInConfig(effective);
 
     const agent = await this.agentsRepository.findById(agentId);
@@ -329,7 +372,14 @@ export class OpenCodeConfigSyncService {
     const prepared = prepareConfigForSync(stripAllMcpRegistryClaims(effective as JsonObject));
 
     try {
-      const envResult = await this.applyEnvSecretsToContainer(agentId, agent.containerId, secrets, prepared);
+      progressRef.agentName = agent.name;
+      const envResult = await this.applyEnvSecretsToContainer(
+        agentId,
+        agent.containerId,
+        secrets,
+        prepared,
+        progressRef,
+      );
 
       if (!envResult.ok) {
         return envResult;
@@ -339,11 +389,15 @@ export class OpenCodeConfigSyncService {
 
       if (envResult.recreated) {
         this.clientFactory.invalidate(agentId);
+        progressRef.tracker?.advance('waitingForHealthy');
         await this.clientFactory.waitForHealthy(agentId, containerId);
+        progressRef.tracker?.advance('finalizing');
         const refreshed = await this.agentsRepository.findById(agentId);
 
         containerId = refreshed?.containerId ?? containerId;
       }
+
+      await this.ensurePlatformAutomationSkillFiles(containerId);
 
       const client = await this.clientFactory.getClient(agentId, containerId);
       const authSecrets = resolveProviderAuthSecrets(secrets, prepared);
@@ -422,8 +476,6 @@ export class OpenCodeConfigSyncService {
         return { ok: false, error: message };
       }
 
-      await this.ensurePlatformAutomationSkillFiles(containerId);
-
       return { ok: true };
     } catch (error) {
       const message = formatOpenCodeError(error);
@@ -436,27 +488,52 @@ export class OpenCodeConfigSyncService {
 
   /** Install the platform ticket-automation skill so OpenCode can load it regardless of UI overlays. */
   private async ensurePlatformAutomationSkillFiles(containerId: string): Promise<void> {
-    const targets = [
-      `${AGENSTRA_TICKET_AUTOMATION_SKILL_ABS_DIR}/SKILL.md`,
-      `/app/${AGENSTRA_TICKET_AUTOMATION_SKILL_REL_DIR}/SKILL.md`,
-    ];
+    const dir = AGENSTRA_TICKET_AUTOMATION_SKILL_ABS_DIR;
+    const filePath = `${dir}/SKILL.md`;
     const base64 = Buffer.from(AGENSTRA_TICKET_AUTOMATION_SKILL_MD, 'utf8').toString('base64');
 
-    for (const filePath of targets) {
-      const dir = filePath.includes('/') ? filePath.slice(0, filePath.lastIndexOf('/')) : '.';
-
-      try {
-        await this.dockerService.sendCommandToContainer(containerId, [
-          'sh',
-          '-c',
-          `mkdir -p ${JSON.stringify(dir)} && printf '%s' ${JSON.stringify(base64)} | base64 -d > ${JSON.stringify(filePath)}`,
-        ]);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-
-        this.logger.warn(`Failed to install platform automation skill at ${filePath}: ${message}`);
-      }
-    }
+    // Validate ancestors top-down before touching the formerly worker-owned skill directory.
+    // Once its parent is trusted, taking ownership and atomically replacing the file cannot follow worker links.
+    await this.dockerService.sendCommandToContainer(
+      containerId,
+      [
+        '/usr/bin/env',
+        '-i',
+        'PATH=/usr/bin:/bin',
+        '/bin/sh',
+        '-c',
+        `set -eu
+for parent in /opt /opt/agenstra /opt/agenstra/skills; do
+  if [ -L "$parent" ]; then
+    printf 'Unsafe platform skill ancestor: %s\\n' "$parent" >&2
+    exit 1
+  fi
+  if [ ! -e "$parent" ]; then
+    mkdir -m 755 -- "$parent"
+  fi
+  owner=$(stat -c %u -- "$parent")
+  mode=$(stat -c %a -- "$parent")
+  if [ ! -d "$parent" ] || [ "$owner" != 0 ] || [ "$((0$mode & 022))" -ne 0 ]; then
+    printf 'Untrusted platform skill ancestor: %s\\n' "$parent" >&2
+    exit 1
+  fi
+done
+dir=${JSON.stringify(dir)}
+if [ -L "$dir" ] || { [ -e "$dir" ] && [ ! -d "$dir" ]; }; then
+  printf 'Unsafe platform skill directory: %s\\n' "$dir" >&2
+  exit 1
+fi
+install -d -m 755 -o root -g root -- "$dir"
+tmp=$(mktemp "$dir/.SKILL.md.XXXXXX")
+trap 'rm -f -- "$tmp"' EXIT
+printf '%s' ${JSON.stringify(base64)} | base64 -d > "$tmp"
+chmod 644 -- "$tmp"
+mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
+      ],
+      undefined,
+      true,
+      { user: '0' },
+    );
   }
 
   /**
@@ -470,6 +547,7 @@ export class OpenCodeConfigSyncService {
     containerId: string,
     secrets: Record<string, string>,
     effective: Record<string, unknown>,
+    progressRef: ConfigSyncProgressRef = {},
   ): Promise<OpencodeSyncEffectiveResult & { containerId?: string; recreated?: boolean }> {
     const network = extractNetworkSecrets(secrets);
     const providerEnv = extractProviderEnvSecrets(secrets, effective as Record<string, unknown>);
@@ -543,6 +621,13 @@ export class OpenCodeConfigSyncService {
     }
 
     try {
+      progressRef.tracker = this.environmentProgress?.start({
+        agentId,
+        agentName: progressRef.agentName ?? agentId,
+        operation: 'update',
+        steps: CONFIG_SYNC_ENVIRONMENT_PROGRESS_STEPS,
+      });
+      progressRef.tracker?.advance('recreatingContainer');
       const newContainerId = await this.dockerService.updateContainer(containerId, { env: desiredEnv });
 
       await this.agentsRepository.update(agentId, { containerId: newContainerId });

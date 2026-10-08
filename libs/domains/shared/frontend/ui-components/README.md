@@ -48,6 +48,10 @@ variables (`--bs-primary`, `--bs-body-bg`, `--bs-border-color`, the `*-bg-subtle
 `*-text-emphasis` families, …), so components follow the host application’s theme — including
 `html[data-bs-theme="dark"]`.
 
+Keep theme-dependent Bootstrap variables in CSS rather than setting them inline on the
+document root: inline values override both light and dark palettes after a theme switch.
+Startup loaders should use theme-scoped CSS fallbacks until the application stylesheet loads.
+
 ### Brand palettes (`styles/brands/`)
 
 Compile-time brand tokens live under `styles/brands/` (Decabill / Agenstra / ForePath). Apps load

@@ -5,6 +5,7 @@ import * as sshpk from 'sshpk';
 
 import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 import { CreateAgentDto } from '../dto/create-agent.dto';
+import type { EnvironmentProgressDto } from '../dto/environment-progress.dto';
 import { UpdateAgentDto } from '../dto/update-agent.dto';
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
@@ -16,6 +17,7 @@ import { AgentChatSessionsService } from './agent-chat-sessions.service';
 import { AgentsService } from './agents.service';
 import { DeploymentsService } from './deployments.service';
 import { DockerService } from './docker.service';
+import { EnvironmentProgressService } from './environment-progress.service';
 import { WorkspaceInotifySupervisor } from './workspace-inotify-supervisor.service';
 
 describe('AgentsService', () => {
@@ -218,6 +220,87 @@ describe('AgentsService', () => {
       delete (mockAgentProvider as { getRepositoryPath?: () => string }).getRepositoryPath;
     });
 
+    describe('environment progress', () => {
+      const buildServiceWithProgress = () => {
+        const progressService = new EnvironmentProgressService();
+        const emitted: EnvironmentProgressDto[] = [];
+
+        progressService.registerBroadcaster((progress) => emitted.push(progress));
+
+        const serviceWithProgress = new AgentsService(
+          mockRepository as unknown as AgentsRepository,
+          mockDockerService as unknown as DockerService,
+          mockPasswordService as unknown as PasswordService,
+          mockAgentProviderFactory as unknown as AgentProviderFactory,
+          mockAgentChatSessionsService as unknown as AgentChatSessionsService,
+          mockOpenCodeClientFactory as unknown as OpenCodeClientFactory,
+          mockDeploymentsService as unknown as DeploymentsService,
+          undefined,
+          progressService,
+        );
+
+        return { serviceWithProgress, progressService, emitted };
+      };
+
+      beforeEach(() => {
+        mockRepository.findByName.mockResolvedValue(null);
+        mockPasswordService.hashPassword.mockResolvedValue('hashed');
+        mockDockerService.createContainer.mockResolvedValue('container-id-123');
+        mockDockerService.sendCommandToContainer.mockResolvedValue(undefined);
+        mockRepository.create.mockResolvedValue({ ...mockAgent, name: 'Progress Agent' });
+      });
+
+      it('should report create steps (including image pull progress) and complete', async () => {
+        mockDockerService.ensureImageExists.mockImplementationOnce(
+          async (_image: string, onProgress?: (fraction: number) => void) => {
+            onProgress?.(0.5);
+          },
+        );
+        const { serviceWithProgress, progressService, emitted } = buildServiceWithProgress();
+
+        await serviceWithProgress.create({ name: 'Progress Agent', containerType: ContainerType.GENERIC });
+
+        const steps = [...new Set(emitted.map((e) => e.step))];
+
+        expect(steps).toEqual([
+          'preparing',
+          'pullingImage',
+          'creatingContainer',
+          'preparingRepository',
+          'persisting',
+          'waitingForHealthy',
+          'finalizing',
+        ]);
+        expect(emitted.some((e) => e.step === 'pullingImage' && e.progress > 5)).toBe(true);
+        expect(emitted.every((e) => e.operation === 'create' && e.agentName === 'Progress Agent')).toBe(true);
+        expect(emitted.find((e) => e.step === 'waitingForHealthy')?.agentId).toBe(mockAgent.id);
+        expect(emitted.at(-1)).toEqual(expect.objectContaining({ status: 'completed', progress: 100 }));
+        expect(progressService.list()).toEqual([]);
+      });
+
+      it('should report failure when provisioning fails', async () => {
+        mockOpenCodeClientFactory.waitForHealthy.mockRejectedValueOnce(new Error('unhealthy'));
+        const { serviceWithProgress, progressService, emitted } = buildServiceWithProgress();
+
+        await expect(
+          serviceWithProgress.create({ name: 'Progress Agent', containerType: ContainerType.GENERIC }),
+        ).rejects.toThrow('unhealthy');
+
+        expect(emitted.at(-1)).toEqual(expect.objectContaining({ status: 'failed', error: 'unhealthy' }));
+        expect(progressService.list()).toEqual([]);
+      });
+
+      it('should not start progress when the name already exists', async () => {
+        mockRepository.findByName.mockResolvedValue(mockAgent);
+        const { serviceWithProgress, emitted } = buildServiceWithProgress();
+
+        await expect(
+          serviceWithProgress.create({ name: 'Progress Agent', containerType: ContainerType.GENERIC }),
+        ).rejects.toThrow(BadRequestException);
+        expect(emitted).toEqual([]);
+      });
+    });
+
     it('should create new agent with auto-generated password and container', async () => {
       const createDto: CreateAgentDto = {
         name: 'New Agent',
@@ -256,7 +339,10 @@ describe('AgentsService', () => {
       expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('opencode');
       expect(mockAgentProvider.getDockerImage).toHaveBeenCalled();
       expect(dockerService.ensureImageExists).toHaveBeenCalledTimes(1);
-      expect(dockerService.ensureImageExists).toHaveBeenCalledWith('ghcr.io/forepath/agenstra-manager-worker:latest');
+      expect(dockerService.ensureImageExists).toHaveBeenCalledWith(
+        'ghcr.io/forepath/agenstra-manager-worker:latest',
+        expect.any(Function),
+      );
       expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
         env: expect.objectContaining({
@@ -297,11 +383,16 @@ describe('AgentsService', () => {
         containerId,
         expect.stringMatching(/sh -c "base64 -d > '\/home\/agenstra\/\.netrc'"/),
         expect.any(String), // base64 content
+        true,
+        { user: 'agenstra' },
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         2,
         containerId,
         "chmod 600 '/home/agenstra/.netrc'",
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         3,
@@ -322,7 +413,10 @@ describe('AgentsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         5,
         containerId,
-        expect.stringMatching(/sh -c "git clone '[^']+' '\/app'"/),
+        ['git', 'clone', '--', process.env.GIT_REPOSITORY_URL, '/app'],
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
       expect(repository.create).toHaveBeenCalledWith({
         name: createDto.name,
@@ -559,6 +653,13 @@ describe('AgentsService', () => {
       dockerService.deleteContainer.mockResolvedValue(undefined);
 
       await expect(service.create(createDto)).rejects.toThrow('Git clone failed');
+      expect(dockerService.sendCommandToContainer).toHaveBeenLastCalledWith(
+        containerId,
+        ['git', 'clone', '--', process.env.GIT_REPOSITORY_URL, '/app'],
+        undefined,
+        true,
+        { user: 'agenstra' },
+      );
 
       // Verify container was created
       expect(dockerService.createContainer).toHaveBeenCalled();
@@ -594,6 +695,48 @@ describe('AgentsService', () => {
       expect(repository.create).toHaveBeenCalled();
       // Verify container cleanup was attempted
       expect(dockerService.deleteContainer).toHaveBeenCalledWith(containerId);
+    });
+
+    it('should remove the persisted agent and container when the health check fails', async () => {
+      const containerId = 'container-id-123';
+
+      mockRepository.findByName.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue('hashed-password');
+      dockerService.createContainer.mockResolvedValue(containerId);
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      repository.create.mockResolvedValue(mockAgent);
+      dockerService.deleteContainer.mockResolvedValue(undefined);
+      mockOpenCodeClientFactory.waitForHealthy.mockRejectedValueOnce(new Error('unhealthy'));
+
+      await expect(service.create({ name: 'New Agent' })).rejects.toThrow('unhealthy');
+
+      expect(dockerService.deleteContainer).toHaveBeenCalledWith(containerId);
+      expect(repository.delete).toHaveBeenCalledWith(mockAgent.id);
+    });
+
+    it('should still throw original error if agent row cleanup fails', async () => {
+      mockRepository.findByName.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue('hashed-password');
+      dockerService.createContainer.mockResolvedValue('container-id-123');
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      repository.create.mockResolvedValue(mockAgent);
+      dockerService.deleteContainer.mockResolvedValue(undefined);
+      repository.delete.mockRejectedValueOnce(new Error('db down'));
+      mockOpenCodeClientFactory.waitForHealthy.mockRejectedValueOnce(new Error('unhealthy'));
+
+      await expect(service.create({ name: 'New Agent' })).rejects.toThrow('unhealthy');
+    });
+
+    it('should not remove an agent row when failing before it was persisted', async () => {
+      mockRepository.findByName.mockResolvedValue(null);
+      passwordService.hashPassword.mockResolvedValue('hashed-password');
+      dockerService.createContainer.mockResolvedValue('container-id-123');
+      dockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      repository.create.mockRejectedValue(new Error('Database error'));
+      dockerService.deleteContainer.mockResolvedValue(undefined);
+
+      await expect(service.create({ name: 'New Agent' })).rejects.toThrow('Database error');
+      expect(repository.delete).not.toHaveBeenCalled();
     });
 
     it('should still throw original error if container cleanup fails', async () => {
@@ -697,31 +840,49 @@ describe('AgentsService', () => {
         1,
         containerId,
         "mkdir -p '/home/agenstra/.ssh'",
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         2,
         containerId,
         "chmod 700 '/home/agenstra/.ssh'",
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         3,
         containerId,
-        expect.stringMatching(/echo .* \| base64 -d > \/home\/agenstra\/\.ssh\/id_ed25519/),
+        ['sh', '-c', expect.stringMatching(/printf '%s' .* \| base64 -d > '\/home\/agenstra\/\.ssh\/id_ed25519'/)],
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         4,
         containerId,
         "chmod 600 '/home/agenstra/.ssh/id_ed25519'",
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         5,
         containerId,
-        expect.stringMatching(/ssh-keyscan.*github\.com.*>> '\/home\/agenstra\/\.ssh\/known_hosts'/),
+        ['sh', '-c', expect.stringMatching(/ssh-keyscan.*github\.com.*>> '\/home\/agenstra\/\.ssh\/known_hosts'/)],
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         6,
         containerId,
-        "chmod 600 '/home/agenstra/.ssh/known_hosts' || true",
+        "chmod 600 '/home/agenstra/.ssh/known_hosts'",
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         7,
@@ -741,7 +902,10 @@ describe('AgentsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         9,
         containerId,
-        expect.stringMatching(/sh -c "git clone .*git@github\.com:user\/repo\.git.*'\/app'"/),
+        ['git', 'clone', '--', 'git@github.com:user/repo.git', '/app'],
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
       expect(repository.create).toHaveBeenCalled();
     });
@@ -790,9 +954,10 @@ describe('AgentsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         9,
         containerId,
-        expect.stringMatching(
-          new RegExp(`sh -c "git clone .*git@github\\.com:user/repo\\.git.*'${expectedPath.replace(/'/g, "'\\''")}'"`),
-        ),
+        ['git', 'clone', '--', 'git@github.com:user/repo.git', expectedPath],
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
     });
 
@@ -890,7 +1055,10 @@ describe('AgentsService', () => {
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         containerId,
-        expect.stringMatching(/sh -c "git init -- '\/app'"/),
+        ['git', 'init', '--', '/app'],
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
       expect(dockerService.sendCommandToContainer).not.toHaveBeenCalledWith(
         containerId,
@@ -941,7 +1109,10 @@ describe('AgentsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         'container-id-empty-env',
-        expect.stringMatching(/git init/),
+        ['git', 'init', '--', '/app'],
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
       expect(dockerService.sendCommandToContainer).not.toHaveBeenCalledWith(
         'container-id-empty-env',
@@ -1115,7 +1286,10 @@ describe('AgentsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         5,
         containerId,
-        expect.stringMatching(new RegExp(`sh -c "git clone '[^']+' '${customBasePath.replace(/'/g, "'\\''")}'"`)),
+        ['git', 'clone', '--', process.env.GIT_REPOSITORY_URL, customBasePath],
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
     });
 
@@ -1157,7 +1331,10 @@ describe('AgentsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         5,
         containerId,
-        expect.stringMatching(new RegExp(`sh -c "git clone '[^']+' '${expectedPath.replace(/'/g, "'\\''")}'"`)),
+        ['git', 'clone', '--', process.env.GIT_REPOSITORY_URL, expectedPath],
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
     });
 
@@ -1233,7 +1410,10 @@ describe('AgentsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         5,
         containerId,
-        expect.stringMatching(new RegExp(`sh -c "git clone '[^']+' '${expectedPath.replace(/'/g, "'\\''")}'"`)),
+        ['git', 'clone', '--', process.env.GIT_REPOSITORY_URL, expectedPath],
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
     });
 
@@ -1272,7 +1452,10 @@ describe('AgentsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         5,
         containerId,
-        expect.stringMatching(new RegExp(`sh -c "git clone '[^']+' '${customBasePath.replace(/'/g, "'\\''")}'"`)),
+        ['git', 'clone', '--', process.env.GIT_REPOSITORY_URL, customBasePath],
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
     });
 
@@ -1343,7 +1526,10 @@ describe('AgentsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         5,
         containerId,
-        expect.stringMatching(/sh -c "git clone '[^']+' '\/app'"/),
+        ['git', 'clone', '--', process.env.GIT_REPOSITORY_URL, '/app'],
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
     });
 
@@ -1414,7 +1600,10 @@ describe('AgentsService', () => {
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         5,
         containerId,
-        expect.stringMatching(/sh -c "git clone '[^']+' '\/app'"/),
+        ['git', 'clone', '--', process.env.GIT_REPOSITORY_URL, '/app'],
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
     });
 
@@ -2264,12 +2453,17 @@ describe('AgentsService', () => {
         containerId,
         expect.stringMatching(/sh -c "base64 -d > '\/home\/agenstra\/\.netrc'"/),
         expect.any(String), // base64 content
+        true,
+        { user: 'agenstra' },
       );
       // Verify second command sets permissions
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         2,
         containerId,
         "chmod 600 '/home/agenstra/.netrc'",
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
 
       // Verify base64 content contains expected .netrc content
@@ -2307,6 +2501,8 @@ describe('AgentsService', () => {
         containerId,
         expect.stringMatching(/sh -c "base64 -d > '\/home\/agenstra\/\.netrc'"/),
         expect.any(String),
+        true,
+        { user: 'agenstra' },
       );
     });
 
@@ -2374,11 +2570,16 @@ describe('AgentsService', () => {
         containerId,
         expect.stringMatching(/sh -c "base64 -d > '\/custom\/home\/\.netrc'"/),
         expect.any(String),
+        true,
+        { user: 'agenstra' },
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         2,
         containerId,
         "chmod 600 '/custom/home/.netrc'",
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
     });
   });
@@ -2608,13 +2809,15 @@ describe('AgentsService', () => {
       const callArgs = dockerService.sendCommandToContainer.mock.calls[0];
 
       expect(callArgs[0]).toBe(containerId);
-      expect(callArgs[1]).toContain('echo');
-      expect(callArgs[1]).toContain('base64 -d');
-      expect(callArgs[1]).toContain(filePath);
+      expect(callArgs[1]).toEqual(['sh', '-c', expect.stringContaining('base64 -d')]);
+      const script = (callArgs[1] as string[])[2];
+
+      expect(script).toContain(filePath);
+      expect(callArgs.slice(2)).toEqual([undefined, true, { user: 'agenstra' }]);
       // Verify base64 encoding
       const base64Content = Buffer.from(contents, 'utf-8').toString('base64');
 
-      expect(callArgs[1]).toContain(base64Content);
+      expect(script).toContain(base64Content);
     });
 
     it('should escape base64 content for shell', async () => {
@@ -2630,7 +2833,7 @@ describe('AgentsService', () => {
       const callArgs = dockerService.sendCommandToContainer.mock.calls[0];
 
       // Base64 content should be escaped
-      expect(callArgs[1]).toMatch(/echo '.*' \| base64 -d >/);
+      expect(callArgs[1]).toEqual(['sh', '-c', expect.stringMatching(/printf '%s' '.*' \| base64 -d >/)]);
     });
   });
 
@@ -2663,31 +2866,49 @@ describe('AgentsService', () => {
         1,
         containerId,
         "mkdir -p '/home/agenstra/.ssh'",
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         2,
         containerId,
         "chmod 700 '/home/agenstra/.ssh'",
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         3,
         containerId,
-        expect.stringMatching(/echo .* \| base64 -d > \/home\/agenstra\/\.ssh\/id_ed25519/),
+        ['sh', '-c', expect.stringMatching(/printf '%s' .* \| base64 -d > '\/home\/agenstra\/\.ssh\/id_ed25519'/)],
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         4,
         containerId,
         "chmod 600 '/home/agenstra/.ssh/id_ed25519'",
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         5,
         containerId,
-        expect.stringMatching(/ssh-keyscan.*github\.com.*>> '\/home\/agenstra\/\.ssh\/known_hosts'/),
+        ['sh', '-c', expect.stringMatching(/ssh-keyscan.*github\.com.*>> '\/home\/agenstra\/\.ssh\/known_hosts'/)],
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         6,
         containerId,
-        "chmod 600 '/home/agenstra/.ssh/known_hosts' || true",
+        "chmod 600 '/home/agenstra/.ssh/known_hosts'",
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
     });
 
@@ -2703,7 +2924,10 @@ describe('AgentsService', () => {
 
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledWith(
         containerId,
-        expect.stringMatching(/ssh-keyscan -p 22 github\.com/),
+        ['sh', '-c', expect.stringMatching(/ssh-keyscan -p 22 'github\.com'/)],
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
     });
 
@@ -2715,6 +2939,21 @@ describe('AgentsService', () => {
       await expect(
         serviceAny.configureSshAccess(containerId, 'git@github.com:user/repo.git', 'invalid-key'),
       ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should surface host-key preparation failures', async () => {
+      const privateKey = sshpk.generatePrivateKey('ed25519').toString('openssh');
+      dockerService.sendCommandToContainer
+        .mockResolvedValueOnce('')
+        .mockResolvedValueOnce('')
+        .mockResolvedValueOnce('')
+        .mockResolvedValueOnce('')
+        .mockRejectedValueOnce(new Error('ssh-keyscan failed'));
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await expect(
+        (service as any).configureSshAccess('container-id-123', 'git@github.com:user/repo.git', privateKey),
+      ).rejects.toThrow('ssh-keyscan failed');
     });
 
     it('should resolve SSH paths from container home directory', async () => {
@@ -2734,16 +2973,25 @@ describe('AgentsService', () => {
         1,
         containerId,
         "mkdir -p '/custom/home/.ssh'",
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         5,
         containerId,
-        expect.stringMatching(/ssh-keyscan.*github\.com.*>> '\/custom\/home\/\.ssh\/known_hosts'/),
+        ['sh', '-c', expect.stringMatching(/ssh-keyscan.*github\.com.*>> '\/custom\/home\/\.ssh\/known_hosts'/)],
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
       expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
         6,
         containerId,
-        "chmod 600 '/custom/home/.ssh/known_hosts' || true",
+        "chmod 600 '/custom/home/.ssh/known_hosts'",
+        undefined,
+        true,
+        { user: 'agenstra' },
       );
     });
   });

@@ -8,6 +8,8 @@ File management enables you to interact with the file system in agent containers
 
 Workspace **code search** (path + text content) is indexed on the agent-controller OpenSearch instance from manager change notifications. See [Workspace code search](./workspace-code-search.md). Remote `fileUpdateNotification` events (including `socketId: system`) keep open editor previews in sync without putting file bodies on the websocket.
 
+For dirty text editors, notifications are checked against the current editor content, the saved version, and any in-flight save before displaying an external-change conflict. This handles system notifications arriving before the save HTTP response, as well as duplicate notifications, without a time-based suppression window that could hide genuine remote edits. Save completion follows explicit success/failure actions; failed saves and edits made while saving remain dirty. Verification failures are logged and retain the conflict prompt so local edits are not silently overwritten. Websocket payloads remain unchanged.
+
 ## File Operations
 
 ### List Directory
@@ -17,6 +19,8 @@ Browse the file system structure:
 - Navigate through directories
 - View files and subdirectories
 - See file metadata (size, type)
+
+Relative paths such as `apps` resolve under the worker workspace root (`/app/apps` for OpenCode). Docker exec output is decoded using its eight-byte frame headers before listing or metadata parsing, and listing commands use argv directly to preserve shell quoting. Entries removed between listing and metadata lookup are skipped without hiding the remaining files. Directory and other metadata command failures propagate as errors rather than being reported as an empty directory.
 
 ### Read File
 

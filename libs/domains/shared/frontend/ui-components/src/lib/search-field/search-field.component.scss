@@ -14,6 +14,10 @@
   // Lock strip height to the leading glyph so the clear control cannot grow the row.
   align-items: center;
 
+  &:has(> .fpc-search-field__input:disabled) {
+    background-color: var(--bs-secondary-bg);
+  }
+
   > i {
     display: flex;
     align-items: center;

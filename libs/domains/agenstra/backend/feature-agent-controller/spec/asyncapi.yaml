@@ -82,10 +82,19 @@ channels:
       "closeTerminal", etc. The remote agent-manager gateway will process the event and may emit
       response events (e.g., "chatMessage", "chatMessageBatch", "chatEnhanceResult", "ticketBodyResult",
       "fileUpdateNotification", "workspaceIndexChanged", "workspaceIndexRebuildRequired",
-      "terminalCreated", "terminalOutput", "terminalClosed", "containerStats")
-      which are automatically forwarded back to the client. The "containerStats" event payload
+      "terminalCreated", "terminalOutput", "terminalClosed", "containerStats", "environmentProgress", "opencodeConfigSynced")
+      which are automatically forwarded back to the client. For each new terminal, "terminalCreated"
+      precedes "terminalOutput", including buffered startup output such as the initial shell prompt.
+      The "containerStats" event payload
       (defined in the agent-manager AsyncAPI) includes container status (running/stopped) and, when
-      running, container statistics. For autonomous ticket runs, proxied `chat` may include
+      running, container statistics. "environmentProgress" (agent-manager AsyncAPI `agents/environmentProgress`)
+      is broadcast by the agent-manager to every connected socket as soon as a client is selected (no agent login
+      required) and carries the live step/percentage of environment creates and container-recreating updates;
+      the initial state is available via `GET /clients/{id}/agents/progress`.
+      "opencodeConfigSynced" (agent-manager AsyncAPI `agents/opencodeConfigSynced`) is forwarded after
+      effective config is applied, including updates without container recreation. Its success envelope
+      contains `data: { agentId }`; clients refresh cached models and slash commands for that environment.
+      For autonomous ticket runs, proxied `chat` may include
       `responseMode: "single" | "stream" | "sync"`, `ephemeral: true`, `continue`, and `resumeSessionSuffix`;
       the controller also uses isolated suffixes (e.g. `-ticket-auto-loop`, `-ticket-auto-commit-msg`) for
       implementation turns vs. post-verify conventional-commit subject generation; statistics on the controller
@@ -279,11 +288,18 @@ channels:
     address: status/statusSnapshot
     description: |
       Full per-user notification state on connect (git dirty + unread per environment, nested `chats[]`
-      for visible primary/user sessions, client rollups, spacesHasAttention).
+      for visible primary/user sessions, client rollups, spacesHasAttention). Optional `environmentProgress[]`
+      lists `{ clientId, operations }` for workspaces with running environment provisioning operations
+      (operations use the agent-manager `EnvironmentProgressDto` shape); omitted when nothing is provisioning.
       Unicast to the connecting socket only. Namespace **socket/status** (STATUS_WEBSOCKET_NAMESPACE, default "socket/status").
   status/statusPatch:
     address: status/statusPatch
-    description: Incremental notification deltas after connect (unicast), including nested `chats[]` when unread changes.
+    description: |
+      Incremental notification deltas after connect (unicast), including nested `chats[]` when unread changes.
+      `environmentProgress[]` contains workspaces whose provisioning operations changed (`operations: []` once all
+      finished). While any provisioning is active, a progress-only patch is polled every
+      STATUS_PROVISIONING_POLL_INTERVAL_MS (default 3000 ms, clamped 1000–30000) in addition to the regular
+      STATUS_POLL_INTERVAL_MS poll.
   status/markEnvironmentRead:
     address: status/markEnvironmentRead
     description: |
@@ -589,7 +605,7 @@ components:
               When event is "enhanceChat", the payload should contain { message: string, correlationId: string, model?: string }.
               When event is "generateTicketBody", the payload should contain { title: string, correlationId: string, model?: string }.
               When event is "chat", the payload may include { message, correlationId?, model?, responseMode?: "single"|"stream"|"sync", ephemeral?: boolean, continue?: boolean, resumeSessionSuffix?: string, contextInjection?: { includeWorkspace?: boolean, environmentIds?: string[], ticketShas?: string[], knowledgeShas?: string[], autoEnrichmentEnabled?: boolean } }.
-              Response events forwarded from the agent-manager include "containerStats" (payload has status.running and optional stats).
+              Response events forwarded from the agent-manager include "containerStats" (payload has status.running and optional stats), "environmentProgress" (environment create/update progress, sent without agent login), and "opencodeConfigSynced" (data.agentId identifies a successfully applied effective config; refresh cached models and slash commands).
           agentId:
             type: string
             description: >

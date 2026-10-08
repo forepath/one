@@ -13,6 +13,7 @@ import { classifyAgentFile } from '../utils/agent-file-type';
 import { expandProviderPathTildeInContainer } from '../utils/provider-container-path.utils';
 
 import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.service';
+import { AgentDirectoryIndexService } from './agent-directory-index.service';
 import { AgentsService } from './agents.service';
 import { DockerService } from './docker.service';
 import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
@@ -55,6 +56,7 @@ export class AgentFileSystemService {
     private readonly agentProviderFactory: AgentProviderFactory,
     private readonly gitStateBroadcast: AgentGitStateBroadcastService,
     private readonly workspaceChangeNotifier: WorkspaceChangeNotifierService,
+    private readonly directoryIndex: AgentDirectoryIndexService,
   ) {}
 
   private notifyGitStateMayHaveChanged(agentId: string): void {
@@ -628,6 +630,7 @@ export class AgentFileSystemService {
     agentId: string,
     directoryPath = '.',
     context: AgentFileManagerContext = 'app',
+    refresh = false,
   ): Promise<FileNodeDto[]> {
     await this.agentsService.findOne(agentId);
     const agentEntity = await this.agentsRepository.findByIdOrThrow(agentId);
@@ -643,13 +646,30 @@ export class AgentFileSystemService {
       agentEntity.containerId,
     );
 
+    const containerId = agentEntity.containerId;
+
+    return this.directoryIndex.getOrLoad(
+      agentId,
+      containerId,
+      JSON.stringify([containerPath, directoryPath]),
+      () => this.listDirectoryLive(agentId, containerId, containerPath, directoryPath),
+      refresh,
+    );
+  }
+
+  private async listDirectoryLive(
+    agentId: string,
+    containerId: string,
+    containerPath: string,
+    directoryPath: string,
+  ): Promise<FileNodeDto[]> {
     try {
       // Use a simpler approach: ls to list, then process with find for each item
       // This avoids the complex while loop that might fail silently
       const escapedPath = this.escapeForShell(containerPath);
       // Get list of items using ls -1 (one per line)
-      const listCommand = `sh -c "ls -a -1 ${escapedPath} 2>/dev/null"`;
-      let output = await this.dockerService.sendCommandToContainer(agentEntity.containerId, listCommand);
+      const listCommand = ['ls', '-a', '-1', '--', containerPath];
+      let output = await this.dockerService.sendCommandToContainer(containerId, listCommand, undefined, true);
 
       // Remove invalid characters that might come from Docker protocol parsing
       output = output.replace(AgentFileSystemService.LIST_OUTPUT_ALLOWED, '').trim();
@@ -673,15 +693,27 @@ export class AgentFileSystemService {
       // Quote $item when joining to the directory path so names with spaces resolve.
       // Without quotes, `fullpath='/app'/$item` word-splits on spaces and stat fails → entry skipped.
       const escapedItems = items.map((item) => this.escapeForShell(item)).join(' ');
-      const processCommand = `sh -c "for item in ${escapedItems}; do
-        fullpath=${escapedPath}/\\"\\$item\\"
-        if [ -d \\"\\$fullpath\\" ]; then
-          echo \\"directory|\\$item|0|\\$(stat -c %Y \\"\\$fullpath\\" 2>/dev/null || echo 0)\\"
+      const processCommand = [
+        'sh',
+        '-c',
+        `for item in ${escapedItems}; do
+        fullpath=${escapedPath}/"$item"
+        metadata=$(stat -c '%Y|%s' "$fullpath") || {
+          if [ ! -e "$fullpath" ] && [ ! -L "$fullpath" ] && [ -x ${escapedPath} ]; then
+            continue
+          fi
+          exit 1
+        }
+        modified=\${metadata%%|*}
+        size=\${metadata#*|}
+        if [ -d "$fullpath" ]; then
+          printf 'directory|%s|0|%s\\n' "$item" "$modified"
         else
-          echo \\"file|\\$item|\\$(stat -c %s \\"\\$fullpath\\" 2>/dev/null || echo 0)|\\$(stat -c %Y \\"\\$fullpath\\" 2>/dev/null || echo 0)\\"
+          printf 'file|%s|%s|%s\\n' "$item" "$size" "$modified"
         fi
-      done"`;
-      let processOutput = await this.dockerService.sendCommandToContainer(agentEntity.containerId, processCommand);
+      done`,
+      ];
+      let processOutput = await this.dockerService.sendCommandToContainer(containerId, processCommand, undefined, true);
 
       // Remove invalid characters that might come from Docker protocol parsing
       // Keep pipe separator (|) for parsing, newlines, and valid filename characters
@@ -730,7 +762,6 @@ export class AgentFileSystemService {
 
           // Skip entries where stat failed (timestamp is 0 or invalid) - indicates file doesn't exist
           // This filters out phantom entries that appear in ls output but don't actually exist
-          // The stat command returns 0 when the file doesn't exist (due to the || echo 0 fallback)
           if (!modifiedTimestamp || modifiedTimestamp <= 0) {
             this.logger.debug(
               `Skipping non-existent entry: name=${name}, type=${type}, size=${size}, modified=${modifiedTimestamp}`,

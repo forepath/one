@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
 
 import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-variable.entity';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
@@ -8,6 +8,11 @@ import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentMessagesService } from './agent-messages.service';
 import { AgentSessionHydrationService } from './agent-session-hydration.service';
 import { DockerService } from './docker.service';
+import {
+  EnvironmentProgressService,
+  EnvironmentProgressTracker,
+  RECONCILE_ENVIRONMENT_PROGRESS_STEPS,
+} from './environment-progress.service';
 
 /**
  * Service for agent environment variables business logic operations.
@@ -24,7 +29,18 @@ export class AgentEnvironmentVariablesService {
     private readonly agentMessagesService: AgentMessagesService,
     private readonly agentProviderFactory: AgentProviderFactory,
     private readonly agentSessionHydrationService: AgentSessionHydrationService,
+    @Optional()
+    private readonly environmentProgress?: EnvironmentProgressService,
   ) {}
+
+  private startUpdateProgress(agentId: string, agentName: string): EnvironmentProgressTracker | undefined {
+    return this.environmentProgress?.start({
+      agentId,
+      agentName,
+      operation: 'update',
+      steps: RECONCILE_ENVIRONMENT_PROGRESS_STEPS,
+    });
+  }
 
   private buildFallbackSummary(lines: Array<{ actor: string; message: string }>): string {
     if (lines.length === 0) {
@@ -196,6 +212,8 @@ export class AgentEnvironmentVariablesService {
    * @throws NotFoundException if agent is not found or has no container
    */
   async reconcileEnvironmentVariables(agentId: string): Promise<void> {
+    let progress: EnvironmentProgressTracker | undefined;
+
     try {
       // Get the agent to find its container ID
       const agent = await this.agentsRepository.findByIdOrThrow(agentId);
@@ -206,6 +224,8 @@ export class AgentEnvironmentVariablesService {
         return;
       }
 
+      progress = this.startUpdateProgress(agent.id, agent.name);
+
       // Get all environment variables for the agent
       const environmentVariables = await this.agentEnvironmentVariablesRepository.findAllByAgentId(agentId);
       // Build the environment object from the variables
@@ -215,20 +235,26 @@ export class AgentEnvironmentVariablesService {
         env[variable.variable] = variable.content ?? '';
       }
 
+      progress?.advance('summarizingContext');
       const summary = await this.buildHydrationSummary(agent.id, agent.containerId, agent.agentType);
 
       this.agentSessionHydrationService.storePendingSummary(agentId, summary);
 
       // Update the container's environment (this recreates the container)
+      progress?.advance('recreatingContainer');
       const newContainerId = await this.dockerService.updateContainer(agent.containerId, { env });
 
       // Update the agent's container ID in the database since the container was recreated
+      progress?.advance('finalizing');
       await this.agentsRepository.update(agentId, { containerId: newContainerId });
+      progress?.complete();
 
       this.logger.log(
         `Reconciled ${environmentVariables.length} environment variables for agent ${agentId} (container ${agent.containerId} -> ${newContainerId})`,
       );
     } catch (error: unknown) {
+      progress?.fail(error);
+
       if (error instanceof NotFoundException) {
         throw error;
       }
@@ -240,6 +266,12 @@ export class AgentEnvironmentVariablesService {
     }
   }
 
+  /**
+   * Recreate every agent container whose environment contains one of the changed keys.
+   * All affected environments are announced as queued update operations up front so clients can
+   * render progress for the whole mass update; they are then processed sequentially.
+   * @param changedEnv - Changed override keys (undefined value removes the key)
+   */
   async reconcileWorkspaceConfigurationOverrides(changedEnv: Record<string, string | undefined>): Promise<void> {
     const changedKeys = Object.keys(changedEnv);
 
@@ -248,6 +280,12 @@ export class AgentEnvironmentVariablesService {
     }
 
     const agents = await this.agentsRepository.findAllWithContainers();
+    const pending: Array<{
+      agent: (typeof agents)[number];
+      containerId: string;
+      relevantOverrides: Record<string, string | undefined>;
+      progress?: EnvironmentProgressTracker;
+    }> = [];
 
     for (const agent of agents) {
       if (!agent.containerId) {
@@ -267,16 +305,45 @@ export class AgentEnvironmentVariablesService {
         continue;
       }
 
-      const summary = await this.buildHydrationSummary(agent.id, agent.containerId, agent.agentType);
+      pending.push({ agent, containerId: agent.containerId, relevantOverrides });
+    }
 
-      this.agentSessionHydrationService.storePendingSummary(agent.id, summary);
+    for (const item of pending) {
+      item.progress = this.startUpdateProgress(item.agent.id, item.agent.name);
+    }
 
-      const newContainerId = await this.dockerService.updateContainer(agent.containerId, { env: relevantOverrides });
+    let index = 0;
 
-      await this.agentsRepository.update(agent.id, { containerId: newContainerId });
-      this.logger.log(
-        `Reconciled workspace configuration overrides for agent ${agent.id} (container ${agent.containerId} -> ${newContainerId})`,
-      );
+    try {
+      for (; index < pending.length; index++) {
+        const { agent, containerId, relevantOverrides, progress } = pending[index];
+
+        try {
+          progress?.advance('summarizingContext');
+          const summary = await this.buildHydrationSummary(agent.id, containerId, agent.agentType);
+
+          this.agentSessionHydrationService.storePendingSummary(agent.id, summary);
+
+          progress?.advance('recreatingContainer');
+          const newContainerId = await this.dockerService.updateContainer(containerId, { env: relevantOverrides });
+
+          progress?.advance('finalizing');
+          await this.agentsRepository.update(agent.id, { containerId: newContainerId });
+          progress?.complete();
+          this.logger.log(
+            `Reconciled workspace configuration overrides for agent ${agent.id} (container ${containerId} -> ${newContainerId})`,
+          );
+        } catch (error: unknown) {
+          progress?.fail(error);
+
+          throw error;
+        }
+      }
+    } finally {
+      // An earlier failure aborts the mass update; release the remaining queued operations.
+      for (let rest = index + 1; rest < pending.length; rest++) {
+        pending[rest].progress?.fail('Aborted after a previous environment failed to update');
+      }
     }
   }
 }

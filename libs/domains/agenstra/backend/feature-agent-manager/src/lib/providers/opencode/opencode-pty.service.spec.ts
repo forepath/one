@@ -171,6 +171,24 @@ describe('OpenCodePtyService', () => {
     expect(JSON.parse(String(createCall?.[1]?.body))).toEqual({ title: 'Agenstra console' });
   });
 
+  it('preserves the initial prompt arriving immediately with WebSocket open', async () => {
+    mockFetchSequence();
+    global.WebSocket = class extends MockWebSocket {
+      override emit(type: string, event: unknown): void {
+        super.emit(type, event);
+        if (type === 'open') {
+          super.emit('message', { data: 'agenstra@worker:/app$ ' });
+        }
+      }
+    } as unknown as typeof WebSocket;
+    const onOutput = jest.fn();
+
+    await service.open('agent-1', 'container-1', 'sess-prompt', {}, { onOutput, onClosed: jest.fn() });
+
+    expect(onOutput).toHaveBeenCalledTimes(1);
+    expect(onOutput).toHaveBeenCalledWith('agenstra@worker:/app$ ');
+  });
+
   it('write sends data on open WebSocket', async () => {
     mockFetchSequence();
     const sockets: MockWebSocket[] = [];

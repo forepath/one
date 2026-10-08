@@ -17,6 +17,17 @@ import {
 import { initialNotificationsState, notificationsReducer } from './notifications.reducer';
 
 describe('notificationsReducer', () => {
+  it('should keep state for progress-only status patches', () => {
+    const state = notificationsReducer(
+      initialNotificationsState,
+      statusPatchReceived({
+        patch: { generatedAt: '2024-01-01T00:00:00Z', environmentProgress: [{ clientId: 'c1', operations: [] }] },
+      }),
+    );
+
+    expect(state).toBe(initialNotificationsState);
+  });
+
   it('applies status snapshot', () => {
     const state = notificationsReducer(
       initialNotificationsState,

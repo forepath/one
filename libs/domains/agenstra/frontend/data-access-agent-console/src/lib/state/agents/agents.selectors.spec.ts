@@ -25,6 +25,7 @@ import {
   selectClientAgentsCreating,
   selectClientAgentsDeleting,
   selectClientAgentsError,
+  selectClientAgentsListError,
   selectClientAgentsLoading,
   selectClientAgentsLoadingAny,
   selectClientAgentsRestarting,
@@ -284,6 +285,20 @@ describe('Agents Selectors', () => {
       const result = selector(rootState as any);
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('selectClientAgentsListError', () => {
+    it('should return the list error for a specific client', () => {
+      const rootState = { agents: createState({ listErrors: { [clientId]: 'Unreachable' }, errors: {} }) };
+
+      expect(selectClientAgentsListError(clientId)(rootState as any)).toBe('Unreachable');
+    });
+
+    it('should return null when no list error for client', () => {
+      const rootState = { agents: createState({ errors: { [clientId]: 'Create failed' } }) };
+
+      expect(selectClientAgentsListError(clientId)(rootState as any)).toBeNull();
     });
   });
 

@@ -94,8 +94,11 @@ caching still applies. The build paths are:
   tools, and OpenCode, and copies `worker-desktop` assets from the manager's build
   output. Compose does not start this image. The manager's Docker service creates
   agent containers from `AGENT_DEFAULT_IMAGE`, whose Compose default is
-  `ghcr.io/forepath/agenstra-manager-worker:latest`. To use the locally built test
-  worker, explicitly set it to the internal-registry `:test` reference above.
+  `ghcr.io/forepath/agenstra-manager-worker:latest`. The manager's
+  `.start-containers.env.example` sets `AGENT_DEFAULT_IMAGE` and
+  `OPENCODE_AGENT_DOCKER_IMAGE` to the internal-registry `:test` reference above, so
+  the stack started via `start-containers` uses the locally built worker. An existing
+  `.start-containers.env` is preserved; update it manually if it still points at `:latest`.
 
 Compose uses `pull_policy: never` for the application services and runs
 `up -d --force-recreate --remove-orphans`. Infrastructure images such as

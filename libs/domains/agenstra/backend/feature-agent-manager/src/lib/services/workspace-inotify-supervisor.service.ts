@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 
 import type { WorkspaceIndexChangeOp } from '../constants/workspace-index.constants';
 import { AgentsRepository } from '../repositories/agents.repository';
-import { shouldIgnoreWorkspaceIndexPath, toWorkspaceRelativePath } from '../utils/workspace-index-ignore';
+import { toWorkspaceRelativePath } from '../utils/workspace-index-ignore';
 
 import { DockerService } from './docker.service';
 import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
@@ -58,10 +58,6 @@ export class WorkspaceInotifySupervisor implements OnModuleDestroy {
     };
 
     const schedule = (relativePath: string, op: WorkspaceIndexChangeOp): void => {
-      if (shouldIgnoreWorkspaceIndexPath(relativePath)) {
-        return;
-      }
-
       pendingOps.set(relativePath, op);
       const existing = debounceTimers.get(relativePath);
 

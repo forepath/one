@@ -5,6 +5,7 @@ import {
   ConfigResponseDto,
   CreateAgentDto,
   CreateAgentResponseDto,
+  EnvironmentProgressDto,
   UpdateAgentDto,
 } from '@forepath/agenstra/backend/feature-agent-manager';
 import { AuthenticationType, ClientAgentCredentialsService } from '@forepath/identity/backend';
@@ -233,6 +234,20 @@ export class ClientAgentProxyService {
       method: 'GET',
       params: { limit, offset },
     });
+  }
+
+  /**
+   * Get active environment provisioning operations (create / container-recreating updates) of a client.
+   * @param clientId - The UUID of the client
+   * @returns Running progress operations, oldest first
+   */
+  async getClientEnvironmentProgress(clientId: string): Promise<EnvironmentProgressDto[]> {
+    const operations = await this.makeRequest<EnvironmentProgressDto[]>(clientId, {
+      method: 'GET',
+      url: '/progress',
+    });
+
+    return Array.isArray(operations) ? operations : [];
   }
 
   /**

@@ -31,6 +31,7 @@ const meta: Meta<FpcProgressComponent> = {
     animated: false,
     showLabel: true,
     height: '1rem',
+    segments: null,
   },
   render: (args) => ({
     props: args,
@@ -42,6 +43,7 @@ const meta: Meta<FpcProgressComponent> = {
             [animated]="animated"
             [showLabel]="showLabel"
             [height]="height"
+            [segments]="segments"
             ariaLabel="Storage used"
         />`,
   }),
@@ -62,3 +64,13 @@ export const Danger: Story = { args: { value: 93, variant: 'danger' } };
 export const Thin: Story = { args: { height: '0.375rem', showLabel: false } };
 
 export const CustomLabel: Story = { args: { label: '13 of 20 seats' } };
+
+export const Stacked: Story = {
+  args: {
+    segments: [
+      { value: 30, variant: 'primary', label: 'Environment A: 60%' },
+      { value: 15, variant: 'info', label: 'Environment B: 30%' },
+      { value: 5, variant: 'success', label: 'Environment C: 10%' },
+    ],
+  },
+};

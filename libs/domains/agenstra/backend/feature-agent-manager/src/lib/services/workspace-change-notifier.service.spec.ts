@@ -50,4 +50,16 @@ describe('WorkspaceChangeNotifierService', () => {
 
     expect(payload.paths).toEqual(['src/a.ts']);
   });
+
+  it('invalidates directory listings for ignored paths without broadcasting them', async () => {
+    const invalidate = jest.fn().mockResolvedValue(undefined);
+    const unregister = service.registerTreeInvalidator(invalidate);
+    service.notifyPathChanges('agent-1', [{ path: '.env', op: 'upsert' }], 'inotify');
+    expect(invalidate).toHaveBeenCalledWith('agent-1');
+    expect(indexEvents).toHaveLength(0);
+    expect(fileUpdates).toHaveLength(0);
+    unregister();
+    service.notifyRebuildRequired('agent-1', 'vcs');
+    expect(invalidate).toHaveBeenCalledTimes(1);
+  });
 });

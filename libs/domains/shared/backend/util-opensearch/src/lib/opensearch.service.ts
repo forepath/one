@@ -177,6 +177,27 @@ export class OpenSearchService implements OnModuleDestroy {
     }
   }
 
+  /**
+   * Count documents matching term filters only (no text query).
+   */
+  async count(index: string, filters: Record<string, string | string[] | boolean | number> = {}): Promise<number> {
+    if (!this.isEnabled()) {
+      return 0;
+    }
+
+    try {
+      const client = this.getClient();
+      const { query } = buildScopedSearchBody({ query: '', fields: [], filters, from: 0, size: 0 });
+      const response = await client.count({ index, body: { query } });
+      const count = response.body?.count;
+
+      return typeof count === 'number' ? count : 0;
+    } catch (error) {
+      this.logger.warn(`OpenSearch count failed for ${index}: ${(error as Error).message}`);
+      throw error;
+    }
+  }
+
   async search(params: OpenSearchSearchParams): Promise<OpenSearchSearchResult> {
     if (!this.isEnabled()) {
       return { hits: [], total: 0 };

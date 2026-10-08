@@ -48,3 +48,38 @@ One physical OpenSearch index holds many logical corpora keyed by `clientId` + `
 - `POST /clients/{id}/agents/{agentId}/workspace-search/reindex`
 
 Manager (optional): `POST /agents/{agentId}/workspace-index/rebuild-signal`
+
+## File tree directory index
+
+The editor file tree is separate from code search. Previously, every folder expansion
+performed a live controller-to-manager request and Docker directory listing, even
+when the browser already had that folder's children cached.
+
+The manager now maintains a lazy relational directory index in Postgres
+(`agent_directory_index`). A snapshot contains one directory's complete immediate
+children, including empty directories, names, file/directory types, sizes and modification
+times. It contains no file bodies and does not inherit search exclusions. Entries
+are scoped by agent, container and requested filesystem path; deleting an agent
+cascades to its snapshots. Apply the agent-manager database migrations before deploying.
+
+- Opening an unindexed directory lists it live and persists the result. Subsequent
+  requests reuse the snapshot for up to **30 seconds**.
+- API mutations, watcher path notifications and bulk/VCS rebuild notifications
+  invalidate that agent's snapshots **before search exclusions are applied**.
+  In-flight listings and invalidations are serialized per agent so a stale load
+  cannot undo an invalidation.
+- The watcher excludes `.git` and `node_modules`, and may be unavailable. The
+  30-second freshness limit forces live reconciliation on the next access even
+  without notifications. A manager timer removes expired snapshots; it does not
+  recursively crawl every workspace. The controller's entity search reindex jobs
+  do not cover container filesystem listings.
+- Explicit root/folder refresh uses `refresh=true` through both HTTP layers to
+  bypass the snapshot immediately.
+- The browser still caches children for display. A small `fpc-spinner` on the
+  folder row reflects the directory request state and clears on success or failure,
+  including background refreshes with existing children. Listing errors continue
+  through the existing file-operation error handling.
+
+This is an event-invalidated, bounded-staleness directory index, not a guarantee
+of instant detection of all external filesystem changes. OpenSearch remains
+responsible only for path/content search.

@@ -27,6 +27,8 @@ export const selectAgentsRestarting = createSelector(selectAgentsState, (state) 
 
 export const selectAgentsErrors = createSelector(selectAgentsState, (state) => state.errors);
 
+export const selectAgentsListErrors = createSelector(selectAgentsState, (state) => state.listErrors);
+
 export const selectAgentsHasMore = createSelector(selectAgentsState, (state) => state.hasMore);
 
 export const selectAgentsNextOffset = createSelector(selectAgentsState, (state) => state.nextOffset);
@@ -78,6 +80,10 @@ export const selectClientAgentsRestarting = (clientId: string) =>
 
 export const selectClientAgentsError = (clientId: string) =>
   createSelector(selectAgentsErrors, (errors) => errors[clientId] ?? null);
+
+/** Error of the last environment list load (not affected by create / update errors). */
+export const selectClientAgentsListError = (clientId: string) =>
+  createSelector(selectAgentsListErrors, (listErrors) => listErrors?.[clientId] ?? null);
 
 export const selectClientAgentsHasMore = (clientId: string) =>
   createSelector(selectAgentsHasMore, (hasMore) => hasMore[clientId] ?? false);

@@ -11,12 +11,14 @@ import { ChatFilter, FilterDirection } from '../providers/chat-filter.interface'
 import { AgentsRepository } from '../repositories/agents.repository';
 import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
 import { AgentGitStateBroadcastService } from '../services/agent-git-state-broadcast.service';
+import { EnvironmentProgressService } from '../services/environment-progress.service';
 import { WorkspaceChangeNotifierService } from '../services/workspace-change-notifier.service';
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
 import { AgentsService } from '../services/agents.service';
 import { OpenCodePtyService } from '../providers/opencode/opencode-pty.service';
+import { OpenCodeConfigSyncService } from '../providers/opencode/opencode-config-sync.service';
 import { DockerService } from '../services/docker.service';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
 
@@ -42,6 +44,7 @@ describe('AgentsGateway', () => {
   let chatFilterFactory: jest.Mocked<ChatFilterFactory>;
   let mockServer: Partial<Server>;
   let mockSocket: Partial<Socket>;
+  let configSyncedBroadcaster: (agentId: string) => void;
   const mockPrimaryChatSession = {
     id: 'primary-chat-id',
     agentId: 'test-uuid-123',
@@ -210,6 +213,15 @@ describe('AgentsGateway', () => {
           provide: AgentGitStateBroadcastService,
           useValue: mockGitStateBroadcast,
         },
+        EnvironmentProgressService,
+        {
+          provide: OpenCodeConfigSyncService,
+          useValue: {
+            registerConfigSyncedBroadcaster: (broadcaster: (agentId: string) => void) => {
+              configSyncedBroadcaster = broadcaster;
+            },
+          },
+        },
         {
           provide: WorkspaceChangeNotifierService,
           useValue: {
@@ -320,6 +332,41 @@ describe('AgentsGateway', () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     } as any);
+  });
+
+  describe('environment progress broadcast', () => {
+    it('broadcasts applied config changes without requiring an agent login', () => {
+      gateway.handleConnection(mockSocket as Socket);
+
+      configSyncedBroadcaster(mockAgent.id);
+
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'opencodeConfigSynced',
+        expect.objectContaining({ success: true, data: { agentId: mockAgent.id }, timestamp: expect.any(String) }),
+      );
+    });
+    it('emits environmentProgress to every connected socket and drops disconnected ones', () => {
+      const progressService = (gateway as any).environmentProgress as EnvironmentProgressService;
+      const otherSocket = { id: 'other-socket', emit: jest.fn(), connected: true };
+      const staleSocket = { id: 'stale-socket', emit: jest.fn(), connected: false };
+
+      (gateway as any).socketById.set(mockSocket.id, mockSocket);
+      (gateway as any).socketById.set(otherSocket.id, otherSocket);
+      (gateway as any).socketById.set(staleSocket.id, staleSocket);
+
+      progressService.start({ operation: 'create', agentName: 'New Env', steps: [{ step: 'preparing', weight: 1 }] });
+
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'environmentProgress',
+        expect.objectContaining({
+          success: true,
+          data: expect.objectContaining({ agentName: 'New Env', operation: 'create', status: 'running' }),
+        }),
+      );
+      expect(otherSocket.emit).toHaveBeenCalledWith('environmentProgress', expect.anything());
+      expect(staleSocket.emit).not.toHaveBeenCalled();
+      expect((gateway as any).socketById.has(staleSocket.id)).toBe(false);
+    });
   });
 
   describe('handleConnection', () => {
@@ -3434,11 +3481,7 @@ describe('AgentsGateway', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (gateway as any).authenticatedClients.set(socketId, mockAgent.id);
 
-      jest.advanceTimersByTime(15000);
-
-      await Promise.resolve();
-      await Promise.resolve();
-      await Promise.resolve();
+      await jest.advanceTimersByTimeAsync(15000);
 
       expect(dockerService.getContainerStatus).toHaveBeenCalledWith(mockAgent.containerId);
       expect(dockerService.getContainerStats).toHaveBeenCalledWith(mockAgent.containerId);
@@ -3455,6 +3498,59 @@ describe('AgentsGateway', () => {
         }),
       );
     }, 10000);
+
+    it('should follow container replacements without requiring another login', async () => {
+      agentsRepository.findById.mockResolvedValue(mockAgent);
+      agentsService.verifyCredentials.mockResolvedValue(true);
+      agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      (dockerService.getContainerStatus as jest.Mock).mockResolvedValue({ running: true });
+      (dockerService.getContainerStats as jest.Mock).mockResolvedValue(mockStats);
+
+      await gateway.handleConnection(mockSocket as Socket);
+      await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
+
+      (dockerService.getContainerStatus as jest.Mock).mockClear();
+      (dockerService.getContainerStats as jest.Mock).mockClear();
+      (mockSocket.emit as jest.Mock).mockClear();
+      agentsRepository.findById.mockResolvedValue({ ...mockAgent, containerId: 'replacement-container' });
+
+      await jest.advanceTimersByTimeAsync(15000);
+
+      expect(dockerService.getContainerStatus).toHaveBeenCalledWith('replacement-container');
+      expect(dockerService.getContainerStatus).not.toHaveBeenCalledWith(mockAgent.containerId);
+      expect(dockerService.getContainerStats).toHaveBeenCalledWith('replacement-container');
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'containerStats',
+        expect.objectContaining({
+          success: true,
+          data: expect.objectContaining({ agentId: mockAgent.id, status: { running: true }, stats: mockStats }),
+        }),
+      );
+    });
+
+    it('should resume stats after a temporarily missing container', async () => {
+      agentsRepository.findById.mockResolvedValue(mockAgent);
+      agentsService.verifyCredentials.mockResolvedValue(true);
+      agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      (dockerService.getContainerStatus as jest.Mock).mockResolvedValue({ running: true });
+      (dockerService.getContainerStats as jest.Mock).mockResolvedValue(mockStats);
+
+      await gateway.handleConnection(mockSocket as Socket);
+      await gateway.handleLogin({ agentId: mockAgent.id, password: 'password123' }, mockSocket as Socket);
+
+      (dockerService.getContainerStatus as jest.Mock).mockClear();
+      agentsRepository.findById.mockResolvedValue(null);
+
+      await jest.advanceTimersByTimeAsync(15000);
+
+      expect(dockerService.getContainerStatus).not.toHaveBeenCalled();
+
+      agentsRepository.findById.mockResolvedValue({ ...mockAgent, containerId: 'replacement-container' });
+
+      await jest.advanceTimersByTimeAsync(15000);
+
+      expect(dockerService.getContainerStatus).toHaveBeenCalledWith('replacement-container');
+    });
 
     it('should not start stats broadcasting if agent has no container', async () => {
       const agentWithoutContainer = { ...mockAgent, containerId: null };
@@ -3549,10 +3645,7 @@ describe('AgentsGateway', () => {
 
       expect(statsIntervals.has(mockAgent.id)).toBe(true);
 
-      jest.advanceTimersByTime(15000);
-      await Promise.resolve();
-      await Promise.resolve();
-      await Promise.resolve();
+      await jest.advanceTimersByTimeAsync(15000);
       expect(dockerService.getContainerStatus).toHaveBeenCalledTimes(2);
       expect(dockerService.getContainerStats).toHaveBeenCalledTimes(2);
     });
@@ -3994,6 +4087,46 @@ describe('AgentsGateway', () => {
         { shell: undefined },
         expect.objectContaining({ onOutput: expect.any(Function), onClosed: expect.any(Function) }),
       );
+    });
+
+    it('emits terminalCreated before buffered initial output and preserves later output', async () => {
+      let output: ((data: string) => void) | undefined;
+      mockOpenCodePtyService.open.mockImplementationOnce(async (_agent, _container, _session, _options, callbacks) => {
+        output = callbacks.onOutput;
+        callbacks.onOutput('initial ');
+        callbacks.onOutput('prompt$ ');
+      });
+
+      await gateway.handleCreateTerminal({ sessionId: 'sess-prompt' }, mockSocket as Socket);
+      output?.('later output');
+
+      const events = (mockSocket.emit as jest.Mock).mock.calls.filter(
+        ([event]) => event === 'terminalCreated' || event === 'terminalOutput',
+      );
+      expect(events.map(([event]) => event)).toEqual([
+        'terminalCreated',
+        'terminalOutput',
+        'terminalOutput',
+        'terminalOutput',
+      ]);
+      expect(events.slice(1).map(([, payload]) => payload.data)).toEqual([
+        { sessionId: 'sess-prompt', data: 'initial ' },
+        { sessionId: 'sess-prompt', data: 'prompt$ ' },
+        { sessionId: 'sess-prompt', data: 'later output' },
+      ]);
+    });
+
+    it('does not flush buffered output if terminal creation fails', async () => {
+      mockOpenCodePtyService.open.mockImplementationOnce(async (_agent, _container, _session, _options, callbacks) => {
+        callbacks.onOutput('initial prompt');
+        throw new Error('connection failed');
+      });
+
+      await gateway.handleCreateTerminal({ sessionId: 'sess-failed' }, mockSocket as Socket);
+
+      expect(mockSocket.emit).not.toHaveBeenCalledWith('terminalCreated', expect.anything());
+      expect(mockSocket.emit).not.toHaveBeenCalledWith('terminalOutput', expect.anything());
+      expect(mockSocket.emit).toHaveBeenCalledWith('error', expect.objectContaining({ success: false }));
     });
 
     it('handleTerminalInput writes to PTY when session belongs to socket', async () => {

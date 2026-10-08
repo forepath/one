@@ -9,6 +9,7 @@ import {
   Injectable,
   Logger,
   OnApplicationBootstrap,
+  Optional,
 } from '@nestjs/common';
 import * as sshpk from 'sshpk';
 import { v4 as uuidv4 } from 'uuid';
@@ -31,6 +32,11 @@ import { expandProviderPathTildeInContainer } from '../utils/provider-container-
 import { AgentChatSessionsService } from './agent-chat-sessions.service';
 import { DeploymentsService } from './deployments.service';
 import { DockerService } from './docker.service';
+import {
+  CREATE_ENVIRONMENT_PROGRESS_STEPS,
+  EnvironmentProgressService,
+  EnvironmentProgressTracker,
+} from './environment-progress.service';
 import { WorkspaceInotifySupervisor } from './workspace-inotify-supervisor.service';
 
 /**
@@ -57,6 +63,8 @@ export class AgentsService implements OnApplicationBootstrap {
     private readonly deploymentsService?: DeploymentsService,
     @Inject(forwardRef(() => WorkspaceInotifySupervisor))
     private readonly workspaceInotifySupervisor?: WorkspaceInotifySupervisor,
+    @Optional()
+    private readonly environmentProgress?: EnvironmentProgressService,
   ) {}
 
   /**
@@ -224,7 +232,13 @@ export class AgentsService implements OnApplicationBootstrap {
     const base64Content = Buffer.from(contents, 'utf-8').toString('base64');
     const escapedBase64 = this.escapeForShell(base64Content);
 
-    await this.dockerService.sendCommandToContainer(containerId, `echo ${escapedBase64} | base64 -d > ${filePath}`);
+    await this.dockerService.sendCommandToContainer(
+      containerId,
+      ['sh', '-c', `printf '%s' ${escapedBase64} | base64 -d > ${this.escapeForShell(filePath)}`],
+      undefined,
+      true,
+      { user: AgentsService.CONTAINER_RUNTIME_USER },
+    );
   }
 
   /**
@@ -244,17 +258,32 @@ export class AgentsService implements OnApplicationBootstrap {
     const escapedKeyPath = this.escapeForShell(keyPath);
     const escapedKnownHosts = this.escapeForShell(`${sshDir}/known_hosts`);
 
-    await this.dockerService.sendCommandToContainer(containerId, `mkdir -p ${escapedSshDir}`);
-    await this.dockerService.sendCommandToContainer(containerId, `chmod 700 ${escapedSshDir}`);
+    await this.dockerService.sendCommandToContainer(containerId, `mkdir -p ${escapedSshDir}`, undefined, true, {
+      user: AgentsService.CONTAINER_RUNTIME_USER,
+    });
+    await this.dockerService.sendCommandToContainer(containerId, `chmod 700 ${escapedSshDir}`, undefined, true, {
+      user: AgentsService.CONTAINER_RUNTIME_USER,
+    });
     await this.writeFileToContainer(containerId, keyPath, keyPair.privateKey);
-    await this.dockerService.sendCommandToContainer(containerId, `chmod 600 ${escapedKeyPath}`);
+    await this.dockerService.sendCommandToContainer(containerId, `chmod 600 ${escapedKeyPath}`, undefined, true, {
+      user: AgentsService.CONTAINER_RUNTIME_USER,
+    });
 
-    const sshKeyscanCommand = ['ssh-keyscan', port ? `-p ${port}` : '', host, `>> ${escapedKnownHosts}`, '|| true']
+    const sshKeyscanCommand = [
+      'ssh-keyscan',
+      port ? `-p ${port}` : '',
+      this.escapeForShell(host),
+      `>> ${escapedKnownHosts}`,
+    ]
       .filter(Boolean)
       .join(' ');
 
-    await this.dockerService.sendCommandToContainer(containerId, sshKeyscanCommand);
-    await this.dockerService.sendCommandToContainer(containerId, `chmod 600 ${escapedKnownHosts} || true`);
+    await this.dockerService.sendCommandToContainer(containerId, ['sh', '-c', sshKeyscanCommand], undefined, true, {
+      user: AgentsService.CONTAINER_RUNTIME_USER,
+    });
+    await this.dockerService.sendCommandToContainer(containerId, `chmod 600 ${escapedKnownHosts}`, undefined, true, {
+      user: AgentsService.CONTAINER_RUNTIME_USER,
+    });
 
     return {
       publicKey: keyPair.publicKey,
@@ -293,10 +322,18 @@ export class AgentsService implements OnApplicationBootstrap {
     // Write file using base64 decode with stdin input (same approach as agent-file-system.service)
     // Use sh -c to run the command in a shell so redirection works
     // The base64 content is sent to stdin, which base64 -d reads and decodes
-    await this.dockerService.sendCommandToContainer(containerId, `sh -c "base64 -d > ${escapedPath}"`, base64Content);
+    await this.dockerService.sendCommandToContainer(
+      containerId,
+      `sh -c "base64 -d > ${escapedPath}"`,
+      base64Content,
+      true,
+      { user: AgentsService.CONTAINER_RUNTIME_USER },
+    );
 
     // Set proper permissions
-    await this.dockerService.sendCommandToContainer(containerId, `chmod 600 ${escapedPath}`);
+    await this.dockerService.sendCommandToContainer(containerId, `chmod 600 ${escapedPath}`, undefined, true, {
+      user: AgentsService.CONTAINER_RUNTIME_USER,
+    });
   }
 
   /**
@@ -340,11 +377,16 @@ export class AgentsService implements OnApplicationBootstrap {
     basePath: string,
   ): Promise<void> {
     const repositoryPath = this.getRepositoryPath(provider, basePath);
-    const escapedRepositoryPath = this.escapeForShell(repositoryPath);
 
     if (setupMode === GitRepositorySetupMode.EMPTY) {
       await this.ensureProviderConfigBaseDirectoryExists(containerId, agentType);
-      await this.dockerService.sendCommandToContainer(containerId, `sh -c "git init -- ${escapedRepositoryPath}"`);
+      await this.dockerService.sendCommandToContainer(
+        containerId,
+        ['git', 'init', '--', repositoryPath],
+        undefined,
+        true,
+        { user: AgentsService.CONTAINER_RUNTIME_USER },
+      );
 
       return;
     }
@@ -363,11 +405,12 @@ export class AgentsService implements OnApplicationBootstrap {
 
     await this.ensureProviderConfigBaseDirectoryExists(containerId, agentType);
 
-    const escapedUrl = this.escapeForShell(repositoryUrl);
-
     await this.dockerService.sendCommandToContainer(
       containerId,
-      `sh -c "git clone ${escapedUrl} ${escapedRepositoryPath}"`,
+      ['git', 'clone', '--', repositoryUrl, repositoryPath],
+      undefined,
+      true,
+      { user: AgentsService.CONTAINER_RUNTIME_USER },
     );
   }
 
@@ -385,6 +428,29 @@ export class AgentsService implements OnApplicationBootstrap {
       throw new BadRequestException(`Agent with name '${createAgentDto.name}' already exists`);
     }
 
+    const progress = this.environmentProgress?.start({
+      agentName: createAgentDto.name,
+      operation: 'create',
+      steps: CREATE_ENVIRONMENT_PROGRESS_STEPS,
+    });
+
+    try {
+      const created = await this.createProvisioned(createAgentDto, progress);
+
+      progress?.complete();
+
+      return created;
+    } catch (error) {
+      progress?.fail(error);
+
+      throw error;
+    }
+  }
+
+  private async createProvisioned(
+    createAgentDto: CreateAgentDto,
+    progress?: EnvironmentProgressTracker,
+  ): Promise<CreateAgentResponseDto> {
     // Generate a random password
     const generatedPassword = this.generateRandomPassword();
     // Hash the password
@@ -421,8 +487,10 @@ export class AgentsService implements OnApplicationBootstrap {
     const opencodeServerUsername = process.env.OPENCODE_SERVER_USERNAME || OPENCODE_SERVER_USERNAME_DEFAULT;
 
     // Ensure the Docker image exists
-    await this.dockerService.ensureImageExists(dockerImage);
+    progress?.advance('pullingImage');
+    await this.dockerService.ensureImageExists(dockerImage, (fraction) => progress?.reportStepProgress(fraction));
 
+    progress?.advance('creatingContainer');
     const agentDockerNetwork = process.env.AGENT_DOCKER_NETWORK?.trim();
 
     if (agentDockerNetwork) {
@@ -473,7 +541,10 @@ export class AgentsService implements OnApplicationBootstrap {
           }),
     });
 
+    let persistedAgentId: string | undefined;
+
     try {
+      progress?.advance('preparingRepository');
       await this.setupAgentRepository(
         containerId,
         agentType,
@@ -484,6 +555,7 @@ export class AgentsService implements OnApplicationBootstrap {
       );
 
       // Create the agent entity
+      progress?.advance('persisting');
       const agent = await this.agentsRepository.create({
         name: createAgentDto.name,
         description: createAgentDto.description,
@@ -501,9 +573,14 @@ export class AgentsService implements OnApplicationBootstrap {
             : createAgentDto.gitRepositorySetupMode,
       });
 
+      persistedAgentId = agent.id;
+      progress?.setAgentId(agent.id);
+      progress?.advance('waitingForHealthy');
       await this.openCodeClientFactory.waitForHealthy(agent.id, containerId, {
         password: opencodeServerPassword,
       });
+
+      progress?.advance('finalizing');
 
       // Full three-layer OpenCode config + secrets are applied by the controller
       // via durable sync targets after create/start/restart (not agent-only defaults).
@@ -550,6 +627,20 @@ export class AgentsService implements OnApplicationBootstrap {
           `Failed to clean up container ${containerId} after agent creation failure: ${err.message}`,
           err.stack,
         );
+      }
+
+      // Drop the persisted row too, otherwise a broken environment without a container remains listed
+      if (persistedAgentId) {
+        try {
+          await this.agentsRepository.delete(persistedAgentId);
+        } catch (cleanupError) {
+          const err = cleanupError as { message?: string; stack?: string };
+
+          this.logger.error(
+            `Failed to remove agent ${persistedAgentId} after agent creation failure: ${err.message}`,
+            err.stack,
+          );
+        }
       }
 
       if (error instanceof HttpException) {

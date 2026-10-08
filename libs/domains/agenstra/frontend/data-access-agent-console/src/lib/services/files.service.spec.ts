@@ -74,6 +74,88 @@ describe('FilesService', () => {
     expect(service).toBeTruthy();
   });
 
+  it('forwards explicit directory refresh without bypassing the controller', () => {
+    service.listDirectory(clientId, agentId, { path: 'src', refresh: true }).subscribe();
+    const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/files?path=src&refresh=true`);
+    expect(req.request.method).toBe('GET');
+    req.flush([]);
+  });
+
+  describe('hasExternalTextChange', () => {
+    const responseBytes = (text: string): ArrayBuffer => {
+      const encoded = new TextEncoder().encode(text);
+      const bytes = new ArrayBuffer(encoded.byteLength);
+
+      new Uint8Array(bytes).set(encoded);
+
+      return bytes;
+    };
+
+    it.each([
+      ['current editor', ['Hello, World!']],
+      ['saved version', ['local edits', 'Hello, World!']],
+      ['in-flight save', ['newer local edits', 'old saved version', 'Hello, World!']],
+      ['empty text', ['']],
+    ])('ignores notifications matching the %s', (_label, knownContents) => {
+      const text = knownContents.at(-1) ?? '';
+      const result = jest.fn();
+
+      service.hasExternalTextChange(clientId, agentId, 'test-file.txt', () => knownContents).subscribe(result);
+      const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/files/test-file.txt`);
+
+      expect(req.request.method).toBe('GET');
+      req.flush(responseBytes(text), { headers: { 'X-File-Type': 'text' } });
+      expect(result).toHaveBeenCalledWith(false);
+    });
+
+    it('detects a real remote edit even while a local save is pending', () => {
+      const result = jest.fn();
+
+      service
+        .hasExternalTextChange(clientId, agentId, 'test-file.txt', () => ['local edits', 'saved', 'pending save'])
+        .subscribe(result);
+      httpMock
+        .expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/files/test-file.txt`)
+        .flush(responseBytes('remote edits'), { headers: { 'X-File-Type': 'text' } });
+
+      expect(result).toHaveBeenCalledWith(true);
+    });
+
+    it('evaluates known versions after the response arrives, not before a save completes', () => {
+      let knownContents = ['old version'];
+      const result = jest.fn();
+
+      service.hasExternalTextChange(clientId, agentId, 'test-file.txt', () => knownContents).subscribe(result);
+      const req = httpMock.expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/files/test-file.txt`);
+
+      knownContents = ['saved version'];
+      req.flush(responseBytes('saved version'), { headers: { 'X-File-Type': 'text' } });
+      expect(result).toHaveBeenCalledWith(false);
+    });
+
+    it('treats a remote replacement with non-text content as a change', () => {
+      const result = jest.fn();
+
+      service.hasExternalTextChange(clientId, agentId, 'test-file.txt', () => ['']).subscribe(result);
+      httpMock
+        .expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/files/test-file.txt`)
+        .flush(new ArrayBuffer(0), { headers: { 'X-File-Type': 'binary' } });
+
+      expect(result).toHaveBeenCalledWith(true);
+    });
+
+    it('propagates read failures instead of treating them as an unchanged file', () => {
+      const error = jest.fn();
+
+      service.hasExternalTextChange(clientId, agentId, 'test-file.txt', () => ['local']).subscribe({ error });
+      httpMock
+        .expectOne(`${apiUrl}/clients/${clientId}/agents/${agentId}/files/test-file.txt`)
+        .flush(responseBytes('Not found'), { status: 404, statusText: 'Not Found' });
+
+      expect(error).toHaveBeenCalledWith(expect.objectContaining({ status: 404 }));
+    });
+  });
+
   describe('readFile', () => {
     it('should map raw bytes and headers to FileContentDto with bodyRef', (done) => {
       const filePath = 'test-file.txt';

@@ -2152,6 +2152,34 @@ paths:
                 $ref: '#/components/schemas/CreateAgentResponseDto'
         '403':
           description: No client access, or workspace management rights required
+  /clients/{id}/agents/progress:
+    get:
+      summary: List active environment provisioning operations for a client
+      description: |
+        Proxies agent-manager `GET /api/agents/progress`. Returns running environment create / container-recreating
+        update operations (oldest first) so the console can render progress immediately; live updates arrive as the
+        forwarded `environmentProgress` event on the clients socket (selected workspace) and as `environmentProgress`
+        in status `statusSnapshot` / `statusPatch` (all workspaces).
+      operationId: getClientEnvironmentProgress
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the client
+      responses:
+        '200':
+          description: Active environment progress operations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EnvironmentProgressDto'
+        '403':
+          description: User does not have access to this client
   /clients/{id}/agents/{agentId}:
     get:
       summary: Get agent by id for a client
@@ -2371,6 +2399,9 @@ paths:
   /clients/{id}/agents/{agentId}/files:
     get:
       summary: List directory contents (proxied)
+      description: |
+        Relative paths such as apps resolve under the worker workspace root (normally /app).
+        Directory listing and metadata failures from the manager propagate as errors, not empty arrays.
       operationId: listClientAgentDirectory
       parameters:
         - in: path
@@ -7036,6 +7067,77 @@ components:
         content:
           type: string
           description: Environment variable content
+    EnvironmentProgressDto:
+      type: object
+      required:
+        [
+          operationId,
+          agentId,
+          agentName,
+          operation,
+          status,
+          step,
+          stepIndex,
+          stepCount,
+          progress,
+          startedAt,
+          updatedAt,
+        ]
+      properties:
+        operationId:
+          type: string
+          format: uuid
+          description: Unique id of the provisioning operation
+        agentId:
+          type: [string, 'null']
+          format: uuid
+          description: Agent UUID; null while a newly created environment is not persisted yet
+        agentName:
+          type: string
+        operation:
+          type: string
+          enum: [create, update]
+          description: create = new environment; update = container recreation (environment variables, workspace overrides, config sync)
+        status:
+          type: string
+          enum: [running, completed, failed]
+          description: Terminal statuses (completed/failed) are emitted once and then dropped from the active list
+        step:
+          type: string
+          enum:
+            [
+              queued,
+              preparing,
+              pullingImage,
+              creatingContainer,
+              preparingRepository,
+              persisting,
+              waitingForHealthy,
+              summarizingContext,
+              recreatingContainer,
+              finalizing,
+            ]
+        stepIndex:
+          type: integer
+          minimum: 0
+          description: Zero-based index of the current step in the operation plan
+        stepCount:
+          type: integer
+          minimum: 1
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Weighted overall percentage (monotonic; 100 only on completion). Image pull reports real layer byte progress.
+        error:
+          type: string
+          description: Failure reason when status is failed
+        startedAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     EnvironmentVariableResponseDto:
       type: object
       required: [id, agentId, variable, content, createdAt, updatedAt]

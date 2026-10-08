@@ -635,6 +635,51 @@
       <trans-unit id="featureChat-backToWorkspaces" datatype="html">
         <source>Back to workspaces</source>
         </trans-unit>
+      <trans-unit id="featureChat-workspaceProvisioningProgress" datatype="html">
+        <source>Provisioning <x id="count" equiv-text="aggregate.operations.length"/> environment(s)</source>
+        </trans-unit>
+      <trans-unit id="featureChat-environmentProgressCreating" datatype="html">
+        <source>Creating</source>
+        </trans-unit>
+      <trans-unit id="featureChat-environmentProgressUpdating" datatype="html">
+        <source>Updating</source>
+        </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepQueued" datatype="html">
+        <source>Queued</source>
+        </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepPreparing" datatype="html">
+        <source>Preparing</source>
+        </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepPullingImage" datatype="html">
+        <source>Pulling image</source>
+        </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepCreatingContainer" datatype="html">
+        <source>Creating container</source>
+        </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepPreparingRepository" datatype="html">
+        <source>Preparing repository</source>
+        </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepPersisting" datatype="html">
+        <source>Saving environment</source>
+        </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepWaitingForHealthy" datatype="html">
+        <source>Waiting for container</source>
+        </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepSummarizingContext" datatype="html">
+        <source>Summarizing context</source>
+        </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepRecreatingContainer" datatype="html">
+        <source>Recreating container</source>
+        </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepFinalizing" datatype="html">
+        <source>Finalizing</source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceUnreachable" datatype="html">
+        <source>Workspace cannot be reached</source>
+        </trans-unit>
+      <trans-unit id="featureChat-workspaceUnreachableTitle" datatype="html">
+        <source>Workspace cannot be reached</source>
+        </trans-unit>
       <trans-unit id="featureChat-environments" datatype="html">
         <source>Environments</source>
         </trans-unit>

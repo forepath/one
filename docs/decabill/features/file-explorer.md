@@ -16,6 +16,10 @@ Supported actions:
 
 Upload, rename, move, and delete are out of scope.
 
+## Tree row layout
+
+The explorer renders a flattened list of visible files and folders with depth-based indentation. Download actions overlay the right edge on hover or keyboard focus instead of reserving name space. Names can extend behind the actions without changing width when actions appear. Persistent file metadata (hash badge and signature status) remains in the row layout, and names truncate only after using the remaining width. Hidden actions do not intercept pointer clicks.
+
 ## Storage layout
 
 Files live under `{FILE_STORAGE_ROOT}`:

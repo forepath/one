@@ -1,6 +1,7 @@
 import {
   AgentChatSessionEntity,
   AgentEntity,
+  AgentDirectoryIndexEntity,
   AgentEnvironmentVariableEntity,
   AgentMessageEntity,
   AgentMessageEventEntity,
@@ -42,6 +43,7 @@ export const typeormConfig: DataSourceOptions = {
   database: process.env.DB_DATABASE || 'agent_manager',
   entities: [
     AgentEntity,
+    AgentDirectoryIndexEntity,
     AgentChatSessionEntity,
     AgentEnvironmentVariableEntity,
     AgentMessageEntity,

@@ -66,6 +66,7 @@ describe('AgentConsoleStatusService', () => {
   };
   const agentProxy = {
     getClientAgents: jest.fn().mockResolvedValue([mockAgent]),
+    getClientEnvironmentProgress: jest.fn().mockResolvedValue([]),
   };
   const realtime = {
     emitToUser: jest.fn(),
@@ -94,6 +95,8 @@ describe('AgentConsoleStatusService', () => {
     service = module.get(AgentConsoleStatusService);
     jest.clearAllMocks();
     agentProxy.getClientAgents.mockResolvedValue([mockAgent]);
+    agentProxy.getClientEnvironmentProgress.mockResolvedValue([]);
+    clientsService.getAccessibleClientIds.mockResolvedValue(['client-1']);
     clientsRepository.findById.mockResolvedValue({ id: 'client-1', userId: 'user-1' });
     clientUsersRepository.findByClientId.mockResolvedValue([]);
     chatReadStateRepository.findByUserAndClientIds.mockResolvedValue([]);
@@ -444,5 +447,98 @@ describe('AgentConsoleStatusService', () => {
 
     expect(realtime.emitToUser).toHaveBeenCalledWith('owner-1', 'statusPatch', expect.any(Object));
     expect(realtime.emitToUser).toHaveBeenCalledWith('member-1', 'statusPatch', expect.any(Object));
+  });
+  describe('environment progress', () => {
+    const userInfo = { isApiKeyAuth: false, userId: 'user-1', user: { id: 'user-1', roles: [] } };
+    const runningOp = {
+      operationId: 'op-1',
+      agentId: 'agent-1',
+      agentName: 'Agent One',
+      operation: 'update' as const,
+      status: 'running' as const,
+      step: 'recreatingContainer' as const,
+      stepIndex: 2,
+      stepCount: 4,
+      progress: 40,
+      startedAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:05.000Z',
+    };
+
+    it('includes running operations per workspace in the snapshot', async () => {
+      agentProxy.getClientEnvironmentProgress.mockResolvedValue([
+        runningOp,
+        { ...runningOp, operationId: 'op-done', status: 'completed', progress: 100 },
+      ]);
+
+      const snapshot = await service.buildSnapshotForUser(userInfo);
+
+      expect(snapshot.environmentProgress).toEqual([{ clientId: 'client-1', operations: [runningOp] }]);
+    });
+
+    it('omits environmentProgress when nothing is provisioning or the workspace is unreachable', async () => {
+      agentProxy.getClientEnvironmentProgress.mockRejectedValue(new Error('offline'));
+
+      const snapshot = await service.buildSnapshotForUser(userInfo);
+
+      expect(snapshot.environmentProgress).toBeUndefined();
+    });
+
+    it('reports active progress for the socket from the last snapshot', async () => {
+      expect(service.hasActiveEnvironmentProgress('socket-1')).toBe(false);
+
+      agentProxy.getClientEnvironmentProgress.mockResolvedValue([runningOp]);
+      await service.emitSnapshotToSocket('socket-1', userInfo);
+
+      expect(service.hasActiveEnvironmentProgress('socket-1')).toBe(true);
+    });
+
+    it('emits progress-only patches on change and a cleared entry when operations finish', async () => {
+      agentProxy.getClientEnvironmentProgress.mockResolvedValue([runningOp]);
+      await service.emitSnapshotToSocket('socket-1', userInfo);
+      jest.clearAllMocks();
+
+      await service.runProgressPollForSocket('socket-1', userInfo);
+      expect(realtime.emitToUser).not.toHaveBeenCalled();
+
+      const advanced = { ...runningOp, progress: 70, step: 'finalizing' as const, stepIndex: 3 };
+
+      agentProxy.getClientEnvironmentProgress.mockResolvedValue([advanced]);
+      await service.runProgressPollForSocket('socket-1', userInfo);
+      expect(realtime.emitToUser).toHaveBeenCalledWith('user-1', 'statusPatch', {
+        generatedAt: expect.any(String),
+        environmentProgress: [{ clientId: 'client-1', operations: [advanced] }],
+      });
+      expect(agentProxy.getClientAgents).not.toHaveBeenCalled();
+
+      jest.clearAllMocks();
+      agentProxy.getClientEnvironmentProgress.mockResolvedValue([]);
+      await service.runProgressPollForSocket('socket-1', userInfo);
+      expect(realtime.emitToUser).toHaveBeenCalledWith('user-1', 'statusPatch', {
+        generatedAt: expect.any(String),
+        environmentProgress: [{ clientId: 'client-1', operations: [] }],
+      });
+      expect(service.hasActiveEnvironmentProgress('socket-1')).toBe(false);
+    });
+
+    it('skips the progress poll without a prior snapshot', async () => {
+      await service.runProgressPollForSocket('unknown-socket', userInfo);
+
+      expect(agentProxy.getClientEnvironmentProgress).not.toHaveBeenCalled();
+      expect(realtime.emitToUser).not.toHaveBeenCalled();
+    });
+
+    it('includes progress changes in regular poll patches', async () => {
+      await service.emitSnapshotToSocket('socket-1', userInfo);
+      jest.clearAllMocks();
+      agentProxy.getClientEnvironmentProgress.mockResolvedValue([runningOp]);
+
+      await service.runPollForSocket('socket-1', userInfo);
+
+      expect(realtime.emitToUser).toHaveBeenCalledWith(
+        'user-1',
+        'statusPatch',
+        expect.objectContaining({ environmentProgress: [{ clientId: 'client-1', operations: [runningOp] }] }),
+      );
+    });
   });
 });

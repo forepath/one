@@ -126,6 +126,41 @@ describe('ClientAgentProxyService', () => {
     jest.clearAllMocks();
   });
 
+  describe('getClientEnvironmentProgress', () => {
+    it('should proxy GET /progress to the agent-manager', async () => {
+      const operations = [{ operationId: 'op-1', agentName: 'Env', progress: 10 }];
+
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({
+        data: operations,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {} as any,
+      });
+
+      const result = await service.getClientEnvironmentProgress('client-uuid');
+
+      expect(result).toEqual(operations);
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({ method: 'GET', url: 'https://example.com/api/api/agents/progress' }),
+      );
+    });
+
+    it('should return an empty list when the manager responds with a non-array body', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({
+        data: '',
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {} as any,
+      });
+
+      await expect(service.getClientEnvironmentProgress('client-uuid')).resolves.toEqual([]);
+    });
+  });
+
   describe('getClientAgents', () => {
     it('should return array of agents for API_KEY client', async () => {
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
