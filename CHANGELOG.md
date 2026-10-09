@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.1.0](https://github.com/forepath/one/compare/v3.0.0...v3.1.0) (2026-10-09)
+
+
+### Features
+
+* **agenstra:** agent management improvement ([#665](https://github.com/forepath/one/issues/665)) ([ad4f740](https://github.com/forepath/one/commit/ad4f740495f9f12f7cf6f5d904014cb100039b87))
+* **shared:** service bootstrapping script ([#664](https://github.com/forepath/one/issues/664)) ([f33fc2b](https://github.com/forepath/one/commit/f33fc2b43fb3e8c22009880e9b0f6f271759306c))
+
+
+### Bug Fixes
+
+* **agenstra:** ticket automation reliability ([#655](https://github.com/forepath/one/issues/655)) ([0d1ab60](https://github.com/forepath/one/commit/0d1ab60ebe6b1e5ac42780fc957392f854ec8bc7))
+* **shared:** docker test image cleanup ([#661](https://github.com/forepath/one/issues/661)) ([c837d84](https://github.com/forepath/one/commit/c837d84b3652328b276bea3d4067834d5a1b9fe4))
+
+
+### Chores
+
+* **shared:** port assignments standardization ([#662](https://github.com/forepath/one/issues/662)) ([1e5a226](https://github.com/forepath/one/commit/1e5a22609dafbdf230a962f60c7a8fff8df159c8))
+
 ## [3.0.0](https://github.com/forepath/one/compare/v2.33.0...v3.0.0) (2026-10-05)
 
 
