@@ -63,7 +63,7 @@ export type {
   FpcNotificationIndicatorPlacement,
 } from './lib/notification-indicator/notification-indicator.component';
 export { FpcProgressComponent } from './lib/progress/progress.component';
-export type { FpcProgressVariant } from './lib/progress/progress.component';
+export type { FpcProgressSegment, FpcProgressVariant } from './lib/progress/progress.component';
 export { FpcSpinnerComponent } from './lib/spinner/spinner.component';
 export type { FpcSpinnerSize, FpcSpinnerType } from './lib/spinner/spinner.component';
 export { FpcToastComponent } from './lib/toast/toast.component';

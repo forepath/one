@@ -119,6 +119,7 @@ describe('ClientsController', () => {
   };
   const mockProxyService = {
     getClientAgents: jest.fn(),
+    getClientEnvironmentProgress: jest.fn(),
     listClientAgentModels: jest.fn(),
     getClientAgent: jest.fn(),
     createClientAgent: jest.fn(),
@@ -420,6 +421,46 @@ describe('ClientsController', () => {
 
       expect(result).toEqual(agents);
       expect(proxyService.getClientAgents).toHaveBeenCalledWith('client-uuid', 10, 0, undefined);
+    });
+  });
+
+  describe('getClientEnvironmentProgress', () => {
+    it('should return active environment progress operations for a client', async () => {
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      const operations = [
+        {
+          operationId: 'op-1',
+          agentId: null,
+          agentName: 'New Env',
+          operation: 'create' as const,
+          status: 'running' as const,
+          step: 'pullingImage' as const,
+          stepIndex: 1,
+          stepCount: 7,
+          progress: 20,
+          startedAt: '2025-01-01T00:00:00.000Z',
+          updatedAt: '2025-01-01T00:00:01.000Z',
+        },
+      ];
+
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+      proxyService.getClientEnvironmentProgress.mockResolvedValue(operations);
+
+      const result = await controller.getClientEnvironmentProgress('client-uuid', mockReq);
+
+      expect(result).toEqual(operations);
+      expect(proxyService.getClientEnvironmentProgress).toHaveBeenCalledWith('client-uuid');
+    });
+
+    it('should throw ForbiddenException when user does not have access', async () => {
+      const mockReq = { apiKeyAuthenticated: false, user: { id: 'user-uuid', role: 'user' } } as any;
+
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: 'other-user-id' } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+
+      await expect(controller.getClientEnvironmentProgress('client-uuid', mockReq)).rejects.toThrow(ForbiddenException);
+      expect(proxyService.getClientEnvironmentProgress).not.toHaveBeenCalled();
     });
   });
 
@@ -794,7 +835,13 @@ describe('ClientsController', () => {
       const result = await controller.listDirectory('client-uuid', 'agent-uuid', 'test-dir', undefined, mockReq);
 
       expect(result).toEqual(mockFileNodes);
-      expect(fileSystemProxyService.listDirectory).toHaveBeenCalledWith('client-uuid', 'agent-uuid', 'test-dir', 'app');
+      expect(fileSystemProxyService.listDirectory).toHaveBeenCalledWith(
+        'client-uuid',
+        'agent-uuid',
+        'test-dir',
+        'app',
+        false,
+      );
     });
 
     it('should use default path when not provided', async () => {
@@ -807,7 +854,7 @@ describe('ClientsController', () => {
 
       await controller.listDirectory('client-uuid', 'agent-uuid', undefined, undefined, mockReq);
 
-      expect(fileSystemProxyService.listDirectory).toHaveBeenCalledWith('client-uuid', 'agent-uuid', '.', 'app');
+      expect(fileSystemProxyService.listDirectory).toHaveBeenCalledWith('client-uuid', 'agent-uuid', '.', 'app', false);
     });
   });
 

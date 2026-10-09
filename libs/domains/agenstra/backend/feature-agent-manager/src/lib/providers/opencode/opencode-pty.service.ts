@@ -70,7 +70,7 @@ export class OpenCodePtyService {
 
     const pty = await this.createPty(baseUrl, authorization, shell, options.cols, options.rows);
     const ticket = await this.createConnectToken(baseUrl, authorization, pty.id);
-    const ws = await this.connectWebSocket(baseUrl, pty.id, ticket.ticket);
+    const ws = await this.connectWebSocket(baseUrl, pty.id, ticket.ticket, callbacks.onOutput);
 
     const session: ActivePtySession = {
       ptyID: pty.id,
@@ -82,10 +82,6 @@ export class OpenCodePtyService {
       callbacks,
       closedNotified: false,
     };
-
-    ws.addEventListener('message', (event) => {
-      this.forwardPtyOutput(event.data, callbacks.onOutput);
-    });
 
     ws.addEventListener('close', () => {
       this.notifyClosed(sessionId);
@@ -309,7 +305,12 @@ export class OpenCodePtyService {
     return this.parseConnectToken(await response.json());
   }
 
-  private async connectWebSocket(baseUrl: string, ptyID: string, ticket: string): Promise<WebSocket> {
+  private async connectWebSocket(
+    baseUrl: string,
+    ptyID: string,
+    ticket: string,
+    onOutput: (chunk: string) => void,
+  ): Promise<WebSocket> {
     const wsBase = baseUrl.replace(/^http/i, 'ws');
     const params = this.ptyQuery();
 
@@ -325,6 +326,9 @@ export class OpenCodePtyService {
     return new Promise((resolve, reject) => {
       const ws = new (WebSocket as WebSocketCtor)(url, { headers: { Origin: origin } });
 
+      ws.addEventListener('message', (event) => {
+        this.forwardPtyOutput(event.data, onOutput);
+      });
       ws.addEventListener('open', () => resolve(ws));
       ws.addEventListener('error', () => reject(new Error('OpenCode PTY WebSocket connection failed')));
     });

@@ -16,6 +16,10 @@ Tree rows use soft background washes (no dots or side accents):
 
 Clipboard highlights apply to **topmost clipboard roots** only. They clear when the clipboard is cleared (after a successful cut paste, or when a new copy/cut replaces it).
 
+## Row actions and label width
+
+Folders and pages use recursive row templates with depth-based indentation. Row actions overlay the right edge on hover or keyboard focus instead of reserving title space. Titles (including their short-hash prefix) can extend behind the actions and truncate only at the row's padded edge; revealing actions does not change the title width. Hidden actions do not intercept pointer clicks.
+
 ## Selection
 
 - **Plain click** selects one item (and opens a page / toggles a folder).

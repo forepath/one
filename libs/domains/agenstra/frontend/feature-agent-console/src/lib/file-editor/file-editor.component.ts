@@ -21,6 +21,8 @@ import {
   FilesService,
   getSocketInstance,
   moveFileOrDirectorySuccess,
+  writeFileSuccess,
+  writeFileFailure,
   ContainerSocketFacade,
   VcsFacade,
   WorkspaceSearchFacade,
@@ -157,8 +159,7 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   readonly fileUpdateNotification = signal<FileUpdateNotificationData | null>(null);
   // Track rejected file updates: filePath -> timestamp of rejected update
   private readonly rejectedFileUpdates = signal<Map<string, string>>(new Map());
-  // Track files we just saved to ignore our own notifications: filePath -> timestamp when saved
-  private readonly recentlySavedFiles = signal<Map<string, number>>(new Map());
+  private readonly pendingSaveContents = new Map<string, string>();
 
   // Sidebar resize state
   private readonly SIDEBAR_MIN_WIDTH = 150;
@@ -610,8 +611,10 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
   private performSave(filePath: string, contentToSave: string): void {
     const clientId = this.clientId();
     const agentId = this.agentId();
+    const context = this.fileManagerContext();
+    const saveKey = JSON.stringify([clientId, agentId, context, filePath]);
 
-    if (!clientId || !agentId) {
+    if (!clientId || !agentId || this.pendingSaveContents.has(saveKey)) {
       return;
     }
 
@@ -621,78 +624,67 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       contentType: 'text/plain; charset=utf-8',
     };
 
-    this.filesFacade.writeFile(clientId, agentId, filePath, writeDto, this.fileManagerContext());
-
-    // Mark as not dirty and sync editorContent after successful save
-    // Also emit file update notification to other clients after successful save
-    combineLatest([this.isWritingFile$, this.selectedFileContent$])
+    this.pendingSaveContents.set(saveKey, contentToSave);
+    this.actions$
       .pipe(
-        filter(([writing]) => !writing),
+        ofType(writeFileSuccess, writeFileFailure),
+        filter(
+          (action) =>
+            action.clientId === clientId &&
+            action.agentId === agentId &&
+            action.filePath === filePath &&
+            (action.context ?? 'app') === context,
+        ),
         take(1),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe(([, savedContent]) => {
-        // Update editorContent with saved content from server
-        if (savedContent) {
-          this.editorContent.set(savedContent.text ?? '');
-        }
+      .subscribe((action) => {
+        this.pendingSaveContents.delete(saveKey);
 
-        // Mark as not dirty
-        this.dirtyFiles.update((dirty) => {
-          const newDirty = new Set(dirty);
-
-          newDirty.delete(filePath);
-
-          return newDirty;
-        });
-        // Clear rejected update tracking for this file (save was successful)
-        this.rejectedFileUpdates.update((rejected) => {
-          const newRejected = new Map(rejected);
-
-          newRejected.delete(filePath);
-
-          return newRejected;
-        });
-
-        // Track that we just saved this file to ignore our own notification
-        this.recentlySavedFiles.update((saved) => {
-          const newSaved = new Map(saved);
-
-          newSaved.set(filePath, Date.now());
-
-          return newSaved;
-        });
-
-        // Reload git status after file save (workspace only)
-        if (this.fileManagerContext() === 'app') {
-          setTimeout(() => {
-            this.vcsFacade.loadStatus(clientId, agentId);
-          }, 300);
-        }
-
-        // Emit file update notification to other clients after successful save
-        // agentId is required for routing the event to the correct agent
-        const agentId = this.agentId();
-
-        if (!agentId) {
-          // Cannot forward file update notification without an agent selected
+        if (action.type === writeFileFailure.type) {
           return;
         }
 
-        // agentId is required for routing the event to the correct agent
-        this.socketsFacade.forwardFileUpdate(filePath, agentId);
+        const sameScope =
+          this.clientId() === clientId && this.agentId() === agentId && this.fileManagerContext() === context;
 
-        // Clear the tracking after 5 seconds (notification should arrive within this time)
-        setTimeout(() => {
-          this.recentlySavedFiles.update((saved) => {
-            const newSaved = new Map(saved);
+        if (sameScope) {
+          const changedDuringSave = this.selectedFilePath() === filePath && this.editorContent() !== contentToSave;
 
-            newSaved.delete(filePath);
+          if (!changedDuringSave) {
+            this.dirtyFiles.update((dirty) => {
+              const newDirty = new Set(dirty);
 
-            return newSaved;
+              newDirty.delete(filePath);
+
+              return newDirty;
+            });
+          } else if (this.autosaveEnabled()) {
+            this.autosaveTrigger$.next();
+          }
+
+          this.rejectedFileUpdates.update((rejected) => {
+            const newRejected = new Map(rejected);
+
+            newRejected.delete(filePath);
+
+            return newRejected;
           });
-        }, 5000);
+        }
+
+        // Reload git status after file save (workspace only)
+        if (context === 'app') {
+          setTimeout(() => {
+            this.vcsFacade.loadStatus(clientId, agentId);
+          }, 300);
+
+          if (sameScope) {
+            this.socketsFacade.forwardFileUpdate(filePath, agentId);
+          }
+        }
       });
+
+    this.filesFacade.writeFile(clientId, agentId, filePath, writeDto, context);
   }
 
   /**
@@ -1277,23 +1269,6 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
     const currentSocketId = getSocketInstance()?.id;
     const clientId = this.clientId();
     const agentId = this.agentId();
-    // Check if we just saved this file ourselves (ignore our own notifications)
-    const recentlySaved = this.recentlySavedFiles().get(notification.filePath);
-
-    if (recentlySaved && Date.now() - recentlySaved < 5000) {
-      // We just saved this file within the last 5 seconds, ignore the notification
-      // Clear the tracking since we've received our own notification
-      this.recentlySavedFiles.update((saved) => {
-        const newSaved = new Map(saved);
-
-        newSaved.delete(notification.filePath);
-
-        return newSaved;
-      });
-
-      return;
-    }
-
     const isSystemUpdate = notification.socketId === 'system';
     const isForeignPeerUpdate = !!currentSocketId && notification.socketId !== currentSocketId && !isSystemUpdate;
 
@@ -1313,10 +1288,55 @@ export class FileEditorComponent implements OnDestroy, AfterViewInit {
       const isDirty = this.dirtyFiles().has(notification.filePath);
 
       if (isDirty) {
-        // File has unsaved changes - disable autosave to prevent conflicts and show modal
-        this.autosaveEnabled.set(false);
-        this.fileUpdateNotification.set(notification);
-        this.showFileUpdateModal.set(true);
+        const saveKey = JSON.stringify([clientId, agentId, 'app', notification.filePath]);
+        const stillSelected = () =>
+          this.fileManagerContext() === 'app' &&
+          this.clientId() === clientId &&
+          this.agentId() === agentId &&
+          this.selectedFilePath() === notification.filePath;
+        const showConflict = () => {
+          if (!stillSelected()) {
+            return;
+          }
+
+          if (!this.dirtyFiles().has(notification.filePath)) {
+            this.filesFacade.readFile(clientId, agentId, notification.filePath, 'app');
+
+            return;
+          }
+
+          this.autosaveEnabled.set(false);
+          this.fileUpdateNotification.set(notification);
+          this.showFileUpdateModal.set(true);
+        };
+
+        this.filesService
+          .hasExternalTextChange(clientId, agentId, notification.filePath, () => {
+            const contents = [this.editorContent()];
+            const saved = this.selectedFileContentSignal()?.text;
+            const pending = this.pendingSaveContents.get(saveKey);
+
+            if (saved !== undefined) {
+              contents.push(saved);
+            }
+            if (pending !== undefined) {
+              contents.push(pending);
+            }
+
+            return contents;
+          })
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: (changed) => {
+              if (changed) {
+                showConflict();
+              }
+            },
+            error: (error) => {
+              console.warn('Failed to verify external file change:', error);
+              showConflict();
+            },
+          });
       } else {
         // File is not dirty - automatically reload from server (no need to disable autosave)
         this.filesFacade.readFile(clientId, agentId, notification.filePath, this.fileManagerContext());

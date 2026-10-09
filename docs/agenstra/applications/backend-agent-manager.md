@@ -40,6 +40,7 @@ All HTTP endpoints are prefixed with `/api` and protected by Keycloak authentica
 ### Agent Management
 
 - `GET /api/agents` - List all agents (supports `limit` and `offset` query parameters)
+- `GET /api/agents/progress` - Running environment create / update operations (step, percentage)
 - `GET /api/agents/:id` - Get a single agent by UUID
 - `POST /api/agents` - Create a new agent (returns auto-generated password)
 - `POST /api/agents/:id` - Update an existing agent
@@ -164,6 +165,7 @@ The Socket.IO gateway shares HTTP `PORT` (default 3000) at `http://localhost:300
 - `chatEvent` / `messageFilterResult`
 - `chatEnhanceResult` / `ticketBodyResult`
 - `gitStateChanged` - Workspace git may have changed; refresh dirty indicators
+- `environmentProgress` - Environment create / update progress (step + percentage, real image pull progress); broadcast to all sockets, terminal `completed` / `failed` states are emitted once
 - `containerStats`, container status and resource usage; first event after login, then every 15 seconds by default (`CONTAINER_STATS_SCHEDULER_INTERVAL` in ms)
 - `fileUpdateNotification` / terminal events, and other provider-specific events per AsyncAPI
 - `error` - Emitted on authorization or processing errors

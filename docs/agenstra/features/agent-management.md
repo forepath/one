@@ -12,6 +12,7 @@ Agents are AI-powered entities that run in Docker containers. Each agent has:
 - **Container** Docker container for agent execution
 - **Credentials** Password for WebSocket authentication
 - **Workspace** Git repository cloned into the container (bind-mounted from host `/opt/agents/{uuid}`; path depends on agent type, see [Container image security](../security/container-images.md))
+- Repository initialization/cloning and Git credential files are prepared as the worker's `agenstra` user. Preparation checks command exit codes: authentication, host-key, or clone failures abort creation instead of reporting a ready environment with an empty workspace. Platform skills are installed outside `/app`; the repository's `.opencode` directory is left untouched.
 
 ## Creating an Agent
 
@@ -58,6 +59,17 @@ sequenceDiagram
     AC->>AC: Save Credentials
     AC-->>U: Agent Created
 ```
+
+### Provisioning progress
+
+Creating an environment and updates that recreate its container (environment variable changes, workspace configuration overrides including mass updates, OpenCode configuration sync) report live progress:
+
+- The agent-manager tracks each operation (`create` / `update`) with a current **step** (for example `pullingImage`, `creatingContainer`, `waitingForHealthy`) and an overall **percentage**. Image pulls report real layer download/extract progress.
+- Progress is broadcast as `environmentProgress` on the manager `socket/agents` namespace (forwarded to the console via `socket/clients`) and is available as a snapshot via `GET /api/clients/:id/agents/progress`, so it can be shown instantly when a workspace is selected.
+- Socket updates received during snapshot loading take precedence, including completed/failed operations and new operations absent from the snapshot. Reselecting or reconnecting cancels older snapshot requests for that workspace and removes stale operations.
+- For workspaces that are not selected, the controller includes running operations in the `socket/status` `statusSnapshot` / `statusPatch` (`environmentProgress`) and polls faster (`STATUS_PROVISIONING_POLL_INTERVAL_MS`) while operations are running.
+- The console shows an `fpc-progress` bar with the current step on each environment (and placeholder rows for environments still being created) and a stacked bar (one segment per environment) on the workspace entry. Bars disappear once the operation completes or fails.
+- While the **Create** / **Save** button of the environment modals is loading, the same bar (operation, step and percentage) is shown in front of it. New environments are matched by name until they have an id.
 
 ### Authentication
 
@@ -178,6 +190,7 @@ Per-agent regex filters live on the manager (`/api/agents-filters`). Global poli
 ### Agent Management
 
 - `GET /api/clients/:id/agents` - List all agents for a client
+- `GET /api/clients/:id/agents/progress` - Running environment create / update operations (step + percentage)
 - `GET /api/clients/:id/agents/:agentId` - Get a single agent by UUID
 - `POST /api/clients/:id/agents` - Create a new agent
 - `POST /api/clients/:id/agents/:agentId` - Update an existing agent

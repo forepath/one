@@ -9,6 +9,8 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import Docker = require('dockerode');
 import { v4 as uuidv4 } from 'uuid';
 
+import { DockerPullProgressAggregator, type DockerPullProgressEvent } from '../utils/docker-pull-progress.utils';
+
 const execAsync = promisify(exec);
 
 function drainExecStdoutLines(buffer: string, chunk: string, queue: string[]): string {
@@ -995,6 +997,35 @@ export class DockerService {
       })) as NodeJS.ReadWriteStream;
       // Collect output from stdout and stderr
       const outputChunks: Buffer[] = [];
+      const decodeOutput = (): string => {
+        const buffer = Buffer.concat(outputChunks);
+        const chunks: Buffer[] = [];
+        let offset = 0;
+
+        while (offset < buffer.length) {
+          if (
+            offset + 8 > buffer.length ||
+            (buffer[offset] !== 1 && buffer[offset] !== 2) ||
+            buffer[offset + 1] !== 0 ||
+            buffer[offset + 2] !== 0 ||
+            buffer[offset + 3] !== 0
+          ) {
+            chunks.push(buffer.subarray(offset));
+            break;
+          }
+
+          const end = offset + 8 + buffer.readUInt32BE(offset + 4);
+
+          if (end > buffer.length) {
+            throw new Error('Incomplete Docker exec output frame');
+          }
+
+          chunks.push(buffer.subarray(offset + 8, end));
+          offset = end;
+        }
+
+        return Buffer.concat(chunks).toString('utf-8').trim();
+      };
 
       stream.on('data', (chunk: Buffer) => {
         outputChunks.push(chunk);
@@ -1039,46 +1070,34 @@ export class DockerService {
         const resolveOnce = (result: string) => {
           if (!resolved) {
             resolved = true;
+            clearTimeout(commandTimeout);
             resolve(result);
           }
         };
         const rejectOnce = (error: unknown) => {
           if (!resolved) {
             resolved = true;
+            clearTimeout(commandTimeout);
             reject(error);
           }
         };
+        const commandTimeout = setTimeout(() => {
+          if (!resolved) {
+            const combinedBuffer = Buffer.concat(outputChunks);
+            const timeoutOutput = combinedBuffer.toString('utf-8').trim();
+
+            rejectOnce(
+              new Error(`Command timed out after 24 hours${timeoutOutput ? `\nOutput: ${timeoutOutput}` : ''}`),
+            );
+          }
+        }, 86400000);
 
         stream.on('end', () => {
-          // Combine all output chunks and demultiplex Docker's multiplexed format
-          const combinedBuffer = Buffer.concat(outputChunks);
-          // Docker multiplexed format: [STREAM_TYPE(1 byte)][LENGTH(4 bytes BE)][DATA...]
-          // Stream type: 1 = stdout, 2 = stderr
-          let i = 0;
-
-          while (i < combinedBuffer.length) {
-            if (i + 5 <= combinedBuffer.length) {
-              const streamType = combinedBuffer[i];
-              const dataLength = combinedBuffer.readUInt32BE(i + 1);
-              const dataStart = i + 5;
-              const dataEnd = dataStart + dataLength;
-
-              if (dataEnd <= combinedBuffer.length && (streamType === 1 || streamType === 2)) {
-                // Valid frame: extract data (both stdout and stderr)
-                const data = combinedBuffer.subarray(dataStart, dataEnd);
-
-                extractedOutput += data.toString('utf-8');
-                i = dataEnd;
-              } else {
-                // Invalid frame, try to extract remaining as plain text
-                extractedOutput += combinedBuffer.subarray(i).toString('utf-8');
-                break;
-              }
-            } else {
-              // Not enough bytes for a complete frame, append as text
-              extractedOutput += combinedBuffer.subarray(i).toString('utf-8');
-              break;
-            }
+          try {
+            extractedOutput = decodeOutput();
+          } catch (error) {
+            rejectOnce(error);
+            return;
           }
 
           // If exit code checking is disabled, resolve immediately (backward compatible)
@@ -1092,14 +1111,13 @@ export class DockerService {
           if (resolved) return;
 
           // Extract output if not already extracted
-          let finalOutput = '';
+          let finalOutput: string;
 
-          if (extractedOutput) {
-            finalOutput = extractedOutput.trim();
-          } else {
-            const combinedBuffer = Buffer.concat(outputChunks);
-
-            finalOutput = combinedBuffer.toString('utf-8').trim();
+          try {
+            finalOutput = decodeOutput();
+          } catch (error) {
+            rejectOnce(error);
+            return;
           }
 
           // If exit code checking is enabled, check the exit code
@@ -1141,23 +1159,13 @@ export class DockerService {
             rejectOnce(error);
           } else {
             // For EPIPE/ECONNRESET, resolve with collected output
-            const combinedBuffer = Buffer.concat(outputChunks);
-
-            resolveOnce(combinedBuffer.toString('utf-8').trim());
+            try {
+              resolveOnce(decodeOutput());
+            } catch (decodeError) {
+              rejectOnce(decodeError);
+            }
           }
         });
-
-        // Set a timeout to prevent hanging (reject if command takes too long)
-        setTimeout(() => {
-          if (!resolved) {
-            const combinedBuffer = Buffer.concat(outputChunks);
-            const timeoutOutput = combinedBuffer.toString('utf-8').trim();
-
-            rejectOnce(
-              new Error(`Command timed out after 24 hours${timeoutOutput ? `\nOutput: ${timeoutOutput}` : ''}`),
-            );
-          }
-        }, 86400000);
       });
 
       return output;
@@ -2041,8 +2049,9 @@ export class DockerService {
   /**
    * Ensure a Docker image exists locally. Pulls only when the image is missing.
    * Does not refresh an existing tag from the registry (avoids clobbering local rebuilds).
+   * @param onProgress - Optional callback receiving the overall pull fraction (0..1) derived from layer byte progress
    */
-  async ensureImageExists(image: string): Promise<void> {
+  async ensureImageExists(image: string, onProgress?: (fraction: number) => void): Promise<void> {
     try {
       await this.docker.getImage(image).inspect();
 
@@ -2065,13 +2074,35 @@ export class DockerService {
           return;
         }
 
-        const modem: { followProgress: (s: NodeJS.ReadableStream, cb: (err?: unknown) => void) => void } = (
+        type FollowProgress = (
+          s: NodeJS.ReadableStream,
+          cb: (err?: unknown) => void,
+          onEvent?: (event: DockerPullProgressEvent) => void,
+        ) => void;
+        const modem: { followProgress: FollowProgress } = (
           this.docker as unknown as {
-            modem: { followProgress: (s: NodeJS.ReadableStream, cb: (err?: unknown) => void) => void };
+            modem: { followProgress: FollowProgress };
           }
         ).modem;
+        const tracker = onProgress ? new DockerPullProgressAggregator() : null;
 
-        modem.followProgress(stream, (followErr?: unknown) => (followErr ? reject(followErr) : resolve()));
+        modem.followProgress(
+          stream,
+          (followErr?: unknown) => (followErr ? reject(followErr) : resolve()),
+          tracker && onProgress
+            ? (event: DockerPullProgressEvent) => {
+                const fraction = tracker.apply(event);
+
+                if (fraction !== null) {
+                  try {
+                    onProgress(fraction);
+                  } catch {
+                    // Progress reporting must never break the pull
+                  }
+                }
+              }
+            : undefined,
+        );
       });
     });
   }

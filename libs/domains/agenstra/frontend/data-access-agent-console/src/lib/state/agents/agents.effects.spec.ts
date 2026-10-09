@@ -3,10 +3,17 @@ import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Store } from '@ngrx/store';
 import { provideMockStore } from '@ngrx/store/testing';
-import { of, throwError } from 'rxjs';
+import { firstValueFrom, of, Subject, throwError, toArray } from 'rxjs';
 
 import { AgentsService } from '../../services/agents.service';
-import { OpencodeConfigService } from '../../services/opencode-config.service';
+import { OpencodeConfigService, type OpencodeCommandsListDto } from '../../services/opencode-config.service';
+import {
+  forwardedEventReceived,
+  remoteReconnected,
+  setClientSuccess,
+} from '../container-socket/container-socket.actions';
+import { selectSelectedClientId } from '../container-socket/container-socket.selectors';
+import { initialAgentsState } from './agents.reducer';
 
 import {
   createClientAgent,
@@ -48,6 +55,7 @@ import {
   deleteClientAgent$,
   loadClientAgent$,
   loadClientAgentModels$,
+  refreshAgentCatalogsOnConfigSynced$,
   loadClientAgentCommandsFromConfig$,
   loadClientAgents$,
   loadMoreClientAgents$,
@@ -56,7 +64,7 @@ import {
   stopClientAgent$,
   updateClientAgent$,
 } from './agents.effects';
-import { selectAgentsEntities } from './agents.selectors';
+import { selectAgentsEntities, selectAgentsState } from './agents.selectors';
 import type {
   AgentResponseDto,
   ContainerType,
@@ -147,6 +155,102 @@ describe('AgentsEffects', () => {
     });
 
     actions$ = TestBed.inject(Actions);
+  });
+
+  describe('refreshAgentCatalogsOnConfigSynced$', () => {
+    beforeEach(() => {
+      store.select.mockImplementation((selector) => {
+        if (selector === selectSelectedClientId) {
+          return of(clientId);
+        }
+
+        expect(selector).toBe(selectAgentsState);
+
+        return of({
+          ...initialAgentsState,
+          agentModels: { 'client-1:agent-1': {}, 'client-1:agent-2': {}, 'other-client:agent-1': {} },
+          commands: { 'client-1:agent-1': [] },
+        });
+      });
+    });
+
+    it('reloads the affected catalogs after config-only or recreating syncs', async () => {
+      actions$ = of(
+        forwardedEventReceived({
+          event: 'opencodeConfigSynced',
+          payload: { success: true, data: { agentId: 'agent-1' }, timestamp: '2024-01-01' },
+        }),
+      );
+
+      expect(await firstValueFrom(refreshAgentCatalogsOnConfigSynced$(actions$, store).pipe(toArray()))).toEqual([
+        loadClientAgentModels({ clientId, agentId: 'agent-1' }),
+        loadClientAgentCommands({ clientId, agentId: 'agent-1' }),
+      ]);
+    });
+
+    it.each([setClientSuccess({ clientId }), remoteReconnected({ clientId })])(
+      'refreshes cached catalogs when reconnecting/selecting a workspace: $type',
+      async (action) => {
+        actions$ = of(action);
+
+        expect(await firstValueFrom(refreshAgentCatalogsOnConfigSynced$(actions$, store).pipe(toArray()))).toEqual([
+          loadClientAgentModels({ clientId, agentId: 'agent-1' }),
+          loadClientAgentCommands({ clientId, agentId: 'agent-1' }),
+          loadClientAgentModels({ clientId, agentId: 'agent-2' }),
+        ]);
+      },
+    );
+
+    it('ignores unrelated, failed, malformed and uncached notifications', async () => {
+      actions$ = of(
+        forwardedEventReceived({ event: 'other', payload: {} }),
+        forwardedEventReceived({ event: 'opencodeConfigSynced', payload: { success: false } }),
+        forwardedEventReceived({ event: 'opencodeConfigSynced', payload: { success: true, data: {} } }),
+        forwardedEventReceived({
+          event: 'opencodeConfigSynced',
+          payload: { success: true, data: { agentId: 'uncached-agent' } },
+        }),
+      );
+
+      expect(await firstValueFrom(refreshAgentCatalogsOnConfigSynced$(actions$, store).pipe(toArray()))).toEqual([]);
+    });
+
+    it('ignores notifications without a selected workspace', async () => {
+      store.select.mockImplementation((selector) =>
+        of(selector === selectSelectedClientId ? null : initialAgentsState),
+      );
+      actions$ = of(
+        forwardedEventReceived({
+          event: 'opencodeConfigSynced',
+          payload: { success: true, data: { agentId: 'agent-1' } },
+        }),
+      );
+
+      expect(await firstValueFrom(refreshAgentCatalogsOnConfigSynced$(actions$, store).pipe(toArray()))).toEqual([]);
+    });
+
+    it('retries a previously failed model catalog after sync', async () => {
+      store.select.mockImplementation((selector) =>
+        of(
+          selector === selectSelectedClientId
+            ? clientId
+            : {
+                ...initialAgentsState,
+                agentModelsErrors: { 'client-1:agent-1': 'Worker unavailable' },
+              },
+        ),
+      );
+      actions$ = of(
+        forwardedEventReceived({
+          event: 'opencodeConfigSynced',
+          payload: { success: true, data: { agentId: 'agent-1' } },
+        }),
+      );
+
+      expect(await firstValueFrom(refreshAgentCatalogsOnConfigSynced$(actions$, store).pipe(toArray()))).toEqual([
+        loadClientAgentModels({ clientId, agentId: 'agent-1' }),
+      ]);
+    });
   });
 
   describe('loadClientAgents$', () => {
@@ -305,6 +409,31 @@ describe('AgentsEffects', () => {
   });
 
   describe('loadClientAgentModels$', () => {
+    it('keeps refreshes of different agents alive and replaces stale requests for the same agent', () => {
+      const requests = new Subject<ReturnType<typeof loadClientAgentModels>>();
+      const first = new Subject<Record<string, string>>();
+      const second = new Subject<Record<string, string>>();
+      const replacement = new Subject<Record<string, string>>();
+      agentsService.listClientAgentModels
+        .mockReturnValueOnce(first)
+        .mockReturnValueOnce(second)
+        .mockReturnValueOnce(replacement);
+      const results: unknown[] = [];
+      const subscription = loadClientAgentModels$(requests, agentsService).subscribe((action) => results.push(action));
+
+      requests.next(loadClientAgentModels({ clientId, agentId: 'agent-1' }));
+      requests.next(loadClientAgentModels({ clientId, agentId: 'agent-2' }));
+      requests.next(loadClientAgentModels({ clientId, agentId: 'agent-1' }));
+      first.next({ stale: 'stale' });
+      second.next({ second: 'second' });
+      replacement.next({ updated: 'updated' });
+
+      expect(results).toEqual([
+        loadClientAgentModelsSuccess({ clientId, agentId: 'agent-2', models: { second: 'second' } }),
+        loadClientAgentModelsSuccess({ clientId, agentId: 'agent-1', models: { updated: 'updated' } }),
+      ]);
+      subscription.unsubscribe();
+    });
     const agentId = 'agent-1';
     const models = { a: 'A' };
 
@@ -590,6 +719,36 @@ describe('AgentsEffects', () => {
 
   describe('loadClientAgentCommandsFromConfig$', () => {
     const agentId = 'agent-1';
+
+    it('keeps command refreshes independent across environments', () => {
+      const requests = new Subject<ReturnType<typeof loadClientAgentCommands>>();
+      const first = new Subject<OpencodeCommandsListDto>();
+      const second = new Subject<OpencodeCommandsListDto>();
+      opencodeConfigService.listAgentCommands.mockReturnValueOnce(first).mockReturnValueOnce(second);
+      const results: unknown[] = [];
+      const subscription = loadClientAgentCommandsFromConfig$(requests, opencodeConfigService).subscribe((action) =>
+        results.push(action),
+      );
+
+      requests.next(loadClientAgentCommands({ clientId, agentId }));
+      requests.next(loadClientAgentCommands({ clientId, agentId: 'agent-2' }));
+      first.next({ commands: [{ name: 'custom', description: 'Custom', source: 'command' }] });
+      second.next({ commands: [{ name: 'other', description: 'Other', source: 'command' }] });
+
+      expect(results).toEqual([
+        loadClientAgentCommandsSuccess({
+          clientId,
+          agentId,
+          commands: [{ name: '/custom', description: 'Custom', source: 'command' }],
+        }),
+        loadClientAgentCommandsSuccess({
+          clientId,
+          agentId: 'agent-2',
+          commands: [{ name: '/other', description: 'Other', source: 'command' }],
+        }),
+      ]);
+      subscription.unsubscribe();
+    });
 
     it('should load slash commands from the OpenCode worker command list', (done) => {
       const action = loadClientAgentCommands({ clientId, agentId });

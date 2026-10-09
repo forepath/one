@@ -75,6 +75,15 @@ describe('ClientAgentFileSystemProxyService', () => {
     jest.clearAllMocks();
   });
 
+  it('forwards explicit directory refresh to the manager', async () => {
+    clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+    mockedAxios.request.mockResolvedValue({ status: 200, data: mockFileNodes, headers: {} });
+    await service.listDirectory(mockClientId, mockAgentId, 'src', 'app', true);
+    expect(mockedAxios.request).toHaveBeenCalledWith(
+      expect.objectContaining({ method: 'GET', params: { path: 'src', refresh: 'true' } }),
+    );
+  });
+
   describe('readFile', () => {
     it('should proxy read file request successfully with API_KEY auth', async () => {
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);

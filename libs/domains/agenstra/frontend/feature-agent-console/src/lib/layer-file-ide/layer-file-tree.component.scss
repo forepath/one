@@ -48,9 +48,13 @@
 
   &:hover {
     background-color: var(--bs-secondary-bg);
+  }
 
+  &:hover,
+  &:focus-within {
     fpc-button-group {
       opacity: 1;
+      pointer-events: auto;
     }
   }
 
@@ -100,7 +104,15 @@
   }
 
   fpc-button-group {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+    background-color: var(--bs-body-bg);
+    border-radius: var(--bs-border-radius-sm);
     opacity: 0;
+    pointer-events: none;
     transition: opacity 0.15s ease-in-out;
   }
 }

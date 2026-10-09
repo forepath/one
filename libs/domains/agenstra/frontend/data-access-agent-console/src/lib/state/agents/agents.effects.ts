@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { catchError, exhaustMap, filter, from, map, mergeMap, of, switchMap, withLatestFrom } from 'rxjs';
+import { catchError, exhaustMap, filter, from, groupBy, map, mergeMap, of, switchMap, withLatestFrom } from 'rxjs';
 
 import { AgentsService } from '../../services/agents.service';
 import {
@@ -10,6 +10,12 @@ import {
   type OpencodeConfigDto,
 } from '../../services/opencode-config.service';
 import { setContainerRunningStatus } from '../stats/stats.actions';
+import {
+  forwardedEventReceived,
+  remoteReconnected,
+  setClientSuccess,
+} from '../container-socket/container-socket.actions';
+import { selectSelectedClientId } from '../container-socket/container-socket.selectors';
 
 import {
   createClientAgent,
@@ -250,14 +256,74 @@ export const loadClientAgentModels$ = createEffect(
   (actions$ = inject(Actions), agentsService = inject(AgentsService)) => {
     return actions$.pipe(
       ofType(loadClientAgentModels),
-      switchMap(({ clientId, agentId }) =>
-        agentsService.listClientAgentModels(clientId, agentId).pipe(
-          map((models) => loadClientAgentModelsSuccess({ clientId, agentId, models })),
-          catchError((error) => of(loadClientAgentModelsFailure({ clientId, agentId, error: normalizeError(error) }))),
+      groupBy(({ clientId, agentId }) => `${clientId}:${agentId}`),
+      mergeMap((requests$) =>
+        requests$.pipe(
+          switchMap(({ clientId, agentId }) =>
+            agentsService.listClientAgentModels(clientId, agentId).pipe(
+              map((models) => loadClientAgentModelsSuccess({ clientId, agentId, models })),
+              catchError((error) =>
+                of(loadClientAgentModelsFailure({ clientId, agentId, error: normalizeError(error) })),
+              ),
+            ),
+          ),
         ),
       ),
     );
   },
+  { functional: true },
+);
+
+/** Refresh catalogs only after config was applied, including updates from other users/layers. */
+export const refreshAgentCatalogsOnConfigSynced$ = createEffect(
+  (actions$ = inject(Actions), store = inject(Store)) =>
+    actions$.pipe(
+      ofType(forwardedEventReceived, setClientSuccess, remoteReconnected),
+      withLatestFrom(store.select(selectSelectedClientId), store.select(selectAgentsState)),
+      mergeMap(([action, selectedClientId, state]) => {
+        let clientId: string;
+        let agentId: string | null = null;
+
+        if (action.type === forwardedEventReceived.type) {
+          if (action.event !== 'opencodeConfigSynced' || !selectedClientId) {
+            return of();
+          }
+
+          const envelope = action.payload as { success?: unknown; data?: { agentId?: unknown } } | null;
+
+          if (envelope?.success !== true || typeof envelope.data?.agentId !== 'string' || !envelope.data.agentId) {
+            return of();
+          }
+
+          clientId = selectedClientId;
+          agentId = envelope.data.agentId;
+        } else {
+          clientId = action.clientId;
+        }
+
+        const modelKeys = new Set([
+          ...Object.keys(state.agentModels),
+          ...Object.keys(state.loadingAgentModels),
+          ...Object.keys(state.agentModelsErrors),
+        ]);
+        const commandKeys = new Set([...Object.keys(state.commands), ...Object.keys(state.loadingCommands)]);
+        const keys = new Set([...modelKeys, ...commandKeys]);
+        const prefix = `${clientId}:`;
+
+        return from(
+          [...keys]
+            .filter((key) => key.startsWith(prefix) && (!agentId || key === `${prefix}${agentId}`))
+            .flatMap((key) => {
+              const target = { clientId, agentId: key.slice(prefix.length) };
+
+              return [
+                ...(modelKeys.has(key) ? [loadClientAgentModels(target)] : []),
+                ...(commandKeys.has(key) ? [loadClientAgentCommands(target)] : []),
+              ];
+            }),
+        );
+      }),
+    ),
   { functional: true },
 );
 
@@ -374,32 +440,37 @@ export const loadClientAgentCommandsFromConfig$ = createEffect(
   (actions$ = inject(Actions), opencodeConfigService = inject(OpencodeConfigService)) => {
     return actions$.pipe(
       ofType(loadClientAgentCommands),
-      switchMap(({ clientId, agentId }) =>
-        opencodeConfigService.listAgentCommands(clientId, agentId).pipe(
-          map((dto) => slashCommandsFromWorker(dto.commands ?? [])),
-          catchError(() => of([] as AgentSlashCommand[])),
-          switchMap((fromWorker) => {
-            if (fromWorker.length > 0) {
-              return of(
-                loadClientAgentCommandsSuccess({
-                  clientId,
-                  agentId,
-                  commands: fromWorker,
-                }),
-              );
-            }
+      groupBy(({ clientId, agentId }) => `${clientId}:${agentId}`),
+      mergeMap((requests$) =>
+        requests$.pipe(
+          switchMap(({ clientId, agentId }) =>
+            opencodeConfigService.listAgentCommands(clientId, agentId).pipe(
+              map((dto) => slashCommandsFromWorker(dto.commands ?? [])),
+              catchError(() => of([] as AgentSlashCommand[])),
+              switchMap((fromWorker) => {
+                if (fromWorker.length > 0) {
+                  return of(
+                    loadClientAgentCommandsSuccess({
+                      clientId,
+                      agentId,
+                      commands: fromWorker,
+                    }),
+                  );
+                }
 
-            return opencodeConfigService.getAgent(clientId, agentId).pipe(
-              map((dto) =>
-                loadClientAgentCommandsSuccess({
-                  clientId,
-                  agentId,
-                  commands: slashCommandsFromOpencodeConfig(dto),
-                }),
-              ),
-              catchError(() => of(loadClientAgentCommandsFailure({ clientId, agentId }))),
-            );
-          }),
+                return opencodeConfigService.getAgent(clientId, agentId).pipe(
+                  map((dto) =>
+                    loadClientAgentCommandsSuccess({
+                      clientId,
+                      agentId,
+                      commands: slashCommandsFromOpencodeConfig(dto),
+                    }),
+                  ),
+                  catchError(() => of(loadClientAgentCommandsFailure({ clientId, agentId }))),
+                );
+              }),
+            ),
+          ),
         ),
       ),
     );

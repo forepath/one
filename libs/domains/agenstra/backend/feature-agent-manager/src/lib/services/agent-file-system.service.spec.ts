@@ -1,4 +1,8 @@
 import * as fs from 'fs';
+import { execFile } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { promisify } from 'node:util';
 
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -10,6 +14,7 @@ import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentsRepository } from '../repositories/agents.repository';
 
 import { AgentFileSystemService } from './agent-file-system.service';
+import { AgentDirectoryIndexService } from './agent-directory-index.service';
 import { AgentGitStateBroadcastService } from './agent-git-state-broadcast.service';
 import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 import { AgentsService } from './agents.service';
@@ -74,6 +79,12 @@ describe('AgentFileSystemService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AgentFileSystemService,
+        {
+          provide: AgentDirectoryIndexService,
+          useValue: {
+            getOrLoad: jest.fn((_agentId, _containerId, _directoryPath, load: () => Promise<FileNodeDto[]>) => load()),
+          },
+        },
         {
           provide: AgentsService,
           useValue: mockAgentsService,
@@ -623,6 +634,35 @@ describe('AgentFileSystemService', () => {
   });
 
   describe('listDirectory', () => {
+    it('should retain existing entries when another file disappears after ls', async () => {
+      const directory = fs.mkdtempSync(join(tmpdir(), 'agenstra-directory-'));
+      const execFileAsync = promisify(execFile);
+
+      try {
+        fs.writeFileSync(join(directory, 'remaining.txt'), 'contents');
+        mockProvider.getBasePath.mockReturnValue(directory);
+        agentsService.findOne.mockResolvedValue(mockAgentResponse);
+        agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
+        dockerService.sendCommandToContainer
+          .mockResolvedValueOnce('removed.txt\nremaining.txt')
+          .mockImplementationOnce(async (_containerId, command) => {
+            if (!Array.isArray(command)) {
+              throw new Error('Expected argv command');
+            }
+
+            const { stdout } = await execFileAsync(command[0], command.slice(1));
+
+            return stdout;
+          });
+
+        const result = await service.listDirectory(mockAgentId);
+
+        expect(result).toEqual([expect.objectContaining({ name: 'remaining.txt', type: 'file', size: 8 })]);
+      } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+      }
+    });
+
     it('should list directory contents successfully', async () => {
       const directoryPath = '.';
       // First call: ls -1 returns just the filenames
@@ -679,11 +719,74 @@ file|Copy (1).md|20|1704067200`;
         size: 10,
       });
 
-      const processCommand = dockerService.sendCommandToContainer.mock.calls[1][1] as string;
+      const processCommand = dockerService.sendCommandToContainer.mock.calls[1][1];
 
       // Path join must quote $item so spaced names do not word-split in the shell
-      expect(processCommand).toContain('fullpath=');
-      expect(processCommand).toContain('/\\"\\$item\\"');
+      expect(processCommand).toEqual(['sh', '-c', expect.stringContaining('/"$item"')]);
+    });
+
+    it('lists nested folders using checked argv without parsing a shell wrapper', async () => {
+      agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
+      dockerService.sendCommandToContainer
+        .mockResolvedValueOnce('.\n..\nagenstra\ndecabill\nforepath\nshared\n')
+        .mockResolvedValueOnce(
+          ['agenstra', 'decabill', 'forepath', 'shared'].map((name) => `directory|${name}|0|1704067200`).join('\n'),
+        );
+
+      const result = await service.listDirectory(mockAgentId, 'apps');
+
+      expect(result.map((node) => node.path)).toEqual([
+        'apps/agenstra',
+        'apps/decabill',
+        'apps/forepath',
+        'apps/shared',
+      ]);
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        1,
+        mockContainerId,
+        ['ls', '-a', '-1', '--', '/app/apps'],
+        undefined,
+        true,
+      );
+      expect(dockerService.sendCommandToContainer).toHaveBeenNthCalledWith(
+        2,
+        mockContainerId,
+        ['sh', '-c', expect.stringContaining('fullpath=\'/app/apps\'/"$item"')],
+        undefined,
+        true,
+      );
+    });
+
+    it('preserves shell quoting for apostrophes in listed names', async () => {
+      agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
+      dockerService.sendCommandToContainer
+        .mockResolvedValueOnce("it's a folder")
+        .mockResolvedValueOnce("directory|it's a folder|0|1704067200");
+
+      expect(await service.listDirectory(mockAgentId, 'apps')).toEqual([
+        expect.objectContaining({ name: "it's a folder", path: "apps/it's a folder", type: 'directory' }),
+      ]);
+      expect(dockerService.sendCommandToContainer.mock.calls[1][1]).toEqual([
+        'sh',
+        '-c',
+        expect.stringContaining("for item in 'it'\\''s a folder'"),
+      ]);
+    });
+
+    it('propagates listing and metadata permission failures instead of returning an empty directory', async () => {
+      agentsService.findOne.mockResolvedValue(mockAgentResponse);
+      agentsRepository.findByIdOrThrow.mockResolvedValue(mockAgentEntity);
+      dockerService.sendCommandToContainer.mockRejectedValueOnce(new Error('Permission denied'));
+
+      await expect(service.listDirectory(mockAgentId, 'apps')).rejects.toThrow('Permission denied');
+
+      dockerService.sendCommandToContainer
+        .mockResolvedValueOnce('folder')
+        .mockRejectedValueOnce(new Error('stat failed'));
+
+      await expect(service.listDirectory(mockAgentId, 'apps')).rejects.toThrow('stat failed');
     });
 
     it('should use default path when not provided', async () => {

@@ -28,6 +28,7 @@ import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-va
 import { AgentMessageEventEntity } from '../entities/agent-message-event.entity';
 import { AgentMessageEntity } from '../entities/agent-message.entity';
 import { AgentEntity } from '../entities/agent.entity';
+import { AgentDirectoryIndexEntity } from '../entities/agent-directory-index.entity';
 import { DeploymentConfigurationEntity } from '../entities/deployment-configuration.entity';
 import { DeploymentRunEntity } from '../entities/deployment-run.entity';
 import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
@@ -77,6 +78,7 @@ import { WorkspaceConfigurationOverridesRepository } from '../repositories/works
 import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
 import { AgentEnvironmentVariablesService } from '../services/agent-environment-variables.service';
 import { AgentFileSystemService } from '../services/agent-file-system.service';
+import { AgentDirectoryIndexService } from '../services/agent-directory-index.service';
 import { AgentGitStateBroadcastService } from '../services/agent-git-state-broadcast.service';
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
@@ -89,6 +91,7 @@ import { ConfigService } from '../services/config.service';
 import { InstanceStatusService } from '../services/instance-status.service';
 import { DeploymentsService } from '../services/deployments.service';
 import { DockerService } from '../services/docker.service';
+import { EnvironmentProgressService } from '../services/environment-progress.service';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
 import { RegexFilterRulesCacheService } from '../services/regex-filter-rules-cache.service';
 import { RegexFilterRulesEvaluateService } from '../services/regex-filter-rules-evaluate.service';
@@ -107,6 +110,7 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
   imports: [
     TypeOrmModule.forFeature([
       AgentEntity,
+      AgentDirectoryIndexEntity,
       AgentMessageEntity,
       AgentMessageEventEntity,
       AgentChatSessionEntity,
@@ -151,7 +155,9 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     AgentChatSessionsService,
     AgentEnvironmentVariablesService,
     AgentGitStateBroadcastService,
+    EnvironmentProgressService,
     AgentFileSystemService,
+    AgentDirectoryIndexService,
     AgentsVcsService,
     WorkspaceChangeNotifierService,
     WorkspaceInotifySupervisor,
@@ -276,6 +282,7 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
   ],
   exports: [
     AgentsService,
+    EnvironmentProgressService,
     AgentChatSessionsService,
     AgentEnvironmentVariablesService,
     AgentMessagesService,

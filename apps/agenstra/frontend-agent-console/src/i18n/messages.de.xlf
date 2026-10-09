@@ -839,6 +839,66 @@
         <source>Back to workspaces</source>
         <target>Zurück zu Arbeitsbereichen</target>
       </trans-unit>
+      <trans-unit id="featureChat-workspaceProvisioningProgress" datatype="html">
+        <source>Provisioning <x id="count" equiv-text="aggregate.operations.length"/> environment(s)</source>
+        <target><x id="count" equiv-text="aggregate.operations.length"/> Umgebung(en) werden bereitgestellt</target>
+      </trans-unit>
+      <trans-unit id="featureChat-environmentProgressCreating" datatype="html">
+        <source>Creating</source>
+        <target>Wird erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureChat-environmentProgressUpdating" datatype="html">
+        <source>Updating</source>
+        <target>Wird aktualisiert</target>
+      </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepQueued" datatype="html">
+        <source>Queued</source>
+        <target>In Warteschlange</target>
+      </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepPreparing" datatype="html">
+        <source>Preparing</source>
+        <target>Vorbereitung</target>
+      </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepPullingImage" datatype="html">
+        <source>Pulling image</source>
+        <target>Image wird geladen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepCreatingContainer" datatype="html">
+        <source>Creating container</source>
+        <target>Container wird erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepPreparingRepository" datatype="html">
+        <source>Preparing repository</source>
+        <target>Repository wird vorbereitet</target>
+      </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepPersisting" datatype="html">
+        <source>Saving environment</source>
+        <target>Umgebung wird gespeichert</target>
+      </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepWaitingForHealthy" datatype="html">
+        <source>Waiting for container</source>
+        <target>Warten auf Container</target>
+      </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepSummarizingContext" datatype="html">
+        <source>Summarizing context</source>
+        <target>Kontext wird zusammengefasst</target>
+      </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepRecreatingContainer" datatype="html">
+        <source>Recreating container</source>
+        <target>Container wird neu erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepFinalizing" datatype="html">
+        <source>Finalizing</source>
+        <target>Abschluss</target>
+      </trans-unit>
+      <trans-unit id="featureChat-workspaceUnreachable" datatype="html">
+        <source>Workspace cannot be reached</source>
+        <target>Workspace ist nicht erreichbar</target>
+      </trans-unit>
+      <trans-unit id="featureChat-workspaceUnreachableTitle" datatype="html">
+        <source>Workspace cannot be reached</source>
+        <target>Workspace ist nicht erreichbar</target>
+      </trans-unit>
       <trans-unit id="featureChat-environments" datatype="html">
         <source>Environments</source>
         <target>Umgebungen</target>

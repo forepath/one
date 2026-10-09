@@ -4,7 +4,13 @@ set -euo pipefail
 APP_UID="${APP_UID:-10001}"
 APP_GID="${APP_GID:-10001}"
 
-chown -R "${APP_UID}:${APP_GID}" /app 2>/dev/null || true
+# Only touch entries with wrong ownership: a blanket `chown -R` forces an overlayfs copy-up of every
+# image-layer file (hundreds of MB under /home/agenstra), delaying `opencode serve` past health checks.
+ensure_app_owner() {
+  find "$@" \( ! -uid "${APP_UID}" -o ! -gid "${APP_GID}" \) -exec chown -h "${APP_UID}:${APP_GID}" {} + 2>/dev/null || true
+}
+
+ensure_app_owner /app
 
 hostname="${OPENCODE_SERVER_HOSTNAME:-0.0.0.0}"
 opencode_port="${OPENCODE_SERVER_PORT:-4096}"
@@ -27,7 +33,7 @@ export XDG_DATA_DIRS=/usr/local/share:/usr/share
 
 mkdir -p /tmp/runtime-agenstra /home/agenstra/.vnc /tmp/.X11-unix \
   /home/agenstra/.config /home/agenstra/.cache /home/agenstra/.local/share /home/agenstra/Desktop
-chown -R "${APP_UID}:${APP_GID}" /tmp/runtime-agenstra /home/agenstra
+ensure_app_owner /tmp/runtime-agenstra /home/agenstra
 chmod 700 /tmp/runtime-agenstra /home/agenstra
 chmod 1777 /tmp/.X11-unix
 

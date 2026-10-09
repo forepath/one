@@ -4,7 +4,7 @@ import type { JsonObject } from './types';
  * Bump when {@link injectPlatformAutomationConfig} / prepareConfigForSync platform wire changes.
  * Included in OpenCode sync revision hashes so existing agents re-sync after deploys.
  */
-export const AGENSTRA_OPENCODE_PLATFORM_WIRE_VERSION = 2;
+export const AGENSTRA_OPENCODE_PLATFORM_WIRE_VERSION = 4;
 
 /** OpenCode primary agent used exclusively for Agenstra ticket automation sessions. */
 export const AGENSTRA_AUTOMATION_AGENT_NAME = 'agenstra-automation';
@@ -13,12 +13,9 @@ export const AGENSTRA_AUTOMATION_AGENT_NAME = 'agenstra-automation';
 export const AGENSTRA_TICKET_AUTOMATION_SKILL_NAME = 'agenstra-ticket-automation';
 
 /**
- * Absolute skill path installed on workers (root-owned layer emit / sync).
- * Relative discovery under `.opencode/skills` is also listed for OpenCode path concat.
+ * Platform-owned skill directory outside the project, explicitly registered in skills.paths.
  */
 export const AGENSTRA_TICKET_AUTOMATION_SKILL_ABS_DIR = '/opt/agenstra/skills/agenstra-ticket-automation';
-
-export const AGENSTRA_TICKET_AUTOMATION_SKILL_REL_DIR = '.opencode/skills/agenstra-ticket-automation';
 
 /** Session-scoped OpenCode permission ruleset: allow every action for automation sessions. */
 export const AGENSTRA_AUTOMATION_SESSION_PERMISSION_RULESET = [
@@ -127,7 +124,6 @@ export function injectPlatformAutomationConfig(config: JsonObject): JsonObject {
   const skills = normalizeSkillsRoot(next['skills']);
   const paths = new Set(skills.paths);
   paths.add(AGENSTRA_TICKET_AUTOMATION_SKILL_ABS_DIR);
-  paths.add(AGENSTRA_TICKET_AUTOMATION_SKILL_REL_DIR);
   next['skills'] = { paths: [...paths], urls: skills.urls };
 
   return next;

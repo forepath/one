@@ -179,6 +179,26 @@ describe('agentsReducer', () => {
       expect(newState.errors[clientId]).toBe('Load failed');
       expect(newState.loading[clientId]).toBe(false);
     });
+
+    it('should track the list error separately and clear it on reload / success', () => {
+      const failed = agentsReducer(initialAgentsState, loadClientAgentsFailure({ clientId, error: 'Unreachable' }));
+
+      expect(failed.listErrors[clientId]).toBe('Unreachable');
+      expect(agentsReducer(failed, loadClientAgents({ clientId })).listErrors[clientId]).toBeNull();
+      expect(
+        agentsReducer(failed, loadClientAgentsSuccess({ clientId, agents: [], hasMore: false, nextOffset: 0 }))
+          .listErrors[clientId],
+      ).toBeNull();
+    });
+
+    it('should not set the list error on create failures', () => {
+      const newState = agentsReducer(
+        initialAgentsState,
+        createClientAgentFailure({ clientId, error: 'Create failed' }),
+      );
+
+      expect(newState.listErrors[clientId]).toBeUndefined();
+    });
   });
 
   describe('loadClientAgent', () => {

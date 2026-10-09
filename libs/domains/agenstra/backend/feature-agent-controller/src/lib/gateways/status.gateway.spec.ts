@@ -18,6 +18,8 @@ describe('StatusGateway', () => {
       spacesHasAttention: false,
     }),
     runPollForSocket: jest.fn().mockResolvedValue(undefined),
+    runProgressPollForSocket: jest.fn().mockResolvedValue(undefined),
+    hasActiveEnvironmentProgress: jest.fn().mockReturnValue(false),
     markEnvironmentRead: jest.fn().mockResolvedValue(undefined),
     setActiveEnvironment: jest.fn(),
     clearSocket: jest.fn(),
@@ -109,6 +111,76 @@ describe('StatusGateway', () => {
 
     await jest.advanceTimersByTimeAsync(30_000);
     expect(mockStatusService.runPollForSocket).toHaveBeenCalledWith('socket-1', socket.data.userInfo);
+  });
+
+  it('runs the fast progress poll only while provisioning is active', async () => {
+    const socket = createMockSocket();
+
+    mockStatusService.hasActiveEnvironmentProgress.mockReturnValue(true);
+    await gateway.handleConnection(socket);
+
+    await jest.advanceTimersByTimeAsync(3_000);
+    expect(mockStatusService.runProgressPollForSocket).toHaveBeenCalledWith('socket-1', socket.data.userInfo);
+
+    mockStatusService.hasActiveEnvironmentProgress.mockReturnValue(false);
+    await jest.advanceTimersByTimeAsync(3_000);
+    mockStatusService.runProgressPollForSocket.mockClear();
+
+    await jest.advanceTimersByTimeAsync(9_000);
+    expect(mockStatusService.runProgressPollForSocket).not.toHaveBeenCalled();
+
+    gateway.handleDisconnect(socket);
+  });
+
+  it('does not start the fast progress poll when nothing is provisioning', async () => {
+    const socket = createMockSocket();
+
+    mockStatusService.hasActiveEnvironmentProgress.mockReturnValue(false);
+    await gateway.handleConnection(socket);
+    await jest.advanceTimersByTimeAsync(9_000);
+
+    expect(mockStatusService.runProgressPollForSocket).not.toHaveBeenCalled();
+    gateway.handleDisconnect(socket);
+  });
+
+  it('stops the fast progress poll on disconnect', async () => {
+    const socket = createMockSocket();
+
+    mockStatusService.hasActiveEnvironmentProgress.mockReturnValue(true);
+    await gateway.handleConnection(socket);
+    gateway.handleDisconnect(socket);
+    await jest.advanceTimersByTimeAsync(9_000);
+
+    expect(mockStatusService.runProgressPollForSocket).not.toHaveBeenCalled();
+    mockStatusService.hasActiveEnvironmentProgress.mockReturnValue(false);
+  });
+
+  it('does not overlap the full poll with an in-flight progress poll', async () => {
+    const socket = createMockSocket();
+    let finishProgress!: () => void;
+    const pendingProgress = new Promise<void>((resolve) => {
+      finishProgress = resolve;
+    });
+
+    mockStatusService.hasActiveEnvironmentProgress.mockReturnValue(true);
+    mockStatusService.runProgressPollForSocket.mockReturnValueOnce(pendingProgress);
+    await gateway.handleConnection(socket);
+
+    try {
+      await jest.advanceTimersByTimeAsync(30_000);
+
+      expect(mockStatusService.runProgressPollForSocket).toHaveBeenCalledTimes(1);
+      expect(mockStatusService.runPollForSocket).not.toHaveBeenCalled();
+
+      finishProgress();
+      await jest.advanceTimersByTimeAsync(30_000);
+
+      expect(mockStatusService.runPollForSocket).toHaveBeenCalledTimes(1);
+    } finally {
+      finishProgress();
+      gateway.handleDisconnect(socket);
+      mockStatusService.hasActiveEnvironmentProgress.mockReturnValue(false);
+    }
   });
 
   it('rejects connection without user id', async () => {

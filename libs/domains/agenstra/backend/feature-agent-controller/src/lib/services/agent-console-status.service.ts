@@ -11,6 +11,7 @@ import { ForbiddenException, forwardRef, Inject, Injectable, Logger } from '@nes
 
 import {
   ChatSessionStatusPayload,
+  ClientEnvironmentProgressPayload,
   ClientStatusPayload,
   EnvironmentStatusPayload,
   StatusPatchPayload,
@@ -75,6 +76,29 @@ function chatsEqual(a: ChatSessionStatusPayload[] | undefined, b: ChatSessionSta
   const rightById = new Map(right.map((c) => [c.chatSessionId, c.hasUnreadMessages]));
 
   return left.every((c) => rightById.get(c.chatSessionId) === c.hasUnreadMessages);
+}
+
+function diffEnvironmentProgress(
+  previous: ClientEnvironmentProgressPayload[] | undefined,
+  next: ClientEnvironmentProgressPayload[] | undefined,
+): ClientEnvironmentProgressPayload[] {
+  const prevByClient = new Map((previous ?? []).map((p) => [p.clientId, JSON.stringify(p.operations)]));
+  const nextByClient = new Map((next ?? []).map((p) => [p.clientId, p]));
+  const changed: ClientEnvironmentProgressPayload[] = [];
+
+  for (const [clientId, entry] of nextByClient.entries()) {
+    if (prevByClient.get(clientId) !== JSON.stringify(entry.operations)) {
+      changed.push(entry);
+    }
+  }
+
+  for (const clientId of prevByClient.keys()) {
+    if (!nextByClient.has(clientId)) {
+      changed.push({ clientId, operations: [] });
+    }
+  }
+
+  return changed;
 }
 
 @Injectable()
@@ -233,7 +257,10 @@ export class AgentConsoleStatusService {
       userInfo.isApiKeyAuth,
       { amr: userInfo.amr },
     );
-    const environments = await this.buildEnvironmentsForUser(userId, clientIds);
+    const [environments, environmentProgress] = await Promise.all([
+      this.buildEnvironmentsForUser(userId, clientIds),
+      this.buildEnvironmentProgress(clientIds),
+    ]);
     const clients = rollupClients(environments);
 
     return {
@@ -241,7 +268,49 @@ export class AgentConsoleStatusService {
       environments,
       clients,
       spacesHasAttention: spacesHasAttention(clients),
+      ...(environmentProgress.length ? { environmentProgress } : {}),
     };
+  }
+
+  /** Whether the last snapshot sent to this socket contains running environment provisioning operations. */
+  hasActiveEnvironmentProgress(socketId: string): boolean {
+    return (this.lastSnapshotBySocketId.get(socketId)?.environmentProgress ?? []).some(
+      (entry) => entry.operations.length > 0,
+    );
+  }
+
+  /**
+   * Lightweight poll used while provisioning is active: refreshes only environment progress for all
+   * accessible workspaces and emits a progress-only statusPatch when something changed.
+   */
+  async runProgressPollForSocket(socketId: string, userInfo: SocketUserInfo): Promise<void> {
+    const userId = resolveUserId(userInfo);
+    const previous = this.lastSnapshotBySocketId.get(socketId);
+
+    if (!userId || !previous) {
+      return;
+    }
+
+    const clientIds = await this.clientsService.getAccessibleClientIds(
+      userInfo.userId ?? userId,
+      userInfo.userRole,
+      userInfo.isApiKeyAuth,
+      { amr: userInfo.amr },
+    );
+    const environmentProgress = await this.buildEnvironmentProgress(clientIds);
+    const changed = diffEnvironmentProgress(previous.environmentProgress, environmentProgress);
+    const current = this.lastSnapshotBySocketId.get(socketId);
+
+    if (current) {
+      current.environmentProgress = environmentProgress.length ? environmentProgress : undefined;
+    }
+
+    if (changed.length) {
+      this.realtime.emitToUser(userId, 'statusPatch', {
+        generatedAt: new Date().toISOString(),
+        environmentProgress: changed,
+      } satisfies StatusPatchPayload);
+    }
   }
 
   async emitSnapshotToSocket(socketId: string, userInfo: SocketUserInfo): Promise<StatusSnapshotPayload> {
@@ -410,6 +479,24 @@ export class AgentConsoleStatusService {
     this.realtime.emitToUser(userId, 'statusPatch', patch);
   }
 
+  private async buildEnvironmentProgress(clientIds: string[]): Promise<ClientEnvironmentProgressPayload[]> {
+    const results = await Promise.all(
+      clientIds.map(async (clientId) => {
+        try {
+          const operations = await this.agentProxy.getClientEnvironmentProgress(clientId);
+
+          return { clientId, operations: operations.filter((op) => op.status === 'running') };
+        } catch (error) {
+          this.logger.debug(`Skipping environment progress for client ${clientId}: ${(error as Error).message}`);
+
+          return { clientId, operations: [] };
+        }
+      }),
+    );
+
+    return results.filter((entry) => entry.operations.length > 0);
+  }
+
   private async buildEnvironmentsForUser(userId: string, clientIds: string[]): Promise<EnvironmentStatusPayload[]> {
     type PendingEnv = {
       clientId: string;
@@ -552,6 +639,7 @@ export class AgentConsoleStatusService {
         environments: next.environments,
         clients: next.clients,
         spacesHasAttention: next.spacesHasAttention,
+        environmentProgress: next.environmentProgress,
       };
     }
 
@@ -585,8 +673,9 @@ export class AgentConsoleStatusService {
     }
 
     const attentionChanged = previous.spacesHasAttention !== next.spacesHasAttention;
+    const changedProgress = diffEnvironmentProgress(previous.environmentProgress, next.environmentProgress);
 
-    if (changedEnvs.length === 0 && changedClients.length === 0 && !attentionChanged) {
+    if (changedEnvs.length === 0 && changedClients.length === 0 && !attentionChanged && changedProgress.length === 0) {
       return null;
     }
 
@@ -595,6 +684,7 @@ export class AgentConsoleStatusService {
       environments: changedEnvs.length ? changedEnvs : undefined,
       clients: changedClients.length ? changedClients : undefined,
       spacesHasAttention: attentionChanged ? next.spacesHasAttention : undefined,
+      environmentProgress: changedProgress.length ? changedProgress : undefined,
     };
   }
 

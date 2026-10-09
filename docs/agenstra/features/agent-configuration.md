@@ -148,6 +148,8 @@ table is empty.
 
 ## Provider models
 
+The environment model dropdown loads its catalog from the worker-backed models endpoint. After effective config and secrets are successfully synced (including inherited workspace/global changes), the manager emits `opencodeConfigSynced` and the console reloads previously requested model and slash-command catalogs. Workspace reconnects also refresh those catalogs, so changes no longer require a page reload.
+
 The `opencode-providers.refresh` job stores each provider’s models.dev model id/name list on `opencode_providers.models`. Built-in providers with a non-empty catalog list show a locked Models panel in the Providers tab. Custom providers (and catalog entries without models) keep the free-text “one model id per line” editor writing `providers.<id>.models`. On startup, if the catalog table is empty **or** all rows have empty `models`, a one-shot bootstrap refresh is enqueued.
 
 ## Sync

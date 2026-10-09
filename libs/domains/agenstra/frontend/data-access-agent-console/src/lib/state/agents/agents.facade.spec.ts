@@ -178,6 +178,24 @@ describe('AgentsFacade', () => {
         done();
       });
     });
+
+    it('should expose list errors keyed by client', (done) => {
+      store.select.mockReturnValue(of({ [clientId]: 'Unreachable' }));
+
+      facade.getListErrorsByClientId$().subscribe((result) => {
+        expect(result).toEqual({ [clientId]: 'Unreachable' });
+        done();
+      });
+    });
+
+    it('should return client agents list error observable', (done) => {
+      store.select.mockReturnValue(of('Unreachable'));
+
+      facade.getClientAgentsListError$(clientId).subscribe((result) => {
+        expect(result).toBe('Unreachable');
+        done();
+      });
+    });
   });
 
   describe('Derived State Observables', () => {

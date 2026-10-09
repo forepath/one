@@ -119,7 +119,7 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
   private resizeObserver?: ResizeObserver;
 
   // Track last consumed terminal output seq
-  private lastConsumedOutputSeq = 0;
+  private lastConsumedOutputSeq = -1;
 
   constructor() {
     // Automatically create a terminal session when the panel becomes visible and no sessions exist
@@ -198,7 +198,7 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
     this.sessions.set(new Map());
     this.activeTerminal = null;
     this.pendingRefreshReplaceSessionId = null;
-    this.lastConsumedOutputSeq = 0;
+    this.lastConsumedOutputSeq = -1;
 
     // Disconnect resize observer
     if (this.resizeObserver) {
@@ -255,6 +255,10 @@ export class TerminalComponent implements AfterViewInit, OnDestroy {
    * Handle terminal created event
    */
   private handleTerminalCreated(sessionId: string): void {
+    if (this.sessions().has(sessionId)) {
+      return;
+    }
+
     // Create xterm terminal instance
     const terminal = new Terminal({
       theme: this.resolveXtermTheme(this.themeService.isDarkMode()),

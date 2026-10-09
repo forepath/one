@@ -31,6 +31,8 @@ import {
   selectClientAgentsCreating,
   selectClientAgentsDeleting,
   selectClientAgentsError,
+  selectAgentsListErrors,
+  selectClientAgentsListError,
   selectClientAgentsHasMore,
   selectClientAgentsLoading,
   selectClientAgentsLoadingAny,
@@ -61,6 +63,11 @@ import type {
 })
 export class AgentsFacade {
   private readonly store = inject(Store);
+
+  /** Environment list load errors keyed by clientId (e.g. workspaces that cannot be reached). */
+  getListErrorsByClientId$(): Observable<Record<string, string | null>> {
+    return this.store.select(selectAgentsListErrors);
+  }
 
   /**
    * Get agents for a specific client.
@@ -180,6 +187,15 @@ export class AgentsFacade {
    */
   getClientAgentsError$(clientId: string): Observable<string | null> {
     return this.store.select(selectClientAgentsError(clientId));
+  }
+
+  /**
+   * Get the error of the last environment list load (e.g. workspace not reachable).
+   * @param clientId - The client ID
+   * @returns Observable of the list error or null
+   */
+  getClientAgentsListError$(clientId: string): Observable<string | null> {
+    return this.store.select(selectClientAgentsListError(clientId));
   }
 
   /**

@@ -9,7 +9,14 @@ describe('WorkspaceSearchIndexService', () => {
   let openSearch: jest.Mocked<
     Pick<
       OpenSearchService,
-      'isEnabled' | 'indexName' | 'ensureIndex' | 'indexDocument' | 'deleteDocument' | 'deleteByQuery' | 'search'
+      | 'isEnabled'
+      | 'indexName'
+      | 'ensureIndex'
+      | 'indexDocument'
+      | 'deleteDocument'
+      | 'deleteByQuery'
+      | 'search'
+      | 'count'
     >
   >;
   let fileProxy: jest.Mocked<Pick<ClientAgentFileSystemProxyService, 'probeFile' | 'readFile' | 'listDirectory'>>;
@@ -23,6 +30,7 @@ describe('WorkspaceSearchIndexService', () => {
       deleteDocument: jest.fn().mockResolvedValue(undefined),
       deleteByQuery: jest.fn().mockResolvedValue(undefined),
       search: jest.fn().mockResolvedValue({ hits: [], total: 0 }),
+      count: jest.fn().mockResolvedValue(0),
     };
     fileProxy = {
       probeFile: jest.fn().mockResolvedValue({ fileType: 'text', contentType: 'text/plain', size: 5 }),
@@ -47,16 +55,12 @@ describe('WorkspaceSearchIndexService', () => {
       docCount: 0,
       message: null,
     });
-    expect(openSearch.search).toHaveBeenCalledWith(
-      expect.objectContaining({
-        filters: { clientId: 'c1', agentId: 'a1' },
-        size: 1,
-      }),
-    );
+    expect(openSearch.count).toHaveBeenCalledWith('agenstra-workspace-files', { clientId: 'c1', agentId: 'a1' });
+    expect(openSearch.search).not.toHaveBeenCalled();
   });
 
   it('recovers ready status from existing OpenSearch docs after process restart', async () => {
-    openSearch.search.mockResolvedValueOnce({ hits: [], total: 42 });
+    openSearch.count.mockResolvedValueOnce(42);
 
     await expect(service.getStatus('c1', 'a1')).resolves.toEqual({
       status: 'ready',
@@ -64,14 +68,14 @@ describe('WorkspaceSearchIndexService', () => {
       message: null,
     });
 
-    openSearch.search.mockClear();
+    openSearch.count.mockClear();
 
     await expect(service.getStatus('c1', 'a1')).resolves.toEqual({
       status: 'ready',
       docCount: 42,
       message: null,
     });
-    expect(openSearch.search).not.toHaveBeenCalled();
+    expect(openSearch.count).not.toHaveBeenCalled();
   });
 
   it('refuses unscoped status as error', async () => {
@@ -93,18 +97,13 @@ describe('WorkspaceSearchIndexService', () => {
 
     expect(result).toEqual({ status: 'missing', hits: [], total: 0 });
     // recovery count query only — not a content search
-    expect(openSearch.search).toHaveBeenCalledTimes(1);
-    expect(openSearch.search).toHaveBeenCalledWith(
-      expect.objectContaining({
-        query: '*',
-        filters: { clientId: 'c1', agentId: 'a1' },
-        size: 1,
-      }),
-    );
+    expect(openSearch.count).toHaveBeenCalledTimes(1);
+    expect(openSearch.search).not.toHaveBeenCalled();
   });
 
   it('search recovers status then queries OpenSearch when docs already exist', async () => {
-    openSearch.search.mockResolvedValueOnce({ hits: [], total: 1 }).mockResolvedValueOnce({
+    openSearch.count.mockResolvedValueOnce(1);
+    openSearch.search.mockResolvedValueOnce({
       hits: [
         {
           id: 'c1:a1:src/a.ts',
@@ -119,13 +118,38 @@ describe('WorkspaceSearchIndexService', () => {
 
     expect(result.status).toBe('ready');
     expect(result.hits).toHaveLength(1);
-    expect(openSearch.search).toHaveBeenNthCalledWith(
-      2,
+    expect(openSearch.search).toHaveBeenCalledTimes(1);
+    expect(openSearch.search).toHaveBeenCalledWith(
       expect.objectContaining({
         query: 'hello',
         filters: { clientId: 'c1', agentId: 'a1' },
       }),
     );
+  });
+
+  it('rebuild keeps existing docs when the workspace cannot be listed', async () => {
+    fileProxy.listDirectory.mockRejectedValueOnce(new Error('agent unreachable'));
+
+    await service.rebuild('c1', 'a1');
+
+    expect(openSearch.deleteByQuery).not.toHaveBeenCalled();
+    await expect(service.getStatus('c1', 'a1')).resolves.toMatchObject({ status: 'error' });
+  });
+
+  it('rebuild purges then reindexes walked paths and records doc count', async () => {
+    fileProxy.listDirectory.mockResolvedValueOnce([{ path: 'src/a.ts', type: 'file' }] as never);
+    openSearch.count.mockResolvedValueOnce(1);
+
+    await service.rebuild('c1', 'a1');
+
+    expect(openSearch.deleteByQuery).toHaveBeenCalledWith('agenstra-workspace-files', {
+      clientId: 'c1',
+      agentId: 'a1',
+    });
+    expect(openSearch.deleteByQuery.mock.invocationCallOrder[0]).toBeLessThan(
+      openSearch.indexDocument.mock.invocationCallOrder[0],
+    );
+    await expect(service.getStatus('c1', 'a1')).resolves.toEqual({ status: 'ready', docCount: 1, message: null });
   });
 
   it('purge deletes by clientId and agentId', async () => {

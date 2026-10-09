@@ -15,9 +15,6 @@
           stored === 'dark' ||
           (stored === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
         document.documentElement.setAttribute('data-bs-theme', isDark ? 'dark' : 'light');
-        // Seed body-bg before Bootstrap CSS so #app-boot-loader matches fpc-loading-overlay.
-        // Values mirror agenstra brand $body-bg / dark $gray-900.
-        document.documentElement.style.setProperty('--bs-body-bg', isDark ? '#0f0f11' : '#f2eff9');
       })();
     </script>
     <!-- Import map for Monaco Editor (external dependency) -->
@@ -41,7 +38,11 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--bs-body-bg);
+        /* Fallbacks mirror the brand palette until Bootstrap CSS loads. */
+        background: var(--bs-body-bg, #f2eff9);
+      }
+      [data-bs-theme='dark'] #app-boot-loader {
+        background: var(--bs-body-bg, #0f0f11);
       }
       #app-boot-loader::after {
         content: '';

@@ -1,3 +1,5 @@
+import type { ClientEnvironmentProgress } from '../environment-progress/environment-progress.types';
+
 export interface ChatSessionStatus {
   chatSessionId: string;
   hasUnreadMessages: boolean;
@@ -23,6 +25,8 @@ export interface StatusSnapshotPayload {
   environments: EnvironmentStatus[];
   clients: ClientStatus[];
   spacesHasAttention: boolean;
+  /** Workspaces with running environment provisioning operations (omitted when none). */
+  environmentProgress?: ClientEnvironmentProgress[];
 }
 
 export interface StatusPatchPayload {
@@ -30,6 +34,8 @@ export interface StatusPatchPayload {
   environments?: EnvironmentStatus[];
   clients?: ClientStatus[];
   spacesHasAttention?: boolean;
+  /** Workspaces whose provisioning operations changed (`operations: []` once finished). */
+  environmentProgress?: ClientEnvironmentProgress[];
 }
 
 export interface ActiveEnvironment {

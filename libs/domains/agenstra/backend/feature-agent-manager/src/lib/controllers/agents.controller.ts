@@ -16,8 +16,10 @@ import { AgentModelsResponseDto } from '../dto/agent-models-response.dto';
 import { AgentResponseDto } from '../dto/agent-response.dto';
 import { CreateAgentResponseDto } from '../dto/create-agent-response.dto';
 import { CreateAgentDto } from '../dto/create-agent.dto';
+import { EnvironmentProgressDto } from '../dto/environment-progress.dto';
 import { UpdateAgentDto } from '../dto/update-agent.dto';
 import { AgentsService } from '../services/agents.service';
+import { EnvironmentProgressService } from '../services/environment-progress.service';
 
 /**
  * Controller for agent management endpoints.
@@ -25,7 +27,10 @@ import { AgentsService } from '../services/agents.service';
  */
 @Controller('agents')
 export class AgentsController {
-  constructor(private readonly agentsService: AgentsService) {}
+  constructor(
+    private readonly agentsService: AgentsService,
+    private readonly environmentProgressService: EnvironmentProgressService,
+  ) {}
 
   /**
    * Get all agents with pagination.
@@ -39,6 +44,16 @@ export class AgentsController {
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
   ): Promise<AgentResponseDto[]> {
     return await this.agentsService.findAll(limit ?? 10, offset ?? 0);
+  }
+
+  /**
+   * List active environment provisioning operations (creates and container-recreating updates).
+   * Provides the initial snapshot; live changes are pushed via the `environmentProgress` socket event.
+   * @returns Running operations, oldest first
+   */
+  @Get('progress')
+  getEnvironmentProgress(): EnvironmentProgressDto[] {
+    return this.environmentProgressService.list();
   }
 
   /**

@@ -7,6 +7,7 @@ import {
   CreateChatSessionDto,
   CreateEnvironmentVariableDto,
   CreateFileDto,
+  EnvironmentProgressDto,
   EnvironmentVariableResponseDto,
   FileNodeDto,
   MoveFileDto,
@@ -182,6 +183,37 @@ export class ClientsController {
     }
 
     return await this.clientAgentProxyService.getClientAgents(id, limit ?? 10, offset ?? 0, search);
+  }
+
+  /**
+   * Get active environment provisioning progress (create / update operations) for a client.
+   * Declared before `:id/agents/:agentId` so `progress` is not parsed as an agent id.
+   * @param id - The UUID of the client
+   * @param req - The request object
+   * @returns Running environment progress operations
+   */
+  @Get(':id/agents/progress')
+  @RequireScopes('agents:read')
+  async getClientEnvironmentProgress(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<EnvironmentProgressDto[]> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    const access = await checkClientAccess(
+      this.clientsRepository,
+      this.clientUsersRepository,
+      id,
+      userInfo.userId,
+      userInfo.userRole,
+      userInfo.isApiKeyAuth,
+      { amr: userInfo.amr },
+    );
+
+    if (!access.hasAccess) {
+      throw new ForbiddenException('You do not have access to this client');
+    }
+
+    return await this.clientAgentProxyService.getClientEnvironmentProgress(id);
   }
 
   /**
@@ -747,10 +779,17 @@ export class ClientsController {
     @Query('path') path?: string,
     @Query('context') contextRaw?: string,
     @Req() req?: RequestWithUser,
+    @Query('refresh') refresh?: string,
   ): Promise<FileNodeDto[]> {
     const context = await this.authorizeFileProxyRequest(id, contextRaw, req);
 
-    return await this.clientAgentFileSystemProxyService.listDirectory(id, agentId, path || '.', context);
+    return await this.clientAgentFileSystemProxyService.listDirectory(
+      id,
+      agentId,
+      path || '.',
+      context,
+      refresh === 'true',
+    );
   }
 
   /**

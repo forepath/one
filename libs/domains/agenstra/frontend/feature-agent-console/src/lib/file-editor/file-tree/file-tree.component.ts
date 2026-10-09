@@ -10,6 +10,7 @@ import {
   OnInit,
   output,
   signal,
+  untracked,
   ViewChild,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
@@ -148,6 +149,7 @@ export class FileTreeComponent implements OnInit {
   readonly pendingUploads = signal<PendingUpload[]>([]);
   /** Paths currently writing/deleting/moving — spinner on the matching tree row. */
   readonly busyPaths = signal<ReadonlySet<string>>(new Set());
+  readonly loadingDirectoryPaths = signal<ReadonlySet<string>>(new Set());
   private previousExpandedPaths = new Set<string>();
   private pendingUploadSeq = 0;
 
@@ -195,6 +197,7 @@ export class FileTreeComponent implements OnInit {
   dragOverPath = signal<string | null>(null);
   private hoverTimeout: ReturnType<typeof setTimeout> | null = null;
   private expandedDirectorySubscriptions = new Map<string, Subscription>();
+  private treeScope = '';
 
   private listParams(path: string): ListDirectoryParams {
     const c = this.fileManagerContext();
@@ -202,8 +205,10 @@ export class FileTreeComponent implements OnInit {
     return c === 'app' ? { path } : { path, context: c };
   }
 
-  private listDirectoryRel(path: string): void {
-    this.filesFacade.listDirectory(this.clientId(), this.agentId(), this.listParams(path));
+  private listDirectoryRel(path: string, refresh = false): void {
+    const params = this.listParams(path);
+
+    this.filesFacade.listDirectory(this.clientId(), this.agentId(), refresh ? { ...params, refresh: true } : params);
   }
 
   // Computed observables for directory listings - convert computed signals to observables
@@ -301,6 +306,17 @@ export class FileTreeComponent implements OnInit {
       const clientId = this.clientId();
       const agentId = this.agentId();
       const expanded = this.expandedPaths();
+      const scope = JSON.stringify([clientId, agentId, this.fileManagerContext()]);
+
+      if (scope !== this.treeScope) {
+        this.expandedDirectorySubscriptions.forEach((subscription) => subscription.unsubscribe());
+        this.expandedDirectorySubscriptions.clear();
+        this.treeScope = scope;
+        untracked(() => {
+          this.treeCache.set(new Map());
+          this.loadingDirectoryPaths.set(new Set());
+        });
+      }
 
       if (!clientId || !agentId) {
         // Clean up all subscriptions if client/agent is not available
@@ -325,17 +341,24 @@ export class FileTreeComponent implements OnInit {
       // Subscribe to newly expanded directories
       for (const path of expandedPathsArray) {
         if (!this.expandedDirectorySubscriptions.has(path)) {
-          // Subscribe to directory listing changes
-          const subscription = this.getDirectoryListing$(path)
-            .pipe(
-              filter((listing) => listing !== null),
-              takeUntilDestroyed(this.destroyRef),
-            )
-            .subscribe((listing) => {
-              if (listing) {
+          const subscription = combineLatest([this.getDirectoryListing$(path), this.getDirectoryLoading$(path)])
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(([listing, loading]) => {
+              this.loadingDirectoryPaths.update((paths) => {
+                const next = new Set(paths);
+
+                if (loading) {
+                  next.add(path);
+                } else {
+                  next.delete(path);
+                }
+
+                return next;
+              });
+              if (listing !== null) {
                 this.updateTreeCache(path, listing);
-                this.rebuildTree();
               }
+              this.rebuildTree();
             });
 
           this.expandedDirectorySubscriptions.set(path, subscription);
@@ -455,33 +478,10 @@ export class FileTreeComponent implements OnInit {
       this.emitSelectionChange();
       this.directoryCollapse.emit(node.path);
     } else {
-      // Expand - load directory if not cached
-      const hasCachedData = this.treeCache().has(node.path);
-
-      if (!hasCachedData) {
-        // Only show loading if we don't have cached data (silent refresh)
-        node.loading = true;
-        this.listDirectoryRel(node.path);
-        // Subscribe to directory listing
-        this.getDirectoryListing$(node.path)
-          .pipe(
-            filter((listing) => listing !== null),
-            take(1),
-            takeUntilDestroyed(this.destroyRef),
-          )
-          .subscribe((listing) => {
-            if (listing) {
-              this.updateTreeCache(node.path, listing);
-              node.loading = false;
-              this.rebuildTree();
-            }
-          });
-      } else {
-        // We have cached data, but still reload to get fresh data (silent)
-        this.listDirectoryRel(node.path);
-      }
-
+      this.loadingDirectoryPaths.update((paths) => new Set([...paths, node.path]));
+      this.listDirectoryRel(node.path);
       this.directoryExpand.emit(node.path);
+      this.rebuildTree();
     }
   }
 
@@ -1866,6 +1866,7 @@ export class FileTreeComponent implements OnInit {
         modifiedAt: node.modifiedAt,
         children: children.length > 0 ? children : undefined,
         expanded: isExpanded,
+        loading: node.type === 'directory' && isExpanded && this.loadingDirectoryPaths().has(node.path),
       });
     }
 
@@ -2029,7 +2030,7 @@ export class FileTreeComponent implements OnInit {
 
     pathsArray.forEach((path, index) => {
       setTimeout(() => {
-        this.listDirectoryRel(path);
+        this.listDirectoryRel(path, true);
       }, index * 50); // 50ms delay between each call
     });
   }
@@ -2064,7 +2065,7 @@ export class FileTreeComponent implements OnInit {
 
     pathsArray.forEach((path, index) => {
       setTimeout(() => {
-        this.listDirectoryRel(path);
+        this.listDirectoryRel(path, true);
       }, index * 50); // 50ms delay between each call
     });
   }

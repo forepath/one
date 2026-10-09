@@ -57,6 +57,8 @@ export interface AgentsState {
   restarting: Record<string, boolean>;
   // Errors per client
   errors: Record<string, string | null>;
+  /** Error of the last environment list load per client (e.g. workspace not reachable). */
+  listErrors: Record<string, string | null>;
   hasMore: Record<string, boolean>;
   nextOffset: Record<string, number>;
   search: Record<string, string | null>;
@@ -82,6 +84,7 @@ export const initialAgentsState: AgentsState = {
   stopping: {},
   restarting: {},
   errors: {},
+  listErrors: {},
   hasMore: {},
   nextOffset: {},
   search: {},
@@ -204,6 +207,7 @@ export const agentsReducer = createReducer(
     search: { ...state.search, [clientId]: params?.search?.trim() ? params.search.trim() : null },
     appendLoading: { ...state.appendLoading, [clientId]: false },
     appendError: { ...state.appendError, [clientId]: null },
+    listErrors: { ...state.listErrors, [clientId]: null },
   })),
   on(loadClientAgentsSuccess, (state, { clientId, agents, hasMore, nextOffset }) => ({
     ...updateClientState(state, clientId, () => ({
@@ -215,12 +219,14 @@ export const agentsReducer = createReducer(
     nextOffset: { ...state.nextOffset, [clientId]: nextOffset },
     appendLoading: { ...state.appendLoading, [clientId]: false },
     appendError: { ...state.appendError, [clientId]: null },
+    listErrors: { ...state.listErrors, [clientId]: null },
   })),
   on(loadClientAgentsFailure, (state, { clientId, error }) => ({
     ...updateClientState(state, clientId, () => ({
       loading: false,
       error,
     })),
+    listErrors: { ...state.listErrors, [clientId]: error },
     hasMore: { ...state.hasMore, [clientId]: false },
     appendLoading: { ...state.appendLoading, [clientId]: false },
   })),

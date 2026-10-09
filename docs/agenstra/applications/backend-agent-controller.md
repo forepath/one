@@ -60,6 +60,7 @@ In api-key mode, users do not play a role; these endpoints are not applicable.
 ### Proxied Agent Operations
 
 - `GET /api/clients/:id/agents` - List all agents for a client
+- `GET /api/clients/:id/agents/progress` - Running environment create / update operations of the workspace (proxied)
 - `GET /api/clients/:id/agents/:agentId` - Get a single agent by UUID
 - `POST /api/clients/:id/agents` - Create a new agent for a client (returns auto-generated password, saves credentials)
 - `POST /api/clients/:id/agents/:agentId` - Update an existing agent
@@ -376,6 +377,7 @@ See the application docs and environment configuration for complete environment 
 - `TICKETS_WEBSOCKET_NAMESPACE` - Ticket board namespace (default: `socket/tickets`)
 - `KNOWLEDGE_WEBSOCKET_NAMESPACE` - Knowledge board namespace (default: `socket/pages`)
 - `STATUS_WEBSOCKET_NAMESPACE` - Status notifications namespace (default: `socket/status`)
+- `STATUS_PROVISIONING_POLL_INTERVAL_MS` - Fast status poll while environment provisioning is running (default: `3000`, 1000–30000)
 - `WEBSOCKET_CORS_ORIGIN` - CORS origin(s) for WebSocket; falls back to `CORS_ORIGIN`, then `*` for Socket.IO
 - `NODE_ENV` - Environment mode (`development` or `production`)
 - **Migration:** `WEBSOCKET_PORT` and `CLIENTS_REMOTE_WS_PORT` are removed; re-provision existing stacks.

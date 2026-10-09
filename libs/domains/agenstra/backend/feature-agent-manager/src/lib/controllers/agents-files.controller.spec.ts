@@ -194,7 +194,7 @@ describe('AgentsFilesController', () => {
       const result = await controller.listDirectory(mockAgentId, mockDirectoryPath, undefined);
 
       expect(result).toEqual(mockFileNodes);
-      expect(service.listDirectory).toHaveBeenCalledWith(mockAgentId, mockDirectoryPath, 'app');
+      expect(service.listDirectory).toHaveBeenCalledWith(mockAgentId, mockDirectoryPath, 'app', false);
     });
 
     it('should use default path when not provided', async () => {
@@ -203,7 +203,13 @@ describe('AgentsFilesController', () => {
       const result = await controller.listDirectory(mockAgentId, undefined, undefined);
 
       expect(result).toEqual(mockFileNodes);
-      expect(service.listDirectory).toHaveBeenCalledWith(mockAgentId, '.', 'app');
+      expect(service.listDirectory).toHaveBeenCalledWith(mockAgentId, '.', 'app', false);
+    });
+
+    it('bypasses the directory index on explicit refresh', async () => {
+      service.listDirectory.mockResolvedValue(mockFileNodes);
+      await controller.listDirectory(mockAgentId, '.', undefined, 'true');
+      expect(service.listDirectory).toHaveBeenCalledWith(mockAgentId, '.', 'app', true);
     });
 
     it('should reject invalid context', async () => {

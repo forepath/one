@@ -150,6 +150,31 @@ export class FilesService {
     }
   }
 
+  /** Check notification contents without overwriting the cached editor body; evaluate known versions at response time. */
+  hasExternalTextChange(
+    clientId: string,
+    agentId: string,
+    filePath: string,
+    knownContents: () => readonly string[],
+    context: FileManagerContext = 'app',
+  ): Observable<boolean> {
+    return this.http
+      .get(this.fileUrl(clientId, agentId, filePath), {
+        params: this.contextParams(context),
+        responseType: 'arraybuffer',
+        observe: 'response',
+      })
+      .pipe(
+        map((response) => {
+          if (this.parseAgentFileType(response.headers.get('X-File-Type')) !== 'text' || !response.body) {
+            return true;
+          }
+
+          return !knownContents().includes(arrayBufferToUtf8(response.body));
+        }),
+      );
+  }
+
   /**
    * Probe file metadata via HEAD (no body transfer).
    */
@@ -450,6 +475,10 @@ export class FilesService {
 
     if (params?.path !== undefined) {
       httpParams = httpParams.set('path', params.path);
+    }
+
+    if (params?.refresh) {
+      httpParams = httpParams.set('refresh', 'true');
     }
 
     return this.http.get<FileNodeDto[]>(`${this.apiUrl}/clients/${clientId}/agents/${agentId}/files`, {

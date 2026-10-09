@@ -1,5 +1,5 @@
 const FILE_EXTENSION_ICON_MAP: Record<string, string> = {
-  ts: 'bi-filetype-ts',
+  tsx: 'bi-filetype-tsx',
   js: 'bi-filetype-js',
   json: 'bi-filetype-json',
   html: 'bi-filetype-html',
@@ -11,11 +11,7 @@ const FILE_EXTENSION_ICON_MAP: Record<string, string> = {
   xml: 'bi-filetype-xml',
   py: 'bi-filetype-py',
   java: 'bi-filetype-java',
-  c: 'bi-filetype-c',
-  cpp: 'bi-filetype-cpp',
   php: 'bi-filetype-php',
-  go: 'bi-filetype-go',
-  rs: 'bi-filetype-rs',
   mp3: 'bi-file-earmark-music',
   wav: 'bi-file-earmark-music',
   flac: 'bi-file-earmark-music',
@@ -24,13 +20,12 @@ const FILE_EXTENSION_ICON_MAP: Record<string, string> = {
   oga: 'bi-file-earmark-music',
   ogg: 'bi-file-earmark-music',
   opus: 'bi-file-earmark-music',
-  vue: 'bi-filetype-vue',
 };
 
 const DEFAULT_FILE_ICON_CLASS = 'bi-file-earmark';
 
 /**
- * Bootstrap Icons class for a file name (e.g. `bi-filetype-ts`).
+ * Bootstrap Icons class for a file name (e.g. `bi-filetype-js`).
  */
 export function fileIconClassForName(fileName: string): string {
   const baseName = fileName.split('/').pop() || fileName;

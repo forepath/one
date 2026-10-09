@@ -259,6 +259,11 @@ export const notificationsReducer = createReducer(
       };
     }
 
+    if (!patch.clients?.length && patch.spacesHasAttention === undefined) {
+      // e.g. progress-only patches (handled by the environment-progress slice)
+      return state;
+    }
+
     const clientsById = { ...state.clientsById };
 
     if (patch.clients?.length) {

@@ -28,6 +28,7 @@ describe('DockerService', () => {
   };
   let mockExec: {
     start: jest.Mock;
+    inspect: jest.Mock;
   };
   let mockStream: NodeJS.ReadWriteStream;
   let mockNetwork: {
@@ -81,6 +82,7 @@ describe('DockerService', () => {
     // Create mock exec
     mockExec = {
       start: jest.fn().mockResolvedValue(mockStream),
+      inspect: jest.fn().mockResolvedValue({ ExitCode: 0 }),
     };
 
     // Create mock container
@@ -1346,6 +1348,15 @@ describe('DockerService', () => {
 
   describe('sendCommandToContainer', () => {
     const containerId = 'test-container-id';
+    const frame = (type: number, text: string): Buffer => {
+      const payload = Buffer.from(text);
+      const header = Buffer.alloc(8);
+
+      header[0] = type;
+      header.writeUInt32BE(payload.length, 4);
+
+      return Buffer.concat([header, payload]);
+    };
 
     beforeEach(() => {
       // Reset stream mock for each test
@@ -1375,7 +1386,7 @@ describe('DockerService', () => {
 
     it('should execute a command without input and return output', async () => {
       mockContainer.inspect.mockResolvedValue({});
-      const outputData = Buffer.from([1, 0, 0, 0, 12, 116, 101, 115, 116, 32, 111, 117, 116, 112, 117, 116]); // Docker format: stdout + "test output"
+      const outputData = frame(1, 'test output');
 
       mockStream.on = jest.fn((event: string, callback: (chunk?: Buffer) => void) => {
         if (event === 'data') {
@@ -1402,7 +1413,68 @@ describe('DockerService', () => {
       });
       expect(mockStream.write).not.toHaveBeenCalled();
       expect(mockStream.end).toHaveBeenCalled();
-      expect(result).toBeTruthy();
+      expect(result).toBe('test output');
+    });
+
+    it.each(['end', 'close', 'error'])(
+      'decodes split 8-byte frames on %s without leaking payload lengths',
+      async (completion) => {
+        mockContainer.inspect.mockResolvedValue({});
+        const listing = '.\n..\nagenstra\ndecabill\nforepath\nshared\n';
+        const bytes = Buffer.concat([frame(1, listing), frame(2, 'diagnostic\n')]);
+
+        mockStream.on = jest.fn((event: string, callback: (value?: Buffer | Error) => void) => {
+          if (event === 'data') {
+            setTimeout(() => {
+              callback(bytes.subarray(0, 3));
+              callback(bytes.subarray(3, 15));
+              callback(bytes.subarray(15));
+            }, 5);
+          } else if (event === completion) {
+            setTimeout(
+              () => callback(completion === 'error' ? Object.assign(new Error('EPIPE'), { code: 'EPIPE' }) : undefined),
+              10,
+            );
+          }
+          return mockStream;
+        });
+
+        expect(await service.sendCommandToContainer(containerId, ['ls', '/app/apps'])).toBe(`${listing}diagnostic`);
+      },
+    );
+
+    it('checks nonzero exec exit codes using decoded stderr', async () => {
+      mockContainer.inspect.mockResolvedValue({});
+      mockExec.inspect.mockResolvedValue({ ExitCode: 2 });
+      mockStream.on = jest.fn((event: string, callback: (chunk?: Buffer) => void) => {
+        if (event === 'data') {
+          setTimeout(() => callback(frame(2, 'ls: Permission denied\n')), 5);
+        } else if (event === 'end' || event === 'close') {
+          setTimeout(() => callback(), 10);
+        }
+        return mockStream;
+      });
+
+      await expect(service.sendCommandToContainer(containerId, ['ls', '/app/apps'], undefined, true)).rejects.toThrow(
+        'ls: Permission denied',
+      );
+    });
+
+    it('rejects a truncated frame rather than returning corrupt filesystem output', async () => {
+      mockContainer.inspect.mockResolvedValue({});
+      const bytes = frame(1, 'apps\n');
+      mockStream.on = jest.fn((event: string, callback: (chunk?: Buffer) => void) => {
+        if (event === 'data') {
+          setTimeout(() => callback(bytes.subarray(0, bytes.length - 1)), 5);
+        } else if (event === 'end') {
+          setTimeout(() => callback(), 10);
+        }
+        return mockStream;
+      });
+
+      await expect(service.sendCommandToContainer(containerId, 'ls')).rejects.toThrow(
+        'Incomplete Docker exec output frame',
+      );
     });
 
     it('should execute a command with arguments', async () => {
@@ -1552,7 +1624,7 @@ describe('DockerService', () => {
 
     it('should ignore EPIPE errors when closing stream and return output', async () => {
       mockContainer.inspect.mockResolvedValue({});
-      const outputData = Buffer.from([1, 0, 0, 0, 11, 116, 101, 115, 116, 32, 111, 117, 116, 112, 117, 116]); // Docker format
+      const outputData = frame(1, 'test output');
       const handlers: { [key: string]: Array<(arg?: unknown) => void> } = {};
 
       mockStream.on = jest.fn((event: string, callback: (error?: unknown, chunk?: Buffer) => void) => {
@@ -2380,6 +2452,51 @@ describe('DockerService', () => {
 
       expect(mockDocker.getImage).toHaveBeenCalledWith('missing:image');
       expect((mockDocker as any).pull).toHaveBeenCalledWith('missing:image', expect.any(Function));
+    });
+
+    it('should report aggregated pull progress through onProgress', async () => {
+      mockImage.inspect.mockRejectedValue({ statusCode: 404 });
+      (mockDocker as any).modem = {
+        followProgress: (
+          _s: unknown,
+          done: (err?: unknown) => void,
+          onEvent?: (event: Record<string, unknown>) => void,
+        ) => {
+          onEvent?.({ id: 'layer-a', status: 'Downloading', progressDetail: { current: 50, total: 100 } });
+          onEvent?.({ id: 'layer-a', status: 'Download complete' });
+          onEvent?.({ id: 'layer-a', status: 'Pull complete' });
+          done();
+        },
+      };
+      const onProgress = jest.fn();
+
+      await service.ensureImageExists('missing:image', onProgress);
+
+      const fractions = onProgress.mock.calls.map(([fraction]) => fraction as number);
+
+      expect(fractions.length).toBeGreaterThan(0);
+      expect(fractions).toEqual([...fractions].sort((a, b) => a - b));
+      expect(fractions.at(-1)).toBe(1);
+    });
+
+    it('should not fail the pull when the progress callback throws', async () => {
+      mockImage.inspect.mockRejectedValue({ statusCode: 404 });
+      (mockDocker as any).modem = {
+        followProgress: (
+          _s: unknown,
+          done: (err?: unknown) => void,
+          onEvent?: (event: Record<string, unknown>) => void,
+        ) => {
+          onEvent?.({ id: 'layer-a', status: 'Pull complete' });
+          done();
+        },
+      };
+
+      await expect(
+        service.ensureImageExists('missing:image', () => {
+          throw new Error('listener failure');
+        }),
+      ).resolves.toBeUndefined();
     });
 
     it('should rethrow when image inspect fails with a non-404 error', async () => {

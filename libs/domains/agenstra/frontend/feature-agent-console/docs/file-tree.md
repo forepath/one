@@ -15,6 +15,10 @@ Tree rows use soft background washes (no dots or side accents):
 
 Clipboard highlights apply to **topmost clipboard roots** only. They clear when the clipboard is cleared (after a successful cut paste, or when a new copy/cut replaces it).
 
+## Row actions and label width
+
+The workspace file tree and configuration-layer file tree render nested files and folders with recursive row templates and depth-based indentation. Row actions overlay the right edge on hover or keyboard focus instead of reserving label space. Names can extend behind the actions and truncate only at the row's padded edge; revealing actions does not change the label width. Hidden actions do not intercept pointer clicks.
+
 ## Selection
 
 - **Plain click** selects one item (and opens a file / toggles a folder).

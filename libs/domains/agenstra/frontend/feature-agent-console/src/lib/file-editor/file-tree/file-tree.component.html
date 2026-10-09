@@ -166,7 +166,7 @@
       [class.dragging]="draggedItem()?.path === node.path"
       [class.drag-over]="dragOverPath() === node.path && node.type === 'directory'"
       [class.tree-node-busy]="isPathBusy(node.path)"
-      [attr.aria-busy]="isPathBusy(node.path) ? true : null"
+      [attr.aria-busy]="isPathBusy(node.path) || node.loading ? true : null"
       [attr.aria-current]="isPathOpen(node.path) ? 'page' : null"
       [attr.data-clipboard]="isPathClipboardCopy(node.path) ? 'copy' : isPathClipboardCut(node.path) ? 'cut' : null"
       [draggable]="!isPathBusy(node.path)"
@@ -190,7 +190,15 @@
 
       <!-- Node content -->
       <div class="tree-node-content d-flex align-items-center flex-grow-1">
-        @if (isPathBusy(node.path)) {
+        @if (node.loading) {
+          <fpc-spinner
+            class="me-2 tree-node-busy-spinner"
+            size="sm"
+            variant="primary"
+            i18n-label="@@featureFileTree-loading"
+            label="Loading..."
+          />
+        } @else if (isPathBusy(node.path)) {
           <fpc-spinner
             class="me-2 tree-node-busy-spinner"
             size="sm"

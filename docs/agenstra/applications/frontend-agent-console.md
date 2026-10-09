@@ -60,6 +60,15 @@ The application uses NgRx for state management with the following state slices:
 - Agent loading states
 - Agent operations (create, update, delete)
 
+### Environment progress state (`environmentProgress`)
+
+- Running environment create / update operations per workspace (`EnvironmentProgressFacade`)
+- Selected workspace: REST snapshot (`GET /clients/:id/agents/progress`) on `setClientSuccess` / remote reconnect plus forwarded `environmentProgress` socket events
+- Other workspaces: `environmentProgress` from the `socket/status` snapshot / patches
+- Create / update environment modals: `getCreateEnvironmentProgress$` (running create matched by name) and `getEnvironmentProgressForAgent$` drive the progress shown next to the loading submit button
+- Aggregates (average + stacked segments) for the workspace list
+- The agents slice tracks list load errors separately (`listErrors`) to flag unreachable workspaces
+
 ### Sockets State
 
 - WebSocket connection status
@@ -152,7 +161,7 @@ Main container component that provides the layout and routing structure.
 
 ### AgentConsoleChatComponent
 
-Main workspace shell: chat (including a **session switcher** for multiple user-visible chat sessions per environment, with per-session unread badges), file tree, Git, environment variables, deployments entry, statistics, and modals for client and agent management. Sessions are managed via controller `/clients/{id}/agents/{agentId}/chats` and restored over WebSocket with `login` / `restoreChat` `chatId` (see [Chat Interface](../features/chat-interface.md)). Unread status for each visible session comes from the `status` WebSocket snapshot/patch (`environments[].chats[]`).
+Main workspace shell: chat (including a **session switcher** for multiple user-visible chat sessions per environment, with per-session unread badges), file tree, Git, environment variables, deployments entry, statistics, and modals for client and agent management. Sessions are managed via controller `/clients/{id}/agents/{agentId}/chats` and restored over WebSocket with `login` / `restoreChat` `chatId` (see [Chat Interface](../features/chat-interface.md)). Unread status for each visible session comes from the `status` WebSocket snapshot/patch (`environments[].chats[]`). Environment and workspace entries show `fpc-progress` bars while environments are created or updated; when the selected workspace cannot be reached, the environments list shows an unavailable-content empty state below the search with the connection error, search/add controls are disabled, and the workspace entry shows a warning icon.
 
 ### TicketsBoardComponent
 

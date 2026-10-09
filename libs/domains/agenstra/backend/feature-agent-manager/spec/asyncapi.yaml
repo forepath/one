@@ -169,7 +169,7 @@ channels:
     messages:
       terminalCreatedEvent:
         $ref: '#/components/messages/TerminalCreated'
-    description: Server acknowledges successful terminal creation. Terminal session is client-specific (socket.id based).
+    description: Server acknowledges successful terminal creation before emitting any terminalOutput for this session. Initial PTY output is buffered during creation. Terminal session is client-specific (socket.id based).
   agents/terminalInput:
     address: agents/terminalInput
     messages:
@@ -214,6 +214,26 @@ channels:
     description: |
       Broadcast after workspace tools that may mutate git state succeed (debounced).
       Clients should refresh git status / dirty indicators. Envelope matches other success broadcasts.
+  agents/environmentProgress:
+    address: agents/environmentProgress
+    messages:
+      environmentProgressEvent:
+        $ref: '#/components/messages/EnvironmentProgress'
+    description: |
+      Broadcast to every connected socket (no agent login required) whenever an environment create or
+      container-recreating update (environment variables, workspace configuration overrides, OpenCode config sync)
+      changes step or percentage. Terminal events (status completed/failed) are emitted once; afterwards the
+      operation is no longer listed by `GET /api/agents/progress`.
+  agents/opencodeConfigSynced:
+    address: agents/opencodeConfigSynced
+    messages:
+      opencodeConfigSyncedEvent:
+        $ref: '#/components/messages/OpencodeConfigSynced'
+    description: |
+      Broadcast to every connected socket (no agent login required) after effective OpenCode config
+      and secrets have successfully been applied to the worker. Includes config-only updates as well
+      as container recreation and changes inherited from workspace/global layers. Clients refresh
+      cached model and slash-command catalogs for the affected agent. Failed/deferred syncs do not emit.
   agents/workspaceIndexChanged:
     address: agents/workspaceIndexChanged
     messages:
@@ -399,6 +419,18 @@ operations:
       $ref: '#/channels/agents~1gitStateChanged'
     messages:
       - $ref: '#/channels/agents~1gitStateChanged/messages/gitStateChangedEvent'
+  serverBroadcastsEnvironmentProgress:
+    action: receive
+    channel:
+      $ref: '#/channels/agents~1environmentProgress'
+    messages:
+      - $ref: '#/channels/agents~1environmentProgress/messages/environmentProgressEvent'
+  serverBroadcastsOpencodeConfigSynced:
+    action: receive
+    channel:
+      $ref: '#/channels/agents~1opencodeConfigSynced'
+    messages:
+      - $ref: '#/channels/agents~1opencodeConfigSynced/messages/opencodeConfigSyncedEvent'
   serverBroadcastsWorkspaceIndexChanged:
     action: receive
     channel:
@@ -1395,6 +1427,113 @@ components:
                 type: string
                 format: date-time
                 description: When the change signal was produced
+          timestamp:
+            type: string
+            format: date-time
+            description: Envelope timestamp
+    OpencodeConfigSynced:
+      name: OpencodeConfigSynced
+      title: Effective OpenCode config applied
+      contentType: application/json
+      payload:
+        type: object
+        required: [success, data, timestamp]
+        properties:
+          success:
+            type: boolean
+            const: true
+          data:
+            type: object
+            required: [agentId]
+            properties:
+              agentId:
+                type: string
+                format: uuid
+          timestamp:
+            type: string
+            format: date-time
+    EnvironmentProgress:
+      name: EnvironmentProgress
+      title: Environment provisioning progress
+      contentType: application/json
+      payload:
+        type: object
+        required: [success, data, timestamp]
+        properties:
+          success:
+            type: boolean
+            enum: [true]
+          data:
+            type: object
+            required:
+              [
+                operationId,
+                agentId,
+                agentName,
+                operation,
+                status,
+                step,
+                stepIndex,
+                stepCount,
+                progress,
+                startedAt,
+                updatedAt,
+              ]
+            properties:
+              operationId:
+                type: string
+                format: uuid
+                description: Unique id of the provisioning operation
+              agentId:
+                type: [string, 'null']
+                format: uuid
+                description: Agent UUID; null while a newly created environment is not persisted yet
+              agentName:
+                type: string
+              operation:
+                type: string
+                enum: [create, update]
+                description: create = new environment; update = container recreation (environment variables, workspace overrides, config sync)
+              status:
+                type: string
+                enum: [running, completed, failed]
+                description: Terminal statuses (completed/failed) are emitted once and then dropped from the active list
+              step:
+                type: string
+                enum:
+                  [
+                    queued,
+                    preparing,
+                    pullingImage,
+                    creatingContainer,
+                    preparingRepository,
+                    persisting,
+                    waitingForHealthy,
+                    summarizingContext,
+                    recreatingContainer,
+                    finalizing,
+                  ]
+              stepIndex:
+                type: integer
+                minimum: 0
+                description: Zero-based index of the current step in the operation plan
+              stepCount:
+                type: integer
+                minimum: 1
+              progress:
+                type: integer
+                minimum: 0
+                maximum: 100
+                description: Weighted overall percentage (monotonic; 100 only on completion). Image pull reports real layer byte progress.
+              error:
+                type: string
+                description: Failure reason when status is failed
+              startedAt:
+                type: string
+                format: date-time
+              updatedAt:
+                type: string
+                format: date-time
           timestamp:
             type: string
             format: date-time

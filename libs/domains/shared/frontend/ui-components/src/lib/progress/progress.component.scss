@@ -11,3 +11,17 @@
   line-height: 1;
   padding-inline: 0.25rem;
 }
+
+.progress-stacked {
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+}
+
+.progress-stacked > .progress {
+  border-radius: 0;
+}
+
+.fpc-progress__label--stacked {
+  display: block;
+  margin-top: 0.125rem;
+  text-align: end;
+}

@@ -45,6 +45,10 @@ paths:
                   $ref: '#/components/schemas/AgentResponseDto'
     post:
       summary: Create agent
+      description: |
+        Prepares the workspace repository and Git credentials as the worker runtime user.
+        Repository preparation failures (including authentication or clone errors) abort creation
+        and clean up the container; a failed clone is not reported as a ready environment.
       operationId: createAgent
       requestBody:
         required: true
@@ -59,6 +63,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateAgentResponseDto'
+  /agents/progress:
+    get:
+      summary: List active environment provisioning operations
+      description: |
+        Returns running create / container-recreating update operations of this manager (oldest first) so clients can
+        render progress immediately. Live updates are broadcast via the `environmentProgress` Socket.IO event (see AsyncAPI).
+      operationId: getEnvironmentProgress
+      responses:
+        '200':
+          description: Active environment progress operations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EnvironmentProgressDto'
   /agents/{id}:
     get:
       summary: Get agent by id
@@ -456,6 +476,10 @@ paths:
   /agents/{id}/opencode/config/sync:
     post:
       summary: Best-effort sync effective OpenCode config into worker
+      description: |
+        After successfully applying effective config and secrets, broadcasts `opencodeConfigSynced`
+        on `socket/agents` with `data: { agentId }` so clients can refresh cached model and command catalogs.
+        Applies to config-only updates and container recreation; failed/deferred syncs do not broadcast.
       operationId: syncAgentOpencodeConfig
       parameters:
         - in: path
@@ -751,6 +775,9 @@ paths:
   /agents/{agentId}/files:
     get:
       summary: List directory contents
+      description: |
+        Relative paths such as apps resolve under the worker workspace root (normally /app).
+        Directory listing and metadata command failures are returned as errors, not empty arrays.
       operationId: listDirectory
       parameters:
         - in: path
@@ -2242,6 +2269,77 @@ components:
         default: app
       description: Filesystem root for relative paths. `app` (default) uses the provider workspace root (e.g. /app).
   schemas:
+    EnvironmentProgressDto:
+      type: object
+      required:
+        [
+          operationId,
+          agentId,
+          agentName,
+          operation,
+          status,
+          step,
+          stepIndex,
+          stepCount,
+          progress,
+          startedAt,
+          updatedAt,
+        ]
+      properties:
+        operationId:
+          type: string
+          format: uuid
+          description: Unique id of the provisioning operation
+        agentId:
+          type: [string, 'null']
+          format: uuid
+          description: Agent UUID; null while a newly created environment is not persisted yet
+        agentName:
+          type: string
+        operation:
+          type: string
+          enum: [create, update]
+          description: create = new environment; update = container recreation (environment variables, workspace overrides, config sync)
+        status:
+          type: string
+          enum: [running, completed, failed]
+          description: Terminal statuses (completed/failed) are emitted once and then dropped from the active list
+        step:
+          type: string
+          enum:
+            [
+              queued,
+              preparing,
+              pullingImage,
+              creatingContainer,
+              preparingRepository,
+              persisting,
+              waitingForHealthy,
+              summarizingContext,
+              recreatingContainer,
+              finalizing,
+            ]
+        stepIndex:
+          type: integer
+          minimum: 0
+          description: Zero-based index of the current step in the operation plan
+        stepCount:
+          type: integer
+          minimum: 1
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Weighted overall percentage (monotonic; 100 only on completion). Image pull reports real layer byte progress.
+        error:
+          type: string
+          description: Failure reason when status is failed
+        startedAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
     CreateAgentDto:
       type: object
       required: [name]

@@ -6,6 +6,7 @@ import { AgentsDeploymentsController } from '../controllers/agents-deployments.c
 import { AgentsMessagesController } from '../controllers/agents-messages.controller';
 import { AgentsController } from '../controllers/agents.controller';
 import { InstanceStatusController } from '../controllers/instance-status.controller';
+import { AgentDirectoryIndexEntity } from '../entities/agent-directory-index.entity';
 import { AgentChatSessionEntity } from '../entities/agent-chat-session.entity';
 import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-variable.entity';
 import { AgentMessageEventEntity } from '../entities/agent-message-event.entity';
@@ -79,6 +80,8 @@ describe('AgentsModule', () => {
       .overrideProvider(getRepositoryToken(AgentEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(AgentMessageEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(AgentDirectoryIndexEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(AgentChatSessionEntity))
       .useValue(mockRepository)

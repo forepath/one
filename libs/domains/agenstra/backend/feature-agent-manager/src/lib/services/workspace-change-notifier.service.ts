@@ -29,6 +29,21 @@ export class WorkspaceChangeNotifierService {
   private readonly logger = new Logger(WorkspaceChangeNotifierService.name);
   private indexBroadcaster?: IndexChangedBroadcaster;
   private fileUpdateBroadcaster?: FileUpdateBroadcaster;
+  private readonly treeInvalidators = new Set<(agentId: string) => Promise<void>>();
+
+  registerTreeInvalidator(invalidate: (agentId: string) => Promise<void>): () => void {
+    this.treeInvalidators.add(invalidate);
+
+    return () => this.treeInvalidators.delete(invalidate);
+  }
+
+  private invalidateTree(agentId: string): void {
+    for (const invalidate of this.treeInvalidators) {
+      void invalidate(agentId).catch((error: unknown) => {
+        this.logger.error(`Directory index invalidation failed for agent ${agentId}: ${String(error)}`);
+      });
+    }
+  }
 
   registerIndexBroadcaster(broadcaster: IndexChangedBroadcaster): void {
     this.indexBroadcaster = broadcaster;
@@ -39,6 +54,10 @@ export class WorkspaceChangeNotifierService {
   }
 
   notifyPathChanges(agentId: string, changes: WorkspaceIndexPathChange[], reason: string): void {
+    if (changes.length > 0) {
+      this.invalidateTree(agentId);
+    }
+
     const filtered = changes.filter((change) => !shouldIgnoreWorkspaceIndexPath(change.path));
 
     if (filtered.length === 0) {
@@ -68,6 +87,7 @@ export class WorkspaceChangeNotifierService {
   }
 
   notifyRebuildRequired(agentId: string, reason: string, paths?: string[]): void {
+    this.invalidateTree(agentId);
     const timestamp = new Date().toISOString();
     const payload: WorkspaceIndexRebuildRequiredData = {
       agentId,

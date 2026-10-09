@@ -14,7 +14,9 @@ const meta: Meta<SearchFieldStoryArgs> = {
       description: {
         component: `**When to use:** Console list/board search strips (\`appearance="default"\`: leading search glyph, optional clear) or landing / blog heroes (\`appearance="marketing"\` + \`size="xl"\`).
 
-**When not to:** Typeahead with suggestion menus → \`fpc-typeahead-select\`.`,
+**When not to:** Typeahead with suggestion menus → \`fpc-typeahead-select\`.
+
+**Disabled:** The leading icon strip matches the disabled input background, including when disabled through Angular forms.`,
       },
     },
   },
