@@ -1125,7 +1125,20 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
   @SubscribeMessage(CLIENT_CHAT_PLAN_EVENTS.refineChatPlan)
   async handleRefineChatPlan(
-    @MessageBody() data: { agentId?: string; planId?: string; message?: string; correlationId?: string },
+    @MessageBody()
+    data: {
+      agentId?: string;
+      planId?: string;
+      message?: string;
+      correlationId?: string;
+      contextInjection?: {
+        includeWorkspace?: boolean;
+        environmentIds?: string[];
+        autoEnrichmentEnabled?: boolean;
+        ticketShas?: string[];
+        knowledgeShas?: string[];
+      };
+    },
     @ConnectedSocket() socket: Socket,
   ): Promise<void> {
     const clientId = this.selectedClientBySocket.get(socket.id);
@@ -1154,7 +1167,20 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         return;
       }
 
-      this.chatPlanOrchestrator.startRefine(planId, message);
+      let contextInjection: ChatPlanContextInjectionJson | undefined;
+
+      if (data.contextInjection) {
+        const enrichedPayload = (await this.enrichForwardPayloadWithTicketContext(clientId, {
+          message,
+          contextInjection: data.contextInjection,
+        })) as {
+          contextInjection?: ChatPlanContextInjectionJson;
+        };
+
+        contextInjection = enrichedPayload.contextInjection ?? data.contextInjection;
+      }
+
+      this.chatPlanOrchestrator.startRefine(planId, message, contextInjection);
       socket.emit('forwardAck', { received: true, event: CLIENT_CHAT_PLAN_EVENTS.refineChatPlan, planId });
     } catch (error: unknown) {
       socket.emit('error', { message: 'Plan not found' });
@@ -1193,6 +1219,43 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
       this.chatPlanOrchestrator.startExecute(planId, data.correlationId);
       socket.emit('forwardAck', { received: true, event: CLIENT_CHAT_PLAN_EVENTS.executeChatPlan, planId });
+    } catch (error: unknown) {
+      socket.emit('error', { message: 'Plan not found' });
+    }
+  }
+
+  @SubscribeMessage(CLIENT_CHAT_PLAN_EVENTS.retryChatPlan)
+  async handleRetryChatPlan(
+    @MessageBody() data: { agentId?: string; planId?: string; correlationId?: string },
+    @ConnectedSocket() socket: Socket,
+  ): Promise<void> {
+    const clientId = this.selectedClientBySocket.get(socket.id);
+
+    if (!clientId) {
+      socket.emit('error', { message: 'No client selected. Call setClient first.' });
+
+      return;
+    }
+
+    const planId = data?.planId;
+
+    if (!planId) {
+      socket.emit('error', { message: 'planId is required' });
+
+      return;
+    }
+
+    try {
+      const plan = await this.chatPlanService.getEntityOrThrow(planId);
+
+      if (plan.clientId !== clientId || (data.agentId && plan.agentId !== data.agentId)) {
+        socket.emit('error', { message: 'Plan not found' });
+
+        return;
+      }
+
+      this.chatPlanOrchestrator.startRetry(planId, data.correlationId);
+      socket.emit('forwardAck', { received: true, event: CLIENT_CHAT_PLAN_EVENTS.retryChatPlan, planId });
     } catch (error: unknown) {
       socket.emit('error', { message: 'Plan not found' });
     }

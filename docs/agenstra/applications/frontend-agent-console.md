@@ -11,6 +11,7 @@ This application provides a comprehensive user interface for managing clients, a
 This application provides:
 
 - **Chat Interface** Real-time bidirectional communication with AI agents via WebSocket
+- **Chat plan mode** Composer-driven explore/refine/execute planning flow with chat-scoped timeline cards and modal refinement UI ([Chat plan mode](../features/chat-plan-mode.md))
 - **Monaco Editor** Integrated code editor with syntax highlighting and code completion
 - **File Management** Browse, read, write, create, and delete files in agent containers
 - **Version Control** Full Git operations (status, branches, commit, push, pull, rebase)

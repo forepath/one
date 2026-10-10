@@ -4,6 +4,7 @@ import {
   chatTimelineAutomationUpsert,
   chatTimelineBatchReceived,
   chatTimelineClear,
+  chatTimelineEventReceived,
   chatTimelineMessageReceived,
   chatTimelinePlanUpsert,
   chatTimelineRestoreRequested,
@@ -253,6 +254,51 @@ describe('chatTimelineReducer', () => {
     );
 
     expect(state.messages.map((m) => m.id)).toEqual(['m1', 'm2']);
+  });
+
+  it('dedupes live chat events by eventId', () => {
+    let state = chatTimelineReducer(
+      initialChatTimelineState,
+      chatTimelineEventReceived({
+        payload: {
+          success: true,
+          data: {
+            eventId: 'evt-1',
+            agentId: 'a1',
+            correlationId: 'corr-1',
+            sequence: 1,
+            timestamp: new Date(1000).toISOString(),
+            kind: 'status',
+            payload: { message: 'first' },
+          },
+          timestamp: new Date(1000).toISOString(),
+        },
+        chatId,
+      }),
+    );
+
+    state = chatTimelineReducer(
+      state,
+      chatTimelineEventReceived({
+        payload: {
+          success: true,
+          data: {
+            eventId: 'evt-1',
+            agentId: 'a1',
+            correlationId: 'corr-1',
+            sequence: 1,
+            timestamp: new Date(1001).toISOString(),
+            kind: 'status',
+            payload: { message: 'updated' },
+          },
+          timestamp: new Date(1001).toISOString(),
+        },
+        chatId,
+      }),
+    );
+
+    expect(state.events).toHaveLength(1);
+    expect(state.events[0]?.payload.data.payload).toEqual({ message: 'updated' });
   });
 
   it('dedupes automations by run.id', () => {

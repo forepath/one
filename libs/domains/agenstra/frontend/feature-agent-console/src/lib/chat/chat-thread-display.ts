@@ -36,6 +36,7 @@ import {
   extractInteractionQueryPreviewText,
   extractThinkingPreviewText,
   formatAgentResponseForChatMarkdown,
+  parseAgentResponseObjectsFromString,
   stripHiddenPromptBlocks,
 } from './agent-chat-response-markdown';
 
@@ -297,6 +298,42 @@ function appendMarkdownToSegments(segments: AgentTurnSegment[], md: string, trac
   } else {
     segments.push({ kind: 'markdown', markdown: trimmed, trackId });
   }
+}
+
+export function appendAgentResponseToSegments(
+  segments: AgentTurnSegment[],
+  response: AgentResponseObject | string,
+  trackId: string,
+  displayTimestampMs: number,
+): void {
+  if (typeof response === 'string') {
+    const parsedParts = parseAgentResponseObjectsFromString(response);
+
+    if (parsedParts) {
+      parsedParts.forEach((part, index) =>
+        appendAgentResponseToSegments(segments, part, `${trackId}-part-${index}`, displayTimestampMs),
+      );
+
+      return;
+    }
+
+    appendMarkdownToSegments(segments, formatAgentResponseForChatMarkdown(response), trackId);
+
+    return;
+  }
+
+  if (shouldOmitAgentPartFromTranscript(response)) {
+    return;
+  }
+
+  const row = mapAgentResponseObjectToDisplayRow(response, trackId, displayTimestampMs);
+
+  if (row) {
+    segments.push({ kind: 'row', row });
+    return;
+  }
+
+  appendMarkdownToSegments(segments, stripHiddenPromptBlocks(formatAgentResponseForChatMarkdown(response)), trackId);
 }
 
 function isUserPayload(payload: ForwardedEventPayload): boolean {
@@ -591,6 +628,10 @@ function isMessageDropped(messageData: ChatMessageData): boolean {
 function shouldOmitAgentPartFromTranscript(part: AgentResponseObject): boolean {
   const t = part.type;
 
+  if (t === 'delta') {
+    return true;
+  }
+
   if (t === 'status') {
     const subtype = typeof part['subtype'] === 'string' ? part['subtype'] : '';
     const title = typeof part['title'] === 'string' ? part['title'].trim() : '';
@@ -620,27 +661,7 @@ function buildViewFromParts(parts: AgentResponseObject[], baseTimestamp: number)
   let i = 0;
 
   for (const part of parts) {
-    if (part.type === 'delta') {
-      continue;
-    }
-
-    if (shouldOmitAgentPartFromTranscript(part)) {
-      i += 1;
-      continue;
-    }
-
-    const row = mapAgentResponseObjectToDisplayRow(part, `part-${baseTimestamp}-${i}`, baseTimestamp);
-
-    if (row) {
-      segments.push({ kind: 'row', row });
-    } else {
-      const md = stripHiddenPromptBlocks(formatAgentResponseForChatMarkdown(part));
-
-      if (md.trim()) {
-        appendMarkdownToSegments(segments, md, `md-${baseTimestamp}-${i}`);
-      }
-    }
-
+    appendAgentResponseToSegments(segments, part, `part-${baseTimestamp}-${i}`, baseTimestamp);
     i += 1;
   }
 
@@ -695,21 +716,7 @@ export function buildAgentTurnView(msgs: ChatMessageWithFilter[]): AgentTurnView
 
     const r = data.response;
 
-    if (typeof r === 'string') {
-      const md = formatAgentResponseForChatMarkdown(r);
-
-      appendMarkdownToSegments(segments, md, `md-${msg.timestamp}-${idx}`);
-    } else {
-      const row = mapAgentResponseObjectToDisplayRow(r, `m-${msg.timestamp}-${idx}`, msg.timestamp);
-
-      if (row) {
-        segments.push({ kind: 'row', row });
-      } else {
-        const md = formatAgentResponseForChatMarkdown(r);
-
-        appendMarkdownToSegments(segments, md, `md-${msg.timestamp}-${idx}`);
-      }
-    }
+    appendAgentResponseToSegments(segments, r, `m-${msg.timestamp}-${idx}`, msg.timestamp);
 
     idx += 1;
   }

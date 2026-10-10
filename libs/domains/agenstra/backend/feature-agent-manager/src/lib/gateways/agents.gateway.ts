@@ -1241,14 +1241,15 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
           },
         ];
       }
+
+      return [];
     }
 
-    const text =
-      typeof response.result === 'string'
-        ? response.result
-        : response.result !== undefined && response.result !== null
-          ? String(response.result)
-          : '';
+    const text = typeof response.result === 'string' ? response.result : '';
+
+    if (!text) {
+      return [];
+    }
 
     return [
       {

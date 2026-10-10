@@ -124,6 +124,32 @@ function toEventRow(
   };
 }
 
+function extractChatEventId(payload: SuccessResponse<AgentEventEnvelope>): string | null {
+  const id = payload.data?.eventId;
+
+  return typeof id === 'string' && id.trim().length > 0 ? id : null;
+}
+
+function appendEventDeduped(existing: ChatTimelineEventRow[], incoming: ChatTimelineEventRow): ChatTimelineEventRow[] {
+  const id = extractChatEventId(incoming.payload);
+
+  if (!id) {
+    return [...existing, incoming];
+  }
+
+  const index = existing.findIndex((row) => extractChatEventId(row.payload) === id);
+
+  if (index < 0) {
+    return [...existing, incoming];
+  }
+
+  const next = [...existing];
+
+  next[index] = incoming;
+
+  return next;
+}
+
 function toFilterResult(
   data: MessageFilterResultData | ChatTimelineFilterResult,
   chatId: string | undefined,
@@ -299,7 +325,7 @@ export const chatTimelineReducer = createReducer(
 
     return {
       ...state,
-      events: [...state.events, row],
+      events: appendEventDeduped(state.events, row),
     };
   }),
   on(chatTimelineFilterReceived, (state, { payload, chatId }) => {

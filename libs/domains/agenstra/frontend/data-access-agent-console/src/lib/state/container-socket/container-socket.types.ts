@@ -490,7 +490,7 @@ export interface ChatPlanResponse {
   updatedAt: string;
 }
 
-export type ChatPlanChatActionType = 'openChatPlan' | 'executeChatPlan';
+export type ChatPlanChatActionType = 'openChatPlan' | 'executeChatPlan' | 'retryChatPlan' | 'cancelChatPlan';
 
 export interface ChatPlanChatOpenAction {
   type: 'openChatPlan';
@@ -506,7 +506,30 @@ export interface ChatPlanChatExecuteAction {
   label: string;
 }
 
-export type ChatPlanChatAction = ChatPlanChatOpenAction | ChatPlanChatExecuteAction;
+export interface ChatPlanChatRetryAction {
+  type: 'retryChatPlan';
+  planId: string;
+  chatId: string;
+  label: string;
+}
+
+export interface ChatPlanChatCancelAction {
+  type: 'cancelChatPlan';
+  planId: string;
+  chatId: string;
+  label: string;
+}
+
+export type ChatPlanChatAction =
+  | ChatPlanChatOpenAction
+  | ChatPlanChatExecuteAction
+  | ChatPlanChatRetryAction
+  | ChatPlanChatCancelAction;
+
+export interface ChatPlanLiveTimelineEvent {
+  payload: unknown;
+  timestamp: number;
+}
 
 /** Controller-originated `chatPlanUpsert` payload (clients namespace). */
 export interface ChatPlanChatEventPayload {
@@ -514,6 +537,7 @@ export interface ChatPlanChatEventPayload {
   hydrate: boolean;
   plan: ChatPlanResponse;
   actions: ChatPlanChatAction[];
+  timelineEvents?: ChatPlanLiveTimelineEvent[];
 }
 
 /** Controller-originated `ticketAutomationRunChatUpsert` payload (clients namespace). */

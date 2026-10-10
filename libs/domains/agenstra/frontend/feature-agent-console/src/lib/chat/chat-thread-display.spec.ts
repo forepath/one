@@ -338,6 +338,19 @@ describe('buildAgentTurnView', () => {
     expect(view.segments.some((s) => s.kind === 'row' && s.row.kind === 'question')).toBe(true);
     expect(view.segments.some((s) => s.kind === 'row' && s.row.toolName === 'question')).toBe(false);
   });
+
+  it('decodes stringified structured response messages instead of rendering raw JSON', () => {
+    const raw = [
+      JSON.stringify({ type: 'tool_call', toolCallId: 't1', name: 'read', status: 'started' }),
+      JSON.stringify({ type: 'tool_result', toolCallId: 't1', name: 'read', result: 'ok', isError: false }),
+      JSON.stringify({ type: 'result', result: 'Done.' }),
+    ].join('\n');
+    const view = buildAgentTurnView([chatMsg('agent', raw, 10)]);
+
+    expect(view.segments.some((s) => s.kind === 'row' && s.row.kind === 'toolCall')).toBe(true);
+    expect(view.segments.some((s) => s.kind === 'markdown' && s.markdown.includes('Done.'))).toBe(true);
+    expect(view.segments.some((s) => s.kind === 'markdown' && s.markdown.includes('{"type"'))).toBe(false);
+  });
 });
 
 function autoPayload(

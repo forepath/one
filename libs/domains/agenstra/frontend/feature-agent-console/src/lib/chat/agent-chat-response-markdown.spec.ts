@@ -4,6 +4,7 @@ import {
   extractThinkingPreviewText,
   formatAgentResponseForChatMarkdown,
   formatUnknownAsMarkdown,
+  parseAgentResponseObjectsFromString,
   stripHiddenPromptBlocks,
 } from './agent-chat-response-markdown';
 
@@ -43,6 +44,30 @@ describe('formatAgentResponseForChatMarkdown', () => {
     expect(md).toContain('read');
     expect(md).toContain('README');
     expect(md).not.toContain('```');
+  });
+
+  it('parses newline-delimited structured response strings instead of rendering raw JSON', () => {
+    const raw = [
+      JSON.stringify({ type: 'tool_call', toolCallId: 't1', name: 'read', status: 'started' }),
+      JSON.stringify({ type: 'result', result: 'Done.' }),
+    ].join('\n');
+    const parsed = parseAgentResponseObjectsFromString(raw);
+    const md = formatAgentResponseForChatMarkdown(raw);
+
+    expect(parsed).toHaveLength(2);
+    expect(md).toContain('Tool call');
+    expect(md).toContain('Done.');
+    expect(md).not.toContain('{"type"');
+  });
+
+  it('omits non-displayable structured status payloads', () => {
+    expect(
+      formatAgentResponseForChatMarkdown({
+        type: 'status',
+        subtype: 'structured_output',
+        result: { status: 'ready' },
+      } as unknown as AgentResponseObject),
+    ).toBe('');
   });
 
   it('omits question tool_call/tool_result markdown fallbacks', () => {

@@ -52,6 +52,24 @@ export function buildRefinePrompt(refineMessage: string, currentPlanMarkdown?: s
 }
 
 /**
+ * Repair prompt used when the hidden planning turn completed but did not provide usable plan content.
+ */
+export function buildPlanRepairPrompt(currentPlanMarkdown?: string | null): string {
+  const planSection =
+    currentPlanMarkdown && currentPlanMarkdown.trim()
+      ? `Current partial plan markdown, if useful:\n${currentPlanMarkdown.trim()}\n\n`
+      : '';
+
+  return (
+    `Your previous planning response did not include usable structured plan content. ` +
+    `Do not mutate files. Repair the response now by returning structured status (${planStatusEnumHint()}) as JSON only ` +
+    `(keys: status, planMarkdown, summary). planMarkdown must be pure markdown for the user, and must not be empty. ` +
+    `Use "ready" when the plan is complete enough to review and execute; otherwise use "exploring" with the best ` +
+    `planMarkdown you can provide. Do not ask questions.\n\n${planSection}`
+  );
+}
+
+/**
  * Leading line of {@link buildExecutePrompt}. Used to hide already-persisted execute triggers in the UI.
  */
 export const CHAT_PLAN_EXECUTE_PROMPT_PREFIX =
@@ -59,7 +77,7 @@ export const CHAT_PLAN_EXECUTE_PROMPT_PREFIX =
 
 /**
  * Wrapper sent to the agent when the user executes a ready plan.
- * The user bubble is suppressed (`suppressUserMessage`); only agent replies appear in chat.
+ * Execution stays in the hidden plan session; UI observes progress through the plan card/modal.
  */
 export function buildExecutePrompt(planMarkdown: string, sourcePrompt?: string | null): string {
   const requestSection = sourcePrompt && sourcePrompt.trim() ? `Original request:\n${sourcePrompt.trim()}\n\n` : '';

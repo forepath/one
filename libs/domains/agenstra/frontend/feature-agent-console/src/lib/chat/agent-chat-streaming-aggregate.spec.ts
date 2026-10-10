@@ -171,4 +171,30 @@ describe('accumulateStreamingTurnFromEvents', () => {
       expect(first.row.summaryBody).toContain('Part B');
     }
   });
+
+  it('renders stringified structured assistantMessage payloads as normal segments, not raw JSON markdown', () => {
+    const raw = [
+      JSON.stringify({ type: 'tool_call', toolCallId: 't1', name: 'read', status: 'started' }),
+      JSON.stringify({ type: 'tool_result', toolCallId: 't1', name: 'read', result: 'ok', isError: false }),
+      JSON.stringify({ type: 'result', result: 'Done.' }),
+    ].join('\n');
+    const result = accumulateStreamingTurnFromEvents(
+      [{ payload: env('assistantMessage', { text: raw }, 'json-lines'), timestamp: 10 }],
+      0,
+    );
+
+    expect(result.segments.some((s) => s.kind === 'row' && s.row.kind === 'toolCall')).toBe(true);
+    expect(result.segments.some((s) => s.kind === 'markdown' && s.markdown.includes('Done.'))).toBe(true);
+    expect(result.segments.some((s) => s.kind === 'markdown' && s.markdown.includes('{"type"'))).toBe(false);
+  });
+
+  it('does not render non-displayable structured status assistantMessage payloads', () => {
+    const raw = JSON.stringify({ type: 'status', subtype: 'structured_output', result: { status: 'ready' } });
+    const result = accumulateStreamingTurnFromEvents(
+      [{ payload: env('assistantMessage', { text: raw }, 'structured-status'), timestamp: 10 }],
+      0,
+    );
+
+    expect(result.segments).toHaveLength(0);
+  });
 });

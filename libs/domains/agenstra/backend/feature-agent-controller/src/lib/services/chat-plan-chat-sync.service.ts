@@ -3,9 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import type { Socket } from 'socket.io';
 import { Repository } from 'typeorm';
 
-import type { ChatPlanChatEventDto } from '../dto/chat-plan/chat-plan-chat-event.dto';
+import type { ChatPlanChatEventDto, ChatPlanLiveTimelineEventDto } from '../dto/chat-plan/chat-plan-chat-event.dto';
 import { ChatPlanEntity } from '../entities/chat-plan.entity';
-import { ChatPlanStatus } from '../entities/chat-plan.enums';
+import { ChatPlanPhase, ChatPlanStatus } from '../entities/chat-plan.enums';
 import { chatPlanEntityToDto } from '../utils/chat-plan-mappers';
 
 import { AgentConsoleStatusService } from './agent-console-status.service';
@@ -19,10 +19,12 @@ export const CHAT_PLAN_HYDRATE_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000;
 
 const OPEN_PLAN_LABEL = 'View plan';
 const EXECUTE_PLAN_LABEL = 'Execute plan';
+const RETRY_PLAN_LABEL = 'Retry plan';
 
 @Injectable()
 export class ChatPlanChatSyncService {
   private readonly logger = new Logger(ChatPlanChatSyncService.name);
+  private readonly liveEventsByPlanId = new Map<string, ChatPlanLiveTimelineEventDto[]>();
 
   constructor(
     @InjectRepository(ChatPlanEntity)
@@ -30,6 +32,16 @@ export class ChatPlanChatSyncService {
     private readonly chatPlanRealtime: ChatPlanRealtimeService,
     private readonly agentConsoleStatusService: AgentConsoleStatusService,
   ) {}
+
+  addLiveEvent(planId: string, payload: unknown): void {
+    const event: ChatPlanLiveTimelineEventDto = { payload, timestamp: Date.now() };
+    const next = [...(this.liveEventsByPlanId.get(planId) ?? []), event];
+    this.liveEventsByPlanId.set(planId, next.slice(-100));
+  }
+
+  clearLiveEvents(planId: string): void {
+    this.liveEventsByPlanId.delete(planId);
+  }
 
   /**
    * After agent login: replay plan snapshots for this client+agent (unicast), oldest first.
@@ -83,7 +95,24 @@ export class ChatPlanChatSyncService {
       },
     ];
 
-    if (plan.status === ChatPlanStatus.READY) {
+    if (
+      plan.status === ChatPlanStatus.EXPLORING ||
+      plan.status === ChatPlanStatus.REFINING ||
+      plan.status === ChatPlanStatus.PENDING ||
+      plan.status === ChatPlanStatus.EXECUTING
+    ) {
+      actions.push({
+        type: 'cancelChatPlan',
+        planId: plan.id,
+        chatId: plan.chatId,
+        label: 'Stop plan',
+      });
+    }
+
+    if (
+      (plan.status === ChatPlanStatus.READY && plan.phase === ChatPlanPhase.READY) ||
+      (plan.status === ChatPlanStatus.CANCELLED && plan.phase === ChatPlanPhase.READY)
+    ) {
       actions.push({
         type: 'executeChatPlan',
         planId: plan.id,
@@ -92,11 +121,21 @@ export class ChatPlanChatSyncService {
       });
     }
 
+    if (plan.status === ChatPlanStatus.FAILED) {
+      actions.push({
+        type: 'retryChatPlan',
+        planId: plan.id,
+        chatId: plan.chatId,
+        label: RETRY_PLAN_LABEL,
+      });
+    }
+
     return {
       timelineAt,
       hydrate,
       plan: planDto,
       actions,
+      timelineEvents: [...(this.liveEventsByPlanId.get(plan.id) ?? [])],
     };
   }
 }

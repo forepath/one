@@ -1,6 +1,6 @@
 import type { ChatPlanResponseDto } from './chat-plan-response.dto';
 
-export type ChatPlanChatActionType = 'openChatPlan' | 'executeChatPlan';
+export type ChatPlanChatActionType = 'openChatPlan' | 'executeChatPlan' | 'retryChatPlan' | 'cancelChatPlan';
 
 export interface ChatPlanChatOpenActionDto {
   type: 'openChatPlan';
@@ -16,7 +16,30 @@ export interface ChatPlanChatExecuteActionDto {
   label: string;
 }
 
-export type ChatPlanChatActionDto = ChatPlanChatOpenActionDto | ChatPlanChatExecuteActionDto;
+export interface ChatPlanChatRetryActionDto {
+  type: 'retryChatPlan';
+  planId: string;
+  chatId: string;
+  label: string;
+}
+
+export interface ChatPlanChatCancelActionDto {
+  type: 'cancelChatPlan';
+  planId: string;
+  chatId: string;
+  label: string;
+}
+
+export type ChatPlanChatActionDto =
+  | ChatPlanChatOpenActionDto
+  | ChatPlanChatExecuteActionDto
+  | ChatPlanChatRetryActionDto
+  | ChatPlanChatCancelActionDto;
+
+export interface ChatPlanLiveTimelineEventDto {
+  payload: unknown;
+  timestamp: number;
+}
 
 /**
  * Server → client payload on namespace `clients`, event `chatPlanUpsert`.
@@ -27,4 +50,5 @@ export interface ChatPlanChatEventDto {
   hydrate: boolean;
   plan: ChatPlanResponseDto;
   actions: ChatPlanChatActionDto[];
+  timelineEvents?: ChatPlanLiveTimelineEventDto[];
 }

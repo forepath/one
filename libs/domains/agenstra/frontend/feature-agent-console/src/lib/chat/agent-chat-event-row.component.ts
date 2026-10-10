@@ -14,10 +14,10 @@ import { FpcBadgeComponent, FpcButtonComponent, FpcIconComponent } from '@forepa
 
 import type { AgentChatEventDisplayRow, AgentChatQuestionInteraction } from './agent-chat-event-display';
 import { AgentChatEventPopoverDirective } from './agent-chat-event-popover.directive';
+import { AgentChatTodosExpandCoordinator } from './agent-chat-todos-expand.coordinator';
 import { resolveAgentChatToolDisplay } from './agent-chat-tool-display';
 import { buildChatRowEmbedView } from './agent-chat-tool-embed-view';
 import { AgentChatToolEmbedComponent } from './agent-chat-tool-embed.component';
-import { AgentChatTodosExpandCoordinator } from './agent-chat-todos-expand.coordinator';
 
 export interface AgentChatQuestionReplyRequest {
   questionId: string;
@@ -56,7 +56,7 @@ export interface AgentChatQuestionReplyRequest {
             >
               <span class="agent-chat-event-row__tool-heading">
                 <fpc-icon class="agent-chat-event-row__tool-icon" [name]="toolDisplay().icon" size="sm" />
-                <span class="agent-chat-event-row__tool-name">{{ toolDisplay().label }}</span>
+                <span class="agent-chat-event-row__tool-name small">{{ toolDisplay().label }}</span>
                 @if (row().toolPair) {
                   <span
                     class="agent-chat-event-row__detail-icons d-inline-flex align-items-center gap-1"
@@ -122,7 +122,7 @@ export interface AgentChatQuestionReplyRequest {
             <div class="d-flex align-items-center gap-1 flex-wrap">
               @if (row().toolPair) {
                 <fpc-icon class="agent-chat-event-row__tool-icon" [name]="toolDisplay().icon" size="sm" />
-                <span class="agent-chat-event-row__tool-name">{{ toolDisplay().label }}</span>
+                <span class="agent-chat-event-row__tool-name small">{{ toolDisplay().label }}</span>
                 <span class="agent-chat-event-row__detail-icons d-inline-flex align-items-center gap-1">
                   @if (hasToolPairCallDetail()) {
                     <span

@@ -3,6 +3,7 @@ export const CLIENT_CHAT_PLAN_EVENTS = {
   createChatPlan: 'createChatPlan',
   refineChatPlan: 'refineChatPlan',
   executeChatPlan: 'executeChatPlan',
+  retryChatPlan: 'retryChatPlan',
   cancelChatPlan: 'cancelChatPlan',
   chatPlanUpsert: 'chatPlanUpsert',
 } as const;

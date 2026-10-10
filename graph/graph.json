@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-10T15:18:53.973Z",
+  "generatedAt": "2026-10-10T17:28:24.970Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -25849,6 +25849,16 @@
       }
     },
     {
+      "id": "concept:agenstra-console-ux",
+      "type": "concept",
+      "attrs": {
+        "title": "Console UX",
+        "docPath": "docs/agenstra/features/chat-plan-mode.md",
+        "sectionAnchor": "console-ux",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-phases-high-level",
       "type": "concept",
       "attrs": {
@@ -48318,6 +48328,11 @@
     {
       "from": "file:docs/agenstra/features/chat-plan-mode.md",
       "to": "concept:agenstra-context-injection",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/chat-plan-mode.md",
+      "to": "concept:agenstra-console-ux",
       "type": "contains"
     },
     {
@@ -80792,6 +80807,11 @@
     },
     {
       "from": "concept:agenstra-context-injection",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-console-ux",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

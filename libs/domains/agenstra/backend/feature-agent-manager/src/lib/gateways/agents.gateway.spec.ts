@@ -2920,6 +2920,17 @@ describe('AgentsGateway', () => {
   });
 
   describe('git state changed broadcasts', () => {
+    it('does not convert non-displayable structured status payloads into assistant text events', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const events = (gateway as any).agentResponseToChatEvents(mockAgent.id, 'corr-1', 1, {
+        type: 'status',
+        subtype: 'structured_output',
+        result: { status: 'ready' },
+      } as AgentResponseObject) as AgentEventEnvelope[];
+
+      expect(events).toEqual([]);
+    });
+
     it('emits gitStateChanged after workspace tool results', () => {
       const socketId = mockSocket.id || 'test-socket-id';
 

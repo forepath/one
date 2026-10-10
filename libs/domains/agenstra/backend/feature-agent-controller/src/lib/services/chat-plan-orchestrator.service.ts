@@ -1,9 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 
+import type { ChatPlanContextInjectionJson } from '../entities/chat-plan.entity';
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ChatPlanFailureCode, ChatPlanPhase, ChatPlanStatus } from '../entities/chat-plan.enums';
-import { buildExecutePrompt, buildExplorePrompt, buildRefinePrompt } from '../utils/chat-plan-prompt.utils';
+import {
+  buildExecutePrompt,
+  buildExplorePrompt,
+  buildPlanRepairPrompt,
+  buildRefinePrompt,
+} from '../utils/chat-plan-prompt.utils';
 import {
   resolvePlanMarkdownFromTurn,
   parsePlanTurnStatusFromAssistantText,
@@ -15,6 +21,7 @@ import { ChatPlanService } from './chat-plan.service';
 import { RemoteAgentsSessionService } from './remote-agents-session.service';
 
 const UPSERT_THROTTLE_MS = 350;
+const PLAN_TURN_REPAIR_ATTEMPTS = 2;
 
 const STREAMING_STATUSES: readonly ChatPlanStatus[] = [
   ChatPlanStatus.PENDING,
@@ -42,8 +49,12 @@ export class ChatPlanOrchestratorService {
     });
   }
 
-  startRefine(planId: string, refineMessage: string): void {
-    void this.runRefine(planId, refineMessage).catch((err) => {
+  /**
+   * @param contextInjection Optional replacement snapshot; when set it is persisted on the plan and reused by
+   * subsequent refine/execute turns.
+   */
+  startRefine(planId: string, refineMessage: string, contextInjection?: ChatPlanContextInjectionJson): void {
+    void this.runRefine(planId, refineMessage, contextInjection).catch((err) => {
       this.logger.warn(`startRefine failed for ${planId}: ${(err as Error).message}`);
     });
   }
@@ -51,6 +62,12 @@ export class ChatPlanOrchestratorService {
   startExecute(planId: string, correlationId?: string): void {
     void this.runExecute(planId, correlationId).catch((err) => {
       this.logger.warn(`startExecute failed for ${planId}: ${(err as Error).message}`);
+    });
+  }
+
+  startRetry(planId: string, correlationId?: string): void {
+    void this.runRetry(planId, correlationId).catch((err) => {
+      this.logger.warn(`startRetry failed for ${planId}: ${(err as Error).message}`);
     });
   }
 
@@ -122,35 +139,54 @@ export class ChatPlanOrchestratorService {
       return;
     }
 
-    let draft = '';
+    let lastDraft = '';
 
     try {
-      const result = await this.remoteAgents.sendChatStreaming({
-        clientId: plan.clientId,
-        agentId: plan.agentId,
-        message: buildExplorePrompt(plan.sourcePrompt),
-        correlationId: `${plan.id}:explore`,
-        continue: false,
-        resumeSessionSuffix: plan.resumeSessionSuffix,
-        ephemeral: true,
-        model: plan.model ?? undefined,
-        contextInjection: plan.contextInjection ?? undefined,
-        statisticsInteractionKind: StatisticsInteractionKind.CHAT_PLAN_TURN,
-        onDeltaText: async (delta) => {
-          draft += delta;
-          const liveMarkdown = resolvePlanMarkdownFromTurn(draft, undefined);
+      for (let attempt = 0; attempt <= PLAN_TURN_REPAIR_ATTEMPTS; attempt++) {
+        let draft = '';
+        const result = await this.remoteAgents.sendChatStreaming({
+          clientId: plan.clientId,
+          agentId: plan.agentId,
+          message: attempt === 0 ? buildExplorePrompt(plan.sourcePrompt) : buildPlanRepairPrompt(lastDraft),
+          correlationId: attempt === 0 ? `${plan.id}:explore` : `${plan.id}:explore:repair:${attempt}`,
+          continue: attempt > 0,
+          resumeSessionSuffix: plan.resumeSessionSuffix,
+          ephemeral: true,
+          model: plan.model ?? undefined,
+          contextInjection: plan.contextInjection ?? undefined,
+          statisticsInteractionKind: StatisticsInteractionKind.CHAT_PLAN_TURN,
+          onDeltaText: async (delta) => {
+            draft += delta;
+            const liveMarkdown = resolvePlanMarkdownFromTurn(draft, undefined);
 
-          if (liveMarkdown) {
-            await this.writeStreamingMarkdown(planId, liveMarkdown, ChatPlanPhase.DRAFT);
-          }
-        },
-      });
+            if (liveMarkdown) {
+              await this.writeStreamingMarkdown(planId, liveMarkdown, ChatPlanPhase.DRAFT);
+            }
+          },
+          onEvent: async (event) => {
+            this.chatPlanChatSync.addLiveEvent(planId, event);
+            await this.emitThrottled(planId);
+          },
+        });
 
-      if (await this.isCancelled(planId)) {
-        return;
+        if (await this.isCancelled(planId)) {
+          return;
+        }
+
+        lastDraft = draft || result.text;
+
+        if (await this.applyTurnResult(planId, result.text, result.planTurnStatus)) {
+          return;
+        }
+
+        this.logger.debug(`Plan ${planId} explore turn lacked usable content; repair attempt ${attempt + 1}`);
       }
 
-      await this.applyTurnResult(planId, result.text, result.planTurnStatus);
+      await this.failPlan(
+        planId,
+        ChatPlanFailureCode.AGENT_NO_PLAN_STATUS,
+        'Plan turn completed without usable plan content',
+      );
     } catch (error: unknown) {
       if (await this.isCancelled(planId)) {
         return;
@@ -161,7 +197,11 @@ export class ChatPlanOrchestratorService {
     }
   }
 
-  private async runRefine(planId: string, refineMessage: string): Promise<void> {
+  private async runRefine(
+    planId: string,
+    refineMessage: string,
+    contextInjection?: ChatPlanContextInjectionJson,
+  ): Promise<void> {
     const plan = await this.chatPlanService.getEntityOrThrow(planId);
 
     if (plan.status === ChatPlanStatus.REFINING) {
@@ -185,41 +225,66 @@ export class ChatPlanOrchestratorService {
       phase: ChatPlanPhase.REFINE,
       completionSignalSeen: false,
       finishedAt: null,
+      ...(contextInjection ? { contextInjection } : {}),
     });
 
     if (!started) {
       return;
     }
 
-    let draft = '';
+    const effectiveContextInjection = contextInjection ?? plan.contextInjection ?? undefined;
+
+    let lastDraft = '';
 
     try {
-      const result = await this.remoteAgents.sendChatStreaming({
-        clientId: plan.clientId,
-        agentId: plan.agentId,
-        message: buildRefinePrompt(message, plan.planMarkdown),
-        correlationId: `${plan.id}:refine:${randomUUID()}`,
-        continue: true,
-        resumeSessionSuffix: plan.resumeSessionSuffix,
-        ephemeral: true,
-        model: plan.model ?? undefined,
-        contextInjection: plan.contextInjection ?? undefined,
-        statisticsInteractionKind: StatisticsInteractionKind.CHAT_PLAN_TURN,
-        onDeltaText: async (delta) => {
-          draft += delta;
-          const liveMarkdown = resolvePlanMarkdownFromTurn(draft, undefined);
+      for (let attempt = 0; attempt <= PLAN_TURN_REPAIR_ATTEMPTS; attempt++) {
+        let draft = '';
+        const result = await this.remoteAgents.sendChatStreaming({
+          clientId: plan.clientId,
+          agentId: plan.agentId,
+          message:
+            attempt === 0
+              ? buildRefinePrompt(message, plan.planMarkdown)
+              : buildPlanRepairPrompt(lastDraft || plan.planMarkdown),
+          correlationId: `${plan.id}:refine:${attempt === 0 ? randomUUID() : `repair:${attempt}:${randomUUID()}`}`,
+          continue: true,
+          resumeSessionSuffix: plan.resumeSessionSuffix,
+          ephemeral: true,
+          model: plan.model ?? undefined,
+          contextInjection: effectiveContextInjection,
+          statisticsInteractionKind: StatisticsInteractionKind.CHAT_PLAN_TURN,
+          onDeltaText: async (delta) => {
+            draft += delta;
+            const liveMarkdown = resolvePlanMarkdownFromTurn(draft, undefined);
 
-          if (liveMarkdown) {
-            await this.writeStreamingMarkdown(planId, liveMarkdown, ChatPlanPhase.REFINE);
-          }
-        },
-      });
+            if (liveMarkdown) {
+              await this.writeStreamingMarkdown(planId, liveMarkdown, ChatPlanPhase.REFINE);
+            }
+          },
+          onEvent: async (event) => {
+            this.chatPlanChatSync.addLiveEvent(planId, event);
+            await this.emitThrottled(planId);
+          },
+        });
 
-      if (await this.isCancelled(planId)) {
-        return;
+        if (await this.isCancelled(planId)) {
+          return;
+        }
+
+        lastDraft = draft || result.text;
+
+        if (await this.applyTurnResult(planId, result.text, result.planTurnStatus)) {
+          return;
+        }
+
+        this.logger.debug(`Plan ${planId} refine turn lacked usable content; repair attempt ${attempt + 1}`);
       }
 
-      await this.applyTurnResult(planId, result.text, result.planTurnStatus);
+      await this.failPlan(
+        planId,
+        ChatPlanFailureCode.AGENT_NO_PLAN_STATUS,
+        'Plan turn completed without usable plan content',
+      );
     } catch (error: unknown) {
       if (await this.isCancelled(planId)) {
         return;
@@ -233,17 +298,23 @@ export class ChatPlanOrchestratorService {
   private async runExecute(planId: string, correlationId?: string): Promise<void> {
     const plan = await this.chatPlanService.getEntityOrThrow(planId);
 
-    if (
-      plan.status === ChatPlanStatus.EXECUTING ||
-      plan.status === ChatPlanStatus.EXECUTED ||
-      plan.status === ChatPlanStatus.CANCELLED
-    ) {
+    if (plan.status === ChatPlanStatus.EXECUTING || plan.status === ChatPlanStatus.EXECUTED) {
       this.logger.debug(`Ignoring execute for plan ${planId} in status ${plan.status}`);
 
       return;
     }
 
-    if (plan.status !== ChatPlanStatus.READY) {
+    if (
+      plan.status !== ChatPlanStatus.READY &&
+      plan.status !== ChatPlanStatus.CANCELLED &&
+      plan.status !== ChatPlanStatus.FAILED
+    ) {
+      return;
+    }
+
+    if (plan.phase !== ChatPlanPhase.READY) {
+      this.logger.debug(`Ignoring execute for plan ${planId} in phase ${plan.phase}`);
+
       return;
     }
 
@@ -255,9 +326,17 @@ export class ChatPlanOrchestratorService {
       return;
     }
 
-    const started = await this.chatPlanService.updateIfStatus(planId, [ChatPlanStatus.READY], {
-      status: ChatPlanStatus.EXECUTING,
-    });
+    const started = await this.chatPlanService.updateIfStatus(
+      planId,
+      [ChatPlanStatus.READY, ChatPlanStatus.CANCELLED, ChatPlanStatus.FAILED],
+      {
+        status: ChatPlanStatus.EXECUTING,
+        phase: ChatPlanPhase.READY,
+        failureCode: null,
+        failureMessage: null,
+        finishedAt: null,
+      },
+    );
 
     if (!started) {
       return;
@@ -269,13 +348,16 @@ export class ChatPlanOrchestratorService {
         agentId: plan.agentId,
         message: buildExecutePrompt(markdown, plan.sourcePrompt),
         correlationId: correlationId ?? `${plan.id}:execute`,
-        continue: false,
-        chatId: plan.chatId,
-        ephemeral: false,
-        suppressUserMessage: true,
+        continue: true,
+        resumeSessionSuffix: plan.resumeSessionSuffix,
+        ephemeral: true,
         model: plan.model ?? undefined,
         contextInjection: plan.contextInjection ?? undefined,
         statisticsInteractionKind: StatisticsInteractionKind.CHAT_PLAN_EXECUTE,
+        onEvent: async (event) => {
+          this.chatPlanChatSync.addLiveEvent(planId, event);
+          await this.emitThrottled(planId);
+        },
       });
 
       const completed = await this.chatPlanService.updateIfStatus(planId, [ChatPlanStatus.EXECUTING], {
@@ -297,11 +379,45 @@ export class ChatPlanOrchestratorService {
     }
   }
 
+  private async runRetry(planId: string, correlationId?: string): Promise<void> {
+    const plan = await this.chatPlanService.getEntityOrThrow(planId);
+
+    if (plan.status !== ChatPlanStatus.FAILED) {
+      return;
+    }
+
+    this.chatPlanChatSync.clearLiveEvents(planId);
+
+    if (plan.phase === ChatPlanPhase.READY && plan.planMarkdown?.trim()) {
+      await this.runExecute(planId, correlationId);
+
+      return;
+    }
+
+    const restarted = await this.chatPlanService.updateIfStatus(planId, [ChatPlanStatus.FAILED], {
+      status: ChatPlanStatus.EXPLORING,
+      phase: ChatPlanPhase.EXPLORE,
+      planMarkdown: null,
+      summary: null,
+      completionSignalSeen: false,
+      failureCode: null,
+      failureMessage: null,
+      startedAt: new Date(),
+      finishedAt: null,
+    });
+
+    if (!restarted) {
+      return;
+    }
+
+    await this.runExplore(planId);
+  }
+
   private async applyTurnResult(
     planId: string,
     text: string,
     turnStatus: AgenstraPlanTurnStatusPayload | undefined,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const plan = await this.chatPlanService.getEntityOrThrow(planId);
 
     if (
@@ -309,7 +425,7 @@ export class ChatPlanOrchestratorService {
       plan.status !== ChatPlanStatus.REFINING &&
       plan.status !== ChatPlanStatus.PENDING
     ) {
-      return;
+      return true;
     }
 
     const parsedFromText = parsePlanTurnStatusFromAssistantText(text);
@@ -345,14 +461,11 @@ export class ChatPlanOrchestratorService {
         finishedAt: null,
       });
     } else {
-      await this.chatPlanService.updateIfStatus(planId, STREAMING_STATUSES, {
-        status: ChatPlanStatus.FAILED,
-        failureCode: ChatPlanFailureCode.AGENT_NO_PLAN_STATUS,
-        failureMessage: 'Plan turn completed without usable plan content',
-        finishedAt: new Date(),
-      });
+      return false;
     }
 
     await this.emitThrottled(planId, true);
+
+    return true;
   }
 }
