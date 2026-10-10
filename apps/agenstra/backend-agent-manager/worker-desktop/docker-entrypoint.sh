@@ -1,8 +1,53 @@
 #!/bin/bash
 set -euo pipefail
 
+# Privileged initialisation must not resolve binaries through agent-writable directories (the image PATH
+# starts with ~/.opencode/bin and the nvm Node bin, both owned by agenstra), so pin a root-owned PATH and
+# hand the image PATH only to processes started after the privilege drop (see run_as_agent).
+AGENT_PATH="${PATH}"
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+
+# Managed agent environment (agent-manager writes NUL-separated KEY=VALUE entries to the mounted volume;
+# see image label io.agenstra.environment-mount). Entries are never evaluated by the shell and never
+# exported into this root shell: `env` applies them only after `runuser` dropped privileges. The
+# entrypoint's own settings below are read from the file into unexported shell variables.
+AGENSTRA_ENVIRONMENT_FILE=/etc/agenstra/environment/environment
+agent_environment=()
+
+if [[ -f "${AGENSTRA_ENVIRONMENT_FILE}" && ! -L "${AGENSTRA_ENVIRONMENT_FILE}" ]]; then
+  while IFS= read -r -d '' entry || [[ -n "${entry}" ]]; do
+    name="${entry%%=*}"
+
+    # Conventional names only: rejects option-like entries and exported Bash functions (BASH_FUNC_*%%).
+    if [[ "${entry}" != *=* || ! "${name}" =~ ^[A-Za-z_][A-Za-z0-9_.-]*$ ]]; then
+      continue
+    fi
+
+    agent_environment+=("${entry}")
+
+    case "${name}" in
+      APP_UID | APP_GID | OPENCODE_SERVER_HOSTNAME | OPENCODE_SERVER_PORT | OPENCODE_SERVER_USERNAME | \
+        OPENCODE_SERVER_PASSWORD | VNC_DISPLAY | VNC_PORT | VNC_WEBSOCKIFY_PORT | VNC_WEBSOCKIFY_UPSTREAM_PORT | \
+        VNC_GEOMETRY | VNC_DEPTH)
+        printf -v "${name}" '%s' "${entry#*=}"
+        ;;
+    esac
+  done <"${AGENSTRA_ENVIRONMENT_FILE}"
+fi
+
+unset entry name
+
+# Command prefix that starts a process as agenstra with the image PATH and the managed agent environment.
+# Arguments appended after it go to `env`, so explicit NAME=VALUE assignments override agent entries.
+# An array (not a function) keeps `$!` pointing at runuser for backgrounded processes.
+run_as_agent=(/usr/sbin/runuser -u agenstra -g agenstra -- /usr/bin/env -- PATH="${AGENT_PATH}" "${agent_environment[@]}")
+
 APP_UID="${APP_UID:-10001}"
 APP_GID="${APP_GID:-10001}"
+
+# Used by root chown/install below: accept numeric non-root IDs only.
+[[ "${APP_UID}" =~ ^[1-9][0-9]*$ ]] || APP_UID=10001
+[[ "${APP_GID}" =~ ^[1-9][0-9]*$ ]] || APP_GID=10001
 
 # Only touch entries with wrong ownership: a blanket `chown -R` forces an overlayfs copy-up of every
 # image-layer file (hundreds of MB under /home/agenstra), delaying `opencode serve` past health checks.
@@ -20,6 +65,28 @@ websockify_port="${VNC_WEBSOCKIFY_PORT:-6080}"
 websockify_upstream_port="${VNC_WEBSOCKIFY_UPSTREAM_PORT:-6081}"
 geometry="${VNC_GEOMETRY:-1920x1080}"
 depth="${VNC_DEPTH:-24}"
+
+assert_numeric_port() {
+  local value="$1"
+
+  [[ "${value}" =~ ^[0-9]+$ ]] && (( value >= 1 && value <= 65535 ))
+}
+
+assert_vnc_display() {
+  [[ "$1" =~ ^:[0-9]+$ ]]
+}
+
+for port_value in "${opencode_port}" "${vnc_port}" "${websockify_port}" "${websockify_upstream_port}"; do
+  if ! assert_numeric_port "${port_value}"; then
+    echo "Invalid port value in managed environment" >&2
+    exit 1
+  fi
+done
+
+if ! assert_vnc_display "${vnc_display}"; then
+  echo "Invalid VNC display value in managed environment" >&2
+  exit 1
+fi
 
 export HOME=/home/agenstra
 export USER=agenstra
@@ -58,7 +125,7 @@ rm -f "/tmp/.X${display_num}-lock" "/tmp/.X11-unix/X${display_num}"
 
 # VNC only on loopback — external access must go through the authenticated proxy.
 # TigerVNC daemonizes (no -fg on 1.15); track the real server PID after the RFB port is up.
-runuser -u agenstra -g agenstra -- env HOME=/home/agenstra USER=agenstra DISPLAY="${vnc_display}" \
+"${run_as_agent[@]}" HOME=/home/agenstra USER=agenstra DISPLAY="${vnc_display}" \
   Xvnc "${vnc_display}" \
   -rfbport "${vnc_port}" \
   -geometry "${geometry}" \
@@ -71,7 +138,7 @@ runuser -u agenstra -g agenstra -- env HOME=/home/agenstra USER=agenstra DISPLAY
 
 vnc_ready=0
 for _ in $(seq 1 60); do
-  if bash -c "echo >/dev/tcp/127.0.0.1/${vnc_port}" 2>/dev/null; then
+  if /bin/bash -c "echo >/dev/tcp/127.0.0.1/${vnc_port}" 2>/dev/null; then
     vnc_ready=1
     break
   fi
@@ -89,7 +156,7 @@ if [[ -z "${VNC_PID}" ]]; then
   exit 1
 fi
 
-runuser -u agenstra -g agenstra -- env \
+"${run_as_agent[@]}" \
   HOME=/home/agenstra \
   USER=agenstra \
   DISPLAY="${vnc_display}" \
@@ -104,12 +171,12 @@ runuser -u agenstra -g agenstra -- env \
 SESSION_PID=$!
 
 # Loopback websockify; public edge is the Basic-auth proxy on ${websockify_port}.
-runuser -u agenstra -g agenstra -- websockify \
+"${run_as_agent[@]}" websockify \
   "127.0.0.1:${websockify_upstream_port}" \
   "127.0.0.1:${vnc_port}" &
 WEBSOCKIFY_PID=$!
 
-runuser -u agenstra -g agenstra -- env \
+"${run_as_agent[@]}" \
   OPENCODE_SERVER_USERNAME="${OPENCODE_SERVER_USERNAME:-opencode}" \
   OPENCODE_SERVER_PASSWORD="${OPENCODE_SERVER_PASSWORD:?OPENCODE_SERVER_PASSWORD is required}" \
   VNC_WEBSOCKIFY_PORT="${websockify_port}" \
@@ -117,7 +184,7 @@ runuser -u agenstra -g agenstra -- env \
   node /usr/local/bin/vnc-auth-proxy.js &
 AUTH_PROXY_PID=$!
 
-runuser -u agenstra -g agenstra -- opencode serve --hostname "${hostname}" --port "${opencode_port}" &
+"${run_as_agent[@]}" opencode serve --hostname "${hostname}" --port "${opencode_port}" &
 OPENCODE_PID=$!
 
 wait "${OPENCODE_PID}"

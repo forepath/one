@@ -11,6 +11,7 @@ import { AgentsRepository } from '../repositories/agents.repository';
 
 import { AgentEnvironmentVariablesService } from './agent-environment-variables.service';
 import { AgentMessagesService } from './agent-messages.service';
+import { AgentRuntimeRefreshService } from './agent-runtime-refresh.service';
 import { AgentSessionHydrationService } from './agent-session-hydration.service';
 import { DockerService } from './docker.service';
 import { EnvironmentProgressService } from './environment-progress.service';
@@ -75,6 +76,13 @@ describe('AgentEnvironmentVariablesService', () => {
   const mockDockerService = {
     updateContainer: jest.fn(),
     getContainerEnvironmentMap: jest.fn(),
+    getEnvironmentApplyStrategy: jest.fn(),
+  };
+  const mockAgentRuntimeRefresh = {
+    invalidateConnections: jest.fn(),
+    waitForHealthy: jest.fn(),
+    reattachWatchers: jest.fn(),
+    restoreGitCredentials: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -109,6 +117,10 @@ describe('AgentEnvironmentVariablesService', () => {
           provide: DockerService,
           useValue: mockDockerService,
         },
+        {
+          provide: AgentRuntimeRefreshService,
+          useValue: mockAgentRuntimeRefresh,
+        },
         EnvironmentProgressService,
       ],
     }).compile();
@@ -119,6 +131,12 @@ describe('AgentEnvironmentVariablesService', () => {
     progressService.registerBroadcaster((progress) => emittedProgress.push(progress));
     mockAgentMessagesService.countMessages.mockResolvedValue(0);
     mockAgentMessagesService.getChatHistory.mockResolvedValue([]);
+    mockDockerService.getEnvironmentApplyStrategy.mockResolvedValue('recreate');
+    mockDockerService.getContainerEnvironmentMap.mockResolvedValue({});
+    mockRepository.findByIdOrThrow.mockResolvedValue(mockEnvironmentVariable);
+    mockAgentRuntimeRefresh.waitForHealthy.mockResolvedValue(true);
+    mockAgentRuntimeRefresh.reattachWatchers.mockResolvedValue(undefined);
+    mockAgentRuntimeRefresh.restoreGitCredentials.mockResolvedValue(true);
   });
 
   afterEach(() => {
@@ -645,8 +663,11 @@ describe('AgentEnvironmentVariablesService', () => {
         'queued',
         'summarizingContext',
         'recreatingContainer',
+        'restoringGitCredentials',
         'finalizing',
       ]);
+      // The recreated container lost the credential files of its writable layer.
+      expect(mockAgentRuntimeRefresh.restoreGitCredentials).toHaveBeenCalledWith(mockAgent.id, 'new-container');
       expect(emittedProgress.at(-1)).toEqual(
         expect.objectContaining({ agentId: mockAgent.id, agentName: mockAgent.name, status: 'completed' }),
       );
@@ -660,6 +681,299 @@ describe('AgentEnvironmentVariablesService', () => {
       await expect(service.reconcileEnvironmentVariables(mockAgent.id)).rejects.toThrow('recreate failed');
 
       expect(emittedProgress.at(-1)).toEqual(expect.objectContaining({ status: 'failed', error: 'recreate failed' }));
+    });
+  });
+
+  describe('reconcileEnvironmentVariables with the mounted environment (restart strategy)', () => {
+    beforeEach(() => {
+      mockDockerService.getEnvironmentApplyStrategy.mockResolvedValue('restart');
+    });
+
+    it('restarts in place without summarizing context or touching the stored container ID', async () => {
+      mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      mockRepository.findAllByAgentId.mockResolvedValue([mockEnvironmentVariable]);
+      mockDockerService.updateContainer.mockResolvedValue('container-id-123');
+
+      await service.reconcileEnvironmentVariables(mockAgent.id);
+
+      expect(mockDockerService.getEnvironmentApplyStrategy).toHaveBeenCalledWith('container-id-123');
+      expect(mockDockerService.updateContainer).toHaveBeenCalledWith('container-id-123', {
+        env: { API_KEY: 'secret-api-key-value' },
+      });
+      expect(mockAgentSessionHydrationService.storePendingSummary).not.toHaveBeenCalled();
+      expect(mockAgentMessagesService.getChatHistory).not.toHaveBeenCalled();
+      expect(mockAgentsRepository.update).not.toHaveBeenCalledWith(
+        'agent-uuid-123',
+        expect.objectContaining({ containerId: expect.anything() }),
+      );
+    });
+
+    it('refreshes runtime connections, waits for health and re-attaches watchers', async () => {
+      mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      mockRepository.findAllByAgentId.mockResolvedValue([]);
+      mockDockerService.updateContainer.mockResolvedValue('container-id-123');
+
+      await service.reconcileEnvironmentVariables(mockAgent.id);
+
+      expect(mockAgentRuntimeRefresh.invalidateConnections).toHaveBeenCalledWith(mockAgent.id);
+      expect(mockAgentRuntimeRefresh.waitForHealthy).toHaveBeenCalledWith(mockAgent.id, 'container-id-123');
+      expect(mockAgentRuntimeRefresh.reattachWatchers).toHaveBeenCalledWith(mockAgent.id);
+    });
+
+    it('reports restart progress steps and completes', async () => {
+      mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      mockRepository.findAllByAgentId.mockResolvedValue([mockEnvironmentVariable]);
+      mockDockerService.updateContainer.mockResolvedValue('container-id-123');
+
+      await service.reconcileEnvironmentVariables(mockAgent.id);
+
+      expect([...new Set(emittedProgress.map((e) => e.step))]).toEqual([
+        'queued',
+        'restartingContainer',
+        'waitingForHealthy',
+        'finalizing',
+      ]);
+      expect(emittedProgress.at(-1)).toEqual(expect.objectContaining({ status: 'completed', progress: 100 }));
+    });
+
+    it('does not touch the Git credential files when no Git credential changed', async () => {
+      mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      mockRepository.findAllByAgentId.mockResolvedValue([mockEnvironmentVariable]);
+      mockDockerService.updateContainer.mockResolvedValue('container-id-123');
+
+      await service.reconcileEnvironmentVariables(mockAgent.id);
+
+      expect(mockAgentRuntimeRefresh.restoreGitCredentials).not.toHaveBeenCalled();
+    });
+
+    it('re-provisions the Git credential files after the restart when a Git credential changed', async () => {
+      mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      mockRepository.findAllByAgentId.mockResolvedValue([
+        { ...mockEnvironmentVariable, variable: 'GIT_TOKEN', content: 'rotated' },
+      ]);
+      mockDockerService.updateContainer.mockResolvedValue('container-id-123');
+
+      await service.reconcileEnvironmentVariables(mockAgent.id);
+
+      expect(mockAgentRuntimeRefresh.restoreGitCredentials).toHaveBeenCalledWith(mockAgent.id, 'container-id-123');
+      expect(mockAgentRuntimeRefresh.waitForHealthy.mock.invocationCallOrder[0]).toBeLessThan(
+        mockAgentRuntimeRefresh.restoreGitCredentials.mock.invocationCallOrder[0],
+      );
+      expect([...new Set(emittedProgress.map((e) => e.step))]).toEqual([
+        'queued',
+        'restartingContainer',
+        'waitingForHealthy',
+        'restoringGitCredentials',
+        'finalizing',
+      ]);
+      expect(emittedProgress.at(-1)).toEqual(expect.objectContaining({ status: 'completed', progress: 100 }));
+    });
+
+    it('re-provisions the Git credential files when a rotated SSH key override is applied', async () => {
+      mockAgentsRepository.findAllWithContainers.mockResolvedValue([mockAgent]);
+      mockDockerService.getContainerEnvironmentMap.mockResolvedValue({ GIT_PRIVATE_KEY: 'old-key' });
+      mockDockerService.updateContainer.mockResolvedValue('container-id-123');
+
+      await service.reconcileWorkspaceConfigurationOverrides({ GIT_PRIVATE_KEY: 'new-key' });
+
+      expect(mockDockerService.updateContainer).toHaveBeenCalledWith('container-id-123', {
+        env: { GIT_PRIVATE_KEY: 'new-key' },
+      });
+      expect(mockAgentRuntimeRefresh.restoreGitCredentials).toHaveBeenCalledWith(mockAgent.id, 'container-id-123');
+    });
+
+    it('still completes when the agent does not become healthy in time', async () => {
+      mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      mockRepository.findAllByAgentId.mockResolvedValue([]);
+      mockDockerService.updateContainer.mockResolvedValue('container-id-123');
+      mockAgentRuntimeRefresh.waitForHealthy.mockResolvedValueOnce(false);
+
+      await expect(service.reconcileEnvironmentVariables(mockAgent.id)).resolves.toBeUndefined();
+
+      expect(emittedProgress.at(-1)).toEqual(expect.objectContaining({ status: 'completed' }));
+    });
+
+    it('reports failure when the in-place restart fails', async () => {
+      mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      mockRepository.findAllByAgentId.mockResolvedValue([]);
+      mockDockerService.updateContainer.mockRejectedValueOnce(new Error('restart failed'));
+
+      await expect(service.reconcileEnvironmentVariables(mockAgent.id)).rejects.toThrow('restart failed');
+
+      expect(emittedProgress.at(-1)).toEqual(
+        expect.objectContaining({ step: 'restartingContainer', status: 'failed', error: 'restart failed' }),
+      );
+      expect(mockAgentRuntimeRefresh.reattachWatchers).not.toHaveBeenCalled();
+    });
+
+    it('restarts workspace configuration overrides in place', async () => {
+      mockAgentsRepository.findAllWithContainers.mockResolvedValue([mockAgent]);
+      mockDockerService.getContainerEnvironmentMap.mockResolvedValue({ GIT_TOKEN: 'old' });
+      mockRepository.findAllByAgentId.mockResolvedValue([]);
+      mockDockerService.updateContainer.mockResolvedValue('container-id-123');
+
+      await service.reconcileWorkspaceConfigurationOverrides({ GIT_TOKEN: 'new' });
+
+      expect(mockDockerService.updateContainer).toHaveBeenCalledTimes(1);
+      expect(mockAgentsRepository.update).not.toHaveBeenCalled();
+      expect(mockAgentSessionHydrationService.storePendingSummary).not.toHaveBeenCalled();
+      expect([...new Set(emittedProgress.map((e) => e.step))]).toContain('restartingContainer');
+      expect(emittedProgress.at(-1)).toEqual(expect.objectContaining({ status: 'completed' }));
+    });
+  });
+
+  describe('environment variable baseline', () => {
+    const trackedAgent = (baseline: Record<string, string | null>): AgentEntity =>
+      ({ ...mockAgent, environmentVariableBaseline: JSON.stringify(baseline) }) as AgentEntity;
+
+    beforeEach(() => {
+      mockDockerService.getEnvironmentApplyStrategy.mockResolvedValue('restart');
+      mockDockerService.updateContainer.mockResolvedValue('container-id-123');
+    });
+
+    it('records the replaced value when an agent variable overrides an existing key', async () => {
+      mockRepository.create.mockResolvedValue({ ...mockEnvironmentVariable, variable: 'HTTP_PROXY', content: 'b' });
+      mockAgentsRepository.findByIdOrThrow.mockResolvedValue(trackedAgent({}));
+      mockRepository.findAllByAgentId.mockResolvedValue([
+        { ...mockEnvironmentVariable, variable: 'HTTP_PROXY', content: 'b' },
+      ]);
+      mockDockerService.getContainerEnvironmentMap.mockResolvedValue({ HTTP_PROXY: 'a' });
+
+      await service.createEnvironmentVariable('agent-uuid-123', 'HTTP_PROXY', 'b');
+
+      expect(mockDockerService.updateContainer).toHaveBeenCalledWith('container-id-123', {
+        env: { HTTP_PROXY: 'b' },
+      });
+      expect(mockAgentsRepository.update).toHaveBeenCalledWith('agent-uuid-123', {
+        environmentVariableBaseline: JSON.stringify({ HTTP_PROXY: 'a' }),
+      });
+    });
+
+    it('restores the replaced value when the agent variable is deleted', async () => {
+      mockRepository.findById.mockResolvedValue({ ...mockEnvironmentVariable, variable: 'HTTP_PROXY' });
+      mockRepository.findByIdOrThrow.mockResolvedValue({ ...mockEnvironmentVariable, variable: 'HTTP_PROXY' });
+      mockRepository.delete.mockResolvedValue(undefined);
+      mockAgentsRepository.findByIdOrThrow.mockResolvedValue(trackedAgent({ HTTP_PROXY: 'a' }));
+      mockRepository.findAllByAgentId.mockResolvedValue([]);
+      mockDockerService.getContainerEnvironmentMap.mockResolvedValue({ HTTP_PROXY: 'b' });
+
+      await service.deleteEnvironmentVariable(mockEnvironmentVariable.id);
+
+      expect(mockDockerService.updateContainer).toHaveBeenCalledWith('container-id-123', {
+        env: { HTTP_PROXY: 'a' },
+      });
+      expect(mockAgentsRepository.update).toHaveBeenCalledWith('agent-uuid-123', {
+        environmentVariableBaseline: '{}',
+      });
+    });
+
+    it('removes a deleted variable that did not replace anything', async () => {
+      mockRepository.findById.mockResolvedValue(mockEnvironmentVariable);
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockEnvironmentVariable);
+      mockRepository.delete.mockResolvedValue(undefined);
+      mockAgentsRepository.findByIdOrThrow.mockResolvedValue(trackedAgent({ API_KEY: null }));
+      mockRepository.findAllByAgentId.mockResolvedValue([]);
+      mockDockerService.getContainerEnvironmentMap.mockResolvedValue({ API_KEY: 'secret-api-key-value' });
+
+      await service.deleteEnvironmentVariable(mockEnvironmentVariable.id);
+
+      const [, options] = mockDockerService.updateContainer.mock.calls[0];
+
+      expect(options.env).toHaveProperty('API_KEY', undefined);
+    });
+
+    it('removes a deleted variable of an untracked (legacy) agent', async () => {
+      mockRepository.findById.mockResolvedValue(mockEnvironmentVariable);
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockEnvironmentVariable);
+      mockRepository.delete.mockResolvedValue(undefined);
+      mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      mockRepository.findAllByAgentId.mockResolvedValue([]);
+      mockDockerService.getContainerEnvironmentMap.mockResolvedValue({ API_KEY: 'secret-api-key-value' });
+
+      await service.deleteEnvironmentVariable(mockEnvironmentVariable.id);
+
+      const [, options] = mockDockerService.updateContainer.mock.calls[0];
+
+      expect(options.env).toHaveProperty('API_KEY', undefined);
+    });
+
+    it('removes the old key when an agent variable is renamed', async () => {
+      const renamed = { ...mockEnvironmentVariable, variable: 'NEW_KEY' };
+
+      mockRepository.findByIdOrThrow.mockResolvedValue(mockEnvironmentVariable);
+      mockRepository.update.mockResolvedValue(renamed);
+      mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      mockRepository.findAllByAgentId.mockResolvedValue([renamed]);
+      mockDockerService.getContainerEnvironmentMap.mockResolvedValue({ API_KEY: 'secret-api-key-value' });
+
+      await service.updateEnvironmentVariable(mockEnvironmentVariable.id, 'NEW_KEY', renamed.content);
+
+      const [, options] = mockDockerService.updateContainer.mock.calls[0];
+
+      expect(options.env).toHaveProperty('API_KEY', undefined);
+      expect(options.env).toHaveProperty('NEW_KEY', 'secret-api-key-value');
+      expect(mockAgentsRepository.update).toHaveBeenCalledWith('agent-uuid-123', {
+        environmentVariableBaseline: JSON.stringify({ NEW_KEY: null }),
+      });
+    });
+
+    it('removes every deleted key when all agent variables are deleted', async () => {
+      mockRepository.findAllByAgentId.mockResolvedValueOnce([mockEnvironmentVariable]).mockResolvedValueOnce([]);
+      mockRepository.deleteByAgentId.mockResolvedValue(1);
+      mockAgentsRepository.findByIdOrThrow.mockResolvedValue(mockAgent);
+      mockDockerService.getContainerEnvironmentMap.mockResolvedValue({ API_KEY: 'secret-api-key-value' });
+
+      await service.deleteAllEnvironmentVariables('agent-uuid-123');
+
+      const [, options] = mockDockerService.updateContainer.mock.calls[0];
+
+      expect(options.env).toHaveProperty('API_KEY', undefined);
+    });
+
+    it('does not persist the baseline when applying the environment fails', async () => {
+      mockAgentsRepository.findByIdOrThrow.mockResolvedValue(trackedAgent({}));
+      mockRepository.findAllByAgentId.mockResolvedValue([mockEnvironmentVariable]);
+      mockDockerService.updateContainer.mockRejectedValue(new Error('restart failed'));
+
+      await expect(service.reconcileEnvironmentVariables('agent-uuid-123')).rejects.toThrow('restart failed');
+
+      expect(mockAgentsRepository.update).not.toHaveBeenCalledWith(
+        'agent-uuid-123',
+        expect.objectContaining({ environmentVariableBaseline: expect.anything() }),
+      );
+    });
+
+    it('only records workspace overrides of keys controlled by agent variables', async () => {
+      const agent = trackedAgent({ HTTP_PROXY: 'a' });
+
+      mockAgentsRepository.findAllWithContainers.mockResolvedValue([agent]);
+      mockAgentsRepository.findByIdOrThrow.mockResolvedValue(agent);
+      mockDockerService.getContainerEnvironmentMap.mockResolvedValue({ HTTP_PROXY: 'b' });
+
+      await service.reconcileWorkspaceConfigurationOverrides({ HTTP_PROXY: 'c' });
+
+      expect(mockDockerService.updateContainer).not.toHaveBeenCalled();
+      expect(mockAgentsRepository.update).toHaveBeenCalledWith('agent-uuid-123', {
+        environmentVariableBaseline: JSON.stringify({ HTTP_PROXY: 'c' }),
+      });
+      expect(emittedProgress).toEqual([]);
+    });
+
+    it('applies only the workspace overrides that are not controlled by agent variables', async () => {
+      const agent = trackedAgent({ HTTP_PROXY: 'a' });
+
+      mockAgentsRepository.findAllWithContainers.mockResolvedValue([agent]);
+      mockAgentsRepository.findByIdOrThrow.mockResolvedValue(agent);
+      mockDockerService.getContainerEnvironmentMap.mockResolvedValue({ HTTP_PROXY: 'b', GIT_TOKEN: 'old' });
+
+      await service.reconcileWorkspaceConfigurationOverrides({ HTTP_PROXY: 'c', GIT_TOKEN: 'new' });
+
+      expect(mockDockerService.updateContainer).toHaveBeenCalledWith('container-id-123', {
+        env: { GIT_TOKEN: 'new' },
+      });
+      expect(mockAgentsRepository.update).toHaveBeenCalledWith('agent-uuid-123', {
+        environmentVariableBaseline: JSON.stringify({ HTTP_PROXY: 'c' }),
+      });
     });
   });
 });

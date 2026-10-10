@@ -82,6 +82,8 @@ import { AgentDirectoryIndexService } from '../services/agent-directory-index.se
 import { AgentGitStateBroadcastService } from '../services/agent-git-state-broadcast.service';
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
+import { AgentGitCredentialsService } from '../services/agent-git-credentials.service';
+import { AgentRuntimeRefreshService } from '../services/agent-runtime-refresh.service';
 import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
 import { AgentsFiltersService } from '../services/agents-filters.service';
 import { AgentsVcsService } from '../services/agents-vcs.service';
@@ -161,6 +163,8 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     AgentsVcsService,
     WorkspaceChangeNotifierService,
     WorkspaceInotifySupervisor,
+    AgentRuntimeRefreshService,
+    AgentGitCredentialsService,
     AgentsVerificationService,
     ConfigService,
     InstanceStatusService,

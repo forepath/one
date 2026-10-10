@@ -4,15 +4,32 @@ import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-va
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentEnvironmentVariablesRepository } from '../repositories/agent-environment-variables.repository';
 import { AgentsRepository } from '../repositories/agents.repository';
+import {
+  type AgentEnvironmentVariableChangeHints,
+  parseAgentEnvironmentBaseline,
+  planAgentEnvironmentVariables,
+  serializeAgentEnvironmentBaseline,
+  shieldAgentEnvironmentVariables,
+  withAgentEnvironmentLock,
+} from '../utils/agent-environment-baseline.utils';
 
+import { touchesGitCredentialEnvironment } from './agent-git-credentials.service';
 import { AgentMessagesService } from './agent-messages.service';
+import { AgentRuntimeRefreshService } from './agent-runtime-refresh.service';
 import { AgentSessionHydrationService } from './agent-session-hydration.service';
-import { DockerService } from './docker.service';
+import { DockerService, type EnvironmentApplyStrategy } from './docker.service';
 import {
   EnvironmentProgressService,
   EnvironmentProgressTracker,
   RECONCILE_ENVIRONMENT_PROGRESS_STEPS,
+  RESTART_ENVIRONMENT_PROGRESS_STEPS,
 } from './environment-progress.service';
+
+interface ApplyEnvironmentTarget {
+  id: string;
+  name: string;
+  agentType: string;
+}
 
 /**
  * Service for agent environment variables business logic operations.
@@ -31,15 +48,73 @@ export class AgentEnvironmentVariablesService {
     private readonly agentSessionHydrationService: AgentSessionHydrationService,
     @Optional()
     private readonly environmentProgress?: EnvironmentProgressService,
+    @Optional()
+    private readonly agentRuntimeRefresh?: AgentRuntimeRefreshService,
   ) {}
 
-  private startUpdateProgress(agentId: string, agentName: string): EnvironmentProgressTracker | undefined {
+  private startUpdateProgress(
+    agentId: string,
+    agentName: string,
+    strategy: EnvironmentApplyStrategy,
+  ): EnvironmentProgressTracker | undefined {
     return this.environmentProgress?.start({
       agentId,
       agentName,
       operation: 'update',
-      steps: RECONCILE_ENVIRONMENT_PROGRESS_STEPS,
+      steps: strategy === 'restart' ? RESTART_ENVIRONMENT_PROGRESS_STEPS : RECONCILE_ENVIRONMENT_PROGRESS_STEPS,
     });
+  }
+
+  /**
+   * Apply env changes to an agent container and track progress.
+   * - `restart`: the env file is rewritten and the container restarted in place (writable layer and
+   *   OpenCode sessions survive, so no conversation summary is needed).
+   * - `recreate`: legacy container; summarize the conversation for rehydration, then recreate it
+   *   once (migrating it to the mounted environment when the image supports it).
+   * Git credential files are re-provisioned when Git credentials changed, and always after a recreate
+   * (the new container's writable layer no longer has them).
+   * @returns The (possibly new) container ID
+   */
+  private async applyEnvironmentToContainer(
+    agent: ApplyEnvironmentTarget,
+    containerId: string,
+    env: Record<string, string | undefined>,
+    strategy: EnvironmentApplyStrategy,
+    progress: EnvironmentProgressTracker | undefined,
+  ): Promise<string> {
+    if (strategy === 'recreate') {
+      progress?.advance('summarizingContext');
+      const summary = await this.buildHydrationSummary(agent.id, containerId, agent.agentType);
+
+      this.agentSessionHydrationService.storePendingSummary(agent.id, summary);
+      progress?.advance('recreatingContainer');
+    } else {
+      progress?.advance('restartingContainer');
+    }
+
+    const newContainerId = await this.dockerService.updateContainer(containerId, { env });
+
+    this.agentRuntimeRefresh?.invalidateConnections(agent.id);
+
+    if (strategy === 'restart') {
+      progress?.advance('waitingForHealthy');
+      await this.agentRuntimeRefresh?.waitForHealthy(agent.id, newContainerId);
+    }
+
+    if (strategy === 'recreate' || touchesGitCredentialEnvironment(env)) {
+      progress?.advance('restoringGitCredentials');
+      await this.agentRuntimeRefresh?.restoreGitCredentials(agent.id, newContainerId);
+    }
+
+    progress?.advance('finalizing');
+
+    if (newContainerId !== containerId) {
+      await this.agentsRepository.update(agent.id, { containerId: newContainerId });
+    }
+
+    await this.agentRuntimeRefresh?.reattachWatchers(agent.id);
+
+    return newContainerId;
   }
 
   private buildFallbackSummary(lines: Array<{ actor: string; message: string }>): string {
@@ -132,7 +207,7 @@ export class AgentEnvironmentVariablesService {
     });
 
     this.logger.debug(`Persisted environment variable for agent ${agentId}`);
-    await this.reconcileEnvironmentVariables(agentId);
+    await this.reconcileEnvironmentVariables(agentId, { addedKeys: [variable] });
 
     return environmentVariableEntity;
   }
@@ -149,9 +224,14 @@ export class AgentEnvironmentVariablesService {
     variable: string,
     content: string,
   ): Promise<AgentEnvironmentVariableEntity> {
+    const previousVariable = await this.agentEnvironmentVariablesRepository.findByIdOrThrow(id);
     const updatedVariable = await this.agentEnvironmentVariablesRepository.update(id, { variable, content });
+    const renamed = previousVariable.variable !== variable;
 
-    await this.reconcileEnvironmentVariables(updatedVariable.agentId);
+    await this.reconcileEnvironmentVariables(
+      updatedVariable.agentId,
+      renamed ? { addedKeys: [variable], removedKeys: [previousVariable.variable] } : undefined,
+    );
 
     return updatedVariable;
   }
@@ -168,7 +248,7 @@ export class AgentEnvironmentVariablesService {
 
     this.logger.log(`Deleting environment variable ${id}`);
     await this.agentEnvironmentVariablesRepository.delete(id);
-    await this.reconcileEnvironmentVariables(agentId);
+    await this.reconcileEnvironmentVariables(agentId, { removedKeys: [variable.variable] });
   }
 
   /**
@@ -197,21 +277,33 @@ export class AgentEnvironmentVariablesService {
    * @returns Number of environment variables deleted
    */
   async deleteAllEnvironmentVariables(agentId: string): Promise<number> {
+    const removedKeys = (await this.agentEnvironmentVariablesRepository.findAllByAgentId(agentId)).map(
+      (variable) => variable.variable,
+    );
     const deletedCount = await this.agentEnvironmentVariablesRepository.deleteByAgentId(agentId);
 
     this.logger.log(`Deleted ${deletedCount} environment variables for agent ${agentId}`);
-    await this.reconcileEnvironmentVariables(agentId);
+    await this.reconcileEnvironmentVariables(agentId, { removedKeys });
 
     return deletedCount;
   }
 
   /**
    * Reconcile environment variables with the Docker container.
-   * Fetches all environment variables for an agent and updates the container's environment.
+   * Applies all agent-level variables; variables that were removed (or renamed away) fall back to the value
+   * they replaced, or are removed when the key did not exist before (see `agent-environment-baseline.utils`).
    * @param agentId - The UUID of the agent
+   * @param hints - Keys added/removed by the triggering mutation (only needed for untracked legacy agents)
    * @throws NotFoundException if agent is not found or has no container
    */
-  async reconcileEnvironmentVariables(agentId: string): Promise<void> {
+  async reconcileEnvironmentVariables(agentId: string, hints?: AgentEnvironmentVariableChangeHints): Promise<void> {
+    await withAgentEnvironmentLock(agentId, () => this.reconcileEnvironmentVariablesLocked(agentId, hints));
+  }
+
+  private async reconcileEnvironmentVariablesLocked(
+    agentId: string,
+    hints?: AgentEnvironmentVariableChangeHints,
+  ): Promise<void> {
     let progress: EnvironmentProgressTracker | undefined;
 
     try {
@@ -224,29 +316,36 @@ export class AgentEnvironmentVariablesService {
         return;
       }
 
-      progress = this.startUpdateProgress(agent.id, agent.name);
+      const strategy = await this.dockerService.getEnvironmentApplyStrategy(agent.containerId);
+
+      progress = this.startUpdateProgress(agent.id, agent.name, strategy);
 
       // Get all environment variables for the agent
       const environmentVariables = await this.agentEnvironmentVariablesRepository.findAllByAgentId(agentId);
       // Build the environment object from the variables
-      const env: Record<string, string> = {};
+      const desired: Record<string, string> = {};
 
       for (const variable of environmentVariables) {
-        env[variable.variable] = variable.content ?? '';
+        desired[variable.variable] = variable.content ?? '';
       }
 
-      progress?.advance('summarizingContext');
-      const summary = await this.buildHydrationSummary(agent.id, agent.containerId, agent.agentType);
+      const plan = planAgentEnvironmentVariables({
+        desired,
+        baseline: parseAgentEnvironmentBaseline(agent.environmentVariableBaseline),
+        currentEnv: await this.dockerService.getContainerEnvironmentMap(agent.containerId),
+        hints,
+      });
+      const newContainerId = await this.applyEnvironmentToContainer(
+        agent,
+        agent.containerId,
+        plan.env,
+        strategy,
+        progress,
+      );
 
-      this.agentSessionHydrationService.storePendingSummary(agentId, summary);
-
-      // Update the container's environment (this recreates the container)
-      progress?.advance('recreatingContainer');
-      const newContainerId = await this.dockerService.updateContainer(agent.containerId, { env });
-
-      // Update the agent's container ID in the database since the container was recreated
-      progress?.advance('finalizing');
-      await this.agentsRepository.update(agentId, { containerId: newContainerId });
+      await this.agentsRepository.update(agentId, {
+        environmentVariableBaseline: serializeAgentEnvironmentBaseline(plan.baseline),
+      });
       progress?.complete();
 
       this.logger.log(
@@ -267,7 +366,8 @@ export class AgentEnvironmentVariablesService {
   }
 
   /**
-   * Recreate every agent container whose environment contains one of the changed keys.
+   * Apply changed override keys to every agent container whose environment contains one of them
+   * (restart in place, or a one-time recreate for legacy containers).
    * All affected environments are announced as queued update operations up front so clients can
    * render progress for the whole mass update; they are then processed sequentially.
    * @param changedEnv - Changed override keys (undefined value removes the key)
@@ -284,6 +384,7 @@ export class AgentEnvironmentVariablesService {
       agent: (typeof agents)[number];
       containerId: string;
       relevantOverrides: Record<string, string | undefined>;
+      strategy: EnvironmentApplyStrategy;
       progress?: EnvironmentProgressTracker;
     }> = [];
 
@@ -305,30 +406,55 @@ export class AgentEnvironmentVariablesService {
         continue;
       }
 
-      pending.push({ agent, containerId: agent.containerId, relevantOverrides });
+      const shielded = shieldAgentEnvironmentVariables(
+        relevantOverrides,
+        parseAgentEnvironmentBaseline(agent.environmentVariableBaseline),
+        { onlyExistingKeys: true },
+      );
+
+      if (Object.keys(shielded.env).length === 0) {
+        // Only keys controlled by agent-level variables changed: record the new fallback values, no restart.
+        await this.applyWorkspaceOverridesToBaseline(agent.id, relevantOverrides);
+        continue;
+      }
+
+      const strategy = await this.dockerService.getEnvironmentApplyStrategy(agent.containerId);
+
+      pending.push({ agent, containerId: agent.containerId, relevantOverrides, strategy });
     }
 
     for (const item of pending) {
-      item.progress = this.startUpdateProgress(item.agent.id, item.agent.name);
+      item.progress = this.startUpdateProgress(item.agent.id, item.agent.name, item.strategy);
     }
 
     let index = 0;
 
     try {
       for (; index < pending.length; index++) {
-        const { agent, containerId, relevantOverrides, progress } = pending[index];
+        const { agent, containerId, relevantOverrides, strategy, progress } = pending[index];
 
         try {
-          progress?.advance('summarizingContext');
-          const summary = await this.buildHydrationSummary(agent.id, containerId, agent.agentType);
+          const newContainerId = await withAgentEnvironmentLock(agent.id, async () => {
+            const current = await this.agentsRepository.findByIdOrThrow(agent.id);
+            const shielded = shieldAgentEnvironmentVariables(
+              relevantOverrides,
+              parseAgentEnvironmentBaseline(current.environmentVariableBaseline),
+              { onlyExistingKeys: true },
+            );
+            const appliedContainerId =
+              Object.keys(shielded.env).length > 0
+                ? await this.applyEnvironmentToContainer(agent, containerId, shielded.env, strategy, progress)
+                : containerId;
 
-          this.agentSessionHydrationService.storePendingSummary(agent.id, summary);
+            if (shielded.baselineChanged && shielded.baseline) {
+              await this.agentsRepository.update(agent.id, {
+                environmentVariableBaseline: serializeAgentEnvironmentBaseline(shielded.baseline),
+              });
+            }
 
-          progress?.advance('recreatingContainer');
-          const newContainerId = await this.dockerService.updateContainer(containerId, { env: relevantOverrides });
+            return appliedContainerId;
+          });
 
-          progress?.advance('finalizing');
-          await this.agentsRepository.update(agent.id, { containerId: newContainerId });
           progress?.complete();
           this.logger.log(
             `Reconciled workspace configuration overrides for agent ${agent.id} (container ${containerId} -> ${newContainerId})`,
@@ -345,5 +471,26 @@ export class AgentEnvironmentVariablesService {
         pending[rest].progress?.fail('Aborted after a previous environment failed to update');
       }
     }
+  }
+
+  /** Record changed workspace overrides as fallback values of keys controlled by agent-level variables. */
+  private async applyWorkspaceOverridesToBaseline(
+    agentId: string,
+    overrides: Record<string, string | undefined>,
+  ): Promise<void> {
+    await withAgentEnvironmentLock(agentId, async () => {
+      const agent = await this.agentsRepository.findByIdOrThrow(agentId);
+      const shielded = shieldAgentEnvironmentVariables(
+        overrides,
+        parseAgentEnvironmentBaseline(agent.environmentVariableBaseline),
+        { onlyExistingKeys: true },
+      );
+
+      if (shielded.baselineChanged && shielded.baseline) {
+        await this.agentsRepository.update(agentId, {
+          environmentVariableBaseline: serializeAgentEnvironmentBaseline(shielded.baseline),
+        });
+      }
+    });
   }
 }

@@ -1,8 +1,15 @@
-import { PassThrough } from 'stream';
+import { PassThrough, Readable } from 'stream';
 
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import Docker = require('dockerode');
+
+import {
+  buildSingleFileTar,
+  extractFirstFileFromTar,
+  parseEnvironmentFile,
+  serializeEnvironmentFile,
+} from '../utils/agent-environment-file.utils';
 
 import { DockerService } from './docker.service';
 
@@ -22,6 +29,8 @@ describe('DockerService', () => {
     update: jest.Mock;
     restart: jest.Mock;
     start: jest.Mock;
+    getArchive: jest.Mock;
+    putArchive: jest.Mock;
     modem: {
       demuxStream: jest.Mock;
     };
@@ -41,6 +50,7 @@ describe('DockerService', () => {
   let mockImage: {
     inspect: jest.Mock;
   };
+  let mockVolume: { remove: jest.Mock };
 
   beforeEach(async () => {
     // Create mock stream
@@ -96,10 +106,13 @@ describe('DockerService', () => {
       update: jest.fn().mockResolvedValue(undefined),
       restart: jest.fn().mockResolvedValue(undefined),
       start: jest.fn().mockResolvedValue(undefined),
+      getArchive: jest.fn().mockRejectedValue({ statusCode: 404 }),
+      putArchive: jest.fn().mockResolvedValue(undefined),
       modem: {
         demuxStream: jest.fn(),
       },
     };
+    mockVolume = { remove: jest.fn().mockResolvedValue(undefined) };
 
     // Create mock network
     mockNetwork = {
@@ -211,38 +224,69 @@ describe('DockerService', () => {
       ensureSpy.mockRestore();
     });
 
-    it('should quote env values that contain whitespace', async () => {
+    it('should pass env values verbatim (no quoting or escaping) for images without the env-mount contract', async () => {
       await service.createContainer({
         image: 'node:22-alpine',
-        env: { FOO: 'hello world' },
+        env: { FOO: 'hello world', QUOTED: 'he said "hi"', PATHS: 'C:\\tools\nline2\rline3\tend' },
       });
 
       expect((mockDocker as any).createContainer).toHaveBeenCalledWith(
-        expect.objectContaining({ Env: ['FOO="hello world"'] }),
+        expect.objectContaining({
+          Env: ['FOO=hello world', 'QUOTED=he said "hi"', 'PATHS=C:\\tools\nline2\rline3\tend'],
+        }),
       );
     });
 
-    it('should escape inner quotes and wrap in double quotes', async () => {
-      await service.createContainer({
-        image: 'node:22-alpine',
-        env: { FOO: 'he said "hi"' },
+    it('should keep env out of Config.Env and seed the managed env file for images with the env-mount contract', async () => {
+      (createdContainer as any).putArchive = jest.fn().mockResolvedValue(undefined);
+      (mockDocker as any).createVolume = jest.fn().mockResolvedValue({});
+      mockImage.inspect.mockResolvedValue({
+        Id: 'image-id',
+        Config: { Labels: { 'io.agenstra.environment-mount': '1' } },
       });
 
-      expect((mockDocker as any).createContainer).toHaveBeenCalledWith(
-        expect.objectContaining({ Env: ['FOO="he said \\"hi\\""'] }),
+      const result = await service.createContainer({
+        image: 'worker:latest',
+        env: { OPENCODE_SERVER_PASSWORD: 'secret', EMPTY: undefined },
+        volumes: [{ hostPath: '/host/a', containerPath: '/app' }],
+      });
+
+      const volumeName = (mockDocker as any).createVolume.mock.calls[0][0].Name;
+      const createArgs = (mockDocker as any).createContainer.mock.calls[0][0];
+
+      expect(result).toBe('abc123');
+      expect(volumeName).toMatch(/^agenstra-env-/);
+      expect(createArgs.Env).toBeUndefined();
+      expect(createArgs.HostConfig.Mounts).toEqual([
+        { Type: 'volume', Source: volumeName, Target: '/etc/agenstra/environment', ReadOnly: false },
+      ]);
+      expect(createArgs.HostConfig.Binds).toEqual(['/host/a:/app']);
+
+      const [archive, options] = (createdContainer as any).putArchive.mock.calls[0];
+
+      expect(options).toEqual({ path: '/etc/agenstra/environment' });
+      expect(parseEnvironmentFile(extractFirstFileFromTar(archive))).toEqual({
+        EMPTY: '',
+        OPENCODE_SERVER_PASSWORD: 'secret',
+      });
+      expect((createdContainer as any).putArchive.mock.invocationCallOrder[0]).toBeLessThan(
+        createdContainer.start.mock.invocationCallOrder[0],
       );
     });
 
-    it('should escape backslashes, newlines, carriage returns and tabs', async () => {
-      await service.createContainer({
-        image: 'node:22-alpine',
-        env: { PATHS: 'C:\\tools\nline2\rline3\tend' },
+    it('should remove the env volume when container creation fails', async () => {
+      (mockDocker as any).createVolume = jest.fn().mockResolvedValue({});
+      (mockDocker as any).getVolume = jest.fn().mockReturnValue(mockVolume);
+      (mockDocker as any).createContainer = jest.fn().mockRejectedValue(new Error('create failed'));
+      mockImage.inspect.mockResolvedValue({
+        Id: 'image-id',
+        Config: { Labels: { 'io.agenstra.environment-mount': '1' } },
       });
 
-      // Expected: backslashes doubled, \n, \r, \t visible; no quoting needed (no spaces/quotes)
-      expect((mockDocker as any).createContainer).toHaveBeenCalledWith(
-        expect.objectContaining({ Env: ['PATHS=C:\\\\tools\\nline2\\rline3\\tend'] }),
+      await expect(service.createContainer({ image: 'worker:latest', env: { A: '1' } })).rejects.toThrow(
+        'create failed',
       );
+      expect(mockVolume.remove).toHaveBeenCalled();
     });
 
     it('should set empty string when env value is undefined', async () => {
@@ -254,19 +298,23 @@ describe('DockerService', () => {
   describe('updateContainer', () => {
     const containerId = 'test-container-id';
     const newContainerId = 'new-container-id';
-    let newContainer: { id: string; start: jest.Mock };
+    let newContainer: { id: string; start: jest.Mock; rename: jest.Mock; remove: jest.Mock; putArchive: jest.Mock };
 
     beforeEach(() => {
       newContainer = {
         id: newContainerId,
         start: jest.fn().mockResolvedValue(undefined),
+        rename: jest.fn().mockResolvedValue(undefined),
+        remove: jest.fn().mockResolvedValue(undefined),
+        putArchive: jest.fn().mockResolvedValue(undefined),
       };
 
-      // Default mock setup: container exists with minimal config
+      // Default mock setup: legacy container (no managed environment mount) with minimal config
       mockContainer.inspect.mockResolvedValue({
         Id: containerId,
         Name: '/test-container',
         Image: 'test-image:latest',
+        State: { Running: true },
         Config: {
           Image: 'test-image:latest',
           Env: [],
@@ -286,326 +334,551 @@ describe('DockerService', () => {
       mockContainer.stop.mockResolvedValue(undefined);
       mockContainer.remove.mockResolvedValue(undefined);
       (mockDocker as any).createContainer = jest.fn().mockResolvedValue(newContainer);
+      (mockDocker as any).createVolume = jest.fn().mockResolvedValue({});
+      (mockDocker as any).getVolume = jest.fn().mockReturnValue(mockVolume);
+      jest.spyOn(service, 'ensureImageExists').mockResolvedValue(undefined);
     });
 
-    it('should recreate container with updated env variables and return new container ID', async () => {
-      const ensureSpy = jest.spyOn(service, 'ensureImageExists').mockResolvedValue(undefined);
-      const result = await service.updateContainer(containerId, {
-        env: { FOO: 'bar', BAZ: 'qux' },
-      });
+    describe('legacy container (recreate)', () => {
+      it('should recreate container with updated env variables and return new container ID', async () => {
+        const result = await service.updateContainer(containerId, {
+          env: { FOO: 'bar', BAZ: 'qux' },
+        });
 
-      expect(ensureSpy).toHaveBeenCalledWith('test-image:latest');
-      ensureSpy.mockRestore();
-      expect(result).toBe(newContainerId);
-      expect(mockDocker.getContainer).toHaveBeenCalledWith(containerId);
-      expect(mockContainer.inspect).toHaveBeenCalled();
-      expect(mockContainer.stop).toHaveBeenCalled();
-      expect(mockContainer.remove).toHaveBeenCalledWith({ force: true });
-      expect((mockDocker as any).createContainer).toHaveBeenCalledWith(
-        expect.objectContaining({
-          name: 'test-container',
-          Image: 'test-image:latest',
-          Env: ['FOO=bar', 'BAZ=qux'],
-        }),
-      );
-      expect(newContainer.start).toHaveBeenCalled();
-    });
-
-    it('should throw NotFoundException when container does not exist', async () => {
-      mockContainer.inspect.mockRejectedValue({ statusCode: 404 });
-
-      await expect(service.updateContainer(containerId, { env: { FOO: 'bar' } })).rejects.toThrow(NotFoundException);
-      expect(mockContainer.stop).not.toHaveBeenCalled();
-      expect(mockContainer.remove).not.toHaveBeenCalled();
-    });
-
-    it('should throw NotFoundException when container removal fails with 404', async () => {
-      mockContainer.remove.mockRejectedValue({ statusCode: 404 });
-
-      await expect(service.updateContainer(containerId, { env: { FOO: 'bar' } })).rejects.toThrow(NotFoundException);
-    });
-
-    it('should merge new env variables with existing ones', async () => {
-      mockContainer.inspect.mockResolvedValue({
-        Id: containerId,
-        Name: '/test-container',
-        Image: 'test-image:latest',
-        Config: {
-          Image: 'test-image:latest',
-          Env: ['EXISTING=value', 'OTHER=other'],
-          ExposedPorts: {},
-          Labels: {},
-        },
-        HostConfig: {
-          AutoRemove: false,
-        },
-        NetworkSettings: {
-          Networks: {},
-        },
-        Mounts: [],
-      });
-
-      await service.updateContainer(containerId, {
-        env: { FOO: 'bar', EXISTING: 'newvalue' },
-      });
-
-      expect((mockDocker as any).createContainer).toHaveBeenCalledWith(
-        expect.objectContaining({
-          Env: expect.arrayContaining(['EXISTING=newvalue', 'OTHER=other', 'FOO=bar']),
-        }),
-      );
-    });
-
-    it('should quote env values that contain whitespace', async () => {
-      await service.updateContainer(containerId, {
-        env: { FOO: 'hello world' },
-      });
-
-      expect((mockDocker as any).createContainer).toHaveBeenCalledWith(
-        expect.objectContaining({
-          Env: ['FOO="hello world"'],
-        }),
-      );
-    });
-
-    it('should escape inner quotes and wrap in double quotes', async () => {
-      await service.updateContainer(containerId, {
-        env: { FOO: 'he said "hi"' },
-      });
-
-      expect((mockDocker as any).createContainer).toHaveBeenCalledWith(
-        expect.objectContaining({
-          Env: ['FOO="he said \\"hi\\""'],
-        }),
-      );
-    });
-
-    it('should escape backslashes, newlines, carriage returns and tabs', async () => {
-      await service.updateContainer(containerId, {
-        env: { PATHS: 'C:\\tools\nline2\rline3\tend' },
-      });
-
-      expect((mockDocker as any).createContainer).toHaveBeenCalledWith(
-        expect.objectContaining({
-          Env: ['PATHS=C:\\\\tools\\nline2\\rline3\\tend'],
-        }),
-      );
-    });
-
-    it('should remove env variable when env value is undefined', async () => {
-      await service.updateContainer(containerId, {
-        env: { EMPTY: undefined },
-      });
-
-      expect((mockDocker as any).createContainer).toHaveBeenCalledWith(
-        expect.objectContaining({
-          Env: [],
-        }),
-      );
-    });
-
-    it('should handle empty env object', async () => {
-      const result = await service.updateContainer(containerId, {
-        env: {},
-      });
-
-      expect(result).toBe(newContainerId);
-      expect((mockDocker as any).createContainer).toHaveBeenCalledWith(
-        expect.objectContaining({
-          Env: [],
-        }),
-      );
-      expect(newContainer.start).toHaveBeenCalled();
-    });
-
-    it('should handle undefined env', async () => {
-      const result = await service.updateContainer(containerId, {});
-
-      expect(result).toBe(newContainerId);
-      expect((mockDocker as any).createContainer).toHaveBeenCalledWith(
-        expect.objectContaining({
-          Env: [],
-        }),
-      );
-      expect(newContainer.start).toHaveBeenCalled();
-    });
-
-    it('should preserve container configuration when recreating', async () => {
-      mockContainer.inspect.mockResolvedValue({
-        Id: containerId,
-        Name: '/test-container',
-        Image: 'test-image:latest',
-        Config: {
-          Image: 'test-image:latest',
-          Env: ['EXISTING=value'],
-          ExposedPorts: { '8080/tcp': {} },
-          Labels: { 'com.example.label': 'value' },
-        },
-        HostConfig: {
-          AutoRemove: false,
-          RestartPolicy: { Name: 'unless-stopped' },
-        },
-        NetworkSettings: {
-          Networks: {},
-        },
-        Mounts: [
-          {
-            Type: 'bind',
-            Source: '/host/path',
-            Destination: '/container/path',
-            RW: true,
-          },
-        ],
-      });
-
-      await service.updateContainer(containerId, {
-        env: { FOO: 'bar' },
-      });
-
-      expect((mockDocker as any).createContainer).toHaveBeenCalledWith(
-        expect.objectContaining({
-          name: 'test-container',
-          Image: 'test-image:latest',
-          ExposedPorts: { '8080/tcp': {} },
-          Labels: { 'com.example.label': 'value' },
-          HostConfig: expect.objectContaining({
-            Binds: ['/host/path:/container/path', '/opt/agents:/opt/workspace:ro'],
-            AutoRemove: false,
+        expect(service.ensureImageExists).toHaveBeenCalledWith('test-image:latest');
+        expect(result).toBe(newContainerId);
+        expect(mockDocker.getContainer).toHaveBeenCalledWith(containerId);
+        expect(mockContainer.inspect).toHaveBeenCalled();
+        expect(mockContainer.stop).toHaveBeenCalled();
+        expect(mockContainer.remove).toHaveBeenCalledWith({ force: true });
+        expect((mockDocker as any).createContainer).toHaveBeenCalledWith(
+          expect.objectContaining({
+            Image: 'test-image:latest',
+            Env: ['FOO=bar', 'BAZ=qux'],
           }),
-        }),
-      );
-    });
+        );
+        expect(newContainer.rename).toHaveBeenCalledWith({ name: 'test-container' });
+        expect(newContainer.start).toHaveBeenCalled();
+        expect(newContainer.putArchive).not.toHaveBeenCalled();
+      });
 
-    it('should reconnect container to networks', async () => {
-      const mockNetwork1 = {
-        connect: jest.fn().mockResolvedValue(undefined),
-      };
-      const mockNetwork2 = {
-        connect: jest.fn().mockResolvedValue(undefined),
-      };
+      it('should create the replacement before removing the current container', async () => {
+        const order: string[] = [];
 
-      mockDocker.getNetwork = jest.fn().mockReturnValueOnce(mockNetwork1).mockReturnValueOnce(mockNetwork2);
+        (mockDocker as any).createContainer.mockImplementation(async () => {
+          order.push('create');
 
-      mockContainer.inspect.mockResolvedValue({
-        Id: containerId,
-        Name: '/test-container',
-        Image: 'test-image:latest',
-        Config: {
+          return newContainer;
+        });
+        mockContainer.remove.mockImplementation(async () => {
+          order.push('remove');
+        });
+        newContainer.rename.mockImplementation(async () => {
+          order.push('rename');
+        });
+        newContainer.start.mockImplementation(async () => {
+          order.push('start');
+        });
+
+        await service.updateContainer(containerId, { env: { FOO: 'bar' } });
+
+        expect(order).toEqual(['create', 'remove', 'rename', 'start']);
+      });
+
+      it('should throw NotFoundException when container does not exist', async () => {
+        mockContainer.inspect.mockRejectedValue({ statusCode: 404 });
+
+        await expect(service.updateContainer(containerId, { env: { FOO: 'bar' } })).rejects.toThrow(NotFoundException);
+        expect(mockContainer.stop).not.toHaveBeenCalled();
+        expect(mockContainer.remove).not.toHaveBeenCalled();
+      });
+
+      it('should tolerate the current container disappearing during removal', async () => {
+        mockContainer.remove.mockRejectedValue({ statusCode: 404 });
+
+        await expect(service.updateContainer(containerId, { env: { FOO: 'bar' } })).resolves.toBe(newContainerId);
+        expect(newContainer.start).toHaveBeenCalled();
+      });
+
+      it('should merge new env variables with existing ones', async () => {
+        mockContainer.inspect.mockResolvedValue({
+          Id: containerId,
+          Name: '/test-container',
           Image: 'test-image:latest',
-          Env: [],
-          ExposedPorts: {},
-          Labels: {},
-        },
-        HostConfig: {
-          AutoRemove: false,
-        },
-        NetworkSettings: {
-          Networks: {
-            network1: { NetworkID: 'net1' },
-            network2: { NetworkID: 'net2' },
+          Config: {
+            Image: 'test-image:latest',
+            Env: ['EXISTING=value', 'OTHER=other'],
+            ExposedPorts: {},
+            Labels: {},
           },
-        },
-        Mounts: [],
+          HostConfig: {
+            AutoRemove: false,
+          },
+          NetworkSettings: {
+            Networks: {},
+          },
+          Mounts: [],
+        });
+
+        await service.updateContainer(containerId, {
+          env: { FOO: 'bar', EXISTING: 'newvalue' },
+        });
+
+        expect((mockDocker as any).createContainer).toHaveBeenCalledWith(
+          expect.objectContaining({
+            Env: ['EXISTING=newvalue', 'OTHER=other', 'FOO=bar'],
+          }),
+        );
       });
 
-      await service.updateContainer(containerId, {
-        env: { FOO: 'bar' },
+      it('should pass env values verbatim (no quoting or escaping)', async () => {
+        await service.updateContainer(containerId, {
+          env: { FOO: 'hello world', QUOTED: 'he said "hi"', PATHS: 'C:\\tools\nline2\rline3\tend' },
+        });
+
+        expect((mockDocker as any).createContainer).toHaveBeenCalledWith(
+          expect.objectContaining({
+            Env: ['FOO=hello world', 'QUOTED=he said "hi"', 'PATHS=C:\\tools\nline2\rline3\tend'],
+          }),
+        );
       });
 
-      expect(mockDocker.getNetwork).toHaveBeenCalledWith('network1');
-      expect(mockDocker.getNetwork).toHaveBeenCalledWith('network2');
-      expect(mockNetwork1.connect).toHaveBeenCalledWith({ Container: newContainerId });
-      expect(mockNetwork2.connect).toHaveBeenCalledWith({ Container: newContainerId });
-    });
+      it('should not re-encode existing env values on subsequent updates', async () => {
+        mockContainer.inspect.mockResolvedValue({
+          Id: containerId,
+          Name: '/test-container',
+          Config: { Image: 'test-image:latest', Env: ['LEGACY="a b"', 'PATHS=C:\\\\x'], Labels: {} },
+          HostConfig: {},
+          NetworkSettings: { Networks: {} },
+          Mounts: [],
+        });
 
-    it('should handle network connection errors gracefully', async () => {
-      const mockNetwork = {
-        connect: jest.fn().mockRejectedValue(new Error('Network not found')),
-      };
+        await service.updateContainer(containerId, { env: { FOO: 'bar' } });
 
-      mockDocker.getNetwork = jest.fn().mockReturnValue(mockNetwork);
+        expect((mockDocker as any).createContainer).toHaveBeenCalledWith(
+          expect.objectContaining({ Env: ['LEGACY="a b"', 'PATHS=C:\\\\x', 'FOO=bar'] }),
+        );
+      });
 
-      mockContainer.inspect.mockResolvedValue({
-        Id: containerId,
-        Name: '/test-container',
-        Image: 'test-image:latest',
-        Config: {
+      it('should remove env variable when env value is undefined', async () => {
+        mockContainer.inspect.mockResolvedValue({
+          Id: containerId,
+          Name: '/test-container',
+          Config: { Image: 'test-image:latest', Env: ['EMPTY=1', 'KEEP=1'], Labels: {} },
+          HostConfig: {},
+          NetworkSettings: { Networks: {} },
+          Mounts: [],
+        });
+
+        await service.updateContainer(containerId, {
+          env: { EMPTY: undefined },
+        });
+
+        expect((mockDocker as any).createContainer).toHaveBeenCalledWith(expect.objectContaining({ Env: ['KEEP=1'] }));
+      });
+
+      it('should skip invalid variable names and values containing NUL', async () => {
+        await service.updateContainer(containerId, {
+          env: { '-i': 'x', 'A=B': 'x', NUL: 'a\0b', OK: '1' },
+        });
+
+        expect((mockDocker as any).createContainer).toHaveBeenCalledWith(expect.objectContaining({ Env: ['OK=1'] }));
+      });
+
+      it('should handle empty or undefined env', async () => {
+        await expect(service.updateContainer(containerId, { env: {} })).resolves.toBe(newContainerId);
+        await expect(service.updateContainer(containerId, {})).resolves.toBe(newContainerId);
+        expect((mockDocker as any).createContainer).toHaveBeenCalledWith(expect.objectContaining({ Env: [] }));
+      });
+
+      it('should preserve container configuration when recreating', async () => {
+        mockContainer.inspect.mockResolvedValue({
+          Id: containerId,
+          Name: '/test-container',
           Image: 'test-image:latest',
-          Env: [],
-          ExposedPorts: {},
-          Labels: {},
-        },
-        HostConfig: {
-          AutoRemove: false,
-        },
-        NetworkSettings: {
-          Networks: {
-            network1: { NetworkID: 'net1' },
+          Config: {
+            Image: 'test-image:latest',
+            Env: ['EXISTING=value'],
+            ExposedPorts: { '8080/tcp': {} },
+            Labels: { 'com.example.label': 'value' },
           },
-        },
-        Mounts: [],
+          HostConfig: {
+            AutoRemove: false,
+            RestartPolicy: { Name: 'unless-stopped' },
+          },
+          NetworkSettings: {
+            Networks: {},
+          },
+          Mounts: [
+            {
+              Type: 'bind',
+              Source: '/host/path',
+              Destination: '/container/path',
+              RW: true,
+            },
+            {
+              Type: 'volume',
+              Name: 'named-volume',
+              Source: '/var/lib/docker/volumes/named-volume/_data',
+              Destination: '/data',
+              RW: false,
+            },
+          ],
+        });
+
+        await service.updateContainer(containerId, {
+          env: { FOO: 'bar' },
+        });
+
+        expect((mockDocker as any).createContainer).toHaveBeenCalledWith(
+          expect.objectContaining({
+            Image: 'test-image:latest',
+            ExposedPorts: { '8080/tcp': {} },
+            Labels: { 'com.example.label': 'value' },
+            HostConfig: expect.objectContaining({
+              Binds: ['/host/path:/container/path', 'named-volume:/data:ro', '/opt/agents:/opt/workspace:ro'],
+              AutoRemove: false,
+              RestartPolicy: { Name: 'unless-stopped' },
+            }),
+          }),
+        );
+        expect(newContainer.rename).toHaveBeenCalledWith({ name: 'test-container' });
       });
 
-      // Should not throw, just log warning
-      const result = await service.updateContainer(containerId, {
-        env: { FOO: 'bar' },
+      it('should reconnect container to networks', async () => {
+        const mockNetwork1 = {
+          connect: jest.fn().mockResolvedValue(undefined),
+        };
+        const mockNetwork2 = {
+          connect: jest.fn().mockResolvedValue(undefined),
+        };
+
+        mockDocker.getNetwork = jest.fn().mockReturnValueOnce(mockNetwork1).mockReturnValueOnce(mockNetwork2);
+
+        mockContainer.inspect.mockResolvedValue({
+          Id: containerId,
+          Name: '/test-container',
+          Image: 'test-image:latest',
+          Config: {
+            Image: 'test-image:latest',
+            Env: [],
+            ExposedPorts: {},
+            Labels: {},
+          },
+          HostConfig: {
+            AutoRemove: false,
+          },
+          NetworkSettings: {
+            Networks: {
+              network1: { NetworkID: 'net1' },
+              network2: { NetworkID: 'net2' },
+            },
+          },
+          Mounts: [],
+        });
+
+        await service.updateContainer(containerId, {
+          env: { FOO: 'bar' },
+        });
+
+        expect(mockDocker.getNetwork).toHaveBeenCalledWith('network1');
+        expect(mockDocker.getNetwork).toHaveBeenCalledWith('network2');
+        expect(mockNetwork1.connect).toHaveBeenCalledWith({ Container: newContainerId });
+        expect(mockNetwork2.connect).toHaveBeenCalledWith({ Container: newContainerId });
       });
 
-      expect(result).toBe(newContainerId);
-      expect(newContainer.start).toHaveBeenCalled();
-    });
+      it('should handle network connection errors gracefully', async () => {
+        const failingNetwork = {
+          connect: jest.fn().mockRejectedValue(new Error('Network not found')),
+        };
 
-    it('should handle stop errors gracefully if container is already stopped', async () => {
-      mockContainer.stop.mockRejectedValue({ statusCode: 304 }); // Not Modified
+        mockDocker.getNetwork = jest.fn().mockReturnValue(failingNetwork);
 
-      const result = await service.updateContainer(containerId, {
-        env: { FOO: 'bar' },
+        mockContainer.inspect.mockResolvedValue({
+          Id: containerId,
+          Name: '/test-container',
+          Image: 'test-image:latest',
+          Config: {
+            Image: 'test-image:latest',
+            Env: [],
+            ExposedPorts: {},
+            Labels: {},
+          },
+          HostConfig: {
+            AutoRemove: false,
+          },
+          NetworkSettings: {
+            Networks: {
+              network1: { NetworkID: 'net1' },
+            },
+          },
+          Mounts: [],
+        });
+
+        const result = await service.updateContainer(containerId, {
+          env: { FOO: 'bar' },
+        });
+
+        expect(result).toBe(newContainerId);
+        expect(newContainer.start).toHaveBeenCalled();
       });
 
-      expect(result).toBe(newContainerId);
-      expect(mockContainer.remove).toHaveBeenCalled();
-      expect((mockDocker as any).createContainer).toHaveBeenCalled();
-    });
+      it('should handle stop errors gracefully if container is already stopped', async () => {
+        mockContainer.stop.mockRejectedValue({ statusCode: 304 }); // Not Modified
 
-    it('should handle stop errors gracefully if container is not found', async () => {
-      mockContainer.stop.mockRejectedValue({ statusCode: 404 });
+        const result = await service.updateContainer(containerId, {
+          env: { FOO: 'bar' },
+        });
 
-      const result = await service.updateContainer(containerId, {
-        env: { FOO: 'bar' },
+        expect(result).toBe(newContainerId);
+        expect(mockContainer.remove).toHaveBeenCalled();
+        expect((mockDocker as any).createContainer).toHaveBeenCalled();
       });
 
-      expect(result).toBe(newContainerId);
-      expect(mockContainer.remove).toHaveBeenCalled();
+      it('should handle stop errors gracefully if container is not found', async () => {
+        mockContainer.stop.mockRejectedValue({ statusCode: 404 });
+
+        const result = await service.updateContainer(containerId, {
+          env: { FOO: 'bar' },
+        });
+
+        expect(result).toBe(newContainerId);
+        expect(mockContainer.remove).toHaveBeenCalled();
+      });
+
+      it('should propagate stop errors and discard the unused replacement', async () => {
+        mockContainer.stop.mockRejectedValue(new Error('Stop failed'));
+
+        await expect(service.updateContainer(containerId, { env: { FOO: 'bar' } })).rejects.toThrow('Stop failed');
+        expect(newContainer.remove).toHaveBeenCalledWith({ force: true });
+        expect(mockContainer.remove).not.toHaveBeenCalled();
+      });
+
+      it('should restart the current container when its removal fails after stopping it', async () => {
+        mockContainer.remove.mockRejectedValue(new Error('Remove failed'));
+
+        await expect(service.updateContainer(containerId, { env: { FOO: 'bar' } })).rejects.toThrow('Remove failed');
+        expect(mockContainer.start).toHaveBeenCalled();
+        expect(newContainer.remove).toHaveBeenCalledWith({ force: true });
+      });
+
+      it('should handle createContainer errors without touching the current container', async () => {
+        (mockDocker as any).createContainer.mockRejectedValue(new Error('Create failed'));
+
+        await expect(service.updateContainer(containerId, { env: { FOO: 'bar' } })).rejects.toThrow('Create failed');
+        expect(mockContainer.stop).not.toHaveBeenCalled();
+        expect(mockContainer.remove).not.toHaveBeenCalled();
+      });
+
+      it('should handle start errors', async () => {
+        newContainer.start.mockRejectedValue(new Error('Start failed'));
+
+        await expect(service.updateContainer(containerId, { env: { FOO: 'bar' } })).rejects.toThrow('Start failed');
+      });
     });
 
-    it('should propagate stop errors that are not 304 or 404', async () => {
-      const stopError = new Error('Stop failed');
+    describe('migration to the managed environment volume', () => {
+      beforeEach(() => {
+        mockImage.inspect.mockResolvedValue({
+          Id: 'image-id',
+          Config: {
+            Labels: { 'io.agenstra.environment-mount': '1' },
+            Env: ['PATH=/usr/bin', 'BROWSER=/usr/local/bin/chromium-agenstra'],
+          },
+        });
+        mockContainer.inspect.mockResolvedValue({
+          Id: containerId,
+          Name: '/test-container',
+          State: { Running: true },
+          Config: {
+            Image: 'test-image:latest',
+            Env: ['PATH=/usr/bin', 'BROWSER=/usr/local/bin/chromium-agenstra', 'SECRET=old', 'OTHER=1'],
+            Labels: {},
+          },
+          HostConfig: { AutoRemove: false },
+          NetworkSettings: { Networks: {} },
+          Mounts: [{ Type: 'bind', Source: '/opt/agents/a', Destination: '/app', RW: true }],
+        });
+      });
 
-      mockContainer.stop.mockRejectedValue(stopError);
+      it('should recreate once with the env moved into the managed env file', async () => {
+        const result = await service.updateContainer(containerId, { env: { SECRET: 'new' } });
 
-      await expect(service.updateContainer(containerId, { env: { FOO: 'bar' } })).rejects.toThrow('Stop failed');
+        expect(result).toBe(newContainerId);
+        expect((mockDocker as any).createVolume).toHaveBeenCalledWith({
+          Name: expect.stringMatching(/^agenstra-env-[0-9a-f-]{36}$/),
+          Labels: { 'io.agenstra.environment-volume': 'true' },
+        });
+
+        const createArgs = (mockDocker as any).createContainer.mock.calls[0][0];
+        const volumeName = (mockDocker as any).createVolume.mock.calls[0][0].Name;
+
+        expect(createArgs.Env).toEqual(['PATH=/usr/bin', 'BROWSER=/usr/local/bin/chromium-agenstra']);
+        expect(createArgs.Env.join('\n')).not.toContain('SECRET');
+        expect(createArgs.HostConfig.Mounts).toEqual([
+          { Type: 'volume', Source: volumeName, Target: '/etc/agenstra/environment', ReadOnly: false },
+        ]);
+        expect(createArgs.HostConfig.Binds).toEqual(['/opt/agents/a:/app', '/opt/agents:/opt/workspace:ro']);
+
+        expect(newContainer.putArchive).toHaveBeenCalledTimes(1);
+        const [archive, archiveOptions] = newContainer.putArchive.mock.calls[0];
+
+        expect(archiveOptions).toEqual({ path: '/etc/agenstra/environment' });
+        expect(parseEnvironmentFile(extractFirstFileFromTar(archive))).toEqual({ OTHER: '1', SECRET: 'new' });
+        expect(newContainer.putArchive.mock.invocationCallOrder[0]).toBeLessThan(
+          mockContainer.remove.mock.invocationCallOrder[0],
+        );
+      });
+
+      it('should drop the new volume and keep the current container when seeding the env file fails', async () => {
+        newContainer.putArchive.mockRejectedValue(new Error('putArchive failed'));
+
+        await expect(service.updateContainer(containerId, { env: { SECRET: 'new' } })).rejects.toThrow(
+          'putArchive failed',
+        );
+        expect(mockContainer.remove).not.toHaveBeenCalled();
+        expect(newContainer.remove).toHaveBeenCalledWith({ force: true });
+        expect(mockVolume.remove).toHaveBeenCalled();
+      });
     });
 
-    it('should handle createContainer errors', async () => {
-      const createError = new Error('Create failed');
+    describe('managed environment volume (restart in place)', () => {
+      const volumeName = 'agenstra-env-11111111-2222-3333-4444-555555555555';
 
-      (mockDocker as any).createContainer.mockRejectedValue(createError);
+      beforeEach(() => {
+        mockContainer.inspect.mockResolvedValue({
+          Id: containerId,
+          Name: '/test-container',
+          State: { Running: true },
+          Config: {
+            Image: 'test-image:latest',
+            Env: ['PATH=/usr/bin'],
+            Labels: { 'io.agenstra.environment-mount': '1' },
+          },
+          HostConfig: {},
+          NetworkSettings: { Networks: {} },
+          Mounts: [
+            {
+              Type: 'volume',
+              Name: volumeName,
+              Source: `/var/lib/docker/volumes/${volumeName}/_data`,
+              Destination: '/etc/agenstra/environment',
+              RW: true,
+            },
+          ],
+        });
+        mockContainer.getArchive.mockImplementation(async () =>
+          Readable.from([
+            buildSingleFileTar('environment', serializeEnvironmentFile({ KEEP: 'k', SECRET: 'old', DROP: 'x' })),
+          ]),
+        );
+      });
 
-      await expect(service.updateContainer(containerId, { env: { FOO: 'bar' } })).rejects.toThrow('Create failed');
+      it('should report the restart strategy', async () => {
+        await expect(service.getEnvironmentApplyStrategy(containerId)).resolves.toBe('restart');
+      });
+
+      it('should rewrite the env file and restart the same container without deleting it', async () => {
+        const result = await service.updateContainer(containerId, {
+          env: { SECRET: 'new value with "quotes"', DROP: undefined, ADDED: 'a\nb' },
+        });
+
+        expect(result).toBe(containerId);
+        expect(mockContainer.restart).toHaveBeenCalled();
+        expect(mockContainer.remove).not.toHaveBeenCalled();
+        expect(mockContainer.stop).not.toHaveBeenCalled();
+        expect((mockDocker as any).createContainer).not.toHaveBeenCalled();
+
+        const [archive, archiveOptions] = mockContainer.putArchive.mock.calls[0];
+
+        expect(archiveOptions).toEqual({ path: '/etc/agenstra/environment' });
+        expect(parseEnvironmentFile(extractFirstFileFromTar(archive))).toEqual({
+          ADDED: 'a\nb',
+          KEEP: 'k',
+          SECRET: 'new value with "quotes"',
+        });
+        expect(mockContainer.putArchive.mock.invocationCallOrder[0]).toBeLessThan(
+          mockContainer.restart.mock.invocationCallOrder[0],
+        );
+      });
+
+      it('should start a stopped container when restart reports a conflict', async () => {
+        mockContainer.restart.mockRejectedValueOnce({ statusCode: 409 });
+
+        await expect(service.updateContainer(containerId, { env: { SECRET: 'x' } })).resolves.toBe(containerId);
+        expect(mockContainer.start).toHaveBeenCalled();
+      });
+
+      it('should not restart when writing the env file fails', async () => {
+        mockContainer.putArchive.mockRejectedValue(new Error('disk full'));
+
+        await expect(service.updateContainer(containerId, { env: { SECRET: 'x' } })).rejects.toThrow('disk full');
+        expect(mockContainer.restart).not.toHaveBeenCalled();
+      });
+
+      it('should serialize concurrent updates of the same container', async () => {
+        let stored = serializeEnvironmentFile({});
+
+        mockContainer.getArchive.mockImplementation(async () =>
+          Readable.from([buildSingleFileTar('environment', stored)]),
+        );
+        mockContainer.putArchive.mockImplementation(async (archive: Buffer) => {
+          await new Promise((resolve) => setTimeout(resolve, 5));
+          stored = extractFirstFileFromTar(archive);
+        });
+
+        await Promise.all([
+          service.updateContainer(containerId, { env: { A: '1' } }),
+          service.updateContainer(containerId, { env: { B: '2' } }),
+        ]);
+
+        expect(parseEnvironmentFile(stored)).toEqual({ A: '1', B: '2' });
+      });
+
+      it('should expose the effective environment (Config.Env + env file)', async () => {
+        await expect(service.getContainerEnvironmentMap(containerId)).resolves.toEqual({
+          PATH: '/usr/bin',
+          KEEP: 'k',
+          SECRET: 'old',
+          DROP: 'x',
+        });
+      });
+
+      it('should pass the managed environment to docker exec via Env (never argv)', async () => {
+        await service.getContainerHomeDirectory(containerId).catch(() => undefined);
+
+        expect(mockContainer.exec).toHaveBeenCalledWith(
+          expect.objectContaining({ Env: ['DROP=x', 'KEEP=k', 'SECRET=old'] }),
+        );
+        expect(JSON.stringify(mockContainer.exec.mock.calls[0][0].Cmd)).not.toContain('old');
+      });
+
+      it('should cache the managed environment for exec and refresh it after an update', async () => {
+        await expect((service as any).getExecEnvironmentOptions(containerId, 'agenstra')).resolves.toEqual({
+          Env: ['DROP=x', 'KEEP=k', 'SECRET=old'],
+        });
+        await (service as any).getExecEnvironmentOptions(containerId, 'agenstra');
+        expect(mockContainer.getArchive).toHaveBeenCalledTimes(1);
+
+        await service.updateContainer(containerId, { env: { SECRET: 'new' } });
+
+        await expect((service as any).getExecEnvironmentOptions(containerId, 'agenstra')).resolves.toEqual({
+          Env: ['DROP=x', 'KEEP=k', 'SECRET=new'],
+        });
+      });
+
+      it('should reject oversized env files', async () => {
+        const huge = Buffer.alloc(5 * 1024 * 1024, 0x41);
+
+        mockContainer.getArchive.mockResolvedValue(Readable.from([huge]));
+
+        await expect(service.updateContainer(containerId, { env: { A: '1' } })).rejects.toThrow('exceeds');
+        expect(mockContainer.restart).not.toHaveBeenCalled();
+      });
     });
 
-    it('should handle start errors', async () => {
-      const startError = new Error('Start failed');
-
-      newContainer.start.mockRejectedValue(startError);
-
-      await expect(service.updateContainer(containerId, { env: { FOO: 'bar' } })).rejects.toThrow('Start failed');
-    });
-
-    it('should call getContainer with correct containerId', async () => {
-      await service.updateContainer(containerId, { env: { FOO: 'bar' } });
-
-      expect(mockDocker.getContainer).toHaveBeenCalledWith(containerId);
+    it('should report the recreate strategy for legacy containers', async () => {
+      await expect(service.getEnvironmentApplyStrategy(containerId)).resolves.toBe('recreate');
     });
   });
 
@@ -699,6 +972,36 @@ describe('DockerService', () => {
       expect(mockContainer.inspect).toHaveBeenCalled();
       expect(mockContainer.stop).toHaveBeenCalled();
       expect(mockContainer.remove).toHaveBeenCalled();
+    });
+
+    it('should remove the managed environment volume together with the container', async () => {
+      mockContainer.inspect.mockResolvedValue({
+        State: { Running: false },
+        Mounts: [
+          { Type: 'volume', Name: 'agenstra-env-abc', Destination: '/etc/agenstra/environment', RW: true },
+          { Type: 'volume', Name: 'user-data', Destination: '/data', RW: true },
+        ],
+      });
+      mockContainer.remove.mockResolvedValue(undefined);
+      (mockDocker as any).getVolume = jest.fn().mockReturnValue(mockVolume);
+
+      await service.deleteContainer(containerId);
+
+      expect((mockDocker as any).getVolume).toHaveBeenCalledTimes(1);
+      expect((mockDocker as any).getVolume).toHaveBeenCalledWith('agenstra-env-abc');
+      expect(mockVolume.remove).toHaveBeenCalled();
+    });
+
+    it('should not fail deletion when removing the environment volume fails', async () => {
+      mockContainer.inspect.mockResolvedValue({
+        State: { Running: false },
+        Mounts: [{ Type: 'volume', Name: 'agenstra-env-abc', Destination: '/etc/agenstra/environment', RW: true }],
+      });
+      mockContainer.remove.mockResolvedValue(undefined);
+      mockVolume.remove.mockRejectedValue({ statusCode: 409, message: 'in use' });
+      (mockDocker as any).getVolume = jest.fn().mockReturnValue(mockVolume);
+
+      await expect(service.deleteContainer(containerId)).resolves.toBeUndefined();
     });
 
     it('should remove a stopped container without stopping', async () => {
@@ -1912,6 +2215,7 @@ describe('DockerService', () => {
         AttachStdout: true,
         AttachStderr: true,
         Tty: false,
+        User: 'agenstra',
       });
       expect(mockExec.start).toHaveBeenCalledWith({
         hijack: true,
@@ -2015,6 +2319,7 @@ describe('DockerService', () => {
         AttachStdout: true,
         AttachStderr: true,
         Tty: false,
+        User: 'agenstra',
       });
     });
   });
@@ -2049,6 +2354,7 @@ describe('DockerService', () => {
         AttachStdout: true,
         AttachStderr: true,
         Tty: false,
+        User: 'agenstra',
       });
     });
 

@@ -74,6 +74,19 @@ export class AgentEntity {
   })
   opencodeUserSecrets?: string | null;
 
+  /**
+   * Values replaced by agent-level environment variables (JSON `{ [key]: string | null }`), restored when
+   * a variable is removed. AES-256-GCM encrypted. `null` for agents created before this was tracked.
+   * See `agent-environment-baseline.utils.ts`.
+   */
+  @Column({
+    type: 'text',
+    nullable: true,
+    name: 'environment_variable_baseline',
+    transformer: createAes256GcmTransformer(),
+  })
+  environmentVariableBaseline?: string | null;
+
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'git_repository_url' })
   gitRepositoryUrl?: string;
 

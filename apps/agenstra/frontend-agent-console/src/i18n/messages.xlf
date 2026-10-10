@@ -671,6 +671,12 @@
       <trans-unit id="featureChat-environmentProgressStepRecreatingContainer" datatype="html">
         <source>Recreating container</source>
         </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepRestartingContainer" datatype="html">
+        <source>Restarting container</source>
+        </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepRestoringGitCredentials" datatype="html">
+        <source>Restoring Git credentials</source>
+        </trans-unit>
       <trans-unit id="featureChat-environmentProgressStepFinalizing" datatype="html">
         <source>Finalizing</source>
         </trans-unit>
@@ -1086,9 +1092,6 @@
         </trans-unit>
       <trans-unit id="featureChat-deleteWorkspaceConfigurationOverrideTitle" datatype="html">
         <source>Delete override</source>
-        </trans-unit>
-      <trans-unit id="featureChat-envVarsWarning" datatype="html">
-        <source>Changing the environment variables will re-create the agent&apos;s container. Context may be lost.</source>
         </trans-unit>
       <trans-unit id="featureChat-manageEnvVarsModalTitle" datatype="html">
         <source> Manage Environment Variables </source>

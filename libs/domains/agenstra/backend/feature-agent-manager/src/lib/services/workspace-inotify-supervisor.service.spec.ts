@@ -72,4 +72,51 @@ describe('WorkspaceInotifySupervisor.parseInotifyLine', () => {
   it('returns null for malformed lines', () => {
     expect(supervisor.parseInotifyLine('no-separator', '/app')).toBeNull();
   });
+
+  describe('restartWatcherIfActive', () => {
+    async function createSupervisor() {
+      const stop = jest.fn().mockResolvedValue(undefined);
+      const startStreamingExec = jest.fn().mockResolvedValue({ stop });
+      const module = await Test.createTestingModule({
+        providers: [
+          WorkspaceInotifySupervisor,
+          WorkspaceChangeNotifierService,
+          {
+            provide: AgentsRepository,
+            useValue: { findById: jest.fn().mockResolvedValue({ containerId: 'container' }) },
+          },
+          { provide: DockerService, useValue: { startStreamingExec } },
+        ],
+      }).compile();
+      const notifier = module.get(WorkspaceChangeNotifierService);
+      const rebuild = jest.spyOn(notifier, 'notifyRebuildRequired').mockImplementation(() => undefined);
+
+      return { supervisor: module.get(WorkspaceInotifySupervisor), startStreamingExec, stop, rebuild };
+    }
+
+    it('re-attaches an active watcher with its base path and requests an index rebuild', async () => {
+      const { supervisor, startStreamingExec, stop, rebuild } = await createSupervisor();
+
+      try {
+        await supervisor.startWatcher('agent', '/workspace');
+        await supervisor.restartWatcherIfActive('agent');
+
+        expect(stop).toHaveBeenCalledTimes(1);
+        expect(startStreamingExec).toHaveBeenCalledTimes(2);
+        expect(startStreamingExec.mock.calls[1][1].at(-1)).toBe('/workspace');
+        expect(rebuild).toHaveBeenCalledWith('agent', 'container-restarted');
+      } finally {
+        await supervisor.onModuleDestroy();
+      }
+    });
+
+    it('does nothing when no watcher is active for the agent', async () => {
+      const { supervisor, startStreamingExec, rebuild } = await createSupervisor();
+
+      await supervisor.restartWatcherIfActive('agent');
+
+      expect(startStreamingExec).not.toHaveBeenCalled();
+      expect(rebuild).not.toHaveBeenCalled();
+    });
+  });
 });

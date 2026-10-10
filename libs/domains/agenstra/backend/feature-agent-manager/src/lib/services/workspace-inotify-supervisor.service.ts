@@ -8,6 +8,7 @@ import { DockerService } from './docker.service';
 import { WorkspaceChangeNotifierService } from './workspace-change-notifier.service';
 
 interface WatcherHandle {
+  basePath: string;
   stop: () => Promise<void>;
   debounceTimers: Map<string, ReturnType<typeof setTimeout>>;
 }
@@ -100,7 +101,7 @@ export class WorkspaceInotifySupervisor implements OnModuleDestroy {
         },
       );
 
-      this.watchers.set(agentId, { stop: handle.stop, debounceTimers });
+      this.watchers.set(agentId, { basePath, stop: handle.stop, debounceTimers });
       this.logger.log(`Started workspace inotify watcher for agent ${agentId}`);
     } catch (error: unknown) {
       this.logger.warn(`Failed to start workspace watcher for agent ${agentId}: ${(error as Error).message}`);
@@ -127,6 +128,21 @@ export class WorkspaceInotifySupervisor implements OnModuleDestroy {
     } catch (error: unknown) {
       this.logger.warn(`Error stopping watcher for agent ${agentId}: ${(error as Error).message}`);
     }
+  }
+
+  /**
+   * Re-attach an active watcher after its container was restarted or recreated (the previous
+   * `inotifywait` exec does not survive). No-op when no watcher is running for the agent.
+   */
+  async restartWatcherIfActive(agentId: string): Promise<void> {
+    const existing = this.watchers.get(agentId);
+
+    if (!existing) {
+      return;
+    }
+
+    await this.startWatcher(agentId, existing.basePath);
+    this.changeNotifier.notifyRebuildRequired(agentId, 'container-restarted');
   }
 
   /**

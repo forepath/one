@@ -11,7 +11,6 @@ import {
   OnApplicationBootstrap,
   Optional,
 } from '@nestjs/common';
-import * as sshpk from 'sshpk';
 import { v4 as uuidv4 } from 'uuid';
 
 import { GitRepositorySetupMode, resolveGitRepositorySetupMode } from '../constants/git-repository-setup-mode';
@@ -27,9 +26,11 @@ import { OpenCodeClientFactory } from '../providers/opencode/opencode-client.fac
 import { OPENCODE_SERVER_PORT, OPENCODE_SERVER_USERNAME_DEFAULT } from '../providers/opencode/opencode-provider.config';
 import { VNC_WEBSOCKIFY_PORT } from '../constants/vnc.constants';
 import { AgentsRepository } from '../repositories/agents.repository';
+import { serializeAgentEnvironmentBaseline } from '../utils/agent-environment-baseline.utils';
 import { expandProviderPathTildeInContainer } from '../utils/provider-container-path.utils';
 
 import { AgentChatSessionsService } from './agent-chat-sessions.service';
+import { AgentGitCredentialsService } from './agent-git-credentials.service';
 import { DeploymentsService } from './deployments.service';
 import { DockerService } from './docker.service';
 import {
@@ -59,6 +60,7 @@ export class AgentsService implements OnApplicationBootstrap {
     private readonly agentProviderFactory: AgentProviderFactory,
     private readonly agentChatSessionsService: AgentChatSessionsService,
     private readonly openCodeClientFactory: OpenCodeClientFactory,
+    private readonly gitCredentials: AgentGitCredentialsService,
     @Inject(forwardRef(() => DeploymentsService))
     private readonly deploymentsService?: DeploymentsService,
     @Inject(forwardRef(() => WorkspaceInotifySupervisor))
@@ -82,24 +84,6 @@ export class AgentsService implements OnApplicationBootstrap {
     }
 
     return password;
-  }
-
-  /**
-   * Extract the domain from a git repository URL.
-   * @param url - The git repository URL (e.g., https://github.com/user/repo.git)
-   * @returns The domain (e.g., github.com)
-   */
-  private extractGitDomain(url: string): string {
-    try {
-      const urlObj = new URL(url);
-
-      return urlObj.hostname;
-    } catch {
-      // Fallback: try to extract domain from common git URL patterns
-      const match = url.match(/@([^/:]+)|:\/\/([^/:]+)/);
-
-      return match ? match[1] || match[2] : 'github.com';
-    }
   }
 
   /**
@@ -144,104 +128,6 @@ export class AgentsService implements OnApplicationBootstrap {
   }
 
   /**
-   * Determine whether the configured git repository uses SSH.
-   */
-  private isSshRepository(url?: string): boolean {
-    if (!url) {
-      return false;
-    }
-
-    return url.startsWith('git@') || url.startsWith('ssh://');
-  }
-
-  /**
-   * Resolve SSH host information from repository URL.
-   */
-  private getSshHostInfo(url: string): { host: string; port?: number } {
-    if (url.startsWith('ssh://')) {
-      const parsed = new URL(url);
-
-      return { host: parsed.hostname, port: parsed.port ? Number(parsed.port) : undefined };
-    }
-
-    const scpLikeMatch = url.match(/^[^@]+@([^:]+):/);
-
-    if (scpLikeMatch?.[1]) {
-      return { host: scpLikeMatch[1] };
-    }
-
-    return { host: this.extractGitDomain(url) };
-  }
-
-  /**
-   * Get the SSH key filename based on key type.
-   * Maps key algorithm to standard SSH key filenames.
-   */
-  private getSshKeyFilename(keyType: string): string {
-    const typeMap: Record<string, string> = {
-      rsa: 'id_rsa',
-      ed25519: 'id_ed25519',
-      ecdsa: 'id_ecdsa',
-      dsa: 'id_dsa',
-    };
-    const normalizedType = keyType.toLowerCase();
-
-    return typeMap[normalizedType] || 'id_rsa'; // Default to RSA if unknown
-  }
-
-  /**
-   * Prepare SSH key pair information.
-   * Returns the private key contents to place inside the container, the public key to share, and the key filename.
-   */
-  private prepareSshKeyPair(providedPrivateKey?: string): {
-    privateKey: string;
-    publicKey: string;
-    keyFilename: string;
-    generated: boolean;
-  } {
-    let key: sshpk.PrivateKey;
-    const generated = false;
-
-    if (providedPrivateKey?.trim()) {
-      try {
-        key = sshpk.parsePrivateKey(providedPrivateKey.trim(), 'auto');
-      } catch (error) {
-        this.logger.debug(`Invalid SSH private key provided: ${(error as Error).message}`);
-        throw new BadRequestException(
-          'Invalid SSH private key. Ensure it is in PEM or OpenSSH format without a passphrase.',
-        );
-      }
-    } else {
-      throw new BadRequestException(
-        'Invalid SSH private key. Ensure it is in PEM or OpenSSH format without a passphrase.',
-      );
-    }
-
-    const privateKey = key.toString('openssh').trimEnd() + '\n';
-    const publicKey = key.toPublic().toString('ssh');
-    const keyType = key.type || 'rsa';
-    const keyFilename = this.getSshKeyFilename(keyType);
-
-    return { privateKey, publicKey, keyFilename, generated };
-  }
-
-  /**
-   * Helper to write multi-line content into the agent container via base64 encoding.
-   */
-  private async writeFileToContainer(containerId: string, filePath: string, contents: string): Promise<void> {
-    const base64Content = Buffer.from(contents, 'utf-8').toString('base64');
-    const escapedBase64 = this.escapeForShell(base64Content);
-
-    await this.dockerService.sendCommandToContainer(
-      containerId,
-      ['sh', '-c', `printf '%s' ${escapedBase64} | base64 -d > ${this.escapeForShell(filePath)}`],
-      undefined,
-      true,
-      { user: AgentsService.CONTAINER_RUNTIME_USER },
-    );
-  }
-
-  /**
    * Configure SSH credentials inside the container and return key metadata for the API response.
    */
   private async configureSshAccess(
@@ -249,46 +135,7 @@ export class AgentsService implements OnApplicationBootstrap {
     repositoryUrl: string,
     providedPrivateKey?: string,
   ): Promise<{ publicKey: string; privateKey?: string }> {
-    const keyPair = this.prepareSshKeyPair(providedPrivateKey);
-    const { host, port } = this.getSshHostInfo(repositoryUrl);
-    const home = await this.dockerService.getContainerHomeDirectory(containerId);
-    const sshDir = `${home}/.ssh`;
-    const keyPath = `${sshDir}/${keyPair.keyFilename}`;
-    const escapedSshDir = this.escapeForShell(sshDir);
-    const escapedKeyPath = this.escapeForShell(keyPath);
-    const escapedKnownHosts = this.escapeForShell(`${sshDir}/known_hosts`);
-
-    await this.dockerService.sendCommandToContainer(containerId, `mkdir -p ${escapedSshDir}`, undefined, true, {
-      user: AgentsService.CONTAINER_RUNTIME_USER,
-    });
-    await this.dockerService.sendCommandToContainer(containerId, `chmod 700 ${escapedSshDir}`, undefined, true, {
-      user: AgentsService.CONTAINER_RUNTIME_USER,
-    });
-    await this.writeFileToContainer(containerId, keyPath, keyPair.privateKey);
-    await this.dockerService.sendCommandToContainer(containerId, `chmod 600 ${escapedKeyPath}`, undefined, true, {
-      user: AgentsService.CONTAINER_RUNTIME_USER,
-    });
-
-    const sshKeyscanCommand = [
-      'ssh-keyscan',
-      port ? `-p ${port}` : '',
-      this.escapeForShell(host),
-      `>> ${escapedKnownHosts}`,
-    ]
-      .filter(Boolean)
-      .join(' ');
-
-    await this.dockerService.sendCommandToContainer(containerId, ['sh', '-c', sshKeyscanCommand], undefined, true, {
-      user: AgentsService.CONTAINER_RUNTIME_USER,
-    });
-    await this.dockerService.sendCommandToContainer(containerId, `chmod 600 ${escapedKnownHosts}`, undefined, true, {
-      user: AgentsService.CONTAINER_RUNTIME_USER,
-    });
-
-    return {
-      publicKey: keyPair.publicKey,
-      privateKey: keyPair.generated ? keyPair.privateKey : undefined,
-    };
+    return this.gitCredentials.configureSshAccess(containerId, repositoryUrl, providedPrivateKey);
   }
 
   /**
@@ -298,41 +145,9 @@ export class AgentsService implements OnApplicationBootstrap {
    * @throws Error if git credentials are not configured
    */
   private async createNetrcFile(containerId: string, repositoryUrl: string): Promise<void> {
-    const gitUsername = process.env.GIT_USERNAME;
-    const gitToken = process.env.GIT_TOKEN || process.env.GIT_PASSWORD;
-
-    if (!gitUsername || !gitToken || !repositoryUrl) {
-      throw new BadRequestException(
-        'Git credentials not configured. Please set GIT_USERNAME, GIT_TOKEN (or GIT_PASSWORD), and provide a repositoryUrl in the createNetrcFile.',
-      );
-    }
-
-    const gitDomain = this.extractGitDomain(repositoryUrl);
-    // Construct the entire .netrc file content
-    const netrcContent = `machine ${gitDomain}
-  login ${gitUsername}
-  password ${gitToken}
-`;
-    // Encode content to base64
-    const base64Content = Buffer.from(netrcContent, 'utf-8').toString('base64');
-    const home = await this.dockerService.getContainerHomeDirectory(containerId);
-    const netrcPath = `${home}/.netrc`;
-    const escapedPath = this.escapeForShell(netrcPath);
-
-    // Write file using base64 decode with stdin input (same approach as agent-file-system.service)
-    // Use sh -c to run the command in a shell so redirection works
-    // The base64 content is sent to stdin, which base64 -d reads and decodes
-    await this.dockerService.sendCommandToContainer(
-      containerId,
-      `sh -c "base64 -d > ${escapedPath}"`,
-      base64Content,
-      true,
-      { user: AgentsService.CONTAINER_RUNTIME_USER },
-    );
-
-    // Set proper permissions
-    await this.dockerService.sendCommandToContainer(containerId, `chmod 600 ${escapedPath}`, undefined, true, {
-      user: AgentsService.CONTAINER_RUNTIME_USER,
+    await this.gitCredentials.writeNetrcFile(containerId, repositoryUrl, {
+      username: process.env.GIT_USERNAME,
+      token: process.env.GIT_TOKEN || process.env.GIT_PASSWORD,
     });
   }
 
@@ -397,7 +212,7 @@ export class AgentsService implements OnApplicationBootstrap {
       );
     }
 
-    if (this.isSshRepository(repositoryUrl)) {
+    if (this.gitCredentials.isSshRepository(repositoryUrl)) {
       await this.configureSshAccess(containerId, repositoryUrl, process.env.GIT_PRIVATE_KEY);
     } else {
       await this.createNetrcFile(containerId, repositoryUrl);
@@ -571,6 +386,7 @@ export class AgentsService implements OnApplicationBootstrap {
           gitRepositorySetupMode === GitRepositorySetupMode.EMPTY
             ? GitRepositorySetupMode.EMPTY
             : createAgentDto.gitRepositorySetupMode,
+        environmentVariableBaseline: serializeAgentEnvironmentBaseline({}),
       });
 
       persistedAgentId = agent.id;

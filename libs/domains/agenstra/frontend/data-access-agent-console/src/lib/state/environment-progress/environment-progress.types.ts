@@ -15,6 +15,8 @@ export type EnvironmentProgressStep =
   | 'waitingForHealthy'
   | 'summarizingContext'
   | 'recreatingContainer'
+  | 'restartingContainer'
+  | 'restoringGitCredentials'
   | 'finalizing';
 
 /** Environment (agent) create / update progress (agent-manager `EnvironmentProgressDto`). */

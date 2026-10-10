@@ -38,6 +38,18 @@ Docker may create missing bind-mount sources on the host as **root-owned** direc
 
 Entrypoint scripts live under **`/usr/local/bin/docker-entrypoint.sh`**, not under bind-mounted workspace paths (for example `/app`), so a workspace mount cannot hide the container startup script.
 
+### Managed environment volume
+
+Worker images labelled `io.agenstra.environment-mount="1"` receive their environment from a per-agent Docker **named volume** (`agenstra-env-<id>`), mounted at **`/etc/agenstra/environment`**. Environment files are never placed under the shared, read-only `/opt/agents` tree.
+
+- The image creates the mount point as **`root:root` `0700`**. The manager writes `environment` as **`root` `0600`**, so the `agenstra` user cannot read the file (it only sees its own process environment).
+- The entrypoint (root) loads the file only when it is a regular file and not a symlink, and only accepts entries whose name matches `^[A-Za-z_][A-Za-z0-9_.-]*$` (the manager enforces the same rule). This rejects option-like entries and exported Bash functions (`BASH_FUNC_name%%`).
+- Agent-controlled entries are **never exported to the root phase**. The entrypoint runs its root commands with a fixed system `PATH` (`/usr/sbin:/usr/bin:/sbin:/bin`), so binaries planted in agent-writable `PATH` directories or variables such as `BASH_ENV`, `LD_PRELOAD` or `PATH` cannot run code as root. The entries are passed to `runuser … -- /usr/bin/env -- PATH=<image PATH> NAME=value …` only after privileges are dropped. Only a fixed allow-list of entrypoint settings (`APP_UID`, `APP_GID`, `OPENCODE_SERVER_*`, `VNC_*`) is read into unexported shell variables.
+- Secrets no longer appear in `docker inspect` (`Config.Env`) for such containers. Commands the manager runs via `docker exec` receive the environment through the exec API's `Env` field, not argv.
+- The manager only removes volumes with the `agenstra-env-` prefix, and caps the size of the file it reads back (4 MiB).
+
+Custom worker images must provide the same contract to opt in: the label, the root-only directory, and an entrypoint loader equivalent to the one in `apps/agenstra/backend-agent-manager/worker-desktop/docker-entrypoint.sh`. Images without the label keep the legacy behaviour (Docker `Env`, recreate on change).
+
 ## Privilege model (no sudo)
 
 Backend images follow the same pattern as Decabill billing API:

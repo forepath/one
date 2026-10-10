@@ -5,7 +5,7 @@ export type EnvironmentProgressOperation = 'create' | 'update';
 export type EnvironmentProgressStatus = 'running' | 'completed' | 'failed';
 
 /**
- * Step identifiers reported while an environment is created or its container is recreated.
+ * Step identifiers reported while an environment is created or its container is recreated / restarted.
  * Clients map these keys to localized labels.
  */
 export type EnvironmentProgressStep =
@@ -18,10 +18,12 @@ export type EnvironmentProgressStep =
   | 'waitingForHealthy'
   | 'summarizingContext'
   | 'recreatingContainer'
+  | 'restartingContainer'
+  | 'restoringGitCredentials'
   | 'finalizing';
 
 /**
- * Snapshot of one environment provisioning operation (create or container-recreating update).
+ * Snapshot of one environment provisioning operation (create, or update that restarts / recreates the container).
  * Emitted as `environmentProgress` over the agents websocket and returned by `GET /agents/progress`.
  */
 export class EnvironmentProgressDto {
