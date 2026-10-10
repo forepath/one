@@ -581,13 +581,22 @@ describe('materializeModelAllowDeny', () => {
     });
 
     expect(prepared.skills).toEqual({
-      paths: ['/opt/skills/local', '/opt/agenstra/skills/agenstra-ticket-automation'],
+      paths: [
+        '/opt/skills/local',
+        '/opt/agenstra/skills/agenstra-ticket-automation',
+        '/opt/agenstra/skills/agenstra-chat-plan',
+        '.opencode/skills/agenstra-chat-plan',
+      ],
       urls: ['https://example.com/skill'],
     });
     expect((prepared.agent as Record<string, unknown>)['agenstra-automation']).toMatchObject({
       mode: 'primary',
       hidden: true,
       permission: 'allow',
+    });
+    expect((prepared.agent as Record<string, unknown>)['agenstra-plan']).toMatchObject({
+      mode: 'primary',
+      hidden: true,
     });
     expect(prepared.mcp).toEqual({
       docs: { type: 'local', command: ['echo'], timeout: 1500, enabled: false },
@@ -778,6 +787,19 @@ describe('prepareConfigForSync wire mapping', () => {
         mode: 'primary',
         hidden: true,
         permission: 'allow',
+      },
+      'agenstra-plan': {
+        description: 'Explore-only Agenstra chat plan mode (platform-managed)',
+        mode: 'primary',
+        hidden: true,
+        permission: {
+          read: 'allow',
+          glob: 'allow',
+          grep: 'allow',
+          edit: 'deny',
+          write: 'deny',
+          bash: 'deny',
+        },
       },
     });
     expect(prepared.command).toEqual({

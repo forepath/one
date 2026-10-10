@@ -5,6 +5,7 @@ import {
   chatTimelineBatchReceived,
   chatTimelineClear,
   chatTimelineMessageReceived,
+  chatTimelinePlanUpsert,
   chatTimelineRestoreRequested,
 } from './chat-timeline.actions';
 import { chatTimelineReducer, initialChatTimelineState, type ChatTimelineState } from './chat-timeline.reducer';
@@ -31,7 +32,7 @@ describe('chatTimelineReducer', () => {
     expect(state).toEqual(initialChatTimelineState);
   });
 
-  it('clears timeline to initial state', () => {
+  it('clears timeline to initial state including plans', () => {
     const prev: ChatTimelineState = {
       ...initialChatTimelineState,
       messages: [
@@ -43,6 +44,39 @@ describe('chatTimelineReducer', () => {
           chatId,
         },
       ],
+      plans: [
+        {
+          event: 'chatPlanUpsert',
+          timestamp: 500,
+          payload: {
+            timelineAt: new Date(500).toISOString(),
+            hydrate: false,
+            plan: {
+              id: 'p1',
+              clientId: 'c1',
+              agentId: 'a1',
+              chatId,
+              status: 'exploring',
+              phase: 'explore',
+              sourcePrompt: 'x',
+              planMarkdown: null,
+              summary: null,
+              contextInjection: null,
+              model: null,
+              resumeSessionSuffix: '-plan-p1',
+              completionSignalSeen: false,
+              failureCode: null,
+              failureMessage: null,
+              createdByUserId: null,
+              startedAt: new Date(500).toISOString(),
+              finishedAt: null,
+              createdAt: new Date(500).toISOString(),
+              updatedAt: new Date(500).toISOString(),
+            },
+            actions: [],
+          },
+        },
+      ],
       hasMoreOlder: true,
       oldestMessageId: 'm1',
       loadingOlder: true,
@@ -52,6 +86,7 @@ describe('chatTimelineReducer', () => {
     const state = chatTimelineReducer(prev, chatTimelineClear());
 
     expect(state).toEqual(initialChatTimelineState);
+    expect(state.plans).toEqual([]);
   });
 
   it('sets loadingInitial or loadingOlder on restore requested', () => {
@@ -264,5 +299,58 @@ describe('chatTimelineReducer', () => {
 
     expect(state.automations).toHaveLength(1);
     expect(state.automations[0]?.payload.run.status).toBe('succeeded');
+  });
+
+  it('dedupes plans by plan.id', () => {
+    const basePayload = {
+      timelineAt: new Date(500).toISOString(),
+      hydrate: false,
+      plan: {
+        id: 'p1',
+        clientId: 'c1',
+        agentId: 'a1',
+        chatId,
+        status: 'exploring' as const,
+        phase: 'explore' as const,
+        sourcePrompt: 'plan',
+        planMarkdown: null,
+        summary: null,
+        contextInjection: null,
+        model: null,
+        resumeSessionSuffix: '-plan-p1',
+        completionSignalSeen: false,
+        failureCode: null,
+        failureMessage: null,
+        createdByUserId: null,
+        startedAt: new Date(500).toISOString(),
+        finishedAt: null,
+        createdAt: new Date(500).toISOString(),
+        updatedAt: new Date(500).toISOString(),
+      },
+      actions: [] as [],
+    };
+
+    let state = chatTimelineReducer(initialChatTimelineState, chatTimelinePlanUpsert({ payload: basePayload }));
+
+    state = chatTimelineReducer(
+      state,
+      chatTimelinePlanUpsert({
+        payload: {
+          ...basePayload,
+          timelineAt: new Date(900).toISOString(),
+          plan: {
+            ...basePayload.plan,
+            status: 'ready',
+            phase: 'ready',
+            planMarkdown: '# Done',
+            updatedAt: new Date(900).toISOString(),
+          },
+        },
+      }),
+    );
+
+    expect(state.plans).toHaveLength(1);
+    expect(state.plans[0]?.payload.plan.status).toBe('ready');
+    expect(state.plans[0]?.payload.plan.planMarkdown).toBe('# Done');
   });
 });

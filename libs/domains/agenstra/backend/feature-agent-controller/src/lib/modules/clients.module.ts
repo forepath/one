@@ -45,11 +45,13 @@ import { OpencodeProvidersController } from '../controllers/opencode-providers.c
 import { KnowledgeTreeController } from '../controllers/knowledge-tree.controller';
 import { StatisticsController } from '../controllers/statistics.controller';
 import { TicketAutomationController } from '../controllers/ticket-automation.controller';
+import { ChatPlanController } from '../controllers/chat-plan.controller';
 import { TicketsController } from '../controllers/tickets.controller';
 import { ClientAgentAutonomyEntity } from '../entities/client-agent-autonomy.entity';
 import { ClientOpencodeConfigEntity } from '../entities/client-opencode-config.entity';
 import { GlobalOpencodeConfigEntity } from '../entities/global-opencode-config.entity';
 import { OpencodeMcpServerEntity } from '../entities/opencode-mcp-server.entity';
+import { ChatPlanEntity } from '../entities/chat-plan.entity';
 import { OpencodeProviderEntity } from '../entities/opencode-provider.entity';
 import { OpencodeLayerFileEntity } from '../entities/opencode-layer-file.entity';
 import { OpencodeLayerFileSyncTargetEntity } from '../entities/opencode-layer-file-sync-target.entity';
@@ -119,6 +121,10 @@ import { RemoteAgentsSessionService } from '../services/remote-agents-session.se
 import { StatisticsAgentSyncService } from '../services/statistics-agent-sync.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
 import { TicketAutomationService } from '../services/ticket-automation.service';
+import { ChatPlanChatSyncService } from '../services/chat-plan-chat-sync.service';
+import { ChatPlanOrchestratorService } from '../services/chat-plan-orchestrator.service';
+import { ChatPlanRealtimeService } from '../services/chat-plan-realtime.service';
+import { ChatPlanService } from '../services/chat-plan.service';
 import { TicketBoardRealtimeService } from '../services/ticket-board-realtime.service';
 import { TicketsService } from '../services/tickets.service';
 
@@ -155,6 +161,7 @@ const authMethod = getAuthenticationMethod();
       TicketAutomationRunEntity,
       TicketAutomationLeaseEntity,
       TicketAutomationRunStepEntity,
+      ChatPlanEntity,
       ClientAgentAutonomyEntity,
       KnowledgeNodeEntity,
       KnowledgeNodeEmbeddingEntity,
@@ -191,6 +198,7 @@ const authMethod = getAuthenticationMethod();
     TicketsController,
     KnowledgeTreeController,
     TicketAutomationController,
+    ChatPlanController,
     ClientAgentAutonomyController,
     ClientAgentAutonomyDirectoryController,
     ClientsAgentAutomationProxyController,
@@ -212,6 +220,8 @@ const authMethod = getAuthenticationMethod();
     KnowledgeEmbeddingIndexService,
     LocalEmbeddingProvider,
     TicketAutomationService,
+    ChatPlanService,
+    ChatPlanOrchestratorService,
     ClientAgentAutonomyService,
     RemoteAgentsSessionService,
     AutonomousRunOrchestratorService,
@@ -255,6 +265,8 @@ const authMethod = getAuthenticationMethod();
     KnowledgeBoardRealtimeService,
     ClientAutomationChatRealtimeService,
     TicketAutomationChatSyncService,
+    ChatPlanRealtimeService,
+    ChatPlanChatSyncService,
     TicketsBoardGateway,
     KnowledgeBoardGateway,
     StatusGateway,

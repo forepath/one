@@ -1087,6 +1087,55 @@
                           </div>
                         </div>
                       </div>
+                    } @else if (item.kind === 'chatPlan') {
+                      <div class="d-flex justify-content-start">
+                        <div class="card border-secondary bg-body chat-message-card">
+                          <div class="card-body chat-message-body">
+                            <div class="d-flex align-items-start gap-2 min-width-0">
+                              <fpc-badge
+                                [color]="chatPlanStateBadgeColor(item.payload.plan.status, item.payload.plan.phase)"
+                                >{{ chatPlanStateLabel(item.payload.plan.status, item.payload.plan.phase) }}</fpc-badge
+                              >
+                              <div
+                                class="fw-semibold text-truncate min-width-0"
+                                [attr.title]="getChatPlanTitle(item.payload.plan)"
+                              >
+                                {{ getChatPlanTitle(item.payload.plan) }}
+                              </div>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between gap-2 w-100 mt-3">
+                              @for (act of item.payload.actions; track act.type + act.planId) {
+                                @if (act.type === 'openChatPlan') {
+                                  <fpc-button
+                                    variant="primary"
+                                    size="sm"
+                                    class="flex-grow-1"
+                                    (clicked)="openChatPlanFromChat(item.payload)"
+                                  >
+                                    {{ act.label }}
+                                  </fpc-button>
+                                } @else if (act.type === 'executeChatPlan') {
+                                  <fpc-button
+                                    variant="success"
+                                    size="sm"
+                                    iconOnly
+                                    i18n-title="@@featureChat-planExecuteTitle"
+                                    title="Execute plan"
+                                    i18n-aria-label="@@featureChat-planExecuteAria"
+                                    ariaLabel="Execute plan"
+                                    (clicked)="onExecuteChatPlan(act.planId)"
+                                  >
+                                    <i class="bi bi-play-fill" aria-hidden="true"></i>
+                                  </fpc-button>
+                                }
+                              }
+                            </div>
+                            <small class="chat-message-timestamp text-muted d-block mt-2">{{
+                              formatTimestamp(item.sortTime)
+                            }}</small>
+                          </div>
+                        </div>
+                      </div>
                     }
                   }
                   <!-- In-flight agent response (chatEvent) until final chatMessage arrives -->
@@ -1315,6 +1364,29 @@
               (clicked)="onOpenContextSelectionModal()"
             >
               <i class="bi bi-plus"></i>
+            </fpc-button>
+            <fpc-button
+              variant="dark"
+              size="sm"
+              iconOnly
+              i18n-title="@@featureChat-planPromptTitle"
+              title="Create plan with AI"
+              i18n-aria-label="@@featureChat-planPromptAria"
+              ariaLabel="Create plan with AI"
+              [disabled]="
+                !(socketConnected$ | async) ||
+                (socketReconnecting$ | async) ||
+                (remoteReconnecting$ | async) ||
+                (forwarding$ | async) ||
+                (chatEnhancementPending$ | async) ||
+                (chatPlanBusy$ | async) ||
+                !(selectedAgent$ | async) ||
+                !chatMessage().trim()
+              "
+              [loading]="(chatPlanBusy$ | async) === true"
+              (clicked)="onPlanMessage()"
+            >
+              <i class="bi bi-list-check" aria-hidden="true"></i>
             </fpc-button>
             <fpc-button
               variant="dark"
@@ -1600,11 +1672,168 @@
     }
   </div>
   <div *fpcModalFooter>
-    <fpc-button variant="primary" (clicked)="contextSelectionModalOpen.set(false)" i18n="@@featureChat-done">
+    <fpc-button variant="primary" (clicked)="onCloseContextSelectionModal()" i18n="@@featureChat-done">
       Done
     </fpc-button>
   </div>
 </fpc-modal>
+
+<!-- Chat Plan Detail Modal -->
+<fpc-modal [(open)]="planDetailModalOpen" title="" size="lg" (closed)="onClosePlanDetailModal()">
+  @if (planDetailPlan$ | async; as plan) {
+    <div fpcModalTitle class="d-flex w-100 align-items-center gap-2 min-width-0 pe-2">
+      <fpc-badge [color]="chatPlanStateBadgeColor(plan.status, plan.phase)">{{
+        chatPlanStateLabel(plan.status, plan.phase)
+      }}</fpc-badge>
+      <span class="text-truncate min-width-0" [attr.title]="getChatPlanTitle(plan)">
+        {{ getChatPlanTitle(plan) || chatPlanModalTitle }}
+      </span>
+    </div>
+  }
+  @if (planDetailPlan$ | async; as plan) {
+    @if (plan.failureMessage) {
+      <div class="alert alert-danger small" role="alert">{{ plan.failureMessage }}</div>
+    }
+    <div class="border rounded p-3 mb-3 bg-body-tertiary" style="max-height: 24rem; overflow: auto">
+      @if (plan.planMarkdown; as md) {
+        @if (parseMarkdownFromString(md); as planHtml) {
+          <div class="markdown-content" [innerHTML]="planHtml"></div>
+        }
+      } @else {
+        <p class="text-muted small mb-0">{{ chatPlanEmptyMarkdown }}</p>
+      }
+    </div>
+    @if (plan.status === 'ready' || plan.status === 'refining') {
+      <div class="chat-plan-refine-composer mt-3">
+        @if (planRefineEnhanceError(); as enhErr) {
+          <div class="alert alert-warning alert-dismissible py-2 px-3 small mb-0" role="alert">
+            {{ enhErr }}
+            <button
+              type="button"
+              class="btn-close"
+              aria-label="Dismiss"
+              i18n-aria-label="@@featureChat-dismissEnhanceError"
+              (click)="clearPlanRefineEnhanceError()"
+            ></button>
+          </div>
+        }
+        <textarea
+          id="chatPlanRefineInput"
+          class="chat-plan-refine-textarea"
+          rows="3"
+          [placeholder]="chatPlanRefinePlaceholder"
+          [value]="planRefineMessage()"
+          (input)="planRefineMessage.set($any($event.target).value)"
+          [disabled]="plan.status === 'refining'"
+        ></textarea>
+        <div class="chat-plan-refine-toolbar d-flex gap-1 align-items-end justify-content-end overflow-hidden">
+          @if (contextSelectionToolbarChips().length > 0) {
+            <span class="context-toolbar-chips me-auto d-inline-flex align-items-center gap-1 justify-content-end">
+              @for (chip of contextSelectionToolbarChips(); track chip.trackKey) {
+                <fpc-badge
+                  color="secondary"
+                  class="border context-toolbar-chip text-truncate"
+                  [attr.title]="chip.title"
+                  >{{ chip.label }}</fpc-badge
+                >
+              }
+            </span>
+          }
+          <fpc-button
+            variant="dark"
+            size="sm"
+            iconOnly
+            class="context-button"
+            i18n-title="@@featureChat-selectContextTitle"
+            title="Select context"
+            i18n-aria-label="@@featureChat-selectContextAria"
+            ariaLabel="Select context"
+            [disabled]="!(selectedAgent$ | async)"
+            (clicked)="onOpenContextSelectionModal('planRefine')"
+          >
+            <i class="bi bi-plus"></i>
+          </fpc-button>
+          <fpc-button
+            variant="dark"
+            size="sm"
+            iconOnly
+            i18n-title="@@featureChat-enhancePromptTitle"
+            title="Enhance prompt with AI"
+            i18n-aria-label="@@featureChat-enhancePromptAria"
+            ariaLabel="Enhance prompt with AI"
+            [disabled]="
+              !(socketConnected$ | async) ||
+              (socketReconnecting$ | async) ||
+              (remoteReconnecting$ | async) ||
+              (forwarding$ | async) ||
+              (chatEnhancementPending$ | async) ||
+              !(selectedAgent$ | async) ||
+              !planRefineMessage().trim()
+            "
+            [loading]="(chatEnhancementPending$ | async) === true"
+            (clicked)="onEnhancePlanRefineMessage()"
+          >
+            <i class="bi bi-magic" aria-hidden="true"></i>
+          </fpc-button>
+          <fpc-button
+            variant="primary"
+            size="sm"
+            iconOnly
+            i18n-title="@@featureChat-planRefineSubmitTitle"
+            title="Refine plan"
+            i18n-aria-label="@@featureChat-planRefineSubmitAria"
+            ariaLabel="Refine plan"
+            [disabled]="
+              plan.status === 'refining' ||
+              !(socketConnected$ | async) ||
+              (socketReconnecting$ | async) ||
+              (remoteReconnecting$ | async) ||
+              (chatEnhancementPending$ | async) ||
+              !(selectedAgent$ | async) ||
+              !planRefineMessage().trim()
+            "
+            [loading]="plan.status === 'refining'"
+            (clicked)="onRefineChatPlan(plan.id)"
+          >
+            <i class="bi bi-send" aria-hidden="true"></i>
+          </fpc-button>
+        </div>
+      </div>
+    }
+  } @else {
+    <div class="d-flex justify-content-center py-4">
+      <fpc-spinner size="sm" variant="primary" />
+    </div>
+  }
+  <div *fpcModalFooter class="d-flex flex-wrap gap-2 justify-content-between w-100">
+    @if (planDetailPlan$ | async; as plan) {
+      <div class="d-flex flex-wrap gap-2">
+        @if (isChatPlanCancellable(plan.status)) {
+          <fpc-button variant="outline-danger" size="sm" (clicked)="onCancelChatPlan(plan.id)">
+            {{ chatPlanCancelLabel }}
+          </fpc-button>
+        }
+      </div>
+      <div class="d-flex flex-wrap gap-2 ms-auto">
+        @if (isChatPlanExecutable(plan.status, plan.phase)) {
+          <fpc-button
+            variant="success"
+            size="sm"
+            iconOnly
+            i18n-title="@@featureChat-planExecuteTitle"
+            title="Execute plan"
+            i18n-aria-label="@@featureChat-planExecuteAria"
+            ariaLabel="Execute plan"
+            (clicked)="onExecuteChatPlan(plan.id)"
+          >
+            <i class="bi bi-play-fill" aria-hidden="true"></i>
+          </fpc-button>
+        }
+      </div>
+    }
+  </div>
+</fpc-modal>
+
 <!-- Delete Workspace Confirmation Modal -->
 <fpc-confirm-dialog
   [(open)]="deleteClientModalOpen"

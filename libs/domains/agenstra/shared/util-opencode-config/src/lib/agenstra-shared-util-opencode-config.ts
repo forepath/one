@@ -8,3 +8,4 @@ export * from './credentials';
 export * from './materialize';
 export * from './enforce-allow-deny';
 export * from './automation-platform';
+export * from './plan-platform';

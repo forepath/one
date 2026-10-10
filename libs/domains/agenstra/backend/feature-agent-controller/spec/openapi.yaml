@@ -3401,6 +3401,116 @@ paths:
           description: User does not have access to this client
         '404':
           description: Client, agent, or chat session not found
+  /clients/{id}/agents/{agentId}/chats/{chatId}/plans:
+    get:
+      summary: List chat plans for a chat session
+      description: >
+        Returns durable chat plan-mode rows for the given visible chat session (explore/refine/execute lifecycle).
+        Requires `agents:chats` scope and client access.
+      operationId: listChatPlans
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the client
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the agent
+        - in: path
+          name: chatId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the visible chat session
+      responses:
+        '200':
+          description: Array of chat plans for the session
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatPlanResponseDto'
+        '403':
+          description: User does not have access to this client
+        '404':
+          description: Client or agent not found
+  /clients/{id}/agents/{agentId}/plans/{planId}:
+    get:
+      summary: Get a chat plan by id
+      operationId: getChatPlan
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: planId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Chat plan detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatPlanResponseDto'
+        '403':
+          description: User does not have access to this client
+        '404':
+          description: Plan not found for this client/agent
+  /clients/{id}/agents/{agentId}/plans/{planId}/cancel:
+    post:
+      summary: Cancel an active chat plan
+      operationId: cancelChatPlan
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: planId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Cancelled chat plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatPlanResponseDto'
+        '403':
+          description: User does not have access to this client
+        '404':
+          description: Plan not found for this client/agent
   /clients/{id}/configuration-overrides:
     get:
       summary: List effective workspace configuration overrides (proxied)
@@ -4707,6 +4817,8 @@ paths:
                 autonomous_ticket_run,
                 autonomous_ticket_run_turn,
                 autonomous_ticket_commit_message,
+                chat_plan_turn,
+                chat_plan_execute,
               ]
           description: Filter by interaction type (normal chat vs prompt enhancement metrics)
         - in: query
@@ -4980,6 +5092,8 @@ paths:
                 autonomous_ticket_run,
                 autonomous_ticket_run_turn,
                 autonomous_ticket_commit_message,
+                chat_plan_turn,
+                chat_plan_execute,
               ]
           description: Filter by interaction type (normal chat vs prompt enhancement metrics)
         - in: query
@@ -7444,6 +7558,8 @@ components:
               autonomous_ticket_run,
               autonomous_ticket_run_turn,
               autonomous_ticket_commit_message,
+              chat_plan_turn,
+              chat_plan_execute,
             ]
           description: Normal chat vs prompt enhancement (magic wand) metrics
         wordCount:
@@ -8271,6 +8387,128 @@ components:
             $ref: '#/components/schemas/TicketAutomationRunChatOpenActionDto'
         contextInjection:
           $ref: '#/components/schemas/ContextInjectionDto'
+    ChatPlanResponseDto:
+      type: object
+      required:
+        [
+          id,
+          clientId,
+          agentId,
+          chatId,
+          status,
+          phase,
+          sourcePrompt,
+          resumeSessionSuffix,
+          completionSignalSeen,
+          startedAt,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        agentId:
+          type: string
+          format: uuid
+        chatId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            [
+              pending,
+              exploring,
+              ready,
+              refining,
+              executing,
+              executed,
+              failed,
+              cancelled,
+            ]
+        phase:
+          type: string
+          enum: [explore, draft, refine, ready]
+        sourcePrompt:
+          type: string
+        planMarkdown:
+          type: string
+          nullable: true
+        summary:
+          type: string
+          nullable: true
+        contextInjection:
+          allOf:
+            - $ref: '#/components/schemas/ContextInjectionDto'
+          nullable: true
+        model:
+          type: string
+          nullable: true
+        resumeSessionSuffix:
+          type: string
+        completionSignalSeen:
+          type: boolean
+        failureCode:
+          type: string
+          nullable: true
+        failureMessage:
+          type: string
+          nullable: true
+        createdByUserId:
+          type: string
+          format: uuid
+          nullable: true
+        startedAt:
+          type: string
+          format: date-time
+        finishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ChatPlanChatEventDto:
+      type: object
+      description: >
+        Payload for WebSocket event `chatPlanUpsert` on namespace **clients**.
+        `timelineAt` uses `plan.startedAt` when `hydrate` is true and `plan.updatedAt` when false.
+        Clients merge with chat messages by chatId + this timestamp.
+      required: [timelineAt, hydrate, plan, actions]
+      properties:
+        timelineAt:
+          type: string
+          format: date-time
+        hydrate:
+          type: boolean
+        plan:
+          $ref: '#/components/schemas/ChatPlanResponseDto'
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatPlanChatActionDto'
+    ChatPlanChatActionDto:
+      type: object
+      required: [type, planId, chatId, label]
+      properties:
+        type:
+          type: string
+          enum: [openChatPlan, executeChatPlan]
+        planId:
+          type: string
+          format: uuid
+        chatId:
+          type: string
+          format: uuid
+        label:
+          type: string
     PrototypePromptResponseDto:
       type: object
       required: [prompt]

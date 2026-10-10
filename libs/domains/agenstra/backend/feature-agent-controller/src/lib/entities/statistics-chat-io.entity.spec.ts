@@ -80,5 +80,15 @@ describe('StatisticsChatIoEntity', () => {
 
     commitMsg.interactionKind = StatisticsInteractionKind.AUTONOMOUS_TICKET_COMMIT_MESSAGE;
     expect(commitMsg.interactionKind).toBe('autonomous_ticket_commit_message');
+
+    const planTurn = new StatisticsChatIoEntity();
+
+    planTurn.interactionKind = StatisticsInteractionKind.CHAT_PLAN_TURN;
+    expect(planTurn.interactionKind).toBe('chat_plan_turn');
+
+    const planExecute = new StatisticsChatIoEntity();
+
+    planExecute.interactionKind = StatisticsInteractionKind.CHAT_PLAN_EXECUTE;
+    expect(planExecute.interactionKind).toBe('chat_plan_execute');
   });
 });

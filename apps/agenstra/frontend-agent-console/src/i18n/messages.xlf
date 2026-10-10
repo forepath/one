@@ -827,6 +827,81 @@
       <trans-unit id="featureChat-enhancePromptAria" datatype="html">
         <source>Enhance prompt with AI</source>
         </trans-unit>
+      <trans-unit id="featureChat-planPromptTitle" datatype="html">
+        <source>Create plan with AI</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planPromptAria" datatype="html">
+        <source>Create plan with AI</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planModalTitle" datatype="html">
+        <source>Plan</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planRefinePlaceholder" datatype="html">
+        <source>Describe changes to the plan…</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planRefineSubmit" datatype="html">
+        <source>Refine plan</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planRefineSubmitTitle" datatype="html">
+        <source>Refine plan</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planRefineSubmitAria" datatype="html">
+        <source>Refine plan</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planExecute" datatype="html">
+        <source>Execute</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planExecuteTitle" datatype="html">
+        <source>Execute plan</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planExecuteAria" datatype="html">
+        <source>Execute plan</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planCancel" datatype="html">
+        <source>Cancel plan</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planEmptyMarkdown" datatype="html">
+        <source>Plan content will appear here as the agent explores…</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planStatusPending" datatype="html">
+        <source>Pending</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planStatusExploring" datatype="html">
+        <source>Exploring</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planStatusReady" datatype="html">
+        <source>Ready</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planStatusRefining" datatype="html">
+        <source>Refining</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planStatusExecuting" datatype="html">
+        <source>Executing</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planStatusExecuted" datatype="html">
+        <source>Executed</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planStatusFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planStatusCancelled" datatype="html">
+        <source>Cancelled</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planPhaseExplore" datatype="html">
+        <source>Explore</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planPhaseDraft" datatype="html">
+        <source>Draft</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planPhaseRefine" datatype="html">
+        <source>Refine</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planPhaseReady" datatype="html">
+        <source>Ready</source>
+        </trans-unit>
+      <trans-unit id="featureChat-planStateDraftAvailable" datatype="html">
+        <source>Draft available</source>
+        </trans-unit>
       <trans-unit id="featureChat-model" datatype="html">
         <source>Model</source>
         </trans-unit>

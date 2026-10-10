@@ -48,6 +48,7 @@ import { TicketAutomationLeaseEntity } from '../entities/ticket-automation-lease
 import { TicketAutomationRunStepEntity } from '../entities/ticket-automation-run-step.entity';
 import { TicketAutomationRunEntity } from '../entities/ticket-automation-run.entity';
 import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
+import { ChatPlanEntity } from '../entities/chat-plan.entity';
 import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
 import { TicketEntity } from '../entities/ticket.entity';
@@ -238,6 +239,8 @@ describe('ClientsModule', () => {
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(TicketAutomationRunStepEntity))
       .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(ChatPlanEntity))
+      .useValue(mockTicketRepository)
       .overrideProvider(getRepositoryToken(ClientAgentAutonomyEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(KnowledgeNodeEntity))

@@ -1,6 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 
 import { CLIENT_CHAT_AUTOMATION_SOCKET_EVENT } from '../container-socket/client-chat-automation.constants';
+import { CLIENT_CHAT_PLAN_SOCKET_EVENT } from '../container-socket/client-chat-plan.constants';
 
 import {
   chatEnhancementStarted,
@@ -13,6 +14,7 @@ import {
   chatTimelineForwardEnhanceFailure,
   chatTimelineForwardTicketBodyFailure,
   chatTimelineMessageReceived,
+  chatTimelinePlanUpsert,
   chatTimelineRestoreRequested,
   chatTimelineRestoreSuccess,
   chatTimelineTicketBodyResult,
@@ -21,12 +23,14 @@ import {
 import type {
   AgentEventEnvelope,
   ChatMessageData,
+  ChatPlanChatEventPayload,
   ChatTimelineAutomationRow,
   ChatTimelineBatchMessage,
   ChatTimelineCorrelationResult,
   ChatTimelineEventRow,
   ChatTimelineFilterResult,
   ChatTimelineMessageRow,
+  ChatTimelinePlanRow,
   MessageFilterResultData,
   SuccessResponse,
   TicketAutomationRunChatEventPayload,
@@ -37,6 +41,7 @@ export interface ChatTimelineState {
   events: ChatTimelineEventRow[];
   filterResults: ChatTimelineFilterResult[];
   automations: ChatTimelineAutomationRow[];
+  plans: ChatTimelinePlanRow[];
   hasMoreOlder: boolean;
   oldestMessageId: string | null;
   loadingInitial: boolean;
@@ -53,6 +58,7 @@ export const initialChatTimelineState: ChatTimelineState = {
   events: [],
   filterResults: [],
   automations: [],
+  plans: [],
   hasMoreOlder: false,
   oldestMessageId: null,
   loadingInitial: false,
@@ -199,6 +205,32 @@ function upsertAutomation(
   return next;
 }
 
+function upsertPlan(existing: ChatTimelinePlanRow[], payload: ChatPlanChatEventPayload): ChatTimelinePlanRow[] {
+  const planId = payload.plan?.id;
+  const timestamp = parseTimestamp(payload.timelineAt, Date.now());
+  const row: ChatTimelinePlanRow = {
+    event: CLIENT_CHAT_PLAN_SOCKET_EVENT,
+    payload,
+    timestamp,
+  };
+
+  if (!planId) {
+    return [...existing, row];
+  }
+
+  const index = existing.findIndex((item) => item.payload.plan?.id === planId);
+
+  if (index < 0) {
+    return [...existing, row];
+  }
+
+  const next = [...existing];
+
+  next[index] = row;
+
+  return next;
+}
+
 export const chatTimelineReducer = createReducer(
   initialChatTimelineState,
   on(chatTimelineClear, () => ({ ...initialChatTimelineState })),
@@ -281,6 +313,10 @@ export const chatTimelineReducer = createReducer(
   on(chatTimelineAutomationUpsert, (state, { payload }) => ({
     ...state,
     automations: upsertAutomation(state.automations, payload),
+  })),
+  on(chatTimelinePlanUpsert, (state, { payload }) => ({
+    ...state,
+    plans: upsertPlan(state.plans, payload),
   })),
   on(chatTimelineRestoreSuccess, (state, { hasMoreOlder, oldestMessageId }) => ({
     ...state,

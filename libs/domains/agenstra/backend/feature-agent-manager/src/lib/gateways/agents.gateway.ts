@@ -62,6 +62,11 @@ interface ChatPayload {
   responseMode?: AgentResponseMode;
   /** When true, do not persist user/agent rows in `agent_messages` (background / autonomous runs). */
   ephemeral?: boolean;
+  /**
+   * When true, send the message to the agent but do not persist/emit the user chatMessage
+   * (or userMessage chatEvent). Agent responses still follow `ephemeral`. Used for chat-plan execute.
+   */
+  suppressUserMessage?: boolean;
   continue?: boolean;
   resumeSessionSuffix?: string;
   /**
@@ -1644,6 +1649,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
 
     // Reserved ACP suffixes must never persist/broadcast into user-visible chat history.
     const ephemeral = data.ephemeral === true || chatContext.hidden;
+    const suppressUserMessage = data.suppressUserMessage === true;
     const { chatSessionId, chatId } = chatContext;
     const chatIdFields = chatId ? { chatId } : {};
     // Apply incoming filters before processing (single hook point for incoming messages)
@@ -1730,24 +1736,26 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       this.agentsWithFirstMessageSent.add(agentUuid);
     }
 
-    await this.emitUserChatMessage(agentUuid, ephemeral, socket, filteredMessage, chatTimestamp, {
-      chatSessionId,
-      chatIdFields,
-      filtered: incomingFilterResult.status === 'filtered',
-    });
+    if (!suppressUserMessage) {
+      await this.emitUserChatMessage(agentUuid, ephemeral, socket, filteredMessage, chatTimestamp, {
+        chatSessionId,
+        chatIdFields,
+        filtered: incomingFilterResult.status === 'filtered',
+      });
 
-    this.emitOrPersistChatEvent(
-      agentUuid,
-      ephemeral,
-      socket,
-      {
-        ...toAgentEventEnvelopeBase(agentUuid, correlationId, sequence++),
-        kind: 'userMessage',
-        payload: { text: filteredMessage },
-      },
-      chatSessionId,
-      chatId,
-    );
+      this.emitOrPersistChatEvent(
+        agentUuid,
+        ephemeral,
+        socket,
+        {
+          ...toAgentEventEnvelopeBase(agentUuid, correlationId, sequence++),
+          kind: 'userMessage',
+          payload: { text: filteredMessage },
+        },
+        chatSessionId,
+        chatId,
+      );
+    }
 
     if (contextInjection) {
       this.emitOrPersistChatEvent(

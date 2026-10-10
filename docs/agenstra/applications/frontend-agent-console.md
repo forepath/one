@@ -11,6 +11,7 @@ This application provides a comprehensive user interface for managing clients, a
 This application provides:
 
 - **Chat Interface** Real-time bidirectional communication with AI agents via WebSocket
+- **Chat plan mode** Composer-driven explore/refine/execute planning flow with chat-scoped timeline cards and modal refinement UI ([Chat plan mode](../features/chat-plan-mode.md))
 - **Monaco Editor** Integrated code editor with syntax highlighting and code completion
 - **File Management** Browse, read, write, create, and delete files in agent containers
 - **Version Control** Full Git operations (status, branches, commit, push, pull, rebase)
@@ -205,7 +206,7 @@ On reconnection:
 2. Restores client context (`setClient`)
 3. Restores agent login (if previously logged in)
 4. Clears stale local buffers where required to avoid duplicates
-5. Receives chat history for the active session (`chatId` / primary) and ticket automation cards on the **primary** session only (as implemented in NgRx selectors/effects); session switches use `restoreChat`
+5. Receives chat history for the active session (`chatId` / primary) and ticket automation cards on the **primary** session only (as implemented in NgRx selectors/effects); **chat plan cards** hydrate for the matching `plan.chatId` (primary or user session). Session switches use `restoreChat`
 
 ## Authentication
 
@@ -308,6 +309,7 @@ Before deploying to production:
 ## Related documentation
 
 - **[Chat Interface Feature](../features/chat-interface.md)** Chat functionality guide
+- **[Chat plan mode](../features/chat-plan-mode.md)** Explore-only plan cards, refine, and execute
 - **[Web IDE Feature](../features/web-ide.md)** Code editor guide
 - **[File Management Feature](../features/file-management.md)** File operations guide
 - **[Version Control Feature](../features/version-control.md)** Git operations guide

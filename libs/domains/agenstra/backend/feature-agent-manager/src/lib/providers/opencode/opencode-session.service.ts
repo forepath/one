@@ -2,9 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import {
   AGENSTRA_AUTOMATION_AGENT_NAME,
   AGENSTRA_AUTOMATION_SESSION_PERMISSION_RULESET,
+  AGENSTRA_PLAN_AGENT_NAME,
+  AGENSTRA_PLAN_SESSION_PERMISSION_RULESET,
 } from '@forepath/agenstra/shared/util-opencode-config';
 
-import { isTicketAutomationResumeSessionSuffix } from '../../constants/chat-session.constants';
+import {
+  isChatPlanResumeSessionSuffix,
+  isTicketAutomationResumeSessionSuffix,
+} from '../../constants/chat-session.constants';
 import { AgentsRepository } from '../../repositories/agents.repository';
 import type { AgentProviderOptions } from '../agent-provider.interface';
 
@@ -68,6 +73,7 @@ export class OpenCodeSessionService {
   private async createSession(client: OpencodeClient, key: OpenCodeSessionKey): Promise<Session> {
     const titleSuffix = key.resumeSessionSuffix ? ` (${key.resumeSessionSuffix})` : '';
     const automation = isTicketAutomationResumeSessionSuffix(key.resumeSessionSuffix);
+    const plan = isChatPlanResumeSessionSuffix(key.resumeSessionSuffix);
     const result = await client.session.create({
       body: {
         title: `agenstra${titleSuffix}`,
@@ -76,7 +82,12 @@ export class OpenCodeSessionService {
               agent: AGENSTRA_AUTOMATION_AGENT_NAME,
               permission: [...AGENSTRA_AUTOMATION_SESSION_PERMISSION_RULESET],
             }
-          : {}),
+          : plan
+            ? {
+                agent: AGENSTRA_PLAN_AGENT_NAME,
+                permission: [...AGENSTRA_PLAN_SESSION_PERMISSION_RULESET],
+              }
+            : {}),
       },
     });
 
@@ -84,7 +95,7 @@ export class OpenCodeSessionService {
       const message =
         result.error && typeof result.error === 'object' && 'message' in result.error
           ? String((result.error as { message?: unknown }).message)
-          : 'Unknown OpenCode session create error';
+          : 'Unknown OpenCode session creation error';
 
       throw new Error(`OpenCode session creation failed: ${message}`);
     }

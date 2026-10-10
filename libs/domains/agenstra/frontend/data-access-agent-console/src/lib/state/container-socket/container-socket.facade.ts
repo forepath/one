@@ -9,6 +9,7 @@ import {
   chatTimelineForwardTicketBodyFailure,
 } from '../chat-timeline/chat-timeline.actions';
 
+import { CLIENT_CHAT_PLAN_EVENTS } from './client-chat-plan.constants';
 import {
   connectSocket,
   disconnectSocket,
@@ -113,6 +114,101 @@ export class ContainerSocketFacade {
       this.store.dispatch(setClient({ clientId }));
       socket.emit('setClient', { clientId });
     });
+  }
+
+  /**
+   * Create a chat plan (controller-local on clients namespace — not via `forward`).
+   */
+  createChatPlan(
+    agentId: string,
+    chatId: string,
+    message: string,
+    correlationId: string,
+    model?: string | null,
+    contextInjection?: ContextInjectionPayload,
+  ): void {
+    const socket = getSocketInstance();
+
+    if (!socket || !socket.connected) {
+      console.warn('Socket not connected. Cannot create chat plan.');
+
+      return;
+    }
+
+    const effectiveModel = model ?? this.currentChatModel ?? undefined;
+    const payload: {
+      agentId: string;
+      chatId: string;
+      message: string;
+      correlationId: string;
+      model?: string;
+      contextInjection?: ContextInjectionPayload;
+    } = { agentId, chatId, message, correlationId };
+
+    if (effectiveModel !== undefined && effectiveModel !== null && effectiveModel !== '') {
+      payload.model = effectiveModel;
+    }
+
+    if (contextInjection) {
+      payload.contextInjection = contextInjection;
+    }
+
+    socket.emit(CLIENT_CHAT_PLAN_EVENTS.createChatPlan, payload);
+  }
+
+  /** When `contextInjection` is set, the controller replaces the plan's stored context snapshot. */
+  refineChatPlan(
+    agentId: string,
+    planId: string,
+    message: string,
+    correlationId: string,
+    contextInjection?: ContextInjectionPayload,
+  ): void {
+    const socket = getSocketInstance();
+
+    if (!socket || !socket.connected) {
+      console.warn('Socket not connected. Cannot refine chat plan.');
+
+      return;
+    }
+
+    const payload: {
+      agentId: string;
+      planId: string;
+      message: string;
+      correlationId: string;
+      contextInjection?: ContextInjectionPayload;
+    } = { agentId, planId, message, correlationId };
+
+    if (contextInjection) {
+      payload.contextInjection = contextInjection;
+    }
+
+    socket.emit(CLIENT_CHAT_PLAN_EVENTS.refineChatPlan, payload);
+  }
+
+  executeChatPlan(agentId: string, planId: string, correlationId: string): void {
+    const socket = getSocketInstance();
+
+    if (!socket || !socket.connected) {
+      console.warn('Socket not connected. Cannot execute chat plan.');
+
+      return;
+    }
+
+    socket.emit(CLIENT_CHAT_PLAN_EVENTS.executeChatPlan, { agentId, planId, correlationId });
+  }
+
+  cancelChatPlan(agentId: string, planId: string): void {
+    const socket = getSocketInstance();
+
+    if (!socket || !socket.connected) {
+      console.warn('Socket not connected. Cannot cancel chat plan.');
+
+      return;
+    }
+
+    socket.emit(CLIENT_CHAT_PLAN_EVENTS.cancelChatPlan, { agentId, planId });
   }
 
   forwardEvent(event: ForwardableEvent, payload?: ForwardableEventPayload, agentId?: string): void {

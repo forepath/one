@@ -15,6 +15,8 @@ import {
   resolveProviderAuthSecrets,
   AGENSTRA_TICKET_AUTOMATION_SKILL_ABS_DIR,
   AGENSTRA_TICKET_AUTOMATION_SKILL_MD,
+  AGENSTRA_CHAT_PLAN_SKILL_ABS_DIR,
+  AGENSTRA_CHAT_PLAN_SKILL_MD,
   type JsonObject,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { mcpServerConfigKey } from '@forepath/agenstra/shared/util-opencode-mcp-servers';
@@ -417,6 +419,7 @@ export class OpenCodeConfigSyncService {
       }
 
       await this.ensurePlatformAutomationSkillFiles(containerId);
+      await this.ensurePlatformPlanSkillFiles(containerId);
 
       const client = await this.clientFactory.getClient(agentId, containerId);
       const authSecrets = resolveProviderAuthSecrets(secrets, prepared);
@@ -523,6 +526,76 @@ export class OpenCodeConfigSyncService {
         '-c',
         `set -eu
 for parent in /opt /opt/agenstra /opt/agenstra/skills; do
+  if [ -L "$parent" ]; then
+    printf 'Unsafe platform skill ancestor: %s\\n' "$parent" >&2
+    exit 1
+  fi
+  if [ ! -e "$parent" ]; then
+    mkdir -m 755 -- "$parent"
+  fi
+  owner=$(stat -c %u -- "$parent")
+  mode=$(stat -c %a -- "$parent")
+  if [ ! -d "$parent" ] || [ "$owner" != 0 ] || [ "$((0$mode & 022))" -ne 0 ]; then
+    printf 'Untrusted platform skill ancestor: %s\\n' "$parent" >&2
+    exit 1
+  fi
+done
+dir=${JSON.stringify(dir)}
+if [ -L "$dir" ] || { [ -e "$dir" ] && [ ! -d "$dir" ]; }; then
+  printf 'Unsafe platform skill directory: %s\\n' "$dir" >&2
+  exit 1
+fi
+install -d -m 755 -o root -g root -- "$dir"
+tmp=$(mktemp "$dir/.SKILL.md.XXXXXX")
+trap 'rm -f -- "$tmp"' EXIT
+printf '%s' ${JSON.stringify(base64)} | base64 -d > "$tmp"
+chmod 644 -- "$tmp"
+mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
+      ],
+      undefined,
+      true,
+      { user: '0' },
+    );
+  }
+
+  /** Install the platform chat-plan skill so OpenCode can load it regardless of UI overlays. */
+  private async ensurePlatformPlanSkillFiles(containerId: string): Promise<void> {
+    const filePath = `${AGENSTRA_CHAT_PLAN_SKILL_ABS_DIR}/SKILL.md`;
+
+    try {
+      await this.installPlatformSkillFile(
+        containerId,
+        filePath,
+        ['/opt', '/opt/agenstra', '/opt/agenstra/skills'],
+        AGENSTRA_CHAT_PLAN_SKILL_MD,
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+
+      this.logger.warn(`Failed to install platform plan skill at ${filePath}: ${message}`);
+    }
+  }
+
+  private async installPlatformSkillFile(
+    containerId: string,
+    filePath: string,
+    parents: string[],
+    skillMarkdown: string,
+  ): Promise<void> {
+    const dir = filePath.slice(0, filePath.lastIndexOf('/'));
+    const base64 = Buffer.from(skillMarkdown, 'utf8').toString('base64');
+    const parentList = parents.map((parent) => JSON.stringify(parent)).join(' ');
+
+    await this.dockerService.sendCommandToContainer(
+      containerId,
+      [
+        '/usr/bin/env',
+        '-i',
+        'PATH=/usr/bin:/bin',
+        '/bin/sh',
+        '-c',
+        `set -eu
+for parent in ${parentList}; do
   if [ -L "$parent" ]; then
     printf 'Unsafe platform skill ancestor: %s\\n' "$parent" >&2
     exit 1

@@ -1,6 +1,7 @@
 import type {
   AgentResponseObject,
   ChatMessageData,
+  ChatPlanChatEventPayload,
   ForwardedEventPayload,
   TicketAutomationRunChatEventPayload,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
@@ -14,6 +15,7 @@ export interface ChatTimelineOrderedRowLike {
 }
 
 const TICKET_AUTOMATION_RUN_CHAT_UPSERT = 'ticketAutomationRunChatUpsert';
+const CHAT_PLAN_UPSERT = 'chatPlanUpsert';
 
 import {
   AGENT_CHAT_EVENT_KIND_LABELS,
@@ -57,7 +59,8 @@ export type ChatMessageWithFilter = {
 export type ChatDisplayThreadItem =
   | { kind: 'user'; msg: ChatMessageWithFilter }
   | { kind: 'agentTurn'; msgs: ChatMessageWithFilter[]; view: AgentTurnView }
-  | { kind: 'ticketAutomationRun'; sortTime: number; payload: TicketAutomationRunChatEventPayload };
+  | { kind: 'ticketAutomationRun'; sortTime: number; payload: TicketAutomationRunChatEventPayload }
+  | { kind: 'chatPlan'; sortTime: number; payload: ChatPlanChatEventPayload };
 
 /** Ordered slices of an agent turn: structured rows and prose markdown interleaved as produced. */
 export type AgentTurnSegment =
@@ -304,6 +307,23 @@ function isUserPayload(payload: ForwardedEventPayload): boolean {
   }
 
   return false;
+}
+
+/**
+ * Chat-plan execute injects a system prompt into the agent turn; it must not appear as a user bubble.
+ * Keep in sync with CHAT_PLAN_EXECUTE_PROMPT_PREFIX on the controller.
+ */
+const CHAT_PLAN_EXECUTE_PROMPT_PREFIX =
+  'Implement the following plan in the repository. Stay scoped to the plan below.';
+
+export function isSuppressedChatPlanExecuteUserMessage(payload: ForwardedEventPayload): boolean {
+  const data = getChatMessageData(payload);
+
+  if (!data || data.from !== 'user' || typeof data.text !== 'string') {
+    return false;
+  }
+
+  return data.text.trimStart().startsWith(CHAT_PLAN_EXECUTE_PROMPT_PREFIX);
 }
 
 function isAgentPayload(payload: ForwardedEventPayload): boolean {
@@ -720,6 +740,10 @@ export function buildChatDisplayThread(messages: ChatMessageWithFilter[]): ChatD
 
   for (const msg of messages) {
     if (isUserPayload(msg.payload)) {
+      if (isSuppressedChatPlanExecuteUserMessage(msg.payload)) {
+        continue;
+      }
+
       flushAgent();
       out.push({ kind: 'user', msg });
     } else if (isAgentPayload(msg.payload)) {
@@ -733,7 +757,8 @@ export function buildChatDisplayThread(messages: ChatMessageWithFilter[]): ChatD
 }
 
 /**
- * Merges ordered chat + automation timeline rows into display items (automation rows break agent turns).
+ * Merges ordered chat + automation + plan timeline rows into display items
+ * (automation/plan rows break agent turns).
  */
 export function buildMergedChatDisplayThread(
   orderedRows: ChatTimelineOrderedRowLike[],
@@ -779,6 +804,14 @@ export function buildMergedChatDisplayThread(
       continue;
     }
 
+    if (row.event === CHAT_PLAN_UPSERT) {
+      flushAgent();
+      const payload = row.payload as ChatPlanChatEventPayload;
+
+      out.push({ kind: 'chatPlan', sortTime: row.semanticTimestamp, payload });
+      continue;
+    }
+
     if (row.event !== 'chatMessage') {
       continue;
     }
@@ -790,6 +823,10 @@ export function buildMergedChatDisplayThread(
     }
 
     if (isUserPayload(msg.payload)) {
+      if (isSuppressedChatPlanExecuteUserMessage(msg.payload)) {
+        continue;
+      }
+
       flushAgent();
       out.push({ kind: 'user', msg });
     } else if (isAgentPayload(msg.payload)) {
