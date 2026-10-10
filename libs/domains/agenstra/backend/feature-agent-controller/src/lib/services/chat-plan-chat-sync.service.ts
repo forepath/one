@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 
 import type { ChatPlanChatEventDto } from '../dto/chat-plan/chat-plan-chat-event.dto';
 import { ChatPlanEntity } from '../entities/chat-plan.entity';
-import { ChatPlanStatus } from '../entities/chat-plan.enums';
+import { ChatPlanPhase, ChatPlanStatus } from '../entities/chat-plan.enums';
 import { chatPlanEntityToDto } from '../utils/chat-plan-mappers';
 
 import { AgentConsoleStatusService } from './agent-console-status.service';
@@ -83,7 +83,7 @@ export class ChatPlanChatSyncService {
       },
     ];
 
-    if (plan.status === ChatPlanStatus.READY) {
+    if (plan.status === ChatPlanStatus.READY && plan.phase === ChatPlanPhase.READY) {
       actions.push({
         type: 'executeChatPlan',
         planId: plan.id,

@@ -78,10 +78,51 @@ describe('ChatPlanChatSyncService', () => {
     const payload = (chatRealtime.emitToSocket as jest.Mock).mock.calls[0][1] as {
       hydrate: boolean;
       plan: { id: string; chatId: string };
+      actions: Array<{ type: string }>;
     };
 
     expect(payload.hydrate).toBe(true);
     expect(payload.plan.id).toBe('p1');
     expect(payload.plan.chatId).toBe('chat-1');
+    expect(payload.actions.some((action: { type: string }) => action.type === 'executeChatPlan')).toBe(true);
+  });
+
+  it('does not offer execution for plans with draft content awaiting agent completion', async () => {
+    const plan = {
+      id: 'p1',
+      clientId: 'c1',
+      agentId: 'a1',
+      chatId: 'chat-1',
+      status: ChatPlanStatus.READY,
+      phase: ChatPlanPhase.DRAFT,
+      sourcePrompt: 'hi',
+      planMarkdown: '# Draft',
+      summary: null,
+      contextInjection: null,
+      model: null,
+      resumeSessionSuffix: '-plan-p1',
+      completionSignalSeen: false,
+      failureCode: null,
+      failureMessage: null,
+      createdByUserId: null,
+      startedAt: new Date('2020-01-01'),
+      finishedAt: null,
+      createdAt: new Date('2020-01-01'),
+      updatedAt: new Date('2020-01-02'),
+    } as ChatPlanEntity;
+
+    const qb = planRepo.createQueryBuilder();
+
+    qb.getMany.mockResolvedValue([plan]);
+    const socket = { connected: true, emit: jest.fn() } as never;
+
+    await service.hydrateForAgentClient(socket, 'c1', 'a1');
+    const payload = (chatRealtime.emitToSocket as jest.Mock).mock.calls[0][1] as {
+      plan: { phase: string };
+      actions: Array<{ type: string }>;
+    };
+
+    expect(payload.plan.phase).toBe(ChatPlanPhase.DRAFT);
+    expect(payload.actions.some((action) => action.type === 'executeChatPlan')).toBe(false);
   });
 });

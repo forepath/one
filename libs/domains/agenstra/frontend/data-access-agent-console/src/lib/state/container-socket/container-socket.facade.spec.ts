@@ -58,4 +58,46 @@ describe('ContainerSocketFacade', () => {
     expect(store.dispatch).toHaveBeenCalledWith(setClient({ clientId: 'c1' }));
     expect(emit).toHaveBeenCalledWith('setClient', { clientId: 'c1' });
   });
+
+  describe('refineChatPlan', () => {
+    it('should emit refineChatPlan without contextInjection when none is given', () => {
+      const emit = jest.fn();
+      (getSocketInstance as jest.Mock).mockReturnValue({ connected: true, emit });
+
+      facade.refineChatPlan('a1', 'p1', 'tweak', 'corr-1');
+
+      expect(emit).toHaveBeenCalledWith('refineChatPlan', {
+        agentId: 'a1',
+        planId: 'p1',
+        message: 'tweak',
+        correlationId: 'corr-1',
+      });
+    });
+
+    it('should include contextInjection when given', () => {
+      const emit = jest.fn();
+      (getSocketInstance as jest.Mock).mockReturnValue({ connected: true, emit });
+      const contextInjection = { includeWorkspace: true, environmentIds: ['a1'], ticketShas: ['abc'] };
+
+      facade.refineChatPlan('a1', 'p1', 'tweak', 'corr-2', contextInjection);
+
+      expect(emit).toHaveBeenCalledWith('refineChatPlan', {
+        agentId: 'a1',
+        planId: 'p1',
+        message: 'tweak',
+        correlationId: 'corr-2',
+        contextInjection,
+      });
+    });
+
+    it('should not emit when the socket is disconnected', () => {
+      const emit = jest.fn();
+      (getSocketInstance as jest.Mock).mockReturnValue({ connected: false, emit });
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+      facade.refineChatPlan('a1', 'p1', 'tweak', 'corr-3');
+
+      expect(emit).not.toHaveBeenCalled();
+    });
+  });
 });

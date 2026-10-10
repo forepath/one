@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 
+import type { ChatPlanContextInjectionJson } from '../entities/chat-plan.entity';
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { ChatPlanFailureCode, ChatPlanPhase, ChatPlanStatus } from '../entities/chat-plan.enums';
 import { buildExecutePrompt, buildExplorePrompt, buildRefinePrompt } from '../utils/chat-plan-prompt.utils';
@@ -42,8 +43,12 @@ export class ChatPlanOrchestratorService {
     });
   }
 
-  startRefine(planId: string, refineMessage: string): void {
-    void this.runRefine(planId, refineMessage).catch((err) => {
+  /**
+   * @param contextInjection Optional replacement snapshot; when set it is persisted on the plan and reused by
+   * subsequent refine/execute turns.
+   */
+  startRefine(planId: string, refineMessage: string, contextInjection?: ChatPlanContextInjectionJson): void {
+    void this.runRefine(planId, refineMessage, contextInjection).catch((err) => {
       this.logger.warn(`startRefine failed for ${planId}: ${(err as Error).message}`);
     });
   }
@@ -161,7 +166,11 @@ export class ChatPlanOrchestratorService {
     }
   }
 
-  private async runRefine(planId: string, refineMessage: string): Promise<void> {
+  private async runRefine(
+    planId: string,
+    refineMessage: string,
+    contextInjection?: ChatPlanContextInjectionJson,
+  ): Promise<void> {
     const plan = await this.chatPlanService.getEntityOrThrow(planId);
 
     if (plan.status === ChatPlanStatus.REFINING) {
@@ -185,11 +194,14 @@ export class ChatPlanOrchestratorService {
       phase: ChatPlanPhase.REFINE,
       completionSignalSeen: false,
       finishedAt: null,
+      ...(contextInjection ? { contextInjection } : {}),
     });
 
     if (!started) {
       return;
     }
+
+    const effectiveContextInjection = contextInjection ?? plan.contextInjection ?? undefined;
 
     let draft = '';
 
@@ -203,7 +215,7 @@ export class ChatPlanOrchestratorService {
         resumeSessionSuffix: plan.resumeSessionSuffix,
         ephemeral: true,
         model: plan.model ?? undefined,
-        contextInjection: plan.contextInjection ?? undefined,
+        contextInjection: effectiveContextInjection,
         statisticsInteractionKind: StatisticsInteractionKind.CHAT_PLAN_TURN,
         onDeltaText: async (delta) => {
           draft += delta;
@@ -244,6 +256,12 @@ export class ChatPlanOrchestratorService {
     }
 
     if (plan.status !== ChatPlanStatus.READY) {
+      return;
+    }
+
+    if (plan.phase !== ChatPlanPhase.READY) {
+      this.logger.debug(`Ignoring execute for plan ${planId} in phase ${plan.phase}`);
+
       return;
     }
 

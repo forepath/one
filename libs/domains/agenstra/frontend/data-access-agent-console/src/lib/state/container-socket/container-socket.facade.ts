@@ -156,7 +156,14 @@ export class ContainerSocketFacade {
     socket.emit(CLIENT_CHAT_PLAN_EVENTS.createChatPlan, payload);
   }
 
-  refineChatPlan(agentId: string, planId: string, message: string, correlationId: string): void {
+  /** When `contextInjection` is set, the controller replaces the plan's stored context snapshot. */
+  refineChatPlan(
+    agentId: string,
+    planId: string,
+    message: string,
+    correlationId: string,
+    contextInjection?: ContextInjectionPayload,
+  ): void {
     const socket = getSocketInstance();
 
     if (!socket || !socket.connected) {
@@ -165,7 +172,19 @@ export class ContainerSocketFacade {
       return;
     }
 
-    socket.emit(CLIENT_CHAT_PLAN_EVENTS.refineChatPlan, { agentId, planId, message, correlationId });
+    const payload: {
+      agentId: string;
+      planId: string;
+      message: string;
+      correlationId: string;
+      contextInjection?: ContextInjectionPayload;
+    } = { agentId, planId, message, correlationId };
+
+    if (contextInjection) {
+      payload.contextInjection = contextInjection;
+    }
+
+    socket.emit(CLIENT_CHAT_PLAN_EVENTS.refineChatPlan, payload);
   }
 
   executeChatPlan(agentId: string, planId: string, correlationId: string): void {

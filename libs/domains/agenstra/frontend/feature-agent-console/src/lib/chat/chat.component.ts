@@ -171,10 +171,11 @@ import {
 } from './agent-chat-response-markdown';
 import { accumulateStreamingTurnFromEvents } from './agent-chat-streaming-aggregate';
 import { AgentChatTodosExpandCoordinator } from './agent-chat-todos-expand.coordinator';
+import { sanitizeAndTrustMarkdownHtml } from './chat-markdown-html';
 import { mergeTicketAutomationChatCardPayload } from './chat-automation-card-merge';
 import {
-  chatPlanPhaseLabel as chatPlanPhaseLabelFn,
-  chatPlanStatusLabel as chatPlanStatusLabelFn,
+  chatPlanStateBadgeColor as chatPlanStateBadgeColorFn,
+  chatPlanStateLabel as chatPlanStateLabelFn,
 } from './chat-plan-labels';
 import { buildMergedChatDisplayThread, type ChatDisplayThreadItem } from './chat-thread-display';
 
@@ -266,13 +267,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly ticketWorkflowLaneLabel = ticketLaneStatusLabel;
   readonly automationRunStatusLabel = ticketAutomationRunStatusLabelFn;
   readonly automationRunPhaseLabel = ticketAutomationRunPhaseLabelFn;
-  readonly chatPlanStatusLabel = chatPlanStatusLabelFn;
-  readonly chatPlanPhaseLabel = chatPlanPhaseLabelFn;
+  readonly chatPlanStateLabel = chatPlanStateLabelFn;
+  readonly chatPlanStateBadgeColor = chatPlanStateBadgeColorFn;
 
   readonly openTicketFromChatButtonLabel = $localize`:@@featureChat-openTicketFromAutomationCard:Open ticket`;
   readonly chatPlanModalTitle = $localize`:@@featureChat-planModalTitle:Plan`;
   readonly chatPlanRefinePlaceholder = $localize`:@@featureChat-planRefinePlaceholder:Describe changes to the plan…`;
-  readonly chatPlanRefineSubmitLabel = $localize`:@@featureChat-planRefineSubmit:Refine`;
+  readonly chatPlanRefineSubmitLabel = $localize`:@@featureChat-planRefineSubmit:Refine plan`;
   readonly chatPlanExecuteLabel = $localize`:@@featureChat-planExecute:Execute`;
   readonly chatPlanCancelLabel = $localize`:@@featureChat-planCancel:Cancel plan`;
   readonly chatPlanEmptyMarkdown = $localize`:@@featureChat-planEmptyMarkdown:Plan content will appear here as the agent explores…`;
@@ -712,7 +713,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   /** Plan detail modal: selected plan id (live updates via plans$). */
   readonly planDetailPlanId = signal<string | null>(null);
   readonly planDetailModalOpen = signal(false);
+  readonly planDetailContextSwapState: AgentModalSwapState = { suspended: false };
   readonly planRefineMessage = signal('');
+  readonly planRefineEnhanceError = signal<string | null>(null);
+  readonly pendingEnhancementTarget = signal<'chat' | 'planRefine'>('chat');
 
   /** Live plan entity for the open plan detail modal (updates on chatPlanUpsert). */
   readonly planDetailPlan$: Observable<ChatPlanResponse | null> = combineLatest([
@@ -1241,6 +1245,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly chatSessionToRenameTitle = signal<string>('');
 
   readonly contextSelectionModalOpen = signal(false);
+  readonly contextSelectionReturnTarget = signal<'chat' | 'planRefine'>('chat');
   readonly deleteClientModalOpen = signal(false);
   readonly deleteAgentModalOpen = signal(false);
   readonly deleteChatSessionModalOpen = signal(false);
@@ -1689,12 +1694,25 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           return;
         }
 
+        const target = this.pendingEnhancementTarget();
+
         if (r.success && r.enhancedText !== undefined) {
-          this.chatMessage.set(r.enhancedText);
-          this.enhanceErrorMessage.set(null);
+          if (target === 'planRefine') {
+            this.planRefineMessage.set(r.enhancedText);
+            this.planRefineEnhanceError.set(null);
+          } else {
+            this.chatMessage.set(r.enhancedText);
+            this.enhanceErrorMessage.set(null);
+          }
         } else {
-          this.enhanceErrorMessage.set(r.errorMessage ?? 'Enhancement failed');
+          if (target === 'planRefine') {
+            this.planRefineEnhanceError.set(r.errorMessage ?? 'Enhancement failed');
+          } else {
+            this.enhanceErrorMessage.set(r.errorMessage ?? 'Enhancement failed');
+          }
         }
+
+        this.pendingEnhancementTarget.set('chat');
       });
 
     // Load clients on init only when not already cached (avoids spinner on route reuse)
@@ -3048,10 +3066,22 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   onEnhanceMessage(): void {
-    let message = this.chatMessage().trim();
+    this.enhanceText(this.chatMessage(), 'chat', true);
+  }
+
+  clearPlanRefineEnhanceError(): void {
+    this.planRefineEnhanceError.set(null);
+  }
+
+  onEnhancePlanRefineMessage(): void {
+    this.enhanceText(this.planRefineMessage(), 'planRefine');
+  }
+
+  private enhanceText(rawMessage: string, target: 'chat' | 'planRefine', includeSlashCommand = false): void {
+    let message = rawMessage.trim();
     const selectedCmd = this.selectedCommand();
 
-    if (selectedCmd) {
+    if (includeSlashCommand && selectedCmd) {
       message = message ? `${selectedCmd}\n${message}` : selectedCmd;
     }
 
@@ -3065,7 +3095,14 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       return;
     }
 
-    this.enhanceErrorMessage.set(null);
+    this.pendingEnhancementTarget.set(target);
+
+    if (target === 'planRefine') {
+      this.planRefineEnhanceError.set(null);
+    } else {
+      this.enhanceErrorMessage.set(null);
+    }
+
     const correlationId = crypto.randomUUID();
     const model = this.selectedChatModel();
     const normalizedModel = model === null || model === '' ? null : model;
@@ -3113,16 +3150,23 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     });
   }
 
+  getChatPlanTitle(plan: Pick<ChatPlanResponse, 'summary' | 'sourcePrompt'>): string {
+    return plan.summary?.trim() || plan.sourcePrompt;
+  }
+
   openChatPlanFromChat(payload: ChatPlanChatEventPayload): void {
     this.planRefineMessage.set('');
+    this.planRefineEnhanceError.set(null);
     this.planDetailPlanId.set(payload.plan.id);
     this.planDetailModalOpen.set(true);
   }
 
   onClosePlanDetailModal(): void {
+    this.planDetailContextSwapState.suspended = false;
     this.planDetailModalOpen.set(false);
     this.planDetailPlanId.set(null);
     this.planRefineMessage.set('');
+    this.planRefineEnhanceError.set(null);
   }
 
   onExecuteChatPlan(planId: string): void {
@@ -3153,12 +3197,23 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       return;
     }
 
-    this.socketsFacade.refineChatPlan(agentId, planId, message, crypto.randomUUID());
+    this.socketsFacade.refineChatPlan(
+      agentId,
+      planId,
+      message,
+      crypto.randomUUID(),
+      this.buildContextInjection(agentId),
+    );
     this.planRefineMessage.set('');
+    this.planRefineEnhanceError.set(null);
   }
 
   isChatPlanCancellable(status: string): boolean {
     return status === 'exploring' || status === 'refining' || status === 'pending' || status === 'executing';
+  }
+
+  isChatPlanExecutable(status: string, phase: string): boolean {
+    return status === 'ready' && phase === 'ready';
   }
 
   onChatInputKeydown(event: KeyboardEvent): void {
@@ -3246,7 +3301,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.autoEnrichmentEnabled.set(enabled);
   }
 
-  onOpenContextSelectionModal(): void {
+  onOpenContextSelectionModal(returnTarget: 'chat' | 'planRefine' = 'chat'): void {
     const clientId = this.activeClientIdSignal();
 
     if (clientId) {
@@ -3254,10 +3309,32 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       this.knowledgeFacade.loadTree(clientId);
     }
 
+    this.contextSelectionReturnTarget.set(returnTarget);
+
+    if (returnTarget === 'planRefine') {
+      swapToOverlayAgentModal({
+        underlyingOpen: this.planDetailModalOpen,
+        overlayOpen: this.contextSelectionModalOpen,
+        swapState: this.planDetailContextSwapState,
+      });
+
+      return;
+    }
+
     showAgentModal(this.contextSelectionModalOpen);
   }
 
   onCloseContextSelectionModal(): void {
+    this.contextSelectionModalOpen.set(false);
+
+    if (this.contextSelectionReturnTarget() === 'planRefine') {
+      restoreUnderlyingAgentModal({
+        underlyingOpen: this.planDetailModalOpen,
+        swapState: this.planDetailContextSwapState,
+      });
+    }
+
+    this.contextSelectionReturnTarget.set('chat');
     this.ticketContextInput.set('');
     this.ticketContextSuggestionsOpen.set(false);
     this.knowledgeContextInput.set('');
@@ -5750,7 +5827,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           breaks: true,
           gfm: true,
         });
-        const safe = this.sanitizer.bypassSecurityTrustHtml(html || '');
+        const safe = sanitizeAndTrustMarkdownHtml(this.sanitizer, html || '');
 
         this.markdownHtmlCache.set(result, safe);
         this.trimHtmlCache(this.markdownHtmlCache);
@@ -5759,7 +5836,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       } catch (error) {
         console.warn('Error parsing markdown:', error);
         const escaped = result.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        const safe = this.sanitizer.bypassSecurityTrustHtml(escaped);
+        const safe = sanitizeAndTrustMarkdownHtml(this.sanitizer, escaped);
 
         this.markdownHtmlCache.set(result, safe);
         this.trimHtmlCache(this.markdownHtmlCache);

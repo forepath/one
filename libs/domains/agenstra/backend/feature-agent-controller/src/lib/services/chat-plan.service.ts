@@ -221,6 +221,7 @@ export class ChatPlanService {
         | 'failureMessage'
         | 'finishedAt'
         | 'startedAt'
+        | 'contextInjection'
       >
     >,
   ): Promise<boolean> {

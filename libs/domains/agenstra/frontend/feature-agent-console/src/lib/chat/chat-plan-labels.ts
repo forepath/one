@@ -1,8 +1,13 @@
-/**
- * Human-readable labels for chat plan status / phase (mirrors backend chat-plan.enums).
- */
+import type { FpcBadgeColor } from '@forepath/shared/frontend/ui-components';
 
-export function chatPlanStatusLabel(status: string): string {
+/**
+ * Human-readable state labels for chat plans. This consolidates status + phase into one operator-facing summary.
+ */
+export function chatPlanStateLabel(status: string, phase: string): string {
+  if (status === 'ready' && phase === 'draft') {
+    return $localize`:@@featureChat-planStateDraftAvailable:Draft available`;
+  }
+
   switch (status) {
     case 'pending':
       return $localize`:@@featureChat-planStatusPending:Pending`;
@@ -21,21 +26,25 @@ export function chatPlanStatusLabel(status: string): string {
     case 'cancelled':
       return $localize`:@@featureChat-planStatusCancelled:Cancelled`;
     default:
-      return status;
+      return phase || status;
   }
 }
 
-export function chatPlanPhaseLabel(phase: string): string {
-  switch (phase) {
-    case 'explore':
-      return $localize`:@@featureChat-planPhaseExplore:Explore`;
-    case 'draft':
-      return $localize`:@@featureChat-planPhaseDraft:Draft`;
-    case 'refine':
-      return $localize`:@@featureChat-planPhaseRefine:Refine`;
+export function chatPlanStateBadgeColor(status: string, phase: string): FpcBadgeColor {
+  if (status === 'ready' && phase === 'draft') {
+    return 'info';
+  }
+
+  switch (status) {
     case 'ready':
-      return $localize`:@@featureChat-planPhaseReady:Ready`;
+    case 'executed':
+      return 'success';
+    case 'failed':
+    case 'cancelled':
+      return 'danger';
+    case 'executing':
+      return 'warning';
     default:
-      return phase;
+      return 'secondary';
   }
 }

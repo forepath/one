@@ -63,6 +63,7 @@ On the manager, the same operations live under `/api/agents/:agentId/chats`.
 - View chat history per session
 - Markdown rendering
 - Code block syntax highlighting
+- Create **chat plans** from the composer prompt, inspect their timeline cards, refine them in a detail modal, and execute the approved plan back into the visible chat
 
 ### Message Types
 
@@ -111,9 +112,11 @@ Known OpenCode tools (`bash`, `read`, `glob`, `grep`, `edit`, `write`, `apply_pa
 ### Sending a Message
 
 1. Type your message in the input field
-2. Press Enter or click Send
-3. Message is sent to the agent via WebSocket (`forward` → `chat`, with the active `chatId` when applicable)
-4. Response is received and displayed
+2. Optional: add **Select context** references (workspace, environments, tickets, knowledge) or use **Enhance prompt with AI**
+3. Optional: use **Create plan with AI** to open the explore/refine plan workflow for the current prompt and selected context
+4. Press Enter or click Send
+5. Message is sent to the agent via WebSocket (`forward` → `chat`, with the active `chatId` when applicable)
+6. Response is received and displayed
 
 ### Viewing History
 

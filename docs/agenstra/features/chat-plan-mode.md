@@ -1,6 +1,6 @@
 # Chat plan mode
 
-Operators can turn the current chat composer prompt (plus selected context) into an **explore-then-plan** workflow. A hidden OpenCode session investigates the repository with **explore-only** permissions, a chat-scoped timeline card shows live status and plan markdown, a detail modal supports refine, and **Execute plan** injects the plan into the same visible chat.
+Operators can turn the current chat composer prompt (plus selected context) into an **explore-then-plan** workflow. A hidden OpenCode session investigates the repository with **explore-only** permissions, a chat-scoped timeline card shows a single human-readable status plus plan title, a detail modal supports refine, and **Execute plan** injects the plan into the same visible chat.
 
 This is an Agenstra productivity feature built on OpenCode (not a native OpenCode “plan mode” product API). It mirrors ticket-automation durability and hydrate patterns, but is user-triggered and chat-session scoped.
 
@@ -12,7 +12,19 @@ This is an Agenstra productivity feature built on OpenCode (not a native OpenCod
 
 ## Context injection
 
-Plan creation uses the **same composer context** as Send (`ContextInjectionPayload`): workspace, related environments, ticket SHAs, knowledge SHAs, and auto-enrichment. The controller stores a snapshot on `chat_plan.context_injection` and reuses it for explore, refine, and execute turns. Refine may optionally send a new snapshot to replace the stored one.
+Plan creation uses the **same composer context** as Send (`ContextInjectionPayload`): workspace, related environments, ticket SHAs, knowledge SHAs, and auto-enrichment. The controller stores a snapshot on `chat_plan.context_injection` and reuses it for explore, refine, and execute turns. Refine may optionally send a new snapshot to replace the stored one via the same **Select context** modal pattern used by the main composer.
+
+## Console UX
+
+- Chat cards show **one consolidated status badge** (for example `Exploring`, `Draft ready`, `Executed`) before the plan title instead of separate status/phase badges.
+- Card actions place **View plan** and the icon-only **Execute plan** action on one full-width row.
+- The detail modal uses the same title-row pattern (badge + title) and keeps the markdown body separate from actions with spacing equivalent to the main chat cards.
+- Refinement is handled through an **inline composer** inside the modal with:
+  - the plan refinement textarea
+  - **Select context**
+  - **Enhance prompt with AI**
+  - an icon-only **Refine plan** submit action
+- The footer keeps terminal actions only (for example **Cancel plan**, icon-only **Execute plan**).
 
 ## Phases (high level)
 

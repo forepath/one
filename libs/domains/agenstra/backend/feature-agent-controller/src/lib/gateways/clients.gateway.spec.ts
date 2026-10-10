@@ -290,6 +290,83 @@ describe('ClientsGateway', () => {
     );
   });
 
+  describe('handleRefineChatPlan', () => {
+    const planEntity = { id: 'plan-1', clientId: 'client-uuid', agentId: 'agent-uuid' };
+
+    const setupRefine = () => {
+      const socket = createMockSocket();
+      const chatPlanService = (gateway as any).chatPlanService as { getEntityOrThrow: jest.Mock };
+      const orchestrator = (gateway as any).chatPlanOrchestrator as { startRefine: jest.Mock };
+
+      (gateway as any).selectedClientBySocket.set(socket.id, 'client-uuid');
+      chatPlanService.getEntityOrThrow.mockResolvedValue(planEntity);
+
+      return { socket, orchestrator };
+    };
+
+    it('should start refine without replacing the stored context when none is sent', async () => {
+      const { socket, orchestrator } = setupRefine();
+
+      await gateway.handleRefineChatPlan(
+        { agentId: 'agent-uuid', planId: 'plan-1', message: ' tweak step 2 ', correlationId: 'c-1' },
+        socket,
+      );
+
+      expect(orchestrator.startRefine).toHaveBeenCalledWith('plan-1', 'tweak step 2', undefined);
+      expect(mockAutoContextResolverService.resolve).not.toHaveBeenCalled();
+      expect(socket.emit).toHaveBeenCalledWith(
+        'forwardAck',
+        expect.objectContaining({ received: true, event: 'refineChatPlan', planId: 'plan-1' }),
+      );
+    });
+
+    it('should enrich and forward a replacement context snapshot', async () => {
+      const { socket, orchestrator } = setupRefine();
+
+      await gateway.handleRefineChatPlan(
+        {
+          agentId: 'agent-uuid',
+          planId: 'plan-1',
+          message: 'include the ticket',
+          correlationId: 'c-2',
+          contextInjection: { includeWorkspace: true, environmentIds: ['agent-uuid'], ticketShas: ['329ec4f'] },
+        },
+        socket,
+      );
+
+      expect(mockAutoContextResolverService.resolve).toHaveBeenCalledWith(
+        expect.objectContaining({ clientId: 'client-uuid', prompt: 'include the ticket' }),
+      );
+      expect(orchestrator.startRefine).toHaveBeenCalledWith(
+        'plan-1',
+        'include the ticket',
+        expect.objectContaining({ includeWorkspace: true, environmentIds: ['agent-uuid'] }),
+      );
+    });
+
+    it('should reject refine for a plan owned by another client', async () => {
+      const { socket, orchestrator } = setupRefine();
+      const chatPlanService = (gateway as any).chatPlanService as { getEntityOrThrow: jest.Mock };
+
+      chatPlanService.getEntityOrThrow.mockResolvedValue({ ...planEntity, clientId: 'other-client' });
+
+      await gateway.handleRefineChatPlan(
+        {
+          agentId: 'agent-uuid',
+          planId: 'plan-1',
+          message: 'x',
+          correlationId: 'c-3',
+          contextInjection: { includeWorkspace: true },
+        },
+        socket,
+      );
+
+      expect(orchestrator.startRefine).not.toHaveBeenCalled();
+      expect(mockAutoContextResolverService.resolve).not.toHaveBeenCalled();
+      expect(socket.emit).toHaveBeenCalledWith('error', { message: 'Plan not found' });
+    });
+  });
+
   it('should enrich forwarded chat context with ticket prompt trees by sha', async () => {
     const socket = createMockSocket();
     const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
