@@ -10,6 +10,8 @@
 # Notes:      Includes Node.js, Nx, opencode, Python (pip + uv), XFCE desktop, Chromium, TigerVNC, websockify.
 #             Entrypoint runs as root to chown bind-mounted /app, then starts desktop + opencode as agenstra.
 #             Set OPENCODE_SERVER_PASSWORD for Basic auth. VNC has no password; access is ticket-proxied.
+#             Label io.agenstra.environment-mount=1: agent env is read from the managed volume at
+#             /etc/agenstra/environment so env updates restart (not recreate) the container.
 # -----------------------------------------------------------------------------
 #
 FROM docker.io/debian:trixie-slim
@@ -171,6 +173,12 @@ RUN chmod 755 /etc/agenstra/vnc/xstartup /usr/local/bin/chromium-agenstra /usr/l
     update-alternatives --set gnome-www-browser /usr/local/bin/chromium-agenstra && \
     chown -R "${APP_UID}:${APP_GID}" /home/agenstra && \
     update-desktop-database /usr/share/applications 2>/dev/null || true
+
+# Managed agent environment: agent-manager mounts a per-agent volume here and writes a root-only
+# (0600) NUL-separated env file that the entrypoint exports; env updates then only need a restart.
+RUN install -d -m 700 -o root -g root /etc/agenstra/environment
+
+LABEL io.agenstra.environment-mount="1"
 
 ENV BROWSER=/usr/local/bin/chromium-agenstra
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

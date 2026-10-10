@@ -2317,6 +2317,8 @@ components:
               waitingForHealthy,
               summarizingContext,
               recreatingContainer,
+              restartingContainer,
+              restoringGitCredentials,
               finalizing,
             ]
         stepIndex:

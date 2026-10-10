@@ -37,6 +37,8 @@ import { DeploymentRunsRepository } from '../repositories/deployment-runs.reposi
 import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
 import { AgentEnvironmentVariablesService } from '../services/agent-environment-variables.service';
 import { AgentMessagesService } from '../services/agent-messages.service';
+import { AgentGitCredentialsService } from '../services/agent-git-credentials.service';
+import { AgentRuntimeRefreshService } from '../services/agent-runtime-refresh.service';
 import { AgentsService } from '../services/agents.service';
 import { DeploymentsService } from '../services/deployments.service';
 import { DockerService } from '../services/docker.service';
@@ -136,6 +138,20 @@ describe('AgentsModule', () => {
 
     expect(service).toBeDefined();
     expect(service).toBeInstanceOf(DockerService);
+  });
+
+  it('should provide AgentGitCredentialsService', () => {
+    const service = module.get(AgentGitCredentialsService);
+
+    expect(service).toBeDefined();
+    expect(service).toBeInstanceOf(AgentGitCredentialsService);
+  });
+
+  it('should provide AgentRuntimeRefreshService', () => {
+    const service = module.get(AgentRuntimeRefreshService);
+
+    expect(service).toBeDefined();
+    expect(service).toBeInstanceOf(AgentRuntimeRefreshService);
   });
 
   it('should provide InstanceStatusService', () => {

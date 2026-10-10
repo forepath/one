@@ -1083,6 +1083,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         return $localize`:@@featureChat-environmentProgressStepSummarizingContext:Summarizing context`;
       case 'recreatingContainer':
         return $localize`:@@featureChat-environmentProgressStepRecreatingContainer:Recreating container`;
+      case 'restartingContainer':
+        return $localize`:@@featureChat-environmentProgressStepRestartingContainer:Restarting container`;
+      case 'restoringGitCredentials':
+        return $localize`:@@featureChat-environmentProgressStepRestoringGitCredentials:Restoring Git credentials`;
       case 'finalizing':
         return $localize`:@@featureChat-environmentProgressStepFinalizing:Finalizing`;
       default:

@@ -1,9 +1,12 @@
 import type { EnvironmentProgressDto } from '../dto/environment-progress.dto';
 
 import {
+  CONFIG_SYNC_ENVIRONMENT_PROGRESS_STEPS,
+  CONFIG_SYNC_RESTART_ENVIRONMENT_PROGRESS_STEPS,
   CREATE_ENVIRONMENT_PROGRESS_STEPS,
   EnvironmentProgressService,
   RECONCILE_ENVIRONMENT_PROGRESS_STEPS,
+  RESTART_ENVIRONMENT_PROGRESS_STEPS,
 } from './environment-progress.service';
 
 describe('EnvironmentProgressService', () => {
@@ -200,5 +203,51 @@ describe('EnvironmentProgressService', () => {
     tracker.advance('creatingContainer');
 
     expect(standalone.list()[0].step).toBe('creatingContainer');
+  });
+
+  it.each([
+    ['RESTART_ENVIRONMENT_PROGRESS_STEPS', RESTART_ENVIRONMENT_PROGRESS_STEPS],
+    ['CONFIG_SYNC_RESTART_ENVIRONMENT_PROGRESS_STEPS', CONFIG_SYNC_RESTART_ENVIRONMENT_PROGRESS_STEPS],
+  ])('%s restarts the container in place without recreating it', (_name, steps) => {
+    const names = steps.map((plan) => plan.step);
+
+    expect(names).toContain('restartingContainer');
+    expect(names).not.toContain('recreatingContainer');
+    expect(names).not.toContain('summarizingContext');
+    expect(names.at(-1)).toBe('finalizing');
+    expect(steps.reduce((sum, plan) => sum + plan.weight, 0)).toBe(100);
+  });
+
+  it.each([
+    ['RECONCILE_ENVIRONMENT_PROGRESS_STEPS', RECONCILE_ENVIRONMENT_PROGRESS_STEPS],
+    ['CONFIG_SYNC_ENVIRONMENT_PROGRESS_STEPS', CONFIG_SYNC_ENVIRONMENT_PROGRESS_STEPS],
+    ['RESTART_ENVIRONMENT_PROGRESS_STEPS', RESTART_ENVIRONMENT_PROGRESS_STEPS],
+  ])('%s restores Git credentials right before finalizing', (_name, steps) => {
+    const names = steps.map((plan) => plan.step);
+
+    expect(names.slice(-2)).toEqual(['restoringGitCredentials', 'finalizing']);
+    expect(steps.reduce((sum, plan) => sum + plan.weight, 0)).toBe(100);
+  });
+
+  it('should report weighted progress through the in-place restart plan', () => {
+    const tracker = service.start({
+      agentId: 'agent-1',
+      agentName: 'Agent',
+      operation: 'update',
+      steps: RESTART_ENVIRONMENT_PROGRESS_STEPS,
+    });
+
+    tracker.advance('restartingContainer');
+    tracker.advance('waitingForHealthy');
+
+    expect(emitted.at(-1)).toEqual(expect.objectContaining({ step: 'waitingForHealthy', progress: 50 }));
+
+    tracker.advance('restoringGitCredentials');
+
+    expect(emitted.at(-1)).toEqual(expect.objectContaining({ step: 'restoringGitCredentials', progress: 85 }));
+
+    tracker.complete();
+
+    expect(emitted.at(-1)).toEqual(expect.objectContaining({ status: 'completed', progress: 100 }));
   });
 });

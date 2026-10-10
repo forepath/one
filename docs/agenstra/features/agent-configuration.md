@@ -81,16 +81,16 @@ Proxy/CA settings are **not** JSON config. The Network panel writes reserved key
 (`HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY`, `NODE_EXTRA_CA_CERTS`). Global network secrets are merged into worker
 sync when workspace/agent layers omit them.
 
-On sync, the agent manager applies these via Docker container `Env` (recreating the container when values change).
+On sync, the agent manager applies these to the container environment when values change. Containers using the [mounted environment](./agent-management.md#environment-variables) are restarted in place; legacy containers are recreated once and migrated.
 Inline PEM for `NODE_EXTRA_CA_CERTS` is written to a file inside the container; the env var points at that path.
-Provider API keys remain on live OpenCode `auth.set` and do not require a recreate.
+Provider API keys remain on live OpenCode `auth.set` and do not require a restart.
 
 ## Provider credentials
 
 Provider API keys are also layer **secrets**, not OpenCode config. Built-in providers seed `providers.<id>.env` with catalog env names; the UI shows a password field per env name (same pattern as Network). Values are stored under those env names in the secrets map. Worker sync applies them as:
 
 - OpenCode `auth.set(providerId)` — env names matching `*_API_KEY` / `*_TOKEN` / … become ApiAuth `key`; other env values become ApiAuth `metadata` (e.g. `AZURE_RESOURCE_NAME` → `resourceName`)
-- Docker container `Env` for every configured provider `env` name (OpenCode also reads e.g. `AZURE_RESOURCE_NAME` from process env; changing these recreates the container)
+- Container environment for every configured provider `env` name (OpenCode also reads e.g. `AZURE_RESOURCE_NAME` from process env; changing these restarts the container, see [Environment variables](./agent-management.md#environment-variables))
 - Resolution accepts both UI `providers` and wire `provider` roots
 
 Network keys are skipped for auth.set (proxy/CA stay Env-only). PUT secrets are merged as a patch: empty string clears a key; omitted keys are left unchanged.

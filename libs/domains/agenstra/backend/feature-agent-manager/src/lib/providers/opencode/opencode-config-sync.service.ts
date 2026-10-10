@@ -32,12 +32,20 @@ import {
   UpsertAgentOpencodeConfigDto,
 } from '../../dto/agent-opencode-config.dto';
 import { AgentsRepository } from '../../repositories/agents.repository';
+import { AgentRuntimeRefreshService } from '../../services/agent-runtime-refresh.service';
 import { DockerService } from '../../services/docker.service';
 import {
   CONFIG_SYNC_ENVIRONMENT_PROGRESS_STEPS,
+  CONFIG_SYNC_RESTART_ENVIRONMENT_PROGRESS_STEPS,
   EnvironmentProgressService,
   EnvironmentProgressTracker,
 } from '../../services/environment-progress.service';
+import {
+  parseAgentEnvironmentBaseline,
+  serializeAgentEnvironmentBaseline,
+  shieldAgentEnvironmentVariables,
+  withAgentEnvironmentLock,
+} from '../../utils/agent-environment-baseline.utils';
 
 import { OpenCodeClientFactory } from './opencode-client.factory';
 import type { OpenCodeAgentInfo } from './opencode-sdk.types';
@@ -242,6 +250,8 @@ export class OpenCodeConfigSyncService {
     private readonly dockerService: DockerService,
     @Optional()
     private readonly environmentProgress?: EnvironmentProgressService,
+    @Optional()
+    private readonly agentRuntimeRefresh?: AgentRuntimeRefreshService,
   ) {}
 
   registerConfigSyncedBroadcaster(broadcaster: (agentId: string) => void): void {
@@ -387,14 +397,23 @@ export class OpenCodeConfigSyncService {
 
       let containerId = envResult.containerId ?? agent.containerId;
 
-      if (envResult.recreated) {
+      if (envResult.recreated || envResult.restarted) {
         this.clientFactory.invalidate(agentId);
+        this.agentRuntimeRefresh?.invalidateConnections(agentId);
         progressRef.tracker?.advance('waitingForHealthy');
         await this.clientFactory.waitForHealthy(agentId, containerId);
+
+        // A recreated container lost the Git credential files from its writable layer.
+        if (envResult.recreated) {
+          progressRef.tracker?.advance('restoringGitCredentials');
+          await this.agentRuntimeRefresh?.restoreGitCredentials(agentId, containerId);
+        }
+
         progressRef.tracker?.advance('finalizing');
         const refreshed = await this.agentsRepository.findById(agentId);
 
         containerId = refreshed?.containerId ?? containerId;
+        await this.agentRuntimeRefresh?.reattachWatchers(agentId);
       }
 
       await this.ensurePlatformAutomationSkillFiles(containerId);
@@ -548,7 +567,7 @@ mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
     secrets: Record<string, string>,
     effective: Record<string, unknown>,
     progressRef: ConfigSyncProgressRef = {},
-  ): Promise<OpencodeSyncEffectiveResult & { containerId?: string; recreated?: boolean }> {
+  ): Promise<OpencodeSyncEffectiveResult & { containerId?: string; recreated?: boolean; restarted?: boolean }> {
     const network = extractNetworkSecrets(secrets);
     const providerEnv = extractProviderEnvSecrets(secrets, effective as Record<string, unknown>);
     const mcpEnv = extractMcpEnvSecrets(secrets, effective as Record<string, unknown>);
@@ -600,6 +619,31 @@ mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
       }
     }
 
+    // Agent-level environment variables stay authoritative; their keys only get a new fallback value.
+    return await withAgentEnvironmentLock(agentId, () =>
+      this.applyShieldedEnvToContainer(agentId, containerId, desiredEnv, progressRef),
+    );
+  }
+
+  private async applyShieldedEnvToContainer(
+    agentId: string,
+    containerId: string,
+    requestedEnv: Record<string, string | undefined>,
+    progressRef: ConfigSyncProgressRef,
+  ): Promise<OpencodeSyncEffectiveResult & { containerId?: string; recreated?: boolean; restarted?: boolean }> {
+    const agent = await this.agentsRepository.findById(agentId);
+    const shielded = shieldAgentEnvironmentVariables(
+      requestedEnv,
+      parseAgentEnvironmentBaseline(agent?.environmentVariableBaseline),
+    );
+    const desiredEnv = shielded.env;
+
+    if (shielded.baselineChanged && shielded.baseline) {
+      await this.agentsRepository.update(agentId, {
+        environmentVariableBaseline: serializeAgentEnvironmentBaseline(shielded.baseline),
+      });
+    }
+
     const currentEnv = await this.dockerService.getContainerEnvironmentMap(containerId);
     let changed = false;
 
@@ -621,19 +665,30 @@ mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
     }
 
     try {
+      // Containers with the mounted environment are restarted in place; legacy ones are recreated once.
+      const strategy = await this.dockerService.getEnvironmentApplyStrategy(containerId);
+
       progressRef.tracker = this.environmentProgress?.start({
         agentId,
         agentName: progressRef.agentName ?? agentId,
         operation: 'update',
-        steps: CONFIG_SYNC_ENVIRONMENT_PROGRESS_STEPS,
+        steps:
+          strategy === 'restart'
+            ? CONFIG_SYNC_RESTART_ENVIRONMENT_PROGRESS_STEPS
+            : CONFIG_SYNC_ENVIRONMENT_PROGRESS_STEPS,
       });
-      progressRef.tracker?.advance('recreatingContainer');
+      progressRef.tracker?.advance(strategy === 'restart' ? 'restartingContainer' : 'recreatingContainer');
       const newContainerId = await this.dockerService.updateContainer(containerId, { env: desiredEnv });
 
-      await this.agentsRepository.update(agentId, { containerId: newContainerId });
+      if (newContainerId !== containerId) {
+        await this.agentsRepository.update(agentId, { containerId: newContainerId });
+      }
+
       this.logger.log(`Applied env secrets for agent ${agentId} (container ${containerId} -> ${newContainerId})`);
 
-      return { ok: true, containerId: newContainerId, recreated: true };
+      return newContainerId === containerId
+        ? { ok: true, containerId, restarted: true }
+        : { ok: true, containerId: newContainerId, recreated: true };
     } catch (error: unknown) {
       const err = error as { message?: string };
 

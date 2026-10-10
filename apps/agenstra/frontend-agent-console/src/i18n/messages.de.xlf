@@ -887,6 +887,14 @@
         <source>Recreating container</source>
         <target>Container wird neu erstellt</target>
       </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepRestartingContainer" datatype="html">
+        <source>Restarting container</source>
+        <target>Container wird neu gestartet</target>
+      </trans-unit>
+      <trans-unit id="featureChat-environmentProgressStepRestoringGitCredentials" datatype="html">
+        <source>Restoring Git credentials</source>
+        <target>Git-Zugangsdaten werden wiederhergestellt</target>
+      </trans-unit>
       <trans-unit id="featureChat-environmentProgressStepFinalizing" datatype="html">
         <source>Finalizing</source>
         <target>Abschluss</target>
@@ -1385,10 +1393,6 @@
       <trans-unit id="featureChat-deleteWorkspaceConfigurationOverrideTitle" datatype="html">
         <source>Delete override</source>
         <target>Override löschen</target>
-      </trans-unit>
-      <trans-unit id="featureChat-envVarsWarning" datatype="html">
-        <source>Changing the environment variables will re-create the agent&apos;s container. Context may be lost.</source>
-        <target>Das Ändern der Umgebungsvariablen erstellt den Container des Agenten neu. Kontext kann verloren gehen.</target>
       </trans-unit>
       <trans-unit id="featureChat-manageEnvVarsModalTitle" datatype="html">
         <source> Manage Environment Variables </source>

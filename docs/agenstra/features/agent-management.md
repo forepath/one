@@ -62,9 +62,10 @@ sequenceDiagram
 
 ### Provisioning progress
 
-Creating an environment and updates that recreate its container (environment variable changes, workspace configuration overrides including mass updates, OpenCode configuration sync) report live progress:
+Creating an environment and updates that apply a changed environment to its container (environment variable changes, workspace configuration overrides including mass updates, OpenCode configuration sync) report live progress:
 
-- The agent-manager tracks each operation (`create` / `update`) with a current **step** (for example `pullingImage`, `creatingContainer`, `waitingForHealthy`) and an overall **percentage**. Image pulls report real layer download/extract progress.
+- The agent-manager tracks each operation (`create` / `update`) with a current **step** (for example `pullingImage`, `creatingContainer`, `restartingContainer`, `waitingForHealthy`) and an overall **percentage**. Image pulls report real layer download/extract progress.
+- Updates of containers that use the [mounted environment](#environment-variables) report `queued` → `restartingContainer` → `waitingForHealthy` → `finalizing`, plus `restoringGitCredentials` before `finalizing` when Git credentials changed. The one-time migration of a legacy container reports `summarizingContext` → `recreatingContainer` → `restoringGitCredentials` instead.
 - Progress is broadcast as `environmentProgress` on the manager `socket/agents` namespace (forwarded to the console via `socket/clients`) and is available as a snapshot via `GET /api/clients/:id/agents/progress`, so it can be shown instantly when a workspace is selected.
 - Socket updates received during snapshot loading take precedence, including completed/failed operations and new operations absent from the snapshot. Reselecting or reconnecting cancels older snapshot requests for that workspace and removes stale operations.
 - For workspaces that are not selected, the controller includes running operations in the `socket/status` `statusSnapshot` / `statusPatch` (`environmentProgress`) and polls faster (`STATUS_PROVISIONING_POLL_INTERVAL_MS`) while operations are running.
@@ -95,7 +96,7 @@ The system automatically handles authentication when you select an agent in the 
 
 When an agent is deleted:
 
-1. The Docker container is stopped and removed
+1. The Docker container is stopped and removed (together with its managed environment volume)
 2. The agent entity is deleted from the database
 3. Stored credentials are deleted from the controller
 4. All associated data is removed
@@ -177,7 +178,24 @@ From the console (through the controller) or via HTTP on the manager, you can st
 
 ### Environment variables
 
-Agent-scoped environment variables are stored on the **agent-manager** and applied to the agent’s Docker container. Creating, updating, or deleting a variable triggers a container restart so the process sees the new environment. Manage them from the console or via the HTTP API (manager paths, or controller-proxied paths per client).
+Agent-scoped environment variables are stored on the **agent-manager** and applied to the agent’s Docker container. Manage them from the console or via the HTTP API (manager paths, or controller-proxied paths per client).
+
+**Mounted environment (no container deletion).** Worker images that carry the label `io.agenstra.environment-mount="1"` receive their environment through a managed file instead of Docker's `Config.Env`:
+
+- On create, the manager attaches a per-agent Docker named volume (`agenstra-env-<id>`) at `/etc/agenstra/environment` and writes `environment` (NUL-separated `KEY=VALUE` entries, root-owned, mode `0600`) before the container starts.
+- The worker entrypoint loads that file and starts OpenCode, the desktop/VNC stack and their child processes with the entries as **real process environment variables**. The root part of the entrypoint itself never runs with these variables.
+- When environment variables, workspace configuration overrides or OpenCode network/provider secrets change, the manager rewrites the file and **restarts the container in place**. The container ID, its writable layer (for example packages installed outside `/app`) and the OpenCode session store are kept. No conversation summary is generated, and the stored container ID does not change.
+- After the restart, the manager drops cached OpenCode connections, waits for OpenCode to become healthy and re-attaches the workspace file watcher.
+- Git credentials (`GIT_PRIVATE_KEY`, `GIT_USERNAME`, `GIT_TOKEN`/`GIT_PASSWORD`, `GIT_REPOSITORY_URL`) are not read from the environment by Git. They are materialized as files in the container (`~/.ssh/<key>` plus `known_hosts`, or `~/.netrc`). When one of them changes, the manager rewrites these files from the container's new environment after the restart, so a rotated SSH key or token takes effect without deleting the container. `.netrc` is managed by Agenstra and is replaced as a whole; an unknown host key is only added to `known_hosts` once. A key of a different type is written next to the previous key file (for example `id_ed25519` next to `id_rsa`), which is not removed. A failure to restore the files is logged and does not fail the update.
+- Commands the manager runs via `docker exec` (terminal, Git, file operations) receive the same effective environment.
+- Values are passed **verbatim** (no shell quoting or escaping). Secrets are no longer visible in `docker inspect` (`Config.Env` only contains image defaults).
+- Variable names must match `^[A-Za-z_][A-Za-z0-9_.-]*$`. Other names (for example exported shell functions such as `BASH_FUNC_name%%`) are skipped with a warning and never reach the container.
+
+**Precedence and removal.** Agent-level variables take precedence over workspace configuration overrides and OpenCode network/provider secrets with the same name. When an agent variable replaces such a value, the manager remembers the replaced value (encrypted in the agent record). Workspace overrides and secret changes for that name only update the remembered value and do not restart the container. Deleting or renaming the agent variable restores the remembered value, or removes the name from the container when it did not exist before. For agents created before this tracking existed, deleting a variable removes it from the container; a value it replaced before the upgrade is not restored automatically (OpenCode network/provider secrets are re-applied by the next OpenCode configuration sync).
+
+**Legacy containers.** Containers created before this mechanism (or from images without the label) still receive environment changes by recreation. The first environment change after upgrading the worker image recreates such a container **once** and migrates its environment into the managed volume. From then on, it is only restarted. Because a recreated container starts with a fresh writable layer, the manager re-provisions the Git credential files after every recreate. SSH keys that older versions stored with escaped line breaks (sometimes escaped twice) are decoded when the files are re-provisioned.
+
+A running process cannot have its environment changed from outside, so applying a change always restarts the container's processes. Only the container restart is unavoidable; the container itself is never deleted.
 
 See also [Deployment](./deployment.md) for CI/CD tokens stored in deployment configuration.
 

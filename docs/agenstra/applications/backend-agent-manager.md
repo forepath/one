@@ -55,7 +55,7 @@ All HTTP endpoints are prefixed with `/api` and protected by Keycloak authentica
 
 ### Environment variables
 
-Changes are persisted and synchronized to the agent’s Docker container (the container is restarted so new variables take effect).
+Changes are persisted and synchronized to the agent’s Docker container. Containers using the mounted environment volume are restarted in place (never deleted) so new variables take effect; legacy containers are recreated once and migrated. See [Agent Management – Environment variables](../features/agent-management.md#environment-variables).
 
 - `GET /api/agents/:agentId/environment` - List variables (`limit`, `offset`)
 - `GET /api/agents/:agentId/environment/count` - Count variables

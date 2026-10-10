@@ -5,6 +5,7 @@ import { AGENSTRA_TICKET_AUTOMATION_SKILL_ABS_DIR } from '@forepath/agenstra/sha
 
 import type { EnvironmentProgressDto } from '../../dto/environment-progress.dto';
 import type { AgentsRepository } from '../../repositories/agents.repository';
+import type { AgentRuntimeRefreshService } from '../../services/agent-runtime-refresh.service';
 import type { DockerService } from '../../services/docker.service';
 import { EnvironmentProgressService } from '../../services/environment-progress.service';
 
@@ -21,6 +22,13 @@ describe('OpenCodeConfigSyncService environment progress', () => {
     updateContainer: jest.Mock;
     sendCommandToContainer: jest.Mock;
     getContainerHomeDirectory: jest.Mock;
+    getEnvironmentApplyStrategy: jest.Mock;
+  };
+  let runtimeRefresh: {
+    invalidateConnections: jest.Mock;
+    waitForHealthy: jest.Mock;
+    reattachWatchers: jest.Mock;
+    restoreGitCredentials: jest.Mock;
   };
   let clientFactory: {
     invalidate: jest.Mock;
@@ -44,6 +52,13 @@ describe('OpenCodeConfigSyncService environment progress', () => {
       updateContainer: jest.fn().mockResolvedValue('container-2'),
       sendCommandToContainer: jest.fn().mockResolvedValue(''),
       getContainerHomeDirectory: jest.fn().mockResolvedValue('/home/agenstra'),
+      getEnvironmentApplyStrategy: jest.fn().mockResolvedValue('recreate'),
+    };
+    runtimeRefresh = {
+      invalidateConnections: jest.fn(),
+      waitForHealthy: jest.fn().mockResolvedValue(true),
+      reattachWatchers: jest.fn().mockResolvedValue(undefined),
+      restoreGitCredentials: jest.fn().mockResolvedValue(true),
     };
     clientFactory = {
       invalidate: jest.fn(),
@@ -59,6 +74,7 @@ describe('OpenCodeConfigSyncService environment progress', () => {
       clientFactory as unknown as OpenCodeClientFactory,
       dockerService as unknown as DockerService,
       progressService,
+      runtimeRefresh as unknown as AgentRuntimeRefreshService,
     );
     configSynced = jest.fn();
     service.registerConfigSyncedBroadcaster(configSynced);
@@ -219,6 +235,7 @@ test "$(/usr/bin/stat -c '%u:%g:%a' ${JSON.stringify(AGENSTRA_TICKET_AUTOMATION_
   it('reports update progress when secrets require container recreation', async () => {
     agentsRepository.findById
       .mockResolvedValueOnce(agent)
+      .mockResolvedValueOnce(agent)
       .mockResolvedValueOnce({ ...agent, containerId: 'container-2' });
     const result = await service.syncEffective(agent.id, {}, { HTTP_PROXY: 'http://proxy:8080' });
 
@@ -227,8 +244,10 @@ test "$(/usr/bin/stat -c '%u:%g:%a' ${JSON.stringify(AGENSTRA_TICKET_AUTOMATION_
     expect([...new Set(emitted.map((e) => e.step))]).toEqual([
       'recreatingContainer',
       'waitingForHealthy',
+      'restoringGitCredentials',
       'finalizing',
     ]);
+    expect(runtimeRefresh.restoreGitCredentials).toHaveBeenCalledWith(agent.id, 'container-2');
     expect(emitted.at(-1)).toEqual(
       expect.objectContaining({
         agentId: agent.id,
@@ -254,6 +273,60 @@ test "$(/usr/bin/stat -c '%u:%g:%a' ${JSON.stringify(AGENSTRA_TICKET_AUTOMATION_
       true,
       { user: '0' },
     );
+  });
+
+  it('keeps agent-level variables authoritative over synced environment secrets', async () => {
+    agentsRepository.findById.mockResolvedValue({
+      ...agent,
+      environmentVariableBaseline: JSON.stringify({ HTTP_PROXY: null }),
+    });
+    dockerService.getContainerEnvironmentMap.mockResolvedValue({ HTTP_PROXY: 'agent-level' });
+
+    const result = await service.syncEffective(agent.id, {}, { HTTP_PROXY: 'http://proxy:8080' });
+
+    expect(result.ok).toBe(true);
+    expect(dockerService.updateContainer).not.toHaveBeenCalled();
+    expect(agentsRepository.update).toHaveBeenCalledWith(agent.id, {
+      environmentVariableBaseline: JSON.stringify({ HTTP_PROXY: 'http://proxy:8080' }),
+    });
+  });
+
+  it('restarts the container in place when it uses the mounted environment', async () => {
+    dockerService.getEnvironmentApplyStrategy.mockResolvedValue('restart');
+    dockerService.updateContainer.mockResolvedValue(agent.containerId);
+
+    const result = await service.syncEffective(agent.id, {}, { HTTP_PROXY: 'http://proxy:8080' });
+
+    expect(result.ok).toBe(true);
+    expect(dockerService.getEnvironmentApplyStrategy).toHaveBeenCalledWith(agent.containerId);
+    expect(dockerService.updateContainer).toHaveBeenCalledWith(agent.containerId, {
+      env: expect.objectContaining({ HTTP_PROXY: 'http://proxy:8080' }),
+    });
+    expect(agentsRepository.update).not.toHaveBeenCalled();
+    expect(clientFactory.invalidate).toHaveBeenCalledWith(agent.id);
+    expect(clientFactory.waitForHealthy).toHaveBeenCalledWith(agent.id, agent.containerId);
+    expect(runtimeRefresh.invalidateConnections).toHaveBeenCalledWith(agent.id);
+    expect(runtimeRefresh.reattachWatchers).toHaveBeenCalledWith(agent.id);
+    expect(runtimeRefresh.restoreGitCredentials).not.toHaveBeenCalled();
+    expect([...new Set(emitted.map((e) => e.step))]).toEqual([
+      'restartingContainer',
+      'waitingForHealthy',
+      'finalizing',
+    ]);
+    expect(emitted.at(-1)).toEqual(expect.objectContaining({ status: 'completed', progress: 100 }));
+    expect(configSynced).toHaveBeenCalledWith(agent.id);
+  });
+
+  it('reports failure on the restart step when the in-place restart fails', async () => {
+    dockerService.getEnvironmentApplyStrategy.mockResolvedValue('restart');
+    dockerService.updateContainer.mockRejectedValueOnce(new Error('restart failed'));
+
+    const result = await service.syncEffective(agent.id, {}, { HTTP_PROXY: 'http://proxy:8080' });
+
+    expect(result.ok).toBe(false);
+    expect(emitted.at(-1)).toEqual(expect.objectContaining({ step: 'restartingContainer', status: 'failed' }));
+    expect(runtimeRefresh.reattachWatchers).not.toHaveBeenCalled();
+    expect(configSynced).not.toHaveBeenCalled();
   });
 
   it('reports failure when container recreation fails', async () => {

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-09T15:30:36.111Z",
+  "generatedAt": "2026-10-10T11:35:52.515Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -11394,6 +11394,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-messages.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-runtime-refresh.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-runtime-refresh.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -40860,6 +40869,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-runtime-refresh.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-session-hydration.service.ts",
       "type": "contains"
     },
@@ -65344,6 +65358,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-config-sync.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-runtime-refresh.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-runtime.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-session.service.ts",
       "type": "injects"
@@ -65404,6 +65423,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-environment-variables.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-runtime-refresh.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-file-system.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents.service.ts",
       "type": "injects"
@@ -65451,6 +65475,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-messages.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-chat-sessions.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-runtime-refresh.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-inotify-supervisor.service.ts",
       "type": "injects"
     },
     {
@@ -68061,6 +68090,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/workspace-inotify-supervisor.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-runtime-refresh.service.ts",
       "type": "provides"
     },
     {

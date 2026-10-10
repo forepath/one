@@ -25,17 +25,39 @@ export const CREATE_ENVIRONMENT_PROGRESS_STEPS: readonly EnvironmentProgressStep
   { step: 'finalizing', weight: 5 },
 ];
 
-/** Step plan for recreating a container after environment variable / workspace override changes. */
+/** Step plan for recreating a (legacy) container after environment variable / workspace override changes. */
 export const RECONCILE_ENVIRONMENT_PROGRESS_STEPS: readonly EnvironmentProgressStepPlan[] = [
   { step: 'queued', weight: 0 },
   { step: 'summarizingContext', weight: 35 },
-  { step: 'recreatingContainer', weight: 55 },
+  { step: 'recreatingContainer', weight: 50 },
+  { step: 'restoringGitCredentials', weight: 5 },
   { step: 'finalizing', weight: 10 },
 ];
 
 /** Step plan for recreating a container while syncing OpenCode secrets/config. */
 export const CONFIG_SYNC_ENVIRONMENT_PROGRESS_STEPS: readonly EnvironmentProgressStepPlan[] = [
-  { step: 'recreatingContainer', weight: 60 },
+  { step: 'recreatingContainer', weight: 55 },
+  { step: 'waitingForHealthy', weight: 30 },
+  { step: 'restoringGitCredentials', weight: 5 },
+  { step: 'finalizing', weight: 10 },
+];
+
+/**
+ * Step plan for applying environment variable / workspace override changes to a container that reads
+ * its environment from the managed volume: the container is restarted in place (never deleted), so
+ * no conversation summary is needed. `restoringGitCredentials` is skipped unless Git credentials changed.
+ */
+export const RESTART_ENVIRONMENT_PROGRESS_STEPS: readonly EnvironmentProgressStepPlan[] = [
+  { step: 'queued', weight: 0 },
+  { step: 'restartingContainer', weight: 50 },
+  { step: 'waitingForHealthy', weight: 35 },
+  { step: 'restoringGitCredentials', weight: 5 },
+  { step: 'finalizing', weight: 10 },
+];
+
+/** Step plan for restarting a container in place while syncing OpenCode secrets/config. */
+export const CONFIG_SYNC_RESTART_ENVIRONMENT_PROGRESS_STEPS: readonly EnvironmentProgressStepPlan[] = [
+  { step: 'restartingContainer', weight: 60 },
   { step: 'waitingForHealthy', weight: 30 },
   { step: 'finalizing', weight: 10 },
 ];

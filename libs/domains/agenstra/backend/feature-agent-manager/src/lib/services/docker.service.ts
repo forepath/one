@@ -9,6 +9,23 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import Docker = require('dockerode');
 import { v4 as uuidv4 } from 'uuid';
 
+import {
+  AGENT_ENVIRONMENT_FILE_MAX_BYTES,
+  AGENT_ENVIRONMENT_FILE_NAME,
+  AGENT_ENVIRONMENT_FILE_PATH,
+  AGENT_ENVIRONMENT_IMAGE_LABEL,
+  AGENT_ENVIRONMENT_IMAGE_LABEL_VERSION,
+  AGENT_ENVIRONMENT_MOUNT_TARGET,
+  AGENT_ENVIRONMENT_VOLUME_LABEL,
+  AGENT_ENVIRONMENT_VOLUME_PREFIX,
+  assertValidEnvironmentVariableName,
+  buildSingleFileTar,
+  extractFirstFileFromTar,
+  parseDockerEnvList,
+  parseEnvironmentFile,
+  serializeEnvironmentFile,
+  toDockerEnvList,
+} from '../utils/agent-environment-file.utils';
 import { DockerPullProgressAggregator, type DockerPullProgressEvent } from '../utils/docker-pull-progress.utils';
 
 const execAsync = promisify(exec);
@@ -30,6 +47,9 @@ function drainExecStdoutLines(buffer: string, chunk: string, queue: string[]): s
   return remaining;
 }
 
+/** How environment changes are applied to a container (see {@link DockerService.updateContainer}). */
+export type EnvironmentApplyStrategy = 'restart' | 'recreate';
+
 export interface DockerExecSession {
   writeLine(line: string): void;
   closeStdin(): void;
@@ -43,6 +63,12 @@ export class DockerService {
   private readonly docker = new Docker({ socketPath: '/var/run/docker.sock' });
   private static readonly WORKSPACE_CONTEXT_BIND_SOURCE = '/opt/agents';
   private static readonly WORKSPACE_CONTEXT_BIND_TARGET = '/opt/workspace';
+  private static readonly ENVIRONMENT_OVERLAY_CACHE_TTL_MS = 15_000;
+  private readonly environmentOverlayCache = new Map<
+    string,
+    { env: Record<string, string> | null; expiresAt: number }
+  >();
+  private readonly environmentLocks = new Map<string, Promise<unknown>>();
 
   async createContainer(options: {
     image?: string;
@@ -77,59 +103,73 @@ export class DockerService {
     // would overwrite a locally rebuilt worker with a stale registry image and break OpenCode serve.
     await this.ensureImageExists(resolvedImage);
 
-    // Map env object to KEY=VALUE strings as required by Docker API
-    // Escape special characters in the value to preserve intent (no quoting)
-    const escapeEnvValue = (val: string): string =>
-      val.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
-    const maybeQuote = (val: string): string => {
-      // Quote if contains whitespace or quotes
-      if (/\s|"|'/u.test(val)) {
-        const inner = val.replace(/"/g, '\\"');
+    const envMap = this.sanitizeEnvironment(
+      Object.fromEntries(Object.entries(env ?? {}).map(([key, value]) => [key, value == null ? '' : String(value)])),
+    );
+    // Images implementing the environment-mount contract read agent env from a managed volume, so
+    // later env updates only need a restart and secrets stay out of `docker inspect` Config.Env.
+    const useEnvironmentMount = await this.imageSupportsEnvironmentMount(resolvedImage);
+    const environmentVolumeName = useEnvironmentMount ? await this.createEnvironmentVolume() : undefined;
 
-        return `"${inner}"`;
+    try {
+      const container = await this.docker.createContainer({
+        Image: resolvedImage,
+        Env: useEnvironmentMount ? undefined : env ? toDockerEnvList(envMap) : undefined,
+        ExposedPorts: Object.keys(exposedPorts).length ? exposedPorts : undefined,
+        HostConfig: {
+          Binds: binds.length ? binds : undefined,
+          Mounts: environmentVolumeName ? [this.buildEnvironmentMount(environmentVolumeName)] : undefined,
+          PortBindings: Object.keys(portBindings).length ? portBindings : undefined,
+          AutoRemove: false,
+          RestartPolicy: {
+            Name: 'unless-stopped',
+          },
+          NetworkMode: network ? network : undefined,
+        },
+      });
+
+      if (environmentVolumeName) {
+        await this.writeEnvironmentOverlay(container, envMap);
+        this.cacheEnvironmentOverlay(container.id as unknown as string, envMap);
       }
 
-      return val;
-    };
-    const envArray = env
-      ? Object.entries(env).map(([key, value]) => {
-          const raw = value == null ? '' : escapeEnvValue(String(value));
-          const quoted = maybeQuote(raw);
+      // Start container
+      await container.start();
 
-          return `${key}=${quoted}`;
-        })
-      : undefined;
+      return container.id as unknown as string;
+    } catch (error) {
+      if (environmentVolumeName) {
+        await this.removeEnvironmentVolumeQuietly(environmentVolumeName);
+      }
 
-    // Create container
-    const container = await this.docker.createContainer({
-      Image: resolvedImage,
-      Env: envArray,
-      ExposedPorts: Object.keys(exposedPorts).length ? exposedPorts : undefined,
-      HostConfig: {
-        Binds: binds.length ? binds : undefined,
-        PortBindings: Object.keys(portBindings).length ? portBindings : undefined,
-        AutoRemove: false,
-        RestartPolicy: {
-          Name: 'unless-stopped',
-        },
-        NetworkMode: network ? network : undefined,
-      },
-    });
+      throw error;
+    }
+  }
 
-    // Start container
-    await container.start();
+  /**
+   * How {@link updateContainer} will apply environment changes to a container:
+   * - `restart`: the container mounts the managed environment volume and its image implements the
+   *   environment-mount contract, so the env file is rewritten and the container restarted in place
+   *   (same container ID, writable layer preserved).
+   * - `recreate`: legacy container (or custom image without the contract). It is recreated once;
+   *   if the image supports the contract it is migrated to the mounted environment.
+   * @throws NotFoundException if container is not found
+   */
+  async getEnvironmentApplyStrategy(containerId: string): Promise<EnvironmentApplyStrategy> {
+    const inspectInfo = await this.inspectContainerOrThrow(containerId);
 
-    return container.id as unknown as string;
+    return this.resolveEnvironmentApplyStrategy(inspectInfo);
   }
 
   /**
    * Update a Docker container's environment variables.
-   * Since Docker's update API doesn't support environment variables,
-   * this method recreates the container with updated environment variables.
+   * Containers using the managed environment volume are restarted in place (never deleted): the
+   * env file is rewritten and the entrypoint exports it on start. Legacy containers are recreated
+   * once and, when the image supports it, migrated to the managed environment volume.
    * @param containerId - The ID of the container to update
    * @param options - Options for updating the container
-   * @param options.env - New environment variables to set (will replace existing ones with the same keys)
-   * @returns The new container ID (since the container is recreated)
+   * @param options.env - Environment variables to set; `undefined` values remove the key
+   * @returns The container ID (unchanged on restart, new ID when the container was recreated)
    * @throws NotFoundException if container is not found
    */
   async updateContainer(
@@ -139,171 +179,19 @@ export class DockerService {
     },
   ): Promise<string> {
     const { env } = options;
-    // Map env object to KEY=VALUE strings as required by Docker API
-    // Escape special characters in the value to preserve intent (no quoting)
-    const escapeEnvValue = (val: string): string =>
-      val.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\t/g, '\\t');
-    const maybeQuote = (val: string): string => {
-      // Quote if contains whitespace or quotes
-      if (/\s|"|'/u.test(val)) {
-        const inner = val.replace(/"/g, '\\"');
-
-        return `"${inner}"`;
-      }
-
-      return val;
-    };
 
     try {
-      const container = this.docker.getContainer(containerId);
-      let inspectInfo: Docker.ContainerInspectInfo;
+      const inspectInfo = await this.inspectContainerOrThrow(containerId);
 
-      try {
-        inspectInfo = await container.inspect();
-      } catch (inspectError: unknown) {
-        const err = inspectError as { statusCode?: number };
-
-        if (err.statusCode === 404) {
-          throw new NotFoundException(`Container with ID '${containerId}' not found`);
-        }
-
-        throw inspectError;
+      if (this.resolveEnvironmentApplyStrategy(inspectInfo) === 'restart') {
+        return await this.withEnvironmentLock(inspectInfo.Id, () =>
+          this.restartWithUpdatedEnvironment(containerId, inspectInfo, env),
+        );
       }
 
-      // Get current environment variables
-      const currentEnvArray = inspectInfo.Config?.Env || [];
-      const currentEnvMap: Record<string, string> = {};
-
-      for (const envVar of currentEnvArray) {
-        const [key, ...valueParts] = envVar.split('=');
-
-        if (key) {
-          currentEnvMap[key] = valueParts.join('=');
-        }
-      }
-
-      // Merge new environment variables (new values override existing ones).
-      // Undefined values explicitly remove keys from the recreated container env.
-      const mergedEnv: Record<string, string | undefined> = { ...currentEnvMap };
-
-      if (env) {
-        for (const [key, value] of Object.entries(env)) {
-          if (value === undefined) {
-            delete mergedEnv[key];
-          } else {
-            mergedEnv[key] = value;
-          }
-        }
-      }
-
-      // Convert merged env to array format
-      const envArray = Object.entries(mergedEnv).map(([key, value]) => {
-        const raw = value == null ? '' : escapeEnvValue(String(value));
-        const quoted = maybeQuote(raw);
-
-        return `${key}=${quoted}`;
-      });
-      // Extract container configuration
-      const containerName = inspectInfo.Name.startsWith('/') ? inspectInfo.Name.slice(1) : inspectInfo.Name;
-      const image = inspectInfo.Config?.Image || inspectInfo.Image;
-      const hostConfig = inspectInfo.HostConfig || {};
-      const exposedPorts = inspectInfo.Config?.ExposedPorts || {};
-      const labels = inspectInfo.Config?.Labels || {};
-      const networkSettings = inspectInfo.NetworkSettings;
-      const mounts = inspectInfo.Mounts || [];
-
-      // Stop the container before removing it
-      try {
-        await container.stop();
-      } catch (stopError: unknown) {
-        const err = stopError as { statusCode?: number; message?: string };
-
-        // Ignore error if container is already stopped (304) or not found (404)
-        if (err.statusCode === 304 || err.statusCode === 404) {
-          // Container is already stopped or doesn't exist, continue with removal
-        } else {
-          // Propagate other errors
-          throw stopError;
-        }
-      }
-
-      // Remove the container
-      try {
-        await container.remove({ force: true });
-      } catch (removeError: unknown) {
-        const err = removeError as { statusCode?: number; message?: string };
-
-        if (err.statusCode === 404) {
-          throw new NotFoundException(`Container with ID '${containerId}' not found`);
-        }
-
-        throw removeError;
-      }
-
-      // Build volume binds from mounts
-      const binds = mounts
-        .map((mount) => {
-          if (mount.Type === 'bind' || mount.Type === 'volume') {
-            const readOnly = mount.RW === false ? ':ro' : '';
-
-            return `${mount.Source}:${mount.Destination}${readOnly}`;
-          }
-
-          return null;
-        })
-        .filter((bind): bind is string => bind !== null);
-      const hasWorkspaceContextBind = mounts.some(
-        (mount) =>
-          mount.Source === DockerService.WORKSPACE_CONTEXT_BIND_SOURCE &&
-          mount.Destination === DockerService.WORKSPACE_CONTEXT_BIND_TARGET,
+      return await this.withEnvironmentLock(inspectInfo.Id, () =>
+        this.recreateWithUpdatedEnvironment(containerId, inspectInfo, env),
       );
-
-      if (!hasWorkspaceContextBind) {
-        binds.push(`${DockerService.WORKSPACE_CONTEXT_BIND_SOURCE}:${DockerService.WORKSPACE_CONTEXT_BIND_TARGET}:ro`);
-      }
-
-      // Ensure the Docker image exists
-      await this.ensureImageExists(image);
-
-      // Recreate container with updated environment variables
-      const newContainer = await this.docker.createContainer({
-        name: containerName,
-        Image: image,
-        Env: envArray,
-        ExposedPorts: Object.keys(exposedPorts).length ? exposedPorts : undefined,
-        HostConfig: {
-          ...hostConfig,
-          Binds: binds.length ? binds : undefined,
-          AutoRemove: hostConfig.AutoRemove ?? false,
-        },
-        Labels: Object.keys(labels).length ? labels : undefined,
-      });
-      // Reconnect to networks if the container was connected to any
-      const networks = networkSettings?.Networks;
-
-      if (networks) {
-        for (const networkName of Object.keys(networks)) {
-          try {
-            const network = this.docker.getNetwork(networkName);
-
-            await network.connect({ Container: newContainer.id });
-          } catch (networkError: unknown) {
-            // Log but don't fail if network connection fails (network might not exist)
-            this.logger.warn(
-              `Failed to connect container to network ${networkName}: ${(networkError as Error).message}`,
-            );
-          }
-        }
-      }
-
-      // Start the new container
-      await newContainer.start();
-
-      const newContainerId = newContainer.id as unknown as string;
-
-      this.logger.log(`Successfully updated container ${containerId} (recreated as ${newContainerId})`);
-
-      return newContainerId;
     } catch (error: unknown) {
       if (error instanceof NotFoundException) {
         throw error;
@@ -316,21 +204,487 @@ export class DockerService {
     }
   }
 
+  /**
+   * Effective environment of a container as seen by its processes: `Config.Env` overlaid with the
+   * managed environment file (if mounted).
+   */
   async getContainerEnvironmentMap(containerId: string): Promise<Record<string, string>> {
     const container = this.docker.getContainer(containerId);
     const inspectInfo = await container.inspect();
-    const currentEnvArray = inspectInfo.Config?.Env || [];
-    const currentEnvMap: Record<string, string> = {};
+    const baseEnv = parseDockerEnvList(inspectInfo.Config?.Env);
 
-    for (const envVar of currentEnvArray) {
-      const [key, ...valueParts] = envVar.split('=');
+    if (!this.findEnvironmentMount(inspectInfo)) {
+      return baseEnv;
+    }
 
-      if (key) {
-        currentEnvMap[key] = valueParts.join('=');
+    const overlay = await this.readEnvironmentOverlay(container);
+
+    this.cacheEnvironmentOverlay(containerId, overlay);
+
+    return { ...baseEnv, ...overlay };
+  }
+
+  private async restartWithUpdatedEnvironment(
+    containerId: string,
+    inspectInfo: Docker.ContainerInspectInfo,
+    env: Record<string, string | undefined> | undefined,
+  ): Promise<string> {
+    const container = this.docker.getContainer(containerId);
+    const overlay = this.mergeEnvironment(await this.readEnvironmentOverlay(container), env);
+
+    this.invalidateEnvironmentOverlayCache(containerId);
+    await this.writeEnvironmentOverlay(container, overlay);
+    this.cacheEnvironmentOverlay(containerId, overlay);
+
+    try {
+      await container.restart();
+    } catch (error: unknown) {
+      const restartError = error as { statusCode?: number };
+
+      if (restartError.statusCode !== 409) {
+        throw error;
+      }
+
+      await container.start();
+    }
+
+    this.logger.log(`Applied environment update to container ${containerId} (restarted in place)`);
+
+    return containerId;
+  }
+
+  private async recreateWithUpdatedEnvironment(
+    containerId: string,
+    inspectInfo: Docker.ContainerInspectInfo,
+    env: Record<string, string | undefined> | undefined,
+  ): Promise<string> {
+    const container = this.docker.getContainer(containerId);
+    const existingEnvironmentMount = this.findEnvironmentMount(inspectInfo);
+    const existingOverlay = existingEnvironmentMount ? await this.readEnvironmentOverlay(container) : {};
+    // Existing Config.Env values are carried over verbatim (no re-encoding on every update).
+    const mergedEnv = this.mergeEnvironment(
+      { ...parseDockerEnvList(inspectInfo.Config?.Env), ...existingOverlay },
+      env,
+    );
+    const containerName = inspectInfo.Name.startsWith('/') ? inspectInfo.Name.slice(1) : inspectInfo.Name;
+    const image = inspectInfo.Config?.Image || inspectInfo.Image;
+    const hostConfig = inspectInfo.HostConfig || {};
+    const exposedPorts = inspectInfo.Config?.ExposedPorts || {};
+    const labels = inspectInfo.Config?.Labels || {};
+    const networkSettings = inspectInfo.NetworkSettings;
+    const mounts = inspectInfo.Mounts || [];
+
+    // Ensure the image exists before touching the current container.
+    await this.ensureImageExists(image);
+
+    const imageInfo = await this.docker.getImage(image).inspect();
+    const migrateToEnvironmentMount = this.labelsSupportEnvironmentMount(imageInfo.Config?.Labels);
+    let containerEnv: string[];
+    let overlay: Record<string, string> | undefined;
+
+    if (migrateToEnvironmentMount) {
+      // Image defaults stay in Config.Env; everything else moves into the managed env file.
+      const imageEnv = parseDockerEnvList(imageInfo.Config?.Env);
+
+      const migratedOverlay = Object.fromEntries(
+        Object.entries(mergedEnv).filter(([key, value]) => imageEnv[key] !== value),
+      );
+
+      overlay = migratedOverlay;
+      containerEnv = toDockerEnvList(
+        Object.fromEntries(Object.entries(imageEnv).filter(([key]) => key in mergedEnv && !(key in migratedOverlay))),
+      );
+    } else {
+      containerEnv = toDockerEnvList(mergedEnv);
+    }
+
+    const otherMounts = ((hostConfig as { Mounts?: Docker.MountSettings[] }).Mounts ?? []).filter(
+      (mount) => mount.Target !== AGENT_ENVIRONMENT_MOUNT_TARGET,
+    );
+    const mountTargets = new Set([AGENT_ENVIRONMENT_MOUNT_TARGET, ...otherMounts.map((mount) => mount.Target)]);
+    // Build volume binds from mounts; entries declared via HostConfig.Mounts (incl. the managed
+    // environment volume) are re-attached through Mounts to avoid duplicate mount points.
+    const binds = mounts
+      .map((mount) => {
+        if (mountTargets.has(mount.Destination)) {
+          return null;
+        }
+
+        if (mount.Type === 'bind' || mount.Type === 'volume') {
+          const source = mount.Type === 'volume' && mount.Name ? mount.Name : mount.Source;
+          const readOnly = mount.RW === false ? ':ro' : '';
+
+          return `${source}:${mount.Destination}${readOnly}`;
+        }
+
+        return null;
+      })
+      .filter((bind): bind is string => bind !== null);
+    const hasWorkspaceContextBind = mounts.some(
+      (mount) =>
+        mount.Source === DockerService.WORKSPACE_CONTEXT_BIND_SOURCE &&
+        mount.Destination === DockerService.WORKSPACE_CONTEXT_BIND_TARGET,
+    );
+
+    if (!hasWorkspaceContextBind) {
+      binds.push(`${DockerService.WORKSPACE_CONTEXT_BIND_SOURCE}:${DockerService.WORKSPACE_CONTEXT_BIND_TARGET}:ro`);
+    }
+
+    const reusedVolumeName = existingEnvironmentMount?.Name;
+    const environmentVolumeName = migrateToEnvironmentMount
+      ? (reusedVolumeName ?? (await this.createEnvironmentVolume()))
+      : undefined;
+    const hostMounts = environmentVolumeName
+      ? [...otherMounts, this.buildEnvironmentMount(environmentVolumeName)]
+      : otherMounts;
+    let newContainer: Docker.Container | undefined;
+    let previousStopped = false;
+
+    try {
+      // Create the replacement (unnamed) and seed its env file before the old container is removed,
+      // so a failure here leaves the current container untouched.
+      newContainer = await this.docker.createContainer({
+        Image: image,
+        Env: containerEnv,
+        ExposedPorts: Object.keys(exposedPorts).length ? exposedPorts : undefined,
+        HostConfig: {
+          ...hostConfig,
+          Binds: binds.length ? binds : undefined,
+          Mounts: hostMounts.length ? hostMounts : undefined,
+          AutoRemove: hostConfig.AutoRemove ?? false,
+        },
+        Labels: Object.keys(labels).length ? labels : undefined,
+      });
+
+      if (overlay) {
+        await this.writeEnvironmentOverlay(newContainer, overlay);
+      }
+
+      // Stop and remove the current container; already stopped (304) / gone (404) is fine.
+      try {
+        await container.stop();
+        previousStopped = inspectInfo.State?.Running === true;
+      } catch (stopError: unknown) {
+        const err = stopError as { statusCode?: number };
+
+        if (err.statusCode !== 304 && err.statusCode !== 404) {
+          throw stopError;
+        }
+      }
+
+      try {
+        await container.remove({ force: true });
+      } catch (removeError: unknown) {
+        const err = removeError as { statusCode?: number };
+
+        if (err.statusCode !== 404) {
+          throw removeError;
+        }
+      }
+    } catch (error) {
+      // The current container is still in place (or already gone): discard the unused replacement.
+      if (previousStopped) {
+        await container.start().catch(() => undefined);
+      }
+
+      if (newContainer) {
+        await newContainer.remove({ force: true }).catch(() => undefined);
+      }
+
+      if (environmentVolumeName && environmentVolumeName !== reusedVolumeName) {
+        await this.removeEnvironmentVolumeQuietly(environmentVolumeName);
+      }
+
+      throw error;
+    }
+
+    this.invalidateEnvironmentOverlayCache(containerId);
+
+    if (existingEnvironmentMount?.Name && existingEnvironmentMount.Name !== environmentVolumeName) {
+      await this.removeEnvironmentVolumeQuietly(existingEnvironmentMount.Name);
+    }
+
+    await newContainer.rename({ name: containerName });
+
+    // Reconnect to networks if the container was connected to any
+    const networks = networkSettings?.Networks;
+
+    if (networks) {
+      for (const networkName of Object.keys(networks)) {
+        try {
+          const network = this.docker.getNetwork(networkName);
+
+          await network.connect({ Container: newContainer.id });
+        } catch (networkError: unknown) {
+          // Log but don't fail if network connection fails (network might not exist)
+          this.logger.warn(`Failed to connect container to network ${networkName}: ${(networkError as Error).message}`);
+        }
       }
     }
 
-    return currentEnvMap;
+    // Start the new container
+    await newContainer.start();
+
+    const newContainerId = newContainer.id as unknown as string;
+
+    if (overlay) {
+      this.cacheEnvironmentOverlay(newContainerId, overlay);
+    }
+
+    this.logger.log(
+      `Successfully updated container ${containerId} (recreated as ${newContainerId}${
+        migrateToEnvironmentMount ? ', migrated to managed environment volume' : ''
+      })`,
+    );
+
+    return newContainerId;
+  }
+
+  private async inspectContainerOrThrow(containerId: string): Promise<Docker.ContainerInspectInfo> {
+    try {
+      return await this.docker.getContainer(containerId).inspect();
+    } catch (inspectError: unknown) {
+      const err = inspectError as { statusCode?: number };
+
+      if (err.statusCode === 404) {
+        throw new NotFoundException(`Container with ID '${containerId}' not found`);
+      }
+
+      throw inspectError;
+    }
+  }
+
+  private resolveEnvironmentApplyStrategy(inspectInfo: Docker.ContainerInspectInfo): EnvironmentApplyStrategy {
+    return this.labelsSupportEnvironmentMount(inspectInfo.Config?.Labels) && this.findEnvironmentMount(inspectInfo)
+      ? 'restart'
+      : 'recreate';
+  }
+
+  private labelsSupportEnvironmentMount(labels: Record<string, string> | null | undefined): boolean {
+    return labels?.[AGENT_ENVIRONMENT_IMAGE_LABEL] === AGENT_ENVIRONMENT_IMAGE_LABEL_VERSION;
+  }
+
+  private async imageSupportsEnvironmentMount(image: string): Promise<boolean> {
+    try {
+      const imageInfo = await this.docker.getImage(image).inspect();
+
+      return this.labelsSupportEnvironmentMount(imageInfo.Config?.Labels);
+    } catch (error: unknown) {
+      this.logger.warn(`Failed to inspect image ${image} for environment mount support: ${(error as Error).message}`);
+
+      return false;
+    }
+  }
+
+  private findEnvironmentMount(
+    inspectInfo: Pick<Docker.ContainerInspectInfo, 'Mounts'>,
+  ): Docker.ContainerInspectInfo['Mounts'][number] | undefined {
+    return (inspectInfo.Mounts ?? []).find(
+      (mount) => mount.Type === 'volume' && mount.Destination === AGENT_ENVIRONMENT_MOUNT_TARGET && !!mount.Name,
+    );
+  }
+
+  private buildEnvironmentMount(volumeName: string): Docker.MountSettings {
+    // Writable so the manager can putArchive into it; the image keeps the directory root-only (0700)
+    // and the file is written root-owned 0600, so the unprivileged agent user cannot read or modify it.
+    return { Type: 'volume', Source: volumeName, Target: AGENT_ENVIRONMENT_MOUNT_TARGET, ReadOnly: false };
+  }
+
+  private async createEnvironmentVolume(): Promise<string> {
+    const name = `${AGENT_ENVIRONMENT_VOLUME_PREFIX}${uuidv4()}`;
+
+    await this.docker.createVolume({ Name: name, Labels: { [AGENT_ENVIRONMENT_VOLUME_LABEL]: 'true' } });
+
+    return name;
+  }
+
+  private async removeEnvironmentVolumeQuietly(volumeName: string): Promise<void> {
+    if (!volumeName.startsWith(AGENT_ENVIRONMENT_VOLUME_PREFIX)) {
+      return;
+    }
+
+    try {
+      await this.docker.getVolume(volumeName).remove();
+    } catch (error: unknown) {
+      const err = error as { statusCode?: number; message?: string };
+
+      if (err.statusCode !== 404) {
+        this.logger.warn(`Failed to remove environment volume ${volumeName}: ${err.message}`);
+      }
+    }
+  }
+
+  /**
+   * Drop entries that cannot be represented safely (invalid names, NUL in values) instead of failing
+   * the whole update; the worker entrypoint would ignore them anyway.
+   */
+  private sanitizeEnvironment(env: Record<string, string>): Record<string, string> {
+    const sanitized: Record<string, string> = {};
+
+    for (const [key, value] of Object.entries(env)) {
+      try {
+        assertValidEnvironmentVariableName(key);
+      } catch {
+        this.logger.warn('Skipping environment variable with an invalid name');
+        continue;
+      }
+
+      if (value.includes('\0')) {
+        this.logger.warn(`Skipping environment variable ${key}: value contains a NUL character`);
+        continue;
+      }
+
+      sanitized[key] = value;
+    }
+
+    return sanitized;
+  }
+
+  private mergeEnvironment(
+    current: Record<string, string>,
+    changes: Record<string, string | undefined> | undefined,
+  ): Record<string, string> {
+    const merged: Record<string, string> = { ...current };
+
+    for (const [key, value] of Object.entries(changes ?? {})) {
+      if (value === undefined) {
+        delete merged[key];
+      } else {
+        merged[key] = value == null ? '' : String(value);
+      }
+    }
+
+    return this.sanitizeEnvironment(merged);
+  }
+
+  private async readEnvironmentOverlay(container: Docker.Container): Promise<Record<string, string>> {
+    let archiveStream: NodeJS.ReadableStream;
+
+    try {
+      archiveStream = await container.getArchive({ path: AGENT_ENVIRONMENT_FILE_PATH });
+    } catch (error: unknown) {
+      if ((error as { statusCode?: number }).statusCode === 404) {
+        return {};
+      }
+
+      throw error;
+    }
+
+    const archive = await this.readStreamWithLimit(archiveStream, AGENT_ENVIRONMENT_FILE_MAX_BYTES + 64 * 1024);
+
+    return parseEnvironmentFile(extractFirstFileFromTar(archive));
+  }
+
+  private async writeEnvironmentOverlay(container: Docker.Container, env: Record<string, string>): Promise<void> {
+    const content = serializeEnvironmentFile(env);
+
+    if (content.length > AGENT_ENVIRONMENT_FILE_MAX_BYTES) {
+      throw new Error(`Agent environment exceeds ${AGENT_ENVIRONMENT_FILE_MAX_BYTES} bytes`);
+    }
+
+    await container.putArchive(buildSingleFileTar(AGENT_ENVIRONMENT_FILE_NAME, content), {
+      path: AGENT_ENVIRONMENT_MOUNT_TARGET,
+    });
+  }
+
+  private readStreamWithLimit(stream: NodeJS.ReadableStream, maxBytes: number): Promise<Buffer> {
+    return new Promise<Buffer>((resolve, reject) => {
+      const chunks: Buffer[] = [];
+      let total = 0;
+      let settled = false;
+      const fail = (error: Error) => {
+        if (!settled) {
+          settled = true;
+          (stream as NodeJS.ReadableStream & { destroy?: () => void }).destroy?.();
+          reject(error);
+        }
+      };
+
+      stream.on('data', (chunk: Buffer | string) => {
+        const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+
+        total += buffer.length;
+
+        if (total > maxBytes) {
+          fail(new Error(`Archive exceeds ${maxBytes} bytes`));
+
+          return;
+        }
+
+        chunks.push(buffer);
+      });
+      stream.on('error', (error: Error) => fail(error));
+      stream.on('end', () => {
+        if (!settled) {
+          settled = true;
+          resolve(Buffer.concat(chunks));
+        }
+      });
+    });
+  }
+
+  private cacheEnvironmentOverlay(containerId: string, env: Record<string, string> | null): void {
+    this.environmentOverlayCache.set(containerId, {
+      env,
+      expiresAt: Date.now() + DockerService.ENVIRONMENT_OVERLAY_CACHE_TTL_MS,
+    });
+  }
+
+  private invalidateEnvironmentOverlayCache(containerId: string): void {
+    for (const key of this.environmentOverlayCache.keys()) {
+      if (key === containerId || key.startsWith(containerId) || containerId.startsWith(key)) {
+        this.environmentOverlayCache.delete(key);
+      }
+    }
+  }
+
+  /**
+   * `docker exec` only inherits `Config.Env`, so processes spawned via exec receive the managed
+   * environment explicitly (passed via exec `Env`, never via argv).
+   */
+  private async getExecEnvironmentOptions(containerId: string, user?: string): Promise<{ Env?: string[] }> {
+    if (!user || user === '0') {
+      return {};
+    }
+
+    try {
+      const cached = this.environmentOverlayCache.get(containerId);
+      let overlay: Record<string, string> | null;
+
+      if (cached && cached.expiresAt > Date.now()) {
+        overlay = cached.env;
+      } else {
+        const container = this.docker.getContainer(containerId);
+        const inspectInfo = await container.inspect();
+
+        overlay = this.findEnvironmentMount(inspectInfo) ? await this.readEnvironmentOverlay(container) : null;
+        this.cacheEnvironmentOverlay(containerId, overlay);
+      }
+
+      return overlay && Object.keys(overlay).length > 0 ? { Env: toDockerEnvList(overlay) } : {};
+    } catch (error: unknown) {
+      this.logger.debug(
+        `Could not resolve managed environment for exec in ${containerId}: ${(error as Error).message}`,
+      );
+
+      return {};
+    }
+  }
+
+  private async withEnvironmentLock<T>(containerId: string, task: () => Promise<T>): Promise<T> {
+    const previous = this.environmentLocks.get(containerId) ?? Promise.resolve();
+    const run = previous.catch(() => undefined).then(task);
+    const tail = run.catch(() => undefined);
+
+    this.environmentLocks.set(containerId, tail);
+
+    try {
+      return await run;
+    } finally {
+      if (this.environmentLocks.get(containerId) === tail) {
+        this.environmentLocks.delete(containerId);
+      }
+    }
   }
 
   /**
@@ -381,12 +735,8 @@ export class DockerService {
         // If container doesn't exist (404), consider it already deleted
         if (removeError.statusCode === 404) {
           this.logger.debug(`Container ${containerId} was already removed`);
-
-          return;
-        }
-
-        // If container is still running (409), try force removal
-        if (removeError.statusCode === 409) {
+        } else if (removeError.statusCode === 409) {
+          // If container is still running (409), try force removal
           this.logger.warn(`Container ${containerId} is still running, attempting force removal`);
 
           try {
@@ -403,6 +753,14 @@ export class DockerService {
           this.logger.error(`Failed to remove container ${containerId}: ${err.message}`, err.stack);
           throw error;
         }
+      }
+
+      this.invalidateEnvironmentOverlayCache(containerId);
+
+      const environmentVolumeName = this.findEnvironmentMount(containerInfo)?.Name;
+
+      if (environmentVolumeName) {
+        await this.removeEnvironmentVolumeQuietly(environmentVolumeName);
       }
     } catch (error: unknown) {
       if (error instanceof NotFoundException) {
@@ -983,6 +1341,7 @@ export class DockerService {
       // Create exec instance with stdin enabled for keystrokes.
       // Optional User (e.g. '0') runs as that container UID — used for absolute paths outside /app.
       const execInstance = await container.exec({
+        ...(await this.getExecEnvironmentOptions(containerId, options?.user)),
         Cmd: [executable, ...args],
         AttachStdin: true,
         AttachStdout: true,
@@ -1205,11 +1564,13 @@ export class DockerService {
     }
 
     const execInstance = await container.exec({
+      ...(await this.getExecEnvironmentOptions(containerId, 'agenstra')),
       Cmd: command,
       AttachStdin: false,
       AttachStdout: true,
       AttachStderr: true,
       Tty: false,
+      User: 'agenstra',
     });
     const stream = (await execInstance.start({
       hijack: true,
@@ -1313,11 +1674,13 @@ export class DockerService {
     const executable = commandParts[0];
     const args = commandParts.slice(1);
     const execInstance = await container.exec({
+      ...(await this.getExecEnvironmentOptions(containerId, 'agenstra')),
       Cmd: [executable, ...args],
       AttachStdin: true,
       AttachStdout: true,
       AttachStderr: true,
       Tty: false,
+      User: 'agenstra',
     });
     const stream = (await execInstance.start({
       hijack: true,
@@ -1438,11 +1801,13 @@ export class DockerService {
       const safePath = `'${escapedPath}'`;
       // Create exec instance to read file
       const exec = await container.exec({
+        ...(await this.getExecEnvironmentOptions(containerId, 'agenstra')),
         Cmd: ['sh', '-c', `cat ${safePath}`],
         AttachStdin: false,
         AttachStdout: true,
         AttachStderr: true,
         Tty: false,
+        User: 'agenstra',
       });
       // Start the exec
       const stream = (await exec.start({
@@ -1570,11 +1935,13 @@ export class DockerService {
       }
 
       const exec = await container.exec({
+        ...(await this.getExecEnvironmentOptions(containerId, 'agenstra')),
         Cmd: ['sh', '-c', 'printf %s "${HOME:-/home/agenstra}"'],
         AttachStdin: false,
         AttachStdout: true,
         AttachStderr: true,
         Tty: false,
+        User: 'agenstra',
       });
       const stream = (await exec.start({
         hijack: true,
@@ -1666,11 +2033,13 @@ export class DockerService {
     const executable = commandParts[0];
     const args = commandParts.slice(1);
     const execInstance = await container.exec({
+      ...(await this.getExecEnvironmentOptions(containerId, 'agenstra')),
       Cmd: [executable, ...args],
       AttachStdin: true,
       AttachStdout: true,
       AttachStderr: true,
       Tty: false,
+      User: 'agenstra',
     });
     const stream = (await execInstance.start({
       hijack: true,
