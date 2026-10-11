@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.2.0](https://github.com/forepath/one/compare/v3.1.0...v3.2.0) (2026-10-11)
+
+
+### Features
+
+* **agenstra:** live agent environment updates ([#666](https://github.com/forepath/one/issues/666)) ([ab9ad35](https://github.com/forepath/one/commit/ab9ad35eeb90927e323be6bc1e0312c94f495111))
+* **agenstra:** plan mode ([#656](https://github.com/forepath/one/issues/656)) ([94c32ae](https://github.com/forepath/one/commit/94c32aef66aca38f984ce9df5a2366138d9cc88f))
+
+
+### Bug Fixes
+
+* **agenstra:** output chat message timestamps with date ([#669](https://github.com/forepath/one/issues/669)) ([9de06d5](https://github.com/forepath/one/commit/9de06d594c226458d28597a55b8f2cb3e7bdea45))
+
+
+### Continuous Integration
+
+* speed up environment setup ([#650](https://github.com/forepath/one/issues/650)) ([01db5ac](https://github.com/forepath/one/commit/01db5ace6370fed47a273e90616dee0b4596288b))
+
 ## [3.1.0](https://github.com/forepath/one/compare/v3.0.0...v3.1.0) (2026-10-09)
 
 
