@@ -11,10 +11,12 @@ import {
 import {
   selectChatEnhancementLastResult,
   selectChatEnhancementPending,
+  selectChatPlanBusyForSelectedChat,
   selectChatTimelineError,
   selectChatTimelineEvents,
   selectChatTimelineMessages,
   selectChatTimelineOrdered,
+  selectChatTimelinePlans,
   selectHasMoreOlder,
   selectLoadingInitial,
   selectLoadingOlder,
@@ -29,6 +31,7 @@ import type {
   ChatTimelineEventRow,
   ChatTimelineFilterResult,
   ChatTimelineMessageRow,
+  ChatTimelinePlanRow,
 } from './chat-timeline.types';
 
 @Injectable({
@@ -42,6 +45,8 @@ export class ChatTimelineFacade {
   readonly events$: Observable<ChatTimelineEventRow[]> = this.store.select(selectChatTimelineEvents);
   readonly messageFilterResults$: Observable<ChatTimelineFilterResult[]> =
     this.store.select(selectMessageFilterResults);
+  readonly plans$: Observable<ChatTimelinePlanRow[]> = this.store.select(selectChatTimelinePlans);
+  readonly chatPlanBusy$: Observable<boolean> = this.store.select(selectChatPlanBusyForSelectedChat);
   readonly hasMoreOlder$: Observable<boolean> = this.store.select(selectHasMoreOlder);
   readonly oldestMessageId$: Observable<string | null> = this.store.select(selectOldestMessageId);
   readonly loadingInitial$: Observable<boolean> = this.store.select(selectLoadingInitial);

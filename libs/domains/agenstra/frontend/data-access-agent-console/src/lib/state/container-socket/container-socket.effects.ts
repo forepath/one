@@ -32,6 +32,7 @@ import {
   chatTimelineEventReceived,
   chatTimelineFilterReceived,
   chatTimelineMessageReceived,
+  chatTimelinePlanUpsert,
   chatTimelineRestoreSuccess,
   chatTimelineTicketBodyResult,
 } from '../chat-timeline/chat-timeline.actions';
@@ -50,6 +51,7 @@ import {
   CLIENT_CHAT_AUTOMATION_SOCKET_EVENT,
   CLIENT_CHAT_TICKET_UPSERT_SOCKET_EVENT,
 } from './client-chat-automation.constants';
+import { CLIENT_CHAT_PLAN_SOCKET_EVENT } from './client-chat-plan.constants';
 import {
   connectSocket,
   connectSocketFailure,
@@ -79,6 +81,7 @@ import {
   type ChatEnhanceResultPayload,
   type ChatMessageBatchData,
   type ChatMessageData,
+  type ChatPlanChatEventPayload,
   type FileUpdateNotificationData,
   type ForwardedEventPayload,
   type MessageFilterResultData,
@@ -654,6 +657,10 @@ export const routeForwardedEvents$ = createEffect(
 
         if (event === CLIENT_CHAT_AUTOMATION_SOCKET_EVENT && payload && typeof payload === 'object') {
           routed.push(chatTimelineAutomationUpsert({ payload: payload as TicketAutomationRunChatEventPayload }));
+        }
+
+        if (event === CLIENT_CHAT_PLAN_SOCKET_EVENT && payload && typeof payload === 'object') {
+          routed.push(chatTimelinePlanUpsert({ payload: payload as ChatPlanChatEventPayload }));
         }
 
         return from(routed);

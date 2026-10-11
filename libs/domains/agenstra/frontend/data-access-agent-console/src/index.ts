@@ -199,6 +199,7 @@ export * from './lib/state/knowledge/knowledge.reducer';
 export * from './lib/state/knowledge/knowledge.selectors';
 export * from './lib/state/knowledge/knowledge.types';
 export * from './lib/state/container-socket/client-chat-automation.constants';
+export * from './lib/state/container-socket/client-chat-plan.constants';
 export * from './lib/state/container-socket/container-socket.actions';
 export * from './lib/state/container-socket/container-socket.effects';
 export * from './lib/state/container-socket/container-socket.facade';

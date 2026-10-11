@@ -2,11 +2,14 @@ import { Injectable, Logger, Optional } from '@nestjs/common';
 import {
   AGENSTRA_AUTOMATION_AGENT_NAME,
   AGENSTRA_AUTOMATION_TURN_STATUS_SCHEMA,
+  isAgenstraPlanExplorePermission,
+  isAgenstraPlanWritePermission,
   parseAgenstraAutomationTurnStatus,
   type AgenstraAutomationTurnStatus,
 } from '@forepath/agenstra/shared/util-opencode-config';
 
 import {
+  isChatPlanResumeSessionSuffix,
   isTicketAutomationLoopResumeSessionSuffix,
   isTicketAutomationResumeSessionSuffix,
 } from '../../constants/chat-session.constants';
@@ -285,6 +288,50 @@ export class OpenCodeRuntimeService {
     void run();
   }
 
+  private extractPermissionType(obj: AgentResponseObject): string | undefined {
+    const result = obj.result;
+
+    if (result && typeof result === 'object' && 'permissionType' in result) {
+      const permissionType = (result as { permissionType?: unknown }).permissionType;
+
+      return typeof permissionType === 'string' ? permissionType : undefined;
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Plan sessions: auto-allow explore permissions, reject write/mutation (and unknown) asks.
+   * Non-permission questions are rejected so the explore turn cannot stall on interactive forms.
+   */
+  private autoReplyPlanInteraction(
+    key: OpenCodeSessionKey,
+    questionId: string,
+    kind: PendingInteractionKind,
+    permissionType: string | undefined,
+  ): void {
+    const run = async (): Promise<void> => {
+      try {
+        if (kind === 'permission') {
+          const reply: PermissionReply =
+            isAgenstraPlanExplorePermission(permissionType) && !isAgenstraPlanWritePermission(permissionType)
+              ? 'always'
+              : 'reject';
+
+          await this.replyPermission(key.agentId, key.containerId, questionId, reply);
+        } else {
+          await this.replyQuestion(key.agentId, key.containerId, questionId, undefined, true);
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+
+        this.logger.warn(`Plan auto-reply failed for ${kind} ${questionId} on agent ${key.agentId}: ${message}`);
+      }
+    };
+
+    void run();
+  }
+
   private async *promptAndDrain(
     key: OpenCodeSessionKey,
     message: string,
@@ -300,6 +347,7 @@ export class OpenCodeRuntimeService {
     let automationTurnStatus: AgenstraAutomationTurnStatus | undefined;
     const automationSession = isTicketAutomationResumeSessionSuffix(key.resumeSessionSuffix);
     const automationLoop = isTicketAutomationLoopResumeSessionSuffix(key.resumeSessionSuffix);
+    const planSession = isChatPlanResumeSessionSuffix(key.resumeSessionSuffix);
 
     const queue: AgentResponseObject[] = [];
     const notify = (() => {
@@ -331,6 +379,8 @@ export class OpenCodeRuntimeService {
 
               if (automationSession) {
                 this.autoReplyAutomationInteraction(key, obj.questionId, kind);
+              } else if (planSession) {
+                this.autoReplyPlanInteraction(key, obj.questionId, kind, this.extractPermissionType(obj));
               }
             }
 

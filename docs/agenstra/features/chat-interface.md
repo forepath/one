@@ -25,11 +25,13 @@ Background and helper flows use reserved ACP `resumeSessionSuffix` values. Those
 - `-prompt-enhance`
 - `-ticket-body`
 - `-ticket-auto-*` (for example `-ticket-auto-pre`, `-ticket-auto-loop`, `-ticket-auto-commit-msg`)
+- `-plan-{planId}` (chat plan mode explore/refine; explore-only permissions)
 
-See [Agent Client Protocol](../ai-agents/agent-client-protocol.md) for suffix rules.
+See [Agent Client Protocol](../ai-agents/agent-client-protocol.md) for suffix rules and [Chat plan mode](./chat-plan-mode.md) for the plan-mode product flow.
 
 Ticket automation **run cards** in the chat timeline are environment-scoped ACP work, but the console shows those embeddings on the **primary chat session only**. Side (`user`) sessions show that session’s messages without automation cards.
 
+**Chat plan cards** are scoped to the **visible chat** that created them (`plan.chatId`): they appear on primary or user sessions accordingly, and survive hard reload via hydrate.
 Unread badges in the chat session dropdown follow the same rule: each visible session has its own unread flag (shown even when that session is selected); automation activity only marks the primary session unread. Selecting a session marks that session read. The dropdown toggle shows a badge when any visible session for the environment has unread.
 
 ### REST API
@@ -61,6 +63,7 @@ On the manager, the same operations live under `/api/agents/:agentId/chats`.
 - View chat history per session
 - Markdown rendering
 - Code block syntax highlighting
+- Create **chat plans** from the composer prompt, inspect their timeline cards, refine them in a detail modal, and execute the approved plan back into the visible chat
 
 ### Message Types
 
@@ -109,9 +112,11 @@ Known OpenCode tools (`bash`, `read`, `glob`, `grep`, `edit`, `write`, `apply_pa
 ### Sending a Message
 
 1. Type your message in the input field
-2. Press Enter or click Send
-3. Message is sent to the agent via WebSocket (`forward` → `chat`, with the active `chatId` when applicable)
-4. Response is received and displayed
+2. Optional: add **Select context** references (workspace, environments, tickets, knowledge) or use **Enhance prompt with AI**
+3. Optional: use **Create plan with AI** to open the explore/refine plan workflow for the current prompt and selected context
+4. Press Enter or click Send
+5. Message is sent to the agent via WebSocket (`forward` → `chat`, with the active `chatId` when applicable)
+6. Response is received and displayed
 
 ### Viewing History
 

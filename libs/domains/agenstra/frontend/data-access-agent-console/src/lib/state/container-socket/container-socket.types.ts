@@ -452,6 +452,94 @@ export interface ContainerStatsPayload {
   timestamp: string;
 }
 
+/** Chat plan lifecycle status (mirrors backend `ChatPlanStatus`). */
+export type ChatPlanStatus =
+  | 'pending'
+  | 'exploring'
+  | 'ready'
+  | 'refining'
+  | 'executing'
+  | 'executed'
+  | 'failed'
+  | 'cancelled';
+
+/** Coarse chat plan phase for UI badges (mirrors backend `ChatPlanPhase`). */
+export type ChatPlanPhase = 'explore' | 'draft' | 'refine' | 'ready';
+
+/** REST / WS plan aggregate (dates are ISO-8601 strings on the wire). */
+export interface ChatPlanResponse {
+  id: string;
+  clientId: string;
+  agentId: string;
+  chatId: string;
+  status: ChatPlanStatus;
+  phase: ChatPlanPhase;
+  sourcePrompt: string;
+  planMarkdown: string | null;
+  summary: string | null;
+  contextInjection: ContextInjectionPayload | null;
+  model: string | null;
+  resumeSessionSuffix: string;
+  completionSignalSeen: boolean;
+  failureCode: string | null;
+  failureMessage: string | null;
+  createdByUserId: string | null;
+  startedAt: string;
+  finishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ChatPlanChatActionType = 'openChatPlan' | 'executeChatPlan' | 'retryChatPlan' | 'cancelChatPlan';
+
+export interface ChatPlanChatOpenAction {
+  type: 'openChatPlan';
+  planId: string;
+  chatId: string;
+  label: string;
+}
+
+export interface ChatPlanChatExecuteAction {
+  type: 'executeChatPlan';
+  planId: string;
+  chatId: string;
+  label: string;
+}
+
+export interface ChatPlanChatRetryAction {
+  type: 'retryChatPlan';
+  planId: string;
+  chatId: string;
+  label: string;
+}
+
+export interface ChatPlanChatCancelAction {
+  type: 'cancelChatPlan';
+  planId: string;
+  chatId: string;
+  label: string;
+}
+
+export type ChatPlanChatAction =
+  | ChatPlanChatOpenAction
+  | ChatPlanChatExecuteAction
+  | ChatPlanChatRetryAction
+  | ChatPlanChatCancelAction;
+
+export interface ChatPlanLiveTimelineEvent {
+  payload: unknown;
+  timestamp: number;
+}
+
+/** Controller-originated `chatPlanUpsert` payload (clients namespace). */
+export interface ChatPlanChatEventPayload {
+  timelineAt: string;
+  hydrate: boolean;
+  plan: ChatPlanResponse;
+  actions: ChatPlanChatAction[];
+  timelineEvents?: ChatPlanLiveTimelineEvent[];
+}
+
 /** Controller-originated `ticketAutomationRunChatUpsert` payload (clients namespace). */
 export interface TicketAutomationRunChatTicketSummary {
   id: string;
@@ -514,4 +602,5 @@ export type ForwardedEventPayload =
   | SuccessResponse<ContainerStatsPayload> // containerStats
   | SuccessResponse<AgentEventEnvelope> // chatEvent
   | TicketAutomationRunChatEventPayload // ticketAutomationRunChatUpsert
+  | ChatPlanChatEventPayload // chatPlanUpsert
   | ErrorResponse; // error

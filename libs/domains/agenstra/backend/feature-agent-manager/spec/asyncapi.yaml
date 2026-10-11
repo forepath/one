@@ -41,9 +41,12 @@ channels:
         $ref: '#/components/messages/Chat'
     description: |
       Client sends a chat message (requires prior login). Payload may include `responseMode` "single" | "stream" | "sync",
-      `ephemeral` (skip `agent_messages` persistence for the turn), `continue`, `resumeSessionSuffix`, `chatId`, `correlationId`, `model`.
+      `ephemeral` (skip `agent_messages` persistence for the turn), `suppressUserMessage` (send to agent but hide the user
+      bubble; used by chat-plan execute), `continue`, `resumeSessionSuffix`, `chatId`, `correlationId`, `model`.
       When `chatId` is set (and `resumeSessionSuffix` is not a reserved hidden ACP suffix), messages and events persist and
       emit under that user-visible chat session; otherwise the primary session is used.
+      Reserved hidden suffixes include `-prompt-enhance`, `-ticket-body`, `-ticket-auto-*`, and `-plan-{planId}` (explore-only
+      permissions; not automation allow-all). Those sessions are ephemeral/hidden and do not persist into `agent_messages`.
       When `ephemeral` is true, `chatMessage`, `chatEvent`, and `messageFilterResult` for that turn are emitted only to the
       requesting socket (not broadcast to other clients on the same agent). Otherwise those events are broadcast to every
       socket authenticated to the agent. The gateway forwards options to `sendMessage` as implemented in code.
@@ -550,6 +553,12 @@ components:
             description: >
               When true, skips persisting user and assistant messages for this turn and emits chatMessage, chatEvent, and
               messageFilterResult for this turn only to the requesting socket (no fan-out to other viewers on the agent).
+          suppressUserMessage:
+            type: boolean
+            description: >
+              When true, the user prompt is still sent to the agent but is not persisted or emitted as a user chatMessage
+              / userMessage chatEvent. Assistant traffic still follows `ephemeral`. Used by chat-plan execute so the
+              injected plan prompt stays out of the visible thread while agent work appears in chat.
           continue:
             type: boolean
             description: Optional continuation flag forwarded to the agent sendMessage flow.
@@ -560,7 +569,9 @@ components:
             type: string
             description: >
               Optional user-visible chat session id. When omitted, the primary session is used.
-              Ignored when resumeSessionSuffix is a reserved hidden ACP suffix (prompt enhance, ticket body, automation).
+              Ignored when resumeSessionSuffix is a reserved hidden ACP suffix
+              (prompt enhance, ticket body, automation `-ticket-auto-*`, or plan `-plan-{planId}`).
+              Plan suffixes use explore-only session permissions (deny writes); automation suffixes use allow-all.
           contextInjection:
             type: object
             description: >

@@ -1,0 +1,23 @@
+sequenceDiagram
+  participant UI as AgentConsole
+  participant CG as ClientsGateway
+  participant PS as ChatPlanOrchestrator
+  participant DB as ControllerDB
+  participant RA as RemoteAgentsSession
+  participant AM as AgentManager_OpenCode
+
+  UI->>CG: createChatPlan(chatId,prompt,model,contextInjection)
+  CG->>DB: insert chat_plan exploring
+  CG-->>UI: chatPlanUpsert
+  CG->>PS: startExplore(planId)
+  PS->>RA: stream hidden -plan-uuid + contextInjection
+  RA->>AM: chat ephemeral reserved suffix
+  AM-->>RA: assistant deltas / turn status
+  RA-->>PS: onDelta / onComplete
+  PS->>DB: update planMarkdown status
+  PS-->>UI: chatPlanUpsert throttled
+  UI->>CG: refineChatPlan(planId,message)
+  PS->>RA: continue same suffix
+  UI->>CG: executeChatPlan(planId)
+  PS->>AM: visible chat + suppressUserMessage + stored contextInjection
+  PS->>DB: status executed

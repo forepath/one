@@ -58,6 +58,71 @@ function strProp(obj: AgentResponseObject, key: string): string | undefined {
   return typeof v === 'string' ? v : undefined;
 }
 
+function isAgentResponseObject(value: unknown): value is AgentResponseObject {
+  return !!value && typeof value === 'object' && typeof (value as { type?: unknown }).type === 'string';
+}
+
+function normalizeParsedAgentResponse(value: unknown): AgentResponseObject[] | null {
+  if (isAgentResponseObject(value)) {
+    return [value];
+  }
+
+  if (Array.isArray(value) && value.every(isAgentResponseObject)) {
+    return value;
+  }
+
+  return null;
+}
+
+/**
+ * Some live transports can surface provider NDJSON/stringified agent response objects as assistant text.
+ * Detect those structured payloads so the UI can render them as normal agent parts instead of raw JSON.
+ */
+export function parseAgentResponseObjectsFromString(text: string): AgentResponseObject[] | null {
+  const trimmed = text.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  try {
+    const parsed = normalizeParsedAgentResponse(JSON.parse(trimmed));
+
+    if (parsed) {
+      return parsed;
+    }
+  } catch {
+    // Not a single JSON payload; try newline-delimited JSON below.
+  }
+
+  const lines = trimmed
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length <= 1 || !lines.every((line) => line.startsWith('{') && line.endsWith('}'))) {
+    return null;
+  }
+
+  const parsedLines: AgentResponseObject[] = [];
+
+  for (const line of lines) {
+    try {
+      const parsed = normalizeParsedAgentResponse(JSON.parse(line));
+
+      if (!parsed) {
+        return null;
+      }
+
+      parsedLines.push(...parsed);
+    } catch {
+      return null;
+    }
+  }
+
+  return parsedLines;
+}
+
 /**
  * Best-effort text from Cursor/producer `thinking` frames (and our unified `{ type: 'thinking' }` parts).
  * Used for timeline rows and plain markdown (avoids `formatUnknownAsMarkdown` bullet lists).
@@ -337,15 +402,13 @@ export function stripHiddenPromptBlocks(text: string): string {
 export function formatAgentResponseForChatMarkdown(response: AgentResponseObject | string): string {
   if (typeof response === 'string') {
     const trimmed = response.trim();
+    const parsed = parseAgentResponseObjectsFromString(trimmed);
 
-    if (trimmed.startsWith('{')) {
-      try {
-        const parsed = JSON.parse(trimmed) as AgentResponseObject;
-
-        return formatAgentResponseForChatMarkdown(parsed);
-      } catch {
-        return stripHiddenPromptBlocks(response);
-      }
+    if (parsed) {
+      return parsed
+        .map((part) => formatAgentResponseForChatMarkdown(part))
+        .filter((part) => part.trim().length > 0)
+        .join('\n\n');
     }
 
     return stripHiddenPromptBlocks(response);
@@ -407,6 +470,10 @@ export function formatAgentResponseForChatMarkdown(response: AgentResponseObject
 
     const message = strProp(response, 'result') ?? strProp(response, 'message') ?? '';
     const heading = title ? `**${title}**` : '**Status**';
+
+    if (!message && !title) {
+      return '';
+    }
 
     return message ? `${heading}\n\n${message}` : heading;
   }

@@ -2,7 +2,9 @@ import {
   PRIMARY_CHAT_RESUME_SESSION_SUFFIX,
   RESERVED_CHAT_RESUME_SESSION_SUFFIXES,
   TICKET_AUTOMATION_RESUME_SESSION_SUFFIXES,
+  buildChatPlanResumeSessionSuffix,
   buildUserChatResumeSessionSuffix,
+  isChatPlanResumeSessionSuffix,
   isReservedChatResumeSessionSuffix,
   isTicketAutomationLoopResumeSessionSuffix,
   isTicketAutomationResumeSessionSuffix,
@@ -22,6 +24,10 @@ describe('chat-session.constants', () => {
       }
     });
 
+    it('returns true for dynamic plan suffixes', () => {
+      expect(isReservedChatResumeSessionSuffix('-plan-11111111-2222-4333-8444-555555555555')).toBe(true);
+    });
+
     it('returns false for primary empty suffix', () => {
       expect(isReservedChatResumeSessionSuffix(PRIMARY_CHAT_RESUME_SESSION_SUFFIX)).toBe(false);
     });
@@ -32,6 +38,20 @@ describe('chat-session.constants', () => {
 
     it('returns false for user chat suffixes', () => {
       expect(isReservedChatResumeSessionSuffix('-chat-abc-123')).toBe(false);
+    });
+  });
+
+  describe('isChatPlanResumeSessionSuffix', () => {
+    it('returns true only for -plan-{id} suffixes', () => {
+      expect(isChatPlanResumeSessionSuffix('-plan-abc')).toBe(true);
+      expect(isChatPlanResumeSessionSuffix('-plan-')).toBe(false);
+      expect(isChatPlanResumeSessionSuffix('-ticket-auto-loop')).toBe(false);
+      expect(isChatPlanResumeSessionSuffix('-chat-abc')).toBe(false);
+      expect(isChatPlanResumeSessionSuffix(undefined)).toBe(false);
+    });
+
+    it('is not classified as ticket automation', () => {
+      expect(isTicketAutomationResumeSessionSuffix('-plan-abc')).toBe(false);
     });
   });
 
@@ -60,6 +80,14 @@ describe('chat-session.constants', () => {
       const chatId = '11111111-2222-4333-8444-555555555555';
 
       expect(buildUserChatResumeSessionSuffix(chatId)).toBe(`-chat-${chatId}`);
+    });
+  });
+
+  describe('buildChatPlanResumeSessionSuffix', () => {
+    it('builds -plan-{id} suffix', () => {
+      const planId = '11111111-2222-4333-8444-555555555555';
+
+      expect(buildChatPlanResumeSessionSuffix(planId)).toBe(`-plan-${planId}`);
     });
   });
 });

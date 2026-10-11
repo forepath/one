@@ -77,6 +77,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
+          "rm -rf dist/apps/agenstra/backend-agent-controller/src/migrations",
           "mkdir -p dist/apps/agenstra/backend-agent-controller/src/migrations",
           "(npx tsc $(find apps/agenstra/backend-agent-controller/src/migrations -name '*.ts' 2>/dev/null || echo '') --outDir dist/apps/agenstra/backend-agent-controller/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir apps/agenstra/backend-agent-controller/src/migrations 2>/dev/null || true)",
           "npx tsc $(find libs/domains/identity/backend/util-auth/src/lib/migrations -name '*.ts') --outDir dist/apps/agenstra/backend-agent-controller/src/migrations --module commonjs --target es2021 --moduleResolution node --esModuleInterop --skipLibCheck --resolveJsonModule --declaration false --rootDir libs/domains/identity/backend/util-auth/src/lib/migrations",

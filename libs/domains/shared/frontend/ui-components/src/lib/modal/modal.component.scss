@@ -163,8 +163,12 @@ $modal-accent-close-size: 40px;
   display: none;
 }
 
-.modal-title:empty {
-  display: none;
+.modal-title {
+  max-width: 100%;
+
+  &:empty {
+    display: none;
+  }
 }
 
 // Scrollable: overflow on `.modal-body`; nested forms (projected) need the flex height chain.

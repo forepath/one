@@ -12,6 +12,9 @@ info:
     (see `clients/ticketAutomationRunChatUpsert` and OpenAPI `TicketAutomationRunChatEventDto`), and
     `ticketChatTicketUpsert` with the same payload shape as tickets-board `ticketUpsert` so chat clients can refresh
     ticket fields on automation cards without joining namespace **socket/tickets**.
+    Chat **plan mode** uses controller-handled events `createChatPlan` / `refineChatPlan` / `executeChatPlan` /
+    `cancelChatPlan` (not proxied via `forward`) and emits `chatPlanUpsert` (see OpenAPI `ChatPlanChatEventDto`)
+    for chat-scoped timeline cards; after login the controller also hydrates recent plans via unicast `chatPlanUpsert`.
     For **socket/clients**, all connections require authentication via the `Authorization` header in the handshake
     (same as HTTP API: `Bearer <jwt-token>` or `Bearer <api-key>` / `ApiKey <api-key>`).
     Unauthenticated connections are rejected with connect_error "Unauthorized".
@@ -108,6 +111,8 @@ channels:
       the controller may emit **ticketAutomationRunChatUpsert** (unicast) to hydrate ticket automation runs for that
       `clientId` + `agentId` into the chat timeline (see `clients/ticketAutomationRunChatUpsert`). Live run updates use
       the same event broadcast to room `client:{clientId}` on the **clients** namespace.
+      The controller may also emit **chatPlanUpsert** (unicast) to hydrate recent chat plans for that agent into the
+      timeline (see `clients/chatPlanUpsert`); live plan updates broadcast to the same client room.
       Login auto-restore from agent-manager emits a single **chatMessageBatch** (latest page) rather than individual
       chatMessage / messageFilterResult / chatEvent frames; clients should forward that event to the FE. Explicit
       `restoreChat` forwards also yield chatMessageBatch then restoreChatSuccess (with hasMoreOlder / oldestMessageId).
@@ -124,6 +129,40 @@ channels:
       Controller-originated ticket automation snapshot for the chat UI (namespace **clients** only; not forwarded from
       agent-manager). Aligns with OpenAPI schema `TicketAutomationRunChatEventDto`. Hydration uses `timelineAt` from
       `run.startedAt`; live updates use `run.updatedAt`.
+  clients/createChatPlan:
+    address: clients/createChatPlan
+    messages:
+      createChatPlanCommand:
+        $ref: '#/components/messages/CreateChatPlan'
+    description: |
+      Start a chat plan-mode explore turn for the selected client. Controller-handled (not forwarded to agent-manager).
+      Payload must include agentId, chatId, message, correlationId; optional model and contextInjection (full composer context).
+  clients/refineChatPlan:
+    address: clients/refineChatPlan
+    messages:
+      refineChatPlanCommand:
+        $ref: '#/components/messages/RefineChatPlan'
+    description: Continue an existing plan on the same hidden `-plan-{planId}` OpenCode session.
+  clients/executeChatPlan:
+    address: clients/executeChatPlan
+    messages:
+      executeChatPlanCommand:
+        $ref: '#/components/messages/ExecuteChatPlan'
+    description: Inject the ready plan into the visible chat session (normal interactive permissions).
+  clients/cancelChatPlan:
+    address: clients/cancelChatPlan
+    messages:
+      cancelChatPlanCommand:
+        $ref: '#/components/messages/CancelChatPlan'
+    description: Cancel an exploring/refining chat plan.
+  clients/chatPlanUpsert:
+    address: clients/chatPlanUpsert
+    messages:
+      chatPlanUpsertEvent:
+        $ref: '#/components/messages/ChatPlanChatEvent'
+    description: |
+      Controller-originated chat plan snapshot for the chat UI. Aligns with OpenAPI `ChatPlanChatEventDto`.
+      Hydration uses `plan.startedAt`; live updates use `plan.updatedAt`. Cards are chat-session scoped via `plan.chatId`.
   clients/ticketChatTicketUpsert:
     address: clients/ticketChatTicketUpsert
     messages:
@@ -387,6 +426,36 @@ operations:
       $ref: '#/channels/clients~1ticketAutomationRunChatUpsert'
     messages:
       - $ref: '#/channels/clients~1ticketAutomationRunChatUpsert/messages/ticketAutomationRunChatUpsertEvent'
+  clientSendsCreateChatPlan:
+    action: send
+    channel:
+      $ref: '#/channels/clients~1createChatPlan'
+    messages:
+      - $ref: '#/channels/clients~1createChatPlan/messages/createChatPlanCommand'
+  clientSendsRefineChatPlan:
+    action: send
+    channel:
+      $ref: '#/channels/clients~1refineChatPlan'
+    messages:
+      - $ref: '#/channels/clients~1refineChatPlan/messages/refineChatPlanCommand'
+  clientSendsExecuteChatPlan:
+    action: send
+    channel:
+      $ref: '#/channels/clients~1executeChatPlan'
+    messages:
+      - $ref: '#/channels/clients~1executeChatPlan/messages/executeChatPlanCommand'
+  clientSendsCancelChatPlan:
+    action: send
+    channel:
+      $ref: '#/channels/clients~1cancelChatPlan'
+    messages:
+      - $ref: '#/channels/clients~1cancelChatPlan/messages/cancelChatPlanCommand'
+  serverEmitsChatPlanUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/clients~1chatPlanUpsert'
+    messages:
+      - $ref: '#/channels/clients~1chatPlanUpsert/messages/chatPlanUpsertEvent'
   serverEmitsTicketChatTicketUpsert:
     action: receive
     channel:
@@ -831,6 +900,119 @@ components:
                   type: string
                   format: uuid
                 runId:
+                  type: string
+                  format: uuid
+                label:
+                  type: string
+        additionalProperties: false
+    CreateChatPlan:
+      name: CreateChatPlan
+      title: Create chat plan
+      contentType: application/json
+      payload:
+        type: object
+        required: [agentId, chatId, message, correlationId]
+        properties:
+          agentId:
+            type: string
+            format: uuid
+          chatId:
+            type: string
+            format: uuid
+          message:
+            type: string
+          correlationId:
+            type: string
+          model:
+            type: string
+          contextInjection:
+            type: object
+            additionalProperties: true
+        additionalProperties: false
+    RefineChatPlan:
+      name: RefineChatPlan
+      title: Refine chat plan
+      contentType: application/json
+      payload:
+        type: object
+        required: [agentId, planId, message, correlationId]
+        properties:
+          agentId:
+            type: string
+            format: uuid
+          planId:
+            type: string
+            format: uuid
+          message:
+            type: string
+          correlationId:
+            type: string
+          contextInjection:
+            type: object
+            additionalProperties: true
+        additionalProperties: false
+    ExecuteChatPlan:
+      name: ExecuteChatPlan
+      title: Execute chat plan
+      contentType: application/json
+      payload:
+        type: object
+        required: [agentId, planId, correlationId]
+        properties:
+          agentId:
+            type: string
+            format: uuid
+          planId:
+            type: string
+            format: uuid
+          correlationId:
+            type: string
+        additionalProperties: false
+    CancelChatPlan:
+      name: CancelChatPlan
+      title: Cancel chat plan
+      contentType: application/json
+      payload:
+        type: object
+        required: [agentId, planId]
+        properties:
+          agentId:
+            type: string
+            format: uuid
+          planId:
+            type: string
+            format: uuid
+        additionalProperties: false
+    ChatPlanChatEvent:
+      name: ChatPlanChatEvent
+      title: Chat plan in chat timeline
+      contentType: application/json
+      description: Same shape as OpenAPI `ChatPlanChatEventDto`.
+      payload:
+        type: object
+        required: [timelineAt, hydrate, plan, actions]
+        properties:
+          timelineAt:
+            type: string
+            format: date-time
+          hydrate:
+            type: boolean
+          plan:
+            type: object
+            additionalProperties: true
+          actions:
+            type: array
+            items:
+              type: object
+              required: [type, planId, chatId, label]
+              properties:
+                type:
+                  type: string
+                  enum: [openChatPlan, executeChatPlan]
+                planId:
+                  type: string
+                  format: uuid
+                chatId:
                   type: string
                   format: uuid
                 label:

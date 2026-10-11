@@ -134,7 +134,7 @@ Authenticated environments receive an immediate `containerStats` snapshot and pe
 
 #### Controller-originated ticket events (still on `clients`)
 
-To refresh ticket metadata in chat without subscribing to `tickets`, the controller may emit `ticketChatTicketUpsert` and automation timeline payloads such as `ticketAutomationRunChatUpsert` to room `client:{clientId}`. See the agent-controller AsyncAPI for fields.
+To refresh ticket metadata in chat without subscribing to `tickets`, the controller may emit `ticketChatTicketUpsert` and automation timeline payloads such as `ticketAutomationRunChatUpsert` to room `client:{clientId}`. Chat plan mode uses controller-handled `createChatPlan` / `refineChatPlan` / `executeChatPlan` / `cancelChatPlan` and emits `chatPlanUpsert` (hydrate on login + live room broadcast). See the agent-controller AsyncAPI for fields and [Chat plan mode](./chat-plan-mode.md).
 
 ### Manager → Controller
 

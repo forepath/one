@@ -213,7 +213,7 @@
 .chat-textarea-container {
   position: relative;
   padding-bottom: 2rem;
-  padding-top: 0.75rem;
+  padding-top: 0.25rem;
   padding-right: 0;
   padding-left: 0;
 }
@@ -239,6 +239,39 @@
   padding-right: 0.75rem;
   padding-left: 0.75rem;
   padding-top: 0.25rem;
+}
+
+.chat-plan-refine-composer {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.375rem;
+  background-color: var(--bs-body-bg);
+
+  &:focus-within {
+    border-color: rgba(var(--bs-primary-rgb), 0.5);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.15);
+  }
+}
+
+.chat-plan-refine-textarea {
+  min-height: 4.5rem;
+  resize: vertical;
+  overflow-wrap: break-word;
+  background-color: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  padding-right: 0.75rem;
+  padding-left: 0.75rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.chat-plan-refine-toolbar {
+  padding: 2px;
 }
 
 // Input area - prevent horizontal overflow

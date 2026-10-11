@@ -77,6 +77,7 @@ All diagrams are available in the [`docs/`](./docs/) directory:
 - **[HTTP VCS Sequence Diagram](./docs/sequence-http-vcs.mmd)** - Detailed sequence diagram for proxied VCS (Git) operations
 - **[WebSocket Forwarding Diagram](./docs/sequence-ws-forward.mmd)** - Sequence diagram for WebSocket connection, client context setup, event forwarding, and auto-login
 - **[Chat prompt enhancement](./docs/sequence-chat-enhancement.mmd)** - Sequence for `enhanceChat` / `chatEnhanceResult` (magic-wand flow; statistics only, no `agent_messages`)
+- **[Chat plan mode](./docs/sequence-chat-plan-mode.mmd)** - Sequence for `createChatPlan` / `chatPlanUpsert` / refine / execute (explore-only hidden session)
 - **[Lifecycle Diagram](./docs/lifecycle.mmd)** - End-to-end sequence diagram showing the complete lifecycle from client creation through proxied agent operations to WebSocket event forwarding
 
 These diagrams provide comprehensive visual documentation of:

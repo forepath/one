@@ -29,6 +29,7 @@ interface ChatPayload {
   model?: string;
   responseMode?: 'stream' | 'sync' | 'single';
   ephemeral?: boolean;
+  suppressUserMessage?: boolean;
   correlationId?: string;
   resumeSessionSuffix?: string;
   chatId?: string;
@@ -2424,6 +2425,76 @@ describe('AgentsGateway', () => {
 
         expect(mockAgentMessageEventsService.persistEvent).toHaveBeenCalled();
       });
+
+      it('suppresses user chatMessage when suppressUserMessage is true but still emits agent reply', async () => {
+        const requesterSocketId = mockSocket.id || 'test-socket-id';
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (gateway as any).authenticatedClients.set(requesterSocketId, mockAgent.id);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (gateway as any).socketById.set(requesterSocketId, mockSocket);
+
+        agentsService.findOne.mockResolvedValue(mockAgentResponse);
+        agentsRepository.findById.mockResolvedValue(mockAgent);
+        agentMessagesService.getChatHistory.mockResolvedValue([
+          {
+            id: 'msg-1',
+            agentId: mockAgent.id,
+            chatSessionId: 'primary-chat-id',
+            agent: mockAgent,
+            actor: 'user',
+            message: 'Previous message',
+            filtered: false,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        ] as any);
+
+        const mockAgentResponseJson = JSON.stringify({
+          type: 'result',
+          subtype: 'success',
+          is_error: false,
+          result: 'Plan executed',
+        });
+        const mockParsedResponse = {
+          type: 'result',
+          subtype: 'success',
+          is_error: false,
+          result: 'Plan executed',
+        };
+
+        mockAgentProvider.sendMessage.mockResolvedValue(mockAgentResponseJson);
+        mockAgentProvider.toParseableStrings.mockReturnValue([mockAgentResponseJson]);
+        mockAgentProvider.toUnifiedResponse.mockReturnValue(mockParsedResponse);
+
+        await gateway.handleChat(
+          {
+            message: 'Implement the following plan in the repository. Stay scoped to the plan below.\n\n## Plan\nDo it',
+            suppressUserMessage: true,
+            responseMode: 'sync',
+            correlationId: 'plan-execute-corr-1',
+          },
+          mockSocket as Socket,
+        );
+
+        expect(mockSocket.emit).not.toHaveBeenCalledWith(
+          'chatMessage',
+          expect.objectContaining({
+            success: true,
+            data: expect.objectContaining({ from: 'user' }),
+          }),
+        );
+        expect(mockSocket.emit).toHaveBeenCalledWith(
+          'chatMessage',
+          expect.objectContaining({
+            success: true,
+            data: expect.objectContaining({ from: 'agent' }),
+          }),
+        );
+        expect(agentMessagesService.createUserMessage).not.toHaveBeenCalled();
+        expect(agentMessagesService.createAgentMessage).toHaveBeenCalled();
+        expect(mockAgentProvider.sendMessage).toHaveBeenCalled();
+      });
     });
 
     describe('streaming mode', () => {
@@ -2849,6 +2920,17 @@ describe('AgentsGateway', () => {
   });
 
   describe('git state changed broadcasts', () => {
+    it('does not convert non-displayable structured status payloads into assistant text events', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const events = (gateway as any).agentResponseToChatEvents(mockAgent.id, 'corr-1', 1, {
+        type: 'status',
+        subtype: 'structured_output',
+        result: { status: 'ready' },
+      } as AgentResponseObject) as AgentEventEnvelope[];
+
+      expect(events).toEqual([]);
+    });
+
     it('emits gitStateChanged after workspace tool results', () => {
       const socketId = mockSocket.id || 'test-socket-id';
 
