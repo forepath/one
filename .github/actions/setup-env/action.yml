@@ -1,28 +1,54 @@
 name: Setup Environment
-description: Setup environment variables for the GitHub Actions workflow.
+description: Setup Node, dependencies, and optional Electron binaries for GitHub Actions jobs.
+
+inputs:
+  install-dependencies:
+    description: Run a lockfile install (npm ci / yarn / pnpm). Set false when node_modules was restored from artifacts.
+    required: false
+    default: 'true'
+  install-electron:
+    description: Restore/cache Electron binaries and run the Electron postinstall.
+    required: false
+    default: 'false'
 
 runs:
   using: 'composite'
   steps:
+    - name: Detect package manager
+      id: pm
+      shell: bash
+      run: |
+        if [ -f pnpm-lock.yaml ]; then
+          echo "pm=pnpm" >> "$GITHUB_OUTPUT"
+          echo "lockfile=pnpm-lock.yaml" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        if [ -f yarn.lock ]; then
+          echo "pm=yarn" >> "$GITHUB_OUTPUT"
+          echo "lockfile=yarn.lock" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        if [ -f package-lock.json ]; then
+          echo "pm=npm" >> "$GITHUB_OUTPUT"
+          echo "lockfile=package-lock.json" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        echo "pm=pnpm" >> "$GITHUB_OUTPUT"
+        echo "lockfile=pnpm-lock.yaml" >> "$GITHUB_OUTPUT"
+
     - name: Setup Node from .nvmrc
       uses: actions/setup-node@v6
       with:
         node-version-file: .nvmrc
+        cache: ${{ steps.pm.outputs.pm }}
+        cache-dependency-path: ${{ steps.pm.outputs.lockfile }}
 
     - name: Enable corepack
       shell: bash
       run: corepack enable || true
 
-    - name: Detect package manager
-      id: pm
-      shell: bash
-      run: |
-        if [ -f pnpm-lock.yaml ]; then echo "pm=pnpm" >> $GITHUB_OUTPUT; exit 0; fi
-        if [ -f yarn.lock ]; then echo "pm=yarn" >> $GITHUB_OUTPUT; exit 0; fi
-        if [ -f package-lock.json ]; then echo "pm=npm" >> $GITHUB_OUTPUT; exit 0; fi
-        echo "pm=pnpm" >> $GITHUB_OUTPUT
-
     - name: Install dependencies
+      if: inputs.install-dependencies == 'true'
       shell: bash
       run: |
         PM="${{ steps.pm.outputs.pm }}"
@@ -30,45 +56,49 @@ runs:
         if [ "$PM" = "yarn" ]; then yarn install --frozen-lockfile; fi
         if [ "$PM" = "npm" ]; then npm ci; fi
 
-    - name: Set Cypress cache folder
-      id: cypress-cache
+    - name: Assert node_modules present
+      if: inputs.install-dependencies != 'true'
+      shell: bash
+      run: |
+        if [ ! -d node_modules ]; then
+          echo "::error::install-dependencies is false but node_modules is missing. Restore build artifacts before setup-env, or set install-dependencies to true."
+          exit 1
+        fi
+
+    - name: Apply patches (artifact restore)
+      if: inputs.install-dependencies != 'true'
+      shell: bash
+      run: |
+        if [ -d patches ]; then
+          npx patch-package
+        fi
+
+    - name: Set Electron cache folder
+      if: inputs.install-electron == 'true'
+      id: electron-cache
       shell: bash
       run: |
         if [ "${{ runner.os }}" = "Windows" ]; then
-          CYPRESS_CACHE="$USERPROFILE/.cache/Cypress"
+          ELECTRON_CACHE="$USERPROFILE/.cache/electron"
         else
-          CYPRESS_CACHE="$HOME/.cache/Cypress"
+          ELECTRON_CACHE="$HOME/.cache/electron"
         fi
-        echo "folder=$CYPRESS_CACHE" >> $GITHUB_OUTPUT
-        echo "CYPRESS_CACHE_FOLDER=$CYPRESS_CACHE" >> $GITHUB_ENV
+        echo "folder=$ELECTRON_CACHE" >> "$GITHUB_OUTPUT"
+        echo "ELECTRON_CACHE=$ELECTRON_CACHE" >> "$GITHUB_ENV"
 
-    - name: Restore Cypress cache
+    - name: Restore Electron cache
+      if: inputs.install-electron == 'true'
       uses: actions/cache@v5
       with:
-        path: |
-          ${{ steps.cypress-cache.outputs.folder }}
-          node_modules/.cache/Cypress
-        key: ${{ runner.os }}-cypress-${{ hashFiles('**/pnpm-lock.yaml', '**/yarn.lock', '**/package-lock.json') }}
+        path: ${{ steps.electron-cache.outputs.folder }}
+        key: ${{ runner.os }}-electron-${{ hashFiles('**/pnpm-lock.yaml', '**/yarn.lock', '**/package-lock.json') }}
         restore-keys: |
-          ${{ runner.os }}-cypress-
-
-    - name: Cypress binary install
-      shell: bash
-      env:
-        CYPRESS_CACHE_FOLDER: ${{ steps.cypress-cache.outputs.folder }}
-      run: |
-        PM="${{ steps.pm.outputs.pm }}"
-        if [ "$PM" = "pnpm" ]; then pnpm exec cypress install || true; fi
-        if [ "$PM" = "yarn" ]; then yarn run -s cypress install || yarn dlx cypress install || true; fi
-        if [ "$PM" = "npm" ]; then npx --yes cypress install || true; fi
+          ${{ runner.os }}-electron-
 
     - name: Electron binary install
+      if: inputs.install-electron == 'true'
       shell: bash
       working-directory: ./node_modules/electron
+      env:
+        ELECTRON_CACHE: ${{ steps.electron-cache.outputs.folder }}
       run: npm run postinstall || node install.js || true
-
-    - name: Patch package
-      shell: bash
-      run: |
-        npm install -g patch-package
-        patch-package

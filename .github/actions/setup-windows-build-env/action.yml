@@ -4,9 +4,26 @@ description: Setup Windows build environment for the GitHub Actions workflow.
 runs:
   using: 'composite'
   steps:
+    - name: Enable i386 architecture
+      shell: bash
+      run: sudo dpkg --add-architecture i386
+
+    - name: Cache apt archives
+      uses: actions/cache@v5
+      with:
+        path: ${{ github.workspace }}/.apt-archives
+        key: ${{ runner.os }}-${{ runner.arch }}-apt-wine-mono-xvfb-v1
+
     - name: Install Wine, Mono, Xvfb and zip tools
       shell: bash
       run: |
-        sudo dpkg --add-architecture i386
+        set -euo pipefail
+        APT_ARCHIVES="${{ github.workspace }}/.apt-archives"
+        mkdir -p "$APT_ARCHIVES"
         sudo apt-get update
-        sudo apt-get install -y wine64 wine32 mono-complete xvfb zip unzip
+        sudo apt-get install -y \
+          -o "Dir::Cache::Archives=$APT_ARCHIVES" \
+          -o APT::Keep-Downloaded-Packages=true \
+          wine64 wine32 mono-complete xvfb zip unzip
+        # actions/cache must be able to read archives written by apt (root).
+        sudo chown -R "$(id -u):$(id -g)" "$APT_ARCHIVES"
