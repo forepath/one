@@ -171,8 +171,8 @@ import {
 } from './agent-chat-response-markdown';
 import { accumulateStreamingTurnFromEvents } from './agent-chat-streaming-aggregate';
 import { AgentChatTodosExpandCoordinator } from './agent-chat-todos-expand.coordinator';
-import { sanitizeAndTrustMarkdownHtml } from './chat-markdown-html';
 import { mergeTicketAutomationChatCardPayload } from './chat-automation-card-merge';
+import { sanitizeAndTrustMarkdownHtml } from './chat-markdown-html';
 import {
   chatPlanStateBadgeColor as chatPlanStateBadgeColorFn,
   chatPlanStateLabel as chatPlanStateLabelFn,
@@ -207,6 +207,8 @@ type ChatMessageWithFilter = {
     };
   } | null;
 };
+
+type SlashCommandInputTarget = 'chat' | 'planRefine';
 
 /** Segment colors of the stacked workspace provisioning bar (cycled per environment). */
 const WORKSPACE_PROGRESS_SEGMENT_VARIANTS: FpcProgressVariant[] = [
@@ -858,20 +860,20 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   /** Last reply error keyed by question id. */
   readonly questionReplyErrors = signal<ReadonlyMap<string, string>>(new Map());
   selectedChatModel = signal<string | null>(null);
-  /** Marked slash command (OpenCode-style); prepended on send. */
-  selectedCommand = signal<string | null>(null);
   /** Dismiss typeahead without clearing the `/` fragment (Escape). */
   private readonly slashMenuDismissed = signal(false);
+  private readonly slashCommandTarget = signal<SlashCommandInputTarget>('chat');
   slashHighlightIndex = signal(0);
   selectedAgentId = signal<string | null>(null);
 
   /** Token after leading `/` while composing a slash command (`null` = menu inactive). */
   readonly slashCommandQuery = computed(() => {
-    if (this.selectedCommand() || this.slashMenuDismissed()) {
+    if (this.slashMenuDismissed()) {
       return null;
     }
 
-    const match = this.chatMessage().match(/^\/([^\s\n]*)$/);
+    const value = this.slashCommandTarget() === 'planRefine' ? this.planRefineMessage() : this.chatMessage();
+    const match = value.match(/^\/([^\s\n]*)$/);
 
     return match ? match[1] : null;
   });
@@ -3037,13 +3039,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   onSendMessage(): void {
-    let message = this.chatMessage().trim();
-    // Append selected command to message if one is selected
-    const selectedCmd = this.selectedCommand();
-
-    if (selectedCmd) {
-      message = message ? `${selectedCmd}\n${message}` : selectedCmd;
-    }
+    const message = this.chatMessage().trim();
 
     if (!message) {
       return;
@@ -3071,8 +3067,6 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.lastUserMessageTimestamp.set(Date.now());
 
     this.chatMessage.set('');
-    // Clear selected command after sending
-    this.selectedCommand.set(null);
     // Trigger scroll after sending message
     this.stickToBottom.set(true);
     this.shouldScrollToBottom = true;
@@ -3083,7 +3077,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   onEnhanceMessage(): void {
-    this.enhanceText(this.chatMessage(), 'chat', true);
+    this.enhanceText(this.chatMessage(), 'chat');
   }
 
   clearPlanRefineEnhanceError(): void {
@@ -3094,13 +3088,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.enhanceText(this.planRefineMessage(), 'planRefine');
   }
 
-  private enhanceText(rawMessage: string, target: 'chat' | 'planRefine', includeSlashCommand = false): void {
-    let message = rawMessage.trim();
-    const selectedCmd = this.selectedCommand();
-
-    if (includeSlashCommand && selectedCmd) {
-      message = message ? `${selectedCmd}\n${message}` : selectedCmd;
-    }
+  private enhanceText(rawMessage: string, target: 'chat' | 'planRefine'): void {
+    const message = rawMessage.trim();
 
     if (!message) {
       return;
@@ -3128,12 +3117,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   onPlanMessage(): void {
-    let message = this.chatMessage().trim();
-    const selectedCmd = this.selectedCommand();
-
-    if (selectedCmd) {
-      message = message ? `${selectedCmd}\n${message}` : selectedCmd;
-    }
+    const message = this.chatMessage().trim();
 
     if (!message) {
       return;
@@ -3248,40 +3232,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   onChatInputKeydown(event: KeyboardEvent): void {
-    if (this.slashCommandMenuOpen()) {
-      const filtered = this.filteredSlashCommands();
-
-      if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        this.slashHighlightIndex.update((index) => Math.min(index + 1, filtered.length - 1));
-
-        return;
-      }
-
-      if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        this.slashHighlightIndex.update((index) => Math.max(index - 1, 0));
-
-        return;
-      }
-
-      if (event.key === 'Enter' || event.key === 'Tab') {
-        event.preventDefault();
-        const command = filtered[this.slashHighlightIndex()] ?? filtered[0];
-
-        if (command) {
-          this.pickSlashCommand(command);
-        }
-
-        return;
-      }
-
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        this.slashMenuDismissed.set(true);
-
-        return;
-      }
+    if (this.handleSlashCommandKeydown(event, 'chat')) {
+      return;
     }
 
     if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey) {
@@ -3290,25 +3242,89 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
   }
 
+  onPlanRefineInputKeydown(event: KeyboardEvent): void {
+    this.handleSlashCommandKeydown(event, 'planRefine');
+  }
+
+  private handleSlashCommandKeydown(event: KeyboardEvent, target: SlashCommandInputTarget): boolean {
+    this.slashCommandTarget.set(target);
+
+    if (this.isSlashCommandMenuOpenFor(target)) {
+      const filtered = this.filteredSlashCommands();
+
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        this.slashHighlightIndex.update((index) => Math.min(index + 1, filtered.length - 1));
+
+        return true;
+      }
+
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        this.slashHighlightIndex.update((index) => Math.max(index - 1, 0));
+
+        return true;
+      }
+
+      if (event.key === 'Enter' || event.key === 'Tab') {
+        event.preventDefault();
+        const command = filtered[this.slashHighlightIndex()] ?? filtered[0];
+
+        if (command) {
+          this.pickSlashCommand(command, undefined, target);
+        }
+
+        return true;
+      }
+
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.slashMenuDismissed.set(true);
+
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   onChatMessageInput(value: string): void {
     this.chatMessage.set(value);
+    this.slashCommandTarget.set('chat');
     this.slashMenuDismissed.set(false);
   }
 
-  pickSlashCommand(command: AgentSlashCommand | string, event?: Event): void {
-    event?.preventDefault();
-    const name = typeof command === 'string' ? command : command.name;
-    this.selectedCommand.set(name);
-    this.chatMessage.set(
-      this.chatMessage()
-        .replace(/^\/[^\s\n]*/, '')
-        .replace(/^\n/, ''),
-    );
-    this.slashMenuDismissed.set(true);
+  onChatMessageFocus(): void {
+    this.slashCommandTarget.set('chat');
   }
 
-  clearSelectedCommand(): void {
-    this.selectedCommand.set(null);
+  onPlanRefineMessageInput(value: string): void {
+    this.planRefineMessage.set(value);
+    this.slashCommandTarget.set('planRefine');
+    this.slashMenuDismissed.set(false);
+  }
+
+  onPlanRefineMessageFocus(): void {
+    this.slashCommandTarget.set('planRefine');
+  }
+
+  isSlashCommandMenuOpenFor(target: SlashCommandInputTarget): boolean {
+    return this.slashCommandTarget() === target && this.slashCommandMenuOpen();
+  }
+
+  pickSlashCommand(command: AgentSlashCommand | string, event?: Event, target = this.slashCommandTarget()): void {
+    event?.preventDefault();
+    const name = typeof command === 'string' ? command : command.name;
+    const insertCommand = (value: string) => value.replace(/^\/[^\s\n]*/, `${name} `);
+
+    if (target === 'planRefine') {
+      this.planRefineMessage.update(insertCommand);
+    } else {
+      this.chatMessage.update(insertCommand);
+    }
+
+    this.slashCommandTarget.set(target);
+    this.slashMenuDismissed.set(true);
   }
 
   onChatModelChange(value: string): void {
@@ -5184,7 +5200,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   formatTimestamp(timestamp: number): string {
-    return new Date(timestamp).toLocaleTimeString();
+    return new Date(timestamp).toLocaleString();
   }
 
   openTicketAutomationRunFromChat(payload: TicketAutomationRunChatEventPayload): void {
