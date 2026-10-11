@@ -109,8 +109,6 @@ jobs:
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
-        with:
-          install-dependencies: 'false'
 
       - name: 'Login to container registry'
         uses: docker/login-action@v4
@@ -158,8 +156,6 @@ jobs:
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
-        with:
-          install-dependencies: 'false'
 
       - name: 'Login to container registry'
         uses: docker/login-action@v4
@@ -207,8 +203,6 @@ jobs:
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
-        with:
-          install-dependencies: 'false'
 
       - name: 'Login to container registry'
         uses: docker/login-action@v4
@@ -256,8 +250,6 @@ jobs:
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
-        with:
-          install-dependencies: 'false'
 
       - name: Configure npm for GitHub Packages
         run: |
@@ -302,9 +294,6 @@ jobs:
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
-        with:
-          install-dependencies: 'false'
-          install-electron: 'true'
 
       - name: Build binaries
         env:
@@ -353,9 +342,6 @@ jobs:
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
-        with:
-          install-dependencies: 'false'
-          install-electron: 'true'
 
       - name: Setup Windows build environment
         uses: ./.github/actions/setup-windows-build-env
