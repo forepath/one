@@ -169,20 +169,6 @@
   position: relative;
 }
 
-.chat-command-mark {
-  display: flex;
-  align-items: center;
-  padding: 0.5rem 0.75rem 0;
-}
-
-.chat-command-mark__badge {
-  max-width: 100%;
-}
-
-.chat-command-mark__clear {
-  font-size: 0.65rem;
-}
-
 .chat-command-typeahead {
   position: absolute;
   left: 0;
@@ -218,10 +204,6 @@
   padding-left: 0;
 }
 
-.chat-textarea-container--command-marked {
-  padding-top: 0;
-}
-
 // Textarea body
 .chat-textarea {
   min-width: 0; // Allow input to shrink
@@ -242,6 +224,7 @@
 }
 
 .chat-plan-refine-composer {
+  position: relative;
   display: flex;
   flex-direction: column;
   border: 1px solid var(--bs-border-color);

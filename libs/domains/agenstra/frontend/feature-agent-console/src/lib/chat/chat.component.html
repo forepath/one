@@ -1049,7 +1049,7 @@
                       }
                     } @else if (item.kind === 'ticketAutomationRun') {
                       <div class="d-flex justify-content-start">
-                        <div class="card border-secondary bg-body chat-message-card">
+                        <div class="card bg-body chat-message-card">
                           <div class="card-body chat-message-body">
                             <div class="fw-semibold text-truncate" [attr.title]="item.payload.ticket.title">
                               {{ item.payload.ticket.title }}
@@ -1089,7 +1089,7 @@
                       </div>
                     } @else if (item.kind === 'chatPlan') {
                       <div class="d-flex justify-content-start">
-                        <div class="card border-secondary bg-body chat-message-card">
+                        <div class="card bg-body chat-message-card">
                           <div class="card-body chat-message-body">
                             <div class="d-flex align-items-start gap-2 min-width-0">
                               <fpc-badge
@@ -1294,25 +1294,8 @@
             </div>
           }
           <div class="chat-input-group">
-            <div
-              class="form-control chat-textarea-container"
-              [class.chat-textarea-container--command-marked]="!!selectedCommand()"
-            >
-              @if (selectedCommand(); as markedCommand) {
-                <div class="chat-command-mark">
-                  <fpc-badge variant="info" color="primary" class="chat-command-mark__badge">
-                    <span class="font-monospace">{{ markedCommand }}</span>
-                    <button
-                      type="button"
-                      class="btn-close chat-command-mark__clear"
-                      (click)="clearSelectedCommand()"
-                      i18n-aria-label="@@featureChat-clearCommandAria"
-                      aria-label="Clear command"
-                    ></button>
-                  </fpc-badge>
-                </div>
-              }
-              @if (slashCommandMenuOpen()) {
+            <div class="form-control chat-textarea-container">
+              @if (isSlashCommandMenuOpenFor('chat')) {
                 <div
                   class="dropdown-menu show fpc-typeahead-select__menu chat-command-typeahead"
                   role="listbox"
@@ -1326,7 +1309,7 @@
                         role="option"
                         [class.active]="i === slashHighlightIndex()"
                         [attr.aria-selected]="i === slashHighlightIndex()"
-                        (mousedown)="pickSlashCommand(command, $event)"
+                        (mousedown)="pickSlashCommand(command, $event, 'chat')"
                       >
                         <span class="d-flex align-items-baseline justify-content-between gap-2">
                           <span class="font-monospace small fw-medium">{{ command.name }}</span>
@@ -1349,10 +1332,11 @@
                 i18n-placeholder="@@featureChat-typeMessagePlaceholder"
                 [value]="chatMessage()"
                 (input)="onChatMessageInput($any($event.target).value)"
+                (focus)="onChatMessageFocus()"
                 (keydown)="onChatInputKeydown($event)"
-                [attr.aria-autocomplete]="slashCommandMenuOpen() ? 'list' : null"
-                [attr.aria-controls]="slashCommandMenuOpen() ? 'chatCommandTypeaheadListbox' : null"
-                [attr.aria-expanded]="slashCommandMenuOpen()"
+                [attr.aria-autocomplete]="isSlashCommandMenuOpenFor('chat') ? 'list' : null"
+                [attr.aria-controls]="isSlashCommandMenuOpenFor('chat') ? 'chatCommandTypeaheadListbox' : null"
+                [attr.aria-expanded]="isSlashCommandMenuOpenFor('chat')"
                 [disabled]="
                   !(socketConnected$ | async) ||
                   (socketReconnecting$ | async) ||
@@ -1760,13 +1744,50 @@
             ></button>
           </div>
         }
+        @if (isSlashCommandMenuOpenFor('planRefine')) {
+          <div
+            class="dropdown-menu show fpc-typeahead-select__menu chat-command-typeahead"
+            role="listbox"
+            id="chatPlanRefineCommandTypeaheadListbox"
+          >
+            <div class="fpc-typeahead-select__suggestions">
+              @for (command of filteredSlashCommands(); track command.name; let i = $index) {
+                <button
+                  type="button"
+                  class="dropdown-item py-2 text-start"
+                  role="option"
+                  [class.active]="i === slashHighlightIndex()"
+                  [attr.aria-selected]="i === slashHighlightIndex()"
+                  (mousedown)="pickSlashCommand(command, $event, 'planRefine')"
+                >
+                  <span class="d-flex align-items-baseline justify-content-between gap-2">
+                    <span class="font-monospace small fw-medium">{{ command.name }}</span>
+                    @if (command.source && command.source !== 'command') {
+                      <span class="text-muted small text-uppercase flex-shrink-0">{{ command.source }}</span>
+                    }
+                  </span>
+                  @if (command.description) {
+                    <span class="d-block text-muted small text-truncate">{{ command.description }}</span>
+                  }
+                </button>
+              }
+            </div>
+          </div>
+        }
         <textarea
           id="chatPlanRefineInput"
           class="chat-plan-refine-textarea"
           rows="3"
           [placeholder]="chatPlanRefinePlaceholder"
           [value]="planRefineMessage()"
-          (input)="planRefineMessage.set($any($event.target).value)"
+          (input)="onPlanRefineMessageInput($any($event.target).value)"
+          (focus)="onPlanRefineMessageFocus()"
+          (keydown)="onPlanRefineInputKeydown($event)"
+          [attr.aria-autocomplete]="isSlashCommandMenuOpenFor('planRefine') ? 'list' : null"
+          [attr.aria-controls]="
+            isSlashCommandMenuOpenFor('planRefine') ? 'chatPlanRefineCommandTypeaheadListbox' : null
+          "
+          [attr.aria-expanded]="isSlashCommandMenuOpenFor('planRefine')"
           [disabled]="plan.status === 'refining'"
         ></textarea>
         <div class="chat-plan-refine-toolbar d-flex gap-1 align-items-end justify-content-end overflow-hidden">
