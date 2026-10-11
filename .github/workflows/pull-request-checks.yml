@@ -355,8 +355,6 @@ jobs:
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
-        with:
-          install-dependencies: 'false'
 
       - name: Build API container images
         run: |
@@ -399,8 +397,6 @@ jobs:
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
-        with:
-          install-dependencies: 'false'
 
       - name: Build Worker container images
         run: |
@@ -443,8 +439,6 @@ jobs:
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
-        with:
-          install-dependencies: 'false'
 
       - name: Build Server container images
         run: |
@@ -540,8 +534,6 @@ jobs:
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
-        with:
-          install-dependencies: 'false'
 
       - name: Build binaries
         run: npx nx affected --target=scripts-binary --parallel=3
@@ -567,8 +559,6 @@ jobs:
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
-        with:
-          install-dependencies: 'false'
 
       - name: Install OpenAPI Generator CLI
         run: |
@@ -600,9 +590,6 @@ jobs:
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
-        with:
-          install-dependencies: 'false'
-          install-electron: 'true'
 
       - name: Build binaries
         env:
@@ -644,9 +631,6 @@ jobs:
 
       - name: Setup environment
         uses: ./.github/actions/setup-env
-        with:
-          install-dependencies: 'false'
-          install-electron: 'true'
 
       - name: Setup Windows build environment
         uses: ./.github/actions/setup-windows-build-env
