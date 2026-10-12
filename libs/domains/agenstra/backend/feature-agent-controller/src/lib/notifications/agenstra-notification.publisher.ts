@@ -7,7 +7,6 @@ import type {
   EnvironmentVariableResponseDto,
 } from '@forepath/agenstra/backend/feature-agent-manager';
 
-import type { FilterRuleResponseDto } from '../dto/filter-rules/filter-rule-response.dto';
 import type { ClientResponseDto } from '../dto/client-response.dto';
 import type { AttachmentResponseDto } from '../dto/attachment.dto';
 import type { TicketCommentResponseDto } from '../dto/tickets/ticket-comment-response.dto';
@@ -19,7 +18,7 @@ export { AGENSTRA_NOTIFICATION_EVENTS, type AgenstraNotificationEventType };
 
 export type ChatMessageDirection = 'incoming' | 'outgoing';
 export type ChatMessageSource = 'user' | 'agent';
-export type FilterRuleTriggerStatus = 'dropped' | 'filtered';
+export type MessageFilterTriggerStatus = 'dropped' | 'filtered';
 
 export type ChatMessageNotificationPayload = {
   agentId: string;
@@ -31,10 +30,10 @@ export type ChatMessageNotificationPayload = {
   chatId?: string | null;
 };
 
-export type FilterRuleTriggeredNotificationPayload = {
+export type MessageFilterTriggeredNotificationPayload = {
   agentId: string;
   direction: ChatMessageDirection;
-  status: FilterRuleTriggerStatus;
+  status: MessageFilterTriggerStatus;
   filterType: string;
   filterDisplayName: string;
   reason?: string | null;
@@ -42,6 +41,51 @@ export type FilterRuleTriggeredNotificationPayload = {
   charCount: number;
   userId?: string | null;
   messagePreview?: string | null;
+};
+
+/** Layer of the agent configuration that was saved. */
+export type AgentConfigLayer = 'global' | 'workspace' | 'environment';
+
+export type AgentConfigUpdatedNotificationPayload = {
+  layer: AgentConfigLayer;
+  clientId?: string | null;
+  agentId?: string | null;
+  /** Root keys whose values (config, overrides or locks) changed. Values are never included. */
+  changedRoots: string[];
+  /** Subset of `changedRoots` that are security policy roots (`permissions`, `egress`, `message_filters`, …). */
+  securityRootsChanged: string[];
+  locksChanged: boolean;
+  secretKeysChanged: string[];
+  updatedByUserId?: string | null;
+};
+
+export type EgressDecisionNotificationPayload = {
+  agentId: string;
+  kind: string;
+  decision: string;
+  host?: string | null;
+  rule?: string | null;
+  matchedEntry?: string | null;
+  matchedSource?: string | null;
+  method?: string | null;
+  count: number;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  /** Number of further distinct decisions omitted from this ingestion batch (notification cap). */
+  omittedDecisions?: number;
+};
+
+export type EgressGuardFailedNotificationPayload = {
+  agentId: string;
+  message: string;
+  occurredAt: string;
+};
+
+export type EgressPolicyNotificationPayload = {
+  agentId: string;
+  mode: string;
+  revision?: string | null;
+  error?: string | null;
 };
 
 export type EnvironmentNotificationPayload = {
@@ -102,23 +146,6 @@ export class AgenstraNotificationPublisher implements IIdentityNotificationPubli
     this.publish(type, this.toAttachmentPayload(attachment), attachment.clientId);
   }
 
-  publishFilterRule(
-    type: 'filter_rule.created' | 'filter_rule.updated' | 'filter_rule.deleted',
-    rule: FilterRuleResponseDto,
-  ): void {
-    const data = this.toFilterRulePayload(rule);
-
-    if (rule.isGlobal || rule.workspaceIds.length === 0) {
-      this.publish(type, data);
-
-      return;
-    }
-
-    for (const clientId of rule.workspaceIds) {
-      this.publish(type, data, clientId);
-    }
-  }
-
   publishChatMessage(clientId: string, payload: ChatMessageNotificationPayload): void {
     this.publish('chat_message.created', payload, clientId);
   }
@@ -141,8 +168,33 @@ export class AgenstraNotificationPublisher implements IIdentityNotificationPubli
     this.publish('agent.chat.failed', payload, clientId);
   }
 
-  publishFilterRuleTriggered(clientId: string, payload: FilterRuleTriggeredNotificationPayload): void {
-    this.publish('filter_rule.triggered', payload, clientId);
+  publishMessageFilterTriggered(clientId: string, payload: MessageFilterTriggeredNotificationPayload): void {
+    this.publish('message_filter.triggered', payload, clientId);
+  }
+
+  /** Agent configuration layer saved (global layer: no clientId → instance-wide delivery). */
+  publishAgentConfigUpdated(payload: AgentConfigUpdatedNotificationPayload): void {
+    this.publish('agent_config.updated', payload, payload.clientId ?? undefined);
+  }
+
+  publishEgressDecision(
+    type: 'egress.blocked' | 'egress.observed',
+    clientId: string,
+    payload: EgressDecisionNotificationPayload,
+  ): void {
+    this.publish(type, payload, clientId);
+  }
+
+  publishEgressGuardFailed(clientId: string, payload: EgressGuardFailedNotificationPayload): void {
+    this.publish('egress.guard_failed', payload, clientId);
+  }
+
+  publishEgressPolicy(
+    type: 'egress.policy_applied' | 'egress.policy_failed',
+    clientId: string,
+    payload: EgressPolicyNotificationPayload,
+  ): void {
+    this.publish(type, payload, clientId);
   }
 
   publishEnvironment(
@@ -233,23 +285,6 @@ export class AgenstraNotificationPublisher implements IIdentityNotificationPubli
       contentSha256: attachment.contentSha256,
       createdByUserId: attachment.createdByUserId ?? null,
       createdAt: this.toIsoString(attachment.createdAt),
-    };
-  }
-
-  private toFilterRulePayload(rule: FilterRuleResponseDto): Record<string, unknown> {
-    return {
-      id: rule.id,
-      pattern: rule.pattern,
-      regexFlags: rule.regexFlags,
-      direction: rule.direction,
-      filterType: rule.filterType,
-      replaceContent: rule.replaceContent ?? null,
-      priority: rule.priority,
-      enabled: rule.enabled,
-      isGlobal: rule.isGlobal,
-      workspaceIds: rule.workspaceIds,
-      createdAt: rule.createdAt,
-      updatedAt: rule.updatedAt,
     };
   }
 

@@ -2,7 +2,6 @@ import { AuthenticationType } from '@forepath/identity/backend';
 import { INSTANCE_SCOPE_KEY, NotificationDispatcherService } from '@forepath/shared/backend';
 
 import type { ClientEntity } from '@forepath/identity/backend';
-import type { FilterRuleResponseDto } from '../dto/filter-rules/filter-rule-response.dto';
 import type { TicketResponseDto } from '../dto/tickets/ticket-response.dto';
 
 import { AgenstraNotificationPublisher } from './agenstra-notification.publisher';
@@ -70,70 +69,77 @@ describe('AgenstraNotificationPublisher', () => {
     );
   });
 
-  it('publishes filter rule events without client id for global rules', () => {
+  it('publishes agent configuration updates (instance-wide for the global layer)', () => {
     const dispatcher = {
       publishFireAndForget: jest.fn(),
     } as unknown as NotificationDispatcherService;
     const publisher = new AgenstraNotificationPublisher(dispatcher);
-    const rule = {
-      id: 'rule-1',
-      pattern: 'secret',
-      regexFlags: 'i',
-      direction: 'outbound',
-      filterType: 'redact',
-      priority: 0,
-      enabled: true,
-      isGlobal: true,
-      workspaceIds: [],
-      sync: { pending: 0, synced: 0, failed: 0 },
-      workspaceSync: [],
-      createdAt: '2026-07-01T10:00:00.000Z',
-      updatedAt: '2026-07-01T10:00:00.000Z',
-    } as unknown as FilterRuleResponseDto;
 
-    publisher.publishFilterRule('filter_rule.deleted', rule);
+    publisher.publishAgentConfigUpdated({
+      layer: 'global',
+      clientId: null,
+      agentId: null,
+      changedRoots: ['egress'],
+      securityRootsChanged: ['egress'],
+      locksChanged: false,
+      secretKeysChanged: [],
+      updatedByUserId: 'user-1',
+    });
+    publisher.publishAgentConfigUpdated({
+      layer: 'workspace',
+      clientId: 'client-1',
+      changedRoots: ['message_filters'],
+      securityRootsChanged: ['message_filters'],
+      locksChanged: true,
+      secretKeysChanged: [],
+    });
 
-    expect(dispatcher.publishFireAndForget).toHaveBeenCalledTimes(1);
-    expect(dispatcher.publishFireAndForget).toHaveBeenCalledWith({
-      type: 'filter_rule.deleted',
+    expect(dispatcher.publishFireAndForget).toHaveBeenNthCalledWith(1, {
+      type: 'agent_config.updated',
       scopeKey: INSTANCE_SCOPE_KEY,
       clientId: undefined,
-      data: expect.objectContaining({
-        id: 'rule-1',
-        pattern: 'secret',
-      }),
+      data: expect.objectContaining({ layer: 'global', changedRoots: ['egress'] }),
     });
+    expect(dispatcher.publishFireAndForget).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ type: 'agent_config.updated', clientId: 'client-1' }),
+    );
   });
 
-  it('publishes filter rule events once per linked workspace', () => {
+  it('publishes egress decision, guard and policy events with workspace client id', () => {
     const dispatcher = {
       publishFireAndForget: jest.fn(),
     } as unknown as NotificationDispatcherService;
     const publisher = new AgenstraNotificationPublisher(dispatcher);
-    const rule = {
-      id: 'rule-2',
-      pattern: 'token',
-      regexFlags: 'i',
-      direction: 'outbound',
-      filterType: 'redact',
-      priority: 0,
-      enabled: true,
-      isGlobal: false,
-      workspaceIds: ['client-a', 'client-b'],
-      sync: { pending: 0, synced: 0, failed: 0 },
-      workspaceSync: [],
-      createdAt: '2026-07-01T10:00:00.000Z',
-      updatedAt: '2026-07-01T10:00:00.000Z',
-    } as unknown as FilterRuleResponseDto;
 
-    publisher.publishFilterRule('filter_rule.created', rule);
+    publisher.publishEgressDecision('egress.blocked', 'client-1', {
+      agentId: 'agent-1',
+      kind: 'web',
+      decision: 'blocked',
+      host: 'example.org',
+      rule: 'deny_host',
+      count: 3,
+      firstSeenAt: '2026-10-12T10:00:00.000Z',
+      lastSeenAt: '2026-10-12T10:00:05.000Z',
+    });
+    publisher.publishEgressGuardFailed('client-1', {
+      agentId: 'agent-1',
+      message: 'guard_missing',
+      occurredAt: '2026-10-12T10:00:00.000Z',
+    });
+    publisher.publishEgressPolicy('egress.policy_applied', 'client-1', { agentId: 'agent-1', mode: 'enforce' });
 
-    expect(dispatcher.publishFireAndForget).toHaveBeenCalledTimes(2);
+    expect(dispatcher.publishFireAndForget).toHaveBeenCalledWith({
+      type: 'egress.blocked',
+      scopeKey: INSTANCE_SCOPE_KEY,
+      clientId: 'client-1',
+      data: expect.objectContaining({ host: 'example.org', count: 3 }),
+    });
     expect(dispatcher.publishFireAndForget).toHaveBeenCalledWith(
-      expect.objectContaining({ clientId: 'client-a', type: 'filter_rule.created' }),
+      expect.objectContaining({ type: 'egress.guard_failed', clientId: 'client-1' }),
     );
     expect(dispatcher.publishFireAndForget).toHaveBeenCalledWith(
-      expect.objectContaining({ clientId: 'client-b', type: 'filter_rule.created' }),
+      expect.objectContaining({ type: 'egress.policy_applied', data: { agentId: 'agent-1', mode: 'enforce' } }),
     );
   });
 
@@ -232,13 +238,13 @@ describe('AgenstraNotificationPublisher', () => {
     });
   });
 
-  it('publishes filter rule triggered events with workspace client id', () => {
+  it('publishes message filter triggered events with workspace client id', () => {
     const dispatcher = {
       publishFireAndForget: jest.fn(),
     } as unknown as NotificationDispatcherService;
     const publisher = new AgenstraNotificationPublisher(dispatcher);
 
-    publisher.publishFilterRuleTriggered('client-1', {
+    publisher.publishMessageFilterTriggered('client-1', {
       agentId: 'agent-1',
       direction: 'incoming',
       status: 'dropped',
@@ -251,7 +257,7 @@ describe('AgenstraNotificationPublisher', () => {
     });
 
     expect(dispatcher.publishFireAndForget).toHaveBeenCalledWith({
-      type: 'filter_rule.triggered',
+      type: 'message_filter.triggered',
       scopeKey: INSTANCE_SCOPE_KEY,
       clientId: 'client-1',
       data: expect.objectContaining({

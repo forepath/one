@@ -23,9 +23,8 @@ export const ControllerJobName = {
   CONTEXT_IMPORT_UNIT: 'context-import.unit',
   KNOWLEDGE_EMBEDDING_COORDINATOR: 'knowledge-embedding.coordinator',
   KNOWLEDGE_EMBEDDING_UNIT: 'knowledge-embedding.unit',
-  FILTER_RULES_SYNC_COORDINATOR: 'filter-rules-sync.coordinator',
-  FILTER_RULES_SYNC_UNIT: 'filter-rules-sync.unit',
-  FILTER_RULES_RECONCILE: 'filter-rules-sync.reconcile',
+  EGRESS_EVENTS_INGEST_COORDINATOR: 'egress-events-ingest.coordinator',
+  EGRESS_EVENTS_INGEST_UNIT: 'egress-events-ingest.unit',
   OPENCODE_CONFIG_SYNC_COORDINATOR: 'opencode-config-sync.coordinator',
   OPENCODE_CONFIG_SYNC_UNIT: 'opencode-config-sync.unit',
   OPENCODE_LAYER_FILES_SYNC_COORDINATOR: 'opencode-layer-files-sync.coordinator',
@@ -87,21 +86,20 @@ export function parseSearchReindexIntervalMs(envKey: string, fallbackMs: number)
   return amount * (multipliers[unit] ?? 1);
 }
 
+/**
+ * Repeatable jobs of removed features. Their Redis repeatables are deleted on startup so they stop
+ * firing (e.g. the global regex filter rule sync, replaced by layered message filters).
+ */
+export const RETIRED_CONTROLLER_REPEATABLE_JOBS: ReadonlyArray<{ name: string; coordinatorJobId: string }> = [
+  { name: 'filter-rules-sync.coordinator', coordinatorJobId: buildCoordinatorJobId('filter-rules-sync') },
+  { name: 'filter-rules-sync.reconcile', coordinatorJobId: buildCoordinatorJobId('filter-rules-reconcile') },
+];
+
 export function getControllerRepeatableJobs(): ControllerRepeatableJobDefinition[] {
   const knowledgeInterval = parseIntervalMs('KNOWLEDGE_EMBEDDINGS_REINDEX_INTERVAL_MS', 3_600_000);
   const contextImportInterval = parseIntervalMs('CONTEXT_IMPORT_SCHEDULER_INTERVAL_MS', 120_000);
   const searchReindexInterval = parseSearchReindexIntervalMs('SEARCH_REINDEX_INTERVAL', 900_000);
   const jobs: ControllerRepeatableJobDefinition[] = [
-    {
-      name: ControllerJobName.FILTER_RULES_SYNC_COORDINATOR,
-      coordinatorJobId: buildCoordinatorJobId('filter-rules-sync'),
-      everyMs: parseIntervalMs('FILTER_RULES_SYNC_INTERVAL_MS', 30_000),
-    },
-    {
-      name: ControllerJobName.FILTER_RULES_RECONCILE,
-      coordinatorJobId: buildCoordinatorJobId('filter-rules-reconcile'),
-      everyMs: parseIntervalMs('FILTER_RULES_SYNC_INTERVAL_MS', 30_000),
-    },
     {
       name: ControllerJobName.OPENCODE_CONFIG_SYNC_COORDINATOR,
       coordinatorJobId: buildCoordinatorJobId('opencode-config-sync'),
@@ -123,6 +121,16 @@ export function getControllerRepeatableJobs(): ControllerRepeatableJobDefinition
       everyMs: getWebhookDeliveryRetentionCoordinatorIntervalMs(),
     },
   ];
+
+  const egressIngestInterval = parseIntervalMs('EGRESS_EVENTS_INGEST_INTERVAL_MS', 30_000);
+
+  if (egressIngestInterval > 0) {
+    jobs.push({
+      name: ControllerJobName.EGRESS_EVENTS_INGEST_COORDINATOR,
+      coordinatorJobId: buildCoordinatorJobId('egress-events-ingest'),
+      everyMs: egressIngestInterval,
+    });
+  }
 
   if (contextImportInterval > 0) {
     jobs.push({
@@ -192,8 +200,8 @@ export function getContextImportConfigBatch(): number {
   return parseInt(process.env.CONTEXT_IMPORT_SCHEDULER_CONFIG_BATCH ?? '3', 10);
 }
 
-export function getFilterRulesSyncBatchSize(): number {
-  return parseInt(process.env.FILTER_RULES_SYNC_BATCH_SIZE ?? '10', 10);
+export function getEgressEventsIngestBatchSize(): number {
+  return parseInt(process.env.EGRESS_EVENTS_INGEST_BATCH_SIZE ?? '10', 10);
 }
 
 export function getOpencodeConfigSyncBatchSize(): number {

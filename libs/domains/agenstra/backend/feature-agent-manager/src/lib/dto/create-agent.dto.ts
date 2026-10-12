@@ -1,4 +1,4 @@
-import { IsEnum, IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsIn, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
 
 import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 import { ContainerType } from '../entities/agent.entity';
@@ -34,6 +34,15 @@ export class CreateAgentDto {
   @IsOptional()
   @IsString({ message: 'Git repository URL must be a string' })
   gitRepositoryUrl?: string;
+
+  /**
+   * Effective egress policy (set by the agent controller from the layered agent configuration).
+   * When it requires filtering, the egress guard is provisioned and its policy applied before the
+   * agent container starts, so the environment never runs without enforcement.
+   */
+  @IsOptional()
+  @IsObject({ message: 'Egress policy must be an object' })
+  egressPolicy?: Record<string, unknown>;
 
   /**
    * CI/CD deployment configuration (optional).

@@ -5,9 +5,6 @@
       <trans-unit id="featureAgentConsole-auditTitle" datatype="html">
         <source>Audit :: Agenstra</source>
         </trans-unit>
-      <trans-unit id="featureAgentConsole-filtersTitle" datatype="html">
-        <source>Filters :: Agenstra</source>
-        </trans-unit>
       <trans-unit id="featureAgentConsole-atlassianImportTitle" datatype="html">
         <source>Atlassian import :: Agenstra</source>
         </trans-unit>
@@ -1480,12 +1477,6 @@
       <trans-unit id="featureContainer-users" datatype="html">
         <source>Users</source>
         </trans-unit>
-      <trans-unit id="featureContainer-filtersTitle" datatype="html">
-        <source>Filters</source>
-        </trans-unit>
-      <trans-unit id="featureContainer-filters" datatype="html">
-        <source>Filters</source>
-        </trans-unit>
       <trans-unit id="featureContainer-opencodeConfigTitle" datatype="html">
         <source>Agent configuration</source>
         </trans-unit>
@@ -1496,7 +1487,7 @@
         <source>Agent configuration</source>
         </trans-unit>
       <trans-unit id="featureContainer-agentConfig" datatype="html">
-        <source>Agent config</source>
+        <source>Config</source>
         </trans-unit>
       <trans-unit id="featureAgentConfig-adminTitle" datatype="html">
         <source>Agent configuration</source>
@@ -2874,141 +2865,6 @@
         </trans-unit>
       <trans-unit id="featureKnowledgeTree-delete" datatype="html">
         <source> Delete </source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-directionIncoming" datatype="html">
-        <source>Incoming</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-directionOutgoing" datatype="html">
-        <source>Outgoing</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-directionBidirectional" datatype="html">
-        <source>Bidirectional</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-filterTypeNone" datatype="html">
-        <source>No content change</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-filterTypeReplace" datatype="html">
-        <source>Replace content</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-filterTypeDrop" datatype="html">
-        <source>Drop message</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-testerNoMatch" datatype="html">
-        <source>No match.</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-testerWouldDrop" datatype="html">
-        <source>Match: the message would be dropped.</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-testerNoContentChange" datatype="html">
-        <source>Match: no content change.</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-testerReplacedHead" datatype="html">
-        <source>Match: replaced result:</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-syncWsTitleFailed" datatype="html">
-        <source>Sync to agent-manager failed</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-syncWsTitleSynced" datatype="html">
-        <source>Synced to agent-manager</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-syncWsTitlePending" datatype="html">
-        <source>Waiting to sync to agent-manager</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-title" datatype="html">
-        <source>Filters</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-addButtonTitle" datatype="html">
-        <source>Add filter rule</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-searchPlaceholder" datatype="html">
-        <source>Search rules</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-loading" datatype="html">
-        <source>Loading…</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-empty" datatype="html">
-        <source>No filter rules yet.</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-statusInactive" datatype="html">
-        <source>Inactive</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-statusActive" datatype="html">
-        <source>Active</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-statusSynced" datatype="html">
-        <source>Synced</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-test" datatype="html">
-        <source>Test</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-edit" datatype="html">
-        <source>Edit</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-delete" datatype="html">
-        <source>Delete</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-allWorkspaces" datatype="html">
-        <source>All workspaces</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-createTitle" datatype="html">
-        <source>Add filter rule</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-pattern" datatype="html">
-        <source>Pattern</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-patternPlaceholder" datatype="html">
-        <source>[a-zA-Z0-9]+</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-flags" datatype="html">
-        <source>Flags</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-direction" datatype="html">
-        <source>Direction</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-filterType" datatype="html">
-        <source>Filter type</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-replace" datatype="html">
-        <source>Replace template</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-priority" datatype="html">
-        <source>Priority</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-enabled" datatype="html">
-        <source>Enabled</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-global" datatype="html">
-        <source>Global (all workspaces)</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-pickWorkspaces" datatype="html">
-        <source>Workspaces</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-create" datatype="html">
-        <source> Create </source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-editTitle" datatype="html">
-        <source>Edit filter rule</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-save" datatype="html">
-        <source> Save </source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-deleteTitle" datatype="html">
-        <source>Delete rule</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-deleteConfirm" datatype="html">
-        <source> Delete this rule? Remote copies will be removed where possible. </source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-cannotUndo" datatype="html">
-        <source>This action cannot be undone.</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-testerTitle" datatype="html">
-        <source>Test rule</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-sample" datatype="html">
-        <source>Sample text</source>
-        </trans-unit>
-      <trans-unit id="featureRuleManager-runTest" datatype="html">
-        <source> Run test </source>
         </trans-unit>
       <trans-unit id="featureTicketsBoard-runStatusPending" datatype="html">
         <source>Pending</source>
@@ -4993,6 +4849,291 @@
         </trans-unit>
       <trans-unit id="utilCookieConsent-policy" datatype="html">
         <source>Cookie Policy</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-sectionSecurity" datatype="html">
+        <source>Security</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-tabEgress" datatype="html">
+        <source>Web traffic</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-egressStatusLabel" datatype="html">
+        <source>Guard status:</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-egressAppliedAt" datatype="html">
+        <source>applied <x id="INTERPOLATION" equiv-text="{{ status.appliedAt | date: &apos;short&apos; }}"/></source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-egressModeHeading" datatype="html">
+        <source>Mode</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressMode" datatype="html">
+        <source>Filtering mode</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressModeHelp" datatype="html">
+        <source>off: no guard · monitor: record would-be blocks · enforce: apply the lists · offline: block all egress</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-inheritOption" datatype="html">
+        <source>(inherit)</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-effectiveValue" datatype="html">
+        <source>Effective:</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-yesOption" datatype="html">
+        <source>yes</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-noOption" datatype="html">
+        <source>no</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-egressHostsHeading" datatype="html">
+        <source> Destinations </source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-inheritedReadOnly" datatype="html">
+        <source>(inherited, read-only)</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-egressNetworkHeading" datatype="html">
+        <source>Non-web exceptions</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addEgressNetworkRule" datatype="html">
+        <source>Add network exception</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-egressNetworkEmpty" datatype="html">
+        <source>No network exceptions.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressProtocol" datatype="html">
+        <source>Protocol</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressPorts" datatype="html">
+        <source>Ports</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressPortsHelp" datatype="html">
+        <source>Single port (22) or range (1000-2000)</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressDestinations" datatype="html">
+        <source>Destinations</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressDestinationsHelp" datatype="html">
+        <source>IP addresses or CIDRs, comma separated</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressDescription" datatype="html">
+        <source>Description</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-egressTesterHeading" datatype="html">
+        <source> Test a destination </source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressTester" datatype="html">
+        <source>Hostname or URL</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressTesterHelp" datatype="html">
+        <source>Evaluated against the effective policy including unsaved changes on this layer</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-tabMessageFilters" datatype="html">
+        <source>Message filters</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-messageFiltersHeading" datatype="html">
+        <source>Rules</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-addMessageFilterRule" datatype="html">
+        <source>Add message filter rule</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-disabledBadge" datatype="html">
+        <source>Disabled</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-messageFiltersEmpty" datatype="html">
+        <source>No message filter rules yet.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterName" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterNameHelp" datatype="html">
+        <source>Shown in drop notices and the audit log (unique per layer)</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterPattern" datatype="html">
+        <source>Pattern</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterPatternHelp" datatype="html">
+        <source>JavaScript regular expression (nested quantifiers such as (a+)+ are rejected)</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterFlags" datatype="html">
+        <source>Flags</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterDirection" datatype="html">
+        <source>Direction</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterAction" datatype="html">
+        <source>Action</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterActionHelp" datatype="html">
+        <source>drop: block the message · replace: rewrite matches · flag: record only</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterReplacement" datatype="html">
+        <source>Replacement</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterEnabled" datatype="html">
+        <source>Enabled</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-messageFilterTesterHeading" datatype="html">
+        <source> Test a message </source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterTester" datatype="html">
+        <source>Sample message</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterTesterHelp" datatype="html">
+        <source>Evaluated against all effective rules including unsaved changes on this layer</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-directionIncoming" datatype="html">
+        <source>incoming (user → agent)</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-directionOutgoing" datatype="html">
+        <source>outgoing (agent → user)</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressBlockPrivate" datatype="html">
+        <source>Block private networks</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressBlockPrivateHelp" datatype="html">
+        <source>Deny loopback, link-local, RFC 1918 and cloud metadata addresses unless explicitly allowed</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressBlockIpLiterals" datatype="html">
+        <source>Block IP literals</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressBlockIpLiteralsHelp" datatype="html">
+        <source>Deny connections to raw IP addresses (and TLS without a hostname) unless the address is allowed</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressLogAllowed" datatype="html">
+        <source>Record allowed traffic</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressLogAllowedHelp" datatype="html">
+        <source>Include allowed destinations in the audit log (blocked traffic is always recorded)</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressDenyHosts" datatype="html">
+        <source>Denylist</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressDenyHostsHelp" datatype="html">
+        <source>Hostnames (subdomains match too; *.example.com is equivalent), IP addresses or CIDRs, one per line. Always wins.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressAllowHosts" datatype="html">
+        <source>Allowlist</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressAllowHostsHelp" datatype="html">
+        <source>When not empty, only these destinations are reachable. Same syntax as the denylist.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressDenyUrlPatterns" datatype="html">
+        <source>Blocked plain-HTTP URL patterns</source>
+        </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressDenyUrlPatternsHelp" datatype="html">
+        <source>Regular expressions matched against http:// URLs (HTTPS paths are not visible), one per line.</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressRuleDenyHost" datatype="html">
+        <source>Denylisted destination</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressRuleNotAllowlisted" datatype="html">
+        <source>Not on the allowlist</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressRulePrivateNetwork" datatype="html">
+        <source>Private network</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressRuleIpLiteral" datatype="html">
+        <source>IP literal</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressRuleDenyUrl" datatype="html">
+        <source>Blocked URL pattern</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressRuleOffline" datatype="html">
+        <source>Offline mode</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressRuleQuic" datatype="html">
+        <source>QUIC (UDP/443)</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressRuleDnsOverTls" datatype="html">
+        <source>DNS over TLS</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressRuleUndeclared" datatype="html">
+        <source>Undeclared protocol / port</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressRuleGuard" datatype="html">
+        <source>Guard</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressDecisionAllowed" datatype="html">
+        <source>Allowed</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressDecisionBlocked" datatype="html">
+        <source>Blocked</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressDecisionObserved" datatype="html">
+        <source>Would be blocked</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressDecisionError" datatype="html">
+        <source>Guard error</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressKindWeb" datatype="html">
+        <source>Web</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressKindDns" datatype="html">
+        <source>DNS</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressKindNetwork" datatype="html">
+        <source>Network</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressKindGuard" datatype="html">
+        <source>Guard</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressEventsTable" datatype="html">
+        <source>Web Traffic</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressDecisionFilter" datatype="html">
+        <source>Decision</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressDecisionAll" datatype="html">
+        <source>All decisions</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressDecision" datatype="html">
+        <source>Decision</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressKind" datatype="html">
+        <source>Type</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressDestination" datatype="html">
+        <source>Destination</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressRule" datatype="html">
+        <source>Rule</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressCount" datatype="html">
+        <source>Count</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressTransfer" datatype="html">
+        <source>Transfer</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressBlocked" datatype="html">
+        <source>Blocked destinations</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressObserved" datatype="html">
+        <source>Would-be blocks</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-egressAllowed" datatype="html">
+        <source>Allowed requests</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-seriesFilterDrops" datatype="html">
+        <source>Message drops</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-seriesFilterFlags" datatype="html">
+        <source>Message flags</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-seriesEgressBlocked" datatype="html">
+        <source>Blocked destinations</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-seriesEgressObserved" datatype="html">
+        <source>Would-be blocks</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-chartSecurityOverTimeTitle" datatype="html">
+        <source>Security events over time</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-chartEgressOverTimeTitle" datatype="html">
+        <source>Web traffic decisions over time</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-chartTopBlockedHostsTitle" datatype="html">
+        <source>Top blocked destinations</source>
+        </trans-unit>
+      <trans-unit id="featureAudit-chartEgressRulesTitle" datatype="html">
+        <source>Blocks by rule</source>
         </trans-unit>
     </body>
   </file>

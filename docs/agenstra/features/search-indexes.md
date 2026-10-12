@@ -10,7 +10,7 @@ Search queries always scope by authenticated client/workspace access (fail close
 
 ## Console list UX
 
-Agent console lists (workspaces/clients, environments/agents, filter rules, and related tables) use **infinite scroll** where applicable: first page on entry, then append on scroll with `fpcInfiniteScroll` and `fpc-list-append-footer` from `@forepath/shared/frontend/ui-components`. Append errors pause loading until retry. Ticket board lane cards use CDK virtual scroll.
+Agent console lists (workspaces/clients, environments/agents, and related tables) use **infinite scroll** where applicable: first page on entry, then append on scroll with `fpcInfiniteScroll` and `fpc-list-append-footer` from `@forepath/shared/frontend/ui-components`. Append errors pause loading until retry. Ticket board lane cards use CDK virtual scroll.
 
 ### Search pattern
 

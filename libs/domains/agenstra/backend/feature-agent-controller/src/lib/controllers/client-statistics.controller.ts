@@ -106,6 +106,37 @@ export class ClientStatisticsController {
   }
 
   /**
+   * Get egress guard decisions (web traffic filtering) for a client.
+   * Query params: agentId, kind, decision, from, to, search, limit, offset
+   */
+  @Get('egress-events')
+  async getEgressEvents(
+    @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
+    @Query('agentId') agentId?: string,
+    @Query('kind') kind?: string,
+    @Query('decision') decision?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('search') search?: string,
+    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+    @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
+    @Req() req?: RequestWithUser,
+  ) {
+    await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
+
+    return await this.statisticsQueryService.getClientEgressEvents(clientId, {
+      agentId,
+      kind,
+      decision,
+      from,
+      to,
+      search,
+      limit,
+      offset,
+    });
+  }
+
+  /**
    * Get filter flags (messages flagged/modified but not dropped) for a client.
    * Query params: agentId, filterType, from, to, limit, offset
    */

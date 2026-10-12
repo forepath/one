@@ -25,7 +25,7 @@ Job registration (queue names, repeatable intervals, job names) lives in:
 
 - `apps/agenstra/backend-agent-controller/src/queue/job-registry.ts`
 
-Coordinators fan out **unit jobs** (one ticket, one import config, etc.). BullMQ `jobId` values prevent duplicate active work for the same entity. Custom job IDs use `.` separators and only allowed characters (alphanumeric, `.`, `-`, `_`, `~`), for example `coordinator.filter-rules-sync`. Colons and slashes are not valid.
+Coordinators fan out **unit jobs** (one ticket, one import config, etc.). BullMQ `jobId` values prevent duplicate active work for the same entity. Custom job IDs use `.` separators and only allowed characters (alphanumeric, `.`, `-`, `_`, `~`), for example `coordinator.egress-events-ingest`. Colons and slashes are not valid.
 
 Notification delivery jobs on the same queue:
 
@@ -42,7 +42,7 @@ Application update check (same queue):
 - `opencode-mcp-servers.refresh`: walk all cursor pages of the [official MCP Registry](https://registry.modelcontextprotocol.io/docs) `GET /v0.1/servers?version=latest` and upsert into `opencode_mcp_servers` (`OPENCODE_MCP_SERVERS_REFRESH_INTERVAL_MS`, default 24h). On first startup with an empty table, a one-shot bootstrap job is enqueued. See [Agent configuration](../features/agent-configuration.md).
 - `opencode-config-sync.coordinator` / `.unit`: retry durable per-agent OpenCode effective-config sync targets (`pending`/`failed`). Interval `OPENCODE_CONFIG_SYNC_INTERVAL_MS` (default 30s), batch `OPENCODE_CONFIG_SYNC_BATCH_SIZE`.
 - `opencode-layer-files-sync.coordinator` / `.unit`: retry layer-file emit targets (`pending`/`failed`). Interval `OPENCODE_LAYER_FILES_SYNC_INTERVAL_MS` (default 30s), batch `OPENCODE_LAYER_FILES_SYNC_BATCH_SIZE`.
-- `filter-rules-sync.coordinator` / `.unit` / `filter-rules-sync.reconcile`: push regex filter rules to agent managers.
+- `egress-events-ingest.coordinator` / `.unit`: pull aggregated egress guard decisions from each workspace's agent manager (`GET /api/egress/events`) into `statistics_egress_events` and publish `egress.*` notifications. Interval `EGRESS_EVENTS_INGEST_INTERVAL_MS` (default 30s; `0` disables), batch `EGRESS_EVENTS_INGEST_BATCH_SIZE` (default 10). See [Egress Filtering](../features/egress-filtering.md).
 
 See [Application updates](../features/application-updates.md).
 

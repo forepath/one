@@ -1,7 +1,7 @@
 <div class="audit-container border-top d-flex flex-column flex-grow-1 min-h-0">
   <fpc-page-header [title]="pageTitle" />
 
-  <fpc-summary-bar [columns]="7">
+  <fpc-summary-bar [columns]="9">
     <fpc-summary-card [label]="totalMessagesLabel">
       <span fpcSummaryCardValue>
         @if (loadingSummary$ | async) {
@@ -62,6 +62,24 @@
           <fpc-spinner size="sm" />
         } @else if (summary(); as summaryData) {
           {{ summaryData.filterDropCount }}
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card [label]="egressBlockedLabel">
+      <span fpcSummaryCardValue data-testid="audit-egress-blocked">
+        @if (loadingSummary$ | async) {
+          <fpc-spinner size="sm" />
+        } @else if (summary(); as summaryData) {
+          {{ summaryData.egressBlockedCount ?? 0 }}
+        }
+      </span>
+    </fpc-summary-card>
+    <fpc-summary-card [label]="egressObservedLabel">
+      <span fpcSummaryCardValue data-testid="audit-egress-observed">
+        @if (loadingSummary$ | async) {
+          <fpc-spinner size="sm" />
+        } @else if (summary(); as summaryData) {
+          {{ summaryData.egressObservedCount ?? 0 }}
         }
       </span>
     </fpc-summary-card>
@@ -190,6 +208,84 @@
                     [labels]="donutOpts.labels"
                     [legend]="donutOpts.legend"
                     [title]="donutOpts.title"
+                  ></apx-chart>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Security charts row -->
+        <div class="row g-3 mt-0">
+          @if (securitySeriesChartOptions(); as chartOpts) {
+            <div class="col-12" [class.col-lg-8]="egressRulesChartOptions()">
+              <div class="card">
+                <div class="card-body">
+                  <apx-chart
+                    [series]="chartOpts.series"
+                    [chart]="chartOpts.chart"
+                    [colors]="chartOpts.colors"
+                    [stroke]="chartOpts.stroke"
+                    [dataLabels]="chartOpts.dataLabels"
+                    [xaxis]="chartOpts.xaxis"
+                    [yaxis]="chartOpts.yaxis"
+                    [grid]="chartOpts.grid"
+                    [legend]="chartOpts.legend"
+                    [title]="chartOpts.title"
+                  ></apx-chart>
+                </div>
+              </div>
+            </div>
+          }
+          @if (egressRulesChartOptions(); as donutOpts) {
+            <div class="col-12 col-lg-4">
+              <div class="card">
+                <div class="card-body">
+                  <apx-chart
+                    [series]="donutOpts.series"
+                    [chart]="donutOpts.chart"
+                    [colors]="donutOpts.colors"
+                    [labels]="donutOpts.labels"
+                    [legend]="donutOpts.legend"
+                    [title]="donutOpts.title"
+                  ></apx-chart>
+                </div>
+              </div>
+            </div>
+          }
+          @if (egressSeriesChartOptions(); as chartOpts) {
+            <div class="col-12" [class.col-lg-8]="egressTopHostsChartOptions()">
+              <div class="card">
+                <div class="card-body">
+                  <apx-chart
+                    [series]="chartOpts.series"
+                    [chart]="chartOpts.chart"
+                    [colors]="chartOpts.colors"
+                    [dataLabels]="chartOpts.dataLabels"
+                    [xaxis]="chartOpts.xaxis"
+                    [yaxis]="chartOpts.yaxis"
+                    [grid]="chartOpts.grid"
+                    [legend]="chartOpts.legend"
+                    [title]="chartOpts.title"
+                  ></apx-chart>
+                </div>
+              </div>
+            </div>
+          }
+          @if (egressTopHostsChartOptions(); as barOpts) {
+            <div class="col-12 col-lg-4">
+              <div class="card">
+                <div class="card-body">
+                  <apx-chart
+                    [series]="barOpts.series"
+                    [chart]="barOpts.chart"
+                    [colors]="barOpts.colors"
+                    [plotOptions]="barOpts.plotOptions"
+                    [dataLabels]="barOpts.dataLabels"
+                    [xaxis]="barOpts.xaxis"
+                    [yaxis]="barOpts.yaxis"
+                    [grid]="barOpts.grid"
+                    [title]="barOpts.title"
                   ></apx-chart>
                 </div>
               </div>
@@ -492,6 +588,146 @@
                         class="page-link"
                         href="#"
                         (click)="onFilterFlagsPageChange(filterFlagsPage() + 1); $event.preventDefault()"
+                        i18n="@@featureAudit-next"
+                        >Next</a
+                      >
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            }
+          </div>
+
+          <!-- Egress (web traffic) Table -->
+          <div class="card mb-4" data-testid="audit-egress-table">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <span i18n="@@featureAudit-egressEventsTable">Web Traffic</span>
+              <div class="d-flex gap-2 align-items-center flex-wrap">
+                <select
+                  class="form-select form-select-sm w-auto"
+                  [ngModel]="egressDecision()"
+                  (ngModelChange)="onEgressDecisionChange($event)"
+                  aria-label="Decision"
+                  i18n-aria-label="@@featureAudit-egressDecisionFilter"
+                >
+                  <option value="" i18n="@@featureAudit-egressDecisionAll">All decisions</option>
+                  @for (decision of egressDecisions; track decision) {
+                    <option [value]="decision">{{ formatEgressDecision(decision) }}</option>
+                  }
+                </select>
+                <fpc-search-field
+                  class="audit-table-search"
+                  size="sm"
+                  [placeholder]="searchPlaceholder"
+                  [ariaLabel]="searchPlaceholder"
+                  [value]="egressEventsSearch()"
+                  (valueChange)="onEgressEventsSearchChange($event)"
+                />
+              </div>
+            </div>
+            <div class="card-body p-0">
+              @if (loadingEgressEvents$ | async) {
+                <div class="text-center py-4">
+                  <fpc-spinner size="sm" />
+                </div>
+              } @else {
+                <div class="table-responsive">
+                  <table class="table table-striped table-hover mb-0">
+                    <thead>
+                      <tr>
+                        <th i18n="@@featureAudit-time">Time</th>
+                        <th i18n="@@featureAudit-agent">Agent</th>
+                        <th i18n="@@featureAudit-egressDecision">Decision</th>
+                        <th i18n="@@featureAudit-egressKind">Type</th>
+                        <th i18n="@@featureAudit-egressDestination">Destination</th>
+                        <th i18n="@@featureAudit-egressRule">Rule</th>
+                        <th i18n="@@featureAudit-egressCount">Count</th>
+                        <th i18n="@@featureAudit-egressTransfer">Transfer</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of egressEvents()?.data ?? []; track row.id) {
+                        <tr>
+                          <td>{{ formatDateTime(row.occurredAt) }}</td>
+                          <td>
+                            @if (buildAgentChatRoute(row.clientId, row.agentId); as route) {
+                              <a
+                                [routerLink]="route"
+                                [innerHTML]="resolveAgentDisplay(row)"
+                                class="text-decoration-none"
+                              ></a>
+                            } @else {
+                              <span [innerHTML]="resolveAgentDisplay(row)"></span>
+                            }
+                          </td>
+                          <td>
+                            <fpc-badge [color]="egressDecisionColor(row.decision)">{{
+                              formatEgressDecision(row.decision)
+                            }}</fpc-badge>
+                          </td>
+                          <td>{{ formatEgressKind(row.kind) }}</td>
+                          <td class="font-monospace small text-break">
+                            {{ row.host ?? '-' }}
+                            @if (row.method) {
+                              <span class="text-muted">· {{ row.method }}</span>
+                            }
+                            @if (row.sampleUrl) {
+                              <div class="text-muted">{{ row.sampleUrl }}</div>
+                            }
+                            @if (row.message) {
+                              <div class="text-muted">{{ row.message }}</div>
+                            }
+                          </td>
+                          <td>
+                            {{ formatEgressRule(row.rule) }}
+                            @if (row.matchedEntry) {
+                              <div class="small text-muted font-monospace">
+                                {{ row.matchedEntry }}
+                                @if (row.matchedSource) {
+                                  · {{ row.matchedSource }}
+                                }
+                              </div>
+                            }
+                          </td>
+                          <td>{{ row.count }}</td>
+                          <td class="small text-nowrap">
+                            ↓ {{ formatBytes(row.bytesIn) }} · ↑ {{ formatBytes(row.bytesOut) }}
+                          </td>
+                        </tr>
+                      } @empty {
+                        <tr>
+                          <td colspan="8" class="text-center text-muted py-3" i18n="@@featureAudit-noRows">No rows</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+            @if (egressEvents(); as list) {
+              <div class="card-footer d-flex justify-content-between align-items-center">
+                <small class="text-muted" i18n="@@featureAudit-showingOf"
+                  >Showing {{ list.data.length }} of {{ list.total }}</small
+                >
+                <nav>
+                  <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" [class.disabled]="egressEventsPage() <= 0">
+                      <a
+                        class="page-link"
+                        href="#"
+                        (click)="onEgressEventsPageChange(egressEventsPage() - 1); $event.preventDefault()"
+                        i18n="@@featureAudit-prev"
+                        >Previous</a
+                      >
+                    </li>
+                    <li class="page-item disabled">
+                      <span class="page-link">{{ egressEventsPage() + 1 }} / {{ totalPages(list.total) || 1 }}</span>
+                    </li>
+                    <li class="page-item" [class.disabled]="egressEventsPage() >= totalPages(list.total) - 1">
+                      <a
+                        class="page-link"
+                        href="#"
+                        (click)="onEgressEventsPageChange(egressEventsPage() + 1); $event.preventDefault()"
                         i18n="@@featureAudit-next"
                         >Next</a
                       >

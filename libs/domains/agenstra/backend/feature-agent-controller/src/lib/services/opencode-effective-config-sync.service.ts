@@ -1,3 +1,7 @@
+import {
+  resolvePlatformSecurityPolicy,
+  type EffectivePlatformSecurityPolicy,
+} from '@forepath/agenstra/shared/util-opencode-config';
 import { Injectable, Logger } from '@nestjs/common';
 
 import { ClientsRepository } from '../repositories/clients.repository';
@@ -10,6 +14,8 @@ export interface OpencodeAgentSyncResult {
   /** When true, keep target `pending` (e.g. container not running) instead of `failed`. */
   defer?: boolean;
   error?: string;
+  /** Platform security policy that was sent with this sync. */
+  platformPolicy?: EffectivePlatformSecurityPolicy;
 }
 
 /**
@@ -33,7 +39,11 @@ export class OpencodeEffectiveConfigSyncService {
   async buildEffectivePayload(
     clientId: string,
     agentId: string,
-  ): Promise<{ effective: Record<string, unknown>; secrets: Record<string, string> }> {
+  ): Promise<{
+    effective: Record<string, unknown>;
+    secrets: Record<string, string>;
+    platformPolicy: EffectivePlatformSecurityPolicy;
+  }> {
     const layers = await this.opencodeConfigService.getLayerConfigs(clientId);
     const secrets = await this.opencodeConfigService.getLayerSecrets(clientId);
     const agentConfig = await this.agentConfigProxy.get(clientId, agentId);
@@ -45,15 +55,33 @@ export class OpencodeEffectiveConfigSyncService {
     );
     // Agent-layer secrets are merged inside manager syncEffective; pass workspace + global only.
     const workerSecrets = this.opencodeConfigService.mergeSecrets({}, secrets.workspace, secrets.global);
+    // Platform security roots never reach the OpenCode wire: resolve them separately (with provenance).
+    const platformPolicy = resolvePlatformSecurityPolicy([
+      { source: 'global', overlay: layers.global },
+      { source: 'workspace', overlay: layers.workspace },
+      { source: 'environment', overlay: agentOverlay },
+    ]);
 
-    return { effective, secrets: workerSecrets };
+    return { effective, secrets: workerSecrets, platformPolicy };
+  }
+
+  /** Effective platform security policy for a new agent (workspace + global; no environment layer yet). */
+  async buildCreationPlatformPolicy(clientId: string): Promise<EffectivePlatformSecurityPolicy> {
+    const layers = await this.opencodeConfigService.getLayerConfigs(clientId);
+
+    return resolvePlatformSecurityPolicy([
+      { source: 'global', overlay: layers.global },
+      { source: 'workspace', overlay: layers.workspace },
+    ]);
   }
 
   /** Sync one agent with the full layered effective config. */
   async syncAgent(clientId: string, agentId: string): Promise<OpencodeAgentSyncResult> {
-    const { effective, secrets } = await this.buildEffectivePayload(clientId, agentId);
+    const { effective, secrets, platformPolicy } = await this.buildEffectivePayload(clientId, agentId);
 
-    return await this.agentConfigProxy.syncEffective(clientId, agentId, effective, secrets);
+    const result = await this.agentConfigProxy.syncEffective(clientId, agentId, effective, secrets, platformPolicy);
+
+    return { ...result, platformPolicy };
   }
 
   /** Sync every agent for one workspace/client (paged). Prefer sync targets + BullMQ for durability. */

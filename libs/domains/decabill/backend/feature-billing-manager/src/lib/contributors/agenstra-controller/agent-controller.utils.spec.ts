@@ -317,7 +317,7 @@ describe('cloud-init.utils', () => {
       expect(script).toContain('SEARCH_REINDEX_INTERVAL: 15m');
       expect(script).toContain('vm.max_map_count=262144');
       expect(script).not.toContain('9200:9200');
-      expect(script).toContain('FILTER_RULES_SYNC_INTERVAL_MS: 30000');
+      expect(script).toContain('EGRESS_EVENTS_INGEST_INTERVAL_MS: 30000');
       expect(script).toContain('CONTEXT_IMPORT_SCHEDULER_INTERVAL_MS: 120000');
       expect(script).toContain('KNOWLEDGE_EMBEDDINGS_REINDEX_INTERVAL_MS: 3600000');
     });

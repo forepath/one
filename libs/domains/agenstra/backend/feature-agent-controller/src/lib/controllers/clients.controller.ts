@@ -72,6 +72,7 @@ import { WorkspaceSearchIndexService } from '../search/workspace-search-index.se
 import { ClientsService } from '../services/clients.service';
 import { OpencodeLayerFilesService } from '../services/opencode-layer-files.service';
 import { OpencodeConfigSyncTargetsService } from '../services/opencode-config-sync-targets.service';
+import { OpencodeEffectiveConfigSyncService } from '../services/opencode-effective-config-sync.service';
 import { ProvisioningService } from '../services/provisioning.service';
 
 /**
@@ -95,6 +96,7 @@ export class ClientsController {
     private readonly workspaceSearchIndex: WorkspaceSearchIndexService,
     private readonly opencodeLayerFilesService: OpencodeLayerFilesService,
     private readonly configSyncTargets: OpencodeConfigSyncTargetsService,
+    private readonly effectiveConfigSync: OpencodeEffectiveConfigSyncService,
   ) {}
 
   private syncAgentRuntime(clientId: string, agentId: string): void {
@@ -386,8 +388,14 @@ export class ClientsController {
   ): Promise<CreateAgentResponseDto> {
     await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, id, req);
     const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
-
-    const created = await this.clientAgentProxyService.createClientAgent(id, createAgentDto, userInfo.userId);
+    // The egress policy is always derived from the layered agent configuration (never from the request),
+    // so the manager can provision the egress guard before the environment first starts.
+    const { egress } = await this.effectiveConfigSync.buildCreationPlatformPolicy(id);
+    const created = await this.clientAgentProxyService.createClientAgent(
+      id,
+      { ...createAgentDto, egressPolicy: egress as unknown as Record<string, unknown> },
+      userInfo.userId,
+    );
 
     this.syncAgentRuntime(id, created.id);
 

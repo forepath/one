@@ -23,7 +23,7 @@ import { AgenstraManagerMetricsCollectorService } from './agenstra-manager-metri
 describe('AgenstraManagerMetricsCollectorService', () => {
   const agentCreateQueryBuilder = jest.fn();
   const messageCreateQueryBuilder = jest.fn();
-  const filterCreateQueryBuilder = jest.fn();
+  const egressCreateQueryBuilder = jest.fn();
   const agentRepository = {
     createQueryBuilder: agentCreateQueryBuilder,
     count: jest.fn(),
@@ -31,8 +31,8 @@ describe('AgenstraManagerMetricsCollectorService', () => {
   const messageRepository = {
     createQueryBuilder: messageCreateQueryBuilder,
   };
-  const filterRulesRepository = {
-    createQueryBuilder: filterCreateQueryBuilder,
+  const egressEventsRepository = {
+    createQueryBuilder: egressCreateQueryBuilder,
   };
 
   beforeEach(() => {
@@ -41,7 +41,7 @@ describe('AgenstraManagerMetricsCollectorService', () => {
     resolveOtelRuntimeConfig.mockReturnValue({ enabled: true });
   });
 
-  it('sets agent, chat, filter-trigger, and filter-rule gauges when OTEL is enabled', async () => {
+  it('sets agent, chat, filter-trigger, egress and message-filter gauges when OTEL is enabled', async () => {
     agentCreateQueryBuilder.mockReturnValue({
       select: jest.fn().mockReturnThis(),
       addSelect: jest.fn().mockReturnThis(),
@@ -49,7 +49,11 @@ describe('AgenstraManagerMetricsCollectorService', () => {
       addGroupBy: jest.fn().mockReturnThis(),
       where: jest.fn().mockReturnThis(),
       getCount: jest.fn().mockResolvedValue(2),
-      getRawMany: jest.fn().mockResolvedValue([{ agentType: 'opencode', containerType: 'docker', count: '2' }]),
+      getRawMany: jest
+        .fn()
+        .mockResolvedValueOnce([{ agentType: 'opencode', containerType: 'docker', count: '2' }])
+        .mockResolvedValueOnce([{ status: 'active', count: '1' }]),
+      getRawOne: jest.fn().mockResolvedValue({ count: '4' }),
     });
     agentRepository.count.mockResolvedValue(3);
     messageCreateQueryBuilder.mockReturnValue({
@@ -62,18 +66,18 @@ describe('AgenstraManagerMetricsCollectorService', () => {
         { actor: 'agent', filtered: true, count: '2', charCount: '40', wordCount: '8' },
       ]),
     });
-    filterCreateQueryBuilder.mockReturnValue({
+    egressCreateQueryBuilder.mockReturnValue({
       select: jest.fn().mockReturnThis(),
       addSelect: jest.fn().mockReturnThis(),
       groupBy: jest.fn().mockReturnThis(),
       addGroupBy: jest.fn().mockReturnThis(),
-      getRawMany: jest.fn().mockResolvedValue([{ direction: 'incoming', filterType: 'drop', count: '3' }]),
+      getRawMany: jest.fn().mockResolvedValue([{ kind: 'web', decision: 'blocked', count: '3' }]),
     });
 
     const service = new AgenstraManagerMetricsCollectorService(
       agentRepository as never,
       messageRepository as never,
-      filterRulesRepository as never,
+      egressEventsRepository as never,
     );
 
     await (service as unknown as { collectMetrics: () => Promise<void> }).collectMetrics();
@@ -99,13 +103,20 @@ describe('AgenstraManagerMetricsCollectorService', () => {
     expect(setGauge).toHaveBeenCalledWith('forepath.agenstra', 'agenstra.manager.filter_triggers', 2, {
       actor: 'agent',
     });
-    expect(setGauge).toHaveBeenCalledWith('forepath.agenstra', 'agenstra.manager.filter_rules', 3, {
-      direction: 'incoming',
-      filter_type: 'drop',
+    expect(setGauge).toHaveBeenCalledWith('forepath.agenstra', 'agenstra.manager.egress_guards', 1, {
+      status: 'active',
     });
-    expect(setGauge).toHaveBeenCalledWith('forepath.agenstra', 'agenstra.manager.filter_rules', 0, {
-      direction: 'outgoing',
-      filter_type: 'filter',
+    expect(setGauge).toHaveBeenCalledWith('forepath.agenstra', 'agenstra.manager.egress_guards', 0, {
+      status: 'failed',
     });
+    expect(setGauge).toHaveBeenCalledWith('forepath.agenstra', 'agenstra.manager.egress_decisions', 3, {
+      kind: 'web',
+      decision: 'blocked',
+    });
+    expect(setGauge).toHaveBeenCalledWith('forepath.agenstra', 'agenstra.manager.egress_decisions', 0, {
+      kind: 'dns',
+      decision: 'blocked',
+    });
+    expect(setGauge).toHaveBeenCalledWith('forepath.agenstra', 'agenstra.manager.message_filter_rules', 4);
   });
 });

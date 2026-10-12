@@ -69,6 +69,7 @@ The library follows Domain-Driven Design (DDD) principles with clear separation 
 All diagrams are available in the [`docs/`](./docs/) directory:
 
 - **[Overview Diagram](./docs/overview.mmd)** - High-level flowchart showing HTTP REST API for clients, proxied agent operations, and WebSocket event forwarding
+- **[Egress Events Ingestion](./docs/egress-events-ingest.mmd)** - `egress-events-ingest` coordinator/unit jobs pulling guard decisions from managers into `statistics_egress_events`; see [Egress Filtering](../../../../docs/agenstra/features/egress-filtering.md)
 - **[Statistics Model](./docs/statistics-architecture.mmd)** - Flowchart of shadow tables and statistics/event tables; persistent statistics (chat I/O, filter drops, entity lifecycle), collection points, REST API
 - **[HTTP Statistics Sequence Diagram](./docs/sequence-http-statistics.mmd)** - Sequence diagram for Statistics REST API (client-scoped and aggregate endpoints)
 - **[HTTP Sequence Diagram](./docs/sequence-http.mmd)** - Detailed sequence diagram for all HTTP CRUD operations (client management and proxied agent operations)
@@ -261,11 +262,13 @@ REST endpoints for querying chat I/O, filter drops, filter flags, and entity lif
 - `GET /api/clients/:id/statistics/filter-drops` - Filter drop incidents (paginated)
 - `GET /api/clients/:id/statistics/filter-flags` - Filter flag incidents (paginated, messages flagged but not dropped)
 - `GET /api/clients/:id/statistics/entity-events` - Entity lifecycle events (paginated)
+- `GET /api/clients/:id/statistics/egress-events` - Web traffic (egress guard) decision events (paginated)
 - `GET /api/statistics/summary` - Aggregate statistics (all accessible clients or filter by `clientId`)
 - `GET /api/statistics/chat-io` - Chat I/O records
 - `GET /api/statistics/filter-drops` - Filter drops
 - `GET /api/statistics/filter-flags` - Filter flags (messages flagged but not dropped)
 - `GET /api/statistics/entity-events` - Entity events
+- `GET /api/statistics/egress-events` - Egress events
 
 ### Server Provisioning
 

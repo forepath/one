@@ -8,6 +8,7 @@ import type {
   StatisticsAggregateParams,
   StatisticsChatIoListDto,
   StatisticsClientScopeParams,
+  StatisticsEgressEventListDto,
   StatisticsEntityEventListDto,
   StatisticsFilterDropListDto,
   StatisticsFilterFlagListDto,
@@ -210,6 +211,46 @@ export class StatisticsService {
     });
 
     return this.http.get<StatisticsEntityEventListDto>(`${this.apiUrl}/statistics/entity-events`, {
+      params: httpParams,
+    });
+  }
+
+  /** Client-scoped: egress guard decisions (web traffic filtering) for a client */
+  getClientEgressEvents(
+    clientId: string,
+    params?: StatisticsClientScopeParams,
+  ): Observable<StatisticsEgressEventListDto> {
+    const httpParams = this.buildParams({
+      agentId: params?.agentId,
+      kind: params?.kind,
+      decision: params?.decision,
+      from: params?.from,
+      to: params?.to,
+      search: params?.search,
+      limit: params?.limit ?? 10,
+      offset: params?.offset ?? 0,
+    });
+
+    return this.http.get<StatisticsEgressEventListDto>(`${this.apiUrl}/clients/${clientId}/statistics/egress-events`, {
+      params: httpParams,
+    });
+  }
+
+  /** Aggregate: egress guard decisions (web traffic filtering) */
+  getEgressEvents(params?: StatisticsAggregateParams): Observable<StatisticsEgressEventListDto> {
+    const httpParams = this.buildParams({
+      clientId: params?.clientId,
+      agentId: params?.agentId,
+      kind: params?.kind,
+      decision: params?.decision,
+      from: params?.from,
+      to: params?.to,
+      search: params?.search,
+      limit: params?.limit ?? 10,
+      offset: params?.offset ?? 0,
+    });
+
+    return this.http.get<StatisticsEgressEventListDto>(`${this.apiUrl}/statistics/egress-events`, {
       params: httpParams,
     });
   }

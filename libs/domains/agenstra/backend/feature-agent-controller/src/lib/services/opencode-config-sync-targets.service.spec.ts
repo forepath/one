@@ -28,3 +28,103 @@ describe('OpencodeConfigSyncTargetsService.hashRevision', () => {
     expect(a).toBe(b);
   });
 });
+
+describe('OpencodeConfigSyncTargetsService platform policy', () => {
+  const policy = (mode: string, deny: string[] = []) =>
+    ({
+      egress: {
+        mode,
+        allowHosts: [],
+        denyHosts: deny.map((value) => ({ value, source: 'global' })),
+        denyUrlPatterns: [],
+        networkAllow: [],
+        blockPrivateNetworks: true,
+        blockIpLiterals: false,
+        logAllowed: true,
+        scalarSources: { mode: 'global', blockPrivateNetworks: null, blockIpLiterals: null, logAllowed: null },
+      },
+      messageFilters: [],
+    }) as never;
+
+  it('includes the platform policy in the revision hash', () => {
+    const config = { model: 'x/y' };
+
+    expect(OpencodeConfigSyncTargetsService.hashRevision(config, {}, policy('off'))).not.toBe(
+      OpencodeConfigSyncTargetsService.hashRevision(config, {}, policy('enforce')),
+    );
+    expect(OpencodeConfigSyncTargetsService.hashEgressRevision(policy('enforce', ['a.example']))).toBe(
+      OpencodeConfigSyncTargetsService.hashEgressRevision(policy('enforce', ['a.example'])),
+    );
+    expect(OpencodeConfigSyncTargetsService.hashEgressRevision(undefined)).toBeNull();
+  });
+
+  function buildService(syncResult: Record<string, unknown>, target: Record<string, unknown>) {
+    const saved: Array<Record<string, unknown>> = [];
+    const targetsRepo = {
+      findOne: jest.fn().mockResolvedValue(target),
+      save: jest.fn(async (value: Record<string, unknown>) => {
+        saved.push({ ...value });
+
+        return value;
+      }),
+    };
+    const effectiveConfigSync = { syncAgent: jest.fn().mockResolvedValue(syncResult) };
+    const publisher = { publishEgressPolicy: jest.fn() };
+    const service = new OpencodeConfigSyncTargetsService(
+      targetsRepo as never,
+      effectiveConfigSync as never,
+      {} as never,
+      publisher as never,
+    );
+
+    return { service, publisher, saved };
+  }
+
+  it('publishes egress.policy_applied once per new egress revision', async () => {
+    const target = { id: 't1', clientId: 'c1', agentId: 'a1', syncStatus: 'pending', desiredRevision: 'r1' };
+    const { service, publisher, saved } = buildService({ ok: true, platformPolicy: policy('enforce') }, target);
+
+    await service.processTargetById('t1');
+
+    expect(publisher.publishEgressPolicy).toHaveBeenCalledWith(
+      'egress.policy_applied',
+      'c1',
+      expect.objectContaining({ agentId: 'a1', mode: 'enforce' }),
+    );
+    expect(saved[0]['appliedEgressRevision']).toEqual(expect.any(String));
+
+    publisher.publishEgressPolicy.mockClear();
+    Object.assign(target, { syncStatus: 'pending', appliedEgressRevision: saved[0]['appliedEgressRevision'] });
+    await service.processTargetById('t1');
+    expect(publisher.publishEgressPolicy).not.toHaveBeenCalled();
+  });
+
+  it('does not notify the initial default (off) policy', async () => {
+    const { service, publisher } = buildService(
+      { ok: true, platformPolicy: policy('off') },
+      { id: 't1', clientId: 'c1', agentId: 'a1', syncStatus: 'pending', desiredRevision: 'r1' },
+    );
+
+    await service.processTargetById('t1');
+
+    expect(publisher.publishEgressPolicy).not.toHaveBeenCalled();
+  });
+
+  it('publishes egress.policy_failed for new egress errors only', async () => {
+    const target = { id: 't1', clientId: 'c1', agentId: 'a1', syncStatus: 'pending', desiredRevision: 'r1' };
+    const error = 'Egress policy not applied: squid configuration rejected';
+    const { service, publisher } = buildService({ ok: false, error, platformPolicy: policy('enforce') }, target);
+
+    await service.processTargetById('t1');
+    expect(publisher.publishEgressPolicy).toHaveBeenCalledWith(
+      'egress.policy_failed',
+      'c1',
+      expect.objectContaining({ error }),
+    );
+
+    publisher.publishEgressPolicy.mockClear();
+    Object.assign(target, { syncStatus: 'failed', lastError: error });
+    await service.processTargetById('t1');
+    expect(publisher.publishEgressPolicy).not.toHaveBeenCalled();
+  });
+});

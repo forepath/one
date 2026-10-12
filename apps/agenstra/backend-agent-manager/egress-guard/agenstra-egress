@@ -1,0 +1,250 @@
+#!/bin/bash
+# Agenstra egress guard control CLI (invoked by the agent manager via `docker exec`, as root).
+#
+#   agenstra-egress lockdown   install fail-closed netfilter rules (loopback + established only)
+#   agenstra-egress prepare    reset the staged policy directory
+#   agenstra-egress apply      validate the staged bundle, activate it atomically, reload services
+#   agenstra-egress activate   (re)apply the active bundle's netfilter rules and reload services
+#   agenstra-egress status     print guard status as JSON
+#   agenstra-egress counters   print netfilter counters of counted categories (iptables-save -c lines)
+#
+# Exit codes: 0 success, 1 validation / apply failure (last known good policy stays active).
+set -euo pipefail
+
+STATE_DIR=/var/lib/agenstra-egress
+STAGED="$STATE_DIR/staged"
+ACTIVE="$STATE_DIR/active"
+PREVIOUS="$STATE_DIR/previous"
+RUN_DIR=/run/agenstra-egress
+DEFAULT_DIR=/etc/agenstra-egress/default
+RESOLVERS_CHAIN=AGENSTRA_EGRESS_RESOLVERS
+REQUIRED_FILES=(squid.conf dnsmasq.conf rules.v4 rules.v6 policy.json allow-domains.txt allow-ips.txt deny-domains.txt deny-ips.txt deny-url-patterns.txt private-ips.txt)
+
+fail() {
+  printf '%s\n' "$*" >&2
+  exit 1
+}
+
+ipv6_available() {
+  if ip6tables -S >/dev/null 2>&1; then
+    return 0
+  fi
+
+  # Without ip6tables, IPv6 must be off in this namespace — otherwise it would be unfiltered.
+  if [ -e /proc/net/if_inet6 ] && [ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6 2>/dev/null || echo 0)" != "1" ]; then
+    fail "IPv6 is enabled but ip6tables is unavailable; refusing to leave IPv6 unfiltered"
+  fi
+
+  return 1
+}
+
+# Upstream resolvers dnsmasq may reach (IPv4 nameservers from the guard's resolv.conf; loopback
+# resolvers such as Docker's embedded DNS are covered by the loopback rule).
+render_resolver_rules() {
+  local ns
+
+  printf ':%s - [0:0]\n' "$RESOLVERS_CHAIN"
+
+  while read -r keyword ns _; do
+    [ "$keyword" = "nameserver" ] || continue
+    [[ "$ns" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] || continue
+    [[ "$ns" == 127.* ]] && continue
+    printf -- '-A %s -d %s/32 -p udp --dport 53 -j ACCEPT\n' "$RESOLVERS_CHAIN" "$ns"
+    printf -- '-A %s -d %s/32 -p tcp --dport 53 -j ACCEPT\n' "$RESOLVERS_CHAIN" "$ns"
+  done < /etc/resolv.conf
+
+  printf -- '-A %s -j RETURN\n' "$RESOLVERS_CHAIN"
+}
+
+ensure_jump() {
+  local bin="$1" table="$2" parent="$3" chain="$4"
+
+  "$bin" -t "$table" -C "$parent" -j "$chain" 2>/dev/null || "$bin" -t "$table" -I "$parent" 1 -j "$chain"
+}
+
+ensure_jumps() {
+  ensure_jump iptables nat OUTPUT AGENSTRA_EGRESS_NAT
+  ensure_jump iptables filter OUTPUT AGENSTRA_EGRESS_OUT
+  ensure_jump iptables filter INPUT AGENSTRA_EGRESS_IN
+
+  if ipv6_available; then
+    ensure_jump ip6tables filter OUTPUT AGENSTRA_EGRESS_OUT
+  fi
+}
+
+cmd_lockdown() {
+  iptables-restore --noflush <<RULES
+*nat
+:AGENSTRA_EGRESS_NAT - [0:0]
+COMMIT
+*filter
+:AGENSTRA_EGRESS_IN - [0:0]
+:AGENSTRA_EGRESS_OUT - [0:0]
+$(render_resolver_rules)
+-A AGENSTRA_EGRESS_IN -i lo -j RETURN
+-A AGENSTRA_EGRESS_IN -p tcp -m multiport --dports 3128:3130,5353 -j DROP
+-A AGENSTRA_EGRESS_IN -p udp --dport 5353 -j DROP
+-A AGENSTRA_EGRESS_OUT -o lo -j ACCEPT
+-A AGENSTRA_EGRESS_OUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+-A AGENSTRA_EGRESS_OUT -m comment --comment "agenstra:guard" -j REJECT
+COMMIT
+RULES
+
+  if ipv6_available; then
+    ip6tables-restore --noflush <<'RULES'
+*filter
+:AGENSTRA_EGRESS_OUT - [0:0]
+-A AGENSTRA_EGRESS_OUT -o lo -j ACCEPT
+-A AGENSTRA_EGRESS_OUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+-A AGENSTRA_EGRESS_OUT -j REJECT
+COMMIT
+RULES
+  fi
+
+  ensure_jumps
+}
+
+cmd_prepare() {
+  rm -rf -- "$STAGED"
+  install -d -m 0750 -o root -g egressproxy "$STAGED"
+}
+
+validate_dir() {
+  local dir="$1"
+
+  for name in "${REQUIRED_FILES[@]}"; do
+    [ -f "$dir/$name" ] || fail "missing policy file: $name"
+  done
+
+  # Squid references the active directory; validate a copy pointing at the candidate bundle.
+  local check_conf
+  check_conf="$(mktemp /tmp/agenstra-egress-squid.XXXXXX)"
+  sed "s#$ACTIVE/#$dir/#g" "$dir/squid.conf" > "$check_conf"
+
+  if ! output="$(squid -k parse -f "$check_conf" 2>&1)"; then
+    rm -f -- "$check_conf"
+    fail "squid configuration rejected: $(printf '%s' "$output" | grep -E 'FATAL|ERROR' | head -n 3 | tr '\n' ' ')"
+  fi
+
+  if printf '%s' "$output" | grep -qE 'FATAL|Bungled'; then
+    rm -f -- "$check_conf"
+    fail "squid configuration rejected: $(printf '%s' "$output" | grep -E 'FATAL|Bungled' | head -n 3 | tr '\n' ' ')"
+  fi
+
+  rm -f -- "$check_conf"
+
+  dnsmasq --test --conf-file="$dir/dnsmasq.conf" >/dev/null 2>&1 || fail "dnsmasq configuration rejected"
+  iptables-restore --test --noflush "$dir/rules.v4" || fail "IPv4 netfilter rules rejected"
+
+  if ipv6_available; then
+    ip6tables-restore --test --noflush "$dir/rules.v6" || fail "IPv6 netfilter rules rejected"
+  fi
+}
+
+revision_of() {
+  sed -n 's/.*"revision":"\([^"]*\)".*/\1/p' "$1/policy.json" 2>/dev/null | head -n 1
+}
+
+signal_reload_and_wait() {
+  local revision="$1"
+  local supervisor_pid
+
+  supervisor_pid="$(cat "$RUN_DIR/supervisor.pid" 2>/dev/null || true)"
+  [ -n "$supervisor_pid" ] || fail "guard supervisor is not running"
+  rm -f -- "$RUN_DIR/applied"
+  kill -HUP "$supervisor_pid" || fail "failed to signal guard supervisor"
+
+  for _ in $(seq 1 80); do
+    if [ "$(cat "$RUN_DIR/applied" 2>/dev/null || true)" = "$revision" ]; then
+      return 0
+    fi
+
+    sleep 0.25
+  done
+
+  fail "guard services did not reload revision $revision in time"
+}
+
+cmd_activate() {
+  [ -d "$ACTIVE" ] || fail "no active policy"
+  iptables-restore --noflush "$ACTIVE/rules.v4"
+
+  if ipv6_available; then
+    ip6tables-restore --noflush "$ACTIVE/rules.v6"
+  fi
+
+  ensure_jumps
+
+  if [ "${1:-}" != "--no-reload" ]; then
+    signal_reload_and_wait "$(revision_of "$ACTIVE")"
+  fi
+}
+
+cmd_apply() {
+  [ -d "$STAGED" ] || fail "no staged policy (run prepare and upload a bundle first)"
+  chown -R root:egressproxy "$STAGED"
+  find "$STAGED" -type f -exec chmod 0640 {} +
+  chmod 0750 "$STAGED"
+  validate_dir "$STAGED"
+
+  rm -rf -- "$PREVIOUS"
+
+  if [ -d "$ACTIVE" ]; then
+    mv -T -- "$ACTIVE" "$PREVIOUS"
+  fi
+
+  mv -T -- "$STAGED" "$ACTIVE"
+
+  if ! cmd_activate; then
+    # Roll back to the last known good bundle.
+    if [ -d "$PREVIOUS" ]; then
+      rm -rf -- "$ACTIVE"
+      mv -T -- "$PREVIOUS" "$ACTIVE"
+      cmd_activate || true
+    else
+      cmd_lockdown || true
+    fi
+
+    fail "failed to activate policy; previous policy restored"
+  fi
+}
+
+process_running() {
+  local pid
+  pid="$(cat "$1" 2>/dev/null || true)"
+  [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null
+}
+
+cmd_status() {
+  local revision="" mode=""
+  local squid=false dnsmasq=false
+
+  if [ -d "$ACTIVE" ]; then
+    revision="$(revision_of "$ACTIVE")"
+    mode="$(sed -n 's/.*"mode":"\([^"]*\)".*/\1/p' "$ACTIVE/policy.json" | head -n 1)"
+  fi
+
+  process_running "$RUN_DIR/squid.pid" && squid=true
+  process_running "$RUN_DIR/dnsmasq.pid" && dnsmasq=true
+
+  printf '{"revision":"%s","mode":"%s","applied":"%s","squid":%s,"dnsmasq":%s}\n' \
+    "$revision" "$mode" "$(cat "$RUN_DIR/applied" 2>/dev/null || true)" "$squid" "$dnsmasq"
+}
+
+cmd_counters() {
+  iptables-save -c -t filter | grep -F 'agenstra:' || true
+
+  if ipv6_available; then
+    ip6tables-save -c -t filter | grep -F 'agenstra:' | sed 's/^/v6 /' || true
+  fi
+}
+
+case "${1:-}" in
+  lockdown) cmd_lockdown ;;
+  prepare) cmd_prepare ;;
+  apply) cmd_apply ;;
+  activate) shift; cmd_activate "${1:-}" ;;
+  status) cmd_status ;;
+  counters) cmd_counters ;;
+  *) fail "usage: agenstra-egress {lockdown|prepare|apply|activate|status|counters}" ;;
+esac

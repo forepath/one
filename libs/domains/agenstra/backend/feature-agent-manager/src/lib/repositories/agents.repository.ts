@@ -75,6 +75,16 @@ export class AgentsRepository {
   }
 
   /**
+   * Find all agents that own an egress guard sidecar.
+   * @returns Array of agent entities with egressGuardContainerId
+   */
+  async findAllWithEgressGuards(): Promise<AgentEntity[]> {
+    return await this.repository.find({
+      where: [{ egressGuardContainerId: Not(IsNull()) }],
+    });
+  }
+
+  /**
    * Count total number of agents.
    * @returns Total count of agents
    */

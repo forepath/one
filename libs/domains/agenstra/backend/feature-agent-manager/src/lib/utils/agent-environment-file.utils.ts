@@ -104,36 +104,51 @@ function writeTarOctal(header: Buffer, value: number, offset: number, length: nu
  * Ownership is root (Docker ignores tar ownership unless `copyUIDGID` is requested).
  */
 export function buildSingleFileTar(fileName: string, content: Buffer, mode = 0o600): Buffer {
-  if (!fileName || fileName.includes('/') || Buffer.byteLength(fileName) > 100) {
-    throw new Error(`Invalid tar entry name '${fileName}'`);
+  return buildFlatTar([{ name: fileName, content, mode }]);
+}
+
+/**
+ * Builds a flat (no directories) multi-file ustar archive for Docker's `PUT /containers/{id}/archive`.
+ * Ownership is root (Docker ignores tar ownership unless `copyUIDGID` is requested).
+ */
+export function buildFlatTar(entries: ReadonlyArray<{ name: string; content: Buffer; mode?: number }>): Buffer {
+  const parts: Buffer[] = [];
+  const mtime = Math.floor(Date.now() / 1000);
+
+  for (const { name, content, mode = 0o600 } of entries) {
+    if (!name || name.includes('/') || name === '.' || name === '..' || Buffer.byteLength(name) > 100) {
+      throw new Error(`Invalid tar entry name '${name}'`);
+    }
+
+    const header = Buffer.alloc(TAR_BLOCK_SIZE, 0);
+
+    writeTarString(header, name, 0, 100);
+    writeTarOctal(header, mode, 100, 8);
+    writeTarOctal(header, 0, 108, 8);
+    writeTarOctal(header, 0, 116, 8);
+    writeTarOctal(header, content.length, 124, 12);
+    writeTarOctal(header, mtime, 136, 12);
+    header.fill(' ', 148, 156);
+    header.write('0', 156, 1, 'ascii');
+    writeTarString(header, 'ustar\0', 257, 6);
+    writeTarString(header, '00', 263, 2);
+    writeTarString(header, 'root', 265, 32);
+    writeTarString(header, 'root', 297, 32);
+
+    let checksum = 0;
+
+    for (const byte of header) {
+      checksum += byte;
+    }
+
+    writeTarString(header, `${checksum.toString(8).padStart(6, '0')}\0 `, 148, 8);
+
+    const padding = (TAR_BLOCK_SIZE - (content.length % TAR_BLOCK_SIZE)) % TAR_BLOCK_SIZE;
+
+    parts.push(header, content, Buffer.alloc(padding, 0));
   }
 
-  const header = Buffer.alloc(TAR_BLOCK_SIZE, 0);
-
-  writeTarString(header, fileName, 0, 100);
-  writeTarOctal(header, mode, 100, 8);
-  writeTarOctal(header, 0, 108, 8);
-  writeTarOctal(header, 0, 116, 8);
-  writeTarOctal(header, content.length, 124, 12);
-  writeTarOctal(header, Math.floor(Date.now() / 1000), 136, 12);
-  header.fill(' ', 148, 156);
-  header.write('0', 156, 1, 'ascii');
-  writeTarString(header, 'ustar\0', 257, 6);
-  writeTarString(header, '00', 263, 2);
-  writeTarString(header, 'root', 265, 32);
-  writeTarString(header, 'root', 297, 32);
-
-  let checksum = 0;
-
-  for (const byte of header) {
-    checksum += byte;
-  }
-
-  writeTarString(header, `${checksum.toString(8).padStart(6, '0')}\0 `, 148, 8);
-
-  const padding = (TAR_BLOCK_SIZE - (content.length % TAR_BLOCK_SIZE)) % TAR_BLOCK_SIZE;
-
-  return Buffer.concat([header, content, Buffer.alloc(padding, 0), Buffer.alloc(TAR_BLOCK_SIZE * 2, 0)]);
+  return Buffer.concat([...parts, Buffer.alloc(TAR_BLOCK_SIZE * 2, 0)]);
 }
 
 function readTarOctal(block: Buffer, offset: number, length: number): number {

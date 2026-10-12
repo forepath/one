@@ -17,6 +17,9 @@ const UNSUPPORTED_WIRE_ROOTS = [
   'model_deny',
   'mcp_allow',
   'mcp_deny',
+  // Platform security roots: enforced by the agent manager (egress guard / chat filters), never by OpenCode.
+  'egress',
+  'message_filters',
 ] as const;
 
 function isPlainObject(value: unknown): value is JsonObject {

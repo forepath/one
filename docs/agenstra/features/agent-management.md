@@ -201,7 +201,7 @@ See also [Deployment](./deployment.md) for CI/CD tokens stored in deployment con
 
 ### Message filters
 
-Per-agent regex filters live on the manager (`/api/agents-filters`). Global policies live on the controller and are documented in [Message Filter Rules](./message-filter-rules.md).
+Message filters are part of the layered agent configuration and are enforced on the manager per environment; see [Message Filters](./message-filters.md). Outbound web traffic of each environment can additionally be filtered by an egress guard sidecar; see [Egress Filtering](./egress-filtering.md).
 
 ## API Endpoints
 
@@ -226,7 +226,8 @@ For detailed API documentation, see the application and API reference docs linke
 - **[Version Control](./version-control.md)** Git operations in containers
 - **[WebSocket Communication](./websocket-communication.md)** Real-time communication
 - **[Usage Statistics](./usage-statistics.md)** Controller-side usage metrics
-- **[Message Filter Rules](./message-filter-rules.md)** Regex filters
+- **[Message Filters](./message-filters.md)** Regex filters
+- **[Egress Filtering](./egress-filtering.md)** Web traffic filtering
 - **[Dynamic provider plugins](./dynamic-provider-plugins.md)** Custom agent, pipeline, and filter providers
 - **[Backend Agent Manager Application](../applications/backend-agent-manager.md)** Application details
 

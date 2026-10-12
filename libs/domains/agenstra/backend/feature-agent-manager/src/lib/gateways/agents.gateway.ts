@@ -31,6 +31,7 @@ import {
   FilterDirection,
 } from '../providers/chat-filter.interface';
 import { AgentsRepository } from '../repositories/agents.repository';
+import { AgentEgressService } from '../services/agent-egress.service';
 import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
 import { AgentGitStateBroadcastService } from '../services/agent-git-state-broadcast.service';
 import { AgentMessageEventsService } from '../services/agent-message-events.service';
@@ -350,11 +351,15 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     private readonly workspaceChangeNotifier: WorkspaceChangeNotifierService,
     @Optional() private readonly environmentProgress?: EnvironmentProgressService,
     @Optional() private readonly openCodeConfigSync?: OpenCodeConfigSyncService,
+    @Optional() private readonly agentEgress?: AgentEgressService,
   ) {}
 
   onModuleInit(): void {
     this.openCodeConfigSync?.registerConfigSyncedBroadcaster((agentId) => {
       this.broadcastToAllSockets('opencodeConfigSynced', createSuccessResponse({ agentId }));
+    });
+    this.agentEgress?.registerStatusChangedBroadcaster((agentId) => {
+      void this.broadcastEgressStatusChanged(agentId);
     });
     this.gitStateBroadcast.registerBroadcaster((agentId) => this.broadcastGitStateChanged(agentId));
     this.workspaceChangeNotifier.registerIndexBroadcaster((agentId, event, data) => {
@@ -3188,6 +3193,29 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       clearInterval(interval);
       this.statsIntervalsByAgent.delete(agentUuid);
       this.logger.debug(`Stopped stats broadcasting for agent ${agentUuid}`);
+    }
+  }
+
+  /** Push the egress guard status of an agent to its viewers (`egressStatusChanged`). */
+  private async broadcastEgressStatusChanged(agentId: string): Promise<void> {
+    if (!this.agentEgress) {
+      return;
+    }
+
+    try {
+      const agent = await this.agentsRepository.findById(agentId);
+
+      if (!agent) {
+        return;
+      }
+
+      this.broadcastToAgent(
+        agentId,
+        'egressStatusChanged',
+        createSuccessResponse({ agentId, ...(await this.agentEgress.describe(agent)) }),
+      );
+    } catch (error: unknown) {
+      this.logger.debug(`Failed to broadcast egress status for ${agentId}: ${(error as Error).message}`);
     }
   }
 

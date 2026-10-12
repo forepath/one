@@ -4,7 +4,6 @@ import {
   AgenstraUpdatesModule,
   ClientsModule,
   ContextImportModule,
-  FilterRulesModule,
 } from '@forepath/agenstra/backend/feature-agent-controller';
 import { SharedQueueModule, shouldRegisterRepeatableJobs, shouldRunQueueWorkers } from '@forepath/shared/backend';
 import { Module, forwardRef } from '@nestjs/common';
@@ -22,7 +21,6 @@ import { ControllerJobsProcessor } from './processors/controller-jobs.processor'
     AgenstraUpdatesModule,
     AgenstraSearchModule,
     forwardRef(() => ClientsModule),
-    forwardRef(() => FilterRulesModule),
     forwardRef(() => ContextImportModule),
   ],
   providers: [

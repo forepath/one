@@ -1,0 +1,45 @@
+sequenceDiagram
+    participant Sched as BullMQ repeatable job
+    participant Coord as EgressEventsIngestCoordinator
+    participant Queue as Controller queue
+    participant Worker as EgressEventsIngestUnit
+    participant Ingest as EgressEventsIngestService
+    participant Proxy as ClientAgentProxyService
+    participant Mgr as Agent Manager<br/>(GET /api/egress/events)
+    participant Stats as StatisticsService
+    participant Pub as AgenstraNotificationPublisher
+    participant DB as Database
+
+    Note over Sched,DB: egress-events-ingest.coordinator / .unit (EGRESS_EVENTS_INGEST_INTERVAL_MS, default 30s)
+
+    Sched->>Coord: tick (egress-events-ingest.coordinator)
+    Coord->>Ingest: findClientIdsDue(EGRESS_EVENTS_INGEST_BATCH_SIZE)
+    Ingest->>DB: SELECT client ids + egress ingest cursors
+    Ingest-->>Coord: never-polled first, then least recently polled
+    loop Each due client
+        Coord->>Queue: enqueue egress-events-ingest.unit (jobId per client)
+    end
+
+    Queue->>Worker: egress-events-ingest.unit { clientId }
+    Worker->>Ingest: ingestClient(clientId)
+    Ingest->>DB: load cursor (lastSeq)
+
+    loop Up to 10 pages of 500 events
+        Ingest->>Proxy: listClientEgressEvents(clientId, afterSeq, 500)
+        Proxy->>Mgr: GET /api/egress/events?afterSeq=&limit=500
+        Mgr-->>Proxy: { events, nextSeq, hasMore }
+        Proxy-->>Ingest: page
+        Ingest->>Stats: recordEgressEvents(clientId, events)
+        Stats->>DB: INSERT statistics_egress_events (dedupe by source seq)
+        Ingest->>Ingest: advance cursor to nextSeq
+    end
+
+    alt Manager answers 404 (no egress feed)
+        Ingest->>DB: save cursor lastError = egress feed not available
+    else Success
+        Ingest->>DB: save cursor (lastSeq, lastIngestedAt)
+    end
+
+    Ingest->>Pub: egress.blocked / egress.observed (grouped per agent, host, rule; capped per run)
+    Ingest->>Pub: egress.guard_failed (guard error events)
+    Note over Pub: Delivered as webhooks / email; /audit reads statistics_egress_events

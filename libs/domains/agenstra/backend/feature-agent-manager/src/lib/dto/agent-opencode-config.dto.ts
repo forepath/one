@@ -1,4 +1,7 @@
-import { IsObject, IsOptional, IsString, MinLength } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsArray, IsObject, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
+
+import type { AgentEgressStatusDto } from './agent-egress.dto';
 
 export class UpsertAgentOpencodeConfigDto {
   @IsOptional()
@@ -19,6 +22,22 @@ export class AgentOpencodeConfigResponseDto {
   overrides!: Record<string, unknown>;
   secretKeys!: string[];
   updatedAt?: Date;
+  /** Egress guard status of this environment (platform security policy). */
+  egress?: AgentEgressStatusDto;
+}
+
+/**
+ * Effective platform security policy resolved by the controller (global → workspace → environment).
+ * Re-normalized on receipt (see `normalizeEffectiveEgressPolicy` / `normalizeEffectiveMessageFilters`).
+ */
+export class SyncAgentPlatformPolicyDto {
+  @IsOptional()
+  @IsObject()
+  egress?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsArray()
+  messageFilters?: unknown[];
 }
 
 export class SyncAgentOpencodeConfigDto {
@@ -28,6 +47,12 @@ export class SyncAgentOpencodeConfigDto {
   @IsOptional()
   @IsObject()
   secrets?: Record<string, string>;
+
+  /** Omitted by older controllers: the stored platform policy stays in force. */
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => SyncAgentPlatformPolicyDto)
+  platformPolicy?: SyncAgentPlatformPolicyDto;
 }
 
 export class OpencodeAgentInfoDto {

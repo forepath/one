@@ -14,6 +14,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import {
   OpencodeConfigService,
+  type AgentEgressStatusDto,
   type InheritedAdditiveDto,
   type OpencodeConfigDto,
   type OpencodeMcpRuntimeStatus,
@@ -30,6 +31,11 @@ import {
   normalizeStoredLocks,
   parseTabIdFromLock,
   tabLockPointer,
+  EGRESS_MODES,
+  EGRESS_NETWORK_PROTOCOLS,
+  MESSAGE_FILTER_ACTIONS,
+  MESSAGE_FILTER_DIRECTIONS,
+  type EffectivePlatformSecurityPolicy,
   type AgentConfigTabId,
   type EnforceAllowDenyContext,
   type JsonObject,
@@ -98,6 +104,16 @@ import {
   resolveLayerEditorPath,
 } from '../path-list/path-list-value.util';
 import { AgentConfigSettingsRowComponent } from '../settings-row/settings-row.component';
+
+import {
+  draftEgressPolicy,
+  draftMessageFilterRules,
+  editorLayerSource,
+  nextMessageFilterRuleName,
+  parseDestinationList,
+  testEgressDestination,
+  testMessageFilters,
+} from './security-policy-editor.util';
 
 type EditorLayer = 'global' | 'workspace' | 'agent';
 type EditorMode = 'structured' | 'raw';
@@ -183,6 +199,72 @@ export class AgentConfigEditorComponent implements OnInit {
   readonly locks = signal<string[]>([]);
   readonly inheritedAdditive = signal<InheritedAdditiveDto[]>([]);
   readonly secretKeys = signal<string[]>([]);
+  /** Effective platform security policy resolved by the server (provenance per entry). */
+  readonly platformPolicy = signal<EffectivePlatformSecurityPolicy | null>(null);
+  /** Egress guard status of the environment (agent layer only). */
+  readonly egressStatus = signal<AgentEgressStatusDto | null>(null);
+  readonly egressTestInput = signal('');
+  readonly messageFilterTestInput = signal('');
+  readonly messageFilterTestDirection = signal<'incoming' | 'outgoing'>('incoming');
+  readonly egressModes = EGRESS_MODES;
+  readonly egressFlagRows = [
+    {
+      key: 'block_private_networks',
+      hint: 'blockPrivateNetworks',
+      title: $localize`:@@featureAgentConfig-fieldEgressBlockPrivate:Block private networks`,
+      help: $localize`:@@featureAgentConfig-fieldEgressBlockPrivateHelp:Deny loopback, link-local, RFC 1918 and cloud metadata addresses unless explicitly allowed`,
+    },
+    {
+      key: 'block_ip_literals',
+      hint: 'blockIpLiterals',
+      title: $localize`:@@featureAgentConfig-fieldEgressBlockIpLiterals:Block IP literals`,
+      help: $localize`:@@featureAgentConfig-fieldEgressBlockIpLiteralsHelp:Deny connections to raw IP addresses (and TLS without a hostname) unless the address is allowed`,
+    },
+    {
+      key: 'log_allowed',
+      hint: 'logAllowed',
+      title: $localize`:@@featureAgentConfig-fieldEgressLogAllowed:Record allowed traffic`,
+      help: $localize`:@@featureAgentConfig-fieldEgressLogAllowedHelp:Include allowed destinations in the audit log (blocked traffic is always recorded)`,
+    },
+  ] as const;
+  readonly egressListRows = [
+    {
+      key: 'deny_hosts',
+      title: $localize`:@@featureAgentConfig-fieldEgressDenyHosts:Denylist`,
+      help: $localize`:@@featureAgentConfig-fieldEgressDenyHostsHelp:Hostnames (subdomains match too; *.example.com is equivalent), IP addresses or CIDRs, one per line. Always wins.`,
+    },
+    {
+      key: 'allow_hosts',
+      title: $localize`:@@featureAgentConfig-fieldEgressAllowHosts:Allowlist`,
+      help: $localize`:@@featureAgentConfig-fieldEgressAllowHostsHelp:When not empty, only these destinations are reachable. Same syntax as the denylist.`,
+    },
+    {
+      key: 'deny_url_patterns',
+      title: $localize`:@@featureAgentConfig-fieldEgressDenyUrlPatterns:Blocked plain-HTTP URL patterns`,
+      help: $localize`:@@featureAgentConfig-fieldEgressDenyUrlPatternsHelp:Regular expressions matched against http:// URLs (HTTPS paths are not visible), one per line.`,
+    },
+  ] as const;
+  readonly egressNetworkProtocols = EGRESS_NETWORK_PROTOCOLS;
+  readonly messageFilterActions = MESSAGE_FILTER_ACTIONS;
+  readonly messageFilterDirections = MESSAGE_FILTER_DIRECTIONS;
+  readonly policyLayerSource = computed(() => editorLayerSource(this.layer()));
+  /** Composed draft (config + overrides) of this layer, used by the policy testers. */
+  readonly composedDraft = computed(() => composeLayerOverlay(this.config(), this.overrides()));
+  readonly draftEgress = computed(() => draftEgressPolicy(this.platformPolicy(), this.layer(), this.composedDraft()));
+  readonly egressTestResult = computed(() => testEgressDestination(this.draftEgress(), this.egressTestInput()));
+  readonly draftMessageFilters = computed(() =>
+    draftMessageFilterRules(this.platformPolicy(), this.layer(), this.composedDraft()),
+  );
+  readonly inheritedMessageFilters = computed(() =>
+    this.draftMessageFilters().filter((rule) => rule.source !== this.policyLayerSource()),
+  );
+  readonly messageFilterRuleEntries = computed(() => this.ruleEntries('message_filters'));
+  readonly egressNetworkRuleEntries = computed(() => this.ruleEntries('egress.network_allow'));
+  readonly messageFilterTestResult = computed(() => {
+    const message = this.messageFilterTestInput();
+
+    return message ? testMessageFilters(this.draftMessageFilters(), message, this.messageFilterTestDirection()) : null;
+  });
   /** Draft password values for layer secrets (network + provider credentials). Never prefilled from API. */
   readonly secretDrafts = signal<Record<string, string>>({});
   /** Secret keys marked for removal on save (empty draft while key was previously set). */
@@ -2889,6 +2971,136 @@ export class AgentConfigEditorComponent implements OnInit {
     this.patchPath(path, rules);
   }
 
+  /** Inherited (read-only) entries of an egress list from higher layers. */
+  inheritedEgressItems(list: 'allow_hosts' | 'deny_hosts' | 'deny_url_patterns'): string[] {
+    return this.inheritedItems(`/egress/${list}`).filter((item): item is string => typeof item === 'string');
+  }
+
+  /** Inherited (read-only) network exceptions from higher layers. */
+  inheritedEgressNetworkRules(): JsonObject[] {
+    return this.inheritedItems('/egress/network_allow').filter(isPlainObject);
+  }
+
+  /** Effective value of an egress scalar with its source (shown as a hint next to the local control). */
+  egressScalarHint(key: 'mode' | 'blockPrivateNetworks' | 'blockIpLiterals' | 'logAllowed'): {
+    value: string;
+    source: string | null;
+  } {
+    const policy = this.draftEgress();
+
+    return { value: String(policy[key]), source: policy.scalarSources[key] };
+  }
+
+  /** Tri-state select value for egress booleans (`''` = inherit / default). */
+  egressBooleanSelectValue(key: 'block_private_networks' | 'block_ip_literals' | 'log_allowed'): string {
+    const value = this.getDisplayPath(`egress.${key}`);
+
+    return value === true ? 'true' : value === false ? 'false' : '';
+  }
+
+  setEgressBoolean(key: 'block_private_networks' | 'block_ip_literals' | 'log_allowed', value: string): void {
+    if (this.isLocked(`/egress/${key}`)) {
+      return;
+    }
+
+    this.patchPath(`egress.${key}`, value === 'true' ? true : value === 'false' ? false : undefined);
+  }
+
+  setEgressMode(value: string): void {
+    if (this.isLocked('/egress/mode')) {
+      return;
+    }
+
+    this.patchPath('egress.mode', value ? value : undefined);
+  }
+
+  addEgressNetworkRule(): void {
+    if (this.isLocked('/egress/network_allow')) {
+      return;
+    }
+
+    this.patchPath('egress.network_allow', [
+      ...this.objectArray('egress.network_allow'),
+      { protocol: 'tcp', ports: '22', destinations: [] },
+    ]);
+  }
+
+  egressNetworkDestinations(rule: JsonObject): string {
+    return Array.isArray(rule['destinations']) ? (rule['destinations'] as unknown[]).map(String).join(', ') : '';
+  }
+
+  updateEgressNetworkDestinations(index: number, value: string): void {
+    if (this.isPathMutationLocked('egress.network_allow')) {
+      return;
+    }
+
+    const rules = this.objectArray('egress.network_allow').map((rule) => ({ ...rule }));
+
+    if (!rules[index]) {
+      return;
+    }
+
+    rules[index]['destinations'] = parseDestinationList(value);
+    this.patchPath('egress.network_allow', rules);
+  }
+
+  addMessageFilterRule(): void {
+    if (this.isLocked('/message_filters')) {
+      return;
+    }
+
+    const current = this.objectArray('message_filters');
+
+    this.patchPath('message_filters', [
+      ...current,
+      {
+        name: nextMessageFilterRuleName(current),
+        pattern: '',
+        flags: 'gi',
+        direction: 'bidirectional',
+        action: 'flag',
+        enabled: true,
+      },
+    ]);
+  }
+
+  updateMessageFilterAction(index: number, action: string): void {
+    if (this.isPathMutationLocked('message_filters')) {
+      return;
+    }
+
+    const rules = this.objectArray('message_filters').map((rule) => ({ ...rule }));
+
+    if (!rules[index]) {
+      return;
+    }
+
+    rules[index]['action'] = action;
+
+    if (action === 'replace') {
+      rules[index]['replacement'] = typeof rules[index]['replacement'] === 'string' ? rules[index]['replacement'] : '';
+    } else {
+      delete rules[index]['replacement'];
+    }
+
+    this.patchPath('message_filters', rules);
+  }
+
+  setMessageFilterEnabled(index: number, enabled: boolean): void {
+    if (this.isPathMutationLocked('message_filters')) {
+      return;
+    }
+
+    const rules = this.objectArray('message_filters').map((rule) => ({ ...rule }));
+
+    if (!rules[index]) {
+      return;
+    }
+
+    rules[index]['enabled'] = enabled;
+    this.patchPath('message_filters', rules);
+  }
+
   readPlugins(): Array<{
     index: number;
     packageName: string;
@@ -3416,6 +3628,8 @@ export class AgentConfigEditorComponent implements OnInit {
     this.locks.set(normalizeStoredLocks(dto.locks ?? []));
     this.inheritedAdditive.set(dto.inheritedAdditive ?? []);
     this.secretKeys.set(dto.secretKeys ?? []);
+    this.platformPolicy.set(dto.platformPolicy ?? null);
+    this.egressStatus.set(dto.egress ?? null);
     this.secretDrafts.set({});
     this.clearSecretKeys.set(new Set());
     this.mcpAllowDenyRemovalStash.set(new Map());

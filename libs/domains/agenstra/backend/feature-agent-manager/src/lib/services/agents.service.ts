@@ -1,5 +1,9 @@
 import { randomBytes } from 'crypto';
 
+import {
+  egressPolicyRequiresGuard,
+  normalizeEffectiveEgressPolicy,
+} from '@forepath/agenstra/shared/util-opencode-config';
 import { PasswordService } from '@forepath/identity/backend';
 import {
   BadRequestException,
@@ -30,6 +34,7 @@ import { serializeAgentEnvironmentBaseline } from '../utils/agent-environment-ba
 import { expandProviderPathTildeInContainer } from '../utils/provider-container-path.utils';
 
 import { AgentChatSessionsService } from './agent-chat-sessions.service';
+import { AgentEgressService, EGRESS_GUARDED_AGENT_CAP_DROP } from './agent-egress.service';
 import { AgentGitCredentialsService } from './agent-git-credentials.service';
 import { DeploymentsService } from './deployments.service';
 import { DockerService } from './docker.service';
@@ -67,6 +72,8 @@ export class AgentsService implements OnApplicationBootstrap {
     private readonly workspaceInotifySupervisor?: WorkspaceInotifySupervisor,
     @Optional()
     private readonly environmentProgress?: EnvironmentProgressService,
+    @Optional()
+    private readonly agentEgress?: AgentEgressService,
   ) {}
 
   /**
@@ -312,49 +319,91 @@ export class AgentsService implements OnApplicationBootstrap {
       await this.dockerService.ensureNetworkExists(agentDockerNetwork);
     }
 
+    // Egress filtering required by the layered agent configuration: provision the guard and apply its
+    // policy before the agent container exists (fail closed — the agent never runs unfiltered).
+    const egressPolicy = createAgentDto.egressPolicy
+      ? normalizeEffectiveEgressPolicy(createAgentDto.egressPolicy)
+      : null;
+    let egressGuard: { guardId: string; revision: string } | undefined;
+
+    if (egressPolicy && egressPolicyRequiresGuard(egressPolicy)) {
+      if (!this.agentEgress?.isEnabled()) {
+        throw new BadRequestException(
+          'The agent configuration requires egress filtering, but egress guard sidecars are disabled on this agent manager',
+        );
+      }
+
+      egressGuard = await this.agentEgress.provisionGuardForNewAgent(egressPolicy, null);
+    }
+
+    const egressProxyEnv = egressGuard
+      ? Object.fromEntries(
+          Object.entries(this.agentEgress?.buildProxyEnv(egressPolicy, true, {}) ?? {}).filter(
+            (entry): entry is [string, string] => typeof entry[1] === 'string',
+          ),
+        )
+      : {};
+
     // Create a docker container
-    const containerId = await this.dockerService.createContainer({
-      image: dockerImage,
-      env: {
-        AGENT_NAME: createAgentDto.name,
-        OPENCODE_SERVER_PASSWORD: opencodeServerPassword,
-        OPENCODE_SERVER_USERNAME: opencodeServerUsername,
-        OPENCODE_SERVER_HOSTNAME: '0.0.0.0',
-        OPENCODE_SERVER_PORT: String(OPENCODE_SERVER_PORT),
-        ...this.buildGitContainerEnv(gitRepositorySetupMode, repositoryUrl),
-        ...(provider.getEnvironmentVariables ? provider.getEnvironmentVariables() : {}),
-      },
-      volumes: [
-        {
-          hostPath: agentVolumePath,
-          containerPath: basePath,
-          readOnly: false,
+    let containerId: string;
+
+    try {
+      containerId = await this.dockerService.createContainer({
+        image: dockerImage,
+        env: {
+          AGENT_NAME: createAgentDto.name,
+          OPENCODE_SERVER_PASSWORD: opencodeServerPassword,
+          OPENCODE_SERVER_USERNAME: opencodeServerUsername,
+          OPENCODE_SERVER_HOSTNAME: '0.0.0.0',
+          OPENCODE_SERVER_PORT: String(OPENCODE_SERVER_PORT),
+          ...this.buildGitContainerEnv(gitRepositorySetupMode, repositoryUrl),
+          ...(provider.getEnvironmentVariables ? provider.getEnvironmentVariables() : {}),
+          ...egressProxyEnv,
         },
-        {
-          hostPath: AgentsService.WORKSPACE_CONTEXT_HOST_PATH,
-          containerPath: AgentsService.WORKSPACE_CONTEXT_CONTAINER_PATH,
-          readOnly: true,
-        },
-      ],
-      ...(agentDockerNetwork
-        ? {
-            // Reach OpenCode/VNC via container IP on the agent network — do not publish ports on the host.
-            network: agentDockerNetwork,
-          }
-        : {
-            // Local/dev without AGENT_DOCKER_NETWORK: bind OpenCode + websockify to loopback only.
-            ports: [
-              {
-                containerPort: OPENCODE_SERVER_PORT,
-                hostIp: '127.0.0.1',
-              },
-              {
-                containerPort: VNC_WEBSOCKIFY_PORT,
-                hostIp: '127.0.0.1',
-              },
-            ],
-          }),
-    });
+        volumes: [
+          {
+            hostPath: agentVolumePath,
+            containerPath: basePath,
+            readOnly: false,
+          },
+          {
+            hostPath: AgentsService.WORKSPACE_CONTEXT_HOST_PATH,
+            containerPath: AgentsService.WORKSPACE_CONTEXT_CONTAINER_PATH,
+            readOnly: true,
+          },
+        ],
+        ...(egressGuard
+          ? {
+              // The guard owns the network namespace (agent network attachment / published ports).
+              sharedNetworkContainerId: egressGuard.guardId,
+              capDrop: [...EGRESS_GUARDED_AGENT_CAP_DROP],
+            }
+          : agentDockerNetwork
+            ? {
+                // Reach OpenCode/VNC via container IP on the agent network — do not publish ports on the host.
+                network: agentDockerNetwork,
+              }
+            : {
+                // Local/dev without AGENT_DOCKER_NETWORK: bind OpenCode + websockify to loopback only.
+                ports: [
+                  {
+                    containerPort: OPENCODE_SERVER_PORT,
+                    hostIp: '127.0.0.1',
+                  },
+                  {
+                    containerPort: VNC_WEBSOCKIFY_PORT,
+                    hostIp: '127.0.0.1',
+                  },
+                ],
+              }),
+      });
+    } catch (error) {
+      if (egressGuard) {
+        await this.agentEgress?.removeGuardContainer(egressGuard.guardId);
+      }
+
+      throw error;
+    }
 
     let persistedAgentId: string | undefined;
 
@@ -387,6 +436,19 @@ export class AgentsService implements OnApplicationBootstrap {
             ? GitRepositorySetupMode.EMPTY
             : createAgentDto.gitRepositorySetupMode,
         environmentVariableBaseline: serializeAgentEnvironmentBaseline({}),
+        ...(egressPolicy
+          ? {
+              egressPolicy,
+              egressStatus: egressGuard ? ('active' as const) : ('inactive' as const),
+              ...(egressGuard
+                ? {
+                    egressGuardContainerId: egressGuard.guardId,
+                    egressPolicyRevision: egressGuard.revision,
+                    egressAppliedAt: new Date(),
+                  }
+                : {}),
+            }
+          : {}),
       });
 
       persistedAgentId = agent.id;
@@ -443,6 +505,10 @@ export class AgentsService implements OnApplicationBootstrap {
           `Failed to clean up container ${containerId} after agent creation failure: ${err.message}`,
           err.stack,
         );
+      }
+
+      if (egressGuard) {
+        await this.agentEgress?.removeGuardContainer(egressGuard.guardId);
       }
 
       // Drop the persisted row too, otherwise a broken environment without a container remains listed
@@ -569,6 +635,7 @@ export class AgentsService implements OnApplicationBootstrap {
       }
     }
 
+    await this.agentEgress?.afterAgentRemove(agent);
     await this.agentsRepository.delete(id);
   }
 
@@ -583,6 +650,8 @@ export class AgentsService implements OnApplicationBootstrap {
 
     if (agent.containerId) {
       try {
+        // The egress guard owns the namespace: it must run before the agent can join it.
+        await this.agentEgress?.beforeAgentStart(agent);
         await this.dockerService.startContainer(agent.containerId);
       } catch (error: unknown) {
         const err = error as { message?: string; stack?: string };
@@ -631,6 +700,8 @@ export class AgentsService implements OnApplicationBootstrap {
       }
     }
 
+    await this.agentEgress?.afterAgentStop(agent);
+
     return await this.mapToResponseDto(agent);
   }
 
@@ -645,6 +716,8 @@ export class AgentsService implements OnApplicationBootstrap {
 
     if (agent.containerId) {
       try {
+        // Fresh guard namespace first; the agent restart then joins it.
+        await this.agentEgress?.beforeAgentRestart(agent);
         await this.dockerService.restartContainer(agent.containerId);
       } catch (error: unknown) {
         const err = error as { message?: string; stack?: string };
@@ -757,6 +830,7 @@ export class AgentsService implements OnApplicationBootstrap {
       git: this.mapAgentGit(agent),
       chats,
       primaryChatId: primary.id,
+      ...(this.agentEgress ? { egress: await this.agentEgress.describe(agent) } : {}),
       createdAt: agent.createdAt,
       updatedAt: agent.updatedAt,
     };
@@ -791,6 +865,7 @@ export class AgentsService implements OnApplicationBootstrap {
         if (agent.containerId && !restartedContainers.has(agent.containerId)) {
           try {
             this.logger.log(`Restarting agent container ${agent.containerId} for agent ${agent.name}`);
+            await this.agentEgress?.beforeAgentRestart(agent);
             await this.dockerService.restartContainer(agent.containerId);
             restartedContainers.add(agent.containerId);
             this.logger.log(`✅ Successfully restarted agent container ${agent.containerId}`);

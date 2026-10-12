@@ -4,6 +4,7 @@ import { FilterDropDirection } from '../entities/statistics-chat-filter-drop.ent
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { StatisticsEntityEventType, StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { StatisticsSecurityRepository } from '../repositories/statistics-security.repository';
 import { StatisticsRepository } from '../repositories/statistics.repository';
 import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
 
@@ -31,6 +32,11 @@ describe('StatisticsService', () => {
     updatedAt: new Date(),
   };
 
+  const securityRepository = {
+    insertEgressEvents: jest.fn(),
+  };
+  const upsertSafe = jest.fn().mockResolvedValue(undefined);
+
   beforeEach(async () => {
     statisticsRepository = {
       upsertStatisticsClient: jest.fn().mockResolvedValue(mockStatisticsClient),
@@ -55,10 +61,11 @@ describe('StatisticsService', () => {
         StatisticsService,
         { provide: StatisticsRepository, useValue: statisticsRepository },
         { provide: ClientsRepository, useValue: clientsRepository },
+        { provide: StatisticsSecurityRepository, useValue: securityRepository },
         {
           provide: AgenstraSearchIndexService,
           useValue: {
-            upsertSafe: jest.fn().mockResolvedValue(undefined),
+            upsertSafe,
             deleteSafe: jest.fn().mockResolvedValue(undefined),
             isEnabled: jest.fn().mockReturnValue(false),
           },
@@ -72,6 +79,75 @@ describe('StatisticsService', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('recordEgressEvents', () => {
+    it('maps manager events to shadow ids, stores them idempotently and indexes new rows', async () => {
+      securityRepository.insertEgressEvents.mockImplementation(async (rows: Array<Record<string, unknown>>) =>
+        rows.slice(0, 1).map((row) => ({ ...row, id: 'row-1' })),
+      );
+
+      const inserted = await service.recordEgressEvents('client-uuid', [
+        {
+          seq: '5',
+          agentId: 'agent-uuid',
+          kind: 'web',
+          decision: 'blocked',
+          host: 'example.org',
+          rule: 'deny_host',
+          count: 0,
+          bytesIn: -1,
+          firstSeenAt: '2026-10-12T10:00:00.000Z',
+          lastSeenAt: '2026-10-12T10:00:05.000Z',
+        },
+        {
+          seq: '6',
+          agentId: 'agent-uuid',
+          kind: 'dns',
+          decision: 'blocked',
+          count: 2,
+          firstSeenAt: '2026-10-12T10:00:00.000Z',
+          lastSeenAt: '2026-10-12T10:00:05.000Z',
+        },
+      ]);
+
+      expect(statisticsRepository.upsertStatisticsAgent).toHaveBeenCalledTimes(1);
+      expect(securityRepository.insertEgressEvents).toHaveBeenCalledWith([
+        expect.objectContaining({
+          statisticsClientId: 'stats-client-uuid',
+          statisticsAgentId: 'stats-agent-uuid',
+          sourceSeq: '5',
+          count: 1,
+          bytesIn: '0',
+          occurredAt: new Date('2026-10-12T10:00:05.000Z'),
+        }),
+        expect.objectContaining({ sourceSeq: '6', kind: 'dns', count: 2 }),
+      ]);
+      expect(inserted).toEqual([expect.objectContaining({ id: 'row-1', originalAgentId: 'agent-uuid' })]);
+      expect(upsertSafe).toHaveBeenCalledWith(
+        'egress-events',
+        expect.objectContaining({ id: 'row-1', agentId: 'agent-uuid' }),
+      );
+    });
+
+    it('is a no-op for empty batches and fails for unknown clients', async () => {
+      await expect(service.recordEgressEvents('client-uuid', [])).resolves.toEqual([]);
+
+      (clientsRepository.findById as jest.Mock).mockResolvedValueOnce(null);
+      await expect(
+        service.recordEgressEvents('missing', [
+          {
+            seq: '1',
+            agentId: 'a',
+            kind: 'web',
+            decision: 'allowed',
+            count: 1,
+            firstSeenAt: new Date(),
+            lastSeenAt: new Date(),
+          },
+        ]),
+      ).rejects.toThrow(/not found/);
+    });
   });
 
   describe('recordChatInput', () => {

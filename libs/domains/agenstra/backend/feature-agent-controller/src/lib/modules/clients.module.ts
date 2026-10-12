@@ -41,6 +41,7 @@ import { AdminOpencodeConfigController } from '../controllers/admin-opencode-con
 import { AdminOpencodeLayerFilesController } from '../controllers/admin-opencode-layer-files.controller';
 import { ClientOpencodeLayerFilesController } from '../controllers/client-opencode-layer-files.controller';
 import { ClientOpencodeConfigController } from '../controllers/client-opencode-config.controller';
+import { ClientAgentEgressController } from '../controllers/client-agent-egress.controller';
 import { McpOAuthCallbackController } from '../controllers/mcp-oauth-callback.controller';
 import { OpencodeMcpServersController } from '../controllers/opencode-mcp-servers.controller';
 import { OpencodeProvidersController } from '../controllers/opencode-providers.controller';
@@ -58,6 +59,7 @@ import { AgenstraAttachmentEntity } from '../entities/agenstra-attachment.entity
 import { OpencodeProviderEntity } from '../entities/opencode-provider.entity';
 import { OpencodeLayerFileEntity } from '../entities/opencode-layer-file.entity';
 import { OpencodeLayerFileSyncTargetEntity } from '../entities/opencode-layer-file-sync-target.entity';
+import { EgressEventIngestCursorEntity } from '../entities/egress-event-ingest-cursor.entity';
 import { OpencodeConfigSyncTargetEntity } from '../entities/opencode-config-sync-target.entity';
 import { KnowledgeNodeEmbeddingEntity } from '../entities/knowledge-node-embedding.entity';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
@@ -114,6 +116,7 @@ import { OpencodeMcpServersCatalogService } from '../services/opencode-mcp-serve
 import { OpencodeProvidersBootstrapService } from '../services/opencode-providers-bootstrap.service';
 import { OpencodeProvidersCatalogService } from '../services/opencode-providers-catalog.service';
 import { OpencodeEffectiveConfigSyncService } from '../services/opencode-effective-config-sync.service';
+import { EgressEventsIngestService } from '../services/egress-events-ingest.service';
 import { OpencodeConfigSyncTargetsService } from '../services/opencode-config-sync-targets.service';
 import { OpencodeLayerFilesService } from '../services/opencode-layer-files.service';
 import { KnowledgeEmbeddingIndexService } from '../services/embeddings/knowledge-embedding-index.service';
@@ -138,7 +141,6 @@ import { WorkspaceSearchIndexService } from '../search/workspace-search-index.se
 import { AgenstraNotificationsModule, AGENSTRA_CONTROLLER_QUEUE_NAME } from './agenstra-notifications.module';
 import { AgenstraUpdatesModule } from './agenstra-updates.module';
 import { ContextImportModule } from './context-import.module';
-import { FilterRulesModule } from './filter-rules.module';
 import { StatisticsModule } from './statistics.module';
 
 const authMethod = getAuthenticationMethod();
@@ -181,6 +183,7 @@ const authMethod = getAuthenticationMethod();
       OpencodeLayerFileEntity,
       OpencodeLayerFileSyncTargetEntity,
       OpencodeConfigSyncTargetEntity,
+      EgressEventIngestCursorEntity,
     ]),
     BullModule.registerQueue({ name: AGENSTRA_CONTROLLER_QUEUE_NAME }),
     RedisCacheModule,
@@ -189,7 +192,6 @@ const authMethod = getAuthenticationMethod();
     AgenstraNotificationsModule,
     AgenstraUpdatesModule,
     StatisticsModule,
-    forwardRef(() => FilterRulesModule),
     forwardRef(() => ContextImportModule),
     // Import KeycloakConnectModule conditionally to make KEYCLOAK_INSTANCE available to SocketAuthService
     ...(authMethod === 'keycloak' ? [KeycloakConnectModule.registerAsync({ useExisting: KeycloakService })] : []),
@@ -213,6 +215,7 @@ const authMethod = getAuthenticationMethod();
     AdminOpencodeConfigController,
     AdminOpencodeLayerFilesController,
     ClientOpencodeConfigController,
+    ClientAgentEgressController,
     McpOAuthCallbackController,
     ClientOpencodeLayerFilesController,
     OpencodeProvidersController,
@@ -257,6 +260,7 @@ const authMethod = getAuthenticationMethod();
     OpencodeMcpServersBootstrapService,
     OpencodeEffectiveConfigSyncService,
     OpencodeConfigSyncTargetsService,
+    EgressEventsIngestService,
     OpencodeLayerFilesService,
     ClientAgentCredentialsRepository,
     ClientAgentCredentialsService,
@@ -334,6 +338,7 @@ const authMethod = getAuthenticationMethod();
     OpencodeProvidersCatalogService,
     OpencodeMcpServersCatalogService,
     OpencodeConfigSyncTargetsService,
+    EgressEventsIngestService,
     OpencodeLayerFilesService,
   ],
 })

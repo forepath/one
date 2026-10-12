@@ -6,11 +6,17 @@ import { FilterDropDirection } from '../entities/statistics-chat-filter-drop.ent
 import { FilterFlagDirection } from '../entities/statistics-chat-filter-flag.entity';
 import { ChatDirection, StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { StatisticsEntityEventType, StatisticsEntityType } from '../entities/statistics-entity-event.entity';
+import type { StatisticsEgressEventEntity } from '../entities/statistics-egress-event.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
+import {
+  StatisticsSecurityRepository,
+  type NewStatisticsEgressEvent,
+} from '../repositories/statistics-security.repository';
 import { StatisticsRepository } from '../repositories/statistics.repository';
 import {
   mapAgentToSearchDocument,
   mapChatIoToSearchDocument,
+  mapEgressEventToSearchDocument,
   mapFilterDropToSearchDocument,
   mapFilterFlagToSearchDocument,
 } from '../search/agenstra-search-document.mapper';
@@ -30,7 +36,105 @@ export class StatisticsService {
     private readonly statisticsRepository: StatisticsRepository,
     private readonly clientsRepository: ClientsRepository,
     private readonly searchIndex: AgenstraSearchIndexService,
+    private readonly securityRepository: StatisticsSecurityRepository,
   ) {}
+
+  /**
+   * Record egress guard decisions ingested from an agent manager (idempotent per manager `seq`).
+   * Returns the rows that were newly stored (already ingested rows are skipped).
+   */
+  async recordEgressEvents(
+    clientId: string,
+    events: ReadonlyArray<{
+      seq: string;
+      agentId: string;
+      kind: string;
+      decision: string;
+      host?: string | null;
+      rule?: string | null;
+      matchedEntry?: string | null;
+      matchedSource?: string | null;
+      method?: string | null;
+      httpStatus?: number | null;
+      sampleUrl?: string | null;
+      count: number;
+      bytesIn?: number;
+      bytesOut?: number;
+      mode?: string | null;
+      policyRevision?: string | null;
+      message?: string | null;
+      firstSeenAt: Date | string;
+      lastSeenAt: Date | string;
+    }>,
+  ): Promise<Array<StatisticsEgressEventEntity & { originalAgentId: string }>> {
+    if (events.length === 0) {
+      return [];
+    }
+
+    const client = await this.clientsRepository.findById(clientId);
+
+    if (!client) {
+      throw new Error(`Client ${clientId} not found`);
+    }
+
+    const statisticsClient = await this.statisticsRepository.upsertStatisticsClient(clientId, {
+      name: client.name,
+      endpoint: client.endpoint,
+      authenticationType: client.authenticationType,
+    });
+    const agentShadowIds = new Map<string, string>();
+
+    for (const agentId of new Set(events.map((event) => event.agentId))) {
+      const shadow = await this.statisticsRepository.upsertStatisticsAgent(agentId, statisticsClient.id, {});
+
+      agentShadowIds.set(agentId, shadow.id);
+    }
+
+    const text = (value: string | null | undefined, max: number) => (value ? value.slice(0, max) : null);
+    const rows: NewStatisticsEgressEvent[] = events.map((event) => ({
+      statisticsAgentId: agentShadowIds.get(event.agentId),
+      statisticsClientId: statisticsClient.id,
+      sourceSeq: String(event.seq),
+      kind: String(event.kind).slice(0, 16),
+      decision: String(event.decision).slice(0, 16),
+      host: text(event.host, 255),
+      rule: text(event.rule, 32),
+      matchedEntry: text(event.matchedEntry, 255),
+      matchedSource: text(event.matchedSource, 16),
+      method: text(event.method, 32),
+      httpStatus: typeof event.httpStatus === 'number' ? event.httpStatus : null,
+      sampleUrl: text(event.sampleUrl, 2048),
+      count: Math.max(1, Math.min(Number(event.count) || 1, 2_147_483_647)),
+      bytesIn: String(Math.max(0, Number(event.bytesIn) || 0)),
+      bytesOut: String(Math.max(0, Number(event.bytesOut) || 0)),
+      mode: text(event.mode, 16),
+      policyRevision: text(event.policyRevision, 64),
+      message: text(event.message, 2000),
+      firstSeenAt: new Date(event.firstSeenAt),
+      occurredAt: new Date(event.lastSeenAt),
+    }));
+    const inserted = await this.securityRepository.insertEgressEvents(rows);
+    const originalAgentByShadow = new Map(
+      [...agentShadowIds.entries()].map(([original, shadow]) => [shadow, original]),
+    );
+
+    for (const row of inserted) {
+      const originalAgentId = row.statisticsAgentId ? originalAgentByShadow.get(row.statisticsAgentId) : undefined;
+
+      void this.searchIndex.upsertSafe('egress-events', mapEgressEventToSearchDocument(row, clientId, originalAgentId));
+      incrementCounter(
+        this.otelMeterName,
+        'agenstra.egress.decisions',
+        { client_id: clientId, kind: row.kind, decision: row.decision, rule: row.rule ?? 'none' },
+        row.count,
+      );
+    }
+
+    return inserted.map((row) => ({
+      ...row,
+      originalAgentId: (row.statisticsAgentId && originalAgentByShadow.get(row.statisticsAgentId)) || '',
+    }));
+  }
 
   /**
    * Record chat input (user message). Ensures shadow entries exist.

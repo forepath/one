@@ -104,6 +104,11 @@ These variables tune the **Atlassian Cloud** import scheduler and provider on th
 - `CONTEXT_IMPORT_ITEM_BUDGET` - Soft cap on import items processed **per config per run** for scheduler and on-demand runs (default: `25`).
 - `ATLASSIAN_IMPORT_DISABLED` - When set to `true`, the Atlassian import provider skips work for import runs (connections and configs remain manageable via the admin API).
 
+### Egress events ingestion
+
+- `EGRESS_EVENTS_INGEST_INTERVAL_MS` - Milliseconds between coordinator runs that pull egress guard events from agent managers (default: `30000`; `0` disables). See [Egress Filtering](../features/egress-filtering.md).
+- `EGRESS_EVENTS_INGEST_BATCH_SIZE` - Workspaces polled per coordinator run (default: `10`).
+
 ### Dynamic provider plugins
 
 Optional runtime extensions for provisioning and context import. See [Dynamic provider plugins](../features/dynamic-provider-plugins.md) for resolution order, post-build mounts, and export contract.
@@ -180,6 +185,17 @@ Optional runtime extensions for provisioning and context import. See [Dynamic pr
 
 - `OPENCODE_AGENT_DOCKER_IMAGE` - Primary worker image (default: `ghcr.io/forepath/agenstra-manager-worker:latest`)
 
+### Egress guard (web traffic filtering)
+
+- `AGENT_EGRESS_GUARD_ENABLED` - Allow per-agent egress guard sidecars on this manager (default: `true`).
+- `AGENT_EGRESS_GUARD_IMAGE` - Guard image (default: `ghcr.io/forepath/agenstra-manager-egress-guard:latest`).
+- `AGENT_EGRESS_GUARD_MEMORY_MB` - Memory limit per guard container (default: `256`).
+- `AGENT_EGRESS_EVENTS_COLLECTOR_ENABLED` - Collect guard decision events (default: `true`).
+- `AGENT_EGRESS_EVENTS_POLL_INTERVAL_MS` - Collector poll interval (default: `15000`).
+- `AGENT_EGRESS_EVENTS_RETENTION_HOURS` - Event retention on the manager (default: `72`).
+
+See [Egress Filtering](../features/egress-filtering.md).
+
 ### Agent Client Protocol (ACP)
 
 - `ACP_AUTO_APPROVE` - When not `false`, auto-select the first option on `session/request_permission` (default: enabled for headless agents). See [Agent Client Protocol](../ai-agents/agent-client-protocol.md).
@@ -195,6 +211,11 @@ When building `Dockerfile.api` images that mount `/var/run/docker.sock`:
 
 - `GIT_AUTHOR_NAME` - Git commit author name (default: `Agenstra`)
 - `GIT_AUTHOR_EMAIL` - Git commit author email (default: `noreply@agenstra.com`)
+
+### Egress events ingestion
+
+- `EGRESS_EVENTS_INGEST_INTERVAL_MS` - Milliseconds between coordinator runs that pull egress guard events from agent managers (default: `30000`; `0` disables). See [Egress Filtering](../features/egress-filtering.md).
+- `EGRESS_EVENTS_INGEST_BATCH_SIZE` - Workspaces polled per coordinator run (default: `10`).
 
 ### Dynamic provider plugins
 

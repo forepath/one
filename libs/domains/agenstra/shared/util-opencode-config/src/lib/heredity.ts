@@ -5,6 +5,7 @@ import {
   type JsonObject,
 } from './types';
 import { findForbiddenV1RootKeys } from './migrate-v1-to-v2';
+import { assertValidPlatformSecurityConfig } from './platform-security';
 
 const ALLOWED_INHERITED_OVERRIDE = new Set<string>(INHERITED_MAP_ENTRY_OVERRIDE_KEYS);
 
@@ -85,6 +86,7 @@ export function assertOverlayRespectsHeredity(
     );
   }
 
+  assertValidPlatformSecurityConfig(overlay);
   assertNoLockedWrites(overlay, lockedPaths);
 
   for (const entry of inheritedAdditive) {

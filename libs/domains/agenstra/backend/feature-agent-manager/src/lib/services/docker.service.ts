@@ -19,6 +19,7 @@ import {
   AGENT_ENVIRONMENT_VOLUME_LABEL,
   AGENT_ENVIRONMENT_VOLUME_PREFIX,
   assertValidEnvironmentVariableName,
+  buildFlatTar,
   buildSingleFileTar,
   extractFirstFileFromTar,
   parseDockerEnvList,
@@ -76,8 +77,16 @@ export class DockerService {
     volumes?: Array<{ hostPath: string; containerPath: string; readOnly?: boolean }>;
     ports?: Array<{ containerPort: number; hostPort?: number; hostIp?: string; protocol?: 'tcp' | 'udp' }>;
     network?: string;
+    /**
+     * Join another container's network namespace (`container:<id>`, e.g. the egress guard).
+     * Ports are published on (and `network` belongs to) the namespace owner instead.
+     */
+    sharedNetworkContainerId?: string;
+    capDrop?: string[];
   }): Promise<string> {
-    const { image, env, volumes = [], ports = [], network } = options;
+    const { image, env, volumes = [], network, sharedNetworkContainerId, capDrop } = options;
+    // Docker rejects port publishing / exposing for containers sharing another network namespace.
+    const ports = sharedNetworkContainerId ? [] : (options.ports ?? []);
     // Resolve image: explicit -> env -> default placeholder
     const resolvedImage = image || process.env.AGENT_DEFAULT_IMAGE || 'ghcr.io/forepath/agenstra-manager-worker:latest';
     // Build HostConfig.Binds from volumes
@@ -124,7 +133,12 @@ export class DockerService {
           RestartPolicy: {
             Name: 'unless-stopped',
           },
-          NetworkMode: network ? network : undefined,
+          NetworkMode: sharedNetworkContainerId
+            ? `container:${sharedNetworkContainerId}`
+            : network
+              ? network
+              : undefined,
+          ...(capDrop?.length ? { CapDrop: capDrop } : {}),
         },
       });
 
@@ -176,12 +190,24 @@ export class DockerService {
     containerId: string,
     options: {
       env?: Record<string, string | undefined>;
+      /**
+       * Move the container into another container's network namespace (egress guard).
+       * Always recreates the container (network mode is immutable).
+       */
+      sharedNetworkContainerId?: string;
+      capDrop?: string[];
     },
   ): Promise<string> {
-    const { env } = options;
+    const { env, sharedNetworkContainerId, capDrop } = options;
 
     try {
       const inspectInfo = await this.inspectContainerOrThrow(containerId);
+
+      if (sharedNetworkContainerId) {
+        return await this.withEnvironmentLock(inspectInfo.Id, () =>
+          this.recreateWithUpdatedEnvironment(containerId, inspectInfo, env, { sharedNetworkContainerId, capDrop }),
+        );
+      }
 
       if (this.resolveEnvironmentApplyStrategy(inspectInfo) === 'restart') {
         return await this.withEnvironmentLock(inspectInfo.Id, () =>
@@ -257,6 +283,7 @@ export class DockerService {
     containerId: string,
     inspectInfo: Docker.ContainerInspectInfo,
     env: Record<string, string | undefined> | undefined,
+    topology?: { sharedNetworkContainerId: string; capDrop?: string[] },
   ): Promise<string> {
     const container = this.docker.getContainer(containerId);
     const existingEnvironmentMount = this.findEnvironmentMount(inspectInfo);
@@ -268,8 +295,28 @@ export class DockerService {
     );
     const containerName = inspectInfo.Name.startsWith('/') ? inspectInfo.Name.slice(1) : inspectInfo.Name;
     const image = inspectInfo.Config?.Image || inspectInfo.Image;
-    const hostConfig = inspectInfo.HostConfig || {};
-    const exposedPorts = inspectInfo.Config?.ExposedPorts || {};
+    const inspectedHostConfig = inspectInfo.HostConfig || {};
+    const targetNetworkMode = topology
+      ? `container:${topology.sharedNetworkContainerId}`
+      : (inspectedHostConfig.NetworkMode ?? undefined);
+    const sharesNetworkNamespace = typeof targetNetworkMode === 'string' && targetNetworkMode.startsWith('container:');
+    // Joining a shared namespace: ports / DNS / hosts belong to the namespace owner (Docker rejects them here).
+    const hostConfig: Docker.HostConfig = sharesNetworkNamespace
+      ? {
+          ...inspectedHostConfig,
+          NetworkMode: targetNetworkMode,
+          PortBindings: undefined,
+          PublishAllPorts: false,
+          Dns: undefined,
+          DnsOptions: undefined,
+          DnsSearch: undefined,
+          ExtraHosts: undefined,
+          ...(topology?.capDrop?.length
+            ? { CapDrop: [...new Set([...(inspectedHostConfig.CapDrop ?? []), ...topology.capDrop])] }
+            : {}),
+        }
+      : inspectedHostConfig;
+    const exposedPorts = sharesNetworkNamespace ? {} : inspectInfo.Config?.ExposedPorts || {};
     const labels = inspectInfo.Config?.Labels || {};
     const networkSettings = inspectInfo.NetworkSettings;
     const mounts = inspectInfo.Mounts || [];
@@ -406,8 +453,9 @@ export class DockerService {
 
     await newContainer.rename({ name: containerName });
 
-    // Reconnect to networks if the container was connected to any
-    const networks = networkSettings?.Networks;
+    // Reconnect to networks if the container was connected to any (never for a shared namespace:
+    // the namespace owner — e.g. the egress guard — holds the network attachments).
+    const networks = sharesNetworkNamespace ? undefined : networkSettings?.Networks;
 
     if (networks) {
       for (const networkName of Object.keys(networks)) {
@@ -2275,7 +2323,7 @@ export class DockerService {
    * Preferring the agent network first avoids picking a secondary Docker network IP that the
    * manager cannot route to after `createNetwork` attaches the worker to a second network.
    */
-  async resolveContainerHttpBaseUrl(containerId: string, containerPort: number): Promise<string> {
+  async resolveContainerHttpBaseUrl(containerId: string, containerPort: number, depth = 0): Promise<string> {
     const container = this.docker.getContainer(containerId);
     let inspectInfo: Docker.ContainerInspectInfo;
 
@@ -2289,6 +2337,14 @@ export class DockerService {
       }
 
       throw error;
+    }
+
+    // Agents behind an egress guard share the guard's network namespace: their listeners are
+    // reachable on the guard's IP / published ports.
+    const networkMode = inspectInfo.HostConfig?.NetworkMode ?? '';
+
+    if (networkMode.startsWith('container:') && depth === 0) {
+      return await this.resolveContainerHttpBaseUrl(networkMode.slice('container:'.length), containerPort, depth + 1);
     }
 
     const networks = inspectInfo.NetworkSettings?.Networks || {};
@@ -2474,6 +2530,154 @@ export class DockerService {
         );
       });
     });
+  }
+
+  /**
+   * Create and start an egress guard sidecar. The guard owns the agent's network namespace, so it is
+   * attached to the agent network (or publishes the agent's ports on loopback when no network is set).
+   * Only the guard receives CAP_NET_ADMIN; every other capability is dropped except those Squid /
+   * dnsmasq need to drop privileges. IPv6 is disabled in the namespace (IPv4 is fully filtered).
+   */
+  async createEgressGuardContainer(options: {
+    name: string;
+    image: string;
+    labels: Record<string, string>;
+    network?: string;
+    publishPorts?: readonly number[];
+    memoryBytes?: number;
+  }): Promise<string> {
+    const { name, image, labels, network, publishPorts = [], memoryBytes } = options;
+
+    await this.ensureImageExists(image);
+
+    const exposedPorts: Record<string, Record<string, never>> = {};
+    const portBindings: Record<string, Array<{ HostPort?: string; HostIp?: string }>> = {};
+
+    if (!network) {
+      for (const port of publishPorts) {
+        exposedPorts[`${port}/tcp`] = {};
+        portBindings[`${port}/tcp`] = [{ HostIp: '127.0.0.1' }];
+      }
+    }
+
+    const container = await this.docker.createContainer({
+      name,
+      Image: image,
+      Tty: true,
+      Labels: labels,
+      ExposedPorts: Object.keys(exposedPorts).length ? exposedPorts : undefined,
+      HostConfig: {
+        NetworkMode: network || undefined,
+        PortBindings: Object.keys(portBindings).length ? portBindings : undefined,
+        RestartPolicy: { Name: 'unless-stopped' },
+        CapDrop: ['ALL'],
+        CapAdd: ['NET_ADMIN', 'NET_BIND_SERVICE', 'SETUID', 'SETGID', 'CHOWN', 'DAC_OVERRIDE', 'FOWNER', 'KILL'],
+        SecurityOpt: ['no-new-privileges'],
+        Sysctls: {
+          'net.ipv6.conf.all.disable_ipv6': '1',
+          'net.ipv6.conf.default.disable_ipv6': '1',
+        },
+        LogConfig: { Type: 'json-file', Config: { 'max-size': '10m', 'max-file': '2' } },
+        ...(memoryBytes ? { Memory: memoryBytes } : {}),
+        PidsLimit: 256,
+      },
+    });
+
+    try {
+      await container.start();
+    } catch (error) {
+      await container.remove({ force: true }).catch(() => undefined);
+
+      throw error;
+    }
+
+    return container.id as unknown as string;
+  }
+
+  /** Upload flat files into an existing directory of a container (root-owned; permissions fixed by the caller). */
+  async putFilesIntoContainer(
+    containerId: string,
+    targetDirectory: string,
+    files: ReadonlyArray<{ name: string; content: string | Buffer; mode?: number }>,
+  ): Promise<void> {
+    const container = this.docker.getContainer(containerId);
+
+    await container.putArchive(
+      buildFlatTar(
+        files.map((file) => ({
+          name: file.name,
+          content: Buffer.isBuffer(file.content) ? file.content : Buffer.from(file.content, 'utf-8'),
+          mode: file.mode ?? 0o640,
+        })),
+      ),
+      { path: targetDirectory },
+    );
+  }
+
+  /**
+   * Read a TTY container's logs since a UNIX timestamp (seconds), with Docker RFC 3339 nano timestamps.
+   * Output is capped at `maxBytes` (newest content kept).
+   */
+  async getContainerLogsSince(containerId: string, sinceSeconds: number, maxBytes = 8 * 1024 * 1024): Promise<string> {
+    const container = this.docker.getContainer(containerId);
+    const raw = (await container.logs({
+      stdout: true,
+      stderr: true,
+      timestamps: true,
+      follow: false,
+      since: Math.max(0, Math.floor(sinceSeconds)),
+    })) as unknown as Buffer | string;
+    const buffer = Buffer.isBuffer(raw) ? raw : Buffer.from(String(raw), 'utf-8');
+    if (buffer.length <= maxBytes) {
+      return buffer.toString('utf-8');
+    }
+
+    // Keep the newest content and drop the partial first line of the truncated window.
+    const tail = buffer.subarray(buffer.length - maxBytes).toString('utf-8');
+    const firstNewline = tail.indexOf('\n');
+
+    return firstNewline === -1 ? '' : tail.slice(firstNewline + 1);
+  }
+
+  /** Lightweight inspect (null when the container does not exist). */
+  async inspectContainerSummary(containerId: string): Promise<{
+    id: string;
+    running: boolean;
+    startedAt: Date | null;
+    networkMode: string | null;
+    labels: Record<string, string>;
+  } | null> {
+    try {
+      const info = await this.docker.getContainer(containerId).inspect();
+      const startedAt = info.State?.StartedAt ? new Date(info.State.StartedAt) : null;
+
+      return {
+        id: info.Id,
+        running: info.State?.Running === true,
+        startedAt: startedAt && !Number.isNaN(startedAt.getTime()) && startedAt.getTime() > 0 ? startedAt : null,
+        networkMode: info.HostConfig?.NetworkMode ?? null,
+        labels: info.Config?.Labels ?? {},
+      };
+    } catch (error: unknown) {
+      if ((error as { statusCode?: number }).statusCode === 404) {
+        return null;
+      }
+
+      throw error;
+    }
+  }
+
+  /** List containers (running or not) carrying a label. */
+  async listContainersByLabel(
+    label: string,
+  ): Promise<Array<{ id: string; labels: Record<string, string>; createdAt: Date }>> {
+    const containers = await this.docker.listContainers({ all: true, filters: { label: [label] } });
+
+    return containers.map((summary) => ({
+      id: summary.Id,
+      labels: summary.Labels ?? {},
+      createdAt: new Date((summary.Created ?? 0) * 1000),
+    }));
   }
 
   /**

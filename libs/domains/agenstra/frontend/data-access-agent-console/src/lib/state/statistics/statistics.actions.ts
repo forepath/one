@@ -4,6 +4,7 @@ import type {
   StatisticsAggregateParams,
   StatisticsChatIoListDto,
   StatisticsClientScopeParams,
+  StatisticsEgressEventListDto,
   StatisticsEntityEventListDto,
   StatisticsFilterDropListDto,
   StatisticsFilterFlagListDto,
@@ -147,5 +148,33 @@ export const loadStatisticsEntityEventsSuccess = createAction(
 );
 export const loadStatisticsEntityEventsFailure = createAction(
   '[Statistics] Load Entity Events Failure',
+  props<{ error: string }>(),
+);
+
+// Client-scoped: Egress Events
+export const loadClientStatisticsEgressEvents = createAction(
+  '[Statistics] Load Client Egress Events',
+  props<{ params: StatisticsClientScopeParams }>(),
+);
+export const loadClientStatisticsEgressEventsSuccess = createAction(
+  '[Statistics] Load Client Egress Events Success',
+  props<{ clientId: string; data: StatisticsEgressEventListDto }>(),
+);
+export const loadClientStatisticsEgressEventsFailure = createAction(
+  '[Statistics] Load Client Egress Events Failure',
+  props<{ clientId: string; error: string }>(),
+);
+
+// Aggregate: Egress Events
+export const loadStatisticsEgressEvents = createAction(
+  '[Statistics] Load Egress Events',
+  props<{ params?: StatisticsAggregateParams }>(),
+);
+export const loadStatisticsEgressEventsSuccess = createAction(
+  '[Statistics] Load Egress Events Success',
+  props<{ data: StatisticsEgressEventListDto }>(),
+);
+export const loadStatisticsEgressEventsFailure = createAction(
+  '[Statistics] Load Egress Events Failure',
   props<{ error: string }>(),
 );

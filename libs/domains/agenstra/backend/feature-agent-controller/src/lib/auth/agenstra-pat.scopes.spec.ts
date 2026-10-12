@@ -14,7 +14,6 @@ describe('AGENSTRA_PAT_SCOPES', () => {
         'tickets:write',
         'attachments:read',
         'attachments:write',
-        'filter_rules:write',
         'agents:read',
         'agents:write',
         'agents:lifecycle',

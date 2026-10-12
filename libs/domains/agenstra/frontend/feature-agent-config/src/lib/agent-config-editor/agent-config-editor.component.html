@@ -2721,6 +2721,592 @@
           </fpc-tab>
         }
 
+        @if (isTabVisible('egress')) {
+          <fpc-tab
+            id="egress"
+            i18n-label="@@featureAgentConfig-tabEgress"
+            label="Web traffic"
+            i18n-section="@@featureAgentConfig-sectionSecurity"
+            section="Security"
+            [actionIcon]="tabLockActionIcon('egress')"
+            [actionPressed]="tabLockActionPressed('egress')"
+            [actionAriaLabel]="tabLockActionLabel('egress')"
+            [actionTitle]="tabLockActionTitle('egress')"
+            (action)="onTabLockAction('egress')"
+          >
+            @if (layer() === 'agent' && egressStatus(); as status) {
+              <div class="agent-config-editor__egress-status mb-3" data-testid="agent-config-egress-status">
+                <span class="fw-medium" i18n="@@featureAgentConfig-egressStatusLabel">Guard status:</span>
+                <span
+                  class="badge ms-2"
+                  [class.text-bg-success]="status.status === 'active'"
+                  [class.text-bg-secondary]="status.status === 'inactive'"
+                  [class.text-bg-danger]="status.status === 'failed'"
+                  >{{ status.status }}</span
+                >
+                <span class="text-muted small ms-2">{{ status.mode }}</span>
+                @if (status.appliedAt) {
+                  <span class="text-muted small ms-2" i18n="@@featureAgentConfig-egressAppliedAt"
+                    >applied {{ status.appliedAt | date: 'short' }}</span
+                  >
+                }
+                @if (status.lastError) {
+                  <fpc-alert variant="danger" class="mt-2" [message]="status.lastError" />
+                }
+              </div>
+            }
+
+            <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-egressModeHeading">Mode</h3>
+            @if (isRowVisible('/egress/mode')) {
+              <agenstra-agent-config-settings-row
+                i18n-title="@@featureAgentConfig-fieldEgressMode"
+                title="Filtering mode"
+                i18n-description="@@featureAgentConfig-fieldEgressModeHelp"
+                description="off: no guard · monitor: record would-be blocks · enforce: apply the lists · offline: block all egress"
+                [dirty]="isConfigPathDirty('egress.mode')"
+                [lockable]="showLockControl('/egress/mode')"
+                [locked]="isLocked('/egress/mode')"
+                [lockInteractive]="canToggleLock('/egress/mode')"
+                (lockChange)="setDraftLock('/egress/mode', $event)"
+              >
+                <fpc-form-control
+                  controlId="agentConfigEgressMode"
+                  controlType="select"
+                  [ngModel]="stringValue('egress.mode')"
+                  (ngModelChange)="setEgressMode($event)"
+                  [disabled]="isLocked('/egress/mode')"
+                >
+                  <option value="" i18n="@@featureAgentConfig-inheritOption">(inherit)</option>
+                  @for (mode of egressModes; track mode) {
+                    <option [value]="mode">{{ mode }}</option>
+                  }
+                </fpc-form-control>
+                <div class="form-text" data-testid="agent-config-egress-effective-mode">
+                  <span i18n="@@featureAgentConfig-effectiveValue">Effective:</span>
+                  {{ egressScalarHint('mode').value }}
+                  @if (egressScalarHint('mode').source; as source) {
+                    <span class="badge text-bg-light border ms-1">{{ source }}</span>
+                  }
+                </div>
+              </agenstra-agent-config-settings-row>
+            }
+            @for (flag of egressFlagRows; track flag.key) {
+              @if (isRowVisible('/egress/' + flag.key)) {
+                <agenstra-agent-config-settings-row
+                  [title]="flag.title"
+                  [description]="flag.help"
+                  [dirty]="isConfigPathDirty('egress.' + flag.key)"
+                  [lockable]="showLockControl('/egress/' + flag.key)"
+                  [locked]="isLocked('/egress/' + flag.key)"
+                  [lockInteractive]="canToggleLock('/egress/' + flag.key)"
+                  (lockChange)="setDraftLock('/egress/' + flag.key, $event)"
+                >
+                  <fpc-form-control
+                    [controlId]="'agentConfigEgress_' + flag.key"
+                    controlType="select"
+                    [ngModel]="egressBooleanSelectValue($any(flag.key))"
+                    (ngModelChange)="setEgressBoolean($any(flag.key), $event)"
+                    [disabled]="isLocked('/egress/' + flag.key)"
+                  >
+                    <option value="" i18n="@@featureAgentConfig-inheritOption">(inherit)</option>
+                    <option value="true" i18n="@@featureAgentConfig-yesOption">yes</option>
+                    <option value="false" i18n="@@featureAgentConfig-noOption">no</option>
+                  </fpc-form-control>
+                  <div class="form-text">
+                    <span i18n="@@featureAgentConfig-effectiveValue">Effective:</span>
+                    {{ egressScalarHint($any(flag.hint)).value }}
+                    @if (egressScalarHint($any(flag.hint)).source; as source) {
+                      <span class="badge text-bg-light border ms-1">{{ source }}</span>
+                    }
+                  </div>
+                </agenstra-agent-config-settings-row>
+              }
+            }
+
+            <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-egressHostsHeading">
+              Destinations
+            </h3>
+            @for (list of egressListRows; track list.key) {
+              @if (isRowVisible('/egress/' + list.key)) {
+                <agenstra-agent-config-settings-row
+                  [title]="list.title"
+                  [description]="list.help"
+                  [dirty]="isConfigPathDirty('egress.' + list.key)"
+                  [lockable]="showLockControl('/egress/' + list.key)"
+                  [locked]="isLocked('/egress/' + list.key)"
+                  [lockInteractive]="canToggleLock('/egress/' + list.key)"
+                  (lockChange)="setDraftLock('/egress/' + list.key, $event)"
+                >
+                  @if (inheritedEgressItems($any(list.key)).length) {
+                    <div class="mb-2" [attr.data-testid]="'agent-config-egress-inherited-' + list.key">
+                      @for (item of inheritedEgressItems($any(list.key)); track item) {
+                        <span class="badge text-bg-secondary me-1 mb-1 font-monospace">{{ item }}</span>
+                      }
+                      <span class="text-muted small" i18n="@@featureAgentConfig-inheritedReadOnly"
+                        >(inherited, read-only)</span
+                      >
+                    </div>
+                  }
+                  <fpc-form-control
+                    [controlId]="'agentConfigEgress_' + list.key"
+                    controlType="textarea"
+                    [rows]="4"
+                    [ngModel]="stringListValue('egress.' + list.key)"
+                    (ngModelChange)="setStringList('egress.' + list.key, $event)"
+                    [disabled]="isLocked('/egress/' + list.key)"
+                  />
+                </agenstra-agent-config-settings-row>
+              }
+            }
+
+            <h3 class="agent-config-editor__section-heading agent-config-editor__section-heading--with-lock">
+              <span i18n="@@featureAgentConfig-egressNetworkHeading">Non-web exceptions</span>
+              @if (showLockControl('/egress/network_allow')) {
+                <button
+                  type="button"
+                  class="agent-config-editor__list-lock btn btn-link btn-sm p-0"
+                  [class.text-warning]="listLockIconLocked('/egress/network_allow')"
+                  [disabled]="!canToggleLock('/egress/network_allow')"
+                  (click)="toggleDraftLock('/egress/network_allow')"
+                  [attr.aria-pressed]="listLockIconLocked('/egress/network_allow')"
+                  [attr.aria-label]="listLockAria('/egress/network_allow')"
+                  [title]="listLockAria('/egress/network_allow')"
+                >
+                  <i
+                    class="bi"
+                    [class.bi-lock-fill]="listLockIconLocked('/egress/network_allow')"
+                    [class.bi-unlock]="!listLockIconLocked('/egress/network_allow')"
+                    aria-hidden="true"
+                  ></i>
+                </button>
+              }
+            </h3>
+            <div class="agent-config-editor__section-toolbar">
+              <fpc-button
+                variant="secondary"
+                size="sm"
+                iconOnly
+                [disabled]="isLocked('/egress/network_allow')"
+                (clicked)="addEgressNetworkRule()"
+                ariaLabel="Add network exception"
+                i18n-ariaLabel="@@featureAgentConfig-addEgressNetworkRule"
+              >
+                <i class="bi bi-plus" aria-hidden="true"></i>
+              </fpc-button>
+            </div>
+            @for (rule of inheritedEgressNetworkRules(); track $index) {
+              <div class="small mb-1 font-monospace">
+                {{ rule['protocol'] }}/{{ rule['ports'] }} → {{ egressNetworkDestinations(rule) }}
+                <span class="badge text-bg-secondary ms-2" i18n="@@featureAgentConfig-inheritedBadge">Inherited</span>
+              </div>
+            }
+            @if (egressNetworkRuleEntries().length === 0 && inheritedEgressNetworkRules().length === 0) {
+              <div class="agent-config-editor__empty">
+                <fpc-empty-state
+                  size="sm"
+                  message="No network exceptions."
+                  i18n-message="@@featureAgentConfig-egressNetworkEmpty"
+                />
+              </div>
+            } @else if (egressNetworkRuleEntries().length > 0) {
+              <fpc-list [flush]="true" ariaLabel="Network exceptions">
+                @for (rule of egressNetworkRuleEntries(); track rule.__index) {
+                  <fpc-list-item variant="condensed" [dirty]="rule.__dirty">
+                    <span fpcListItemTitle class="font-monospace">
+                      {{ rule['protocol'] }}/{{ rule['ports'] }}
+                      @if (rule.__deleted) {
+                        <span class="badge text-bg-warning ms-2" i18n="@@featureAgentConfig-removedBadge">Removed</span>
+                      }
+                    </span>
+                    <span fpcListItemMeta class="font-monospace">{{ egressNetworkDestinations(rule) }}</span>
+                    <div fpcListItemActions class="d-flex gap-1">
+                      <fpc-button
+                        variant="danger"
+                        size="sm"
+                        iconOnly
+                        [disabled]="isLocked('/egress/network_allow') || rule.__deleted"
+                        (clicked)="removeRule('egress.network_allow', rule.__index)"
+                        ariaLabel="Remove"
+                      >
+                        <i class="bi bi-trash" aria-hidden="true"></i>
+                      </fpc-button>
+                    </div>
+                    @if (!rule.__deleted) {
+                      <div class="w-100">
+                        <agenstra-agent-config-settings-row
+                          i18n-title="@@featureAgentConfig-fieldEgressProtocol"
+                          title="Protocol"
+                          [dirty]="isRuleFieldDirty('egress.network_allow', rule.__index, 'protocol')"
+                        >
+                          <fpc-form-control
+                            controlType="select"
+                            [ngModel]="$any(rule['protocol'])"
+                            (ngModelChange)="updateRuleField('egress.network_allow', rule.__index, 'protocol', $event)"
+                            [disabled]="isLocked('/egress/network_allow')"
+                          >
+                            @for (protocol of egressNetworkProtocols; track protocol) {
+                              <option [value]="protocol">{{ protocol }}</option>
+                            }
+                          </fpc-form-control>
+                        </agenstra-agent-config-settings-row>
+                        <agenstra-agent-config-settings-row
+                          i18n-title="@@featureAgentConfig-fieldEgressPorts"
+                          title="Ports"
+                          i18n-description="@@featureAgentConfig-fieldEgressPortsHelp"
+                          description="Single port (22) or range (1000-2000)"
+                          [dirty]="isRuleFieldDirty('egress.network_allow', rule.__index, 'ports')"
+                        >
+                          <fpc-form-control
+                            [ngModel]="$any(rule['ports'])"
+                            (ngModelChange)="updateRuleField('egress.network_allow', rule.__index, 'ports', $event)"
+                            [disabled]="isLocked('/egress/network_allow')"
+                          />
+                        </agenstra-agent-config-settings-row>
+                        <agenstra-agent-config-settings-row
+                          i18n-title="@@featureAgentConfig-fieldEgressDestinations"
+                          title="Destinations"
+                          i18n-description="@@featureAgentConfig-fieldEgressDestinationsHelp"
+                          description="IP addresses or CIDRs, comma separated"
+                          [dirty]="isRuleFieldDirty('egress.network_allow', rule.__index, 'destinations')"
+                        >
+                          <fpc-form-control
+                            [ngModel]="egressNetworkDestinations(rule)"
+                            (ngModelChange)="updateEgressNetworkDestinations(rule.__index, $event)"
+                            [disabled]="isLocked('/egress/network_allow')"
+                          />
+                        </agenstra-agent-config-settings-row>
+                        <agenstra-agent-config-settings-row
+                          i18n-title="@@featureAgentConfig-fieldEgressDescription"
+                          title="Description"
+                          [dirty]="isRuleFieldDirty('egress.network_allow', rule.__index, 'description')"
+                        >
+                          <fpc-form-control
+                            [ngModel]="$any(rule['description'] ?? '')"
+                            (ngModelChange)="
+                              updateRuleField('egress.network_allow', rule.__index, 'description', $event)
+                            "
+                            [disabled]="isLocked('/egress/network_allow')"
+                          />
+                        </agenstra-agent-config-settings-row>
+                      </div>
+                    }
+                  </fpc-list-item>
+                }
+              </fpc-list>
+            }
+
+            <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-egressTesterHeading">
+              Test a destination
+            </h3>
+            <agenstra-agent-config-settings-row
+              i18n-title="@@featureAgentConfig-fieldEgressTester"
+              title="Hostname or URL"
+              i18n-description="@@featureAgentConfig-fieldEgressTesterHelp"
+              description="Evaluated against the effective policy including unsaved changes on this layer"
+            >
+              <fpc-form-control
+                controlId="agentConfigEgressTester"
+                placeholder="https://registry.npmjs.org/"
+                [ngModel]="egressTestInput()"
+                (ngModelChange)="egressTestInput.set($event)"
+              />
+              @if (egressTestResult(); as result) {
+                <div class="mt-2" data-testid="agent-config-egress-test-result">
+                  <span
+                    class="badge"
+                    [class.text-bg-success]="result.decision === 'allowed'"
+                    [class.text-bg-danger]="result.decision === 'blocked'"
+                    [class.text-bg-warning]="result.decision === 'observed'"
+                    >{{ result.decision }}</span
+                  >
+                  <span class="font-monospace small ms-2">{{ result.host }}</span>
+                  @if (result.rule) {
+                    <span class="small ms-2">· {{ result.rule }}</span>
+                  }
+                  @if (result.matchedEntry) {
+                    <span class="small ms-2 font-monospace">· {{ result.matchedEntry }}</span>
+                  }
+                  @if (result.source) {
+                    <span class="badge text-bg-light border ms-2">{{ result.source }}</span>
+                  }
+                </div>
+              }
+            </agenstra-agent-config-settings-row>
+          </fpc-tab>
+        }
+
+        @if (isTabVisible('message_filters')) {
+          <fpc-tab
+            id="message_filters"
+            i18n-label="@@featureAgentConfig-tabMessageFilters"
+            label="Message filters"
+            i18n-section="@@featureAgentConfig-sectionSecurity"
+            section="Security"
+            [actionIcon]="tabLockActionIcon('message_filters')"
+            [actionPressed]="tabLockActionPressed('message_filters')"
+            [actionAriaLabel]="tabLockActionLabel('message_filters')"
+            [actionTitle]="tabLockActionTitle('message_filters')"
+            (action)="onTabLockAction('message_filters')"
+          >
+            <h3 class="agent-config-editor__section-heading agent-config-editor__section-heading--with-lock">
+              <span i18n="@@featureAgentConfig-messageFiltersHeading">Rules</span>
+              @if (showLockControl('/message_filters')) {
+                <button
+                  type="button"
+                  class="agent-config-editor__list-lock btn btn-link btn-sm p-0"
+                  [class.text-warning]="listLockIconLocked('/message_filters')"
+                  [disabled]="!canToggleLock('/message_filters')"
+                  (click)="toggleDraftLock('/message_filters')"
+                  [attr.aria-pressed]="listLockIconLocked('/message_filters')"
+                  [attr.aria-label]="listLockAria('/message_filters')"
+                  [title]="listLockAria('/message_filters')"
+                >
+                  <i
+                    class="bi"
+                    [class.bi-lock-fill]="listLockIconLocked('/message_filters')"
+                    [class.bi-unlock]="!listLockIconLocked('/message_filters')"
+                    aria-hidden="true"
+                  ></i>
+                </button>
+              }
+            </h3>
+            <div class="agent-config-editor__section-toolbar">
+              <fpc-button
+                variant="secondary"
+                size="sm"
+                iconOnly
+                [disabled]="isLocked('/message_filters')"
+                (clicked)="addMessageFilterRule()"
+                ariaLabel="Add message filter rule"
+                i18n-ariaLabel="@@featureAgentConfig-addMessageFilterRule"
+              >
+                <i class="bi bi-plus" aria-hidden="true"></i>
+              </fpc-button>
+            </div>
+            @for (rule of inheritedMessageFilters(); track $index) {
+              <div class="small mb-1" data-testid="agent-config-message-filter-inherited">
+                <span class="fw-medium">{{ rule.name }}</span>
+                <span class="font-monospace ms-2">/{{ rule.pattern }}/{{ rule.flags }}</span>
+                <span class="ms-2">{{ rule.action }} · {{ rule.direction }}</span>
+                @if (!rule.enabled) {
+                  <span class="badge text-bg-light border ms-2" i18n="@@featureAgentConfig-disabledBadge"
+                    >Disabled</span
+                  >
+                }
+                <span class="badge text-bg-secondary ms-2">{{ rule.source }}</span>
+              </div>
+            }
+            @if (messageFilterRuleEntries().length === 0 && inheritedMessageFilters().length === 0) {
+              <div class="agent-config-editor__empty">
+                <fpc-empty-state
+                  size="sm"
+                  message="No message filter rules yet."
+                  i18n-message="@@featureAgentConfig-messageFiltersEmpty"
+                />
+              </div>
+            } @else if (messageFilterRuleEntries().length > 0) {
+              <fpc-list [flush]="true" ariaLabel="Message filter rules">
+                @for (rule of messageFilterRuleEntries(); track rule.__index) {
+                  <fpc-list-item variant="condensed" [dirty]="rule.__dirty">
+                    <span fpcListItemTitle>
+                      {{ rule['name'] }}
+                      @if (rule.__deleted) {
+                        <span class="badge text-bg-warning ms-2" i18n="@@featureAgentConfig-removedBadge">Removed</span>
+                      }
+                    </span>
+                    <span fpcListItemMeta>{{ rule['action'] }} · {{ rule['direction'] ?? 'bidirectional' }}</span>
+                    <div fpcListItemActions class="d-flex gap-1">
+                      <fpc-button
+                        variant="secondary"
+                        size="sm"
+                        iconOnly
+                        [disabled]="isLocked('/message_filters') || rule.__deleted || rule.__index === 0"
+                        (clicked)="moveRule('message_filters', rule.__index, -1)"
+                        ariaLabel="Move up"
+                      >
+                        <i class="bi bi-arrow-up" aria-hidden="true"></i>
+                      </fpc-button>
+                      <fpc-button
+                        variant="secondary"
+                        size="sm"
+                        iconOnly
+                        [disabled]="
+                          isLocked('/message_filters') ||
+                          rule.__deleted ||
+                          rule.__index >= objectArray('message_filters').length - 1
+                        "
+                        (clicked)="moveRule('message_filters', rule.__index, 1)"
+                        ariaLabel="Move down"
+                      >
+                        <i class="bi bi-arrow-down" aria-hidden="true"></i>
+                      </fpc-button>
+                      <fpc-button
+                        variant="danger"
+                        size="sm"
+                        iconOnly
+                        [disabled]="isLocked('/message_filters') || rule.__deleted"
+                        (clicked)="removeRule('message_filters', rule.__index)"
+                        ariaLabel="Remove"
+                      >
+                        <i class="bi bi-trash" aria-hidden="true"></i>
+                      </fpc-button>
+                    </div>
+                    @if (!rule.__deleted) {
+                      <div class="w-100">
+                        <agenstra-agent-config-settings-row
+                          i18n-title="@@featureAgentConfig-fieldMessageFilterName"
+                          title="Name"
+                          i18n-description="@@featureAgentConfig-fieldMessageFilterNameHelp"
+                          description="Shown in drop notices and the audit log (unique per layer)"
+                          [dirty]="isRuleFieldDirty('message_filters', rule.__index, 'name')"
+                        >
+                          <fpc-form-control
+                            [ngModel]="$any(rule['name'])"
+                            (ngModelChange)="updateRuleField('message_filters', rule.__index, 'name', $event)"
+                            [disabled]="isLocked('/message_filters')"
+                          />
+                        </agenstra-agent-config-settings-row>
+                        <agenstra-agent-config-settings-row
+                          i18n-title="@@featureAgentConfig-fieldMessageFilterPattern"
+                          title="Pattern"
+                          i18n-description="@@featureAgentConfig-fieldMessageFilterPatternHelp"
+                          description="JavaScript regular expression (nested quantifiers such as (a+)+ are rejected)"
+                          [dirty]="isRuleFieldDirty('message_filters', rule.__index, 'pattern')"
+                        >
+                          <fpc-form-control
+                            [ngModel]="$any(rule['pattern'])"
+                            (ngModelChange)="updateRuleField('message_filters', rule.__index, 'pattern', $event)"
+                            [disabled]="isLocked('/message_filters')"
+                          />
+                        </agenstra-agent-config-settings-row>
+                        <agenstra-agent-config-settings-row
+                          i18n-title="@@featureAgentConfig-fieldMessageFilterFlags"
+                          title="Flags"
+                          description="g, i, m, s, u, y, d"
+                          [dirty]="isRuleFieldDirty('message_filters', rule.__index, 'flags')"
+                        >
+                          <fpc-form-control
+                            [ngModel]="$any(rule['flags'] ?? 'g')"
+                            (ngModelChange)="updateRuleField('message_filters', rule.__index, 'flags', $event)"
+                            [disabled]="isLocked('/message_filters')"
+                          />
+                        </agenstra-agent-config-settings-row>
+                        <agenstra-agent-config-settings-row
+                          i18n-title="@@featureAgentConfig-fieldMessageFilterDirection"
+                          title="Direction"
+                          [dirty]="isRuleFieldDirty('message_filters', rule.__index, 'direction')"
+                        >
+                          <fpc-form-control
+                            controlType="select"
+                            [ngModel]="$any(rule['direction'] ?? 'bidirectional')"
+                            (ngModelChange)="updateRuleField('message_filters', rule.__index, 'direction', $event)"
+                            [disabled]="isLocked('/message_filters')"
+                          >
+                            @for (direction of messageFilterDirections; track direction) {
+                              <option [value]="direction">{{ direction }}</option>
+                            }
+                          </fpc-form-control>
+                        </agenstra-agent-config-settings-row>
+                        <agenstra-agent-config-settings-row
+                          i18n-title="@@featureAgentConfig-fieldMessageFilterAction"
+                          title="Action"
+                          i18n-description="@@featureAgentConfig-fieldMessageFilterActionHelp"
+                          description="drop: block the message · replace: rewrite matches · flag: record only"
+                          [dirty]="isRuleFieldDirty('message_filters', rule.__index, 'action')"
+                        >
+                          <fpc-form-control
+                            controlType="select"
+                            [ngModel]="$any(rule['action'])"
+                            (ngModelChange)="updateMessageFilterAction(rule.__index, $event)"
+                            [disabled]="isLocked('/message_filters')"
+                          >
+                            @for (action of messageFilterActions; track action) {
+                              <option [value]="action">{{ action }}</option>
+                            }
+                          </fpc-form-control>
+                        </agenstra-agent-config-settings-row>
+                        @if (rule['action'] === 'replace') {
+                          <agenstra-agent-config-settings-row
+                            i18n-title="@@featureAgentConfig-fieldMessageFilterReplacement"
+                            title="Replacement"
+                            description="Supports $1 / $&lt;name&gt; references"
+                            [dirty]="isRuleFieldDirty('message_filters', rule.__index, 'replacement')"
+                          >
+                            <fpc-form-control
+                              [ngModel]="$any(rule['replacement'] ?? '')"
+                              (ngModelChange)="updateRuleField('message_filters', rule.__index, 'replacement', $event)"
+                              [disabled]="isLocked('/message_filters')"
+                            />
+                          </agenstra-agent-config-settings-row>
+                        }
+                        <agenstra-agent-config-settings-row
+                          i18n-title="@@featureAgentConfig-fieldMessageFilterEnabled"
+                          title="Enabled"
+                          [dirty]="isRuleFieldDirty('message_filters', rule.__index, 'enabled')"
+                        >
+                          <input
+                            type="checkbox"
+                            class="form-check-input"
+                            [ngModel]="rule['enabled'] !== false"
+                            (ngModelChange)="setMessageFilterEnabled(rule.__index, $event)"
+                            [disabled]="isLocked('/message_filters')"
+                          />
+                        </agenstra-agent-config-settings-row>
+                      </div>
+                    }
+                  </fpc-list-item>
+                }
+              </fpc-list>
+            }
+
+            <h3 class="agent-config-editor__section-heading" i18n="@@featureAgentConfig-messageFilterTesterHeading">
+              Test a message
+            </h3>
+            <agenstra-agent-config-settings-row
+              i18n-title="@@featureAgentConfig-fieldMessageFilterTester"
+              title="Sample message"
+              i18n-description="@@featureAgentConfig-fieldMessageFilterTesterHelp"
+              description="Evaluated against all effective rules including unsaved changes on this layer"
+            >
+              <fpc-form-control
+                controlId="agentConfigMessageFilterTester"
+                controlType="textarea"
+                [rows]="3"
+                [ngModel]="messageFilterTestInput()"
+                (ngModelChange)="messageFilterTestInput.set($event)"
+              />
+              <fpc-form-control
+                class="mt-2 d-block"
+                controlId="agentConfigMessageFilterTesterDirection"
+                controlType="select"
+                [ngModel]="messageFilterTestDirection()"
+                (ngModelChange)="messageFilterTestDirection.set($event)"
+              >
+                <option value="incoming" i18n="@@featureAgentConfig-directionIncoming">incoming (user → agent)</option>
+                <option value="outgoing" i18n="@@featureAgentConfig-directionOutgoing">outgoing (agent → user)</option>
+              </fpc-form-control>
+              @if (messageFilterTestResult(); as result) {
+                <div class="mt-2" data-testid="agent-config-message-filter-test-result">
+                  <span
+                    class="badge"
+                    [class.text-bg-success]="result.status === 'allowed'"
+                    [class.text-bg-danger]="result.status === 'dropped'"
+                    [class.text-bg-warning]="result.status === 'filtered'"
+                    >{{ result.status }}</span
+                  >
+                  @if (result.matchedRule; as matched) {
+                    <span class="small ms-2">{{ matched.name }}</span>
+                    <span class="badge text-bg-light border ms-2">{{ matched.source }}</span>
+                  }
+                  @if (result.modifiedMessage !== undefined) {
+                    <pre class="small mt-2 mb-0 agent-config-editor__tester-output">{{ result.modifiedMessage }}</pre>
+                  }
+                </div>
+              }
+            </agenstra-agent-config-settings-row>
+          </fpc-tab>
+        }
+
         @if (isTabVisible('websearch')) {
           <fpc-tab
             id="websearch"

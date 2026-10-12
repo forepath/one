@@ -627,7 +627,7 @@
         <source>Documented automation for Hetzner and DigitalOcean to install agent-manager and register clients.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-agenstraT10" datatype="html">
-        <source>Global regex filter rules, pluggable chat filters, statistics for drops/flags and entity events.</source>
+        <source>Layered message filters and per-environment web traffic filtering (egress guard), pluggable chat filters, audit statistics for drops, flags, blocked destinations and entity events.</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-agenstraT11" datatype="html">
         <source>Statistics REST for chat I/O, filter incidents, and entity lifecycle (per client and aggregate).</source>

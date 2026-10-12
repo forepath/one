@@ -4,18 +4,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { AgentMessageEntity } from '../entities/agent-message.entity';
+import { AgentEgressEventEntity } from '../entities/agent-egress-event.entity';
 import { AgentEntity, ContainerType } from '../entities/agent.entity';
-import {
-  RegexFilterRuleDirection,
-  RegexFilterRuleEntity,
-  RegexFilterRuleType,
-} from '../entities/regex-filter-rule.entity';
 
 const METER_NAME = 'forepath.agenstra';
 const POLL_INTERVAL_MS = 60_000;
 
-const FILTER_DIRECTIONS: RegexFilterRuleDirection[] = ['incoming', 'outgoing', 'bidirectional'];
-const FILTER_TYPES: RegexFilterRuleType[] = ['none', 'filter', 'drop'];
+const EGRESS_STATUSES = ['inactive', 'active', 'failed'] as const;
+const EGRESS_KINDS = ['web', 'dns', 'network', 'guard'] as const;
+const EGRESS_DECISIONS = ['allowed', 'blocked', 'observed', 'error'] as const;
 const CHAT_ACTORS = ['user', 'agent'] as const;
 
 @Injectable()
@@ -28,8 +25,8 @@ export class AgenstraManagerMetricsCollectorService implements OnModuleInit, OnM
     private readonly agentRepository: Repository<AgentEntity>,
     @InjectRepository(AgentMessageEntity)
     private readonly messageRepository: Repository<AgentMessageEntity>,
-    @InjectRepository(RegexFilterRuleEntity)
-    private readonly filterRulesRepository: Repository<RegexFilterRuleEntity>,
+    @InjectRepository(AgentEgressEventEntity)
+    private readonly egressEventsRepository: Repository<AgentEgressEventEntity>,
   ) {}
 
   onModuleInit(): void {
@@ -56,7 +53,7 @@ export class AgenstraManagerMetricsCollectorService implements OnModuleInit, OnM
     try {
       await this.collectAgentMetrics();
       await this.collectChatMetrics();
-      await this.collectFilterRuleMetrics();
+      await this.collectSecurityPolicyMetrics();
     } catch (error) {
       this.logger.warn(`Failed to collect Agenstra manager OTEL metrics: ${(error as Error).message}`);
     }
@@ -149,27 +146,46 @@ export class AgenstraManagerMetricsCollectorService implements OnModuleInit, OnM
     }
   }
 
-  private async collectFilterRuleMetrics(): Promise<void> {
-    const filterRuleRows = await this.filterRulesRepository
-      .createQueryBuilder('rule')
-      .select('rule.direction', 'direction')
-      .addSelect('rule.filterType', 'filterType')
+  private async collectSecurityPolicyMetrics(): Promise<void> {
+    const statusRows = await this.agentRepository
+      .createQueryBuilder('agent')
+      .select("COALESCE(agent.egressStatus, 'inactive')", 'status')
       .addSelect('COUNT(*)', 'count')
-      .groupBy('rule.direction')
-      .addGroupBy('rule.filterType')
-      .getRawMany<{ direction: string; filterType: string; count: string }>();
+      .groupBy("COALESCE(agent.egressStatus, 'inactive')")
+      .getRawMany<{ status: string; count: string }>();
+    const byStatus = new Map(statusRows.map((row) => [row.status, parseInt(row.count ?? '0', 10)]));
 
-    const byKey = new Map(
-      filterRuleRows.map((row) => [`${row.direction}:${row.filterType}`, parseInt(row.count ?? '0', 10)]),
-    );
+    for (const status of EGRESS_STATUSES) {
+      setGauge(METER_NAME, 'agenstra.manager.egress_guards', byStatus.get(status) ?? 0, { status });
+    }
 
-    for (const direction of FILTER_DIRECTIONS) {
-      for (const filterType of FILTER_TYPES) {
-        setGauge(METER_NAME, 'agenstra.manager.filter_rules', byKey.get(`${direction}:${filterType}`) ?? 0, {
-          direction,
-          filter_type: filterType,
+    const eventRows = await this.egressEventsRepository
+      .createQueryBuilder('event')
+      .select('event.kind', 'kind')
+      .addSelect('event.decision', 'decision')
+      .addSelect('COALESCE(SUM(event.count), 0)', 'count')
+      .groupBy('event.kind')
+      .addGroupBy('event.decision')
+      .getRawMany<{ kind: string; decision: string; count: string }>();
+    const byKey = new Map(eventRows.map((row) => [`${row.kind}:${row.decision}`, parseInt(row.count ?? '0', 10)]));
+
+    for (const kind of EGRESS_KINDS) {
+      for (const decision of EGRESS_DECISIONS) {
+        setGauge(METER_NAME, 'agenstra.manager.egress_decisions', byKey.get(`${kind}:${decision}`) ?? 0, {
+          kind,
+          decision,
         });
       }
     }
+
+    const ruleRow = await this.agentRepository
+      .createQueryBuilder('agent')
+      .select(
+        "COALESCE(SUM(CASE WHEN jsonb_typeof(agent.messageFilters) = 'array' THEN jsonb_array_length(agent.messageFilters) ELSE 0 END), 0)",
+        'count',
+      )
+      .getRawOne<{ count: string }>();
+
+    setGauge(METER_NAME, 'agenstra.manager.message_filter_rules', parseInt(ruleRow?.count ?? '0', 10));
   }
 }

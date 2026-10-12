@@ -28,6 +28,8 @@ When the agent manager creates an agent, it bind-mounts host paths into child co
 | ---------- | ------------------------- | ---------- | ---------------- |
 | `opencode` | `agenstra-manager-worker` | `/app`     | `/app`           |
 
+The per-agent **egress guard** sidecar uses its own image (`agenstra-manager-egress-guard`, built by the `egress-guard-container-image` target); it is not an agent type.
+
 Each agent worker mounts its host directory at the provider **`basePath`** (typically `/app`).
 
 ### Host directory ownership
@@ -74,6 +76,7 @@ docker exec <worker> id -u                           # expect: 0 only for the en
 
 ## Manager and controller API images
 
+- The **egress guard** image (`agenstra-manager-egress-guard`, Alpine) runs a root supervisor (tini) with Squid as UID `10901` and dnsmasq as UID `10902`; the manager creates it with all capabilities dropped except `NET_ADMIN`, `NET_BIND_SERVICE` (lets Squid keep `NET_ADMIN` to mark its upstream sockets), `SETUID`/`SETGID`, `CHOWN`, `DAC_OVERRIDE`, `FOWNER` and `KILL`, `no-new-privileges`, IPv6 disabled and no host ports other than the agent's forwarded ports. See [Egress Filtering](../features/egress-filtering.md).
 - Mount **`/var/run/docker.sock`** only when the service must create agent containers on the host.
 - Build-time **`DOCKER_GID`** (default **995**) should match the host `docker` group when known at build time:
   `stat -c '%g' /var/run/docker.sock`

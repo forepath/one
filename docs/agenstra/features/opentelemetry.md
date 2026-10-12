@@ -71,17 +71,15 @@ When BullMQ is configured, the controller registers **`queueNames`** for the not
 
 Domain gauges (meter `forepath.agenstra`, polled every 60 seconds when OTEL is enabled):
 
-| Gauge                               | Labels                                       | Description                                         |
-| ----------------------------------- | -------------------------------------------- | --------------------------------------------------- |
-| `agenstra.workspaces`               | -                                            | Workspace (client) count                            |
-| `agenstra.tickets`                  | `client_id`, `status`                        | Ticket counts per workspace and status              |
-| `agenstra.chat_messages`            | `client_id`, `direction`, `interaction_kind` | Cumulative chat I/O message counts from statistics  |
-| `agenstra.chat_words`               | `client_id`, `direction`, `interaction_kind` | Cumulative word counts                              |
-| `agenstra.chat_chars`               | `client_id`, `direction`, `interaction_kind` | Cumulative character counts                         |
-| `agenstra.filter_drops`             | `client_id`, `direction`, `filter_type`      | Messages dropped by chat filters                    |
-| `agenstra.filter_flags`             | `client_id`, `direction`, `filter_type`      | Messages flagged/modified by filters                |
-| `agenstra.filter_rules`             | `enabled`                                    | Console regex filter rules                          |
-| `agenstra.filter_rule_sync_targets` | `sync_status`                                | Rule sync targets (`pending` / `synced` / `failed`) |
+| Gauge                    | Labels                                       | Description                                        |
+| ------------------------ | -------------------------------------------- | -------------------------------------------------- |
+| `agenstra.workspaces`    | -                                            | Workspace (client) count                           |
+| `agenstra.tickets`       | `client_id`, `status`                        | Ticket counts per workspace and status             |
+| `agenstra.chat_messages` | `client_id`, `direction`, `interaction_kind` | Cumulative chat I/O message counts from statistics |
+| `agenstra.chat_words`    | `client_id`, `direction`, `interaction_kind` | Cumulative word counts                             |
+| `agenstra.chat_chars`    | `client_id`, `direction`, `interaction_kind` | Cumulative character counts                        |
+| `agenstra.filter_drops`  | `client_id`, `direction`, `filter_type`      | Messages dropped by chat filters                   |
+| `agenstra.filter_flags`  | `client_id`, `direction`, `filter_type`      | Messages flagged/modified by filters               |
 
 ### Application updates
 
@@ -113,7 +111,6 @@ The agent manager enables shared host and runtime metrics. When OTEL is enabled 
 | `agenstra.manager.chat_words`         | `actor`, `filtered`            | Approximate word counts from message text                 |
 | `agenstra.manager.chat_chars`         | `actor`, `filtered`            | Character counts from message text                        |
 | `agenstra.manager.filter_triggers`    | `actor`                        | Messages marked filtered (manager has no drop/flag split) |
-| `agenstra.manager.filter_rules`       | `direction`, `filter_type`     | Local regex filter rules (zero-filled for all combos)     |
 
 ## Optional OTLP export
 

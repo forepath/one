@@ -10,15 +10,18 @@ Statistics help operators and admins answer questions such as: how much assistan
 
 Base path pattern: `/api/clients/{id}/statistics/...` (requires access to that client).
 
-| Area              | Purpose                                                                                          |
-| ----------------- | ------------------------------------------------------------------------------------------------ |
-| **Summary**       | Aggregate counts such as messages, words, characters, and filter-related drops for the workspace |
-| **Chat I/O**      | Time-bounded or bucketed chat input and output metrics for usage reporting                       |
-| **Filter drops**  | Metrics when messages are dropped by filtering rules                                             |
-| **Filter flags**  | Metrics when messages are flagged rather than dropped                                            |
-| **Entity events** | Auditable-style entity change events relevant to statistics dashboards                           |
+| Area              | Purpose                                                                                                                                                                                        |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Summary**       | Aggregate counts such as messages, words, characters, and filter-related drops for the workspace                                                                                               |
+| **Chat I/O**      | Time-bounded or bucketed chat input and output metrics for usage reporting                                                                                                                     |
+| **Filter drops**  | Metrics when messages are dropped by filtering rules                                                                                                                                           |
+| **Filter flags**  | Metrics when messages are flagged rather than dropped                                                                                                                                          |
+| **Egress events** | Web traffic decisions (`allowed`, `blocked`, `observed`, `error`) per agent from the egress guard, ingested from the managers; filter by `agentId`, `kind`, `decision`, `from`, `to`, `search` |
+| **Entity events** | Auditable-style entity change events relevant to statistics dashboards                                                                                                                         |
 
 Global equivalents exist under `/api/statistics/...` for cross-workspace views where your role allows aggregated access (see OpenAPI for query parameters such as optional `clientId` scoping).
+
+Egress events live in `statistics_egress_events` and are served by `GET /api/clients/{id}/statistics/egress-events` (global: `GET /api/statistics/egress-events`). The console **Audit** page (`/audit`) charts web traffic next to filter drops and flags. See [Egress Filtering](./egress-filtering.md) and [Message Filters](./message-filters.md).
 
 ## Who can access what
 
@@ -34,13 +37,15 @@ Global equivalents exist under `/api/statistics/...` for cross-workspace views w
 
 ## Related documentation
 
+- **[Egress Filtering](./egress-filtering.md)** Web traffic audit events
+- **[Message Filters](./message-filters.md)** Filter drops and flags
 - **[Backend Agent Controller](../applications/backend-agent-controller.md)** Endpoint group listing
 - **[Agent Management](./agent-management.md)** Container stats and agent lifecycle
 - **[Authentication](./authentication.md)** Roles and access modes
 
 ## API reference
 
-- [Agent Controller OpenAPI](/spec/agent-controller/openapi.yaml) `/clients/{id}/statistics/*` and `/statistics/*`
+- [Agent Controller OpenAPI](/spec/agent-controller/openapi.yaml) `/clients/{id}/statistics/*` (including `egress-events`) and `/statistics/*`
 
 ---
 

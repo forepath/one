@@ -583,7 +583,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
               )
               .catch(() => undefined);
 
-            this.notificationPublisher.publishFilterRuleTriggered(currentClientId, {
+            this.notificationPublisher.publishMessageFilterTriggered(currentClientId, {
               agentId: lastAgentId,
               direction: direction === FilterDropDirection.OUTGOING ? 'outgoing' : 'incoming',
               status: 'dropped',
@@ -630,7 +630,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
               )
               .catch(() => undefined);
 
-            this.notificationPublisher.publishFilterRuleTriggered(currentClientId, {
+            this.notificationPublisher.publishMessageFilterTriggered(currentClientId, {
               agentId: lastAgentId,
               direction: flagDirection === FilterFlagDirection.OUTGOING ? 'outgoing' : 'incoming',
               status: 'filtered',

@@ -3,7 +3,7 @@ import { Column, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from 
 export type OpencodeConfigSyncStatus = 'pending' | 'synced' | 'failed';
 
 /**
- * Per-agent desired vs applied OpenCode effective config revision (filter-rules pattern).
+ * Per-agent desired vs applied OpenCode effective config revision.
  */
 @Entity('opencode_config_sync_targets')
 @Index('IDX_opencode_config_sync_agent', ['agentId'], { unique: true })
@@ -27,6 +27,10 @@ export class OpencodeConfigSyncTargetEntity {
 
   @Column({ type: 'varchar', length: 16, name: 'sync_status', default: 'pending' })
   syncStatus!: OpencodeConfigSyncStatus;
+
+  /** Hash of the effective egress policy last applied successfully (drives `egress.policy_*` notifications). */
+  @Column({ type: 'varchar', length: 64, name: 'applied_egress_revision', nullable: true })
+  appliedEgressRevision?: string | null;
 
   @Column({ type: 'text', name: 'last_error', nullable: true })
   lastError?: string | null;

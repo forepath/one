@@ -65,7 +65,7 @@ Host path **`/opt/agents`** must exist and be writable by UID **10001** on manag
 
 ### PostgreSQL (pgvector)
 
-Stores clients, tickets, knowledge embeddings, statistics, and filter rules.
+Stores clients, tickets, knowledge embeddings, statistics, and egress events.
 
 | Profile             | vCPU | Memory | Disk     | Notes                                      |
 | ------------------- | ---- | ------ | -------- | ------------------------------------------ |
@@ -106,7 +106,7 @@ HTTP **3100** (REST `/api/`, Socket.IO namespaces under `/socket/`, VNC `/socket
 
 ### Controller Worker (`QUEUE_ROLE=worker`)
 
-Processes unit jobs: context import, **knowledge embedding reindex**, filter-rule sync, autonomous ticket automation. Default **`QUEUE_WORKER_CONCURRENCY=5`**.
+Processes unit jobs: context import, **knowledge embedding reindex**, egress event ingestion, autonomous ticket automation. Default **`QUEUE_WORKER_CONCURRENCY=5`**.
 
 | Profile         | vCPU | Memory limit | Notes                                             |
 | --------------- | ---- | ------------ | ------------------------------------------------- |
@@ -129,7 +129,7 @@ The manager API orchestrates Docker containers; it does not replace Docker host 
 
 ### Manager PostgreSQL
 
-Agent metadata, chat history, deployment runs, and filter rules.
+Agent metadata, chat history, deployment runs, and egress guard events.
 
 | Profile         | vCPU | Memory  | Disk   | Notes                                     |
 | --------------- | ---- | ------- | ------ | ----------------------------------------- |

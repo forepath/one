@@ -21,7 +21,7 @@ This application provides:
 - **Tickets** Workspace ticket board with comments, activity, migration, and automation runs ([Tickets and Workspaces](../features/tickets-and-workspaces.md))
 - **Deployments** CI/CD configuration and runs per agent ([Deployment](../features/deployment.md))
 - **Usage statistics** Controller-backed analytics slices for operators ([Usage Statistics](../features/usage-statistics.md))
-- **Message filter rules** Global admin rule manager ([Message Filter Rules](../features/message-filter-rules.md))
+- **Message filters and web traffic** Security tabs in the agent configuration editor ([Message Filters](../features/message-filters.md), [Egress Filtering](../features/egress-filtering.md))
 - **Atlassian import** Admin UI for Atlassian site connections and Jira/Confluence import configs ([Atlassian import](../features/atlassian-import.md))
 - **Agent autonomy** Configure which agents may run autonomously per workspace
 - **Server Provisioning** Provision cloud servers (Hetzner, DigitalOcean) with automated deployment
@@ -112,10 +112,6 @@ The application uses NgRx for state management with the following state slices:
 
 - Summary, chat I/O, filter drops/flags, and entity events (controller API)
 
-### Filter rules state (`filterRules`)
-
-- Global filter rules for administrators
-
 ### Atlassian context import state (`atlassianContextImport`)
 
 - Site connections and import configurations for administrators (loads when the agent-console feature routes are active)
@@ -143,8 +139,7 @@ Routes are defined in the framework library `libs/domains/agenstra/frontend/feat
 - **Identity** `identityAuthRoutes` (login, register, password reset, email confirmation, user management) merged under the shell component
 - `/audit`. Audit (authenticated)
 - `/agent-config`. Admin **Agent configuration** editor (structured + raw; **admin** guard); see [Agent configuration](../features/agent-configuration.md)
-- `/filters`. Global message filter rules (**admin** guard)
-- `/imports/atlassian`. Atlassian site connections and import configurations (**admin** guard; sidebar with Users/Filters)
+- `/imports/atlassian`. Atlassian site connections and import configurations (**admin** guard; sidebar with Users)
 - `/tickets`, `/tickets/:clientId`. Ticket board (**authenticated**; requires active client context)
 - `/clients`. Default **Manager** view: client and agent chat shell
   - `/clients`. Landing list
@@ -167,10 +162,6 @@ Main workspace shell: chat (including a **session switcher** for multiple user-v
 ### TicketsBoardComponent
 
 Ticket board and detail experience for the active workspace (`/tickets`).
-
-### RuleManagerComponent
-
-Administrative UI for global regex filter rules (`/filters`).
 
 ### AtlassianImportAdminComponent
 
@@ -316,7 +307,8 @@ Before deploying to production:
 - **[Tickets and Workspaces](../features/tickets-and-workspaces.md)** Ticket board and automation
 - **[Deployment](../features/deployment.md)** CI/CD from the console
 - **[Usage Statistics](../features/usage-statistics.md)** Controller analytics
-- **[Message Filter Rules](../features/message-filter-rules.md)** Global and per-agent filters
+- **[Message Filters](../features/message-filters.md)** Layered chat message filters
+- **[Egress Filtering](../features/egress-filtering.md)** Per-environment web traffic filtering
 - **[Atlassian import](../features/atlassian-import.md)** Atlassian site connections and import configurations (admin UI)
 - **[WebSocket Communication](../features/websocket-communication.md)** Dual-namespace behavior
 - **[Backend Agent Controller](./backend-agent-controller.md)** API and WebSocket surface

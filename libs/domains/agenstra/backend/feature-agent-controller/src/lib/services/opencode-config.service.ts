@@ -14,6 +14,8 @@ import {
   normalizeStoredLocks,
   OpencodeConfigValidationError,
   prepareConfigForSync,
+  resolvePlatformSecurityPolicy,
+  type EffectivePlatformSecurityPolicy,
   type HeredityParentLayer,
   type InheritedAdditiveEntry,
   type JsonObject,
@@ -103,6 +105,7 @@ export class OpencodeConfigService {
     const response = this.toResponse(row?.config, row?.overrides, row?.locks, row?.secrets, row?.updatedAt);
     // Owning (global) layer still needs `effective` for draft-lock display fallbacks.
     response.effective = this.composeStoredLayer(row?.config, row?.overrides);
+    response.platformPolicy = this.resolvePlatformPolicy({ global: response.effective });
 
     return response;
   }
@@ -146,6 +149,7 @@ export class OpencodeConfigService {
     const response = this.toResponse(saved.config, saved.overrides, saved.locks, saved.secrets, saved.updatedAt);
 
     response.effective = this.composeStoredLayer(saved.config, saved.overrides);
+    response.platformPolicy = this.resolvePlatformPolicy({ global: response.effective });
 
     return response;
   }
@@ -161,6 +165,7 @@ export class OpencodeConfigService {
     response.effective = this.mergeEffective(null, overlay, globalLayer.overlay);
     response.lockedPaths = heredity.lockedPaths;
     response.inheritedAdditive = heredity.inheritedAdditive;
+    response.platformPolicy = this.resolvePlatformPolicy({ global: globalLayer.overlay, workspace: overlay });
 
     return response;
   }
@@ -212,6 +217,7 @@ export class OpencodeConfigService {
     response.effective = this.mergeEffective(null, overlay, globalLayer.overlay);
     response.lockedPaths = heredity.lockedPaths;
     response.inheritedAdditive = heredity.inheritedAdditive;
+    response.platformPolicy = this.resolvePlatformPolicy({ global: globalLayer.overlay, workspace: overlay });
 
     return response;
   }
@@ -257,6 +263,22 @@ export class OpencodeConfigService {
     globalSecrets: Record<string, string>,
   ): Record<string, string> {
     return mergeSecretMaps(agentSecrets, workspaceSecrets, globalSecrets);
+  }
+
+  /**
+   * Effective platform security policy (egress + message filters) with provenance for the given layers
+   * (composed overlays). Omitted layers do not contribute.
+   */
+  resolvePlatformPolicy(layers: {
+    global?: Record<string, unknown> | null;
+    workspace?: Record<string, unknown> | null;
+    environment?: Record<string, unknown> | null;
+  }): EffectivePlatformSecurityPolicy {
+    return resolvePlatformSecurityPolicy([
+      { source: 'global', overlay: layers.global ?? null },
+      { source: 'workspace', overlay: layers.workspace ?? null },
+      { source: 'environment', overlay: layers.environment ?? null },
+    ]);
   }
 
   computeHeredity(...parents: Array<HeredityParentLayer | null | undefined>): {

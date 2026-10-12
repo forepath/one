@@ -1,5 +1,6 @@
 import {
   AgentChatSessionEntity,
+  AgentEgressEventEntity,
   AgentEntity,
   AgentDirectoryIndexEntity,
   AgentEnvironmentVariableEntity,
@@ -7,7 +8,6 @@ import {
   AgentMessageEventEntity,
   DeploymentConfigurationEntity,
   DeploymentRunEntity,
-  RegexFilterRuleEntity,
   WorkspaceConfigurationOverrideEntity,
 } from '@forepath/agenstra/backend/feature-agent-manager';
 import { CorrelationAwareTypeOrmLogger } from '@forepath/shared/backend/util-http-context';
@@ -45,12 +45,12 @@ export const typeormConfig: DataSourceOptions = {
     AgentEntity,
     AgentDirectoryIndexEntity,
     AgentChatSessionEntity,
+    AgentEgressEventEntity,
     AgentEnvironmentVariableEntity,
     AgentMessageEntity,
     AgentMessageEventEntity,
     DeploymentConfigurationEntity,
     DeploymentRunEntity,
-    RegexFilterRuleEntity,
     WorkspaceConfigurationOverrideEntity,
   ],
   // Migration paths:

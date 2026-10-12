@@ -3,3 +3,4 @@ export { StatisticsChatIoDto, StatisticsChatIoListDto } from './statistics-chat-
 export { StatisticsFilterDropDto, StatisticsFilterDropListDto } from './statistics-filter-drop.dto';
 export { StatisticsFilterFlagDto, StatisticsFilterFlagListDto } from './statistics-filter-flag.dto';
 export { StatisticsEntityEventDto, StatisticsEntityEventListDto } from './statistics-entity-event.dto';
+export { StatisticsEgressEventDto, StatisticsEgressEventListDto } from './statistics-egress-event.dto';

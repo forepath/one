@@ -3,7 +3,6 @@ import { OpenSearchModule } from '@forepath/shared/backend/util-opensearch';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { AgentConsoleRegexFilterRuleEntity } from '../entities/agent-console-regex-filter-rule.entity';
 import { AtlassianSiteConnectionEntity } from '../entities/atlassian-site-connection.entity';
 import { ExternalImportConfigEntity } from '../entities/external-import-config.entity';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
@@ -11,6 +10,7 @@ import { StatisticsAgentEntity } from '../entities/statistics-agent.entity';
 import { StatisticsChatFilterDropEntity } from '../entities/statistics-chat-filter-drop.entity';
 import { StatisticsChatFilterFlagEntity } from '../entities/statistics-chat-filter-flag.entity';
 import { StatisticsChatIoEntity } from '../entities/statistics-chat-io.entity';
+import { StatisticsEgressEventEntity } from '../entities/statistics-egress-event.entity';
 import { StatisticsClientEntity } from '../entities/statistics-client.entity';
 import { StatisticsEntityEventEntity } from '../entities/statistics-entity-event.entity';
 import { StatisticsUserEntity } from '../entities/statistics-user.entity';
@@ -27,7 +27,6 @@ import { AgenstraSearchIndexService } from './agenstra-search-index.service';
       ClientEntity,
       TicketEntity,
       KnowledgeNodeEntity,
-      AgentConsoleRegexFilterRuleEntity,
       AtlassianSiteConnectionEntity,
       ExternalImportConfigEntity,
       StatisticsAgentEntity,
@@ -35,6 +34,7 @@ import { AgenstraSearchIndexService } from './agenstra-search-index.service';
       StatisticsChatIoEntity,
       StatisticsChatFilterDropEntity,
       StatisticsChatFilterFlagEntity,
+      StatisticsEgressEventEntity,
       StatisticsEntityEventEntity,
       StatisticsUserEntity,
       OpencodeProviderEntity,

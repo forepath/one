@@ -16,23 +16,25 @@ Frontend copy never uses the vendor name “OpenCode”; APIs and worker sync ke
 
 ## UI tabs ↔ config fields
 
-| Section    | Tab                      | Config / secrets                                                                                                         |
-| ---------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| Core       | General                  | `username`, `theme`, `model` (known provider/model picker), `share`, `keybinds`, `tui`, `server`                         |
-| Core       | Models                   | UI allow/deny + known provider/model pickers → `enabled_providers` / `disabled_providers` / `model_allow` / `model_deny` |
-| Core       | Providers                | `providers` + credential secrets; catalog models locked read-only for built-ins                                          |
-| Extensions | MCP                      | `mcp_allow` / `mcp_deny` + `mcp.servers` + secrets/OAuth; registry catalog picker (built-in vs custom)                   |
-| Extensions | Skills & instructions    | `skills`, `instructions`                                                                                                 |
-| Extensions | Commands & plugins       | `commands`, `plugins`                                                                                                    |
-| Extensions | Agents                   | `agents`                                                                                                                 |
-| Extensions | References               | `references`                                                                                                             |
-| Security   | Permissions & policies   | `permissions`, `experimental.policies`                                                                                   |
-| Runtime    | Websearch & network      | `websearch`; Network → secrets `HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY`, `NODE_EXTRA_CA_CERTS`                            |
-| Runtime    | Compaction               | `compaction`                                                                                                             |
-| Runtime    | Formatters & attachments | `formatter`, `media` / attachment limits                                                                                 |
-| Runtime    | Warming                  | `warming`                                                                                                                |
-| Runtime    | Tool output              | `tool_output`                                                                                                            |
-| Advanced   | Overrides                | Layer `overrides` JSON (merged over structured `config`; same heredity locks)                                            |
+| Section    | Tab                      | Config / secrets                                                                                                                                                                                  |
+| ---------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Core       | General                  | `username`, `theme`, `model` (known provider/model picker), `share`, `keybinds`, `tui`, `server`                                                                                                  |
+| Core       | Models                   | UI allow/deny + known provider/model pickers → `enabled_providers` / `disabled_providers` / `model_allow` / `model_deny`                                                                          |
+| Core       | Providers                | `providers` + credential secrets; catalog models locked read-only for built-ins                                                                                                                   |
+| Extensions | MCP                      | `mcp_allow` / `mcp_deny` + `mcp.servers` + secrets/OAuth; registry catalog picker (built-in vs custom)                                                                                            |
+| Extensions | Skills & instructions    | `skills`, `instructions`                                                                                                                                                                          |
+| Extensions | Commands & plugins       | `commands`, `plugins`                                                                                                                                                                             |
+| Extensions | Agents                   | `agents`                                                                                                                                                                                          |
+| Extensions | References               | `references`                                                                                                                                                                                      |
+| Security   | Permissions & policies   | `permissions`, `experimental.policies`                                                                                                                                                            |
+| Security   | Web traffic              | `egress` (`mode`, `allow_hosts`, `deny_hosts`, `deny_url_patterns`, `network_allow`, `block_private_networks`, `block_ip_literals`, `log_allowed`); see [Egress Filtering](./egress-filtering.md) |
+| Security   | Message filters          | `message_filters` (regex rules with `drop` / `replace` / `flag`); see [Message Filters](./message-filters.md)                                                                                     |
+| Runtime    | Websearch & network      | `websearch`; Network → secrets `HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY`, `NODE_EXTRA_CA_CERTS`                                                                                                     |
+| Runtime    | Compaction               | `compaction`                                                                                                                                                                                      |
+| Runtime    | Formatters & attachments | `formatter`, `media` / attachment limits                                                                                                                                                          |
+| Runtime    | Warming                  | `warming`                                                                                                                                                                                         |
+| Runtime    | Tool output              | `tool_output`                                                                                                                                                                                     |
+| Advanced   | Overrides                | Layer `overrides` JSON (merged over structured `config`; same heredity locks)                                                                                                                     |
 
 Modes: **Structured** (sectioned vertical tabs) and **Raw JSON**. Both enforce heredity.
 
@@ -42,6 +44,8 @@ Within a layer, the editable surface is `compose(config, overrides)` — structu
 
 - **Replace + lock:** `permissions`, provider allow/deny lists, model allow/deny lists, MCP allow/deny lists (`mcp_allow` / `mcp_deny`), `experimental.policies`, and similar security roots. Parent presence locks the path for children.
 - **Explicit locks (Global / Workspace):** each layer may store a `locks` array of JSON Pointers (e.g. `/model`, `/skills`, `/tabs/mcp`). Locks apply to **this layer and** lower layers **even when the parent value is unset**. Tab locks use `/tabs/{id}` and expand to all fields owned by that tab. Environment cannot author locks.
+- **Egress (`egress`, tab lock `/tabs/egress`):** scalars `mode`, `block_private_networks`, `block_ip_literals`, `log_allowed` are **lock-on-presence** (the highest layer that sets one locks it for lower layers). Lists `allow_hosts`, `deny_hosts`, `deny_url_patterns`, `network_allow` are **additive** (lower layers append, never remove). Deny wins over allow; an empty allowlist means unrestricted.
+- **Message filters (`message_filters`, tab lock `/tabs/message_filters`):** rules are additive across global → workspace → environment; inherited rules cannot be removed or edited. The most restrictive outcome wins (`drop` > `replace` > `flag`). Patterns with nested quantifiers (ReDoS risk) are rejected.
 - **Map merge:** `providers`, `mcp.servers`, `commands`, `agents`, `references`, `formatter` (object) — parent entry keys are inherited; children may add new keys and may set `disabled` / `hidden` on inherited keys (deep-merged), unless the map root is explicitly locked. Parent `formatter: false` fully locks formatters. When an inherited map entry is prohibited by allow/deny (this layer or a higher layer), the editor and **backend PUT** write a `{ disabled: true }` stub into the overlay (checkbox cannot override). Local prohibited entries are **deleted** from the overlay.
 - **Array concat:** `skills`, `instructions`, `plugins` — parent items stack; children append (skills are converted to OpenCode `{ paths, urls }` on worker sync), unless the array root is explicitly locked.
 - Responses expose `locks` (this layer), `lockedPaths` (from higher layers, presence + expanded explicit locks), and `inheritedAdditive`.

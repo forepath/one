@@ -237,6 +237,15 @@ channels:
       and secrets have successfully been applied to the worker. Includes config-only updates as well
       as container recreation and changes inherited from workspace/global layers. Clients refresh
       cached model and slash-command catalogs for the affected agent. Failed/deferred syncs do not emit.
+  agents/egressStatusChanged:
+    address: agents/egressStatusChanged
+    messages:
+      egressStatusChangedEvent:
+        $ref: '#/components/messages/EgressStatusChanged'
+    description: |
+      Emitted to sockets logged in to the affected agent whenever the egress guard (web traffic filtering)
+      status of that environment changes (guard applied, failed, or deactivated). Payload is the egress status
+      of the agent; use `GET /api/agents/{id}/egress` for the full policy and recent events.
   agents/workspaceIndexChanged:
     address: agents/workspaceIndexChanged
     messages:
@@ -434,6 +443,12 @@ operations:
       $ref: '#/channels/agents~1opencodeConfigSynced'
     messages:
       - $ref: '#/channels/agents~1opencodeConfigSynced/messages/opencodeConfigSyncedEvent'
+  serverBroadcastsEgressStatusChanged:
+    action: receive
+    channel:
+      $ref: '#/channels/agents~1egressStatusChanged'
+    messages:
+      - $ref: '#/channels/agents~1egressStatusChanged/messages/egressStatusChangedEvent'
   serverBroadcastsWorkspaceIndexChanged:
     action: receive
     channel:
@@ -1516,6 +1531,52 @@ components:
               agentId:
                 type: string
                 format: uuid
+          timestamp:
+            type: string
+            format: date-time
+    EgressStatusChanged:
+      name: EgressStatusChanged
+      title: Egress guard status changed
+      contentType: application/json
+      payload:
+        type: object
+        required: [success, data, timestamp]
+        properties:
+          success:
+            type: boolean
+            const: true
+          data:
+            type: object
+            required:
+              [
+                agentId,
+                status,
+                mode,
+                guardContainerId,
+                policyRevision,
+                appliedAt,
+                lastError,
+              ]
+            properties:
+              agentId:
+                type: string
+                format: uuid
+              status:
+                type: string
+                enum: [inactive, active, failed]
+              mode:
+                type: string
+                enum: [off, monitor, enforce, offline]
+              guardContainerId:
+                type: [string, 'null']
+                description: Short guard container id (null when the agent never required egress filtering)
+              policyRevision:
+                type: [string, 'null']
+              appliedAt:
+                type: [string, 'null']
+                format: date-time
+              lastError:
+                type: [string, 'null']
           timestamp:
             type: string
             format: date-time

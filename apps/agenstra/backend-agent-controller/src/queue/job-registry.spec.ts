@@ -1,16 +1,16 @@
-import { ControllerJobName, getControllerRepeatableJobs } from './job-registry';
+import { ControllerJobName, RETIRED_CONTROLLER_REPEATABLE_JOBS, getControllerRepeatableJobs } from './job-registry';
 
 describe('controller job-registry', () => {
   it('defines coordinator and unit job names', () => {
     expect(ControllerJobName.AUTONOMOUS_TICKET_UNIT).toBe('autonomous-ticket.unit');
-    expect(ControllerJobName.FILTER_RULES_RECONCILE).toBe('filter-rules-sync.reconcile');
+    expect(ControllerJobName.EGRESS_EVENTS_INGEST_UNIT).toBe('egress-events-ingest.unit');
   });
 
   it('getControllerRepeatableJobs includes core coordinators', () => {
     const jobs = getControllerRepeatableJobs();
     const names = jobs.map((job) => job.name);
 
-    expect(names).toContain(ControllerJobName.FILTER_RULES_SYNC_COORDINATOR);
+    expect(names).toContain(ControllerJobName.EGRESS_EVENTS_INGEST_COORDINATOR);
     expect(names).toContain(ControllerJobName.WEBHOOK_DELIVERY_RETENTION_COORDINATOR);
   });
 
@@ -64,10 +64,33 @@ describe('controller job-registry', () => {
     expect(names).toContain(ControllerJobName.OPENCODE_LAYER_FILES_SYNC_COORDINATOR);
   });
 
+  it('getControllerRepeatableJobs skips egress ingestion when disabled', () => {
+    process.env.EGRESS_EVENTS_INGEST_INTERVAL_MS = '0';
+    const names = getControllerRepeatableJobs().map((job) => job.name);
+
+    expect(names).not.toContain(ControllerJobName.EGRESS_EVENTS_INGEST_COORDINATOR);
+    delete process.env.EGRESS_EVENTS_INGEST_INTERVAL_MS;
+  });
+
   it('coordinator job ids are valid for BullMQ (no colons)', () => {
     for (const job of getControllerRepeatableJobs()) {
       expect(job.coordinatorJobId).not.toContain(':');
       expect(job.coordinatorJobId.startsWith('coordinator.')).toBe(true);
+    }
+  });
+
+  it('lists retired repeatables that no active job reuses', () => {
+    const active = getControllerRepeatableJobs();
+
+    expect(RETIRED_CONTROLLER_REPEATABLE_JOBS.map((job) => job.name)).toEqual([
+      'filter-rules-sync.coordinator',
+      'filter-rules-sync.reconcile',
+    ]);
+
+    for (const retired of RETIRED_CONTROLLER_REPEATABLE_JOBS) {
+      expect(active.some((job) => job.name === retired.name || job.coordinatorJobId === retired.coordinatorJobId)).toBe(
+        false,
+      );
     }
   });
 });

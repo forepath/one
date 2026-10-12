@@ -159,7 +159,7 @@ Or inspect startup logs for `DynamicProviderRegistry` / loader errors.
 
 - **Agents** [Agent Management](./agent-management.md); `DYNAMIC_AGENT_PROVIDERS` extends agent types beyond the built-in OpenCode provider.
 - **Pipelines** [Deployment](./deployment.md); `DYNAMIC_PIPELINE_PROVIDERS` adds CI/CD backends.
-- **Chat filters** [Message Filter Rules](./message-filter-rules.md); `DYNAMIC_CHAT_FILTERS` adds filter implementations on the manager.
+- **Chat filters** [Message Filters](./message-filters.md); `DYNAMIC_CHAT_FILTERS` adds filter implementations on the manager.
 
 ## Docker Compose (optional plugins)
 

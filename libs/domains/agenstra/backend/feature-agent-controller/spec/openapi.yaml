@@ -630,131 +630,6 @@ paths:
           description: Authenticator removed
         '404':
           description: User not found
-  /filter-rules:
-    get:
-      summary: List regex filter rules (admin only)
-      operationId: listFilterRules
-      parameters:
-        - in: query
-          name: limit
-          required: false
-          schema:
-            type: integer
-            minimum: 1
-            default: 10
-          description: Maximum number of rules to return
-        - in: query
-          name: offset
-          required: false
-          schema:
-            type: integer
-            minimum: 0
-            default: 0
-          description: Number of rules to skip (pagination)
-        - in: query
-          name: search
-          schema:
-            type: string
-          description: Case-insensitive search across pattern, filterType, direction, replaceContent, id
-      responses:
-        '200':
-          description: Rules with per-workspace sync summary
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/FilterRuleResponseDto'
-        '403':
-          description: Forbidden
-    post:
-      summary: Create filter rule (admin only)
-      operationId: createFilterRule
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateFilterRuleDto'
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FilterRuleResponseDto'
-        '400':
-          description: Validation error
-        '403':
-          description: Forbidden
-  /filter-rules/{id}:
-    get:
-      summary: Get filter rule (admin only)
-      operationId: getFilterRule
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Rule
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FilterRuleResponseDto'
-        '403':
-          description: Forbidden
-        '404':
-          description: Not found
-    put:
-      summary: Update filter rule (admin only)
-      operationId: updateFilterRule
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateFilterRuleDto'
-      responses:
-        '200':
-          description: Updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FilterRuleResponseDto'
-        '400':
-          description: Validation error
-        '403':
-          description: Forbidden
-        '404':
-          description: Not found
-    delete:
-      summary: Delete filter rule (admin only)
-      operationId: deleteFilterRule
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '204':
-          description: Deleted
-        '403':
-          description: Forbidden
-        '404':
-          description: Not found
   /imports/atlassian/connections:
     get:
       summary: List Atlassian site connections (admin only)
@@ -5099,6 +4974,71 @@ paths:
                 $ref: '#/components/schemas/StatisticsFilterFlagListDto'
         '403':
           description: Access denied to this client
+  /clients/{id}/statistics/egress-events:
+    get:
+      summary: Get egress events for a client
+      description: |
+        Returns paginated egress guard decisions (web traffic filtering). Identical decisions
+        within one collection cycle are aggregated into a single event with a `count`.
+      operationId: getClientStatisticsEgressEvents
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: agentId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: kind
+          schema:
+            type: string
+            enum: [web, dns, network, guard]
+          description: Filter by kind (web, dns, network, guard)
+        - in: query
+          name: decision
+          schema:
+            type: string
+            enum: [allowed, blocked, observed, error]
+          description: Filter by decision (allowed, blocked, observed, error)
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Case-insensitive search across host, rule, matchedEntry, decision, kind, id
+      responses:
+        '200':
+          description: Paginated egress events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsEgressEventListDto'
+        '403':
+          description: Access denied to this client
   /clients/{id}/statistics/entity-events:
     get:
       summary: Get entity lifecycle events for a client
@@ -5370,6 +5310,71 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatisticsFilterFlagListDto'
+        '403':
+          description: Access denied to requested client
+  /statistics/egress-events:
+    get:
+      summary: Get egress events (aggregate or by client)
+      description: |
+        Returns paginated egress guard decisions (web traffic filtering). Identical decisions
+        within one collection cycle are aggregated into a single event with a `count`.
+      operationId: getStatisticsEgressEvents
+      parameters:
+        - in: query
+          name: clientId
+          schema:
+            type: string
+            format: uuid
+          description: Optional client filter; must be accessible
+        - in: query
+          name: agentId
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: kind
+          schema:
+            type: string
+            enum: [web, dns, network, guard]
+          description: Filter by kind (web, dns, network, guard)
+        - in: query
+          name: decision
+          schema:
+            type: string
+            enum: [allowed, blocked, observed, error]
+          description: Filter by decision (allowed, blocked, observed, error)
+        - in: query
+          name: from
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Case-insensitive search across host, rule, matchedEntry, decision, kind, id
+      responses:
+        '200':
+          description: Paginated egress events
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsEgressEventListDto'
         '403':
           description: Access denied to requested client
   /statistics/entity-events:
@@ -6023,6 +6028,78 @@ paths:
                 properties:
                   ok:
                     type: boolean
+  /clients/{id}/agents/{agentId}/egress:
+    get:
+      summary: Get agent egress guard details
+      description: |
+        Returns the egress guard (web traffic filtering) status of the environment, the effective
+        policy in force on the agent manager, the effective message filters and recent guard decisions.
+        Requires the `clients:read` scope and workspace management access (exposes layered policy details, like the agent configuration endpoints).
+      operationId: getClientAgentEgress
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Egress guard details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentEgressDetailsDto'
+        '403':
+          description: Access denied to this client
+        '404':
+          description: Client or agent not found
+  /clients/{id}/agents/{agentId}/egress/evaluate:
+    post:
+      summary: Evaluate a destination against the effective egress policy
+      description: |
+        Evaluates a hostname, IP address or URL against the environment's effective (layered)
+        egress policy (global, workspace, environment). Only `http://` and `https://` URLs are accepted.
+        Requires the `clients:read` scope and workspace management access (exposes layered policy details, like the agent configuration endpoints).
+      operationId: evaluateClientAgentEgressDestination
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluateEgressDestinationDto'
+      responses:
+        '200':
+          description: Evaluation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EgressEvaluationResponseDto'
+        '400':
+          description: Invalid destination
+        '403':
+          description: Access denied to this client
+        '404':
+          description: Client or agent not found
   /clients/{id}/agents/{agentId}/opencode/config:
     get:
       summary: Get agent OpenCode config
@@ -7583,6 +7660,13 @@ components:
           autoEnrichmentChars,
           filterDropCount,
           filterTypesBreakdown,
+          egressAllowedCount,
+          egressBlockedCount,
+          egressObservedCount,
+          egressGuardErrorCount,
+          egressBreakdown,
+          egressTopBlockedHosts,
+          egressRulesBreakdown,
         ]
       properties:
         totalMessages:
@@ -7655,6 +7739,80 @@ components:
                 type: integer
               charCount:
                 type: integer
+        egressAllowedCount:
+          type: integer
+          description: Egress guard decisions (sum of aggregated counts) with decision allowed
+        egressBlockedCount:
+          type: integer
+        egressObservedCount:
+          type: integer
+        egressGuardErrorCount:
+          type: integer
+        egressBreakdown:
+          type: array
+          description: Decisions by kind and decision
+          items:
+            type: object
+            required: [kind, decision, count]
+            properties:
+              kind:
+                type: string
+                enum: [web, dns, network, guard]
+              decision:
+                type: string
+                enum: [allowed, blocked, observed, error]
+              count:
+                type: integer
+        egressTopBlockedHosts:
+          type: array
+          description: Most frequently blocked / observed destinations (top 10)
+          items:
+            type: object
+            required: [host, count]
+            properties:
+              host:
+                type: string
+              count:
+                type: integer
+        egressRulesBreakdown:
+          type: array
+          description: Blocked / observed decisions by guard rule
+          items:
+            type: object
+            required: [rule, count]
+            properties:
+              rule:
+                type: string
+              count:
+                type: integer
+        securitySeries:
+          type: array
+          description: Security events over time (only with groupBy); message filter drops / flags and egress decisions
+          items:
+            type: object
+            required:
+              [
+                period,
+                filterDrops,
+                filterFlags,
+                egressAllowed,
+                egressBlocked,
+                egressObserved,
+              ]
+            properties:
+              period:
+                type: string
+                format: date-time
+              filterDrops:
+                type: integer
+              filterFlags:
+                type: integer
+              egressAllowed:
+                type: integer
+              egressBlocked:
+                type: integer
+              egressObserved:
+                type: integer
     StatisticsChatIoDto:
       type: object
       required:
@@ -7720,6 +7878,100 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/StatisticsChatIoDto'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+    StatisticsEgressEventDto:
+      type: object
+      required:
+        [
+          id,
+          clientId,
+          kind,
+          decision,
+          count,
+          bytesIn,
+          bytesOut,
+          firstSeenAt,
+          occurredAt,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        agentId:
+          type: string
+          format: uuid
+        clientName:
+          type: string
+        agentName:
+          type: string
+        kind:
+          type: string
+          enum: [web, dns, network, guard]
+        decision:
+          type: string
+          enum: [allowed, blocked, observed, error]
+        host:
+          type: string
+          nullable: true
+        rule:
+          type: string
+          nullable: true
+          description: Guard rule (deny_host, not_allowlisted, private_network, ip_literal, deny_url, offline, quic, ...)
+        matchedEntry:
+          type: string
+          nullable: true
+        matchedSource:
+          type: string
+          nullable: true
+          enum: [global, workspace, environment, null]
+          description: Layer that contributed the matched entry
+        method:
+          type: string
+          nullable: true
+        httpStatus:
+          type: integer
+          nullable: true
+        sampleUrl:
+          type: string
+          nullable: true
+        count:
+          type: integer
+          description: Number of identical decisions aggregated within one collection cycle
+        bytesIn:
+          type: integer
+        bytesOut:
+          type: integer
+        mode:
+          type: string
+          nullable: true
+        policyRevision:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+        firstSeenAt:
+          type: string
+          format: date-time
+        occurredAt:
+          type: string
+          format: date-time
+    StatisticsEgressEventListDto:
+      type: object
+      required: [data, total, limit, offset]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatisticsEgressEventDto'
         total:
           type: integer
         limit:
@@ -8720,145 +8972,6 @@ components:
           format: uuid
         content:
           type: string
-    FilterRuleSyncSummaryDto:
-      type: object
-      required: [pending, synced, failed]
-      properties:
-        pending:
-          type: integer
-          minimum: 0
-        synced:
-          type: integer
-          minimum: 0
-        failed:
-          type: integer
-          minimum: 0
-    FilterRuleWorkspaceSyncDto:
-      type: object
-      required: [clientId, syncStatus]
-      properties:
-        clientId:
-          type: string
-          format: uuid
-        syncStatus:
-          type: string
-          enum: [pending, synced, failed]
-        lastError:
-          type: string
-    FilterRuleResponseDto:
-      type: object
-      required:
-        [
-          id,
-          pattern,
-          regexFlags,
-          direction,
-          filterType,
-          priority,
-          enabled,
-          isGlobal,
-          workspaceIds,
-          sync,
-          workspaceSync,
-          createdAt,
-          updatedAt,
-        ]
-      properties:
-        id:
-          type: string
-          format: uuid
-        pattern:
-          type: string
-        regexFlags:
-          type: string
-        direction:
-          type: string
-          enum: [incoming, outgoing, bidirectional]
-        filterType:
-          type: string
-          enum: [none, filter, drop]
-        replaceContent:
-          type: string
-        priority:
-          type: integer
-        enabled:
-          type: boolean
-        isGlobal:
-          type: boolean
-        workspaceIds:
-          type: array
-          items:
-            type: string
-            format: uuid
-          description: Empty when isGlobal is true (applies to all workspaces)
-        sync:
-          $ref: '#/components/schemas/FilterRuleSyncSummaryDto'
-        workspaceSync:
-          type: array
-          items:
-            $ref: '#/components/schemas/FilterRuleWorkspaceSyncDto'
-          description: Per-workspace agent-manager sync status for this rule
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-    CreateFilterRuleDto:
-      type: object
-      required: [pattern, direction, filterType, isGlobal]
-      properties:
-        pattern:
-          type: string
-        regexFlags:
-          type: string
-        direction:
-          type: string
-          enum: [incoming, outgoing, bidirectional]
-        filterType:
-          type: string
-          enum: [none, filter, drop]
-        replaceContent:
-          type: string
-        priority:
-          type: integer
-          minimum: 0
-        enabled:
-          type: boolean
-        isGlobal:
-          type: boolean
-        workspaceIds:
-          type: array
-          items:
-            type: string
-            format: uuid
-    UpdateFilterRuleDto:
-      type: object
-      properties:
-        pattern:
-          type: string
-        regexFlags:
-          type: string
-        direction:
-          type: string
-          enum: [incoming, outgoing, bidirectional]
-        filterType:
-          type: string
-          enum: [none, filter, drop]
-        replaceContent:
-          type: string
-        priority:
-          type: integer
-          minimum: 0
-        enabled:
-          type: boolean
-        isGlobal:
-          type: boolean
-        workspaceIds:
-          type: array
-          items:
-            type: string
-            format: uuid
     AtlassianSiteConnectionResponseDto:
       type: object
       description: Connection metadata only; API tokens are stored encrypted at rest and are never returned.
@@ -9483,6 +9596,324 @@ components:
         entryKind:
           type: string
           enum: [file, directory]
+    EffectiveEgressPolicy:
+      type: object
+      description: Fully resolved egress policy with per-entry provenance
+      required:
+        [
+          mode,
+          allowHosts,
+          denyHosts,
+          denyUrlPatterns,
+          networkAllow,
+          blockPrivateNetworks,
+          blockIpLiterals,
+          logAllowed,
+          scalarSources,
+        ]
+      properties:
+        mode:
+          type: string
+          enum: [off, monitor, enforce, offline]
+        allowHosts:
+          type: array
+          items:
+            type: object
+            required: [value, source]
+            properties:
+              value:
+                type: string
+              source:
+                type: string
+                enum: [global, workspace, environment]
+        denyHosts:
+          type: array
+          items:
+            type: object
+            required: [value, source]
+            properties:
+              value:
+                type: string
+              source:
+                type: string
+                enum: [global, workspace, environment]
+        denyUrlPatterns:
+          type: array
+          items:
+            type: object
+            required: [value, source]
+            properties:
+              value:
+                type: string
+              source:
+                type: string
+                enum: [global, workspace, environment]
+        networkAllow:
+          type: array
+          items:
+            type: object
+            required: [protocol, ports, destinations, source]
+            properties:
+              protocol:
+                type: string
+                enum: [tcp, udp]
+              ports:
+                type: string
+                description: Single port (22) or range (1000-2000)
+              destinations:
+                type: array
+                items:
+                  type: string
+              description:
+                type: string
+              source:
+                type: string
+                enum: [global, workspace, environment]
+        blockPrivateNetworks:
+          type: boolean
+        blockIpLiterals:
+          type: boolean
+        logAllowed:
+          type: boolean
+        scalarSources:
+          type: object
+          description: Layer that set each scalar (null = platform default)
+          properties:
+            mode:
+              type: string
+              nullable: true
+              enum: [global, workspace, environment, null]
+            blockPrivateNetworks:
+              type: string
+              nullable: true
+              enum: [global, workspace, environment, null]
+            blockIpLiterals:
+              type: string
+              nullable: true
+              enum: [global, workspace, environment, null]
+            logAllowed:
+              type: string
+              nullable: true
+              enum: [global, workspace, environment, null]
+    EffectiveMessageFilterRule:
+      type: object
+      description: Message filter rule from the layered config (`message_filters` root key)
+      required: [name, pattern, flags, direction, action, enabled, source]
+      properties:
+        name:
+          type: string
+        pattern:
+          type: string
+        flags:
+          type: string
+        direction:
+          type: string
+          enum: [incoming, outgoing, bidirectional]
+        action:
+          type: string
+          enum: [drop, replace, flag]
+        replacement:
+          type: string
+        enabled:
+          type: boolean
+        source:
+          type: string
+          enum: [global, workspace, environment]
+    EffectivePlatformSecurityPolicy:
+      type: object
+      description: >
+        Effective platform security policy for a scope (Security: Web traffic / Message filters),
+        resolved global, workspace, environment with per-entry provenance.
+      required: [egress, messageFilters]
+      properties:
+        egress:
+          $ref: '#/components/schemas/EffectiveEgressPolicy'
+        messageFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/EffectiveMessageFilterRule'
+    AgentEgressGuardRuntimeDto:
+      type: object
+      required: [running, startedAt, activeRevision, proxyRunning, dnsRunning]
+      properties:
+        running:
+          type: boolean
+        startedAt:
+          type: string
+          format: date-time
+          nullable: true
+        activeRevision:
+          type: string
+          nullable: true
+          description: Policy revision the guard reports as active
+        proxyRunning:
+          type: boolean
+        dnsRunning:
+          type: boolean
+    AgentEgressStatusDto:
+      type: object
+      description: Egress guard status of one agent environment
+      required:
+        [status, mode, guardContainerId, policyRevision, appliedAt, lastError]
+      properties:
+        status:
+          type: string
+          enum: [inactive, active, failed]
+        mode:
+          type: string
+          enum: [off, monitor, enforce, offline]
+        guardContainerId:
+          type: string
+          nullable: true
+        policyRevision:
+          type: string
+          nullable: true
+        appliedAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastError:
+          type: string
+          nullable: true
+        guard:
+          $ref: '#/components/schemas/AgentEgressGuardRuntimeDto'
+    AgentEgressEventDto:
+      type: object
+      description: One aggregated guard decision
+      required:
+        [
+          seq,
+          agentId,
+          kind,
+          decision,
+          host,
+          rule,
+          matchedEntry,
+          matchedSource,
+          method,
+          httpStatus,
+          sampleUrl,
+          count,
+          bytesIn,
+          bytesOut,
+          firstSeenAt,
+          lastSeenAt,
+          mode,
+          policyRevision,
+          message,
+        ]
+      properties:
+        seq:
+          type: string
+          description: Monotonic cursor (stringified bigint)
+        agentId:
+          type: string
+          format: uuid
+        kind:
+          type: string
+          enum: [web, dns, network, guard]
+        decision:
+          type: string
+          enum: [allowed, blocked, observed, error]
+        host:
+          type: string
+          nullable: true
+        rule:
+          type: string
+          nullable: true
+        matchedEntry:
+          type: string
+          nullable: true
+        matchedSource:
+          type: string
+          nullable: true
+          enum: [global, workspace, environment, null]
+        method:
+          type: string
+          nullable: true
+        httpStatus:
+          type: integer
+          nullable: true
+        sampleUrl:
+          type: string
+          nullable: true
+        count:
+          type: integer
+        bytesIn:
+          type: integer
+        bytesOut:
+          type: integer
+        firstSeenAt:
+          type: string
+          format: date-time
+        lastSeenAt:
+          type: string
+          format: date-time
+        mode:
+          type: string
+          nullable: true
+        policyRevision:
+          type: string
+          nullable: true
+        message:
+          type: string
+          nullable: true
+    AgentEgressDetailsDto:
+      type: object
+      description: Egress status plus the effective policy and message filters in force
+      required: [agentId, status, policy, messageFilters, recentEvents]
+      properties:
+        agentId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/AgentEgressStatusDto'
+        policy:
+          allOf:
+            - $ref: '#/components/schemas/EffectiveEgressPolicy'
+          nullable: true
+        messageFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/EffectiveMessageFilterRule'
+        recentEvents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentEgressEventDto'
+    EvaluateEgressDestinationDto:
+      type: object
+      required: [destination]
+      properties:
+        destination:
+          type: string
+          minLength: 1
+          maxLength: 2048
+          description: Hostname, IP address or URL (scheme / path optional)
+    EgressEvaluationResponseDto:
+      type: object
+      required: [host, decision, rule, mode]
+      properties:
+        host:
+          type: string
+        decision:
+          type: string
+          enum: [allowed, blocked, observed]
+        rule:
+          type: string
+          nullable: true
+        matchedEntry:
+          type: string
+          nullable: true
+        source:
+          type: string
+          nullable: true
+        mode:
+          type: string
+        scheme:
+          type: string
+          nullable: true
+          enum: [http, https, null]
+          description: Plain-HTTP URL rules only apply to http:// URLs (HTTPS paths are not visible without TLS interception)
     OpencodeConfigResponseDto:
       type: object
       required: [config, overrides, locks, secretKeys]
@@ -9537,6 +9968,10 @@ components:
                   type: string
               items:
                 type: array
+        platformPolicy:
+          $ref: '#/components/schemas/EffectivePlatformSecurityPolicy'
+        egress:
+          $ref: '#/components/schemas/AgentEgressStatusDto'
         updatedAt:
           type: string
           format: date-time

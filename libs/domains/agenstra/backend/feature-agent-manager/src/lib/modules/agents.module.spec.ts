@@ -14,16 +14,16 @@ import { AgentMessageEntity } from '../entities/agent-message.entity';
 import { AgentEntity } from '../entities/agent.entity';
 import { DeploymentConfigurationEntity } from '../entities/deployment-configuration.entity';
 import { DeploymentRunEntity } from '../entities/deployment-run.entity';
-import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
+import { AgentEgressEventEntity } from '../entities/agent-egress-event.entity';
 import { WorkspaceConfigurationOverrideEntity } from '../entities/workspace-configuration-override.entity';
 import { AgentsGateway } from '../gateways/agents.gateway';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { OpenCodeAgentProvider } from '../providers/agents/opencode-agent.provider';
 import { ChatFilterFactory } from '../providers/chat-filter.factory';
 import { BidirectionalChatFilter } from '../providers/filters/bidirectional-chat-filter';
-import { DatabaseRegexIncomingChatFilter } from '../providers/filters/database-regex-incoming-chat-filter';
-import { DatabaseRegexOutgoingChatFilter } from '../providers/filters/database-regex-outgoing-chat-filter';
 import { IncomingChatFilter } from '../providers/filters/incoming-chat-filter';
+import { MessageFiltersIncomingChatFilter } from '../providers/filters/message-filters-incoming-chat-filter';
+import { MessageFiltersOutgoingChatFilter } from '../providers/filters/message-filters-outgoing-chat-filter';
 import { NoopChatFilter } from '../providers/filters/noop-chat-filter';
 import { OutgoingChatFilter } from '../providers/filters/outgoing-chat-filter';
 import { PipelineProviderFactory } from '../providers/pipeline-provider.factory';
@@ -95,7 +95,7 @@ describe('AgentsModule', () => {
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(DeploymentRunEntity))
       .useValue(mockRepository)
-      .overrideProvider(getRepositoryToken(RegexFilterRuleEntity))
+      .overrideProvider(getRepositoryToken(AgentEgressEventEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(WorkspaceConfigurationOverrideEntity))
       .useValue(mockRepository)
@@ -291,13 +291,14 @@ describe('AgentsModule', () => {
     expect(factory.getFilter('bidirectional-example')).toBe(bidirectionalFilter);
     expect(bidirectionalFilter.getType()).toBe('bidirectional-example');
 
-    const dbIn = module.get(DatabaseRegexIncomingChatFilter);
-    const dbOut = module.get(DatabaseRegexOutgoingChatFilter);
+    const messageFiltersIn = module.get(MessageFiltersIncomingChatFilter);
+    const messageFiltersOut = module.get(MessageFiltersOutgoingChatFilter);
 
-    expect(factory.hasFilter('database-regex-incoming')).toBe(true);
-    expect(factory.getFilter('database-regex-incoming')).toBe(dbIn);
-    expect(factory.hasFilter('database-regex-outgoing')).toBe(true);
-    expect(factory.getFilter('database-regex-outgoing')).toBe(dbOut);
+    expect(factory.hasFilter('message-filters-incoming')).toBe(true);
+    expect(factory.getFilter('message-filters-incoming')).toBe(messageFiltersIn);
+    expect(factory.hasFilter('message-filters-outgoing')).toBe(true);
+    expect(factory.getFilter('message-filters-outgoing')).toBe(messageFiltersOut);
+    expect(factory.hasFilter('database-regex-incoming')).toBe(false);
   });
 
   it('should initialize CHAT_FILTER_INIT factory', () => {

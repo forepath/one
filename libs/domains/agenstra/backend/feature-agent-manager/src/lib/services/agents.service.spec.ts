@@ -2728,4 +2728,154 @@ describe('AgentsService', () => {
       );
     });
   });
+  describe('egress guard integration', () => {
+    const enforcePolicy = {
+      mode: 'enforce',
+      allowHosts: [{ value: 'github.com', source: 'global' }],
+      denyHosts: [],
+      denyUrlPatterns: [],
+      networkAllow: [],
+      blockPrivateNetworks: true,
+      blockIpLiterals: false,
+      logAllowed: true,
+      scalarSources: { mode: 'global', blockPrivateNetworks: null, blockIpLiterals: null, logAllowed: null },
+    };
+    let egress: Record<string, jest.Mock>;
+    let guardedService: AgentsService;
+
+    beforeEach(() => {
+      process.env.GIT_REPOSITORY_SETUP_MODE = 'empty';
+      egress = {
+        isEnabled: jest.fn().mockReturnValue(true),
+        provisionGuardForNewAgent: jest.fn().mockResolvedValue({ guardId: 'guard-1', revision: 'rev-1' }),
+        removeGuardContainer: jest.fn().mockResolvedValue(undefined),
+        buildProxyEnv: jest.fn().mockReturnValue({
+          HTTPS_PROXY: 'http://127.0.0.1:3128',
+          http_proxy: 'http://127.0.0.1:3128',
+          no_proxy: undefined,
+        }),
+        beforeAgentStart: jest.fn().mockResolvedValue(undefined),
+        beforeAgentRestart: jest.fn().mockResolvedValue(undefined),
+        afterAgentStop: jest.fn().mockResolvedValue(undefined),
+        afterAgentRemove: jest.fn().mockResolvedValue(undefined),
+        describe: jest.fn().mockResolvedValue({ status: 'active', mode: 'enforce' }),
+      };
+      guardedService = new AgentsService(
+        mockRepository as unknown as AgentsRepository,
+        mockDockerService as unknown as DockerService,
+        mockPasswordService as unknown as PasswordService,
+        mockAgentProviderFactory as unknown as AgentProviderFactory,
+        mockAgentChatSessionsService as unknown as AgentChatSessionsService,
+        mockOpenCodeClientFactory as unknown as OpenCodeClientFactory,
+        new AgentGitCredentialsService(mockDockerService as unknown as DockerService),
+        mockDeploymentsService as unknown as DeploymentsService,
+        undefined,
+        undefined,
+        egress as never,
+      );
+      mockRepository.findByName.mockResolvedValue(null);
+      mockPasswordService.hashPassword.mockResolvedValue('hashed');
+      mockDockerService.createContainer.mockResolvedValue('container-id-123');
+      mockDockerService.sendCommandToContainer.mockResolvedValue(undefined);
+      mockRepository.create.mockResolvedValue({ ...mockAgent });
+    });
+
+    it('provisions the guard before the agent and starts the agent inside its namespace', async () => {
+      const result = await guardedService.create({ name: 'Guarded', egressPolicy: enforcePolicy } as CreateAgentDto);
+
+      expect(egress.provisionGuardForNewAgent).toHaveBeenCalledWith(expect.objectContaining({ mode: 'enforce' }), null);
+      expect(egress.provisionGuardForNewAgent.mock.invocationCallOrder[0]).toBeLessThan(
+        mockDockerService.createContainer.mock.invocationCallOrder[0],
+      );
+
+      const createArgs = mockDockerService.createContainer.mock.calls[0][0];
+
+      expect(createArgs.sharedNetworkContainerId).toBe('guard-1');
+      expect(createArgs.capDrop).toEqual(['NET_ADMIN', 'NET_RAW']);
+      expect(createArgs.network).toBeUndefined();
+      expect(createArgs.ports).toBeUndefined();
+      expect(createArgs.env).toEqual(
+        expect.objectContaining({ HTTPS_PROXY: 'http://127.0.0.1:3128', http_proxy: 'http://127.0.0.1:3128' }),
+      );
+      expect(createArgs.env).not.toHaveProperty('no_proxy');
+      expect(mockRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          egressGuardContainerId: 'guard-1',
+          egressPolicyRevision: 'rev-1',
+          egressStatus: 'active',
+          egressPolicy: expect.objectContaining({ mode: 'enforce' }),
+        }),
+      );
+      expect(result.egress).toEqual({ status: 'active', mode: 'enforce' });
+    });
+
+    it('removes the guard when the agent container cannot be created', async () => {
+      mockDockerService.createContainer.mockRejectedValueOnce(new Error('create failed'));
+
+      await expect(
+        guardedService.create({ name: 'Guarded', egressPolicy: enforcePolicy } as CreateAgentDto),
+      ).rejects.toThrow('create failed');
+      expect(egress.removeGuardContainer).toHaveBeenCalledWith('guard-1');
+    });
+
+    it('removes the guard when provisioning after container creation fails', async () => {
+      mockRepository.create.mockRejectedValueOnce(new Error('db down'));
+
+      await expect(
+        guardedService.create({ name: 'Guarded', egressPolicy: enforcePolicy } as CreateAgentDto),
+      ).rejects.toThrow(BadRequestException);
+      expect(mockDockerService.deleteContainer).toHaveBeenCalledWith('container-id-123');
+      expect(egress.removeGuardContainer).toHaveBeenCalledWith('guard-1');
+    });
+
+    it('rejects creation when filtering is required but guards are disabled', async () => {
+      egress.isEnabled.mockReturnValue(false);
+
+      await expect(
+        guardedService.create({ name: 'Guarded', egressPolicy: enforcePolicy } as CreateAgentDto),
+      ).rejects.toThrow(/egress guard sidecars are disabled/);
+      expect(mockDockerService.createContainer).not.toHaveBeenCalled();
+    });
+
+    it('keeps the legacy topology for policies that do not require a guard', async () => {
+      await guardedService.create({ name: 'Plain', egressPolicy: { ...enforcePolicy, mode: 'off' } } as CreateAgentDto);
+
+      expect(egress.provisionGuardForNewAgent).not.toHaveBeenCalled();
+      expect(mockDockerService.createContainer.mock.calls[0][0].sharedNetworkContainerId).toBeUndefined();
+      expect(mockRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ egressStatus: 'inactive', egressPolicy: expect.objectContaining({ mode: 'off' }) }),
+      );
+    });
+
+    it('orders guard and agent operations in the lifecycle', async () => {
+      const guarded = { ...mockAgent, egressGuardContainerId: 'guard-1' };
+
+      mockRepository.findByIdOrThrow.mockResolvedValue(guarded);
+      mockDockerService.startContainer.mockResolvedValue(undefined);
+      mockDockerService.stopContainer.mockResolvedValue(undefined);
+      mockDockerService.restartContainer.mockResolvedValue(undefined);
+      mockDockerService.deleteContainer.mockResolvedValue(undefined);
+      mockRepository.delete.mockResolvedValue(undefined);
+
+      await guardedService.start(guarded.id);
+      expect(egress.beforeAgentStart.mock.invocationCallOrder[0]).toBeLessThan(
+        mockDockerService.startContainer.mock.invocationCallOrder[0],
+      );
+
+      await guardedService.restart(guarded.id);
+      expect(egress.beforeAgentRestart.mock.invocationCallOrder[0]).toBeLessThan(
+        mockDockerService.restartContainer.mock.invocationCallOrder[0],
+      );
+
+      await guardedService.stop(guarded.id);
+      expect(egress.afterAgentStop.mock.invocationCallOrder[0]).toBeGreaterThan(
+        mockDockerService.stopContainer.mock.invocationCallOrder[0],
+      );
+
+      await guardedService.remove(guarded.id);
+      expect(egress.afterAgentRemove.mock.invocationCallOrder[0]).toBeGreaterThan(
+        mockDockerService.deleteContainer.mock.invocationCallOrder[0],
+      );
+    });
+  });
 });

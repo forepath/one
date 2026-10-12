@@ -5,7 +5,7 @@ import { OpencodeLayerFileEntity } from './opencode-layer-file.entity';
 export type OpencodeLayerFileSyncStatus = 'pending' | 'synced' | 'failed';
 
 /**
- * Per-agent emit status for a layer file revision (filter-rules sync-target pattern).
+ * Per-agent emit status for a layer file revision (durable sync-target pattern).
  */
 @Entity('opencode_layer_file_sync_targets')
 export class OpencodeLayerFileSyncTargetEntity {

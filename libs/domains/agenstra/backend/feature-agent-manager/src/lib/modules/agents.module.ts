@@ -11,7 +11,7 @@ import { AgentsDeploymentsController } from '../controllers/agents-deployments.c
 import { InstanceStatusController } from '../controllers/instance-status.controller';
 import { AgentsEnvironmentVariablesController } from '../controllers/agents-environment-variables.controller';
 import { AgentsFilesController } from '../controllers/agents-files.controller';
-import { AgentsFiltersController } from '../controllers/agents-filters.controller';
+import { AgentsEgressController } from '../controllers/agents-egress.controller';
 import { AgentsMessagesController } from '../controllers/agents-messages.controller';
 import { AgentsVcsController } from '../controllers/agents-vcs.controller';
 import { AgentsVerificationController } from '../controllers/agents-verification.controller';
@@ -31,7 +31,7 @@ import { AgentEntity } from '../entities/agent.entity';
 import { AgentDirectoryIndexEntity } from '../entities/agent-directory-index.entity';
 import { DeploymentConfigurationEntity } from '../entities/deployment-configuration.entity';
 import { DeploymentRunEntity } from '../entities/deployment-run.entity';
-import { RegexFilterRuleEntity } from '../entities/regex-filter-rule.entity';
+import { AgentEgressEventEntity } from '../entities/agent-egress-event.entity';
 import { WorkspaceConfigurationOverrideEntity } from '../entities/workspace-configuration-override.entity';
 import { AgentsGateway } from '../gateways/agents.gateway';
 import { VncGateway } from '../gateways/vnc.gateway';
@@ -55,9 +55,9 @@ import {
 } from '../providers/outbound-agent-event-publisher';
 import { ChatFilterFactory } from '../providers/chat-filter.factory';
 import { BidirectionalChatFilter } from '../providers/filters/bidirectional-chat-filter';
-import { DatabaseRegexIncomingChatFilter } from '../providers/filters/database-regex-incoming-chat-filter';
-import { DatabaseRegexOutgoingChatFilter } from '../providers/filters/database-regex-outgoing-chat-filter';
 import { IncomingChatFilter } from '../providers/filters/incoming-chat-filter';
+import { MessageFiltersIncomingChatFilter } from '../providers/filters/message-filters-incoming-chat-filter';
+import { MessageFiltersOutgoingChatFilter } from '../providers/filters/message-filters-outgoing-chat-filter';
 import { NoopChatFilter } from '../providers/filters/noop-chat-filter';
 import { OutgoingChatFilter } from '../providers/filters/outgoing-chat-filter';
 import { PipelineProviderFactory } from '../providers/pipeline-provider.factory';
@@ -73,7 +73,7 @@ import { AgentMessagesRepository } from '../repositories/agent-messages.reposito
 import { AgentsRepository } from '../repositories/agents.repository';
 import { DeploymentConfigurationsRepository } from '../repositories/deployment-configurations.repository';
 import { DeploymentRunsRepository } from '../repositories/deployment-runs.repository';
-import { RegexFilterRulesRepository } from '../repositories/regex-filter-rules.repository';
+import { AgentEgressEventsRepository } from '../repositories/agent-egress-events.repository';
 import { WorkspaceConfigurationOverridesRepository } from '../repositories/workspace-configuration-overrides.repository';
 import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
 import { AgentEnvironmentVariablesService } from '../services/agent-environment-variables.service';
@@ -85,7 +85,9 @@ import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentGitCredentialsService } from '../services/agent-git-credentials.service';
 import { AgentRuntimeRefreshService } from '../services/agent-runtime-refresh.service';
 import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
-import { AgentsFiltersService } from '../services/agents-filters.service';
+import { AgentEgressEventsCollectorService } from '../services/agent-egress-events-collector.service';
+import { AgentEgressService } from '../services/agent-egress.service';
+import { AgentMessageFiltersService } from '../services/agent-message-filters.service';
 import { AgentsVcsService } from '../services/agents-vcs.service';
 import { AgentsVerificationService } from '../services/agents-verification.service';
 import { AgentsService } from '../services/agents.service';
@@ -95,8 +97,6 @@ import { DeploymentsService } from '../services/deployments.service';
 import { DockerService } from '../services/docker.service';
 import { EnvironmentProgressService } from '../services/environment-progress.service';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
-import { RegexFilterRulesCacheService } from '../services/regex-filter-rules-cache.service';
-import { RegexFilterRulesEvaluateService } from '../services/regex-filter-rules-evaluate.service';
 import { VncBridgeService } from '../services/vnc-bridge.service';
 import { VncSessionsService } from '../services/vnc-sessions.service';
 import { VncTicketService } from '../services/vnc-ticket.service';
@@ -119,7 +119,7 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
       AgentEnvironmentVariableEntity,
       DeploymentConfigurationEntity,
       DeploymentRunEntity,
-      RegexFilterRuleEntity,
+      AgentEgressEventEntity,
       WorkspaceConfigurationOverrideEntity,
     ]),
   ],
@@ -137,7 +137,7 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     AgentsVncController,
     AgentsEnvironmentVariablesController,
     AgentsChatSessionsController,
-    AgentsFiltersController,
+    AgentsEgressController,
     ConfigController,
     InstanceStatusController,
     WorkspaceConfigurationOverridesController,
@@ -202,14 +202,14 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     IncomingChatFilter,
     OutgoingChatFilter,
     BidirectionalChatFilter,
-    RegexFilterRulesRepository,
-    RegexFilterRulesCacheService,
-    RegexFilterRulesEvaluateService,
-    AgentsFiltersService,
+    AgentMessageFiltersService,
+    AgentEgressService,
+    AgentEgressEventsRepository,
+    AgentEgressEventsCollectorService,
     WorkspaceConfigurationOverridesRepository,
     WorkspaceConfigurationOverridesService,
-    DatabaseRegexIncomingChatFilter,
-    DatabaseRegexOutgoingChatFilter,
+    MessageFiltersIncomingChatFilter,
+    MessageFiltersOutgoingChatFilter,
     DynamicProviderLoaderService,
     {
       provide: 'AGENT_PROVIDER_INIT',
@@ -251,16 +251,16 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
         incomingFilter: IncomingChatFilter,
         outgoingFilter: OutgoingChatFilter,
         bidirectionalFilter: BidirectionalChatFilter,
-        dbIncoming: DatabaseRegexIncomingChatFilter,
-        dbOutgoing: DatabaseRegexOutgoingChatFilter,
+        messageFiltersIncoming: MessageFiltersIncomingChatFilter,
+        messageFiltersOutgoing: MessageFiltersOutgoingChatFilter,
         dynamicLoader: DynamicProviderLoaderService,
       ) => {
         factory.registerFilter(noopFilter);
         factory.registerFilter(incomingFilter);
         factory.registerFilter(outgoingFilter);
         factory.registerFilter(bidirectionalFilter);
-        factory.registerFilter(dbIncoming);
-        factory.registerFilter(dbOutgoing);
+        factory.registerFilter(messageFiltersIncoming);
+        factory.registerFilter(messageFiltersOutgoing);
 
         await registerDynamicProviders<ChatFilter>({
           envKey: 'DYNAMIC_CHAT_FILTERS',
@@ -278,8 +278,8 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
         IncomingChatFilter,
         OutgoingChatFilter,
         BidirectionalChatFilter,
-        DatabaseRegexIncomingChatFilter,
-        DatabaseRegexOutgoingChatFilter,
+        MessageFiltersIncomingChatFilter,
+        MessageFiltersOutgoingChatFilter,
         DynamicProviderLoaderService,
       ],
     },
