@@ -455,6 +455,29 @@ components:
           createdByUserId: { type: string, format: uuid, nullable: true }
           createdByEmail: { type: string }
           locked: { type: boolean }
+          attachments:
+            type: array
+            items:
+              type: object
+              required:
+                [
+                  id,
+                  ticketId,
+                  fileName,
+                  contentType,
+                  byteSize,
+                  downloadUrl,
+                  createdAt,
+                ]
+              properties:
+                id: { type: string, format: uuid }
+                ticketId: { type: string, format: uuid }
+                fileName: { type: string }
+                contentType: { type: string }
+                byteSize: { type: integer }
+                downloadUrl: { type: string }
+                createdByUserId: { type: string, format: uuid, nullable: true }
+                createdAt: { type: string, format: date-time }
           createdAt: { type: string, format: date-time }
           updatedAt: { type: string, format: date-time }
           children:

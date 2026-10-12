@@ -55,7 +55,12 @@ describe('admin-file-manager-path.util', () => {
   });
 
   it('materializes fixed structural children without dynamic date folders', () => {
-    expect(structuralChildrenForPath([], AdminFileManagerView.TENANT)).toEqual(['customer', 'supplier', 'export']);
+    expect(structuralChildrenForPath([], AdminFileManagerView.TENANT)).toEqual([
+      'customer',
+      'supplier',
+      'export',
+      'project',
+    ]);
     expect(structuralChildrenForPath(['customer'], AdminFileManagerView.TENANT)).toEqual([
       'invoices',
       'offers',
@@ -63,6 +68,8 @@ describe('admin-file-manager-path.util', () => {
     ]);
     expect(structuralChildrenForPath(['supplier'], AdminFileManagerView.TENANT)).toEqual(['invoices']);
     expect(structuralChildrenForPath(['export'], AdminFileManagerView.TENANT)).toEqual(['datev']);
+    expect(structuralChildrenForPath(['project'], AdminFileManagerView.TENANT)).toEqual(['tickets']);
+    expect(structuralChildrenForPath(['project', 'tickets'], AdminFileManagerView.TENANT)).toEqual(['attachments']);
     expect(structuralChildrenForPath(['export', 'datev'], AdminFileManagerView.TENANT)).toBeNull();
     expect(structuralChildrenForPath(['customer', 'invoices'], AdminFileManagerView.TENANT)).toBeNull();
     expect(structuralChildrenForPath([], AdminFileManagerView.UNIFIED)).toBeNull();

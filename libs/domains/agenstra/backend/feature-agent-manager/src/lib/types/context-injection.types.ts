@@ -8,6 +8,15 @@ export interface EnvironmentContextReference {
 export interface ContextInjectionPayload {
   includeWorkspace?: boolean;
   environmentIds?: string[];
+  attachmentIds?: string[];
+  attachmentContexts?: Array<{
+    id: string;
+    fileName: string;
+    contentType: string;
+    byteSize: number;
+    agentPath?: string | null;
+    downloadUrl: string;
+  }>;
   ticketShas?: string[];
   ticketContexts?: string[];
   knowledgeShas?: string[];

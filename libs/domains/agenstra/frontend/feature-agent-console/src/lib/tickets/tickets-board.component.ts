@@ -61,6 +61,7 @@ import {
   type TicketCreationTemplate,
   type TicketPriority,
   type TicketResponseDto,
+  type AttachmentResponseDto,
   type TicketStatus,
   type UpdateTicketAutomationDto,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
@@ -2635,6 +2636,47 @@ export class TicketsBoardComponent implements OnInit {
     }
 
     this.ticketsFacade.update(d.id, { content: draft });
+  }
+
+  onTicketAttachmentSelected(event: Event, ticket: TicketResponseDto): void {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+
+    if (files.length === 0) {
+      return;
+    }
+
+    for (const file of files) {
+      this.ticketsService
+        .uploadAttachment(ticket.id, file)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({ next: (attachment) => this.ticketsFacade.addAttachment(ticket.id, attachment) });
+    }
+
+    input.value = '';
+  }
+
+  downloadTicketAttachment(attachment: AttachmentResponseDto): void {
+    this.ticketsService
+      .downloadAttachment(attachment)
+      .pipe(take(1), takeUntilDestroyed(this.destroyRef))
+      .subscribe((blob) => this.saveBlob(blob, attachment.fileName));
+  }
+
+  deleteTicketAttachment(ticket: TicketResponseDto, attachment: AttachmentResponseDto): void {
+    this.ticketsService
+      .deleteAttachment(ticket.id, attachment.id)
+      .pipe(take(1), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.ticketsFacade.removeAttachment(ticket.id, attachment.id));
+  }
+
+  private saveBlob(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(url);
   }
 
   isLaneDragHighlight(status: BoardLaneStatus): boolean {

@@ -22,6 +22,7 @@ import {
   KnowledgeService,
   TicketsFacade,
   type ClientResponseDto,
+  type AttachmentResponseDto,
   type KnowledgeNodeDto,
   type KnowledgeNodeType,
   type KnowledgePageActivityDto,
@@ -621,6 +622,51 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
     }
 
     this.knowledgeFacade.updateNode(selected.id, { content: this.editContent() });
+  }
+
+  onPageAttachmentSelected(event: Event, node: KnowledgeNodeDto | null): void {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+
+    if (!node || node.nodeType !== 'page' || files.length === 0) {
+      return;
+    }
+
+    for (const file of files) {
+      this.knowledgeService
+        .uploadAttachment(node.id, file)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({ next: () => this.knowledgeFacade.loadTree(node.clientId) });
+    }
+
+    input.value = '';
+  }
+
+  downloadPageAttachment(attachment: AttachmentResponseDto): void {
+    this.knowledgeService
+      .downloadAttachment(attachment)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((blob) => this.saveBlob(blob, attachment.fileName));
+  }
+
+  deletePageAttachment(node: KnowledgeNodeDto | null, attachment: AttachmentResponseDto): void {
+    if (!node || node.nodeType !== 'page') {
+      return;
+    }
+
+    this.knowledgeService
+      .deleteAttachment(node.id, attachment.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.knowledgeFacade.removeAttachment(node.id, attachment.id));
+  }
+
+  private saveBlob(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(url);
   }
 
   openRelationsModal(): void {

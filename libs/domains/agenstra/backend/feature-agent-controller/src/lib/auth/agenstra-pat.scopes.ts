@@ -11,6 +11,8 @@ export const AGENSTRA_PAT_SCOPES = [
   'tickets:write',
   'knowledge:read',
   'knowledge:write',
+  'attachments:read',
+  'attachments:write',
   'filter_rules:write',
   'agents:read',
   'agents:write',

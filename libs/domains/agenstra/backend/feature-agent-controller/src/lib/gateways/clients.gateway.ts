@@ -30,6 +30,7 @@ import { AgenstraNotificationPublisher } from '../notifications/agenstra-notific
 import { ClientsRepository } from '../repositories/clients.repository';
 import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 import { AgentConsoleStatusService } from '../services/agent-console-status.service';
+import { AgenstraAttachmentsService } from '../services/agenstra-attachments.service';
 import { AutoContextResolverService } from '../services/auto-context-resolver.service';
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
@@ -108,6 +109,15 @@ interface ForwardPayload {
 interface ContextInjectionPayload {
   includeWorkspace?: boolean;
   environmentIds?: string[];
+  attachmentIds?: string[];
+  attachmentContexts?: Array<{
+    id: string;
+    fileName: string;
+    contentType: string;
+    byteSize: number;
+    agentPath: string;
+    downloadUrl: string;
+  }>;
   ticketShas?: string[];
   ticketContexts?: string[];
   knowledgeShas?: string[];
@@ -183,6 +193,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     private readonly agentConsoleStatusService: AgentConsoleStatusService,
     private readonly notificationPublisher: AgenstraNotificationPublisher,
     private readonly workspaceSearchIndex: WorkspaceSearchIndexService,
+    private readonly attachmentsService: AgenstraAttachmentsService,
   ) {}
 
   afterInit(server: Server): void {
@@ -1096,7 +1107,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     try {
       const userInfo = (socket as Socket & { data?: { userInfo?: Parameters<typeof buildRequestFromSocketUser>[0] } })
         .data?.userInfo;
-      const enrichedPayload = (await this.enrichForwardPayloadWithTicketContext(clientId, {
+      const enrichedPayload = (await this.enrichForwardPayloadWithTicketContext(clientId, agentId, {
         message,
         contextInjection: data.contextInjection,
       })) as {
@@ -1170,7 +1181,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       let contextInjection: ChatPlanContextInjectionJson | undefined;
 
       if (data.contextInjection) {
-        const enrichedPayload = (await this.enrichForwardPayloadWithTicketContext(clientId, {
+        const enrichedPayload = (await this.enrichForwardPayloadWithTicketContext(clientId, plan.agentId, {
           message,
           contextInjection: data.contextInjection,
         })) as {
@@ -1356,7 +1367,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       }
 
       const agentId = data?.agentId;
-      const payloadWithContext = await this.enrichForwardPayloadWithTicketContext(clientId, payload);
+      const payloadWithContext = await this.enrichForwardPayloadWithTicketContext(clientId, agentId, payload);
       let loggedIn = this.loggedInAgentsBySocket.get(socket.id);
 
       if (!loggedIn) {
@@ -1618,7 +1629,11 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     }
   }
 
-  private async enrichForwardPayloadWithTicketContext(clientId: string, payload: unknown): Promise<unknown> {
+  private async enrichForwardPayloadWithTicketContext(
+    clientId: string,
+    agentId: string | undefined,
+    payload: unknown,
+  ): Promise<unknown> {
     if (!payload || typeof payload !== 'object') {
       return payload;
     }
@@ -1630,6 +1645,10 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       return payload;
     }
 
+    const attachmentIds = Array.from(
+      new Set((contextInjection.attachmentIds ?? []).map((id) => id.trim()).filter((id) => id.length > 0)),
+    );
+
     const promptForAutoContext = (
       (typed as { message?: string; title?: string }).message ??
       (typed as { message?: string; title?: string }).title ??
@@ -1639,13 +1658,13 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       enabledGlobal: workspaceAutoEnrichEnabledGlobal,
       vectorMaxCosineDistance: workspaceAutoEnrichVectorMaxCosineDistance,
     } = await this.resolveWorkspaceAutoEnrichSettings(clientId);
-    const resolvedContextInjection = await this.autoContextResolverService.resolve({
+    const resolvedContextInjection = (await this.autoContextResolverService.resolve({
       clientId,
       prompt: promptForAutoContext,
       contextInjection,
       workspaceAutoEnrichEnabledGlobal,
       workspaceAutoEnrichVectorMaxCosineDistance,
-    });
+    })) as ContextInjectionPayload;
     const ticketShas = Array.from(
       new Set((resolvedContextInjection.ticketShas ?? []).map((sha) => sha.trim()).filter((sha) => sha.length > 0)),
     );
@@ -1669,7 +1688,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       new Set((resolvedContextInjection.knowledgeShas ?? []).map((sha) => sha.trim()).filter((sha) => sha.length > 0)),
     );
 
-    if (ticketShas.length === 0 && knowledgeShas.length === 0) {
+    if (ticketShas.length === 0 && knowledgeShas.length === 0 && attachmentIds.length === 0) {
       return payload;
     }
 
@@ -1690,11 +1709,38 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       }
     }
 
+    let attachmentContexts: NonNullable<ContextInjectionPayload['attachmentContexts']> = [];
+
+    if (agentId && (attachmentIds.length > 0 || ticketShas.length > 0 || knowledgeShas.length > 0)) {
+      try {
+        attachmentContexts = await this.attachmentsService.resolveContextAttachments({
+          clientId,
+          agentId,
+          attachmentIds,
+          ticketShas,
+          knowledgeShas,
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+
+        this.logger.warn(`Failed to resolve attachment context for client ${clientId}: ${message}`);
+      }
+    }
+
     return {
       ...typed,
       contextInjection: {
         ...resolvedContextInjection,
         ticketShas,
+        attachmentIds,
+        attachmentContexts: Array.from(
+          new Map(
+            [...attachmentContexts, ...(resolvedContextInjection.attachmentContexts ?? [])].map((attachment) => [
+              attachment.id,
+              attachment,
+            ]),
+          ).values(),
+        ),
         ticketContexts,
         knowledgeShas,
         knowledgeContexts: Array.from(

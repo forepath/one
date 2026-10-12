@@ -23,12 +23,14 @@ describe('ProjectTicketsService', () => {
     publishTicket: jest.fn(),
     publishTicketComment: jest.fn(),
   };
+  const ticketAttachmentsService = { listForTicketIds: jest.fn().mockResolvedValue(new Map()) };
 
   let service: ProjectTicketsService;
   const billingSearchIndexService = { scheduleUpsert: jest.fn(), scheduleDelete: jest.fn() };
 
   beforeEach(() => {
     jest.resetAllMocks();
+    ticketAttachmentsService.listForTicketIds.mockResolvedValue(new Map());
     service = new ProjectTicketsService(
       projectsRepository as never,
       ticketsRepository as never,
@@ -40,6 +42,7 @@ describe('ProjectTicketsService', () => {
       projectBoardSummary as never,
       billingNotificationPublisher as never,
       billingSearchIndexService as never,
+      ticketAttachmentsService as never,
     );
   });
 

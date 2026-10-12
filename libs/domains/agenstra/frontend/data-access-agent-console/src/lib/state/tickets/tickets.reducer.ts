@@ -32,6 +32,8 @@ import {
   openTicketDetail,
   prependTicketDetailActivity,
   replaceTicketDetailActivity,
+  ticketAttachmentAdded,
+  ticketAttachmentRemoved,
   ticketBoardActivityCreated,
   ticketBoardCommentCreated,
   ticketBoardTicketRemoved,
@@ -165,6 +167,24 @@ function findTicketInTree(root: TicketResponseDto, id: string): TicketResponseDt
   }
 
   return null;
+}
+
+function updateTicketAttachments(
+  ticket: TicketResponseDto,
+  ticketId: string,
+  update: (attachments: NonNullable<TicketResponseDto['attachments']>) => NonNullable<TicketResponseDto['attachments']>,
+): TicketResponseDto {
+  const nextChildren = ticket.children?.map((child) => updateTicketAttachments(child, ticketId, update));
+
+  if (ticket.id !== ticketId) {
+    return nextChildren === ticket.children ? ticket : { ...ticket, children: nextChildren };
+  }
+
+  return {
+    ...ticket,
+    attachments: update(ticket.attachments ?? []),
+    children: nextChildren ?? ticket.children,
+  };
 }
 
 export const ticketsReducer = createReducer(
@@ -306,6 +326,26 @@ export const ticketsReducer = createReducer(
     };
   }),
   on(addTicketCommentFailure, (state, { error }) => ({ ...state, saving: false, error })),
+  on(ticketAttachmentAdded, (state, { ticketId, attachment }) => {
+    const append = (attachments: NonNullable<TicketResponseDto['attachments']>) => {
+      const withoutDup = attachments.filter((a) => a.id !== attachment.id);
+      return [...withoutDup, attachment];
+    };
+    const list = state.list.map((ticket) => updateTicketAttachments(ticket, ticketId, append));
+    const detail = state.detail ? updateTicketAttachments(state.detail, ticketId, append) : state.detail;
+    const enriched = enrichTicketsWithSubtaskCounts(list, detail);
+
+    return { ...state, list: enriched.list, detail: enriched.detail };
+  }),
+  on(ticketAttachmentRemoved, (state, { ticketId, attachmentId }) => {
+    const remove = (attachments: NonNullable<TicketResponseDto['attachments']>) =>
+      attachments.filter((a) => a.id !== attachmentId);
+    const list = state.list.map((ticket) => updateTicketAttachments(ticket, ticketId, remove));
+    const detail = state.detail ? updateTicketAttachments(state.detail, ticketId, remove) : state.detail;
+    const enriched = enrichTicketsWithSubtaskCounts(list, detail);
+
+    return { ...state, list: enriched.list, detail: enriched.detail };
+  }),
   on(clearTicketsError, (state) => ({ ...state, error: null })),
   on(prependTicketDetailActivity, (state, { activity }) => {
     if (state.selectedTicketId !== activity.ticketId) {

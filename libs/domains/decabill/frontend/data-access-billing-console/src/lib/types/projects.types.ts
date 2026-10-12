@@ -144,10 +144,22 @@ export interface ProjectTicketResponse {
   createdByUserId?: string | null;
   createdByEmail?: string;
   locked: boolean;
+  attachments?: ProjectTicketAttachmentResponse[];
   createdAt: string;
   updatedAt: string;
   children?: ProjectTicketResponse[];
   subtaskCounts?: ProjectTicketSubtaskCountsDto;
+}
+
+export interface ProjectTicketAttachmentResponse {
+  id: string;
+  ticketId: string;
+  fileName: string;
+  contentType: string;
+  byteSize: number;
+  downloadUrl: string;
+  createdByUserId?: string | null;
+  createdAt: string;
 }
 
 export interface CreateProjectTicketDto {

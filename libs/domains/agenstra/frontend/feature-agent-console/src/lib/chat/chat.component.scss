@@ -159,6 +159,32 @@
   margin-top: 0.25rem;
 }
 
+.chat-message-attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 100%;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: var(--bs-border-radius-sm);
+  color: var(--bs-white);
+  background: rgba(255, 255, 255, 0.14);
+  text-decoration: none;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--bs-white);
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.55);
+    text-decoration: none;
+  }
+}
+
+.chat-message-attachment__size {
+  color: rgba(255, 255, 255, 0.78);
+  flex-shrink: 0;
+}
+
 // Chat input container - provides positioning context for commands select
 .chat-input-container {
   position: relative;
@@ -167,6 +193,29 @@
 // Input group with slash-command typeahead
 .chat-input-group {
   position: relative;
+}
+
+.chat-input-group--drag-active {
+  border-radius: 0.5rem;
+  outline: 2px dashed var(--bs-primary);
+  outline-offset: 0.25rem;
+  background: rgba(var(--bs-primary-rgb), 0.08);
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.08);
+}
+
+.chat-input-group--drag-active::after {
+  content: 'Drop files to attach';
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  color: var(--bs-primary);
+  font-weight: 600;
+  background: rgba(var(--bs-body-bg-rgb), 0.72);
+  pointer-events: none;
 }
 
 .chat-command-typeahead {
@@ -608,8 +657,32 @@ span {
 }
 
 .context-toolbar-chip {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: min(14rem, 42vw);
   border-radius: 0.25rem;
   background-color: rgba(var(--bs-tertiary-bg-rgb), var(--bs-bg-opacity)) !important;
+}
+
+.context-toolbar-chip-label {
+  display: inline-block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-context-chip {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  max-width: min(100%, 22rem);
+
+  .text-truncate {
+    min-width: 0;
+  }
 }
 
 .chat-context-chip-clear {

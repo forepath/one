@@ -66,6 +66,7 @@ export interface ChatPayload {
   correlationId?: string;
   responseMode?: AgentResponseMode;
   contextInjection?: ContextInjectionPayload;
+  attachments?: ChatAttachmentDto[];
   /** User-visible chat session id; defaults to primary when omitted. */
   chatId?: string;
 }
@@ -153,9 +154,20 @@ export interface GenerateTicketBodyPayload {
 export interface ContextInjectionPayload {
   includeWorkspace?: boolean;
   environmentIds?: string[];
+  attachmentIds?: string[];
+  attachmentContexts?: ChatAttachmentDto[];
   ticketShas?: string[];
   knowledgeShas?: string[];
   autoEnrichmentEnabled?: boolean;
+}
+
+export interface ChatAttachmentDto {
+  id: string;
+  fileName: string;
+  contentType: string;
+  byteSize: number;
+  downloadUrl: string;
+  agentPath?: string | null;
 }
 
 /**
@@ -307,6 +319,7 @@ export interface UserChatMessageData {
   chatId?: string;
   /** Persisted agent_messages.id when available. */
   id?: string;
+  attachments?: ChatAttachmentDto[];
 }
 
 /**

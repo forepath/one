@@ -9,6 +9,7 @@ import type {
 
 import type { FilterRuleResponseDto } from '../dto/filter-rules/filter-rule-response.dto';
 import type { ClientResponseDto } from '../dto/client-response.dto';
+import type { AttachmentResponseDto } from '../dto/attachment.dto';
 import type { TicketCommentResponseDto } from '../dto/tickets/ticket-comment-response.dto';
 import type { TicketResponseDto } from '../dto/tickets/ticket-response.dto';
 
@@ -95,6 +96,10 @@ export class AgenstraNotificationPublisher implements IIdentityNotificationPubli
 
   publishTicketComment(clientId: string, comment: TicketCommentResponseDto | TicketCommentNotificationPayload): void {
     this.publish('ticket.comment.created', this.toTicketCommentPayload(comment), clientId);
+  }
+
+  publishAttachment(type: 'attachment.created' | 'attachment.deleted', attachment: AttachmentResponseDto): void {
+    this.publish(type, this.toAttachmentPayload(attachment), attachment.clientId);
   }
 
   publishFilterRule(
@@ -213,6 +218,21 @@ export class AgenstraNotificationPublisher implements IIdentityNotificationPubli
       authorUserId: 'authorUserId' in comment ? (comment.authorUserId ?? null) : null,
       body: comment.body,
       createdAt: this.toIsoString(comment.createdAt),
+    };
+  }
+
+  private toAttachmentPayload(attachment: AttachmentResponseDto): Record<string, unknown> {
+    return {
+      id: attachment.id,
+      clientId: attachment.clientId,
+      ownerType: attachment.ownerType,
+      ownerId: attachment.ownerId,
+      fileName: attachment.fileName,
+      contentType: attachment.contentType,
+      byteSize: attachment.byteSize,
+      contentSha256: attachment.contentSha256,
+      createdByUserId: attachment.createdByUserId ?? null,
+      createdAt: this.toIsoString(attachment.createdAt),
     };
   }
 

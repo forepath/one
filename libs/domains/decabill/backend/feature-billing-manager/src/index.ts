@@ -162,6 +162,7 @@ export * from './lib/entities/usage-record.entity';
 export * from './lib/projects/entities/project.entity';
 export * from './lib/projects/entities/project-milestone.entity';
 export * from './lib/projects/entities/project-ticket.entity';
+export * from './lib/projects/entities/project-ticket-attachment.entity';
 export * from './lib/projects/entities/project-ticket-comment.entity';
 export * from './lib/projects/entities/project-ticket-activity.entity';
 export * from './lib/projects/entities/project-time-entry.entity';

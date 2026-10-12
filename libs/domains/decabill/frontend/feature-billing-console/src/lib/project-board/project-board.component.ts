@@ -27,6 +27,7 @@ import {
   type BoardLaneStatus,
   type CreateProjectTicketDto,
   type ProjectMilestoneResponse,
+  type ProjectTicketAttachmentResponse,
   type ProjectTicketBoardRow,
   type ProjectTicketPriority,
   type ProjectTicketResponse,
@@ -903,6 +904,47 @@ export class ProjectBoardComponent implements OnInit {
     if (content === (d.content ?? '')) return;
 
     this.ticketsFacade.update(this.projectId, d.id, { content });
+  }
+
+  onTicketAttachmentSelected(event: Event, ticket: ProjectTicketResponse): void {
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+
+    if (files.length === 0) return;
+
+    for (const file of files) {
+      this.ticketsService
+        .uploadAttachment(this.projectId, ticket.id, file)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({ next: (attachment) => this.ticketsFacade.addAttachment(ticket.id, attachment) });
+    }
+
+    input.value = '';
+  }
+
+  downloadTicketAttachment(attachment: ProjectTicketAttachmentResponse, ticket: ProjectTicketResponse): void {
+    this.ticketsService
+      .downloadAttachment(this.projectId, ticket.id, attachment.id)
+      .pipe(take(1), takeUntilDestroyed(this.destroyRef))
+      .subscribe((blob) => this.saveBlob(blob, attachment.fileName));
+  }
+
+  deleteTicketAttachment(attachment: ProjectTicketAttachmentResponse, ticket: ProjectTicketResponse): void {
+    if (!this.isAdmin || ticket.locked) return;
+
+    this.ticketsService
+      .deleteAttachment(this.projectId, ticket.id, attachment.id)
+      .pipe(take(1), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.ticketsFacade.removeAttachment(ticket.id, attachment.id));
+  }
+
+  private saveBlob(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(url);
   }
 
   submitComment(): void {

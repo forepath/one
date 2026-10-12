@@ -29,6 +29,8 @@ import {
   projectBoardCommentCreated,
   projectBoardTicketRemoved,
   projectBoardTicketUpsert,
+  projectTicketAttachmentAdded,
+  projectTicketAttachmentRemoved,
   updateProjectTicket,
   updateProjectTicketFailure,
   updateProjectTicketSuccess,
@@ -86,6 +88,24 @@ function mergeCreatedChildIntoDetail(
   const withoutDup = prevChildren.filter((c) => c.id !== created.id);
 
   return { ...detail, children: [...withoutDup, created] };
+}
+
+function updateTicketAttachments(
+  ticket: ProjectTicketResponse,
+  ticketId: string,
+  update: (
+    attachments: NonNullable<ProjectTicketResponse['attachments']>,
+  ) => NonNullable<ProjectTicketResponse['attachments']>,
+): ProjectTicketResponse {
+  const nextChildren = ticket.children?.map((child) => updateTicketAttachments(child, ticketId, update));
+
+  if (ticket.id !== ticketId) return nextChildren === ticket.children ? ticket : { ...ticket, children: nextChildren };
+
+  return {
+    ...ticket,
+    attachments: update(ticket.attachments ?? []),
+    children: nextChildren ?? ticket.children,
+  };
 }
 
 export const projectTicketsReducer = createReducer(
@@ -180,6 +200,26 @@ export const projectTicketsReducer = createReducer(
     };
   }),
   on(addProjectTicketCommentFailure, (state, { error }) => ({ ...state, saving: false, error })),
+  on(projectTicketAttachmentAdded, (state, { ticketId, attachment }) => {
+    const append = (attachments: NonNullable<ProjectTicketResponse['attachments']>) => {
+      const withoutDup = attachments.filter((a) => a.id !== attachment.id);
+      return [...withoutDup, attachment];
+    };
+    const list = state.list.map((ticket) => updateTicketAttachments(ticket, ticketId, append));
+    const detail = state.detail ? updateTicketAttachments(state.detail, ticketId, append) : state.detail;
+    const enriched = enrichTicketsWithSubtaskCounts(list, detail);
+
+    return { ...state, list: enriched.list, detail: enriched.detail };
+  }),
+  on(projectTicketAttachmentRemoved, (state, { ticketId, attachmentId }) => {
+    const remove = (attachments: NonNullable<ProjectTicketResponse['attachments']>) =>
+      attachments.filter((a) => a.id !== attachmentId);
+    const list = state.list.map((ticket) => updateTicketAttachments(ticket, ticketId, remove));
+    const detail = state.detail ? updateTicketAttachments(state.detail, ticketId, remove) : state.detail;
+    const enriched = enrichTicketsWithSubtaskCounts(list, detail);
+
+    return { ...state, list: enriched.list, detail: enriched.detail };
+  }),
   on(clearProjectTicketsError, (state) => ({ ...state, error: null })),
   on(projectBoardTicketUpsert, (state, { ticket }) => {
     const list = mergeTicketInList(state.list, ticket);

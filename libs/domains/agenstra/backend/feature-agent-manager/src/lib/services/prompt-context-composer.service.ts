@@ -23,6 +23,9 @@ export class PromptContextComposerService {
     const ticketContexts = (contextInjection.ticketContexts ?? []).filter((ctx) => ctx.trim().length > 0);
     const knowledgeShas = (contextInjection.knowledgeShas ?? []).filter((sha) => sha.trim().length > 0);
     const knowledgeContexts = (contextInjection.knowledgeContexts ?? []).filter((ctx) => ctx.trim().length > 0);
+    const attachmentContexts = (contextInjection.attachmentContexts ?? []).filter(
+      (attachment) => attachment.agentPath?.trim().length > 0,
+    );
 
     if (environmentIds.length > 0) {
       const environmentLine = formatEnvironmentContextLine(
@@ -58,6 +61,16 @@ export class PromptContextComposerService {
       for (const [index, context] of knowledgeContexts.entries()) {
         lines.push(`Knowledge context #${index + 1}:`);
         lines.push(context.trim());
+      }
+    }
+
+    if (attachmentContexts.length > 0) {
+      lines.push('- Read-only attachment files are mounted in the container at:');
+
+      for (const attachment of attachmentContexts) {
+        lines.push(
+          `  - ${attachment.fileName} (${attachment.contentType}, ${attachment.byteSize} bytes): ${attachment.agentPath}`,
+        );
       }
     }
 

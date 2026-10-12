@@ -18,6 +18,7 @@ import type {
   PrototypePromptResponseDto,
   StartBodyGenerationSessionResponseDto,
   TicketActivityResponseDto,
+  AttachmentResponseDto,
   TicketCommentResponseDto,
   TicketResponseDto,
   UpdateTicketDto,
@@ -108,6 +109,31 @@ export class TicketsService {
     return this.http.get<TicketActivityResponseDto[]>(`${this.apiUrl}/tickets/${ticketId}/activity`, {
       params,
     });
+  }
+
+  listAttachments(ticketId: string): Observable<AttachmentResponseDto[]> {
+    return this.http.get<AttachmentResponseDto[]>(`${this.apiUrl}/tickets/${ticketId}/attachments`);
+  }
+
+  uploadAttachment(ticketId: string, file: File): Observable<AttachmentResponseDto> {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    return this.http.post<AttachmentResponseDto>(`${this.apiUrl}/tickets/${ticketId}/attachments`, form);
+  }
+
+  deleteAttachment(ticketId: string, attachmentId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/tickets/${ticketId}/attachments/${attachmentId}`);
+  }
+
+  downloadAttachment(attachment: AttachmentResponseDto): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/attachments/${attachment.id}/download`, { responseType: 'blob' });
+  }
+
+  uploadChatAttachment(clientId: string, file: File): Observable<AttachmentResponseDto> {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    const params = new HttpParams().set('clientId', clientId);
+    return this.http.post<AttachmentResponseDto>(`${this.apiUrl}/attachments/chat`, form, { params });
   }
 
   startBodyGenerationSession(ticketId: string, agentId?: string): Observable<StartBodyGenerationSessionResponseDto> {

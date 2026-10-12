@@ -29,6 +29,7 @@ Decabill provides a complete set of capabilities for subscription billing, invoi
 - **CloudInit Configs** Admin-managed Docker templates for the custom service kind
 - **Projects** Customer-assigned work tracking with admin CRUD and billable time
 - **Project Board** Live ticket board with swimlanes and WebSocket updates
+- **[Ticket attachments](./ticket-attachments.md)** Upload, list, download, and file-explorer integration for project ticket files
 - **OpenTelemetry** Optional Prometheus metrics and OTLP export (disabled by default)
 
 ## Features

@@ -1300,6 +1300,96 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/KnowledgePageActivityResponseDto'
+  /knowledge/{id}/attachments:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      summary: List knowledge page attachments
+      description: Requires `attachments:read`; caller must be able to read the page workspace.
+      operationId: listKnowledgePageAttachments
+      responses:
+        '200':
+          description: Attachment list
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AttachmentResponseDto' }
+    post:
+      summary: Upload knowledge page attachment
+      description: Requires `attachments:write`; multipart field name is `file`.
+      operationId: uploadKnowledgePageAttachment
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '201':
+          description: Uploaded attachment
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttachmentResponseDto' }
+  /knowledge/{id}/attachments/{attachmentId}:
+    delete:
+      summary: Delete knowledge page attachment metadata
+      description: Requires `attachments:write`; caller must be able to write the page workspace.
+      operationId: deleteKnowledgePageAttachment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: attachmentId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Deleted }
+  /attachments/chat:
+    post:
+      summary: Upload chat context attachment
+      description: Requires `attachments:write`; multipart field name is `file`. The returned id can be sent in chat `contextInjection.attachmentIds`.
+      operationId: uploadChatAttachment
+      parameters:
+        - in: query
+          name: clientId
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '201':
+          description: Uploaded attachment
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttachmentResponseDto' }
+  /attachments/{id}/download:
+    get:
+      summary: Download attachment
+      description: Requires `attachments:read`; caller must be able to read the attachment workspace.
+      operationId: downloadAttachment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Attachment bytes }
   /knowledge/{id}/reorder:
     post:
       summary: Reorder knowledge node
@@ -1511,6 +1601,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TicketCommentResponseDto'
+  /tickets/{id}/attachments:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      summary: List ticket attachments
+      description: Requires `attachments:read`; caller must be able to read the ticket workspace.
+      operationId: listTicketAttachments
+      responses:
+        '200':
+          description: Attachment list
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AttachmentResponseDto' }
+    post:
+      summary: Upload ticket attachment
+      description: Requires `attachments:write`; multipart field name is `file`.
+      operationId: uploadTicketAttachment
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '201':
+          description: Uploaded attachment
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AttachmentResponseDto' }
+  /tickets/{id}/attachments/{attachmentId}:
+    delete:
+      summary: Delete ticket attachment metadata
+      description: Requires `attachments:write`; caller must be able to write the ticket workspace.
+      operationId: deleteTicketAttachment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: attachmentId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Deleted }
   /tickets/{id}/activity:
     get:
       summary: List ticket activity
@@ -7826,6 +7969,37 @@ components:
           description: |
             Sums of open/done checkboxes on all descendant tickets (direct and nested), excluding this ticket's body.
           $ref: '#/components/schemas/TicketMarkdownCheckboxTaskCountsDto'
+    AttachmentResponseDto:
+      type: object
+      required:
+        [
+          id,
+          clientId,
+          ownerType,
+          ownerId,
+          fileName,
+          contentType,
+          byteSize,
+          contentSha256,
+          downloadUrl,
+          createdAt,
+        ]
+      properties:
+        id: { type: string, format: uuid }
+        clientId: { type: string, format: uuid }
+        ownerType: { type: string, enum: [ticket, knowledge_page, chat] }
+        ownerId: { type: string, format: uuid }
+        fileName: { type: string }
+        contentType: { type: string }
+        byteSize: { type: integer }
+        contentSha256: { type: string }
+        downloadUrl: { type: string }
+        agentPath:
+          type: string
+          nullable: true
+          description: Read-only absolute path inside agent containers when mirrored into chat context.
+        createdByUserId: { type: string, format: uuid, nullable: true }
+        createdAt: { type: string, format: date-time }
     TicketShasDto:
       type: object
       required: [short, long]
@@ -7896,6 +8070,10 @@ components:
           format: date-time
         tasks:
           $ref: '#/components/schemas/TicketTasksDto'
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttachmentResponseDto'
         children:
           type: array
           items:
@@ -9046,6 +9224,9 @@ components:
         title: { type: string }
         content: { type: string, nullable: true }
         sortOrder: { type: integer }
+        attachments:
+          type: array
+          items: { $ref: '#/components/schemas/AttachmentResponseDto' }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
         children:

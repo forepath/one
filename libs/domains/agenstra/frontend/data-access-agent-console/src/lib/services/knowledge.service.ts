@@ -14,6 +14,7 @@ import type {
   UpdateKnowledgeNodeDto,
   UploadKnowledgeTextDto,
   UploadKnowledgeTextResultDto,
+  AttachmentResponseDto,
 } from '../state/knowledge/knowledge.types';
 
 @Injectable({
@@ -93,5 +94,23 @@ export class KnowledgeService {
     return this.http.get<KnowledgePageActivityDto[]>(`${this.apiUrl}/knowledge/${pageId}/activity`, {
       params,
     });
+  }
+
+  listAttachments(pageId: string): Observable<AttachmentResponseDto[]> {
+    return this.http.get<AttachmentResponseDto[]>(`${this.apiUrl}/knowledge/${pageId}/attachments`);
+  }
+
+  uploadAttachment(pageId: string, file: File): Observable<AttachmentResponseDto> {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    return this.http.post<AttachmentResponseDto>(`${this.apiUrl}/knowledge/${pageId}/attachments`, form);
+  }
+
+  deleteAttachment(pageId: string, attachmentId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/knowledge/${pageId}/attachments/${attachmentId}`);
+  }
+
+  downloadAttachment(attachment: AttachmentResponseDto): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/attachments/${attachment.id}/download`, { responseType: 'blob' });
   }
 }

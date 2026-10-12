@@ -7,6 +7,15 @@ export type ChatPlanContextInjectionJson = {
   includeWorkspace?: boolean;
   environmentIds?: string[];
   autoEnrichmentEnabled?: boolean;
+  attachmentIds?: string[];
+  attachmentContexts?: Array<{
+    id: string;
+    fileName: string;
+    contentType: string;
+    byteSize: number;
+    agentPath: string;
+    downloadUrl: string;
+  }>;
   ticketShas?: string[];
   ticketContexts?: string[];
   knowledgeShas?: string[];

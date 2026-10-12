@@ -1,3 +1,6 @@
+import type { AttachmentResponseDto } from '../tickets/tickets.types';
+export type { AttachmentResponseDto } from '../tickets/tickets.types';
+
 export type KnowledgeNodeType = 'folder' | 'page';
 export type KnowledgeRelationSourceType = 'ticket' | 'page';
 export type KnowledgeRelationTargetType = 'ticket' | 'folder' | 'page';
@@ -11,7 +14,9 @@ export type KnowledgeActionType =
   | 'DELETED'
   | 'DUPLICATED'
   | 'RELATION_ADDED'
-  | 'RELATION_REMOVED';
+  | 'RELATION_REMOVED'
+  | 'ATTACHMENT_ADDED'
+  | 'ATTACHMENT_REMOVED';
 
 export interface KnowledgeNodeShasDto {
   short: string;
@@ -27,6 +32,7 @@ export interface KnowledgeNodeDto {
   title: string;
   content?: string | null;
   sortOrder: number;
+  attachments?: AttachmentResponseDto[];
   createdAt: string;
   updatedAt: string;
   children?: KnowledgeNodeDto[];

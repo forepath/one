@@ -16,13 +16,14 @@ const SEGMENT_TO_SCOPE: Readonly<Record<string, FileStorageScopeType>> = {
   [FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.customerTimesheets]]: FileStorageScope.customerTimesheets,
   [FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.supplierInvoices]]: FileStorageScope.supplierInvoices,
   [FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.datevExports]]: FileStorageScope.datevExports,
+  [FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.projectTicketAttachments]]: FileStorageScope.projectTicketAttachments,
 };
 
 /** Full scope path segments (e.g. customer/invoices). */
 export const ADMIN_FILE_MANAGER_SCOPE_SEGMENTS = Object.keys(SEGMENT_TO_SCOPE);
 
 /** Top-level virtual folders matching the disk narrative. */
-export const ADMIN_FILE_MANAGER_ROOT_FOLDERS = ['customer', 'supplier', 'export'] as const;
+export const ADMIN_FILE_MANAGER_ROOT_FOLDERS = ['customer', 'supplier', 'export', 'project'] as const;
 
 /**
  * Fixed structural children under a path (tenant-relative).
@@ -33,6 +34,8 @@ export const ADMIN_FILE_MANAGER_STRUCTURAL_CHILDREN: Readonly<Record<string, rea
   customer: ['invoices', 'offers', 'timesheets'],
   supplier: ['invoices'],
   export: ['datev'],
+  project: ['tickets'],
+  'project/tickets': ['attachments'],
 };
 
 /**

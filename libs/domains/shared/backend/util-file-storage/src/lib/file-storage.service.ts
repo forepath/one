@@ -150,6 +150,22 @@ export class FileStorageService {
     return await this.fileExists(FileStorageScope.supplierInvoices, storageKey);
   }
 
+  async writeProjectTicketAttachmentFile(storageKey: string, content: Buffer): Promise<void> {
+    await this.writeFile(FileStorageScope.projectTicketAttachments, storageKey, content);
+  }
+
+  async readProjectTicketAttachmentFile(storageKey: string): Promise<Buffer> {
+    return await this.readFile(FileStorageScope.projectTicketAttachments, storageKey);
+  }
+
+  async writeAgenstraAttachmentFile(storageKey: string, content: Buffer): Promise<void> {
+    await this.writeFile(FileStorageScope.agenstraAttachments, storageKey, content);
+  }
+
+  async readAgenstraAttachmentFile(storageKey: string): Promise<Buffer> {
+    return await this.readFile(FileStorageScope.agenstraAttachments, storageKey);
+  }
+
   private resolveDualReadFallback(
     scope: FileStorageScopeType,
     storageKey: string,

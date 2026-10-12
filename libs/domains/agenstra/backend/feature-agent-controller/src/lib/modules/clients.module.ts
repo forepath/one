@@ -3,6 +3,7 @@ import {
   registerDynamicProviders,
 } from '@forepath/shared/backend/util-dynamic-provider-registry';
 import { RedisCacheModule } from '@forepath/shared/backend/util-redis-cache';
+import { FileStorageModule } from '@forepath/shared/backend/util-file-storage';
 import {
   ClientAgentCredentialEntity,
   ClientAgentCredentialsRepository,
@@ -27,6 +28,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { KeycloakConnectModule } from 'nest-keycloak-connect';
 
 import { ClientAgentAutonomyDirectoryController } from '../controllers/client-agent-autonomy-directory.controller';
+import { AttachmentsController } from '../controllers/attachments.controller';
 import { ClientAgentAutonomyController } from '../controllers/client-agent-autonomy.controller';
 import { ClientStatisticsController } from '../controllers/client-statistics.controller';
 import { ClientsAgentAutomationProxyController } from '../controllers/clients-agent-automation-proxy.controller';
@@ -52,6 +54,7 @@ import { ClientOpencodeConfigEntity } from '../entities/client-opencode-config.e
 import { GlobalOpencodeConfigEntity } from '../entities/global-opencode-config.entity';
 import { OpencodeMcpServerEntity } from '../entities/opencode-mcp-server.entity';
 import { ChatPlanEntity } from '../entities/chat-plan.entity';
+import { AgenstraAttachmentEntity } from '../entities/agenstra-attachment.entity';
 import { OpencodeProviderEntity } from '../entities/opencode-provider.entity';
 import { OpencodeLayerFileEntity } from '../entities/opencode-layer-file.entity';
 import { OpencodeLayerFileSyncTargetEntity } from '../entities/opencode-layer-file-sync-target.entity';
@@ -87,6 +90,7 @@ import { UserChatSessionReadStateRepository } from '../repositories/user-chat-se
 import { UserEnvironmentReadStateRepository } from '../repositories/user-environment-read-state.repository';
 import { AgentConsoleStatusRealtimeService } from '../services/agent-console-status-realtime.service';
 import { AgentConsoleStatusService } from '../services/agent-console-status.service';
+import { AgenstraAttachmentsService } from '../services/agenstra-attachments.service';
 import { AgenstraMetricsCollectorService } from '../services/agenstra-metrics-collector.service';
 import { AutoContextResolverService } from '../services/auto-context-resolver.service';
 import { AutonomousRunOrchestratorService } from '../services/autonomous-run-orchestrator.service';
@@ -162,6 +166,7 @@ const authMethod = getAuthenticationMethod();
       TicketAutomationLeaseEntity,
       TicketAutomationRunStepEntity,
       ChatPlanEntity,
+      AgenstraAttachmentEntity,
       ClientAgentAutonomyEntity,
       KnowledgeNodeEntity,
       KnowledgeNodeEmbeddingEntity,
@@ -179,6 +184,7 @@ const authMethod = getAuthenticationMethod();
     ]),
     BullModule.registerQueue({ name: AGENSTRA_CONTROLLER_QUEUE_NAME }),
     RedisCacheModule,
+    FileStorageModule,
     AgenstraSearchModule,
     AgenstraNotificationsModule,
     AgenstraUpdatesModule,
@@ -196,6 +202,7 @@ const authMethod = getAuthenticationMethod();
     ClientStatisticsController,
     StatisticsController,
     TicketsController,
+    AttachmentsController,
     KnowledgeTreeController,
     TicketAutomationController,
     ChatPlanController,
@@ -214,6 +221,7 @@ const authMethod = getAuthenticationMethod();
   providers: [
     AgenstraMetricsCollectorService,
     ClientsService,
+    AgenstraAttachmentsService,
     TicketsService,
     KnowledgeTreeService,
     AutoContextResolverService,

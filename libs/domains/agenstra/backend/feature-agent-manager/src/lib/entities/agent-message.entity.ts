@@ -11,6 +11,15 @@ import {
 import { AgentChatSessionEntity } from './agent-chat-session.entity';
 import { AgentEntity } from './agent.entity';
 
+export interface AgentMessageAttachmentJson {
+  id: string;
+  fileName: string;
+  contentType: string;
+  byteSize: number;
+  downloadUrl: string;
+  agentPath?: string | null;
+}
+
 /**
  * Agent message entity representing a chat message bound to an agent chat session.
  * Each message has an actor (user or agent) and the message content.
@@ -42,6 +51,9 @@ export class AgentMessageEntity {
 
   @Column({ type: 'boolean', name: 'filtered', default: false })
   filtered!: boolean;
+
+  @Column({ type: 'jsonb', name: 'attachments', nullable: true })
+  attachments?: AgentMessageAttachmentJson[] | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

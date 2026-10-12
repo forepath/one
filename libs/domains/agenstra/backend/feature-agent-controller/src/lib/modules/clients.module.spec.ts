@@ -19,6 +19,7 @@ import { KEYCLOAK_CONNECT_OPTIONS, KEYCLOAK_INSTANCE } from 'nest-keycloak-conne
 
 import { ClientsController } from '../controllers/clients.controller';
 import { AgentConsoleRegexFilterRuleEntity } from '../entities/agent-console-regex-filter-rule.entity';
+import { AgenstraAttachmentEntity } from '../entities/agenstra-attachment.entity';
 import { AtlassianSiteConnectionEntity } from '../entities/atlassian-site-connection.entity';
 import { ClientAgentAutonomyEntity } from '../entities/client-agent-autonomy.entity';
 import { ExternalImportConfigEntity } from '../entities/external-import-config.entity';
@@ -241,6 +242,8 @@ describe('ClientsModule', () => {
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(ChatPlanEntity))
       .useValue(mockTicketRepository)
+      .overrideProvider(getRepositoryToken(AgenstraAttachmentEntity))
+      .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(ClientAgentAutonomyEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(KnowledgeNodeEntity))

@@ -139,6 +139,73 @@
 
               <div>
                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                  <h3 class="h6 mb-0" i18n="@@featureKnowledgeBoard-attachmentsHeading">Attachments</h3>
+                  <input
+                    #pageAttachmentInput
+                    type="file"
+                    class="d-none"
+                    multiple
+                    (change)="onPageAttachmentSelected($event, selectedNode())"
+                  />
+                  <fpc-button
+                    variant="dark"
+                    size="sm"
+                    iconOnly
+                    (clicked)="pageAttachmentInput.click()"
+                    i18n-title="@@featureKnowledgeBoard-addAttachment"
+                    title="Add attachment"
+                    i18n-ariaLabel="@@featureKnowledgeBoard-addAttachment"
+                    ariaLabel="Add attachment"
+                  >
+                    <i class="bi bi-paperclip" aria-hidden="true"></i>
+                  </fpc-button>
+                </div>
+                @if ((selectedNode()?.attachments ?? []).length === 0) {
+                  <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-attachmentsEmpty">
+                    No attachments yet.
+                  </p>
+                } @else {
+                  <ul class="list-group list-group-flush border rounded small mb-0" role="list">
+                    @for (attachment of selectedNode()?.attachments ?? []; track attachment.id) {
+                      <li class="list-group-item d-flex align-items-center gap-2 justify-content-between">
+                        <span class="text-truncate" [title]="attachment.fileName">
+                          <i class="bi bi-paperclip me-1" aria-hidden="true"></i>{{ attachment.fileName }}
+                          <span class="text-muted">· {{ attachment.byteSize | number }} B</span>
+                        </span>
+                        <span class="d-inline-flex align-items-center gap-1 flex-shrink-0">
+                          <fpc-button
+                            variant="outline-secondary"
+                            size="sm"
+                            iconOnly
+                            (clicked)="downloadPageAttachment(attachment)"
+                            i18n-title="@@featureKnowledgeBoard-downloadAttachment"
+                            title="Download attachment"
+                            i18n-ariaLabel="@@featureKnowledgeBoard-downloadAttachment"
+                            ariaLabel="Download attachment"
+                          >
+                            <i class="bi bi-download" aria-hidden="true"></i>
+                          </fpc-button>
+                          <fpc-button
+                            variant="outline-danger"
+                            size="sm"
+                            iconOnly
+                            (clicked)="deletePageAttachment(selectedNode(), attachment)"
+                            i18n-title="@@featureKnowledgeBoard-deleteAttachment"
+                            title="Delete attachment"
+                            i18n-ariaLabel="@@featureKnowledgeBoard-deleteAttachment"
+                            ariaLabel="Delete attachment"
+                          >
+                            <i class="bi bi-trash" aria-hidden="true"></i>
+                          </fpc-button>
+                        </span>
+                      </li>
+                    }
+                  </ul>
+                }
+              </div>
+
+              <div>
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
                   <h3 class="h6 mb-0" i18n="@@featureKnowledgeBoard-relationsHeading">Relations</h3>
                   <fpc-button
                     variant="dark"

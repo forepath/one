@@ -82,7 +82,7 @@ describe('AdminFileManagerService', () => {
   it('lists scope roots for tenant view', async () => {
     const result = await runWithTenantId('default', () => service.listDirectory('', AdminFileManagerView.TENANT));
 
-    expect(result.entries.map((entry) => entry.name)).toEqual(['customer', 'export', 'supplier']);
+    expect(result.entries.map((entry) => entry.name)).toEqual(['customer', 'export', 'project', 'supplier']);
     expect(result.viewTenantId).toBe('default');
   });
 

@@ -53,6 +53,7 @@ import { CustomerAutoBillingController } from './controllers/customer-auto-billi
 import { AdminProjectsController } from './projects/controllers/admin-projects.controller';
 import { ProjectMilestonesController } from './projects/controllers/project-milestones.controller';
 import { ProjectTicketsController } from './projects/controllers/project-tickets.controller';
+import { ProjectTicketAttachmentsController } from './projects/controllers/project-ticket-attachments.controller';
 import { ProjectTimeEntriesController } from './projects/controllers/project-time-entries.controller';
 import { ProjectsController } from './projects/controllers/projects.controller';
 import { ProjectBoardGateway } from './projects/gateways/project-board.gateway';
@@ -61,6 +62,7 @@ import { ProjectMilestoneEntity } from './projects/entities/project-milestone.en
 import { ProjectTicketActivityEntity } from './projects/entities/project-ticket-activity.entity';
 import { ProjectTicketCommentEntity } from './projects/entities/project-ticket-comment.entity';
 import { ProjectTicketEntity } from './projects/entities/project-ticket.entity';
+import { ProjectTicketAttachmentEntity } from './projects/entities/project-ticket-attachment.entity';
 import { ProjectTimeEntryEntity } from './projects/entities/project-time-entry.entity';
 import { ProjectMilestonesRepository } from './projects/repositories/project-milestones.repository';
 import { ProjectTicketActivitiesRepository } from './projects/repositories/project-ticket-activities.repository';
@@ -76,6 +78,7 @@ import { ProjectBoardRealtimeService } from './projects/services/project-board-r
 import { ProjectBoardSummaryService } from './projects/services/project-board-summary.service';
 import { ProjectMilestonesService } from './projects/services/project-milestones.service';
 import { ProjectTicketsService } from './projects/services/project-tickets.service';
+import { ProjectTicketAttachmentsService } from './projects/services/project-ticket-attachments.service';
 import { ProjectTimeEntriesService } from './projects/services/project-time-entries.service';
 import { ProjectsAdminService } from './projects/services/projects-admin.service';
 import { ProjectsService } from './projects/services/projects.service';
@@ -421,6 +424,7 @@ const authMethod = getAuthenticationMethod();
       ProjectEntity,
       ProjectMilestoneEntity,
       ProjectTicketEntity,
+      ProjectTicketAttachmentEntity,
       ProjectTicketCommentEntity,
       ProjectTicketActivityEntity,
       ProjectTimeEntryEntity,
@@ -467,6 +471,7 @@ const authMethod = getAuthenticationMethod();
     AdminProjectsController,
     ProjectMilestonesController,
     ProjectTicketsController,
+    ProjectTicketAttachmentsController,
     ProjectTimeEntriesController,
   ],
   providers: [
@@ -643,6 +648,7 @@ const authMethod = getAuthenticationMethod();
     ProjectsAdminService,
     ProjectMilestonesService,
     ProjectTicketsService,
+    ProjectTicketAttachmentsService,
     ProjectTimeEntriesService,
     ProjectBillingService,
     ProjectTimeReportService,

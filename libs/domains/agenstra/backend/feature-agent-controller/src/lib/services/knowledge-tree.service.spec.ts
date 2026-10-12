@@ -47,6 +47,7 @@ describe('KnowledgeTreeService', () => {
   const clientsRepository = {} as never;
   const clientUsersRepository = {} as never;
   const usersRepository: any = { findById: jest.fn() };
+  const attachmentRepo: any = { find: jest.fn().mockResolvedValue([]) };
   const ticketsService: any = {
     getPrototypePromptByClientSha: jest.fn(),
     assertTicketInClient: jest.fn().mockResolvedValue({ id: 'ticket-1', clientId: 'c1' }),
@@ -72,6 +73,7 @@ describe('KnowledgeTreeService', () => {
     nodeRepo,
     relationRepo,
     pageActivityRepo,
+    attachmentRepo,
     clientsRepository,
     clientUsersRepository,
     usersRepository,

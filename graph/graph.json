@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-10T17:28:24.970Z",
+  "generatedAt": "2026-10-12T09:30:06.008Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -4753,6 +4753,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/attachments.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/attachments.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/chat-plan.controller.ts",
       "type": "controller",
       "attrs": {
@@ -4946,6 +4955,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-console-status.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/attachment.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/attachment.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -5378,6 +5396,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/update-client.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/agenstra-attachment.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/agenstra-attachment.entity.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -5972,6 +5999,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/workspace-search-index.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agenstra-attachments.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agenstra-attachments.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -8592,6 +8628,15 @@
       }
     },
     {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/controllers/project-ticket-attachments.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/controllers/project-ticket-attachments.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/controllers/project-tickets.controller.ts",
       "type": "controller",
       "attrs": {
@@ -8623,6 +8668,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/dto/project-milestone.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/dto/project-ticket-attachment.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/dto/project-ticket-attachment.dto.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -8668,6 +8722,15 @@
       "type": "entity",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/entities/project-ticket-activity.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/entities/project-ticket-attachment.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/entities/project-ticket-attachment.entity.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -8803,6 +8866,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-milestones.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "decabill-backend-feature-billing-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-ticket-attachments.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-ticket-attachments.service.ts",
         "languageOrKind": "ts",
         "projectName": "decabill-backend-feature-billing-manager"
       }
@@ -14061,6 +14133,14 @@
       }
     },
     {
+      "id": "file:docs/agenstra/features/file-attachments.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/agenstra/features/file-attachments.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:docs/agenstra/features/file-management.md",
       "type": "doc",
       "attrs": {
@@ -14681,6 +14761,14 @@
       "type": "doc",
       "attrs": {
         "path": "docs/decabill/features/supplier-profiles.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
+      "id": "file:docs/decabill/features/ticket-attachments.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/decabill/features/ticket-attachments.md",
         "languageOrKind": "md"
       }
     },
@@ -15944,6 +16032,61 @@
       }
     },
     {
+      "id": "api:HTTP:GET:/knowledge/{id}/attachments",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/knowledge/{id}/attachments",
+        "operationId": "listKnowledgePageAttachments",
+        "summary": "List knowledge page attachments",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/knowledge/{id}/attachments",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/knowledge/{id}/attachments",
+        "operationId": "uploadKnowledgePageAttachment",
+        "summary": "Upload knowledge page attachment",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/knowledge/{id}/attachments/{attachmentId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/knowledge/{id}/attachments/{attachmentId}",
+        "operationId": "deleteKnowledgePageAttachment",
+        "summary": "Delete knowledge page attachment metadata",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/attachments/chat",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/attachments/chat",
+        "operationId": "uploadChatAttachment",
+        "summary": "Upload chat context attachment",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/attachments/{id}/download",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/attachments/{id}/download",
+        "operationId": "downloadAttachment",
+        "summary": "Download attachment",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:POST:/knowledge/{id}/reorder",
       "type": "endpoint",
       "attrs": {
@@ -16050,6 +16193,39 @@
         "pathOrChannel": "/tickets/{id}/comments",
         "operationId": "addTicketComment",
         "summary": "Add ticket comment",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/tickets/{id}/attachments",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/tickets/{id}/attachments",
+        "operationId": "listTicketAttachments",
+        "summary": "List ticket attachments",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/tickets/{id}/attachments",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/tickets/{id}/attachments",
+        "operationId": "uploadTicketAttachment",
+        "summary": "Upload ticket attachment",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/tickets/{id}/attachments/{attachmentId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/tickets/{id}/attachments/{attachmentId}",
+        "operationId": "deleteTicketAttachment",
+        "summary": "Delete ticket attachment metadata",
         "specKind": "openapi"
       }
     },
@@ -17707,6 +17883,24 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "application.update_check_failed",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:attachment.created",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "attachment.created",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:attachment.deleted",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "attachment.deleted",
         "projectName": "agenstra-backend-feature-agent-controller",
         "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
       }
@@ -20497,6 +20691,50 @@
       }
     },
     {
+      "id": "api:HTTP:GET:/projects/{projectId}/tickets/{ticketId}/attachments",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/projects/{projectId}/tickets/{ticketId}/attachments",
+        "operationId": "listProjectTicketAttachments",
+        "summary": "List ticket attachments",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/projects/{projectId}/tickets/{ticketId}/attachments",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/projects/{projectId}/tickets/{ticketId}/attachments",
+        "operationId": "uploadProjectTicketAttachment",
+        "summary": "Upload ticket attachment",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/projects/{projectId}/tickets/{ticketId}/attachments/{attachmentId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/projects/{projectId}/tickets/{ticketId}/attachments/{attachmentId}",
+        "operationId": "deleteProjectTicketAttachment",
+        "summary": "Delete ticket attachment metadata",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/projects/{projectId}/tickets/{ticketId}/attachments/{attachmentId}/download",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/projects/{projectId}/tickets/{ticketId}/attachments/{attachmentId}/download",
+        "operationId": "downloadProjectTicketAttachment",
+        "summary": "Download ticket attachment",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/projects/{projectId}/milestones",
       "type": "endpoint",
       "attrs": {
@@ -21860,6 +22098,24 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "supplier_profile.updated",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:ticket.attachment.created",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "ticket.attachment.created",
+        "projectName": "decabill-backend-feature-billing-manager",
+        "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:decabill-backend-feature-billing-manager:ticket.attachment.deleted",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "ticket.attachment.deleted",
         "projectName": "decabill-backend-feature-billing-manager",
         "catalogPath": "libs/domains/decabill/backend/feature-billing-manager/src/lib/notifications/billing-notification.events.ts"
       }
@@ -26205,6 +26461,36 @@
         "title": "Events",
         "docPath": "docs/agenstra/features/email-notifications.md",
         "sectionAnchor": "events",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-file-attachments",
+      "type": "concept",
+      "attrs": {
+        "title": "File attachments",
+        "docPath": "docs/agenstra/features/file-attachments.md",
+        "sectionAnchor": "file-attachments",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-supported-objects",
+      "type": "concept",
+      "attrs": {
+        "title": "Supported objects",
+        "docPath": "docs/agenstra/features/file-attachments.md",
+        "sectionAnchor": "supported-objects",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-storage-and-agent-context",
+      "type": "concept",
+      "attrs": {
+        "title": "Storage and agent context",
+        "docPath": "docs/agenstra/features/file-attachments.md",
+        "sectionAnchor": "storage-and-agent-context",
         "domain": "agenstra"
       }
     },
@@ -31999,6 +32285,16 @@
       }
     },
     {
+      "id": "concept:decabill-project-ticket-attachments",
+      "type": "concept",
+      "attrs": {
+        "title": "Project ticket attachments",
+        "docPath": "docs/decabill/features/ticket-attachments.md",
+        "sectionAnchor": "project-ticket-attachments",
+        "domain": "decabill"
+      }
+    },
+    {
       "id": "concept:decabill-usage-meters",
       "type": "concept",
       "attrs": {
@@ -33603,6 +33899,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "project:shared-backend-util-otel",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "project:shared-backend-util-file-storage",
       "type": "depends_on"
     },
     {
@@ -37422,6 +37723,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/attachments.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/chat-plan.controller.ts",
       "type": "contains"
     },
@@ -37528,6 +37834,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-console-status.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/attachment.dto.ts",
       "type": "contains"
     },
     {
@@ -37768,6 +38079,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/update-client.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/agenstra-attachment.entity.ts",
       "type": "contains"
     },
     {
@@ -38098,6 +38414,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/workspace-search-index.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agenstra-attachments.service.ts",
       "type": "contains"
     },
     {
@@ -39537,6 +39858,11 @@
     },
     {
       "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/controllers/project-ticket-attachments.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/controllers/project-tickets.controller.ts",
       "type": "contains"
     },
@@ -39553,6 +39879,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/dto/project-milestone.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/dto/project-ticket-attachment.dto.ts",
       "type": "contains"
     },
     {
@@ -39578,6 +39909,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/entities/project-ticket-activity.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/entities/project-ticket-attachment.entity.ts",
       "type": "contains"
     },
     {
@@ -39653,6 +39989,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-milestones.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-ticket-attachments.service.ts",
       "type": "contains"
     },
     {
@@ -42832,6 +43173,31 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/knowledge/{id}/attachments",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/knowledge/{id}/attachments",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/knowledge/{id}/attachments/{attachmentId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/attachments/chat",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/attachments/{id}/download",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:POST:/knowledge/{id}/reorder",
       "type": "contains"
     },
@@ -42878,6 +43244,21 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:POST:/tickets/{id}/comments",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/tickets/{id}/attachments",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/tickets/{id}/attachments",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/tickets/{id}/attachments/{attachmentId}",
       "type": "contains"
     },
     {
@@ -43643,6 +44024,16 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "webhook-event:agenstra-backend-feature-agent-controller:application.update_check_failed",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:attachment.created",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:attachment.deleted",
       "type": "contains"
     },
     {
@@ -45097,6 +45488,26 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/projects/{projectId}/tickets/{ticketId}/attachments",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/projects/{projectId}/tickets/{ticketId}/attachments",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/projects/{projectId}/tickets/{ticketId}/attachments/{attachmentId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/projects/{projectId}/tickets/{ticketId}/attachments/{attachmentId}/download",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/projects/{projectId}/milestones",
       "type": "contains"
     },
@@ -45808,6 +46219,16 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "webhook-event:decabill-backend-feature-billing-manager:supplier_profile.updated",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:ticket.attachment.created",
+      "type": "contains"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "webhook-event:decabill-backend-feature-billing-manager:ticket.attachment.deleted",
       "type": "contains"
     },
     {
@@ -48583,6 +49004,26 @@
     {
       "from": "file:docs/agenstra/features/email-notifications.md",
       "to": "concept:agenstra-events",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/file-attachments.md",
+      "to": "concept:agenstra-file-attachments",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/file-attachments.md",
+      "to": "concept:agenstra-supported-objects",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/file-attachments.md",
+      "to": "concept:agenstra-storage-and-agent-context",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/file-attachments.md",
+      "to": "concept:agenstra-security",
       "type": "contains"
     },
     {
@@ -52601,6 +53042,16 @@
       "type": "contains"
     },
     {
+      "from": "file:docs/decabill/features/ticket-attachments.md",
+      "to": "concept:decabill-project-ticket-attachments",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/decabill/features/ticket-attachments.md",
+      "to": "concept:decabill-security",
+      "type": "contains"
+    },
+    {
       "from": "file:docs/decabill/features/usage-meters.md",
       "to": "concept:decabill-usage-meters",
       "type": "contains"
@@ -54927,6 +55378,36 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/knowledge-tree.controller.ts",
+      "to": "api:HTTP:GET:/knowledge/{id}/attachments",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/knowledge/{id}/attachments",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/knowledge-tree.controller.ts",
+      "to": "api:HTTP:POST:/knowledge/{id}/attachments",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/knowledge/{id}/attachments",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/knowledge-tree.controller.ts",
+      "to": "api:HTTP:DELETE:/knowledge/{id}/attachments/{attachmentId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:DELETE:/knowledge/{id}/attachments/{attachmentId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/knowledge-tree.controller.ts",
       "to": "api:HTTP:POST:/knowledge/{id}/reorder",
       "type": "implements"
     },
@@ -55113,6 +55594,36 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "api:HTTP:POST:/tickets/{id}/comments",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/tickets.controller.ts",
+      "to": "api:HTTP:GET:/tickets/{id}/attachments",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/tickets/{id}/attachments",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/tickets.controller.ts",
+      "to": "api:HTTP:POST:/tickets/{id}/attachments",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/tickets/{id}/attachments",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/tickets.controller.ts",
+      "to": "api:HTTP:DELETE:/tickets/{id}/attachments/{attachmentId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:DELETE:/tickets/{id}/attachments/{attachmentId}",
       "type": "implements"
     },
     {
@@ -58828,6 +59339,46 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "api:HTTP:POST:/projects/{projectId}/tickets/{ticketId}/comments",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/controllers/projects.controller.ts",
+      "to": "api:HTTP:GET:/projects/{projectId}/tickets/{ticketId}/attachments",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/projects/{projectId}/tickets/{ticketId}/attachments",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/controllers/projects.controller.ts",
+      "to": "api:HTTP:POST:/projects/{projectId}/tickets/{ticketId}/attachments",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:POST:/projects/{projectId}/tickets/{ticketId}/attachments",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/controllers/projects.controller.ts",
+      "to": "api:HTTP:DELETE:/projects/{projectId}/tickets/{ticketId}/attachments/{attachmentId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:DELETE:/projects/{projectId}/tickets/{ticketId}/attachments/{attachmentId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/controllers/projects.controller.ts",
+      "to": "api:HTTP:GET:/projects/{projectId}/tickets/{ticketId}/attachments/{attachmentId}/download",
+      "type": "implements"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "api:HTTP:GET:/projects/{projectId}/tickets/{ticketId}/attachments/{attachmentId}/download",
       "type": "implements"
     },
     {
@@ -60911,6 +61462,21 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/attachments.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agenstra-attachments.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/attachments.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/attachments.controller.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/chat-plan.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/chat-plan.service.ts",
       "type": "injects"
@@ -61291,6 +61857,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agenstra-attachments.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/knowledge-board.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
       "type": "injects"
@@ -61402,6 +61973,21 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/workspace-search-index.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-file-system-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agenstra-attachments.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agenstra-attachments.service.ts",
+      "to": "file:libs/domains/shared/backend/util-file-storage/src/lib/file-storage.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agenstra-attachments.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-file-system-proxy.service.ts",
       "type": "injects"
     },
@@ -63011,6 +63597,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/controllers/project-ticket-attachments.controller.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-ticket-attachments.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/controllers/project-tickets.controller.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-tickets.service.ts",
       "type": "injects"
@@ -63136,6 +63727,31 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-ticket-attachments.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/repositories/projects.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-ticket-attachments.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/repositories/project-tickets.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-ticket-attachments.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/repositories/project-ticket-activities.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-ticket-attachments.service.ts",
+      "to": "file:libs/domains/shared/backend/util-file-storage/src/lib/file-storage.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-ticket-attachments.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/stored-file-registry.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-tickets.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/repositories/projects.repository.ts",
       "type": "injects"
@@ -63178,6 +63794,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-tickets.service.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/search/billing-search-index.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-tickets.service.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-ticket-attachments.service.ts",
       "type": "injects"
     },
     {
@@ -66572,6 +67193,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/attachments.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/knowledge-tree.controller.ts",
       "type": "provides"
     },
@@ -66648,6 +67274,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/clients.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agenstra-attachments.service.ts",
       "type": "provides"
     },
     {
@@ -67237,6 +67868,11 @@
     },
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/controllers/project-ticket-attachments.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/controllers/project-time-entries.controller.ts",
       "type": "provides"
     },
@@ -67783,6 +68419,11 @@
     {
       "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-tickets.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/billing.module.ts",
+      "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/projects/services/project-ticket-attachments.service.ts",
       "type": "provides"
     },
     {
@@ -70171,6 +70812,26 @@
       "type": "calls"
     },
     {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/knowledge.service.ts",
+      "to": "api:HTTP:GET:/knowledge/{id}/attachments",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/knowledge.service.ts",
+      "to": "api:HTTP:POST:/knowledge/{id}/attachments",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/knowledge.service.ts",
+      "to": "api:HTTP:DELETE:/knowledge/{id}/attachments/{attachmentId}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/knowledge.service.ts",
+      "to": "api:HTTP:GET:/attachments/{id}/download",
+      "type": "calls"
+    },
+    {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/opencode-config.service.ts",
       "to": "api:HTTP:GET:/opencode/providers",
       "type": "calls"
@@ -70398,6 +71059,31 @@
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/tickets.service.ts",
       "to": "api:HTTP:GET:/tickets/{id}/activity",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/tickets.service.ts",
+      "to": "api:HTTP:GET:/tickets/{id}/attachments",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/tickets.service.ts",
+      "to": "api:HTTP:POST:/tickets/{id}/attachments",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/tickets.service.ts",
+      "to": "api:HTTP:DELETE:/tickets/{id}/attachments/{attachmentId}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/tickets.service.ts",
+      "to": "api:HTTP:GET:/attachments/{id}/download",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/tickets.service.ts",
+      "to": "api:HTTP:POST:/attachments/chat",
       "type": "calls"
     },
     {
@@ -77086,6 +77772,21 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-project-ticket-attachments",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-project-ticket-attachments",
+      "to": "api:HTTP:GET:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:decabill-project-ticket-attachments",
+      "to": "api:HTTP:POST:/tickets",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-catalog",
       "to": "api:HTTP:GET:/meters",
       "type": "documents"
@@ -79021,6 +79722,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "file:docs/agenstra/features/file-attachments.md",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "file:docs/agenstra/features/file-management.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -79407,6 +80113,11 @@
     },
     {
       "from": "file:docs/decabill/features/supplier-profiles.md",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/decabill/features/ticket-attachments.md",
       "to": "domain:decabill",
       "type": "belongs_to"
     },
@@ -80987,6 +81698,21 @@
     },
     {
       "from": "concept:agenstra-events",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-file-attachments",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-supported-objects",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-storage-and-agent-context",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -83882,6 +84608,11 @@
     },
     {
       "from": "concept:decabill-datev-creditor-accounts",
+      "to": "domain:decabill",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:decabill-project-ticket-attachments",
       "to": "domain:decabill",
       "type": "belongs_to"
     },

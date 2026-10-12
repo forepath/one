@@ -4,6 +4,7 @@ import { Store } from '@ngrx/store';
 import type {
   CreateProjectTicketDto,
   ListProjectTicketsParams,
+  ProjectTicketAttachmentResponse,
   UpdateProjectTicketDto,
 } from '../../types/projects.types';
 
@@ -15,6 +16,8 @@ import {
   deleteProjectTicket,
   loadProjectTickets,
   openProjectTicketDetail,
+  projectTicketAttachmentAdded,
+  projectTicketAttachmentRemoved,
   updateProjectTicket,
 } from './project-tickets.actions';
 import {
@@ -73,6 +76,14 @@ export class ProjectTicketsFacade {
 
   addComment(projectId: string, ticketId: string, body: string): void {
     this.store.dispatch(addProjectTicketComment({ projectId, ticketId, body }));
+  }
+
+  addAttachment(ticketId: string, attachment: ProjectTicketAttachmentResponse): void {
+    this.store.dispatch(projectTicketAttachmentAdded({ ticketId, attachment }));
+  }
+
+  removeAttachment(ticketId: string, attachmentId: string): void {
+    this.store.dispatch(projectTicketAttachmentRemoved({ ticketId, attachmentId }));
   }
 
   clearError(): void {

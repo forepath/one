@@ -39,6 +39,7 @@ import {
   StatsFacade,
   TicketAutomationFacade,
   TicketsFacade,
+  TicketsService,
   WorkspaceConfigFacade,
   type AddClientUserDto,
   type AgentModelsMap,
@@ -46,6 +47,7 @@ import {
   type AgentResponseObject,
   type AgentSlashCommand,
   type ChatMessageData,
+  type ChatAttachmentDto,
   type ChatPlanChatEventPayload,
   type ChatPlanResponse,
   type ChatSessionResponseDto,
@@ -68,6 +70,7 @@ import {
   type ProvisionServerDto,
   type TicketAutomationRunChatEventPayload,
   type TicketResponseDto,
+  type AttachmentResponseDto,
   type UpdateAgentDto,
   type UpdateClientDto,
   type UpdateEnvironmentVariableDto,
@@ -297,6 +300,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private readonly environmentProgressFacade = inject(EnvironmentProgressFacade);
   private readonly statsFacade = inject(StatsFacade);
   private readonly ticketsFacade = inject(TicketsFacade);
+  private readonly ticketsService = inject(TicketsService);
   private readonly ticketAutomationFacade = inject(TicketAutomationFacade);
   private readonly filesFacade = inject(FilesFacade);
   private readonly envFacade = inject(EnvFacade);
@@ -902,6 +906,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   selectedEnvironmentContextIds = signal<string[]>([]);
   selectedTicketContextShas = signal<string[]>([]);
   selectedKnowledgeContextShas = signal<string[]>([]);
+  selectedAttachmentContexts = signal<ChatAttachmentDto[]>([]);
+  readonly chatAttachmentDragActive = signal(false);
+  private chatAttachmentDragDepth = 0;
   ticketContextInput = signal<string>('');
   knowledgeContextInput = signal<string>('');
   /** Keeps suggestion menu open while interacting (blur closes with delay for mousedown). */
@@ -1086,6 +1093,14 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         trackKey: `knowledge:${longSha}`,
         label: display,
         title: display,
+      });
+    }
+
+    for (const attachment of this.selectedAttachmentContexts()) {
+      chips.push({
+        trackKey: `attachment:${attachment.id}`,
+        label: attachment.fileName,
+        title: `Attachment: ${attachment.fileName}`,
       });
     }
 
@@ -3067,9 +3082,81 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.lastUserMessageTimestamp.set(Date.now());
 
     this.chatMessage.set('');
+    this.selectedAttachmentContexts.set([]);
     // Trigger scroll after sending message
     this.stickToBottom.set(true);
     this.shouldScrollToBottom = true;
+  }
+
+  onChatAttachmentSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.uploadChatAttachments(Array.from(input.files ?? []));
+    input.value = '';
+  }
+
+  onChatInputDragOver(event: DragEvent): void {
+    if (event.dataTransfer?.types.includes('Files')) {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'copy';
+    }
+  }
+
+  onChatInputDragEnter(event: DragEvent): void {
+    if (!event.dataTransfer?.types.includes('Files')) return;
+
+    event.preventDefault();
+    this.chatAttachmentDragDepth += 1;
+    this.chatAttachmentDragActive.set(true);
+  }
+
+  onChatInputDragLeave(event: DragEvent): void {
+    if (!event.dataTransfer?.types.includes('Files')) return;
+
+    this.chatAttachmentDragDepth = Math.max(0, this.chatAttachmentDragDepth - 1);
+    if (this.chatAttachmentDragDepth === 0) {
+      this.chatAttachmentDragActive.set(false);
+    }
+  }
+
+  onChatInputDrop(event: DragEvent): void {
+    const files = Array.from(event.dataTransfer?.files ?? []);
+
+    event.preventDefault();
+    this.chatAttachmentDragDepth = 0;
+    this.chatAttachmentDragActive.set(false);
+
+    if (files.length === 0) return;
+
+    this.uploadChatAttachments(files);
+  }
+
+  removeChatAttachment(id: string): void {
+    this.selectedAttachmentContexts.set(this.selectedAttachmentContexts().filter((attachment) => attachment.id !== id));
+  }
+
+  private uploadChatAttachments(files: File[]): void {
+    const clientId = this.activeClientIdSignal();
+
+    if (!clientId) return;
+
+    for (const file of files) {
+      this.ticketsService
+        .uploadChatAttachment(clientId, file)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe((attachment) =>
+          this.selectedAttachmentContexts.update((current) => [
+            ...current,
+            {
+              id: attachment.id,
+              fileName: attachment.fileName,
+              contentType: attachment.contentType,
+              byteSize: attachment.byteSize,
+              downloadUrl: attachment.downloadUrl,
+              agentPath: attachment.agentPath,
+            },
+          ]),
+        );
+    }
   }
 
   clearEnhanceError(): void {
@@ -3525,6 +3612,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     | {
         includeWorkspace?: boolean;
         environmentIds?: string[];
+        attachmentIds?: string[];
         ticketShas?: string[];
         knowledgeShas?: string[];
         autoEnrichmentEnabled?: boolean;
@@ -3550,18 +3638,26 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           .filter((sha) => sha),
       ),
     ];
+    const attachmentIds = [
+      ...new Set(
+        this.selectedAttachmentContexts()
+          .map((attachment) => attachment.id)
+          .filter((id) => id.length > 0),
+      ),
+    ];
 
     if (
       !includeWorkspace &&
       !autoEnrichmentEnabled &&
       environmentIds.length === 0 &&
+      attachmentIds.length === 0 &&
       ticketShas.length === 0 &&
       knowledgeShas.length === 0
     ) {
       return undefined;
     }
 
-    return { includeWorkspace, environmentIds, ticketShas, knowledgeShas, autoEnrichmentEnabled };
+    return { includeWorkspace, environmentIds, attachmentIds, ticketShas, knowledgeShas, autoEnrichmentEnabled };
   }
 
   onConnectSocket(): void {
@@ -5911,6 +6007,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     }
 
     return null;
+  }
+
+  getMessageAttachments(messageData: ChatMessageData): ChatAttachmentDto[] {
+    return 'attachments' in messageData && messageData.attachments?.length ? messageData.attachments : [];
   }
 
   /**

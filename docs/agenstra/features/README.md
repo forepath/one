@@ -15,6 +15,7 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **Version Control** Git operations directly from the web interface
 - **Web IDE** Monaco Editor integration for code editing
 - **Chat Interface** AI chat functionality with real-time responses
+- **[File attachments](./file-attachments.md)** Attach/download files on tickets, knowledge pages, and chat context with read-only agent mirroring
 - **[Chat plan mode](./chat-plan-mode.md)** Explore-only OpenCode planning with refine and execute-into-chat
 - **Deployment** CI/CD pipeline management and deployment functionality
 - **Authentication** Multiple authentication methods with configurable user registration

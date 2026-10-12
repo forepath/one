@@ -51,9 +51,25 @@ export interface TicketResponseDto {
   createdAt: string;
   updatedAt: string;
   tasks: TicketTasksDto;
+  attachments?: AttachmentResponseDto[];
   children?: TicketResponseDto[];
   /** Present after tickets are processed in the reducer (not from the API). */
   subtaskCounts?: TicketSubtaskCountsDto;
+}
+
+export interface AttachmentResponseDto {
+  id: string;
+  clientId: string;
+  ownerType: string;
+  ownerId: string;
+  fileName: string;
+  contentType: string;
+  byteSize: number;
+  contentSha256: string;
+  downloadUrl: string;
+  agentPath?: string | null;
+  createdByUserId?: string | null;
+  createdAt: string;
 }
 
 export interface CreateTicketDto {
