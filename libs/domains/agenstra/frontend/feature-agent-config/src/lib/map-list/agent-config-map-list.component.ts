@@ -89,10 +89,12 @@ export interface ConfigMapEntryView {
               <span fpcListItemTitle>
                 {{ entry.key }}
                 @if (entry.inherited) {
-                  <span class="badge text-bg-secondary ms-2" i18n="@@featureAgentConfig-inheritedBadge">Inherited</span>
+                  <fpc-badge color="secondary" class="ms-2" i18n="@@featureAgentConfig-inheritedBadge"
+                    >Inherited</fpc-badge
+                  >
                 }
                 @if (entry.deleted) {
-                  <span class="badge text-bg-warning ms-2" i18n="@@featureAgentConfig-removedBadge">Removed</span>
+                  <fpc-badge color="warning" class="ms-2" i18n="@@featureAgentConfig-removedBadge">Removed</fpc-badge>
                 }
                 @for (badge of entry.badges ?? []; track badge.label) {
                   <fpc-badge class="ms-2" [color]="badge.color" size="sm">{{ badge.label }}</fpc-badge>

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
+  FpcBadgeComponent,
   FpcButtonComponent,
   FpcButtonGroupComponent,
   FpcEmptyStateComponent,
@@ -35,6 +36,7 @@ export interface PathListEntryView {
   imports: [
     CommonModule,
     FormsModule,
+    FpcBadgeComponent,
     FpcButtonComponent,
     FpcButtonGroupComponent,
     FpcEmptyStateComponent,
@@ -83,10 +85,12 @@ export interface PathListEntryView {
               <span fpcListItemTitle>
                 <code class="small">{{ entry.value }}</code>
                 @if (entry.inherited) {
-                  <span class="badge text-bg-secondary ms-2" i18n="@@featureAgentConfig-inheritedBadge">Inherited</span>
+                  <fpc-badge color="secondary" class="ms-2" i18n="@@featureAgentConfig-inheritedBadge"
+                    >Inherited</fpc-badge
+                  >
                 }
                 @if (entry.deleted) {
-                  <span class="badge text-bg-warning ms-2" i18n="@@featureAgentConfig-removedBadge">Removed</span>
+                  <fpc-badge color="warning" class="ms-2" i18n="@@featureAgentConfig-removedBadge">Removed</fpc-badge>
                 }
               </span>
               <fpc-button-group fpcListItemActions size="sm">
@@ -207,7 +211,7 @@ export class AgentConfigPathListComponent {
   readonly disabled = input(false);
   readonly emptyLabel = input('No entries yet.');
   readonly addLabel = input($localize`:@@featureAgentConfig-addPathLabel:Path or URL`);
-  readonly addPlaceholder = input($localize`:@@featureAgentConfig-addPathPlaceholder:/path or https://…`);
+  readonly addPlaceholder = input($localize`:@@featureAgentConfig-addPathPlaceholder:/path or https://...`);
   readonly ariaLabel = input('Path entries');
 
   readonly add = output<string>();

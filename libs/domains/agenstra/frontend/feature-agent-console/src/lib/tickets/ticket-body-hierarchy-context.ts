@@ -38,7 +38,7 @@ export function buildTicketBodyHierarchyContext(
     parents.forEach((p, index) => {
       parentLines.push(...formatPromptLinesForTicket(p, index));
     });
-    blocks.push(`Parent tickets (root → immediate parent):\n${parentLines.join('\n')}`);
+    blocks.push(`Parent tickets (root to immediate parent):\n${parentLines.join('\n')}`);
   }
 
   const children = detail.children ?? [];

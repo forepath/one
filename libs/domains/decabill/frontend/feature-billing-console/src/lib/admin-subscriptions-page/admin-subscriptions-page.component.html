@@ -94,7 +94,7 @@
                 <div class="row g-2 mt-2">
                   @if (subscriptionItems(sub).length > 0) {
                     <div class="col-md">
-                      <div class="small text-muted h-100 bg-body-tertiary rounded border py-2 px-3">
+                      <div class="small text-body-secondary h-100 bg-body-tertiary rounded border py-2 px-3">
                         <div class="fw-semibold mb-1" i18n="@@featureAdminSubscriptions-services">Services</div>
                         <div class="d-flex flex-column gap-2">
                           @for (item of subscriptionItems(sub); track item.id) {
@@ -131,7 +131,7 @@
                   }
                   @if (hasSubscriptionMeters(sub)) {
                     <div class="col-md">
-                      <div class="small text-muted h-100 bg-body-tertiary rounded border py-2 px-3">
+                      <div class="small text-body-secondary h-100 bg-body-tertiary rounded border py-2 px-3">
                         <div class="fw-semibold mb-1" i18n="@@featureAdminSubscriptions-usageMeters">Usage meters</div>
                         <div class="d-flex flex-column gap-1">
                           @for (
@@ -142,7 +142,7 @@
                               <fpc-badge variant="info" color="secondary">{{ meter.name }}</fpc-badge>
                               <span>{{ formatMeterValue(meter) }}</span>
                               @if (hasMeterBillingDetails(meter)) {
-                                <span class="text-muted small">{{ formatMeterBillingDetails(meter) }}</span>
+                                <span class="text-body-secondary small">{{ formatMeterBillingDetails(meter) }}</span>
                               }
                               <span class="ms-auto">{{ formatMeterCharge(meter.estimatedChargeNet) }}</span>
                             </div>
@@ -235,7 +235,6 @@
           [disabled]="(hasMore$ | async) === false || !!(appendLoading$ | async) || !!(loading$ | async)"
           (reachedEnd)="facade.loadMore()"
           aria-hidden="true"
-          style="height: 1px; width: 100%; flex-shrink: 0"
         ></div>
       }
     }
@@ -313,40 +312,54 @@
     <div class="col-lg-5">
       <h6 class="mb-2" i18n="@@featureAdminSubscriptions-meterSummaries">Current period summaries</h6>
       @if (metersLoadingAny$ | async) {
-        <div class="text-muted small" i18n="@@featureAdminSubscriptions-metersLoading">Loading meters...</div>
+        <div class="text-body-secondary small" i18n="@@featureAdminSubscriptions-metersLoading">Loading meters...</div>
       } @else if (meterSummaries().length === 0) {
-        <div class="text-muted small" i18n="@@featureAdminSubscriptions-noMeterSummaries">No meter summaries.</div>
-      } @else {
-        <div class="list-group list-group-flush border rounded">
-          @for (summary of meterSummaries(); track summary.meterId + summary.attachmentType + (summary.addonId ?? '')) {
-            <div class="list-group-item d-flex flex-wrap align-items-center gap-2">
-              <fpc-badge variant="info" color="secondary">{{ summary.name }}</fpc-badge>
-              <span class="small text-muted">{{ formatMeterValue(summary) }}</span>
-              @if (hasMeterBillingDetails(summary)) {
-                <span class="small text-muted">{{ formatMeterBillingDetails(summary) }}</span>
-              }
-              <span class="small text-muted ms-auto">{{ formatMeterCharge(summary.estimatedChargeNet) }}</span>
-            </div>
-          }
+        <div class="text-body-secondary small" i18n="@@featureAdminSubscriptions-noMeterSummaries">
+          No meter summaries.
         </div>
+      } @else {
+        <fpc-list>
+          @for (summary of meterSummaries(); track summary.meterId + summary.attachmentType + (summary.addonId ?? '')) {
+            <fpc-list-item>
+              <div class="d-flex flex-wrap align-items-center gap-2">
+                <fpc-badge variant="info" color="secondary">{{ summary.name }}</fpc-badge>
+                <span class="small text-body-secondary">{{ formatMeterValue(summary) }}</span>
+                @if (hasMeterBillingDetails(summary)) {
+                  <span class="small text-body-secondary">{{ formatMeterBillingDetails(summary) }}</span>
+                }
+                <span class="small text-body-secondary ms-auto">{{
+                  formatMeterCharge(summary.estimatedChargeNet)
+                }}</span>
+              </div>
+            </fpc-list-item>
+          }
+        </fpc-list>
       }
     </div>
     <div class="col-lg-7">
       <h6 class="mb-2" i18n="@@featureAdminSubscriptions-meterEntries">Meter entries</h6>
       @if (meterEntries().length === 0) {
-        <div class="text-muted small mb-3" i18n="@@featureAdminSubscriptions-noMeterEntries">No entries yet.</div>
+        <div class="text-body-secondary small mb-3" i18n="@@featureAdminSubscriptions-noMeterEntries">
+          No entries yet.
+        </div>
       } @else {
-        <div class="list-group list-group-flush border rounded mb-3">
+        <fpc-list class="mb-3">
           @for (entry of meterEntries(); track entry.id) {
-            <div class="list-group-item d-flex justify-content-between align-items-start gap-2">
-              <div>
-                <div class="fw-semibold">{{ meterNameById(entry.meterId) }}</div>
-                <div class="small text-muted">
-                  {{ entry.value }} · {{ attachmentTypeLabel(entry.attachmentType) }} ·
-                  {{ formatDateTime(entry.periodStart) }} – {{ formatDateTime(entry.periodEnd) }}
-                </div>
+            <fpc-list-item>
+              <div fpcListItemTitle class="fw-semibold">{{ meterNameById(entry.meterId) }}</div>
+              <div fpcListItemMeta class="d-flex flex-wrap align-items-center gap-3 row-gap-0">
+                <span><i class="bi bi-speedometer2 me-1" aria-hidden="true"></i>{{ entry.value }}</span>
+                <span
+                  ><i class="bi bi-tag me-1" aria-hidden="true"></i
+                  >{{ attachmentTypeLabel(entry.attachmentType) }}</span
+                >
+                <span>
+                  <i class="bi bi-calendar-range me-1" aria-hidden="true"></i>{{ formatDateTime(entry.periodStart) }}
+                  <i class="bi bi-arrow-right mx-1" aria-hidden="true"></i>{{ formatDateTime(entry.periodEnd) }}
+                </span>
               </div>
               <fpc-button
+                fpcListItemActions
                 variant="danger"
                 size="sm"
                 iconOnly
@@ -355,9 +368,9 @@
               >
                 <i class="bi bi-trash" aria-hidden="true"></i>
               </fpc-button>
-            </div>
+            </fpc-list-item>
           }
-        </div>
+        </fpc-list>
       }
       <div class="border rounded p-3 bg-body-secondary">
         <h6 class="mb-3" i18n="@@featureAdminSubscriptions-createEntry">Record meter entry</h6>

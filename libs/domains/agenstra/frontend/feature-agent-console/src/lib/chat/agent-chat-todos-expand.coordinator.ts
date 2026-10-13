@@ -6,9 +6,9 @@ interface TodosExpandScopeState {
   nextSeq: number;
   registrations: ReadonlyMap<string, number>;
   /**
-   * `undefined` — open the latest registered todos row in this message.
-   * `null` — all todos in this message collapsed.
-   * `string` — that trackId is open (manual toggle).
+   * `undefined`: open the latest registered todos row in this message.
+   * `null`: all todos in this message collapsed.
+   * `string`: that trackId is open (manual toggle).
    */
   openOverride: ScopeOpenOverride;
 }
@@ -83,7 +83,7 @@ export class AgentChatTodosExpandCoordinator {
     nextScopes.set(scopeId, {
       nextSeq,
       registrations,
-      // New latest todos in this message → auto-expand it (closes earlier ones in the same message).
+      // New latest todos in this message -> auto-expand it (closes earlier ones in the same message).
       openOverride: undefined,
     });
     this.scopes.set(nextScopes);

@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 /**
  * Horizontal page columns host. When `marketingHidden` is set, marketing columns collapse and
- * the form column expands — matching identity auth split layouts.
+ * the form column expands - matching identity auth split layouts.
  */
 @Component({
   selector: 'fpc-section-row',

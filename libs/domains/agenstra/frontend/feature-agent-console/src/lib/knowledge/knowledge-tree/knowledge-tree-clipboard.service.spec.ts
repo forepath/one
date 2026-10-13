@@ -85,7 +85,7 @@ describe('KnowledgeTreeClipboardService', () => {
     );
     await flushMicrotasks();
 
-    // Destination has no collision — restore original title after move.
+    // Destination has no collision - restore original title after move.
     expect(knowledgeFacade.updateNode).toHaveBeenCalledWith('copy-1', { title: 'Page' });
     actions$.next(
       updateKnowledgeNodeSuccess({ node: sampleNode({ id: 'copy-1', parentId: 'folder-1', title: 'Page' }) }),

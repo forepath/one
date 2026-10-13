@@ -870,7 +870,7 @@ export class ServicePlansPageComponent implements OnInit {
     );
   }
 
-  /** Formats plan price for display in list (e.g. "€4.51" or "—"). */
+  /** Formats plan price for display in list (e.g. "€4.51" or "-"). */
   formatPlanPrice(plan: ServicePlanResponse): string {
     return this.formatEstimatedPrice(this.getPlanTotalPrice(plan));
   }
@@ -961,8 +961,8 @@ export class ServicePlansPageComponent implements OnInit {
 
   /**
    * Effective cloud provider for plan form UI.
-   * Customer selection on → first of plan subset (or type primary).
-   * Customer selection off → pinned plan provider (or type primary when only one).
+   * Customer selection on -> first of plan subset (or type primary).
+   * Customer selection off -> pinned plan provider (or type primary when only one).
    */
   resolveFormProviderId(
     form: 'create' | 'edit',
@@ -2318,9 +2318,9 @@ export class ServicePlansPageComponent implements OnInit {
     return base + base * (marginPct / 100) + marginFix;
   }
 
-  /** Formats estimated price for display (e.g. "€4.51" or "—"). */
+  /** Formats estimated price for display (e.g. "€4.51" or "-"). */
   formatEstimatedPrice(total: number | null): string {
-    if (total === null) return '—';
+    if (total === null) return '-';
 
     return `€${this.formatPrice(total)}`;
   }
@@ -2348,7 +2348,7 @@ export class ServicePlansPageComponent implements OnInit {
   ): string {
     const breakdown = this.getEstimatedPriceBreakdown(basePrice, marginPercent, marginFixed, taxCategory);
 
-    if (!breakdown) return '—';
+    if (!breakdown) return '-';
 
     return `€${this.formatPrice(breakdown.net)} + €${this.formatPrice(breakdown.tax)} VAT (${breakdown.taxRate}%) = €${this.formatPrice(breakdown.gross)}`;
   }

@@ -147,7 +147,7 @@ function truncateText(text: string, max = AGENT_CHAT_TOOL_EMBED_BODY_CHAR_LIMIT)
     return { text, truncated: false };
   }
 
-  return { text: `${text.slice(0, max)}\n…`, truncated: true };
+  return { text: `${text.slice(0, max)}\n...`, truncated: true };
 }
 
 /** Unwrap envelope (`payload`) or part root into a flat tool record. */
@@ -171,7 +171,7 @@ export function parseToolDetailRecord(detailJson: string | undefined): Record<st
       obj = data;
     }
 
-    // Unwrap nested `payload` until tool fields appear (envelope → tool payload).
+    // Unwrap nested `payload` until tool fields appear (envelope -> tool payload).
     for (let depth = 0; depth < 3; depth++) {
       const nested = asRecord(obj['payload']);
 
@@ -543,7 +543,7 @@ export function buildTodosEmbedFromDetail(
   let todos = collectTodosFromRecord(root);
 
   if (!todos) {
-    // Status envelopes: { kind: 'status', payload: { todos, message } } — payload may not look like a tool.
+    // Status envelopes: { kind: 'status', payload: { todos, message } }; payload may not look like a tool.
     try {
       const parsed = detailJson?.trim() ? (JSON.parse(detailJson) as unknown) : undefined;
       const obj = asRecord(parsed);
@@ -586,7 +586,7 @@ export function buildChatRowEmbedView(row: {
     return buildTodosEmbedFromDetail(row.detailJson, row.summaryBody);
   }
 
-  // Tool pair present but unparsed todowrite — try checklist / todos on the detail blobs.
+  // Tool pair present but unparsed todowrite: try checklist / todos on the detail blobs.
   const toolName = normalizeToolName(row.toolName ?? '');
 
   if (
@@ -696,7 +696,7 @@ function parseGrepHits(result: unknown): AgentChatGrepHitEmbed[] {
       const line = asNumber(rec['line']) ?? asNumber(rec['lineNumber']) ?? asNumber(rec['line_number']);
 
       if (path || snippet) {
-        hits.push({ path: path || '—', line, snippet });
+        hits.push({ path: path || '-', line, snippet });
       }
     }
 

@@ -8,10 +8,11 @@
   border-color: var(--bs-border-color);
 }
 
+// Plain brand-coloured icon (no tinted tile).
 .consulting-module-icon {
-  width: 4.5rem;
-  height: 4.5rem;
-  background: rgba(255, 107, 53, 0.12);
+  width: fit-content;
+  height: auto;
+  background: none;
 }
 
 .consulting-module-panel__top {
@@ -34,7 +35,7 @@
   height: 2rem;
   margin-bottom: 1rem;
   border-radius: 50%;
-  background: rgba(255, 107, 53, 0.12);
+  background: color-mix(in srgb, var(--bs-primary) 12%, transparent);
   color: var(--bs-primary);
   font-size: 0.875rem;
   font-weight: 600;

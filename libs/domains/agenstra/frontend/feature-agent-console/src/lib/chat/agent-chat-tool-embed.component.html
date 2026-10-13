@@ -53,15 +53,11 @@
           <div class="agent-chat-tool-embed__label">{{ fileLabel }}</div>
           <div class="agent-chat-tool-embed__meta-row">
             <code class="agent-chat-tool-embed__path">{{ view.filePath }}</code>
-            @if (view.offset !== undefined || view.limit !== undefined) {
-              <span class="agent-chat-tool-embed__meta">
-                @if (view.offset !== undefined) {
-                  offset {{ view.offset }}
-                }
-                @if (view.limit !== undefined) {
-                  · limit {{ view.limit }}
-                }
-              </span>
+            @if (view.offset !== undefined) {
+              <span class="agent-chat-tool-embed__meta">offset {{ view.offset }}</span>
+            }
+            @if (view.limit !== undefined) {
+              <span class="agent-chat-tool-embed__meta">limit {{ view.limit }}</span>
             }
           </div>
           @if (view.content) {
@@ -112,7 +108,7 @@
               <span class="agent-chat-tool-embed__meta">in {{ view.path }}</span>
             }
             @if (view.include) {
-              <span class="agent-chat-tool-embed__meta">· {{ view.include }}</span>
+              <span class="agent-chat-tool-embed__meta">({{ view.include }})</span>
             }
           </div>
           @if (view.hits.length === 0) {

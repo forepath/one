@@ -9,7 +9,7 @@ const meta: Meta<FpcSpinnerComponent> = {
       description: {
         component: `**When to use:** Inline loading indicator (buttons, cells).
 
-**When not to:** Full-viewport blocking → \`fpc-loading-overlay\`.`,
+**When not to:** Full-viewport blocking: use \`fpc-loading-overlay\`.`,
       },
     },
   },

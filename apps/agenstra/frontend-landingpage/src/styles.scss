@@ -8,9 +8,6 @@
 @import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/chrome';
 @import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/badge-tint';
 
-// Landing: white cards on tertiary bands (shared console palette leaves $card-bg → body-bg).
-$card-bg: #ffffff;
-
 @import 'bootstrap/scss/bootstrap';
 @import '../../../../libs/domains/shared/frontend/ui-components/styles';
 @import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/extras';
@@ -20,12 +17,6 @@ $card-bg: #ffffff;
 @import 'bootstrap-icons/font/bootstrap-icons';
 @import '@fontsource-variable/plus-jakarta-sans/wght.css';
 @import 'libs/domains/shared/frontend/util-cookie-consent/src/lib/cookie-consent.scss';
-
-:root {
-  // Shared console palette darkened tertiary; landing banding stays at main's lighter wash.
-  --bs-tertiary-bg: #{color.mix($primary, #f9f8fc, 1.5%)};
-  --bs-tertiary-bg-rgb: #{to-rgb(color.mix($primary, #f9f8fc, 1.5%))};
-}
 
 // Smooth scrolling for anchor links
 html {
@@ -176,10 +167,6 @@ body {
 
     &.grid-section__container--dark {
       --bs-border-color: rgba(255, 255, 255, 0.08);
-    }
-
-    &.grid-section__container--shadow {
-      margin-bottom: -1px;
     }
 
     &.grid-section__container--hero-top,

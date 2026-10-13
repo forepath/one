@@ -86,7 +86,7 @@
     } @else if (loadingDetail$ | async) {
       <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 text-body-secondary">
         <fpc-spinner size="sm" />
-        <span i18n="@@featureServiceDetail-loading">Loading service…</span>
+        <span i18n="@@featureServiceDetail-loading">Loading service...</span>
       </div>
     }
 
@@ -141,7 +141,7 @@
             <div class="d-flex align-items-center gap-2 text-body-secondary" aria-live="polite">
               <fpc-spinner size="sm" />
               <span class="visually-hidden" i18n="@@featureServiceDetail-serverStatusUpdatingHint"
-                >Server status updating…</span
+                >Server status updating...</span
               >
             </div>
           }
@@ -218,30 +218,32 @@
             <div class="card-body service-detail-page__lane-body">
               @if (detail(); as detailValue) {
                 <dl class="row mb-0 small">
-                  <dt class="col-sm-3 text-muted" i18n="@@featureServiceDetail-serviceType">Service type</dt>
+                  <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-serviceType">Service type</dt>
                   <dd class="col-sm-9">{{ productServiceLabel(detailValue) }}</dd>
                   @if (providerLabel(detailValue); as providerName) {
-                    <dt class="col-sm-3 text-muted" i18n="@@featureServiceDetail-provider">Provider</dt>
+                    <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-provider">Provider</dt>
                     <dd class="col-sm-9">{{ providerName }}</dd>
                   }
                   @if (detailValue.serverInfo; as serverInfo) {
                     @if (serverInfo.publicIp) {
-                      <dt class="col-sm-3 text-muted" i18n="@@featureServiceDetail-publicIp">Public IP</dt>
+                      <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-publicIp">Public IP</dt>
                       <dd class="col-sm-9">{{ serverInfo.publicIp }}</dd>
                     }
                     @if (serverInfo.privateIp) {
-                      <dt class="col-sm-3 text-muted" i18n="@@featureServiceDetail-privateIp">Private IP</dt>
+                      <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-privateIp">Private IP</dt>
                       <dd class="col-sm-9">{{ serverInfo.privateIp }}</dd>
                     }
                     @if (serverInfo.hostname) {
-                      <dt class="col-sm-3 text-muted" i18n="@@featureServiceDetail-hostname">Hostname</dt>
-                      <dd class="col-sm-9">{{ serverInfo.hostname }}</dd>
+                      <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-hostname">Hostname</dt>
+                      <dd class="col-sm-9 text-break">{{ serverInfo.hostname }}</dd>
                     }
                     @if (serverInfo.hostnameFqdn) {
-                      <dt class="col-sm-3 text-muted" i18n="@@featureServiceDetail-hostnameFqdn">FQDN</dt>
-                      <dd class="col-sm-9">{{ serverInfo.hostnameFqdn }}</dd>
+                      <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-hostnameFqdn">FQDN</dt>
+                      <dd class="col-sm-9 text-break">{{ serverInfo.hostnameFqdn }}</dd>
                     }
-                    <dt class="col-sm-3 text-muted" i18n="@@featureServiceDetail-runtimeStatus">Runtime status</dt>
+                    <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-runtimeStatus">
+                      Runtime status
+                    </dt>
                     <dd class="col-sm-9">
                       <fpc-badge
                         variant="info"
@@ -254,18 +256,18 @@
                       </fpc-badge>
                     </dd>
                     @if (serverLocationLabel(serverInfo.metadata, locationCatalog()); as locationLabel) {
-                      <dt class="col-sm-3 text-muted" i18n="@@featureServiceDetail-location">Location</dt>
+                      <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-location">Location</dt>
                       <dd class="col-sm-9">{{ locationLabel }}</dd>
                     }
                   } @else if (detailValue.hostname) {
-                    <dt class="col-sm-3 text-muted" i18n="@@featureServiceDetail-hostname">Hostname</dt>
-                    <dd class="col-sm-9">{{ detailValue.hostname }}</dd>
+                    <dt class="col-sm-3 text-body-secondary" i18n="@@featureServiceDetail-hostname">Hostname</dt>
+                    <dd class="col-sm-9 text-break">{{ detailValue.hostname }}</dd>
                   }
                 </dl>
               } @else if (loadingDetail$ | async) {
-                <p class="text-muted small mb-0" i18n="@@featureServiceDetail-loading">Loading service…</p>
+                <p class="text-body-secondary small mb-0" i18n="@@featureServiceDetail-loading">Loading service...</p>
               } @else {
-                <p class="text-muted small mb-0" i18n="@@featureServiceDetail-noServerInfo">
+                <p class="text-body-secondary small mb-0" i18n="@@featureServiceDetail-noServerInfo">
                   Server details are not available yet.
                 </p>
               }
@@ -289,7 +291,7 @@
                 [showClear]="false"
               >
                 <div class="row g-3 mb-0 w-100">
-                  <div class="col-6">
+                  <div class="col-12 col-md-6">
                     <fpc-form-field forId="serviceDetailFrom" i18n-label="@@featureServiceDetail-fromDate" label="From">
                       <fpc-form-control
                         controlId="serviceDetailFrom"
@@ -300,7 +302,7 @@
                       />
                     </fpc-form-field>
                   </div>
-                  <div class="col-6">
+                  <div class="col-12 col-md-6">
                     <fpc-form-field forId="serviceDetailTo" i18n-label="@@featureServiceDetail-toDate" label="To">
                       <fpc-form-control
                         controlId="serviceDetailTo"
@@ -350,18 +352,18 @@
                 </div>
               </fpc-collapsible-filter-panel>
 
-              <div class="service-detail-page__lane-body p-3 d-flex flex-column gap-3">
+              <div class="service-detail-page__lane-body d-flex flex-column">
                 @if (loadingHistory()) {
                   <div class="text-center py-4">
                     <fpc-spinner size="sm" />
                   </div>
                 } @else {
-                  @for (
-                    entry of meterCharts();
-                    track entry.meter.meterId + entry.meter.attachmentType + (entry.meter.addonId ?? '')
-                  ) {
-                    <div class="card">
-                      <div class="card-body">
+                  <fpc-panel-grid [columns]="1" [bordered]="false">
+                    @for (
+                      entry of meterCharts();
+                      track entry.meter.meterId + entry.meter.attachmentType + (entry.meter.addonId ?? '')
+                    ) {
+                      <fpc-panel [title]="entry.meter.name">
                         @if (entry.options; as chart) {
                           <apx-chart
                             [series]="chart.series"
@@ -373,19 +375,18 @@
                             [xaxis]="chart.xaxis"
                             [yaxis]="chart.yaxis"
                             [grid]="chart.grid"
-                            [title]="chart.title"
                           ></apx-chart>
                         }
-                        <p class="small text-muted mb-0 mt-2">
+                        <p fpcPanelFooter class="small text-body-secondary mb-0">
                           <span i18n="@@featureServiceDetail-meterTotalLabel">Total:</span>
                           {{ formatMeterTotal(entry.meter) }}
                           @if (entry.summary && hasMeterBillingDetails(entry.summary)) {
-                            <span class="ms-1">{{ formatMeterBillingDetails(entry.summary) }}</span>
+                            <span class="ms-1">({{ formatMeterBillingDetails(entry.summary) }})</span>
                           }
                         </p>
-                      </div>
-                    </div>
-                  }
+                      </fpc-panel>
+                    }
+                  </fpc-panel-grid>
                 }
               </div>
             </div>
@@ -441,7 +442,7 @@
   i18n-title="@@featureOverview-sshAccessDisplayTitle"
   title="SSH access key"
 >
-  <p class="small text-muted" i18n="@@featureOverview-sshAccessDisplayHint">
+  <p class="small text-body-secondary" i18n="@@featureOverview-sshAccessDisplayHint">
     Store this private key securely. It will not be shown again in the billing console.
   </p>
   <fpc-form-control

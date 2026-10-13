@@ -86,7 +86,7 @@
             (clicked)="openWorkspaceSwitchModal()"
             i18n="@@featureTicketsBoard-chooseWorkspaceButton"
           >
-            Choose workspace…
+            Choose workspace...
           </fpc-button>
         </fpc-empty-state>
       }
@@ -169,7 +169,7 @@
                         <div class="d-flex align-items-center gap-2 min-width-0 w-100">
                           <div class="fw-medium text-truncate flex-grow-1 min-width-0" [title]="row.ticket.title">
                             @if (row.ticket.shas.short) {
-                              <small class="text-muted small">{{ row.ticket.shas.short }}</small>
+                              <small class="text-body-secondary small">{{ row.ticket.shas.short }}</small>
                             }
                             {{ row.ticket.title }}
                           </div>
@@ -236,7 +236,7 @@
     <div class="d-flex align-items-center gap-2 min-width-0 flex-grow-1 mb-0">
       @if (detail(); as det) {
         @if (det.shas.short) {
-          <small class="text-muted small flex-shrink-0">{{ det.shas.short }}</small>
+          <small class="text-body-secondary small flex-shrink-0">{{ det.shas.short }}</small>
         }
         @if (detailTitleEditing()) {
           <fpc-form-control
@@ -329,12 +329,12 @@
     <div class="tickets-board__ticket-detail-body d-flex overflow-hidden w-100 flex-grow-1 min-h-0">
       @if (detailLoading$ | async) {
         <div class="d-flex justify-content-center py-4">
-          <fpc-spinner variant="primary" i18n-label="@@featureTicketsBoard-detailLoading" label="Loading ticket…" />
+          <fpc-spinner variant="primary" i18n-label="@@featureTicketsBoard-detailLoading" label="Loading ticket..." />
         </div>
       } @else {
         @if (detail(); as d) {
-          <div class="row g-0 w-100 overflow-hidden">
-            <div class="col-lg-7 h-100 overflow-hidden overflow-y-auto p-3">
+          <div class="row g-0 w-100 tickets-board__ticket-detail-columns">
+            <div class="col-lg-7 tickets-board__ticket-detail-pane p-3">
               <dl class="row small mb-3 align-items-center">
                 @if (d.shas.short || d.shas.long) {
                   <dt class="col-sm-3 mb-2" i18n="@@featureTicketsBoard-fieldShas">SHAs</dt>
@@ -389,7 +389,7 @@
                     [selectedAgentId]="selectedAgentForAi()"
                     (selectedAgentIdChange)="onPreferredChatAgentChange(d, $event)"
                     i18n-placeholder="@@featureTicketsBoard-agentPlaceholder"
-                    placeholder="Select agent…"
+                    placeholder="Select agent..."
                   />
                 </dd>
                 <dt class="col-sm-3 mt-2" id="ticketModelSelectLabel" i18n="@@featureTicketsBoard-modelLabel">
@@ -408,7 +408,7 @@
                   >
                     @if (ticketAiModelOptions().length === 0) {
                       <option value="" i18n="@@featureTicketsBoard-modelPlaceholder">
-                        {{ ticketAiModelsLoading() ? 'Loading models…' : 'Select agent to load models…' }}
+                        {{ ticketAiModelsLoading() ? 'Loading models...' : 'Select agent to load models...' }}
                       </option>
                     }
                     @for (model of ticketAiModelOptions(); track model.value) {
@@ -421,21 +421,17 @@
                   <dt class="col-sm-3 mt-2" id="ticketAcceptanceLabel" i18n="@@featureTicketsBoard-acceptanceLabel">
                     Acceptance
                     @let percentage = ((d.tasks.done + d.tasks.children.done) / total) * 100;
-                    <span class="text-muted small d-block fw-normal" [attr.aria-label]="percentage + '%'"
+                    <span class="text-body-secondary small d-block fw-normal" [attr.aria-label]="percentage + '%'"
                       >{{ percentage | number: '1.0-0' }}%</span
                     >
                   </dt>
                   <dd class="col-sm-9 mt-2 mb-0 d-flex align-items-center gap-2">
-                    <div
-                      class="progress w-100 rounded-pill"
-                      role="progressbar"
-                      aria-labelledby="ticketAcceptanceLabel"
-                      [attr.aria-valuenow]="percentage"
-                      aria-valuemin="0"
-                      aria-valuemax="100"
-                    >
-                      <div class="progress-bar" [style.width]="percentage + '%'"></div>
-                    </div>
+                    <fpc-progress
+                      class="tickets-board__progress w-100"
+                      [value]="percentage"
+                      i18n-ariaLabel="@@featureTicketsBoard-acceptanceProgressAria"
+                      ariaLabel="Acceptance progress"
+                    />
                   </dd>
                 }
                 @if (d.subtaskCounts; as st) {
@@ -448,22 +444,18 @@
                       i18n="@@featureTicketsBoard-subtaskProgressLabel"
                     >
                       Subtasks
-                      <span class="text-muted small d-block fw-normal" [attr.aria-label]="stPct + '%'"
+                      <span class="text-body-secondary small d-block fw-normal" [attr.aria-label]="stPct + '%'"
                         >{{ stPct | number: '1.0-0' }}%</span
                       >
                     </dt>
                     <dd class="col-sm-9 mt-2 mb-0 d-flex align-items-center gap-2">
-                      <div
-                        class="progress w-100 rounded-pill"
-                        role="progressbar"
-                        aria-label="Subtask progress"
-                        i18n-aria-label="@@featureTicketsBoard-subtaskProgressAria"
-                        [attr.aria-valuenow]="stPct"
-                        aria-valuemin="0"
-                        aria-valuemax="100"
-                      >
-                        <div class="progress-bar bg-secondary" [style.width]="stPct + '%'"></div>
-                      </div>
+                      <fpc-progress
+                        class="tickets-board__progress w-100"
+                        variant="secondary"
+                        [value]="stPct"
+                        i18n-ariaLabel="@@featureTicketsBoard-subtaskProgressAria"
+                        ariaLabel="Subtask progress"
+                      />
                     </dd>
                   }
                 }
@@ -527,18 +519,18 @@
                     </fpc-button>
                   </div>
                   @if ((d.attachments ?? []).length === 0) {
-                    <p class="text-muted small mb-0" i18n="@@featureTicketsBoard-attachmentsEmpty">
+                    <p class="text-body-secondary small mb-0" i18n="@@featureTicketsBoard-attachmentsEmpty">
                       No attachments yet.
                     </p>
                   } @else {
-                    <ul class="list-group list-group-flush border rounded small mb-0" role="list">
+                    <fpc-list [flush]="true" class="border rounded small mb-0">
                       @for (attachment of d.attachments ?? []; track attachment.id) {
-                        <li class="list-group-item d-flex align-items-center gap-2 justify-content-between">
-                          <span class="text-truncate" [title]="attachment.fileName">
+                        <fpc-list-item>
+                          <div fpcListItemTitle class="text-truncate" [title]="attachment.fileName">
                             <i class="bi bi-paperclip me-1" aria-hidden="true"></i>{{ attachment.fileName }}
-                            <span class="text-muted">· {{ attachment.byteSize | number }} B</span>
-                          </span>
-                          <span class="d-inline-flex align-items-center gap-1 flex-shrink-0">
+                          </div>
+                          <div fpcListItemMeta>{{ attachment.byteSize | number }} B</div>
+                          <span fpcListItemActions class="d-inline-flex align-items-center gap-1">
                             <fpc-button
                               variant="outline-secondary"
                               size="sm"
@@ -564,9 +556,9 @@
                               <i class="bi bi-trash" aria-hidden="true"></i>
                             </fpc-button>
                           </span>
-                        </li>
+                        </fpc-list-item>
                       }
-                    </ul>
+                    </fpc-list>
                   }
                 </div>
 
@@ -588,7 +580,9 @@
                     </fpc-button>
                   </div>
                   @if (detailSubtaskRows().length === 0) {
-                    <p class="text-muted small mb-0" i18n="@@featureTicketsBoard-subtasksEmpty">No subtasks yet.</p>
+                    <p class="text-body-secondary small mb-0" i18n="@@featureTicketsBoard-subtasksEmpty">
+                      No subtasks yet.
+                    </p>
                   } @else {
                     <ul
                       class="list-group list-group-flush tickets-board__detail-subtasks border rounded small mb-0"
@@ -612,7 +606,7 @@
                           >
                             <span class="d-flex align-items-center gap-2 w-100 min-width-0">
                               @if (row.ticket.shas.short) {
-                                <small class="text-muted flex-shrink-0 small fw-medium">{{
+                                <small class="text-body-secondary flex-shrink-0 small fw-medium">{{
                                   row.ticket.shas.short
                                 }}</small>
                               }
@@ -668,11 +662,13 @@
                     </fpc-button>
                   </div>
                   @if (ticketRelationsLoading()) {
-                    <p class="text-muted small mb-0" i18n="@@featureTicketsBoard-loadingRelations">
+                    <p class="text-body-secondary small mb-0" i18n="@@featureTicketsBoard-loadingRelations">
                       Loading relations...
                     </p>
                   } @else if (ticketRelations().length === 0) {
-                    <p class="text-muted small mb-0" i18n="@@featureTicketsBoard-relationsEmpty">No relations yet.</p>
+                    <p class="text-body-secondary small mb-0" i18n="@@featureTicketsBoard-relationsEmpty">
+                      No relations yet.
+                    </p>
                   } @else {
                     <ul
                       class="list-group list-group-flush tickets-board__detail-relations border rounded small mb-0"
@@ -700,11 +696,11 @@
                                       : 'Ticket'
                                 }}</fpc-badge>
                                 @if (relation.targetType === 'ticket') {
-                                  <small class="text-muted flex-shrink-0 small fw-medium">{{
+                                  <small class="text-body-secondary flex-shrink-0 small fw-medium">{{
                                     ticketRelationTicketShortSha(relation.targetTicketLongSha)
                                   }}</small>
                                 } @else if (relationNode?.shas?.short) {
-                                  <small class="text-muted flex-shrink-0 small fw-medium">{{
+                                  <small class="text-body-secondary flex-shrink-0 small fw-medium">{{
                                     relationNode?.shas?.short
                                   }}</small>
                                 }
@@ -782,10 +778,10 @@
                           </fpc-alert>
                         }
                         @if (ticketAutomationLoadingConfig()) {
-                          <div class="d-flex align-items-center gap-2 text-muted py-2">
+                          <div class="d-flex align-items-center gap-2 text-body-secondary py-2">
                             <fpc-spinner size="sm" variant="primary" />
                             <span i18n="@@featureTicketsBoard-automationLoadingConfig"
-                              >Loading automation settings…</span
+                              >Loading automation settings...</span
                             >
                           </div>
                         } @else if (ticketAutomationConfig(); as acfg) {
@@ -829,7 +825,10 @@
                               >Allowed agents</span
                             >
                             @if (automationTicketAutomationAgentChoices().length > 0) {
-                              <p class="text-muted small mb-2" i18n="@@featureTicketsBoard-automationAllowedAgentsHint">
+                              <p
+                                class="text-body-secondary small mb-2"
+                                i18n="@@featureTicketsBoard-automationAllowedAgentsHint"
+                              >
                                 If none are selected, every agent with prototype autonomy enabled for this workspace may
                                 run this ticket. Select specific agents to restrict who can pick it up.
                               </p>
@@ -838,17 +837,21 @@
                               (automationAgentsLoading() || autonomyEnabledAgentIdsLoading()) &&
                               automationTicketAutomationAgentChoices().length === 0
                             ) {
-                              <div class="text-muted d-flex align-items-center gap-2 py-1">
+                              <div class="text-body-secondary d-flex align-items-center gap-2 py-1">
                                 <fpc-spinner size="sm" variant="primary" />
-                                <span i18n="@@featureTicketsBoard-automationLoadingAgents">Loading agents…</span>
+                                <span i18n="@@featureTicketsBoard-automationLoadingAgents">Loading agents...</span>
                               </div>
                             } @else if (automationAgentChoices().length === 0) {
-                              <div class="text-muted" i18n="@@featureTicketsBoard-automationNoAgents" role="status">
+                              <div
+                                class="text-body-secondary"
+                                i18n="@@featureTicketsBoard-automationNoAgents"
+                                role="status"
+                              >
                                 No agents in this workspace.
                               </div>
                             } @else if (automationTicketAutomationAgentChoices().length === 0) {
                               <div
-                                class="text-muted"
+                                class="text-body-secondary"
                                 i18n="@@featureTicketsBoard-automationNoAutonomyAgents"
                                 role="status"
                               >
@@ -871,7 +874,7 @@
                                       "
                                     >
                                       <fpc-form-check
-                                        class="mb-0 mh-0"
+                                        class="mb-0 min-h-0"
                                         [checkId]="'ticketAutomationAgent' + a.id"
                                         [checked]="isAutomationAgentAllowed(a.id)"
                                         [disabled]="isAutomationAllowedAgentLockedToChat(a.id)"
@@ -879,7 +882,7 @@
                                       >
                                         <label class="form-check-label w-100" [for]="'ticketAutomationAgent' + a.id">
                                           <span class="fw-medium">{{ a.name }}</span>
-                                          <small class="text-muted small ms-1">({{ a.agentType }})</small>
+                                          <small class="text-body-secondary small ms-1">({{ a.agentType }})</small>
                                         </label>
                                       </fpc-form-check>
                                     </div>
@@ -893,7 +896,8 @@
                                   class="fw-semibold mb-2"
                                   i18n="@@featureTicketsBoard-automationOrphanAgentsHeading"
                                 >
-                                  Allowed agents not listed above—uncheck to remove (e.g. autonomy off or agent removed)
+                                  Allowed agents not listed above. Uncheck to remove them (e.g. autonomy off or agent
+                                  removed).
                                 </div>
                                 @for (oid of automationOrphanAllowedAgentIds(); track oid) {
                                   <div
@@ -929,7 +933,10 @@
                               i18n="@@featureTicketsBoard-automationPreferredModel"
                               >Model for automation</span
                             >
-                            <p class="text-muted small mb-2" i18n="@@featureTicketsBoard-automationPreferredModelHint">
+                            <p
+                              class="text-body-secondary small mb-2"
+                              i18n="@@featureTicketsBoard-automationPreferredModelHint"
+                            >
                               Required when automation is enabled. OpenCode has no auto model selection.
                             </p>
                             <fpc-form-control
@@ -944,7 +951,9 @@
                             >
                               @if (ticketAiModelOptions().length === 0) {
                                 <option value="" i18n="@@featureTicketsBoard-automationModelPlaceholder">
-                                  {{ ticketAiModelsLoading() ? 'Loading models…' : 'Select an agent to load models…' }}
+                                  {{
+                                    ticketAiModelsLoading() ? 'Loading models...' : 'Select an agent to load models...'
+                                  }}
                                 </option>
                               }
                               @for (model of ticketAiModelOptions(); track model.value) {
@@ -974,13 +983,16 @@
                               [checked]="automationDraftAutoEnrichmentEnabled()"
                               (checkedChange)="automationDraftAutoEnrichmentEnabled.set($event)"
                             />
-                            <p class="text-muted small mb-2" i18n="@@featureTicketsBoard-automationContextHint">
+                            <p
+                              class="text-body-secondary small mb-2"
+                              i18n="@@featureTicketsBoard-automationContextHint"
+                            >
                               Select additional environments to enrich context more specifically. The active run
                               environment is included automatically.
                             </p>
                             @if (automationAgentChoices().length === 0) {
                               <div
-                                class="text-muted small"
+                                class="text-body-secondary small"
                                 role="status"
                                 i18n="@@featureTicketsBoard-automationContextNoEnvironments"
                               >
@@ -998,7 +1010,7 @@
                                       "
                                     >
                                       <fpc-form-check
-                                        class="mb-0 mh-0"
+                                        class="mb-0 min-h-0"
                                         [checkId]="'ticketAutomationContextEnvironment' + a.id"
                                         [checked]="isAutomationContextEnvironmentSelected(a.id)"
                                         [disabled]="isAutomationContextEnvironmentLockedToChat(a.id)"
@@ -1010,9 +1022,9 @@
                                         >
                                           <span class="fw-medium">{{ a.name }}</span>
                                           @if (isAutomationContextEnvironmentLocalRepo(a)) {
-                                            <small class="text-muted small ms-1">(Local repository)</small>
+                                            <small class="text-body-secondary small ms-1">(Local repository)</small>
                                           } @else if (getAutomationContextEnvironmentGitLabel(a); as repo) {
-                                            <small class="text-muted small ms-1">({{ repo }})</small>
+                                            <small class="text-body-secondary small ms-1">({{ repo }})</small>
                                           }
                                         </label>
                                       </fpc-form-check>
@@ -1034,7 +1046,7 @@
                               [ngModel]="automationDraftDefaultBranch()"
                               (ngModelChange)="automationDraftDefaultBranch.set($event)"
                               i18n-placeholder="@@featureTicketsBoard-automationDefaultBranchPh"
-                              placeholder="Optional — leave empty to use repository default"
+                              placeholder="Optional. Leave empty to use the repository default."
                             />
                           </fpc-form-field>
                           <fpc-form-field
@@ -1068,7 +1080,7 @@
                                     >Force a fresh branch on the next run</span
                                   >
                                   <span
-                                    class="text-muted d-block small mt-1"
+                                    class="text-body-secondary d-block small mt-1"
                                     i18n="@@featureTicketsBoard-automationForceNewBranchHint"
                                     >Use when a run is stuck; the flag clears after the next run starts.</span
                                   >
@@ -1076,7 +1088,7 @@
                               </fpc-form-check>
                             }
                           </fpc-form-field>
-                          <div class="mb-2 d-flex justify-content-between align-items-center">
+                          <div class="mb-2 d-flex flex-wrap justify-content-between align-items-center gap-2">
                             <span class="fw-semibold" i18n="@@featureTicketsBoard-automationVerifierHeading"
                               >Verifier commands</span
                             >
@@ -1150,12 +1162,12 @@
                           <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
                             @if (ticketAutomationSaving()) {
                               <span
-                                class="text-muted small d-inline-flex align-items-center gap-2"
+                                class="text-body-secondary small d-inline-flex align-items-center gap-2"
                                 role="status"
                                 i18n="@@featureTicketsBoard-automationSaving"
                               >
                                 <fpc-spinner size="sm" variant="primary" />
-                                Saving automation settings…
+                                Saving automation settings...
                               </span>
                             }
                             @if (acfg.requiresApproval && !acfg.approvedAt) {
@@ -1211,47 +1223,49 @@
                             </fpc-button>
                           </div>
                           @if (automationSortedRuns().length === 0) {
-                            <p class="text-muted mb-0" i18n="@@featureTicketsBoard-automationNoRuns">No runs yet.</p>
+                            <p class="text-body-secondary mb-0" i18n="@@featureTicketsBoard-automationNoRuns">
+                              No runs yet.
+                            </p>
                           } @else {
-                            <ul class="list-group list-group-flush border rounded mb-3">
+                            <fpc-list [flush]="true" class="border rounded mb-3">
                               @for (run of automationSortedRuns(); track run.id) {
-                                <li class="list-group-item py-2">
-                                  <div class="d-flex flex-wrap justify-content-between gap-2 align-items-start">
-                                    <div class="min-width-0">
-                                      <fpc-badge
-                                        class="me-1"
-                                        [color]="ticketAutomationRunStatusBadgeColor(run.status)"
-                                        [attr.title]="automationRunStatusLabel(run.status)"
-                                        >{{ automationRunStatusLabel(run.status) }}</fpc-badge
+                                <fpc-list-item>
+                                  <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-1">
+                                    <fpc-badge
+                                      [color]="ticketAutomationRunStatusBadgeColor(run.status)"
+                                      [attr.title]="automationRunStatusLabel(run.status)"
+                                      >{{ automationRunStatusLabel(run.status) }}</fpc-badge
+                                    >
+                                    <fpc-badge color="light" [attr.title]="automationRunPhaseLabel(run.phase)">{{
+                                      automationRunPhaseLabel(run.phase)
+                                    }}</fpc-badge>
+                                    @if (run.verificationPassed === true) {
+                                      <fpc-badge color="success" i18n="@@featureTicketsBoard-automationVerifyOk"
+                                        >Verify: passed</fpc-badge
                                       >
-                                      <fpc-badge
-                                        color="light"
-                                        class="me-1"
-                                        [attr.title]="automationRunPhaseLabel(run.phase)"
-                                        >{{ automationRunPhaseLabel(run.phase) }}</fpc-badge
+                                    }
+                                    @if (run.verificationPassed === false) {
+                                      <fpc-badge color="warning" i18n="@@featureTicketsBoard-automationVerifyFail"
+                                        >Verify: failed</fpc-badge
                                       >
-                                      <div class="text-muted mt-1">
-                                        <span>{{ run.startedAt | date: activityOccurredAtFormat }}</span>
-                                        @if (run.branchName) {
-                                          <span class="ms-1 text-break">· {{ run.branchName }}</span>
-                                        }
-                                      </div>
-                                      @if (run.verificationPassed === true) {
-                                        <div class="mt-1">
-                                          <fpc-badge color="success" i18n="@@featureTicketsBoard-automationVerifyOk"
-                                            >Verify: passed</fpc-badge
-                                          >
-                                        </div>
-                                      }
-                                      @if (run.verificationPassed === false) {
-                                        <div class="mt-1">
-                                          <fpc-badge color="warning" i18n="@@featureTicketsBoard-automationVerifyFail"
-                                            >Verify: failed</fpc-badge
-                                          >
-                                        </div>
-                                      }
-                                    </div>
-                                    <fpc-button-group size="sm" class="flex-shrink-0">
+                                    }
+                                  </div>
+                                  <div
+                                    fpcListItemMeta
+                                    class="d-flex flex-wrap align-items-center column-gap-3 row-gap-1"
+                                  >
+                                    <span
+                                      ><i class="bi bi-clock me-1" aria-hidden="true"></i
+                                      >{{ run.startedAt | date: activityOccurredAtFormat }}</span
+                                    >
+                                    @if (run.branchName) {
+                                      <span class="text-break"
+                                        ><i class="bi bi-git me-1" aria-hidden="true"></i>{{ run.branchName }}</span
+                                      >
+                                    }
+                                  </div>
+                                  <div fpcListItemActions>
+                                    <fpc-button-group size="sm">
                                       <fpc-button
                                         variant="dark"
                                         size="sm"
@@ -1277,9 +1291,9 @@
                                       }
                                     </fpc-button-group>
                                   </div>
-                                </li>
+                                </fpc-list-item>
                               }
-                            </ul>
+                            </fpc-list>
                           }
                         }
                       </div>
@@ -1295,7 +1309,7 @@
                 <fpc-alert variant="danger" class="small mt-2 mb-0" [message]="be" />
               }
             </div>
-            <div class="col-lg-5 border-start-lg h-100 overflow-hidden overflow-y-auto p-3">
+            <div class="col-lg-5 border-start-lg tickets-board__ticket-detail-pane p-3">
               <h3 class="h6" i18n="@@featureTicketsBoard-commentsHeading">Comments</h3>
               <div class="tickets-board__comment-composer mb-3">
                 <div class="form-control form-control-sm tickets-board__comment-shell">
@@ -1305,7 +1319,7 @@
                     [value]="newCommentText()"
                     (input)="newCommentText.set($any($event.target).value)"
                     i18n-placeholder="@@featureTicketsBoard-commentPlaceholder"
-                    placeholder="Add a comment…"
+                    placeholder="Add a comment..."
                     [attr.aria-label]="commentInputAriaLabel"
                   ></textarea>
                 </div>
@@ -1342,7 +1356,7 @@
                           i18n-title="@@featureTicketsBoard-commentAuthorUnknownTitle"
                           title="Author email not available"
                           i18n="@@featureTicketsBoard-commentAuthorDash"
-                          >—</span
+                          >-</span
                         >
                       }
                     </div>
@@ -1437,14 +1451,14 @@
           (mousedown)="onPickTicketRelationCandidate(candidate, $event)"
         >
           <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
-            <span class="font-monospace text-muted small flex-shrink-0">{{
+            <span class="font-monospace text-body-secondary small flex-shrink-0">{{
               candidate.kind === 'knowledge' ? candidate.node.shas.short : candidate.ticket.shas.short
             }}</span>
             <span class="text-truncate small flex-grow-1 min-width-0">
               {{
                 candidate.kind === 'knowledge'
-                  ? (candidate.node.nodeType === 'folder' ? 'Folder' : 'Page') + ' · ' + candidate.node.title
-                  : 'Ticket · ' + candidate.ticket.title
+                  ? (candidate.node.nodeType === 'folder' ? 'Folder' : 'Page') + ': ' + candidate.node.title
+                  : 'Ticket: ' + candidate.ticket.title
               }}
             </span>
           </span>
@@ -1455,12 +1469,7 @@
   @if (selectedTicketRelationTargets().length > 0) {
     <div class="d-flex flex-wrap gap-2 mt-2">
       @for (target of selectedTicketRelationTargets(); track ticketRelationTrackId(target)) {
-        <fpc-badge
-          variant="info"
-          color="secondary"
-          class="tickets-board__relation-chip"
-          style="max-width: min(100%, 24rem)"
-        >
+        <fpc-badge variant="info" color="secondary" class="tickets-board__relation-chip">
           <span class="text-truncate small">{{ ticketRelationChipDisplay(target) }}</span>
           <button
             type="button"
@@ -1473,7 +1482,7 @@
       }
     </div>
   } @else {
-    <p class="text-muted small mb-0" i18n="@@featureTicketsBoard-relationsSearchHint">
+    <p class="text-body-secondary small mb-0" i18n="@@featureTicketsBoard-relationsSearchHint">
       Search by title or SHA and add one or more relation targets.
     </p>
   }
@@ -1495,7 +1504,7 @@
   [closeOnBackdrop]="false"
   (closed)="onTicketMigrateModalClosed()"
 >
-  <p class="small text-muted mb-3" i18n="@@featureTicketsBoard-migrateModalIntro">
+  <p class="small text-body-secondary mb-3" i18n="@@featureTicketsBoard-migrateModalIntro">
     The ticket and its subtasks in this workspace will move to the workspace you select. You must be a workspace admin
     in both places.
   </p>
@@ -1556,7 +1565,7 @@
           {{ automationRunPhaseLabel(ar.phase) }}
         </dd>
         <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunBranch">Branch</dt>
-        <dd class="col-sm-8 mt-2 mb-0 text-break">{{ ar.branchName ?? '—' }}</dd>
+        <dd class="col-sm-8 mt-2 mb-0 text-break">{{ ar.branchName ?? '-' }}</dd>
         <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunAgent">Agent</dt>
         <dd class="col-sm-8 mt-2 mb-0 font-monospace text-break">{{ ar.agentId }}</dd>
         <dt class="col-sm-4 mt-2" i18n="@@featureTicketsBoard-automationRunIterations">Iterations</dt>
@@ -1576,15 +1585,15 @@
       </dl>
       @if (ar.summary) {
         <h3 class="h6" i18n="@@featureTicketsBoard-automationRunSummary">Summary (JSON)</h3>
-        <pre class="small bg-body-tertiary rounded p-2 border overflow-auto" style="max-height: 12rem">{{
+        <pre class="small bg-body-tertiary rounded p-2 border overflow-auto tickets-board__run-summary">{{
           formatAutomationJson(ar.summary)
         }}</pre>
       }
       <h3 class="h6 mt-3" i18n="@@featureTicketsBoard-automationRunSteps">Steps</h3>
       @if (ticketAutomationLoadingRunDetail()) {
-        <div class="d-flex align-items-center gap-2 text-muted py-3">
+        <div class="d-flex align-items-center gap-2 text-body-secondary py-3">
           <fpc-spinner size="sm" />
-          <span i18n="@@featureTicketsBoard-automationLoadingTrace">Loading steps…</span>
+          <span i18n="@@featureTicketsBoard-automationLoadingTrace">Loading steps...</span>
         </div>
       } @else if (ar.steps && ar.steps.length > 0) {
         <div class="accordion" id="automationStepAccordion">
@@ -1603,7 +1612,7 @@
                   <span class="me-2" [attr.title]="automationRunPhaseLabel(step.phase)">{{
                     automationRunPhaseLabel(step.phase)
                   }}</span>
-                  <span class="text-muted small" [attr.title]="automationRunStepKindLabel(step.kind)">{{
+                  <span class="text-body-secondary small" [attr.title]="automationRunStepKindLabel(step.kind)">{{
                     automationRunStepKindLabel(step.kind)
                   }}</span>
                 </button>
@@ -1627,19 +1636,22 @@
                   <span class="fw-semibold d-block mb-1" i18n="@@featureTicketsBoard-automationStepPayload"
                     >Payload (JSON)</span
                   >
-                  <pre class="small mb-0 bg-body-tertiary rounded p-2 border overflow-auto" style="max-height: 16rem">{{
-                    formatAutomationJson(step.payload)
-                  }}</pre>
+                  <pre
+                    class="small mb-0 bg-body-tertiary rounded p-2 border overflow-auto tickets-board__step-payload"
+                    >{{ formatAutomationJson(step.payload) }}</pre
+                  >
                 </div>
               </div>
             </div>
           }
         </div>
       } @else {
-        <p class="text-muted mb-0" i18n="@@featureTicketsBoard-automationNoSteps">No steps recorded for this run.</p>
+        <p class="text-body-secondary mb-0" i18n="@@featureTicketsBoard-automationNoSteps">
+          No steps recorded for this run.
+        </p>
       }
     } @else {
-      <p class="text-muted mb-0" i18n="@@featureTicketsBoard-automationRunModalEmpty">
+      <p class="text-body-secondary mb-0" i18n="@@featureTicketsBoard-automationRunModalEmpty">
         Open a run from the ticket detail panel.
       </p>
     }
@@ -1825,7 +1837,7 @@
           >
             <span class="d-flex flex-wrap align-items-baseline gap-2 w-100 min-width-0">
               @if (ticket.shas?.short) {
-                <span class="font-monospace text-muted small flex-shrink-0">{{ ticket.shas.short }}</span>
+                <span class="font-monospace text-body-secondary small flex-shrink-0">{{ ticket.shas.short }}</span>
               }
               <span class="fw-medium text-break flex-grow-1 min-width-0">{{ ticket.title }}</span>
               @if (ticket.automationEligible) {
@@ -1848,14 +1860,14 @@
           </button>
         }
       } @else if (globalSearchQuery().trim()) {
-        <span class="dropdown-item-text text-muted small" i18n="@@featureTicketsBoard-globalSearchNoResults"
+        <span class="dropdown-item-text text-body-secondary small" i18n="@@featureTicketsBoard-globalSearchNoResults"
           >No matching tickets</span
         >
       }
     </div>
   </fpc-typeahead-select>
   @if (globalSearchQuery().trim() === '') {
-    <p class="text-muted small mb-0 mt-2" i18n="@@featureTicketsBoard-globalSearchHint">
+    <p class="text-body-secondary small mb-0 mt-2" i18n="@@featureTicketsBoard-globalSearchHint">
       Type to search all tickets in this workspace, including done and closed.
     </p>
   }
@@ -1873,7 +1885,7 @@
       <fpc-spinner
         variant="primary"
         i18n-label="@@featureTicketsBoard-workspaceSwitcherLoading"
-        label="Loading workspaces…"
+        label="Loading workspaces..."
       />
     </div>
   } @else {

@@ -13,7 +13,7 @@ const meta: Meta<PaginationStoryArgs> = {
       description: {
         component: `**When to use:** Page controls for large tables and admin lists.
 
-**When not to:** Infinite scroll feeds → \`fpcInfiniteScroll\`.`,
+**When not to:** Infinite scroll feeds: use \`fpcInfiniteScroll\`.`,
       },
     },
   },

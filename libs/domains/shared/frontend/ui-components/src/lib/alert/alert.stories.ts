@@ -11,7 +11,7 @@ const meta: Meta<FpcAlertComponent> = {
       description: {
         component: `**When to use:** Inline page/form feedback (\`showIcon\` on by default; \`flush\` under page headers). Trailing CTAs use \`[fpcAlertActions]\` (e.g. \`fpc-button\`) and sit at the far right.
 
-**When not to:** Transient toast → \`fpc-toast\`.`,
+**When not to:** Transient toast: use \`fpc-toast\`.`,
       },
     },
   },

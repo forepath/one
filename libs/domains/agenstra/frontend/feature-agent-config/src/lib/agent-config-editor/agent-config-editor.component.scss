@@ -3,6 +3,39 @@
   min-height: 0;
 }
 
+// Page presentation (/agent-config): the editor fills the page body edge to edge. No frame of its
+// own (the page header and the tab rail already draw the edges); the tab rail and the tab panels
+// scroll independently.
+:host(.agent-config-editor--page) {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+
+  .agent-config-editor__surface {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+  }
+
+  .agent-config-editor__settings {
+    flex: 1 1 0;
+    min-height: 0;
+    border: 0;
+  }
+
+  .agent-config-editor__raw {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: auto;
+  }
+}
+
+.agent-config-editor__heredity--bar {
+  padding: 0.5rem 1rem;
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+}
+
 .agent-config-editor__loading {
   display: flex;
   justify-content: center;
@@ -43,12 +76,12 @@
     padding-inline: 1rem;
   }
 
-  // List groups with items — vertical breathing room around the item stack.
+  // List groups with items - vertical breathing room around the item stack.
   ::ng-deep fpc-list.fpc-list {
     padding-block: 0.5rem;
   }
 
-  // Embedded list rows — horizontal inset + row chrome.
+  // Embedded list rows - horizontal inset + row chrome.
   ::ng-deep .fpc-list-item.fpc-list-item--condensed {
     padding-inline: 1rem;
     padding-block: 0.5rem;
@@ -77,20 +110,27 @@
   }
 
   // Nested forms sit in a bordered panel that collapses with the content slot.
+  // `clip`, not `hidden`: rounds the corners without becoming a scroll container, so the sticky
+  // subsection headings inside still stick to the tab panel.
   ::ng-deep .fpc-list-item .fpc-list-item__content:not(:empty) {
     border: var(--bs-border-width) solid var(--bs-border-color);
     border-radius: var(--bs-border-radius);
-    overflow: hidden;
+    overflow: clip;
   }
 
-  // Section heading already draws the top edge — drop the preceding row separator.
+  // Section heading already draws the top edge - drop the preceding row separator.
   ::ng-deep agenstra-agent-config-settings-row:has(+ .agent-config-editor__section-heading) .agent-config-settings-row {
     border-bottom: none;
   }
 }
 
 // Match vertical tab sidebar section titles (full-bleed bar + equal padding).
+// Sticky inside the scrolling tab panel: the heading of the section being read stays on top and the
+// next heading slides over it (same height, opaque), which reads as pushing it off.
 .agent-config-editor__section-heading {
+  position: sticky;
+  top: 0;
+  z-index: 3;
   margin: 0;
   padding: 0.5rem 1rem;
   font-size: 0.7rem;
@@ -143,7 +183,12 @@
   }
 }
 
+// Subsection headings live inside an expanded list entry; they stick right below the section
+// heading (2rem) and leave together with their entry.
 .agent-config-editor__subsection-heading {
+  position: sticky;
+  top: 2rem;
+  z-index: 2;
   margin: 0;
   padding: 0.5rem 1rem;
   font-size: 0.7rem;
@@ -204,7 +249,7 @@
   font-family: var(--bs-font-monospace, ui-monospace, monospace);
 }
 
-// Help copy — same inset and row separator as settings-rows.
+// Help copy - same inset and row separator as settings-rows.
 .agent-config-editor__note {
   margin: 0;
   padding: 0.75rem 1rem;
@@ -293,7 +338,7 @@
   }
 }
 
-// Compact empty placeholders — do not let fpc-empty-state flex-fill the panel.
+// Compact empty placeholders - do not let fpc-empty-state flex-fill the panel.
 .agent-config-editor__empty {
   display: flex;
   justify-content: center;

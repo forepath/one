@@ -23,6 +23,7 @@ import {
   uploadKnowledgeTextFilesSuccess,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
 import {
+  FpcAlertComponent,
   FpcButtonComponent,
   FpcButtonGroupComponent,
   FpcConfirmDialogComponent,
@@ -66,6 +67,7 @@ const ALLOWED_UPLOAD_EXTENSIONS = new Set(['.md', '.mmd', '.txt']);
   imports: [
     CommonModule,
     FormsModule,
+    FpcAlertComponent,
     FpcButtonComponent,
     FpcButtonGroupComponent,
     FpcConfirmDialogComponent,

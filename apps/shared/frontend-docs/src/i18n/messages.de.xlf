@@ -6,9 +6,9 @@
         <source>Documentation</source>
         <target>Dokumentation</target>
       </trans-unit>
-      <trans-unit id="featureDocsLayout-brandAlt" datatype="html">
-        <source>Agenstra</source>
-        <target>Agenstra</target>
+      <trans-unit id="featureDocsBreadcrumbs-ariaLabel" datatype="html">
+        <source>Breadcrumb</source>
+        <target>Brotkrümelnavigation</target>
       </trans-unit>
       <trans-unit id="featureDocsLayout-documentation" datatype="html">
         <source>Documentation</source>
@@ -43,8 +43,8 @@
         <target> Alle Ergebnisse anzeigen </target>
       </trans-unit>
       <trans-unit id="featureDocsSearch-noResults" datatype="html">
-        <source>No results found</source>
-        <target>Keine Ergebnisse gefunden</target>
+        <source>No search results</source>
+        <target>Keine Suchergebnisse</target>
       </trans-unit>
       <trans-unit id="featureDocsToc-title" datatype="html">
         <source>Table of Contents</source>
@@ -90,6 +90,10 @@
         <source>No search query yet</source>
         <target>Noch keine Suchanfrage</target>
       </trans-unit>
+      <trans-unit id="featureDocsSearchPage-resultsAriaLabel" datatype="html">
+        <source>Search results</source>
+        <target>Suchergebnisse</target>
+      </trans-unit>
       <trans-unit id="featureDocsSearchPage-metaDescription" datatype="html">
         <source>Search Agenstra docs for setup guides, API references, security hardening, agent configuration, deployment patterns, and troubleshooting.</source>
         <target>Durchsuchen Sie die Agenstra-Dokumentation nach Setup-Anleitungen, API-Referenzen, Security-Hardening, Agent-Konfiguration, Deployment-Mustern und Troubleshooting.</target>
@@ -101,14 +105,6 @@
       <trans-unit id="featureDocsSearchPage-metaTitlePrefix" datatype="html">
         <source>Search Documentation</source>
         <target>Dokumentation durchsuchen</target>
-      </trans-unit>
-      <trans-unit id="featureDocsSearchPage-foundOneResult" datatype="html">
-        <source>Found <x id="PH" equiv-text="count"/> result for &quot;<x id="PH_1" equiv-text="query"/>&quot;</source>
-        <target><x id="PH" equiv-text="count"/> Ergebnis für &quot;<x id="PH_1" equiv-text="query"/>&quot; gefunden</target>
-      </trans-unit>
-      <trans-unit id="featureDocsSearchPage-foundResults" datatype="html">
-        <source>Found <x id="PH" equiv-text="count"/> results for &quot;<x id="PH_1" equiv-text="query"/>&quot;</source>
-        <target><x id="PH" equiv-text="count"/> Ergebnisse für &quot;<x id="PH_1" equiv-text="query"/>&quot; gefunden</target>
       </trans-unit>
       <trans-unit id="utilCookieConsent-message" datatype="html">
         <source>This website uses cookies to ensure you get the best experience on our website.</source>

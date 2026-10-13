@@ -1,95 +1,5 @@
 @import '../page.component.scss';
 
-.it-vendor-section {
-  overflow: hidden;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-}
-
-.it-vendor-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  width: 100%;
-  border-top: 1px solid var(--bs-border-color);
-  border-bottom: 1px solid var(--bs-border-color);
-  border-left: 1px solid var(--bs-border-color);
-  border-radius: 0.75rem;
-  overflow: hidden;
-
-  @media (min-width: 992px) {
-    grid-template-columns: repeat(5, 1fr);
-    border-radius: 0;
-    border-top: 0;
-    border-bottom: 0;
-    border-left: 0;
-    overflow: visible;
-  }
-}
-
-.it-vendor-grid__cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 5.5rem;
-  padding: 1.25rem 1rem;
-  border-right: 1px solid var(--bs-border-color);
-  border-bottom: 1px solid var(--bs-border-color);
-
-  &:last-child {
-    border-bottom: 0;
-  }
-
-  @media (min-width: 992px) {
-    border-bottom: 0;
-
-    &:last-child {
-      border-right: 0;
-    }
-  }
-}
-
-.it-vendor-grid__logo {
-  height: 1.75rem;
-  max-width: 5.5rem;
-  width: auto;
-  object-fit: contain;
-  object-position: center;
-  animation: it-vendor-logo-fade-in 0.7s ease;
-}
-
-.it-vendor-grid__logo--compact {
-  height: 1.35rem;
-  max-width: 4.25rem;
-}
-
-@keyframes it-vendor-logo-fade-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 0.5;
-  }
-}
-
-@media (min-width: 992px) {
-  .it-vendor-grid__logo {
-    height: 2rem;
-    max-width: 6.5rem;
-  }
-
-  .it-vendor-grid__logo--compact {
-    height: 1.55rem;
-    max-width: 5rem;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .it-vendor-grid__logo {
-    animation: none;
-  }
-}
-
 .it-offerings-title {
   max-width: 800px;
 }
@@ -104,60 +14,16 @@
   }
 }
 
+// The rental scene fills the column next to the copy (same section padding); on phones it sits below
+// the copy.
 .it-topi-visual-col {
-  min-height: 14rem;
+  padding-inline: var(--bs-gutter-x, 0.75rem);
 
-  @media (min-width: 992px) {
-    min-height: 0;
-  }
-}
-
-.it-topi-visual {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-height: 14rem;
-  padding: 2.5rem 1.5rem;
-  background:
-    radial-gradient(circle at 88% 18%, rgb(255 0 98 / 0.45) 0%, transparent 42%),
-    linear-gradient(145deg, #002bff 0%, #001a99 58%, #002bff 100%);
-  border-top: 1px solid var(--bs-border-color);
-  border-bottom: 1px solid var(--bs-border-color);
-  border-right: 1px solid var(--bs-border-color);
-  border-radius: 0.75rem;
-  overflow: hidden;
-  margin-bottom: 3rem;
-
-  @media (min-width: 768px) {
-    min-height: 21rem;
-    margin-bottom: 6rem;
+  @media (max-width: 991.98px) {
+    padding-top: 0;
   }
 
   @media (min-width: 992px) {
-    border-top: 0;
-    border-bottom: 0;
-    border-right: 0;
-    border-radius: 0;
-    overflow: visible;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: var(--grid-section-line-left);
-    right: 50%;
-    width: auto;
-    min-height: 100%;
-    margin-bottom: 0;
-  }
-}
-
-.it-topi-logo {
-  width: auto;
-  max-width: 10rem;
-  height: auto;
-  object-fit: contain;
-
-  @media (min-width: 768px) {
-    max-width: 12rem;
+    padding-inline: 0;
   }
 }

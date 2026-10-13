@@ -204,9 +204,9 @@ export class OffersPageComponent implements OnInit {
   }
 
   formatDate(value?: string | null): string {
-    if (!value) return '—';
+    if (!value) return '-';
 
-    return this.datePipe.transform(value, 'mediumDate') ?? '—';
+    return this.datePipe.transform(value, 'mediumDate') ?? '-';
   }
 
   onMobilePanelTabChange(tabId: string | null): void {

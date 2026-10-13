@@ -1,5 +1,5 @@
-// Agenstra palette — Sass overrides before `bootstrap/scss/bootstrap`.
-// App entry still imports `bootstrap/scss/functions` for Bootstrap helpers (`to-rgb`, …).
+// Agenstra palette - Sass overrides before `bootstrap/scss/bootstrap`.
+// App entry still imports `bootstrap/scss/functions` for Bootstrap helpers (`to-rgb`, ...).
 //
 // Brand primary is electric violet. Semantics share that chroma (saturated mid-tones
 // that carry white labels) with clear hue roles: teal success, blue info, amber
@@ -20,7 +20,7 @@ $dark: #0f0f11;
 
 $code-color: color.mix($primary, #2a2d31, 28%);
 
-// Light-mode surfaces: only tint the pale end of the scale. $gray-300–$gray-900 stay as-is so
+// Light-mode surfaces: only tint the pale end of the scale. $gray-300 to $gray-900 stay as-is so
 // _variables-dark.scss (body text, secondary bg, borders) is unchanged.
 $gray-100: color.mix($primary, #f3f4f6, 4%);
 $gray-200: color.mix($primary, #e5e7eb, 3%);

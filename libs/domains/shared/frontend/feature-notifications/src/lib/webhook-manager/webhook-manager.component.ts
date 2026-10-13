@@ -331,14 +331,14 @@ export class WebhookManagerComponent implements OnInit {
 
   private formatDeliveryBody(value: Record<string, unknown> | string | null | undefined): string {
     if (value == null) {
-      return '—';
+      return '-';
     }
 
     if (typeof value === 'string') {
       const trimmed = value.trim();
 
       if (!trimmed) {
-        return '—';
+        return '-';
       }
 
       try {
@@ -349,7 +349,7 @@ export class WebhookManagerComponent implements OnInit {
     }
 
     if (Object.keys(value).length === 0) {
-      return '—';
+      return '-';
     }
 
     try {

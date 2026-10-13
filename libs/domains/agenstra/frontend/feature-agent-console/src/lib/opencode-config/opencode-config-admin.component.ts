@@ -58,7 +58,7 @@ import { LayerFileIdeComponent } from '../layer-file-ide/layer-file-ide.componen
           <span i18n="@@featureAgentConfig-unsavedChangesHint">Closing without saving will discard your edits.</span>
         </div>
       }
-      <div class="agent-config-admin__body p-3">
+      <div class="agent-config-admin__body">
         <agenstra-agent-config-editor layer="global" presentation="page" (editPathFile)="onEditPathFile($event)" />
       </div>
     </div>
@@ -103,10 +103,13 @@ import { LayerFileIdeComponent } from '../layer-file-ide/layer-file-ide.componen
         gap: 0.35rem 0.5rem;
       }
 
+      // The editor fills the body edge to edge; its tab rail and panels scroll on their own.
       .agent-config-admin__body {
+        display: flex;
+        flex-direction: column;
         flex: 1 1 0;
         min-height: 0;
-        overflow: auto;
+        overflow: hidden;
       }
     `,
   ],

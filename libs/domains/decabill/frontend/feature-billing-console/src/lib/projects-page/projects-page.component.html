@@ -75,7 +75,6 @@
           [disabled]="(hasMore$ | async) === false || !!(appendLoading$ | async) || !!(loading$ | async)"
           (reachedEnd)="facade.loadMore()"
           aria-hidden="true"
-          style="height: 1px; width: 100%; flex-shrink: 0"
         ></div>
       }
     }

@@ -1,14 +1,21 @@
 import { AfterViewInit, Directive, effect, ElementRef, inject, input, NgZone, OnDestroy, output } from '@angular/core';
 
 /**
- * Observes a bottom sentinel. Put the directive on a 1px sentinel as the last child of a
- * scrollable container, and pass that container via `root`. Emits `reachedEnd` when the
- * sentinel intersects the scroll root (including when `paused`/`disabled` clear while still
- * visible). Migrated from `shared/frontend/ui-lists`.
+ * Observes a bottom sentinel. Put the directive on an empty element as the last child of a
+ * scrollable container, and pass that container via `root`. The host is sized as a 1px
+ * full-width sentinel. Emits `reachedEnd` when the sentinel intersects the scroll root
+ * (including when `paused`/`disabled` clear while still visible). Migrated from
+ * `shared/frontend/ui-lists`.
  */
 @Directive({
   selector: '[fpcInfiniteScroll]',
   standalone: true,
+  host: {
+    '[style.display]': '"block"',
+    '[style.height.px]': '1',
+    '[style.width.%]': '100',
+    '[style.flex-shrink]': '0',
+  },
 })
 export class FpcInfiniteScrollDirective implements AfterViewInit, OnDestroy {
   private readonly elementRef = inject(ElementRef<HTMLElement>);

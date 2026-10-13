@@ -6,14 +6,14 @@ export type FpcPageHeaderDensity = 'default' | 'compact';
  * Console page / panel title strip (`bg-body-tertiary` + bottom border).
  *
  * Slots:
- * - `[fpcPageHeaderBreadcrumbs]` — back link / crumbs above the title row
- * - `[fpcPageHeaderTitle]` — rich title when the `title` input is not enough
- * - `[fpcPageHeaderActions]` — trailing actions (usually `fpc-button`)
- * - default — optional content below the title row
+ * - `[fpcPageHeaderBreadcrumbs]` - back link / crumbs above the title row
+ * - `[fpcPageHeaderTitle]` - rich title when the `title` input is not enough
+ * - `[fpcPageHeaderActions]` - trailing actions (usually `fpc-button`)
+ * - default - optional content below the title row
  *
  * Row height is locked via `--fpc-page-header-control-size` (sidebar-aligned). Icon-only
  * `fpc-button size="sm"` inside the header picks up that size so actions stay 1:1.
- * Workspace chips should be `fpc-button` wrapping `fpc-badge` — the button flushes its own
+ * Workspace chips should be `fpc-button` wrapping `fpc-badge` - the button flushes its own
  * padding when it contains a badge (host `p-0` never reaches the inner `.btn`).
  */
 @Component({

@@ -13,7 +13,7 @@ const meta: Meta<FormSwitchStoryArgs> = {
       description: {
         component: `**When to use:** On/off settings toggles in consoles and admin panels.
 
-**When not to:** Multi-option choices → radios/\`fpc-form-check\`.`,
+**When not to:** Multi-option choices: use radios/\`fpc-form-check\`.`,
       },
     },
   },

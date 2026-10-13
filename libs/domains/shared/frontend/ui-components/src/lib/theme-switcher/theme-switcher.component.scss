@@ -5,7 +5,7 @@
 
 // Bootstrap `.form-check` / `.form-switch` add a large padding-start + compensating
 // negative margin for the classic stack layout. In a toolbar that reads as empty
-// space before the control — zero it out and rely on flex gap instead.
+// space before the control - zero it out and rely on flex gap instead.
 .fpc-theme-switcher__switch {
   display: flex;
   align-items: center;

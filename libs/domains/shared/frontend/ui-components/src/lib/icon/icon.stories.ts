@@ -9,7 +9,7 @@ const meta: Meta<FpcIconComponent> = {
       description: {
         component: `**When to use:** Bootstrap Icons by short \`name\` (without \`bi-\`) when you want a typed wrapper.
 
-**When not to:** Prefer raw \`<i class="bi …">\` inside \`fpc-button\` \`iconOnly\` content when that is already the local pattern.`,
+**When not to:** Prefer raw \`<i class="bi ...">\` inside \`fpc-button\` \`iconOnly\` content when that is already the local pattern.`,
       },
     },
   },

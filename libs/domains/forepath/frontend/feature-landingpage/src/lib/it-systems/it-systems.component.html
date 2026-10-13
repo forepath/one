@@ -1,4 +1,4 @@
-<section id="hero" class="py-10 py-lg-6 bg-body-tertiary grid-section">
+<section id="hero" class="py-10 py-lg-6 bg-dark text-white grid-section">
   <div class="container grid-section__container">
     <div class="text-center">
       <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureForepathItSystems-heroTitle">
@@ -11,34 +11,21 @@
   </div>
 </section>
 
-<section class="bg-body-tertiary grid-section it-vendor-section">
+<section class="bg-body-tertiary grid-section landing-logo-section">
   <div class="container grid-section__container">
-    <div
-      class="it-vendor-grid"
-      role="list"
-      i18n-aria-label="@@featureForepathItSystems-vendorGridLabel"
-      aria-label="Technology vendors we work with"
-    >
-      @for (logo of visibleVendorLogos(); track logo.instanceKey) {
-        <div class="it-vendor-grid__cell" role="listitem">
-          <img
-            [src]="logo.logoUrl"
-            [alt]="logo.name"
-            class="it-vendor-grid__logo logo-partner"
-            [class.it-vendor-grid__logo--compact]="logo.compact"
-            loading="lazy"
-          />
-        </div>
-      }
-    </div>
+    <shared-logo-grid
+      [slots]="logoSlots"
+      i18n-ariaLabel="@@featureForepathItSystems-vendorGridLabel"
+      ariaLabel="Technology vendors we work with"
+    />
   </div>
 </section>
 
-<section id="managed-it" class="py-10 bg-white grid-section">
+<section id="managed-it" class="py-10 bg-body grid-section">
   <div class="container grid-section__container">
     <div class="text-center pb-10">
       <h2
-        class="h2 fw-semibold mb-4 mx-auto it-offerings-title text-dark"
+        class="h2 fw-semibold mb-4 mx-auto it-offerings-title text-body-emphasis"
         i18n="@@featureForepathItSystems-offeringsTitle"
       >
         Turn infrastructure complexity into IT you can rely on
@@ -51,7 +38,7 @@
     </div>
     <div class="row g-4">
       <div class="col-lg-6">
-        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-white">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-body">
           <i class="bi bi-hdd-network text-primary icon-md mb-3" aria-hidden="true"></i>
           <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-domainNetworkTitle">
             Network and connectivity
@@ -83,7 +70,7 @@
         </article>
       </div>
       <div class="col-lg-6">
-        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-white">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-body">
           <i class="bi bi-server text-primary icon-md mb-3" aria-hidden="true"></i>
           <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-domainComputeTitle">
             Compute and platforms
@@ -115,7 +102,7 @@
         </article>
       </div>
       <div class="col-lg-6">
-        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-white">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-body">
           <i class="bi bi-pc-display text-primary icon-md mb-3" aria-hidden="true"></i>
           <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-domainEndpointsTitle">
             Endpoints and workplace
@@ -147,7 +134,7 @@
         </article>
       </div>
       <div class="col-lg-6">
-        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-white">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-body">
           <i class="bi bi-door-open text-primary icon-md mb-3" aria-hidden="true"></i>
           <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-domainIdentityTitle">Identity and access</h3>
           <p class="text-muted mb-4" i18n="@@featureForepathItSystems-domainIdentityDesc">
@@ -177,7 +164,7 @@
         </article>
       </div>
       <div class="col-lg-6">
-        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-white">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-body">
           <i class="bi bi-shield-lock text-primary icon-md mb-3" aria-hidden="true"></i>
           <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-domainSecurityTitle">
             Security and protection
@@ -208,7 +195,7 @@
         </article>
       </div>
       <div class="col-lg-6">
-        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-white">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-body">
           <i class="bi bi-graph-up text-primary icon-md mb-3" aria-hidden="true"></i>
           <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-domainResilienceTitle">
             Resilience and operations
@@ -242,21 +229,16 @@
   </div>
 </section>
 
-<section id="hardware-rental" class="bg-white grid-section">
+<section id="hardware-rental" class="bg-body grid-section">
   <div class="container grid-section__container">
     <div class="row g-0 align-items-stretch it-topi-row">
-      <div class="col-lg-6 it-topi-visual-col order-2 order-lg-1">
-        <div class="it-topi-visual">
-          <img
-            src="assets/images/logos/topi.svg"
-            class="it-topi-logo"
-            i18n-alt="@@featureForepathItSystems-topiLogoAlt"
-            alt="topi"
-            loading="lazy"
-          />
-        </div>
+      <div class="col-lg-6 it-topi-visual-col landing-illustration-fill py-10 order-2 order-lg-1">
+        <framework-forepath-rental-illustration
+          label="topi checkout renting laptops, a server and network gear together with ForePath managed services for one monthly rate"
+          i18n-label="@@featureForepathItSystems-rentalIllustration"
+        />
       </div>
-      <div class="col-lg-6 it-topi-copy py-10 order-1 order-lg-2">
+      <div class="col-lg-6 it-topi-copy py-10 d-flex flex-column order-1 order-lg-2">
         <h2 class="h2 fw-semibold mb-4" i18n="@@featureForepathItSystems-topiTitle">
           Rent the hardware you need, month by month
         </h2>
@@ -267,7 +249,7 @@
         </p>
         <ul class="list-unstyled mb-4 row g-3">
           <li class="col-12 col-sm-6">
-            <article class="card border rounded-3 shadow-sm p-4 bg-white h-100">
+            <article class="card border rounded-3 shadow-sm p-4 bg-body h-100">
               <i class="bi bi-wallet2 text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
               <p class="mb-0 small" i18n="@@featureForepathItSystems-topiItem1">
                 Predictable monthly rates keep capital free for other priorities. You pay for the hardware you need
@@ -276,7 +258,7 @@
             </article>
           </li>
           <li class="col-12 col-sm-6">
-            <article class="card border rounded-3 shadow-sm p-4 bg-white h-100">
+            <article class="card border rounded-3 shadow-sm p-4 bg-body h-100">
               <i class="bi bi-shield-check text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
               <p class="mb-0 small" i18n="@@featureForepathItSystems-topiItem2">
                 A digital rental flow covers procurement end to end. Warranty coverage is included on every device so
@@ -285,7 +267,7 @@
             </article>
           </li>
           <li class="col-12 col-sm-6">
-            <article class="card border rounded-3 shadow-sm p-4 bg-white h-100">
+            <article class="card border rounded-3 shadow-sm p-4 bg-body h-100">
               <i class="bi bi-tools text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
               <p class="mb-0 small" i18n="@@featureForepathItSystems-topiItem3">
                 Optional topi Care packages cover repair and faster device exchange. When something breaks, your team
@@ -294,7 +276,7 @@
             </article>
           </li>
           <li class="col-12 col-sm-6">
-            <article class="card border rounded-3 shadow-sm p-4 bg-white h-100">
+            <article class="card border rounded-3 shadow-sm p-4 bg-body h-100">
               <i class="bi bi-arrows-angle-expand text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
               <p class="mb-0 small" i18n="@@featureForepathItSystems-topiItem4">
                 Scale up or refresh equipment as your team and projects evolve. Add devices for new hires or replace
@@ -303,7 +285,7 @@
             </article>
           </li>
         </ul>
-        <p class="text-muted mb-0" i18n="@@featureForepathItSystems-topiClosing">
+        <p class="text-muted mb-0 mt-auto" i18n="@@featureForepathItSystems-topiClosing">
           From first deployments to refresh cycles, we help you choose hardware that fits your environment and wrap it
           in an operating model your teams can rely on.
         </p>
@@ -321,7 +303,7 @@
   </framework-forepath-one-teaser>
 </section>
 
-<section id="cta" class="py-10 bg-body-tertiary grid-section">
+<section id="cta" class="py-10 bg-dark grid-section">
   <div class="container grid-section__container">
     <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
       <h2 class="h2 fw-semibold mb-4" i18n="@@featureForepathItSystems-ctaTitle">Do you only need managed IT?</h2>

@@ -247,11 +247,11 @@ export class AdminFileManagerPageComponent implements OnInit {
 
     return [
       `Status: ${signature.status}`,
-      `Alg: ${signature.alg ?? '—'}`,
-      `Version: ${signature.version ?? '—'}`,
-      `Tenant: ${signature.tenantId ?? '—'}`,
-      `Signed at: ${signature.signedAt ?? '—'}`,
-      `Signature: ${signature.value ?? '—'}`,
+      `Alg: ${signature.alg ?? '-'}`,
+      `Version: ${signature.version ?? '-'}`,
+      `Tenant: ${signature.tenantId ?? '-'}`,
+      `Signed at: ${signature.signedAt ?? '-'}`,
+      `Signature: ${signature.value ?? '-'}`,
     ].join('\n');
   }
 

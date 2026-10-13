@@ -315,7 +315,7 @@
       </div>
       <div class="col-12">
         <div class="border rounded p-3 bg-body-secondary">
-          <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
             <span class="fw-semibold" i18n="@@featureAddons-envVariables">Environment variables</span>
             <fpc-button
               variant="primary"
@@ -440,16 +440,26 @@
                   size="sm"
                   (clicked)="moveEnvVariable(form, i, -1)"
                   [disabled]="disabled || i === 0"
+                  iconOnly
+                  title="Move up"
+                  i18n-title="@@featureServicePlans-moveHighlightUp"
+                  ariaLabel="Move up"
+                  i18n-ariaLabel="@@featureServicePlans-moveHighlightUp"
                 >
-                  ↑
+                  <i class="bi bi-arrow-up" aria-hidden="true"></i>
                 </fpc-button>
                 <fpc-button
                   variant="dark"
                   size="sm"
-                  (clicked)="moveEnvVariable(form, i, -1)"
+                  (clicked)="moveEnvVariable(form, i, 1)"
                   [disabled]="disabled || i === form.environmentVariableRows.length - 1"
+                  iconOnly
+                  title="Move down"
+                  i18n-title="@@featureServicePlans-moveHighlightDown"
+                  ariaLabel="Move down"
+                  i18n-ariaLabel="@@featureServicePlans-moveHighlightDown"
                 >
-                  ↓
+                  <i class="bi bi-arrow-down" aria-hidden="true"></i>
                 </fpc-button>
                 <fpc-button
                   variant="danger"
@@ -525,22 +535,26 @@
           <fpc-alert class="py-2" variant="danger" [message]="addonMeterAttachError" />
         }
         @if (prefix === 'edit' && addonMeterAttachLoading && attachedMetersFor('edit').length === 0) {
-          <div class="text-muted small mb-2" i18n="@@featureAddons-metersLoading">Loading meters…</div>
+          <div class="text-body-secondary small mb-2" i18n="@@featureAddons-metersLoading">Loading meters...</div>
         }
         @for (attached of attachedMetersFor(prefix); track attached.meterId) {
           <div class="row g-2 mb-2 align-items-end">
             <div class="col-12 col-md-4">
               <div class="fw-semibold">{{ attached.name }}</div>
-              <div class="small text-muted">
-                {{ attached.key }} · {{ attached.aggregator }} · €{{ attached.effectiveUnitPriceNet }}
-                @if (attached.unitLabel) {
-                  <span>/ {{ attached.unitLabel }}</span>
-                }
+              <div class="d-flex flex-wrap align-items-center gap-2 small">
+                <span class="font-monospace text-break">{{ attached.key }}</span>
+                <span class="text-body-secondary">{{ attached.aggregator }}</span>
+                <span class="text-body-secondary"
+                  >€{{ attached.effectiveUnitPriceNet }}
+                  @if (attached.unitLabel) {
+                    / {{ attached.unitLabel }}
+                  }
+                </span>
               </div>
             </div>
             <div class="col-12 col-md-5">
               <div class="row g-2">
-                <div class="col-6">
+                <div class="col-12 col-md-6">
                   <fpc-form-field
                     [forId]="prefix + 'AddonMeterOverride' + attached.meterId"
                     i18n-label="@@featureAddons-meterUnitPriceOverride"
@@ -558,7 +572,7 @@
                     />
                   </fpc-form-field>
                 </div>
-                <div class="col-6">
+                <div class="col-12 col-md-6">
                   <fpc-form-field
                     [forId]="prefix + 'AddonMeterIncludedUsage' + attached.meterId"
                     i18n-label="@@featureAddons-meterIncludedUsageOverride"
@@ -591,12 +605,6 @@
                 variant="primary"
                 size="sm"
                 iconOnly
-                click
-                updateAttachedAddonMeter
-                prefix
-                attached
-                addonMeterOverride.value()
-                addonMeterIncludedUsage.value()
                 [disabled]="disabled || (prefix === 'edit' && addonMeterAttachLoading)"
                 title="Update price"
                 i18n-title="@@featureAddons-updateMeterPrice"
@@ -611,11 +619,6 @@
                   variant="danger"
                   size="sm"
                   iconOnly
-                  click
-                  detachAddonMeter
-                  prefix
-                  attached.meterId
-                  [disabled]="disabled || (prefix === 'edit' && addonMeterAttachLoading)"
                   title="Detach meter"
                   i18n-title="@@featureAddons-detachMeter"
                   ariaLabel="Detach meter"
@@ -624,13 +627,15 @@
                   <i class="bi bi-trash" aria-hidden="true"></i>
                 </fpc-button>
               } @else {
-                <span class="small text-muted align-self-center" i18n="@@featureAddons-requiredMeter">Required</span>
+                <span class="small text-body-secondary align-self-center" i18n="@@featureAddons-requiredMeter"
+                  >Required</span
+                >
               }
             </div>
           </div>
         } @empty {
           @if (prefix === 'create' || !addonMeterAttachLoading) {
-            <p class="text-muted small mb-3" i18n="@@featureAddons-noMetersAttached">
+            <p class="text-body-secondary small mb-3" i18n="@@featureAddons-noMetersAttached">
               No meters attached to this addon yet.
             </p>
           }
@@ -678,7 +683,7 @@
                 </div>
                 <div class="col-12 col-md-5">
                   <div class="row g-2">
-                    <div class="col-6">
+                    <div class="col-12 col-md-6">
                       <fpc-form-field
                         [forId]="prefix + 'AttachAddonMeterPrice'"
                         i18n-label="@@featureAddons-attachMeterPrice"
@@ -709,7 +714,7 @@
                         }
                       </fpc-form-field>
                     </div>
-                    <div class="col-6">
+                    <div class="col-12 col-md-6">
                       <fpc-form-field
                         [forId]="prefix + 'AttachAddonMeterIncludedUsage'"
                         i18n-label="@@featureAddons-attachMeterIncludedUsage"
@@ -763,17 +768,19 @@
                 </div>
               </div>
             } @else if (meters.length === 0) {
-              <p class="text-muted small mb-0" i18n="@@featureAddons-noCatalogMeters">
-                No active meters in the catalog. Create meters under Administration → Usage meters first.
+              <p class="text-body-secondary small mb-0" i18n="@@featureAddons-noCatalogMeters">
+                No active meters in the catalog. Create meters under Administration &gt; Usage meters first.
               </p>
             } @else {
-              <p class="text-muted small mb-0" i18n="@@featureAddons-allMetersAttached">
+              <p class="text-body-secondary small mb-0" i18n="@@featureAddons-allMetersAttached">
                 All active catalog meters are already attached to this addon.
               </p>
             }
           }
         } @else {
-          <p class="text-muted small mb-0" i18n="@@featureAddons-metersCatalogLoading">Loading meter catalog…</p>
+          <p class="text-body-secondary small mb-0" i18n="@@featureAddons-metersCatalogLoading">
+            Loading meter catalog...
+          </p>
         }
       </div>
     </div>

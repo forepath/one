@@ -50,7 +50,7 @@
         <span i18n="@@featureAtlassianImportAdmin-connectionTestFailed">Failed</span>
       }
       @if (test.result.message) {
-        <span> — {{ test.result.message }}</span>
+        <div class="small mt-1 text-break">{{ test.result.message }}</div>
       }
     </fpc-alert>
   }
@@ -128,13 +128,15 @@
                       </div>
                       <div fpcListItemMeta class="small d-flex align-items-center gap-1 row-gap-0 flex-wrap">
                         @if (connectionHostname(c)) {
-                          <span class="me-2 text-truncate" style="max-width: min(100%, 22rem)" [attr.title]="c.baseUrl">
+                          <span
+                            class="me-2 text-truncate atlassian-import-admin__connection-meta"
+                            [attr.title]="c.baseUrl"
+                          >
                             <i class="bi bi-globe me-1" aria-hidden="true"></i>{{ connectionHostname(c) }}
                           </span>
                         }
                         <span
-                          class="me-2 text-truncate"
-                          style="max-width: min(100%, 22rem)"
+                          class="me-2 text-truncate atlassian-import-admin__connection-meta"
                           [attr.title]="c.accountEmail"
                         >
                           <i class="bi bi-envelope me-1" aria-hidden="true"></i>{{ c.accountEmail }}
@@ -328,7 +330,7 @@
                           class="atlassian-import-admin__config-query small bg-body-secondary border rounded p-2"
                         ><code class="text-body">{{ displayConfluenceSearchCql(cfg) }}</code></pre>
                       }
-                      <div class="small text-muted d-flex flex-column gap-2">
+                      <div class="small text-body-secondary d-flex flex-column gap-2">
                         <div class="d-flex align-items-center gap-2 flex-wrap">
                           <span class="d-inline-flex align-items-center gap-1 flex-wrap text-body-secondary">
                             <fpc-badge color="secondary" [attr.title]="connectionNameForConfig(cfg)">{{
@@ -337,7 +339,7 @@
                             @if (cfg.importKind === 'jira') {
                               <fpc-badge color="info">{{ cfg.jiraBoardId }}</fpc-badge>
                             }
-                            <span class="text-muted" i18n="@@featureAtlassianImportAdmin-connectionToWorkspace"
+                            <span class="text-body-secondary" i18n="@@featureAtlassianImportAdmin-connectionToWorkspace"
                               >to</span
                             >
                             <fpc-badge color="secondary" [attr.title]="clientName(cfg.clientId)">{{
@@ -352,7 +354,7 @@
                               <span>{{ cfg.lastRunAt | date: 'medium' }}</span>
                             </span>
                           } @else {
-                            <span class="text-muted">
+                            <span class="text-body-secondary">
                               <i class="bi bi-clock me-1" aria-hidden="true"></i>
                               <span i18n="@@featureAtlassianImportAdmin-neverRun">Never run</span>
                             </span>
@@ -461,7 +463,7 @@
             size="sm"
             [(ngModel)]="newConfig.atlassianConnectionId"
           >
-            <option value="" i18n="@@featureAtlassianImportAdmin-selectPlaceholder">Select…</option>
+            <option value="" i18n="@@featureAtlassianImportAdmin-selectPlaceholder">Select...</option>
             @for (c of connections(); track c.id) {
               <option [value]="c.id">{{ connectionLabel(c) }}</option>
             }
@@ -481,7 +483,7 @@
             [(ngModel)]="newConfig.clientId"
             (ngModelChange)="onWorkspaceDataLoad($event)"
           >
-            <option value="" i18n="@@featureAtlassianImportAdmin-selectPlaceholder">Select…</option>
+            <option value="" i18n="@@featureAtlassianImportAdmin-selectPlaceholder">Select...</option>
             @for (cl of clients(); track cl.id) {
               <option [value]="cl.id">{{ cl.name }}</option>
             }
@@ -591,7 +593,7 @@
                     (mousedown)="onPickNewParentTicket(t, $event)"
                   >
                     <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
-                      <span class="font-monospace text-muted small flex-shrink-0">{{ t.shas?.short }}</span>
+                      <span class="font-monospace text-body-secondary small flex-shrink-0">{{ t.shas?.short }}</span>
                       <span class="text-truncate small flex-grow-1 min-width-0">{{ t.title }}</span>
                     </span>
                   </button>
@@ -681,12 +683,12 @@
                     (mousedown)="onPickNewParentFolder(n, $event)"
                   >
                     <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
-                      <span class="font-monospace text-muted small flex-shrink-0">{{ n.shas.short }}</span>
+                      <span class="font-monospace text-body-secondary small flex-shrink-0">{{ n.shas.short }}</span>
                       <span
                         class="text-truncate small flex-grow-1 min-width-0"
                         i18n="@@featureAtlassianImportAdmin-folderSuggestRow"
                       >
-                        Folder · {{ n.title }}
+                        Folder: {{ n.title }}
                       </span>
                     </span>
                   </button>
@@ -915,7 +917,7 @@
                       (mousedown)="onPickEditParentTicket(t, $event)"
                     >
                       <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
-                        <span class="font-monospace text-muted small flex-shrink-0">{{ t.shas?.short }}</span>
+                        <span class="font-monospace text-body-secondary small flex-shrink-0">{{ t.shas?.short }}</span>
                         <span class="text-truncate small flex-grow-1 min-width-0">{{ t.title }}</span>
                       </span>
                     </button>
@@ -1002,12 +1004,12 @@
                       (mousedown)="onPickEditParentFolder(n, $event)"
                     >
                       <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
-                        <span class="font-monospace text-muted small flex-shrink-0">{{ n.shas.short }}</span>
+                        <span class="font-monospace text-body-secondary small flex-shrink-0">{{ n.shas.short }}</span>
                         <span
                           class="text-truncate small flex-grow-1 min-width-0"
                           i18n="@@featureAtlassianImportAdmin-folderSuggestRow"
                         >
-                          Folder · {{ n.title }}
+                          Folder: {{ n.title }}
                         </span>
                       </span>
                     </button>

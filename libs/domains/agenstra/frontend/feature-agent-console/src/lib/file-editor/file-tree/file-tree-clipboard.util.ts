@@ -125,7 +125,7 @@ export function wouldMoveDirectoryIntoSelf(sourceDirectory: string, targetDirect
 }
 
 /**
- * Remap a path after a move/rename of `sourcePath` → `destinationPath`
+ * Remap a path after a move/rename of `sourcePath` -> `destinationPath`
  * (exact match or nested under a moved directory).
  */
 export function remapPathAfterMove(path: string, sourcePath: string, destinationPath: string): string {

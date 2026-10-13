@@ -1,4 +1,4 @@
-/** sessionStorage key for one-shot chat input prefill (e.g. ticket prototype → Spaces). */
+/** sessionStorage key for one-shot chat input prefill (e.g. ticket prototype -> Spaces). */
 export const AGENT_CONSOLE_CHAT_DRAFT_STORAGE_KEY = 'agentConsole.chatDraft.v1';
 
 export interface AgentConsoleChatDraftV1 {

@@ -1,12 +1,12 @@
 <!-- Hero -->
-<section id="hero" class="py-10 bg-body-tertiary grid-section">
+<section id="hero" class="py-10 bg-dark text-white grid-section home-hero">
   <div class="container hero-content grid-section__container">
-    <div class="row justify-content-center">
-      <div class="col-12 text-center hero-container">
+    <div class="row justify-content-center align-items-center gx-lg-5 row-gap-5">
+      <div class="col-12 col-lg-7 text-center text-lg-start home-hero__copy">
         <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureForepathHome-heroTitle">
           <span class="text-primary">Practical engineering</span> for teams that ship and operate with confidence
         </h1>
-        <p class="hero-lead lead fs-5 mb-4 mx-auto" i18n="@@featureForepathHome-heroLead">
+        <p class="hero-lead lead fs-5 mb-4 mx-auto mx-lg-0" i18n="@@featureForepathHome-heroLead">
           ForePath partners with organizations to modernize infrastructure, deliver software, and adopt AI without
           trading away control, clarity, or long-term maintainability.
         </p>
@@ -14,7 +14,7 @@
           From cloud foundations to product delivery, we work alongside your teams with transparent methods, open
           standards, and outcomes you can sustain after the engagement ends.
         </p>
-        <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <div class="d-flex gap-3 justify-content-center justify-content-lg-start flex-wrap">
           <fpc-button
             variant="primary"
             size="xl"
@@ -34,10 +34,22 @@
             <i class="bi bi-calculator" aria-hidden="true"></i>Get an instant quote
           </fpc-button>
         </div>
-        @if (latestBlogPost(); as post) {
+      </div>
+      <div class="col-lg-5 d-none d-lg-block home-hero__illustration">
+        <div class="home-hero__scene">
+          <framework-forepath-platform-board-illustration
+            label="Shared architecture board where ForePath and your team split a monolith into services, ship them, operate them and extend them with Agenstra agents"
+            i18n-label="@@featureForepathHome-heroIllustration"
+          />
+        </div>
+      </div>
+    </div>
+    @if (latestBlogPost(); as post) {
+      <div class="row justify-content-center home-hero__teaser">
+        <div class="col-12 col-lg-8">
           <a
             [routerLink]="['/blog', post.slug]"
-            class="home-blog-teaser card border rounded-pill shadow-sm bg-white text-decoration-none text-body mt-5 d-flex flex-row align-items-center gap-3"
+            class="home-blog-teaser card border rounded-pill shadow-sm bg-body text-decoration-none text-body d-flex flex-row align-items-center gap-3"
           >
             <span
               class="home-blog-teaser__label small fw-semibold text-primary text-nowrap"
@@ -52,14 +64,14 @@
             <span class="home-blog-teaser__title fw-semibold text-truncate">{{ post.title }}</span>
             <i class="bi bi-arrow-right ms-auto text-primary flex-shrink-0" aria-hidden="true"></i>
           </a>
-        }
+        </div>
       </div>
-    </div>
+    }
   </div>
 </section>
 
 <!-- Process -->
-<section id="process" class="py-10 bg-body-tertiary grid-section">
+<section id="process" class="py-10 bg-dark text-white grid-section landing-hero-continuation">
   <div class="container grid-section__container">
     <div
       class="home-process"
@@ -252,7 +264,7 @@
           <div class="col-lg-6">
             <ul class="list-unstyled mb-0 row gx-3 gy-3 gx-lg-4 gy-lg-4">
               <li class="col-12 col-lg-6">
-                <article class="card border rounded-3 shadow-sm p-4 h-100 bg-white">
+                <article class="card border rounded-3 shadow-sm p-4 h-100 bg-body">
                   <i class="bi bi-compass text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
                   <h3 class="h6 fw-semibold mb-2" i18n="@@featureForepathHome-processStep1Verb">Advise</h3>
                   <p class="small text-muted mb-3" i18n="@@featureForepathHome-processStep1Caption">
@@ -267,7 +279,7 @@
                 </article>
               </li>
               <li class="col-12 col-lg-6">
-                <article class="card border rounded-3 shadow-sm p-4 h-100 bg-white">
+                <article class="card border rounded-3 shadow-sm p-4 h-100 bg-body">
                   <i class="bi bi-code-slash text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
                   <h3 class="h6 fw-semibold mb-2" i18n="@@featureForepathHome-processStep2Verb">Build</h3>
                   <p class="small text-muted mb-3" i18n="@@featureForepathHome-processStep2Caption">
@@ -282,7 +294,7 @@
                 </article>
               </li>
               <li class="col-12 col-lg-6">
-                <article class="card border rounded-3 shadow-sm p-4 h-100 bg-white">
+                <article class="card border rounded-3 shadow-sm p-4 h-100 bg-body">
                   <i class="bi bi-hdd-stack text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
                   <h3 class="h6 fw-semibold mb-2" i18n="@@featureForepathHome-processStep3Verb">Operate</h3>
                   <p class="small text-muted mb-3" i18n="@@featureForepathHome-processStep3Caption">
@@ -297,7 +309,7 @@
                 </article>
               </li>
               <li class="col-12 col-lg-6">
-                <article class="card border rounded-3 shadow-sm p-4 h-100 bg-white">
+                <article class="card border rounded-3 shadow-sm p-4 h-100 bg-body">
                   <i class="bi bi-boxes text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
                   <h3 class="h6 fw-semibold mb-2" i18n="@@featureForepathHome-processStep4Verb">Extend</h3>
                   <p class="small text-muted mb-3" i18n="@@featureForepathHome-processStep4Caption">
@@ -356,15 +368,17 @@
 </section>
 
 <!-- Proof -->
-<section id="proof" class="py-10 bg-white grid-section">
+<section id="proof" class="py-10 bg-body grid-section">
   <div class="container grid-section__container">
     <div class="row align-items-center g-4 g-lg-5">
       <div class="col-lg-4 text-center text-lg-start">
         <p class="home-proof-stat fw-semibold text-primary mb-1" i18n="@@featureForepathHome-proofStat">10+</p>
-        <p class="h4 fw-semibold text-dark mb-0" i18n="@@featureForepathHome-proofStatLabel">years with IT systems</p>
+        <p class="h4 fw-semibold text-body-emphasis mb-0" i18n="@@featureForepathHome-proofStatLabel">
+          years with IT systems
+        </p>
       </div>
       <div class="col-lg-8">
-        <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featureForepathHome-proofTitle">
+        <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureForepathHome-proofTitle">
           Built in production, not in slide decks
         </h2>
         <p class="text-muted mb-4" i18n="@@featureForepathHome-proofStory">
@@ -419,26 +433,13 @@
 </section>
 
 <!-- Platform logos -->
-<section id="platform-logos" class="bg-white grid-section home-platform-section">
+<section id="platform-logos" class="bg-body grid-section landing-logo-section">
   <div class="container grid-section__container">
-    <div
-      class="home-platform-grid"
-      role="list"
-      i18n-aria-label="@@featureForepathHome-platformGridLabel"
-      aria-label="Cloud platforms and operating systems we work with"
-    >
-      @for (logo of visiblePlatformLogos(); track logo.instanceKey) {
-        <div class="home-platform-grid__cell" role="listitem">
-          <img
-            [src]="logo.logoUrl"
-            [alt]="logo.name"
-            class="home-platform-grid__logo logo-partner"
-            [class.home-platform-grid__logo--compact]="logo.compact"
-            loading="lazy"
-          />
-        </div>
-      }
-    </div>
+    <shared-logo-grid
+      [slots]="logoSlots"
+      i18n-ariaLabel="@@featureForepathHome-platformGridLabel"
+      ariaLabel="Cloud platforms and operating systems we work with"
+    />
   </div>
 </section>
 
@@ -454,7 +455,7 @@
         </p>
         <ul class="list-unstyled mb-4 row g-3">
           <li class="col-12 col-sm-6">
-            <article class="card border rounded-3 shadow-sm p-4 bg-white h-100">
+            <article class="card border rounded-3 shadow-sm p-4 bg-body h-100">
               <i class="bi bi-compass text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
               <p class="mb-0 small" i18n="@@featureForepathHome-humanMeetsItem1">
                 Consulting spans infrastructure, cloud, DevOps, security, and AI adoption. Architecture is shaped so
@@ -463,7 +464,7 @@
             </article>
           </li>
           <li class="col-12 col-sm-6">
-            <article class="card border rounded-3 shadow-sm p-4 bg-white h-100">
+            <article class="card border rounded-3 shadow-sm p-4 bg-body h-100">
               <i class="bi bi-code-slash text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
               <p class="mb-0 small" i18n="@@featureForepathHome-humanMeetsItem2">
                 Software is delivered on modern stacks your engineers can own after handover. Pairing and clear
@@ -472,7 +473,7 @@
             </article>
           </li>
           <li class="col-12 col-sm-6">
-            <article class="card border rounded-3 shadow-sm p-4 bg-white h-100">
+            <article class="card border rounded-3 shadow-sm p-4 bg-body h-100">
               <i class="bi bi-hdd-stack text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
               <p class="mb-0 small" i18n="@@featureForepathHome-humanMeetsItem3">
                 IT systems and managed operations are built for on-call reality. Monitoring and runbooks stay practical
@@ -481,7 +482,7 @@
             </article>
           </li>
           <li class="col-12 col-sm-6">
-            <article class="card border rounded-3 shadow-sm p-4 bg-white h-100">
+            <article class="card border rounded-3 shadow-sm p-4 bg-body h-100">
               <i class="bi bi-cpu text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
               <p class="mb-0 small" i18n="@@featureForepathHome-humanMeetsItem4">
                 Automation, CI/CD, and agent workflows remove toil where machines excel. Judgment stays with your team
@@ -536,7 +537,7 @@
 </section>
 
 <!-- Regional roots -->
-<section id="roots" class="py-10 bg-white grid-section">
+<section id="roots" class="py-10 bg-body grid-section">
   <div class="container grid-section__container">
     <div class="row align-items-center g-4 g-lg-5">
       <div class="col-lg-4 col-xl-3 text-center">
@@ -553,7 +554,7 @@
         </figure>
       </div>
       <div class="col-lg-8 col-xl-9">
-        <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featureForepathHome-rootsTitle">
+        <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureForepathHome-rootsTitle">
           Rooted in Ostwestfalen-Lippe
         </h2>
         <p class="text-muted mb-4" i18n="@@featureForepathHome-rootsStory">
@@ -602,7 +603,7 @@
 </section>
 
 <!-- CTA -->
-<section id="cta" class="py-10 bg-body-tertiary grid-section">
+<section id="cta" class="py-10 bg-dark grid-section">
   <div class="container grid-section__container">
     <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
       <h2 class="h2 fw-semibold mb-4" i18n="@@featureForepathHome-ctaTitle">Ready to move your platform forward?</h2>

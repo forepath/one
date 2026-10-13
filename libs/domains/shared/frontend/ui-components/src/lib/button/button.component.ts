@@ -33,7 +33,7 @@ export type FpcButtonType = 'button' | 'submit' | 'reset';
  * Prefer host `routerLink` / `queryParams` / `fragment` (import `RouterLink` in the parent) for
  * SPA navigation. Those bind to a host-level `RouterLink`; this component activates that link from
  * the inner control click so path + query params apply. Do not also put `RouterLink` on an inner
- * control or via `hostDirectives` — Angular allows only one match per element.
+ * control or via `hostDirectives` - Angular allows only one match per element.
  *
  * When `href` is set, activation navigates (new tab when `target="_blank"` or modifier-click).
  *
@@ -47,7 +47,7 @@ export type FpcButtonType = 'button' | 'submit' | 'reset';
  * overridable). These live on the button so page SCSS does not need to pierce encapsulation.
  *
  * When content includes `fpc-badge`, the inner control is flush (no Bootstrap button padding) so
- * the badge owns the visual size — use this for clickable chips (workspace switchers, etc.).
+ * the badge owns the visual size - use this for clickable chips (workspace switchers, etc.).
  */
 @Component({
   selector: 'fpc-button',

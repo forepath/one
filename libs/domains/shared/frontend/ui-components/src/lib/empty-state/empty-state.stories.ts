@@ -57,7 +57,7 @@ export const WithAction: Story = {
   }),
 };
 
-/** Active search / filter with zero hits — use this pair everywhere. */
+/** Active search / filter with zero hits - use this pair everywhere. */
 export const NoSearchResults: Story = {
   args: { icon: 'search', title: null, message: 'No search results', size: 'sm' },
 };

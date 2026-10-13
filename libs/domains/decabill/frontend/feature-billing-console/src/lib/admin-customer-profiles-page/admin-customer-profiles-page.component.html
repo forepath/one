@@ -170,8 +170,8 @@
     <div class="trust-score-summary border rounded p-3 mb-3">
       <div class="d-flex flex-wrap justify-content-between gap-3 align-items-start">
         <div>
-          <div class="text-muted small" i18n="@@featureAdminProfiles-trustFor">Trust score for</div>
-          <div class="fw-semibold">{{ trustScoreProfile ? profilePrimaryTitle(trustScoreProfile) : '—' }}</div>
+          <div class="text-body-secondary small" i18n="@@featureAdminProfiles-trustFor">Trust score for</div>
+          <div class="fw-semibold">{{ trustScoreProfile ? profilePrimaryTitle(trustScoreProfile) : '-' }}</div>
         </div>
         <div class="text-end">
           <div class="display-6 mb-1">{{ trustDetail.score }}</div>
@@ -197,7 +197,7 @@
           </div>
         </div>
       </div>
-      <div class="small text-muted mt-3 d-flex flex-wrap gap-3">
+      <div class="small text-body-secondary mt-3 d-flex flex-wrap gap-3">
         <span>
           <strong i18n="@@featureAdminProfiles-trustBaseScore">Base score:</strong> {{ trustDetail.baseScore }}
         </span>
@@ -208,19 +208,17 @@
       </div>
     </div>
 
-    <div class="list-group list-group-flush border rounded">
+    <fpc-list>
       @for (factor of trustDetail.factors; track factor.id) {
-        <div class="list-group-item d-flex justify-content-between align-items-start gap-3">
-          <div>
-            <div class="fw-semibold">{{ factor.label }}</div>
-            <div class="small text-muted">{{ factor.description }}</div>
-          </div>
-          <div class="fw-semibold text-nowrap" [ngClass]="trustScorePointsClass(factor.points)">
+        <fpc-list-item>
+          <div fpcListItemTitle class="fw-semibold">{{ factor.label }}</div>
+          <div fpcListItemMeta>{{ factor.description }}</div>
+          <div fpcListItemActions class="fw-semibold text-nowrap" [ngClass]="trustScorePointsClass(factor.points)">
             {{ factor.points > 0 ? '+' : '' }}{{ factor.points }}
           </div>
-        </div>
+        </fpc-list-item>
       }
-    </div>
+    </fpc-list>
   } @else {
     <fpc-alert class="mb-0" variant="dark">Trust details are currently unavailable.</fpc-alert>
   }
@@ -331,13 +329,13 @@
   i18n-title="@@featureAdminProfiles-customDataTitle"
   title="Custom data"
 >
-  <p class="text-muted small mb-3" i18n="@@featureAdminProfiles-customDataHelp">
+  <p class="text-body-secondary small mb-3" i18n="@@featureAdminProfiles-customDataHelp">
     Admin-only key/value pairs for linking this customer to external systems. Values are stored encrypted.
   </p>
   @if (customDataProfile) {
-    <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
       <div>
-        <div class="text-muted small" i18n="@@featureAdminProfiles-customDataFor">Custom data for</div>
+        <div class="text-body-secondary small" i18n="@@featureAdminProfiles-customDataFor">Custom data for</div>
         <div class="fw-semibold">{{ profilePrimaryTitle(customDataProfile) }}</div>
       </div>
       <fpc-button
@@ -361,7 +359,7 @@
     </div>
   } @else {
     @if (customDataRows.length === 0) {
-      <p class="text-muted mb-3" i18n="@@featureAdminProfiles-customDataEmpty">No custom data entries yet.</p>
+      <p class="text-body-secondary mb-3" i18n="@@featureAdminProfiles-customDataEmpty">No custom data entries yet.</p>
     }
     @for (row of customDataRows; track $index; let i = $index) {
       <div class="row g-2 align-items-center mb-2">

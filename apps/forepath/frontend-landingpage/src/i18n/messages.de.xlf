@@ -283,8 +283,8 @@
         <target> Wenn Sie Strategie- und Architekturberatung ohne Auslieferung oder Betrieb auf demselben roten Faden wünschen, schildern Sie uns Ziele und Zeitrahmen. Wir unterbreiten ein Angebot, das allein auf Beratung ausgerichtet ist. </target>
       </trans-unit>
       <trans-unit id="featureForepathConsulting-ctaButton" datatype="html">
-        <source>Contact us</source>
-        <target> Kontakt aufnehmen </target>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Kontakt aufnehmen </target>
       </trans-unit>
       <trans-unit id="featureForepathConsulting-metaTitle" datatype="html">
         <source>IT and platform consulting :: ForePath</source>
@@ -435,8 +435,8 @@
         <target>Widerruf</target>
       </trans-unit>
       <trans-unit id="featureForepath-footerCopyright" datatype="html">
-        <source> © 2025 IPvX UG (haftungsbeschränkt). All rights reserved. </source>
-        <target>© 2025 IPvX UG (haftungsbeschränkt). Alle Rechte vorbehalten.</target>
+        <source> © <x id="INTERPOLATION" equiv-text="{{ currentYear }}"/> IPvX UG (haftungsbeschränkt). All rights reserved. </source>
+        <target>© <x id="INTERPOLATION" equiv-text="{{ currentYear }}"/> IPvX UG (haftungsbeschränkt). Alle Rechte vorbehalten.</target>
       </trans-unit>
       <trans-unit id="featureForepathHome-heroTitle" datatype="html">
         <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Practical engineering<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> for teams that ship and operate with confidence </source>
@@ -451,12 +451,8 @@
         <target> Von Cloud-Fundamenten bis zur Produktauslieferung arbeiten wir an der Seite Ihrer Teams mit transparenten Methoden, offenen Standards und Ergebnissen, die auch nach dem Projekt Bestand haben. </target>
       </trans-unit>
       <trans-unit id="featureForepathHome-heroContact" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Start a conversation </source>
-        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Gespräch beginnen </target>
-      </trans-unit>
-      <trans-unit id="featureForepathHome-heroExplore" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-down me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> See our experience </source>
-        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-down me-2&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Erfahrung ansehen </target>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Start a conversation </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Gespräch beginnen </target>
       </trans-unit>
       <trans-unit id="featureForepathHome-proofStat" datatype="html">
         <source>10+</source>
@@ -539,17 +535,20 @@
         <target> Menschliche Prüfung, Pairing und klare Leitplanken gehören zu jedem Auftrag dazu. Ziel ist mehr Leistungsfähigkeit bei gleicher Kontrolle. Sie erhalten schnellere Auslieferung, klareren Betrieb und Technologie, die Ihr Team weiterhin versteht. </target>
       </trans-unit>
       <trans-unit id="featureForepathHome-humanMeetsLinkConsulting" datatype="html">
-        <source>Consulting</source>
+        <source>Consulting <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+          &gt;"/></source>
         <target>Beratung <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
           &gt;"/></target>
       </trans-unit>
       <trans-unit id="featureForepathHome-humanMeetsLinkItSystems" datatype="html">
-        <source>IT systems</source>
+        <source>IT systems <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+          &gt;"/></source>
         <target>IT-Systeme <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
           &gt;"/></target>
       </trans-unit>
       <trans-unit id="featureForepathHome-humanMeetsLinkSoftwareDevelopment" datatype="html">
-        <source>Software development</source>
+        <source>Software development <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+          &gt;"/></source>
         <target>Softwareentwicklung <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
           &gt;"/></target>
       </trans-unit>
@@ -578,8 +577,8 @@
         <target> Schildern Sie uns, wo Sie feststecken. Das kann Migration, Auslieferung, KI-Einführung oder alles zusammen sein. Wir schlagen einen praktikablen Weg vor und stellen das passende Team bereit. </target>
       </trans-unit>
       <trans-unit id="featureForepathHome-ctaButton" datatype="html">
-        <source>Contact us</source>
-        <target> Kontakt aufnehmen </target>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Kontakt aufnehmen </target>
       </trans-unit>
       <trans-unit id="featureForepathHome-metaTitle" datatype="html">
         <source>Consulting and engineering for modern IT :: ForePath</source>
@@ -761,9 +760,9 @@
         <source> From first deployments to refresh cycles, we help you choose hardware that fits your environment and wrap it in an operating model your teams can rely on. </source>
         <target> Vom ersten Rollout bis zum Refresh helfen wir Ihnen, passende Hardware auszuwählen und sie in einen Betrieb zu integrieren, auf den Ihre Teams vertrauen können. </target>
       </trans-unit>
-      <trans-unit id="featureForepathItSystems-topiLogoAlt" datatype="html">
-        <source>topi</source>
-        <target>topi</target>
+      <trans-unit id="featureForepathItSystems-rentalIllustration" datatype="html">
+        <source>topi checkout renting laptops, a server and network gear together with ForePath managed services for one monthly rate</source>
+        <target>topi-Checkout, der Laptops, einen Server und Netzwerktechnik zusammen mit Managed Services von ForePath zu einer Monatsrate mietet</target>
       </trans-unit>
       <trans-unit id="featureForepathItSystems-oneTeaserLead" datatype="html">
         <source> We keep your environment stable. ForePath One connects that operations work with consulting, software delivery, and community we run ourselves. Same engineers, one thread, fewer handoffs between phases. </source>
@@ -778,8 +777,8 @@
         <target> Betriebsabdeckung muss nicht Teil eines breiteren ForePath-One-Auftrags sein. Wenn Managed IT gerade Ihr Bedarf ist, beschreiben Sie uns Ihre Umgebung und Lücken. Wir skizzieren Leistungsumfang und SLA-Vorschlag nur für IT-Systeme. </target>
       </trans-unit>
       <trans-unit id="featureForepathItSystems-ctaButton" datatype="html">
-        <source>Contact us</source>
-        <target> Kontakt aufnehmen </target>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Kontakt aufnehmen </target>
       </trans-unit>
       <trans-unit id="featureForepathItSystems-metaTitle" datatype="html">
         <source>Managed IT systems :: ForePath</source>
@@ -918,8 +917,8 @@
         <target state="translated">Wenn Sie Fragen zu unseren Unternehmensinformationen, Registrierungsdetails oder anderen rechtlichen Angelegenheiten haben, helfen wir gerne weiter.</target>
       </trans-unit>
       <trans-unit id="featureForepathDisclosure-ctaContact" datatype="html">
-        <source> Contact us </source>
-        <target state="translated">Kontaktieren Sie uns</target>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
+        <target state="translated"><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Kontaktieren Sie uns</target>
       </trans-unit>
       <trans-unit id="featureForepathDisclosure-metaTitle" datatype="html">
         <source>Legal Disclosure :: ForePath</source>
@@ -1198,8 +1197,8 @@
         <target>Wir nehmen Datenschutz ernst. Wenn Sie Fragen dazu haben, wie wir mit Ihren Daten umgehen, Ihre Rechte ausüben möchten oder Klärungsbedarf zu einem Aspekt unserer Datenschutzerklärung haben, kontaktieren Sie uns bitte.</target>
       </trans-unit>
       <trans-unit id="featureForepathLegal-ctaContact" datatype="html">
-        <source> Contact us </source>
-        <target state="translated">Kontaktieren Sie uns</target>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
+        <target state="translated"><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Kontaktieren Sie uns</target>
       </trans-unit>
       <trans-unit id="featureForepathLegalPrivacy-metaTitle" datatype="html">
         <source>Privacy Policy :: ForePath</source>
@@ -1519,13 +1518,29 @@
         <source>Community</source>
         <target>Community</target>
       </trans-unit>
+      <trans-unit id="featureForepathOneTeaser-detailConsulting" datatype="html">
+        <source>Architecture, platforms, and strategy</source>
+        <target>Architektur, Plattformen und Strategie</target>
+      </trans-unit>
+      <trans-unit id="featureForepathOneTeaser-detailDevelopment" datatype="html">
+        <source>Software your teams can own</source>
+        <target>Software, die Ihre Teams selbst weiterführen können</target>
+      </trans-unit>
+      <trans-unit id="featureForepathOneTeaser-detailIt" datatype="html">
+        <source>Infrastructure and day-to-day operations</source>
+        <target>Infrastruktur und laufender Betrieb</target>
+      </trans-unit>
+      <trans-unit id="featureForepathOneTeaser-detailCommunity" datatype="html">
+        <source>Blog, open source, and Discord</source>
+        <target>Blog, Open Source und Discord</target>
+      </trans-unit>
       <trans-unit id="featureForepathOne-heroTitle" datatype="html">
-        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>ForePath One<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> is where we ship products we operate </source>
-        <target><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>ForePath One<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> ist der Ort, an dem wir Produkte bereitstellen, die wir selbst betreiben</target>
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>ForePath One<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> connects services and products into one thread </source>
+        <target><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>ForePath One<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> verbindet Services und Produkte zu einem durchgängigen Ganzen</target>
       </trans-unit>
       <trans-unit id="featureForepathOne-heroLead" datatype="html">
-        <source> The same engineers who advise your platform teams build this software. It is designed for production, not demos. </source>
-        <target> Dieselben Ingenieure, die Ihre Plattform-Teams beraten, entwickeln diese Software. Sie ist für die Produktion gedacht, nicht für Demos. </target>
+        <source> We advise your platform, operate your systems, build your software, and ship products we run ourselves. Same engineers, same standards, less drift between strategy and production. </source>
+        <target>Wir beraten Sie zu Ihrer Plattform, betreiben Ihre Systeme, entwickeln Ihre Software und liefern Produkte, die wir selbst betreiben. Dieselben Ingenieure, dieselben Standards, weniger Reibungsverluste zwischen Strategie und Produktion.</target>
       </trans-unit>
       <trans-unit id="featureForepathOne-path3Step3" datatype="html">
         <source>Consulting to align rollout with your delivery model</source>
@@ -1710,8 +1725,10 @@
         <target> Der Umfang bleibt an Ergebnissen gebunden, wenn Preise vorab vereinbart werden und nicht mitten im Sprint neu verhandelt werden müssen </target>
       </trans-unit>
       <trans-unit id="featureForepathOne-pricingLink" datatype="html">
-        <source>View pricing <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
-        <target>Preise ansehen <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></target>
+        <source>View pricing <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+        &gt;"/></source>
+        <target>Preise ansehen <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+        &gt;"/></target>
       </trans-unit>
       <trans-unit id="featureForepathOne-pricingStartingLabel" datatype="html">
         <source>Starting rate</source>
@@ -1746,24 +1763,24 @@
         <target> Sagen Sie uns, wo Sie heute stehen und wohin Sie möchten. Wir zeigen, welche Services und Produkte sinnvoll sind und in welcher Reihenfolge. </target>
       </trans-unit>
       <trans-unit id="featureForepathOne-ctaEstimateButton" datatype="html">
-        <source>Get an instant quote</source>
-        <target>Sofortangebot erhalten</target>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calculator&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get an instant quote </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calculator&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Sofortangebot erhalten</target>
       </trans-unit>
       <trans-unit id="featureForepathOne-ctaButton" datatype="html">
-        <source>Contact us</source>
-        <target> Kontakt aufnehmen </target>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Kontakt aufnehmen </target>
       </trans-unit>
       <trans-unit id="featureForepathOne-metaTitle" datatype="html">
-        <source>ForePath One product portfolio :: ForePath</source>
-        <target> ForePath-One-Produktportfolio :: ForePath </target>
+        <source>ForePath One services and products :: ForePath</source>
+        <target>ForePath-One-Services und -Produkte :: ForePath</target>
       </trans-unit>
       <trans-unit id="featureForepathOne-metaDescription" datatype="html">
-        <source>ForePath One is our product portfolio, starting with Agenstra for agent governance. Software we build, operate, and stand behind.</source>
-        <target> ForePath One ist unser Produktportfolio, beginnend mit Agenstra für Agent-Governance. Software, die wir entwickeln, betreiben und verantworten. </target>
+        <source>See how ForePath consulting, IT systems, software development, and ForePath One products connect. One thread from strategy to software you can operate.</source>
+        <target>Erfahren Sie, wie ForePath-Beratung, IT-Systeme, Softwareentwicklung und ForePath-One-Produkte ineinandergreifen. Ein durchgängiger Weg von der Strategie bis zur betriebsfähigen Software.</target>
       </trans-unit>
       <trans-unit id="featureForepathOne-metaKeywords" datatype="html">
-        <source>ForePath One, Agenstra, agent platform, product portfolio</source>
-        <target> ForePath One, Agenstra, Agentenplattform, Produktportfolio </target>
+        <source>ForePath One, consulting, IT systems, software development, Agenstra, platform services</source>
+        <target>ForePath One, Beratung, IT-Systeme, Softwareentwicklung, Agenstra, Plattform-Services</target>
       </trans-unit>
       <trans-unit id="featureForepathPricing-heroTitle" datatype="html">
         <source> Transparent <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>service pricing<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> for predictable IT investment </source>
@@ -1906,8 +1923,8 @@
         <target> Wir gehen Ihr Szenario gerne durch und empfehlen das passende Modell, bevor die Arbeit beginnt. </target>
       </trans-unit>
       <trans-unit id="featureForepathPricing-ctaButton" datatype="html">
-        <source>Contact us</source>
-        <target>Kontakt</target>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Kontakt</target>
       </trans-unit>
       <trans-unit id="featureForepathPricing-metaTitle" datatype="html">
         <source>Service pricing :: ForePath</source>
@@ -2009,6 +2026,22 @@
         <source>Technologies we commonly use</source>
         <target>Technologien, die wir häufig einsetzen</target>
       </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-stackLayerInterface" datatype="html">
+        <source>Interface</source>
+        <target>Oberfläche</target>
+      </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-stackLayerServices" datatype="html">
+        <source>Services</source>
+        <target>Services</target>
+      </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-stackLayerData" datatype="html">
+        <source>Data</source>
+        <target>Daten</target>
+      </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-stackLayerPlatform" datatype="html">
+        <source>Platform</source>
+        <target>Plattform</target>
+      </trans-unit>
       <trans-unit id="featureForepathSoftwareDevelopment-oneTeaserLead" datatype="html">
         <source> We ship software your teams can own. ForePath One connects that delivery work with consulting, operations, and community we run ourselves. Same engineers, one thread, fewer handoffs between phases. </source>
         <target> Wir liefern Software, die Ihre Teams selbst betreiben können. ForePath One verbindet diese Entwicklung mit Beratung, Betrieb und Community, die wir selbst betreiben. Dieselben Ingenieure, ein roter Faden, weniger Übergaben zwischen den Phasen. </target>
@@ -2022,8 +2055,8 @@
         <target> Sie können mit uns auch nur zur Entwicklung zusammenarbeiten, ohne Beratung oder Managed Operations einzubinden. Teilen Sie uns Produktziele und Rahmenbedingungen mit. Wir schlagen Teamgröße und Zeitplan für reine Entwicklungsarbeit vor. </target>
       </trans-unit>
       <trans-unit id="featureForepathSoftwareDevelopment-ctaButton" datatype="html">
-        <source>Contact us</source>
-        <target> Kontakt aufnehmen </target>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Kontakt aufnehmen </target>
       </trans-unit>
       <trans-unit id="featureForepathSoftwareDevelopment-metaTitle" datatype="html">
         <source>Software development services :: ForePath</source>
@@ -2074,32 +2107,16 @@
         <target>Erlauben Sie die Berechtigung unten, um Ihr Angebot zu erstellen. Ihre Projektdetails bleiben privat und werden nicht an unsere Server gesendet.</target>
       </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-gpuPermissionButton" datatype="html">
-        <source>Continue securely</source>
-        <target>Sicher fortfahren</target>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-shield-lock&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Continue securely </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-shield-lock&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Sicher fortfahren</target>
       </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-unsupportedHelp" datatype="html">
         <source>We can still review your project manually and provide a tailored quote.</source>
         <target>Wir können Ihr Projekt dennoch manuell prüfen und ein individuelles Angebot erstellen.</target>
       </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-contactButton" datatype="html">
-        <source>Contact us</source>
-        <target>Kontakt aufnehmen</target>
-      </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-chatTitle" datatype="html">
-        <source>Instant quote</source>
-        <target>Sofortangebot</target>
-      </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-chatHint" datatype="html">
-        <source>Example: “We need a customer portal, API integration, and managed hosting support for 3 months.”</source>
-        <target>Beispiel: „Wir brauchen ein Kundenportal, API-Integration und Managed-Hosting-Support für 3 Monate.“</target>
-      </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-modelLoading" datatype="html">
-        <source>Almost ready...</source>
-        <target>Fast fertig...</target>
-      </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-emptyState" datatype="html">
-        <source>Share your goals, timeline, and systems involved to receive an indicative quote.</source>
-        <target>Teilen Sie Ziele, Zeitplan und beteiligte Systeme mit, um ein indikatives Angebot zu erhalten.</target>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Kontakt aufnehmen</target>
       </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-resultTitle" datatype="html">
         <source>Indicative quote</source>
@@ -2126,12 +2143,8 @@
         <target>Annahmen</target>
       </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-disclaimerAriaLabel" datatype="html">
-        <source>Quote disclaimer</source>
-        <target>Hinweis zum Angebot</target>
-      </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-generating" datatype="html">
-        <source>Generating your quote...</source>
-        <target>Ihr Angebot wird erstellt...</target>
+        <source>Estimate disclaimer</source>
+        <target>Hinweis zur Schätzung</target>
       </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-warmupTitle" datatype="html">
         <source>Preparing to quote</source>
@@ -2210,7 +2223,7 @@
         <target>Das kann einen Moment dauern. Bitte kurz warten.</target>
       </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-generatingMsg6" datatype="html">
-        <source>It's faster than a call. We promise!</source>
+        <source>It&apos;s faster than a call. We promise!</source>
         <target>Schneller als ein Telefonat. Versprochen!</target>
       </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-generatingMsg7" datatype="html">
@@ -2228,10 +2241,6 @@
       <trans-unit id="featureForepathProjectEstimate-generatingOverlayAriaLabel" datatype="html">
         <source>Generating your instant quote</source>
         <target>Sofortangebot wird erstellt</target>
-      </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-inputLabel" datatype="html">
-        <source>Describe your project</source>
-        <target>Beschreiben Sie Ihr Projekt</target>
       </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-inputPlaceholder" datatype="html">
         <source>Tell us about the scope, systems, timeline, and support needs for your project.</source>
@@ -2281,10 +2290,6 @@
         <source>Standard</source>
         <target>Standard</target>
       </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-switchToLighter" datatype="html">
-        <source>Use quicker analysis:</source>
-        <target>Schnellere Analyse verwenden:</target>
-      </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-startOverButton" datatype="html">
         <source>Start over</source>
         <target>Neu starten</target>
@@ -2317,10 +2322,6 @@
         <source>Assumptions</source>
         <target>Annahmen</target>
       </trans-unit>
-      <trans-unit id="featureForepathProjectEstimate-startOverHint" datatype="html">
-        <source>Clear this quote and describe a new project.</source>
-        <target>Dieses Angebot löschen und ein neues Projekt beschreiben.</target>
-      </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-ctaTitle" datatype="html">
         <source>Need a confirmed quote?</source>
         <target>Benötigen Sie ein verbindliches Angebot?</target>
@@ -2330,8 +2331,8 @@
         <target>Das Angebot oben ist indikativ. Wir präzisieren gerne den Umfang und erstellen ein formelles Angebot.</target>
       </trans-unit>
       <trans-unit id="featureForepathProjectEstimate-ctaButton" datatype="html">
-        <source>Contact us</source>
-        <target>Kontakt aufnehmen</target>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Kontakt aufnehmen</target>
       </trans-unit>
       <trans-unit id="featureForepath-navProjectEstimate" datatype="html">
         <source>Instant quote</source>
@@ -2342,8 +2343,12 @@
         <target>Aus Ihrer Projektbeschreibung, in Sekunden</target>
       </trans-unit>
       <trans-unit id="featureForepathHome-heroEstimate" datatype="html">
-        <source>Get an instant quote</source>
-        <target>Sofortangebot erhalten</target>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calculator&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get an instant quote </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calculator&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Sofortangebot erhalten</target>
+      </trans-unit>
+      <trans-unit id="featureForepathHome-heroIllustration" datatype="html">
+        <source>Shared architecture board where ForePath and your team split a monolith into services, ship them, operate them and extend them with Agenstra agents</source>
+        <target>Gemeinsames Architektur-Board, auf dem ForePath und Ihr Team einen Monolithen in Services aufteilen, diese ausliefern, betreiben und mit Agenstra-Agenten erweitern</target>
       </trans-unit>
       <trans-unit id="featureForepathHome-blogTeaserLabel" datatype="html">
         <source>Latest from the blog</source>
@@ -2366,8 +2371,10 @@
         <target>Richtung, Architektur und Rahmenbedingungen, die Ihr Team umsetzen kann</target>
       </trans-unit>
       <trans-unit id="featureForepathHome-processStep1Link" datatype="html">
-        <source>View consulting <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
-        <target>Beratung ansehen <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></target>
+        <source>View consulting <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+                  &gt;"/></source>
+        <target>Beratung ansehen <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+                  &gt;"/></target>
       </trans-unit>
       <trans-unit id="featureForepathHome-processStep2Verb" datatype="html">
         <source>Build</source>
@@ -2378,8 +2385,10 @@
         <target>Software auf Stacks liefern, die Ihre Engineers nach der Übergabe besitzen können</target>
       </trans-unit>
       <trans-unit id="featureForepathHome-processStep2Link" datatype="html">
-        <source>View development <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
-        <target>Entwicklung ansehen <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></target>
+        <source>View development <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+                  &gt;"/></source>
+        <target>Entwicklung ansehen <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+                  &gt;"/></target>
       </trans-unit>
       <trans-unit id="featureForepathHome-processStep3Verb" datatype="html">
         <source>Operate</source>
@@ -2390,8 +2399,10 @@
         <target>Dauerhafter Betrieb mit Monitoring, SLAs und On-Call-Realität</target>
       </trans-unit>
       <trans-unit id="featureForepathHome-processStep3Link" datatype="html">
-        <source>View IT systems <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
-        <target>IT-Systeme ansehen <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></target>
+        <source>View IT systems <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+                  &gt;"/></source>
+        <target>IT-Systeme ansehen <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+                  &gt;"/></target>
       </trans-unit>
       <trans-unit id="featureForepathHome-processStep4Verb" datatype="html">
         <source>Extend</source>
@@ -2402,16 +2413,18 @@
         <target>Produktions-Tooling, das denselben Standards folgt wie die Services</target>
       </trans-unit>
       <trans-unit id="featureForepathHome-processStep4Link" datatype="html">
-        <source>View ForePath One <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></source>
-        <target>ForePath One ansehen <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/></target>
+        <source>View ForePath One <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+                  &gt;"/></source>
+        <target>ForePath One ansehen <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+                  &gt;"/></target>
       </trans-unit>
       <trans-unit id="featureForepathPricing-heroEstimateCta" datatype="html">
-        <source>Get an instant quote</source>
-        <target>Sofortangebot erhalten</target>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calculator&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get an instant quote </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calculator&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Sofortangebot erhalten</target>
       </trans-unit>
       <trans-unit id="featureForepathPricing-ctaEstimateButton" datatype="html">
-        <source>Get an instant quote</source>
-        <target>Sofortangebot erhalten</target>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calculator&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get an instant quote </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calculator&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Sofortangebot erhalten</target>
       </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-metaTitle" datatype="html">
         <source>Contact :: <x id="productName" equiv-text="productName"/></source>
@@ -2440,14 +2453,6 @@
       <trans-unit id="sharedFeatureLandingpageContact-successLead" datatype="html">
         <source>Thank you for reaching out. We received your message and will get back to you soon.</source>
         <target>Vielen Dank für Ihre Nachricht. Wir haben sie erhalten und melden uns in Kürze bei Ihnen.</target>
-      </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-referenceLabel" datatype="html">
-        <source>Reference:</source>
-        <target>Referenz:</target>
-      </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-sendAnother" datatype="html">
-        <source>Send another message</source>
-        <target>Weitere Nachricht senden</target>
       </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-nameLabel" datatype="html">
         <source>Name</source>
@@ -2498,8 +2503,8 @@
         <target>Sie müssen die Datenschutzerklärung akzeptieren, um Ihre Nachricht zu senden.</target>
       </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-submitting" datatype="html">
-        <source>Sending…</source>
-        <target>Wird gesendet…</target>
+        <source>Sending...</source>
+        <target>Wird gesendet...</target>
       </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-submit" datatype="html">
         <source>Send message</source>
@@ -2570,8 +2575,8 @@
         <target>Beiträge suchen</target>
       </trans-unit>
       <trans-unit id="featureForepathBlog-loading" datatype="html">
-        <source>Loading posts…</source>
-        <target>Beiträge werden geladen…</target>
+        <source>Loading posts...</source>
+        <target>Beiträge werden geladen...</target>
       </trans-unit>
       <trans-unit id="featureForepathBlog-loadError" datatype="html">
         <source>We could not load blog posts right now. Please try again later.</source>
@@ -2582,8 +2587,8 @@
         <target>Keine Beiträge gefunden. Schauen Sie bald wieder vorbei.</target>
       </trans-unit>
       <trans-unit id="featureForepathBlog-loadingMore" datatype="html">
-        <source>Loading…</source>
-        <target>Wird geladen…</target>
+        <source>Loading...</source>
+        <target>Wird geladen...</target>
       </trans-unit>
       <trans-unit id="featureForepathBlog-loadMore" datatype="html">
         <source>Load more</source>
@@ -2606,8 +2611,8 @@
         <target>Zurück zum Blog</target>
       </trans-unit>
       <trans-unit id="featureForepathBlogPost-loading" datatype="html">
-        <source>Loading post…</source>
-        <target>Beitrag wird geladen…</target>
+        <source>Loading post...</source>
+        <target>Beitrag wird geladen...</target>
       </trans-unit>
       <trans-unit id="featureForepathBlogPost-notFoundTitle" datatype="html">
         <source>Post not found</source>
@@ -2694,8 +2699,8 @@
         <target>Zweck</target>
       </trans-unit>
       <trans-unit id="featureForepathLegalVulnerabilityDisclosure-purposeP1" datatype="html">
-        <source> This Vulnerability Disclosure Policy ("Policy") applies to coordinated vulnerability disclosure between IPvX UG (haftungsbeschränkt) ("we", "us") and you regarding any published software product of ours, including ForePath (forepath.io), Agenstra (agenstra.com), Decabill (decabill.com), and software made available in the <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>forepath/one<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> monorepo, and defines our coordinated vulnerability disclosure ("CVD") policy under Annex I, Part II(5) of Regulation (EU) 2024/2847 (the EU Cyber Resilience Act). </source>
-        <target> Diese Richtlinie zur Meldung von Schwachstellen ("Richtlinie") gilt für die koordinierte Schwachstellenmeldung zwischen IPvX UG (haftungsbeschränkt) ("wir", "uns") und Ihnen in Bezug auf jedes von uns veröffentlichte Softwareprodukt, einschließlich ForePath (forepath.io), Agenstra (agenstra.com), Decabill (decabill.com) sowie Software, die im Monorepo <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>forepath/one<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> bereitgestellt wird, und definiert unsere Richtlinie zur koordinierten Schwachstellenmeldung ("CVD") gemäß Anhang I Teil II Nr. 5 der Verordnung (EU) 2024/2847 (Cyber Resilience Act). </target>
+        <source> This Vulnerability Disclosure Policy (&quot;Policy&quot;) applies to coordinated vulnerability disclosure between IPvX UG (haftungsbeschränkt) (&quot;we&quot;, &quot;us&quot;) and you regarding any published software product of ours, including ForePath (forepath.io), Agenstra (agenstra.com), Decabill (decabill.com), and software made available in the <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>forepath/one<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> monorepo, and defines our coordinated vulnerability disclosure (&quot;CVD&quot;) policy under Annex I, Part II(5) of Regulation (EU) 2024/2847 (the EU Cyber Resilience Act). </source>
+        <target>Diese Richtlinie zur Meldung von Schwachstellen („Richtlinie“) gilt für die koordinierte Schwachstellenmeldung zwischen IPvX UG (haftungsbeschränkt) („wir“, „uns“) und Ihnen in Bezug auf jedes von uns veröffentlichte Softwareprodukt, einschließlich ForePath (forepath.io), Agenstra (agenstra.com), Decabill (decabill.com) sowie Software, die im Monorepo <x id="START_TAG_CODE" ctype="x-code" equiv-text="&lt;code&gt;"/>forepath/one<x id="CLOSE_TAG_CODE" ctype="x-code" equiv-text="&lt;/code&gt;"/> bereitgestellt wird, und definiert unsere Richtlinie zur koordinierten Schwachstellenmeldung („CVD“) gemäß Anhang I Teil II Nr. 5 der Verordnung (EU) 2024/2847 (Cyber Resilience Act).</target>
       </trans-unit>
       <trans-unit id="featureForepathLegalVulnerabilityDisclosure-scopeTitle" datatype="html">
         <source>Scope</source>
@@ -2781,11 +2786,11 @@
         <source> If you prefer encrypted email, please use our OpenPGP public key at <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;/.well-known/pgp-key.txt&quot;&gt;"/>/.well-known/pgp-key.txt<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/> (fingerprint 5B20 C75D E760 91CE FE8B 3CA5 2926 E9F2 4F3D 9191). </source>
         <target> Wenn Sie verschlüsselte E-Mails bevorzugen, nutzen Sie bitte unseren öffentlichen OpenPGP-Schlüssel unter <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;/.well-known/pgp-key.txt&quot;&gt;"/>/.well-known/pgp-key.txt<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/> (Fingerprint 5B20 C75D E760 91CE FE8B 3CA5 2926 E9F2 4F3D 9191). </target>
       </trans-unit>
-            <trans-unit id="featureForepathLegalVulnerabilityDisclosure-includeIntro" datatype="html">
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-includeIntro" datatype="html">
         <source> To help us assess and fix the issue quickly, please include as much of the following as you can. </source>
         <target> Damit wir das Problem schnell bewerten und beheben können, geben Sie bitte möglichst viel von dem Folgenden an. </target>
       </trans-unit>
-<trans-unit id="featureForepathLegalVulnerabilityDisclosure-includeTitle" datatype="html">
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-includeTitle" datatype="html">
         <source> What to include </source>
         <target> Was enthalten sein sollte </target>
       </trans-unit>
@@ -2813,11 +2818,11 @@
         <source> How we can reach you for follow-up </source>
         <target> Wie wir Sie für Rückfragen erreichen können </target>
       </trans-unit>
-            <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaIntro" datatype="html">
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaIntro" datatype="html">
         <source> When you send a report, we aim to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>acknowledge<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> receipt within <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>48 hours<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>. After acknowledgment, we work toward the following remediation targets. These are best-effort goals, and complex issues may take longer. </source>
         <target> Wenn Sie eine Meldung senden, streben wir an, den Eingang innerhalb von <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>48 Stunden<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> zu <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>bestätigen<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>. Nach der Bestätigung arbeiten wir auf die folgenden Ziele zur Behebung hin. Das sind Ziele nach bestem Bemühen, und komplexe Fälle können länger dauern. </target>
       </trans-unit>
-<trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaTitle" datatype="html">
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaTitle" datatype="html">
         <source> Our commitments </source>
         <target> Unsere Verpflichtungen </target>
       </trans-unit>
@@ -2849,7 +2854,7 @@
         <source>Best effort</source>
         <target>Best effort</target>
       </trans-unit>
-            <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaTriage24h" datatype="html">
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaTriage24h" datatype="html">
         <source>24 hours</source>
         <target>24 Stunden</target>
       </trans-unit>
@@ -2877,7 +2882,7 @@
         <source>90 days</source>
         <target>90 Tage</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaDisclosure" datatype="html">
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-slaDisclosure" datatype="html">
         <source> We generally aim for a <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>90-day<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> coordinated disclosure window once a fix is available and acknowledged. We may delay public disclosure when the risk of active exploitation or incomplete patch adoption outweighs the benefit of immediate publication. That narrow delay is consistent with Annex I, Part II(4) of the CRA. </source>
         <target> Wir streben in der Regel ein koordiniertes Offenlegungsfenster von <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>90 Tagen<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> an, sobald ein Fix verfügbar ist und bestätigt wurde. Wir können die öffentliche Offenlegung verzögern, wenn das Risiko aktiver Ausnutzung oder unvollständiger Patch-Adoption den Nutzen einer sofortigen Veröffentlichung überwiegt. Diese enge Verzögerung entspricht Anhang I Teil II Nr. 4 der CRA. </target>
       </trans-unit>
@@ -2913,11 +2918,11 @@
         <source> By providing this Policy, we meet the coordinated vulnerability disclosure obligation in Annex I, Part II(5) of Regulation (EU) 2024/2847. Actively exploited vulnerabilities and severe incidents are escalated internally so we can meet Article 14 reporting to the competent CSIRT and ENISA. That includes the early warning, notification, and final report cadence. Our operator runbook covers internal escalation. We do not publish those operational details here. </source>
         <target> Indem wir diese Richtlinie bereitstellen, erfüllen wir die Verpflichtung zur koordinierten Schwachstellenmeldung in Anhang I Teil II Nr. 5 der Verordnung (EU) 2024/2847. Aktiv ausgenutzte Schwachstellen und schwere Vorfälle werden intern eskaliert, damit wir die Meldung nach Artikel 14 an das zuständige CSIRT und ENISA erfüllen können. Das umfasst die Frühwarnung, die Meldung und den Abschlussbericht. Unser Operator-Runbook regelt die interne Eskalation. Diese betrieblichen Details veröffentlichen wir hier nicht. </target>
       </trans-unit>
-            <trans-unit id="featureForepathLegalVulnerabilityDisclosure-advisoriesIntro" datatype="html">
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-advisoriesIntro" datatype="html">
         <source> Once a fix ships, we publish public advisories and release Software Bills of Materials so you can see what changed and what is included in each build. </source>
         <target> Sobald ein Fix veröffentlicht ist, stellen wir öffentliche Advisories und Software Bills of Materials bereit, damit Sie nachvollziehen können, was sich geändert hat und was in jedem Build enthalten ist. </target>
       </trans-unit>
-<trans-unit id="featureForepathLegalVulnerabilityDisclosure-advisoriesTitle" datatype="html">
+      <trans-unit id="featureForepathLegalVulnerabilityDisclosure-advisoriesTitle" datatype="html">
         <source> Public advisories and SBOM </source>
         <target> Öffentliche Advisories und SBOM </target>
       </trans-unit>
@@ -3082,8 +3087,8 @@
         <target> Sie müssen die Datenschutzerklärung akzeptieren, um Ihre Meldung zu senden. </target>
       </trans-unit>
       <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formSubmitting" datatype="html">
-        <source>Submitting…</source>
-        <target>Wird gesendet…</target>
+        <source>Submitting...</source>
+        <target>Wird gesendet...</target>
       </trans-unit>
       <trans-unit id="featureForepathLegalVulnerabilityDisclosure-formSubmit" datatype="html">
         <source>Submit report</source>
@@ -3100,136 +3105,136 @@
       <trans-unit id="featureForepathLegalVulnerabilityDisclosure-metaKeywords" datatype="html">
         <source>ForePath, vulnerability disclosure, security, CRA, CVD</source>
         <target>ForePath, Schwachstellenmeldung, Sicherheit, CRA, CVD</target>
-      </trans-unit><trans-unit id="featureForepathLegalContentReport-title" datatype="html">
+      </trans-unit>
+      <trans-unit id="featureForepathLegalContentReport-title" datatype="html">
         <source> Content Report </source>
         <target>Inhaltsmeldung</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-subtitle" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-subtitle" datatype="html">
         <source> Illegal content notices under the DSA and official terrorist-content removal orders under the TCO Regulation </source>
         <target>Meldungen illegaler Inhalte nach DSA und amtliche Löschungsanordnungen nach der TCO-Verordnung</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-reportCta" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-reportCta" datatype="html">
         <source> Report illegal content </source>
         <target>Illegale Inhalte melden</target>
       </trans-unit>
-
-<trans-unit id="featureForepathLegalContentReport-whichTitle" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-whichTitle" datatype="html">
         <source>Which mechanism to use</source>
         <target>Welchen Mechanismus verwenden</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-whichIntro" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-whichIntro" datatype="html">
         <source> Choose the mechanism that matches your role and the nature of your submission. Public reporters of alleged illegal content use the DSA notice. Competent authorities issuing a binding terrorist-content removal order use the TCO contact point. </source>
         <target>Wählen Sie den Mechanismus, der Ihrer Rolle und der Art Ihrer Einreichung entspricht. Öffentliche Melder mutmaßlich illegaler Inhalte nutzen die DSA-Meldung. Zuständige Behörden, die eine verbindliche Löschungsanordnung für terroristische Inhalte erlassen, nutzen die TCO-Kontaktstelle.</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-whichDsaTitle" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-whichDsaTitle" datatype="html">
         <source> DSA notice (public) </source>
         <target>DSA-Meldung (öffentlich)</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-whichDsaBody" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-whichDsaBody" datatype="html">
         <source> Any individual or entity may notify us of specific content they consider illegal. There is no fixed one-hour clock. We process notices in a timely, diligent, non-arbitrary, and objective manner. </source>
         <target>Jede natürliche oder juristische Person kann uns über bestimmte Inhalte benachrichtigen, die sie für illegal hält. Es gibt keine feste Ein-Stunden-Frist. Wir bearbeiten Meldungen zeitnah, sorgfältig, nicht willkürlich und objektiv.</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-whichDsaLink" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-whichDsaLink" datatype="html">
         <source>Use the DSA form</source>
         <target>DSA-Formular verwenden</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-whichTcoTitle" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-whichTcoTitle" datatype="html">
         <source> TCO removal order (authorities) </source>
         <target>TCO-Löschungsanordnung (Behörden)</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-whichTcoBody" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-whichTcoBody" datatype="html">
         <source> Only EU Member State competent authorities may submit binding removal orders for terrorist content. This contact point is staffed for 24/7 electronic receipt. Content identified in a valid order is removed or disabled within one hour of receipt, subject to the Regulation. </source>
         <target>Nur zuständige Behörden der EU-Mitgliedstaaten dürfen verbindliche Löschungsanordnungen für terroristische Inhalte übermitteln. Diese Kontaktstelle ist rund um die Uhr für den elektronischen Empfang besetzt. In einer gültigen Anordnung identifizierte Inhalte werden vorbehaltlich der Verordnung innerhalb einer Stunde nach Eingang entfernt oder gesperrt.</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-whichTcoLink" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-whichTcoLink" datatype="html">
         <source>Use the TCO form</source>
         <target>TCO-Formular verwenden</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-dsaTitle" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-dsaTitle" datatype="html">
         <source> DSA notice-and-action commitments </source>
         <target>DSA-Verpflichtungen (Notice and Action)</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-dsaP1" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-dsaP1" datatype="html">
         <source> We provide an easy electronic mechanism so any individual or entity can notify us of specific illegal content. Where your notice includes an email address, we send a confirmation of receipt without undue delay. We then notify you of our decision regarding the reported content and of the redress possibilities available against that decision, including internal complaint handling where offered, out-of-court dispute settlement where applicable, and judicial redress. </source>
         <target>Wir stellen einen einfachen elektronischen Mechanismus bereit, damit jede natürliche oder juristische Person uns über bestimmte illegale Inhalte benachrichtigen kann. Enthält Ihre Meldung eine E-Mail-Adresse, senden wir unverzüglich eine Empfangsbestätigung. Anschließend teilen wir Ihnen unsere Entscheidung zu den gemeldeten Inhalten sowie die dagegen verfügbaren Rechtsbehelfe mit, einschließlich interner Beschwerdeverfahren sofern angeboten, außergerichtlicher Streitbeilegung sofern anwendbar und gerichtlichen Rechtsschutzes.</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-dsaP2" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-dsaP2" datatype="html">
         <source> We do not currently use automated means to decide DSA notices. If that changes, we will disclose the use of automation in the decision notification. Abusive, bad-faith, or repeatedly unfounded notices may be deprioritized or rejected without further engagement. </source>
         <target>Wir nutzen derzeit keine automatisierten Mittel zur Entscheidung über DSA-Meldungen. Falls sich das ändert, werden wir den Einsatz von Automatisierung in der Entscheidungsmitteilung offenlegen. Missbräuchliche, böswillige oder wiederholt unbegründete Meldungen können nachrangig behandelt oder ohne weitere Bearbeitung abgelehnt werden.</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-dsaP3" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-dsaP3" datatype="html">
         <source> You may also email <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;mailto:report+dsa&amp;#64;forepath.io&quot;&gt;"/>report+dsa@forepath.io<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/>. Prefer the form so mandatory Article 16 elements are complete at submission. Competent authorities with a binding TCO removal order should use the TCO mechanism instead. </source>
         <target> Sie können auch eine E-Mail an <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;mailto:report+dsa&amp;#64;forepath.io&quot;&gt;"/>report+dsa@forepath.io<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/> senden. Bevorzugen Sie das Formular, damit die verpflichtenden Elemente nach Artikel 16 bei der Einreichung vollständig sind. Zuständige Behörden mit einer verbindlichen TCO-Löschungsanordnung sollten stattdessen den TCO-Mechanismus nutzen. </target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-tcoTitle" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-tcoTitle" datatype="html">
         <source> TCO removal-order contact point </source>
         <target>TCO-Kontaktstelle für Löschungsanordnungen</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-tcoP1" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-tcoP1" datatype="html">
         <source> Our TCO contact point receives electronic removal orders from competent authorities only. It is available 24/7. Supported languages are English and German. Our main establishment is in Germany (IPvX UG (haftungsbeschränkt)). </source>
         <target>Unsere TCO-Kontaktstelle empfängt elektronische Löschungsanordnungen ausschließlich von zuständigen Behörden. Sie ist rund um die Uhr verfügbar. Unterstützte Sprachen sind Englisch und Deutsch. Unsere Hauptniederlassung befindet sich in Deutschland (IPvX UG (haftungsbeschränkt)).</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-tcoP2" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-tcoP2" datatype="html">
         <source> Submit the signed removal-order PDF through the form below, or email <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;mailto:report+tco&amp;#64;forepath.io&quot;&gt;"/>report+tco@forepath.io<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/> with the same information. Public reports of alleged illegal content that are not binding TCO removal orders must use the DSA mechanism. </source>
         <target> Übermitteln Sie die unterzeichnete Löschungsanordnung als PDF über das Formular unten oder per E-Mail an <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;mailto:report+tco&amp;#64;forepath.io&quot;&gt;"/>report+tco@forepath.io<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/> mit denselben Angaben. Öffentliche Meldungen mutmaßlich illegaler Inhalte, die keine verbindlichen TCO-Löschungsanordnungen sind, müssen den DSA-Mechanismus nutzen. </target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-tcoP3" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-tcoP3" datatype="html">
         <source> If we apply specific proactive measures against terrorist content, content providers whose content was removed or disabled may contest that decision through a separate complaint channel. That Article 5 channel is distinct from this authority-facing intake. </source>
         <target>Wenn wir besondere proaktive Maßnahmen gegen terroristische Inhalte anwenden, können Inhalteanbieter, deren Inhalte entfernt oder gesperrt wurden, diese Entscheidung über einen gesonderten Beschwerdekanal anfechten. Dieser Kanal nach Artikel 5 ist von diesem behördlichen Intake getrennt.</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formTitle" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formTitle" datatype="html">
         <source> Submit a content report </source>
         <target>Inhaltsmeldung absenden</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formLead" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formLead" datatype="html">
         <source> Select the report type that matches your submission, then complete the fields for that mechanism. </source>
         <target>Wählen Sie den Meldungstyp, der Ihrer Einreichung entspricht, und füllen Sie anschließend die Felder für diesen Mechanismus aus.</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formSuccessTitle" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formSuccessTitle" datatype="html">
         <source> Report submitted </source>
         <target>Meldung übermittelt</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formSuccessLead" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formSuccessLead" datatype="html">
         <source> Thank you. We received your report and will process it according to the selected mechanism. </source>
         <target>Vielen Dank. Wir haben Ihre Meldung erhalten und werden sie gemäß dem gewählten Mechanismus bearbeiten.</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formTypeLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formTypeLabel" datatype="html">
         <source> Report type </source>
         <target>Meldungstyp</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formTypeDsaTitle" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formTypeDsaTitle" datatype="html">
         <source>Illegal content under the Digital Services Act (DSA)</source>
         <target>Illegale Inhalte nach dem Digital Services Act (DSA)</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formTypeDsaHelp" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formTypeDsaHelp" datatype="html">
         <source>For individuals or entities reporting content they believe is illegal.</source>
         <target>Für natürliche oder juristische Personen, die Inhalte melden, die sie für illegal halten.</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formTypeTcoTitle" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formTypeTcoTitle" datatype="html">
         <source>Official terrorist-content removal order under the TCO Regulation</source>
         <target>Amtliche Löschungsanordnung für terroristische Inhalte nach der TCO-Verordnung</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formTypeTcoHelp" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formTypeTcoHelp" datatype="html">
         <source>For competent authorities submitting a binding TCO removal order.</source>
         <target>Für zuständige Behörden, die eine verbindliche TCO-Löschungsanordnung übermitteln.</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formUrlsLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formUrlsLabel" datatype="html">
         <source>Exact URL(s) / electronic location</source>
         <target>Genaue URL(s) / elektronischer Speicherort</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formUrlsRequired" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formUrlsRequired" datatype="html">
         <source> Exact URL(s) are required. </source>
         <target>Genaue URL(s) sind erforderlich.</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formCsamLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formCsamLabel" datatype="html">
         <source> This notice concerns child sexual abuse offences under Articles 3 to 7 of Directive 2011/93/EU and I request anonymity (name and email waived). </source>
         <target>Diese Meldung betrifft Straftaten des sexuellen Missbrauchs von Kindern nach den Artikeln 3 bis 7 der Richtlinie 2011/93/EU und ich beantrage Anonymität (Name und E-Mail entfallen).</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formNameLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formNameLabel" datatype="html">
         <source>Name</source>
         <target>Name</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formNameRequired" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formNameRequired" datatype="html">
         <source> Name is required. </source>
         <target>Name ist erforderlich.</target>
       </trans-unit>
@@ -3237,7 +3242,7 @@
         <source>Waived</source>
         <target>Ausgesetzt</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formEmailLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formEmailLabel" datatype="html">
         <source>Email</source>
         <target>E-Mail</target>
       </trans-unit>
@@ -3245,117 +3250,121 @@
         <source>Waived</source>
         <target>Ausgesetzt</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formEmailRequired" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formEmailRequired" datatype="html">
         <source> Email is required. </source>
         <target>E-Mail ist erforderlich.</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formEmailInvalid" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formEmailInvalid" datatype="html">
         <source> Enter a valid email address. </source>
         <target>Geben Sie eine gültige E-Mail-Adresse ein.</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formExplanationLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formExplanationLabel" datatype="html">
         <source>Explanation of alleged illegality</source>
         <target>Erläuterung der mutmaßlichen Rechtswidrigkeit</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formExplanationRequired" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formExplanationRequired" datatype="html">
         <source> A sufficiently substantiated explanation is required. </source>
         <target>Eine hinreichend begründete Erläuterung ist erforderlich.</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formCategoryLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formCategoryLabel" datatype="html">
         <source>Category of illegal content (optional)</source>
         <target>Kategorie illegaler Inhalte (optional)</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formAdditionalLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formAdditionalLabel" datatype="html">
         <source>Additional identifying information (optional)</source>
         <target>Zusätzliche Identifizierungsangaben (optional)</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formGoodFaithLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formGoodFaithLabel" datatype="html">
         <source> I confirm in good faith that the information and allegations in this notice are accurate and complete. </source>
         <target>Ich bestätige nach Treu und Glauben, dass die Informationen und Behauptungen in dieser Meldung zutreffend und vollständig sind.</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formAuthorityLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formAuthorityLabel" datatype="html">
         <source>Issuing competent authority</source>
         <target>Ausstellende zuständige Behörde</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formMemberStateLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formMemberStateLabel" datatype="html">
         <source>Member State</source>
         <target>Mitgliedstaat</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formOfficialNameLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formOfficialNameLabel" datatype="html">
         <source>Authorized official&apos;s name</source>
         <target>Authorized official&apos;s name</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formOfficialRoleLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formOfficialRoleLabel" datatype="html">
         <source>Official&apos;s role</source>
         <target>Official&apos;s role</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formOrderRefLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formOrderRefLabel" datatype="html">
         <source>Removal order reference number</source>
         <target>Aktenzeichen der Löschungsanordnung</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formOrderIssuedLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formOrderIssuedLabel" datatype="html">
         <source>Date and time of issuance</source>
         <target>Datum und Uhrzeit der Ausstellung</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formLanguageLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formLanguageLabel" datatype="html">
         <source>Preferred language of exchange</source>
         <target>Bevorzugte Sprache der Kommunikation</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formLanguagePlaceholder" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formLanguagePlaceholder" datatype="html">
         <source> Select a language </source>
         <target>Sprache auswählen</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formLanguageEn" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formLanguageEn" datatype="html">
         <source>English</source>
         <target>Englisch</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formLanguageDe" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formLanguageDe" datatype="html">
         <source>German</source>
         <target>Deutsch</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formEmergencyLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formEmergencyLabel" datatype="html">
         <source> Emergency case (12-hour pre-notification exception) </source>
         <target>Notfall (Ausnahme von der 12-Stunden-Vorabunterrichtung)</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formReasonsLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formReasonsLabel" datatype="html">
         <source>Statement of reasons / legal basis</source>
         <target>Begründung / Rechtsgrundlage</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formRedressLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formRedressLabel" datatype="html">
         <source>Redress information provided to the host and content provider</source>
         <target>Rechtsbehelfsinformationen für den Host und den Inhalteanbieter</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formPdfLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formPdfLabel" datatype="html">
         <source>Signed removal-order PDF</source>
         <target>Unterzeichnete Löschungsanordnung (PDF)</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formAttestationLabel" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formAttestationLabel" datatype="html">
         <source> I confirm that I am submitting on behalf of an EU Member State competent authority and that this is a binding terrorist-content removal order under Regulation (EU) 2021/784. </source>
         <target>Ich bestätige, dass ich im Namen einer zuständigen Behörde eines EU-Mitgliedstaats einreiche und dass es sich um eine verbindliche Löschungsanordnung für terroristische Inhalte nach Verordnung (EU) 2021/784 handelt.</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formPrivacyPrefix" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formPrivacyPrefix" datatype="html">
         <source>I agree to the </source>
         <target>Ich stimme der </target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formPrivacyLink" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formPrivacyLink" datatype="html">
         <source>Privacy Policy</source>
         <target>Datenschutzerklärung</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-formSubmit" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-formSubmit" datatype="html">
         <source> Submit report </source>
         <target>Meldung absenden</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-metaTitle" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-metaTitle" datatype="html">
         <source>Content Report :: ForePath</source>
         <target>Inhaltsmeldung :: ForePath</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-metaDescription" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-metaDescription" datatype="html">
         <source>Report illegal content under the Digital Services Act or submit an official TCO removal order to IPvX UG (haftungsbeschränkt).</source>
         <target>Melden Sie illegale Inhalte nach dem Digital Services Act oder übermitteln Sie eine amtliche TCO-Löschungsanordnung an IPvX UG (haftungsbeschränkt).</target>
       </trans-unit>
-<trans-unit id="featureForepathLegalContentReport-metaKeywords" datatype="html">
+      <trans-unit id="featureForepathLegalContentReport-metaKeywords" datatype="html">
         <source>ForePath, DSA, TCO, content report, illegal content</source>
         <target>ForePath, DSA, TCO, Inhaltsmeldung, illegale Inhalte</target>
+      </trans-unit>
+      <trans-unit id="featureForepathSoftwareDevelopment-codeIllustration" datatype="html">
+        <source>Code editor with the same service written in PHP, TypeScript and Java</source>
+        <target>Code-Editor mit demselben Service in PHP, TypeScript und Java</target>
       </trans-unit>
   </body>
   </file>

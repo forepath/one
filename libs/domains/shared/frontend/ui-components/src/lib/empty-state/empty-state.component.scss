@@ -18,7 +18,7 @@
 
 // Solo child of an overflow scrollport (no list/sentinel siblings): fill the scrollport
 // without relying on flex-grow, which some engines ignore on overflow:auto containers.
-// Do not use min-height: 100% when siblings exist — that plus a 1px infinite-scroll
+// Do not use min-height: 100% when siblings exist - that plus a 1px infinite-scroll
 // sentinel overflows the scrollport and shows a useless scrollbar.
 :host:only-child {
   min-height: 100%;

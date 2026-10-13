@@ -15,7 +15,7 @@ const meta: Meta<FormControlStoryArgs> = {
 
 **Pairs with:** \`fpc-form-field\`, \`fpc-input-group\` (host is the flex item inside input groups).
 
-**When not to:** Complex multi-select with \`compareWith\` / \`[ngValue]\` — keep native selects when needed.`,
+**When not to:** Complex multi-select with \`compareWith\` / \`[ngValue]\`: keep native selects when needed.`,
       },
     },
   },
@@ -62,7 +62,7 @@ export const Select: Story = {
   render: (args) => ({
     props: args,
     template: `<fpc-form-control controlType="select" [size]="size" [value]="value">
-            <option value="">Choose…</option>
+            <option value="">Choose...</option>
             <option value="draft">Draft</option>
             <option value="published">Published</option>
         </fpc-form-control>`,

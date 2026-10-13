@@ -12,7 +12,7 @@ const meta: Meta<FpcButtonGroupComponent> = {
 
 **Pairs with:** \`fpc-button\` (usually \`size="sm"\` + \`iconOnly\`).
 
-**When not to:** Segmented equal-width tabs → \`fpc-tab-group\`. Prefix/suffix around a field → \`fpc-input-group\`.
+**When not to:** Segmented equal-width tabs: use \`fpc-tab-group\`. Prefix/suffix around a field: use \`fpc-input-group\`.
 
 Unlike Bootstrap \`btn-group\`, buttons keep their own borders and sit with a slight gap (\`size\` picks the default; \`gap\` overrides).`,
       },

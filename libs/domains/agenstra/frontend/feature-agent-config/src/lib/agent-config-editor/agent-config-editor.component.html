@@ -4,13 +4,16 @@
   </div>
 } @else {
   @if (error(); as err) {
-    <fpc-alert variant="danger" class="mb-3">{{ err }}</fpc-alert>
+    <fpc-alert variant="danger" [class.mb-3]="presentation() === 'modal'" [flush]="presentation() === 'page'">{{
+      err
+    }}</fpc-alert>
   }
 
   @if (lockedPaths().length) {
     <fpc-alert
       variant="warning"
-      class="mb-3"
+      [class.mb-3]="presentation() === 'modal'"
+      [flush]="presentation() === 'page'"
       i18n-message="@@featureAgentConfig-lockedByHigherLayerAlert"
       message="Some settings are locked by a higher layer and cannot be edited here."
     />
@@ -44,7 +47,7 @@
       </fpc-button>
     </div>
   } @else if (inheritedAdditive().length) {
-    <div class="agent-config-editor__heredity mb-3">
+    <div class="agent-config-editor__heredity agent-config-editor__heredity--bar">
       <div class="text-secondary small">
         <span i18n="@@featureAgentConfig-inheritedHint"
           >Inherited additive entries are shown read-only where applicable.</span
@@ -449,7 +452,7 @@
                         inputId="agentConfigEnabledKnownProvider"
                         listboxId="agentConfigEnabledKnownProvider-listbox"
                         i18n-placeholder="@@featureAgentConfig-providerTypeaheadPlaceholder"
-                        placeholder="Search built-in providers…"
+                        placeholder="Search built-in providers..."
                         i18n-ariaLabel="@@featureAgentConfig-providerTypeaheadAria"
                         ariaLabel="Search built-in providers"
                         [loading]="enabledProviderTypeaheadLoading()"
@@ -469,7 +472,7 @@
                               <span class="d-block small fw-medium text-truncate">{{
                                 builtinProviderLabel(provider)
                               }}</span>
-                              <span class="d-block font-monospace text-muted small text-truncate">{{
+                              <span class="d-block font-monospace text-body-secondary small text-truncate">{{
                                 provider.id
                               }}</span>
                             </button>
@@ -512,7 +515,7 @@
                         inputId="agentConfigDisabledKnownProvider"
                         listboxId="agentConfigDisabledKnownProvider-listbox"
                         i18n-placeholder="@@featureAgentConfig-providerTypeaheadPlaceholder"
-                        placeholder="Search built-in providers…"
+                        placeholder="Search built-in providers..."
                         i18n-ariaLabel="@@featureAgentConfig-providerTypeaheadAria"
                         ariaLabel="Search built-in providers"
                         [loading]="disabledProviderTypeaheadLoading()"
@@ -532,7 +535,7 @@
                               <span class="d-block small fw-medium text-truncate">{{
                                 builtinProviderLabel(provider)
                               }}</span>
-                              <span class="d-block font-monospace text-muted small text-truncate">{{
+                              <span class="d-block font-monospace text-body-secondary small text-truncate">{{
                                 provider.id
                               }}</span>
                             </button>
@@ -611,7 +614,7 @@
                                   <span class="d-block small fw-medium text-truncate">{{
                                     builtinProviderLabel(provider)
                                   }}</span>
-                                  <span class="d-block font-monospace text-muted small text-truncate">{{
+                                  <span class="d-block font-monospace text-body-secondary small text-truncate">{{
                                     provider.id
                                   }}</span>
                                 </button>
@@ -731,7 +734,7 @@
                                   <span class="d-block small fw-medium text-truncate">{{
                                     builtinProviderLabel(provider)
                                   }}</span>
-                                  <span class="d-block font-monospace text-muted small text-truncate">{{
+                                  <span class="d-block font-monospace text-body-secondary small text-truncate">{{
                                     provider.id
                                   }}</span>
                                 </button>
@@ -837,7 +840,7 @@
                     inputId="agentConfigBuiltinProvider"
                     listboxId="agentConfigBuiltinProvider-listbox"
                     i18n-placeholder="@@featureAgentConfig-providerTypeaheadPlaceholder"
-                    placeholder="Search built-in providers…"
+                    placeholder="Search built-in providers..."
                     i18n-ariaLabel="@@featureAgentConfig-providerTypeaheadAria"
                     ariaLabel="Search built-in providers"
                     [loading]="providerTypeaheadLoading()"
@@ -857,7 +860,9 @@
                           <span class="d-block small fw-medium text-truncate">{{
                             builtinProviderLabel(provider)
                           }}</span>
-                          <span class="d-block font-monospace text-muted small text-truncate">{{ provider.id }}</span>
+                          <span class="d-block font-monospace text-body-secondary small text-truncate">{{
+                            provider.id
+                          }}</span>
                         </button>
                       }
                     </div>
@@ -1149,7 +1154,7 @@
                         inputId="agentConfigAllowKnownMcp"
                         listboxId="agentConfigAllowKnownMcp-listbox"
                         i18n-placeholder="@@featureAgentConfig-mcpTypeaheadPlaceholder"
-                        placeholder="Search MCP registry…"
+                        placeholder="Search MCP registry..."
                         i18n-ariaLabel="@@featureAgentConfig-mcpTypeaheadAria"
                         ariaLabel="Search MCP registry servers"
                         [loading]="allowMcpTypeaheadLoading()"
@@ -1169,7 +1174,7 @@
                               <span class="d-block small fw-medium text-truncate">{{
                                 builtinMcpServerOptionLabel(server)
                               }}</span>
-                              <span class="d-block font-monospace text-muted small text-truncate">{{
+                              <span class="d-block font-monospace text-body-secondary small text-truncate">{{
                                 server.name
                               }}</span>
                             </button>
@@ -1223,7 +1228,7 @@
                         inputId="agentConfigDenyKnownMcp"
                         listboxId="agentConfigDenyKnownMcp-listbox"
                         i18n-placeholder="@@featureAgentConfig-mcpTypeaheadPlaceholder"
-                        placeholder="Search MCP registry…"
+                        placeholder="Search MCP registry..."
                         i18n-ariaLabel="@@featureAgentConfig-mcpTypeaheadAria"
                         ariaLabel="Search MCP registry servers"
                         [loading]="denyMcpTypeaheadLoading()"
@@ -1243,7 +1248,7 @@
                               <span class="d-block small fw-medium text-truncate">{{
                                 builtinMcpServerOptionLabel(server)
                               }}</span>
-                              <span class="d-block font-monospace text-muted small text-truncate">{{
+                              <span class="d-block font-monospace text-body-secondary small text-truncate">{{
                                 server.name
                               }}</span>
                             </button>
@@ -1281,7 +1286,7 @@
                     inputId="agentConfigBuiltinMcp"
                     listboxId="agentConfigBuiltinMcp-listbox"
                     i18n-placeholder="@@featureAgentConfig-mcpTypeaheadPlaceholder"
-                    placeholder="Search MCP registry…"
+                    placeholder="Search MCP registry..."
                     i18n-ariaLabel="@@featureAgentConfig-mcpTypeaheadAria"
                     ariaLabel="Search MCP registry servers"
                     [loading]="mcpTypeaheadLoading()"
@@ -1301,7 +1306,9 @@
                           <span class="d-block small fw-medium text-truncate">{{
                             builtinMcpServerOptionLabel(server)
                           }}</span>
-                          <span class="d-block font-monospace text-muted small text-truncate">{{ server.name }}</span>
+                          <span class="d-block font-monospace text-body-secondary small text-truncate">{{
+                            server.name
+                          }}</span>
                         </button>
                       }
                     </div>
@@ -1517,7 +1524,7 @@
                     [description]="
                       secretSet(mcpOAuthSecretKey(key))
                         ? 'Set (enter new value to rotate, clear to remove)'
-                        : 'Not set — stored as a layer secret'
+                        : 'Not set (stored as a layer secret)'
                     "
                     [dirty]="isSecretDirty(mcpOAuthSecretKey(key))"
                   >
@@ -1991,12 +1998,14 @@
                     <span fpcListItemTitle>
                       {{ plugin.packageName || 'plugin' }}
                       @if (plugin.inherited) {
-                        <span class="badge text-bg-secondary ms-2" i18n="@@featureAgentConfig-inheritedBadge"
-                          >Inherited</span
+                        <fpc-badge color="secondary" class="ms-2" i18n="@@featureAgentConfig-inheritedBadge"
+                          >Inherited</fpc-badge
                         >
                       }
                       @if (plugin.deleted) {
-                        <span class="badge text-bg-warning ms-2" i18n="@@featureAgentConfig-removedBadge">Removed</span>
+                        <fpc-badge color="warning" class="ms-2" i18n="@@featureAgentConfig-removedBadge"
+                          >Removed</fpc-badge
+                        >
                       }
                     </span>
                     <div fpcListItemActions>
@@ -2428,10 +2437,11 @@
               <fpc-list [flush]="true" ariaLabel="Permissions">
                 @for (rule of permissionRules(); track rule.__index) {
                   <fpc-list-item variant="condensed" [dirty]="rule.__dirty">
-                    <span fpcListItemTitle>
-                      {{ rule['action'] }} · {{ rule['resource'] }}
+                    <span fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                      <span>{{ rule['action'] }}</span>
+                      <span>{{ rule['resource'] }}</span>
                       @if (rule.__deleted) {
-                        <span class="badge text-bg-warning ms-2" i18n="@@featureAgentConfig-removedBadge">Removed</span>
+                        <fpc-badge color="warning" i18n="@@featureAgentConfig-removedBadge">Removed</fpc-badge>
                       }
                     </span>
                     <span fpcListItemMeta>{{ rule['effect'] }}</span>
@@ -2550,10 +2560,11 @@
               <fpc-list [flush]="true" ariaLabel="Policies">
                 @for (rule of policyRules(); track rule.__index) {
                   <fpc-list-item variant="condensed" [dirty]="rule.__dirty">
-                    <span fpcListItemTitle>
-                      {{ rule['action'] }} · {{ rule['resource'] }}
+                    <span fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                      <span>{{ rule['action'] }}</span>
+                      <span>{{ rule['resource'] }}</span>
                       @if (rule.__deleted) {
-                        <span class="badge text-bg-warning ms-2" i18n="@@featureAgentConfig-removedBadge">Removed</span>
+                        <fpc-badge color="warning" i18n="@@featureAgentConfig-removedBadge">Removed</fpc-badge>
                       }
                     </span>
                     <span fpcListItemMeta>{{ rule['effect'] }}</span>
@@ -2737,16 +2748,14 @@
             @if (layer() === 'agent' && egressStatus(); as status) {
               <div class="agent-config-editor__egress-status mb-3" data-testid="agent-config-egress-status">
                 <span class="fw-medium" i18n="@@featureAgentConfig-egressStatusLabel">Guard status:</span>
-                <span
-                  class="badge ms-2"
-                  [class.text-bg-success]="status.status === 'active'"
-                  [class.text-bg-secondary]="status.status === 'inactive'"
-                  [class.text-bg-danger]="status.status === 'failed'"
-                  >{{ status.status }}</span
+                <fpc-badge
+                  class="ms-2"
+                  [color]="status.status === 'active' ? 'success' : status.status === 'failed' ? 'danger' : 'secondary'"
+                  >{{ status.status }}</fpc-badge
                 >
-                <span class="text-muted small ms-2">{{ status.mode }}</span>
+                <span class="text-body-secondary small ms-2">{{ status.mode }}</span>
                 @if (status.appliedAt) {
-                  <span class="text-muted small ms-2" i18n="@@featureAgentConfig-egressAppliedAt"
+                  <span class="text-body-secondary small ms-2" i18n="@@featureAgentConfig-egressAppliedAt"
                     >applied {{ status.appliedAt | date: 'short' }}</span
                   >
                 }
@@ -2762,7 +2771,7 @@
                 i18n-title="@@featureAgentConfig-fieldEgressMode"
                 title="Filtering mode"
                 i18n-description="@@featureAgentConfig-fieldEgressModeHelp"
-                description="off: no guard · monitor: record would-be blocks · enforce: apply the lists · offline: block all egress"
+                description="off: no guard, monitor: record would-be blocks, enforce: apply the lists, offline: block all egress"
                 [dirty]="isConfigPathDirty('egress.mode')"
                 [lockable]="showLockControl('/egress/mode')"
                 [locked]="isLocked('/egress/mode')"
@@ -2785,7 +2794,7 @@
                   <span i18n="@@featureAgentConfig-effectiveValue">Effective:</span>
                   {{ egressScalarHint('mode').value }}
                   @if (egressScalarHint('mode').source; as source) {
-                    <span class="badge text-bg-light border ms-1">{{ source }}</span>
+                    <fpc-badge color="light" class="border ms-1">{{ source }}</fpc-badge>
                   }
                 </div>
               </agenstra-agent-config-settings-row>
@@ -2816,7 +2825,7 @@
                     <span i18n="@@featureAgentConfig-effectiveValue">Effective:</span>
                     {{ egressScalarHint($any(flag.hint)).value }}
                     @if (egressScalarHint($any(flag.hint)).source; as source) {
-                      <span class="badge text-bg-light border ms-1">{{ source }}</span>
+                      <fpc-badge color="light" class="border ms-1">{{ source }}</fpc-badge>
                     }
                   </div>
                 </agenstra-agent-config-settings-row>
@@ -2840,9 +2849,9 @@
                   @if (inheritedEgressItems($any(list.key)).length) {
                     <div class="mb-2" [attr.data-testid]="'agent-config-egress-inherited-' + list.key">
                       @for (item of inheritedEgressItems($any(list.key)); track item) {
-                        <span class="badge text-bg-secondary me-1 mb-1 font-monospace">{{ item }}</span>
+                        <fpc-badge color="secondary" class="me-1 mb-1 font-monospace">{{ item }}</fpc-badge>
                       }
-                      <span class="text-muted small" i18n="@@featureAgentConfig-inheritedReadOnly"
+                      <span class="text-body-secondary small" i18n="@@featureAgentConfig-inheritedReadOnly"
                         >(inherited, read-only)</span
                       >
                     </div>
@@ -2895,9 +2904,11 @@
               </fpc-button>
             </div>
             @for (rule of inheritedEgressNetworkRules(); track $index) {
-              <div class="small mb-1 font-monospace">
-                {{ rule['protocol'] }}/{{ rule['ports'] }} → {{ egressNetworkDestinations(rule) }}
-                <span class="badge text-bg-secondary ms-2" i18n="@@featureAgentConfig-inheritedBadge">Inherited</span>
+              <div class="small mb-1 font-monospace d-flex flex-wrap align-items-center gap-2">
+                <span>{{ rule['protocol'] }}/{{ rule['ports'] }}</span>
+                <i class="bi bi-arrow-right text-body-secondary" aria-hidden="true"></i>
+                <span>{{ egressNetworkDestinations(rule) }}</span>
+                <fpc-badge color="secondary" i18n="@@featureAgentConfig-inheritedBadge">Inherited</fpc-badge>
               </div>
             }
             @if (egressNetworkRuleEntries().length === 0 && inheritedEgressNetworkRules().length === 0) {
@@ -2915,7 +2926,9 @@
                     <span fpcListItemTitle class="font-monospace">
                       {{ rule['protocol'] }}/{{ rule['ports'] }}
                       @if (rule.__deleted) {
-                        <span class="badge text-bg-warning ms-2" i18n="@@featureAgentConfig-removedBadge">Removed</span>
+                        <fpc-badge color="warning" class="ms-2" i18n="@@featureAgentConfig-removedBadge"
+                          >Removed</fpc-badge
+                        >
                       }
                     </span>
                     <span fpcListItemMeta class="font-monospace">{{ egressNetworkDestinations(rule) }}</span>
@@ -3011,23 +3024,25 @@
                 (ngModelChange)="egressTestInput.set($event)"
               />
               @if (egressTestResult(); as result) {
-                <div class="mt-2" data-testid="agent-config-egress-test-result">
-                  <span
-                    class="badge"
-                    [class.text-bg-success]="result.decision === 'allowed'"
-                    [class.text-bg-danger]="result.decision === 'blocked'"
-                    [class.text-bg-warning]="result.decision === 'observed'"
-                    >{{ result.decision }}</span
+                <div
+                  class="mt-2 d-flex flex-wrap align-items-center gap-2"
+                  data-testid="agent-config-egress-test-result"
+                >
+                  <fpc-badge
+                    [color]="
+                      result.decision === 'allowed' ? 'success' : result.decision === 'blocked' ? 'danger' : 'warning'
+                    "
+                    >{{ result.decision }}</fpc-badge
                   >
-                  <span class="font-monospace small ms-2">{{ result.host }}</span>
+                  <span class="font-monospace small">{{ result.host }}</span>
                   @if (result.rule) {
-                    <span class="small ms-2">· {{ result.rule }}</span>
+                    <span class="small">{{ result.rule }}</span>
                   }
                   @if (result.matchedEntry) {
-                    <span class="small ms-2 font-monospace">· {{ result.matchedEntry }}</span>
+                    <span class="small font-monospace">{{ result.matchedEntry }}</span>
                   }
                   @if (result.source) {
-                    <span class="badge text-bg-light border ms-2">{{ result.source }}</span>
+                    <fpc-badge color="light" class="border">{{ result.source }}</fpc-badge>
                   }
                 </div>
               }
@@ -3084,16 +3099,18 @@
               </fpc-button>
             </div>
             @for (rule of inheritedMessageFilters(); track $index) {
-              <div class="small mb-1" data-testid="agent-config-message-filter-inherited">
+              <div
+                class="small mb-1 d-flex flex-wrap align-items-center gap-2"
+                data-testid="agent-config-message-filter-inherited"
+              >
                 <span class="fw-medium">{{ rule.name }}</span>
-                <span class="font-monospace ms-2">/{{ rule.pattern }}/{{ rule.flags }}</span>
-                <span class="ms-2">{{ rule.action }} · {{ rule.direction }}</span>
+                <span class="font-monospace">/{{ rule.pattern }}/{{ rule.flags }}</span>
+                <span>{{ rule.action }}</span>
+                <span>{{ rule.direction }}</span>
                 @if (!rule.enabled) {
-                  <span class="badge text-bg-light border ms-2" i18n="@@featureAgentConfig-disabledBadge"
-                    >Disabled</span
-                  >
+                  <fpc-badge color="light" class="border" i18n="@@featureAgentConfig-disabledBadge">Disabled</fpc-badge>
                 }
-                <span class="badge text-bg-secondary ms-2">{{ rule.source }}</span>
+                <fpc-badge color="secondary">{{ rule.source }}</fpc-badge>
               </div>
             }
             @if (messageFilterRuleEntries().length === 0 && inheritedMessageFilters().length === 0) {
@@ -3111,10 +3128,15 @@
                     <span fpcListItemTitle>
                       {{ rule['name'] }}
                       @if (rule.__deleted) {
-                        <span class="badge text-bg-warning ms-2" i18n="@@featureAgentConfig-removedBadge">Removed</span>
+                        <fpc-badge color="warning" class="ms-2" i18n="@@featureAgentConfig-removedBadge"
+                          >Removed</fpc-badge
+                        >
                       }
                     </span>
-                    <span fpcListItemMeta>{{ rule['action'] }} · {{ rule['direction'] ?? 'bidirectional' }}</span>
+                    <span fpcListItemMeta class="d-flex flex-wrap align-items-center gap-2">
+                      <span>{{ rule['action'] }}</span>
+                      <span>{{ rule['direction'] ?? 'bidirectional' }}</span>
+                    </span>
                     <div fpcListItemActions class="d-flex gap-1">
                       <fpc-button
                         variant="secondary"
@@ -3211,7 +3233,7 @@
                           i18n-title="@@featureAgentConfig-fieldMessageFilterAction"
                           title="Action"
                           i18n-description="@@featureAgentConfig-fieldMessageFilterActionHelp"
-                          description="drop: block the message · replace: rewrite matches · flag: record only"
+                          description="drop: block the message, replace: rewrite matches, flag: record only"
                           [dirty]="isRuleFieldDirty('message_filters', rule.__index, 'action')"
                         >
                           <fpc-form-control
@@ -3282,21 +3304,20 @@
                 [ngModel]="messageFilterTestDirection()"
                 (ngModelChange)="messageFilterTestDirection.set($event)"
               >
-                <option value="incoming" i18n="@@featureAgentConfig-directionIncoming">incoming (user → agent)</option>
-                <option value="outgoing" i18n="@@featureAgentConfig-directionOutgoing">outgoing (agent → user)</option>
+                <option value="incoming" i18n="@@featureAgentConfig-directionIncoming">incoming (user to agent)</option>
+                <option value="outgoing" i18n="@@featureAgentConfig-directionOutgoing">outgoing (agent to user)</option>
               </fpc-form-control>
               @if (messageFilterTestResult(); as result) {
                 <div class="mt-2" data-testid="agent-config-message-filter-test-result">
-                  <span
-                    class="badge"
-                    [class.text-bg-success]="result.status === 'allowed'"
-                    [class.text-bg-danger]="result.status === 'dropped'"
-                    [class.text-bg-warning]="result.status === 'filtered'"
-                    >{{ result.status }}</span
+                  <fpc-badge
+                    [color]="
+                      result.status === 'allowed' ? 'success' : result.status === 'dropped' ? 'danger' : 'warning'
+                    "
+                    >{{ result.status }}</fpc-badge
                   >
                   @if (result.matchedRule; as matched) {
                     <span class="small ms-2">{{ matched.name }}</span>
-                    <span class="badge text-bg-light border ms-2">{{ matched.source }}</span>
+                    <fpc-badge color="light" class="border ms-2">{{ matched.source }}</fpc-badge>
                   }
                   @if (result.modifiedMessage !== undefined) {
                     <pre class="small mt-2 mb-0 agent-config-editor__tester-output">{{ result.modifiedMessage }}</pre>

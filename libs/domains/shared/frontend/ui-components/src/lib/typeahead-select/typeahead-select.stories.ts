@@ -17,11 +17,11 @@ const meta: Meta<TypeaheadStoryArgs> = {
       description: {
         component: `**When to use:** Combobox chrome: input + suggestions + selected chip patterns in consoles.
 
-**Variants:** \`menu\` (default) — floating suggestion menu, \`position: fixed\` and portaled to \`document.body\` so modal overflow / dialog transforms cannot clip results. \`inline\` — results list in document flow under the input (modal search panels).
+**Variants:** \`menu\` (default): floating suggestion menu, \`position: fixed\` and portaled to \`document.body\` so modal overflow / dialog transforms cannot clip results. \`inline\`: results list in document flow under the input (modal search panels).
 
 **Behavior:** While \`loading\` is true, the results host stays hidden so empty-state copy and an empty bordered panel cannot flash before the first response.
 
-**When not to:** Plain free-text search → \`fpc-search-field\`.`,
+**When not to:** Plain free-text search: use \`fpc-search-field\`.`,
       },
     },
   },
@@ -91,10 +91,10 @@ export const Inline: Story = {
         >
             <div fpcTypeaheadSuggestions>
                 <button type="button" class="dropdown-item py-2 text-start">
-                    <span class="d-flex gap-2"><span class="font-monospace text-muted small">a1b2</span><span>Fix login redirect</span></span>
+                    <span class="d-flex gap-2"><span class="font-monospace text-body-secondary small">a1b2</span><span>Fix login redirect</span></span>
                 </button>
                 <button type="button" class="dropdown-item py-2 text-start">
-                    <span class="d-flex gap-2"><span class="font-monospace text-muted small">c3d4</span><span>Update billing invoice PDF</span></span>
+                    <span class="d-flex gap-2"><span class="font-monospace text-body-secondary small">c3d4</span><span>Update billing invoice PDF</span></span>
                 </button>
             </div>
         </fpc-typeahead-select>`,

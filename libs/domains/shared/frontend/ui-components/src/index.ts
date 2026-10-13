@@ -8,6 +8,23 @@ export type { FpcButtonSize, FpcButtonType, FpcButtonVariant } from './lib/butto
 export { FpcButtonGroupComponent } from './lib/button-group/button-group.component';
 export type { FpcButtonGroupGap, FpcButtonGroupSize } from './lib/button-group/button-group.component';
 
+// Charts (ApexCharts option presets; global chrome lives in `styles/_charts.scss`)
+export {
+  FPC_CHART_AREA_FILL,
+  FPC_CHART_AXIS,
+  FPC_CHART_COLORS,
+  FPC_CHART_GRID,
+  FPC_CHART_LABEL_STYLE,
+  FPC_CHART_LEGEND,
+  FPC_CHART_PLACEHOLDER_COLOR,
+  FPC_CHART_SLICE_LABELS,
+  FPC_CHART_SLICE_TOOLTIP,
+  fpcChart,
+  fpcChartColor,
+  fpcChartColors,
+} from './lib/chart-theme/chart-theme';
+export type { FpcChartType } from './lib/chart-theme/chart-theme';
+
 // Data display
 export { FpcAccordionComponent } from './lib/accordion/accordion.component';
 export { FPC_ACCORDION_HOST, FpcAccordionItemComponent } from './lib/accordion-item/accordion-item.component';
@@ -77,6 +94,8 @@ export { FpcCollapsibleFilterPanelComponent } from './lib/collapsible-filter-pan
 export { FpcLaneHeaderComponent } from './lib/lane-header/lane-header.component';
 export type { FpcLaneHeaderVisibility } from './lib/lane-header/lane-header.component';
 export { FpcPageHeaderComponent } from './lib/page-header/page-header.component';
+export { FpcPanelComponent } from './lib/panel/panel.component';
+export { FpcPanelGridComponent } from './lib/panel-grid/panel-grid.component';
 export type { FpcPageHeaderDensity } from './lib/page-header/page-header.component';
 export { FpcSectionColumnComponent } from './lib/section-column/section-column.component';
 export type { FpcSectionColumnVariant } from './lib/section-column/section-column.component';

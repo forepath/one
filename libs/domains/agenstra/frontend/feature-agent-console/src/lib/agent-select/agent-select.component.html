@@ -32,11 +32,13 @@
           @for (agent of filteredAgents(); track agent.id) {
             <button type="button" class="dropdown-item py-2 text-start" (mousedown)="pickAgent(agent, $event)">
               <span class="d-block small fw-medium text-truncate">{{ agent.name }}</span>
-              <span class="d-block font-monospace text-muted small text-truncate">{{ agent.id }}</span>
+              <span class="d-block font-monospace text-body-secondary small text-truncate">{{ agent.id }}</span>
             </button>
           }
         } @else if (searchQuery().trim() && !loading()) {
-          <span class="dropdown-item-text text-muted small" i18n="@@featureAgentSelect-noAgents">No agents found.</span>
+          <span class="dropdown-item-text text-body-secondary small" i18n="@@featureAgentSelect-noAgents"
+            >No agents found.</span
+          >
         }
       </div>
     </fpc-typeahead-select>

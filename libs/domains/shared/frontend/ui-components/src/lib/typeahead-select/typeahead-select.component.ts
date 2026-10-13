@@ -21,15 +21,15 @@ import { FpcSpinnerComponent } from '../spinner/spinner.component';
 
 export type FpcTypeaheadSelectSize = 'sm' | 'md';
 
-/** `menu` — floating body-portaled dropdown. `inline` — results list in document flow under the input. */
+/** `menu` - floating body-portaled dropdown. `inline` - results list in document flow under the input. */
 export type FpcTypeaheadSelectVariant = 'menu' | 'inline';
 
 /**
  * Presentational typeahead shell. The component owns the query input and the results chrome;
  * filtering and rendering of results stay with the consumer:
  *
- * - `[fpcTypeaheadSelection]` — chips or summary for the current selection
- * - `[fpcTypeaheadSuggestions]` — the suggestion list
+ * - `[fpcTypeaheadSelection]` - chips or summary for the current selection
+ * - `[fpcTypeaheadSuggestions]` - the suggestion list
  *
  * **Variants**
  * - `menu` (default): suggestion menu is portaled to `document.body` with `position: fixed`
@@ -128,7 +128,7 @@ export class FpcTypeaheadSelectComponent implements OnDestroy {
 
   readonly query = model('');
   readonly open = model(false);
-  readonly placeholder = input<string | null>('Start typing…');
+  readonly placeholder = input<string | null>('Start typing...');
   readonly ariaLabel = input<string | null>(null);
   readonly clearAriaLabel = input('Clear selection');
   readonly inputId = input<string | null>(null);
@@ -141,8 +141,8 @@ export class FpcTypeaheadSelectComponent implements OnDestroy {
   /** Opens the suggestion popup as soon as the input receives focus. */
   readonly openOnFocus = input(true);
   /**
-   * `menu` — floating portaled dropdown (default).
-   * `inline` — results list below the input in document flow (modal searches).
+   * `menu` - floating portaled dropdown (default).
+   * `inline` - results list below the input in document flow (modal searches).
    */
   readonly variant = input<FpcTypeaheadSelectVariant>('menu');
 

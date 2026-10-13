@@ -1,5 +1,5 @@
 <!-- Hero -->
-<section id="hero" class="py-10 py-lg-6 bg-body-tertiary position-relative overflow-hidden grid-section">
+<section id="hero" class="py-10 py-lg-6 bg-dark text-white position-relative overflow-hidden grid-section">
   <div class="container grid-section__container">
     <div class="text-center">
       <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureForepathPricing-heroTitle">
@@ -22,7 +22,7 @@
 </section>
 
 <!-- Price list -->
-<section id="price-list" class="py-10 bg-white grid-section">
+<section id="price-list" class="py-10 bg-body grid-section">
   <div class="container grid-section__container">
     <div class="mb-5">
       <h3 class="h4 fw-semibold mb-4" i18n="@@featureForepathPricing-itSystemsTitle">IT systems</h3>
@@ -188,8 +188,8 @@
     </div>
 
     <article class="card border rounded-3 shadow-sm overflow-hidden card-capability card-capability-primary mt-5">
-      <div class="row g-0 align-items-center">
-        <div class="col-lg-8 p-4 p-lg-5">
+      <div class="row g-0 align-items-stretch">
+        <div class="col-lg-8 p-4 p-lg-5 d-flex flex-column justify-content-center">
           <h2 class="h3 fw-semibold mb-3" i18n="@@featureForepathPricing-startupTitle">
             Special conditions for startups and SMEs
           </h2>
@@ -198,7 +198,9 @@
             selected software and hardware products.
           </p>
         </div>
-        <div class="col-lg-4 p-4 p-lg-5 text-center">
+        <div
+          class="col-lg-4 p-4 p-lg-5 text-center d-flex flex-column align-items-center justify-content-center landing-divider-start landing-surface-tint"
+        >
           <fpc-button routerLink="/contact" variant="primary" size="lg" i18n="@@featureForepathPricing-startupCta"
             >Request free of charge</fpc-button
           >
@@ -215,7 +217,7 @@
 </section>
 
 <!-- CTA -->
-<section id="cta" class="py-10 bg-body-tertiary grid-section">
+<section id="cta" class="py-10 bg-dark grid-section">
   <div class="container grid-section__container">
     <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
       <h2 class="h2 fw-semibold mb-4" i18n="@@featureForepathPricing-ctaTitle">Questions about our rates?</h2>

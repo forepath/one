@@ -1,6 +1,6 @@
 <div class="workspace-search-panel d-flex flex-column h-100">
   <div class="workspace-search-header p-2 ps-3 border-bottom bg-body-tertiary">
-    <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex justify-content-between align-items-center gap-2">
       <h6 class="mb-0 fw-semibold" i18n="@@featureWorkspaceSearch-header">Search</h6>
       <fpc-button
         variant="dark"
@@ -66,7 +66,7 @@
           [openOnFocus]="false"
           [loading]="includeSuggestLoading()"
           i18n-placeholder="@@featureWorkspaceSearch-includePlaceholder"
-          placeholder="Add path prefix…"
+          placeholder="Add path prefix..."
           i18n-ariaLabel="@@featureWorkspaceSearch-includeLabel"
           ariaLabel="Include paths"
           [query]="includeDraft()"
@@ -122,7 +122,7 @@
           [openOnFocus]="false"
           [loading]="excludeSuggestLoading()"
           i18n-placeholder="@@featureWorkspaceSearch-excludePlaceholder"
-          placeholder="Exclude path prefix…"
+          placeholder="Exclude path prefix..."
           i18n-ariaLabel="@@featureWorkspaceSearch-excludeLabel"
           ariaLabel="Exclude paths"
           [query]="excludeDraft()"
@@ -174,7 +174,7 @@
     <div class="workspace-search-results flex-grow-1 overflow-auto min-h-0 border-top">
       @if (loading$ | async) {
         <div class="d-flex justify-content-center py-4">
-          <fpc-spinner variant="primary" i18n-label="@@featureWorkspaceSearch-loading" label="Searching…" />
+          <fpc-spinner variant="primary" i18n-label="@@featureWorkspaceSearch-loading" label="Searching..." />
         </div>
       } @else {
         @switch (indexStatus$ | async) {
@@ -188,7 +188,7 @@
           @case ('indexing') {
             <fpc-empty-state
               icon="hourglass-split"
-              message="Indexing…"
+              message="Indexing..."
               i18n-message="@@featureWorkspaceSearch-indexing"
             />
           }

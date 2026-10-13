@@ -1,5 +1,5 @@
 // Accent close, header/footer chrome, and scrollable flex fixes for `fpc-modal`.
-// Formerly global `styles/_modal.scss` + `styles/_scrollable-modal.scss` — no longer needed
+// Formerly global `styles/_modal.scss` + `styles/_scrollable-modal.scss` - no longer needed
 // outside this component (all consoles use `fpc-modal` / `fpc-confirm-dialog`).
 
 $modal-accent-close-size: 40px;
@@ -151,7 +151,7 @@ $modal-accent-close-size: 40px;
   }
 }
 
-// Dark: same language as `fpc-top-bar` — dark chrome + black wash.
+// Dark: same language as `fpc-top-bar` - dark chrome + black wash.
 :host-context(html[data-bs-theme='dark']) .modal-content > .modal-footer {
   background-color: var(--bs-dark);
   color: var(--bs-white);

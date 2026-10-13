@@ -178,9 +178,9 @@
         <div class="col-12">
           <fpc-label i18n="@@featureTokenManager-scopesLabel" [required]="true">Scopes</fpc-label>
           @if ((scopesLoading$ | async) === true) {
-            <div class="text-muted small" i18n="@@featureTokenManager-loadingScopes">Loading scopes...</div>
+            <div class="text-body-secondary small" i18n="@@featureTokenManager-loadingScopes">Loading scopes...</div>
           } @else if (scopes().length === 0) {
-            <div class="text-muted small" i18n="@@featureTokenManager-noScopes">No scopes available</div>
+            <div class="text-body-secondary small" i18n="@@featureTokenManager-noScopes">No scopes available</div>
           } @else {
             <div class="scope-list border rounded p-2">
               @for (scopeItem of scopes(); track scopeItem.scope) {
@@ -234,9 +234,9 @@
       <div class="col-12">
         <fpc-label i18n="@@featureTokenManager-scopesLabel" [required]="true">Scopes</fpc-label>
         @if ((scopesLoading$ | async) === true) {
-          <div class="text-muted small" i18n="@@featureTokenManager-loadingScopes">Loading scopes...</div>
+          <div class="text-body-secondary small" i18n="@@featureTokenManager-loadingScopes">Loading scopes...</div>
         } @else if (scopes().length === 0) {
-          <div class="text-muted small" i18n="@@featureTokenManager-noScopes">No scopes available</div>
+          <div class="text-body-secondary small" i18n="@@featureTokenManager-noScopes">No scopes available</div>
         } @else {
           <div class="scope-list border rounded p-2">
             @for (scopeItem of scopes(); track scopeItem.scope) {

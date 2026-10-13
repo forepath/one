@@ -9,13 +9,13 @@
         <source> Every AI coding tool wants its own configuration and instructions. Over time they drift apart and assistants start contradicting each other. AgentCTX lets you maintain project context once and generate aligned configs for every editor your team uses. </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-installCta" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-download&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Install AgentCTX</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-download&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Install AgentCTX </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-quickstartCta" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-book&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>View quickstart</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-book&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>View quickstart </source>
         </trans-unit>
-      <trans-unit id="featurePortalAgentctx-partnersTagline" datatype="html">
-        <source> Generates configs for the assistants your team already uses </source>
+      <trans-unit id="featurePortalAgentctx-partnersGridLabel" datatype="html">
+        <source>Coding assistants AgentCTX generates configs for</source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-storyTitle" datatype="html">
         <source> End config sprawl. Keep every AI tool on the same page </source>
@@ -30,7 +30,7 @@
         <source> Your context lives in one place you maintain. No more duplicating project rules in every AI editor. Just update your context, run AgentCTX, and each supported assistant stays aligned. </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-solutionTagline" datatype="html">
-        <source> One context. Every assistant. </source>
+        <source>One context. Every assistant.</source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-key1Label" datatype="html">
         <source>Sources you maintain</source>
@@ -86,38 +86,23 @@
       <trans-unit id="featurePortalAgentctx-contentLead" datatype="html">
         <source> AgentCTX helps teams treat project context as a first class asset. You capture architecture, standards, security, and documentation as linked knowledge assistants can rely on. When it stays current, every tool follows the same rules, people onboard faster, and you can add or swap editors without starting over. </source>
         </trans-unit>
-      <trans-unit id="featurePortalAgentctx-contentMapAriaLabel" datatype="html">
-        <source>How project context topics connect</source>
+      <trans-unit id="featurePortalAgentctx-contentHubCaption" datatype="html">
+        <source>One context, every assistant</source>
         </trans-unit>
-      <trans-unit id="featurePortalAgentctx-benefit1Title" datatype="html">
-        <source>Consistency</source>
-        </trans-unit>
-      <trans-unit id="featurePortalAgentctx-benefit1Desc" datatype="html">
-        <source> Every assistant follows the same rules and understands the same project story. </source>
+      <trans-unit id="featurePortalAgentctx-contentIllustration" datatype="html">
+        <source>AgentCTX context folder with the assistant configs it keeps in sync</source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-content1Title" datatype="html">
-        <source>Architecture &amp; domain</source>
+        <source> Architecture &amp; domain </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-content1Desc" datatype="html">
         <source> High level architecture and domain overview </source>
-        </trans-unit>
-      <trans-unit id="featurePortalAgentctx-benefit2Title" datatype="html">
-        <source>Faster onboarding</source>
-        </trans-unit>
-      <trans-unit id="featurePortalAgentctx-benefit2Desc" datatype="html">
-        <source> New team members get clear guidance from .agenstra/ and consistent behavior from their tools. </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-content2Title" datatype="html">
         <source>Coding style</source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-content2Desc" datatype="html">
         <source> Coding styles, naming conventions, and review expectations </source>
-        </trans-unit>
-      <trans-unit id="featurePortalAgentctx-contentHubTitle" datatype="html">
-        <source>AgentCTX</source>
-        </trans-unit>
-      <trans-unit id="featurePortalAgentctx-contentHubCaption" datatype="html">
-        <source> One context, every assistant </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-content3Title" datatype="html">
         <source>Security</source>
@@ -130,6 +115,18 @@
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-content4Desc" datatype="html">
         <source> Links to documentation, ADRs, and design docs </source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-benefit1Title" datatype="html">
+        <source>Consistency</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-benefit1Desc" datatype="html">
+        <source> Every assistant follows the same rules and understands the same project story. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-benefit2Title" datatype="html">
+        <source>Faster onboarding</source>
+        </trans-unit>
+      <trans-unit id="featurePortalAgentctx-benefit2Desc" datatype="html">
+        <source> New team members get clear guidance from .agenstra/ and consistent behavior from their tools. </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-benefit3Title" datatype="html">
         <source>Version control friendly</source>
@@ -195,10 +192,10 @@
         <source> Once your team feels the difference, you can roll out AgentCTX across repositories to standardize how AI coding tools understand your systems. </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-ctaPrimary" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-book&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>View installation guide</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-book&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>View installation guide </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-ctaSecondary" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-folder2-open&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Explore example context files</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-folder2-open&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Explore example context files </source>
         </trans-unit>
       <trans-unit id="featurePortalAgentctx-metaTitle" datatype="html">
         <source>One context for all your AI coding tools :: Agenstra</source>
@@ -222,16 +219,19 @@
         <source>/ month</source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-heroPriceUnavailable" datatype="html">
-        <source>Not available</source>
+        <source>On request</source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-heroCtaPrimary" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-chat-dots&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Talk to us</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-chat-dots&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Talk to us </source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-heroCtaSecondary" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-play-circle&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>See how it works</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-play-circle&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>See how it works </source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-providersTagline" datatype="html">
-        <source> Hosted on cloud providers your platform team already trusts </source>
+        <source>Hosted on cloud providers your platform team already trusts</source>
+        </trans-unit>
+      <trans-unit id="featurePortalCloud-providersGridLabel" datatype="html">
+        <source>Cloud providers Agenstra Cloud runs on</source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-teaserTitle" datatype="html">
         <source> The same platform without running it yourself </source>
@@ -309,7 +309,7 @@
         <source> Start building </source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-infraTitle" datatype="html">
-        <source>Where Agenstra Cloud runs</source>
+        <source> Where Agenstra Cloud runs </source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-infraLead" datatype="html">
         <source> We choose providers and regions deliberately. Security, latency, and your requirements shape the roadmap. </source>
@@ -330,7 +330,7 @@
         <source> Talk to us about access, pricing, and how Agenstra Cloud fits your tools and environments. </source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-ctaPrimary" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-person-plus&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Register for free</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-person-plus&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Register for free </source>
         </trans-unit>
       <trans-unit id="featurePortalCloud-infraHetznerName" datatype="html">
         <source>Hetzner Cloud</source>
@@ -498,7 +498,7 @@
         <source>What we optimize for</source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-matrixHeading" datatype="html">
-        <source>Feature comparison</source>
+        <source> Feature comparison </source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-matrixIntro" datatype="html">
         <source> The same thirteen capabilities appear on every page. You can compare vendors without chasing different rubrics. </source>
@@ -510,10 +510,10 @@
         <source> Build with technology that fits your needs </source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-ctaDemo" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calendar-check&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Book a demo</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calendar-check&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Book a demo </source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-ctaPricing" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-tags&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>View pricing</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-tags&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>View pricing </source>
         </trans-unit>
       <trans-unit id="featurePortalComparison-moreHeading" datatype="html">
         <source>More comparisons</source>
@@ -1046,11 +1046,11 @@
       <trans-unit id="sharedFeatureLandingpageBlog-footerLink" datatype="html">
         <source>Blog</source>
         </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-footerLink" datatype="html">
-        <source>Contact</source>
-        </trans-unit>
       <trans-unit id="sharedFeatureLandingpagePortal-footerLink" datatype="html">
         <source>Portal</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-footerLink" datatype="html">
+        <source>Contact</source>
         </trans-unit>
       <trans-unit id="featurePortal-footerLegal" datatype="html">
         <source>Legal</source>
@@ -1074,7 +1074,7 @@
         <source>Right of Withdrawal</source>
         </trans-unit>
       <trans-unit id="featurePortal-footerCopyright" datatype="html">
-        <source> © 2025 IPvX UG (haftungsbeschränkt). All rights reserved. </source>
+        <source> © <x id="INTERPOLATION" equiv-text="{{ currentYear }}"/> IPvX UG (haftungsbeschränkt). All rights reserved. </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-heroTitle" datatype="html">
         <source> A <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Local Control Center<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> For Your AI Agents </source>
@@ -1083,10 +1083,10 @@
         <source> Agenstra Desktop brings the power of the Agenstra platform to your workstation. Connect to your agent infrastructure, inspect activity, and work with context from a focused desktop experience that fits into your daily tools. </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-downloadCtaHero" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-download&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Download Agenstra Desktop</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-download&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Download Agenstra Desktop </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-setupGuide" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-book&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Read setup guide</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-book&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Read setup guide </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-platforms" datatype="html">
         <source> Available for: Windows, Linux </source>
@@ -1205,38 +1205,17 @@
       <trans-unit id="featurePortalDesktop-securityItem3Sub" datatype="html">
         <source> No bypass of governance </source>
         </trans-unit>
-      <trans-unit id="featurePortalDesktop-flowDesktop" datatype="html">
-        <source>Desktop</source>
+      <trans-unit id="featurePortalDesktop-securityIllustration" datatype="html">
+        <source>Agenstra Desktop connected through company sign-in, with the permissions of your role</source>
         </trans-unit>
-      <trans-unit id="featurePortalDesktop-flowEncrypted" datatype="html">
-        <source>Encrypted Data</source>
-        </trans-unit>
-      <trans-unit id="featurePortalDesktop-flowCloud" datatype="html">
-        <source>Cloud</source>
+      <trans-unit id="featurePortalDesktop-toolchainDockAriaLabel" datatype="html">
+        <source>Tools around Agenstra Desktop</source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-toolchainTitle" datatype="html">
         <source> Works alongside your editor, terminal, and browser </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-toolchainLead" datatype="html">
         <source> Your editor, terminal, and browser stay where they are. Agenstra Desktop sits beside them as a governed window into agent activity while you code, debug, and review. </source>
-        </trans-unit>
-      <trans-unit id="featurePortalDesktop-toolchainDockAriaLabel" datatype="html">
-        <source>Tools around Agenstra Desktop</source>
-        </trans-unit>
-      <trans-unit id="featurePortalDesktop-toolIde" datatype="html">
-        <source>IDE</source>
-        </trans-unit>
-      <trans-unit id="featurePortalDesktop-toolTerminal" datatype="html">
-        <source>Terminal</source>
-        </trans-unit>
-      <trans-unit id="featurePortalDesktop-toolDesktop" datatype="html">
-        <source>Agenstra Desktop</source>
-        </trans-unit>
-      <trans-unit id="featurePortalDesktop-toolBrowser" datatype="html">
-        <source>Browser</source>
-        </trans-unit>
-      <trans-unit id="featurePortalDesktop-toolGit" datatype="html">
-        <source>Git</source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-toolchainItem1" datatype="html">
         <source> Keep it open next to your IDE to observe agent behavior while coding </source>
@@ -1257,10 +1236,10 @@
         <source> Once the team is comfortable, you can add access to staging and production according to your organization&apos;s access policies. </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-downloadCta" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-download&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Download Agenstra Desktop</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-download&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Download Agenstra Desktop </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-talkToTeam" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-chat-dots&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Talk to the team</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-chat-dots&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Talk to the team </source>
         </trans-unit>
       <trans-unit id="featurePortalDesktop-metaTitle" datatype="html">
         <source>Your local control center for AI agents :: Agenstra</source>
@@ -1302,28 +1281,16 @@
         <source>Your cloud or ours</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-getStartedHero" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get started</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get started </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-productTour" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-play-circle&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>View product tour</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-play-circle&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>View product tour </source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-heroSlideSpaces" datatype="html">
-        <source>Agenstra workspaces</source>
+      <trans-unit id="featurePortalHome-heroIllustration" datatype="html">
+        <source>Agenstra console with workspaces, agents and an agent chat</source>
         </trans-unit>
-      <trans-unit id="featurePortalHome-heroSlideTickets" datatype="html">
-        <source>Agenstra tickets board</source>
-        </trans-unit>
-      <trans-unit id="featurePortalHome-heroSlideIde" datatype="html">
-        <source>Agenstra web IDE</source>
-        </trans-unit>
-      <trans-unit id="featurePortalHome-heroSlideAudit" datatype="html">
-        <source>Agenstra audit and usage statistics</source>
-        </trans-unit>
-      <trans-unit id="featurePortalHome-heroSlideIndicatorsAriaLabel" datatype="html">
-        <source>Hero screenshot slides</source>
-        </trans-unit>
-      <trans-unit id="featurePortalHome-partnersTagline" datatype="html">
-        <source> Runs with the coding agents your teams already use </source>
+      <trans-unit id="featurePortalHome-partnersGridLabel" datatype="html">
+        <source>Coding agents and runtimes Agenstra works with</source>
         </trans-unit>
       <trans-unit id="featurePortalHome-solutionTitle" datatype="html">
         <source> Turn agent momentum into software you can trust </source>
@@ -1740,7 +1707,7 @@
         <source>Starting at</source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-cloudPriceUnavailable" datatype="html">
-        <source>Not available</source>
+        <source> On request </source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-getStartedNow" datatype="html">
         <source>Get Started Now</source>
@@ -1758,10 +1725,10 @@
         <source> Run on your own infrastructure or let us host Agenstra Cloud for you. </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-getStarted" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get started</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get started </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-talkToTeam" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-chat-dots&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Talk to the team</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-chat-dots&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Talk to the team </source>
         </trans-unit>
       <trans-unit id="featurePortalHome-metaTitle" datatype="html">
         <source>One place to run, govern, and ship with agents :: Agenstra</source>
@@ -1866,7 +1833,7 @@
         <source> If you have questions about our company information, registration details, or any other legal matters, we&apos;re happy to help. </source>
         </trans-unit>
       <trans-unit id="featurePortalDisclosure-ctaContact" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
         </trans-unit>
       <trans-unit id="featurePortalDisclosure-metaTitle" datatype="html">
         <source>Legal Disclosure :: Agenstra</source>
@@ -2056,7 +2023,7 @@
         <source> We take data protection seriously. If you have questions about how we handle your data, want to exercise your rights, or need clarification on any aspect of our privacy policy, please reach out. </source>
         </trans-unit>
       <trans-unit id="featurePortalPrivacy-ctaContact" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
         </trans-unit>
       <trans-unit id="featurePortalPrivacy-metaTitle" datatype="html">
         <source>Privacy Policy :: Agenstra</source>
@@ -2266,7 +2233,7 @@
         <source> If you need clarification on licenses, the Cloud Service, or contractual conditions, please contact us using the details above. </source>
         </trans-unit>
       <trans-unit id="featurePortalTerms-ctaContact" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
         </trans-unit>
       <trans-unit id="featurePortalTerms-metaTitle" datatype="html">
         <source>Terms of Service :: Agenstra</source>
@@ -2284,13 +2251,13 @@
         <source> Run Agenstra on your own infrastructure or let us host it with predictable pricing as you grow from experiments to enterprise governance. </source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-pathsTitle" datatype="html">
-        <source>Two ways to run Agenstra</source>
+        <source> Two ways to run Agenstra </source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-pathsLead" datatype="html">
         <source> Most teams start self-hosted; move to managed cloud when you want us to operate the platform. </source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-pathSelfHostedTitle" datatype="html">
-        <source>Self-hosted</source>
+        <source> Self-hosted </source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-pathSelfHostedDesc" datatype="html">
         <source> Open source through enterprise licenses. You control data, networking, and upgrades. </source>
@@ -2300,7 +2267,7 @@
             &gt;"/></source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-pathManagedTitle" datatype="html">
-        <source>Agenstra Cloud</source>
+        <source> Agenstra Cloud </source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-pathManagedDesc" datatype="html">
         <source> Fully managed platform. We handle infrastructure, updates, and scaling. </source>
@@ -2463,10 +2430,10 @@
         <source> Whether you&apos;re starting with our open source version or need enterprise features, we&apos;re here to help you build reliable agentic systems. </source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-ctaGetStarted" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get Started Free</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get Started Free </source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-ctaTalkToSales" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-chat-dots&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Talk to Sales</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-chat-dots&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Talk to Sales </source>
         </trans-unit>
       <trans-unit id="featurePortalPricing-metaTitle" datatype="html">
         <source>Licensing from open source to enterprise :: Agenstra</source>
@@ -2490,16 +2457,16 @@
         <source>Name</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-nameRequired" datatype="html">
-        <source> Name is required. </source>
+        <source>Name is required.</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-emailLabel" datatype="html">
         <source>Email</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-emailRequired" datatype="html">
-        <source> Email is required. </source>
+        <source>Email is required.</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-emailInvalid" datatype="html">
-        <source> Enter a valid email address. </source>
+        <source>Enter a valid email address.</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-phoneLabel" datatype="html">
         <source>Phone (optional)</source>
@@ -2523,7 +2490,7 @@
         <source> You must accept the Privacy Policy to send your message. </source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-submitting" datatype="html">
-        <source>Sending…</source>
+        <source>Sending...</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-submit" datatype="html">
         <source>Send message</source>

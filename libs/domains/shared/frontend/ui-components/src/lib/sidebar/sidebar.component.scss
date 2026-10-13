@@ -6,7 +6,7 @@
   height: 100%;
   min-height: 0;
   position: relative;
-  // Do not use `isolation: isolate` — it traps `fpc-sidebar-popover`'s `position: fixed`
+  // Do not use `isolation: isolate` - it traps `fpc-sidebar-popover`'s `position: fixed`
   // panel in this stacking context so it paints under the main shell.
   background-color: var(--bs-tertiary-bg);
   border-right: var(--bs-border-width) solid var(--bs-border-color);
@@ -20,7 +20,7 @@
   --fpc-sidebar-shade-angle: 155deg;
 }
 
-// Soft top→bottom grayscale wash under the rail (same language as top-bar / modal footer).
+// Soft top->bottom grayscale wash under the rail (same language as top-bar / modal footer).
 :host::before {
   content: '';
   position: absolute;

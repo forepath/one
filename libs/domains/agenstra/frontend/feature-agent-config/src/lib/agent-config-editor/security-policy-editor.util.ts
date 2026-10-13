@@ -207,7 +207,7 @@ export function messageFilterRules(draft: JsonObject): JsonObject[] {
   return Array.isArray(rules) ? rules.filter(isPlainObject) : [];
 }
 
-/** Next free default rule name within a layer (`Rule 1`, `Rule 2`, …). */
+/** Next free default rule name within a layer (`Rule 1`, `Rule 2`, ...). */
 export function nextMessageFilterRuleName(existing: readonly JsonObject[], prefix = 'Rule'): string {
   const names = new Set(existing.map((rule) => String(rule['name'] ?? '').trim()));
   let index = existing.length + 1;

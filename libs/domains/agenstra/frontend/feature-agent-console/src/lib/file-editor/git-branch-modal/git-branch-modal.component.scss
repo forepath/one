@@ -1,1 +1,13 @@
-// Branch list active styling lives on `fpc-list-item` (primary → transparent wash).
+// Branch list active styling lives on `fpc-list-item` (primary -> transparent wash).
+
+.git-branch-modal__list {
+  overflow-y: auto;
+}
+
+.git-branch-modal__list--local {
+  max-height: 300px;
+}
+
+.git-branch-modal__list--remote {
+  max-height: 200px;
+}

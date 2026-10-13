@@ -7,8 +7,9 @@
   max-width: 100%;
 
   .otp-digit {
-    width: 3.25rem;
-    flex: 0 0 3.25rem;
+    // Six digits at 3.25rem overflow ~360px phones; shrink with the viewport below 400px only.
+    width: min(3.25rem, 13vw);
+    flex: 0 0 min(3.25rem, 13vw);
     font-size: 1.5rem;
     padding: 0.2rem !important;
     text-align: center;

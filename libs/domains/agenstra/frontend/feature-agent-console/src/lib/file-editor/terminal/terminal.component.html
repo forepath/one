@@ -1,7 +1,9 @@
 <div class="terminal-container d-flex flex-column h-100">
   @if (sessionIds().length > 0) {
     <!-- Terminal Header -->
-    <div class="terminal-header p-2 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center">
+    <div
+      class="terminal-header p-2 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center gap-2"
+    >
       <div class="d-flex align-items-center gap-2">
         <i class="bi bi-terminal"></i>
         <fpc-dropdown [(open)]="sessionMenuOpen">
@@ -73,10 +75,10 @@
       <div
         class="d-flex justify-content-center align-items-center h-100 bg-body-secondary position-absolute top-0 start-0 w-100 h-100"
       >
-        <div class="text-center text-muted p-4">
+        <div class="text-center text-body-secondary p-4">
           <i class="bi bi-terminal fs-1 d-block mb-3"></i>
           <p class="mb-0" i18n="@@featureTerminal-noSession">No terminal session</p>
-          <small class="text-muted" i18n="@@featureTerminal-createSessionHint"
+          <small class="text-body-secondary" i18n="@@featureTerminal-createSessionHint"
             >Click "New" to create a terminal session</small
           >
           <div class="mt-3">

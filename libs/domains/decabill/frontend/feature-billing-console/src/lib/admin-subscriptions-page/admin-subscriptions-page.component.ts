@@ -281,7 +281,7 @@ export class AdminSubscriptionsPageComponent implements OnInit {
       );
     }
 
-    return parts.join(' · ');
+    return parts.join(', ');
   }
 
   hasMeterBillingDetails(summary: SubscriptionMeterSummary): boolean {
@@ -305,7 +305,7 @@ export class AdminSubscriptionsPageComponent implements OnInit {
           key: `${summary.meterId}|${addonId}`,
           meterId: summary.meterId,
           addonId,
-          label: addonName ? `${summary.name} · ${addonName}` : summary.name,
+          label: addonName ? `${summary.name} (${addonName})` : summary.name,
         };
       });
   }

@@ -55,11 +55,19 @@ import {
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
+  FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSpinnerComponent,
   FpcTabComponent,
   FpcTabGroupComponent,
+  FPC_CHART_AREA_FILL,
+  FPC_CHART_AXIS,
+  FPC_CHART_GRID,
+  FPC_CHART_LABEL_STYLE,
+  fpcChart,
+  fpcChartColor,
 } from '@forepath/shared/frontend/ui-components';
-import type { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexTitleSubtitle, ApexXAxis } from 'ng-apexcharts';
+import type { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexFill, ApexStroke, ApexXAxis } from 'ng-apexcharts';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import {
   catchError,
@@ -93,15 +101,6 @@ interface ServiceDetailFiltersStorage {
   groupBy: 'day' | 'month';
   filtersCollapsed: boolean;
 }
-
-const BS_CHART_COLORS = [
-  'var(--bs-primary)',
-  'var(--bs-secondary)',
-  'var(--bs-success)',
-  'var(--bs-danger)',
-  'var(--bs-warning)',
-  'var(--bs-info)',
-] as const;
 
 type ServiceViewMode = 'admin' | 'customer';
 type ServiceDetailBackTarget = 'subscriptions' | 'dashboard';
@@ -154,6 +153,8 @@ function isDashboardUrl(url: string | null | undefined): boolean {
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
+    FpcPanelComponent,
+    FpcPanelGridComponent,
     FpcSpinnerComponent,
     FpcTabComponent,
     FpcTabGroupComponent,
@@ -801,7 +802,7 @@ export class ServiceDetailPageComponent implements OnInit {
       parts.push($localize`:@@featureServiceDetail-meterBillableValue:${summary.billableValue}${unit}:value: billable`);
     }
 
-    return parts.join(' · ');
+    return parts.join(', ');
   }
 
   hasMeterBillingDetails(summary: SubscriptionMeterSummary): boolean {
@@ -928,40 +929,28 @@ export class ServiceDetailPageComponent implements OnInit {
     }
 
     const axisDateFormat = groupBy === 'month' ? 'mediumDate' : 'shortDate';
-    const color = BS_CHART_COLORS[index % BS_CHART_COLORS.length];
+    const color = fpcChartColor(index);
     const unitSuffix = meter.unitLabel ? ` ${meter.unitLabel}` : '';
 
     return {
       series: [{ name: meter.name, data: series.map((point) => point.value) }] as ApexAxisChartSeries,
-      chart: {
-        type: 'area',
-        height: 240,
-        toolbar: { show: false },
-        background: 'transparent',
-        zoom: { enabled: false },
-      } as ApexChart,
+      chart: fpcChart('area', 240) as ApexChart,
       colors: [color],
-      stroke: { colors: [color] },
-      fill: { colors: [color] },
+      stroke: { curve: 'smooth', width: 2 } as ApexStroke,
+      fill: FPC_CHART_AREA_FILL as ApexFill,
       dataLabels: { enabled: false } as ApexDataLabels,
       xaxis: {
+        ...FPC_CHART_AXIS,
         categories: series.map((point) => this.datePipe.transform(point.period, axisDateFormat) ?? point.period),
-        labels: {
-          style: { colors: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
-        },
-        axisBorder: { color: 'var(--bs-border-color)' },
+        labels: { style: FPC_CHART_LABEL_STYLE },
       } as ApexXAxis,
       yaxis: {
         labels: {
-          style: { colors: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
+          style: FPC_CHART_LABEL_STYLE,
           formatter: (value: number) => `${value}${unitSuffix}`,
         },
       },
-      grid: { borderColor: 'var(--bs-border-color)' },
-      title: {
-        text: meter.name,
-        style: { color: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
-      } as ApexTitleSubtitle,
+      grid: FPC_CHART_GRID,
     };
   }
 }

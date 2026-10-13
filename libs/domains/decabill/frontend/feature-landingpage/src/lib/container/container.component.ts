@@ -53,6 +53,8 @@ function isComparisonDropdownRoutePath(path: string): boolean {
 })
 export class PortalContainerComponent {
   protected readonly localeService = inject(LocaleService);
+  /** Footer copyright year, so it never goes stale. */
+  protected readonly currentYear = new Date().getFullYear();
 
   private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);

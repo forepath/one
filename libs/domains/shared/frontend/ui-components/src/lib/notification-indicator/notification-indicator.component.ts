@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 /**
- * `default` / `unread` — primary dot, `security-warning` — warning dot (e.g. MFA),
- * `git` — info dot for repository activity, `both` — unread and git together.
+ * `default` / `unread` - primary dot, `security-warning` - warning dot (e.g. MFA),
+ * `git` - info dot for repository activity, `both` - unread and git together.
  */
 export type FpcNotificationIndicatorKind = 'default' | 'security-warning' | 'git' | 'unread' | 'both';
 

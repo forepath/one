@@ -132,7 +132,7 @@ export const forepathRoutes: Route[] = [
       },
       createSharedContactRoute({
         canonicalUrl: 'https://forepath.io/contact',
-        heroTheme: 'forepath',
+        heroTheme: 'dark',
         contactDetails: createBrandContactDetails({
           email: 'hi@forepath.io',
           websiteUrl: 'https://forepath.io',

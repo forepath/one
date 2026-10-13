@@ -11,7 +11,7 @@ const meta: Meta<FpcInputGroupComponent> = {
 
 **Pairs with:** \`fpc-form-control\` + \`fpc-button\` marked \`fpcInputGroupPrefix\` / \`fpcInputGroupSuffix\`.
 
-**When not to:** Full-width search strips with glyph → \`fpc-search-field\`.`,
+**When not to:** Full-width search strips with glyph: use \`fpc-search-field\`.`,
       },
     },
   },

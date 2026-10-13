@@ -1,3 +1,5 @@
+@use '../../../styles/brands/chrome';
+
 :host {
   display: inline-flex;
   align-items: center;
@@ -89,12 +91,13 @@
 }
 
 // Landing soft chips / feature pills (replaces ad-hoc `.badge` + border / subtle / info-badge marketing).
+// Same padding and line height as the buttons, so a chip next to a button lines up with it.
 :host(.fpc-badge--marketing) {
   font-size: 0.8125rem;
   font-weight: 500;
-  line-height: 1.25;
-  padding-block: 0.375rem;
-  padding-inline: 0.75rem;
+  line-height: 1.5;
+  padding-block: chrome.$input-btn-padding-y;
+  padding-inline: chrome.$input-btn-padding-x;
   border-radius: var(--bs-border-radius);
   white-space: nowrap;
   color: var(--bs-body-color);
@@ -104,14 +107,12 @@
 
 :host(.fpc-badge--marketing.fpc-badge--lg) {
   font-size: 0.875rem;
-  padding-block: 0.5rem;
-  padding-inline: 0.875rem;
+  padding-block: chrome.$input-btn-padding-y-lg;
+  padding-inline: chrome.$input-btn-padding-x-lg;
 }
 
 :host(.fpc-badge--marketing.fpc-badge--xl) {
   font-size: 0.8125rem;
-  padding-block: 0.5rem;
-  padding-inline: 1rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
@@ -160,7 +161,8 @@
 
 :host(.fpc-badge--marketing.fpc-badge--light) {
   color: var(--bs-body-color);
-  background-color: var(--bs-light);
+  // Theme surface rather than the fixed `--bs-light`, so the chip also works in dark mode.
+  background-color: var(--bs-tertiary-bg);
   border-color: var(--bs-border-color);
 }
 

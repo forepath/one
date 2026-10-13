@@ -9,7 +9,7 @@ const meta: Meta<FpcOtpInputComponent> = {
       description: {
         component: `**When to use:** Fixed-length OTP entry (identity auth flows).
 
-**When not to:** Generic multi-field forms → separate \`fpc-form-control\`s.`,
+**When not to:** Generic multi-field forms: use separate \`fpc-form-control\`s.`,
       },
     },
   },

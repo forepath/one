@@ -228,8 +228,9 @@
                 i18n-title="@@featureServicePlans-moveHighlightUp"
                 ariaLabel="Move up"
                 i18n-ariaLabel="@@featureServicePlans-moveHighlightUp"
+                iconOnly
               >
-                ↑
+                <i class="bi bi-arrow-up" aria-hidden="true"></i>
               </fpc-button>
               <fpc-button
                 variant="dark"
@@ -240,8 +241,9 @@
                 i18n-title="@@featureServicePlans-moveHighlightDown"
                 ariaLabel="Move down"
                 i18n-ariaLabel="@@featureServicePlans-moveHighlightDown"
+                iconOnly
               >
-                ↓
+                <i class="bi bi-arrow-down" aria-hidden="true"></i>
               </fpc-button>
               <fpc-button
                 variant="danger"
@@ -302,7 +304,7 @@
           <fpc-form-field
             forId="createBillingDayOfMonth"
             i18n-label="@@featureServicePlans-billingDayOfMonth"
-            label="Billing day of month (1–31)"
+            label="Billing day of month (1 to 31)"
           >
             <fpc-form-control
               inputType="number"
@@ -375,8 +377,11 @@
         />
       </fpc-form-field>
       <div class="mb-3">
-        <span class="fw-semibold d-block mb-1" i18n="@@featureServicePlans-taxCategory">VAT rate</span>
-        <fpc-form-check-group>
+        <fpc-form-check-group
+          legendId="createTaxCategoryLegend"
+          i18n-label="@@featureServicePlans-taxCategory"
+          label="VAT rate"
+        >
           @for (option of taxCategoryOptions(); track option.value) {
             <fpc-form-check
               type="radio"
@@ -1174,8 +1179,9 @@
                 i18n-title="@@featureServicePlans-moveHighlightUp"
                 ariaLabel="Move up"
                 i18n-ariaLabel="@@featureServicePlans-moveHighlightUp"
+                iconOnly
               >
-                ↑
+                <i class="bi bi-arrow-up" aria-hidden="true"></i>
               </fpc-button>
               <fpc-button
                 variant="dark"
@@ -1186,8 +1192,9 @@
                 i18n-title="@@featureServicePlans-moveHighlightDown"
                 ariaLabel="Move down"
                 i18n-ariaLabel="@@featureServicePlans-moveHighlightDown"
+                iconOnly
               >
-                ↓
+                <i class="bi bi-arrow-down" aria-hidden="true"></i>
               </fpc-button>
               <fpc-button
                 variant="danger"
@@ -1248,7 +1255,7 @@
           <fpc-form-field
             forId="editBillingDayOfMonth"
             i18n-label="@@featureServicePlans-billingDayOfMonth"
-            label="Billing day of month (1–31)"
+            label="Billing day of month (1 to 31)"
           >
             <fpc-form-control
               inputType="number"
@@ -1321,8 +1328,11 @@
         />
       </fpc-form-field>
       <div class="mb-3">
-        <span class="fw-semibold d-block mb-1" i18n="@@featureServicePlans-taxCategory">VAT rate</span>
-        <fpc-form-check-group>
+        <fpc-form-check-group
+          legendId="editTaxCategoryLegend"
+          i18n-label="@@featureServicePlans-taxCategory"
+          label="VAT rate"
+        >
           @for (option of taxCategoryOptions(); track option.value) {
             <fpc-form-check
               type="radio"
@@ -1337,12 +1347,7 @@
           }
         </fpc-form-check-group>
       </div>
-      <div
-        class="alert mb-3"
-        [class.alert-warning]="!editForm.migrateExistingSubscriptions"
-        [class.alert-primary]="editForm.migrateExistingSubscriptions === true"
-        role="alert"
-      >
+      <fpc-alert class="mb-3" [variant]="editForm.migrateExistingSubscriptions === true ? 'primary' : 'warning'">
         <fpc-form-check
           class="mb-0"
           checkId="editMigrateExistingSubscriptions"
@@ -1357,7 +1362,7 @@
           (differential billing, statutory withdrawal restart, and customer email). Leave unchecked to update the
           catalog only for new orders.
         </div>
-      </div>
+      </fpc-alert>
       <div class="mb-3">
         @if (showPerTypePriceEstimates('edit')) {
           <span class="text-body-secondary" i18n="@@featureServicePlans-estimatedPrices">Estimated prices</span>
@@ -2097,25 +2102,31 @@
       <fpc-alert class="py-2" variant="danger" [message]="planMeterAttachError" />
     }
     @if (mode === 'edit' && planMeterAttachLoading && attachedMetersFor(mode).length === 0) {
-      <div class="text-muted small mb-2" i18n="@@featureServicePlans-metersLoading">Loading meters…</div>
+      <div class="text-body-secondary small mb-2" i18n="@@featureServicePlans-metersLoading">Loading meters...</div>
     }
     @for (attached of attachedMetersFor(mode); track attached.meterId) {
       <div class="row g-2 mb-2 align-items-end">
         <div class="col-12 col-md-4">
           <div class="fw-semibold">{{ attached.name }}</div>
-          <div class="small text-muted">
-            {{ attached.key }} · {{ attached.aggregator }} · €{{ attached.effectiveUnitPriceNet }}
-            @if (attached.unitLabel) {
-              <span>/ {{ attached.unitLabel }}</span>
-            }
+          <div class="d-flex flex-wrap align-items-center gap-2 small">
+            <span class="font-monospace text-break">{{ attached.key }}</span>
+            <span class="text-body-secondary">{{ attached.aggregator }}</span>
+            <span class="text-body-secondary"
+              >€{{ attached.effectiveUnitPriceNet }}
+              @if (attached.unitLabel) {
+                / {{ attached.unitLabel }}
+              }
+            </span>
           </div>
           @if (attached.inherited) {
-            <div class="small text-muted" i18n="@@featureServicePlans-meterFromServiceType">From service type</div>
+            <div class="small text-body-secondary" i18n="@@featureServicePlans-meterFromServiceType">
+              From service type
+            </div>
           }
         </div>
         <div class="col-12 col-md-5">
           <div class="row g-2">
-            <div class="col-6">
+            <div class="col-12 col-md-6">
               <fpc-form-field
                 [forId]="mode + 'PlanMeterOverride' + attached.meterId"
                 i18n-label="@@featureServicePlans-meterUnitPriceOverride"
@@ -2133,7 +2144,7 @@
                 />
               </fpc-form-field>
             </div>
-            <div class="col-6">
+            <div class="col-12 col-md-6">
               <fpc-form-field
                 [forId]="mode + 'PlanMeterIncludedUsage' + attached.meterId"
                 i18n-label="@@featureServicePlans-meterIncludedUsageOverride"
@@ -2188,7 +2199,7 @@
       </div>
     } @empty {
       @if (mode === 'create' || !planMeterAttachLoading) {
-        <p class="text-muted small mb-3" i18n="@@featureServicePlans-noMetersAttached">
+        <p class="text-body-secondary small mb-3" i18n="@@featureServicePlans-noMetersAttached">
           No meters attached to this plan yet.
         </p>
       }
@@ -2236,7 +2247,7 @@
             </div>
             <div class="col-12 col-md-5">
               <div class="row g-2">
-                <div class="col-6">
+                <div class="col-12 col-md-6">
                   <fpc-form-field
                     [forId]="mode + 'AttachMeterPrice'"
                     i18n-label="@@featureServicePlans-attachMeterPrice"
@@ -2267,7 +2278,7 @@
                     }
                   </fpc-form-field>
                 </div>
-                <div class="col-6">
+                <div class="col-12 col-md-6">
                   <fpc-form-field
                     [forId]="mode + 'AttachMeterIncludedUsage'"
                     i18n-label="@@featureServicePlans-attachMeterIncludedUsage"
@@ -2321,17 +2332,19 @@
             </div>
           </div>
         } @else if (meters.length === 0) {
-          <p class="text-muted small mb-0 mt-3" i18n="@@featureServicePlans-noCatalogMeters">
-            No active meters in the catalog. Create meters under Administration → Usage meters first.
+          <p class="text-body-secondary small mb-0 mt-3" i18n="@@featureServicePlans-noCatalogMeters">
+            No active meters in the catalog. Create meters under Administration &gt; Usage meters first.
           </p>
         } @else {
-          <p class="text-muted small mb-0 mt-3" i18n="@@featureServicePlans-allMetersAttached">
+          <p class="text-body-secondary small mb-0 mt-3" i18n="@@featureServicePlans-allMetersAttached">
             All active catalog meters are already attached to this plan.
           </p>
         }
       }
     } @else {
-      <p class="text-muted small mb-0" i18n="@@featureServicePlans-metersCatalogLoading">Loading meter catalog…</p>
+      <p class="text-body-secondary small mb-0" i18n="@@featureServicePlans-metersCatalogLoading">
+        Loading meter catalog...
+      </p>
     }
   </div>
 </ng-template>

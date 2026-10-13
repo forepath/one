@@ -66,7 +66,7 @@
     background-color: var(--bs-secondary-bg);
   }
 
-  // Soft row washes — no dots or border accents for open / clipboard state.
+  // Soft row washes - no dots or border accents for open / clipboard state.
   &.tree-node-open {
     background-color: color-mix(in srgb, var(--bs-info) 10%, var(--bs-body-bg));
   }

@@ -1,7 +1,7 @@
 /**
  * Builds directory path-prefix autocomplete options from file-search hit paths.
  * Only parent directories are suggested (never file paths). Excludes the exact draft
- * (shown separately as “Add …”) and already-selected chips.
+ * (shown separately as “Add ...”) and already-selected chips.
  */
 export function buildPathPrefixSuggestions(
   hitPaths: string[],

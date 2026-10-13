@@ -4,7 +4,7 @@ import { IsActiveMatchOptions, RouterLink, RouterLinkActive } from '@angular/rou
 /**
  * Menu row for `fpc-dropdown` (action, `routerLink`, or `href` menuitem with optional icon / end actions).
  *
- * Projected label + end-slot content use a single pair of `<ng-content>` nodes (never inside `@if`) —
+ * Projected label + end-slot content use a single pair of `<ng-content>` nodes (never inside `@if`) -
  * Angular does not project into duplicate/default slots across `@if` / `@else` branches.
  */
 @Component({

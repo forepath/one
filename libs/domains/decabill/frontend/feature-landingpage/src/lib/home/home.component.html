@@ -64,63 +64,24 @@
   </div>
   <div class="container grid-section__container grid-section__container--hero-bottom">
     <div class="row">
-      <div class="col-md-12 intent-cards" (mouseenter)="pauseAutoplay()" (mouseleave)="resumeAutoplay()">
-        <img
-          src="assets/images/screenshots/overview-dark_framed.png"
-          alt="Decabill overview dashboard with cloud instances"
-          class="img-fluid intent-card"
-          [class.d-none]="activeSlide() !== 1"
-          i18n-alt="@@featureDecabillHome-heroSlideOverview"
+      <div class="col-md-12 hero-illustration d-none d-md-block">
+        <framework-portal-overview-illustration
+          label="Decabill overview with plans, services and invoices"
+          i18n-label="@@featureDecabillHome-heroIllustration"
         />
-        <img
-          src="assets/images/screenshots/plans-dark_framed.png"
-          alt="Decabill plans and subscriptions"
-          class="img-fluid intent-card"
-          [class.d-none]="activeSlide() !== 2"
-          i18n-alt="@@featureDecabillHome-heroSlidePlans"
-        />
-        <img
-          src="assets/images/screenshots/billing-dark_framed.png"
-          alt="Decabill customer billing and invoices"
-          class="img-fluid intent-card"
-          [class.d-none]="activeSlide() !== 3"
-          i18n-alt="@@featureDecabillHome-heroSlideBilling"
-        />
-        <img
-          src="assets/images/screenshots/admin-dark_framed.png"
-          alt="Decabill admin billing and revenue statistics"
-          class="img-fluid intent-card"
-          [class.d-none]="activeSlide() !== 4"
-          i18n-alt="@@featureDecabillHome-heroSlideAdmin"
-        />
-        <div
-          class="intent-card-indicators"
-          role="tablist"
-          i18n-aria-label="@@featureDecabillHome-heroSlideIndicatorsAriaLabel"
-          aria-label="Hero screenshot slides"
-        >
-          @for (slide of [1, 2, 3, 4]; track slide) {
-            <button
-              type="button"
-              class="intent-card-indicator"
-              [class.intent-card-indicator--active]="activeSlide() === slide"
-              role="tab"
-              [attr.aria-selected]="activeSlide() === slide"
-              [attr.aria-label]="'Go to slide ' + slide"
-              (click)="selectSlide(slide)"
-            ></button>
-          }
-        </div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- Solution (main claim) -->
-<section id="solution" class="py-10 bg-white grid-section">
+<section id="solution" class="py-10 bg-body grid-section">
   <div class="container grid-section__container">
     <div class="text-center pb-10">
-      <h2 class="h2 fw-semibold mb-4 mx-auto section-title-lg text-dark" i18n="@@featureDecabillHome-solutionTitle">
+      <h2
+        class="h2 fw-semibold mb-4 mx-auto section-title-lg text-body-emphasis"
+        i18n="@@featureDecabillHome-solutionTitle"
+      >
         Turn revenue complexity into billing you can trust
       </h2>
       <p class="lead mx-auto text-muted section-lead mb-0" i18n="@@featureDecabillHome-solutionLead">
@@ -129,11 +90,9 @@
       </p>
     </div>
 
-    <div
-      class="card border rounded-3 shadow-sm overflow-hidden mb-5 home-solution-studio card-capability card-capability-primary"
-    >
-      <div class="row g-0 align-items-center">
-        <div class="col-lg-8 p-4 p-lg-5">
+    <div class="card border rounded-3 shadow-sm overflow-hidden mb-5 home-solution-studio landing-bento-visual">
+      <div class="row g-0 align-items-stretch">
+        <div class="col-lg-8 p-4 p-lg-5 d-flex flex-column justify-content-center">
           <h3 class="h4 fw-semibold mb-3" i18n="@@featureDecabillHome-solutionStudioTitle">
             Meet the modern billing system
           </h3>
@@ -143,10 +102,9 @@
             code.
           </p>
         </div>
-        <div class="col-lg-4 p-4 p-lg-5 d-flex align-items-center justify-content-center border-start">
+        <div class="col-lg-4 p-4 p-lg-5 d-flex align-items-center justify-content-center landing-divider-start bg-body">
           <div class="text-center">
-            <i class="bi bi-receipt-cutoff text-primary icon-xl mb-3 d-block" aria-hidden="true"></i>
-            <p class="small text-muted mb-0" i18n="@@featureDecabillHome-solutionStudioTagline">
+            <p class="fw-semibold mb-0" i18n="@@featureDecabillHome-solutionStudioTagline">
               One platform. Multiple models. Clear books.
             </p>
           </div>
@@ -244,7 +202,7 @@
         tabindex="0"
       >
         <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
-          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+          <div class="home-solution-panel-top p-4 p-lg-5 border-bottom landing-surface-tint">
             <div
               class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
               aria-hidden="true"
@@ -265,8 +223,8 @@
               stream shares the same billing core.
             </p>
           </div>
-          <div class="home-solution-panel-bottom p-4 p-lg-5">
-            <div class="row row-cols-1 row-cols-sm-3 g-3">
+          <div class="home-solution-panel-bottom landing-panel-points">
+            <div class="row row-cols-1 row-cols-md-3 g-0">
               <div class="col">
                 <i class="bi bi-briefcase text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
                 <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageUnifiedBenefit1Title">
@@ -310,7 +268,7 @@
         tabindex="0"
       >
         <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
-          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+          <div class="home-solution-panel-top p-4 p-lg-5 border-bottom landing-surface-tint">
             <div
               class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
               aria-hidden="true"
@@ -331,8 +289,8 @@
               as part of how billing runs every day.
             </p>
           </div>
-          <div class="home-solution-panel-bottom p-4 p-lg-5">
-            <div class="row row-cols-1 row-cols-sm-3 g-3">
+          <div class="home-solution-panel-bottom landing-panel-points">
+            <div class="row row-cols-1 row-cols-md-3 g-0">
               <div class="col">
                 <i class="bi bi-file-earmark-check text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
                 <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageComplianceBenefit1Title">
@@ -375,7 +333,7 @@
         tabindex="0"
       >
         <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
-          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+          <div class="home-solution-panel-top p-4 p-lg-5 border-bottom landing-surface-tint">
             <div
               class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
               aria-hidden="true"
@@ -396,8 +354,8 @@
               billing experience that feels intentional, not like an afterthought.
             </p>
           </div>
-          <div class="home-solution-panel-bottom p-4 p-lg-5">
-            <div class="row row-cols-1 row-cols-sm-3 g-3">
+          <div class="home-solution-panel-bottom landing-panel-points">
+            <div class="row row-cols-1 row-cols-md-3 g-0">
               <div class="col">
                 <i class="bi bi-box-seam text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
                 <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageCustomersBenefit1Title">
@@ -441,7 +399,7 @@
         tabindex="0"
       >
         <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
-          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+          <div class="home-solution-panel-top p-4 p-lg-5 border-bottom landing-surface-tint">
             <div
               class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
               aria-hidden="true"
@@ -462,8 +420,8 @@
               gives operators one cockpit instead of context switching across tools.
             </p>
           </div>
-          <div class="home-solution-panel-bottom p-4 p-lg-5">
-            <div class="row row-cols-1 row-cols-sm-3 g-3">
+          <div class="home-solution-panel-bottom landing-panel-points">
+            <div class="row row-cols-1 row-cols-md-3 g-0">
               <div class="col">
                 <i class="bi bi-kanban text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
                 <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageOperationsBenefit1Title">
@@ -507,7 +465,7 @@
         tabindex="0"
       >
         <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
-          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+          <div class="home-solution-panel-top p-4 p-lg-5 border-bottom landing-surface-tint">
             <div
               class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
               aria-hidden="true"
@@ -528,8 +486,8 @@
               trajectory without forcing a rip-and-replace every time the portfolio grows.
             </p>
           </div>
-          <div class="home-solution-panel-bottom p-4 p-lg-5">
-            <div class="row row-cols-1 row-cols-sm-3 g-3">
+          <div class="home-solution-panel-bottom landing-panel-points">
+            <div class="row row-cols-1 row-cols-md-3 g-0">
               <div class="col">
                 <i class="bi bi-diagram-3 text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
                 <p class="small fw-semibold mb-1" i18n="@@featureDecabillHome-solutionAdvantageScaleBenefit1Title">
@@ -572,7 +530,7 @@
 <section id="how-it-works" class="py-10 bg-body-tertiary grid-section">
   <div class="container grid-section__container">
     <div class="text-center pb-10">
-      <h2 class="h2 fw-semibold mb-4 mx-auto section-title-lg text-dark" i18n="@@featureDecabillHome-howTitle">
+      <h2 class="h2 fw-semibold mb-4 mx-auto section-title-lg text-body-emphasis" i18n="@@featureDecabillHome-howTitle">
         How Decabill fits the way you already work
       </h2>
       <p class="lead mx-auto text-muted section-lead mb-0" i18n="@@featureDecabillHome-howLead">
@@ -582,7 +540,7 @@
     </div>
 
     <div class="row g-0 align-items-stretch home-how-row">
-      <div class="col-lg-6 home-how-copy">
+      <div class="col-lg-6 home-how-copy d-flex flex-column">
         <h3 class="h4 fw-semibold mb-3" i18n="@@featureDecabillHome-howIntegrationsTitle">Integrations that matter</h3>
         <p class="text-muted mb-4" i18n="@@featureDecabillHome-howIntegrationsLead">
           Plug in payments, hosting, identity, and bookkeeping without rebuilding your stack around one-off scripts for
@@ -607,7 +565,7 @@
           </li>
         </ul>
 
-        <article class="card border home-how-example p-4">
+        <article class="card border home-how-example p-4 mt-auto">
           <p
             class="small fw-semibold text-primary text-uppercase letter-spacing-wide mb-2"
             i18n="@@featureDecabillHome-howExampleLabel"
@@ -617,54 +575,20 @@
           <h4 class="h6 fw-semibold mb-2" i18n="@@featureDecabillHome-howExampleTitle">
             An agency that ships SaaS and managed hosting
           </h4>
-          <p class="small text-muted mb-4" i18n="@@featureDecabillHome-howExampleLead">
+          <p class="small text-muted mb-0" i18n="@@featureDecabillHome-howExampleLead">
             Customers subscribe from the marketing site, pay through Stripe, and receive compliant invoices. Hosting
             orders provision on Hetzner when plans include infrastructure. At month end, finance exports to DATEV
             without re-keying line items from side spreadsheets.
           </p>
-          <div class="d-flex flex-wrap gap-2 align-items-center small text-muted">
-            <fpc-badge variant="marketing" [pill]="true" i18n="@@featureDecabillHome-howExampleStep1"
-              >Subscribe</fpc-badge
-            >
-            <i class="bi bi-arrow-right" aria-hidden="true"></i>
-            <fpc-badge variant="marketing" [pill]="true" i18n="@@featureDecabillHome-howExampleStep2">Pay</fpc-badge>
-            <i class="bi bi-arrow-right" aria-hidden="true"></i>
-            <fpc-badge variant="marketing" [pill]="true" i18n="@@featureDecabillHome-howExampleStep3"
-              >Provision</fpc-badge
-            >
-            <i class="bi bi-arrow-right" aria-hidden="true"></i>
-            <fpc-badge variant="marketing" [pill]="true" i18n="@@featureDecabillHome-howExampleStep4">Export</fpc-badge>
-          </div>
         </article>
       </div>
 
-      <div class="col-lg-6 home-integration-grid-col">
-        <div
-          class="home-integration-grid"
-          role="list"
-          i18n-aria-label="@@featureDecabillHome-howIntegrationGridLabel"
-          aria-label="Billing integrations and connected systems"
-        >
-          @for (integration of billingIntegrations; track integration.id) {
-            <div
-              class="home-integration-grid__cell"
-              role="listitem"
-              [style.background-color]="integration.brandColor"
-              [attr.aria-label]="integration.name"
-            >
-              @if (integration.logoUrl) {
-                <img
-                  [src]="integration.logoUrl"
-                  [alt]="integration.name"
-                  class="home-integration-grid__logo"
-                  [ngClass]="integration.logoClass"
-                  loading="lazy"
-                />
-              } @else {
-                <span class="home-integration-grid__wordmark">{{ integration.name }}</span>
-              }
-            </div>
-          }
+      <div class="col-lg-6 home-how-visual-col landing-bento-visual d-flex flex-column">
+        <div class="home-how-illustration landing-illustration-fill">
+          <framework-portal-billing-timeline-illustration
+            label="Billing integrations and connected systems"
+            i18n-label="@@featureDecabillHome-howIntegrationGridLabel"
+          />
         </div>
       </div>
     </div>
@@ -695,36 +619,36 @@
     </div>
     <div class="row g-4 g-lg-5 justify-content-center">
       <div class="col-md-4">
-        <article class="card border rounded-3 shadow-sm p-4 h-100 bg-white">
-          <i class="bi bi-shield-check text-primary icon-md mb-3" aria-hidden="true"></i>
-          <h3 class="h6 fw-semibold mb-2 text-dark" i18n="@@featureDecabillHome-compliancePoint1Title">
+        <article class="card border rounded-3 shadow-sm p-4 h-100">
+          <i class="bi bi-shield-check text-white icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2 text-body-emphasis" i18n="@@featureDecabillHome-compliancePoint1Title">
             Built in, not bolted on
           </h3>
-          <p class="small text-muted mb-0" i18n="@@featureDecabillHome-compliancePoint1Desc">
+          <p class="small mb-0" i18n="@@featureDecabillHome-compliancePoint1Desc">
             Invoices, payments, and audit trails share one system from issuance through finance export. You do not need
             parallel spreadsheets holding the real numbers.
           </p>
         </article>
       </div>
       <div class="col-md-4">
-        <article class="card border rounded-3 shadow-sm p-4 h-100 bg-white">
-          <i class="bi bi-arrow-repeat text-primary icon-md mb-3" aria-hidden="true"></i>
-          <h3 class="h6 fw-semibold mb-2 text-dark" i18n="@@featureDecabillHome-compliancePoint2Title">
+        <article class="card border rounded-3 shadow-sm p-4 h-100">
+          <i class="bi bi-arrow-repeat text-white icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2 text-body-emphasis" i18n="@@featureDecabillHome-compliancePoint2Title">
             We run what we ship
           </h3>
-          <p class="small text-muted mb-0" i18n="@@featureDecabillHome-compliancePoint2Desc">
+          <p class="small mb-0" i18n="@@featureDecabillHome-compliancePoint2Desc">
             Our own subscriptions, plan changes, and customer billing run through Decabill. That is living proof the
             workflows you sell with actually hold up in production.
           </p>
         </article>
       </div>
       <div class="col-md-4">
-        <article class="card border rounded-3 shadow-sm p-4 h-100 bg-white">
-          <i class="bi bi-tools text-primary icon-md mb-3" aria-hidden="true"></i>
-          <h3 class="h6 fw-semibold mb-2 text-dark" i18n="@@featureDecabillHome-compliancePoint3Title">
+        <article class="card border rounded-3 shadow-sm p-4 h-100">
+          <i class="bi bi-tools text-white icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2 text-body-emphasis" i18n="@@featureDecabillHome-compliancePoint3Title">
             Maintained where it counts
           </h3>
-          <p class="small text-muted mb-0" i18n="@@featureDecabillHome-compliancePoint3Desc">
+          <p class="small mb-0" i18n="@@featureDecabillHome-compliancePoint3Desc">
             Improvements land in the codebase we operate every day, not in a sandbox demo. Compliance paths stay current
             as regulations and integrations evolve.
           </p>
@@ -735,11 +659,13 @@
 </section>
 
 <!-- Built for how you sell -->
-<section id="use-cases" class="py-10 bg-white home-sell grid-section">
+<section id="use-cases" class="py-10 bg-body home-sell grid-section">
   <div class="container grid-section__container">
     <div class="row justify-content-center text-center pb-10">
       <div class="col-lg-9">
-        <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featureDecabillHome-useCasesTitle">Built for how you sell</h2>
+        <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureDecabillHome-useCasesTitle">
+          Built for how you sell
+        </h2>
         <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureDecabillHome-useCasesLead">
           Decabill is where your team runs revenue operations. It sits beside the products and services you already sell
           so billing follows how agencies and product teams actually go to market.
@@ -751,19 +677,19 @@
       <div class="row g-3 g-lg-4">
         <div class="col-lg-8">
           <div
-            class="card border rounded-3 shadow-sm overflow-hidden h-100 home-sell-visual card-capability card-capability-primary"
+            class="card border rounded-3 shadow-sm overflow-hidden h-100 home-sell-visual landing-bento-visual card-capability card-capability-primary"
           >
             <div class="p-3 p-lg-4 pb-0">
               <fpc-badge color="primary" class="mb-3 bento-badge" i18n="@@featureDecabillHome-sellVisualBadge"
                 >Configure plans and pricing</fpc-badge
               >
             </div>
-            <img
-              src="assets/images/screenshots/product-config-dark_framed.png"
-              alt="Decabill service plan configuration"
-              class="img-fluid w-100 home-sell-screenshot"
-              i18n-alt="@@featureDecabillHome-sellProductConfigAlt"
-            />
+            <div class="home-sell-illustration landing-illustration-fill">
+              <framework-portal-plan-config-illustration
+                label="Decabill service plan configuration"
+                i18n-label="@@featureDecabillHome-sellProductConfigAlt"
+              />
+            </div>
           </div>
         </div>
         <div class="col-lg-4 d-flex flex-column gap-3">
@@ -820,7 +746,7 @@
 <section id="ecosystem" class="py-10 bg-body-tertiary home-ecosystem grid-section">
   <div class="container grid-section__container">
     <div class="text-center pb-10">
-      <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featureDecabillHome-ecosystemTitle">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureDecabillHome-ecosystemTitle">
         One platform, flexible surfaces
       </h2>
       <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureDecabillHome-ecosystemLead">
@@ -833,7 +759,7 @@
       class="card border rounded-3 shadow-sm home-ecosystem-studio card-capability card-capability-primary mb-4 overflow-hidden"
     >
       <div class="row g-0 align-items-lg-stretch">
-        <div class="col-lg-6 p-4 p-lg-5 d-flex flex-column card-capability-primary">
+        <div class="col-lg-6 p-4 p-lg-5 d-flex flex-column landing-bento-visual">
           <fpc-badge color="primary" class="mb-3 align-self-start" i18n="@@featureDecabillHome-ecosystemOpenSourceBadge"
             >Open source</fpc-badge
           >
@@ -859,12 +785,12 @@
             >
           </div>
         </div>
-        <div class="col-lg-6 home-ecosystem-studio-surfaces border-start bg-white p-4 p-lg-4">
+        <div class="col-lg-6 home-ecosystem-studio-surfaces landing-divider-start bg-body p-4 p-lg-4">
           <p class="small fw-semibold text-muted mb-3 mb-lg-4" i18n="@@featureDecabillHome-ecosystemAdvantagesLabel">
             Why open source
           </p>
-          <div class="d-flex flex-column gap-3">
-            <article class="home-ecosystem-surface rounded-3 border p-3 p-lg-4">
+          <div class="d-flex flex-column landing-hairline-list">
+            <article class="home-ecosystem-surface py-3">
               <div class="d-flex gap-3">
                 <i class="bi bi-hdd-stack text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
                 <div>
@@ -886,7 +812,7 @@
                 </div>
               </div>
             </article>
-            <article class="home-ecosystem-surface rounded-3 border p-3 p-lg-4">
+            <article class="home-ecosystem-surface py-3">
               <div class="d-flex gap-3">
                 <i class="bi bi-code-slash text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
                 <div>
@@ -918,8 +844,8 @@
         <article
           class="card border rounded-3 shadow-sm overflow-hidden home-ecosystem-product home-ecosystem-product--cloud"
         >
-          <div class="row g-0 align-items-stretch bg-body-tertiary">
-            <div class="col-lg-8 p-4 p-lg-5 bg-white">
+          <div class="row g-0 align-items-stretch">
+            <div class="col-lg-8 p-4 p-lg-5 bg-body">
               <div class="mb-3">
                 <i class="bi bi-cloud-check text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
                 <h3 class="h5 fw-semibold mb-0" i18n="@@featureDecabillHome-ecosystemCloudTitle">Decabill Cloud</h3>
@@ -930,22 +856,24 @@
               </p>
             </div>
             <div
-              class="col-lg-4 p-4 p-lg-5 text-center card-capability-primary border-start home-ecosystem-cloud-aside d-flex flex-column justify-content-center"
+              class="col-lg-4 p-4 p-lg-5 text-center landing-surface-tint landing-divider-start home-ecosystem-cloud-aside d-flex flex-column justify-content-center"
             >
               <p class="small text-muted mb-2" i18n="@@featureDecabillHome-ecosystemCloudStartingAt">Starting at</p>
-              <div class="h2 fw-bold text-primary mb-4">
+              <div class="mb-4">
                 @if (cheapestOfferingLoading() || !cheapestLoaded()) {
-                  <span class="text-muted" aria-hidden="true">…</span>
+                  <div class="h2 fw-bold text-muted mb-0" aria-hidden="true">...</div>
                 } @else {
                   @if (cheapestOffering(); as plan) {
                     @if (formatPublicOfferingPrice(plan); as price) {
-                      {{ price.prefix }}€{{ price.amount | number: '1.2-2'
-                      }}<span class="fs-6 text-muted fw-normal">{{ billingIntervalSuffix(plan) }}</span>
+                      <div class="h2 fw-bold text-primary mb-0">
+                        {{ price.prefix }}€{{ price.amount | number: '1.2-2'
+                        }}<span class="fs-6 text-muted fw-normal">{{ billingIntervalSuffix(plan) }}</span>
+                      </div>
                     }
                   } @else {
-                    <span class="text-muted fs-6" i18n="@@featureDecabillHome-ecosystemCloudUnavailable"
-                      >Contact us</span
-                    >
+                    <div class="h2 fw-bold text-primary mb-0" i18n="@@featureDecabillHome-ecosystemCloudUnavailable">
+                      On request
+                    </div>
                   }
                 }
               </div>

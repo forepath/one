@@ -21,19 +21,39 @@ import {
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcPageHeaderComponent,
+  FpcPanelComponent,
+  FpcPanelGridComponent,
+  FpcPaginationComponent,
   FpcSearchFieldComponent,
   FpcSpinnerComponent,
   FpcSummaryBarComponent,
   FpcSummaryCardComponent,
   FpcSummaryCardValueDirective,
+  FPC_CHART_AREA_FILL,
+  FPC_CHART_AXIS,
+  FPC_CHART_GRID,
+  FPC_CHART_LABEL_STYLE,
+  FPC_CHART_LEGEND,
+  FPC_CHART_PLACEHOLDER_COLOR,
+  FPC_CHART_SLICE_LABELS,
+  FPC_CHART_SLICE_TOOLTIP,
+  fpcChart,
+  fpcChartColor,
+  fpcChartColors,
 } from '@forepath/shared/frontend/ui-components';
 import type {
   ApexAxisChartSeries,
   ApexChart,
   ApexDataLabels,
+  ApexFill,
+  ApexGrid,
+  ApexLegend,
   ApexNonAxisChartSeries,
-  ApexTitleSubtitle,
+  ApexPlotOptions,
+  ApexStroke,
+  ApexTooltip,
   ApexXAxis,
+  ApexYAxis,
 } from 'ng-apexcharts';
 import { NgApexchartsModule } from 'ng-apexcharts';
 
@@ -67,18 +87,30 @@ interface AuditFiltersStorage {
   filtersCollapsed: boolean;
 }
 
-const CHART_TEXT_STYLE = { color: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' };
-const CHART_LABEL_STYLE = { colors: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' };
+interface AuditAxisChartOptions {
+  series: ApexAxisChartSeries;
+  chart: ApexChart;
+  colors: string[];
+  stroke: ApexStroke;
+  fill: ApexFill;
+  dataLabels: ApexDataLabels;
+  xaxis: ApexXAxis;
+  yaxis: ApexYAxis;
+  grid: ApexGrid;
+  legend: ApexLegend;
+  heading: string;
+}
 
-/** Bootstrap color palette for charts (donut/bar). */
-const BS_CHART_COLORS = [
-  'var(--bs-primary)',
-  'var(--bs-secondary)',
-  'var(--bs-success)',
-  'var(--bs-danger)',
-  'var(--bs-warning)',
-  'var(--bs-info)',
-] as const;
+interface AuditDonutChartOptions {
+  series: ApexNonAxisChartSeries;
+  chart: ApexChart;
+  colors: string[];
+  labels: string[];
+  dataLabels: ApexDataLabels;
+  legend: ApexLegend;
+  tooltip: ApexTooltip;
+  heading: string;
+}
 
 @Component({
   selector: 'framework-audit',
@@ -96,6 +128,9 @@ const BS_CHART_COLORS = [
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcPageHeaderComponent,
+    FpcPanelComponent,
+    FpcPanelGridComponent,
+    FpcPaginationComponent,
     FpcSearchFieldComponent,
     FpcSpinnerComponent,
     FpcSummaryBarComponent,
@@ -187,18 +222,7 @@ export class AuditComponent implements OnInit {
     return list.find((c) => c.id === id) ?? null;
   });
 
-  readonly seriesChartOptions = computed<{
-    series: ApexAxisChartSeries;
-    chart: ApexChart;
-    colors: string[];
-    stroke: { colors: string[] };
-    fill: { colors: string[] };
-    dataLabels: ApexDataLabels;
-    xaxis: ApexXAxis;
-    yaxis: { labels: { style: { colors: string } } };
-    grid: { borderColor: string };
-    title: ApexTitleSubtitle;
-  } | null>(() => {
+  readonly seriesChartOptions = computed<AuditAxisChartOptions | null>(() => {
     const s = this.summary();
 
     if (!s) return null;
@@ -211,51 +235,19 @@ export class AuditComponent implements OnInit {
       this.toDate(),
       groupBy,
     );
-    const axisDateFormat = groupBy === 'day' ? 'mediumDate' : 'short';
 
     return {
+      ...this.buildTimeAxisChart('area', categories, groupBy),
       series: [{ name: 'Messages', data }],
-      chart: {
-        type: 'area',
-        height: 280,
-        toolbar: { show: false },
-        background: 'transparent',
-        zoom: { enabled: false },
-      },
-      colors: ['var(--bs-primary)'],
-      stroke: { colors: ['var(--bs-primary)'] },
-      fill: { colors: ['var(--bs-primary)'] },
-      dataLabels: { enabled: false },
-      xaxis: {
-        categories,
-        labels: {
-          style: { colors: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
-          formatter: (value: string): string => this.formatAxisDateLabel(value, axisDateFormat),
-        },
-        axisBorder: { color: 'var(--bs-border-color)' },
-      },
-      yaxis: {
-        labels: { style: { colors: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' } },
-      },
-      grid: {
-        borderColor: 'var(--bs-border-color)',
-      },
-      title: {
-        text: $localize`:@@featureAudit-chartMessagesOverTimeTitle:Messages over time`,
-        style: { color: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
-      },
+      colors: [fpcChartColor(0)],
+      stroke: { curve: 'smooth', width: 2 },
+      fill: FPC_CHART_AREA_FILL,
+      legend: { ...FPC_CHART_LEGEND, show: false },
+      heading: $localize`:@@featureAudit-chartMessagesOverTimeTitle:Messages over time`,
     };
   });
 
-  readonly filterBreakdownChartOptions = computed<{
-    series: ApexNonAxisChartSeries;
-    chart: ApexChart;
-    colors: string[];
-    labels: string[];
-    legend: { labels: { colors: string }; fontFamily: string };
-    title: ApexTitleSubtitle;
-    dataLabels: { style: { colors: string; fontFamily: string } };
-  } | null>(() => {
+  readonly filterBreakdownChartOptions = computed<AuditDonutChartOptions | null>(() => {
     const s = this.summary();
 
     if (!s) return null;
@@ -271,46 +263,27 @@ export class AuditComponent implements OnInit {
       count: b.count,
     }));
     const items = [...drops, ...flags];
-    const labels =
-      items.length > 0
-        ? items.map((i) => i.label)
-        : [$localize`:@@featureAudit-chartNoFilterBreakdown:No filter drops or flags`];
-    const series = items.length > 0 ? items.map((i) => i.count) : [1];
-    const colors =
-      items.length > 0 ? items.map((_, i) => BS_CHART_COLORS[i % BS_CHART_COLORS.length]) : ['var(--bs-secondary)'];
 
-    return {
-      series,
-      chart: { type: 'donut', height: 280, background: 'transparent' },
-      colors,
-      labels,
-      legend: {
-        labels: { colors: 'var(--bs-body-color)' },
-        fontFamily: 'var(--bs-body-font-family)',
-      },
-      dataLabels: {
-        style: { colors: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
-      },
-      title: {
-        text: $localize`:@@featureAudit-chartFilterBreakdownTitle:Filter drops and flags by type`,
-        style: { color: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
-      },
-    };
+    if (items.length === 0) {
+      return this.buildDonutChart(
+        [$localize`:@@featureAudit-chartNoFilterBreakdown:No filter drops or flags`],
+        [1],
+        [FPC_CHART_PLACEHOLDER_COLOR],
+        $localize`:@@featureAudit-chartFilterBreakdownTitle:Filter drops and flags by type`,
+        false,
+      );
+    }
+
+    return this.buildDonutChart(
+      items.map((i) => i.label),
+      items.map((i) => i.count),
+      fpcChartColors(items.length),
+      $localize`:@@featureAudit-chartFilterBreakdownTitle:Filter drops and flags by type`,
+    );
   });
 
   /** Security events over time: message filter drops / flags and blocked or observed destinations. */
-  readonly securitySeriesChartOptions = computed<{
-    series: ApexAxisChartSeries;
-    chart: ApexChart;
-    colors: string[];
-    stroke: { curve: 'smooth'; width: number };
-    dataLabels: ApexDataLabels;
-    xaxis: ApexXAxis;
-    yaxis: { labels: { style: { colors: string } } };
-    grid: { borderColor: string };
-    legend: { labels: { colors: string } };
-    title: ApexTitleSubtitle;
-  } | null>(() => {
+  readonly securitySeriesChartOptions = computed<AuditAxisChartOptions | null>(() => {
     const s = this.summary();
 
     if (!s?.securitySeries) return null;
@@ -321,55 +294,25 @@ export class AuditComponent implements OnInit {
       this.generateUtcBucketKeysInclusive(this.fromDate(), this.toDate(), groupBy),
       groupBy,
     );
-    const axisDateFormat = groupBy === 'day' ? 'mediumDate' : 'short';
 
     return {
+      ...this.buildTimeAxisChart('area', aligned.categories, groupBy),
       series: [
         { name: $localize`:@@featureAudit-seriesFilterDrops:Message drops`, data: aligned.filterDrops },
         { name: $localize`:@@featureAudit-seriesFilterFlags:Message flags`, data: aligned.filterFlags },
         { name: $localize`:@@featureAudit-seriesEgressBlocked:Blocked destinations`, data: aligned.egressBlocked },
         { name: $localize`:@@featureAudit-seriesEgressObserved:Would-be blocks`, data: aligned.egressObserved },
       ],
-      chart: {
-        type: 'line',
-        height: 280,
-        toolbar: { show: false },
-        background: 'transparent',
-        zoom: { enabled: false },
-      },
       colors: ['var(--bs-danger)', 'var(--bs-warning)', 'var(--bs-primary)', 'var(--bs-info)'],
       stroke: { curve: 'smooth', width: 2 },
-      dataLabels: { enabled: false },
-      xaxis: {
-        categories: aligned.categories,
-        labels: {
-          style: CHART_LABEL_STYLE,
-          formatter: (value: string): string => this.formatAxisDateLabel(value, axisDateFormat),
-        },
-        axisBorder: { color: 'var(--bs-border-color)' },
-      },
-      yaxis: { labels: { style: CHART_LABEL_STYLE } },
-      grid: { borderColor: 'var(--bs-border-color)' },
-      legend: { labels: { colors: 'var(--bs-body-color)' } },
-      title: {
-        text: $localize`:@@featureAudit-chartSecurityOverTimeTitle:Security events over time`,
-        style: CHART_TEXT_STYLE,
-      },
+      fill: FPC_CHART_AREA_FILL,
+      legend: FPC_CHART_LEGEND,
+      heading: $localize`:@@featureAudit-chartSecurityOverTimeTitle:Security events over time`,
     };
   });
 
   /** Web traffic decisions over time (stacked: allowed / blocked / would-be blocked). */
-  readonly egressSeriesChartOptions = computed<{
-    series: ApexAxisChartSeries;
-    chart: ApexChart;
-    colors: string[];
-    dataLabels: ApexDataLabels;
-    xaxis: ApexXAxis;
-    yaxis: { labels: { style: { colors: string } } };
-    grid: { borderColor: string };
-    legend: { labels: { colors: string } };
-    title: ApexTitleSubtitle;
-  } | null>(() => {
+  readonly egressSeriesChartOptions = computed<AuditAxisChartOptions | null>(() => {
     const s = this.summary();
 
     if (!s?.securitySeries || !this.hasEgress()) return null;
@@ -380,103 +323,107 @@ export class AuditComponent implements OnInit {
       this.generateUtcBucketKeysInclusive(this.fromDate(), this.toDate(), groupBy),
       groupBy,
     );
-    const axisDateFormat = groupBy === 'day' ? 'mediumDate' : 'short';
 
     return {
+      ...this.buildTimeAxisChart('bar', aligned.categories, groupBy, { stacked: true }),
       series: [
         { name: formatEgressDecision('allowed'), data: aligned.egressAllowed },
         { name: formatEgressDecision('blocked'), data: aligned.egressBlocked },
         { name: formatEgressDecision('observed'), data: aligned.egressObserved },
       ],
-      chart: {
-        type: 'bar',
-        stacked: true,
-        height: 280,
-        toolbar: { show: false },
-        background: 'transparent',
-        zoom: { enabled: false },
-      },
       colors: ['var(--bs-success)', 'var(--bs-danger)', 'var(--bs-warning)'],
-      dataLabels: { enabled: false },
-      xaxis: {
-        categories: aligned.categories,
-        labels: {
-          style: CHART_LABEL_STYLE,
-          formatter: (value: string): string => this.formatAxisDateLabel(value, axisDateFormat),
-        },
-        axisBorder: { color: 'var(--bs-border-color)' },
-      },
-      yaxis: { labels: { style: CHART_LABEL_STYLE } },
-      grid: { borderColor: 'var(--bs-border-color)' },
-      legend: { labels: { colors: 'var(--bs-body-color)' } },
-      title: {
-        text: $localize`:@@featureAudit-chartEgressOverTimeTitle:Web traffic decisions over time`,
-        style: CHART_TEXT_STYLE,
-      },
+      stroke: { width: 0 },
+      fill: { type: 'solid' },
+      legend: FPC_CHART_LEGEND,
+      heading: $localize`:@@featureAudit-chartEgressOverTimeTitle:Web traffic decisions over time`,
     };
   });
 
   /** Most frequently blocked / would-be blocked destinations. */
-  readonly egressTopHostsChartOptions = computed<{
-    series: ApexAxisChartSeries;
-    chart: ApexChart;
-    colors: string[];
-    plotOptions: { bar: { horizontal: boolean; borderRadius: number } };
-    dataLabels: ApexDataLabels;
-    xaxis: ApexXAxis;
-    yaxis: { labels: { style: { colors: string } } };
-    grid: { borderColor: string };
-    title: ApexTitleSubtitle;
-  } | null>(() => {
-    const hosts = this.summary()?.egressTopBlockedHosts ?? [];
+  readonly egressTopHostsChartOptions = computed<(AuditAxisChartOptions & { plotOptions: ApexPlotOptions }) | null>(
+    () => {
+      const hosts = this.summary()?.egressTopBlockedHosts ?? [];
 
-    if (hosts.length === 0) return null;
+      if (hosts.length === 0) return null;
 
-    return {
-      series: [{ name: this.egressBlockedLabel, data: hosts.map((host) => host.count) }],
-      chart: { type: 'bar', height: 280, toolbar: { show: false }, background: 'transparent' },
-      colors: ['var(--bs-danger)'],
-      plotOptions: { bar: { horizontal: true, borderRadius: 2 } },
-      dataLabels: { enabled: false },
-      xaxis: {
-        categories: hosts.map((host) => host.host),
-        labels: { style: CHART_LABEL_STYLE },
-        axisBorder: { color: 'var(--bs-border-color)' },
-      },
-      yaxis: { labels: { style: CHART_LABEL_STYLE } },
-      grid: { borderColor: 'var(--bs-border-color)' },
-      title: {
-        text: $localize`:@@featureAudit-chartTopBlockedHostsTitle:Top blocked destinations`,
-        style: CHART_TEXT_STYLE,
-      },
-    };
-  });
+      return {
+        series: [{ name: this.egressBlockedLabel, data: hosts.map((host) => host.count) }],
+        chart: fpcChart('bar', 280),
+        colors: ['var(--bs-danger)'],
+        stroke: { width: 0 },
+        fill: { type: 'solid' },
+        plotOptions: { bar: { horizontal: true, borderRadius: 2 } },
+        dataLabels: { enabled: false },
+        xaxis: {
+          ...FPC_CHART_AXIS,
+          categories: hosts.map((host) => host.host),
+          labels: { style: FPC_CHART_LABEL_STYLE },
+        },
+        yaxis: { labels: { style: FPC_CHART_LABEL_STYLE } },
+        grid: FPC_CHART_GRID,
+        legend: { ...FPC_CHART_LEGEND, show: false },
+        heading: $localize`:@@featureAudit-chartTopBlockedHostsTitle:Top blocked destinations`,
+      };
+    },
+  );
 
   /** Blocked / would-be blocked decisions by guard rule. */
-  readonly egressRulesChartOptions = computed<{
-    series: ApexNonAxisChartSeries;
-    chart: ApexChart;
-    colors: string[];
-    labels: string[];
-    legend: { labels: { colors: string }; fontFamily: string };
-    title: ApexTitleSubtitle;
-  } | null>(() => {
+  readonly egressRulesChartOptions = computed<AuditDonutChartOptions | null>(() => {
     const rules = this.summary()?.egressRulesBreakdown ?? [];
 
     if (rules.length === 0) return null;
 
-    return {
-      series: rules.map((rule) => rule.count),
-      chart: { type: 'donut', height: 280, background: 'transparent' },
-      colors: rules.map((_, index) => BS_CHART_COLORS[index % BS_CHART_COLORS.length]),
-      labels: rules.map((rule) => formatEgressRule(rule.rule)),
-      legend: { labels: { colors: 'var(--bs-body-color)' }, fontFamily: 'var(--bs-body-font-family)' },
-      title: {
-        text: $localize`:@@featureAudit-chartEgressRulesTitle:Blocks by rule`,
-        style: CHART_TEXT_STYLE,
-      },
-    };
+    return this.buildDonutChart(
+      rules.map((rule) => formatEgressRule(rule.rule)),
+      rules.map((rule) => rule.count),
+      fpcChartColors(rules.length),
+      $localize`:@@featureAudit-chartEgressRulesTitle:Blocks by rule`,
+    );
   });
+
+  /** Shared chart, axes and grid for the time-bucketed charts. */
+  private buildTimeAxisChart(
+    type: 'area' | 'line' | 'bar',
+    categories: string[],
+    groupBy: 'day' | 'hour',
+    extra: { stacked?: boolean } = {},
+  ): Pick<AuditAxisChartOptions, 'chart' | 'dataLabels' | 'xaxis' | 'yaxis' | 'grid'> {
+    const axisDateFormat = groupBy === 'day' ? 'mediumDate' : 'short';
+
+    return {
+      chart: fpcChart(type, 280, extra),
+      dataLabels: { enabled: false },
+      xaxis: {
+        ...FPC_CHART_AXIS,
+        categories,
+        labels: {
+          style: FPC_CHART_LABEL_STYLE,
+          formatter: (value: string): string => this.formatAxisDateLabel(value, axisDateFormat),
+        },
+      },
+      yaxis: { labels: { style: FPC_CHART_LABEL_STYLE } },
+      grid: FPC_CHART_GRID,
+    };
+  }
+
+  private buildDonutChart(
+    labels: string[],
+    series: number[],
+    colors: string[],
+    title: string,
+    showSliceLabels = true,
+  ): AuditDonutChartOptions {
+    return {
+      series,
+      chart: fpcChart('donut', 280),
+      colors,
+      labels,
+      dataLabels: { ...FPC_CHART_SLICE_LABELS, enabled: showSliceLabels },
+      legend: FPC_CHART_LEGEND,
+      tooltip: FPC_CHART_SLICE_TOOLTIP,
+      heading: title,
+    };
+  }
 
   ngOnInit(): void {
     const stored = this.loadFilters();

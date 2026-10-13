@@ -8,12 +8,6 @@
   isolation: isolate;
   // Native bottom edge stays for spacing; the visible stroke is redrawn above content below.
   border-bottom-color: transparent;
-  // Open-dot fill: soft step below tertiary (light); dark uses shared `.btn-dark` token.
-  --fpc-list-item-open-dot: color-mix(in srgb, var(--bs-tertiary-bg) 88%, black);
-}
-
-:host-context(html[data-bs-theme='dark']) {
-  --fpc-list-item-open-dot: var(--fpc-btn-dark-bg);
 }
 
 // Redraw the separator above in-flow chips so opaque badge fills cannot mask a segment of it
@@ -95,13 +89,13 @@
   margin-top: 0.25rem;
   color: var(--bs-secondary-color);
   // Bootstrap `.small` scale (Decabill admin lists). Absolute rem so callers do not need
-  // `class="small"` for the type size — layout utilities alone are enough.
+  // `class="small"` for the type size - layout utilities alone are enough.
   font-size: 0.875em;
   line-height: 1.35;
 }
 
 // Nested anchors are projected from the parent (e.g. Decabill project rows), so they do not
-// receive this component's encapsulation attribute — pierce to override Bootstrap `a` link ink.
+// receive this component's encapsulation attribute - pierce to override Bootstrap `a` link ink.
 :host ::ng-deep {
   .fpc-list-item__title a,
   .fpc-list-item__meta a,
@@ -119,8 +113,8 @@
   }
 }
 
-// Selected row: no wash — dark open-dot (same size/placement as unread indicators).
-// Skip the open-dot when a notification indicator is already present (e.g. unread).
+// Selected row: no wash - a primary bar on the left edge, 3px like the active marker of the
+// vertical `fpc-tab-group` rail. Drawn as an overlay so the row content does not shift.
 :host(.active) {
   --bs-list-group-active-bg: transparent;
   --bs-list-group-active-color: var(--bs-body-color);
@@ -140,18 +134,13 @@
 :host(.active)::before {
   content: '';
   position: absolute;
-  top: 0.25rem;
-  right: 0.25rem;
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 0.25rem;
-  background-color: var(--fpc-list-item-open-dot);
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: var(--bs-primary);
   pointer-events: none;
   z-index: 2;
-}
-
-:host(.active):has(fpc-notification-indicator)::before {
-  content: none;
 }
 
 // Slot wrappers collapse when nothing is projected so rows keep a tight rhythm.
@@ -177,4 +166,24 @@
   width: 100%;
   position: relative;
   z-index: 1;
+}
+
+// Phones: keep a readable title column; wide action clusters move below the title and wrap
+// instead of shrinking the body to zero. A small icon cluster still fits on the title row.
+@media (max-width: 575.98px) {
+  .fpc-list-item__main {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
+
+  .fpc-list-item__body {
+    flex: 1 1 12rem;
+  }
+
+  .fpc-list-item__actions {
+    flex: 0 1 auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    max-width: 100%;
+  }
 }

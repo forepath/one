@@ -5,7 +5,7 @@ import { getPreviewGlobals, subscribePreviewGlobals } from './fpc-globals-channe
 import { createFpcStorybookTheme } from './fpc-storybook-theme';
 
 /**
- * Storybook docs chrome (arg tables, preview toolbars, source panels, …) is emotion-themed
+ * Storybook docs chrome (arg tables, preview toolbars, source panels, ...) is emotion-themed
  * via DocsContainer's `theme` prop. Accent follows Color set primary; base follows Theme.
  */
 export function FpcDocsContainer(props: PropsWithChildren<DocsContainerProps>): ReactElement {

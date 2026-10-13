@@ -21,11 +21,11 @@ export type FpcFormControlSize = 'sm' | 'md' | 'lg' | 'xl';
  * For `controlType="select"`, project the `<option>` elements as content.
  *
  * Inside Bootstrap `input-group` / `fpc-input-group`, the host itself is the flex item
- * (see component SCSS). `display: contents` cannot bridge Bootstrap's `>` selectors —
+ * (see component SCSS). `display: contents` cannot bridge Bootstrap's `>` selectors -
  * those use the element tree, so a nested `.form-control` would keep `width: 100%` and
  * wrap suffixes under `flex-wrap`.
  *
- * Multi-selects that need array `ngModel` / `compareWith` / `[ngValue]` should stay native —
+ * Multi-selects that need array `ngModel` / `compareWith` / `[ngValue]` should stay native -
  * use `multiple` only for simple string / `(valuesChange)` flows. File inputs use
  * `(filesChange)` because the CVA string path cannot carry a `FileList`.
  */

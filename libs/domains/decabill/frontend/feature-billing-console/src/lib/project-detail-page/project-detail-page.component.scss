@@ -19,10 +19,15 @@
   font-weight: 400;
 }
 
-.customer-billing__summary-progress-open {
-  background-color: var(--bs-secondary-bg);
+// Thin pill bars under the summary values; segment colours below override the `bg-*` utilities.
+:host ::ng-deep .customer-billing__summary-progress .progress-stacked {
+  border-radius: var(--bs-border-radius-pill);
 }
 
-.customer-billing__summary-progress-over {
-  background-color: color-mix(in srgb, var(--bs-primary) 72%, var(--bs-body-color));
+:host ::ng-deep .customer-billing__summary-progress--open .progress:first-child .progress-bar {
+  background-color: var(--bs-secondary-bg) !important;
+}
+
+:host ::ng-deep .customer-billing__summary-progress--over .progress:last-child .progress-bar {
+  background-color: color-mix(in srgb, var(--bs-primary) 72%, var(--bs-body-color)) !important;
 }

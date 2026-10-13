@@ -12,10 +12,10 @@
         Back to projects
       </a>
       @if (isAdminView() && assigneeEmail(project); as email) {
-        <p class="mb-0 small text-muted" i18n="@@featureProjectDetail-assignee">Assignee: {{ email }}</p>
+        <p class="mb-0 small text-body-secondary" i18n="@@featureProjectDetail-assignee">Assignee: {{ email }}</p>
       }
       @if (project.description) {
-        <p class="mb-0 small text-muted">{{ project.description }}</p>
+        <p class="mb-0 small text-body-secondary">{{ project.description }}</p>
       }
     </fpc-page-header>
   }
@@ -33,7 +33,7 @@
           @if (selectedProject$ | async; as project) {
             {{ formatMinutes(summary.totalTrackedMinutes) }}
             @if (hasTargetHours(project.targetHours)) {
-              <span class="text-muted customer-billing__summary-out-of">
+              <span class="text-body-secondary customer-billing__summary-out-of">
                 / {{ formatTargetHoursDuration(project.targetHours) }}
               </span>
             }
@@ -41,33 +41,24 @@
             {{ formatMinutes(summary.totalTrackedMinutes) }}
           }
         } @else {
-          <span class="text-body-secondary">—</span>
+          <span class="text-body-secondary">-</span>
         }
       </span>
       @if ((loadingSummary$ | async) === false) {
         @if (summary$ | async; as summary) {
           @if (selectedProject$ | async; as project) {
             @let progress = targetHoursProgress(summary.totalTrackedMinutes, project.targetHours);
-            <div
-              class="progress w-100 rounded-pill mt-1"
-              role="progressbar"
-              [attr.aria-valuenow]="progress.isOver ? 100 : progress.primaryPct"
-              aria-valuemin="0"
-              aria-valuemax="100"
-              [attr.aria-label]="
+            <fpc-progress
+              class="customer-billing__summary-progress w-100 mt-1"
+              [class.customer-billing__summary-progress--over]="progress.isOver"
+              height="var(--bs-progress-height)"
+              [segments]="targetHoursProgressSegments(progress)"
+              [ariaLabel]="
                 hasTargetHours(project.targetHours)
                   ? trackedTimeTargetAriaLabel(summary.totalTrackedMinutes, project.targetHours)
                   : trackedTimeProgressAriaLabel
               "
-            >
-              <div class="progress-bar" [style.width.%]="progress.primaryPct"></div>
-              @if (progress.isOver) {
-                <div
-                  class="progress-bar customer-billing__summary-progress-over"
-                  [style.width.%]="progress.dangerPct"
-                ></div>
-              }
-            </div>
+            />
           }
         }
       }
@@ -79,7 +70,7 @@
         } @else if (summary$ | async; as summary) {
           {{ formatMinutes(summary.unbilledMinutes) }}
         } @else {
-          <span class="text-body-secondary">—</span>
+          <span class="text-body-secondary">-</span>
         }
       </span>
     </fpc-summary-card>
@@ -90,7 +81,7 @@
         } @else if (summary$ | async; as summary) {
           {{ summary.openBillableAmountNet | number: '1.2-2' }}€
         } @else {
-          <span class="text-body-secondary">—</span>
+          <span class="text-body-secondary">-</span>
         }
       </span>
     </fpc-summary-card>
@@ -101,32 +92,23 @@
         } @else if (summary$ | async; as summary) {
           {{ milestoneSummaryPrimaryCount(summary) }}
           @if (summary.milestoneCount > 0) {
-            <span class="text-muted customer-billing__summary-out-of"> / {{ summary.milestoneCount }}</span>
+            <span class="text-body-secondary customer-billing__summary-out-of"> / {{ summary.milestoneCount }}</span>
           }
         } @else {
-          <span class="text-body-secondary">—</span>
+          <span class="text-body-secondary">-</span>
         }
       </span>
       @if ((loadingSummary$ | async) === false) {
         @if (summary$ | async; as summary) {
           @let progress = milestonesCompleteProgress(summary);
-          <div
-            class="progress w-100 rounded-pill mt-1"
-            role="progressbar"
-            [attr.aria-valuenow]="hasOpenDoneSplit(progress) ? 100 : progress.primaryPct"
-            aria-valuemin="0"
-            aria-valuemax="100"
-            i18n-aria-label="@@featureProjectDetail-milestonesProgressAria"
-            aria-label="Milestone completion"
-          >
-            @if (hasOpenDoneSplit(progress) && progress.openPct! > 0) {
-              <div
-                class="progress-bar customer-billing__summary-progress-open"
-                [style.width.%]="progress.openPct"
-              ></div>
-            }
-            <div class="progress-bar" [style.width.%]="progress.primaryPct"></div>
-          </div>
+          <fpc-progress
+            class="customer-billing__summary-progress w-100 mt-1"
+            [class.customer-billing__summary-progress--open]="hasOpenSegment(progress)"
+            height="var(--bs-progress-height)"
+            [segments]="openDoneProgressSegments(progress)"
+            i18n-ariaLabel="@@featureProjectDetail-milestonesProgressAria"
+            ariaLabel="Milestone completion"
+          />
         }
       }
     </fpc-summary-card>
@@ -137,32 +119,23 @@
         } @else if (summary$ | async; as summary) {
           {{ ticketSummaryPrimaryCount(summary) }}
           @if (totalTicketCount(summary) > 0) {
-            <span class="text-muted customer-billing__summary-out-of"> / {{ totalTicketCount(summary) }}</span>
+            <span class="text-body-secondary customer-billing__summary-out-of"> / {{ totalTicketCount(summary) }}</span>
           }
         } @else {
-          <span class="text-body-secondary">—</span>
+          <span class="text-body-secondary">-</span>
         }
       </span>
       @if ((loadingSummary$ | async) === false) {
         @if (summary$ | async; as summary) {
           @let progress = ticketsDoneProgress(summary);
-          <div
-            class="progress w-100 rounded-pill mt-1"
-            role="progressbar"
-            [attr.aria-valuenow]="hasOpenDoneSplit(progress) ? 100 : progress.primaryPct"
-            aria-valuemin="0"
-            aria-valuemax="100"
-            i18n-aria-label="@@featureProjectDetail-ticketsProgressAria"
-            aria-label="Tickets done"
-          >
-            @if (hasOpenDoneSplit(progress) && progress.openPct! > 0) {
-              <div
-                class="progress-bar customer-billing__summary-progress-open"
-                [style.width.%]="progress.openPct"
-              ></div>
-            }
-            <div class="progress-bar" [style.width.%]="progress.primaryPct"></div>
-          </div>
+          <fpc-progress
+            class="customer-billing__summary-progress w-100 mt-1"
+            [class.customer-billing__summary-progress--open]="hasOpenSegment(progress)"
+            height="var(--bs-progress-height)"
+            [segments]="openDoneProgressSegments(progress)"
+            i18n-ariaLabel="@@featureProjectDetail-ticketsProgressAria"
+            ariaLabel="Tickets done"
+          />
         }
       }
     </fpc-summary-card>
@@ -407,7 +380,7 @@
         variant="primary"
         size="sm"
         i18n-label="@@featureProjectDetail-billTimeLoading"
-        label="Loading range…"
+        label="Loading range..."
       />
     </div>
   } @else {
@@ -429,11 +402,11 @@
         required
       />
     </fpc-form-field>
-    <p class="text-muted small mb-3" i18n="@@featureProjectDetail-billTimeRangeHint">
+    <p class="text-body-secondary small mb-3" i18n="@@featureProjectDetail-billTimeRangeHint">
       Only time entries fully within the selected range are included (start on or after From, end on or before To).
     </p>
     @if (billBoundsEntryCount() === 0) {
-      <p class="text-muted small mb-3" i18n="@@featureProjectDetail-billTimeNoUnbilled">
+      <p class="text-body-secondary small mb-3" i18n="@@featureProjectDetail-billTimeNoUnbilled">
         No unbilled time entries to bill.
       </p>
     }
@@ -451,7 +424,7 @@
       />
     </fpc-form-field>
     <h6 class="mb-2" i18n="@@featureProjectDetail-billTimeAdditionalLines">Additional line items (optional)</h6>
-    <p class="text-muted small" i18n="@@featureProjectDetail-billTimeAdditionalLinesHint">
+    <p class="text-body-secondary small" i18n="@@featureProjectDetail-billTimeAdditionalLinesHint">
       Unbilled time is billed as the first invoice line. Add extra lines here if needed.
     </p>
     @for (line of billCustomLineItems; track $index; let i = $index) {
@@ -500,7 +473,7 @@
         variant="primary"
         size="sm"
         i18n-label="@@featureProjectDetail-timeReportLoading"
-        label="Loading range…"
+        label="Loading range..."
       />
     </div>
   } @else {
@@ -527,7 +500,7 @@
         required
       />
     </fpc-form-field>
-    <p class="text-muted small mb-3" i18n="@@featureProjectDetail-timeReportRangeHint">
+    <p class="text-body-secondary small mb-3" i18n="@@featureProjectDetail-timeReportRangeHint">
       Only time entries fully within the selected range are included (start on or after From, end on or before To).
     </p>
     <fpc-form-check
@@ -603,8 +576,12 @@
         </div>
       </div>
       <div class="mt-2">
-        <span class="form-label d-block" i18n="@@featureAdminInvoices-lineTaxCategory">VAT rate</span>
-        <fpc-form-check-group inline>
+        <fpc-form-check-group
+          inline
+          [legendId]="'billTimeTaxLegend' + i"
+          i18n-label="@@featureAdminInvoices-lineTaxCategory"
+          label="VAT rate"
+        >
           @for (option of taxCategoryOptions(); track option.value) {
             <fpc-form-check
               type="radio"

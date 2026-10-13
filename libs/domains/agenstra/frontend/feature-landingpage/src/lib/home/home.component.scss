@@ -1,60 +1,18 @@
 @import '../page.component.scss';
 
 // Primary button: custom shadow and hover (plan)
-.home-btn-primary {
-  font-weight: 500;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
-  transition: all 0.2s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(139, 92, 246, 0.3);
-  }
-}
-
-.home-btn-secondary {
-  border-width: 1.5px;
-  border-color: rgba(245, 245, 245, 0.4);
-
-  &:hover {
-    background-color: rgba(245, 245, 245, 0.1);
-  }
-}
-
 // Problem cards: left border accent, light purple tint (plan)
 
-// Security badges: custom colors and shadow (plan)
-.home-security-badge {
-  font-size: 0.875rem;
-  font-weight: 500;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.home-security-badge-teal {
-  background-color: var(--bs-success) !important;
-}
-
-.home-security-badge-primary {
-  background-color: var(--bs-primary) !important;
-}
-
-.home-security-badge-warning {
-  background-color: var(--bs-warning) !important;
-}
-
 // Final CTA section: gradient, rounded, shadow (plan)
-.home-cta-section {
-  background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-primary-dark) 100%);
-  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.25);
-}
-
-.home-engineering-screenshot {
-  display: block;
-  margin-top: -8rem;
+// Illustration window inset from the left, running off the card's right and bottom edges (the card
+// clips it), so it reads as a peek into the app rather than a framed picture.
+.home-engineering-illustration {
+  margin: 0 -18% -2.5rem 0;
+  padding-left: 1.5rem;
 }
 
 .home-engineering-closing {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, #fff 55%);
+  background: var(--bs-body-bg);
 }
 
 .home-ecosystem-studio-surfaces,
@@ -71,26 +29,6 @@
 
 .home-ecosystem-surface {
   background: var(--bs-body-tertiary);
-}
-
-.home-security-lead,
-.home-security-intro {
-  color: rgba(255, 255, 255, 0.82);
-}
-
-.home-security-pill {
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.95);
-  font-weight: 500;
-  padding: 0.5rem 1rem;
-}
-
-.home-security-closing {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.home-security-visual {
-  background: rgba(255, 255, 255, 0.04);
 }
 
 // Custom inline style replacements
@@ -142,73 +80,18 @@
   opacity: 0.2;
 }
 
-.intent-cards {
-  margin-top: -5rem;
+// Drawn product scene below the hero copy.
+.hero-illustration {
   position: relative;
+  z-index: 3;
+  max-width: 68rem;
+  margin: 3rem auto 0;
+}
 
-  @media (max-width: 768px) {
-    padding-top: 2.5rem;
-    margin-top: 0;
-
-    > .intent-card {
-      display: none;
-    }
-
-    .intent-card-indicators {
-      display: none;
-    }
-  }
-
-  @media (max-width: 992px) and (min-width: 768px) {
-    margin-top: -2rem;
-  }
-
-  @media (max-width: 1200px) and (min-width: 992px) {
-    margin-top: -3rem;
-  }
-
-  > .intent-card {
-    position: relative;
-    z-index: 3;
-    display: block;
-  }
-
-  .intent-card-indicators {
-    position: absolute;
-    left: 50%;
-    bottom: 0.75rem;
-    z-index: 4;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.125rem;
-    transform: translateX(-50%);
-  }
-
-  .intent-card-indicator {
-    box-sizing: content-box;
-    width: 0.5rem;
-    height: 0.5rem;
-    padding: 0.625rem;
-    border: 0;
-    border-radius: 50%;
-    background-clip: content-box;
-    background-color: rgba(var(--bs-body-color-rgb), 0.28);
-    transition:
-      background-color 0.2s ease,
-      transform 0.2s ease;
-
-    &:hover,
-    &:focus-visible {
-      background-color: rgba(var(--bs-body-color-rgb), 0.45);
-      outline: none;
-    }
-
-    &--active {
-      background-color: var(--bs-primary);
-      transform: scale(1.15);
-    }
-  }
+// The hero window sits on the section edge, so only its top corners are rounded.
+.hero-illustration ::ng-deep .shared-app-illustration__window {
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
 .hero-content {
@@ -217,10 +100,11 @@
 }
 
 .home-pillar-icon,
+// Plain brand-coloured icon (no tinted tile).
 .home-solution-icon {
-  width: 72px;
-  height: 72px;
-  background: rgba(139, 92, 246, 0.12);
+  width: fit-content;
+  height: auto;
+  background: none;
 }
 
 .home-solution-panel-top {
@@ -240,7 +124,7 @@
 
 .home-solution-closing {
   border-left: 4px solid var(--bs-primary);
-  background: linear-gradient(to right, rgba(139, 92, 246, 0.06) 0%, #fff 40%) !important;
+  background: var(--bs-body-bg) !important;
 }
 
 @media (max-width: 991.98px) {

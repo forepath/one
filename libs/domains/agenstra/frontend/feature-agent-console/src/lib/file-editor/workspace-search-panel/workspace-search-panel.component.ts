@@ -119,8 +119,8 @@ export class WorkspaceSearchPanelComponent {
 
   readonly modeFullLabel = $localize`:@@featureWorkspaceSearch-modeFull:Full`;
   readonly modeFilesLabel = $localize`:@@featureWorkspaceSearch-modeFiles:Files`;
-  readonly queryPlaceholderFull = $localize`:@@featureWorkspaceSearch-queryPlaceholder:Search files and content…`;
-  readonly queryPlaceholderFiles = $localize`:@@featureWorkspaceSearch-queryPlaceholderFiles:Search by file path…`;
+  readonly queryPlaceholderFull = $localize`:@@featureWorkspaceSearch-queryPlaceholder:Search files and content...`;
+  readonly queryPlaceholderFiles = $localize`:@@featureWorkspaceSearch-queryPlaceholderFiles:Search by file path...`;
 
   constructor() {
     effect(() => {

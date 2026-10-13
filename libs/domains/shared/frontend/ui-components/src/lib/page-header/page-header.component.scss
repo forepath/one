@@ -40,8 +40,15 @@
   min-width: 0;
 }
 
+// Default density: a step below Bootstrap `h5` (1.25rem) so page titles sit closer to the
+// 0.875rem lane / panel headers. Compact headers keep `h6`. `::ng-deep` also reaches titles that
+// pages project through `fpcPageHeaderTitle` (e.g. tickets, knowledge).
+:host(:not(.fpc-page-header--compact)) ::ng-deep .fpc-page-header__title {
+  font-size: 1.125rem;
+}
+
 .fpc-page-header__icon {
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   line-height: 1;
   color: var(--bs-secondary-color);
 }
@@ -66,4 +73,20 @@
 
 .fpc-page-header__breadcrumbs {
   margin-bottom: 0.75rem;
+}
+
+// Phones: let actions drop below the title instead of squeezing it to nothing, and let
+// multi-button clusters wrap. Desktop keeps the single nowrap row.
+@media (max-width: 575.98px) {
+  .fpc-page-header__row {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
+
+  .fpc-page-header__actions {
+    flex: 0 1 auto;
+    flex-wrap: wrap;
+    max-width: 100%;
+    margin-inline-start: auto;
+  }
 }

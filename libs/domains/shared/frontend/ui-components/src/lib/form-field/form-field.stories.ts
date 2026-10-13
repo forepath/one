@@ -52,7 +52,7 @@ export const WithError: Story = {
 export const ProjectedSlots: Story = {
   render: () => ({
     template: `<fpc-form-field label="API token" forId="form-field-token">
-            <fpc-form-control controlId="form-field-token" placeholder="fp_…" />
+            <fpc-form-control controlId="form-field-token" placeholder="fp_..." />
             <span fpcFormFieldHint>Read the <a href="#">token guide</a> before rotating.</span>
         </fpc-form-field>`,
   }),

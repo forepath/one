@@ -2,8 +2,12 @@
   <div class="mb-3">
     <div class="admin-offer-line-card border rounded p-3">
       <div class="mb-3">
-        <span class="form-label d-block" i18n="@@featureAdminOffers-lineType">Line type</span>
-        <fpc-form-check-group inline>
+        <fpc-form-check-group
+          inline
+          [legendId]="prefix + 'LineTypeLegend' + i"
+          i18n-label="@@featureAdminOffers-lineType"
+          label="Line type"
+        >
           @for (type of lineTypes; track type) {
             <fpc-form-check
               type="radio"
@@ -94,8 +98,12 @@
           />
         </fpc-form-field>
         <div class="mb-0">
-          <span class="form-label d-block" i18n="@@featureAdminOffers-lineTaxCategory">VAT rate</span>
-          <fpc-form-check-group inline>
+          <fpc-form-check-group
+            inline
+            [legendId]="prefix + 'LineTaxLegend' + i"
+            i18n-label="@@featureAdminOffers-lineTaxCategory"
+            label="VAT rate"
+          >
             @for (option of taxCategoryOptions(); track option.value) {
               <fpc-form-check
                 type="radio"
@@ -183,7 +191,7 @@
           required
         >
           @if (plansLoading()) {
-            <div class="text-muted small" i18n="@@featureAdminOffers-loadingPlans">Loading plans…</div>
+            <div class="text-body-secondary small" i18n="@@featureAdminOffers-loadingPlans">Loading plans...</div>
           } @else {
             <fpc-form-control
               controlType="select"

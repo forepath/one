@@ -3,7 +3,7 @@
 }
 
 // Participate as the flex item inside Bootstrap `.input-group`. Do not use
-// `display: contents` — the child combinator (`>`) uses the element tree, so
+// `display: contents` - the child combinator (`>`) uses the element tree, so
 // Bootstrap's `.input-group > .form-control { width: 1% }` never matches the
 // nested native input and `width: 100%` wraps suffixes under `flex-wrap`.
 :host-context(.input-group) {

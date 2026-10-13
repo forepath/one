@@ -26,7 +26,7 @@ const meta: Meta<FpcPageHeaderComponent> = {
   ],
   args: {
     title: 'Invoices',
-    subtitle: '12 open · 3 overdue',
+    subtitle: '12 open, 3 overdue',
     icon: 'receipt',
     bordered: true,
     density: 'default',

@@ -62,7 +62,7 @@ export class AgentChatToolEmbedComponent {
   readonly embedAriaLabel = computed(() => {
     const kind = this.embed().kind;
 
-    return $localize`:@@featureChat-toolEmbedAria:Tool result · ${kind}:toolKind:`;
+    return $localize`:@@featureChat-toolEmbedAria:Tool result: ${kind}:toolKind:`;
   });
 
   asTodos(): TodosEmbed | null {
@@ -178,7 +178,7 @@ export class AgentChatToolEmbedComponent {
   }
 
   invalidMessage(tool: string, error: string): string {
-    return $localize`:@@featureChat-toolEmbedInvalidMessage:${tool}:toolName: — ${error}:errorText:`;
+    return $localize`:@@featureChat-toolEmbedInvalidMessage:${tool}:toolName:: ${error}:errorText:`;
   }
 
   asDiffLines(prefix: '+' | '-', text: string): AgentChatDiffLineEmbed[] {

@@ -11,7 +11,7 @@
   } @else if (currentRunStatus()) {
     <!-- Run Status -->
     <div class="p-3 border-bottom">
-      <div class="d-flex align-items-center justify-content-between mb-2">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
         <h6 class="mb-0 fw-semibold">{{ getRunDisplayName(currentRunStatus()!.runName) }}</h6>
         <fpc-badge [color]="getStatusBadgeColor(currentRunStatus()!.status)" [attr.title]="currentRunStatus()!.status">
           <i class="bi" [ngClass]="getStatusIcon(currentRunStatus()!.status)"></i>
@@ -52,7 +52,7 @@
 
     <!-- Jobs List -->
     @if (!showRunLogs() && !showJobLogs()) {
-      <div class="d-flex flex-column flex-grow-1" style="min-height: 0">
+      <div class="min-h-0 d-flex flex-column flex-grow-1">
         <fpc-lane-header flush>
           <span fpcLaneHeaderTitle i18n="@@featureDeploymentRunDetails-jobsHeader">Jobs</span>
           <fpc-button
@@ -71,7 +71,7 @@
             <i class="bi bi-file-text" aria-hidden="true"></i>
           </fpc-button>
         </fpc-lane-header>
-        <div class="flex-grow-1 overflow-auto" style="min-height: 0">
+        <div class="min-h-0 flex-grow-1 overflow-auto">
           @if (loadingRunJobs$ | async) {
             <div class="d-flex justify-content-center p-2">
               <fpc-spinner
@@ -82,7 +82,7 @@
               />
             </div>
           } @else if (runJobs().length === 0) {
-            <p class="text-muted small mb-0" i18n="@@featureDeploymentRunDetails-noJobs">No jobs available</p>
+            <p class="text-body-secondary small mb-0" i18n="@@featureDeploymentRunDetails-noJobs">No jobs available</p>
           } @else {
             <fpc-list [flush]="true">
               @for (job of runJobs(); track job.id) {
@@ -124,7 +124,7 @@
 
     <!-- Logs Display -->
     @if (showRunLogs() || showJobLogs()) {
-      <div class="flex-grow-1 d-flex flex-column" style="min-height: 0">
+      <div class="min-h-0 flex-grow-1 d-flex flex-column">
         <fpc-lane-header flush>
           <span fpcLaneHeaderTitle>
             {{ getLogsHeader() }}
@@ -136,7 +136,7 @@
             <i class="bi bi-x" aria-hidden="true"></i>
           </fpc-button>
         </fpc-lane-header>
-        <div class="flex-grow-1 overflow-auto p-3" style="min-height: 0">
+        <div class="min-h-0 flex-grow-1 overflow-auto p-3">
           @if (showRunLogs() && loadingRunLogs()) {
             <div class="d-flex justify-content-center p-4">
               <fpc-spinner
@@ -160,14 +160,14 @@
           } @else if (showJobLogs() && jobLogs()) {
             <pre class="log-content mb-0">{{ jobLogs() }}</pre>
           } @else {
-            <p class="text-muted small mb-0" i18n="@@featureDeploymentRunDetails-noLogs">No logs available</p>
+            <p class="text-body-secondary small mb-0" i18n="@@featureDeploymentRunDetails-noLogs">No logs available</p>
           }
         </div>
       </div>
     }
   } @else {
     <div class="d-flex justify-content-center align-items-center p-4">
-      <div class="text-center text-muted">
+      <div class="text-center text-body-secondary">
         <i class="bi bi-exclamation-triangle fs-4 d-block mb-2"></i>
         <p class="mb-0 small" i18n="@@featureDeploymentRunDetails-runNotFound">Run not found</p>
       </div>

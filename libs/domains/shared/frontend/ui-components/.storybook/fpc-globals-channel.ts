@@ -29,7 +29,7 @@ export function readGlobalsFromUrl(): GlobalsMap {
 /**
  * Keep a preview-iframe mirror of toolbar globals and write them to `documentElement`.
  *
- * Listen to the manager intent (`UPDATE_GLOBALS`) and the initial dump (`SET_GLOBALS`) —
+ * Listen to the manager intent (`UPDATE_GLOBALS`) and the initial dump (`SET_GLOBALS`) -
  * not `GLOBALS_UPDATED`, which can arrive with a stale snapshot relative to the toolbar click.
  * Runs for canvas and MDX docs (docs never hit story decorators).
  */

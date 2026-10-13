@@ -1,14 +1,108 @@
 @import '../page.component.scss';
 
-.hero-container {
-  max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
 .hero-lead {
   max-width: 700px;
   line-height: 1.6;
+}
+
+.home-hero__copy {
+  max-width: 900px;
+}
+
+// Wide screens: copy on the left, the delivery scene on the right, both above the fold.
+@media (min-width: 992px) {
+  // A shorter top (`#hero` takes its top padding from `--grid-section-padding-y`) keeps the copy above the
+  // fold; the bottom keeps the regular 6rem, both as padding and for the grid lines.
+  .home-hero {
+    --grid-section-padding-y: 4rem;
+    --grid-section-padding-bottom: 6rem;
+    padding-bottom: var(--grid-section-padding-bottom);
+  }
+
+  .home-hero__copy {
+    max-width: none;
+
+    .hero-title {
+      font-size: clamp(2.5rem, 3.4vw, 3.25rem);
+    }
+
+    .hero-lead {
+      font-size: 1.125rem !important;
+    }
+  }
+}
+
+// The latest blog post sits under both columns, centred.
+.home-hero__teaser {
+  position: relative;
+  z-index: 2;
+  margin-top: 2rem;
+
+  @media (min-width: 576px) {
+    margin-top: 3rem;
+  }
+
+  @media (min-width: 768px) {
+    margin-top: 6rem;
+  }
+}
+
+// Wide screens: the scene is taken out of the flow (the copy sets the height) and sized from the copy
+// column's height: it starts above the hero, so its address bar sits under the sticky navigation, and
+// reaches the section's bottom padding, whatever the screen width. Its width follows from the
+// scene's aspect ratio, and whatever does not fit runs off the right edge of the screen; the hero's
+// `overflow: hidden` crops both. Below 992px the copy column would get too narrow, so the scene is
+// hidden there.
+// To keep it a backdrop to the copy rather than a second headline, it sits well away from the copy,
+// is slightly dimmed, and dissolves into the hero towards the right and bottom instead of ending in
+// hard window edges.
+@media (min-width: 992px) {
+  // A size container, so the scene can be sized from the column's height (the copy's height).
+  .home-hero__illustration {
+    position: relative;
+    align-self: stretch;
+    container-type: size;
+  }
+
+  .home-hero__scene {
+    // How far the scene starts above the hero's top edge: exactly the address bar (2.25rem, plus the
+    // window's top border and the bar's bottom border), so the bar sits under the navigation and the
+    // board's toolbar starts right at the edge, its steps centred in what is visible.
+    --scene-offset: calc(-2.25rem - 2px);
+    // Column height plus the section's top and bottom padding, plus the part under the nav.
+    --scene-height: calc(
+      100cqh + var(--grid-section-padding-y) + var(--grid-section-padding-bottom) - var(--scene-offset)
+    );
+
+    position: absolute;
+    top: calc(-1 * var(--grid-section-padding-y) + var(--scene-offset));
+    left: 5.5rem;
+    z-index: 1;
+    height: var(--scene-height);
+    // Address bar plus the 1200 x 720 scene, so 5 / 3 of the scene's height without the bar.
+    width: calc((var(--scene-height) - 2.25rem) * 5 / 3);
+    mask-image:
+      linear-gradient(to right, #000 45%, transparent 92%), linear-gradient(to bottom, #000 55%, transparent 96%);
+    mask-composite: intersect;
+
+    // Opaque backing in the hero colour under the dimmed scene, faded by the same mask. It hides the
+    // container's right grid line (`::after`) behind the scene, so the line shows only as much as the
+    // scene fades out, whatever the layout.
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 0.75rem;
+      background-color: var(--fpc-landing-hero-surface, var(--bs-dark));
+    }
+
+    framework-forepath-platform-board-illustration {
+      position: relative;
+      display: block;
+      height: 100%;
+      opacity: 0.85;
+    }
+  }
 }
 
 .home-blog-teaser {
@@ -20,7 +114,7 @@
 }
 
 .home-blog-teaser:hover {
-  border-color: rgba(255, 107, 53, 0.45);
+  border-color: color-mix(in srgb, var(--bs-primary) 45%, transparent);
 }
 
 .home-blog-teaser__title {
@@ -56,6 +150,18 @@
   inset: 0;
   width: 100%;
   height: 100%;
+}
+
+.home-process__funnel-body {
+  fill: none;
+  stroke: var(--bs-primary);
+  stroke-width: 1.25;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.45;
+}
+
+.home-process__funnel-body--bulb {
+  display: none;
 }
 
 .home-process__funnel-svg--horizontal {
@@ -122,7 +228,7 @@
   margin: -1.375rem 0 0 -1.375rem;
   border: 1px solid var(--bs-border-color);
   border-radius: 50%;
-  background-color: #fff;
+  background-color: var(--bs-body-bg);
   box-shadow: var(--bs-box-shadow-sm);
   color: var(--bs-primary);
   font-size: 1.15rem;
@@ -146,23 +252,19 @@
   0%,
   51% {
     transform: scale(1);
-    filter: drop-shadow(0 0 0 transparent);
   }
 
   58% {
     transform: scale(1.12);
-    filter: drop-shadow(0 0 16px rgba(255, 107, 53, 0.5));
   }
 
   70% {
     transform: scale(1.05);
-    filter: drop-shadow(0 0 10px rgba(255, 107, 53, 0.32));
   }
 
   82%,
   100% {
     transform: scale(1);
-    filter: drop-shadow(0 0 0 transparent);
   }
 }
 
@@ -250,101 +352,6 @@
     flex-shrink: 0;
     font-size: 1.5rem;
     line-height: 1.1;
-  }
-}
-
-.home-platform-section {
-  overflow: hidden;
-  padding-top: 2rem !important;
-  padding-bottom: 2.5rem !important;
-
-  @media (min-width: 992px) {
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-  }
-}
-
-.home-platform-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  width: 100%;
-  border-top: 1px solid var(--bs-border-color);
-  border-bottom: 1px solid var(--bs-border-color);
-  border-left: 1px solid var(--bs-border-color);
-  border-radius: 0.75rem;
-  overflow: hidden;
-
-  @media (min-width: 992px) {
-    grid-template-columns: repeat(4, 1fr);
-    border-radius: 0;
-    border-top: 0;
-    border-bottom: 0;
-    border-left: 0;
-    overflow: visible;
-  }
-}
-
-.home-platform-grid__cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 5.5rem;
-  padding: 1.25rem 1rem;
-  border-right: 1px solid var(--bs-border-color);
-  border-bottom: 1px solid var(--bs-border-color);
-
-  &:last-child {
-    border-bottom: 0;
-  }
-
-  @media (min-width: 992px) {
-    border-bottom: 0;
-
-    &:last-child {
-      border-right: 0;
-    }
-  }
-}
-
-.home-platform-grid__logo {
-  height: 1.75rem;
-  max-width: 5.5rem;
-  width: auto;
-  object-fit: contain;
-  object-position: center;
-  animation: home-platform-logo-fade-in 0.7s ease;
-}
-
-.home-platform-grid__logo--compact {
-  height: 1.35rem;
-  max-width: 4.25rem;
-}
-
-@keyframes home-platform-logo-fade-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 0.5;
-  }
-}
-
-@media (min-width: 992px) {
-  .home-platform-grid__logo {
-    height: 2rem;
-    max-width: 6.5rem;
-  }
-
-  .home-platform-grid__logo--compact {
-    height: 1.55rem;
-    max-width: 5rem;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .home-platform-grid__logo {
-    animation: none;
   }
 }
 

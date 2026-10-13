@@ -1,13 +1,10 @@
-<div class="section__content-wrapper d-flex flex-column">
+<div class="section__content-wrapper d-flex flex-column" [class.border-top]="!isToolWindowRoute()">
   <!-- Toolbar (shown when editor is open, spans editor and chat) -->
   @if (editorOpen() && (activeClientId$ | async) && (selectedAgent$ | async)) {
     <div class="editor-toolbar-container border-bottom bg-body-tertiary">
       <div class="editor-toolbar ps-2 pe-3 py-3 d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
-          <div
-            class="brand-icon-container me-2 fs-3 bg-primary p-3"
-            style="margin-left: -0.5rem; margin-top: -1rem; margin-bottom: -1rem"
-          >
+          <div class="brand-icon-container brand-icon-container--toolbar me-2 fs-3 bg-primary p-3">
             <img
               src="assets/images/icon_light.svg"
               alt="Agenstra"
@@ -15,12 +12,8 @@
               class="brand-icon"
             />
           </div>
-          <span class="fw-bold text-uppercase" i18n="@@featureChat-appName">Agenstra</span>
-          <span
-            class="badge bg-transparent border border-2 border-primary text-primary text-uppercase small editor-toolbar-badge fw-bold"
-            i18n="@@featureChat-studio"
-            >Studio</span
-          >
+          <span class="fw-bold" i18n="@@featureChat-appName">Agenstra</span>
+          <fpc-badge variant="info" color="primary" i18n="@@featureChat-studio">Studio</fpc-badge>
         </div>
         <div class="d-flex align-items-center gap-2">
           <fpc-button-group size="sm">
@@ -287,7 +280,6 @@
                   "
                   (reachedEnd)="onLoadMoreClients()"
                   aria-hidden="true"
-                  style="height: 1px; width: 100%; flex-shrink: 0"
                 ></div>
               }
             }
@@ -385,7 +377,7 @@
                     <div class="small text-body-secondary">
                       <div class="d-flex justify-content-between gap-2 mb-1">
                         <span class="text-truncate"
-                          >{{ environmentProgressOperationLabel(pending) }} ·
+                          >{{ environmentProgressOperationLabel(pending) }}:
                           {{ environmentProgressStepLabel(pending.step) }}</span
                         >
                         <span class="flex-shrink-0">{{ pending.progress }}%</span>
@@ -476,7 +468,7 @@
                         <div class="small text-body-secondary">
                           <div class="d-flex justify-content-between gap-2 mb-1">
                             <span class="text-truncate"
-                              >{{ environmentProgressOperationLabel(progress) }} ·
+                              >{{ environmentProgressOperationLabel(progress) }}:
                               {{ environmentProgressStepLabel(progress.step) }}</span
                             >
                             <span class="flex-shrink-0">{{ progress.progress }}%</span>
@@ -569,7 +561,6 @@
                   "
                   (reachedEnd)="onLoadMoreAgents()"
                   aria-hidden="true"
-                  style="height: 1px; width: 100%; flex-shrink: 0"
                 ></div>
               }
             }
@@ -604,17 +595,11 @@
         <div class="editor-toolbar-container border-bottom bg-body-tertiary">
           <div class="editor-toolbar ps-2 pe-3 py-3 d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-2">
-              <div
-                class="brand-icon-container me-2 fs-3 bg-primary p-3"
-                style="margin-left: -0.5rem; margin-top: -1rem; margin-bottom: -1rem"
-              >
+              <div class="brand-icon-container brand-icon-container--toolbar me-2 fs-3 bg-primary p-3">
                 <img src="assets/images/icon_light.svg" alt="Agenstra" class="brand-icon" />
               </div>
-              <span class="fw-bold text-uppercase">Agenstra</span>
-              <span
-                class="badge bg-transparent border border-2 border-primary text-primary text-uppercase small editor-toolbar-badge fw-bold"
-                >Deployment Manager</span
-              >
+              <span class="fw-bold">Agenstra</span>
+              <fpc-badge variant="info" color="primary">Deployment Manager</fpc-badge>
             </div>
           </div>
         </div>
@@ -635,10 +620,7 @@
         <div class="editor-toolbar-container border-bottom bg-body-tertiary">
           <div class="editor-toolbar ps-2 pe-3 py-3 d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-2">
-              <div
-                class="brand-icon-container me-2 fs-3 bg-primary p-3"
-                style="margin-left: -0.5rem; margin-top: -1rem; margin-bottom: -1rem"
-              >
+              <div class="brand-icon-container brand-icon-container--toolbar me-2 fs-3 bg-primary p-3">
                 <img
                   src="assets/images/icon_light.svg"
                   alt="Agenstra"
@@ -646,11 +628,9 @@
                   class="brand-icon"
                 />
               </div>
-              <span class="fw-bold text-uppercase" i18n="@@featureChat-appName">Agenstra</span>
-              <span
-                class="badge bg-transparent border border-2 border-primary text-primary text-uppercase small editor-toolbar-badge fw-bold"
-                i18n="@@featureVirtualDesktop-header"
-                >Virtual Desktop</span
+              <span class="fw-bold" i18n="@@featureChat-appName">Agenstra</span>
+              <fpc-badge variant="info" color="primary" i18n="@@featureVirtualDesktop-header"
+                >Virtual Desktop</fpc-badge
               >
             </div>
             <div class="d-flex align-items-center gap-2">
@@ -702,9 +682,8 @@
               @if (selectedAgent$ | async; as selectedAgent) {
                 @if ({ running: getAgentContainerRunning$(activeClient.id, selectedAgent.id) | async }; as status) {
                   <span
-                    class="rounded-circle d-inline-block flex-shrink-0"
+                    class="chat-status-dot rounded-circle d-inline-block flex-shrink-0"
                     [ngClass]="status.running ? 'bg-success' : 'bg-danger'"
-                    style="width: 0.5rem; height: 0.5rem"
                     [attr.aria-label]="status.running ? 'Container started' : 'Container stopped'"
                   ></span>
                 }
@@ -737,7 +716,9 @@
                     <span class="d-inline-flex align-items-center gap-2 flex-wrap">
                       <span>{{ getChatSessionDisplayTitle(row.session) }}</span>
                       @if (row.session.kind === 'primary') {
-                        <span class="text-muted small" i18n="@@featureChat-chatSessionPrimaryBadge">(primary)</span>
+                        <span class="text-body-secondary small" i18n="@@featureChat-chatSessionPrimaryBadge"
+                          >(primary)</span
+                        >
                       }
                       @if (row.hasUnread) {
                         <fpc-notification-indicator kind="unread" placement="inline" />
@@ -1078,7 +1059,7 @@
                                   }
                                 }
                               }
-                              <small class="chat-message-timestamp text-muted">{{
+                              <small class="chat-message-timestamp text-body-secondary">{{
                                 formatTimestamp(item.view.displayTimestamp)
                               }}</small>
                             </div>
@@ -1092,7 +1073,7 @@
                             <div class="fw-semibold text-truncate" [attr.title]="item.payload.ticket.title">
                               {{ item.payload.ticket.title }}
                             </div>
-                            <div class="small text-muted mt-1 d-flex flex-wrap gap-1">
+                            <div class="small text-body-secondary mt-1 d-flex flex-wrap gap-1">
                               <fpc-badge color="light" class="border">{{
                                 ticketWorkflowLaneLabel(item.payload.ticket.status)
                               }}</fpc-badge>
@@ -1119,7 +1100,7 @@
                                 {{ openTicketFromChatButtonLabel }}
                               </fpc-button>
                             </div>
-                            <small class="chat-message-timestamp text-muted d-block mt-2">{{
+                            <small class="chat-message-timestamp text-body-secondary d-block mt-2">{{
                               formatTimestamp(item.sortTime)
                             }}</small>
                           </div>
@@ -1141,7 +1122,7 @@
                                 {{ getChatPlanTitle(item.payload.plan) }}
                               </div>
                             </div>
-                            <div class="d-flex align-items-center justify-content-between gap-2 w-100 mt-3">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 w-100 mt-3">
                               @for (act of item.payload.actions; track act.type + act.planId) {
                                 @if (act.type === 'openChatPlan') {
                                   <fpc-button
@@ -1194,7 +1175,7 @@
                                 }
                               }
                             </div>
-                            <small class="chat-message-timestamp text-muted d-block mt-2">{{
+                            <small class="chat-message-timestamp text-body-secondary d-block mt-2">{{
                               formatTimestamp(item.sortTime)
                             }}</small>
                           </div>
@@ -1253,83 +1234,79 @@
           </div>
 
           @if (!stickToBottom()) {
-            <button
-              type="button"
-              class="btn btn-primary rounded-circle position-absolute bottom-0 end-0 m-3 shadow d-flex align-items-center justify-content-center chat-scroll-to-bottom-btn"
-              style="z-index: 2; width: 2.5rem; height: 2.5rem"
-              i18n-aria-label="@@featureChat-scrollToBottomAria"
-              aria-label="Scroll to latest messages"
+            <fpc-button
+              class="chat-scroll-to-bottom-btn position-absolute bottom-0 end-0 m-3"
+              variant="primary"
+              iconOnly
+              btnClass="rounded-circle shadow"
+              i18n-ariaLabel="@@featureChat-scrollToBottomAria"
+              ariaLabel="Scroll to latest messages"
               i18n-title="@@featureChat-scrollToBottomTitle"
               title="Scroll to latest messages"
-              (click)="onScrollToBottomClick()"
+              (clicked)="onScrollToBottomClick()"
             >
               <i class="bi bi-arrow-down" aria-hidden="true"></i>
-            </button>
+            </fpc-button>
           }
         </div>
 
         <!-- Socket reconnection status (main socket) -->
         @if (socketReconnecting$ | async) {
-          <div class="alert alert-warning m-3" role="alert">
+          <fpc-alert class="m-3" variant="warning" [showIcon]="false">
             <div class="d-flex align-items-center">
               <fpc-spinner class="me-2" size="sm" />
               <span>
                 <span i18n="@@featureChat-reconnectingToServer">Reconnecting to server...</span>
                 @if (socketReconnectAttempts$ | async; as attempts) {
-                  <span class="text-muted">(attempt {{ attempts }})</span>
+                  <span class="text-body-secondary">(attempt {{ attempts }})</span>
                 }
               </span>
             </div>
-          </div>
+          </fpc-alert>
         }
 
         <!-- Remote connection reconnection status (per clientId) -->
         @if (remoteReconnecting$ | async) {
           @if (activeClientId$ | async) {
-            <div class="alert alert-warning m-3" role="alert">
+            <fpc-alert class="m-3" variant="warning" [showIcon]="false">
               <div class="d-flex align-items-center">
                 <fpc-spinner class="me-2" size="sm" />
                 <span i18n="@@featureChat-reconnectingToWorkspace">Reconnecting to workspace...</span>
               </div>
-            </div>
+            </fpc-alert>
           }
         }
 
         <!-- Remote connection error (only shown when not reconnecting) -->
         @if (remoteConnectionError$ | async; as remoteError) {
           @if (remoteError && !(remoteReconnecting$ | async)) {
-            <div class="alert alert-danger m-3" role="alert">
-              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <fpc-alert class="m-3" variant="danger">
               <ng-container i18n="@@featureChat-workspaceConnectionFailed"
                 >Workspace connection failed: {{ remoteError }}</ng-container
               >
-            </div>
+            </fpc-alert>
           }
         }
 
         <!-- Socket error (only shown when not reconnecting) -->
         @if (socketError$ | async; as socketError) {
           @if (!(socketReconnecting$ | async)) {
-            <div class="alert alert-danger m-3" role="alert">
-              <i class="bi bi-exclamation-triangle-fill me-2"></i>
-              {{ socketError }}
-            </div>
+            <fpc-alert class="m-3" variant="danger" [message]="socketError" />
           }
         }
 
         <!-- Chat input -->
         <div class="p-3 border-top bg-body-tertiary chat-input-container">
           @if (enhanceErrorMessage(); as enhErr) {
-            <div class="alert alert-warning alert-dismissible py-2 px-3 small mb-2" role="alert">
-              {{ enhErr }}
-              <button
-                type="button"
-                class="btn-close"
-                aria-label="Dismiss"
-                i18n-aria-label="@@featureChat-dismissEnhanceError"
-                (click)="clearEnhanceError()"
-              ></button>
-            </div>
+            <fpc-alert
+              class="small mb-2"
+              variant="warning"
+              [message]="enhErr"
+              dismissible
+              closeAriaLabel="Dismiss"
+              i18n-closeAriaLabel="@@featureChat-dismissEnhanceError"
+              (closed)="clearEnhanceError()"
+            />
           }
           <div
             class="chat-input-group"
@@ -1359,11 +1336,11 @@
                         <span class="d-flex align-items-baseline justify-content-between gap-2">
                           <span class="font-monospace small fw-medium">{{ command.name }}</span>
                           @if (command.source && command.source !== 'command') {
-                            <span class="text-muted small text-uppercase flex-shrink-0">{{ command.source }}</span>
+                            <span class="text-body-secondary small flex-shrink-0">{{ command.source }}</span>
                           }
                         </span>
                         @if (command.description) {
-                          <span class="d-block text-muted small text-truncate">{{ command.description }}</span>
+                          <span class="d-block text-body-secondary small text-truncate">{{ command.description }}</span>
                         }
                       </button>
                     }
@@ -1373,7 +1350,7 @@
               <textarea
                 class="chat-textarea"
                 [rows]="3"
-                placeholder="Type a message or /command…"
+                placeholder="Type a message or /command..."
                 i18n-placeholder="@@featureChat-typeMessagePlaceholder"
                 [value]="chatMessage()"
                 (input)="onChatMessageInput($any($event.target).value)"
@@ -1488,7 +1465,7 @@
           <div class="row row-gap-2">
             <div class="col-md-6">
               <fpc-input-group size="sm" class="mt-2">
-                <span fpcInputGroupPrefix class="input-group-text small text-muted" i18n="@@featureChat-model"
+                <span fpcInputGroupPrefix class="input-group-text small text-body-secondary" i18n="@@featureChat-model"
                   >Model</span
                 >
                 <fpc-form-control
@@ -1516,7 +1493,10 @@
             </div>
             <div class="col-md-6">
               <fpc-input-group size="sm" class="mt-2">
-                <span fpcInputGroupPrefix class="input-group-text small text-muted" i18n="@@featureChat-responseMode"
+                <span
+                  fpcInputGroupPrefix
+                  class="input-group-text small text-body-secondary"
+                  i18n="@@featureChat-responseMode"
                   >Response</span
                 >
                 <fpc-form-control
@@ -1542,7 +1522,7 @@
             </div>
           </div>
           @if (!(socketConnected$ | async)) {
-            <small class="text-muted d-block mt-2">
+            <small class="text-body-secondary d-block mt-2">
               <i class="bi bi-info-circle me-1"></i>
               <span i18n="@@featureChat-connectToSend">Connect to socket to send messages</span>
             </small>
@@ -1588,7 +1568,7 @@
     i18n-label="@@featureChat-environmentContextLabel"
     label="Environment context"
   >
-    <p class="text-muted small mb-2" i18n="@@featureChat-environmentContextHint">
+    <p class="text-body-secondary small mb-2" i18n="@@featureChat-environmentContextHint">
       Select additional environments to enrich context more specifically. The active environment is included
       automatically.
     </p>
@@ -1605,9 +1585,9 @@
                 <label class="form-check-label" [for]="'contextEnvironment-' + agent.id">
                   {{ agent.name }}
                   @if (isLocalGitRepository(agent, activeClient)) {
-                    <span class="text-muted small ms-1">(Local repository)</span>
+                    <span class="text-body-secondary small ms-1">(Local repository)</span>
                   } @else if (getAgentGitRepositoryLabel(agent, activeClient); as repo) {
-                    <span class="text-muted small ms-1">({{ repo }})</span>
+                    <span class="text-body-secondary small ms-1">({{ repo }})</span>
                   }
                 </label>
               </fpc-form-check>
@@ -1650,7 +1630,7 @@
             >
               <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
                 @if (ticket.shas?.short) {
-                  <span class="font-monospace text-muted small flex-shrink-0">{{ ticket.shas.short }}</span>
+                  <span class="font-monospace text-body-secondary small flex-shrink-0">{{ ticket.shas.short }}</span>
                 }
                 <span class="text-truncate small flex-grow-1 min-width-0">{{ ticket.title }}</span>
               </span>
@@ -1662,7 +1642,7 @@
     @if (selectedTicketContextShas().length > 0) {
       <div class="d-flex flex-wrap gap-2 mt-2">
         @for (sha of selectedTicketContextShas(); track sha) {
-          <fpc-badge variant="info" color="secondary" class="chat-context-chip" style="max-width: min(100%, 22rem)">
+          <fpc-badge variant="info" color="secondary" class="chat-context-chip">
             <span class="text-truncate small">{{ ticketContextChipDisplay(sha) }}</span>
             <button
               type="button"
@@ -1703,10 +1683,10 @@
             >
               <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
                 @if (node.shas?.short) {
-                  <span class="font-monospace text-muted small flex-shrink-0">{{ node.shas.short }}</span>
+                  <span class="font-monospace text-body-secondary small flex-shrink-0">{{ node.shas.short }}</span>
                 }
                 <span class="text-truncate small flex-grow-1 min-width-0">
-                  {{ node.nodeType === 'folder' ? 'Folder' : 'Page' }} · {{ node.title }}
+                  {{ node.nodeType === 'folder' ? 'Folder' : 'Page' }}: {{ node.title }}
                 </span>
               </span>
             </button>
@@ -1717,7 +1697,7 @@
     @if (selectedKnowledgeContextShas().length > 0) {
       <div class="d-flex flex-wrap gap-2 mt-2">
         @for (sha of selectedKnowledgeContextShas(); track sha) {
-          <fpc-badge variant="info" color="secondary" class="chat-context-chip" style="max-width: min(100%, 22rem)">
+          <fpc-badge variant="info" color="secondary" class="chat-context-chip">
             <span class="text-truncate small">{{ knowledgeContextChipDisplay(sha) }}</span>
             <button
               type="button"
@@ -1752,7 +1732,7 @@
     @if (selectedAttachmentContexts().length > 0) {
       <div class="d-flex flex-wrap gap-2 mt-2">
         @for (attachment of selectedAttachmentContexts(); track attachment.id) {
-          <fpc-badge variant="info" color="secondary" class="chat-context-chip" style="max-width: min(100%, 22rem)">
+          <fpc-badge variant="info" color="secondary" class="chat-context-chip">
             <span class="text-truncate small">{{ attachment.fileName }}</span>
             <button
               type="button"
@@ -1791,7 +1771,7 @@
     }
     @if (planDetailLiveEventRows$ | async; as liveRows) {
       @if (liveRows.length > 0) {
-        <div class="border rounded p-3 mb-3 bg-body-tertiary" style="max-height: 18rem; overflow: auto">
+        <div class="chat-plan-detail-panel chat-plan-detail-panel--events border rounded p-3 mb-3 bg-body-tertiary">
           <div class="d-flex flex-column gap-2">
             @for (row of liveRows; track row.trackId) {
               <framework-agent-chat-event-row
@@ -1806,13 +1786,13 @@
         </div>
       }
     }
-    <div class="border rounded p-3 mb-3 bg-body-tertiary" style="max-height: 24rem; overflow: auto">
+    <div class="chat-plan-detail-panel chat-plan-detail-panel--markdown border rounded p-3 mb-3 bg-body-tertiary">
       @if (plan.planMarkdown; as md) {
         @if (parseMarkdownFromString(md); as planHtml) {
           <div class="markdown-content" [innerHTML]="planHtml"></div>
         }
       } @else {
-        <p class="text-muted small mb-0">{{ chatPlanEmptyMarkdown }}</p>
+        <p class="text-body-secondary small mb-0">{{ chatPlanEmptyMarkdown }}</p>
       }
     </div>
     @if (plan.status === 'ready' || plan.status === 'refining') {
@@ -1825,16 +1805,15 @@
         (drop)="onChatInputDrop($event)"
       >
         @if (planRefineEnhanceError(); as enhErr) {
-          <div class="alert alert-warning alert-dismissible py-2 px-3 small mb-0" role="alert">
-            {{ enhErr }}
-            <button
-              type="button"
-              class="btn-close"
-              aria-label="Dismiss"
-              i18n-aria-label="@@featureChat-dismissEnhanceError"
-              (click)="clearPlanRefineEnhanceError()"
-            ></button>
-          </div>
+          <fpc-alert
+            class="small mb-0"
+            variant="warning"
+            [message]="enhErr"
+            dismissible
+            closeAriaLabel="Dismiss"
+            i18n-closeAriaLabel="@@featureChat-dismissEnhanceError"
+            (closed)="clearPlanRefineEnhanceError()"
+          />
         }
         @if (isSlashCommandMenuOpenFor('planRefine')) {
           <div
@@ -1855,11 +1834,11 @@
                   <span class="d-flex align-items-baseline justify-content-between gap-2">
                     <span class="font-monospace small fw-medium">{{ command.name }}</span>
                     @if (command.source && command.source !== 'command') {
-                      <span class="text-muted small text-uppercase flex-shrink-0">{{ command.source }}</span>
+                      <span class="text-body-secondary small flex-shrink-0">{{ command.source }}</span>
                     }
                   </span>
                   @if (command.description) {
-                    <span class="d-block text-muted small text-truncate">{{ command.description }}</span>
+                    <span class="d-block text-body-secondary small text-truncate">{{ command.description }}</span>
                   }
                 </button>
               }
@@ -2023,14 +2002,13 @@
     >?
   </p>
   @if (clientToDeleteHasProvisioning()) {
-    <div class="alert alert-warning mb-3" role="alert">
-      <i class="bi bi-cloud-fill me-2"></i>
+    <fpc-alert class="mb-3" variant="warning" icon="cloud-fill">
       <strong i18n="@@featureChat-provisionedServerDetected">Provisioned Server Detected</strong>
       <p class="mb-0 mt-2" i18n="@@featureChat-provisionedServerWarning">
         This workspace has a provisioned server. Deleting the workspace will also delete the server from the cloud
         provider. This action cannot be undone and will result in permanent data loss.
       </p>
-    </div>
+    </fpc-alert>
   }
   <p class="text-danger mb-0">
     <i class="bi bi-exclamation-triangle-fill me-2"></i>
@@ -2407,7 +2385,7 @@
             [disabled]="(clientsCreating$ | async) === true || (provisioning$ | async) === true"
           />
           <small fpcFormFieldHint i18n="@@featureChat-provisionVectorMaxCosHint"
-            >0–2 (pgvector &lt;=&gt;). Only knowledge chunks at or below this distance are used; default 1.</small
+            >0 to 2 (pgvector &lt;=&gt;). Only knowledge chunks at or below this distance are used; default 1.</small
           >
         </fpc-form-field>
 
@@ -2640,7 +2618,7 @@
           <div class="flex-grow-1 min-w-0 small my-2" role="status" aria-live="polite">
             <div class="d-flex justify-content-between gap-2 mb-1">
               <span class="text-truncate"
-                >{{ environmentProgressOperationLabel(progress) }} ·
+                >{{ environmentProgressOperationLabel(progress) }}:
                 {{ environmentProgressStepLabel(progress.step) }}</span
               >
               <span class="flex-shrink-0">{{ progress.progress }}%</span>
@@ -2845,7 +2823,7 @@
           <div class="flex-grow-1 min-w-0 small my-2" role="status" aria-live="polite">
             <div class="d-flex justify-content-between gap-2 mb-1">
               <span class="text-truncate"
-                >{{ environmentProgressOperationLabel(progress) }} ·
+                >{{ environmentProgressOperationLabel(progress) }}:
                 {{ environmentProgressStepLabel(progress.step) }}</span
               >
               <span class="flex-shrink-0">{{ progress.progress }}%</span>
@@ -2881,13 +2859,10 @@
 >
   @let mutationInProgress = (workspaceConfigurationMutating$ | async) === true;
   @if (workspaceConfigurationError$ | async; as error) {
-    <div class="alert alert-danger mb-3" role="alert">
-      <i class="bi bi-exclamation-triangle-fill me-2"></i>
-      {{ error }}
-    </div>
+    <fpc-alert class="mb-3" variant="danger" [message]="error" />
   }
   <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
       <h6 class="mb-0" i18n="@@featureChat-workspaceConfigurationSettings">Workspace Configuration Settings</h6>
       @if (workspaceConfigurationLoading$ | async) {
         <fpc-spinner size="sm" variant="primary" label="Loading..." />
@@ -2905,7 +2880,7 @@
               @for (setting of settings; track setting.settingKey) {
                 @if (isWorkspaceConfigurationSettingVisible(setting.settingKey, settings, managedClient.config)) {
                   <fpc-list-item>
-                    <div class="mb-2 d-flex justify-content-between align-items-center">
+                    <div class="mb-2 d-flex flex-wrap justify-content-between align-items-center gap-2">
                       <div class="fw-semibold">
                         {{ getWorkspaceConfigurationSettingTitle(setting.settingKey) }}
                       </div>
@@ -2917,8 +2892,8 @@
                         {{ getWorkspaceConfigurationSourceLabel(setting) }}
                       </fpc-badge>
                     </div>
-                    <div class="text-muted small mb-2">
-                      <code>{{ setting.envVarName }}</code>
+                    <div class="text-body-secondary small mb-2">
+                      <code class="text-break">{{ setting.envVarName }}</code>
                     </div>
                     <div class="d-flex align-items-center gap-2">
                       <div class="flex-grow-1 min-width-0">
@@ -3063,10 +3038,7 @@
   (closed)="onCloseEnvironmentVariablesModal()"
 >
   @if (environmentVariablesError$ | async; as error) {
-    <div class="alert alert-danger mb-3" role="alert">
-      <i class="bi bi-exclamation-triangle-fill me-2"></i>
-      {{ error }}
-    </div>
+    <fpc-alert class="mb-3" variant="danger" [message]="error" />
   }
   <!-- Add New Environment Variable Form -->
   <div class="card mb-3">
@@ -3130,7 +3102,7 @@
 
   <!-- Environment Variables List -->
   <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
       <h6 class="mb-0" i18n="@@featureChat-envVars">Environment Variables</h6>
       @if (environmentVariablesLoading$ | async) {
         <fpc-spinner size="sm" variant="primary" label="Loading..." />
@@ -3225,13 +3197,13 @@
 >
   @if (autonomyLoading()) {
     <div class="d-flex justify-content-center py-4">
-      <fpc-spinner variant="primary" i18n-label="@@featureTicketAutonomyManager-loading" label="Loading…" />
+      <fpc-spinner variant="primary" i18n-label="@@featureTicketAutonomyManager-loading" label="Loading..." />
     </div>
   } @else {
     @if (autonomyError(); as err) {
       <fpc-alert variant="danger" class="mb-3" [message]="err" />
     }
-    <p class="text-muted small" i18n="@@featureTicketAutonomyManager-intro">
+    <p class="text-body-secondary small" i18n="@@featureTicketAutonomyManager-intro">
       Control whether this agent may run autonomous ticket prototyping, including scope and safety limits.
     </p>
     <fpc-form-switch
@@ -3326,10 +3298,7 @@
   (closed)="onCloseClientUsersModal()"
 >
   @if (clientUsersError$ | async; as error) {
-    <div class="alert alert-danger mb-3" role="alert">
-      <i class="bi bi-exclamation-triangle-fill me-2"></i>
-      {{ error }}
-    </div>
+    <fpc-alert class="mb-3" variant="danger" [message]="error" />
   }
   @if (clientUsersModalPermissions$ | async; as perms) {
     @if (perms.canAddUser) {
@@ -3397,7 +3366,7 @@
 
   <!-- Client Users List -->
   <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
       <h6 class="mb-0" i18n="@@featureChat-clientUsers">Workspace Users</h6>
       @if (clientUsersLoading$ | async) {
         <fpc-spinner size="sm" variant="primary" label="Loading..." />
@@ -3415,7 +3384,7 @@
       } @else {
         @if (clientUsers$ | async; as users) {
           @if (users.length === 0) {
-            <div class="text-center text-muted py-4">
+            <div class="text-center text-body-secondary py-4">
               <i class="bi bi-people fs-1 d-block mb-2"></i>
               <p class="mb-0" i18n="@@featureChat-noClientUsers">No users assigned to this workspace</p>
             </div>

@@ -34,7 +34,9 @@ import {
   FpcModalFooterDirective,
   FpcListItemComponent,
   FpcPageHeaderComponent,
+  FpcProgressComponent,
   FpcSpinnerComponent,
+  type FpcProgressSegment,
   FpcSummaryBarComponent,
   FpcSummaryCardComponent,
   FpcSummaryCardValueDirective,
@@ -104,6 +106,7 @@ interface BillTimeFormLineItem extends ManualInvoiceLineItemDto {
     FpcListItemComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
+    FpcProgressComponent,
   ],
   templateUrl: './project-detail-page.component.html',
   styleUrls: ['./project-detail-page.component.scss'],
@@ -562,10 +565,10 @@ export class ProjectDetailPageComponent implements OnInit {
     const timeOptions: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
 
     if (sameDay) {
-      return `${start.toLocaleTimeString([], timeOptions)} – ${end.toLocaleTimeString([], timeOptions)}`;
+      return `${start.toLocaleTimeString([], timeOptions)} - ${end.toLocaleTimeString([], timeOptions)}`;
     }
 
-    return `${start.toLocaleString()} – ${end.toLocaleString()}`;
+    return `${start.toLocaleString()} - ${end.toLocaleString()}`;
   }
 
   timeEntryTitle(entry: ProjectTimeEntryResponse): string {
@@ -623,6 +626,25 @@ export class ProjectDetailPageComponent implements OnInit {
 
   hasOpenDoneSplit(progress: ProjectSummaryProgressBar): boolean {
     return progress.openPct != null;
+  }
+
+  /** Whether the open/done bar renders a leading "open" segment. */
+  hasOpenSegment(progress: ProjectSummaryProgressBar): boolean {
+    return this.hasOpenDoneSplit(progress) && progress.openPct! > 0;
+  }
+
+  /** Stacked segments for open/done bars: optional open share first, then the done share. */
+  openDoneProgressSegments(progress: ProjectSummaryProgressBar): FpcProgressSegment[] {
+    const done: FpcProgressSegment = { value: progress.primaryPct };
+
+    return this.hasOpenSegment(progress) ? [{ value: progress.openPct!, variant: 'secondary' }, done] : [done];
+  }
+
+  /** Stacked segments for the tracked-time bar: target share first, then the overrun share when over target. */
+  targetHoursProgressSegments(progress: ProjectSummaryProgressBar): FpcProgressSegment[] {
+    const within: FpcProgressSegment = { value: progress.primaryPct };
+
+    return progress.isOver ? [within, { value: progress.dangerPct }] : [within];
   }
 
   totalTicketCount(summary: ProjectSummaryResponse): number {

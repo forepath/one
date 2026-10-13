@@ -4,12 +4,12 @@ Shared Angular UI library for all ForePath frontends.
 
 ## Naming
 
-The selector prefix is **`fpc`** — short for **ForePath Component**. Element components use
+The selector prefix is **`fpc`**, short for **ForePath Component**. Element components use
 `fpc-<kebab-case>` (`fpc-button`, `fpc-list-item`), directives use the camelCase attribute
 form (`[fpcInfiniteScroll]`, `*fpcModalFooter`), and other content-projection slots use attribute
 markers in the same namespace (`[fpcListItemActions]`).
 
-Class names follow the selector: `fpc-summary-card` → `FpcSummaryCardComponent`.
+Class names follow the selector: `fpc-summary-card` becomes `FpcSummaryCardComponent`.
 
 ## Usage
 
@@ -25,7 +25,7 @@ import { FpcButtonComponent, FpcModalComponent, FpcModalFooterDirective } from '
   template: `
     <fpc-button variant="primary" (clicked)="open.set(true)">New invoice</fpc-button>
     <fpc-modal [(open)]="open" title="New invoice">
-      …
+      ...
       <div *fpcModalFooter class="d-flex justify-content-end gap-2">
         <fpc-button variant="primary">Save</fpc-button>
       </div>
@@ -45,7 +45,7 @@ projection slots.
 
 The library never hard-codes colours in components. Everything resolves through Bootstrap 5 CSS
 variables (`--bs-primary`, `--bs-body-bg`, `--bs-border-color`, the `*-bg-subtle` /
-`*-text-emphasis` families, …), so components follow the host application’s theme — including
+`*-text-emphasis` families, ...), so components follow the host application’s theme, including
 `html[data-bs-theme="dark"]`.
 
 Keep theme-dependent Bootstrap variables in CSS rather than setting them inline on the
@@ -69,7 +69,7 @@ them **before** Bootstrap:
 ```
 
 Shared `brands/extras` sets `--bs-primary-dark` /
-`--bs-success-dark` via `color-mix(… 92% / 80%, black)` so dark accents track the brand primary and
+`--bs-success-dark` via `color-mix(... 92% / 80%, black)` so dark accents track the brand primary and
 success without hand-tuned hex per app.
 
 Ad-hoc one-off overrides remain possible:
@@ -90,7 +90,7 @@ A few library-specific variables exist for layout-only concerns and can be overr
 
 Document-wide rules that cannot live only in encapsulated component styles ship as Sass
 partials under `styles/` and are loaded once from each app’s `styles.scss` via
-`@import '…/styles'`:
+`@import '.../styles'`:
 
 | Partial     | Why global                                                   |
 | ----------- | ------------------------------------------------------------ |
@@ -113,8 +113,8 @@ nx run shared-frontend-ui-components:build-storybook  # static build
 
 Toolbar globals (same for CSF and Docs):
 
-- **Theme** — sets `html[data-bs-theme]` to `light` | `dark` (matches apps).
-- **Color set** — optional Storybook-only brand overlay via `html[data-fpc-brand]`
+- **Theme**: sets `html[data-bs-theme]` to `light` | `dark` (matches apps).
+- **Color set**: optional Storybook-only brand overlay via `html[data-fpc-brand]`
   (`bootstrap` | `decabill` | `agenstra` | `forepath`). Overlays under `.storybook/brands/`
   compile the shared `styles/brands/*/palette` tokens into scoped CSS variables.
 

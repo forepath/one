@@ -76,80 +76,35 @@
   </div>
   <div class="container grid-section__container grid-section__container--hero-bottom">
     <div class="row">
-      <div class="col-md-12 intent-cards" (mouseenter)="pauseAutoplay()" (mouseleave)="resumeAutoplay()">
-        <img
-          src="assets/images/screenshots/spaces-dark_framed.png"
-          alt="Agenstra workspaces"
-          class="img-fluid intent-card"
-          [class.d-none]="activeSlide() !== 1"
-          i18n-alt="@@featurePortalHome-heroSlideSpaces"
+      <div class="col-md-12 hero-illustration d-none d-md-block">
+        <framework-portal-console-illustration
+          label="Agenstra console with workspaces, agents and an agent chat"
+          i18n-label="@@featurePortalHome-heroIllustration"
         />
-        <img
-          src="assets/images/screenshots/tasks-dark_framed.png"
-          alt="Agenstra tickets board"
-          class="img-fluid intent-card"
-          [class.d-none]="activeSlide() !== 2"
-          i18n-alt="@@featurePortalHome-heroSlideTickets"
-        />
-        <img
-          src="assets/images/screenshots/editor-dark_framed.png"
-          alt="Agenstra web IDE"
-          class="img-fluid intent-card"
-          [class.d-none]="activeSlide() !== 3"
-          i18n-alt="@@featurePortalHome-heroSlideIde"
-        />
-        <img
-          src="assets/images/screenshots/audit-dark_framed.png"
-          alt="Agenstra audit and usage statistics"
-          class="img-fluid intent-card"
-          [class.d-none]="activeSlide() !== 4"
-          i18n-alt="@@featurePortalHome-heroSlideAudit"
-        />
-        <div
-          class="intent-card-indicators"
-          role="tablist"
-          i18n-aria-label="@@featurePortalHome-heroSlideIndicatorsAriaLabel"
-          aria-label="Hero screenshot slides"
-        >
-          @for (slide of [1, 2, 3, 4]; track slide) {
-            <button
-              type="button"
-              class="intent-card-indicator"
-              [class.intent-card-indicator--active]="activeSlide() === slide"
-              role="tab"
-              [attr.aria-selected]="activeSlide() === slide"
-              [attr.aria-label]="'Go to slide ' + slide"
-              (click)="selectSlide(slide)"
-            ></button>
-          }
-        </div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- Supported AI Agents Section -->
-<section class="py-5 bg-body-tertiary grid-section">
+<section class="bg-body-tertiary grid-section landing-logo-section">
   <div class="container grid-section__container">
-    <div class="row justify-content-center">
-      <div class="col-12 text-center">
-        <p class="small text-muted mb-4" i18n="@@featurePortalHome-partnersTagline">
-          Runs with the coding agents your teams already use
-        </p>
-        <div class="d-flex flex-row justify-content-center align-items-center gap-5 flex-wrap">
-          <img src="assets/images/logos/cursor.svg" alt="Cursor" class="img-fluid logo-partner" />
-          <img src="assets/images/logos/opencode.svg" alt="OpenCode" class="img-fluid logo-partner" />
-        </div>
-      </div>
-    </div>
+    <shared-logo-grid
+      [slots]="agentLogoSlots"
+      ariaLabel="Coding agents and runtimes Agenstra works with"
+      i18n-ariaLabel="@@featurePortalHome-partnersGridLabel"
+    />
   </div>
 </section>
 
 <!-- Problem & solution (combined) -->
-<section id="solution" class="py-10 bg-white grid-section">
+<section id="solution" class="py-10 bg-body grid-section">
   <div class="container grid-section__container">
     <div class="text-center pb-10">
-      <h2 class="h2 fw-semibold mb-4 mx-auto section-title-lg text-dark" i18n="@@featurePortalHome-solutionTitle">
+      <h2
+        class="h2 fw-semibold mb-4 mx-auto section-title-lg text-body-emphasis"
+        i18n="@@featurePortalHome-solutionTitle"
+      >
         Turn agent momentum into software you can trust
       </h2>
       <p class="lead mx-auto text-muted section-lead mb-0" i18n="@@featurePortalHome-solutionLead">
@@ -158,11 +113,9 @@
       </p>
     </div>
 
-    <div
-      class="card border rounded-3 shadow-sm overflow-hidden mb-5 home-solution-studio card-capability card-capability-primary"
-    >
-      <div class="row g-0 align-items-center">
-        <div class="col-lg-8 p-4 p-lg-5">
+    <div class="card border rounded-3 shadow-sm overflow-hidden mb-5 home-solution-studio landing-bento-visual">
+      <div class="row g-0 align-items-stretch">
+        <div class="col-lg-8 p-4 p-lg-5 d-flex flex-column justify-content-center">
           <h3 class="h4 fw-semibold mb-3" i18n="@@featurePortalHome-solutionStudioTitle">Meet Agenstra Studio</h3>
           <p class="text-muted mb-0 lh-lg" i18n="@@featurePortalHome-solutionStudioLead">
             Your organization’s home for agents: connect the tools you already use, manage workspaces, and keep delivery
@@ -170,10 +123,9 @@
             prefer.
           </p>
         </div>
-        <div class="col-lg-4 p-4 p-lg-5 d-flex align-items-center justify-content-center">
+        <div class="col-lg-4 p-4 p-lg-5 d-flex align-items-center justify-content-center landing-divider-start bg-body">
           <div class="text-center">
-            <i class="bi bi-stars text-primary icon-xl mb-3 d-block" aria-hidden="true"></i>
-            <p class="small text-muted mb-0" i18n="@@featurePortalHome-solutionStudioTagline">
+            <p class="fw-semibold mb-0" i18n="@@featurePortalHome-solutionStudioTagline">
               One platform. Many teams. Clear accountability.
             </p>
           </div>
@@ -286,7 +238,7 @@
         tabindex="0"
       >
         <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
-          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+          <div class="home-solution-panel-top p-4 p-lg-5 border-bottom landing-surface-tint">
             <div
               class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
               aria-hidden="true"
@@ -307,8 +259,8 @@
               team works day to day.
             </p>
           </div>
-          <div class="home-solution-panel-bottom p-4 p-lg-5">
-            <div class="row row-cols-1 row-cols-sm-3 g-3">
+          <div class="home-solution-panel-bottom landing-panel-points">
+            <div class="row row-cols-1 row-cols-md-3 g-0">
               <div class="col">
                 <i class="bi bi-binoculars text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
                 <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageWorkspacesBenefit1Title">
@@ -351,7 +303,7 @@
         tabindex="0"
       >
         <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
-          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+          <div class="home-solution-panel-top p-4 p-lg-5 border-bottom landing-surface-tint">
             <div
               class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
               aria-hidden="true"
@@ -372,8 +324,8 @@
               whatever was last pasted into chat.
             </p>
           </div>
-          <div class="home-solution-panel-bottom p-4 p-lg-5">
-            <div class="row row-cols-1 row-cols-sm-3 g-3">
+          <div class="home-solution-panel-bottom landing-panel-points">
+            <div class="row row-cols-1 row-cols-md-3 g-0">
               <div class="col">
                 <i class="bi bi-chat-square-quote text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
                 <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageKnowledgeBenefit1Title">
@@ -414,7 +366,7 @@
         tabindex="0"
       >
         <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
-          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+          <div class="home-solution-panel-top p-4 p-lg-5 border-bottom landing-surface-tint">
             <div
               class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
               aria-hidden="true"
@@ -432,8 +384,8 @@
               autonomous work.
             </p>
           </div>
-          <div class="home-solution-panel-bottom p-4 p-lg-5">
-            <div class="row row-cols-1 row-cols-sm-3 g-3">
+          <div class="home-solution-panel-bottom landing-panel-points">
+            <div class="row row-cols-1 row-cols-md-3 g-0">
               <div class="col">
                 <i class="bi bi-shield-check text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
                 <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantagePolicyBenefit1Title">
@@ -474,7 +426,7 @@
         tabindex="0"
       >
         <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
-          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+          <div class="home-solution-panel-top p-4 p-lg-5 border-bottom landing-surface-tint">
             <div
               class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
               aria-hidden="true"
@@ -495,8 +447,8 @@
               from human contributors.
             </p>
           </div>
-          <div class="home-solution-panel-bottom p-4 p-lg-5">
-            <div class="row row-cols-1 row-cols-sm-3 g-3">
+          <div class="home-solution-panel-bottom landing-panel-points">
+            <div class="row row-cols-1 row-cols-md-3 g-0">
               <div class="col">
                 <i class="bi bi-arrow-repeat text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
                 <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageTicketsBenefit1Title">
@@ -531,7 +483,7 @@
 
       <div class="tab-pane fade" id="solution-pane-ide" role="tabpanel" aria-labelledby="solution-tab-ide" tabindex="0">
         <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
-          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+          <div class="home-solution-panel-top p-4 p-lg-5 border-bottom landing-surface-tint">
             <div
               class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
               aria-hidden="true"
@@ -549,8 +501,8 @@
               the agents doing it.
             </p>
           </div>
-          <div class="home-solution-panel-bottom p-4 p-lg-5">
-            <div class="row row-cols-1 row-cols-sm-3 g-3">
+          <div class="home-solution-panel-bottom landing-panel-points">
+            <div class="row row-cols-1 row-cols-md-3 g-0">
               <div class="col">
                 <i class="bi bi-lightning-charge text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
                 <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageIdeBenefit1Title">
@@ -591,7 +543,7 @@
         tabindex="0"
       >
         <div class="card border rounded-3 shadow-sm overflow-hidden home-solution-panel card-capability-primary">
-          <div class="home-solution-panel-top p-4 p-lg-5 bg-white border-bottom">
+          <div class="home-solution-panel-top p-4 p-lg-5 border-bottom landing-surface-tint">
             <div
               class="home-solution-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
               aria-hidden="true"
@@ -609,8 +561,8 @@
               a separate ceremony.
             </p>
           </div>
-          <div class="home-solution-panel-bottom p-4 p-lg-5">
-            <div class="row row-cols-1 row-cols-sm-3 g-3">
+          <div class="home-solution-panel-bottom landing-panel-points">
+            <div class="row row-cols-1 row-cols-md-3 g-0">
               <div class="col">
                 <i class="bi bi-arrow-left-right text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
                 <p class="small fw-semibold mb-1" i18n="@@featurePortalHome-solutionAdvantageDeployBenefit1Title">
@@ -651,7 +603,7 @@
   <div class="container grid-section__container">
     <div class="row justify-content-center text-center pb-10">
       <div class="col-lg-9">
-        <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featurePortalHome-engineeringTitle">
+        <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featurePortalHome-engineeringTitle">
           Built for how platform and engineering teams ship software
         </h2>
         <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalHome-engineeringLead">
@@ -665,19 +617,19 @@
       <div class="row g-3 g-lg-4">
         <div class="col-lg-8">
           <div
-            class="card border rounded-3 shadow-sm overflow-hidden h-100 home-engineering-visual card-capability card-capability-primary"
+            class="card border rounded-3 shadow-sm overflow-hidden h-100 home-engineering-visual landing-bento-visual card-capability card-capability-primary"
           >
             <div class="p-3 p-lg-4 pb-0">
               <fpc-badge color="primary" class="mb-3 bento-badge" i18n="@@featurePortalHome-engineeringVisualBadge"
                 >Web IDE + agent chat</fpc-badge
               >
             </div>
-            <img
-              src="assets/images/screenshots/ide-dark_framed.png"
-              alt="Agenstra web IDE and dashboard"
-              class="img-fluid w-100 home-engineering-screenshot"
-              i18n-alt="@@featurePortalHome-dashboardAlt"
-            />
+            <div class="home-engineering-illustration landing-illustration-fill">
+              <framework-portal-ide-illustration
+                label="Agenstra web IDE and dashboard"
+                i18n-label="@@featurePortalHome-dashboardAlt"
+              />
+            </div>
           </div>
         </div>
         <div class="col-lg-4 d-flex flex-column gap-3">
@@ -731,9 +683,9 @@
 </section>
 
 <!-- What you get -->
-<section id="features" class="py-10 bg-white grid-section">
+<section id="features" class="py-10 bg-body grid-section">
   <div class="container grid-section__container">
-    <h2 class="h2 fw-semibold mb-4 text-center text-dark" i18n="@@featurePortalHome-capabilitiesTitle">
+    <h2 class="h2 fw-semibold mb-4 text-center text-body-emphasis" i18n="@@featurePortalHome-capabilitiesTitle">
       Five ways Agenstra earns a place in your delivery stack
     </h2>
     <p class="lead text-center text-muted pb-10 mx-auto section-lead" i18n="@@featurePortalHome-capabilitiesLead">
@@ -834,7 +786,7 @@
       >
         <div class="card border rounded-3 shadow-sm overflow-hidden home-pillar-panel card-capability-primary">
           <div class="row g-0 align-items-stretch">
-            <div class="col-lg-5 p-4 p-lg-5 bg-white border-end">
+            <div class="col-lg-5 p-4 p-lg-5 border-end landing-bento-visual">
               <div
                 class="home-pillar-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
                 aria-hidden="true"
@@ -889,7 +841,7 @@
       >
         <div class="card border rounded-3 shadow-sm overflow-hidden home-pillar-panel card-capability-primary">
           <div class="row g-0 align-items-stretch">
-            <div class="col-lg-5 p-4 p-lg-5 bg-white border-end">
+            <div class="col-lg-5 p-4 p-lg-5 border-end landing-bento-visual">
               <div
                 class="home-pillar-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
                 aria-hidden="true"
@@ -939,7 +891,7 @@
       <div class="tab-pane fade" id="pillar-pane-ship" role="tabpanel" aria-labelledby="pillar-tab-ship" tabindex="0">
         <div class="card border rounded-3 shadow-sm overflow-hidden home-pillar-panel card-capability-primary">
           <div class="row g-0 align-items-stretch">
-            <div class="col-lg-5 p-4 p-lg-5 bg-white border-end">
+            <div class="col-lg-5 p-4 p-lg-5 border-end landing-bento-visual">
               <div
                 class="home-pillar-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
                 aria-hidden="true"
@@ -990,7 +942,7 @@
       <div class="tab-pane fade" id="pillar-pane-know" role="tabpanel" aria-labelledby="pillar-tab-know" tabindex="0">
         <div class="card border rounded-3 shadow-sm overflow-hidden home-pillar-panel card-capability-primary">
           <div class="row g-0 align-items-stretch">
-            <div class="col-lg-5 p-4 p-lg-5 bg-white border-end">
+            <div class="col-lg-5 p-4 p-lg-5 border-end landing-bento-visual">
               <div
                 class="home-pillar-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
                 aria-hidden="true"
@@ -1053,7 +1005,7 @@
       >
         <div class="card border rounded-3 shadow-sm overflow-hidden home-pillar-panel card-capability-primary">
           <div class="row g-0 align-items-stretch">
-            <div class="col-lg-5 p-4 p-lg-5 bg-white border-end">
+            <div class="col-lg-5 p-4 p-lg-5 border-end landing-bento-visual">
               <div
                 class="home-pillar-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
                 aria-hidden="true"
@@ -1110,7 +1062,7 @@
 <section id="ecosystem" class="py-10 bg-body-tertiary home-ecosystem grid-section">
   <div class="container grid-section__container">
     <div class="text-center pb-10">
-      <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featurePortalHome-ecosystemTitle">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featurePortalHome-ecosystemTitle">
         One platform, flexible surfaces
       </h2>
       <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalHome-ecosystemLead">
@@ -1123,7 +1075,7 @@
       class="card border rounded-3 shadow-sm home-ecosystem-studio card-capability card-capability-primary mb-4 overflow-hidden"
     >
       <div class="row g-0 align-items-lg-stretch">
-        <div class="col-lg-6 p-4 p-lg-5 d-flex flex-column card-capability-primary">
+        <div class="col-lg-6 p-4 p-lg-5 d-flex flex-column landing-bento-visual">
           <fpc-badge color="primary" class="mb-3 align-self-start" i18n="@@featurePortalHome-ecosystemStudioBadge"
             >Core platform</fpc-badge
           >
@@ -1146,12 +1098,12 @@
             >
           </div>
         </div>
-        <div class="col-lg-6 home-ecosystem-studio-surfaces border-start bg-white p-4 p-lg-4">
+        <div class="col-lg-6 home-ecosystem-studio-surfaces landing-divider-start bg-body p-4 p-lg-4">
           <p class="small fw-semibold text-muted mb-3 mb-lg-4" i18n="@@featurePortalHome-ecosystemSurfacesLabel">
             Part of Studio
           </p>
-          <div class="d-flex flex-column gap-3">
-            <article class="home-ecosystem-surface rounded-3 border p-3 p-lg-4">
+          <div class="d-flex flex-column landing-hairline-list">
+            <article class="home-ecosystem-surface py-3">
               <div class="d-flex gap-3">
                 <i class="bi bi-file-earmark-code text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
                 <div>
@@ -1169,7 +1121,7 @@
                 </div>
               </div>
             </article>
-            <article class="home-ecosystem-surface rounded-3 border p-3 p-lg-4">
+            <article class="home-ecosystem-surface py-3">
               <div class="d-flex gap-3">
                 <i class="bi bi-display text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
                 <div>
@@ -1196,8 +1148,8 @@
         <article
           class="card border rounded-3 shadow-sm overflow-hidden home-ecosystem-product home-ecosystem-product--cloud"
         >
-          <div class="row g-0 align-items-stretch bg-body-tertiary">
-            <div class="col-lg-8 p-4 p-lg-5 bg-white">
+          <div class="row g-0 align-items-stretch">
+            <div class="col-lg-8 p-4 p-lg-5 bg-body">
               <div class="mb-3">
                 <i class="bi bi-cloud-check text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
                 <h3 class="h5 fw-semibold mb-0" i18n="@@featurePortalHome-ecosystemCloudTitle">Agenstra Cloud</h3>
@@ -1208,20 +1160,24 @@
               </p>
             </div>
             <div
-              class="col-lg-4 p-4 p-lg-5 text-center card-capability-primary border-start home-ecosystem-cloud-aside d-flex flex-column justify-content-center"
+              class="col-lg-4 p-4 p-lg-5 text-center landing-surface-tint landing-divider-start home-ecosystem-cloud-aside d-flex flex-column justify-content-center"
             >
               <p class="small text-muted mb-2" i18n="@@featurePortalPricing-cloudStartingAt">Starting at</p>
-              <div class="h2 fw-bold text-primary mb-4">
+              <div class="mb-4">
                 @if (cheapestOfferingLoading() || !cheapestLoaded()) {
-                  <span class="text-muted" aria-hidden="true">…</span>
+                  <div class="h2 fw-bold text-muted mb-0" aria-hidden="true">...</div>
                 } @else {
                   @if (cheapestOffering(); as cloudPlan) {
                     @if (formatPublicOfferingPrice(cloudPlan); as price) {
-                      {{ price.prefix }}€{{ price.amount | number: '1.2-2'
-                      }}<span class="fs-6 text-muted fw-normal">{{ billingIntervalSuffix(cloudPlan) }}</span>
+                      <div class="h2 fw-bold text-primary mb-0">
+                        {{ price.prefix }}€{{ price.amount | number: '1.2-2'
+                        }}<span class="fs-6 text-muted fw-normal">{{ billingIntervalSuffix(cloudPlan) }}</span>
+                      </div>
                     }
                   } @else {
-                    <span class="text-muted" i18n="@@featurePortalPricing-cloudPriceUnavailable">Not available</span>
+                    <div class="h2 fw-bold text-primary mb-0" i18n="@@featurePortalPricing-cloudPriceUnavailable">
+                      On request
+                    </div>
                   }
                 }
               </div>

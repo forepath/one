@@ -275,7 +275,7 @@ export class UpdatesManagerComponent implements OnInit {
   }
 
   dependencyStatusTitle(name: string, status: DependencyHealthStatus): string {
-    return `${name} · ${this.dependencyHealthLabel(status)}`;
+    return `${name}: ${this.dependencyHealthLabel(status)}`;
   }
 
   dependencyHealthClass(status: DependencyHealthStatus): string {
@@ -284,13 +284,13 @@ export class UpdatesManagerComponent implements OnInit {
       case 'degraded':
         return 'bg-body-tertiary text-success fs-5';
       default:
-        return 'bg-body-tertiary text-muted fs-5';
+        return 'bg-body-tertiary text-body-secondary fs-5';
     }
   }
 
   formatDate(iso: string | null | undefined): string {
     if (!iso) {
-      return '—';
+      return '-';
     }
 
     try {
@@ -304,7 +304,7 @@ export class UpdatesManagerComponent implements OnInit {
     const trimmed = version?.trim();
 
     if (!trimmed) {
-      return '—';
+      return '-';
     }
 
     return /^v/i.test(trimmed) ? trimmed : `v${trimmed}`;

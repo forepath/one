@@ -46,6 +46,8 @@ import {
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
+  FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSearchFieldComponent,
   FpcSpinnerComponent,
   FpcSummaryBarComponent,
@@ -53,13 +55,25 @@ import {
   FpcSummaryCardValueDirective,
   FpcTabComponent,
   FpcTabGroupComponent,
+  FPC_CHART_AREA_FILL,
+  FPC_CHART_AXIS,
+  FPC_CHART_GRID,
+  FPC_CHART_LABEL_STYLE,
+  FPC_CHART_LEGEND,
+  FPC_CHART_SLICE_LABELS,
+  FPC_CHART_SLICE_TOOLTIP,
+  fpcChart,
+  fpcChartColor,
+  fpcChartColors,
 } from '@forepath/shared/frontend/ui-components';
 import type {
   ApexAxisChartSeries,
   ApexChart,
   ApexDataLabels,
+  ApexFill,
+  ApexLegend,
   ApexNonAxisChartSeries,
-  ApexTitleSubtitle,
+  ApexStroke,
   ApexTooltip,
   ApexXAxis,
 } from 'ng-apexcharts';
@@ -129,15 +143,6 @@ interface InvoicePreviewView {
   balanceDue: number;
 }
 
-const BS_CHART_COLORS = [
-  'var(--bs-primary)',
-  'var(--bs-secondary)',
-  'var(--bs-success)',
-  'var(--bs-danger)',
-  'var(--bs-warning)',
-  'var(--bs-info)',
-] as const;
-
 type AdminBillingMobilePanel = 'overview' | 'invoices';
 type AdminBillingPerspective = 'customer' | 'supplier';
 
@@ -171,6 +176,8 @@ type AdminBillingPerspective = 'customer' | 'supplier';
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
+    FpcPanelComponent,
+    FpcPanelGridComponent,
     FpcSpinnerComponent,
     FpcSummaryBarComponent,
     FpcSummaryCardComponent,
@@ -352,12 +359,17 @@ export class AdminBillingPageComponent implements OnInit {
     return this.auditLogsByInvoice()[id] ?? [];
   });
 
+  readonly turnoverChartTitle = $localize`:@@featureAdminBilling-chartTurnoverTitle:Turnover over time`;
+  readonly expensesChartTitle = $localize`:@@featureAdminBilling-chartExpensesTitle:Expenses over time`;
+  readonly productChartTitle = $localize`:@@featureAdminBilling-chartProductTitle:Turnover by product`;
+  readonly countryChartTitle = $localize`:@@featureAdminBilling-chartCountryTitle:Turnover by country`;
+
   readonly seriesChartOptions = computed(() => this.buildSeriesChart(this.statisticsSummary()?.series ?? []));
   readonly expenseSeriesChartOptions = computed(() =>
-    this.buildSeriesChart(this.supplierSummary()?.series ?? [], {
-      seriesName: $localize`:@@featureAdminBilling-chartExpensesSeries:Expenses`,
-      title: $localize`:@@featureAdminBilling-chartExpensesTitle:Expenses over time`,
-    }),
+    this.buildSeriesChart(
+      this.supplierSummary()?.series ?? [],
+      $localize`:@@featureAdminBilling-chartExpensesSeries:Expenses`,
+    ),
   );
   readonly donutChartOptions = computed(() => this.buildDonutChart(this.statisticsByProduct()?.items ?? []));
   readonly countryDonutChartOptions = computed(() =>
@@ -946,9 +958,9 @@ export class AdminBillingPageComponent implements OnInit {
   }
 
   formatDate(value?: string | Date): string {
-    if (!value) return '—';
+    if (!value) return '-';
 
-    return this.datePipe.transform(value, 'mediumDate') ?? '—';
+    return this.datePipe.transform(value, 'mediumDate') ?? '-';
   }
 
   invoiceDisplayTitle(invoice: AdminInvoiceListItem): string {
@@ -1432,7 +1444,7 @@ export class AdminBillingPageComponent implements OnInit {
     });
   }
 
-  private buildSeriesChart(series: BillingStatisticsSeriesPoint[], labels?: { seriesName: string; title: string }) {
+  private buildSeriesChart(series: BillingStatisticsSeriesPoint[], seriesLabel?: string) {
     const filled = fillPeriodSeriesPoints(series, this.fromDate(), this.toDate(), this.groupBy(), (period) => ({
       period,
       totalGross: 0,
@@ -1442,41 +1454,28 @@ export class AdminBillingPageComponent implements OnInit {
       return null;
     }
 
-    const seriesName = labels?.seriesName ?? $localize`:@@featureAdminBilling-chartTurnoverSeries:Turnover`;
-    const title = labels?.title ?? $localize`:@@featureAdminBilling-chartTurnoverTitle:Turnover over time`;
+    const seriesName = seriesLabel ?? $localize`:@@featureAdminBilling-chartTurnoverSeries:Turnover`;
 
     return {
       series: [{ name: seriesName, data: filled.map((p) => p.totalGross) }] as ApexAxisChartSeries,
-      chart: {
-        type: 'area',
-        height: 240,
-        toolbar: { show: false },
-        background: 'transparent',
-        zoom: { enabled: false },
-      } as ApexChart,
-      colors: [BS_CHART_COLORS[0]],
-      stroke: { colors: [BS_CHART_COLORS[0]] },
-      fill: { colors: [BS_CHART_COLORS[0]] },
+      chart: fpcChart('area', 240) as ApexChart,
+      colors: [fpcChartColor(0)],
+      stroke: { curve: 'smooth', width: 2 } as ApexStroke,
+      fill: FPC_CHART_AREA_FILL as ApexFill,
       dataLabels: { enabled: false } as ApexDataLabels,
       xaxis: {
+        ...FPC_CHART_AXIS,
         type: 'category',
         categories: filled.map((p) => this.formatChartPeriodLabel(p.period)),
-        labels: {
-          style: { colors: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
-        },
-        axisBorder: { color: 'var(--bs-border-color)' },
+        labels: { style: FPC_CHART_LABEL_STYLE },
       } as ApexXAxis,
       yaxis: {
         labels: {
-          style: { colors: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
+          style: FPC_CHART_LABEL_STYLE,
           formatter: (value: number) => `${value.toFixed(2)}€`,
         },
       },
-      grid: { borderColor: 'var(--bs-border-color)' },
-      title: {
-        text: title,
-        style: { color: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
-      } as ApexTitleSubtitle,
+      grid: FPC_CHART_GRID,
     };
   }
 
@@ -1488,20 +1487,14 @@ export class AdminBillingPageComponent implements OnInit {
   }
 
   private buildDonutChart(items: { planName: string; totalGross: number }[]) {
-    return this.buildTurnoverDonutChart(
-      items.map((i) => ({ label: i.planName, totalGross: i.totalGross })),
-      $localize`:@@featureAdminBilling-chartProductTitle:Turnover by product`,
-    );
+    return this.buildTurnoverDonutChart(items.map((i) => ({ label: i.planName, totalGross: i.totalGross })));
   }
 
   private buildCountryDonutChart(items: { countryName: string; totalGross: number }[]) {
-    return this.buildTurnoverDonutChart(
-      items.map((i) => ({ label: i.countryName, totalGross: i.totalGross })),
-      $localize`:@@featureAdminBilling-chartCountryTitle:Turnover by country`,
-    );
+    return this.buildTurnoverDonutChart(items.map((i) => ({ label: i.countryName, totalGross: i.totalGross })));
   }
 
-  private buildTurnoverDonutChart(items: { label: string; totalGross: number }[], title: string) {
+  private buildTurnoverDonutChart(items: { label: string; totalGross: number }[]) {
     if (items.length === 0) return null;
 
     const series = items.map((i) => i.totalGross);
@@ -1510,31 +1503,22 @@ export class AdminBillingPageComponent implements OnInit {
 
     return {
       series: series as ApexNonAxisChartSeries,
-      chart: { type: 'donut', height: 240, background: 'transparent' } as ApexChart,
+      chart: fpcChart('donut', 240) as ApexChart,
       labels: items.map((i) => i.label),
-      colors: BS_CHART_COLORS.slice(0, items.length),
+      colors: fpcChartColors(items.length),
       dataLabels: {
+        ...FPC_CHART_SLICE_LABELS,
         enabled: true,
         formatter: (percent: number) => `${percent.toFixed(1)}%`,
-        style: {
-          fontSize: '10px',
-          colors: ['#ffffff'],
-          fontFamily: 'var(--bs-body-font-family)',
-        },
+        style: { ...FPC_CHART_SLICE_LABELS.style, fontSize: '10px' },
       } as ApexDataLabels,
-      legend: {
-        labels: { colors: 'var(--bs-body-color)' },
-        fontFamily: 'var(--bs-body-font-family)',
-      },
+      legend: FPC_CHART_LEGEND as ApexLegend,
       tooltip: {
+        ...FPC_CHART_SLICE_TOOLTIP,
         y: {
           formatter: (value: number) => formatEuro(value),
         },
       } as ApexTooltip,
-      title: {
-        text: title,
-        style: { color: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
-      } as ApexTitleSubtitle,
     };
   }
 

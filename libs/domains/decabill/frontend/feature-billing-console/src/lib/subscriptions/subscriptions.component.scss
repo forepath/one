@@ -33,6 +33,11 @@
   overflow: hidden;
 }
 
+.subscriptions__pre-wrap {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .order-wizard__layout {
   align-items: flex-start;
 

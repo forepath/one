@@ -85,6 +85,7 @@ import {
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
+  FpcProgressComponent,
   FpcSearchFieldComponent,
   FpcSpinnerComponent,
   FpcTabComponent,
@@ -258,6 +259,7 @@ const TICKETS_BOARD_VIRTUAL_ITEM_SIZE_PX = 88;
     FpcListComponent,
     FpcListItemComponent,
     FpcPageHeaderComponent,
+    FpcProgressComponent,
     FpcSearchFieldComponent,
     FpcSpinnerComponent,
     FpcTabComponent,
@@ -272,12 +274,12 @@ const TICKETS_BOARD_VIRTUAL_ITEM_SIZE_PX = 88;
 })
 export class TicketsBoardComponent implements OnInit {
   readonly pageTitle = $localize`:@@featureTicketsBoard-title:Tickets`;
-  readonly commentInputAriaLabel = $localize`:@@featureTicketsBoard-commentPlaceholder:Add a comment…`;
+  readonly commentInputAriaLabel = $localize`:@@featureTicketsBoard-commentPlaceholder:Add a comment...`;
   readonly workspaceBadgeSwitchTitle = $localize`:@@featureTicketsBoard-workspaceBadgeSwitchTitle:Switch workspace`;
   readonly globalSearchTitle = $localize`:@@featureTicketsBoard-globalSearchOpenTitle:Search tickets (Ctrl+F)`;
   readonly globalSearchAriaLabel = $localize`:@@featureTicketsBoard-globalSearchOpenAria:Search tickets`;
   readonly newTicketAriaLabel = $localize`:@@featureTicketsBoard-newTicket:Add`;
-  readonly loadingLabel = $localize`:@@featureTicketsBoard-loading:Loading tickets…`;
+  readonly loadingLabel = $localize`:@@featureTicketsBoard-loading:Loading tickets...`;
   readonly laneSearchPlaceholder = $localize`:@@featureTicketsBoard-searchLanePlaceholder:Search tickets`;
   readonly laneSearchAriaLabel = $localize`:@@featureTicketsBoard-searchLaneLabel:Search tickets`;
   readonly laneVirtualItemSize = TICKETS_BOARD_VIRTUAL_ITEM_SIZE_PX;
@@ -461,7 +463,7 @@ export class TicketsBoardComponent implements OnInit {
   selectedAgentForAi = signal<string | null>(null);
   /** OpenCode `provider/model` for chat/AI on the open ticket. */
   selectedModelForAi = signal<string | null>(null);
-  /** Model dropdown options for the selected chat agent (from GET …/models). */
+  /** Model dropdown options for the selected chat agent (from GET .../models). */
   ticketAiModelOptions = signal<Array<{ value: string; label: string }>>([]);
   ticketAiModelsLoading = signal(false);
   newCommentText = signal('');
@@ -1281,7 +1283,7 @@ export class TicketsBoardComponent implements OnInit {
   }
 
   /** Same style as deployment run lists: short date + time (Angular `DatePipe`). */
-  readonly activityOccurredAtFormat = 'MMM d, y · h:mm a';
+  readonly activityOccurredAtFormat = 'MMM d, y, h:mm a';
 
   activityActionLabel(actionType: string): string {
     switch (actionType) {
@@ -1690,10 +1692,10 @@ export class TicketsBoardComponent implements OnInit {
       const ticket = this.ticketByLongSha(target.ticketLongSha);
 
       if (!ticket) {
-        return `${target.ticketLongSha.slice(0, 7)} · Ticket: Unavailable ticket`;
+        return `Ticket: Unavailable ticket (${target.ticketLongSha.slice(0, 7)})`;
       }
 
-      return `${ticket.shas.short} · Ticket: ${ticket.title ?? ''}`;
+      return `Ticket: ${ticket.title ?? ''} (${ticket.shas.short})`;
     }
 
     const node = this.ticketRelationNodeById(target.nodeId);
@@ -1701,12 +1703,12 @@ export class TicketsBoardComponent implements OnInit {
     if (!node) {
       const type = target.nodeType === 'folder' ? 'Folder' : 'Page';
 
-      return `${target.nodeId.slice(0, 7)} · ${type}: Unavailable knowledge`;
+      return `${type}: Unavailable knowledge (${target.nodeId.slice(0, 7)})`;
     }
 
     const type = node.nodeType === 'folder' ? 'Folder' : 'Page';
 
-    return `${node.shas.short} · ${type}: ${node.title}`;
+    return `${type}: ${node.title} (${node.shas.short})`;
   }
 
   onRemovePendingTicketRelation(
@@ -2258,7 +2260,7 @@ export class TicketsBoardComponent implements OnInit {
     return this.isAutomationAgentAllowed(agentId);
   }
 
-  readonly ticketAutomationChatAgentLockTitle = $localize`:@@featureTicketsBoard-automationChatAgentLockTitle:Matches Agent for chat / AI — change the chat agent to allow unchecking.`;
+  readonly ticketAutomationChatAgentLockTitle = $localize`:@@featureTicketsBoard-automationChatAgentLockTitle:Matches Agent for chat / AI. Change the chat agent to allow unchecking.`;
 
   onAutomationBranchStrategyChange(strategy: TicketAutomationBranchStrategy): void {
     this.automationDraftBranchStrategy.set(strategy);

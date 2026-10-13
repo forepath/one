@@ -2,7 +2,7 @@
   <div
     class="section__column section__column--marketing d-flex align-items-center justify-content-center bg-body-tertiary h-100 border-end"
   >
-    <div class="p-4" style="width: 700px; max-width: 100%">
+    <div class="public-withdrawal__marketing p-4">
       <h1 class="display-5 fw-bold mb-3" i18n="@@featurePublicWithdrawal-title">Statutory Withdrawal</h1>
       <p class="lead mb-4">
         {{
@@ -12,12 +12,12 @@
     </div>
   </div>
   <div class="section__column section__column--form section__column--scroll d-flex align-items-center">
-    <div class="p-4 my-auto" style="width: 500px; max-width: 100%">
+    <div class="public-withdrawal__form p-4 my-auto">
       <h2 class="section__column-title mb-4 text-end" i18n="@@featurePublicWithdrawal-formTitle">Withdrawal Request</h2>
 
       @if (addresseeLoading$ | async) {
         <div class="card mb-4 bg-body-secondary">
-          <div class="card-body text-center text-muted">
+          <div class="card-body text-center text-body-secondary">
             <fpc-spinner class="me-2" size="sm" />
             <span i18n="@@featurePublicWithdrawal-addresseeLoading">Loading addressee...</span>
           </div>
@@ -32,15 +32,15 @@
           <div class="card-body">
             <p class="mb-1 fw-semibold">{{ addressee.name }}</p>
             @for (line of addressee.lines; track line) {
-              <p class="mb-0 text-muted">{{ line }}</p>
+              <p class="mb-0 text-body-secondary">{{ line }}</p>
             }
             @if (addressee.vatId) {
-              <p class="mb-0 mt-2 text-muted">
+              <p class="mb-0 mt-2 text-body-secondary">
                 <span i18n="@@featurePublicWithdrawal-vatIdLabel">VAT ID:</span> {{ addressee.vatId }}
               </p>
             }
             @if (addressee.email) {
-              <p class="mb-0 text-muted">
+              <p class="mb-0 text-body-secondary">
                 <span i18n="@@featurePublicWithdrawal-emailLabel">Email:</span> {{ addressee.email }}
               </p>
             }
@@ -187,7 +187,7 @@
             <fpc-form-control controlId="receivedOn" inputType="date" formControlName="receivedOn" />
           </fpc-form-field>
 
-          <div class="d-flex gap-2 justify-content-between align-items-center">
+          <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
             <a routerLink="/login" class="text-decoration-none small">
               <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>
               <span i18n="@@featurePublicWithdrawal-backToLoginLink">Back to login</span>
@@ -251,7 +251,7 @@
             </fpc-form-field>
           </div>
 
-          <div class="d-flex gap-2 justify-content-between align-items-center">
+          <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
             <a routerLink="/login" class="text-decoration-none small">
               <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>
               <span i18n="@@featurePublicWithdrawal-backToLoginLink">Back to login</span>
@@ -302,7 +302,7 @@
             }
           </div>
 
-          <div class="d-flex gap-2 justify-content-between align-items-center">
+          <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
             <a routerLink="/login" class="text-decoration-none small">
               <i class="bi bi-arrow-left me-2" aria-hidden="true"></i>
               <span i18n="@@featurePublicWithdrawal-backToLoginLink">Back to login</span>
@@ -322,7 +322,7 @@
       @if ((step$ | async) === 'done') {
         <div class="text-center">
           <div class="mb-4">
-            <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem" aria-hidden="true"></i>
+            <i class="bi bi-check-circle-fill text-success public-withdrawal__done-icon" aria-hidden="true"></i>
           </div>
           <p class="lead mb-4" i18n="@@featurePublicWithdrawal-doneMessage">
             Your withdrawal request has been submitted successfully.
