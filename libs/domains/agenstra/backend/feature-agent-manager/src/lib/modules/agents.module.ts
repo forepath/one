@@ -11,6 +11,7 @@ import { AgentsDeploymentsController } from '../controllers/agents-deployments.c
 import { InstanceStatusController } from '../controllers/instance-status.controller';
 import { AgentsEnvironmentVariablesController } from '../controllers/agents-environment-variables.controller';
 import { AgentsFilesController } from '../controllers/agents-files.controller';
+import { AgentsSystemFilesController } from '../controllers/agents-system-files.controller';
 import { AgentsEgressController } from '../controllers/agents-egress.controller';
 import { AgentsMessagesController } from '../controllers/agents-messages.controller';
 import { AgentsVcsController } from '../controllers/agents-vcs.controller';
@@ -130,6 +131,7 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     AgentsPermissionsController,
     AgentsMessagesController,
     AgentsFilesController,
+    AgentsSystemFilesController,
     AgentsWorkspaceIndexController,
     AgentsVcsController,
     AgentsVerificationController,

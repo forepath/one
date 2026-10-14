@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-13T05:26:32.243Z",
+  "generatedAt": "2026-10-14T18:52:11.379Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -10676,6 +10676,15 @@
       "type": "controller",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-system-files.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-system-files.controller.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -22842,6 +22851,50 @@
       }
     },
     {
+      "id": "api:HTTP:GET:/agents/{agentId}/system-files",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agents/{agentId}/system-files",
+        "operationId": "listSystemDirectory",
+        "summary": "List a system or workspace directory",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PUT:/agents/{agentId}/system-files/{path}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PUT",
+        "pathOrChannel": "/agents/{agentId}/system-files/{path}",
+        "operationId": "writeSystemFile",
+        "summary": "Write a system or workspace file as raw bytes (max 10MB, no chunking)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/agents/{agentId}/system-files/{path}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/agents/{agentId}/system-files/{path}",
+        "operationId": "createSystemFileOrDirectory",
+        "summary": "Create an empty system or workspace file or directory",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/agents/{agentId}/system-files/{path}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/agents/{agentId}/system-files/{path}",
+        "operationId": "deleteSystemFileOrDirectory",
+        "summary": "Delete a system or workspace file or directory",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/agents/{agentId}/environment",
       "type": "endpoint",
       "attrs": {
@@ -26541,6 +26594,16 @@
         "title": "Real-time File Updates",
         "docPath": "docs/agenstra/features/file-management.md",
         "sectionAnchor": "real-time-file-updates",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-workspace-confinement",
+      "type": "concept",
+      "attrs": {
+        "title": "Workspace confinement",
+        "docPath": "docs/agenstra/features/file-management.md",
+        "sectionAnchor": "workspace-confinement",
         "domain": "agenstra"
       }
     },
@@ -41068,6 +41131,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-system-files.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-vcs.controller.ts",
       "type": "contains"
     },
@@ -46663,6 +46731,26 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agents/{agentId}/system-files",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:PUT:/agents/{agentId}/system-files/{path}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/agents/{agentId}/system-files/{path}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/agents/{agentId}/system-files/{path}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/agents/{agentId}/environment",
       "type": "contains"
     },
@@ -49144,6 +49232,11 @@
     {
       "from": "file:docs/agenstra/features/file-management.md",
       "to": "concept:agenstra-api-endpoints",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/file-management.md",
+      "to": "concept:agenstra-workspace-confinement",
       "type": "contains"
     },
     {
@@ -59878,6 +59971,46 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/system-files",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:GET:/agents/{agentId}/system-files",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:PUT:/agents/{agentId}/system-files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:PUT:/agents/{agentId}/system-files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/system-files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:POST:/agents/{agentId}/system-files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
+      "to": "api:HTTP:DELETE:/agents/{agentId}/system-files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:DELETE:/agents/{agentId}/system-files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
       "to": "api:HTTP:GET:/agents/{agentId}/environment",
       "type": "implements"
     },
@@ -60458,6 +60591,26 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/system-files",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:PUT:/agents/{agentId}/system-files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/system-files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "api:HTTP:DELETE:/agents/{agentId}/system-files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
       "to": "api:HTTP:GET:/agents/{agentId}/environment",
       "type": "implements"
     },
@@ -60819,6 +60972,26 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
       "to": "api:HTTP:PATCH:/agents/{agentId}/files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:GET:/agents/{agentId}/system-files",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:PUT:/agents/{agentId}/system-files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:POST:/agents/{agentId}/system-files/{path}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents.controller.ts",
+      "to": "api:HTTP:DELETE:/agents/{agentId}/system-files/{path}",
       "type": "implements"
     },
     {
@@ -66382,6 +66555,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-system-files.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-file-system.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-vcs.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents-vcs.service.ts",
       "type": "injects"
@@ -69194,6 +69372,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-files.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-system-files.controller.ts",
       "type": "provides"
     },
     {
@@ -72898,7 +73081,7 @@
     },
     {
       "from": "concept:agenstra-path-lists-and-layer-files",
-      "to": "api:HTTP:POST:/agents/{agentId}/files/{path}",
+      "to": "api:HTTP:POST:/agents/{agentId}/system-files/{path}",
       "type": "documents"
     },
     {
@@ -74173,6 +74356,26 @@
     },
     {
       "from": "concept:agenstra-agent-workload-bind-mounts",
+      "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-privilege-model-no-sudo",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-privilege-model-no-sudo",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-privilege-model-no-sudo",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-privilege-model-no-sudo",
       "to": "api:HTTP:POST:/agents",
       "type": "documents"
     },
@@ -82088,6 +82291,11 @@
     },
     {
       "from": "concept:agenstra-real-time-file-updates",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-workspace-confinement",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

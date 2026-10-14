@@ -1,5 +1,5 @@
 import { OpenSearchService } from '@forepath/shared/backend/util-opensearch';
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 
@@ -26,6 +26,8 @@ interface StatusEntry {
 
 @Injectable()
 export class WorkspaceSearchIndexService {
+  /** Agent-manager rejection for paths (e.g. symlinked directories) resolving outside the agent workspace. */
+  private static readonly OUTSIDE_WORKSPACE_MESSAGE = 'Path resolves outside the agent workspace';
   private readonly logger = new Logger(WorkspaceSearchIndexService.name);
   private readonly statusByKey = new Map<string, StatusEntry>();
   private indexReady = false;
@@ -334,9 +336,22 @@ export class WorkspaceSearchIndexService {
       if (node.type === 'file') {
         paths.push(node.path);
       } else if (node.type === 'directory') {
-        const childPaths = await this.walkAllFilePaths(clientId, agentId, node.path);
+        try {
+          const childPaths = await this.walkAllFilePaths(clientId, agentId, node.path);
 
-        paths.push(...childPaths);
+          paths.push(...childPaths);
+        } catch (error: unknown) {
+          // Symlinked directories resolving outside the agent workspace are rejected by the manager (400);
+          // skip only those instead of aborting the whole walk (other failures must keep aborting the rebuild).
+          if (
+            !(error instanceof BadRequestException) ||
+            !error.message.includes(WorkspaceSearchIndexService.OUTSIDE_WORKSPACE_MESSAGE)
+          ) {
+            throw error;
+          }
+
+          this.logger.debug(`Skip index walk for ${node.path}: ${error.message}`);
+        }
       }
     }
 

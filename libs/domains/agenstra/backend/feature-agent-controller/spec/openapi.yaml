@@ -2415,11 +2415,18 @@ paths:
         '404':
           description: Agent not found
   /clients/{id}/agents/{agentId}/files:
+    description: |
+      Proxied, workspace-confined agent file API (client membership + `agents:files` scope for PATs).
+      Operations are limited to the agent workspace (normally /app): absolute paths outside it, `..` segments,
+      and paths whose canonical (symlink-resolved) target leaves the workspace are rejected with 400.
+      Files run as the unprivileged agent runtime user; root-owned injected configuration outside the
+      workspace (OpenCode layer files, context attachments) is not reachable through this API.
     get:
       summary: List directory contents (proxied)
       description: |
         Relative paths such as apps resolve under the worker workspace root (normally /app).
         Directory listing and metadata failures from the manager propagate as errors, not empty arrays.
+        Paths outside the workspace (lexically or via symlinks) are rejected with 400.
       operationId: listClientAgentDirectory
       parameters:
         - in: path
@@ -2600,6 +2607,10 @@ paths:
         '404':
           description: Client or agent not found
   /clients/{id}/agents/{agentId}/files/{path}:
+    description: |
+      Workspace-confined file operations (see `/clients/{id}/agents/{agentId}/files`). Absolute paths outside the
+      workspace and symlinks resolving outside it are rejected with 400; mutations of the workspace root itself are
+      rejected. Deleting or moving a symlink affects the link, never its target.
     head:
       summary: Probe file metadata without transferring the body (proxied)
       operationId: headClientAgentFile

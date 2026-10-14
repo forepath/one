@@ -1,4 +1,5 @@
 import { OpenSearchService } from '@forepath/shared/backend/util-opensearch';
+import { BadRequestException } from '@nestjs/common';
 
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 
@@ -150,6 +151,33 @@ describe('WorkspaceSearchIndexService', () => {
       openSearch.indexDocument.mock.invocationCallOrder[0],
     );
     await expect(service.getStatus('c1', 'a1')).resolves.toEqual({ status: 'ready', docCount: 1, message: null });
+  });
+
+  it('rebuild skips symlinked directories the manager rejects as outside the workspace', async () => {
+    fileProxy.listDirectory
+      .mockResolvedValueOnce([
+        { path: 'src', type: 'directory' },
+        { path: 'outside-link', type: 'directory' },
+      ] as never)
+      .mockResolvedValueOnce([{ path: 'src/a.ts', type: 'file' }] as never)
+      .mockRejectedValueOnce(new BadRequestException('Path resolves outside the agent workspace'));
+    openSearch.count.mockResolvedValueOnce(1);
+
+    await service.rebuild('c1', 'a1');
+
+    expect(openSearch.indexDocument).toHaveBeenCalledTimes(1);
+    await expect(service.getStatus('c1', 'a1')).resolves.toEqual({ status: 'ready', docCount: 1, message: null });
+  });
+
+  it('rebuild still aborts when a subdirectory fails for other reasons', async () => {
+    fileProxy.listDirectory
+      .mockResolvedValueOnce([{ path: 'src', type: 'directory' }] as never)
+      .mockRejectedValueOnce(new BadRequestException('Request failed: connection reset'));
+
+    await service.rebuild('c1', 'a1');
+
+    expect(openSearch.deleteByQuery).not.toHaveBeenCalled();
+    await expect(service.getStatus('c1', 'a1')).resolves.toMatchObject({ status: 'error' });
   });
 
   it('purge deletes by clientId and agentId', async () => {

@@ -1,6 +1,6 @@
 import { PassThrough, Readable } from 'stream';
 
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import Docker = require('dockerode');
 
@@ -1719,6 +1719,30 @@ describe('DockerService', () => {
       expect(result).toBe('test output');
     });
 
+    it('appends explicit env entries (e.g. a fixed root PATH) to the exec environment', async () => {
+      mockContainer.inspect.mockResolvedValue({});
+      mockStream.on = jest.fn((event: string, callback: () => void) => {
+        if (event === 'end') {
+          setTimeout(() => callback(), 10);
+        }
+
+        return mockStream;
+      });
+
+      await service.sendCommandToContainer(containerId, ['mkdir', '-p', '/opt/x'], undefined, false, {
+        user: '0',
+        env: ['PATH=/usr/sbin:/usr/bin:/sbin:/bin'],
+      });
+
+      expect(mockContainer.exec).toHaveBeenCalledWith(
+        expect.objectContaining({
+          Cmd: ['mkdir', '-p', '/opt/x'],
+          User: '0',
+          Env: ['PATH=/usr/sbin:/usr/bin:/sbin:/bin'],
+        }),
+      );
+    });
+
     it.each(['end', 'close', 'error'])(
       'decodes split 8-byte frames on %s without leaking payload lengths',
       async (completion) => {
@@ -2321,6 +2345,109 @@ describe('DockerService', () => {
         Tty: false,
         User: 'agenstra',
       });
+    });
+  });
+
+  describe('readFileBytesFromContainer', () => {
+    const containerId = 'test-container-id';
+    const filePath = '/app/image.png';
+
+    function mockExecOutput(stdoutChunks: Buffer[], stderrText = ''): void {
+      mockStream.on = jest.fn((event: string, callback: () => void) => {
+        if (event === 'end') {
+          setTimeout(() => callback(), 10);
+        }
+
+        return mockStream;
+      });
+      mockContainer.modem.demuxStream = jest.fn((_stream, stdout: PassThrough, stderr: PassThrough) => {
+        setTimeout(() => {
+          for (const chunk of stdoutChunks) {
+            stdout.write(chunk);
+          }
+
+          if (stderrText) {
+            stderr.write(Buffer.from(stderrText));
+          }
+        }, 5);
+      });
+    }
+
+    beforeEach(() => {
+      mockContainer.inspect.mockResolvedValue({});
+    });
+
+    it('reads binary bytes via cat argv as the requested non-root user', async () => {
+      const bytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x00, 0xff, 0x0d, 0x0a]);
+
+      mockExecOutput([bytes.subarray(0, 3), bytes.subarray(3)]);
+
+      const result = await service.readFileBytesFromContainer(containerId, filePath, {
+        user: 'agenstra',
+        maxBytes: 1024,
+      });
+
+      expect(result.equals(bytes)).toBe(true);
+      expect(mockContainer.exec).toHaveBeenCalledWith(
+        expect.objectContaining({
+          Cmd: ['sh', '-c', expect.stringContaining('exec cat -- "$1"'), 'sh', filePath],
+          AttachStdin: false,
+          User: 'agenstra',
+        }),
+      );
+      expect(mockContainer.getArchive).not.toHaveBeenCalled();
+    });
+
+    it('maps a missing file to NotFoundException', async () => {
+      mockExecOutput([], `cat: ${filePath}: No such file or directory`);
+      mockExec.inspect.mockResolvedValueOnce({ ExitCode: 1 });
+
+      await expect(
+        service.readFileBytesFromContainer(containerId, filePath, { user: 'agenstra', maxBytes: 1024 }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('surfaces other non-zero exits (e.g. permission denied) as errors', async () => {
+      mockExecOutput([], `cat: ${filePath}: Permission denied`);
+      mockExec.inspect.mockResolvedValueOnce({ ExitCode: 1 });
+
+      await expect(
+        service.readFileBytesFromContainer(containerId, filePath, { user: 'agenstra', maxBytes: 1024 }),
+      ).rejects.toThrow(/Permission denied/);
+    });
+
+    it('waits for the exec exit code instead of treating a pending exit as success', async () => {
+      jest.useFakeTimers({ doNotFake: ['setImmediate', 'nextTick'] });
+      mockExecOutput([], `cat: ${filePath}: Permission denied`);
+      mockExec.inspect
+        .mockResolvedValueOnce({ Running: true, ExitCode: null })
+        .mockResolvedValueOnce({ Running: false, ExitCode: 1 });
+
+      const pending = service.readFileBytesFromContainer(containerId, filePath, { user: 'agenstra', maxBytes: 1024 });
+      const assertion = expect(pending).rejects.toThrow(/Permission denied/);
+
+      await jest.advanceTimersByTimeAsync(500);
+      await assertion;
+      expect(mockExec.inspect).toHaveBeenCalledTimes(2);
+      jest.useRealTimers();
+    });
+
+    it('aborts when the file exceeds maxBytes', async () => {
+      mockExecOutput([Buffer.alloc(6), Buffer.alloc(6)]);
+
+      await expect(
+        service.readFileBytesFromContainer(containerId, filePath, { user: 'agenstra', maxBytes: 10 }),
+      ).rejects.toThrow(BadRequestException);
+      expect((mockStream as NodeJS.ReadWriteStream & { destroy: jest.Mock }).destroy).toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException when the container does not exist', async () => {
+      mockContainer.inspect.mockRejectedValue({ statusCode: 404 });
+
+      await expect(
+        service.readFileBytesFromContainer(containerId, filePath, { user: 'agenstra', maxBytes: 1024 }),
+      ).rejects.toThrow(NotFoundException);
+      expect(mockContainer.exec).not.toHaveBeenCalled();
     });
   });
 

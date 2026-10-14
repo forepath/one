@@ -140,6 +140,17 @@ This enables real-time collaboration and ensures all clients see the latest file
 
 For detailed API documentation, see the application and API reference docs linked below.
 
+## Workspace confinement
+
+The file API only operates inside the agent workspace (`/app` for OpenCode):
+
+- Relative paths (including `./…`) resolve under the workspace root. Absolute paths are accepted only when they already point inside the workspace (for example `/app/src/main.ts`); any other absolute path (`/etc/passwd`, `/opt/workspace/…`, `/home/agenstra/…`) is rejected with **400**.
+- `..` segments, null bytes and other control characters are rejected. Mutations of the workspace root itself (write, create, delete, move) are rejected. The agent-controller additionally rejects `.`/`..` file paths before proxying, so URL normalization cannot route them to other agent-manager endpoints.
+- Before every operation the agent-manager resolves the canonical target inside the container (`realpath`). Paths whose parent directories or final target are symlinks pointing outside the workspace are rejected with **400** (`Path resolves outside the agent workspace`). Deleting or moving a symlink affects the link itself, never its target.
+- All file commands — including reads, which stream bytes via `cat` instead of `docker cp` — run as the unprivileged agent runtime user (`agenstra`, UID 10001), the same user that owns `/app` and runs OpenCode. A race that swaps a directory for a symlink after the check therefore gains no privileges beyond those the agent already has.
+
+Configuration that Agenstra injects outside the workspace — OpenCode layer files (for example under `~/.config/opencode`) and context attachments under `/opt/agenstra/context` — is written by the agent-controller through the manager's separate, controller-internal `system-files` API. Those paths are root-owned and read-only for the runtime user and are not reachable through the user-facing file API. See [Agent configuration](./agent-configuration.md) and the agent-manager application docs.
+
 ## Related documentation
 
 - **[Web IDE](./web-ide.md)** Monaco Editor integration

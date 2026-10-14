@@ -18,7 +18,7 @@ describe('AgenstraAttachmentsService', () => {
   const knowledgeActivityRepo = { create: jest.fn((row) => row), save: jest.fn() };
   const clientsRepository = { findByIdOrThrow: jest.fn() };
   const fileStorage = { writeAgenstraAttachmentFile: jest.fn(), readAgenstraAttachmentFile: jest.fn() };
-  const fileSystemProxy = { writeFile: jest.fn() };
+  const fileSystemProxy = { writeSystemFile: jest.fn() };
   const notificationPublisher = { publishAttachment: jest.fn() };
 
   const service = new AgenstraAttachmentsService(
@@ -54,6 +54,18 @@ describe('AgenstraAttachmentsService', () => {
     expect(notificationPublisher.publishAttachment).toHaveBeenCalledWith('attachment.created', result);
   });
 
+  it('strips control characters from attachment file names', async () => {
+    ticketRepo.findOne.mockResolvedValue({ id: 'ticket-1', clientId: 'client-1' });
+
+    const result = await service.uploadForTicket(
+      'ticket-1',
+      { buffer: Buffer.from('x'), originalname: 're\tport\x01\x7f.txt', mimetype: 'text/plain' },
+      'user-1',
+    );
+
+    expect(result.fileName).toBe('report.txt');
+  });
+
   it('rejects missing files before storing bytes', async () => {
     ticketRepo.findOne.mockResolvedValue({ id: 'ticket-1', clientId: 'client-1' });
 
@@ -84,15 +96,41 @@ describe('AgenstraAttachmentsService', () => {
       attachmentIds: ['att-1'],
     });
 
-    expect(fileSystemProxy.writeFile).toHaveBeenCalledWith(
+    expect(fileSystemProxy.writeSystemFile).toHaveBeenCalledWith(
       'client-1',
       'agent-1',
       expect.stringContaining('/opt/agenstra/context/client-1/chat/owner-1/att-1-brief.pdf'),
       Buffer.from('pdf'),
-      'app',
       { contentType: 'application/pdf' },
     );
     expect(result[0].agentPath).toContain('/opt/agenstra/context/client-1/chat/owner-1/att-1-brief.pdf');
+  });
+
+  it('sanitizes legacy stored file names when mirroring into the agent context path', async () => {
+    attachmentRepo.find.mockResolvedValue([
+      {
+        id: 'att-2',
+        clientId: 'client-1',
+        ownerType: AgenstraAttachmentOwnerType.CHAT,
+        ownerId: 'owner-1',
+        fileName: 'legacy\tname.txt',
+        contentType: 'text/plain',
+        byteSize: '1',
+        storageKey: 'k2',
+        contentSha256: 'def',
+        createdByUserId: null,
+        createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      },
+    ]);
+    fileStorage.readAgenstraAttachmentFile.mockResolvedValue(Buffer.from('x'));
+
+    const result = await service.resolveContextAttachments({
+      clientId: 'client-1',
+      agentId: 'agent-1',
+      attachmentIds: ['att-2'],
+    });
+
+    expect(result[0].agentPath).toBe('/opt/agenstra/context/client-1/chat/owner-1/att-2-legacyname.txt');
   });
 
   it('stores knowledge page attachments only for pages', async () => {

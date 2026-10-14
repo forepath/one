@@ -5,7 +5,7 @@ import * as path from 'path';
 import { PassThrough } from 'stream';
 import { promisify } from 'util';
 
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import Docker = require('dockerode');
 import { v4 as uuidv4 } from 'uuid';
 
@@ -1351,6 +1351,8 @@ export class DockerService {
    * @param command - Shell string (parsed) or argv array passed straight to Docker exec
    * @param input - Optional input/keystrokes to send to stdin (string or array of strings)
    * @param checkExitCode - If true, check exit code and throw error if non-zero (default: false)
+   * @param options.user - Optional container user for the exec (e.g. `'0'` or `agenstra`)
+   * @param options.env - Optional `NAME=value` entries appended to the exec environment (override earlier entries)
    * @returns The command output (stdout and stderr combined)
    * @throws NotFoundException if container is not found
    * @throws Error if checkExitCode is true and command exits with non-zero code
@@ -1360,7 +1362,7 @@ export class DockerService {
     command: string | string[],
     input?: string | string[],
     checkExitCode = false,
-    options?: { user?: string },
+    options?: { user?: string; env?: string[] },
   ): Promise<string> {
     try {
       this.logger.debug(
@@ -1388,8 +1390,9 @@ export class DockerService {
       const args = commandParts.slice(1);
       // Create exec instance with stdin enabled for keystrokes.
       // Optional User (e.g. '0') runs as that container UID — used for absolute paths outside /app.
+      const environmentOptions = await this.getExecEnvironmentOptions(containerId, options?.user);
       const execInstance = await container.exec({
-        ...(await this.getExecEnvironmentOptions(containerId, options?.user)),
+        ...(options?.env?.length ? { Env: [...(environmentOptions.Env ?? []), ...options.env] } : environmentOptions),
         Cmd: [executable, ...args],
         AttachStdin: true,
         AttachStdout: true,
@@ -1529,8 +1532,7 @@ export class DockerService {
 
           // If exit code checking is enabled, check the exit code
           if (checkExitCode) {
-            execInstance
-              .inspect()
+            this.inspectExecUntilExited(execInstance)
               .then((execInspect) => {
                 const exitCode = execInspect.ExitCode;
 
@@ -1959,6 +1961,161 @@ export class DockerService {
       this.logger.error(`Error reading file from container: ${err.message}`, err.stack);
       throw error;
     }
+  }
+
+  /**
+   * Inspect an exec until Docker reports it finished (the output stream can end before the exit code is set).
+   * Bounded to ~5s; callers decide how to treat a still-unknown exit code.
+   */
+  private async inspectExecUntilExited(exec: Docker.Exec): Promise<Docker.ExecInspectInfo> {
+    let execInfo = await exec.inspect();
+
+    for (let attempt = 0; (execInfo.Running || execInfo.ExitCode === null) && attempt < 50; attempt += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      execInfo = await exec.inspect();
+    }
+
+    return execInfo;
+  }
+
+  /**
+   * Read raw file bytes from a container via `cat` executed as the given (non-root) user.
+   * Unlike `getArchive` (daemon privileges), path resolution and permission checks happen with
+   * the exec user's rights, so symlinks cannot be used to read files that user cannot read.
+   * @param containerId - The container ID
+   * @param filePath - Absolute path inside the container
+   * @param options.user - Container user for the exec (e.g. `agenstra`)
+   * @param options.maxBytes - Abort and reject when the file exceeds this many bytes
+   * @returns File content as a Buffer
+   * @throws NotFoundException if the container or file is not found
+   */
+  async readFileBytesFromContainer(
+    containerId: string,
+    filePath: string,
+    options: { user: string; maxBytes: number },
+  ): Promise<Buffer> {
+    const container = this.docker.getContainer(containerId);
+
+    try {
+      await container.inspect();
+    } catch (error: unknown) {
+      if ((error as { statusCode?: number }).statusCode === 404) {
+        throw new NotFoundException(`Container with ID '${containerId}' not found`);
+      }
+
+      throw error;
+    }
+
+    const exec = await container.exec({
+      ...(await this.getExecEnvironmentOptions(containerId, options.user)),
+      // Regular files only: `cat` on a FIFO would block the exec until the timeout.
+      Cmd: [
+        'sh',
+        '-c',
+        'if [ ! -e "$1" ]; then echo "cat: $1: No such file or directory" >&2; exit 1; fi; ' +
+          'if [ ! -f "$1" ]; then echo "cat: $1: Not a regular file" >&2; exit 1; fi; ' +
+          'exec cat -- "$1"',
+        'sh',
+        filePath,
+      ],
+      AttachStdin: false,
+      AttachStdout: true,
+      AttachStderr: true,
+      Tty: false,
+      User: options.user,
+    });
+    const stream = (await exec.start({
+      hijack: true,
+      stdin: false,
+    })) as NodeJS.ReadWriteStream;
+    const stdoutStream = new PassThrough();
+    const stderrStream = new PassThrough();
+    const stdoutChunks: Buffer[] = [];
+    let stdoutBytes = 0;
+    let stderrData = '';
+
+    container.modem.demuxStream(stream, stdoutStream, stderrStream);
+
+    await new Promise<void>((resolve, reject) => {
+      let settled = false;
+      let pendingStreams = 2;
+      const settle = (error?: unknown) => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        clearTimeout(timeout);
+
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      };
+      const finishSource = () => {
+        // Flush demuxed output; resolve once both demux targets have drained.
+        stdoutStream.end();
+        stderrStream.end();
+      };
+      const onDemuxedEnd = () => {
+        pendingStreams -= 1;
+
+        if (pendingStreams === 0) {
+          settle();
+        }
+      };
+      const timeout = setTimeout(() => {
+        (stream as NodeJS.ReadWriteStream & { destroy?: () => void }).destroy?.();
+        settle(new Error(`Timed out reading file: ${filePath}`));
+      }, 300000);
+
+      stdoutStream.on('data', (chunk: Buffer) => {
+        if (settled) {
+          return;
+        }
+
+        stdoutBytes += chunk.length;
+
+        if (stdoutBytes > options.maxBytes) {
+          (stream as NodeJS.ReadWriteStream & { destroy?: () => void }).destroy?.();
+          settle(new BadRequestException(`File size exceeds maximum allowed size of ${options.maxBytes} bytes`));
+
+          return;
+        }
+
+        stdoutChunks.push(chunk);
+      });
+      stderrStream.on('data', (chunk: Buffer) => {
+        stderrData += chunk.toString('utf8');
+      });
+      stdoutStream.on('end', onDemuxedEnd);
+      stderrStream.on('end', onDemuxedEnd);
+      stream.on('end', finishSource);
+      stream.on('close', finishSource);
+      stream.on('error', (error: unknown) => {
+        const err = error as { code?: string };
+
+        if (err.code === 'EPIPE' || err.code === 'ECONNRESET') {
+          finishSource();
+        } else {
+          settle(error);
+        }
+      });
+    });
+
+    // The stream can end before Docker records the exit code; never treat an unknown exit as success.
+    const { ExitCode: exitCode } = await this.inspectExecUntilExited(exec);
+
+    if (exitCode !== 0) {
+      if (stderrData.includes('No such file') || stderrData.includes('not found')) {
+        throw new NotFoundException(`File not found: ${filePath}`);
+      }
+
+      throw new Error(stderrData.trim() || `Reading ${filePath} failed with exit code ${exitCode}`);
+    }
+
+    return Buffer.concat(stdoutChunks, stdoutBytes);
   }
 
   /**

@@ -38,8 +38,8 @@ function shouldParseAgentFileRawBody(req: express.Request): boolean {
     return false;
   }
 
-  // /api/agents/:agentId/files/...
-  return /\/api\/agents\/[^/]+\/files\//.test(req.path);
+  // /api/agents/:agentId/files/... and /api/agents/:agentId/system-files/...
+  return /\/api\/agents\/[^/]+\/(?:system-)?files\//.test(req.path);
 }
 
 async function preloadWorkspaceConfigurationOverrides(): Promise<void> {

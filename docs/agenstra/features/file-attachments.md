@@ -12,7 +12,7 @@ Agenstra supports attachments on tickets, knowledge pages, and chat prompts.
 
 Attachment bytes are stored with the shared file-storage abstraction under the `agenstraAttachments` scope. The database stores only metadata and a generated storage key; user supplied file names are sanitized and never used as path roots.
 
-When a chat prompt references tickets or pages, their attachments are resolved during context enrichment. Explicit chat attachments are resolved the same way. Resolved files are copied to each selected agent container under `/opt/agenstra/context/...`; the manager writes those files as root and hardens them to be readable but not writable by the runtime user.
+When a chat prompt references tickets or pages, their attachments are resolved during context enrichment. Explicit chat attachments are resolved the same way. Resolved files are copied to each selected agent container under `/opt/agenstra/context/...` via the manager's controller-internal `system-files` API; the manager writes those files as root and hardens them to be readable but not writable by the runtime user. They are not reachable through the user-facing, workspace-confined file API.
 
 ## Security
 
