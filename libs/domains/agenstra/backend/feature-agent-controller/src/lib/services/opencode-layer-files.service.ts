@@ -373,7 +373,7 @@ export class OpencodeLayerFilesService {
   ): Promise<void> {
     if (protectedPaths.size === 0) {
       try {
-        await this.fileSystemProxy.deleteFileOrDirectory(clientId, agentId, rootPath, 'app');
+        await this.fileSystemProxy.deleteSystemFileOrDirectory(clientId, agentId, rootPath);
       } catch {
         // Path may not exist yet on this agent.
       }
@@ -388,7 +388,7 @@ export class OpencodeLayerFilesService {
 
     for (const path of toDelete) {
       try {
-        await this.fileSystemProxy.deleteFileOrDirectory(clientId, agentId, path, 'app');
+        await this.fileSystemProxy.deleteSystemFileOrDirectory(clientId, agentId, path);
       } catch {
         // Best-effort cleanup.
       }
@@ -417,7 +417,7 @@ export class OpencodeLayerFilesService {
       let nodes: Array<{ name: string; type: 'file' | 'directory'; path: string }>;
 
       try {
-        nodes = await this.fileSystemProxy.listDirectory(clientId, agentId, dirPath, 'app');
+        nodes = await this.fileSystemProxy.listSystemDirectory(clientId, agentId, dirPath);
       } catch {
         return;
       }
@@ -777,13 +777,12 @@ export class OpencodeLayerFilesService {
 
     try {
       if (file.entryKind === 'directory') {
-        await this.fileSystemProxy.createFileOrDirectory(clientId, agentId, emittedPath, { type: 'directory' }, 'app');
+        await this.fileSystemProxy.createSystemFileOrDirectory(clientId, agentId, emittedPath, { type: 'directory' });
       } else {
         const buffer = Buffer.from(file.content ?? '', 'utf8');
 
-        await this.fileSystemProxy.writeFile(clientId, agentId, emittedPath, buffer, 'app', {
+        await this.fileSystemProxy.writeSystemFile(clientId, agentId, emittedPath, buffer, {
           contentType: 'text/plain; charset=utf-8',
-          fileType: 'text',
         });
       }
 

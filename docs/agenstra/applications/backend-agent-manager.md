@@ -123,6 +123,19 @@ Agent profile responses include `chats` and `primaryChatId`.
 - `DELETE /api/agents/:agentId/files/:path` - Delete file or directory
 - `PATCH /api/agents/:agentId/files/:path` - Move file or directory
 
+File operations are confined to the agent workspace (`/app`): absolute paths outside it, `..` segments, and paths whose canonical (symlink-resolved) target leaves the workspace are rejected with `400`. All commands run as the unprivileged runtime user `agenstra` with paths passed as argv (never interpolated into shell strings); custom worker images must therefore provide an `agenstra` user. Reads only stream regular files (no FIFOs/devices). Files created in `/app` as root by earlier versions stay root-owned until the next container start (the worker entrypoint re-owns `/app` to `agenstra`); until then, modifying them through the API returns `400` (permission denied). Paths containing control characters are rejected. See [File management](../features/file-management.md#workspace-confinement).
+
+### System File Operations (agent-controller only)
+
+Trusted channel for configuration the agent-controller injects into worker containers (OpenCode layer files, context attachments under `/opt/agenstra/context`). The agent-controller never forwards end-user requests here.
+
+- `GET /api/agents/:agentId/system-files?path=` - List a system or workspace directory
+- `PUT /api/agents/:agentId/system-files/:path` - Write file content (max 10MB)
+- `POST /api/agents/:agentId/system-files/:path` - Create file or directory
+- `DELETE /api/agents/:agentId/system-files/:path` - Delete file or directory
+
+Relative and in-workspace paths behave like the file API above. Absolute paths outside the workspace are installed as root by a single in-container script that walks the parent chain with `cd -P`, refuses symlinked components (`400`), prepares files in a private root-owned `0700` staging directory and installs them with `mv -fT` (never writing or `chmod`-ing through an agent-planted symlink, even in agent-owned parent directories) and leaves entries root-owned with mode `u=rwX,go=rX` (readable, not writable by the agent). Deletes remove a final symlink itself. Protected system trees (`/etc`, `/usr`, `/bin`, `/sbin`, `/lib*`, `/boot`, `/dev`, `/proc`, `/sys`, `/root`, `/run`, `/var`, `/opt/workspace`) and `/` are rejected (`400`). Root execs run via `/usr/bin/env -i` with a fixed system `PATH`, and loader/libc hooks (`LD_PRELOAD`, `LD_DEBUG_OUTPUT`, `GLIBC_TUNABLES`, …) are cleared for the `env` process itself. Agent-controller and agent-manager must be upgraded together: an agent-controller of this version cannot sync layer files or attachments to an older manager (missing `system-files` route), and an older controller cannot sync absolute layer paths to this manager (they are rejected on `/files`).
+
 ### Version Control Operations
 
 - `GET /api/agents/:agentId/vcs/status` - Get git status

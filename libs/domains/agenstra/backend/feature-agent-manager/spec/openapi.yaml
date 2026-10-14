@@ -725,11 +725,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/ConfigResponseDto'
   /agents/{agentId}/files:
+    description: |
+      User-facing file API, confined to the agent workspace (normally /app). Relative paths resolve under
+      the workspace root; absolute paths are only accepted when they point inside it (e.g. /app/src/a.ts).
+      Paths outside the workspace, `..` segments, and paths whose canonical (symlink-resolved) target leaves
+      the workspace are rejected with 400. All commands run as the unprivileged agent runtime user.
     get:
       summary: List directory contents
       description: |
         Relative paths such as apps resolve under the worker workspace root (normally /app).
         Directory listing and metadata command failures are returned as errors, not empty arrays.
+        Listing a path outside the workspace (lexically or via symlinks) is rejected with 400.
       operationId: listDirectory
       parameters:
         - in: path
@@ -758,6 +764,10 @@ paths:
         '404':
           description: Agent or directory not found
   /agents/{agentId}/files/{path}:
+    description: |
+      Workspace-confined file operations (see `/agents/{agentId}/files`). Absolute paths outside the workspace
+      and symlinks resolving outside it are rejected with 400; mutations of the workspace root itself are rejected.
+      Deleting or moving a symlink affects the link, never its target.
     head:
       summary: Probe file metadata without transferring the body
       operationId: headFile
@@ -1012,6 +1022,133 @@ paths:
           description: Invalid path, destination, invalid context, or agent type does not support configuration file access
         '404':
           description: Agent or source file/directory not found
+  /agents/{agentId}/system-files:
+    description: |
+      Trusted system file channel used by the agent-controller only (OpenCode layer files, chat/ticket/knowledge
+      context attachments under /opt/agenstra/context). The agent-controller never forwards end-user requests here.
+      Relative paths and absolute paths inside the workspace behave like `/agents/{agentId}/files` (runtime user,
+      canonical workspace containment). Absolute paths outside the workspace are installed as root and hardened
+      (root-owned, 644/755) so the agent runtime user can read but not modify them; such paths must not traverse
+      symbolic links (400 otherwise; a final symlink is replaced on write and removed itself on delete).
+      The filesystem root `/` and protected system trees (/etc, /usr, /bin, /sbin, /lib*, /boot, /dev, /proc,
+      /sys, /root, /run, /var, /opt/workspace) are rejected with 400.
+    get:
+      summary: List a system or workspace directory
+      operationId: listSystemDirectory
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: path
+          schema:
+            type: string
+          description: Absolute container path or workspace-relative path (defaults to '.'). Node paths keep the requested prefix.
+        - in: query
+          name: refresh
+          schema:
+            type: boolean
+          description: Bypass the cached directory listing
+      responses:
+        '200':
+          description: Array of file nodes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FileNodeDto'
+        '400':
+          description: Invalid path, path traversing symlinks, or workspace path resolving outside the workspace
+        '404':
+          description: Agent or directory not found
+  /agents/{agentId}/system-files/{path}:
+    description: Trusted system file operations (see `/agents/{agentId}/system-files`).
+    put:
+      summary: Write a system or workspace file as raw bytes (max 10MB, no chunking)
+      operationId: writeSystemFile
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: path
+          required: true
+          schema:
+            type: string
+          description: URL-encoded absolute container path or workspace-relative path
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema: { type: string, format: binary }
+          text/plain:
+            schema: { type: string, format: binary }
+      responses:
+        '204':
+          description: File written (outside-workspace paths are root-owned and read-only for the agent)
+        '400':
+          description: Invalid path, path traversing symlinks, or content too large
+        '404':
+          description: Agent not found
+    post:
+      summary: Create an empty system or workspace file or directory
+      operationId: createSystemFileOrDirectory
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: path
+          required: true
+          schema:
+            type: string
+          description: URL-encoded absolute container path or workspace-relative path
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFileDto'
+      responses:
+        '201':
+          description: File or directory created
+        '400':
+          description: Invalid path or path traversing symlinks
+        '404':
+          description: Agent not found
+    delete:
+      summary: Delete a system or workspace file or directory
+      operationId: deleteSystemFileOrDirectory
+      parameters:
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: path
+          required: true
+          schema:
+            type: string
+          description: URL-encoded absolute container path or workspace-relative path
+      responses:
+        '204':
+          description: File or directory deleted
+        '400':
+          description: Invalid path or path traversing symlinks
+        '404':
+          description: Agent or file/directory not found
   /agents/{agentId}/environment:
     get:
       summary: List environment variables

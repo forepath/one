@@ -86,6 +86,14 @@ export class WorkspaceChangeNotifierService {
     }
   }
 
+  /**
+   * Invalidate cached directory listings only (no index / file-update broadcast).
+   * Used for changes outside the agent workspace (system files), which are not part of the workspace index.
+   */
+  notifyDirectoryTreeChanged(agentId: string): void {
+    this.invalidateTree(agentId);
+  }
+
   notifyRebuildRequired(agentId: string, reason: string, paths?: string[]): void {
     this.invalidateTree(agentId);
     const timestamp = new Date().toISOString();

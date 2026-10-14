@@ -54,7 +54,7 @@ describe('OpencodeLayerFilesService', () => {
       ...deps.agentProxy,
     };
     const fileSystemProxy = {
-      writeFile: jest.fn().mockResolvedValue(undefined),
+      writeSystemFile: jest.fn().mockResolvedValue(undefined),
       ...deps.fileSystemProxy,
     };
 
@@ -79,7 +79,7 @@ describe('OpencodeLayerFilesService', () => {
     };
   };
 
-  it('putWorkspace persists path as-is and fans out writeFile', async () => {
+  it('putWorkspace persists path as-is and fans out writeSystemFile', async () => {
     const { svc, fileRepo, fileSystemProxy, agentProxy } = await createService();
 
     const dto = await svc.putWorkspace(clientId, 'skills/a.md', '# skill');
@@ -95,12 +95,11 @@ describe('OpencodeLayerFilesService', () => {
       }),
     );
     expect(agentProxy.getClientAgents).toHaveBeenCalledWith(clientId, 100, 0);
-    expect(fileSystemProxy.writeFile).toHaveBeenCalledWith(
+    expect(fileSystemProxy.writeSystemFile).toHaveBeenCalledWith(
       clientId,
       agentId,
       'skills/a.md',
       Buffer.from('# skill', 'utf8'),
-      'app',
       expect.objectContaining({ contentType: 'text/plain; charset=utf-8' }),
     );
     expect(dto.emittedPath).toBe('skills/a.md');
@@ -123,12 +122,11 @@ describe('OpencodeLayerFilesService', () => {
 
     expect(clientsRepository.findAllIds).toHaveBeenCalled();
     expect(agentProxy.getClientAgents).toHaveBeenCalledTimes(2);
-    expect(fileSystemProxy.writeFile).toHaveBeenCalledWith(
+    expect(fileSystemProxy.writeSystemFile).toHaveBeenCalledWith(
       clientId,
       agentId,
       '/tmp/docs/readme.md',
       Buffer.from('hello', 'utf8'),
-      'app',
       expect.any(Object),
     );
   });
@@ -260,9 +258,9 @@ describe('OpencodeLayerFilesService', () => {
   });
 
   it('ensureWorkspace nukes the container path when no other VFS occupies it', async () => {
-    const deleteFileOrDirectory = jest.fn().mockResolvedValue(undefined);
-    const createFileOrDirectory = jest.fn().mockResolvedValue(undefined);
-    const writeFile = jest.fn().mockResolvedValue(undefined);
+    const deleteSystemFileOrDirectory = jest.fn().mockResolvedValue(undefined);
+    const createSystemFileOrDirectory = jest.fn().mockResolvedValue(undefined);
+    const writeSystemFile = jest.fn().mockResolvedValue(undefined);
 
     const store = new Map<string, Record<string, unknown>>();
     const findOne = jest.fn().mockImplementation(async ({ where }: { where: { path?: string; scope?: string } }) => {
@@ -296,13 +294,18 @@ describe('OpencodeLayerFilesService', () => {
 
     const { svc } = await createService({
       fileRepo: { findOne, find, create, save },
-      fileSystemProxy: { deleteFileOrDirectory, createFileOrDirectory, writeFile, listDirectory: jest.fn() },
+      fileSystemProxy: {
+        deleteSystemFileOrDirectory,
+        createSystemFileOrDirectory,
+        writeSystemFile,
+        listSystemDirectory: jest.fn(),
+      },
     });
 
     await svc.ensureWorkspace(clientId, '/opt/skills', 'directory');
 
-    expect(deleteFileOrDirectory).toHaveBeenCalledWith(clientId, agentId, '/opt/skills', 'app');
-    expect(createFileOrDirectory).toHaveBeenCalledWith(clientId, agentId, '/opt/skills', { type: 'directory' }, 'app');
+    expect(deleteSystemFileOrDirectory).toHaveBeenCalledWith(clientId, agentId, '/opt/skills');
+    expect(createSystemFileOrDirectory).toHaveBeenCalledWith(clientId, agentId, '/opt/skills', { type: 'directory' });
   });
 
   it('ensureWorkspace preserves other-VFS paths and deletes orphans', async () => {
@@ -327,10 +330,10 @@ describe('OpencodeLayerFilesService', () => {
       updatedAt: new Date('2026-01-01T00:00:00.000Z'),
     };
 
-    const deleteFileOrDirectory = jest.fn().mockResolvedValue(undefined);
-    const createFileOrDirectory = jest.fn().mockResolvedValue(undefined);
-    const writeFile = jest.fn().mockResolvedValue(undefined);
-    const listDirectory = jest.fn().mockResolvedValueOnce([
+    const deleteSystemFileOrDirectory = jest.fn().mockResolvedValue(undefined);
+    const createSystemFileOrDirectory = jest.fn().mockResolvedValue(undefined);
+    const writeSystemFile = jest.fn().mockResolvedValue(undefined);
+    const listSystemDirectory = jest.fn().mockResolvedValueOnce([
       { name: 'keep.md', type: 'file', path: '/opt/skills/keep.md' },
       { name: 'orphan.md', type: 'file', path: '/opt/skills/orphan.md' },
     ]);
@@ -346,24 +349,28 @@ describe('OpencodeLayerFilesService', () => {
 
     const { svc } = await createService({
       fileRepo: { findOne, find },
-      fileSystemProxy: { deleteFileOrDirectory, createFileOrDirectory, writeFile, listDirectory },
+      fileSystemProxy: {
+        deleteSystemFileOrDirectory,
+        createSystemFileOrDirectory,
+        writeSystemFile,
+        listSystemDirectory,
+      },
     });
 
     await svc.ensureWorkspace(clientId, '/opt/skills', 'directory');
 
-    expect(deleteFileOrDirectory).toHaveBeenCalledWith(clientId, agentId, '/opt/skills/orphan.md', 'app');
-    expect(deleteFileOrDirectory).not.toHaveBeenCalledWith(clientId, agentId, '/opt/skills/keep.md', 'app');
-    expect(writeFile).toHaveBeenCalledWith(
+    expect(deleteSystemFileOrDirectory).toHaveBeenCalledWith(clientId, agentId, '/opt/skills/orphan.md');
+    expect(deleteSystemFileOrDirectory).not.toHaveBeenCalledWith(clientId, agentId, '/opt/skills/keep.md');
+    expect(writeSystemFile).toHaveBeenCalledWith(
       clientId,
       agentId,
       '/opt/skills/keep.md',
       Buffer.from('keep', 'utf8'),
-      'app',
       expect.any(Object),
     );
   });
 
-  it('marks sync target failed when writeFile throws', async () => {
+  it('marks sync target failed when writeSystemFile throws', async () => {
     const existingTarget = {
       id: 'target-1',
       fileId,
@@ -382,7 +389,7 @@ describe('OpencodeLayerFilesService', () => {
     const { svc } = await createService({
       syncRepo,
       fileSystemProxy: {
-        writeFile: jest.fn().mockRejectedValue(new Error('container down')),
+        writeSystemFile: jest.fn().mockRejectedValue(new Error('container down')),
       },
     });
 
@@ -440,13 +447,12 @@ describe('OpencodeLayerFilesService', () => {
         { scope: 'workspace', clientId },
       ],
     });
-    expect(fileSystemProxy.writeFile).toHaveBeenCalledTimes(2);
-    expect(fileSystemProxy.writeFile).toHaveBeenCalledWith(
+    expect(fileSystemProxy.writeSystemFile).toHaveBeenCalledTimes(2);
+    expect(fileSystemProxy.writeSystemFile).toHaveBeenCalledWith(
       clientId,
       agentId,
       'g.md',
       Buffer.from('g', 'utf8'),
-      'app',
       expect.any(Object),
     );
   });
@@ -461,6 +467,6 @@ describe('OpencodeLayerFilesService', () => {
     await expect(svc.putGlobal('a.md', 'x')).resolves.toMatchObject({
       emittedPath: 'a.md',
     });
-    expect(fileSystemProxy.writeFile).not.toHaveBeenCalled();
+    expect(fileSystemProxy.writeSystemFile).not.toHaveBeenCalled();
   });
 });

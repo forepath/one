@@ -54,6 +54,12 @@ export interface ClientAgentFileProxyWriteOptions {
   contentType?: string;
 }
 
+/**
+ * Agent-manager file API: `files` (user-facing, confined to the agent workspace) or
+ * `system-files` (trusted controller-internal writers; may target paths outside the workspace).
+ */
+type AgentFilesApi = 'files' | 'system-files';
+
 function getResponseHeader(
   headers: RawAxiosResponseHeaders | AxiosResponseHeaders | undefined,
   name: string,
@@ -76,6 +82,21 @@ function getResponseHeader(
   }
 
   return Array.isArray(value) ? String(value[0]) : String(value);
+}
+
+/**
+ * Encode a file path as a single URL path segment for the manager file APIs.
+ * Dot segments (`.` / `..`) are rejected: URL normalization would resolve them against the route
+ * (e.g. `.../files/..` → `/api/agents/:agentId/`) and reach unrelated manager endpoints.
+ */
+export function encodeAgentFilePath(filePath: string): string {
+  const trimmed = typeof filePath === 'string' ? filePath.trim() : '';
+
+  if (!trimmed || trimmed === '.' || trimmed === '..') {
+    throw new BadRequestException('Invalid file path');
+  }
+
+  return encodeURIComponent(filePath);
 }
 
 function parseJsonErrorMessage(data: unknown): string | undefined {
@@ -145,14 +166,15 @@ export class ClientAgentFileSystemProxyService {
   /**
    * Build the base URL for agent file system API requests.
    * @param endpoint - The client's endpoint URL
+   * @param api - `files` (workspace-confined) or `system-files` (trusted internal writers)
    * @returns The base URL for agent file system API requests
    */
-  private buildAgentFilesApiUrl(endpoint: string, agentId: string): string {
+  private buildAgentFilesApiUrl(endpoint: string, agentId: string, api: AgentFilesApi = 'files'): string {
     // Remove trailing slash if present
     const baseUrl = endpoint.replace(/\/$/, '');
 
-    // Ensure /api/agents/{agentId}/files path
-    return `${baseUrl}/api/agents/${agentId}/files`;
+    // Ensure /api/agents/{agentId}/{files|system-files} path
+    return `${baseUrl}/api/agents/${agentId}/${api}`;
   }
 
   private buildAgentWorkspaceIndexApiUrl(endpoint: string, agentId: string): string {
@@ -237,12 +259,17 @@ export class ClientAgentFileSystemProxyService {
    * @throws NotFoundException if client or agent is not found
    * @throws BadRequestException if request fails
    */
-  private async makeRequest<T>(clientId: string, agentId: string, config: AxiosRequestConfig): Promise<T> {
+  private async makeRequest<T>(
+    clientId: string,
+    agentId: string,
+    config: AxiosRequestConfig,
+    api: AgentFilesApi = 'files',
+  ): Promise<T> {
     const clientEntity = await this.clientsRepository.findByIdOrThrow(clientId);
 
     await validateClientEndpointWithDnsOrThrow(clientEntity.endpoint);
     const authHeader = await this.getAuthHeader(clientId);
-    const baseUrl = this.buildAgentFilesApiUrl(clientEntity.endpoint, agentId);
+    const baseUrl = this.buildAgentFilesApiUrl(clientEntity.endpoint, agentId, api);
     const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
 
     try {
@@ -304,12 +331,13 @@ export class ClientAgentFileSystemProxyService {
     agentId: string,
     config: AxiosRequestConfig,
     contentType = 'application/octet-stream',
+    api: AgentFilesApi = 'files',
   ): Promise<AxiosResponse<ArrayBuffer>> {
     const clientEntity = await this.clientsRepository.findByIdOrThrow(clientId);
 
     await validateClientEndpointWithDnsOrThrow(clientEntity.endpoint);
     const authHeader = await this.getAuthHeader(clientId);
-    const baseUrl = this.buildAgentFilesApiUrl(clientEntity.endpoint, agentId);
+    const baseUrl = this.buildAgentFilesApiUrl(clientEntity.endpoint, agentId, api);
     const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
 
     try {
@@ -372,7 +400,7 @@ export class ClientAgentFileSystemProxyService {
     filePath: string,
     context: AgentFileManagerContext = 'app',
   ): Promise<Pick<ClientAgentFileProxyReadResult, 'fileType' | 'contentType' | 'size' | 'acceptRanges'>> {
-    const encodedPath = encodeURIComponent(filePath);
+    const encodedPath = encodeAgentFilePath(filePath);
     const params: Record<string, string> = {};
 
     const response = await this.makeBinaryRequest(clientId, agentId, {
@@ -414,7 +442,7 @@ export class ClientAgentFileSystemProxyService {
     context: AgentFileManagerContext = 'app',
     options?: ClientAgentFileProxyReadOptions,
   ): Promise<ClientAgentFileProxyReadResult> {
-    const encodedPath = encodeURIComponent(filePath);
+    const encodedPath = encodeAgentFilePath(filePath);
     const params: Record<string, string> = {};
 
     if (options?.download) {
@@ -476,7 +504,7 @@ export class ClientAgentFileSystemProxyService {
     context: AgentFileManagerContext = 'app',
     options?: ClientAgentFileProxyWriteOptions,
   ): Promise<void> {
-    const encodedPath = encodeURIComponent(filePath);
+    const encodedPath = encodeAgentFilePath(filePath);
     const headers: Record<string, string> = {};
 
     if (options?.contentRange) {
@@ -546,7 +574,7 @@ export class ClientAgentFileSystemProxyService {
     createFileDto: CreateFileDto,
     context: AgentFileManagerContext = 'app',
   ): Promise<void> {
-    const encodedPath = encodeURIComponent(filePath);
+    const encodedPath = encodeAgentFilePath(filePath);
 
     await this.makeRequest<void>(clientId, agentId, {
       method: 'POST',
@@ -568,7 +596,7 @@ export class ClientAgentFileSystemProxyService {
     filePath: string,
     context: AgentFileManagerContext = 'app',
   ): Promise<void> {
-    const encodedPath = encodeURIComponent(filePath);
+    const encodedPath = encodeAgentFilePath(filePath);
 
     await this.makeRequest<void>(clientId, agentId, {
       method: 'DELETE',
@@ -591,7 +619,7 @@ export class ClientAgentFileSystemProxyService {
     moveFileDto: MoveFileDto,
     context: AgentFileManagerContext = 'app',
   ): Promise<void> {
-    const encodedPath = encodeURIComponent(sourcePath);
+    const encodedPath = encodeAgentFilePath(sourcePath);
 
     await this.makeRequest<void>(clientId, agentId, {
       method: 'PATCH',
@@ -599,5 +627,82 @@ export class ClientAgentFileSystemProxyService {
       data: moveFileDto,
       params: undefined,
     });
+  }
+
+  /**
+   * Write a file through the manager's trusted `system-files` API.
+   * Controller-internal only (OpenCode layer files, context attachments) — never route user input here.
+   * Absolute paths outside the agent workspace are written root-owned and read-only for the agent.
+   */
+  async writeSystemFile(
+    clientId: string,
+    agentId: string,
+    filePath: string,
+    buffer: Buffer,
+    options?: Pick<ClientAgentFileProxyWriteOptions, 'contentType'>,
+  ): Promise<void> {
+    await this.makeBinaryRequest(
+      clientId,
+      agentId,
+      {
+        method: 'PUT',
+        url: `/${encodeAgentFilePath(filePath)}`,
+        data: buffer,
+      },
+      options?.contentType || 'application/octet-stream',
+      'system-files',
+    );
+  }
+
+  /**
+   * Create an empty file or directory through the manager's trusted `system-files` API (controller-internal only).
+   */
+  async createSystemFileOrDirectory(
+    clientId: string,
+    agentId: string,
+    filePath: string,
+    createFileDto: CreateFileDto,
+  ): Promise<void> {
+    await this.makeRequest<void>(
+      clientId,
+      agentId,
+      {
+        method: 'POST',
+        url: `/${encodeAgentFilePath(filePath)}`,
+        data: createFileDto,
+      },
+      'system-files',
+    );
+  }
+
+  /**
+   * Delete a file or directory through the manager's trusted `system-files` API (controller-internal only).
+   */
+  async deleteSystemFileOrDirectory(clientId: string, agentId: string, filePath: string): Promise<void> {
+    await this.makeRequest<void>(
+      clientId,
+      agentId,
+      {
+        method: 'DELETE',
+        url: `/${encodeAgentFilePath(filePath)}`,
+      },
+      'system-files',
+    );
+  }
+
+  /**
+   * List a directory through the manager's trusted `system-files` API (controller-internal only).
+   * Absolute requests yield absolute node paths.
+   */
+  async listSystemDirectory(clientId: string, agentId: string, path?: string): Promise<FileNodeDto[]> {
+    return await this.makeRequest<FileNodeDto[]>(
+      clientId,
+      agentId,
+      {
+        method: 'GET',
+        params: path ? { path } : undefined,
+      },
+      'system-files',
+    );
   }
 }

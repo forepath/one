@@ -62,4 +62,15 @@ describe('WorkspaceChangeNotifierService', () => {
     service.notifyRebuildRequired('agent-1', 'vcs');
     expect(invalidate).toHaveBeenCalledTimes(1);
   });
+
+  it('invalidates directory listings for system file changes without broadcasting', () => {
+    const invalidate = jest.fn().mockResolvedValue(undefined);
+
+    service.registerTreeInvalidator(invalidate);
+    service.notifyDirectoryTreeChanged('agent-1');
+
+    expect(invalidate).toHaveBeenCalledWith('agent-1');
+    expect(indexEvents).toHaveLength(0);
+    expect(fileUpdates).toHaveLength(0);
+  });
 });

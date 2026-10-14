@@ -174,7 +174,7 @@ export class AgenstraAttachmentsService {
     for (const row of unique) {
       const agentPath = this.agentContextPath(row);
       const buffer = await this.fileStorage.readAgenstraAttachmentFile(row.storageKey);
-      await this.fileSystemProxy.writeFile(params.clientId, params.agentId, agentPath, buffer, 'app', {
+      await this.fileSystemProxy.writeSystemFile(params.clientId, params.agentId, agentPath, buffer, {
         contentType: row.contentType,
       });
       mirrored.push({
@@ -291,13 +291,16 @@ export class AgenstraAttachmentsService {
   private sanitizeFileName(name: string): string {
     const base = path
       .basename(name.replace(/\\/g, '/'))
-      .replace(/[\0\r\n]/g, '')
+      // Control characters are rejected by the agent-manager file APIs (mirrored context path).
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\x00-\x1f\x7f]/g, '')
       .trim();
     return (base || 'attachment').slice(0, 255);
   }
 
   private agentContextPath(row: AgenstraAttachmentEntity): string {
-    return `/opt/agenstra/context/${row.clientId}/${row.ownerType}/${row.ownerId}/${row.id}-${row.fileName}`;
+    // Re-sanitize: rows stored before control-character stripping must still yield a valid manager path.
+    return `/opt/agenstra/context/${row.clientId}/${row.ownerType}/${row.ownerId}/${row.id}-${this.sanitizeFileName(row.fileName)}`;
   }
 
   private toDto(row: AgenstraAttachmentEntity): AttachmentResponseDto {

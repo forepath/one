@@ -578,4 +578,128 @@ describe('ClientAgentFileSystemProxyService', () => {
       await expect(service.readFile(mockClientId, mockAgentId, mockFilePath)).rejects.toThrow(BadRequestException);
     });
   });
+  describe('system-files channel', () => {
+    const systemPath = '/opt/agenstra/context/client/chat/owner/att-brief.pdf';
+    const systemBaseUrl = `https://example.com/api/api/agents/${mockAgentId}/system-files`;
+
+    beforeEach(() => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+    });
+
+    it('writeSystemFile PUTs raw bytes to the system-files API with the encoded absolute path', async () => {
+      mockedAxios.request.mockResolvedValue({ status: 204, data: new ArrayBuffer(0), headers: {} } as any);
+
+      await service.writeSystemFile(mockClientId, mockAgentId, systemPath, mockFileBuffer, {
+        contentType: 'application/pdf',
+      });
+
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'PUT',
+          url: `${systemBaseUrl}/${encodeURIComponent(systemPath)}`,
+          data: mockFileBuffer,
+          responseType: 'arraybuffer',
+          headers: expect.objectContaining({
+            Authorization: 'Bearer test-api-key',
+            'Content-Type': 'application/pdf',
+          }),
+        }),
+      );
+    });
+
+    it('createSystemFileOrDirectory POSTs to the system-files API', async () => {
+      mockedAxios.request.mockResolvedValue({ status: 201, data: undefined } as any);
+
+      await service.createSystemFileOrDirectory(mockClientId, mockAgentId, '/opt/skills', { type: 'directory' });
+
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'POST',
+          url: `${systemBaseUrl}/${encodeURIComponent('/opt/skills')}`,
+          data: { type: 'directory' },
+        }),
+      );
+    });
+
+    it('deleteSystemFileOrDirectory DELETEs via the system-files API', async () => {
+      mockedAxios.request.mockResolvedValue({ status: 204, data: undefined } as any);
+
+      await service.deleteSystemFileOrDirectory(mockClientId, mockAgentId, '/opt/skills/a.md');
+
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'DELETE',
+          url: `${systemBaseUrl}/${encodeURIComponent('/opt/skills/a.md')}`,
+        }),
+      );
+    });
+
+    it('listSystemDirectory GETs the system-files API with the path query', async () => {
+      mockedAxios.request.mockResolvedValue({ status: 200, data: mockFileNodes, headers: {} } as any);
+
+      await expect(service.listSystemDirectory(mockClientId, mockAgentId, '/opt/skills')).resolves.toEqual(
+        mockFileNodes,
+      );
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'GET',
+          url: systemBaseUrl,
+          params: { path: '/opt/skills' },
+        }),
+      );
+    });
+
+    it('maps manager 400 responses (e.g. symlinked system path) to BadRequestException', async () => {
+      mockedAxios.request.mockResolvedValue({
+        status: 400,
+        data: { message: 'System file paths must not traverse symbolic links' },
+        headers: { 'content-type': 'application/json' },
+      } as any);
+
+      await expect(service.deleteSystemFileOrDirectory(mockClientId, mockAgentId, '/opt/skills')).rejects.toThrow(
+        new BadRequestException('System file paths must not traverse symbolic links'),
+      );
+    });
+
+    it('keeps user-facing file operations on the workspace-confined files API', async () => {
+      mockedAxios.request.mockResolvedValue({ status: 204, data: new ArrayBuffer(0), headers: {} } as any);
+
+      await service.writeFile(mockClientId, mockAgentId, mockFilePath, mockFileBuffer);
+
+      const { url } = mockedAxios.request.mock.calls[0][0] as { url: string };
+
+      expect(url).toContain(`/api/agents/${mockAgentId}/files/`);
+      expect(url).not.toContain('system-files');
+    });
+  });
+
+  describe('dot-segment paths', () => {
+    beforeEach(() => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+    });
+
+    it.each(['..', '.', ' .. ', ''])(
+      'rejects %p before any request so URL normalization cannot reach other routes',
+      async (path) => {
+        await expect(service.deleteFileOrDirectory(mockClientId, mockAgentId, path)).rejects.toThrow(
+          new BadRequestException('Invalid file path'),
+        );
+        await expect(service.readFile(mockClientId, mockAgentId, path)).rejects.toThrow(BadRequestException);
+        await expect(service.deleteSystemFileOrDirectory(mockClientId, mockAgentId, path)).rejects.toThrow(
+          BadRequestException,
+        );
+        expect(mockedAxios.request).not.toHaveBeenCalled();
+      },
+    );
+
+    it('still encodes names containing dots as a single segment', async () => {
+      mockedAxios.request.mockResolvedValue({ status: 204, data: undefined } as any);
+
+      await service.deleteFileOrDirectory(mockClientId, mockAgentId, 'a/../b');
+
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({ url: expect.stringContaining('/files/a%2F..%2Fb') }),
+      );
+    });
+  });
 });
