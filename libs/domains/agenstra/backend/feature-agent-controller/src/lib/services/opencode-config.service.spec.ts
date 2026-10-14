@@ -298,4 +298,65 @@ describe('OpencodeConfigService locks', () => {
       },
     });
   });
+
+  it('putGlobal_persistsPlatformSecurityConfig_andReturnsEffectivePolicy', async () => {
+    const saved = await service.putGlobal({
+      config: {
+        egress: { mode: 'enforce', deny_hosts: ['Bad.Example'] },
+        message_filters: [{ name: 'Keys', pattern: 'BEGIN PRIVATE KEY', action: 'drop' }],
+      },
+      locks: ['/tabs/egress'],
+    });
+
+    expect(globalRepo.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        config: expect.objectContaining({ egress: { mode: 'enforce', deny_hosts: ['Bad.Example'] } }),
+      }),
+    );
+    expect(saved.platformPolicy?.egress).toEqual(
+      expect.objectContaining({ mode: 'enforce', denyHosts: [{ value: 'bad.example', source: 'global' }] }),
+    );
+    expect(saved.platformPolicy?.messageFilters).toEqual([expect.objectContaining({ name: 'Keys', source: 'global' })]);
+  });
+
+  it('putGlobal_rejectsInvalidPlatformSecurityConfig', async () => {
+    await expect(service.putGlobal({ config: { egress: { mode: 'strict' } } })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    await expect(
+      service.putGlobal({ config: { message_filters: [{ name: 'x', pattern: '(a+)+', action: 'drop' }] } }),
+    ).rejects.toThrow(/nested quantifiers/);
+  });
+
+  it('putClient_respectsLockedEgressScalars_butAllowsAppendingLists', async () => {
+    globalRepo.find.mockResolvedValue([
+      {
+        config: { egress: { mode: 'enforce', deny_hosts: ['bad.example'] } },
+        overrides: {},
+        locks: [],
+        secrets: null,
+        updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+      },
+    ]);
+
+    await expect(service.putClient('client-1', { config: { egress: { mode: 'off' } } })).rejects.toThrow(/locked/);
+
+    const saved = await service.putClient('client-1', { config: { egress: { deny_hosts: ['more.example'] } } });
+
+    expect(saved.lockedPaths).toEqual(expect.arrayContaining(['/egress/mode']));
+    expect(saved.platformPolicy?.egress.denyHosts).toEqual([
+      { value: 'bad.example', source: 'global' },
+      { value: 'more.example', source: 'workspace' },
+    ]);
+  });
+
+  it('putClient_rejectsMessageFiltersUnderTabLock', async () => {
+    globalRepo.find.mockResolvedValue([
+      { config: {}, overrides: {}, locks: ['/tabs/message_filters'], secrets: null, updatedAt: new Date() },
+    ]);
+
+    await expect(
+      service.putClient('client-1', { config: { message_filters: [{ name: 'x', pattern: 'x', action: 'flag' }] } }),
+    ).rejects.toThrow(/locked/);
+  });
 });

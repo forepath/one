@@ -1,6 +1,17 @@
 import { AGENSTRA_NOTIFICATION_EVENTS } from './agenstra-notification.events';
 
 describe('AGENSTRA_NOTIFICATION_EVENTS', () => {
+  it('no longer exposes the removed filter rule CRUD events', () => {
+    expect(AGENSTRA_NOTIFICATION_EVENTS).not.toEqual(
+      expect.arrayContaining([
+        'filter_rule.created',
+        'filter_rule.updated',
+        'filter_rule.deleted',
+        'filter_rule.triggered',
+      ]),
+    );
+  });
+
   it('contains unique event type strings', () => {
     expect(new Set(AGENSTRA_NOTIFICATION_EVENTS).size).toBe(AGENSTRA_NOTIFICATION_EVENTS.length);
   });
@@ -17,7 +28,13 @@ describe('AGENSTRA_NOTIFICATION_EVENTS', () => {
         'agent.acp.session_failed',
         'agent.acp.permission_denied',
         'agent.chat.failed',
-        'filter_rule.triggered',
+        'message_filter.triggered',
+        'agent_config.updated',
+        'egress.blocked',
+        'egress.observed',
+        'egress.guard_failed',
+        'egress.policy_applied',
+        'egress.policy_failed',
         'environment.created',
         'environment.updated',
         'environment.deleted',

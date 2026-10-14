@@ -40,12 +40,15 @@ Events are published from the **agent-controller** service after proxied operati
 
 **Comments:** Adding a comment publishes `ticket.comment.created`. Comments cannot be updated or deleted via the API, so there are no update/delete comment events.
 
-### Chat and filter rules
+### Chat, filters and egress
 
 - `chat_message.created`, user or agent chat message in a workspace session (payload may include `chatId`)
 - `chat_session.created`, `chat_session.updated`, `chat_session.deleted` — user-visible chat session lifecycle for an agent environment
-- `filter_rule.created`, `filter_rule.updated`, `filter_rule.deleted`
-- `filter_rule.triggered`, a filter rule dropped or flagged a message
+- `message_filter.triggered`, a message filter dropped, rewrote or flagged a message (renamed from `filter_rule.triggered`)
+- `agent_config.updated`, an agent configuration layer was saved (global, workspace or environment)
+- `egress.blocked`, `egress.observed`, egress guard blocked a request or would have blocked it in `monitor` mode (summarized per ingestion run)
+- `egress.guard_failed`, an egress guard sidecar reported an error
+- `egress.policy_applied`, `egress.policy_failed`, an egress policy bundle was activated or rejected (last known good stays active)
 
 ### Agent environment variables
 
@@ -116,7 +119,7 @@ Author email is never included. Ticket body `content` is never included on ticke
 
 `kind` is `primary` or `user`. Delete events always include `id` and `agentId`; other fields may be null when only identifiers are available.
 
-### `filter_rule.triggered`
+### `message_filter.triggered`
 
 ```json
 {
@@ -128,11 +131,58 @@ Author email is never included. Ticket body `content` is never included on ticke
   "reason": "Matched secret pattern",
   "wordCount": 3,
   "charCount": 11,
-  "userId": "user-uuid"
+  "userId": "user-uuid",
+  "messagePreview": "..."
 }
 ```
 
-`status` is `dropped` or `filtered`.
+`status` is `dropped` or `filtered`; the rule name is in `filterDisplayName`.
+
+### `agent_config.updated`
+
+```json
+{
+  "layer": "workspace",
+  "clientId": "client-uuid",
+  "agentId": null,
+  "changedRoots": ["egress", "message_filters"],
+  "securityRootsChanged": ["egress", "message_filters"],
+  "locksChanged": false,
+  "secretKeysChanged": [],
+  "updatedByUserId": "user-uuid"
+}
+```
+
+Values are never included, only the changed root keys. Global-layer saves carry no `clientId` and are delivered instance-wide.
+
+### `egress.blocked` / `egress.observed`
+
+```json
+{
+  "agentId": "agent-uuid",
+  "kind": "web",
+  "decision": "blocked",
+  "host": "example.org",
+  "rule": "not_allowlisted",
+  "matchedEntry": null,
+  "matchedSource": null,
+  "method": "CONNECT",
+  "count": 4,
+  "firstSeenAt": "2026-07-01T10:00:00.000Z",
+  "lastSeenAt": "2026-07-01T10:00:12.000Z",
+  "omittedDecisions": 0
+}
+```
+
+`egress.observed` has the same shape and is emitted in `monitor` mode. See [Egress Filtering](./egress-filtering.md).
+
+### `egress.guard_failed` / `egress.policy_applied` / `egress.policy_failed`
+
+```json
+{ "agentId": "agent-uuid", "message": "Egress guard error", "occurredAt": "2026-07-01T10:00:00.000Z" }
+```
+
+`egress.guard_failed` uses the payload above. `egress.policy_applied` and `egress.policy_failed` carry `{ "agentId", "mode", "revision", "error" }`.
 
 ### `environment.created` / `environment.updated` / `environment.deleted`
 

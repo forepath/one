@@ -1,0 +1,64 @@
+sequenceDiagram
+    participant Ctrl as Agent Controller
+    participant Mgr as AgentEgressService
+    participant Docker as DockerService
+    participant Guard as Egress guard<br/>(agenstra-egress-agentId)
+    participant Agent as Agent container
+    participant Coll as AgentEgressEventsCollectorService
+    participant DB as Database
+
+    Note over Ctrl,DB: Egress guard - provisioning and event collection
+
+    rect rgb(230, 240, 255)
+        Note over Ctrl,Guard: Step 1 - Provision guard before the agent exists (fail closed)
+        Ctrl->>Mgr: create agent + effective egress policy (layered: global, workspace, environment)
+        Mgr->>Docker: create + start guard (CAP_NET_ADMIN, memory limit)
+        Guard->>Guard: install lockdown netfilter rules (no policy = no egress)
+        Mgr->>Guard: waitForGuardReady (squid + dnsmasq running, 30s timeout)
+        Mgr->>Guard: agenstra-egress prepare
+        Mgr->>Guard: upload bundle to staged/ (squid.conf, dnsmasq.conf, rules.v4/v6, allow/deny lists)
+        Mgr->>Guard: agenstra-egress apply
+        Guard->>Guard: validate (squid -k parse, dnsmasq --test, iptables-restore --test)
+        alt Bundle valid
+            Guard->>Guard: activate bundle, SIGHUP supervisor, reload squid + dnsmasq
+            Guard-->>Mgr: applied revision
+        else Bundle invalid
+            Guard-->>Mgr: error (last known good bundle stays active)
+            Mgr->>Docker: remove guard
+            Mgr-->>Ctrl: provisioning fails (egressStatus failed)
+        end
+    end
+
+    rect rgb(240, 255, 240)
+        Note over Mgr,Agent: Step 2 - Agent joins the guard network namespace
+        Mgr->>Docker: create agent (NetworkMode container:guard, HTTP_PROXY / HTTPS_PROXY = 127.0.0.1:3128)
+        Docker->>Agent: start
+        Agent->>Guard: DNS -> dnsmasq 5353, TCP 80 -> squid 3129, TCP 443 -> squid 3130 (peek / splice / terminate)
+        Note over Guard: QUIC, DNS over TLS and undeclared protocols are rejected
+    end
+
+    rect rgb(255, 248, 232)
+        Note over Ctrl,Guard: Step 3 - Policy change (config sync)
+        Ctrl->>Mgr: effective policy update
+        Mgr->>Mgr: compute revision (skip when guard already applied it)
+        Mgr->>Guard: prepare, upload, apply
+        Mgr->>Agent: recreate once only when it still runs on the legacy network
+    end
+
+    rect rgb(245, 235, 255)
+        Note over Coll,DB: Step 4 - Event collection (every AGENT_EGRESS_EVENTS_POLL_INTERVAL_MS)
+        loop Every poll interval
+            Coll->>Guard: read logs (AGENSTRA_EGRESS web lines, AGENSTRA_GUARD events)
+            Coll->>Guard: agenstra-egress counters (netfilter counted categories)
+            Guard-->>Coll: log lines + counters
+            Coll->>Coll: aggregate decisions (allowed, blocked, observed, error)
+            Coll->>DB: INSERT agent egress events (monotonic seq)
+            Coll->>DB: DELETE events older than AGENT_EGRESS_EVENTS_RETENTION_HOURS
+        end
+    end
+
+    rect rgb(255, 240, 240)
+        Note over Ctrl,DB: Step 5 - Controller ingestion
+        Ctrl->>Mgr: GET /api/egress/events?afterSeq=&limit=
+        Mgr-->>Ctrl: events, nextSeq, hasMore
+    end

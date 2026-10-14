@@ -1,6 +1,11 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import type { Environment } from '@forepath/agenstra/frontend/util-configuration';
+import type {
+  EffectiveEgressPolicy,
+  EffectiveMessageFilterRule,
+  EffectivePlatformSecurityPolicy,
+} from '@forepath/agenstra/shared/util-opencode-config';
 import { ENVIRONMENT } from '@forepath/agenstra/frontend/util-configuration';
 import { Observable } from 'rxjs';
 
@@ -20,7 +25,69 @@ export interface OpencodeConfigDto {
   effective?: Record<string, unknown>;
   lockedPaths?: string[];
   inheritedAdditive?: InheritedAdditiveDto[];
+  /** Effective platform security policy (Security → Web traffic / Message filters) with provenance. */
+  platformPolicy?: EffectivePlatformSecurityPolicy;
+  /** Egress guard status (environment layer only). */
+  egress?: AgentEgressStatusDto;
   updatedAt?: string;
+}
+
+/** Egress guard (web traffic filtering) status of an environment. */
+export interface AgentEgressStatusDto {
+  status: 'inactive' | 'active' | 'failed';
+  mode: EffectiveEgressPolicy['mode'];
+  guardContainerId: string | null;
+  policyRevision: string | null;
+  appliedAt: string | null;
+  lastError: string | null;
+  guard?: {
+    running: boolean;
+    startedAt: string | null;
+    activeRevision: string | null;
+    proxyRunning: boolean;
+    dnsRunning: boolean;
+  };
+}
+
+export interface AgentEgressEventDto {
+  seq: string;
+  agentId: string;
+  kind: 'web' | 'dns' | 'network' | 'guard';
+  decision: 'allowed' | 'blocked' | 'observed' | 'error';
+  host: string | null;
+  rule: string | null;
+  matchedEntry: string | null;
+  matchedSource: string | null;
+  method: string | null;
+  httpStatus: number | null;
+  sampleUrl: string | null;
+  count: number;
+  bytesIn: number;
+  bytesOut: number;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  mode: string | null;
+  policyRevision: string | null;
+  message: string | null;
+}
+
+/** Egress status, policy in force, message filters and recent guard decisions of an environment. */
+export interface AgentEgressDetailsDto {
+  agentId: string;
+  status: AgentEgressStatusDto;
+  policy: EffectiveEgressPolicy | null;
+  messageFilters: EffectiveMessageFilterRule[];
+  recentEvents: AgentEgressEventDto[];
+}
+
+export interface EgressEvaluationDto {
+  host: string;
+  decision: 'allowed' | 'blocked' | 'observed';
+  rule: string | null;
+  matchedEntry?: string | null;
+  source?: string | null;
+  mode: string;
+  scheme?: 'http' | 'https' | null;
 }
 
 export interface UpsertOpencodeConfigPayload {
@@ -196,6 +263,18 @@ export class OpencodeConfigService {
       `${this.apiUrl}/clients/${clientId}/agents/${agentId}/opencode/config`,
       payload,
     );
+  }
+
+  /** Egress guard status, policy in force and recent decisions of an environment. */
+  getAgentEgress(clientId: string, agentId: string): Observable<AgentEgressDetailsDto> {
+    return this.http.get<AgentEgressDetailsDto>(`${this.apiUrl}/clients/${clientId}/agents/${agentId}/egress`);
+  }
+
+  /** Evaluate a destination (hostname, IP or URL) against the environment's effective egress policy. */
+  evaluateAgentEgress(clientId: string, agentId: string, destination: string): Observable<EgressEvaluationDto> {
+    return this.http.post<EgressEvaluationDto>(`${this.apiUrl}/clients/${clientId}/agents/${agentId}/egress/evaluate`, {
+      destination,
+    });
   }
 
   listAgentAgents(clientId: string, agentId: string): Observable<OpencodeAgentsListDto> {

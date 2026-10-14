@@ -44,6 +44,7 @@ import { ClientAgentProxyService } from '../services/client-agent-proxy.service'
 import { ClientAgentVncProxyService } from '../services/client-agent-vnc-proxy.service';
 import { ClientsService } from '../services/clients.service';
 import { OpencodeConfigSyncTargetsService } from '../services/opencode-config-sync-targets.service';
+import { OpencodeEffectiveConfigSyncService } from '../services/opencode-effective-config-sync.service';
 import { OpencodeLayerFilesService } from '../services/opencode-layer-files.service';
 import { ProvisioningService } from '../services/provisioning.service';
 import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
@@ -240,6 +241,15 @@ describe('ClientsController', () => {
           provide: OpencodeLayerFilesService,
           useValue: {
             resetFailedAndEmitAllForAgent: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: OpencodeEffectiveConfigSyncService,
+          useValue: {
+            buildCreationPlatformPolicy: jest.fn().mockResolvedValue({
+              egress: { mode: 'enforce', allowHosts: [], denyHosts: [] },
+              messageFilters: [],
+            }),
           },
         },
         {
@@ -510,7 +520,11 @@ describe('ClientsController', () => {
       const result = await controller.createClientAgent('client-uuid', createDto, mockReq);
 
       expect(result).toEqual(mockCreateAgentResponse);
-      expect(proxyService.createClientAgent).toHaveBeenCalledWith('client-uuid', createDto, undefined);
+      expect(proxyService.createClientAgent).toHaveBeenCalledWith(
+        'client-uuid',
+        { ...createDto, egressPolicy: { mode: 'enforce', allowHosts: [], denyHosts: [] } },
+        undefined,
+      );
       expect(opencodeLayerFilesService.resetFailedAndEmitAllForAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
       expect(configSyncTargets.markAndProcessAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
     });

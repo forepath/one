@@ -2815,4 +2815,224 @@ describe('DockerService', () => {
       expect((mockDocker as any).pull).not.toHaveBeenCalled();
     });
   });
+
+  describe('egress guard topology', () => {
+    let createdContainer: { id: string; start: jest.Mock; rename: jest.Mock; remove: jest.Mock; putArchive: jest.Mock };
+
+    beforeEach(() => {
+      createdContainer = {
+        id: 'created-id',
+        start: jest.fn().mockResolvedValue(undefined),
+        rename: jest.fn().mockResolvedValue(undefined),
+        remove: jest.fn().mockResolvedValue(undefined),
+        putArchive: jest.fn().mockResolvedValue(undefined),
+      };
+      (mockDocker as any).createContainer = jest.fn().mockResolvedValue(createdContainer);
+      (mockDocker as any).listContainers = jest.fn();
+      jest.spyOn(service, 'ensureImageExists').mockResolvedValue(undefined);
+    });
+
+    it('creates agents inside the guard namespace without ports and with dropped capabilities', async () => {
+      await service.createContainer({
+        image: 'worker:latest',
+        ports: [{ containerPort: 4096, hostIp: '127.0.0.1' }],
+        network: 'ignored-network',
+        sharedNetworkContainerId: 'guard-1',
+        capDrop: ['NET_ADMIN', 'NET_RAW'],
+      });
+
+      const args = (mockDocker as any).createContainer.mock.calls[0][0];
+
+      expect(args.ExposedPorts).toBeUndefined();
+      expect(args.HostConfig.PortBindings).toBeUndefined();
+      expect(args.HostConfig.NetworkMode).toBe('container:guard-1');
+      expect(args.HostConfig.CapDrop).toEqual(['NET_ADMIN', 'NET_RAW']);
+    });
+
+    it('recreates an agent into the guard namespace (no ports / DNS / network reconnect)', async () => {
+      mockContainer.inspect.mockResolvedValue({
+        Id: 'agent-id',
+        Name: '/agent',
+        Image: 'worker:latest',
+        State: { Running: true },
+        Config: { Image: 'worker:latest', Env: ['A=1'], ExposedPorts: { '4096/tcp': {} }, Labels: {} },
+        HostConfig: {
+          NetworkMode: 'agent-net',
+          PortBindings: { '4096/tcp': [{ HostIp: '127.0.0.1' }] },
+          Dns: ['1.1.1.1'],
+          ExtraHosts: ['host.docker.internal:host-gateway'],
+          CapDrop: ['MKNOD'],
+        },
+        NetworkSettings: { Networks: { 'agent-net': { IPAddress: '172.18.0.4' } } },
+        Mounts: [],
+      });
+      mockContainer.stop.mockResolvedValue(undefined);
+      mockContainer.remove.mockResolvedValue(undefined);
+
+      const result = await service.updateContainer('agent-id', {
+        env: { HTTPS_PROXY: 'http://127.0.0.1:3128' },
+        sharedNetworkContainerId: 'guard-1',
+        capDrop: ['NET_ADMIN', 'NET_RAW'],
+      });
+
+      const args = (mockDocker as any).createContainer.mock.calls[0][0];
+
+      expect(result).toBe('created-id');
+      expect(args.ExposedPorts).toBeUndefined();
+      expect(args.Env).toEqual(['A=1', 'HTTPS_PROXY=http://127.0.0.1:3128']);
+      expect(args.HostConfig).toEqual(
+        expect.objectContaining({
+          NetworkMode: 'container:guard-1',
+          PortBindings: undefined,
+          Dns: undefined,
+          ExtraHosts: undefined,
+          CapDrop: ['MKNOD', 'NET_ADMIN', 'NET_RAW'],
+        }),
+      );
+      expect(mockNetwork.connect).not.toHaveBeenCalled();
+      expect(createdContainer.start).toHaveBeenCalled();
+    });
+
+    it('keeps a joined agent in its namespace on later environment recreates', async () => {
+      mockContainer.inspect.mockResolvedValue({
+        Id: 'agent-id',
+        Name: '/agent',
+        Image: 'worker:latest',
+        State: { Running: true },
+        Config: { Image: 'worker:latest', Env: [], ExposedPorts: { '4096/tcp': {} }, Labels: {} },
+        HostConfig: { NetworkMode: 'container:guard-1' },
+        NetworkSettings: { Networks: {} },
+        Mounts: [],
+      });
+      mockContainer.stop.mockResolvedValue(undefined);
+      mockContainer.remove.mockResolvedValue(undefined);
+
+      await service.updateContainer('agent-id', { env: { B: '2' } });
+
+      const args = (mockDocker as any).createContainer.mock.calls[0][0];
+
+      expect(args.HostConfig.NetworkMode).toBe('container:guard-1');
+      expect(args.ExposedPorts).toBeUndefined();
+    });
+
+    it('resolves agent HTTP endpoints through the namespace owner', async () => {
+      process.env.AGENT_DOCKER_NETWORK = 'agent-net';
+      mockContainer.inspect
+        .mockResolvedValueOnce({ HostConfig: { NetworkMode: 'container:guard-1' }, NetworkSettings: { Networks: {} } })
+        .mockResolvedValueOnce({
+          HostConfig: { NetworkMode: 'agent-net' },
+          NetworkSettings: { Networks: { 'agent-net': { IPAddress: '172.18.0.9' } } },
+        });
+
+      await expect(service.resolveContainerHttpBaseUrl('agent-id', 4096)).resolves.toBe('http://172.18.0.9:4096');
+      expect(mockDocker.getContainer).toHaveBeenLastCalledWith('guard-1');
+    });
+
+    it('creates hardened guard sidecars and publishes agent ports only without a network', async () => {
+      await service.createEgressGuardContainer({
+        name: 'agenstra-egress-a',
+        image: 'guard:latest',
+        labels: { 'io.agenstra.egress-guard': '1' },
+        publishPorts: [4096, 6080],
+        memoryBytes: 1024,
+      });
+
+      const args = (mockDocker as any).createContainer.mock.calls[0][0];
+
+      expect(args).toEqual(
+        expect.objectContaining({
+          name: 'agenstra-egress-a',
+          Image: 'guard:latest',
+          Tty: true,
+          Labels: { 'io.agenstra.egress-guard': '1' },
+          ExposedPorts: { '4096/tcp': {}, '6080/tcp': {} },
+        }),
+      );
+      expect(args.HostConfig).toEqual(
+        expect.objectContaining({
+          PortBindings: { '4096/tcp': [{ HostIp: '127.0.0.1' }], '6080/tcp': [{ HostIp: '127.0.0.1' }] },
+          CapDrop: ['ALL'],
+          CapAdd: expect.arrayContaining(['NET_ADMIN']),
+          SecurityOpt: ['no-new-privileges'],
+          Sysctls: { 'net.ipv6.conf.all.disable_ipv6': '1', 'net.ipv6.conf.default.disable_ipv6': '1' },
+          Memory: 1024,
+          RestartPolicy: { Name: 'unless-stopped' },
+        }),
+      );
+      expect(args.HostConfig.CapAdd).not.toContain('NET_RAW');
+
+      (mockDocker as any).createContainer.mockClear();
+      await service.createEgressGuardContainer({
+        name: 'g',
+        image: 'guard',
+        labels: {},
+        network: 'agent-net',
+        publishPorts: [4096],
+      });
+      expect((mockDocker as any).createContainer.mock.calls[0][0].HostConfig.NetworkMode).toBe('agent-net');
+      expect((mockDocker as any).createContainer.mock.calls[0][0].HostConfig.PortBindings).toBeUndefined();
+    });
+
+    it('removes a guard that fails to start', async () => {
+      createdContainer.start.mockRejectedValue(new Error('no NET_ADMIN'));
+
+      await expect(service.createEgressGuardContainer({ name: 'g', image: 'guard', labels: {} })).rejects.toThrow(
+        'no NET_ADMIN',
+      );
+      expect(createdContainer.remove).toHaveBeenCalledWith({ force: true });
+    });
+
+    it('uploads flat files as a tar archive', async () => {
+      await service.putFilesIntoContainer('guard-1', '/var/lib/agenstra-egress/staged', [
+        { name: 'squid.conf', content: 'http_port 3128\n' },
+      ]);
+
+      const [archive, options] = mockContainer.putArchive.mock.calls[0];
+
+      expect(options).toEqual({ path: '/var/lib/agenstra-egress/staged' });
+      expect(extractFirstFileFromTar(archive).toString('utf-8')).toBe('http_port 3128\n');
+    });
+
+    it('reads timestamped logs since a cursor (capped to the newest bytes)', async () => {
+      mockContainer.logs.mockResolvedValue(Buffer.from('2026-01-01T00:00:00Z a\n2026-01-01T00:00:01Z b\n'));
+
+      await expect(service.getContainerLogsSince('guard-1', 12.7, 26)).resolves.toBe('2026-01-01T00:00:01Z b\n');
+      expect(mockContainer.logs).toHaveBeenCalledWith({
+        stdout: true,
+        stderr: true,
+        timestamps: true,
+        follow: false,
+        since: 12,
+      });
+    });
+
+    it('summarizes containers and returns null when missing', async () => {
+      mockContainer.inspect.mockResolvedValueOnce({
+        Id: 'full-id',
+        State: { Running: true, StartedAt: '2026-01-01T00:00:00Z' },
+        HostConfig: { NetworkMode: 'container:guard' },
+        Config: { Labels: { a: 'b' } },
+      });
+
+      await expect(service.inspectContainerSummary('x')).resolves.toEqual({
+        id: 'full-id',
+        running: true,
+        startedAt: new Date('2026-01-01T00:00:00Z'),
+        networkMode: 'container:guard',
+        labels: { a: 'b' },
+      });
+
+      mockContainer.inspect.mockRejectedValueOnce({ statusCode: 404 });
+      await expect(service.inspectContainerSummary('x')).resolves.toBeNull();
+    });
+
+    it('lists containers by label', async () => {
+      (mockDocker as any).listContainers.mockResolvedValue([{ Id: 'g1', Labels: { l: '1' }, Created: 10 }]);
+
+      await expect(service.listContainersByLabel('l=1')).resolves.toEqual([
+        { id: 'g1', labels: { l: '1' }, createdAt: new Date(10_000) },
+      ]);
+      expect((mockDocker as any).listContainers).toHaveBeenCalledWith({ all: true, filters: { label: ['l=1'] } });
+    });
+  });
 });

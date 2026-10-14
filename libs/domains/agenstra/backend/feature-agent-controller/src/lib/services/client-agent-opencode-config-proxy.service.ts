@@ -1,3 +1,4 @@
+import type { EffectivePlatformSecurityPolicy } from '@forepath/agenstra/shared/util-opencode-config';
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { AuthenticationType } from '@forepath/identity/backend';
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
@@ -110,11 +111,12 @@ export class ClientAgentOpencodeConfigProxyService {
     agentId: string,
     effective: Record<string, unknown>,
     secrets?: Record<string, string>,
+    platformPolicy?: EffectivePlatformSecurityPolicy,
   ): Promise<{ ok: boolean; defer?: boolean; error?: string }> {
     const result = await this.makeRequest<{ ok: boolean; defer?: boolean; error?: string }>(clientId, agentId, {
       method: 'POST',
       url: '/sync',
-      data: { config: effective, secrets: secrets ?? {} },
+      data: { config: effective, secrets: secrets ?? {}, ...(platformPolicy ? { platformPolicy } : {}) },
     });
 
     if (!result || typeof result.ok !== 'boolean') {

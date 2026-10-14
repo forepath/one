@@ -5,7 +5,9 @@ import type { WebhookAuthConfig, WebhookHttpMethod } from './webhook.types';
 /** Event types that must not be delivered via GET (payload would appear in query strings). */
 export const WEBHOOK_SENSITIVE_EVENT_TYPES = new Set([
   'chat_message.created',
-  'filter_rule.triggered',
+  'message_filter.triggered',
+  'egress.blocked',
+  'egress.observed',
   'user.created',
   'user.updated',
   'user.deleted',

@@ -89,7 +89,7 @@ const AGENSTRA_TOOLTIPS: readonly string[] = [
   $localize`:@@featurePortalComparison-agenstraT7:Knowledge tree, relations, activity, and prompt-context endpoints.`,
   $localize`:@@featurePortalComparison-agenstraT8:Deployments APIs cover configs, workflows, runs, logs, and cancel. All of that is scoped to agents.`,
   $localize`:@@featurePortalComparison-agenstraT9:Documented automation for Hetzner and DigitalOcean to install agent-manager and register clients.`,
-  $localize`:@@featurePortalComparison-agenstraT10:Global regex filter rules, pluggable chat filters, statistics for drops/flags and entity events.`,
+  $localize`:@@featurePortalComparison-agenstraT10:Layered message filters and per-environment web traffic filtering (egress guard), pluggable chat filters, audit statistics for drops, flags, blocked destinations and entity events.`,
   $localize`:@@featurePortalComparison-agenstraT11:Statistics REST for chat I/O, filter incidents, and entity lifecycle (per client and aggregate).`,
   $localize`:@@featurePortalComparison-agenstraT12:Plugin agent providers and chat filters in agent-manager.`,
   $localize`:@@featurePortalComparison-agenstraT13:Keycloak OIDC/SAML, built-in JWT users, or static API key. Federate corporate IdPs via Keycloak where needed.`,

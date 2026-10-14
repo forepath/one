@@ -15,7 +15,7 @@ Tickets and knowledge trees already live on the controller ([Tickets and Workspa
 
 ## Access control
 
-- **HTTP** All routes under `/api/imports/atlassian` require the same **admin check** as global [Message Filter Rules](./message-filter-rules.md): the user must be a **global admin** (`UserRole.ADMIN`) unless the request is authenticated as an **API key** (`isApiKeyAuth`), in which case the role check is bypassed for trusted automation (consistent with `/api/filter-rules`).
+- **HTTP** All routes under `/api/imports/atlassian` require the same **admin check** as the global [agent configuration](./agent-configuration.md): the user must be a **global admin** (`UserRole.ADMIN`) unless the request is authenticated as an **API key** (`isApiKeyAuth`), in which case the role check is bypassed for trusted automation.
 - **Console** Route **`/imports/atlassian`** uses `authGuard` and `adminGuard` (same predicate as `/filters` and user management). The sidebar **Import** entry is shown only when that admin predicate is true.
 
 Non-admin interactive users receive **403** from the API and cannot open the admin UI for import settings.
@@ -56,7 +56,7 @@ Boards do not embed full import administration; operators manage imports from th
 ## Related documentation
 
 - **[Tickets and Workspaces](./tickets-and-workspaces.md)** Target model for Jira imports
-- **[Message Filter Rules](./message-filter-rules.md)** Same admin / API-key authorization pattern on the controller
+- **[Agent Configuration](./agent-configuration.md)** Same admin / API-key authorization pattern on the controller
 - **[Authentication](./authentication.md)** Roles and authentication modes
 - **[Dynamic provider plugins](./dynamic-provider-plugins.md)** `DYNAMIC_CONTEXT_IMPORT_PROVIDERS` and shared loader behavior
 - **[Backend Agent Controller](../applications/backend-agent-controller.md)** Nest application and `/api` prefix

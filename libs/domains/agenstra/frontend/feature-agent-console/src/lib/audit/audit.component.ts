@@ -8,6 +8,7 @@ import {
   ClientsFacade,
   StatisticsFacade,
   type ClientResponseDto,
+  type StatisticsEgressDecision,
   type StatisticsSeriesPoint,
   type UserResponseDto,
 } from '@forepath/agenstra/frontend/data-access-agent-console';
@@ -39,6 +40,16 @@ import { NgApexchartsModule } from 'ng-apexcharts';
 import { getUnavailableDisplayLabel, resolveNamedDisplayLabel } from '../display-name.util';
 import { ClientSelectComponent } from '../client-select/client-select.component';
 
+import {
+  alignSecuritySeries,
+  egressDecisionColor,
+  formatBytes,
+  formatEgressDecision,
+  formatEgressKind,
+  formatEgressRule,
+  hasEgressData,
+} from './audit-security.util';
+
 const PAGE_SIZE = 10;
 const AUDIT_FILTERS_STORAGE_KEY = 'agent-console-audit-filters';
 
@@ -51,8 +62,13 @@ interface AuditFiltersStorage {
   filterDropsSearch: string;
   filterFlagsSearch: string;
   entityEventsSearch: string;
+  egressEventsSearch: string;
+  egressDecision: StatisticsEgressDecision | '';
   filtersCollapsed: boolean;
 }
+
+const CHART_TEXT_STYLE = { color: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' };
+const CHART_LABEL_STYLE = { colors: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' };
 
 /** Bootstrap color palette for charts (donut/bar). */
 const BS_CHART_COLORS = [
@@ -109,6 +125,15 @@ export class AuditComponent implements OnInit {
   readonly totalCostLabel = $localize`:@@featureAudit-totalCost:Total cost (USD)`;
   readonly filterFlagsLabel = $localize`:@@featureAudit-filterFlags:Filter flags`;
   readonly filterDropsLabel = $localize`:@@featureAudit-filterDrops:Filter drops`;
+  readonly egressBlockedLabel = $localize`:@@featureAudit-egressBlocked:Blocked destinations`;
+  readonly egressObservedLabel = $localize`:@@featureAudit-egressObserved:Would-be blocks`;
+  readonly egressAllowedLabel = $localize`:@@featureAudit-egressAllowed:Allowed requests`;
+  readonly egressDecisions: StatisticsEgressDecision[] = ['blocked', 'observed', 'allowed', 'error'];
+  readonly formatEgressRule = formatEgressRule;
+  readonly formatEgressDecision = formatEgressDecision;
+  readonly formatEgressKind = formatEgressKind;
+  readonly egressDecisionColor = egressDecisionColor;
+  readonly formatBytes = formatBytes;
 
   readonly filtersCollapsed = signal(true);
   readonly selectedClientId = signal<string | null>(null);
@@ -120,16 +145,20 @@ export class AuditComponent implements OnInit {
   readonly filterDropsPage = signal(0);
   readonly filterFlagsPage = signal(0);
   readonly entityEventsPage = signal(0);
+  readonly egressEventsPage = signal(0);
+  readonly egressDecision = signal<StatisticsEgressDecision | ''>('');
 
   readonly chatIoSearch = signal('');
   readonly filterDropsSearch = signal('');
   readonly filterFlagsSearch = signal('');
   readonly entityEventsSearch = signal('');
+  readonly egressEventsSearch = signal('');
 
   private chatIoSearchTimer: ReturnType<typeof setTimeout> | null = null;
   private filterDropsSearchTimer: ReturnType<typeof setTimeout> | null = null;
   private filterFlagsSearchTimer: ReturnType<typeof setTimeout> | null = null;
   private entityEventsSearchTimer: ReturnType<typeof setTimeout> | null = null;
+  private egressEventsSearchTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly clients$ = this.clientsFacade.clients$;
   readonly clients = toSignal(this.clientsFacade.clients$, { initialValue: [] as ClientResponseDto[] });
@@ -139,6 +168,9 @@ export class AuditComponent implements OnInit {
   readonly filterDrops = toSignal(this.statisticsFacade.filterDrops$, { initialValue: null });
   readonly filterFlags = toSignal(this.statisticsFacade.filterFlags$, { initialValue: null });
   readonly entityEvents = toSignal(this.statisticsFacade.entityEvents$, { initialValue: null });
+  readonly egressEvents = toSignal(this.statisticsFacade.egressEvents$, { initialValue: null });
+  readonly loadingEgressEvents$ = this.statisticsFacade.loadingEgressEvents$;
+  readonly hasEgress = computed(() => hasEgressData(this.summary()?.egressBreakdown));
   readonly loadingSummary$ = this.statisticsFacade.loadingSummary$;
   readonly loadingChatIo$ = this.statisticsFacade.loadingChatIo$;
   readonly loadingFilterDrops$ = this.statisticsFacade.loadingFilterDrops$;
@@ -266,6 +298,186 @@ export class AuditComponent implements OnInit {
     };
   });
 
+  /** Security events over time: message filter drops / flags and blocked or observed destinations. */
+  readonly securitySeriesChartOptions = computed<{
+    series: ApexAxisChartSeries;
+    chart: ApexChart;
+    colors: string[];
+    stroke: { curve: 'smooth'; width: number };
+    dataLabels: ApexDataLabels;
+    xaxis: ApexXAxis;
+    yaxis: { labels: { style: { colors: string } } };
+    grid: { borderColor: string };
+    legend: { labels: { colors: string } };
+    title: ApexTitleSubtitle;
+  } | null>(() => {
+    const s = this.summary();
+
+    if (!s?.securitySeries) return null;
+
+    const groupBy = this.groupBy();
+    const aligned = alignSecuritySeries(
+      s.securitySeries,
+      this.generateUtcBucketKeysInclusive(this.fromDate(), this.toDate(), groupBy),
+      groupBy,
+    );
+    const axisDateFormat = groupBy === 'day' ? 'mediumDate' : 'short';
+
+    return {
+      series: [
+        { name: $localize`:@@featureAudit-seriesFilterDrops:Message drops`, data: aligned.filterDrops },
+        { name: $localize`:@@featureAudit-seriesFilterFlags:Message flags`, data: aligned.filterFlags },
+        { name: $localize`:@@featureAudit-seriesEgressBlocked:Blocked destinations`, data: aligned.egressBlocked },
+        { name: $localize`:@@featureAudit-seriesEgressObserved:Would-be blocks`, data: aligned.egressObserved },
+      ],
+      chart: {
+        type: 'line',
+        height: 280,
+        toolbar: { show: false },
+        background: 'transparent',
+        zoom: { enabled: false },
+      },
+      colors: ['var(--bs-danger)', 'var(--bs-warning)', 'var(--bs-primary)', 'var(--bs-info)'],
+      stroke: { curve: 'smooth', width: 2 },
+      dataLabels: { enabled: false },
+      xaxis: {
+        categories: aligned.categories,
+        labels: {
+          style: CHART_LABEL_STYLE,
+          formatter: (value: string): string => this.formatAxisDateLabel(value, axisDateFormat),
+        },
+        axisBorder: { color: 'var(--bs-border-color)' },
+      },
+      yaxis: { labels: { style: CHART_LABEL_STYLE } },
+      grid: { borderColor: 'var(--bs-border-color)' },
+      legend: { labels: { colors: 'var(--bs-body-color)' } },
+      title: {
+        text: $localize`:@@featureAudit-chartSecurityOverTimeTitle:Security events over time`,
+        style: CHART_TEXT_STYLE,
+      },
+    };
+  });
+
+  /** Web traffic decisions over time (stacked: allowed / blocked / would-be blocked). */
+  readonly egressSeriesChartOptions = computed<{
+    series: ApexAxisChartSeries;
+    chart: ApexChart;
+    colors: string[];
+    dataLabels: ApexDataLabels;
+    xaxis: ApexXAxis;
+    yaxis: { labels: { style: { colors: string } } };
+    grid: { borderColor: string };
+    legend: { labels: { colors: string } };
+    title: ApexTitleSubtitle;
+  } | null>(() => {
+    const s = this.summary();
+
+    if (!s?.securitySeries || !this.hasEgress()) return null;
+
+    const groupBy = this.groupBy();
+    const aligned = alignSecuritySeries(
+      s.securitySeries,
+      this.generateUtcBucketKeysInclusive(this.fromDate(), this.toDate(), groupBy),
+      groupBy,
+    );
+    const axisDateFormat = groupBy === 'day' ? 'mediumDate' : 'short';
+
+    return {
+      series: [
+        { name: formatEgressDecision('allowed'), data: aligned.egressAllowed },
+        { name: formatEgressDecision('blocked'), data: aligned.egressBlocked },
+        { name: formatEgressDecision('observed'), data: aligned.egressObserved },
+      ],
+      chart: {
+        type: 'bar',
+        stacked: true,
+        height: 280,
+        toolbar: { show: false },
+        background: 'transparent',
+        zoom: { enabled: false },
+      },
+      colors: ['var(--bs-success)', 'var(--bs-danger)', 'var(--bs-warning)'],
+      dataLabels: { enabled: false },
+      xaxis: {
+        categories: aligned.categories,
+        labels: {
+          style: CHART_LABEL_STYLE,
+          formatter: (value: string): string => this.formatAxisDateLabel(value, axisDateFormat),
+        },
+        axisBorder: { color: 'var(--bs-border-color)' },
+      },
+      yaxis: { labels: { style: CHART_LABEL_STYLE } },
+      grid: { borderColor: 'var(--bs-border-color)' },
+      legend: { labels: { colors: 'var(--bs-body-color)' } },
+      title: {
+        text: $localize`:@@featureAudit-chartEgressOverTimeTitle:Web traffic decisions over time`,
+        style: CHART_TEXT_STYLE,
+      },
+    };
+  });
+
+  /** Most frequently blocked / would-be blocked destinations. */
+  readonly egressTopHostsChartOptions = computed<{
+    series: ApexAxisChartSeries;
+    chart: ApexChart;
+    colors: string[];
+    plotOptions: { bar: { horizontal: boolean; borderRadius: number } };
+    dataLabels: ApexDataLabels;
+    xaxis: ApexXAxis;
+    yaxis: { labels: { style: { colors: string } } };
+    grid: { borderColor: string };
+    title: ApexTitleSubtitle;
+  } | null>(() => {
+    const hosts = this.summary()?.egressTopBlockedHosts ?? [];
+
+    if (hosts.length === 0) return null;
+
+    return {
+      series: [{ name: this.egressBlockedLabel, data: hosts.map((host) => host.count) }],
+      chart: { type: 'bar', height: 280, toolbar: { show: false }, background: 'transparent' },
+      colors: ['var(--bs-danger)'],
+      plotOptions: { bar: { horizontal: true, borderRadius: 2 } },
+      dataLabels: { enabled: false },
+      xaxis: {
+        categories: hosts.map((host) => host.host),
+        labels: { style: CHART_LABEL_STYLE },
+        axisBorder: { color: 'var(--bs-border-color)' },
+      },
+      yaxis: { labels: { style: CHART_LABEL_STYLE } },
+      grid: { borderColor: 'var(--bs-border-color)' },
+      title: {
+        text: $localize`:@@featureAudit-chartTopBlockedHostsTitle:Top blocked destinations`,
+        style: CHART_TEXT_STYLE,
+      },
+    };
+  });
+
+  /** Blocked / would-be blocked decisions by guard rule. */
+  readonly egressRulesChartOptions = computed<{
+    series: ApexNonAxisChartSeries;
+    chart: ApexChart;
+    colors: string[];
+    labels: string[];
+    legend: { labels: { colors: string }; fontFamily: string };
+    title: ApexTitleSubtitle;
+  } | null>(() => {
+    const rules = this.summary()?.egressRulesBreakdown ?? [];
+
+    if (rules.length === 0) return null;
+
+    return {
+      series: rules.map((rule) => rule.count),
+      chart: { type: 'donut', height: 280, background: 'transparent' },
+      colors: rules.map((_, index) => BS_CHART_COLORS[index % BS_CHART_COLORS.length]),
+      labels: rules.map((rule) => formatEgressRule(rule.rule)),
+      legend: { labels: { colors: 'var(--bs-body-color)' }, fontFamily: 'var(--bs-body-font-family)' },
+      title: {
+        text: $localize`:@@featureAudit-chartEgressRulesTitle:Blocks by rule`,
+        style: CHART_TEXT_STYLE,
+      },
+    };
+  });
+
   ngOnInit(): void {
     const stored = this.loadFilters();
 
@@ -285,6 +497,15 @@ export class AuditComponent implements OnInit {
       if (stored.filterFlagsSearch !== undefined) this.filterFlagsSearch.set(stored.filterFlagsSearch);
 
       if (stored.entityEventsSearch !== undefined) this.entityEventsSearch.set(stored.entityEventsSearch);
+
+      if (stored.egressEventsSearch !== undefined) this.egressEventsSearch.set(stored.egressEventsSearch);
+
+      if (
+        stored.egressDecision !== undefined &&
+        (stored.egressDecision === '' || this.egressDecisions.includes(stored.egressDecision))
+      ) {
+        this.egressDecision.set(stored.egressDecision);
+      }
 
       if (stored.filtersCollapsed !== undefined) this.filtersCollapsed.set(stored.filtersCollapsed);
     }
@@ -394,11 +615,17 @@ export class AuditComponent implements OnInit {
     this.filterDropsPage.set(0);
     this.filterFlagsPage.set(0);
     this.entityEventsPage.set(0);
+    this.egressEventsPage.set(0);
     this.filtersCollapsed.set(true);
     this.applyFilters();
   }
 
   onResetFilters(): void {
+    if (this.egressEventsSearchTimer) {
+      clearTimeout(this.egressEventsSearchTimer);
+      this.egressEventsSearchTimer = null;
+    }
+
     if (this.chatIoSearchTimer) {
       clearTimeout(this.chatIoSearchTimer);
       this.chatIoSearchTimer = null;
@@ -427,11 +654,14 @@ export class AuditComponent implements OnInit {
     this.filterDropsSearch.set('');
     this.filterFlagsSearch.set('');
     this.entityEventsSearch.set('');
+    this.egressEventsSearch.set('');
+    this.egressDecision.set('');
     this.filtersCollapsed.set(true);
     this.chatIoPage.set(0);
     this.filterDropsPage.set(0);
     this.filterFlagsPage.set(0);
     this.entityEventsPage.set(0);
+    this.egressEventsPage.set(0);
     this.applyFilters();
   }
 
@@ -457,6 +687,31 @@ export class AuditComponent implements OnInit {
   onEntityEventsPageChange(page: number): void {
     this.entityEventsPage.set(page);
     this.loadEntityEvents();
+  }
+
+  onEgressEventsPageChange(page: number): void {
+    this.egressEventsPage.set(page);
+    this.loadEgressEvents();
+  }
+
+  onEgressEventsSearchChange(value: string): void {
+    this.egressEventsSearch.set(value);
+
+    if (this.egressEventsSearchTimer) clearTimeout(this.egressEventsSearchTimer);
+
+    this.egressEventsSearchTimer = setTimeout(() => {
+      this.egressEventsPage.set(0);
+      this.loadEgressEvents();
+      this.egressEventsSearchTimer = null;
+    }, 300);
+  }
+
+  onEgressDecisionChange(value: string): void {
+    this.egressDecision.set(
+      this.egressDecisions.includes(value as StatisticsEgressDecision) ? (value as StatisticsEgressDecision) : '',
+    );
+    this.egressEventsPage.set(0);
+    this.loadEgressEvents();
   }
 
   onChatIoSearchChange(value: string): void {
@@ -515,6 +770,7 @@ export class AuditComponent implements OnInit {
     this.loadFilterDrops();
     this.loadFilterFlags();
     this.loadEntityEvents();
+    this.loadEgressEvents();
   }
 
   private getBaseParams(): {
@@ -594,6 +850,20 @@ export class AuditComponent implements OnInit {
       search,
       limit: PAGE_SIZE,
       offset: this.entityEventsPage() * PAGE_SIZE,
+    });
+  }
+
+  private loadEgressEvents(): void {
+    const base = this.getBaseParams();
+    const search = this.egressEventsSearch().trim() || undefined;
+    const decision = this.egressDecision() || undefined;
+
+    this.statisticsFacade.loadEgressEvents({
+      ...base,
+      search,
+      decision,
+      limit: PAGE_SIZE,
+      offset: this.egressEventsPage() * PAGE_SIZE,
     });
   }
 
@@ -776,6 +1046,8 @@ export class AuditComponent implements OnInit {
       this.filterDropsSearch();
       this.filterFlagsSearch();
       this.entityEventsSearch();
+      this.egressEventsSearch();
+      this.egressDecision();
       this.filtersCollapsed();
       this.saveFilters();
     });
@@ -814,6 +1086,8 @@ export class AuditComponent implements OnInit {
         filterDropsSearch: this.filterDropsSearch(),
         filterFlagsSearch: this.filterFlagsSearch(),
         entityEventsSearch: this.entityEventsSearch(),
+        egressEventsSearch: this.egressEventsSearch(),
+        egressDecision: this.egressDecision(),
         filtersCollapsed: this.filtersCollapsed(),
       };
 

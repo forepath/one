@@ -6,10 +6,6 @@
         <source>Audit :: Agenstra</source>
         <target>Audit :: Agenstra</target>
       </trans-unit>
-      <trans-unit id="featureAgentConsole-filtersTitle" datatype="html">
-        <source>Filters :: Agenstra</source>
-        <target>Filter :: Agenstra</target>
-      </trans-unit>
       <trans-unit id="featureAgentConsole-atlassianImportTitle" datatype="html">
         <source>Atlassian import :: Agenstra</source>
         <target>Atlassian-Import :: Agenstra</target>
@@ -34,7 +30,7 @@
         <source>Refresh</source>
         <target> Aktualisieren </target>
       </trans-unit>
-      
+
       <trans-unit id="featureAtlassianImportAdmin-dismiss" datatype="html">
         <source> Dismiss </source>
         <target> Ausblenden </target>
@@ -1822,6 +1818,10 @@
         <source>Users</source>
         <target>Benutzer</target>
       </trans-unit>
+      <trans-unit id="featureContainer-agentConfig" datatype="html">
+        <source>Config</source>
+        <target>Konfiguration</target>
+      </trans-unit>
       <trans-unit id="featureContainer-tokensTitle" datatype="html">
         <source>Access Tokens</source>
         <target>Zugriffstoken</target>
@@ -1829,14 +1829,6 @@
       <trans-unit id="featureContainer-tokens" datatype="html">
         <source>Tokens</source>
         <target>Token</target>
-      </trans-unit>
-      <trans-unit id="featureContainer-filtersTitle" datatype="html">
-        <source>Filters</source>
-        <target>Filterregeln</target>
-      </trans-unit>
-      <trans-unit id="featureContainer-filters" datatype="html">
-        <source>Filters</source>
-        <target>Filterregeln</target>
       </trans-unit>
       <trans-unit id="featureContainer-opencodeConfigTitle" datatype="html">
         <source>OpenCode config</source>
@@ -2026,7 +2018,7 @@
         <source>Create Configuration</source>
         <target>Konfiguration erstellen</target>
       </trans-unit>
-      
+
       <trans-unit id="featureDeploymentConfig-closeAriaLabel" datatype="html">
         <source>Close</source>
         <target>Schließen</target>
@@ -2467,7 +2459,7 @@
         <source> Delete </source>
         <target>Löschen</target>
       </trans-unit>
-      
+
       <trans-unit id="featureFileTree-newNameLabel" datatype="html">
         <source>New Name</source>
         <target>Neuer Name</target>
@@ -2476,7 +2468,7 @@
         <source> Rename </source>
         <target>Umbenennen</target>
       </trans-unit>
-      
+
       <trans-unit id="featureFileTree-destinationPathLabel" datatype="html">
         <source>Destination Path</source>
         <target>Zielpfad</target>
@@ -2493,7 +2485,7 @@
         <source> Move </source>
         <target>Verschieben</target>
       </trans-unit>
-      
+
       <trans-unit id="featureFileTree-enterFileName" datatype="html">
         <source>Enter file name...</source>
         <target>Dateiname eingeben...</target>
@@ -2810,7 +2802,7 @@
         <source> Create Terminal </source>
         <target>Terminal erstellen</target>
       </trans-unit>
-      
+
       <trans-unit id="featureKnowledgeBoard-title" datatype="html">
         <source>Knowledge</source>
         <target>Wissen</target>
@@ -3026,182 +3018,6 @@
       <trans-unit id="featureKnowledgeTree-delete" datatype="html">
         <source> Delete </source>
         <target>Löschen</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-directionIncoming" datatype="html">
-        <source>Incoming</source>
-        <target>Eingehend</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-directionOutgoing" datatype="html">
-        <source>Outgoing</source>
-        <target>Ausgehend</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-directionBidirectional" datatype="html">
-        <source>Bidirectional</source>
-        <target>Bidirektional</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-filterTypeNone" datatype="html">
-        <source>No content change</source>
-        <target>Keine Inhaltsänderung</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-filterTypeReplace" datatype="html">
-        <source>Replace content</source>
-        <target>Inhalt ersetzen</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-filterTypeDrop" datatype="html">
-        <source>Drop message</source>
-        <target>Nachricht verwerfen</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-testerNoMatch" datatype="html">
-        <source>No match.</source>
-        <target>Keine Übereinstimmung.</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-testerWouldDrop" datatype="html">
-        <source>Match: the message would be dropped.</source>
-        <target>Treffer: Die Nachricht würde verworfen.</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-testerNoContentChange" datatype="html">
-        <source>Match: no content change.</source>
-        <target>Treffer: Keine Inhaltsänderung.</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-testerReplacedHead" datatype="html">
-        <source>Match: replaced result:</source>
-        <target>Treffer: Ersetztes Ergebnis:</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-syncWsTitleFailed" datatype="html">
-        <source>Sync to agent-manager failed</source>
-        <target>Synchronisation mit Agent-Manager fehlgeschlagen</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-syncWsTitleSynced" datatype="html">
-        <source>Synced to agent-manager</source>
-        <target>Mit Agent-Manager synchronisiert</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-syncWsTitlePending" datatype="html">
-        <source>Waiting to sync to agent-manager</source>
-        <target>Wartet auf Synchronisation mit dem Agent-Manager</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-title" datatype="html">
-        <source>Filters</source>
-        <target>Filterregeln</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-addButtonTitle" datatype="html">
-        <source>Add filter rule</source>
-        <target>Filterregel hinzufügen</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-searchPlaceholder" datatype="html">
-        <source>Search rules</source>
-        <target>Regeln suchen</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-loading" datatype="html">
-        <source>Loading…</source>
-        <target>Wird geladen…</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-empty" datatype="html">
-        <source>No filter rules yet.</source>
-        <target>Noch keine Filterregeln.</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-statusInactive" datatype="html">
-        <source>Inactive</source>
-        <target>Inaktiv</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-statusActive" datatype="html">
-        <source>Active</source>
-        <target>Ausstehend</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-statusSynced" datatype="html">
-        <source>Synced</source>
-        <target>Synchronisiert</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-test" datatype="html">
-        <source>Test</source>
-        <target>Test</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-edit" datatype="html">
-        <source>Edit</source>
-        <target>Bearbeiten</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-delete" datatype="html">
-        <source>Delete</source>
-        <target>Löschen</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-allWorkspaces" datatype="html">
-        <source>All workspaces</source>
-        <target>Alle Arbeitsbereiche</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-createTitle" datatype="html">
-        <source>Add filter rule</source>
-        <target>Filterregel hinzufügen</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-pattern" datatype="html">
-        <source>Pattern</source>
-        <target>Muster</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-patternPlaceholder" datatype="html">
-        <source>[a-zA-Z0-9]+</source>
-        <target>[a-zA-Z0-9]+</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-flags" datatype="html">
-        <source>Flags</source>
-        <target>Flags</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-direction" datatype="html">
-        <source>Direction</source>
-        <target>Richtung</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-filterType" datatype="html">
-        <source>Filter type</source>
-        <target>Filtertyp</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-replace" datatype="html">
-        <source>Replace template</source>
-        <target>Ersetzungsvorlage</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-priority" datatype="html">
-        <source>Priority</source>
-        <target>Priorität</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-enabled" datatype="html">
-        <source>Enabled</source>
-        <target>Aktiviert</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-global" datatype="html">
-        <source>Global (all workspaces)</source>
-        <target>Global (alle Arbeitsbereiche)</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-pickWorkspaces" datatype="html">
-        <source>Workspaces</source>
-        <target>Arbeitsbereiche</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-save" datatype="html">
-        <source> Save </source>
-        <target>Speichern</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-editTitle" datatype="html">
-        <source>Edit filter rule</source>
-        <target>Filterregel bearbeiten</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-deleteTitle" datatype="html">
-        <source>Delete rule</source>
-        <target>Regel löschen</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-deleteConfirm" datatype="html">
-        <source> Delete this rule? Remote copies will be removed where possible. </source>
-        <target>Diese Regel löschen? Remote-Kopien werden nach Möglichkeit entfernt.</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-cannotUndo" datatype="html">
-        <source>This action cannot be undone.</source>
-        <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-testerTitle" datatype="html">
-        <source>Test rule</source>
-        <target>Regel testen</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-sample" datatype="html">
-        <source>Sample text</source>
-        <target>Beispieltext</target>
-      </trans-unit>
-      <trans-unit id="featureRuleManager-runTest" datatype="html">
-        <source> Run test </source>
-        <target>Test ausführen</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-runStatusPending" datatype="html">
         <source>Pending</source>
@@ -3539,7 +3355,7 @@
         <source>Add subtask</source>
         <target>Unteraufgabe hinzufügen</target>
       </trans-unit>
-      
+
       <trans-unit id="featureTicketsBoard-subtasksHeading" datatype="html">
         <source>Subtasks</source>
         <target>Unteraufgaben</target>
@@ -3936,7 +3752,7 @@
         <source> Create </source>
         <target>Anlegen</target>
       </trans-unit>
-      
+
       <trans-unit id="featureTicketsBoard-globalSearchTitle" datatype="html">
         <source> Search tickets </source>
         <target>Tickets durchsuchen</target>
@@ -4793,7 +4609,7 @@
         <source> Create personal access token </source>
         <target>Persönliches Zugriffstoken erstellen</target>
       </trans-unit>
-      
+
       <trans-unit id="featureTokenManager-closeAriaLabel" datatype="html">
         <source>Close</source>
         <target>Schließen</target>
@@ -4806,7 +4622,7 @@
         <source> Copy this token now. It will not be shown again. </source>
         <target>Kopieren Sie dieses Token jetzt. Es wird nicht erneut angezeigt.</target>
       </trans-unit>
-      
+
       <trans-unit id="featureTokenManager-copied" datatype="html">
         <source>Copied</source>
         <target>Kopiert</target>
@@ -4819,7 +4635,7 @@
         <source> Done </source>
         <target>Fertig</target>
       </trans-unit>
-      
+
       <trans-unit id="featureTokenManager-nameLabel" datatype="html">
         <source>Name</source>
         <target>Name</target>
@@ -4852,7 +4668,7 @@
         <source> Revoke token </source>
         <target>Token widerrufen</target>
       </trans-unit>
-      
+
       <trans-unit id="featureTokenManager-revokeConfirm" datatype="html">
         <source> Are you sure you want to revoke the token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
         <target>Möchten Sie das Token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> wirklich widerrufen?</target>
@@ -5033,10 +4849,6 @@
         <source> Save </source>
         <target>Speichern</target>
       </trans-unit>
-      <trans-unit id="featureRuleManager-create" datatype="html">
-        <source> Create </source>
-        <target>Erstellen</target>
-      </trans-unit>
       <trans-unit id="featureTicketsBoard-relationsAdd" datatype="html">
         <source>Add</source>
         <target>Hinzufügen</target>
@@ -5097,7 +4909,7 @@
         <source> Edit personal access token </source>
         <target>Persönlichen Zugriffstoken bearbeiten</target>
       </trans-unit>
-      
+
       <trans-unit id="featureTokenManager-update" datatype="html">
         <source>Update</source>
         <target>Aktualisieren</target>
@@ -5442,7 +5254,7 @@
         <source> Response </source>
         <target>Antwort</target>
       </trans-unit>
-      
+
       <trans-unit id="featureNotifications-moreDeliveries" datatype="html">
         <source> More deliveries exist than shown. </source>
         <target>Es gibt mehr Zustellungen als angezeigt.</target>
@@ -5475,7 +5287,7 @@
         <source> Check now </source>
         <target>Jetzt prüfen</target>
       </trans-unit>
-      
+
       <trans-unit id="featureUpdates-loading" datatype="html">
         <source>Loading updates...</source>
         <target>Updates werden geladen…</target>
@@ -5504,12 +5316,12 @@
         <source> Installed version </source>
         <target>Installierte Version</target>
       </trans-unit>
-      
+
       <trans-unit id="featureUpdates-latestVersion" datatype="html">
         <source> Latest version </source>
         <target>Neueste Version</target>
       </trans-unit>
-      
+
       <trans-unit id="featureUpdates-viewRelease" datatype="html">
         <source>View release</source>
         <target>Release anzeigen</target>
@@ -5518,7 +5330,7 @@
         <source> Frontend version </source>
         <target>Frontend-Version</target>
       </trans-unit>
-      
+
       <trans-unit id="featureUpdates-lastCheck" datatype="html">
         <source>Last check</source>
         <target>Letzte Prüfung</target>
@@ -5527,7 +5339,7 @@
         <source> Service instances </source>
         <target>Service-Instanzen</target>
       </trans-unit>
-      
+
       <trans-unit id="featureUpdates-mobilePanelInstances" datatype="html">
         <source>Instances</source>
         <target>Instanzen</target>
@@ -5560,22 +5372,22 @@
         <source> Product changelog </source>
         <target>Produkt-Changelog</target>
       </trans-unit>
-      
+
       <trans-unit id="featureUpdates-changelogShared" datatype="html">
         <source> Shared changelog </source>
         <target>Geteiltes Changelog</target>
       </trans-unit>
-      
+
       <trans-unit id="featureUpdates-noChangelogProduct" datatype="html">
         <source> No product changelog entries. </source>
         <target>Keine Einträge im Produkt-Changelog.</target>
       </trans-unit>
-      
+
       <trans-unit id="featureUpdates-noChangelogShared" datatype="html">
         <source> No shared changelog entries. </source>
         <target>Keine Einträge im geteilten Changelog.</target>
       </trans-unit>
-      
+
       <trans-unit id="featureUpdates-dependencyHealthy" datatype="html">
         <source>Healthy</source>
         <target>Gesund</target>
@@ -6083,6 +5895,386 @@
       <trans-unit id="featureAgentConfig-accumulatedJsonAria" datatype="html">
         <source>Accumulated configuration JSON</source>
         <target>Akkumulierte Konfiguration (JSON)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-sectionSecurity" datatype="html">
+        <source>Security</source>
+        <target>Sicherheit</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-tabEgress" datatype="html">
+        <source>Web traffic</source>
+        <target>Webverkehr</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-egressStatusLabel" datatype="html">
+        <source>Guard status:</source>
+        <target>Guard-Status:</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-egressAppliedAt" datatype="html">
+        <source>applied <x id="INTERPOLATION" equiv-text="{{ status.appliedAt | date: &apos;short&apos; }}"/></source>
+        <target>angewendet <x id="INTERPOLATION" equiv-text="{{ status.appliedAt | date: &apos;short&apos; }}"/></target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-egressModeHeading" datatype="html">
+        <source>Mode</source>
+        <target>Modus</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressMode" datatype="html">
+        <source>Filtering mode</source>
+        <target>Filtermodus</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressModeHelp" datatype="html">
+        <source>off: no guard · monitor: record would-be blocks · enforce: apply the lists · offline: block all egress</source>
+        <target>off: kein Guard · monitor: mögliche Sperren protokollieren · enforce: Listen anwenden · offline: gesamten ausgehenden Verkehr sperren</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-inheritOption" datatype="html">
+        <source>(inherit)</source>
+        <target>(erben)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-effectiveValue" datatype="html">
+        <source>Effective:</source>
+        <target>Wirksam:</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-yesOption" datatype="html">
+        <source>yes</source>
+        <target>ja</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-noOption" datatype="html">
+        <source>no</source>
+        <target>nein</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-egressHostsHeading" datatype="html">
+        <source> Destinations </source>
+        <target> Ziele </target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-inheritedReadOnly" datatype="html">
+        <source>(inherited, read-only)</source>
+        <target>(geerbt, schreibgeschützt)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-egressNetworkHeading" datatype="html">
+        <source>Non-web exceptions</source>
+        <target>Ausnahmen für Nicht-Web-Verkehr</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addEgressNetworkRule" datatype="html">
+        <source>Add network exception</source>
+        <target>Netzwerkausnahme hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-egressNetworkEmpty" datatype="html">
+        <source>No network exceptions.</source>
+        <target>Keine Netzwerkausnahmen.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressProtocol" datatype="html">
+        <source>Protocol</source>
+        <target>Protokoll</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressPorts" datatype="html">
+        <source>Ports</source>
+        <target>Ports</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressPortsHelp" datatype="html">
+        <source>Single port (22) or range (1000-2000)</source>
+        <target>Einzelner Port (22) oder Bereich (1000-2000)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressDestinations" datatype="html">
+        <source>Destinations</source>
+        <target>Ziele</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressDestinationsHelp" datatype="html">
+        <source>IP addresses or CIDRs, comma separated</source>
+        <target>IP-Adressen oder CIDRs, durch Komma getrennt</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressDescription" datatype="html">
+        <source>Description</source>
+        <target>Beschreibung</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-egressTesterHeading" datatype="html">
+        <source> Test a destination </source>
+        <target> Ziel testen </target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressTester" datatype="html">
+        <source>Hostname or URL</source>
+        <target>Hostname oder URL</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressTesterHelp" datatype="html">
+        <source>Evaluated against the effective policy including unsaved changes on this layer</source>
+        <target>Ausgewertet gegen die wirksame Richtlinie inklusive ungespeicherter Änderungen dieser Ebene</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-tabMessageFilters" datatype="html">
+        <source>Message filters</source>
+        <target>Nachrichtenfilter</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-messageFiltersHeading" datatype="html">
+        <source>Rules</source>
+        <target>Regeln</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addMessageFilterRule" datatype="html">
+        <source>Add message filter rule</source>
+        <target>Nachrichtenfilterregel hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-disabledBadge" datatype="html">
+        <source>Disabled</source>
+        <target>Deaktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-messageFiltersEmpty" datatype="html">
+        <source>No message filter rules yet.</source>
+        <target>Noch keine Nachrichtenfilterregeln.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterName" datatype="html">
+        <source>Name</source>
+        <target>Name</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterNameHelp" datatype="html">
+        <source>Shown in drop notices and the audit log (unique per layer)</source>
+        <target>Wird in Verwerfungshinweisen und im Audit-Protokoll angezeigt (pro Ebene eindeutig)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterPattern" datatype="html">
+        <source>Pattern</source>
+        <target>Muster</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterPatternHelp" datatype="html">
+        <source>JavaScript regular expression (nested quantifiers such as (a+)+ are rejected)</source>
+        <target>Regulärer JavaScript-Ausdruck (verschachtelte Quantoren wie (a+)+ werden abgelehnt)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterFlags" datatype="html">
+        <source>Flags</source>
+        <target>Flags</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterDirection" datatype="html">
+        <source>Direction</source>
+        <target>Richtung</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterAction" datatype="html">
+        <source>Action</source>
+        <target>Aktion</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterActionHelp" datatype="html">
+        <source>drop: block the message · replace: rewrite matches · flag: record only</source>
+        <target>drop: Nachricht verwerfen · replace: Treffer ersetzen · flag: nur protokollieren</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterReplacement" datatype="html">
+        <source>Replacement</source>
+        <target>Ersetzung</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterEnabled" datatype="html">
+        <source>Enabled</source>
+        <target>Aktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-messageFilterTesterHeading" datatype="html">
+        <source> Test a message </source>
+        <target> Nachricht testen </target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterTester" datatype="html">
+        <source>Sample message</source>
+        <target>Beispielnachricht</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMessageFilterTesterHelp" datatype="html">
+        <source>Evaluated against all effective rules including unsaved changes on this layer</source>
+        <target>Ausgewertet gegen alle wirksamen Regeln inklusive ungespeicherter Änderungen dieser Ebene</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-directionIncoming" datatype="html">
+        <source>incoming (user → agent)</source>
+        <target>eingehend (Benutzer → Agent)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-directionOutgoing" datatype="html">
+        <source>outgoing (agent → user)</source>
+        <target>ausgehend (Agent → Benutzer)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressBlockPrivate" datatype="html">
+        <source>Block private networks</source>
+        <target>Private Netzwerke sperren</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressBlockPrivateHelp" datatype="html">
+        <source>Deny loopback, link-local, RFC 1918 and cloud metadata addresses unless explicitly allowed</source>
+        <target>Loopback-, Link-Local-, RFC-1918- und Cloud-Metadaten-Adressen sperren, sofern nicht ausdrücklich erlaubt</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressBlockIpLiterals" datatype="html">
+        <source>Block IP literals</source>
+        <target>IP-Literale sperren</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressBlockIpLiteralsHelp" datatype="html">
+        <source>Deny connections to raw IP addresses (and TLS without a hostname) unless the address is allowed</source>
+        <target>Verbindungen zu reinen IP-Adressen (und TLS ohne Hostnamen) sperren, sofern die Adresse nicht erlaubt ist</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressLogAllowed" datatype="html">
+        <source>Record allowed traffic</source>
+        <target>Erlaubten Verkehr protokollieren</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressLogAllowedHelp" datatype="html">
+        <source>Include allowed destinations in the audit log (blocked traffic is always recorded)</source>
+        <target>Erlaubte Ziele in das Audit-Protokoll aufnehmen (gesperrter Verkehr wird immer protokolliert)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressDenyHosts" datatype="html">
+        <source>Denylist</source>
+        <target>Sperrliste</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressDenyHostsHelp" datatype="html">
+        <source>Hostnames (subdomains match too; *.example.com is equivalent), IP addresses or CIDRs, one per line. Always wins.</source>
+        <target>Hostnamen (Subdomains passen ebenfalls; *.example.com ist gleichwertig), IP-Adressen oder CIDRs, einer pro Zeile. Hat immer Vorrang.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressAllowHosts" datatype="html">
+        <source>Allowlist</source>
+        <target>Erlaubnisliste</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressAllowHostsHelp" datatype="html">
+        <source>When not empty, only these destinations are reachable. Same syntax as the denylist.</source>
+        <target>Wenn nicht leer, sind nur diese Ziele erreichbar. Gleiche Syntax wie die Sperrliste.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressDenyUrlPatterns" datatype="html">
+        <source>Blocked plain-HTTP URL patterns</source>
+        <target>Gesperrte HTTP-URL-Muster</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEgressDenyUrlPatternsHelp" datatype="html">
+        <source>Regular expressions matched against http:// URLs (HTTPS paths are not visible), one per line.</source>
+        <target>Reguläre Ausdrücke für http://-URLs (HTTPS-Pfade sind nicht sichtbar), einer pro Zeile.</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressRuleDenyHost" datatype="html">
+        <source>Denylisted destination</source>
+        <target>Gesperrtes Ziel</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressRuleNotAllowlisted" datatype="html">
+        <source>Not on the allowlist</source>
+        <target>Nicht auf der Erlaubnisliste</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressRulePrivateNetwork" datatype="html">
+        <source>Private network</source>
+        <target>Privates Netzwerk</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressRuleIpLiteral" datatype="html">
+        <source>IP literal</source>
+        <target>IP-Literal</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressRuleDenyUrl" datatype="html">
+        <source>Blocked URL pattern</source>
+        <target>Gesperrtes URL-Muster</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressRuleOffline" datatype="html">
+        <source>Offline mode</source>
+        <target>Offline-Modus</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressRuleQuic" datatype="html">
+        <source>QUIC (UDP/443)</source>
+        <target>QUIC (UDP/443)</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressRuleDnsOverTls" datatype="html">
+        <source>DNS over TLS</source>
+        <target>DNS over TLS</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressRuleUndeclared" datatype="html">
+        <source>Undeclared protocol / port</source>
+        <target>Nicht freigegebenes Protokoll / Port</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressRuleGuard" datatype="html">
+        <source>Guard</source>
+        <target>Guard</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressDecisionAllowed" datatype="html">
+        <source>Allowed</source>
+        <target>Erlaubt</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressDecisionBlocked" datatype="html">
+        <source>Blocked</source>
+        <target>Gesperrt</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressDecisionObserved" datatype="html">
+        <source>Would be blocked</source>
+        <target>Würde gesperrt</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressDecisionError" datatype="html">
+        <source>Guard error</source>
+        <target>Guard-Fehler</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressKindWeb" datatype="html">
+        <source>Web</source>
+        <target>Web</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressKindDns" datatype="html">
+        <source>DNS</source>
+        <target>DNS</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressKindNetwork" datatype="html">
+        <source>Network</source>
+        <target>Netzwerk</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressKindGuard" datatype="html">
+        <source>Guard</source>
+        <target>Guard</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressEventsTable" datatype="html">
+        <source>Web Traffic</source>
+        <target>Webverkehr</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressDecisionFilter" datatype="html">
+        <source>Decision</source>
+        <target>Entscheidung</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressDecisionAll" datatype="html">
+        <source>All decisions</source>
+        <target>Alle Entscheidungen</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressDecision" datatype="html">
+        <source>Decision</source>
+        <target>Entscheidung</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressKind" datatype="html">
+        <source>Type</source>
+        <target>Typ</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressDestination" datatype="html">
+        <source>Destination</source>
+        <target>Ziel</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressRule" datatype="html">
+        <source>Rule</source>
+        <target>Regel</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressCount" datatype="html">
+        <source>Count</source>
+        <target>Anzahl</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressTransfer" datatype="html">
+        <source>Transfer</source>
+        <target>Übertragung</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressBlocked" datatype="html">
+        <source>Blocked destinations</source>
+        <target>Gesperrte Ziele</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressObserved" datatype="html">
+        <source>Would-be blocks</source>
+        <target>Mögliche Sperren</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-egressAllowed" datatype="html">
+        <source>Allowed requests</source>
+        <target>Erlaubte Anfragen</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-seriesFilterDrops" datatype="html">
+        <source>Message drops</source>
+        <target>Verworfene Nachrichten</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-seriesFilterFlags" datatype="html">
+        <source>Message flags</source>
+        <target>Markierte Nachrichten</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-seriesEgressBlocked" datatype="html">
+        <source>Blocked destinations</source>
+        <target>Gesperrte Ziele</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-seriesEgressObserved" datatype="html">
+        <source>Would-be blocks</source>
+        <target>Mögliche Sperren</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-chartSecurityOverTimeTitle" datatype="html">
+        <source>Security events over time</source>
+        <target>Sicherheitsereignisse im Zeitverlauf</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-chartEgressOverTimeTitle" datatype="html">
+        <source>Web traffic decisions over time</source>
+        <target>Webverkehr-Entscheidungen im Zeitverlauf</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-chartTopBlockedHostsTitle" datatype="html">
+        <source>Top blocked destinations</source>
+        <target>Am häufigsten gesperrte Ziele</target>
+      </trans-unit>
+      <trans-unit id="featureAudit-chartEgressRulesTitle" datatype="html">
+        <source>Blocks by rule</source>
+        <target>Sperren nach Regel</target>
       </trans-unit>
     </body>
   </file>

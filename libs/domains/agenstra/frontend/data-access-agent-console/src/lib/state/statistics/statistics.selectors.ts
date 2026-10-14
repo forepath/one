@@ -57,3 +57,13 @@ export const selectLoadingFilterFlags = createSelector(selectStatisticsState, (s
 export const selectLoadingEntityEvents = createSelector(selectStatisticsState, (state) => state.loadingEntityEvents);
 
 export const selectStatisticsError = createSelector(selectStatisticsState, (state) => state.error);
+
+export const selectClientEgressEvents = (clientId: string) =>
+  createSelector(selectStatisticsState, (state) => state.clientEgressEvents[clientId]);
+
+export const selectLoadingClientEgressEvents = (clientId: string) =>
+  createSelector(selectStatisticsState, (state) => state.loadingClientEgressEvents[clientId] ?? false);
+
+export const selectEgressEvents = createSelector(selectStatisticsState, (state) => state.egressEvents);
+
+export const selectLoadingEgressEvents = createSelector(selectStatisticsState, (state) => state.loadingEgressEvents);

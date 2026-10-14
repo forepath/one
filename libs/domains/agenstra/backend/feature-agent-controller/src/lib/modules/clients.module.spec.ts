@@ -18,7 +18,8 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { KEYCLOAK_CONNECT_OPTIONS, KEYCLOAK_INSTANCE } from 'nest-keycloak-connect';
 
 import { ClientsController } from '../controllers/clients.controller';
-import { AgentConsoleRegexFilterRuleEntity } from '../entities/agent-console-regex-filter-rule.entity';
+import { EgressEventIngestCursorEntity } from '../entities/egress-event-ingest-cursor.entity';
+import { StatisticsEgressEventEntity } from '../entities/statistics-egress-event.entity';
 import { AgenstraAttachmentEntity } from '../entities/agenstra-attachment.entity';
 import { AtlassianSiteConnectionEntity } from '../entities/atlassian-site-connection.entity';
 import { ClientAgentAutonomyEntity } from '../entities/client-agent-autonomy.entity';
@@ -61,34 +62,13 @@ import { ClientAgentFileSystemProxyService } from '../services/client-agent-file
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { ClientsService } from '../services/clients.service';
 import { ExternalImportSyncMarkerService } from '../services/external-import-sync-marker.service';
-import { FilterRulesService } from '../services/filter-rules.service';
 
 import { ClientsModule } from './clients.module';
 import { AgenstraNotificationsModule } from './agenstra-notifications.module';
 import { ContextImportModule } from './context-import.module';
-import { FilterRulesModule } from './filter-rules.module';
 import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
 import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
-
-@Module({
-  providers: [
-    {
-      provide: FilterRulesService,
-      useValue: {
-        countForMetrics: jest.fn().mockResolvedValue({
-          rulesEnabled: 0,
-          rulesDisabled: 0,
-          syncPending: 0,
-          syncSynced: 0,
-          syncFailed: 0,
-        }),
-      },
-    },
-  ],
-  exports: [FilterRulesService],
-})
-class StubFilterRulesModule {}
 
 @Module({
   providers: [
@@ -111,7 +91,7 @@ class StubContextImportModule {}
       useValue: {
         publishClient: jest.fn(),
         publishTicket: jest.fn(),
-        publishFilterRule: jest.fn(),
+        publishAgentConfigUpdated: jest.fn(),
         publish: jest.fn(),
       },
     },
@@ -170,8 +150,6 @@ describe('ClientsModule', () => {
     const moduleBuilder = Test.createTestingModule({
       imports: [ClientsModule],
     })
-      .overrideModule(FilterRulesModule)
-      .useModule(StubFilterRulesModule)
       .overrideModule(ContextImportModule)
       .useModule(StubContextImportModule)
       .overrideModule(AgenstraNotificationsModule)
@@ -272,7 +250,9 @@ describe('ClientsModule', () => {
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(OpencodeConfigSyncTargetEntity))
       .useValue(mockRepository)
-      .overrideProvider(getRepositoryToken(AgentConsoleRegexFilterRuleEntity))
+      .overrideProvider(getRepositoryToken(StatisticsEgressEventEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(EgressEventIngestCursorEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(AtlassianSiteConnectionEntity))
       .useValue(mockRepository)

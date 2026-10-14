@@ -33,7 +33,7 @@ export class AgentsOpencodeConfigController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Body() dto: SyncAgentOpencodeConfigDto,
   ): Promise<{ ok: boolean; defer?: boolean; error?: string }> {
-    return await this.syncService.syncEffective(agentId, dto.config, dto.secrets ?? {});
+    return await this.syncService.syncEffective(agentId, dto.config, dto.secrets ?? {}, dto.platformPolicy);
   }
 
   @Get('agents')

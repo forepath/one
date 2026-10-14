@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { StatisticsEntityEventType, StatisticsEntityType } from '../entities/statistics-entity-event.entity';
+import { StatisticsSecurityRepository } from '../repositories/statistics-security.repository';
 import { StatisticsRepository } from '../repositories/statistics.repository';
 
 import { StatisticsQueryService } from './statistics-query.service';
@@ -20,14 +21,33 @@ describe('StatisticsQueryService', () => {
     queryFilterFlagsAggregate: jest.fn(),
     queryEntityEvents: jest.fn(),
   };
+  const mockSecurityRepository = {
+    queryEgressAggregate: jest.fn(),
+    querySecuritySeries: jest.fn(),
+    queryEgressEvents: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [StatisticsQueryService, { provide: StatisticsRepository, useValue: mockRepository }],
+      providers: [
+        StatisticsQueryService,
+        { provide: StatisticsRepository, useValue: mockRepository },
+        { provide: StatisticsSecurityRepository, useValue: mockSecurityRepository },
+      ],
     }).compile();
 
     service = module.get<StatisticsQueryService>(StatisticsQueryService);
     repository = module.get(StatisticsRepository);
+    mockSecurityRepository.queryEgressAggregate.mockResolvedValue({
+      egressAllowedCount: 0,
+      egressBlockedCount: 0,
+      egressObservedCount: 0,
+      egressGuardErrorCount: 0,
+      egressBreakdown: [],
+      egressTopBlockedHosts: [],
+      egressRulesBreakdown: [],
+    });
+    mockSecurityRepository.querySecuritySeries.mockResolvedValue([]);
     jest.clearAllMocks();
   });
 
@@ -68,6 +88,103 @@ describe('StatisticsQueryService', () => {
 
     it('should throw BadRequestException for invalid from date', async () => {
       await expect(service.getClientSummary('client-1', { from: 'invalid-date' })).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('security summary and egress events', () => {
+    it('adds egress aggregates and the security series to summaries', async () => {
+      mockRepository.findStatisticsClientIdsByOriginalIds.mockResolvedValue(['sc1']);
+      mockRepository.queryChatIoAggregate.mockResolvedValue({ totalMessages: 1, totalWords: 1, totalChars: 1 });
+      mockRepository.queryFilterDropsAggregate.mockResolvedValue({ filterDropCount: 0, filterTypesBreakdown: [] });
+      mockRepository.queryFilterFlagsAggregate.mockResolvedValue({ filterFlagCount: 0, filterTypesBreakdown: [] });
+      mockSecurityRepository.queryEgressAggregate.mockResolvedValue({
+        egressAllowedCount: 10,
+        egressBlockedCount: 3,
+        egressObservedCount: 0,
+        egressGuardErrorCount: 1,
+        egressBreakdown: [{ kind: 'web', decision: 'blocked', count: 3 }],
+        egressTopBlockedHosts: [{ host: 'example.org', count: 3 }],
+        egressRulesBreakdown: [{ rule: 'deny_host', count: 3 }],
+      });
+      mockSecurityRepository.querySecuritySeries.mockResolvedValue([
+        {
+          period: '2026-10-12T00:00:00.000Z',
+          filterDrops: 1,
+          filterFlags: 0,
+          egressAllowed: 10,
+          egressBlocked: 3,
+          egressObserved: 0,
+        },
+      ]);
+
+      const result = await service.getSummary(['client-1'], { from: '2026-10-01', to: '2026-10-12', groupBy: 'day' });
+
+      expect(mockSecurityRepository.queryEgressAggregate).toHaveBeenCalledWith({
+        statisticsClientIds: ['sc1'],
+        from: '2026-10-01',
+        to: '2026-10-12T23:59:59.999Z',
+      });
+      expect(mockSecurityRepository.querySecuritySeries).toHaveBeenCalledWith(
+        expect.objectContaining({ statisticsClientIds: ['sc1'], groupBy: 'day' }),
+      );
+      expect(result.egressBlockedCount).toBe(3);
+      expect(result.egressTopBlockedHosts).toEqual([{ host: 'example.org', count: 3 }]);
+      expect(result.securitySeries).toHaveLength(1);
+    });
+
+    it('omits the security series without groupBy and returns zeros for unknown clients', async () => {
+      mockRepository.findStatisticsClientIdsByOriginalIds.mockResolvedValue([]);
+
+      const empty = await service.getClientSummary('client-unknown', {});
+
+      expect(empty.egressBlockedCount).toBe(0);
+      expect(empty.egressBreakdown).toEqual([]);
+      expect(empty.securitySeries).toBeUndefined();
+    });
+
+    it('lists egress events with validated filters and maps original ids', async () => {
+      mockRepository.findStatisticsClientIdsByOriginalIds.mockResolvedValue(['sc1']);
+      mockSecurityRepository.queryEgressEvents.mockResolvedValue({
+        rows: [
+          {
+            id: 'e1',
+            statisticsClientId: 'sc1',
+            statisticsClient: { originalClientId: 'client-1', name: 'WS' },
+            statisticsAgent: { originalAgentId: 'agent-1', name: 'Agent' },
+            kind: 'web',
+            decision: 'blocked',
+            host: 'example.org',
+            rule: 'deny_host',
+            matchedEntry: 'example.org',
+            matchedSource: 'global',
+            count: 2,
+            bytesIn: '0',
+            bytesOut: '12',
+            firstSeenAt: new Date(1),
+            occurredAt: new Date(2),
+          },
+        ],
+        total: 1,
+      });
+
+      const result = await service.getClientEgressEvents('client-1', {
+        decision: 'blocked',
+        kind: 'web',
+        search: 'example',
+      });
+
+      expect(mockSecurityRepository.queryEgressEvents).toHaveBeenCalledWith(
+        expect.objectContaining({ statisticsClientIds: ['sc1'], decision: 'blocked', kind: 'web', search: 'example' }),
+      );
+      expect(result.data[0]).toEqual(
+        expect.objectContaining({ clientId: 'client-1', agentId: 'agent-1', host: 'example.org', bytesOut: 12 }),
+      );
+      expect(result.total).toBe(1);
+    });
+
+    it('rejects unknown egress filters', async () => {
+      await expect(service.getEgressEvents(['client-1'], { decision: 'maybe' })).rejects.toThrow(BadRequestException);
+      await expect(service.getEgressEvents(['client-1'], { kind: 'smtp' })).rejects.toThrow(BadRequestException);
     });
   });
 

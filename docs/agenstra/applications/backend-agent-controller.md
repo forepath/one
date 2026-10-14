@@ -15,7 +15,7 @@ This application provides:
 - **Server Provisioning** Automated cloud server provisioning (Hetzner Cloud, DigitalOcean) with Docker and agent-manager deployment
 - **Tickets and Automation** Workspace tickets, migration, and automation APIs with optional ticket board WebSocket namespace
 - **Usage Statistics** Aggregated chat, filter, and entity metrics for operators and admins
-- **Global Filter Rules** Admin-managed regex policies synced to workspaces
+- **Message filters and egress policy** Layered `message_filters` and `egress` (web traffic) policy in the agent configuration, resolved and synced to managers; egress events ingested for the audit page
 - **Atlassian import** Admin-managed Atlassian site connections and Jira/Confluence import configurations (scheduled and on-demand)
 - **Agent configuration** Three-layer OpenCode V2 overlays (`/admin/opencode/config`, client and agent `/opencode/config`) with heredity locks and worker sync; see [Agent configuration](../features/agent-configuration.md)
 - **Per-Client Permissions** Fine-grained access control with user roles per client (keycloak/users mode)
@@ -152,16 +152,17 @@ See [Usage Statistics](../features/usage-statistics.md).
 - `GET /api/statistics/summary` - Aggregate summary (access rules per OpenAPI)
 - `GET /api/statistics/chat-io`, `filter-drops`, `filter-flags`, `entity-events` - Global aggregates
 
-### Global message filter rules (admin)
+### Message filters and web traffic (egress)
 
-See [Message Filter Rules](../features/message-filter-rules.md).
+Message filters and egress policy are authored in the layered agent configuration (no dedicated CRUD routes). See [Message Filters](../features/message-filters.md) and [Egress Filtering](../features/egress-filtering.md).
 
-- `GET/POST /api/filter-rules` - List (paginated) and create rules
-- `GET/PUT/DELETE /api/filter-rules/:id` - Read, update, delete a rule
+- `GET /api/clients/:id/agents/:agentId/egress` - Guard status, policy in force, message filters and recent decisions
+- `POST /api/clients/:id/agents/:agentId/egress/evaluate` - Evaluate a destination against the environment's effective egress policy
+- `GET /api/clients/:id/statistics/egress-events` and `GET /api/statistics/egress-events` - Ingested egress decision events
 
 ### Atlassian import (controller-native, admin)
 
-See [Atlassian import](../features/atlassian-import.md). All paths are under **`/api/imports/atlassian`** with the same admin authorization model as filter rules (global admin session, or API key authentication).
+See [Atlassian import](../features/atlassian-import.md). All paths are under **`/api/imports/atlassian`** with the same admin authorization model as the admin agent configuration (global admin session, or API key authentication).
 
 - `GET/POST /api/imports/atlassian/connections` - List (paginated) and create site connections
 - `GET/PUT/DELETE /api/imports/atlassian/connections/{id}` - Read, update, delete a connection
@@ -474,7 +475,8 @@ Before deploying to production, ensure:
 - **[WebSocket Communication Feature](../features/websocket-communication.md)** WebSocket communication guide
 - **[Tickets and Workspaces](../features/tickets-and-workspaces.md)** Tickets, migration, automation
 - **[Usage Statistics](../features/usage-statistics.md)** Controller usage metrics
-- **[Message Filter Rules](../features/message-filter-rules.md)** Global and per-agent filters
+- **[Message Filters](../features/message-filters.md)** Layered chat message filters
+- **[Egress Filtering](../features/egress-filtering.md)** Per-environment web traffic filtering
 - **[Atlassian import](../features/atlassian-import.md)** Atlassian site connections and Jira/Confluence import configurations
 - **[Agent configuration](../features/agent-configuration.md)** Three-layer runtime overlays and worker sync
 - **[Dynamic provider plugins](../features/dynamic-provider-plugins.md)** Runtime provisioning and import provider extensions

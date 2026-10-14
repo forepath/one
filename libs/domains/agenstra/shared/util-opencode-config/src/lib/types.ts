@@ -51,7 +51,13 @@ export const MAP_MERGE_ROOT_KEYS = ['providers', 'commands', 'agents', 'referenc
 export const INHERITED_MAP_ENTRY_OVERRIDE_KEYS = ['disabled', 'hidden'] as const;
 
 /** Array keys that concatenate across layers. */
-export const ARRAY_CONCAT_ROOT_KEYS = ['skills', 'instructions', 'plugins'] as const;
+export const ARRAY_CONCAT_ROOT_KEYS = ['skills', 'instructions', 'plugins', 'message_filters'] as const;
+
+/**
+ * Platform security roots enforced by the agent manager (never sent to the OpenCode worker).
+ * `egress` merges per field (scalars lock / lists concatenate); `message_filters` concatenates.
+ */
+export const PLATFORM_SECURITY_ROOT_KEYS = ['egress', 'message_filters'] as const;
 
 /** Scalar / object roots locked when parent defines them. */
 export const SCALAR_LOCK_ROOT_KEYS = [

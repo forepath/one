@@ -21,7 +21,8 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **Authentication** Multiple authentication methods with configurable user registration
 - **Tickets and Workspaces** Ticket boards, migration, and automation on the controller
 - **Usage Statistics** Controller-backed usage and filter metrics (distinct from container stats)
-- **Message Filter Rules** Global and per-agent regex policies for chat traffic
+- **Message Filters** Layered regex policies for chat traffic
+- **Egress Filtering** Per-environment web traffic filtering via an egress guard sidecar
 - **Atlassian import** Admin-managed site connections and import configs (Jira and Confluence) into tickets and knowledge
 - **Dynamic provider plugins** Extend provisioning, agents, pipelines, context import, and chat filters via env-configured packages
 - **OpenTelemetry** Optional Prometheus metrics and OTLP export (disabled by default)
@@ -200,9 +201,13 @@ Aggregated usage and filter metrics on the agent controller for reporting and op
 - Chat I/O, filter drops, filter flags, and entity events
 - Complements live **container** statistics from the agent-manager
 
-### [Message Filter Rules](./message-filter-rules.md)
+### [Message Filters](./message-filters.md)
 
-Regex-based rules at controller (global, admin) and manager (per-agent) levels.
+Regex-based message filters (`message_filters`) layered global, workspace and environment; most restrictive wins.
+
+### [Egress Filtering](./egress-filtering.md)
+
+Per-environment web traffic filtering through an egress guard sidecar (Squid, dnsmasq, iptables) with audit events.
 
 **Key Capabilities**:
 
@@ -261,7 +266,8 @@ graph TB
     AUTH[Authentication]
     TK[Tickets and Workspaces]
     ST[Usage Statistics]
-    FR[Message Filter Rules]
+    FR[Message Filters]
+    EG[Egress Filtering]
     DP[Dynamic Provider Plugins]
 
     SP --> CM

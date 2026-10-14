@@ -360,6 +360,8 @@ paths:
                   updatedAt:
                     type: string
                     format: date-time
+                  egress:
+                    $ref: '#/components/schemas/AgentEgressStatusDto'
     put:
       summary: Update agent OpenCode user config
       operationId: putAgentOpencodeConfig
@@ -393,7 +395,7 @@ paths:
                     type: string
       responses:
         '200':
-          description: Updated agent OpenCode config
+          description: Updated agent OpenCode config (same shape as the GET response, including `egress`)
   /agents/{id}/opencode/config/agents:
     get:
       summary: List effective OpenCode agents (primary + subagents) from the worker
@@ -499,6 +501,13 @@ paths:
                 config:
                   type: object
                   additionalProperties: true
+                secrets:
+                  type: object
+                  additionalProperties:
+                    type: string
+                platformPolicy:
+                  $ref: '#/components/schemas/SyncAgentPlatformPolicyDto'
+                  description: Omitted by older controllers; the stored platform policy then stays in force
       responses:
         '200':
           description: Sync attempted
@@ -634,66 +643,49 @@ paths:
           description: Invalid code or OAuth failed
         '404':
           description: Agent or MCP server not found
-  /agents-filters:
+  /egress/events:
     get:
-      summary: List regex filter rules
-      operationId: listRegexFilterRules
+      summary: List egress guard decision events (ingestion feed)
+      description: |
+        Cursor-based feed of aggregated egress guard decisions, ordered by the monotonic `seq`.
+        The agent controller polls this endpoint, passing the previous `nextSeq` as `afterSeq`.
+      operationId: listEgressEvents
       parameters:
+        - in: query
+          name: afterSeq
+          schema:
+            type: string
+            pattern: '^\d{1,19}$'
+            default: '0'
+          description: Return only events with a `seq` greater than this cursor (non-negative integer)
         - in: query
           name: limit
           schema:
             type: integer
-            minimum: 0
+            minimum: 1
+          description: Maximum number of events to return (default 500, capped at the server maximum page size)
         - in: query
-          name: offset
+          name: agentId
           schema:
-            type: integer
-            minimum: 0
+            type: string
+            format: uuid
+          description: Restrict events to one agent
       responses:
         '200':
-          description: Array of regex filter rules (ordered by priority)
+          description: Page of egress events
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RegexFilterRuleResponseDto'
-    post:
-      summary: Create regex filter rule
-      operationId: createRegexFilterRule
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateRegexFilterRuleDto'
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RegexFilterRuleResponseDto'
-  /agents-filters/count:
+                $ref: '#/components/schemas/AgentEgressEventsPageDto'
+        '400':
+          description: Invalid afterSeq or agentId
+  /agents/{id}/egress:
     get:
-      summary: Count regex filter rules
-      operationId: countRegexFilterRules
-      responses:
-        '200':
-          description: Count
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [count]
-                properties:
-                  count:
-                    type: integer
-                    minimum: 0
-  /agents-filters/{id}:
-    get:
-      summary: Get regex filter rule by id
-      operationId: getRegexFilterRule
+      summary: Get egress guard details of an agent
+      description: |
+        Returns the live guard status, the effective egress policy and message filters in force,
+        and the most recent (up to 50) egress events of the agent.
+      operationId: getAgentEgress
       parameters:
         - in: path
           name: id
@@ -703,53 +695,13 @@ paths:
             format: uuid
       responses:
         '200':
-          description: Rule
+          description: Egress details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RegexFilterRuleResponseDto'
+                $ref: '#/components/schemas/AgentEgressDetailsDto'
         '404':
-          description: Not found
-    put:
-      summary: Update regex filter rule
-      operationId: updateRegexFilterRule
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateRegexFilterRuleDto'
-      responses:
-        '200':
-          description: Updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RegexFilterRuleResponseDto'
-        '404':
-          description: Not found
-    delete:
-      summary: Delete regex filter rule
-      operationId: deleteRegexFilterRule
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '204':
-          description: Deleted
-        '404':
-          description: Not found
+          description: Agent not found
   /instance-status:
     get:
       summary: Get agent-manager instance status
@@ -2397,6 +2349,12 @@ components:
           type: string
           enum: [opencode]
           description: Agent provider type
+        egressPolicy:
+          $ref: '#/components/schemas/EffectiveEgressPolicy'
+          description: |
+            Effective egress policy (set by the agent controller from the layered agent configuration).
+            When it requires filtering, the egress guard is provisioned and its policy applied before the
+            agent container starts.
         deploymentConfiguration:
           type: object
           description: CI/CD deployment configuration (optional). If provided, the deployment configuration for this agent will be updated or created.
@@ -2462,6 +2420,9 @@ components:
           type: string
           format: uuid
           description: Id of the primary chat session for this environment
+        egress:
+          $ref: '#/components/schemas/AgentEgressStatusDto'
+          description: Egress guard (web traffic filtering) status of this environment
         createdAt:
           type: string
           format: date-time
@@ -3207,85 +3168,301 @@ components:
           enum: [override, default_env, unset]
         hasOverride:
           type: boolean
-    RegexFilterRuleResponseDto:
+    EgressMode:
+      type: string
+      enum: [off, monitor, enforce, offline]
+      description: |
+        `off` no enforcement; `monitor` all traffic allowed, would-be blocks recorded as `observed`;
+        `enforce` allow/deny lists apply (deny wins; empty allowlist = unrestricted); `offline` all egress blocked.
+    PlatformPolicyLayer:
+      type: string
+      enum: [global, workspace, environment]
+      description: Configuration layer that contributed a policy entry
+    EgressRule:
+      type: string
+      enum:
+        [
+          offline,
+          deny_host,
+          private_network,
+          ip_literal,
+          deny_url,
+          not_allowlisted,
+          quic,
+          dns_over_tls,
+          undeclared_protocol,
+          guard,
+        ]
+    EffectiveEgressEntry:
+      type: object
+      required: [value, source]
+      properties:
+        value:
+          type: string
+        source:
+          $ref: '#/components/schemas/PlatformPolicyLayer'
+    EffectiveEgressNetworkRule:
+      type: object
+      required: [protocol, ports, destinations, source]
+      properties:
+        protocol:
+          type: string
+          enum: [tcp, udp]
+        ports:
+          type: string
+          description: Port or port range, e.g. `22` or `1000-2000`
+        destinations:
+          type: array
+          items:
+            type: string
+          description: IP addresses or CIDRs
+        description:
+          type: string
+        source:
+          $ref: '#/components/schemas/PlatformPolicyLayer'
+    EffectiveEgressPolicy:
+      type: object
+      description: Fully resolved egress (web traffic) policy (global -> workspace -> environment)
+      required:
+        [
+          mode,
+          allowHosts,
+          denyHosts,
+          denyUrlPatterns,
+          networkAllow,
+          blockPrivateNetworks,
+          blockIpLiterals,
+          logAllowed,
+          scalarSources,
+        ]
+      properties:
+        mode:
+          $ref: '#/components/schemas/EgressMode'
+        allowHosts:
+          type: array
+          items:
+            $ref: '#/components/schemas/EffectiveEgressEntry'
+        denyHosts:
+          type: array
+          items:
+            $ref: '#/components/schemas/EffectiveEgressEntry'
+        denyUrlPatterns:
+          type: array
+          items:
+            $ref: '#/components/schemas/EffectiveEgressEntry'
+        networkAllow:
+          type: array
+          items:
+            $ref: '#/components/schemas/EffectiveEgressNetworkRule'
+        blockPrivateNetworks:
+          type: boolean
+        blockIpLiterals:
+          type: boolean
+        logAllowed:
+          type: boolean
+        scalarSources:
+          type: object
+          description: Layer that set each scalar setting (null = platform default)
+          required: [mode, blockPrivateNetworks, blockIpLiterals, logAllowed]
+          properties:
+            mode:
+              oneOf:
+                - $ref: '#/components/schemas/PlatformPolicyLayer'
+                - type: 'null'
+            blockPrivateNetworks:
+              oneOf:
+                - $ref: '#/components/schemas/PlatformPolicyLayer'
+                - type: 'null'
+            blockIpLiterals:
+              oneOf:
+                - $ref: '#/components/schemas/PlatformPolicyLayer'
+                - type: 'null'
+            logAllowed:
+              oneOf:
+                - $ref: '#/components/schemas/PlatformPolicyLayer'
+                - type: 'null'
+    EffectiveMessageFilterRule:
+      type: object
+      required: [name, pattern, flags, direction, action, enabled, source]
+      properties:
+        name:
+          type: string
+        pattern:
+          type: string
+        flags:
+          type: string
+          description: Flags passed to JavaScript RegExp (subset g,i,m,s,u,y,d)
+        direction:
+          type: string
+          enum: [incoming, outgoing, bidirectional]
+        action:
+          type: string
+          enum: [drop, replace, flag]
+        replacement:
+          type: string
+          description: Replacement template when action is replace
+        enabled:
+          type: boolean
+        source:
+          $ref: '#/components/schemas/PlatformPolicyLayer'
+    SyncAgentPlatformPolicyDto:
+      type: object
+      description: |
+        Effective platform security policy resolved by the controller (global -> workspace -> environment).
+        Re-normalized on receipt.
+      properties:
+        egress:
+          $ref: '#/components/schemas/EffectiveEgressPolicy'
+        messageFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/EffectiveMessageFilterRule'
+    AgentEgressGuardRuntimeDto:
+      type: object
+      required: [running, startedAt, activeRevision, proxyRunning, dnsRunning]
+      properties:
+        running:
+          type: boolean
+        startedAt:
+          type: [string, 'null']
+          format: date-time
+        activeRevision:
+          type: [string, 'null']
+          description: Policy revision the guard reports as active
+        proxyRunning:
+          type: boolean
+        dnsRunning:
+          type: boolean
+    AgentEgressStatusDto:
+      type: object
+      required:
+        [status, mode, guardContainerId, policyRevision, appliedAt, lastError]
+      properties:
+        status:
+          type: string
+          enum: [inactive, active, failed]
+          description: '`inactive` (no enforcement), `active` (guard applied), `failed` (last apply failed; previous bundle kept)'
+        mode:
+          $ref: '#/components/schemas/EgressMode'
+        guardContainerId:
+          type: [string, 'null']
+          description: Short guard container id (null when the agent never required egress filtering)
+        policyRevision:
+          type: [string, 'null']
+        appliedAt:
+          type: [string, 'null']
+          format: date-time
+        lastError:
+          type: [string, 'null']
+        guard:
+          $ref: '#/components/schemas/AgentEgressGuardRuntimeDto'
+    AgentEgressEventDto:
       type: object
       required:
         [
-          id,
-          pattern,
-          regexFlags,
-          direction,
-          filterType,
-          priority,
-          createdAt,
-          updatedAt,
+          seq,
+          agentId,
+          kind,
+          decision,
+          host,
+          rule,
+          matchedEntry,
+          matchedSource,
+          method,
+          httpStatus,
+          sampleUrl,
+          count,
+          bytesIn,
+          bytesOut,
+          firstSeenAt,
+          lastSeenAt,
+          mode,
+          policyRevision,
+          message,
         ]
       properties:
-        id:
+        seq:
+          type: string
+          description: Monotonic cursor (stringified bigint)
+        agentId:
           type: string
           format: uuid
-        pattern:
+        kind:
           type: string
-        regexFlags:
+          enum: [web, dns, network, guard]
+        decision:
           type: string
-          description: Flags passed to JavaScript RegExp (subset g,i,m,s,u)
-        direction:
-          type: string
-          enum: [incoming, outgoing, bidirectional]
-        filterType:
-          type: string
-          enum: [none, filter, drop]
-        replaceContent:
-          type: string
-          description: Replacement template when filterType is filter ($1-style backrefs supported)
-        priority:
+          enum: [allowed, blocked, observed, error]
+        host:
+          type: [string, 'null']
+        rule:
+          oneOf:
+            - $ref: '#/components/schemas/EgressRule'
+            - type: 'null'
+        matchedEntry:
+          type: [string, 'null']
+        matchedSource:
+          oneOf:
+            - $ref: '#/components/schemas/PlatformPolicyLayer'
+            - type: 'null'
+        method:
+          type: [string, 'null']
+        httpStatus:
+          type: [integer, 'null']
+        sampleUrl:
+          type: [string, 'null']
+        count:
           type: integer
-          description: Lower values run first
-        createdAt:
+        bytesIn:
+          type: integer
+        bytesOut:
+          type: integer
+        firstSeenAt:
           type: string
           format: date-time
-        updatedAt:
+        lastSeenAt:
           type: string
           format: date-time
-    CreateRegexFilterRuleDto:
+        mode:
+          type: [string, 'null']
+        policyRevision:
+          type: [string, 'null']
+        message:
+          type: [string, 'null']
+    AgentEgressEventsPageDto:
       type: object
-      required: [pattern, direction, filterType]
+      required: [events, nextSeq, hasMore]
       properties:
-        pattern:
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentEgressEventDto'
+        nextSeq:
           type: string
-        regexFlags:
-          type: string
-          default: g
-        direction:
-          type: string
-          enum: [incoming, outgoing, bidirectional]
-        filterType:
-          type: string
-          enum: [none, filter, drop]
-        replaceContent:
-          type: string
-          description: Required when filterType is filter
-        priority:
-          type: integer
-          minimum: 0
-    UpdateRegexFilterRuleDto:
+          description: Cursor to pass as `afterSeq` for the next page (unchanged when no events were returned)
+        hasMore:
+          type: boolean
+    AgentEgressDetailsDto:
       type: object
+      required: [agentId, status, policy, messageFilters, recentEvents]
       properties:
-        pattern:
+        agentId:
           type: string
-        regexFlags:
-          type: string
-        direction:
-          type: string
-          enum: [incoming, outgoing, bidirectional]
-        filterType:
-          type: string
-          enum: [none, filter, drop]
-        replaceContent:
-          type: string
-        priority:
-          type: integer
-          minimum: 0
+          format: uuid
+        status:
+          $ref: '#/components/schemas/AgentEgressStatusDto'
+        policy:
+          oneOf:
+            - $ref: '#/components/schemas/EffectiveEgressPolicy'
+            - type: 'null'
+        messageFilters:
+          type: array
+          items:
+            $ref: '#/components/schemas/EffectiveMessageFilterRule'
+        recentEvents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentEgressEventDto'
     OpencodeMcpServerStatusDto:
       type: object
       required: [name, status]

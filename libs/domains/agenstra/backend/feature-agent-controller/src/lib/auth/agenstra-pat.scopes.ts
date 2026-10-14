@@ -13,7 +13,6 @@ export const AGENSTRA_PAT_SCOPES = [
   'knowledge:write',
   'attachments:read',
   'attachments:write',
-  'filter_rules:write',
   'agents:read',
   'agents:write',
   'agents:lifecycle',

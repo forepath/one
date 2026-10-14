@@ -15,8 +15,8 @@ describe('job-id.util', () => {
   });
 
   it('buildCoordinatorJobId uses allowed characters only', () => {
-    expect(buildCoordinatorJobId('filter-rules-sync')).toBe('coordinator.filter-rules-sync');
-    assertValidBullMqJobId(buildCoordinatorJobId('filter-rules-sync'));
+    expect(buildCoordinatorJobId('egress-events-ingest')).toBe('coordinator.egress-events-ingest');
+    assertValidBullMqJobId(buildCoordinatorJobId('egress-events-ingest'));
   });
 
   it('rejects integer-only job ids', () => {

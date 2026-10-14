@@ -1,12 +1,12 @@
 import type { ClientEntity } from '@forepath/identity/backend';
 
-import type { AgentConsoleRegexFilterRuleEntity } from '../entities/agent-console-regex-filter-rule.entity';
 import type { AtlassianSiteConnectionEntity } from '../entities/atlassian-site-connection.entity';
 import type { ExternalImportConfigEntity } from '../entities/external-import-config.entity';
 import type { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
 import type { StatisticsAgentEntity } from '../entities/statistics-agent.entity';
 import type { StatisticsChatFilterDropEntity } from '../entities/statistics-chat-filter-drop.entity';
 import type { StatisticsChatFilterFlagEntity } from '../entities/statistics-chat-filter-flag.entity';
+import type { StatisticsEgressEventEntity } from '../entities/statistics-egress-event.entity';
 import type { StatisticsChatIoEntity } from '../entities/statistics-chat-io.entity';
 import type { StatisticsEntityEventEntity } from '../entities/statistics-entity-event.entity';
 import type { StatisticsUserEntity } from '../entities/statistics-user.entity';
@@ -107,34 +107,6 @@ export function mapKnowledgeNodeToSearchDocument(node: KnowledgeNodeEntity): Age
   };
 }
 
-export function mapFilterRuleToSearchDocument(
-  rule: AgentConsoleRegexFilterRuleEntity,
-  clientIds: string[],
-): AgenstraSearchDocument {
-  const primaryClientId = rule.isGlobal ? null : (clientIds[0] ?? null);
-
-  return {
-    id: rule.id,
-    entityType: 'filter-rules',
-    clientId: primaryClientId,
-    clientIds: rule.isGlobal ? undefined : clientIds,
-    instanceScoped: rule.isGlobal,
-    pattern: rule.pattern,
-    filterType: rule.filterType,
-    direction: rule.direction,
-    createdAt: toIso(rule.createdAt),
-    updatedAt: toIso(rule.updatedAt),
-    searchableText: joinSearchable([
-      rule.id,
-      rule.pattern,
-      rule.filterType,
-      rule.direction,
-      rule.replaceContent,
-      ...clientIds,
-    ]),
-  };
-}
-
 export function mapDeploymentRunToSearchDocument(input: {
   id: string;
   clientId: string;
@@ -214,6 +186,37 @@ export function mapFilterFlagToSearchDocument(
     charCount: row.charCount,
     createdAt: toIso(row.occurredAt),
     searchableText: joinSearchable([row.id, row.filterType, row.filterDisplayName, row.filterReason, row.direction]),
+  };
+}
+
+export function mapEgressEventToSearchDocument(
+  row: StatisticsEgressEventEntity,
+  originalClientId: string,
+  originalAgentId?: string | null,
+): AgenstraSearchDocument {
+  return {
+    id: row.id,
+    entityType: 'egress-events',
+    clientId: originalClientId,
+    statisticsClientId: row.statisticsClientId,
+    agentId: originalAgentId ?? null,
+    host: row.host ?? null,
+    decision: row.decision,
+    kind: row.kind,
+    rule: row.rule ?? null,
+    label: row.matchedEntry ?? null,
+    createdAt: toIso(row.occurredAt),
+    searchableText: joinSearchable([
+      row.id,
+      row.host,
+      row.kind,
+      row.decision,
+      row.rule,
+      row.matchedEntry,
+      row.matchedSource,
+      row.method,
+      row.message,
+    ]),
   };
 }
 
@@ -381,7 +384,7 @@ export function isAgenstraSearchEntityType(value: string): value is AgenstraSear
     value === 'agents' ||
     value === 'tickets' ||
     value === 'knowledge-nodes' ||
-    value === 'filter-rules' ||
+    value === 'egress-events' ||
     value === 'deployment-runs' ||
     value === 'chat-io' ||
     value === 'filter-drops' ||

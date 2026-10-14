@@ -270,8 +270,8 @@ export function buildAgentControllerCloudInitUserData(config: AgentControllerClo
     ...buildOpenSearchBackendEnvLines('agenstra'),
     `QUEUE_WORKER_CONCURRENCY: 5`,
     // Coordinator / worker scheduler intervals (shared across api, worker, scheduler)
-    `FILTER_RULES_SYNC_INTERVAL_MS: 30000`,
-    `FILTER_RULES_SYNC_BATCH_SIZE: 10`,
+    `EGRESS_EVENTS_INGEST_INTERVAL_MS: 30000`,
+    `EGRESS_EVENTS_INGEST_BATCH_SIZE: 10`,
     `CONTEXT_IMPORT_SCHEDULER_INTERVAL_MS: 120000`,
     `CONTEXT_IMPORT_SCHEDULER_CONFIG_BATCH: 3`,
     `CONTEXT_IMPORT_ITEM_BUDGET: 25`,

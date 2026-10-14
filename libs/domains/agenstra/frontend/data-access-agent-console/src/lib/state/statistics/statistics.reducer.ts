@@ -1,6 +1,12 @@
 import { createReducer, on } from '@ngrx/store';
 
 import {
+  loadClientStatisticsEgressEvents,
+  loadClientStatisticsEgressEventsFailure,
+  loadClientStatisticsEgressEventsSuccess,
+  loadStatisticsEgressEvents,
+  loadStatisticsEgressEventsFailure,
+  loadStatisticsEgressEventsSuccess,
   loadClientStatisticsChatIo,
   loadClientStatisticsChatIoFailure,
   loadClientStatisticsChatIoSuccess,
@@ -34,6 +40,7 @@ import {
 } from './statistics.actions';
 import type {
   StatisticsChatIoListDto,
+  StatisticsEgressEventListDto,
   StatisticsEntityEventListDto,
   StatisticsFilterDropListDto,
   StatisticsFilterFlagListDto,
@@ -47,22 +54,26 @@ export interface StatisticsState {
   clientFilterDrops: Record<string, StatisticsFilterDropListDto>;
   clientFilterFlags: Record<string, StatisticsFilterFlagListDto>;
   clientEntityEvents: Record<string, StatisticsEntityEventListDto>;
+  clientEgressEvents: Record<string, StatisticsEgressEventListDto>;
   loadingClientSummary: Record<string, boolean>;
   loadingClientChatIo: Record<string, boolean>;
   loadingClientFilterDrops: Record<string, boolean>;
   loadingClientFilterFlags: Record<string, boolean>;
   loadingClientEntityEvents: Record<string, boolean>;
+  loadingClientEgressEvents: Record<string, boolean>;
   // Aggregate
   summary: StatisticsSummaryDto | null;
   chatIo: StatisticsChatIoListDto | null;
   filterDrops: StatisticsFilterDropListDto | null;
   filterFlags: StatisticsFilterFlagListDto | null;
   entityEvents: StatisticsEntityEventListDto | null;
+  egressEvents: StatisticsEgressEventListDto | null;
   loadingSummary: boolean;
   loadingChatIo: boolean;
   loadingFilterDrops: boolean;
   loadingFilterFlags: boolean;
   loadingEntityEvents: boolean;
+  loadingEgressEvents: boolean;
   error: string | null;
 }
 
@@ -72,21 +83,25 @@ export const initialStatisticsState: StatisticsState = {
   clientFilterDrops: {},
   clientFilterFlags: {},
   clientEntityEvents: {},
+  clientEgressEvents: {},
   loadingClientSummary: {},
   loadingClientChatIo: {},
   loadingClientFilterDrops: {},
   loadingClientFilterFlags: {},
   loadingClientEntityEvents: {},
+  loadingClientEgressEvents: {},
   summary: null,
   chatIo: null,
   filterDrops: null,
   filterFlags: null,
   entityEvents: null,
+  egressEvents: null,
   loadingSummary: false,
   loadingChatIo: false,
   loadingFilterDrops: false,
   loadingFilterFlags: false,
   loadingEntityEvents: false,
+  loadingEgressEvents: false,
   error: null,
 };
 
@@ -260,6 +275,40 @@ export const statisticsReducer = createReducer(
   on(loadStatisticsEntityEventsFailure, (state, { error }) => ({
     ...state,
     loadingEntityEvents: false,
+    error,
+  })),
+  // Client-scoped Egress Events
+  on(loadClientStatisticsEgressEvents, (state, { params }) => ({
+    ...state,
+    loadingClientEgressEvents: { ...state.loadingClientEgressEvents, [params.clientId]: true },
+    error: null,
+  })),
+  on(loadClientStatisticsEgressEventsSuccess, (state, { clientId, data }) => ({
+    ...state,
+    clientEgressEvents: { ...state.clientEgressEvents, [clientId]: data },
+    loadingClientEgressEvents: { ...state.loadingClientEgressEvents, [clientId]: false },
+    error: null,
+  })),
+  on(loadClientStatisticsEgressEventsFailure, (state, { clientId, error }) => ({
+    ...state,
+    loadingClientEgressEvents: { ...state.loadingClientEgressEvents, [clientId]: false },
+    error,
+  })),
+  // Aggregate Egress Events
+  on(loadStatisticsEgressEvents, (state) => ({
+    ...state,
+    loadingEgressEvents: true,
+    error: null,
+  })),
+  on(loadStatisticsEgressEventsSuccess, (state, { data }) => ({
+    ...state,
+    egressEvents: data,
+    loadingEgressEvents: false,
+    error: null,
+  })),
+  on(loadStatisticsEgressEventsFailure, (state, { error }) => ({
+    ...state,
+    loadingEgressEvents: false,
     error,
   })),
 );

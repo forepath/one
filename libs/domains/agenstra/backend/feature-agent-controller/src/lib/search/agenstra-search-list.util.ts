@@ -120,10 +120,13 @@ const SEARCH_FIELD_COLUMNS: Partial<
     status: (alias) => `${alias}.node_type::text`,
     id: (alias) => `CAST(${alias}.id AS text)`,
   },
-  'filter-rules': {
-    pattern: (alias) => `${alias}.pattern`,
-    filterType: (alias) => `${alias}.filter_type`,
-    direction: (alias) => `${alias}.direction::text`,
+  'egress-events': {
+    host: (alias) => `${alias}.host`,
+    decision: (alias) => `${alias}.decision`,
+    kind: (alias) => `${alias}.kind`,
+    rule: (alias) => `${alias}.rule`,
+    label: (alias) => `${alias}.matched_entry`,
+    provider: (alias) => `${alias}.method`,
     id: (alias) => `CAST(${alias}.id AS text)`,
   },
   'atlassian-connections': {
@@ -188,10 +191,6 @@ export function applyAgenstraSearchIlike<T extends ObjectLiteral>(
     clauses.push(`${alias}.jql ILIKE :agenstraSearchTerm`);
     clauses.push(`${alias}.cql ILIKE :agenstraSearchTerm`);
     clauses.push(`${alias}.confluence_space_key ILIKE :agenstraSearchTerm`);
-  }
-
-  if (entityType === 'filter-rules') {
-    clauses.push(`COALESCE(${alias}.replace_content, '') ILIKE :agenstraSearchTerm`);
   }
 
   if (clauses.length === 0) {

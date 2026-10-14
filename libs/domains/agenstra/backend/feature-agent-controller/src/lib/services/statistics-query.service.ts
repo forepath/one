@@ -3,6 +3,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   StatisticsChatIoListDto,
   StatisticsChatIoDto,
+  StatisticsEgressEventDto,
+  StatisticsEgressEventListDto,
   StatisticsEntityEventListDto,
   StatisticsEntityEventDto,
   StatisticsFilterDropListDto,
@@ -13,6 +15,8 @@ import {
 } from '../dto/statistics';
 import { ChatDirection, StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 import { StatisticsEntityEventType, StatisticsEntityType } from '../entities/statistics-entity-event.entity';
+import type { StatisticsEgressEventEntity } from '../entities/statistics-egress-event.entity';
+import { StatisticsSecurityRepository } from '../repositories/statistics-security.repository';
 import { StatisticsRepository } from '../repositories/statistics.repository';
 
 const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})?)?$/;
@@ -59,9 +63,151 @@ function parseStatisticsInteractionKind(value: string | undefined): StatisticsIn
   throw new BadRequestException(`interactionKind must be one of: ${[...ALLOWED_INTERACTION_KINDS].join(', ')}`);
 }
 
+const ALLOWED_EGRESS_KINDS: ReadonlySet<string> = new Set(['web', 'dns', 'network', 'guard']);
+const ALLOWED_EGRESS_DECISIONS: ReadonlySet<string> = new Set(['allowed', 'blocked', 'observed', 'error']);
+
+function parseEgressFilter(
+  value: string | undefined,
+  allowed: ReadonlySet<string>,
+  paramName: string,
+): string | undefined {
+  if (!value) return undefined;
+
+  if (allowed.has(value)) {
+    return value;
+  }
+
+  throw new BadRequestException(`${paramName} must be one of: ${[...allowed].join(', ')}`);
+}
+
+const EMPTY_SECURITY_SUMMARY = {
+  egressAllowedCount: 0,
+  egressBlockedCount: 0,
+  egressObservedCount: 0,
+  egressGuardErrorCount: 0,
+  egressBreakdown: [] as StatisticsSummaryDto['egressBreakdown'],
+  egressTopBlockedHosts: [] as StatisticsSummaryDto['egressTopBlockedHosts'],
+  egressRulesBreakdown: [] as StatisticsSummaryDto['egressRulesBreakdown'],
+};
+
 @Injectable()
 export class StatisticsQueryService {
-  constructor(private readonly statisticsRepository: StatisticsRepository) {}
+  constructor(
+    private readonly statisticsRepository: StatisticsRepository,
+    private readonly securityRepository: StatisticsSecurityRepository,
+  ) {}
+
+  /** Egress aggregates + (optional) security time series for summary responses. */
+  private async buildSecuritySummary(
+    ids: string[],
+    from: string | undefined,
+    to: string | undefined,
+    groupBy: 'day' | 'hour' | undefined,
+  ): Promise<
+    Pick<
+      StatisticsSummaryDto,
+      | 'egressAllowedCount'
+      | 'egressBlockedCount'
+      | 'egressObservedCount'
+      | 'egressGuardErrorCount'
+      | 'egressBreakdown'
+      | 'egressTopBlockedHosts'
+      | 'egressRulesBreakdown'
+      | 'securitySeries'
+    >
+  > {
+    const [aggregate, securitySeries] = await Promise.all([
+      this.securityRepository.queryEgressAggregate({ statisticsClientIds: ids, from, to }),
+      groupBy
+        ? this.securityRepository.querySecuritySeries({ statisticsClientIds: ids, from, to, groupBy })
+        : Promise.resolve(undefined),
+    ]);
+
+    return { ...aggregate, ...(securitySeries ? { securitySeries } : {}) };
+  }
+
+  private toEgressEventDto(row: StatisticsEgressEventEntity): StatisticsEgressEventDto {
+    return {
+      id: row.id,
+      clientId: row.statisticsClient?.originalClientId ?? row.statisticsClientId,
+      agentId: row.statisticsAgent?.originalAgentId,
+      clientName: row.statisticsClient?.name,
+      agentName: row.statisticsAgent?.name,
+      kind: row.kind,
+      decision: row.decision,
+      host: row.host ?? null,
+      rule: row.rule ?? null,
+      matchedEntry: row.matchedEntry ?? null,
+      matchedSource: row.matchedSource ?? null,
+      method: row.method ?? null,
+      httpStatus: row.httpStatus ?? null,
+      sampleUrl: row.sampleUrl ?? null,
+      count: row.count,
+      bytesIn: Number(row.bytesIn ?? 0),
+      bytesOut: Number(row.bytesOut ?? 0),
+      mode: row.mode ?? null,
+      policyRevision: row.policyRevision ?? null,
+      message: row.message ?? null,
+      firstSeenAt: row.firstSeenAt,
+      occurredAt: row.occurredAt,
+    };
+  }
+
+  async getClientEgressEvents(
+    clientId: string,
+    params: {
+      agentId?: string;
+      kind?: string;
+      decision?: string;
+      from?: string;
+      to?: string;
+      search?: string;
+      limit?: number;
+      offset?: number;
+    },
+  ): Promise<StatisticsEgressEventListDto> {
+    return await this.getEgressEvents([clientId], params);
+  }
+
+  async getEgressEvents(
+    accessibleClientIds: string[],
+    params: {
+      agentId?: string;
+      kind?: string;
+      decision?: string;
+      from?: string;
+      to?: string;
+      search?: string;
+      limit?: number;
+      offset?: number;
+    },
+  ): Promise<StatisticsEgressEventListDto> {
+    const from = validateIsoDate(params.from, 'from');
+    const to = normalizeToEndOfDay(validateIsoDate(params.to, 'to'));
+    const kind = parseEgressFilter(params.kind, ALLOWED_EGRESS_KINDS, 'kind');
+    const decision = parseEgressFilter(params.decision, ALLOWED_EGRESS_DECISIONS, 'decision');
+    const limit = params.limit ?? 10;
+    const offset = params.offset ?? 0;
+    const ids = await this.resolveStatisticsClientIds(accessibleClientIds);
+
+    if (ids.length === 0) {
+      return { data: [], total: 0, limit, offset };
+    }
+
+    const { rows, total } = await this.securityRepository.queryEgressEvents({
+      statisticsClientIds: ids,
+      agentId: params.agentId,
+      kind,
+      decision,
+      from,
+      to,
+      search: params.search,
+      limit,
+      offset,
+    });
+
+    return { data: rows.map((row) => this.toEgressEventDto(row)), total, limit, offset };
+  }
 
   private async resolveStatisticsClientIds(originalClientIds: string[]): Promise<string[]> {
     if (originalClientIds.length === 0) return [];
@@ -94,6 +240,7 @@ export class StatisticsQueryService {
         filterTypesBreakdown: [],
         filterFlagCount: 0,
         filterFlagsBreakdown: [],
+        ...EMPTY_SECURITY_SUMMARY,
       };
     }
 
@@ -113,6 +260,7 @@ export class StatisticsQueryService {
       this.statisticsRepository.queryFilterDropsAggregate({ statisticsClientIds: ids, from, to }),
       this.statisticsRepository.queryFilterFlagsAggregate({ statisticsClientIds: ids, from, to }),
     ]);
+    const security = await this.buildSecuritySummary(ids, from, to, params.groupBy);
 
     return {
       totalMessages: chatAgg.totalMessages,
@@ -131,6 +279,7 @@ export class StatisticsQueryService {
       filterFlagCount: filterFlagAgg.filterFlagCount,
       filterFlagsBreakdown: filterFlagAgg.filterTypesBreakdown,
       series: chatAgg.series,
+      ...security,
     };
   }
 
@@ -159,6 +308,7 @@ export class StatisticsQueryService {
         filterTypesBreakdown: [],
         filterFlagCount: 0,
         filterFlagsBreakdown: [],
+        ...EMPTY_SECURITY_SUMMARY,
       };
     }
 
@@ -178,6 +328,7 @@ export class StatisticsQueryService {
       this.statisticsRepository.queryFilterDropsAggregate({ statisticsClientIds: ids, from, to }),
       this.statisticsRepository.queryFilterFlagsAggregate({ statisticsClientIds: ids, from, to }),
     ]);
+    const security = await this.buildSecuritySummary(ids, from, to, params.groupBy);
 
     return {
       totalMessages: chatAgg.totalMessages,
@@ -196,6 +347,7 @@ export class StatisticsQueryService {
       filterFlagCount: filterFlagAgg.filterFlagCount,
       filterFlagsBreakdown: filterFlagAgg.filterTypesBreakdown,
       series: chatAgg.series,
+      ...security,
     };
   }
 

@@ -180,18 +180,11 @@ export class AgentConsoleContainerComponent implements OnInit {
       label: $localize`:@@featureContainer-users:Users`,
     },
     {
-      routerLink: ['/filters'],
-      activePaths: ['/filters'],
-      icon: 'bi-funnel',
-      title: $localize`:@@featureContainer-filtersTitle:Filters`,
-      label: $localize`:@@featureContainer-filters:Filters`,
-    },
-    {
       routerLink: ['/agent-config'],
       activePaths: ['/agent-config', '/opencode-config'],
-      icon: 'bi-sliders',
+      icon: 'bi-cpu',
       title: $localize`:@@featureContainer-agentConfigTitle:Agent configuration`,
-      label: $localize`:@@featureContainer-agentConfig:Agent config`,
+      label: $localize`:@@featureContainer-agentConfig:Config`,
     },
     {
       routerLink: ['/imports/atlassian'],
@@ -251,7 +244,6 @@ export class AgentConsoleContainerComponent implements OnInit {
     const onMainRoute =
       path.includes('/clients') ||
       path.includes('/users') ||
-      path.includes('/filters') ||
       path.includes('/webhooks') ||
       path.includes('/updates') ||
       path.includes('/audit') ||
@@ -280,7 +272,6 @@ export class AgentConsoleContainerComponent implements OnInit {
 
     return (
       path.includes('/users') ||
-      path.includes('/filters') ||
       path.includes('/agent-config') ||
       path.includes('/imports') ||
       path.includes('/webhooks') ||

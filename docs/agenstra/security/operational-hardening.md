@@ -102,6 +102,13 @@ Accepted risk: **AR-002** in **[Accepted risks](./accepted-risks.md)**.
 - The agent console connects using `controller.vncWebsocketUrl`, or derives `ws(s)://…/socket/vnc` from `controller.websocketUrl` (same host/port as Socket.IO).
 - Desktop session starts as non-privileged user **`agenstra`** (no greeter). Worker image is larger due to XFCE + Chromium.
 
+## Agent egress (web traffic) guard
+
+- Each agent environment can be placed behind a per-agent **egress guard** sidecar that owns the agent's network namespace (`NetworkMode: container:<guard>`). Only the guard holds `CAP_NET_ADMIN` (agents in a guard namespace additionally lose `NET_ADMIN` / `NET_RAW`). Netfilter exempts only Squid's **marked** upstream connections (a mark cannot be set without `CAP_NET_ADMIN`) and dnsmasq's DNS queries to the configured resolvers — never a bare UID.
+- Fail closed: lockdown rules are installed before any policy, invalid policy bundles never replace the last known good one, QUIC, DNS over TLS and undeclared protocols are denied, enforcing policies are not silently skipped when `AGENT_EGRESS_GUARD_ENABLED=false`, and agents whose required guard cannot be provisioned are stopped instead of running unfiltered.
+- Lower configuration layers can narrow but never widen an inherited allowlist; URL patterns and message filters reject regexes at risk of catastrophic backtracking.
+- HTTPS is filtered by SNI without decryption. `host_verify_strict` prevents connecting to an IP other than what DNS resolves for the name, but **domain fronting on shared CDNs is not prevented**. Details and limitations: [Egress Filtering](../features/egress-filtering.md).
+
 ## Origin allowlist (unsafe HTTP methods)
 
 Browser-originated **state-changing** requests can be restricted by origin allowlist middleware on backends (see `origin-allowlist.middleware.ts` in identity util-auth). Configure per deployment expectations.

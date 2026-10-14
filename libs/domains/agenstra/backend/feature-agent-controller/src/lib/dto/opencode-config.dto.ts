@@ -1,4 +1,6 @@
-import { IsArray, IsObject, IsOptional, IsString, MinLength } from 'class-validator';
+import type { AgentEgressStatusDto } from '@forepath/agenstra/backend/feature-agent-manager';
+import type { EffectivePlatformSecurityPolicy } from '@forepath/agenstra/shared/util-opencode-config';
+import { IsArray, IsObject, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 /**
  * PUT body for OpenCode config overlays (global / workspace / agent).
@@ -78,7 +80,35 @@ export class OpencodeConfigResponseDto {
   inheritedAdditive?: InheritedAdditiveDto[];
   /** Per-agent effective-config sync target (agent GET/PUT only). */
   sync?: OpencodeConfigSyncSummaryDto | null;
+  /**
+   * Effective platform security policy for this scope (Security → Web traffic / Message filters),
+   * resolved global → workspace → environment with per-entry provenance.
+   */
+  platformPolicy?: EffectivePlatformSecurityPolicy;
+  /** Egress guard status of the environment (agent GET/PUT only). */
+  egress?: AgentEgressStatusDto;
   updatedAt?: Date;
+}
+
+/** Body for evaluating a destination against an environment's effective egress policy. */
+export class EvaluateEgressDestinationDto {
+  /** Hostname, IP address or URL (scheme / path optional). */
+  @IsString()
+  @MinLength(1)
+  @MaxLength(2048)
+  destination!: string;
+}
+
+/** Result of {@link EvaluateEgressDestinationDto}. */
+export class EgressEvaluationResponseDto {
+  host!: string;
+  decision!: 'allowed' | 'blocked' | 'observed';
+  rule!: string | null;
+  matchedEntry?: string | null;
+  source?: string | null;
+  mode!: string;
+  /** Plain-HTTP URL rules only apply to `http://` URLs (HTTPS paths are not visible without TLS interception). */
+  scheme?: 'http' | 'https' | null;
 }
 
 export class OpencodeAgentInfoDto {

@@ -13,6 +13,7 @@ This application provides:
 - **HTTP REST API** Full CRUD operations for agent management
 - **WebSocket Gateway** Real-time bidirectional communication with agents
 - **Container Integration** Docker container management for agent execution
+- **Egress guard** Per-agent sidecar that filters outbound web traffic (Squid/dnsmasq/iptables) and reports decision events; see [Egress Filtering](../features/egress-filtering.md)
 - **Secure Authentication** Keycloak integration for HTTP endpoints and database-backed authentication for WebSocket
 - **Database Support** PostgreSQL with TypeORM for data persistence
 - **Auto Migrations** Automatic database schema migrations on startup
@@ -64,13 +65,14 @@ Changes are persisted and synchronized to the agent’s Docker container. Contai
 - `DELETE /api/agents/:agentId/environment/:id` - Delete one variable
 - `DELETE /api/agents/:agentId/environment` - Delete all variables
 
-### Per-agent message filter rules
+### Egress guard (web traffic filtering)
 
-Regex rules scoped to this manager instance (distinct from controller global rules). See [Message Filter Rules](../features/message-filter-rules.md).
+Message filters and the egress policy arrive with the effective agent configuration pushed by the controller (the former `/api/agents-filters` routes were removed). See [Message Filters](../features/message-filters.md) and [Egress Filtering](../features/egress-filtering.md).
 
-- `GET/POST /api/agents-filters` - List (ordered by priority) and create
-- `GET /api/agents-filters/count` - Rule count
-- `GET/PUT/DELETE /api/agents-filters/:id` - Read, update, delete
+- `GET /api/agents/:id/egress` - Guard status, policy in force, message filters and recent decision events
+- `GET /api/egress/events` - Aggregated decision events (`afterSeq`, `limit`, `agentId`) consumed by the controller's `egress-events-ingest` job
+
+Environment variables: `AGENT_EGRESS_GUARD_ENABLED`, `AGENT_EGRESS_GUARD_IMAGE`, `AGENT_EGRESS_GUARD_MEMORY_MB`, `AGENT_EGRESS_EVENTS_COLLECTOR_ENABLED`, `AGENT_EGRESS_EVENTS_POLL_INTERVAL_MS`, `AGENT_EGRESS_EVENTS_RETENTION_HOURS`.
 
 ### Deployments (CI/CD)
 
@@ -322,7 +324,8 @@ Before deploying to production, ensure:
 - **[Agent Management Feature](../features/agent-management.md)** Agent management guide
 - **[WebSocket Communication Feature](../features/websocket-communication.md)** WebSocket communication guide
 - **[Deployment Feature](../features/deployment.md)** CI/CD configuration and operations
-- **[Message Filter Rules](../features/message-filter-rules.md)** Per-agent regex filters
+- **[Message Filters](../features/message-filters.md)** Layered chat message filters
+- **[Egress Filtering](../features/egress-filtering.md)** Per-environment web traffic filtering
 - **[Dynamic provider plugins](../features/dynamic-provider-plugins.md)** Custom agent, pipeline, and filter providers
 - **[Backend Agent Controller](./backend-agent-controller.md)** Control plane and proxy paths used by the console
 - **[Deployment Guide](../deployment/production-checklist.md)** Production deployment guide

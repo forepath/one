@@ -1,0 +1,51 @@
+# -----------------------------------------------------------------------------
+# Image:      agenstra-manager-egress-guard
+# Project:    backend-agent-manager — Nx target `egress-guard-container-image`
+# Registry:   ghcr.io/forepath/agenstra-manager-egress-guard
+# Base:       alpine:3.24 (Squid 7.x, dnsmasq, iptables-nft)
+# User:       root supervisor; Squid runs as egressproxy (10901), dnsmasq as egressdns (10902)
+# Exposes:    — (owns the agent's network namespace; agent ports 4096 / 6080 are published here)
+# Build:      npx nx run agenstra-backend-agent-manager:egress-guard-container-image
+# Run:        created by the agent manager per agent (`agenstra-egress-<agentId>`) with CAP_NET_ADMIN
+# Notes:      Per-agent egress filtering sidecar. The agent container joins this container's network
+#             namespace (`NetworkMode: container:<guard>`), so all agent egress traverses the guard's
+#             netfilter rules: DNS → dnsmasq policy proxy, TCP/80 → Squid intercept, TCP/443 → Squid
+#             TLS peek / splice / terminate (no decryption, no trusted CA), explicit proxy on 3128,
+#             everything else default-deny. Fail-closed lockdown rules are installed before any
+#             policy is applied; invalid policy bundles never replace the last known good one.
+# -----------------------------------------------------------------------------
+#
+FROM docker.io/alpine:3.24
+
+ARG VERSION=0.0.0
+ENV VERSION=${VERSION}
+
+RUN apk add --no-cache \
+      bash \
+      coreutils \
+      dnsmasq \
+      ip6tables \
+      iptables \
+      openssl \
+      'squid~7' \
+      tini \
+    && addgroup -S -g 10901 egressproxy \
+    && adduser -S -D -H -h /var/empty -s /sbin/nologin -u 10901 -G egressproxy egressproxy \
+    && addgroup -S -g 10902 egressdns \
+    && adduser -S -D -H -h /var/empty -s /sbin/nologin -u 10902 -G egressdns egressdns \
+    && install -d -m 0750 -o root -g egressproxy /var/lib/agenstra-egress \
+    && install -d -m 0755 /run/agenstra-egress /etc/agenstra-egress \
+    && install -d -m 0750 -o egressproxy -g egressproxy /var/log/agenstra-egress \
+    && squid -v | head -n 1
+
+COPY egress-guard/default/ /etc/agenstra-egress/default/
+COPY egress-guard/entrypoint.sh /usr/local/bin/agenstra-egress-entrypoint
+COPY egress-guard/agenstra-egress /usr/local/bin/agenstra-egress
+
+RUN chmod 0755 /usr/local/bin/agenstra-egress-entrypoint /usr/local/bin/agenstra-egress \
+    && chmod 0644 /etc/agenstra-egress/default/*
+
+LABEL io.agenstra.egress-guard.contract="1"
+
+STOPSIGNAL SIGTERM
+ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/agenstra-egress-entrypoint"]

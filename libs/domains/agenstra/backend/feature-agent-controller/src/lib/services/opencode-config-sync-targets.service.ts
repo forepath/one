@@ -3,9 +3,11 @@ import { createHash } from 'crypto';
 import {
   AGENSTRA_OPENCODE_PLATFORM_WIRE_VERSION,
   prepareConfigForSync,
+  stablePlatformPolicyJson,
+  type EffectivePlatformSecurityPolicy,
   type JsonObject,
 } from '@forepath/agenstra/shared/util-opencode-config';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
@@ -13,6 +15,8 @@ import {
   OpencodeConfigSyncStatus,
   OpencodeConfigSyncTargetEntity,
 } from '../entities/opencode-config-sync-target.entity';
+
+import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 
 import { ClientAgentProxyService } from './client-agent-proxy.service';
 import { OpencodeEffectiveConfigSyncService } from './opencode-effective-config-sync.service';
@@ -26,7 +30,7 @@ export interface OpencodeConfigSyncSummaryDto {
 }
 
 /**
- * Durable per-agent OpenCode config sync targets (filter-rules pattern).
+ * Durable per-agent OpenCode config sync targets.
  * Marks pending on config changes; coordinator/unit jobs retry pending+failed.
  */
 @Injectable()
@@ -38,14 +42,32 @@ export class OpencodeConfigSyncTargetsService {
     private readonly targetsRepo: Repository<OpencodeConfigSyncTargetEntity>,
     private readonly effectiveConfigSync: OpencodeEffectiveConfigSyncService,
     private readonly clientAgentProxy: ClientAgentProxyService,
+    @Optional()
+    private readonly notificationPublisher?: AgenstraNotificationPublisher,
   ) {}
 
+  /** Hash of the effective egress policy alone (provenance excluded). */
+  static hashEgressRevision(platformPolicy: EffectivePlatformSecurityPolicy | null | undefined): string | null {
+    if (!platformPolicy) {
+      return null;
+    }
+
+    return createHash('sha256')
+      .update(stablePlatformPolicyJson({ ...platformPolicy.egress, scalarSources: undefined }))
+      .digest('hex');
+  }
+
   /**
-   * Hash desired worker wire + secrets.
+   * Hash desired worker wire + secrets + platform security policy.
    * Includes platform wire version and prepareConfigForSync output so inject/materialize
-   * deploys rematch even when stored overlays are unchanged.
+   * deploys rematch even when stored overlays are unchanged. The platform policy (egress guard,
+   * message filters) is stripped from the wire, so it is hashed separately.
    */
-  static hashRevision(config: Record<string, unknown>, secrets: Record<string, string>): string {
+  static hashRevision(
+    config: Record<string, unknown>,
+    secrets: Record<string, string>,
+    platformPolicy?: EffectivePlatformSecurityPolicy | null,
+  ): string {
     const sortedSecrets: Record<string, string> = {};
 
     for (const key of Object.keys(secrets).sort()) {
@@ -60,6 +82,7 @@ export class OpencodeConfigSyncTargetsService {
           platformWireVersion: AGENSTRA_OPENCODE_PLATFORM_WIRE_VERSION,
           config: prepared,
           secrets: sortedSecrets,
+          ...(platformPolicy ? { platformPolicy: stablePlatformPolicyJson(platformPolicy) } : {}),
         }),
       )
       .digest('hex');
@@ -83,8 +106,11 @@ export class OpencodeConfigSyncTargetsService {
 
   /** Recompute desired revision and set pending for one agent. */
   async markAgentPending(clientId: string, agentId: string): Promise<OpencodeConfigSyncTargetEntity> {
-    const { effective, secrets } = await this.effectiveConfigSync.buildEffectivePayload(clientId, agentId);
-    const desiredRevision = OpencodeConfigSyncTargetsService.hashRevision(effective, secrets);
+    const { effective, secrets, platformPolicy } = await this.effectiveConfigSync.buildEffectivePayload(
+      clientId,
+      agentId,
+    );
+    const desiredRevision = OpencodeConfigSyncTargetsService.hashRevision(effective, secrets, platformPolicy);
 
     let target = await this.targetsRepo.findOne({ where: { agentId } });
 
@@ -225,11 +251,11 @@ export class OpencodeConfigSyncTargetsService {
       }
 
       try {
-        const { effective, secrets } = await this.effectiveConfigSync.buildEffectivePayload(
+        const { effective, secrets, platformPolicy } = await this.effectiveConfigSync.buildEffectivePayload(
           target.clientId,
           target.agentId,
         );
-        const desiredRevision = OpencodeConfigSyncTargetsService.hashRevision(effective, secrets);
+        const desiredRevision = OpencodeConfigSyncTargetsService.hashRevision(effective, secrets, platformPolicy);
 
         if (desiredRevision === target.appliedRevision && desiredRevision === target.desiredRevision) {
           continue;
@@ -274,18 +300,21 @@ export class OpencodeConfigSyncTargetsService {
 
     try {
       const result = await this.effectiveConfigSync.syncAgent(target.clientId, target.agentId);
+      const previousError = target.lastError ?? null;
 
       if (result.ok) {
         target.syncStatus = 'synced';
         target.appliedRevision = target.desiredRevision;
         target.lastError = null;
         target.lastSyncedAt = new Date();
+        this.notifyEgressApplied(target, result.platformPolicy);
       } else {
         // No container / not healthy → keep pending for retry; hard apply errors → failed.
         const defer = result.defer === true;
 
         target.syncStatus = defer ? 'pending' : 'failed';
         target.lastError = result.error ?? 'sync failed';
+        this.notifyEgressFailed(target, result.platformPolicy, previousError);
       }
 
       await this.targetsRepo.save(target);
@@ -297,5 +326,51 @@ export class OpencodeConfigSyncTargetsService {
       target.lastError = msg;
       await this.targetsRepo.save(target);
     }
+  }
+
+  /** `egress.policy_applied` once per new effective egress policy (not on every unrelated config sync). */
+  private notifyEgressApplied(
+    target: OpencodeConfigSyncTargetEntity,
+    platformPolicy: EffectivePlatformSecurityPolicy | undefined,
+  ): void {
+    const egressRevision = OpencodeConfigSyncTargetsService.hashEgressRevision(platformPolicy);
+
+    if (!egressRevision || egressRevision === target.appliedEgressRevision) {
+      return;
+    }
+
+    const firstApplyOfDefault = !target.appliedEgressRevision && platformPolicy?.egress.mode === 'off';
+
+    target.appliedEgressRevision = egressRevision;
+
+    if (firstApplyOfDefault) {
+      return;
+    }
+
+    this.notificationPublisher?.publishEgressPolicy('egress.policy_applied', target.clientId, {
+      agentId: target.agentId,
+      mode: platformPolicy?.egress.mode ?? 'off',
+      revision: egressRevision,
+    });
+  }
+
+  /** `egress.policy_failed` when the manager could not apply the egress policy (deduplicated per error). */
+  private notifyEgressFailed(
+    target: OpencodeConfigSyncTargetEntity,
+    platformPolicy: EffectivePlatformSecurityPolicy | undefined,
+    previousError: string | null,
+  ): void {
+    const error = target.lastError ?? '';
+
+    if (!error.startsWith('Egress policy not applied') || error === previousError) {
+      return;
+    }
+
+    this.notificationPublisher?.publishEgressPolicy('egress.policy_failed', target.clientId, {
+      agentId: target.agentId,
+      mode: platformPolicy?.egress.mode ?? 'off',
+      revision: OpencodeConfigSyncTargetsService.hashEgressRevision(platformPolicy),
+      error,
+    });
   }
 }

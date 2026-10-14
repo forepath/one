@@ -269,7 +269,7 @@ You're now ready to:
 
 - Open **Tickets** from the navigation (`/tickets`) after selecting a workspace to manage tickets, automation, and migration between clients ([Tickets and Workspaces](./features/tickets-and-workspaces.md))
 - Use workspace-level **usage statistics** in the console where exposed to review chat volume and filter metrics ([Usage Statistics](./features/usage-statistics.md)); these differ from live **container** stats in the chat view
-- **Global administrators** can open **Filters** (`/filters`) for message filter rules and **Import** (`/imports/atlassian`) for Atlassian site connections and Jira/Confluence import configurations ([Atlassian import](./features/atlassian-import.md))
+- **Global administrators** can open **Agent configuration** (`/agent-config`) for global message filters and web traffic policy and **Import** (`/imports/atlassian`) for Atlassian site connections and Jira/Confluence import configurations ([Atlassian import](./features/atlassian-import.md))
 
 ## Next Steps
 

@@ -1,7 +1,10 @@
+import type { EffectiveEgressPolicy, EffectiveMessageFilterRule } from '@forepath/agenstra/shared/util-opencode-config';
 import { createAes256GcmTransformer } from '@forepath/shared/backend';
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
+
+export type AgentEgressStatus = 'inactive' | 'active' | 'failed';
 
 /**
  * Container type enum representing the type of container.
@@ -105,6 +108,39 @@ export class AgentEntity {
    */
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'acp_session_container_id' })
   acpSessionContainerId?: string | null;
+
+  /**
+   * Egress guard sidecar owning this agent's network namespace (`NetworkMode: container:<id>`).
+   * `null` when the agent never required egress filtering (legacy network topology).
+   */
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'egress_guard_container_id' })
+  egressGuardContainerId?: string | null;
+
+  /** Effective egress policy last received from the controller (layered agent configuration). */
+  @Column({ type: 'jsonb', nullable: true, name: 'egress_policy' })
+  egressPolicy?: EffectiveEgressPolicy | null;
+
+  /** Revision of the guard policy bundle last applied successfully. */
+  @Column({ type: 'varchar', length: 64, nullable: true, name: 'egress_policy_revision' })
+  egressPolicyRevision?: string | null;
+
+  /** `inactive` (no enforcement) | `active` (guard applied) | `failed` (last apply failed; previous bundle kept). */
+  @Column({ type: 'varchar', length: 16, nullable: true, name: 'egress_status' })
+  egressStatus?: AgentEgressStatus | null;
+
+  @Column({ type: 'text', nullable: true, name: 'egress_last_error' })
+  egressLastError?: string | null;
+
+  @Column({ type: 'timestamptz', nullable: true, name: 'egress_applied_at' })
+  egressAppliedAt?: Date | null;
+
+  /** Docker log timestamp (RFC 3339 nano) up to which guard logs were collected. */
+  @Column({ type: 'varchar', length: 64, nullable: true, name: 'egress_log_cursor' })
+  egressLogCursor?: string | null;
+
+  /** Effective chat message filter rules (global → workspace → environment) last received from the controller. */
+  @Column({ type: 'jsonb', nullable: true, name: 'message_filters' })
+  messageFilters?: EffectiveMessageFilterRule[] | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

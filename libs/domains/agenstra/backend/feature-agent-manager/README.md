@@ -25,6 +25,7 @@ Agents are entities that can be created, authenticated, and interacted with thro
 - ✅ Support for UUID or name-based agent identification
 - ✅ **Plugin-based agent provider system** - OpenCode via [Agent Client Protocol (ACP)](../../../../docs/agenstra/ai-agents/agent-client-protocol.md) over stdio; additional types through the unified `AgentProvider` interface
 - ✅ **Plugin-based chat filter system** - Support for multiple message filtering implementations (profanity, PII, content policy, etc.) through a unified interface
+- ✅ **Egress guard** - Per-agent sidecar (Squid, dnsmasq, iptables) that filters outbound web traffic and reports decision events; see [Egress Filtering](../../../../docs/agenstra/features/egress-filtering.md). Message filters (`message_filters`) arrive with the layered agent configuration; see [Message Filters](../../../../docs/agenstra/features/message-filters.md)
 - ✅ **Extensible architecture** - Easy to add new agent providers and chat filters by implementing the respective interfaces
 
 ## Architecture
@@ -87,6 +88,7 @@ All diagrams are available in the [`docs/`](./docs/) directory:
 - **[WebSocket Auth & Logs Diagram](./docs/sequence-ws-auth-logs.mmd)** - Sequence diagram for WebSocket connection, authentication flow, and container log streaming
 - **[WebSocket Chat Diagram](./docs/sequence-ws-chat.mmd)** - Sequence diagram for WebSocket chat message flow and disconnection handling
 - **[WebSocket Container Stats Diagram](./docs/sequence-ws-container-stats.mmd)** - Periodic `containerStats` broadcasting after login (default interval 15s via `CONTAINER_STATS_SCHEDULER_INTERVAL`)
+- **[Egress Guard Diagram](./docs/egress-guard.mmd)** - Guard provisioning, policy apply, agent network namespace join and event collection
 - **[Lifecycle Diagram](./docs/lifecycle.mmd)** - End-to-end sequence diagram showing the complete agent lifecycle from creation through deletion
 
 These diagrams provide comprehensive visual documentation of:

@@ -53,7 +53,7 @@ describe('OpencodeEffectiveConfigSyncService', () => {
 
     const result = await svc.syncAgent(clientId, agentId);
 
-    expect(result).toEqual({ ok: true });
+    expect(result).toEqual({ ok: true, platformPolicy: expect.objectContaining({ messageFilters: [] }) });
     expect(opencodeConfigService.composeStoredLayer).toHaveBeenCalledWith({ c: 3 }, { d: 4 });
     expect(opencodeConfigService.mergeEffectiveForSync).toHaveBeenCalledWith({ c: 3, d: 4 }, { b: 2 }, { a: 1 });
     expect(agentConfigProxy.syncEffective).toHaveBeenCalledWith(
@@ -64,7 +64,33 @@ describe('OpencodeEffectiveConfigSyncService', () => {
         G: 'g',
         W: 'w',
       },
+      expect.objectContaining({ egress: expect.objectContaining({ mode: 'off' }), messageFilters: [] }),
     );
+  });
+
+  it('resolves the platform security policy with layer provenance', async () => {
+    const { svc, opencodeConfigService, agentConfigProxy } = await createService();
+
+    opencodeConfigService.getLayerConfigs.mockResolvedValue({
+      global: { egress: { mode: 'enforce', deny_hosts: ['bad.example'] } },
+      workspace: { message_filters: [{ name: 'W', pattern: 'w', action: 'drop' }] },
+    });
+    opencodeConfigService.composeStoredLayer.mockReturnValue({ egress: { mode: 'off', allow_hosts: ['ok.example'] } });
+
+    const payload = await svc.buildEffectivePayload(clientId, agentId);
+
+    expect(payload.platformPolicy.egress.mode).toBe('enforce');
+    expect(payload.platformPolicy.egress.scalarSources.mode).toBe('global');
+    expect(payload.platformPolicy.egress.allowHosts).toEqual([{ value: 'ok.example', source: 'environment' }]);
+    expect(payload.platformPolicy.messageFilters).toEqual([
+      expect.objectContaining({ name: 'W', source: 'workspace' }),
+    ]);
+    expect(agentConfigProxy.get).toHaveBeenCalledWith(clientId, agentId);
+
+    const creation = await svc.buildCreationPlatformPolicy(clientId);
+
+    expect(creation.egress.allowHosts).toEqual([]);
+    expect(creation.egress.denyHosts).toEqual([{ value: 'bad.example', source: 'global' }]);
   });
 
   it('syncAllClients fans out to every client agent (paged)', async () => {

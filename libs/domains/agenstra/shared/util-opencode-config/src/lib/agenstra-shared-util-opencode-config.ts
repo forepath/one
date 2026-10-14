@@ -9,3 +9,7 @@ export * from './materialize';
 export * from './enforce-allow-deny';
 export * from './automation-platform';
 export * from './plan-platform';
+export * from './platform-policy';
+export * from './egress-policy';
+export * from './message-filters';
+export * from './platform-security';

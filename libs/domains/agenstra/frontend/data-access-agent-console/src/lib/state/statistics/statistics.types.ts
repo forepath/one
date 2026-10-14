@@ -28,6 +28,68 @@ export interface StatisticsSummaryDto {
   filterFlagCount: number;
   filterFlagsBreakdown: StatisticsFilterTypesBreakdownItem[];
   series?: StatisticsSeriesPoint[];
+  /** Egress guard decisions (sum of aggregated counts) by decision. */
+  egressAllowedCount?: number;
+  egressBlockedCount?: number;
+  egressObservedCount?: number;
+  egressGuardErrorCount?: number;
+  egressBreakdown?: StatisticsEgressBreakdownItem[];
+  egressTopBlockedHosts?: Array<{ host: string; count: number }>;
+  egressRulesBreakdown?: Array<{ rule: string; count: number }>;
+  /** Security events over time (with groupBy). */
+  securitySeries?: StatisticsSecuritySeriesPoint[];
+}
+
+export type StatisticsEgressKind = 'web' | 'dns' | 'network' | 'guard';
+export type StatisticsEgressDecision = 'allowed' | 'blocked' | 'observed' | 'error';
+
+export interface StatisticsEgressBreakdownItem {
+  kind: StatisticsEgressKind;
+  decision: StatisticsEgressDecision;
+  count: number;
+}
+
+export interface StatisticsSecuritySeriesPoint {
+  period: string;
+  filterDrops: number;
+  filterFlags: number;
+  egressAllowed: number;
+  egressBlocked: number;
+  egressObserved: number;
+}
+
+/** Single egress guard decision (aggregate of identical decisions within one collection cycle). */
+export interface StatisticsEgressEventDto {
+  id: string;
+  clientId: string;
+  agentId?: string;
+  clientName?: string;
+  agentName?: string;
+  kind: StatisticsEgressKind;
+  decision: StatisticsEgressDecision;
+  host?: string | null;
+  rule?: string | null;
+  matchedEntry?: string | null;
+  matchedSource?: string | null;
+  method?: string | null;
+  httpStatus?: number | null;
+  sampleUrl?: string | null;
+  count: number;
+  bytesIn: number;
+  bytesOut: number;
+  mode?: string | null;
+  policyRevision?: string | null;
+  message?: string | null;
+  firstSeenAt: string;
+  occurredAt: string;
+}
+
+/** Paginated egress events list */
+export interface StatisticsEgressEventListDto {
+  data: StatisticsEgressEventDto[];
+  total: number;
+  limit: number;
+  offset: number;
 }
 
 /** Single chat I/O record */
@@ -140,6 +202,8 @@ export interface StatisticsQueryParams {
   entityType?: StatisticsEntityType;
   eventType?: StatisticsEntityEventType;
   direction?: 'input' | 'output';
+  kind?: StatisticsEgressKind;
+  decision?: StatisticsEgressDecision;
   search?: string;
   limit?: number;
   offset?: number;

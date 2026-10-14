@@ -173,8 +173,41 @@
       },
       "defaultConfiguration": "test"
     },
+    "egress-guard-container-image": {
+      "cache": false,
+      "executor": "@nx-tools/nx-container:build",
+      "options": {
+        "engine": "docker",
+        "file": "apps/agenstra/backend-agent-manager/Dockerfile.egress-guard",
+        "context": "apps/agenstra/backend-agent-manager",
+        "build-args": ["VERSION"]
+      },
+      "configurations": {
+        "test": {
+          "load": true,
+          "labels": [
+            "io.forepath.one.test-project=agenstra-backend-agent-manager"
+          ],
+          "tags": [
+            "registry.forenet.internal/forepath/agenstra-manager-egress-guard:test"
+          ]
+        },
+        "release": {
+          "push": true,
+          "tags": [
+            "ghcr.io/forepath/agenstra-manager-egress-guard:latest",
+            "ghcr.io/forepath/agenstra-manager-egress-guard:$VERSION"
+          ]
+        }
+      },
+      "defaultConfiguration": "test"
+    },
     "start-containers": {
-      "dependsOn": ["api-container-image", "worker-container-image"],
+      "dependsOn": [
+        "api-container-image",
+        "worker-container-image",
+        "egress-guard-container-image"
+      ],
       "cache": false,
       "executor": "nx:run-commands",
       "options": {

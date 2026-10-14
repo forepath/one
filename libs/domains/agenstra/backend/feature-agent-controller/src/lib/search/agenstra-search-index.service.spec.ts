@@ -4,7 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { ClientEntity } from '@forepath/identity/backend';
 
-import { AgentConsoleRegexFilterRuleEntity } from '../entities/agent-console-regex-filter-rule.entity';
+import { StatisticsEgressEventEntity } from '../entities/statistics-egress-event.entity';
 import { AtlassianSiteConnectionEntity } from '../entities/atlassian-site-connection.entity';
 import { ExternalImportConfigEntity } from '../entities/external-import-config.entity';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
@@ -51,7 +51,7 @@ describe('AgenstraSearchIndexService', () => {
         { provide: getRepositoryToken(ClientEntity), useValue: emptyRepo },
         { provide: getRepositoryToken(TicketEntity), useValue: emptyRepo },
         { provide: getRepositoryToken(KnowledgeNodeEntity), useValue: emptyRepo },
-        { provide: getRepositoryToken(AgentConsoleRegexFilterRuleEntity), useValue: emptyRepo },
+        { provide: getRepositoryToken(StatisticsEgressEventEntity), useValue: emptyRepo },
         { provide: getRepositoryToken(AtlassianSiteConnectionEntity), useValue: emptyRepo },
         { provide: getRepositoryToken(ExternalImportConfigEntity), useValue: emptyRepo },
         { provide: getRepositoryToken(StatisticsAgentEntity), useValue: emptyRepo },

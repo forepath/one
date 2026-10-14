@@ -2,6 +2,7 @@ import {
   ClientUsersRepository,
   RequireScopes,
   ensureWorkspaceManagementAccess,
+  getUserFromRequest,
   type RequestWithUser,
 } from '@forepath/identity/backend';
 import {
@@ -17,6 +18,7 @@ import {
   Delete,
   Get,
   Logger,
+  Optional,
   Param,
   ParseUUIDPipe,
   Post,
@@ -35,10 +37,16 @@ import {
   OpencodeMcpServerStatusDto,
   OpencodeMcpStatusListResponseDto,
 } from '../dto/opencode-config.dto';
+import { AgenstraNotificationPublisher, type AgentConfigLayer } from '../notifications/agenstra-notification.publisher';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { ClientAgentOpencodeConfigProxyService } from '../services/client-agent-opencode-config-proxy.service';
 import { OpencodeConfigService } from '../services/opencode-config.service';
 import { OpencodeConfigSyncTargetsService } from '../services/opencode-config-sync-targets.service';
+import {
+  hasAgentConfigChanges,
+  summarizeAgentConfigChange,
+  type AgentConfigLayerSnapshot,
+} from '../utils/agent-config-change.utils';
 import { assertNoCredentialKeysInConfig } from '../utils/opencode-config-credentials.utils';
 import {
   buildMcpOAuthCallbackUrl,
@@ -56,7 +64,32 @@ export class ClientOpencodeConfigController {
     private readonly configSyncTargets: OpencodeConfigSyncTargetsService,
     private readonly clientsRepository: ClientsRepository,
     private readonly clientUsersRepository: ClientUsersRepository,
+    @Optional() private readonly notificationPublisher?: AgenstraNotificationPublisher,
   ) {}
+
+  private notifyLayerUpdated(
+    layer: AgentConfigLayer,
+    clientId: string,
+    agentId: string | null,
+    before: AgentConfigLayerSnapshot,
+    after: AgentConfigLayerSnapshot,
+    secretsPatch: Record<string, string> | null | undefined,
+    req?: RequestWithUser,
+  ): void {
+    const summary = summarizeAgentConfigChange(before, after, secretsPatch);
+
+    if (!hasAgentConfigChanges(summary)) {
+      return;
+    }
+
+    this.notificationPublisher?.publishAgentConfigUpdated({
+      layer,
+      clientId,
+      agentId,
+      ...summary,
+      updatedByUserId: getUserFromRequest(req || ({} as RequestWithUser)).userId ?? null,
+    });
+  }
 
   @Get('opencode/config')
   @RequireScopes('clients:read')
@@ -78,7 +111,10 @@ export class ClientOpencodeConfigController {
   ): Promise<OpencodeConfigResponseDto> {
     await ensureWorkspaceManagementAccess(this.clientsRepository, this.clientUsersRepository, clientId, req);
 
+    const before = await this.opencodeConfigService.getClient(clientId);
     const response = await this.opencodeConfigService.putClient(clientId, dto);
+
+    this.notifyLayerUpdated('workspace', clientId, null, before, response, dto.secrets, req);
 
     void this.configSyncTargets.markAndProcessClient(clientId).catch((error: unknown) => {
       const err = error as { message?: string };
@@ -117,6 +153,11 @@ export class ClientOpencodeConfigController {
       lockedPaths: heredity.lockedPaths,
       inheritedAdditive: heredity.inheritedAdditive,
       sync,
+      platformPolicy: this.opencodeConfigService.resolvePlatformPolicy({
+        global: layers.global.overlay,
+        workspace: layers.workspace.overlay,
+        environment: agentOverlay,
+      }),
     };
   }
 
@@ -171,6 +212,8 @@ export class ClientOpencodeConfigController {
     );
     const sync = await this.configSyncTargets.markAndProcessAgent(clientId, agentId);
 
+    this.notifyLayerUpdated('environment', clientId, agentId, existing, agentConfig, sanitized.secrets, req);
+
     return {
       ...agentConfig,
       overrides: agentConfig.overrides ?? {},
@@ -179,6 +222,11 @@ export class ClientOpencodeConfigController {
       lockedPaths: heredity.lockedPaths,
       inheritedAdditive: heredity.inheritedAdditive,
       sync,
+      platformPolicy: this.opencodeConfigService.resolvePlatformPolicy({
+        global: layers.global.overlay,
+        workspace: layers.workspace.overlay,
+        environment: agentOverlay,
+      }),
     };
   }
 

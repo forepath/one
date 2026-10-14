@@ -4,7 +4,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
-import { AgentConsoleRegexFilterRuleEntity } from '../entities/agent-console-regex-filter-rule.entity';
 import { AtlassianSiteConnectionEntity } from '../entities/atlassian-site-connection.entity';
 import { ExternalImportConfigEntity } from '../entities/external-import-config.entity';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
@@ -14,6 +13,7 @@ import { StatisticsAgentEntity } from '../entities/statistics-agent.entity';
 import { StatisticsChatFilterDropEntity } from '../entities/statistics-chat-filter-drop.entity';
 import { StatisticsChatFilterFlagEntity } from '../entities/statistics-chat-filter-flag.entity';
 import { StatisticsChatIoEntity } from '../entities/statistics-chat-io.entity';
+import { StatisticsEgressEventEntity } from '../entities/statistics-egress-event.entity';
 import { StatisticsClientEntity } from '../entities/statistics-client.entity';
 import { StatisticsEntityEventEntity } from '../entities/statistics-entity-event.entity';
 import { StatisticsUserEntity } from '../entities/statistics-user.entity';
@@ -25,10 +25,10 @@ import {
   mapAtlassianConnectionToSearchDocument,
   mapChatIoToSearchDocument,
   mapClientToSearchDocument,
+  mapEgressEventToSearchDocument,
   mapEntityEventToSearchDocument,
   mapFilterDropToSearchDocument,
   mapFilterFlagToSearchDocument,
-  mapFilterRuleToSearchDocument,
   mapImportConfigToSearchDocument,
   mapKnowledgeNodeToSearchDocument,
   mapOpencodeMcpServerToSearchDocument,
@@ -60,8 +60,8 @@ export class AgenstraSearchIndexService {
     private readonly ticketsRepo: Repository<TicketEntity>,
     @InjectRepository(KnowledgeNodeEntity)
     private readonly knowledgeNodesRepo: Repository<KnowledgeNodeEntity>,
-    @InjectRepository(AgentConsoleRegexFilterRuleEntity)
-    private readonly filterRulesRepo: Repository<AgentConsoleRegexFilterRuleEntity>,
+    @InjectRepository(StatisticsEgressEventEntity)
+    private readonly egressEventsRepo: Repository<StatisticsEgressEventEntity>,
     @InjectRepository(AtlassianSiteConnectionEntity)
     private readonly atlassianConnectionsRepo: Repository<AtlassianSiteConnectionEntity>,
     @InjectRepository(ExternalImportConfigEntity)
@@ -218,8 +218,8 @@ export class AgenstraSearchIndexService {
         return await this.reindexTickets(offset, limit);
       case 'knowledge-nodes':
         return await this.reindexKnowledgeNodes(offset, limit);
-      case 'filter-rules':
-        return await this.reindexFilterRules(offset, limit);
+      case 'egress-events':
+        return await this.reindexEgressEvents(offset, limit);
       case 'chat-io':
         return await this.reindexChatIo(offset, limit);
       case 'filter-drops':
@@ -362,21 +362,25 @@ export class AgenstraSearchIndexService {
     return { indexed: rows.length, hasMore: rows.length === limit };
   }
 
-  private async reindexFilterRules(offset: number, limit: number): Promise<AgenstraReindexBatchResult> {
-    const rows = await this.filterRulesRepo.find({
-      order: { createdAt: 'ASC' },
+  private async reindexEgressEvents(offset: number, limit: number): Promise<AgenstraReindexBatchResult> {
+    const rows = await this.egressEventsRepo.find({
+      order: { occurredAt: 'ASC' },
       skip: offset,
       take: limit,
-      relations: { clientLinks: true },
+      relations: { statisticsAgent: true },
     });
-    const documents = rows.map((row) =>
-      mapFilterRuleToSearchDocument(
-        row,
-        (row.clientLinks ?? []).map((link) => link.clientId),
-      ),
-    );
+    const clientMap = await this.originalClientIdMap(rows.map((row) => row.statisticsClientId));
+    const documents = rows
+      .map((row) => {
+        const originalClientId = clientMap.get(row.statisticsClientId);
 
-    await this.bulkIndex('filter-rules', documents);
+        return originalClientId
+          ? mapEgressEventToSearchDocument(row, originalClientId, row.statisticsAgent?.originalAgentId ?? null)
+          : null;
+      })
+      .filter((document): document is AgenstraSearchDocument => document !== null);
+
+    await this.bulkIndex('egress-events', documents);
 
     return { indexed: rows.length, hasMore: rows.length === limit };
   }

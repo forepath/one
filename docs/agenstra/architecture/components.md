@@ -12,14 +12,14 @@ This document provides a detailed breakdown of all system components, their resp
 
 **Key Components** (via `ClientsModule` and related providers from `@forepath/agenstra/backend`):
 
-- `ClientsController` - HTTP REST API for clients, proxy paths, tickets, statistics, filter rules, provisioning
+- `ClientsController` - HTTP REST API for clients, proxy paths, tickets, statistics, egress status/evaluation, provisioning
 - `ClientsService` - Business logic for clients with permission checks
 - `ClientUsersService` - Manages client-user relationships and per-client roles
 - `ClientsGateway` - WebSocket `socket/clients` namespace (manager proxy, ticket hints for chat)
 - `TicketsBoardGateway` - WebSocket `socket/tickets` namespace (ticket board realtime)
 - `ClientAgentProxyService` - Proxies HTTP requests to remote agent-managers
 - `ProvisioningService` - Automated cloud server provisioning
-- Ticket, automation, statistics, and filter-rule services and repositories (see library source)
+- Ticket, automation, statistics, and egress-event ingestion services and repositories (see library source)
 
 **Dependencies**:
 
@@ -48,7 +48,7 @@ This document provides a detailed breakdown of all system components, their resp
 - `AgentsGateway` - WebSocket gateway for agent communication
 - `DockerService` - Container management and log streaming
 - `AgentProviderFactory` - Plugin-based agent provider system
-- Regex filter rule services for `/api/agents-filters`
+- `AgentEgressService`, `AgentEgressEventsCollectorService` and `AgentsEgressController` for the per-agent egress guard sidecar (`/api/agents/:id/egress`, `/api/egress/events`)
 
 **Dependencies**:
 
@@ -77,7 +77,6 @@ This document provides a detailed breakdown of all system components, their resp
 - `AgentConsoleChatComponent` - Main workspace shell (chat, files, Git, env, deployments)
 - `AgentConsoleContainerComponent` - Layout and lazy-loaded routes
 - `TicketsBoardComponent` - Ticket board
-- `RuleManagerComponent` - Admin filter rules
 - `AuditComponent` - Admin audit views
 - Monaco Editor integration
 - NgRx state management (including identity auth routes)
@@ -111,7 +110,7 @@ This document provides a detailed breakdown of all system components, their resp
 - `ClientAgentCredentialEntity` - Agent credential storage
 - Ticket, comment, activity, automation, and body-generation entities
 - Statistics shadow and event entities (`statistics_*` tables)
-- Global console filter rule entities and sync-target tables
+- Egress event entities (`statistics_egress_events`, ingest cursors)
 - `ClientsRepository` - Data access layer
 - `ClientUsersRepository` - Client-user relationship data access
 - `ClientsService` - Business logic with permission checks
@@ -134,7 +133,7 @@ This document provides a detailed breakdown of all system components, their resp
 - `AgentEntity` - Agent domain model
 - Deployment configuration and deployment run entities
 - `AgentEnvironmentVariableEntity` - Per-agent environment variables
-- `RegexFilterRuleEntity` - Per-agent regex chat filters
+- `AgentEgressEventEntity` - Aggregated egress guard decisions (agent entity also stores the effective `egressPolicy`, `messageFilters` and guard status)
 - `AgentMessageEventEntity` - Structured agent message stream events
 - `AgentsRepository` - Data access layer
 - `AgentsService` - Business logic
@@ -187,7 +186,6 @@ This document provides a detailed breakdown of all system components, their resp
   - `deployments` - CI/CD state
   - `tickets`, `ticketAutomation` - Ticket board and automation
   - `clientAgentAutonomy` - Autonomy configuration
-  - `filterRules` - Global filter rules (admin)
 - **Facades**:
   - `ClientsFacade` - Client operations
   - `AgentsFacade` - Agent operations
@@ -198,7 +196,7 @@ This document provides a detailed breakdown of all system components, their resp
   - `FilesFacade` - File operations
   - `EnvFacade` - Environment variables
   - `VcsFacade` - Git operations
-  - `StatisticsFacade`, `DeploymentsFacade`, `TicketsFacade`, `TicketAutomationFacade`, `ClientAgentAutonomyFacade`, `FilterRulesFacade`
+  - `StatisticsFacade`, `DeploymentsFacade`, `TicketsFacade`, `TicketAutomationFacade`, `ClientAgentAutonomyFacade`
 - **Effects**: NgRx effects for side effects
 - **Selectors**: State selectors
 
@@ -278,8 +276,8 @@ graph TB
 
 ### Database
 
-- **Agent Controller**: Clients, credentials, provisioning references, client users, tickets (`tickets`, `ticket_comments`, `ticket_activity`, `ticket_body_generation_sessions`), ticket automation (`client_agent_autonomy`, `ticket_automation`, `ticket_automation_run`, `ticket_automation_lease`, `ticket_automation_run_step`), statistics shadow and event tables (`statistics_users`, `statistics_clients`, `statistics_agents`, `statistics_provisioning_references`, `statistics_client_users`, `statistics_chat_io`, `statistics_chat_filter_drops`, `statistics_chat_filter_flags`, `statistics_entity_events`), global console filter tables (`agent_console_regex_filter_rules`, `agent_console_regex_filter_rule_clients`, `agent_console_regex_filter_rule_sync_targets`)
-- **Agent Manager**: Agents, chat messages (`agent_chat_messages`), agent message events (`agent_message_events`), environment variables (`agent_environment_variables`), `deployment_configurations`, `deployment_runs`, per-agent regex rules (`regex_filter_rules`)
+- **Agent Controller**: Clients, credentials, provisioning references, client users, tickets (`tickets`, `ticket_comments`, `ticket_activity`, `ticket_body_generation_sessions`), ticket automation (`client_agent_autonomy`, `ticket_automation`, `ticket_automation_run`, `ticket_automation_lease`, `ticket_automation_run_step`), statistics shadow and event tables (`statistics_users`, `statistics_clients`, `statistics_agents`, `statistics_provisioning_references`, `statistics_client_users`, `statistics_chat_io`, `statistics_chat_filter_drops`, `statistics_chat_filter_flags`, `statistics_entity_events`, `statistics_egress_events`), egress ingest cursors
+- **Agent Manager**: Agents, chat messages (`agent_chat_messages`), agent message events (`agent_message_events`), environment variables (`agent_environment_variables`), `deployment_configurations`, `deployment_runs`, egress guard events (`agent_egress_events`)
 
 ## Related documentation
 

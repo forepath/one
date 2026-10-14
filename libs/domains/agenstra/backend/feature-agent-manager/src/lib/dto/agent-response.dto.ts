@@ -1,6 +1,7 @@
 import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 import { ContainerType } from '../entities/agent.entity';
 
+import type { AgentEgressStatusDto } from './agent-egress.dto';
 import type { AgentChatSessionSummaryDto } from './chat-session-response.dto';
 import type { AgentTypeCapabilities } from './config-response.dto';
 
@@ -30,6 +31,10 @@ export class AgentResponseDto {
    * Id of the primary chat session for this environment.
    */
   primaryChatId!: string;
+  /**
+   * Egress guard (web traffic filtering) status of this environment.
+   */
+  egress?: AgentEgressStatusDto;
   createdAt!: Date;
   updatedAt!: Date;
 }

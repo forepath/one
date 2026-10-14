@@ -22,7 +22,7 @@ The Agent Controller HTTP API provides:
 - Tickets, comments, activity, migration, automation, and assisted body-generation flows (`/tickets/*`)
 - Knowledge tree and relations (`/knowledge/*`) for workspace pages/folders
 - Usage statistics (`/clients/:id/statistics/*`, `/statistics/*`)
-- Global message filter rules for administrators (`/filter-rules`)
+- Agent web traffic (egress) status, policy evaluation, and event statistics (`/clients/:id/agents/:agentId/egress`, `/clients/:id/statistics/egress-events`)
 - Atlassian site connections and import configurations for administrators (`/imports/atlassian/*`)
 - Agent autonomy configuration per workspace and per agent
 - Proxied agent operations (CRUD, models, start/stop/restart, environment variables, deployments)
@@ -83,7 +83,7 @@ The Agent Manager HTTP API provides:
 
 - Agent management (CRUD, models, start/stop/restart)
 - Latest agent message metadata (`GET /agents/{id}/messages/latest-agent`) for unread tracking
-- Per-agent regex filter rules (`/agents-filters`)
+- Egress guard status and decision event feed (`/agents/{id}/egress`, `/egress/events`)
 - Environment variable CRUD with container restart semantics
 - Workspace configuration overrides (`/configuration-overrides`)
 - File system operations (read, write, create, delete, move; optional `context` query)

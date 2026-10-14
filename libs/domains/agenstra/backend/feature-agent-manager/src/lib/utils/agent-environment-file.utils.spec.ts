@@ -1,5 +1,6 @@
 import {
   assertValidEnvironmentVariableName,
+  buildFlatTar,
   buildSingleFileTar,
   extractFirstFileFromTar,
   parseDockerEnvList,
@@ -141,6 +142,26 @@ describe('agent-environment-file.utils', () => {
       archive.write('zzzzzzzzzzz', 124, 'ascii');
 
       expect(() => extractFirstFileFromTar(archive)).toThrow('Unsupported tar header encoding');
+    });
+  });
+  describe('buildFlatTar', () => {
+    it('packs multiple files in order with their modes', () => {
+      const archive = buildFlatTar([
+        { name: 'a.conf', content: Buffer.from('first'), mode: 0o640 },
+        { name: 'b.txt', content: Buffer.from('second') },
+      ]);
+
+      expect(extractFirstFileFromTar(archive).toString()).toBe('first');
+      expect(archive.subarray(100, 107).toString('ascii')).toBe('0000640');
+      // Second header follows the 512-byte aligned first entry.
+      expect(archive.subarray(1024, 1029).toString('ascii')).toBe('b.txt');
+      expect(archive.subarray(1024 + 512, 1024 + 518).toString('utf-8')).toBe('second');
+      expect(archive.length % 512).toBe(0);
+    });
+
+    it('rejects nested or special entry names', () => {
+      expect(() => buildFlatTar([{ name: 'dir/file', content: Buffer.alloc(0) }])).toThrow('Invalid tar entry name');
+      expect(() => buildFlatTar([{ name: '..', content: Buffer.alloc(0) }])).toThrow('Invalid tar entry name');
     });
   });
 });

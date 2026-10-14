@@ -1,9 +1,13 @@
-import { registerRepeatableCoordinatorJob, shouldRegisterRepeatableJobs } from '@forepath/shared/backend';
+import {
+  registerRepeatableCoordinatorJob,
+  removeRepeatableCoordinatorJob,
+  shouldRegisterRepeatableJobs,
+} from '@forepath/shared/backend';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Queue } from 'bullmq';
 
-import { CONTROLLER_QUEUE_NAME, getControllerRepeatableJobs } from './job-registry';
+import { CONTROLLER_QUEUE_NAME, RETIRED_CONTROLLER_REPEATABLE_JOBS, getControllerRepeatableJobs } from './job-registry';
 
 @Injectable()
 export class ControllerQueueRegistrarService implements OnModuleInit {
@@ -14,6 +18,10 @@ export class ControllerQueueRegistrarService implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     if (!shouldRegisterRepeatableJobs()) {
       return;
+    }
+
+    for (const retired of RETIRED_CONTROLLER_REPEATABLE_JOBS) {
+      await removeRepeatableCoordinatorJob(this.controllerQueue, retired.name, retired.coordinatorJobId);
     }
 
     for (const definition of getControllerRepeatableJobs()) {

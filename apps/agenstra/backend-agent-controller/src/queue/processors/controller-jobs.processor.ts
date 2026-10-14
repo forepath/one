@@ -4,9 +4,8 @@ import {
   AgenstraSearchIndexService,
   AutonomousRunOrchestratorService,
   ContextImportOrchestratorService,
+  EgressEventsIngestService,
   ExternalImportConfigService,
-  FilterRulesService,
-  FilterRulesSyncService,
   isAgenstraSearchEntityType,
   KnowledgeEmbeddingIndexService,
   OpencodeConfigSyncTargetsService,
@@ -39,7 +38,7 @@ import {
   getAutonomousTicketBatchSize,
   getContextImportConfigBatch,
   getContextImportItemBudget,
-  getFilterRulesSyncBatchSize,
+  getEgressEventsIngestBatchSize,
   getKnowledgeEmbeddingPageBatchSize,
   getOpencodeConfigSyncBatchSize,
   getOpencodeLayerFilesSyncBatchSize,
@@ -58,8 +57,7 @@ export class ControllerJobsProcessor extends WorkerHost {
     private readonly contextImportOrchestrator: ContextImportOrchestratorService,
     private readonly contextImportConfigService: ExternalImportConfigService,
     private readonly knowledgeEmbeddingIndex: KnowledgeEmbeddingIndexService,
-    private readonly filterRulesSync: FilterRulesSyncService,
-    private readonly filterRulesService: FilterRulesService,
+    private readonly egressEventsIngest: EgressEventsIngestService,
     private readonly autonomousOrchestrator: AutonomousRunOrchestratorService,
     private readonly webhookDeliveryService: WebhookDeliveryService,
     private readonly webhookDeliveryRetentionService: WebhookDeliveryRetentionService,
@@ -97,14 +95,11 @@ export class ControllerJobsProcessor extends WorkerHost {
         break;
       }
 
-      case ControllerJobName.FILTER_RULES_SYNC_COORDINATOR:
-        await this.runFilterRulesSyncCoordinator();
+      case ControllerJobName.EGRESS_EVENTS_INGEST_COORDINATOR:
+        await this.runEgressEventsIngestCoordinator();
         break;
-      case ControllerJobName.FILTER_RULES_SYNC_UNIT:
-        await this.filterRulesSync.processTargetById((job.data as { targetId: string }).targetId);
-        break;
-      case ControllerJobName.FILTER_RULES_RECONCILE:
-        await this.filterRulesService.reconcileAllGlobalRules();
+      case ControllerJobName.EGRESS_EVENTS_INGEST_UNIT:
+        await this.egressEventsIngest.ingestClient((job.data as { clientId: string }).clientId);
         break;
       case ControllerJobName.OPENCODE_CONFIG_SYNC_COORDINATOR:
         await this.runOpencodeConfigSyncCoordinator();
@@ -316,16 +311,16 @@ export class ControllerJobsProcessor extends WorkerHost {
     }
   }
 
-  private async runFilterRulesSyncCoordinator(): Promise<void> {
-    const targetIds = await this.filterRulesSync.findPendingTargetIds(getFilterRulesSyncBatchSize());
+  private async runEgressEventsIngestCoordinator(): Promise<void> {
+    const clientIds = await this.egressEventsIngest.findClientIdsDue(getEgressEventsIngestBatchSize());
 
-    for (const targetId of targetIds) {
+    for (const clientId of clientIds) {
       await enqueueUnitJob({
         queue: this.controllerQueue,
-        jobName: ControllerJobName.FILTER_RULES_SYNC_UNIT,
-        payload: { targetId },
-        jobIdNamespace: 'filter-rules:target',
-        jobIdParts: [targetId],
+        jobName: ControllerJobName.EGRESS_EVENTS_INGEST_UNIT,
+        payload: { clientId },
+        jobIdNamespace: 'egress-events:client',
+        jobIdParts: [clientId],
       });
     }
   }

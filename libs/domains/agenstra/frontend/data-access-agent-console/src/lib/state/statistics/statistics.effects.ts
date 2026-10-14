@@ -5,6 +5,12 @@ import { catchError, map, of, switchMap } from 'rxjs';
 import { StatisticsService } from '../../services/statistics.service';
 
 import {
+  loadClientStatisticsEgressEvents,
+  loadClientStatisticsEgressEventsFailure,
+  loadClientStatisticsEgressEventsSuccess,
+  loadStatisticsEgressEvents,
+  loadStatisticsEgressEventsFailure,
+  loadStatisticsEgressEventsSuccess,
   loadClientStatisticsChatIo,
   loadClientStatisticsChatIoFailure,
   loadClientStatisticsChatIoSuccess,
@@ -189,6 +195,36 @@ export const loadStatisticsEntityEvents$ = createEffect(
         statisticsService.getEntityEvents(params).pipe(
           map((data) => loadStatisticsEntityEventsSuccess({ data })),
           catchError((error) => of(loadStatisticsEntityEventsFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const loadClientStatisticsEgressEvents$ = createEffect(
+  (actions$ = inject(Actions), statisticsService = inject(StatisticsService)) =>
+    actions$.pipe(
+      ofType(loadClientStatisticsEgressEvents),
+      switchMap(({ params }) =>
+        statisticsService.getClientEgressEvents(params.clientId, params).pipe(
+          map((data) => loadClientStatisticsEgressEventsSuccess({ clientId: params.clientId, data })),
+          catchError((error) =>
+            of(loadClientStatisticsEgressEventsFailure({ clientId: params.clientId, error: normalizeError(error) })),
+          ),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const loadStatisticsEgressEvents$ = createEffect(
+  (actions$ = inject(Actions), statisticsService = inject(StatisticsService)) =>
+    actions$.pipe(
+      ofType(loadStatisticsEgressEvents),
+      switchMap(({ params }) =>
+        statisticsService.getEgressEvents(params).pipe(
+          map((data) => loadStatisticsEgressEventsSuccess({ data })),
+          catchError((error) => of(loadStatisticsEgressEventsFailure({ error: normalizeError(error) }))),
         ),
       ),
     ),

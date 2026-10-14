@@ -1,6 +1,9 @@
 import {
   applySecretsPatch,
   assertNoCredentialKeysInConfig,
+  assertValidPlatformSecurityConfig,
+  normalizeEffectiveEgressPolicy,
+  OpencodeConfigValidationError,
   buildAllowDenyContext,
   composeLayerOverlay,
   enforceAllowDenyOnOverlay,
@@ -31,9 +34,16 @@ import {
   OpencodeMcpAuthStartResponseDto,
   OpencodeMcpServerStatusDto,
   OpencodeMcpStatusListResponseDto,
+  SyncAgentPlatformPolicyDto,
   UpsertAgentOpencodeConfigDto,
 } from '../../dto/agent-opencode-config.dto';
 import { AgentsRepository } from '../../repositories/agents.repository';
+import {
+  AgentEgressService,
+  EGRESS_GUARDED_AGENT_CAP_DROP,
+  type AgentEgressApplyResult,
+} from '../../services/agent-egress.service';
+import { AgentMessageFiltersService } from '../../services/agent-message-filters.service';
 import { AgentRuntimeRefreshService } from '../../services/agent-runtime-refresh.service';
 import { DockerService } from '../../services/docker.service';
 import {
@@ -254,6 +264,10 @@ export class OpenCodeConfigSyncService {
     private readonly environmentProgress?: EnvironmentProgressService,
     @Optional()
     private readonly agentRuntimeRefresh?: AgentRuntimeRefreshService,
+    @Optional()
+    private readonly agentEgress?: AgentEgressService,
+    @Optional()
+    private readonly messageFilters?: AgentMessageFiltersService,
   ) {}
 
   registerConfigSyncedBroadcaster(broadcaster: (agentId: string) => void): void {
@@ -274,12 +288,24 @@ export class OpenCodeConfigSyncService {
       overrides: agent.opencodeUserOverrides ?? {},
       secretKeys: Object.keys(secrets),
       updatedAt: agent.updatedAt,
+      ...(this.agentEgress ? { egress: await this.agentEgress.describe(agent) } : {}),
     };
   }
 
   async put(agentId: string, dto: UpsertAgentOpencodeConfigDto): Promise<AgentOpencodeConfigResponseDto> {
     assertNoCredentialKeysInConfig(dto.config ?? undefined);
     assertNoCredentialKeysInConfig(dto.overrides ?? undefined);
+
+    try {
+      assertValidPlatformSecurityConfig(dto.config ?? undefined);
+      assertValidPlatformSecurityConfig(dto.overrides ?? undefined);
+    } catch (error) {
+      if (error instanceof OpencodeConfigValidationError) {
+        throw new BadRequestException(error.message);
+      }
+
+      throw error;
+    }
 
     const agent = await this.agentsRepository.findById(agentId);
 
@@ -323,6 +349,7 @@ export class OpenCodeConfigSyncService {
       overrides: saved.opencodeUserOverrides ?? {},
       secretKeys: Object.keys(secrets),
       updatedAt: saved.updatedAt,
+      ...(this.agentEgress ? { egress: await this.agentEgress.describe(saved) } : {}),
     };
   }
 
@@ -334,11 +361,12 @@ export class OpenCodeConfigSyncService {
     agentId: string,
     effective: Record<string, unknown>,
     parentSecrets: Record<string, string> = {},
+    platformPolicy?: SyncAgentPlatformPolicyDto,
   ): Promise<OpencodeSyncEffectiveResult> {
     const progressRef: ConfigSyncProgressRef = {};
 
     try {
-      const result = await this.syncEffectiveInternal(agentId, effective, parentSecrets, progressRef);
+      const result = await this.syncEffectiveInternal(agentId, effective, parentSecrets, progressRef, platformPolicy);
 
       if (result.ok) {
         progressRef.tracker?.complete();
@@ -360,6 +388,7 @@ export class OpenCodeConfigSyncService {
     effective: Record<string, unknown>,
     parentSecrets: Record<string, string>,
     progressRef: ConfigSyncProgressRef,
+    platformPolicy?: SyncAgentPlatformPolicyDto,
   ): Promise<OpencodeSyncEffectiveResult> {
     assertNoCredentialKeysInConfig(effective);
 
@@ -385,12 +414,31 @@ export class OpenCodeConfigSyncService {
 
     try {
       progressRef.agentName = agent.name;
+
+      // Platform security policy (layered agent configuration → Security). Message filters take effect
+      // immediately; the egress guard is created / updated before the container environment is applied
+      // so a topology change (joining the guard namespace) happens in the same recreate.
+      if (platformPolicy?.messageFilters !== undefined) {
+        await this.messageFilters?.store(agentId, platformPolicy.messageFilters);
+      }
+
+      let egressPlan: AgentEgressApplyResult | undefined;
+
+      if (this.agentEgress && (platformPolicy?.egress !== undefined || agent.egressGuardContainerId)) {
+        egressPlan = await this.agentEgress.applyPolicyForAgent(
+          agentId,
+          platformPolicy?.egress !== undefined ? normalizeEffectiveEgressPolicy(platformPolicy.egress) : undefined,
+          secrets,
+        );
+      }
+
       const envResult = await this.applyEnvSecretsToContainer(
         agentId,
         agent.containerId,
         secrets,
         prepared,
         progressRef,
+        egressPlan,
       );
 
       if (!envResult.ok) {
@@ -496,6 +544,11 @@ export class OpenCodeConfigSyncService {
         this.logger.warn(`OpenCode config sync failed for ${agentId}: ${message}`);
 
         return { ok: false, error: message };
+      }
+
+      if (egressPlan && !egressPlan.ok) {
+        // Everything else was applied; surface the egress failure so the controller retries / notifies.
+        return { ok: false, error: `Egress policy not applied: ${egressPlan.error ?? 'unknown error'}` };
       }
 
       return { ok: true };
@@ -640,6 +693,7 @@ mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
     secrets: Record<string, string>,
     effective: Record<string, unknown>,
     progressRef: ConfigSyncProgressRef = {},
+    egressPlan?: AgentEgressApplyResult,
   ): Promise<OpencodeSyncEffectiveResult & { containerId?: string; recreated?: boolean; restarted?: boolean }> {
     const network = extractNetworkSecrets(secrets);
     const providerEnv = extractProviderEnvSecrets(secrets, effective as Record<string, unknown>);
@@ -671,6 +725,12 @@ mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
       desiredEnv[key] = value;
     }
 
+    // While an egress guard enforces, every proxy variable points at the guard's explicit proxy
+    // (the configured upstream proxy is chained by the guard instead).
+    for (const [key, value] of Object.entries(egressPlan?.proxyEnv ?? {})) {
+      desiredEnv[key] = value;
+    }
+
     if (desiredEnv.NODE_EXTRA_CA_CERTS && isPemCertificateMaterial(desiredEnv.NODE_EXTRA_CA_CERTS)) {
       try {
         const home = await this.dockerService.getContainerHomeDirectory(containerId);
@@ -694,7 +754,7 @@ mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
 
     // Agent-level environment variables stay authoritative; their keys only get a new fallback value.
     return await withAgentEnvironmentLock(agentId, () =>
-      this.applyShieldedEnvToContainer(agentId, containerId, desiredEnv, progressRef),
+      this.applyShieldedEnvToContainer(agentId, containerId, desiredEnv, progressRef, egressPlan?.joinGuardId),
     );
   }
 
@@ -703,6 +763,7 @@ mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
     containerId: string,
     requestedEnv: Record<string, string | undefined>,
     progressRef: ConfigSyncProgressRef,
+    joinGuardId?: string,
   ): Promise<OpencodeSyncEffectiveResult & { containerId?: string; recreated?: boolean; restarted?: boolean }> {
     const agent = await this.agentsRepository.findById(agentId);
     const shielded = shieldAgentEnvironmentVariables(
@@ -733,13 +794,18 @@ mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
       }
     }
 
+    if (joinGuardId) {
+      // Joining the egress guard namespace is a network-mode change: always a recreate.
+      changed = true;
+    }
+
     if (!changed) {
       return { ok: true, containerId, recreated: false };
     }
 
     try {
       // Containers with the mounted environment are restarted in place; legacy ones are recreated once.
-      const strategy = await this.dockerService.getEnvironmentApplyStrategy(containerId);
+      const strategy = joinGuardId ? 'recreate' : await this.dockerService.getEnvironmentApplyStrategy(containerId);
 
       progressRef.tracker = this.environmentProgress?.start({
         agentId,
@@ -751,7 +817,10 @@ mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
             : CONFIG_SYNC_ENVIRONMENT_PROGRESS_STEPS,
       });
       progressRef.tracker?.advance(strategy === 'restart' ? 'restartingContainer' : 'recreatingContainer');
-      const newContainerId = await this.dockerService.updateContainer(containerId, { env: desiredEnv });
+      const newContainerId = await this.dockerService.updateContainer(containerId, {
+        env: desiredEnv,
+        ...(joinGuardId ? { sharedNetworkContainerId: joinGuardId, capDrop: [...EGRESS_GUARDED_AGENT_CAP_DROP] } : {}),
+      });
 
       if (newContainerId !== containerId) {
         await this.agentsRepository.update(agentId, { containerId: newContainerId });

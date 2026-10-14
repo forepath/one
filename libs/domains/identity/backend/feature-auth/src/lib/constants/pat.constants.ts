@@ -33,7 +33,6 @@ export const ADMIN_ONLY_PAT_SCOPES = new Set([
   'billing_admin:read',
   'billing_admin:write',
   'datev:write',
-  'filter_rules:write',
   'imports:write',
   'invoices:write',
   'customer_profile:admin',

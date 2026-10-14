@@ -3,7 +3,7 @@ export const AGENSTRA_SEARCH_ENTITY_TYPES = [
   'agents',
   'tickets',
   'knowledge-nodes',
-  'filter-rules',
+  'egress-events',
   'deployment-runs',
   'chat-io',
   'filter-drops',
@@ -50,6 +50,10 @@ export interface AgenstraSearchDocument {
   variable?: string | null;
   agentId?: string | null;
   role?: string | null;
+  host?: string | null;
+  decision?: string | null;
+  kind?: string | null;
+  rule?: string | null;
   wordCount?: number | null;
   charCount?: number | null;
   updatedAt?: string | null;
@@ -110,6 +114,10 @@ export const AGENSTRA_SEARCH_TEXT_FIELDS = [
   'variable',
   'agentId',
   'role',
+  'host',
+  'decision',
+  'kind',
+  'rule',
   'id',
 ] as const;
 
@@ -134,6 +142,10 @@ export const AGENSTRA_SEARCH_INDEX_MAPPINGS: Record<string, unknown> = {
     agentType: { type: 'keyword' },
     containerType: { type: 'keyword' },
     role: { type: 'keyword' },
+    decision: { type: 'keyword' },
+    kind: { type: 'keyword' },
+    rule: { type: 'keyword' },
+    host: { type: 'text' },
     title: { type: 'text' },
     name: { type: 'text' },
     description: { type: 'text' },

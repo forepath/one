@@ -9,6 +9,8 @@ import {
 } from './types';
 import { migrateConfigV1ToV2 } from './migrate-v1-to-v2';
 import { expandExplicitLocks } from './locks';
+import { EGRESS_LIST_KEYS, EGRESS_SCALAR_KEYS, mergeEgressOverlays } from './egress-policy';
+import { EGRESS_CONFIG_ROOT } from './platform-policy';
 
 function isPlainObject(value: unknown): value is JsonObject {
   return !!value && typeof value === 'object' && !Array.isArray(value);
@@ -124,6 +126,11 @@ export function mergeConfigs(...layers: Array<JsonObject | null | undefined>): J
 
       if (key === 'mcp') {
         next[key] = mergeMcp(result[key], value);
+        continue;
+      }
+
+      if (key === EGRESS_CONFIG_ROOT) {
+        next[key] = mergeEgressOverlays(result[key], value);
         continue;
       }
 
@@ -306,6 +313,28 @@ export function computeHeredityMetadata(...parents: Array<HeredityParentLayer | 
       if ((ARRAY_CONCAT_ROOT_KEYS as readonly string[]).includes(key) && Array.isArray(normalized[key])) {
         const entry = ensureAdditive(pointer(key));
         entry.items = [...(entry.items ?? []), ...(normalized[key] as unknown[])];
+        continue;
+      }
+
+      // Egress: scalar settings lock when a parent sets them; host / pattern / network lists are additive.
+      if (key === EGRESS_CONFIG_ROOT) {
+        const egress = normalized[key];
+
+        if (isPlainObject(egress)) {
+          for (const scalar of EGRESS_SCALAR_KEYS) {
+            if (egress[scalar] !== undefined) {
+              locked.add(pointer(`${EGRESS_CONFIG_ROOT}/${scalar}`));
+            }
+          }
+
+          for (const list of EGRESS_LIST_KEYS) {
+            if (Array.isArray(egress[list]) && (egress[list] as unknown[]).length > 0) {
+              const entry = ensureAdditive(pointer(`${EGRESS_CONFIG_ROOT}/${list}`));
+              entry.items = [...(entry.items ?? []), ...(egress[list] as unknown[])];
+            }
+          }
+        }
+
         continue;
       }
 

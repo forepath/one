@@ -16,8 +16,8 @@ jest.mock('../repositories/statistics.repository', () => ({
   StatisticsRepository: class StatisticsRepository {},
 }));
 
-jest.mock('./filter-rules.service', () => ({
-  FilterRulesService: class FilterRulesService {},
+jest.mock('../repositories/statistics-security.repository', () => ({
+  StatisticsSecurityRepository: class StatisticsSecurityRepository {},
 }));
 
 jest.mock('../entities/ticket.enums', () => ({
@@ -60,8 +60,8 @@ describe('AgenstraMetricsCollectorService', () => {
     countFilterDropsGroupedForMetrics: jest.fn(),
     countFilterFlagsGroupedForMetrics: jest.fn(),
   };
-  const filterRulesService = {
-    countForMetrics: jest.fn(),
+  const statisticsSecurityRepository = {
+    countEgressEventsGroupedForMetrics: jest.fn(),
   };
 
   beforeEach(() => {
@@ -70,7 +70,7 @@ describe('AgenstraMetricsCollectorService', () => {
     resolveOtelRuntimeConfig.mockReturnValue({ enabled: true });
   });
 
-  it('sets workspace, ticket, chat, filter-trigger, and filter-rule gauges when OTEL is enabled', async () => {
+  it('sets workspace, ticket, chat, filter-trigger, and egress gauges when OTEL is enabled', async () => {
     clientsRepository.count.mockResolvedValue(1);
     clientsRepository.findAllIds.mockResolvedValue(['client-a']);
     createQueryBuilder.mockReturnValue({
@@ -96,19 +96,15 @@ describe('AgenstraMetricsCollectorService', () => {
     statisticsRepository.countFilterFlagsGroupedForMetrics.mockResolvedValue([
       { clientId: 'client-a', direction: 'outgoing', filterType: 'filter', count: 2 },
     ]);
-    filterRulesService.countForMetrics.mockResolvedValue({
-      rulesEnabled: 5,
-      rulesDisabled: 1,
-      syncPending: 2,
-      syncSynced: 4,
-      syncFailed: 0,
-    });
+    statisticsSecurityRepository.countEgressEventsGroupedForMetrics.mockResolvedValue([
+      { clientId: 'client-a', kind: 'web', decision: 'blocked', count: 7 },
+    ]);
 
     const service = new AgenstraMetricsCollectorService(
       clientsRepository as never,
       ticketRepository as never,
       statisticsRepository as never,
-      filterRulesService as never,
+      statisticsSecurityRepository as never,
     );
 
     await (service as unknown as { collectMetrics: () => Promise<void> }).collectMetrics();
@@ -143,11 +139,16 @@ describe('AgenstraMetricsCollectorService', () => {
       direction: 'outgoing',
       filter_type: 'filter',
     });
-    expect(setGauge).toHaveBeenCalledWith('forepath.agenstra', 'agenstra.filter_rules', 5, {
-      enabled: 'true',
+    expect(setGauge).toHaveBeenCalledWith('forepath.agenstra', 'agenstra.egress_events', 7, {
+      client_id: 'client-a',
+      kind: 'web',
+      decision: 'blocked',
     });
-    expect(setGauge).toHaveBeenCalledWith('forepath.agenstra', 'agenstra.filter_rule_sync_targets', 2, {
-      sync_status: 'pending',
-    });
+    expect(setGauge).not.toHaveBeenCalledWith(
+      'forepath.agenstra',
+      'agenstra.filter_rules',
+      expect.anything(),
+      expect.anything(),
+    );
   });
 });

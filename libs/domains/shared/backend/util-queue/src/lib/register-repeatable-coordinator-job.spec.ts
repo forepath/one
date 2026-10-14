@@ -9,10 +9,10 @@ import {
 describe('registerRepeatableCoordinatorJob', () => {
   it('removes stale repeatables before registering', async () => {
     const removeRepeatableByKey = jest.fn().mockResolvedValue(true);
-    const add = jest.fn().mockResolvedValue({ id: 'coordinator.filter-rules-sync' });
+    const add = jest.fn().mockResolvedValue({ id: 'coordinator.egress-events-ingest' });
     const queue = {
       getRepeatableJobs: jest.fn().mockResolvedValue([
-        { name: 'filter-rules-sync.coordinator', id: 'coordinator.filter-rules-sync', key: 'repeat:abc' },
+        { name: 'egress-events-ingest.coordinator', id: 'coordinator.egress-events-ingest', key: 'repeat:abc' },
         { name: 'other.coordinator', id: 'coordinator.other', key: 'repeat:def' },
       ]),
       removeRepeatableByKey,
@@ -21,18 +21,18 @@ describe('registerRepeatableCoordinatorJob', () => {
 
     await registerRepeatableCoordinatorJob({
       queue,
-      name: 'filter-rules-sync.coordinator',
-      coordinatorJobId: 'coordinator.filter-rules-sync',
+      name: 'egress-events-ingest.coordinator',
+      coordinatorJobId: 'coordinator.egress-events-ingest',
       everyMs: 30_000,
     });
 
     expect(removeRepeatableByKey).toHaveBeenCalledTimes(1);
     expect(removeRepeatableByKey).toHaveBeenCalledWith('repeat:abc');
     expect(add).toHaveBeenCalledWith(
-      'filter-rules-sync.coordinator',
+      'egress-events-ingest.coordinator',
       {},
       expect.objectContaining({
-        jobId: 'coordinator.filter-rules-sync',
+        jobId: 'coordinator.egress-events-ingest',
         repeat: { every: 30_000 },
         removeOnComplete: defaultRemoveOnComplete,
         removeOnFail: defaultRemoveOnFail,

@@ -1,5 +1,5 @@
 import { isOtelEffectivelyEnabled, resolveOtelRuntimeConfig, setGauge } from '@forepath/shared/backend/util-otel';
-import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit, forwardRef } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -7,9 +7,8 @@ import { ChatDirection, StatisticsInteractionKind } from '../entities/statistics
 import { TicketEntity } from '../entities/ticket.entity';
 import { TicketStatus } from '../entities/ticket.enums';
 import { ClientsRepository } from '../repositories/clients.repository';
+import { StatisticsSecurityRepository } from '../repositories/statistics-security.repository';
 import { StatisticsRepository } from '../repositories/statistics.repository';
-
-import { FilterRulesService } from './filter-rules.service';
 
 const METER_NAME = 'forepath.agenstra';
 const POLL_INTERVAL_MS = 60_000;
@@ -24,8 +23,7 @@ export class AgenstraMetricsCollectorService implements OnModuleInit, OnModuleDe
     @InjectRepository(TicketEntity)
     private readonly ticketRepository: Repository<TicketEntity>,
     private readonly statisticsRepository: StatisticsRepository,
-    @Inject(forwardRef(() => FilterRulesService))
-    private readonly filterRulesService: FilterRulesService,
+    private readonly statisticsSecurityRepository: StatisticsSecurityRepository,
   ) {}
 
   onModuleInit(): void {
@@ -70,7 +68,7 @@ export class AgenstraMetricsCollectorService implements OnModuleInit, OnModuleDe
       }
 
       await this.collectChatAndFilterMetrics(clientIds);
-      await this.collectFilterRuleMetrics();
+      await this.collectEgressMetrics();
     } catch (error) {
       this.logger.warn(`Failed to collect Agenstra OTEL metrics: ${(error as Error).message}`);
     }
@@ -120,14 +118,16 @@ export class AgenstraMetricsCollectorService implements OnModuleInit, OnModuleDe
     }
   }
 
-  private async collectFilterRuleMetrics(): Promise<void> {
-    const counts = await this.filterRulesService.countForMetrics();
+  private async collectEgressMetrics(): Promise<void> {
+    const rows = await this.statisticsSecurityRepository.countEgressEventsGroupedForMetrics();
 
-    setGauge(METER_NAME, 'agenstra.filter_rules', counts.rulesEnabled, { enabled: 'true' });
-    setGauge(METER_NAME, 'agenstra.filter_rules', counts.rulesDisabled, { enabled: 'false' });
-    setGauge(METER_NAME, 'agenstra.filter_rule_sync_targets', counts.syncPending, { sync_status: 'pending' });
-    setGauge(METER_NAME, 'agenstra.filter_rule_sync_targets', counts.syncSynced, { sync_status: 'synced' });
-    setGauge(METER_NAME, 'agenstra.filter_rule_sync_targets', counts.syncFailed, { sync_status: 'failed' });
+    for (const row of rows) {
+      setGauge(METER_NAME, 'agenstra.egress_events', row.count, {
+        client_id: row.clientId,
+        kind: row.kind,
+        decision: row.decision,
+      });
+    }
   }
 
   private async countTicketsGroupedByClientAndStatus(): Promise<Map<string, number>> {

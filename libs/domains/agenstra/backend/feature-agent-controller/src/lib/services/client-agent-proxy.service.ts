@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import {
+  AgentEgressDetailsDto,
+  AgentEgressEventsPageDto,
   AgentModelsResponseDto,
   AgentResponseDto,
   ConfigResponseDto,
@@ -102,12 +104,19 @@ export class ClientAgentProxyService {
    * @throws NotFoundException if client is not found
    * @throws BadRequestException if request fails
    */
-  private async makeRequest<T>(clientId: string, config: AxiosRequestConfig): Promise<T> {
+  private async makeRequest<T>(
+    clientId: string,
+    config: AxiosRequestConfig,
+    scope: 'agents' | 'api' = 'agents',
+  ): Promise<T> {
     const clientEntity = await this.clientsRepository.findByIdOrThrow(clientId);
 
     await validateClientEndpointWithDnsOrThrow(clientEntity.endpoint);
     const authHeader = await this.getAuthHeader(clientId);
-    const baseUrl = this.buildAgentApiUrl(clientEntity.endpoint);
+    const baseUrl =
+      scope === 'agents'
+        ? this.buildAgentApiUrl(clientEntity.endpoint)
+        : `${clientEntity.endpoint.replace(/\/$/, '')}/api`;
     const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
 
     try {
@@ -118,7 +127,7 @@ export class ClientAgentProxyService {
         url: config.url ? `${baseUrl}${config.url}` : baseUrl,
         headers: buildClientProxyRequestHeaders(config.headers, authHeader),
         validateStatus: (status) => status < 500, // Don't throw on 4xx errors
-        timeout: process.env.REQUEST_TIMEOUT ? parseInt(process.env.REQUEST_TIMEOUT) : 600000, // 10 minutes timeout for long-running processes
+        timeout: config.timeout ?? (process.env.REQUEST_TIMEOUT ? parseInt(process.env.REQUEST_TIMEOUT) : 600000), // 10 minutes timeout for long-running processes
         httpsAgent: baseUrl.startsWith('https://')
           ? new (require('https').Agent)({
               rejectUnauthorized: tlsPolicy.rejectUnauthorized,
@@ -182,6 +191,32 @@ export class ClientAgentProxyService {
         throw new BadRequestException(`Request setup failed: ${axiosError.message}`);
       }
     }
+  }
+
+  /**
+   * Egress guard status, effective policy, message filters and recent decisions of one agent.
+   */
+  async getClientAgentEgress(clientId: string, agentId: string): Promise<AgentEgressDetailsDto> {
+    return await this.makeRequest<AgentEgressDetailsDto>(clientId, {
+      method: 'GET',
+      url: `/${agentId}/egress`,
+    });
+  }
+
+  /**
+   * Page the agent manager's egress decision feed (monotonic `seq` cursor; all agents of the workspace).
+   */
+  async listClientEgressEvents(clientId: string, afterSeq: string, limit: number): Promise<AgentEgressEventsPageDto> {
+    return await this.makeRequest<AgentEgressEventsPageDto>(
+      clientId,
+      {
+        method: 'GET',
+        url: '/egress/events',
+        params: { afterSeq, limit },
+        timeout: 60_000,
+      },
+      'api',
+    );
   }
 
   /**

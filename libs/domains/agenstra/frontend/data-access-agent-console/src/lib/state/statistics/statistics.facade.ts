@@ -3,6 +3,8 @@ import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
 import {
+  loadClientStatisticsEgressEvents,
+  loadStatisticsEgressEvents,
   loadClientStatisticsChatIo,
   loadClientStatisticsEntityEvents,
   loadClientStatisticsFilterDrops,
@@ -15,6 +17,10 @@ import {
   loadStatisticsSummary,
 } from './statistics.actions';
 import {
+  selectClientEgressEvents,
+  selectEgressEvents,
+  selectLoadingClientEgressEvents,
+  selectLoadingEgressEvents,
   selectChatIo,
   selectClientChatIo,
   selectClientEntityEvents,
@@ -41,6 +47,7 @@ import type {
   StatisticsAggregateParams,
   StatisticsChatIoListDto,
   StatisticsClientScopeParams,
+  StatisticsEgressEventListDto,
   StatisticsEntityEventListDto,
   StatisticsFilterDropListDto,
   StatisticsFilterFlagListDto,
@@ -68,6 +75,8 @@ export class StatisticsFacade {
   readonly loadingFilterDrops$: Observable<boolean> = this.store.select(selectLoadingFilterDrops);
   readonly loadingFilterFlags$: Observable<boolean> = this.store.select(selectLoadingFilterFlags);
   readonly loadingEntityEvents$: Observable<boolean> = this.store.select(selectLoadingEntityEvents);
+  readonly egressEvents$: Observable<StatisticsEgressEventListDto | null> = this.store.select(selectEgressEvents);
+  readonly loadingEgressEvents$: Observable<boolean> = this.store.select(selectLoadingEgressEvents);
   readonly error$: Observable<string | null> = this.store.select(selectStatisticsError);
 
   /** Client-scoped: load summary */
@@ -168,5 +177,25 @@ export class StatisticsFacade {
   /** Client-scoped: loading state for entity events */
   getLoadingClientEntityEvents$(clientId: string): Observable<boolean> {
     return this.store.select(selectLoadingClientEntityEvents(clientId));
+  }
+
+  /** Client-scoped: load egress guard decisions */
+  loadClientEgressEvents(params: StatisticsClientScopeParams): void {
+    this.store.dispatch(loadClientStatisticsEgressEvents({ params }));
+  }
+
+  /** Aggregate: load egress guard decisions */
+  loadEgressEvents(params?: StatisticsAggregateParams): void {
+    this.store.dispatch(loadStatisticsEgressEvents({ params }));
+  }
+
+  /** Client-scoped: egress events for a client */
+  getClientEgressEvents$(clientId: string): Observable<StatisticsEgressEventListDto | undefined> {
+    return this.store.select(selectClientEgressEvents(clientId));
+  }
+
+  /** Client-scoped: loading state for egress events */
+  getLoadingClientEgressEvents$(clientId: string): Observable<boolean> {
+    return this.store.select(selectLoadingClientEgressEvents(clientId));
   }
 }
