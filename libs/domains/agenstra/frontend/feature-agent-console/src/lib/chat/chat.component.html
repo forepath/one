@@ -965,6 +965,25 @@
                                 @if (formatMessageWithCommandBadge(getText(messageData)); as formattedText) {
                                   <p class="card-text chat-message-text" [innerHTML]="formattedText"></p>
                                 }
+                                @if (getMessageAttachments(messageData); as attachments) {
+                                  @if (attachments.length) {
+                                    <div class="d-flex flex-column gap-1 mt-2">
+                                      @for (attachment of attachments; track attachment.id) {
+                                        <a
+                                          class="chat-message-attachment text-start small"
+                                          [href]="attachment.downloadUrl"
+                                          [download]="attachment.fileName"
+                                        >
+                                          <i class="bi bi-paperclip me-1" aria-hidden="true"></i
+                                          >{{ attachment.fileName }}
+                                          <span class="chat-message-attachment__size"
+                                            >{{ attachment.byteSize | number }} B</span
+                                          >
+                                        </a>
+                                      }
+                                    </div>
+                                  }
+                                }
                                 <div class="d-flex align-items-center gap-2 mt-2">
                                   <i class="bi bi-shield-exclamation text-warning" title="Message was filtered"></i>
                                   <small class="chat-message-timestamp text-warning mt-0"> Filtered </small>
@@ -977,6 +996,25 @@
                               <div class="card-body chat-message-body">
                                 @if (formatMessageWithCommandBadge(getText(messageData)); as formattedText) {
                                   <p class="card-text chat-message-text" [innerHTML]="formattedText"></p>
+                                }
+                                @if (getMessageAttachments(messageData); as attachments) {
+                                  @if (attachments.length) {
+                                    <div class="d-flex flex-column gap-1 mt-2">
+                                      @for (attachment of attachments; track attachment.id) {
+                                        <a
+                                          class="chat-message-attachment text-start small"
+                                          [href]="attachment.downloadUrl"
+                                          [download]="attachment.fileName"
+                                        >
+                                          <i class="bi bi-paperclip me-1" aria-hidden="true"></i
+                                          >{{ attachment.fileName }}
+                                          <span class="chat-message-attachment__size"
+                                            >{{ attachment.byteSize | number }} B</span
+                                          >
+                                        </a>
+                                      }
+                                    </div>
+                                  }
                                 }
                                 <small class="chat-message-timestamp">{{ formatTimestamp(item.msg.timestamp) }}</small>
                               </div>
@@ -1293,7 +1331,14 @@
               ></button>
             </div>
           }
-          <div class="chat-input-group">
+          <div
+            class="chat-input-group"
+            [class.chat-input-group--drag-active]="chatAttachmentDragActive()"
+            (dragenter)="onChatInputDragEnter($event)"
+            (dragover)="onChatInputDragOver($event)"
+            (dragleave)="onChatInputDragLeave($event)"
+            (drop)="onChatInputDrop($event)"
+          >
             <div class="form-control chat-textarea-container">
               @if (isSlashCommandMenuOpenFor('chat')) {
                 <div
@@ -1356,7 +1401,7 @@
                     color="secondary"
                     class="border context-toolbar-chip text-truncate"
                     [attr.title]="chip.title"
-                    >{{ chip.label }}</fpc-badge
+                    ><span class="context-toolbar-chip-label text-truncate">{{ chip.label }}</span></fpc-badge
                   >
                 }
               </span>
@@ -1538,46 +1583,51 @@
     [checked]="autoEnrichmentEnabled()"
     (checkedChange)="onAutoEnrichmentToggle($event)"
   />
-  <p class="text-muted small mb-2" i18n="@@featureChat-environmentContextLabel">Environment context</p>
-  <p class="text-muted small mb-2" i18n="@@featureChat-environmentContextHint">
-    Select additional environments to enrich context more specifically. The active environment is included
-    automatically.
-  </p>
-  <div class="d-flex flex-column gap-2">
-    @if (agents$ | async; as agents) {
-      @if (activeClient$ | async; as activeClient) {
-        @for (agent of agents; track agent.id) {
-          @if (agent.id !== selectedAgentId()) {
-            <fpc-form-check
-              [checkId]="'contextEnvironment-' + agent.id"
-              [ngModel]="isEnvironmentContextSelected(agent.id)"
-              (ngModelChange)="onEnvironmentContextToggle(agent.id, $event)"
-            >
-              <label class="form-check-label" [for]="'contextEnvironment-' + agent.id">
-                {{ agent.name }}
-                @if (isLocalGitRepository(agent, activeClient)) {
-                  <span class="text-muted small ms-1">(Local repository)</span>
-                } @else if (getAgentGitRepositoryLabel(agent, activeClient); as repo) {
-                  <span class="text-muted small ms-1">({{ repo }})</span>
-                }
-              </label>
-            </fpc-form-check>
+  <fpc-form-field
+    forId="environmentContextGroup"
+    i18n-label="@@featureChat-environmentContextLabel"
+    label="Environment context"
+  >
+    <p class="text-muted small mb-2" i18n="@@featureChat-environmentContextHint">
+      Select additional environments to enrich context more specifically. The active environment is included
+      automatically.
+    </p>
+    <div id="environmentContextGroup" class="d-flex flex-column gap-2">
+      @if (agents$ | async; as agents) {
+        @if (activeClient$ | async; as activeClient) {
+          @for (agent of agents; track agent.id) {
+            @if (agent.id !== selectedAgentId()) {
+              <fpc-form-check
+                [checkId]="'contextEnvironment-' + agent.id"
+                [ngModel]="isEnvironmentContextSelected(agent.id)"
+                (ngModelChange)="onEnvironmentContextToggle(agent.id, $event)"
+              >
+                <label class="form-check-label" [for]="'contextEnvironment-' + agent.id">
+                  {{ agent.name }}
+                  @if (isLocalGitRepository(agent, activeClient)) {
+                    <span class="text-muted small ms-1">(Local repository)</span>
+                  } @else if (getAgentGitRepositoryLabel(agent, activeClient); as repo) {
+                    <span class="text-muted small ms-1">({{ repo }})</span>
+                  }
+                </label>
+              </fpc-form-check>
+            }
           }
-        }
-      } @else {
-        @for (agent of agents; track agent.id) {
-          @if (agent.id !== selectedAgentId()) {
-            <fpc-form-check
-              [checkId]="'contextEnvironment-' + agent.id"
-              [label]="agent.name"
-              [ngModel]="isEnvironmentContextSelected(agent.id)"
-              (ngModelChange)="onEnvironmentContextToggle(agent.id, $event)"
-            />
+        } @else {
+          @for (agent of agents; track agent.id) {
+            @if (agent.id !== selectedAgentId()) {
+              <fpc-form-check
+                [checkId]="'contextEnvironment-' + agent.id"
+                [label]="agent.name"
+                [ngModel]="isEnvironmentContextSelected(agent.id)"
+                (ngModelChange)="onEnvironmentContextToggle(agent.id, $event)"
+              />
+            }
           }
         }
       }
-    }
-  </div>
+    </div>
+  </fpc-form-field>
   <div class="mt-3">
     <fpc-form-field forId="ticketContextShaInput" label="Ticket context (SHA)">
       <fpc-typeahead-select
@@ -1681,6 +1731,41 @@
       </div>
     }
   </div>
+  <div class="mt-3">
+    <fpc-form-field
+      forId="attachmentContextInput"
+      i18n-label="@@featureChat-attachmentContextLabel"
+      label="File attachments"
+    >
+      <label class="btn btn-sm btn-outline-secondary mb-0">
+        <i class="bi bi-paperclip me-1" aria-hidden="true"></i>
+        <span i18n="@@featureChat-addAttachmentContext">Attach files</span>
+        <input
+          id="attachmentContextInput"
+          type="file"
+          class="d-none"
+          multiple
+          (change)="onChatAttachmentSelected($event)"
+        />
+      </label>
+    </fpc-form-field>
+    @if (selectedAttachmentContexts().length > 0) {
+      <div class="d-flex flex-wrap gap-2 mt-2">
+        @for (attachment of selectedAttachmentContexts(); track attachment.id) {
+          <fpc-badge variant="info" color="secondary" class="chat-context-chip" style="max-width: min(100%, 22rem)">
+            <span class="text-truncate small">{{ attachment.fileName }}</span>
+            <button
+              type="button"
+              class="btn-close chat-context-chip-clear"
+              (click)="removeChatAttachment(attachment.id)"
+              i18n-aria-label="@@featureChat-removeAttachmentContext"
+              aria-label="Remove attachment"
+            ></button>
+          </fpc-badge>
+        }
+      </div>
+    }
+  </div>
   <div *fpcModalFooter>
     <fpc-button variant="primary" (clicked)="onCloseContextSelectionModal()" i18n="@@featureChat-done">
       Done
@@ -1731,7 +1816,14 @@
       }
     </div>
     @if (plan.status === 'ready' || plan.status === 'refining') {
-      <div class="chat-plan-refine-composer mt-3">
+      <div
+        class="chat-plan-refine-composer mt-3"
+        [class.chat-input-group--drag-active]="chatAttachmentDragActive()"
+        (dragenter)="onChatInputDragEnter($event)"
+        (dragover)="onChatInputDragOver($event)"
+        (dragleave)="onChatInputDragLeave($event)"
+        (drop)="onChatInputDrop($event)"
+      >
         @if (planRefineEnhanceError(); as enhErr) {
           <div class="alert alert-warning alert-dismissible py-2 px-3 small mb-0" role="alert">
             {{ enhErr }}
@@ -1794,11 +1886,8 @@
           @if (contextSelectionToolbarChips().length > 0) {
             <span class="context-toolbar-chips me-auto d-inline-flex align-items-center gap-1 justify-content-end">
               @for (chip of contextSelectionToolbarChips(); track chip.trackKey) {
-                <fpc-badge
-                  color="secondary"
-                  class="border context-toolbar-chip text-truncate"
-                  [attr.title]="chip.title"
-                  >{{ chip.label }}</fpc-badge
+                <fpc-badge color="secondary" class="border context-toolbar-chip text-truncate" [attr.title]="chip.title"
+                  ><span class="context-toolbar-chip-label text-truncate">{{ chip.label }}</span></fpc-badge
                 >
               }
             </span>

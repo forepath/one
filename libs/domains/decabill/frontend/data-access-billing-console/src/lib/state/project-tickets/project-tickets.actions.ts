@@ -4,6 +4,7 @@ import type {
   CreateProjectTicketDto,
   ListProjectTicketsParams,
   ProjectTicketActivityResponse,
+  ProjectTicketAttachmentResponse,
   ProjectTicketCommentResponse,
   ProjectTicketResponse,
   UpdateProjectTicketDto,
@@ -66,6 +67,16 @@ export const addProjectTicketCommentSuccess = createAction(
 export const addProjectTicketCommentFailure = createAction(
   '[ProjectTickets] Add Comment Failure',
   props<{ error: string }>(),
+);
+
+export const projectTicketAttachmentAdded = createAction(
+  '[ProjectTickets] Attachment Added',
+  props<{ ticketId: string; attachment: ProjectTicketAttachmentResponse }>(),
+);
+
+export const projectTicketAttachmentRemoved = createAction(
+  '[ProjectTickets] Attachment Removed',
+  props<{ ticketId: string; attachmentId: string }>(),
 );
 
 export const clearProjectTicketsError = createAction('[ProjectTickets] Clear Error');

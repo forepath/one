@@ -50,6 +50,22 @@ function withoutMutatingId(state: KnowledgeState, id: string): ReadonlySet<strin
   return next;
 }
 
+function updateNodeAttachments(
+  node: KnowledgeNodeDto,
+  pageId: string,
+  update: (attachments: NonNullable<KnowledgeNodeDto['attachments']>) => NonNullable<KnowledgeNodeDto['attachments']>,
+): KnowledgeNodeDto {
+  const nextChildren = node.children?.map((child) => updateNodeAttachments(child, pageId, update));
+
+  if (node.id !== pageId) return nextChildren === node.children ? node : { ...node, children: nextChildren };
+
+  return {
+    ...node,
+    attachments: update(node.attachments ?? []),
+    children: nextChildren ?? node.children,
+  };
+}
+
 export const knowledgeReducer = createReducer(
   initialKnowledgeState,
   on(KnowledgeActions.loadKnowledgeTree, (state, { clientId }) => ({
@@ -97,6 +113,20 @@ export const knowledgeReducer = createReducer(
     activityLoading: false,
     error,
   })),
+  on(KnowledgeActions.knowledgeAttachmentAdded, (state, { pageId, attachment }) => {
+    const append = (attachments: NonNullable<KnowledgeNodeDto['attachments']>) => {
+      const withoutDup = attachments.filter((a) => a.id !== attachment.id);
+      return [...withoutDup, attachment];
+    };
+
+    return { ...state, tree: state.tree.map((node) => updateNodeAttachments(node, pageId, append)) };
+  }),
+  on(KnowledgeActions.knowledgeAttachmentRemoved, (state, { pageId, attachmentId }) => {
+    const remove = (attachments: NonNullable<KnowledgeNodeDto['attachments']>) =>
+      attachments.filter((a) => a.id !== attachmentId);
+
+    return { ...state, tree: state.tree.map((node) => updateNodeAttachments(node, pageId, remove)) };
+  }),
   on(KnowledgeActions.loadKnowledgeTreeFailure, (state, { error }) => ({ ...state, loading: false, error })),
   on(KnowledgeActions.selectKnowledgeNode, (state, { nodeId }) => ({
     ...state,

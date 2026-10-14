@@ -12,6 +12,8 @@ import {
   migrateTicket as migrateTicketAction,
   openTicketDetail,
   prependTicketDetailActivity,
+  ticketAttachmentAdded,
+  ticketAttachmentRemoved,
   updateTicket,
 } from './tickets.actions';
 import {
@@ -29,6 +31,7 @@ import {
 } from './tickets.selectors';
 import type {
   CreateTicketDto,
+  AttachmentResponseDto,
   ListTicketsParams,
   TicketActivityResponseDto,
   TicketCommentResponseDto,
@@ -84,6 +87,14 @@ export class TicketsFacade {
 
   addComment(ticketId: string, body: string): void {
     this.store.dispatch(addTicketComment({ ticketId, body }));
+  }
+
+  addAttachment(ticketId: string, attachment: AttachmentResponseDto): void {
+    this.store.dispatch(ticketAttachmentAdded({ ticketId, attachment }));
+  }
+
+  removeAttachment(ticketId: string, attachmentId: string): void {
+    this.store.dispatch(ticketAttachmentRemoved({ ticketId, attachmentId }));
   }
 
   clearError(): void {

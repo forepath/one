@@ -32,6 +32,8 @@ import {
   UploadKnowledgeTextResultDto,
 } from '../dto/knowledge';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
+import { AgenstraAttachmentEntity } from '../entities/agenstra-attachment.entity';
+import { AgenstraAttachmentOwnerType } from '../entities/attachment.enums';
 import {
   KnowledgeActionType,
   KnowledgeActorType,
@@ -70,6 +72,8 @@ export class KnowledgeTreeService {
     private readonly knowledgeRelationRepo: Repository<KnowledgeRelationEntity>,
     @InjectRepository(KnowledgePageActivityEntity)
     private readonly knowledgePageActivityRepo: Repository<KnowledgePageActivityEntity>,
+    @InjectRepository(AgenstraAttachmentEntity)
+    private readonly attachmentRepo: Repository<AgenstraAttachmentEntity>,
     private readonly clientsRepository: ClientsRepository,
     private readonly clientUsersRepository: ClientUsersRepository,
     private readonly usersRepository: UsersRepository,
@@ -157,8 +161,15 @@ export class KnowledgeTreeService {
     return (siblings[0]?.sortOrder ?? -1) + 1;
   }
 
-  private mapNode(row: KnowledgeNodeEntity): KnowledgeNodeResponseDto {
+  private async mapNode(row: KnowledgeNodeEntity): Promise<KnowledgeNodeResponseDto> {
     const longSha = row.longSha ?? KnowledgeNodeEntity.deriveLongSha(row.id);
+    const attachments =
+      row.nodeType === KnowledgeNodeType.PAGE
+        ? await this.attachmentRepo.find({
+            where: { ownerType: AgenstraAttachmentOwnerType.KNOWLEDGE_PAGE, ownerId: row.id },
+            order: { createdAt: 'ASC' },
+          })
+        : [];
 
     return {
       id: row.id,
@@ -172,6 +183,20 @@ export class KnowledgeTreeService {
       title: row.title,
       content: row.content ?? null,
       sortOrder: row.sortOrder,
+      attachments: attachments.map((attachment) => ({
+        id: attachment.id,
+        clientId: attachment.clientId,
+        ownerType: attachment.ownerType,
+        ownerId: attachment.ownerId,
+        fileName: attachment.fileName,
+        contentType: attachment.contentType,
+        byteSize: Number(attachment.byteSize),
+        contentSha256: attachment.contentSha256,
+        downloadUrl: `/api/attachments/${attachment.id}/download`,
+        agentPath: `/opt/agenstra/context/${attachment.clientId}/${attachment.ownerType}/${attachment.ownerId}/${attachment.id}-${attachment.fileName}`,
+        createdByUserId: attachment.createdByUserId ?? null,
+        createdAt: attachment.createdAt,
+      })),
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
@@ -318,7 +343,7 @@ export class KnowledgeTreeService {
 
     void this.searchIndex.upsertSafe('knowledge-nodes', mapKnowledgeNodeToSearchDocument(saved));
 
-    return this.mapNode(saved);
+    return await this.mapNode(saved);
   }
 
   async listNodes(clientId: string, req?: RequestWithUser, search?: string): Promise<KnowledgeNodeResponseDto[]> {
@@ -359,7 +384,7 @@ export class KnowledgeTreeService {
       });
     }
 
-    return rows.map((row) => this.mapNode(row));
+    return await Promise.all(rows.map((row) => this.mapNode(row)));
   }
 
   async getTree(clientId: string, req?: RequestWithUser, search?: string): Promise<KnowledgeNodeResponseDto[]> {
@@ -391,7 +416,7 @@ export class KnowledgeTreeService {
   async getNode(id: string, req?: RequestWithUser): Promise<KnowledgeNodeResponseDto> {
     const node = await this.assertNodeReadable(id, req);
 
-    return this.mapNode(node);
+    return await this.mapNode(node);
   }
 
   async updateNode(id: string, dto: UpdateKnowledgeNodeDto, req?: RequestWithUser): Promise<KnowledgeNodeResponseDto> {
@@ -464,7 +489,7 @@ export class KnowledgeTreeService {
 
     void this.searchIndex.upsertSafe('knowledge-nodes', mapKnowledgeNodeToSearchDocument(saved));
 
-    return this.mapNode(saved);
+    return await this.mapNode(saved);
   }
 
   async reorderNode(
@@ -489,7 +514,7 @@ export class KnowledgeTreeService {
       );
     }
 
-    return this.mapNode(saved);
+    return await this.mapNode(saved);
   }
 
   async deleteNode(id: string, req?: RequestWithUser, releaseExternalSyncMarker = false): Promise<void> {
@@ -599,7 +624,7 @@ export class KnowledgeTreeService {
         await this.appendPageActivity(saved.id, saved.clientId, KnowledgeActionType.CONTENT_UPDATED, {}, reqSystem);
       }
 
-      return this.mapNode(saved);
+      return await this.mapNode(saved);
     }
 
     const sortOrder = await this.nextSortOrder(clientId, parentFolderId ?? null);
@@ -627,7 +652,7 @@ export class KnowledgeTreeService {
       reqSystem,
     );
 
-    return this.mapNode(saved);
+    return await this.mapNode(saved);
   }
 
   /**
@@ -674,7 +699,7 @@ export class KnowledgeTreeService {
 
       this.emitKnowledgeTreeChanged(saved.clientId);
 
-      return this.mapNode(saved);
+      return await this.mapNode(saved);
     }
 
     const sortOrder = await this.nextSortOrder(clientId, parentFolderId ?? null);
@@ -694,7 +719,7 @@ export class KnowledgeTreeService {
 
     this.emitKnowledgeTreeChanged(saved.clientId);
 
-    return this.mapNode(saved);
+    return await this.mapNode(saved);
   }
 
   private static readonly ALLOWED_UPLOAD_EXTENSIONS = new Set(['.md', '.mmd', '.txt']);
@@ -932,7 +957,7 @@ export class KnowledgeTreeService {
       );
     }
 
-    return this.mapNode(duplicated);
+    return await this.mapNode(duplicated);
   }
 
   async listPageActivity(
@@ -980,7 +1005,7 @@ export class KnowledgeTreeService {
         .getOne();
     }
 
-    return node ? this.mapNode(node) : null;
+    return node ? await this.mapNode(node) : null;
   }
 
   async createRelation(dto: CreateKnowledgeRelationDto, req?: RequestWithUser): Promise<KnowledgeRelationResponseDto> {

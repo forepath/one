@@ -10,6 +10,7 @@ import type {
   UpdateKnowledgeNodeDto,
   UploadKnowledgeTextDto,
   UploadKnowledgeTextResultDto,
+  AttachmentResponseDto,
 } from './knowledge.types';
 
 export const loadKnowledgeTree = createAction('[Knowledge] Load Tree', props<{ clientId: string; search?: string }>());
@@ -118,6 +119,14 @@ export const loadKnowledgeActivitySuccess = createAction(
 export const loadKnowledgeActivityFailure = createAction(
   '[Knowledge] Load Activity Failure',
   props<{ error: string }>(),
+);
+export const knowledgeAttachmentAdded = createAction(
+  '[Knowledge] Attachment Added',
+  props<{ pageId: string; attachment: AttachmentResponseDto }>(),
+);
+export const knowledgeAttachmentRemoved = createAction(
+  '[Knowledge] Attachment Removed',
+  props<{ pageId: string; attachmentId: string }>(),
 );
 export const prependKnowledgeActivity = createAction(
   '[Knowledge] Prepend Activity',

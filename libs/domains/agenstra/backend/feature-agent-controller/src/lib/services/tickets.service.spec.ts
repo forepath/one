@@ -5,6 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { TicketActivityEntity } from '../entities/ticket-activity.entity';
+import { AgenstraAttachmentEntity } from '../entities/agenstra-attachment.entity';
 import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
@@ -104,6 +105,7 @@ describe('TicketsService', () => {
     find: jest.fn().mockResolvedValue([]),
     findOne: jest.fn().mockResolvedValue(null),
   };
+  const attachmentRepo = { find: jest.fn().mockResolvedValue([]) };
   const usersRepository = {
     findById: jest.fn().mockResolvedValue(null),
   };
@@ -127,6 +129,7 @@ describe('TicketsService', () => {
     } as unknown as TicketEntity;
     ticketRepo.findOne.mockResolvedValue(ticket);
     ticketRepo.find.mockResolvedValue([ticket]);
+    attachmentRepo.find.mockResolvedValue([]);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -136,6 +139,7 @@ describe('TicketsService', () => {
         { provide: getRepositoryToken(TicketActivityEntity), useValue: activityRepo },
         { provide: getRepositoryToken(TicketBodyGenerationSessionEntity), useValue: bodySessionRepo },
         { provide: getRepositoryToken(TicketAutomationEntity), useValue: ticketAutomationRepo },
+        { provide: getRepositoryToken(AgenstraAttachmentEntity), useValue: attachmentRepo },
         { provide: ClientsRepository, useValue: {} },
         { provide: ClientUsersRepository, useValue: {} },
         { provide: UsersRepository, useValue: usersRepository },

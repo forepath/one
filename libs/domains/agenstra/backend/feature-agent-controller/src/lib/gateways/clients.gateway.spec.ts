@@ -10,6 +10,7 @@ import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity
 import { ClientsRepository } from '../repositories/clients.repository';
 import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { AgentConsoleStatusService } from '../services/agent-console-status.service';
+import { AgenstraAttachmentsService } from '../services/agenstra-attachments.service';
 import { AutoContextResolverService } from '../services/auto-context-resolver.service';
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
@@ -184,6 +185,7 @@ describe('ClientsGateway', () => {
     purgeAgent: jest.fn().mockResolvedValue(undefined),
     getStatus: jest.fn().mockReturnValue({ status: 'missing', docCount: 0 }),
   };
+  const mockAttachmentsService = { resolveContextAttachments: jest.fn().mockResolvedValue([]) };
   const createMockSocket = (id = 'socket-1', withUserInfo = true) => {
     const emitted: Record<string, unknown>[] = [];
     const socket = {
@@ -252,6 +254,7 @@ describe('ClientsGateway', () => {
           provide: WorkspaceSearchIndexService,
           useValue: mockWorkspaceSearchIndex,
         },
+        { provide: AgenstraAttachmentsService, useValue: mockAttachmentsService },
       ],
     }).compile();
 

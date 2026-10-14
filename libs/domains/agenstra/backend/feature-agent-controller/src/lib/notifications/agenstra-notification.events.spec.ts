@@ -25,6 +25,8 @@ describe('AGENSTRA_NOTIFICATION_EVENTS', () => {
         'chat_session.updated',
         'chat_session.deleted',
         'ticket.comment.created',
+        'attachment.created',
+        'attachment.deleted',
         'application.update_available',
         'application.update_check_failed',
         'application.instance_outdated',

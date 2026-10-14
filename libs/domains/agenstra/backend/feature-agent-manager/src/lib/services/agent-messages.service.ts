@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 
-import { AgentMessageEntity } from '../entities/agent-message.entity';
+import { AgentMessageEntity, type AgentMessageAttachmentJson } from '../entities/agent-message.entity';
 import { AgentMessagesRepository } from '../repositories/agent-messages.repository';
 import { AgentChatSessionsService } from './agent-chat-sessions.service';
 
@@ -30,6 +30,7 @@ export class AgentMessagesService {
     message: string,
     filtered = false,
     chatSessionId?: string,
+    attachments?: AgentMessageAttachmentJson[],
   ): Promise<AgentMessageEntity> {
     const session = await this.agentChatSessionsService.resolveSessionForChat(agentId, chatSessionId);
     const messageEntity = await this.agentMessagesRepository.create({
@@ -38,6 +39,7 @@ export class AgentMessagesService {
       actor: 'user',
       message: message.trim(),
       filtered,
+      ...(attachments?.length ? { attachments } : {}),
     });
 
     await this.agentChatSessionsService.touchLastMessageAt(session.id, messageEntity.createdAt);

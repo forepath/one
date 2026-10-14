@@ -6,6 +6,7 @@ import type {
   TicketActivityResponseDto,
   TicketCommentResponseDto,
   TicketResponseDto,
+  AttachmentResponseDto,
   UpdateTicketDto,
 } from './tickets.types';
 
@@ -74,6 +75,16 @@ export const addTicketCommentSuccess = createAction(
 );
 
 export const addTicketCommentFailure = createAction('[Tickets] Add Comment Failure', props<{ error: string }>());
+
+export const ticketAttachmentAdded = createAction(
+  '[Tickets] Attachment Added',
+  props<{ ticketId: string; attachment: AttachmentResponseDto }>(),
+);
+
+export const ticketAttachmentRemoved = createAction(
+  '[Tickets] Attachment Removed',
+  props<{ ticketId: string; attachmentId: string }>(),
+);
 
 export const clearTicketsError = createAction('[Tickets] Clear Error');
 

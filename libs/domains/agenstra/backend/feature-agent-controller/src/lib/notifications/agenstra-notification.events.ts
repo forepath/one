@@ -9,6 +9,8 @@ export const AGENSTRA_NOTIFICATION_EVENTS = [
   'ticket.updated',
   'ticket.deleted',
   'ticket.comment.created',
+  'attachment.created',
+  'attachment.deleted',
   'chat_message.created',
   'agent.acp.session_failed',
   'agent.acp.permission_denied',

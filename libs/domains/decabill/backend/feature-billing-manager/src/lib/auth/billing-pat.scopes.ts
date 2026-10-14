@@ -25,6 +25,8 @@ export const BILLING_PAT_SCOPES = [
   'projects:write',
   'tickets:read',
   'tickets:write',
+  'attachments:read',
+  'attachments:write',
   'milestones:write',
   'time_entries:write',
   'billing_admin:read',

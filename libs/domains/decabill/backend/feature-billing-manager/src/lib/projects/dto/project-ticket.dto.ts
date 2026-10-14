@@ -1,6 +1,7 @@
 import { IsEnum, IsOptional, IsString, IsUUID, Length, MaxLength } from 'class-validator';
 
 import { ProjectTicketPriority, ProjectTicketStatus } from '../entities/project.enums';
+import { ProjectTicketAttachmentResponseDto } from './project-ticket-attachment.dto';
 
 export class CreateProjectTicketDto {
   @IsOptional()
@@ -80,6 +81,7 @@ export class ProjectTicketResponseDto {
   createdByUserId?: string | null;
   createdByEmail?: string;
   locked!: boolean;
+  attachments?: ProjectTicketAttachmentResponseDto[];
   createdAt!: Date;
   updatedAt!: Date;
   children?: ProjectTicketResponseDto[];

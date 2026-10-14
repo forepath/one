@@ -6266,6 +6266,80 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProjectTicketCommentResponse'
+  /projects/{projectId}/tickets/{ticketId}/attachments:
+    get:
+      tags: [Project Board]
+      summary: List ticket attachments
+      description: Requires `attachments:read` and project read access.
+      operationId: listProjectTicketAttachments
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/TicketId'
+      responses:
+        '200':
+          description: Attachment list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  {
+                    $ref: '#/components/schemas/ProjectTicketAttachmentResponse',
+                  }
+    post:
+      tags: [Project Board]
+      summary: Upload ticket attachment
+      description: Requires `attachments:write` and project write access. Multipart field name is `file`.
+      operationId: uploadProjectTicketAttachment
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/TicketId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '201':
+          description: Uploaded attachment
+          content:
+            application/json:
+              schema:
+                { $ref: '#/components/schemas/ProjectTicketAttachmentResponse' }
+  /projects/{projectId}/tickets/{ticketId}/attachments/{attachmentId}:
+    delete:
+      tags: [Project Board]
+      summary: Delete ticket attachment metadata
+      description: Requires `attachments:write` and project write access.
+      operationId: deleteProjectTicketAttachment
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/TicketId'
+        - name: attachmentId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Deleted }
+  /projects/{projectId}/tickets/{ticketId}/attachments/{attachmentId}/download:
+    get:
+      tags: [Project Board]
+      summary: Download ticket attachment
+      description: Requires `attachments:read` and project read access.
+      operationId: downloadProjectTicketAttachment
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+        - $ref: '#/components/parameters/TicketId'
+        - name: attachmentId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Attachment bytes }
   /projects/{projectId}/milestones:
     get:
       tags: [Projects]
@@ -10738,6 +10812,10 @@ components:
         createdByUserId: { type: string, format: uuid, nullable: true }
         createdByEmail: { type: string }
         locked: { type: boolean }
+        attachments:
+          type: array
+          items:
+            { $ref: '#/components/schemas/ProjectTicketAttachmentResponse' }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
         children:
@@ -10772,6 +10850,19 @@ components:
         userId: { type: string, format: uuid }
         userEmail: { type: string }
         body: { type: string }
+        createdAt: { type: string, format: date-time }
+    ProjectTicketAttachmentResponse:
+      type: object
+      required:
+        [id, ticketId, fileName, contentType, byteSize, downloadUrl, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        ticketId: { type: string, format: uuid }
+        fileName: { type: string }
+        contentType: { type: string }
+        byteSize: { type: integer }
+        downloadUrl: { type: string }
+        createdByUserId: { type: string, format: uuid, nullable: true }
         createdAt: { type: string, format: date-time }
     CreateProjectTicketCommentDto:
       type: object

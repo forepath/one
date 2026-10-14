@@ -136,6 +136,67 @@ describe('TicketsService', () => {
     });
   });
 
+  describe('attachments', () => {
+    const attachment = {
+      id: 'att-1',
+      clientId: 'client-1',
+      ownerType: 'ticket' as const,
+      ownerId: 'ticket-1',
+      fileName: 'brief.txt',
+      contentType: 'text/plain',
+      byteSize: 5,
+      contentSha256: 'abc',
+      downloadUrl: '/api/attachments/att-1/download',
+      createdByUserId: null,
+      createdAt: '2026-01-01T00:00:00Z',
+    };
+
+    it('listAttachments should GET ticket attachments', (done) => {
+      service.listAttachments('ticket-1').subscribe((rows) => {
+        expect(rows).toEqual([attachment]);
+        done();
+      });
+      const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1/attachments`);
+
+      expect(req.request.method).toBe('GET');
+      req.flush([attachment]);
+    });
+
+    it('uploadAttachment should POST multipart form data', (done) => {
+      const file = new File(['hello'], 'brief.txt', { type: 'text/plain' });
+
+      service.uploadAttachment('ticket-1', file).subscribe((row) => {
+        expect(row).toEqual(attachment);
+        done();
+      });
+      const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1/attachments`);
+
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body instanceof FormData).toBe(true);
+      req.flush(attachment);
+    });
+
+    it('downloadAttachment should GET shared download endpoint as blob', (done) => {
+      service.downloadAttachment(attachment).subscribe((blob) => {
+        expect(blob.size).toBe(5);
+        done();
+      });
+      const req = httpMock.expectOne(`${apiUrl}/attachments/att-1/download`);
+
+      expect(req.request.method).toBe('GET');
+      expect(req.request.responseType).toBe('blob');
+      req.flush(new Blob(['hello']));
+    });
+
+    it('deleteAttachment should DELETE ticket attachment metadata', (done) => {
+      service.deleteAttachment('ticket-1', 'att-1').subscribe(() => done());
+      const req = httpMock.expectOne(`${apiUrl}/tickets/ticket-1/attachments/att-1`);
+
+      expect(req.request.method).toBe('DELETE');
+      req.flush(null);
+    });
+  });
+
   describe('ticket automation', () => {
     const mockAutomation = {
       ticketId: 'ticket-1',

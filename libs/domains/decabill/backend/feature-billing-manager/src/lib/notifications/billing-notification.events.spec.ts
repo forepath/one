@@ -24,6 +24,8 @@ describe('BILLING_NOTIFICATION_EVENTS', () => {
         'ticket.updated',
         'ticket.deleted',
         'ticket.comment.created',
+        'ticket.attachment.created',
+        'ticket.attachment.deleted',
         'datev_export.started',
         'datev_export.completed',
         'datev_export.failed',

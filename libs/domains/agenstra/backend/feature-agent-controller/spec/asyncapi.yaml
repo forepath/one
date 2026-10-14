@@ -673,7 +673,8 @@ components:
               When event is "closeTerminal", the payload should contain {sessionId: string}.
               When event is "enhanceChat", the payload should contain { message: string, correlationId: string, model?: string }.
               When event is "generateTicketBody", the payload should contain { title: string, correlationId: string, model?: string }.
-              When event is "chat", the payload may include { message, correlationId?, model?, responseMode?: "single"|"stream"|"sync", ephemeral?: boolean, continue?: boolean, resumeSessionSuffix?: string, contextInjection?: { includeWorkspace?: boolean, environmentIds?: string[], ticketShas?: string[], knowledgeShas?: string[], autoEnrichmentEnabled?: boolean } }.
+              When event is "chat", the payload may include { message, correlationId?, model?, responseMode?: "single"|"stream"|"sync", ephemeral?: boolean, continue?: boolean, resumeSessionSuffix?: string, contextInjection?: { includeWorkspace?: boolean, environmentIds?: string[], ticketShas?: string[], knowledgeShas?: string[], attachmentIds?: string[], autoEnrichmentEnabled?: boolean } }.
+              The controller resolves ticket/page/chat attachments and forwards read-only agentPath metadata to the agent-manager.
               Response events forwarded from the agent-manager include "containerStats" (payload has status.running and optional stats), "environmentProgress" (environment create/update progress, sent without agent login), and "opencodeConfigSynced" (data.agentId identifies a successfully applied effective config; refresh cached models and slash commands).
           agentId:
             type: string

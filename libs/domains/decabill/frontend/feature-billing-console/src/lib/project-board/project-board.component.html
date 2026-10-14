@@ -405,6 +405,75 @@
 
               <div>
                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                  <h3 class="h6 mb-0" i18n="@@featureProjectBoard-attachmentsHeading">Attachments</h3>
+                  @if (isAdmin && !d.locked) {
+                    <input
+                      #projectTicketAttachmentInput
+                      type="file"
+                      class="d-none"
+                      multiple
+                      (change)="onTicketAttachmentSelected($event, d)"
+                    />
+                    <fpc-button
+                      variant="dark"
+                      size="sm"
+                      iconOnly
+                      (clicked)="projectTicketAttachmentInput.click()"
+                      i18n-title="@@featureProjectBoard-addAttachment"
+                      title="Add attachment"
+                      i18n-ariaLabel="@@featureProjectBoard-addAttachment"
+                      ariaLabel="Add attachment"
+                    >
+                      <i class="bi bi-paperclip" aria-hidden="true"></i>
+                    </fpc-button>
+                  }
+                </div>
+                @if ((d.attachments ?? []).length === 0) {
+                  <p class="text-muted small mb-0" i18n="@@featureProjectBoard-attachmentsEmpty">No attachments yet.</p>
+                } @else {
+                  <ul class="list-group list-group-flush border rounded small mb-0" role="list">
+                    @for (attachment of d.attachments ?? []; track attachment.id) {
+                      <li class="list-group-item d-flex align-items-center gap-2 justify-content-between">
+                        <span class="text-truncate" [title]="attachment.fileName">
+                          <i class="bi bi-paperclip me-1" aria-hidden="true"></i>{{ attachment.fileName }}
+                          <span class="text-muted">· {{ attachment.byteSize | number }} B</span>
+                        </span>
+                        <span class="d-inline-flex align-items-center gap-1 flex-shrink-0">
+                          <fpc-button
+                            variant="outline-secondary"
+                            size="sm"
+                            iconOnly
+                            (clicked)="downloadTicketAttachment(attachment, d)"
+                            i18n-title="@@featureProjectBoard-downloadAttachment"
+                            title="Download attachment"
+                            i18n-ariaLabel="@@featureProjectBoard-downloadAttachment"
+                            ariaLabel="Download attachment"
+                          >
+                            <i class="bi bi-download" aria-hidden="true"></i>
+                          </fpc-button>
+                          @if (isAdmin && !d.locked) {
+                            <fpc-button
+                              variant="outline-danger"
+                              size="sm"
+                              iconOnly
+                              (clicked)="deleteTicketAttachment(attachment, d)"
+                              i18n-title="@@featureProjectBoard-deleteAttachment"
+                              title="Delete attachment"
+                              i18n-ariaLabel="@@featureProjectBoard-deleteAttachment"
+                              ariaLabel="Delete attachment"
+                            >
+                              <i class="bi bi-trash" aria-hidden="true"></i>
+                            </fpc-button>
+                          }
+                        </span>
+                      </li>
+                    }
+                  </ul>
+                }
+              </div>
+
+              <div>
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
                   <h3 class="h6 mb-0" i18n="@@featureProjectBoard-subtasksHeading">Subtasks</h3>
                   @if (isAdmin && !d.locked) {
                     <fpc-button

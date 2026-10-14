@@ -36,6 +36,8 @@ import {
   UpdateTicketDto,
 } from '../dto/tickets';
 import { TicketActivityEntity } from '../entities/ticket-activity.entity';
+import { AgenstraAttachmentEntity } from '../entities/agenstra-attachment.entity';
+import { AgenstraAttachmentOwnerType } from '../entities/attachment.enums';
 import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
@@ -101,6 +103,8 @@ export class TicketsService {
     private readonly bodySessionRepo: Repository<TicketBodyGenerationSessionEntity>,
     @InjectRepository(TicketAutomationEntity)
     private readonly ticketAutomationRepo: Repository<TicketAutomationEntity>,
+    @InjectRepository(AgenstraAttachmentEntity)
+    private readonly attachmentRepo: Repository<AgenstraAttachmentEntity>,
     private readonly clientsRepository: ClientsRepository,
     private readonly clientUsersRepository: ClientUsersRepository,
     private readonly usersRepository: UsersRepository,
@@ -1448,6 +1452,10 @@ export class TicketsService {
     const own = countMarkdownCheckboxTasks(row.content);
     const child = descendantTotals.get(row.id) ?? { open: 0, done: 0 };
     const longSha = row.longSha ?? this.deriveTicketLongSha(row.id);
+    const attachments = await this.attachmentRepo.find({
+      where: { ownerType: AgenstraAttachmentOwnerType.TICKET, ownerId: row.id },
+      order: { createdAt: 'ASC' },
+    });
 
     return {
       id: row.id,
@@ -1473,6 +1481,20 @@ export class TicketsService {
         done: own.done,
         children: { open: child.open, done: child.done },
       },
+      attachments: attachments.map((attachment) => ({
+        id: attachment.id,
+        clientId: attachment.clientId,
+        ownerType: attachment.ownerType,
+        ownerId: attachment.ownerId,
+        fileName: attachment.fileName,
+        contentType: attachment.contentType,
+        byteSize: Number(attachment.byteSize),
+        contentSha256: attachment.contentSha256,
+        downloadUrl: `/api/attachments/${attachment.id}/download`,
+        agentPath: `/opt/agenstra/context/${attachment.clientId}/${attachment.ownerType}/${attachment.ownerId}/${attachment.id}-${attachment.fileName}`,
+        createdByUserId: attachment.createdByUserId ?? null,
+        createdAt: attachment.createdAt,
+      })),
     };
   }
 

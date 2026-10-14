@@ -22,6 +22,7 @@ import {
 import { AgentEventEnvelope, AgentInteractionQueryPayload, AgentResponseMode } from '../providers/agent-events.types';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
 import { AgentResponseObject } from '../providers/agent-provider.interface';
+import type { AgentMessageAttachmentJson } from '../entities/agent-message.entity';
 import { ChatFilterFactory } from '../providers/chat-filter.factory';
 import {
   AppliedFilterInfo,
@@ -77,6 +78,7 @@ interface ChatPayload {
   /** User-visible chat session id; defaults to primary when omitted (ignored for reserved ACP suffixes). */
   chatId?: string;
   contextInjection?: ContextInjectionPayload;
+  attachments?: AgentMessageAttachmentJson[];
 }
 
 interface RestoreChatPayload {
@@ -192,6 +194,7 @@ interface UserChatMessageData {
   chatId?: string;
   /** Persisted `agent_messages.id` when available. */
   id?: string;
+  attachments?: AgentMessageAttachmentJson[];
 }
 
 interface AgentChatMessageData {
@@ -627,18 +630,27 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       chatSessionId?: string;
       chatIdFields: { chatId?: string };
       filtered?: boolean;
+      attachments?: AgentMessageAttachmentJson[];
     },
   ): Promise<void> {
     let messageId: string | undefined;
 
     if (!ephemeral) {
       try {
-        const persisted = await this.agentMessagesService.createUserMessage(
-          agentUuid,
-          text,
-          opts.filtered === true,
-          opts.chatSessionId,
-        );
+        const persisted = opts.attachments?.length
+          ? await this.agentMessagesService.createUserMessage(
+              agentUuid,
+              text,
+              opts.filtered === true,
+              opts.chatSessionId,
+              opts.attachments,
+            )
+          : await this.agentMessagesService.createUserMessage(
+              agentUuid,
+              text,
+              opts.filtered === true,
+              opts.chatSessionId,
+            );
 
         messageId = persisted.id;
       } catch (persistError) {
@@ -659,6 +671,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
         text,
         timestamp,
         ...opts.chatIdFields,
+        ...(opts.attachments?.length ? { attachments: opts.attachments } : {}),
       }),
     );
   }
@@ -822,6 +835,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
       knowledgeShas: contextInjection.knowledgeShas ?? [],
       knowledgeContextCount: contextInjection.knowledgeContexts?.length ?? 0,
+      attachmentCount: contextInjection.attachmentContexts?.length ?? 0,
     };
 
     return [
@@ -847,10 +861,36 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
           ticketContextCount: contextInjection.ticketContexts?.length ?? 0,
           knowledgeShas: contextInjection.knowledgeShas ?? [],
           knowledgeContextCount: contextInjection.knowledgeContexts?.length ?? 0,
+          attachmentCount: contextInjection.attachmentContexts?.length ?? 0,
         },
         isError: false,
       },
     ];
+  }
+
+  private normalizeChatAttachments(attachments?: AgentMessageAttachmentJson[]): AgentMessageAttachmentJson[] {
+    if (!Array.isArray(attachments)) {
+      return [];
+    }
+
+    const normalized = new Map<string, AgentMessageAttachmentJson>();
+
+    for (const attachment of attachments) {
+      if (!attachment || typeof attachment.id !== 'string' || !attachment.id.trim()) {
+        continue;
+      }
+
+      normalized.set(attachment.id, {
+        id: attachment.id,
+        fileName: String(attachment.fileName ?? 'attachment'),
+        contentType: String(attachment.contentType ?? 'application/octet-stream'),
+        byteSize: Number(attachment.byteSize ?? 0),
+        downloadUrl: String(attachment.downloadUrl ?? ''),
+        agentPath: attachment.agentPath ?? null,
+      });
+    }
+
+    return [...normalized.values()];
   }
 
   private mergeTranscriptPartsIntoFinalResponse(
@@ -1028,6 +1068,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     const knowledgeContexts = Array.from(
       new Set((contextInjection.knowledgeContexts ?? []).map((ctx) => ctx.trim()).filter((ctx) => ctx.length > 0)),
     );
+    const attachmentIds = Array.from(
+      new Set((contextInjection.attachmentIds ?? []).map((id) => id.trim()).filter((id) => id.length > 0)),
+    );
+    const attachmentContexts = this.normalizeChatAttachments(contextInjection.attachmentContexts);
     const allowedIds: string[] = [];
     const environmentContainerTypes: NonNullable<ContextInjectionPayload['environmentContainerTypes']> = [];
     const needsAgentLookup = includeWorkspace || requestedIds.length > 0;
@@ -1068,7 +1112,9 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       ticketShas.length === 0 &&
       ticketContexts.length === 0 &&
       knowledgeShas.length === 0 &&
-      knowledgeContexts.length === 0
+      knowledgeContexts.length === 0 &&
+      attachmentIds.length === 0 &&
+      attachmentContexts.length === 0
     ) {
       return undefined;
     }
@@ -1086,7 +1132,9 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       ticketContexts,
       knowledgeShas,
       knowledgeContexts,
-      workspaceContainerType,
+      ...(attachmentIds.length ? { attachmentIds } : {}),
+      ...(attachmentContexts.length ? { attachmentContexts } : {}),
+      ...(workspaceContainerType ? { workspaceContainerType } : {}),
       environmentContainerTypes,
     };
   }
@@ -1418,6 +1466,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
             text: messageEntity.message,
             timestamp,
             chatId: session.id,
+            ...(messageEntity.attachments?.length ? { attachments: messageEntity.attachments } : {}),
           });
         } else if (messageEntity.actor === 'agent') {
           let response: AgentResponseObject | string;
@@ -1709,6 +1758,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     const pendingHydrationSummary = this.agentSessionHydrationService.consumePendingSummary(agentUuid);
     const messageWithHydration = this.prependHiddenHydrationContext(filteredMessage, pendingHydrationSummary);
     const contextInjection = await this.normalizeContextInjection(agentUuid, data.contextInjection);
+    const chatAttachments = this.normalizeChatAttachments(data.attachments ?? contextInjection?.attachmentContexts);
     const messageToUse = this.promptContextComposer.composeChatMessage(messageWithHydration, contextInjection);
     const enrichmentTranscriptParts = this.buildEnrichmentTranscriptParts(contextInjection, correlationId);
 
@@ -1742,6 +1792,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
         chatSessionId,
         chatIdFields,
         filtered: incomingFilterResult.status === 'filtered',
+        attachments: chatAttachments,
       });
 
       this.emitOrPersistChatEvent(

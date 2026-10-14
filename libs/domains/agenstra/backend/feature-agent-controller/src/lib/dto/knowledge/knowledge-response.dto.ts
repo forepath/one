@@ -3,6 +3,7 @@ import {
   KnowledgeRelationSourceType,
   KnowledgeRelationTargetType,
 } from '../../entities/knowledge-node.enums';
+import { AttachmentResponseDto } from '../attachment.dto';
 
 export class KnowledgeNodeShasDto {
   short!: string;
@@ -18,6 +19,7 @@ export class KnowledgeNodeResponseDto {
   title!: string;
   content?: string | null;
   sortOrder!: number;
+  attachments?: AttachmentResponseDto[];
   createdAt!: Date;
   updatedAt!: Date;
   children?: KnowledgeNodeResponseDto[];

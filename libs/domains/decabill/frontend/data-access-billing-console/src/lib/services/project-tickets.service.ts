@@ -9,6 +9,7 @@ import type {
   CreateProjectTicketDto,
   ListProjectTicketsParams,
   ProjectTicketActivityResponse,
+  ProjectTicketAttachmentResponse,
   ProjectTicketCommentResponse,
   ProjectTicketResponse,
   UpdateProjectTicketDto,
@@ -93,6 +94,29 @@ export class ProjectTicketsService {
 
     return this.http.get<ProjectTicketActivityResponse[]>(`${this.ticketsUrl(projectId)}/${ticketId}/activity`, {
       params: httpParams,
+    });
+  }
+
+  listAttachments(projectId: string, ticketId: string): Observable<ProjectTicketAttachmentResponse[]> {
+    return this.http.get<ProjectTicketAttachmentResponse[]>(`${this.ticketsUrl(projectId)}/${ticketId}/attachments`);
+  }
+
+  uploadAttachment(projectId: string, ticketId: string, file: File): Observable<ProjectTicketAttachmentResponse> {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    return this.http.post<ProjectTicketAttachmentResponse>(
+      `${this.ticketsUrl(projectId)}/${ticketId}/attachments`,
+      form,
+    );
+  }
+
+  deleteAttachment(projectId: string, ticketId: string, attachmentId: string): Observable<void> {
+    return this.http.delete<void>(`${this.ticketsUrl(projectId)}/${ticketId}/attachments/${attachmentId}`);
+  }
+
+  downloadAttachment(projectId: string, ticketId: string, attachmentId: string): Observable<Blob> {
+    return this.http.get(`${this.ticketsUrl(projectId)}/${ticketId}/attachments/${attachmentId}/download`, {
+      responseType: 'blob',
     });
   }
 }

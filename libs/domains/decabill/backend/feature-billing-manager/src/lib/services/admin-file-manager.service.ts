@@ -344,6 +344,7 @@ export class AdminFileManagerService {
     const timesheetSegment = FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.customerTimesheets];
     const supplierSegment = FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.supplierInvoices];
     const datevSegment = FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.datevExports];
+    const ticketAttachmentSegment = FILE_STORAGE_SCOPE_SEGMENTS[FileStorageScope.projectTicketAttachments];
 
     const invoiceRows: Array<{
       pdf_storage_key: string | null;
@@ -506,6 +507,31 @@ export class AdminFileManagerService {
           FileStorageScope.datevExports,
           row.storage_key,
           row.completed_at ?? row.created_at,
+        ),
+      );
+    }
+
+    const attachmentRows: Array<{ storage_key: string; created_at: Date }> = await this.dataSource.query(
+      `
+      SELECT a.storage_key, a.created_at
+      FROM billing_project_ticket_attachments a
+      INNER JOIN billing_project_tickets t ON t.id = a.ticket_id
+      INNER JOIN billing_projects p ON p.id = t.project_id
+      INNER JOIN users u ON u.id = p.user_id
+      WHERE u.tenant_id = $1
+      `,
+      [tenantId],
+    );
+
+    for (const row of attachmentRows) {
+      refs.push(
+        this.toRef(
+          tenantId,
+          unifiedLayout,
+          ticketAttachmentSegment,
+          FileStorageScope.projectTicketAttachments,
+          row.storage_key,
+          row.created_at,
         ),
       );
     }

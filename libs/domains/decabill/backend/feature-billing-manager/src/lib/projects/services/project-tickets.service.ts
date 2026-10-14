@@ -7,6 +7,7 @@ import { BillingNotificationPublisher } from '../../notifications/billing-notifi
 import { mapTicketToSearchDocument } from '../../search/billing-search-document.mapper';
 import { BillingSearchIndexService } from '../../search/billing-search-index.service';
 import { getRequiredTenantId } from '../../utils/tenant-query.utils';
+import type { ProjectTicketAttachmentResponseDto } from '../dto/project-ticket-attachment.dto';
 import type {
   CreateProjectTicketCommentDto,
   CreateProjectTicketDto,
@@ -41,6 +42,7 @@ import {
 import { ProjectBoardRealtimeService } from './project-board-realtime.service';
 import { PROJECTS_BOARD_EVENTS } from './project-board-realtime.constants';
 import { ProjectBoardSummaryService } from './project-board-summary.service';
+import { ProjectTicketAttachmentsService } from './project-ticket-attachments.service';
 
 @Injectable()
 export class ProjectTicketsService {
@@ -55,6 +57,7 @@ export class ProjectTicketsService {
     private readonly projectBoardSummary: ProjectBoardSummaryService,
     private readonly billingNotificationPublisher: BillingNotificationPublisher,
     private readonly billingSearchIndexService: BillingSearchIndexService,
+    private readonly ticketAttachmentsService: ProjectTicketAttachmentsService,
   ) {}
 
   async listTickets(
@@ -75,7 +78,12 @@ export class ProjectTicketsService {
     const all = await this.ticketsRepository.findAllByProject(projectId);
     const descMap = buildDescendantCheckboxTaskTotalsByTicketId(all);
 
-    return Promise.all(rows.map((row) => this.mapTicket(row, descMap)));
+    const attachmentMap = await this.ticketAttachmentsService.listForTicketIds(
+      rows.map((row) => row.id),
+      projectId,
+    );
+
+    return Promise.all(rows.map((row) => this.mapTicket(row, descMap, attachmentMap)));
   }
 
   async findOne(
@@ -95,10 +103,14 @@ export class ProjectTicketsService {
 
     const all = await this.ticketsRepository.findAllByProject(projectId);
     const descMap = buildDescendantCheckboxTaskTotalsByTicketId(all);
-    const dto = await this.mapTicket(ticket, descMap);
+    const attachmentMap = await this.ticketAttachmentsService.listForTicketIds(
+      all.map((row) => row.id),
+      projectId,
+    );
+    const dto = await this.mapTicket(ticket, descMap, attachmentMap);
 
     if (includeDescendants) {
-      dto.children = await this.buildChildTicketDtos(ticket.id, all, descMap);
+      dto.children = await this.buildChildTicketDtos(ticket.id, all, descMap, attachmentMap);
     }
 
     return dto;
@@ -389,6 +401,7 @@ export class ProjectTicketsService {
     parentTicketId: string,
     all: ProjectTicketEntity[],
     descMap: Map<string, { open: number; done: number }>,
+    attachmentMap: Map<string, ProjectTicketAttachmentResponseDto[]>,
   ): Promise<ProjectTicketResponseDto[]> {
     const byParent = new Map<string | null, ProjectTicketEntity[]>();
 
@@ -407,7 +420,7 @@ export class ProjectTicketsService {
       const out: ProjectTicketResponseDto[] = [];
 
       for (const k of kids) {
-        const d = await this.mapTicket(k, descMap);
+        const d = await this.mapTicket(k, descMap, attachmentMap);
 
         d.children = await build(k.id);
         out.push(d);
@@ -422,6 +435,7 @@ export class ProjectTicketsService {
   private async mapTicket(
     row: ProjectTicketEntity,
     descMap: Map<string, { open: number; done: number }>,
+    attachmentMap?: Map<string, ProjectTicketAttachmentResponseDto[]>,
   ): Promise<ProjectTicketResponseDto> {
     const own = countMarkdownCheckboxTasks(row.content);
     const children = descMap.get(row.id) ?? { open: 0, done: 0 };
@@ -455,6 +469,7 @@ export class ProjectTicketsService {
       createdByUserId: row.createdByUserId,
       createdByEmail,
       locked: row.locked,
+      attachments: attachmentMap?.get(row.id) ?? [],
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };

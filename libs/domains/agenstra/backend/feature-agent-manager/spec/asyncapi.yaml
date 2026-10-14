@@ -453,6 +453,28 @@ components:
       name: Authorization
       in: header
       description: 'Bearer JWT from Keycloak, e.g. Authorization: Bearer <token>'
+  schemas:
+    AttachmentContext:
+      type: object
+      required: [id, fileName, contentType, byteSize, downloadUrl]
+      properties:
+        id:
+          type: string
+          format: uuid
+        fileName:
+          type: string
+        contentType:
+          type: string
+        byteSize:
+          type: integer
+        contentSha256:
+          type: string
+        downloadUrl:
+          type: string
+        agentPath:
+          type: string
+          nullable: true
+          description: Read-only path inside the agent container after controller-side context mirroring.
   messages:
     Login:
       name: Login
@@ -597,6 +619,17 @@ components:
                 description: Optional knowledge page/folder SHA references for prompt enrichment.
                 items:
                   type: string
+              attachmentIds:
+                type: array
+                description: Optional attachment ids uploaded by the controller for read-only mirroring into `/opt/agenstra/context/...`.
+                items:
+                  type: string
+                  format: uuid
+              attachmentContexts:
+                type: array
+                description: Resolved attachment metadata including agent container paths; normally added by the controller.
+                items:
+                  $ref: '#/components/schemas/AttachmentContext'
               autoEnrichmentEnabled:
                 type: boolean
                 description: Enable prompt-based automatic enrichment (default true when omitted).
@@ -752,6 +785,15 @@ components:
                 type: array
                 items:
                   type: string
+              attachmentIds:
+                type: array
+                items:
+                  type: string
+                  format: uuid
+              attachmentContexts:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AttachmentContext'
               autoEnrichmentEnabled:
                 type: boolean
     ChatEnhanceResult:
@@ -839,6 +881,15 @@ components:
                 type: array
                 items:
                   type: string
+              attachmentIds:
+                type: array
+                items:
+                  type: string
+                  format: uuid
+              attachmentContexts:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AttachmentContext'
               autoEnrichmentEnabled:
                 type: boolean
     TicketBodyResult:
@@ -918,6 +969,11 @@ components:
                   chatId:
                     type: string
                     description: User-visible chat session id when the message belongs to a persisted chat
+                  attachments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AttachmentContext'
+                    description: Files attached to this user message, including read-only agentPath when mirrored.
               - type: object
                 required: [from, response, timestamp]
                 properties:

@@ -18,6 +18,7 @@ import type {
   CreateKnowledgeNodeDto,
   CreateKnowledgeRelationDto,
   KnowledgeRelationSourceType,
+  AttachmentResponseDto,
   UpdateKnowledgeNodeDto,
   UploadKnowledgeTextDto,
 } from './knowledge.types';
@@ -79,5 +80,13 @@ export class KnowledgeFacade {
 
   loadActivity(pageId: string): void {
     this.store.dispatch(KnowledgeActions.loadKnowledgeActivity({ pageId }));
+  }
+
+  addAttachment(pageId: string, attachment: AttachmentResponseDto): void {
+    this.store.dispatch(KnowledgeActions.knowledgeAttachmentAdded({ pageId, attachment }));
+  }
+
+  removeAttachment(pageId: string, attachmentId: string): void {
+    this.store.dispatch(KnowledgeActions.knowledgeAttachmentRemoved({ pageId, attachmentId }));
   }
 }
