@@ -38,24 +38,21 @@
   </div>
 </section>
 
-<section class="py-5 bg-body-tertiary grid-section">
+<section class="bg-body-tertiary grid-section landing-logo-section">
   <div class="container grid-section__container">
-    <p class="small text-muted text-center mb-4" i18n="@@featurePortalAgentctx-partnersTagline">
-      Generates configs for the assistants your team already uses
-    </p>
-    <div class="d-flex flex-row justify-content-center align-items-center gap-5 flex-wrap">
-      <img src="assets/images/logos/cursor.svg" alt="Cursor" class="img-fluid logo-partner" />
-      <img src="assets/images/logos/opencode.svg" alt="OpenCode" class="img-fluid logo-partner" />
-      <img src="assets/images/logos/github-copilot.svg" alt="GitHub Copilot" class="img-fluid logo-partner" />
-    </div>
+    <shared-logo-grid
+      [slots]="assistantLogoSlots"
+      ariaLabel="Coding assistants AgentCTX generates configs for"
+      i18n-ariaLabel="@@featurePortalAgentctx-partnersGridLabel"
+    />
   </div>
 </section>
 
 <!-- Story: sprawl → one source (combined) -->
-<section id="solution" class="py-10 bg-white agentctx-story grid-section">
+<section id="solution" class="py-10 bg-body agentctx-story grid-section">
   <div class="container grid-section__container">
     <div class="text-center pb-10">
-      <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featurePortalAgentctx-storyTitle">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featurePortalAgentctx-storyTitle">
         End config sprawl. Keep every AI tool on the same page
       </h2>
       <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalAgentctx-solutionLead">
@@ -66,10 +63,10 @@
     </div>
 
     <div
-      class="card border rounded-3 shadow-sm overflow-hidden mb-4 mb-lg-5 agentctx-solution-highlight card-capability card-capability-primary"
+      class="card border rounded-3 shadow-sm overflow-hidden mb-4 mb-lg-5 agentctx-solution-highlight landing-bento-visual"
     >
-      <div class="row g-0 align-items-center">
-        <div class="col-lg-8 p-4 p-lg-5">
+      <div class="row g-0 align-items-stretch">
+        <div class="col-lg-8 p-4 p-lg-5 d-flex flex-column justify-content-center">
           <h3 class="h4 fw-semibold mb-3" i18n="@@featurePortalAgentctx-solutionTitle">
             A single source of truth that syncs everywhere
           </h3>
@@ -78,12 +75,9 @@
             update your context, run AgentCTX, and each supported assistant stays aligned.
           </p>
         </div>
-        <div class="col-lg-4 p-4 p-lg-5 d-flex align-items-center justify-content-center">
+        <div class="col-lg-4 p-4 p-lg-5 d-flex align-items-center justify-content-center landing-divider-start bg-body">
           <div class="text-center">
-            <i class="bi bi-arrow-repeat text-primary icon-xl mb-3 d-block" aria-hidden="true"></i>
-            <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-solutionTagline">
-              One context. Every assistant.
-            </p>
+            <p class="fw-semibold mb-0" i18n="@@featurePortalAgentctx-solutionTagline">One context. Every assistant.</p>
           </div>
         </div>
       </div>
@@ -125,7 +119,7 @@
 <section id="how" class="py-10 bg-body-tertiary agentctx-how grid-section">
   <div class="container grid-section__container">
     <div class="text-center pb-10">
-      <h2 class="h2 fw-semibold text-dark mb-4" i18n="@@featurePortalAgentctx-howTitle">
+      <h2 class="h2 fw-semibold text-body-emphasis mb-4" i18n="@@featurePortalAgentctx-howTitle">
         Simple workflow for any project
       </h2>
       <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalAgentctx-howLead">
@@ -188,10 +182,10 @@
 </section>
 
 <!-- Context bento -->
-<section id="content" class="py-10 bg-white agentctx-content grid-section">
+<section id="content" class="py-10 bg-body agentctx-content grid-section">
   <div class="container grid-section__container">
     <div class="text-center pb-10">
-      <h2 class="h2 fw-semibold text-dark mb-4" i18n="@@featurePortalAgentctx-contentTitle">
+      <h2 class="h2 fw-semibold text-body-emphasis mb-4" i18n="@@featurePortalAgentctx-contentTitle">
         Less drift, more alignment
       </h2>
       <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalAgentctx-contentLead">
@@ -200,124 +194,106 @@
         follows the same rules, people onboard faster, and you can add or swap editors without starting over.
       </p>
     </div>
-    <div
-      class="agentctx-context-map"
-      role="group"
-      i18n-aria-label="@@featurePortalAgentctx-contentMapAriaLabel"
-      aria-label="How project context topics connect"
-    >
-      <svg class="agentctx-context-map__svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        <defs>
-          <linearGradient id="agentctx-context-line-h" gradientUnits="userSpaceOnUse" x1="0" y1="50" x2="100" y2="50">
-            <stop offset="0%" stop-color="rgba(139, 92, 246, 0)" />
-            <stop offset="20%" stop-color="rgba(139, 92, 246, 0.2)" />
-            <stop offset="50%" stop-color="rgba(139, 92, 246, 0.35)" />
-            <stop offset="80%" stop-color="rgba(139, 92, 246, 0.2)" />
-            <stop offset="100%" stop-color="rgba(139, 92, 246, 0)" />
-          </linearGradient>
-          <linearGradient id="agentctx-context-line-v" gradientUnits="userSpaceOnUse" x1="50" y1="0" x2="50" y2="100">
-            <stop offset="0%" stop-color="rgba(139, 92, 246, 0)" />
-            <stop offset="20%" stop-color="rgba(139, 92, 246, 0.2)" />
-            <stop offset="50%" stop-color="rgba(139, 92, 246, 0.35)" />
-            <stop offset="80%" stop-color="rgba(139, 92, 246, 0.2)" />
-            <stop offset="100%" stop-color="rgba(139, 92, 246, 0)" />
-          </linearGradient>
-        </defs>
-        <line
-          class="agentctx-context-map__line agentctx-context-map__line--peer"
-          x1="18"
-          y1="50"
-          x2="82"
-          y2="50"
-          stroke="url(#agentctx-context-line-h)"
-        />
-        <line
-          class="agentctx-context-map__line agentctx-context-map__line--peer"
-          x1="50"
-          y1="16"
-          x2="50"
-          y2="84"
-          stroke="url(#agentctx-context-line-v)"
-        />
-        <line class="agentctx-context-map__line agentctx-context-map__line--spoke" x1="50" y1="50" x2="50" y2="18" />
-        <line class="agentctx-context-map__line agentctx-context-map__line--spoke" x1="50" y1="50" x2="18" y2="50" />
-        <line class="agentctx-context-map__line agentctx-context-map__line--spoke" x1="50" y1="50" x2="82" y2="50" />
-        <line class="agentctx-context-map__line agentctx-context-map__line--spoke" x1="50" y1="50" x2="50" y2="84" />
-      </svg>
-
-      <article class="agentctx-context-benefit agentctx-context-benefit--1 card border rounded-3 shadow-sm p-4 h-100">
-        <i class="bi bi-check2-square text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
-        <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-benefit1Title">Consistency</h3>
-        <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-benefit1Desc">
-          Every assistant follows the same rules and understands the same project story.
-        </p>
-      </article>
-
-      <article class="agentctx-context-node agentctx-context-node--arch card border rounded-3 shadow-sm p-4 h-100">
-        <i class="bi bi-diagram-3-fill text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
-        <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-content1Title">Architecture &amp; domain</h3>
-        <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-content1Desc">
-          High level architecture and domain overview
-        </p>
-      </article>
-
-      <article class="agentctx-context-benefit agentctx-context-benefit--2 card border rounded-3 shadow-sm p-4 h-100">
-        <i class="bi bi-people text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
-        <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-benefit2Title">Faster onboarding</h3>
-        <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-benefit2Desc">
-          New team members get clear guidance from .agenstra/ and consistent behavior from their tools.
-        </p>
-      </article>
-
-      <article class="agentctx-context-node agentctx-context-node--coding card border rounded-3 shadow-sm p-4 h-100">
-        <i class="bi bi-code-slash text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
-        <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-content2Title">Coding style</h3>
-        <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-content2Desc">
-          Coding styles, naming conventions, and review expectations
-        </p>
-      </article>
-
-      <div class="agentctx-context-hub">
-        <div class="agentctx-context-node agentctx-context-node--hub card border rounded-3 shadow-sm p-4 text-center">
-          <i class="bi bi-share text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
-          <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-contentHubTitle">AgentCTX</h3>
-          <p class="small text-muted mb-0 mt-2" i18n="@@featurePortalAgentctx-contentHubCaption">
-            One context, every assistant
-          </p>
+    <div class="agentctx-context-bento">
+      <div class="row g-3 g-lg-4">
+        <div class="col-lg-7">
+          <div
+            class="card border rounded-3 shadow-sm overflow-hidden h-100 card-capability card-capability-primary agentctx-context-visual landing-bento-visual"
+          >
+            <div class="p-3 p-lg-4 pb-0">
+              <fpc-badge color="primary" class="mb-3 bento-badge" i18n="@@featurePortalAgentctx-contentHubCaption"
+                >One context, every assistant</fpc-badge
+              >
+            </div>
+            <div class="agentctx-context-illustration landing-illustration-fill">
+              <framework-portal-agentctx-illustration
+                label="AgentCTX context folder with the assistant configs it keeps in sync"
+                i18n-label="@@featurePortalAgentctx-contentIllustration"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-5">
+          <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-1 g-3">
+            <div class="col">
+              <article class="card border rounded-3 shadow-sm p-4 h-100">
+                <i class="bi bi-diagram-3-fill text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+                <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-content1Title">
+                  Architecture &amp; domain
+                </h3>
+                <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-content1Desc">
+                  High level architecture and domain overview
+                </p>
+              </article>
+            </div>
+            <div class="col">
+              <article class="card border rounded-3 shadow-sm p-4 h-100">
+                <i class="bi bi-code-slash text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+                <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-content2Title">Coding style</h3>
+                <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-content2Desc">
+                  Coding styles, naming conventions, and review expectations
+                </p>
+              </article>
+            </div>
+            <div class="col">
+              <article class="card border rounded-3 shadow-sm p-4 h-100">
+                <i class="bi bi-shield-lock text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+                <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-content3Title">Security</h3>
+                <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-content3Desc">
+                  Security considerations, secrets handling, and what must never be changed automatically
+                </p>
+              </article>
+            </div>
+            <div class="col">
+              <article class="card border rounded-3 shadow-sm p-4 h-100">
+                <i class="bi bi-journal-text text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+                <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-content4Title">Documentation</h3>
+                <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-content4Desc">
+                  Links to documentation, ADRs, and design docs
+                </p>
+              </article>
+            </div>
+          </div>
         </div>
       </div>
-
-      <article class="agentctx-context-node agentctx-context-node--security card border rounded-3 shadow-sm p-4 h-100">
-        <i class="bi bi-shield-lock text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
-        <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-content3Title">Security</h3>
-        <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-content3Desc">
-          Security considerations, secrets handling, and what must never be changed automatically
-        </p>
-      </article>
-
-      <article class="agentctx-context-node agentctx-context-node--doc card border rounded-3 shadow-sm p-4 h-100">
-        <i class="bi bi-journal-text text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
-        <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-content4Title">Documentation</h3>
-        <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-content4Desc">
-          Links to documentation, ADRs, and design docs
-        </p>
-      </article>
-
-      <article class="agentctx-context-benefit agentctx-context-benefit--3 card border rounded-3 shadow-sm p-4 h-100">
-        <i class="bi bi-git text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
-        <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-benefit3Title">Version control friendly</h3>
-        <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-benefit3Desc">
-          .agenstra/ lives in your repository with pull requests, reviews, and history.
-        </p>
-      </article>
-
-      <article class="agentctx-context-benefit agentctx-context-benefit--4 card border rounded-3 shadow-sm p-4 h-100">
-        <i class="bi bi-arrow-left-right text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
-        <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-benefit4Title">Tool flexibility</h3>
-        <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-benefit4Desc">
-          You can add or swap AI tools without redefining everything from scratch.
-        </p>
-      </article>
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3 g-lg-4 mt-0 mt-lg-1">
+        <div class="col">
+          <article class="card border rounded-3 shadow-sm p-4 h-100">
+            <i class="bi bi-check2-square text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+            <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-benefit1Title">Consistency</h3>
+            <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-benefit1Desc">
+              Every assistant follows the same rules and understands the same project story.
+            </p>
+          </article>
+        </div>
+        <div class="col">
+          <article class="card border rounded-3 shadow-sm p-4 h-100">
+            <i class="bi bi-people text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+            <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-benefit2Title">Faster onboarding</h3>
+            <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-benefit2Desc">
+              New team members get clear guidance from .agenstra/ and consistent behavior from their tools.
+            </p>
+          </article>
+        </div>
+        <div class="col">
+          <article class="card border rounded-3 shadow-sm p-4 h-100">
+            <i class="bi bi-git text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+            <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-benefit3Title">Version control friendly</h3>
+            <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-benefit3Desc">
+              .agenstra/ lives in your repository with pull requests, reviews, and history.
+            </p>
+          </article>
+        </div>
+        <div class="col">
+          <article class="card border rounded-3 shadow-sm p-4 h-100">
+            <i class="bi bi-arrow-left-right text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+            <h3 class="h6 fw-semibold mb-2" i18n="@@featurePortalAgentctx-benefit4Title">Tool flexibility</h3>
+            <p class="small text-muted mb-0" i18n="@@featurePortalAgentctx-benefit4Desc">
+              You can add or swap AI tools without redefining everything from scratch.
+            </p>
+          </article>
+        </div>
+      </div>
     </div>
   </div>
 </section>

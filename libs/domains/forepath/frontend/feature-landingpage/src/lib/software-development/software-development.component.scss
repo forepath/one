@@ -4,12 +4,9 @@
   overflow: visible;
 }
 
+// The editor fills the column, which stretches to the height of the capability cards beside it.
 .dev-build-visual-col {
-  @media (min-width: 992px) {
-    position: relative;
-    min-height: 0;
-    align-self: stretch;
-  }
+  align-self: stretch;
 }
 
 .dev-build-cards-col {
@@ -26,118 +23,6 @@
   }
 }
 
-.dev-code-skeleton {
-  --dev-code-badge-size: 2.75rem;
-  --dev-code-badge-logo-size: 1.75rem;
-  --dev-code-badge-logo-size-compact: 1.25rem;
-
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-  overflow: hidden;
-
-  @media (min-width: 992px) {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    height: 100%;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    background: linear-gradient(to bottom, transparent 0%, #fff 100%);
-  }
-}
-
-@mixin dev-lang-badge($color, $emphasis) {
-  background-color: color-mix(in srgb, $color 24%, var(--bs-tertiary-bg)) !important;
-  color: $emphasis !important;
-}
-
-.dev-code-skeleton__badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--dev-code-badge-size);
-  height: var(--dev-code-badge-size);
-  aspect-ratio: 1 / 1;
-  padding: 0.5rem;
-  line-height: 1;
-}
-
-.dev-code-skeleton__badge-logo {
-  width: var(--dev-code-badge-logo-size);
-  height: var(--dev-code-badge-logo-size);
-  aspect-ratio: 1 / 1;
-  flex-shrink: 0;
-  object-fit: contain;
-}
-
-.dev-code-skeleton__badge--typescript,
-.dev-code-skeleton__badge--java {
-  .dev-code-skeleton__badge-logo {
-    width: var(--dev-code-badge-logo-size-compact);
-    height: var(--dev-code-badge-logo-size-compact);
-  }
-}
-
-.dev-code-skeleton__badge--php {
-  @include dev-lang-badge(#777bb4, #4a4f8f);
-}
-
-.dev-code-skeleton__badge--typescript {
-  @include dev-lang-badge(#3178c6, #1f5f9b);
-}
-
-.dev-code-skeleton__badge--java {
-  @include dev-lang-badge(#ed8b00, #9a5a00);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .dev-code-skeleton__badge {
-    transition: none;
-  }
-}
-
-.dev-code-skeleton__line {
-  flex-shrink: 0;
-  border-radius: 0.25rem;
-  background: rgba(15, 15, 17, 0.07);
-  transition: width 0.65s ease;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .dev-code-skeleton__line {
-    transition: none;
-  }
-}
-
-.dev-code-skeleton__line--long {
-  width: 92%;
-  height: 0.5rem;
-}
-
-.dev-code-skeleton__line--medium {
-  width: 72%;
-  height: 0.5rem;
-}
-
-.dev-code-skeleton__line--short {
-  width: 46%;
-  height: 0.5rem;
-}
-
-.dev-code-skeleton__line--indent {
-  margin-left: 1.25rem;
-}
-
 .dev-delivery-copy {
   padding-left: var(--bs-gutter-x, 0.75rem);
   padding-right: var(--bs-gutter-x, 0.75rem);
@@ -148,62 +33,82 @@
   }
 }
 
-.dev-stack-grid-col {
-  min-height: 16rem;
-
-  @media (min-width: 992px) {
-    min-height: 0;
-  }
-}
-
-.dev-stack-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(2, 1fr);
-  width: 100%;
-  border-top: 1px solid var(--bs-border-color);
-  border-bottom: 1px solid var(--bs-border-color);
-  border-left: 1px solid var(--bs-border-color);
+// "Modern technologies": the stack as layers, from the interface down to the platform. Each band
+// is a little deeper in brand tint, so the column reads as one stack instead of a second grid.
+.dev-stack {
+  display: flex;
+  flex-direction: column;
+  border: var(--bs-border-width) solid var(--bs-border-color);
   border-radius: 0.75rem;
   overflow: hidden;
+  margin-bottom: 2.5rem;
 
   @media (min-width: 992px) {
-    border-top: 0;
-    border-bottom: 0;
-    border-radius: 0;
-    overflow: visible;
     position: absolute;
     top: 0;
     bottom: 0;
     left: 50%;
     right: var(--grid-section-line-right);
-    width: auto;
+    margin: 0;
+    border-width: 0 0 0 var(--bs-border-width);
+    border-radius: 0;
   }
 }
 
-.dev-stack-grid__cell {
+.dev-stack__layer {
   display: flex;
+  flex: 1 1 0;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  padding: 1.25rem 1rem;
-  border-right: 1px solid var(--bs-border-color);
-  border-bottom: 1px solid var(--bs-border-color);
+  gap: 0.75rem 1.5rem;
+  padding: 1.25rem 1.5rem;
+  background-color: color-mix(in srgb, var(--bs-primary) calc(var(--dev-stack-depth, 0) * 3%), var(--bs-body-bg));
 
-  &:nth-child(n + 4) {
-    border-bottom: 0;
+  & + & {
+    border-top: var(--bs-border-width) solid var(--bs-border-color);
+  }
+
+  &:nth-child(2) {
+    --dev-stack-depth: 1;
+  }
+
+  &:nth-child(3) {
+    --dev-stack-depth: 2;
+  }
+
+  &:nth-child(4) {
+    --dev-stack-depth: 3;
+  }
+
+  @media (min-width: 992px) {
+    padding-inline: 2.5rem;
   }
 }
 
-.dev-stack-grid__logo {
-  max-height: 1.75rem;
-  max-width: 5.5rem;
-  width: auto;
+// Label above the technologies on phones, a fixed column beside them from sm up.
+.dev-stack__label {
+  flex: 0 0 100%;
+
+  @media (min-width: 576px) {
+    flex-basis: 6rem;
+  }
+}
+
+.dev-stack__technologies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 2rem;
+}
+
+.dev-stack__technology {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
+.dev-stack__logo {
+  width: 1.5rem;
+  height: 1.5rem;
   object-fit: contain;
-}
-
-@media (min-width: 992px) {
-  .dev-stack-grid__logo {
-    max-height: 2rem;
-    max-width: 6.5rem;
-  }
 }

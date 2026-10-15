@@ -160,7 +160,6 @@
               "
               (reachedEnd)="loadMoreSubscriptions()"
               aria-hidden="true"
-              style="height: 1px; width: 100%; flex-shrink: 0"
             ></div>
           }
         </fpc-board-lane>
@@ -228,111 +227,107 @@
 </div>
 
 <ng-template #subscriptionListItem let-sub let-plans="plans">
-  <div class="list-group-item border-bottom">
-    <div class="d-flex justify-content-between align-items-center gap-2">
-      <div class="min-w-0 flex-grow-1">
-        <div class="fw-semibold mb-1">{{ subscriptionDisplayTitle(sub, plans) }}</div>
-        <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-          <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-            <fpc-badge
-              variant="info"
-              color="secondary"
-              class="me-2"
-              [ngClass]="subscriptionStatusBadgeClass(sub.status)"
-              [attr.title]="sub.status ?? undefined"
-            >
-              {{ subscriptionStatusLabel(sub.status) }}
-            </fpc-badge>
-            @if (showProvisioningStatusBadge(sub.id)) {
-              <fpc-badge
-                variant="info"
-                color="secondary"
-                class="me-2"
-                [ngClass]="provisioningStatusBadgeClass(provisioningStatusForSubscription(sub.id))"
-                [attr.title]="provisioningStatusForSubscription(sub.id) ?? undefined"
-              >
-                @if (provisioningStatusForSubscription(sub.id) === 'failed') {
-                  <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
-                }
-                {{ provisioningStatusLabel(provisioningStatusForSubscription(sub.id)) }}
-              </fpc-badge>
+  <fpc-list-item>
+    <div fpcListItemTitle class="fw-semibold">{{ subscriptionDisplayTitle(sub, plans) }}</div>
+    <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
+      <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+        <fpc-badge
+          variant="info"
+          color="secondary"
+          class="me-2"
+          [ngClass]="subscriptionStatusBadgeClass(sub.status)"
+          [attr.title]="sub.status ?? undefined"
+        >
+          {{ subscriptionStatusLabel(sub.status) }}
+        </fpc-badge>
+        @if (showProvisioningStatusBadge(sub.id)) {
+          <fpc-badge
+            variant="info"
+            color="secondary"
+            class="me-2"
+            [ngClass]="provisioningStatusBadgeClass(provisioningStatusForSubscription(sub.id))"
+            [attr.title]="provisioningStatusForSubscription(sub.id) ?? undefined"
+          >
+            @if (provisioningStatusForSubscription(sub.id) === 'failed') {
+              <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
             }
-            @if (sub.number) {
-              <span class="me-2"> <i class="bi bi-upc-scan me-1" aria-hidden="true"></i>{{ sub.number }} </span>
-            }
-            <span class="me-2">
-              <i class="bi bi-calendar-range me-1" aria-hidden="true"></i>{{ formatSubscriptionPeriod(sub) }}
-            </span>
-            <span class="me-2">
-              <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ formatDate(sub.nextBillingAt) }}
-            </span>
-            <span class="me-2">
-              <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>{{ formatSubscriptionPeriodPrice(sub, plans) }}
-            </span>
-          </div>
-        </div>
+            {{ provisioningStatusLabel(provisioningStatusForSubscription(sub.id)) }}
+          </fpc-badge>
+        }
+        @if (sub.number) {
+          <span class="me-2"> <i class="bi bi-upc-scan me-1" aria-hidden="true"></i>{{ sub.number }} </span>
+        }
+        <span class="me-2">
+          <i class="bi bi-calendar-range me-1" aria-hidden="true"></i>{{ formatSubscriptionPeriod(sub) }}
+        </span>
+        <span class="me-2">
+          <i class="bi bi-calendar-event me-1" aria-hidden="true"></i>{{ formatDate(sub.nextBillingAt) }}
+        </span>
+        <span class="me-2">
+          <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>{{ formatSubscriptionPeriodPrice(sub, plans) }}
+        </span>
       </div>
-      <fpc-button-group
-        size="sm"
-        class="flex-shrink-0"
-        ariaLabel="Subscription actions"
-        i18n-ariaLabel="@@featureSubscriptions-subscriptionActionsAria"
-      >
-        @if (sub.withdrawalEligibility?.canWithdraw) {
-          <fpc-button
-            iconOnly
-            size="sm"
-            variant="danger"
-            (clicked)="openWithdrawConfirm(sub)"
-            title="Withdraw subscription"
-            i18n-title="@@featureSubscriptions-withdrawButtonTitle"
-          >
-            <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
-          </fpc-button>
-        }
-        @if (canModifyConfiguration(sub)) {
-          <fpc-button
-            iconOnly
-            size="sm"
-            variant="primary"
-            (clicked)="openModifyConfigModal(sub)"
-            title="Upgrade or downgrade"
-            i18n-title="@@featureSubscriptions-modifyConfigButtonTitle"
-          >
-            <i class="bi bi-arrow-down-up" aria-hidden="true"></i>
-          </fpc-button>
-        }
-        @if (sub.status === 'active') {
-          <fpc-button
-            iconOnly
-            size="sm"
-            variant="danger"
-            (clicked)="openCancelConfirm(sub)"
-            title="Cancel subscription"
-            i18n-title="@@featureSubscriptions-cancelButtonTitle"
-          >
-            <i class="bi bi-x-circle" aria-hidden="true"></i>
-          </fpc-button>
-        }
-        @if (sub.status === 'pending_cancel') {
-          <fpc-button
-            iconOnly
-            size="sm"
-            variant="success"
-            (clicked)="openResumeConfirm(sub)"
-            title="Resume subscription"
-            i18n-title="@@featureSubscriptions-resumeButtonTitle"
-          >
-            <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
-          </fpc-button>
-        }
-      </fpc-button-group>
     </div>
+    <fpc-button-group
+      fpcListItemActions
+      size="sm"
+      ariaLabel="Subscription actions"
+      i18n-ariaLabel="@@featureSubscriptions-subscriptionActionsAria"
+    >
+      @if (sub.withdrawalEligibility?.canWithdraw) {
+        <fpc-button
+          iconOnly
+          size="sm"
+          variant="danger"
+          (clicked)="openWithdrawConfirm(sub)"
+          title="Withdraw subscription"
+          i18n-title="@@featureSubscriptions-withdrawButtonTitle"
+        >
+          <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
+        </fpc-button>
+      }
+      @if (canModifyConfiguration(sub)) {
+        <fpc-button
+          iconOnly
+          size="sm"
+          variant="primary"
+          (clicked)="openModifyConfigModal(sub)"
+          title="Upgrade or downgrade"
+          i18n-title="@@featureSubscriptions-modifyConfigButtonTitle"
+        >
+          <i class="bi bi-arrow-down-up" aria-hidden="true"></i>
+        </fpc-button>
+      }
+      @if (sub.status === 'active') {
+        <fpc-button
+          iconOnly
+          size="sm"
+          variant="danger"
+          (clicked)="openCancelConfirm(sub)"
+          title="Cancel subscription"
+          i18n-title="@@featureSubscriptions-cancelButtonTitle"
+        >
+          <i class="bi bi-x-circle" aria-hidden="true"></i>
+        </fpc-button>
+      }
+      @if (sub.status === 'pending_cancel') {
+        <fpc-button
+          iconOnly
+          size="sm"
+          variant="success"
+          (clicked)="openResumeConfirm(sub)"
+          title="Resume subscription"
+          i18n-title="@@featureSubscriptions-resumeButtonTitle"
+        >
+          <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+        </fpc-button>
+      }
+    </fpc-button-group>
     @if (subscriptionItems(sub).length > 0 || hasSubscriptionMeters(sub)) {
-      <div class="row g-2 mt-2">
+      <div class="row g-2">
         @if (subscriptionItems(sub).length > 0) {
           <div class="col-md">
-            <div class="small text-muted h-100 bg-body-tertiary rounded border py-2 px-3">
+            <div class="small text-body-secondary h-100 bg-body-tertiary rounded border py-2 px-3">
               <div class="fw-semibold mb-1" i18n="@@featureSubscriptions-services">Services</div>
               <div class="d-flex flex-column gap-2">
                 @for (item of subscriptionItems(sub); track item.id) {
@@ -364,7 +359,7 @@
         }
         @if (hasSubscriptionMeters(sub)) {
           <div class="col-md">
-            <div class="small text-muted h-100 bg-body-tertiary rounded border py-2 px-3">
+            <div class="small text-body-secondary h-100 bg-body-tertiary rounded border py-2 px-3">
               <div class="fw-semibold mb-1" i18n="@@featureSubscriptions-usageMeters">Usage meters</div>
               <div class="d-flex flex-column gap-1">
                 @for (
@@ -375,7 +370,7 @@
                     <fpc-badge variant="info" color="secondary">{{ meter.name }}</fpc-badge>
                     <span>{{ formatMeterValue(meter) }}</span>
                     @if (hasMeterBillingDetails(meter)) {
-                      <span class="text-muted small">{{ formatMeterBillingDetails(meter) }}</span>
+                      <span class="text-body-secondary small">{{ formatMeterBillingDetails(meter) }}</span>
                     }
                     <span class="ms-auto">{{ formatMeterCharge(meter.estimatedChargeNet) }}</span>
                   </div>
@@ -386,33 +381,31 @@
         }
       </div>
     }
-  </div>
+  </fpc-list-item>
 </ng-template>
 
 <ng-template #backorderListItem let-bo let-plans="plans">
-  <div class="list-group-item d-flex justify-content-between align-items-center border-bottom gap-2">
-    <div class="min-w-0 flex-grow-1">
-      <div class="fw-semibold mb-1">{{ backorderDisplayTitle(bo, plans) }}</div>
-      <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
-        <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
-          <fpc-badge
-            variant="info"
-            color="secondary"
-            class="me-2"
-            [ngClass]="backorderStatusBadgeClass(bo.status)"
-            [attr.title]="bo.status ?? undefined"
-          >
-            {{ backorderStatusLabel(bo.status) }}
-          </fpc-badge>
-          <span class="me-2">
-            <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>{{ formatBackorderPeriodPrice(bo, plans) }}
-          </span>
-        </div>
+  <fpc-list-item>
+    <div fpcListItemTitle class="fw-semibold">{{ backorderDisplayTitle(bo, plans) }}</div>
+    <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
+      <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
+        <fpc-badge
+          variant="info"
+          color="secondary"
+          class="me-2"
+          [ngClass]="backorderStatusBadgeClass(bo.status)"
+          [attr.title]="bo.status ?? undefined"
+        >
+          {{ backorderStatusLabel(bo.status) }}
+        </fpc-badge>
+        <span class="me-2">
+          <i class="bi bi-cash-stack me-1" aria-hidden="true"></i>{{ formatBackorderPeriodPrice(bo, plans) }}
+        </span>
       </div>
     </div>
     <fpc-button-group
+      fpcListItemActions
       size="sm"
-      class="flex-shrink-0"
       ariaLabel="Backorder actions"
       i18n-ariaLabel="@@featureSubscriptions-backorderActionsAria"
     >
@@ -437,7 +430,7 @@
         <i class="bi bi-box-arrow-left" aria-hidden="true"></i>
       </fpc-button>
     </fpc-button-group>
-  </div>
+  </fpc-list-item>
 </ng-template>
 
 <!-- Order plan modal -->
@@ -524,7 +517,7 @@
                       @if (orderAddonsLoading) {
                         <div class="mt-3 text-body-secondary small d-flex align-items-center gap-2">
                           <fpc-spinner size="sm" />
-                          <span i18n="@@featureSubscriptions-loadingAddons">Loading addons…</span>
+                          <span i18n="@@featureSubscriptions-loadingAddons">Loading addons...</span>
                         </div>
                       } @else if (orderAddons.length > 0) {
                         <fieldset class="mt-3 border rounded bg-body p-3">
@@ -602,8 +595,7 @@
                       }
                       @if (selectedPlan?.description?.trim()) {
                         <div
-                          class="mt-3 text-body-secondary small p-3 bg-body border rounded"
-                          style="white-space: pre-wrap"
+                          class="subscriptions__pre-wrap mt-3 text-body-secondary small p-3 bg-body border rounded"
                           [innerHTML]="selectedPlan!.description"
                         ></div>
                       }
@@ -626,10 +618,7 @@
                         </div>
                       }
                       @if (selectedPlan?.orderingHighlights?.length) {
-                        <div
-                          class="mt-3 text-body-secondary small p-3 bg-body border rounded"
-                          style="white-space: pre-wrap"
-                        >
+                        <div class="subscriptions__pre-wrap mt-3 text-body-secondary small p-3 bg-body border rounded">
                           <ul class="list-unstyled d-flex flex-column gap-2 mt-0 mb-0 small">
                             @for (line of selectedPlan!.orderingHighlights; track $index) {
                               <li class="d-flex gap-3 align-items-center justify-content-start lh-1">
@@ -703,7 +692,7 @@
                       @if (orderServerTypesLoading) {
                         <div class="text-body-secondary small d-flex align-items-center gap-2">
                           <fpc-spinner size="sm" />
-                          <span>Loading server types…</span>
+                          <span>Loading server types...</span>
                         </div>
                       } @else if (orderServerTypeOptions.length > 0) {
                         <fpc-form-field
@@ -758,7 +747,7 @@
                           <div class="d-flex align-items-center gap-2 text-body-secondary small" aria-live="polite">
                             <fpc-spinner size="sm" />
                             <span i18n="@@featureSubscriptions-loadingProvisioningOptions"
-                              >Loading provisioning options…</span
+                              >Loading provisioning options...</span
                             >
                           </div>
                         } @else if (orderProvisioningOptionsError) {
@@ -799,7 +788,7 @@
                               <div class="d-flex align-items-center gap-2 text-body-secondary small" aria-live="polite">
                                 <fpc-spinner size="sm" />
                                 <span i18n="@@featureSubscriptions-loadingCustomOrderFields"
-                                  >Loading configuration fields…</span
+                                  >Loading configuration fields...</span
                                 >
                               </div>
                             } @else if (orderCustomOrderFieldsError) {
@@ -1381,19 +1370,13 @@
                           </fpc-input-group>
                         </fpc-form-field>
                         @if (orderPromotionValidationPreview(); as preview) {
-                          <div
-                            class="alert mt-2 mb-3"
-                            [class.alert-success]="preview.valid"
-                            [class.alert-danger]="!preview.valid"
-                            role="status"
-                            aria-live="polite"
-                          >
+                          <fpc-alert class="mt-2 mb-3" [variant]="preview.valid ? 'success' : 'danger'">
                             @if (preview.valid) {
                               <span i18n="@@featurePromotions-validMessage">This code can be applied.</span>
                               <div class="small">{{ preview.advantageSummary }}</div>
                               @if (!orderPromotionPricingAdjustment()) {
                                 <div
-                                  class="small text-muted mt-1"
+                                  class="small text-body-secondary mt-1"
                                   i18n="@@featurePromotions-orderPricingPendingSidebar"
                                 >
                                   Check the price summary for updated totals.
@@ -1402,7 +1385,7 @@
                             } @else {
                               {{ preview.message ?? 'This code cannot be applied.' }}
                             }
-                          </div>
+                          </fpc-alert>
                         } @else if (orderPromotionValidationError(); as validationError) {
                           <fpc-alert
                             class="mt-2 mb-3"
@@ -1602,7 +1585,7 @@
           </div>
         }
       </div>
-      <div *fpcModalFooter class="d-flex justify-content-between w-100">
+      <div *fpcModalFooter class="d-flex flex-wrap justify-content-between gap-2 w-100">
         <div>
           @if (showOrderWizardBackButton()) {
             <fpc-button
@@ -1689,7 +1672,7 @@
         @if (configChangeEligibilityLoading()) {
           <div class="text-body-secondary small d-flex align-items-center gap-2">
             <fpc-spinner size="sm" />
-            <span i18n="@@featureSubscriptions-configChangeLoadingEligibility">Checking available changes…</span>
+            <span i18n="@@featureSubscriptions-configChangeLoadingEligibility">Checking available changes...</span>
           </div>
         } @else if (configChangeEligibilityMessage(); as eligibilityMessage) {
           <fpc-alert class="mb-0" variant="warning" [message]="eligibilityMessage" />
@@ -1730,7 +1713,7 @@
                         <div class="text-body-secondary small d-flex align-items-center gap-2">
                           <fpc-spinner size="sm" />
                           <span i18n="@@featureSubscriptions-configChangeLoadingServerTypes"
-                            >Loading server types…</span
+                            >Loading server types...</span
                           >
                         </div>
                       } @else if (configChangeServerTypeOptions.length > 0) {
@@ -1776,7 +1759,7 @@
                       @if (configChangeAddonsLoading) {
                         <div class="text-body-secondary small d-flex align-items-center gap-2">
                           <fpc-spinner size="sm" />
-                          <span i18n="@@featureSubscriptions-loadingAddons">Loading addons…</span>
+                          <span i18n="@@featureSubscriptions-loadingAddons">Loading addons...</span>
                         </div>
                       } @else if (configChangeAddonOptions().length > 0) {
                         <fieldset class="border rounded bg-body p-3">
@@ -1898,7 +1881,7 @@
                               <span>
                                 <span i18n="@@featureSubscriptions-configChangeSummaryServerType">Server type</span>
                                 <strong class="ms-2">{{ configChangeCurrentServerTypeLabel() }}</strong>
-                                <span class="mx-2">&rarr;</span>
+                                <i class="bi bi-arrow-right mx-2" aria-hidden="true"></i>
                                 <strong>{{ configChangeServerType }}</strong>
                               </span>
                             </li>
@@ -1996,7 +1979,7 @@
                     @if (configChangePreviewLoading()) {
                       <div class="text-body-secondary small d-flex align-items-center gap-2">
                         <fpc-spinner size="sm" />
-                        <span i18n="@@featureSubscriptions-loadingPrice">Loading price…</span>
+                        <span i18n="@@featureSubscriptions-loadingPrice">Loading price...</span>
                       </div>
                     } @else if (configChangePreviewFailed()) {
                       <div class="text-body-secondary small">
@@ -2075,7 +2058,7 @@
           </div>
         }
       </div>
-      <div *fpcModalFooter class="d-flex justify-content-between w-100">
+      <div *fpcModalFooter class="d-flex flex-wrap justify-content-between gap-2 w-100">
         <div>
           @if (showConfigChangeBackButton()) {
             <fpc-button
@@ -2388,7 +2371,7 @@
           @if (autoBillingSetupFeedback === 'waiting') {
             <fpc-alert class="py-2 small mb-3" variant="success"
               ><span i18n="@@featureSubscriptions-autoBillingSetupWaiting">
-                Payment method submitted. Waiting for confirmation from the payment provider…
+                Payment method submitted. Waiting for confirmation from the payment provider...
               </span></fpc-alert
             >
           }

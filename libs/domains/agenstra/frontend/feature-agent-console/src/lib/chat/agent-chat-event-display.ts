@@ -149,17 +149,20 @@ function previewString(value: string, maxChars: number): string {
     return t;
   }
 
-  return `${t.slice(0, maxChars - 1)}…`;
+  return `${t.slice(0, maxChars - 1)}...`;
 }
 
-/** OpenCode `question` tool parts duplicate the dedicated interactive `question` event — omit from tool rows. */
+/** OpenCode `question` tool parts duplicate the dedicated interactive `question` event, so omit them from tool rows. */
 export function isInteractiveQuestionToolName(name: string | undefined): boolean {
   return (name ?? '').trim().toLowerCase() === 'question';
 }
 
-/** `toolCallId` placeholders must not pair-merge (would collapse unrelated rows). */
+/**
+ * `toolCallId` placeholders must not pair-merge (would collapse unrelated rows).
+ * Matches the current '-' placeholder and the legacy em dash one.
+ */
 export function isConcreteToolCallId(id: string | undefined): id is string {
-  return id !== undefined && id.length > 0 && id !== '—';
+  return id !== undefined && id.length > 0 && id !== '-' && id !== '—';
 }
 
 export function toolPairOutcomeFromCallStatus(status: string): AgentChatToolPairOutcome {
@@ -228,7 +231,7 @@ export function mergeToolPairDisplayRows(
     kind: 'toolCall',
     kindLabel: AGENT_CHAT_EVENT_KIND_LABELS.toolCall,
     summaryTitle: callRow.summaryTitle,
-    summaryBody: `${callRow.summaryBody} → ${resultRow.summaryBody}`,
+    summaryBody: `${callRow.summaryBody}; ${resultRow.summaryBody}`,
     badgeColor: toolPairOutcomeToBadgeColor(outcome),
     detailJson: `${callDetail}\n\n---\n\n${resultDetail}`,
     toolCallId: callRow.toolCallId,
@@ -302,7 +305,7 @@ export function computeToolPairMergePlanFromIndices(options: {
 
 function previewUnknown(value: unknown, maxChars: number): string {
   if (value === undefined || value === null) {
-    return '—';
+    return '-';
   }
 
   if (typeof value === 'string') {
@@ -475,7 +478,7 @@ function summarizeEnvelope(
         typeof (payload as { phase?: unknown }).phase === 'string' ? (payload as { phase: string }).phase.trim() : '';
 
       summaryTitle = $localize`:@@featureChat-agentEventSummaryThinking:Agent is thinking`;
-      summaryBody = phase ? previewString(phase, 120) : 'Waiting for the first response…';
+      summaryBody = phase ? previewString(phase, 120) : 'Waiting for the first response...';
       badgeColor = 'light';
       break;
     }
@@ -487,7 +490,7 @@ function summarizeEnvelope(
       } as AgentResponseObject);
 
       summaryTitle = $localize`:@@featureChat-agentEventSummaryInteractionQuery:Query`;
-      summaryBody = preview ? previewString(preview, 120) : 'Waiting for the first response…';
+      summaryBody = preview ? previewString(preview, 120) : 'Waiting for the first response...';
       badgeColor = 'light';
       break;
     }
@@ -519,11 +522,11 @@ function summarizeEnvelope(
         status?: unknown;
       };
       const name = typeof p.name === 'string' ? p.name : 'tool';
-      const toolCallId = typeof p.toolCallId === 'string' ? p.toolCallId : '—';
+      const toolCallId = typeof p.toolCallId === 'string' ? p.toolCallId : '-';
       const status = typeof p.status === 'string' ? p.status : 'unknown';
 
       summaryTitle = resolveAgentChatToolDisplay(name).label;
-      summaryBody = `${status} · ${toolCallId}`;
+      summaryBody = `${status} (${toolCallId})`;
 
       if (p.args !== undefined) {
         const args = p.args as Record<string, unknown>;
@@ -536,11 +539,11 @@ function summarizeEnvelope(
         const description = typeof args['description'] === 'string' ? args['description'] : undefined;
 
         if (agentName || description) {
-          summaryBody = [agentName ? `@${agentName}` : null, description, `${status} · ${toolCallId}`]
+          summaryBody = [agentName ? `@${agentName}` : null, description, `${status} (${toolCallId})`]
             .filter((part): part is string => Boolean(part))
-            .join(' · ');
+            .join(', ');
         } else {
-          summaryBody += ` · ${previewUnknown(p.args, 160)}`;
+          summaryBody += `: ${previewUnknown(p.args, 160)}`;
         }
       }
 
@@ -556,11 +559,11 @@ function summarizeEnvelope(
         isError?: unknown;
       };
       const name = typeof p.name === 'string' ? p.name : 'tool';
-      const toolCallId = typeof p.toolCallId === 'string' ? p.toolCallId : '—';
+      const toolCallId = typeof p.toolCallId === 'string' ? p.toolCallId : '-';
       const isError = Boolean(p.isError);
 
       summaryTitle = resolveAgentChatToolDisplay(name).label;
-      summaryBody = `${isError ? 'Failed' : 'Success'} · ${toolCallId} · ${previewUnknown(p.result, 200)}`;
+      summaryBody = `${isError ? 'Failed' : 'Success'} (${toolCallId}): ${previewUnknown(p.result, 200)}`;
       badgeColor = toolPairOutcomeToBadgeColor(isError ? 'error' : 'success');
       break;
     }
@@ -616,7 +619,7 @@ function summarizeEnvelope(
       summaryBody = previewString(message, 200);
 
       if (typeof p.details === 'string' && p.details.trim()) {
-        summaryBody += ` · ${previewString(p.details, 120)}`;
+        summaryBody += ` (${previewString(p.details, 120)})`;
       }
 
       badgeColor = 'danger';
@@ -641,7 +644,7 @@ function summarizeEnvelope(
 const isChunkedSummaryPlaceholder = (s: string): boolean => {
   const t = s.trim();
 
-  return t.length === 0 || t === '…' || t === '—';
+  return t.length === 0 || t === '...' || t === '-' || t === '—';
 };
 
 /**
@@ -655,7 +658,7 @@ export function mergeAdjacentThinkingDisplayRows(
     .map((s) => s.trim())
     .filter((s) => !isChunkedSummaryPlaceholder(s));
   const mergedRaw = pieces.join('\n');
-  const summaryBody = mergedRaw.length === 0 ? '…' : previewString(mergedRaw.replace(/\r\n/g, '\n'), 480);
+  const summaryBody = mergedRaw.length === 0 ? '...' : previewString(mergedRaw.replace(/\r\n/g, '\n'), 480);
   const mergedPlainParts = [prev.popoverPlainDetail, row.popoverPlainDetail]
     .map((s) => (typeof s === 'string' ? s.trim() : ''))
     .filter((s) => s.length > 0);
@@ -685,7 +688,7 @@ export function mergeAdjacentInteractionQueryDisplayRows(
     .map((s) => s.trim())
     .filter((s) => !isChunkedSummaryPlaceholder(s));
   const mergedRaw = pieces.join('\n');
-  const summaryBody = mergedRaw.length === 0 ? '…' : previewString(mergedRaw.replace(/\r\n/g, '\n'), 480);
+  const summaryBody = mergedRaw.length === 0 ? '...' : previewString(mergedRaw.replace(/\r\n/g, '\n'), 480);
   const mergedPlainParts = [prev.popoverPlainDetail, row.popoverPlainDetail]
     .map((s) => (typeof s === 'string' ? s.trim() : ''))
     .filter((s) => s.length > 0);

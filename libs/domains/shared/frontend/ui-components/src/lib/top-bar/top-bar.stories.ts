@@ -5,7 +5,7 @@ import { FpcBadgeComponent } from '../badge/badge.component';
 import { FpcButtonComponent } from '../button/button.component';
 import { FpcTopBarComponent } from './top-bar.component';
 
-/** Storybook Color set → console light mark (white glyph on `bg-primary`). */
+/** Storybook Color set -> console light mark (white glyph on `bg-primary`). */
 const BRAND_MARKS: Record<string, { src: string; alt: string }> = {
   bootstrap: { src: '/assets/images/brands/bootstrap.svg', alt: 'Bootstrap' },
   decabill: { src: '/assets/images/brands/decabill.svg', alt: 'Decabill' },

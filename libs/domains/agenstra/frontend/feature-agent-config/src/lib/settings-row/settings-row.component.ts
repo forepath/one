@@ -102,6 +102,21 @@ import { ChangeDetectionStrategy, Component, booleanAttribute, input, output } f
       .agent-config-settings-row__lock--readonly:hover {
         color: var(--bs-secondary-color);
       }
+      /* Phones: title + lock share the first line, the control takes the full width below. */
+      @media (max-width: 575.98px) {
+        .agent-config-settings-row {
+          flex-wrap: wrap;
+          row-gap: 0.5rem;
+        }
+        .agent-config-settings-row__copy {
+          flex: 1 1 0;
+        }
+        .agent-config-settings-row__control {
+          flex: 1 1 100%;
+          max-width: 100%;
+          order: 1;
+        }
+      }
     `,
   ],
 })

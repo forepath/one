@@ -9,7 +9,7 @@ const meta: Meta<FpcProgressComponent> = {
       description: {
         component: `**When to use:** Determinate or multi-segment progress (uploads, wizards).
 
-**When not to:** Indeterminate wait without value → \`fpc-spinner\`.`,
+**When not to:** Indeterminate wait without value: use \`fpc-spinner\`.`,
       },
     },
   },

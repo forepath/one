@@ -1,7 +1,7 @@
 .comparison-matrix-table {
   .table {
-    --bs-table-bg: var(--bs-white);
-    --bs-table-hover-bg: rgba(50, 168, 82, 0.04);
+    --bs-table-bg: var(--bs-body-bg);
+    --bs-table-hover-bg: color-mix(in srgb, var(--bs-primary) 4%, transparent);
   }
 
   thead th {

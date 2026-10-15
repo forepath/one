@@ -10,7 +10,7 @@ const meta: Meta<FpcSectionColumnComponent> = {
       description: {
         component: `**When to use:** Page columns (\`scroll\`, \`variant\` default/marketing/form, optional title).
 
-**When not to:** Board lane chrome inside a column → \`fpc-board-lane\`.`,
+**When not to:** Board lane chrome inside a column: use \`fpc-board-lane\`.`,
       },
     },
   },

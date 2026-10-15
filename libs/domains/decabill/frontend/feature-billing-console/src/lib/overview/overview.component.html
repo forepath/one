@@ -94,7 +94,7 @@
           } @else if (invoicesSummary(); as summary) {
             {{ summary.openOverdueCount }}
           } @else {
-            <span class="text-body-secondary">—</span>
+            <span class="text-body-secondary">-</span>
           }
         </span>
         <fpc-button
@@ -262,7 +262,7 @@
                         <div class="d-flex align-items-center gap-2 text-body-secondary" aria-live="polite">
                           <fpc-spinner size="sm" />
                           <span class="visually-hidden" i18n="@@featureOverview-serverStatusUpdating"
-                            >Server status updating…</span
+                            >Server status updating...</span
                           >
                         </div>
                       }
@@ -306,7 +306,7 @@
 
 <ng-template #instanceMain let-item>
   <div class="fw-semibold mb-1">{{ instanceDisplayTitle(item) }}</div>
-  <div class="small text-muted d-flex align-items-center gap-3 row-gap-0 flex-wrap">
+  <div class="small text-body-secondary d-flex align-items-center gap-3 row-gap-0 flex-wrap">
     <div class="d-flex align-items-center gap-1 row-gap-0 flex-wrap">
       @if (isProvisioningPending(item) || isProvisioningFailed(item)) {
         <fpc-badge
@@ -410,7 +410,7 @@
   i18n-title="@@featureOverview-sshAccessDisplayTitle"
   title="SSH access key"
 >
-  <p class="small text-muted" i18n="@@featureOverview-sshAccessDisplayHint">
+  <p class="small text-body-secondary" i18n="@@featureOverview-sshAccessDisplayHint">
     Store this private key securely. It will not be shown again in the billing console.
   </p>
   <fpc-form-control

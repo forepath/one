@@ -4,8 +4,8 @@
   --pricing-rate-col-width: 10.5rem;
 
   .table {
-    --bs-table-bg: var(--bs-white);
-    --bs-table-hover-bg: rgba(255, 107, 53, 0.04);
+    --bs-table-bg: var(--bs-body-bg);
+    --bs-table-hover-bg: color-mix(in srgb, var(--bs-primary) 4%, transparent);
     table-layout: fixed;
     width: 100%;
   }

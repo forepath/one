@@ -1,5 +1,5 @@
 // Global scrollbar: thumb tints follow --bs-body-color-rgb, so light/dark switch with [data-bs-theme].
-// Firefox only — Chrome 121+ ignores ::-webkit-scrollbar-* when scrollbar-width is set on the same element.
+// Firefox only - Chrome 121+ ignores ::-webkit-scrollbar-* when scrollbar-width is set on the same element.
 @supports not selector(::-webkit-scrollbar) {
   * {
     scrollbar-width: thin;

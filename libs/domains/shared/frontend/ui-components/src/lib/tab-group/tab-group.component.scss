@@ -24,6 +24,15 @@
   border-right: var(--bs-border-width) solid var(--bs-border-color);
 }
 
+// Phones: a fixed 14rem rail leaves almost no room for the panel; cap it at 40% of the group.
+@media (max-width: 575.98px) {
+  :host(.fpc-tab-group--vertical) .fpc-tab-group__bar {
+    flex-basis: min(14rem, 40%);
+    width: min(14rem, 40%);
+    max-width: min(14rem, 40%);
+  }
+}
+
 .fpc-tab-group__section-title {
   padding: 0.5rem 0.75rem;
   font-size: 0.7rem;
@@ -134,6 +143,15 @@
   }
 }
 
+// Vertical rail scrolls on its own: keep the current group's title visible; the next title slides
+// over it.
+:host(.fpc-tab-group--vertical) .fpc-tab-group__section-title {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  flex: 0 0 auto;
+}
+
 :host(.fpc-tab-group--vertical) .btn-group-options {
   .fpc-tab-group__item {
     flex: 0 0 auto;
@@ -170,4 +188,10 @@
 :host(.fpc-tab-group--vertical) .fpc-tab-group__panels {
   overflow: auto;
   padding: 0;
+}
+
+// The vertical panel area is the scroll container, so a tab keeps its full content height instead of
+// shrinking to the viewport. Otherwise sticky headings inside it are pushed off after one screen.
+:host(.fpc-tab-group--vertical) ::ng-deep .fpc-tab-group__panels > fpc-tab {
+  flex-shrink: 0;
 }

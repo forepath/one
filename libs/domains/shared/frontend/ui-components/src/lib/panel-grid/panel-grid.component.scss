@@ -1,0 +1,30 @@
+// Separators: every panel draws a top and left hairline; the grid is pulled up and left by one
+// border width and the host clips, so only lines *between* panels remain. This works with column
+// spans and incomplete rows, which nth-child rules (as in `fpc-summary-bar`) cannot handle.
+// `overflow: clip` (not `hidden`) clips without becoming a scroll container, so the sticky panel
+// headers keep sticking to the page's scroll area.
+:host {
+  position: relative;
+  display: block;
+  flex-shrink: 0;
+  overflow: clip;
+}
+
+:host(.fpc-panel-grid--bordered) {
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.fpc-panel-grid__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  margin: calc(-1 * var(--bs-border-width)) 0 0 calc(-1 * var(--bs-border-width));
+
+  @media (min-width: 992px) {
+    grid-template-columns: repeat(var(--fpc-panel-grid-columns, 2), minmax(0, 1fr));
+  }
+}
+
+:host ::ng-deep .fpc-panel-grid__grid > fpc-panel {
+  border-top: var(--bs-border-width) solid var(--bs-border-color);
+  border-left: var(--bs-border-width) solid var(--bs-border-color);
+}

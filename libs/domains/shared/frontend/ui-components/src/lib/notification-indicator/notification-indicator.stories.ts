@@ -9,7 +9,7 @@ const meta: Meta<FpcNotificationIndicatorComponent> = {
       description: {
         component: `**When to use:** Attention dots on icons/nav (unread, pending).
 
-**When not to:** Full toast/alert copy → \`fpc-toast\` / \`fpc-alert\`.`,
+**When not to:** Full toast/alert copy: use \`fpc-toast\` / \`fpc-alert\`.`,
       },
     },
   },

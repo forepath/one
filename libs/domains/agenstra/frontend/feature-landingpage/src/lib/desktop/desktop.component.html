@@ -40,11 +40,10 @@
         </p>
       </div>
       <div class="col-lg-6 text-center position-relative desktop-hero-visual">
-        <img
-          src="assets/images/screenshots/spaces-dark_framed-alt.png"
-          alt="Agenstra Desktop application"
-          class="desktop-screenshot img-fluid d-none d-lg-block"
-          i18n-alt="@@featurePortalDesktop-heroAlt"
+        <framework-portal-desktop-illustration
+          class="desktop-hero-illustration d-none d-lg-block"
+          label="Agenstra Desktop application"
+          i18n-label="@@featurePortalDesktop-heroAlt"
         />
       </div>
     </div>
@@ -52,10 +51,10 @@
 </section>
 
 <!-- Workflow bridge -->
-<section id="value" class="py-10 bg-white desktop-value grid-section">
+<section id="value" class="py-10 bg-body desktop-value grid-section">
   <div class="container grid-section__container">
     <div class="text-center pb-10">
-      <h2 class="h2 fw-semibold text-dark mb-4" i18n="@@featurePortalDesktop-valueTitle">
+      <h2 class="h2 fw-semibold text-body-emphasis mb-4" i18n="@@featurePortalDesktop-valueTitle">
         Agents in the browser, control on your desk
       </h2>
       <p class="lead text-muted mb-3 mx-auto section-lead" i18n="@@featurePortalDesktop-valueLead">
@@ -69,7 +68,7 @@
     </div>
     <div class="row align-items-center g-4 text-center">
       <div class="col-md-4">
-        <div class="desktop-workflow-node card border rounded-3 shadow-sm p-4 h-100 bg-white">
+        <div class="desktop-workflow-node card border rounded-3 shadow-sm p-4 h-100 bg-body">
           <i class="bi bi-globe text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
           <h3 class="h6 fw-semibold mb-1" i18n="@@featurePortalDesktop-webLabel">Web Interface</h3>
           <p class="small text-muted mb-0" i18n="@@featurePortalDesktop-webUse">Admin &amp; config</p>
@@ -77,7 +76,7 @@
       </div>
       <div class="col-md-4">
         <div
-          class="desktop-workflow-node desktop-workflow-node--focus card border rounded-3 shadow-sm p-4 h-100 card-capability card-capability-primary"
+          class="desktop-workflow-node card border rounded-3 shadow-sm p-4 h-100 card-capability card-capability-primary"
         >
           <i class="bi bi-display text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
           <h3 class="h6 fw-semibold mb-1" i18n="@@featurePortalDesktop-desktopLabel">Desktop App</h3>
@@ -85,7 +84,7 @@
         </div>
       </div>
       <div class="col-md-4">
-        <div class="desktop-workflow-node card border rounded-3 shadow-sm p-4 h-100 bg-white">
+        <div class="desktop-workflow-node card border rounded-3 shadow-sm p-4 h-100 bg-body">
           <i class="bi bi-code-square text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
           <h3 class="h6 fw-semibold mb-1" i18n="@@featurePortalDesktop-ideLabel">Your IDE</h3>
           <p class="small text-muted mb-0" i18n="@@featurePortalDesktop-ideUse">Coding</p>
@@ -99,7 +98,7 @@
 <section id="features" class="py-10 bg-body-tertiary desktop-features grid-section">
   <div class="container grid-section__container">
     <div class="text-center pb-10">
-      <h2 class="h2 fw-semibold text-dark mb-4" i18n="@@featurePortalDesktop-featuresTitle">
+      <h2 class="h2 fw-semibold text-body-emphasis mb-4" i18n="@@featurePortalDesktop-featuresTitle">
         Everything you need during a development day
       </h2>
       <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalDesktop-featuresLead">
@@ -151,7 +150,7 @@
       >
         <div class="card border rounded-3 shadow-sm overflow-hidden desktop-pillar-panel card-capability-primary">
           <div class="row g-0 align-items-stretch">
-            <div class="col-lg-5 p-4 p-lg-5 bg-white border-end">
+            <div class="col-lg-5 p-4 p-lg-5 border-end landing-bento-visual">
               <div
                 class="desktop-pillar-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
                 aria-hidden="true"
@@ -201,7 +200,7 @@
       <div class="tab-pane fade" id="desktop-pane-act" role="tabpanel" aria-labelledby="desktop-tab-act" tabindex="0">
         <div class="card border rounded-3 shadow-sm overflow-hidden desktop-pillar-panel card-capability-primary">
           <div class="row g-0 align-items-stretch">
-            <div class="col-lg-5 p-4 p-lg-5 bg-white border-end">
+            <div class="col-lg-5 p-4 p-lg-5 border-end landing-bento-visual">
               <div
                 class="desktop-pillar-icon rounded d-flex align-items-center justify-content-center mb-4 mx-auto mx-lg-0"
                 aria-hidden="true"
@@ -250,11 +249,11 @@
 </section>
 
 <!-- Security: trust & governance -->
-<section id="security" class="py-10 bg-white desktop-security grid-section">
+<section id="security" class="py-10 bg-body desktop-security grid-section">
   <div class="container grid-section__container">
     <div class="row d-flex align-items-stretch g-5">
       <div class="col-lg-6">
-        <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featurePortalDesktop-securityTitle">
+        <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featurePortalDesktop-securityTitle">
           Local convenience, centralized control
         </h2>
         <p class="lead mb-5 desktop-security-lead text-muted" i18n="@@featurePortalDesktop-securityLead">
@@ -263,7 +262,7 @@
           interact with the systems your security and platform teams have already approved.
         </p>
         <div class="d-flex flex-column gap-3">
-          <article class="card border rounded-3 shadow-sm p-3 bg-white desktop-security-item">
+          <article class="card border rounded-3 shadow-sm p-3 bg-body desktop-security-item">
             <div class="d-flex gap-3 align-items-center">
               <i class="bi bi-shield-check text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
               <div>
@@ -276,7 +275,7 @@
               </div>
             </div>
           </article>
-          <article class="card border rounded-3 shadow-sm p-3 bg-white desktop-security-item">
+          <article class="card border rounded-3 shadow-sm p-3 bg-body desktop-security-item">
             <div class="d-flex gap-3 align-items-center">
               <i class="bi bi-key text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
               <div>
@@ -289,7 +288,7 @@
               </div>
             </div>
           </article>
-          <article class="card border rounded-3 shadow-sm p-3 bg-white desktop-security-item">
+          <article class="card border rounded-3 shadow-sm p-3 bg-body desktop-security-item">
             <div class="d-flex gap-3 align-items-center">
               <i class="bi bi-lock text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
               <div>
@@ -304,25 +303,15 @@
           </article>
         </div>
       </div>
-      <div class="col-lg-6 text-center">
+      <div class="col-lg-6">
         <div
-          class="desktop-security-flow card border rounded-3 shadow-sm p-4 p-lg-5 card-capability-primary h-100 d-flex align-items-center justify-content-center"
+          class="desktop-security-visual landing-bento-visual card border rounded-3 shadow-sm overflow-hidden h-100 card-capability-primary"
         >
-          <div class="d-flex align-items-center justify-content-center flex-wrap gap-3">
-            <fpc-badge variant="marketing" [pill]="true">
-              <i class="bi bi-laptop me-2" aria-hidden="true"></i>
-              <span i18n="@@featurePortalDesktop-flowDesktop">Desktop</span>
-            </fpc-badge>
-            <i class="bi bi-arrow-right text-secondary" aria-hidden="true"></i>
-            <fpc-badge variant="marketing" color="primary" [pill]="true">
-              <i class="bi bi-lock-fill me-2" aria-hidden="true"></i>
-              <span i18n="@@featurePortalDesktop-flowEncrypted">Encrypted Data</span>
-            </fpc-badge>
-            <i class="bi bi-arrow-right text-secondary" aria-hidden="true"></i>
-            <fpc-badge variant="marketing" [pill]="true">
-              <i class="bi bi-cloud me-2" aria-hidden="true"></i>
-              <span i18n="@@featurePortalDesktop-flowCloud">Cloud</span>
-            </fpc-badge>
+          <div class="desktop-security-illustration landing-illustration-fill">
+            <framework-portal-desktop-security-illustration
+              label="Agenstra Desktop connected through company sign-in, with the permissions of your role"
+              i18n-label="@@featurePortalDesktop-securityIllustration"
+            />
           </div>
         </div>
       </div>
@@ -333,82 +322,47 @@
 <!-- Toolchain dock -->
 <section id="toolchain" class="py-10 bg-body-tertiary desktop-toolchain grid-section">
   <div class="container grid-section__container">
-    <div class="text-center pb-10">
-      <h2 class="h2 fw-semibold text-dark mb-4" i18n="@@featurePortalDesktop-toolchainTitle">
-        Works alongside your editor, terminal, and browser
-      </h2>
-      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalDesktop-toolchainLead">
-        Your editor, terminal, and browser stay where they are. Agenstra Desktop sits beside them as a governed window
-        into agent activity while you code, debug, and review.
-      </p>
-    </div>
-    <div class="desktop-toolchain-visual mb-4 mb-lg-5">
-      <div
-        class="desktop-toolchain-dock"
-        role="list"
-        i18n-aria-label="@@featurePortalDesktop-toolchainDockAriaLabel"
-        aria-label="Tools around Agenstra Desktop"
-      >
-        <div class="desktop-toolchain-node desktop-toolchain-node--far" role="listitem">
-          <div class="desktop-toolchain-node-card">
-            <i class="bi bi-code-slash text-primary desktop-toolchain-node-icon" aria-hidden="true"></i>
-            <span class="desktop-toolchain-node-label" i18n="@@featurePortalDesktop-toolIde">IDE</span>
-          </div>
-        </div>
-        <div class="desktop-toolchain-node desktop-toolchain-node--near" role="listitem">
-          <div class="desktop-toolchain-node-card">
-            <i class="bi bi-terminal text-primary desktop-toolchain-node-icon" aria-hidden="true"></i>
-            <span class="desktop-toolchain-node-label" i18n="@@featurePortalDesktop-toolTerminal">Terminal</span>
-          </div>
-        </div>
-        <div class="desktop-toolchain-node desktop-toolchain-node--center" role="listitem">
-          <div
-            class="desktop-toolchain-node-card desktop-toolchain-node-card--focus card-capability card-capability-primary"
-          >
-            <i class="bi bi-display text-primary icon-md mb-2 d-block" aria-hidden="true"></i>
-            <span class="h6 fw-semibold text-primary mb-0 d-block" i18n="@@featurePortalDesktop-toolDesktop"
-              >Agenstra Desktop</span
-            >
-          </div>
-        </div>
-        <div class="desktop-toolchain-node desktop-toolchain-node--near" role="listitem">
-          <div class="desktop-toolchain-node-card">
-            <i class="bi bi-browser-chrome text-primary desktop-toolchain-node-icon" aria-hidden="true"></i>
-            <span class="desktop-toolchain-node-label" i18n="@@featurePortalDesktop-toolBrowser">Browser</span>
-          </div>
-        </div>
-        <div class="desktop-toolchain-node desktop-toolchain-node--far" role="listitem">
-          <div class="desktop-toolchain-node-card">
-            <i class="bi bi-git text-primary desktop-toolchain-node-icon" aria-hidden="true"></i>
-            <span class="desktop-toolchain-node-label" i18n="@@featurePortalDesktop-toolGit">Git</span>
-          </div>
-        </div>
+    <div class="row g-5 align-items-stretch">
+      <div class="col-lg-7 landing-illustration-fill order-2 order-lg-1">
+        <framework-portal-toolchain-illustration
+          label="Tools around Agenstra Desktop"
+          i18n-label="@@featurePortalDesktop-toolchainDockAriaLabel"
+        />
       </div>
-    </div>
-    <div class="row row-cols-1 row-cols-md-3 g-3 g-lg-4">
-      <div class="col">
-        <article class="card border rounded-3 shadow-sm p-4 h-100 bg-white">
-          <i class="bi bi-window-sidebar text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
-          <p class="small text-muted mb-0" i18n="@@featurePortalDesktop-toolchainItem1">
-            Keep it open next to your IDE to observe agent behavior while coding
-          </p>
-        </article>
-      </div>
-      <div class="col">
-        <article class="card border rounded-3 shadow-sm p-4 h-100 bg-white">
-          <i class="bi bi-clock-history text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
-          <p class="small text-muted mb-0" i18n="@@featurePortalDesktop-toolchainItem2">
-            Use it during incident reviews to replay problematic runs
-          </p>
-        </article>
-      </div>
-      <div class="col">
-        <article class="card border rounded-3 shadow-sm p-4 h-100 bg-white">
-          <i class="bi bi-arrow-repeat text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
-          <p class="small text-muted mb-0" i18n="@@featurePortalDesktop-toolchainItem3">
-            Combine it with AgentCTX to keep agents and developers in sync
-          </p>
-        </article>
+      <div class="col-lg-5 order-1 order-lg-2 d-flex flex-column justify-content-center">
+        <h2 class="h2 fw-semibold text-body-emphasis mb-4" i18n="@@featurePortalDesktop-toolchainTitle">
+          Works alongside your editor, terminal, and browser
+        </h2>
+        <p class="lead text-muted mb-4" i18n="@@featurePortalDesktop-toolchainLead">
+          Your editor, terminal, and browser stay where they are. Agenstra Desktop sits beside them as a governed window
+          into agent activity while you code, debug, and review.
+        </p>
+        <div class="d-flex flex-column gap-3">
+          <article class="card border rounded-3 shadow-sm p-3 bg-body">
+            <div class="d-flex gap-3 align-items-center">
+              <i class="bi bi-window-sidebar text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <p class="mb-0" i18n="@@featurePortalDesktop-toolchainItem1">
+                Keep it open next to your IDE to observe agent behavior while coding
+              </p>
+            </div>
+          </article>
+          <article class="card border rounded-3 shadow-sm p-3 bg-body">
+            <div class="d-flex gap-3 align-items-center">
+              <i class="bi bi-clock-history text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <p class="mb-0" i18n="@@featurePortalDesktop-toolchainItem2">
+                Use it during incident reviews to replay problematic runs
+              </p>
+            </div>
+          </article>
+          <article class="card border rounded-3 shadow-sm p-3 bg-body">
+            <div class="d-flex gap-3 align-items-center">
+              <i class="bi bi-arrow-repeat text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <p class="mb-0" i18n="@@featurePortalDesktop-toolchainItem3">
+                Combine it with AgentCTX to keep agents and developers in sync
+              </p>
+            </div>
+          </article>
+        </div>
       </div>
     </div>
   </div>

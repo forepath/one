@@ -7,8 +7,8 @@ import { map, take } from 'rxjs';
 
 /**
  * Tickets routing:
- * - `/tickets/:clientId` — activates that workspace and shows its board (deep link / bookmark).
- * - `/tickets` — redirects to `/tickets/{activeClientId}` when a workspace is already selected;
+ * - `/tickets/:clientId` - activates that workspace and shows its board (deep link / bookmark).
+ * - `/tickets` - redirects to `/tickets/{activeClientId}` when a workspace is already selected;
  *   otherwise allows activation so the board can open the workspace picker (locale prefix via `relativeTo`).
  */
 export const ticketsRequireActiveClientGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {

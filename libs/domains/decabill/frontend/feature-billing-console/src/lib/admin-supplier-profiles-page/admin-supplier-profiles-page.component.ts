@@ -239,9 +239,9 @@ export class AdminSupplierProfilesPageComponent implements OnInit {
   }
 
   formatDate(value?: string): string {
-    if (!value) return '—';
+    if (!value) return '-';
 
-    return this.datePipe.transform(value, 'mediumDate') ?? '—';
+    return this.datePipe.transform(value, 'mediumDate') ?? '-';
   }
 
   datevCreditorNumberDisplay(value: number | null | undefined): string {

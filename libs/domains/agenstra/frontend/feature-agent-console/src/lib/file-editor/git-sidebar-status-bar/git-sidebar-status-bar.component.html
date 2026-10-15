@@ -2,13 +2,13 @@
   <div class="git-sidebar-status-bar px-2 py-1 border-top bg-body-tertiary">
     <div class="d-flex align-items-center gap-2">
       @if (clientRepositoryName$ | async; as repoName) {
-        <small class="text-muted d-flex align-items-center gap-2 text-truncate flex-grow-1" [title]="repoName">
+        <small class="text-body-secondary d-flex align-items-center gap-2 text-truncate flex-grow-1" [title]="repoName">
           <i class="bi bi-git me-1"></i>
           <span class="text-truncate">{{ repoName }}</span>
         </small>
       } @else {
         <small
-          class="text-muted d-flex align-items-center gap-2 text-truncate flex-grow-1"
+          class="text-body-secondary d-flex align-items-center gap-2 text-truncate flex-grow-1"
           i18n-title="@@featureGitSidebar-localRepoTitle"
           title="Local repository"
         >
@@ -20,7 +20,7 @@
       <div class="d-flex align-items-center gap-2 flex-shrink-0">
         @if (currentBranch$ | async; as branch) {
           <small
-            class="text-muted d-flex align-items-center gap-2 cursor-pointer"
+            class="text-body-secondary d-flex align-items-center gap-2 cursor-pointer"
             (click)="onOpenBranchModal()"
             [title]="getCurrentBranchTitle(branch)"
           >

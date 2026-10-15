@@ -54,7 +54,7 @@ export const Cramped: Story = {
                 <fpc-sidebar-nav-item icon="key" label="Tokens" />
                 <fpc-sidebar-nav-item fpcSidebarFooter icon="gear" label="Admin" />
             </fpc-sidebar>
-            <div class="flex-grow-1 p-3">Short viewport — items scroll, Admin stays put</div>
+            <div class="flex-grow-1 p-3">Short viewport: items scroll, Admin stays put</div>
         </div>`,
   }),
 };

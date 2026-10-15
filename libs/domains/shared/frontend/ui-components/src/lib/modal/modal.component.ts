@@ -40,7 +40,7 @@ const MODAL_TRANSITION_MS = 150;
  *
  * Import `FpcModalFooterDirective` alongside this component when using a footer slot.
  *
- * Open/close uses Bootstrap's fade classes: mount → paint → add `show`, and on close remove
+ * Open/close uses Bootstrap's fade classes: mount -> paint -> add `show`, and on close remove
  * `show` then unmount after the transition so enter/exit animate instead of popping.
  *
  * Accent close button (`accent` input; fill + X ink match `.btn-{accent}` colors), header/footer

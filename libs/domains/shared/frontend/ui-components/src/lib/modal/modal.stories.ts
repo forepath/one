@@ -14,9 +14,9 @@ const meta: Meta<ModalStoryArgs> = {
   parameters: {
     docs: {
       description: {
-        component: `**When to use:** Modal shell for create/edit flows. Corner close via \`accent\` (\`primary\` / \`danger\` / \`warning\`) — fill and X ink match \`.btn-{accent}\` colors.
+        component: `**When to use:** Modal shell for create/edit flows. Corner close via \`accent\` (\`primary\` / \`danger\` / \`warning\`): fill and X ink match \`.btn-{accent}\` colors.
 
-**Pairs with:** \`fpc-button\` in footer slots (\`*fpcModalFooter\` — import \`FpcModalFooterDirective\`); prefer \`fpc-confirm-dialog\` for destructive confirms.
+**Pairs with:** \`fpc-button\` in footer slots (\`*fpcModalFooter\`, import \`FpcModalFooterDirective\`); prefer \`fpc-confirm-dialog\` for destructive confirms.
 
 **Note:** Use \`*fpcModalFooter\` (structural) so footers render in \`.modal-footer\` even under multi-root \`@if\`/\`@else\` (avoids NG8011 dumping the footer into the body).`,
       },
@@ -106,7 +106,7 @@ export const BodyOnly: Story = {
   render: (args) => ({
     props: args,
     template: `<fpc-modal [open]="open" title="Heads up">
-            <p class="mb-0">No footer, no actions — just a message.</p>
+            <p class="mb-0">No footer, no actions, just a message.</p>
         </fpc-modal>`,
   }),
 };

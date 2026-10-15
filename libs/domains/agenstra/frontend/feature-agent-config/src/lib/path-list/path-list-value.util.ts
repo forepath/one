@@ -27,10 +27,10 @@ export function classifyPathListValue(value: string): PathListValueKind {
  * Resolve a path-list value to the VFS path the layer editor should open.
  *
  * Globs open at the directory before the first wildcard segment:
- * - /opt/skills/* → /opt/skills
- * - /opt/skills/** → /opt/skills
- * - /opt/skills + recursive glob + /abc → /opt/skills
- * - /opt/skills + recursive glob + /*.md → /opt/skills
+ * - /opt/skills/* -> /opt/skills
+ * - /opt/skills/** -> /opt/skills
+ * - /opt/skills + recursive glob + /abc -> /opt/skills
+ * - /opt/skills + recursive glob + /*.md -> /opt/skills
  *
  * Globs with no directory prefix and bare package ids return null.
  */
@@ -50,7 +50,7 @@ export function resolveLayerEditorPath(value: string): string | null {
   const globIndex = parts.findIndex((part) => /[[*?]/.test(part));
 
   if (globIndex === 0) {
-    // Starts with a glob segment — no VFS folder to open.
+    // Starts with a glob segment - no VFS folder to open.
     return null;
   }
 
@@ -58,7 +58,7 @@ export function resolveLayerEditorPath(value: string): string | null {
     const baseParts = parts.slice(0, globIndex);
     const base = absolute ? `/${baseParts.join('/')}` : baseParts.join('/');
 
-    // Allow bare dir names as glob bases (`skills/**/abc` → `skills`).
+    // Allow bare dir names as glob bases (`skills/**/abc` -> `skills`).
     if (!isOpenableLocalPath(base, true)) {
       return null;
     }

@@ -1,4 +1,4 @@
-<section id="hero" class="py-10 bg-body-tertiary grid-section">
+<section id="hero" class="py-10 bg-dark text-white grid-section">
   <div class="container hero-content grid-section__container">
     <div class="row justify-content-center">
       <div class="col-lg-10 text-center">
@@ -28,7 +28,7 @@
 <section class="py-10 bg-body-tertiary grid-section">
   <div class="container grid-section__container">
     @if (loading() && posts().length === 0) {
-      <p class="text-center text-muted mb-0" i18n="@@featureForepathBlog-loading">Loading posts…</p>
+      <p class="text-center text-muted mb-0" i18n="@@featureForepathBlog-loading">Loading posts...</p>
     } @else if (errorMessage()) {
       <p class="text-center text-danger mb-0" role="alert">{{ errorMessage() }}</p>
     } @else if (posts().length === 0) {
@@ -37,7 +37,7 @@
       <div class="row g-4">
         @for (post of posts(); track post.id) {
           <div class="col-md-6 col-lg-4">
-            <article class="blog-card card border rounded-3 shadow-sm bg-white h-100">
+            <article class="blog-card card border rounded-3 shadow-sm bg-body h-100">
               <a [routerLink]="['/blog', post.slug]" class="blog-card__link text-decoration-none text-body">
                 @if (post.feature_image) {
                   <div class="blog-card__media">
@@ -143,7 +143,7 @@
         <div class="text-center mt-5">
           <fpc-button type="button" class="rounded-3" variant="dark" [loading]="loadingMore()" (clicked)="loadMore()">
             @if (loadingMore()) {
-              <span i18n="@@featureForepathBlog-loadingMore">Loading…</span>
+              <span i18n="@@featureForepathBlog-loadingMore">Loading...</span>
             } @else {
               <span i18n="@@featureForepathBlog-loadMore">Load more</span>
             }

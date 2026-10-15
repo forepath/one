@@ -29,7 +29,7 @@ export function matrixStrengthVisual(strength: MatrixStrength): MatrixStrengthVi
     case 'na':
       return {
         iconClass: 'bi-x-circle',
-        colorClass: 'text-secondary',
+        colorClass: 'text-body-secondary',
         label: $localize`:@@featureDecabillComparison-matrixLabelNa:Not applicable`,
       };
   }

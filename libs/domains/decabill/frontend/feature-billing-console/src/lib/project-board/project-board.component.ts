@@ -45,10 +45,14 @@ import {
   FpcEmptyStateComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
+  FpcLabelComponent,
   FpcLaneHeaderComponent,
+  FpcListComponent,
+  FpcListItemComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
   FpcPageHeaderComponent,
+  FpcProgressComponent,
   FpcSearchFieldComponent,
   FpcSpinnerComponent,
   FpcTabComponent,
@@ -138,10 +142,14 @@ function isEditableDomTarget(target: EventTarget | null): boolean {
     FpcEmptyStateComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
+    FpcLabelComponent,
     FpcLaneHeaderComponent,
+    FpcListComponent,
+    FpcListItemComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
+    FpcProgressComponent,
     FpcSearchFieldComponent,
     FpcSpinnerComponent,
     FpcTabComponent,
@@ -155,7 +163,7 @@ export class ProjectBoardComponent implements OnInit {
   readonly pageTitle = $localize`:@@featureProjectBoard-title:Board`;
   readonly globalSearchTitle = $localize`:@@featureProjectBoard-globalSearchOpenTitle:Search tickets (Ctrl+F)`;
   readonly globalSearchAriaLabel = $localize`:@@featureProjectBoard-globalSearchOpenAria:Search tickets`;
-  readonly commentInputAriaLabel = $localize`:@@featureProjectBoard-commentPlaceholder:Add a comment…`;
+  readonly commentInputAriaLabel = $localize`:@@featureProjectBoard-commentPlaceholder:Add a comment...`;
   readonly laneSearchPlaceholder = $localize`:@@featureProjectBoard-searchLanePlaceholder:Search tickets`;
   readonly laneSearchAriaLabel = $localize`:@@featureProjectBoard-searchLaneLabel:Search tickets`;
   readonly addTitle = $localize`:@@featureProjectBoard-add:Add`;
@@ -184,7 +192,7 @@ export class ProjectBoardComponent implements OnInit {
   readonly statusOptions = ALL_TICKET_STATUSES;
   readonly priorityOptions = PRIORITY_OPTIONS;
   readonly selectedLane = signal<BoardLaneStatus>('todo');
-  readonly activityOccurredAtFormat = 'MMM d, y · h:mm a';
+  readonly activityOccurredAtFormat = 'MMM d, y, h:mm a';
 
   /** Per-swimlane list filter (same substring behavior as Agenstra tickets board). */
   readonly laneSearchQueries = signal({
@@ -841,10 +849,10 @@ export class ProjectBoardComponent implements OnInit {
     const timeOptions: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
 
     if (sameDay) {
-      return `${start.toLocaleTimeString([], timeOptions)} – ${end.toLocaleTimeString([], timeOptions)}`;
+      return `${start.toLocaleTimeString([], timeOptions)} - ${end.toLocaleTimeString([], timeOptions)}`;
     }
 
-    return `${start.toLocaleString()} – ${end.toLocaleString()}`;
+    return `${start.toLocaleString()} - ${end.toLocaleString()}`;
   }
 
   isTicketTimeFormValid(): boolean {

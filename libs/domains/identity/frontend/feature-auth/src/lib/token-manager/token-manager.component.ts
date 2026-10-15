@@ -250,7 +250,7 @@ export class IdentityTokenManagerComponent implements OnInit {
 
   formatDate(iso: string | null | undefined): string {
     if (!iso) {
-      return '—';
+      return '-';
     }
 
     try {

@@ -10,7 +10,7 @@ const meta: Meta<FpcConfirmDialogComponent> = {
       description: {
         component: `**When to use:** Constrained confirm/cancel dialogs for destructive or irreversible actions.
 
-**When not to:** Multi-field editors → \`fpc-modal\`.
+**When not to:** Multi-field editors: use \`fpc-modal\`.
 
 \`danger\` / \`warning\` tint the confirm button and the modal corner close (X ink matches that button’s text color).`,
       },

@@ -6,46 +6,7 @@ section {
   }
 }
 
-#hero.contact-hero--forepath {
-  &:before,
-  &:after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(110px);
-    opacity: 0.22;
-    pointer-events: none;
-  }
-
-  &:before {
-    animation: contact-hero-orb-float 18s ease-in-out infinite;
-    width: 420px;
-    height: 420px;
-    top: -60px;
-    left: -40px;
-    background: radial-gradient(circle at 30% 30%, #ff8c5a, transparent 60%);
-  }
-
-  &:after {
-    animation: contact-hero-orb-float 22s ease-in-out infinite reverse;
-    width: 520px;
-    height: 520px;
-    bottom: -120px;
-    right: -80px;
-    background: radial-gradient(circle at 70% 70%, #21808d, transparent 65%);
-  }
-}
-
-@keyframes contact-hero-orb-float {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
-
-  50% {
-    transform: translate3d(0, 18px, 0);
-  }
-}
+// Hero background (contour field) lives in the shared `ui-components/styles/_landing.scss`.
 
 .hero-lead,
 .section-lead {
@@ -61,7 +22,7 @@ section {
 }
 
 .contact-form .form-check-input[type='checkbox'] {
-  background-color: var(--bs-white);
+  background-color: var(--bs-body-bg);
 
   &:checked {
     background-color: var(--bs-primary);

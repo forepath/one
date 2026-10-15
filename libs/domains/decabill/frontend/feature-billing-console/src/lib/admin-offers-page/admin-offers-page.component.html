@@ -96,7 +96,7 @@
                   ></framework-billing-admin-user-select>
                 </fpc-form-field>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <fpc-form-field forId="offersFromDate" i18n-label="@@featureAdminOffers-fromDate" label="From">
                   <fpc-form-control
                     controlId="offersFromDate"
@@ -108,7 +108,7 @@
                   />
                 </fpc-form-field>
               </div>
-              <div class="col-6">
+              <div class="col-12 col-md-6">
                 <fpc-form-field forId="offersToDate" i18n-label="@@featureAdminOffers-toDate" label="To">
                   <fpc-form-control
                     controlId="offersToDate"
@@ -157,34 +157,32 @@
           </fpc-collapsible-filter-panel>
 
           <div class="admin-offers__statistics-body flex-grow-1 overflow-auto d-flex flex-column min-h-0">
-            <div class="d-flex flex-column gap-3 p-3">
-              <div class="card">
-                <div class="card-body">
-                  @if (statisticsLoading$ | async) {
-                    <div class="text-center py-4">
-                      <fpc-spinner size="sm" />
-                    </div>
-                  } @else if (seriesChartOptions(); as chart) {
-                    <apx-chart
-                      [series]="chart.series"
-                      [chart]="chart.chart"
-                      [colors]="chart.colors"
-                      [stroke]="chart.stroke"
-                      [dataLabels]="chart.dataLabels"
-                      [legend]="chart.legend"
-                      [xaxis]="chart.xaxis"
-                      [yaxis]="chart.yaxis"
-                      [grid]="chart.grid"
-                      [title]="chart.title"
-                    ></apx-chart>
-                  } @else {
-                    <p class="text-muted small mb-0" i18n="@@featureAdminOffers-noStatistics">
-                      No statistics for the selected period.
-                    </p>
-                  }
-                </div>
-              </div>
-            </div>
+            <fpc-panel-grid [columns]="1" [bordered]="false">
+              <fpc-panel [title]="offersChartTitle">
+                @if (statisticsLoading$ | async) {
+                  <div class="text-center py-4">
+                    <fpc-spinner size="sm" />
+                  </div>
+                } @else if (seriesChartOptions(); as chart) {
+                  <apx-chart
+                    [series]="chart.series"
+                    [chart]="chart.chart"
+                    [colors]="chart.colors"
+                    [stroke]="chart.stroke"
+                    [fill]="chart.fill"
+                    [dataLabels]="chart.dataLabels"
+                    [legend]="chart.legend"
+                    [xaxis]="chart.xaxis"
+                    [yaxis]="chart.yaxis"
+                    [grid]="chart.grid"
+                  ></apx-chart>
+                } @else {
+                  <p class="text-body-secondary small mb-0" i18n="@@featureAdminOffers-noStatistics">
+                    No statistics for the selected period.
+                  </p>
+                }
+              </fpc-panel>
+            </fpc-panel-grid>
           </div>
         </div>
       </div>
@@ -435,16 +433,19 @@
       <fpc-spinner variant="primary" />
     </div>
   } @else if (selectedAuditLogs().length === 0) {
-    <p class="text-muted mb-0" i18n="@@featureAdminOffers-noAuditLogs">No audit entries.</p>
+    <p class="text-body-secondary mb-0" i18n="@@featureAdminOffers-noAuditLogs">No audit entries.</p>
   } @else {
-    <div class="list-group list-group-flush">
+    <fpc-list [flush]="true">
       @for (entry of selectedAuditLogs(); track entry.id) {
-        <div class="list-group-item px-0">
-          <div class="fw-semibold">{{ entry.message }}</div>
-          <div class="small text-muted">{{ entry.process }} · {{ formatDate(entry.createdAt) }}</div>
-        </div>
+        <fpc-list-item class="px-0">
+          <div fpcListItemTitle class="fw-semibold">{{ entry.message }}</div>
+          <div fpcListItemMeta class="d-flex flex-wrap align-items-center gap-3 row-gap-0">
+            <span><i class="bi bi-gear me-1" aria-hidden="true"></i>{{ entry.process }}</span>
+            <span><i class="bi bi-calendar3 me-1" aria-hidden="true"></i>{{ formatDate(entry.createdAt) }}</span>
+          </div>
+        </fpc-list-item>
       }
-    </div>
+    </fpc-list>
     @if (auditLogsHasMore()) {
       <div class="text-center mt-3">
         <fpc-button

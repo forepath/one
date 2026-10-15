@@ -55,11 +55,11 @@
 
   <!-- Local Branches - Show immediately, loading state only for the list -->
   <div class="mb-3">
-    <label class="form-label fw-semibold" i18n="@@featureGitBranchModal-localBranchesLabel">Local Branches</label>
-    <fpc-list [flush]="true" style="max-height: 300px; overflow-y: auto">
+    <fpc-label class="fw-semibold" i18n="@@featureGitBranchModal-localBranchesLabel">Local Branches</fpc-label>
+    <fpc-list class="git-branch-modal__list git-branch-modal__list--local" [flush]="true">
       @if (loadingBranches$ | async) {
         <fpc-list-item>
-          <div fpcListItemTitle class="text-center text-muted py-2">
+          <div fpcListItemTitle class="text-center text-body-secondary py-2">
             <fpc-spinner class="me-2" size="sm" variant="primary" />
             <span i18n="@@featureGitBranchModal-loadingBranches">Loading branches...</span>
           </div>
@@ -68,18 +68,22 @@
         @if (localBranches$ | async; as localBranches) {
           @if (localBranches.length === 0) {
             <fpc-list-item>
-              <div fpcListItemTitle class="text-muted text-center" i18n="@@featureGitBranchModal-noLocalBranches">
+              <div
+                fpcListItemTitle
+                class="text-body-secondary text-center"
+                i18n="@@featureGitBranchModal-noLocalBranches"
+              >
                 No local branches
               </div>
             </fpc-list-item>
           } @else {
             @for (branch of localBranches; track branch.name) {
               <fpc-list-item [active]="branch.isCurrent">
-                <div fpcListItemTitle class="d-flex align-items-center gap-2">
+                <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
                   @if (branch.isCurrent) {
                     <i class="bi bi-check-circle-fill text-primary"></i>
                   }
-                  <span class="fw-semibold">{{ branch.name }}</span>
+                  <span class="fw-semibold text-break">{{ branch.name }}</span>
                   @if (branch.aheadCount && branch.aheadCount > 0) {
                     <fpc-badge color="success">+{{ branch.aheadCount }}</fpc-badge>
                   }
@@ -128,11 +132,11 @@
 
   <!-- Remote Branches - Show immediately, loading state only for the list -->
   <div class="mb-3">
-    <label class="form-label fw-semibold" i18n="@@featureGitBranchModal-remoteBranchesLabel">Remote Branches</label>
-    <fpc-list [flush]="true" style="max-height: 200px; overflow-y: auto">
+    <fpc-label class="fw-semibold" i18n="@@featureGitBranchModal-remoteBranchesLabel">Remote Branches</fpc-label>
+    <fpc-list class="git-branch-modal__list git-branch-modal__list--remote" [flush]="true">
       @if (loadingBranches$ | async) {
         <fpc-list-item>
-          <div fpcListItemTitle class="text-center text-muted py-2">
+          <div fpcListItemTitle class="text-center text-body-secondary py-2">
             <fpc-spinner class="me-2" size="sm" variant="primary" />
             <span i18n="@@featureGitBranchModal-loadingBranches">Loading branches...</span>
           </div>
@@ -141,18 +145,22 @@
         @if (remoteBranches$ | async; as remoteBranches) {
           @if (remoteBranches.length === 0) {
             <fpc-list-item>
-              <div fpcListItemTitle class="text-muted text-center" i18n="@@featureGitBranchModal-noRemoteBranches">
+              <div
+                fpcListItemTitle
+                class="text-body-secondary text-center"
+                i18n="@@featureGitBranchModal-noRemoteBranches"
+              >
                 No remote branches
               </div>
             </fpc-list-item>
           } @else {
             @for (branch of remoteBranches; track branch.ref) {
               <fpc-list-item>
-                <div fpcListItemTitle class="d-flex align-items-center gap-2">
-                  <i class="bi bi-cloud text-muted"></i>
-                  <span>{{ branch.name }}</span>
+                <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                  <i class="bi bi-cloud text-body-secondary"></i>
+                  <span class="text-break">{{ branch.name }}</span>
                   @if (branch.remote) {
-                    <small class="text-muted">({{ branch.remote }})</small>
+                    <small class="text-body-secondary">({{ branch.remote }})</small>
                   }
                 </div>
                 @if (branch.message) {
@@ -182,7 +190,7 @@
 
   <!-- Create New Branch - Show immediately (doesn't depend on branches list) -->
   <div class="border-top pt-3">
-    <label class="form-label fw-semibold" i18n="@@featureGitBranchModal-createBranchLabel">Create New Branch</label>
+    <fpc-label class="fw-semibold" i18n="@@featureGitBranchModal-createBranchLabel">Create New Branch</fpc-label>
     <div class="mb-2">
       <fpc-form-check
         checkId="useConventionalPrefix"
@@ -194,7 +202,7 @@
     </div>
     @if (useConventionalPrefix()) {
       <div class="row g-2">
-        <div class="col-md-4">
+        <div class="col-12 col-md-4">
           <fpc-form-field forId="conventionalType" i18n-label="@@featureGitBranchModal-typeLabel" label="Type">
             <fpc-form-control
               controlType="select"
@@ -213,7 +221,7 @@
             </fpc-form-control>
           </fpc-form-field>
         </div>
-        <div class="col-md-8">
+        <div class="col-12 col-md-8">
           <fpc-form-field
             forId="customBranchName"
             i18n-label="@@featureGitBranchModal-branchNameLabel"
@@ -249,7 +257,7 @@
         />
       </fpc-form-field>
     }
-    <div class="d-flex align-items-center gap-2">
+    <div class="d-flex flex-wrap align-items-center gap-2">
       <fpc-button
         variant="primary"
         size="sm"
@@ -260,7 +268,7 @@
         <span i18n="@@featureGitBranchModal-createBranchButton">Create Branch</span>
       </fpc-button>
       @if (branchName()) {
-        <small class="text-muted" i18n="@@featureGitBranchModal-willCreateLabel">
+        <small class="text-body-secondary text-break" i18n="@@featureGitBranchModal-willCreateLabel">
           Will create: <code>{{ branchName() }}</code></small
         >
       }

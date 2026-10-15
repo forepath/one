@@ -6,7 +6,7 @@ import { IDENTITY_AUTH_ENVIRONMENT, type IdentityAuthEnvironment } from '../../.
 
 /**
  * Allows `/settings/tokens` only when auth mode supports PATs (users or keycloak).
- * api-key mode has no PAT APIs — redirect home.
+ * api-key mode has no PAT APIs - redirect home.
  */
 export const patUiGuard: CanActivateFn = () => {
   const environment = inject<IdentityAuthEnvironment>(IDENTITY_AUTH_ENVIRONMENT);

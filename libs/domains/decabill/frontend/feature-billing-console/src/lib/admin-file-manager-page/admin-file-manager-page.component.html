@@ -52,7 +52,7 @@
   <div class="flex-grow-1 overflow-auto min-h-0 d-flex flex-column">
     @if ((loadingPath$ | async) === '' && treeNodes().length === 0) {
       <div class="d-flex justify-content-center align-items-center p-4">
-        <fpc-spinner variant="primary" i18n-label="@@featureAdminFileExplorer-loading" label="Loading files…" />
+        <fpc-spinner variant="primary" i18n-label="@@featureAdminFileExplorer-loading" label="Loading files..." />
       </div>
     } @else {
       @if (error$ | async; as err) {
@@ -120,7 +120,7 @@
                         class="bi file-tree-lock"
                         [class.bi-lock-fill]="node.entry.signature?.status === 'signed'"
                         [class.bi-unlock]="node.entry.signature?.status !== 'signed'"
-                        [class.text-muted]="node.entry.signature?.status !== 'signed'"
+                        [class.text-body-secondary]="node.entry.signature?.status !== 'signed'"
                         aria-hidden="true"
                       ></i>
                     </fpc-tooltip>

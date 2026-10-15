@@ -3,7 +3,7 @@
 .estimate-chat__messages {
   min-height: 24rem;
   overflow-y: auto;
-  background: var(--bs-white);
+  background: var(--bs-body-bg);
 }
 
 .estimate-chat__composer .form-control {
@@ -55,7 +55,7 @@
 }
 
 .estimate-message--user .estimate-message__bubble {
-  background: rgba(255, 107, 53, 0.12);
+  background: color-mix(in srgb, var(--bs-primary) 12%, transparent);
 }
 
 .estimate-result {

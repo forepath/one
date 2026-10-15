@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-14T18:52:11.379Z",
+  "generatedAt": "2026-10-14T21:00:37.127Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -34251,6 +34251,11 @@
     },
     {
       "from": "project:agenstra-frontend-feature-landingpage",
+      "to": "project:shared-frontend-feature-landingpage",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-landingpage",
       "to": "project:shared-frontend-util-meta",
       "type": "depends_on"
     },
@@ -34262,11 +34267,6 @@
     {
       "from": "project:agenstra-frontend-feature-landingpage",
       "to": "project:agenstra-frontend-data-access-portal",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-frontend-feature-landingpage",
-      "to": "project:shared-frontend-feature-landingpage",
       "type": "depends_on"
     },
     {

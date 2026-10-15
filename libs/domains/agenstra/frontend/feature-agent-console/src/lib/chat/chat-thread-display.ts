@@ -388,12 +388,12 @@ function previewString(value: string, maxChars: number): string {
     return t;
   }
 
-  return `${t.slice(0, maxChars - 1)}…`;
+  return `${t.slice(0, maxChars - 1)}...`;
 }
 
 function previewUnknown(value: unknown, maxChars: number): string {
   if (value === undefined || value === null) {
-    return '—';
+    return '-';
   }
 
   if (typeof value === 'string') {
@@ -431,13 +431,13 @@ export function mapAgentResponseObjectToDisplayRow(
     }
 
     const rawToolCallId = typeof r['toolCallId'] === 'string' ? r['toolCallId'] : undefined;
-    const toolCallIdDisplay = rawToolCallId ?? '—';
+    const toolCallIdDisplay = rawToolCallId ?? '-';
     const status = typeof r['status'] === 'string' ? r['status'] : 'unknown';
-    let summaryBody = `${status} · ${toolCallIdDisplay}`;
+    let summaryBody = `${status} (${toolCallIdDisplay})`;
     const summaryTitle = resolveAgentChatToolDisplay(name).label;
 
     if (r['args'] !== undefined) {
-      summaryBody += ` · ${previewUnknown(r['args'], 160)}`;
+      summaryBody += `: ${previewUnknown(r['args'], 160)}`;
     }
 
     const detailJson = JSON.stringify(r, null, 2);
@@ -469,7 +469,7 @@ export function mapAgentResponseObjectToDisplayRow(
     }
 
     const rawToolCallId = typeof r['toolCallId'] === 'string' ? r['toolCallId'] : undefined;
-    const toolCallIdDisplay = rawToolCallId ?? '—';
+    const toolCallIdDisplay = rawToolCallId ?? '-';
     const isError = Boolean(r['isError'] ?? r['is_error']);
     const summaryTitle = resolveAgentChatToolDisplay(name).label;
     const detailJson = JSON.stringify(r, null, 2);
@@ -480,7 +480,7 @@ export function mapAgentResponseObjectToDisplayRow(
       kind: 'toolResult',
       kindLabel: AGENT_CHAT_EVENT_KIND_LABELS.toolResult,
       summaryTitle,
-      summaryBody: `${isError ? 'Failed' : 'Success'} · ${toolCallIdDisplay} · ${previewUnknown(r['result'], 200)}`,
+      summaryBody: `${isError ? 'Failed' : 'Success'} (${toolCallIdDisplay}): ${previewUnknown(r['result'], 200)}`,
       badgeColor: toolPairOutcomeToBadgeColor(outcome),
       detailJson,
       displayTimestampMs,
@@ -544,7 +544,7 @@ export function mapAgentResponseObjectToDisplayRow(
       kind: 'thinking',
       kindLabel: AGENT_CHAT_EVENT_KIND_LABELS.thinking,
       summaryTitle: 'Thinking',
-      summaryBody: preview ? previewString(preview, 220) : '…',
+      summaryBody: preview ? previewString(preview, 220) : '...',
       badgeColor: 'light',
       detailJson: JSON.stringify(r, null, 2),
       ...(preview.trim().length > 0 ? { popoverPlainDetail: preview } : {}),
@@ -555,7 +555,7 @@ export function mapAgentResponseObjectToDisplayRow(
   if (t === 'status') {
     const subtype = typeof r['subtype'] === 'string' ? r['subtype'] : '';
 
-    // OpenCode step-finish / step markers — never render as timeline or markdown.
+    // OpenCode step-finish / step markers: never render as timeline or markdown.
     if (subtype === 'step' || subtype.startsWith('step')) {
       return null;
     }
@@ -595,7 +595,7 @@ export function mapAgentResponseObjectToDisplayRow(
       kind: 'interactionQuery',
       kindLabel: AGENT_CHAT_EVENT_KIND_LABELS.interactionQuery,
       summaryTitle: $localize`:@@featureChat-agentEventSummaryInteractionQuery:Query`,
-      summaryBody: preview ? previewString(preview, 220) : '…',
+      summaryBody: preview ? previewString(preview, 220) : '...',
       badgeColor: 'light',
       detailJson: JSON.stringify(r, null, 2),
       ...(preview.trim().length > 0 ? { popoverPlainDetail: preview } : {}),
@@ -646,7 +646,7 @@ function shouldOmitAgentPartFromTranscript(part: AgentResponseObject): boolean {
   }
 
   // Interactive Question UI is a dedicated `question` part; skip duplicate tool frames (do not
-  // fall through to markdown "Tool call · question").
+  // fall through to markdown "Tool call `question`").
   if (t === 'tool' || t === 'tool_call' || t === 'toolCall' || t === 'tool_result' || t === 'toolResult') {
     const name = typeof part['name'] === 'string' ? part['name'] : typeof part['tool'] === 'string' ? part['tool'] : '';
 

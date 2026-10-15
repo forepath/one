@@ -1,40 +1,19 @@
-import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  DestroyRef,
-  inject,
-  LOCALE_ID,
-  OnInit,
-  PLATFORM_ID,
-  signal,
-} from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
+import { SharedLogoGridComponent, type SharedLogoGridLogo } from '@forepath/shared/frontend/feature-landingpage';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 import { catchError, of } from 'rxjs';
 
 import { GhostContentApiService } from '../blog/ghost-content-api.service';
 import type { GhostPost } from '../blog/ghost.types';
+import { PlatformBoardIllustrationComponent } from '../illustrations/platform-board-illustration.component';
 
-interface PlatformLogo {
-  id: string;
-  name: string;
-  logoUrl: string;
-  compact?: boolean;
-}
-
-interface VisiblePlatformLogo extends PlatformLogo {
-  instanceKey: string;
-}
-
-const PLATFORM_LOGO_ROTATION_INTERVAL_MS = 4000;
-
-const PLATFORM_LOGO_SLOTS: readonly (readonly PlatformLogo[])[] = [
+const PLATFORM_LOGO_SLOTS: readonly (readonly SharedLogoGridLogo[])[] = [
   [
     { id: 'fedora', name: 'Fedora', logoUrl: 'assets/images/logos/fedora.svg' },
     { id: 'redhat', name: 'Red Hat', logoUrl: 'assets/images/logos/redhat.svg' },
@@ -57,23 +36,22 @@ const PLATFORM_LOGO_SLOTS: readonly (readonly PlatformLogo[])[] = [
 
 @Component({
   selector: 'framework-forepath-home',
-  imports: [FpcBadgeComponent, FpcButtonComponent, CommonModule, RouterModule, DatePipe],
+  imports: [
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    CommonModule,
+    RouterModule,
+    DatePipe,
+    SharedLogoGridComponent,
+    PlatformBoardIllustrationComponent,
+  ],
   styleUrls: ['./home.component.scss'],
   templateUrl: './home.component.html',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ForepathHomeComponent implements OnInit {
-  readonly platformSlotIndices = signal([0, 0, 0, 0]);
-  readonly visiblePlatformLogos = computed<VisiblePlatformLogo[]>(() =>
-    this.platformSlotIndices().map((index, slotIndex) => {
-      const logo = PLATFORM_LOGO_SLOTS[slotIndex][index];
-      return {
-        ...logo,
-        instanceKey: `${slotIndex}-${logo.id}-${index}`,
-      };
-    }),
-  );
+  protected readonly logoSlots = PLATFORM_LOGO_SLOTS;
   readonly latestBlogPost = signal<GhostPost | null>(null);
 
   private readonly titleService = inject(Title);
@@ -81,9 +59,7 @@ export class ForepathHomeComponent implements OnInit {
   private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly platformId = inject(PLATFORM_ID);
   private readonly ghostApi = inject(GhostContentApiService);
-  private platformLogoRotationIntervalId: ReturnType<typeof setInterval> | undefined;
 
   ngOnInit(): void {
     const metaTitle = $localize`:@@featureForepathHome-metaTitle:Consulting and engineering for modern IT :: ForePath`;
@@ -109,10 +85,6 @@ export class ForepathHomeComponent implements OnInit {
     );
 
     this.loadLatestBlogPost();
-    this.startPlatformLogoRotation();
-    this.destroyRef.onDestroy(() => {
-      clearInterval(this.platformLogoRotationIntervalId);
-    });
   }
 
   private loadLatestBlogPost(): void {
@@ -125,21 +97,5 @@ export class ForepathHomeComponent implements OnInit {
       .subscribe((result) => {
         this.latestBlogPost.set(result?.posts[0] ?? null);
       });
-  }
-
-  private startPlatformLogoRotation(): void {
-    if (!isPlatformBrowser(this.platformId) || this.prefersReducedMotion()) {
-      return;
-    }
-
-    this.platformLogoRotationIntervalId = setInterval(() => {
-      this.platformSlotIndices.update((indices) =>
-        indices.map((index, slotIndex) => (index + 1) % PLATFORM_LOGO_SLOTS[slotIndex].length),
-      );
-    }, PLATFORM_LOGO_ROTATION_INTERVAL_MS);
-  }
-
-  private prefersReducedMotion(): boolean {
-    return typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 }

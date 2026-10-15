@@ -44,7 +44,7 @@ import { LayerFileTreeComponent } from './layer-file-tree.component';
   ],
   template: `
     <div class="layer-file-ide d-flex flex-column gap-2">
-      <div class="small text-muted text-truncate">
+      <div class="small text-body-secondary text-truncate">
         <span i18n="@@featureAgentConfig-layerFilePathLabel">Path</span>:
         <code>{{ displayPath() }}</code>
       </div>
@@ -293,12 +293,12 @@ export class LayerFileIdeComponent implements OnInit {
           this.content.set(dto.content);
           this.dirty.set(false);
         } else if (dto?.entryKind === 'directory') {
-          // Tree starts at the opened directory contents (e.g. /opt/skills/test → children of test).
+          // Tree starts at the opened directory contents (e.g. /opt/skills/test -> children of test).
           this.treeRoot.set(dto.path);
           this.initialExpandPaths.set([]);
           this.selectedPath.set(null);
         } else {
-          // Ensure failed — still open tree at the requested path and try to select if it looks like a file.
+          // Ensure failed - still open tree at the requested path and try to select if it looks like a file.
           const looksLikeFile = /\.[A-Za-z0-9]+$/.test(raw.split('/').pop() ?? '');
 
           if (looksLikeFile) {

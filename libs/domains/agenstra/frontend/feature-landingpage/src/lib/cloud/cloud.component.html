@@ -16,7 +16,7 @@
           <div class="mb-2" i18n="@@featurePortalCloud-heroFrom">From</div>
           <div class="h3 fw-bold hero-lead mb-0">
             @if (cheapestOfferingLoading() || !cheapestLoaded()) {
-              <span class="hero-lead" aria-hidden="true">…</span>
+              <span class="hero-lead" aria-hidden="true">...</span>
             } @else {
               @if (cheapestOffering(); as cloudPlan) {
                 @if (formatPublicOfferingPrice(cloudPlan); as price) {
@@ -25,7 +25,7 @@
                 }
               } @else {
                 <span class="hero-lead fs-6 fw-normal" i18n="@@featurePortalCloud-heroPriceUnavailable"
-                  >Not available</span
+                  >On request</span
                 >
               }
             }
@@ -58,28 +58,24 @@
 </section>
 
 <!-- Cloud Providers Section -->
-<section class="py-5 bg-body-tertiary grid-section">
+<section class="bg-body-tertiary grid-section landing-logo-section">
   <div class="container grid-section__container">
-    <div class="row justify-content-center">
-      <div class="col-12 text-center">
-        <p class="small text-muted mb-4" i18n="@@featurePortalCloud-providersTagline">
-          Hosted on cloud providers your platform team already trusts
-        </p>
-        <div class="d-flex flex-row justify-content-center align-items-center gap-5 flex-wrap">
-          <img src="assets/images/logos/hetzner.svg" alt="Hetzner" class="img-fluid logo-partner logo-partner--small" />
-          <img src="assets/images/logos/digitalocean.svg" alt="DigitalOcean" class="img-fluid logo-partner" />
-        </div>
-      </div>
-    </div>
+    <shared-logo-grid
+      [slots]="providerLogoSlots"
+      caption="Hosted on cloud providers your platform team already trusts"
+      i18n-caption="@@featurePortalCloud-providersTagline"
+      ariaLabel="Cloud providers Agenstra Cloud runs on"
+      i18n-ariaLabel="@@featurePortalCloud-providersGridLabel"
+    />
   </div>
 </section>
 
 <!-- Why Cloud: bento -->
-<section id="why" class="py-10 bg-white cloud-why grid-section">
+<section id="why" class="py-10 bg-body cloud-why grid-section">
   <div class="container grid-section__container">
     <div class="row justify-content-center text-center pb-10">
       <div class="col-lg-9">
-        <h2 class="h2 fw-semibold mb-4 text-dark" i18n="@@featurePortalCloud-teaserTitle">
+        <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featurePortalCloud-teaserTitle">
           The same platform without running it yourself
         </h2>
         <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalCloud-teaserLead">
@@ -92,19 +88,19 @@
       <div class="row g-3 g-lg-4">
         <div class="col-lg-7">
           <div
-            class="card border rounded-3 shadow-sm overflow-hidden h-100 card-capability card-capability-primary cloud-why-visual"
+            class="card border rounded-3 shadow-sm overflow-hidden h-100 card-capability card-capability-primary cloud-why-visual landing-bento-visual"
           >
             <div class="p-3 p-lg-4 pb-0">
               <fpc-badge color="primary" class="mb-3 bento-badge" i18n="@@featurePortalCloud-teaserVisualBadge"
                 >Managed console + workspaces</fpc-badge
               >
             </div>
-            <img
-              src="assets/images/screenshots/cloud_framed.png"
-              alt="Agenstra Cloud management interface"
-              class="img-fluid w-100 cloud-why-visual-img"
-              i18n-alt="@@featurePortalCloud-teaserScreenshotAlt"
-            />
+            <div class="cloud-why-illustration landing-illustration-fill">
+              <framework-portal-cloud-illustration
+                label="Agenstra Cloud management interface"
+                i18n-label="@@featurePortalCloud-teaserScreenshotAlt"
+              />
+            </div>
           </div>
         </div>
         <div class="col-lg-5 d-flex flex-column gap-3">
@@ -157,7 +153,7 @@
 <!-- Plans carousel + getting started -->
 <section id="plans" class="py-10 bg-body-tertiary grid-section">
   <div class="container grid-section__container">
-    <h2 class="h2 fw-semibold mb-4 text-center text-dark" i18n="@@featurePortalCloud-plansTitle">
+    <h2 class="h2 fw-semibold mb-4 text-center text-body-emphasis" i18n="@@featurePortalCloud-plansTitle">
       Cloud plans that match how you work
     </h2>
     <p class="lead text-center text-muted pb-10 mx-auto max-w-700" i18n="@@featurePortalCloud-plansLead">
@@ -278,7 +274,7 @@
       </div>
     </div>
     <div class="cloud-onboarding card border rounded-3 shadow-sm p-4 p-lg-5">
-      <h3 class="h5 fw-semibold mb-4 text-center text-dark" i18n="@@featurePortalCloud-gettingStartedTitle">
+      <h3 class="h5 fw-semibold mb-4 text-center text-body-emphasis" i18n="@@featurePortalCloud-gettingStartedTitle">
         Getting started
       </h3>
       <ol class="cloud-onboarding-track list-unstyled mb-0">
@@ -312,10 +308,12 @@
 </section>
 
 <!-- Infrastructure -->
-<section id="infrastructure" class="py-10 bg-white cloud-infra grid-section">
+<section id="infrastructure" class="py-10 bg-body cloud-infra grid-section">
   <div class="container grid-section__container">
     <div class="text-center pb-10">
-      <h2 class="h2 fw-semibold text-dark mb-4" i18n="@@featurePortalCloud-infraTitle">Where Agenstra Cloud runs</h2>
+      <h2 class="h2 fw-semibold text-body-emphasis mb-4" i18n="@@featurePortalCloud-infraTitle">
+        Where Agenstra Cloud runs
+      </h2>
       <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalCloud-infraLead">
         We choose providers and regions deliberately. Security, latency, and your requirements shape the roadmap.
       </p>

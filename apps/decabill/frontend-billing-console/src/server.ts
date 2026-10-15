@@ -185,7 +185,7 @@ function createDiskStaticMiddleware(root: string): express.RequestHandler {
     index: false,
     fallthrough: true,
     setHeaders(res, filePath) {
-      // Own Cache-Control entirely (fingerprinted → long/immutable; else revalidate).
+      // Own Cache-Control entirely (fingerprinted -> long/immutable; else revalidate).
       res.setHeader('Cache-Control', getStaticCacheControlHeader(filePath));
     },
   });

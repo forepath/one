@@ -18,12 +18,7 @@
       <div class="preview-content flex-grow-1 p-3 overflow-auto">
         @if (mediaPreviewHref(); as imageUrl) {
           <div class="d-flex align-items-center justify-content-center h-100">
-            <img
-              [src]="imageUrl"
-              [alt]="filePath() || 'Preview'"
-              class="img-fluid"
-              style="max-height: 100%; object-fit: contain"
-            />
+            <img [src]="imageUrl" [alt]="filePath() || 'Preview'" class="img-fluid preview-image" />
           </div>
         } @else {
           <fpc-empty-state
@@ -114,7 +109,7 @@
       </div>
       <div class="preview-content flex-grow-1 p-3 overflow-auto d-flex align-items-center justify-content-center">
         @if (mediaPreviewHref(); as audioUrl) {
-          <audio [src]="audioUrl" controls class="w-100" style="max-width: 40rem"></audio>
+          <audio [src]="audioUrl" controls class="preview-audio w-100"></audio>
         } @else {
           <fpc-empty-state
             icon="music-note-beamed"
@@ -287,13 +282,18 @@
             class="preview-header d-flex align-items-center justify-content-between p-2 border-bottom bg-body-tertiary"
           >
             <span class="small fw-semibold" i18n="@@featureMonacoEditor-preview">Preview</span>
-            <button
-              type="button"
-              class="btn btn-sm btn-close"
-              (click)="closePreview()"
-              i18n-aria-label="@@featureMonacoEditor-closePreviewAriaLabel"
-              aria-label="Close preview"
-            ></button>
+            <fpc-button
+              variant="dark"
+              size="sm"
+              iconOnly
+              (clicked)="closePreview()"
+              i18n-ariaLabel="@@featureMonacoEditor-closePreviewAriaLabel"
+              ariaLabel="Close preview"
+              i18n-title="@@featureMonacoEditor-closePreviewAriaLabel"
+              title="Close preview"
+            >
+              <i class="bi bi-x" aria-hidden="true"></i>
+            </fpc-button>
           </div>
           <div class="preview-content flex-grow-1 p-3 overflow-auto">
             @if (isMarkdown() && markdownPreviewHtml(); as markdownHtml) {

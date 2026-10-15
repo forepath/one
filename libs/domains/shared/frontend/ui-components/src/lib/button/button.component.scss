@@ -45,7 +45,7 @@
 
 // Chip-as-control: `fpc-badge` already owns padding/radius. Bootstrap `.btn` / `.btn-link`
 // padding would stack on top and inflate parents (e.g. `fpc-page-header` row past sm icon height).
-// Host utilities like `p-0` never reach the inner control — drop chrome here instead.
+// Host utilities like `p-0` never reach the inner control - drop chrome here instead.
 :host:has(fpc-badge) {
   vertical-align: middle;
   line-height: 0;
@@ -98,7 +98,7 @@
   }
 }
 
-// CTA band / fit panel: slightly darkened primary (lives on the button — parent page SCSS
+// CTA band / fit panel: slightly darkened primary (lives on the button - parent page SCSS
 // cannot pierce encapsulation to the inner `.btn`).
 :host-context(#cta) .fpc-button__btn--xl.btn-primary,
 :host-context(#fit) .fpc-button__btn--xl.btn-primary {

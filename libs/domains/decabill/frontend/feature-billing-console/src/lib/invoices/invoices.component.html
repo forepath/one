@@ -14,7 +14,7 @@
     @if (paymentReturnFeedback === 'waiting') {
       <fpc-alert [flush]="true" variant="success"
         ><span i18n="@@featureInvoices-paymentWaiting">
-          Payment submitted. Waiting for confirmation from the payment provider…
+          Payment submitted. Waiting for confirmation from the payment provider...
         </span></fpc-alert
       >
     }
@@ -44,7 +44,7 @@
           } @else if (invoicesSummary$ | async; as summary) {
             {{ summary.openOverdueCount }}
           } @else {
-            <span class="text-body-secondary">—</span>
+            <span class="text-body-secondary">-</span>
           }
         </span>
       </fpc-summary-card>
@@ -55,7 +55,7 @@
           } @else if (invoicesSummary$ | async; as summary) {
             {{ summary.openOverdueTotal | number: '1.2-2' }}€
           } @else {
-            <span class="text-body-secondary">—</span>
+            <span class="text-body-secondary">-</span>
           }
         </span>
       </fpc-summary-card>
@@ -66,7 +66,7 @@
           } @else if (invoicesSummary$ | async; as summary) {
             {{ summary.billingDayOfMonth | nextBillingDay }}
           } @else {
-            <span class="text-body-secondary">—</span>
+            <span class="text-body-secondary">-</span>
           }
         </span>
       </fpc-summary-card>
@@ -77,7 +77,7 @@
           } @else if (invoicesSummary$ | async; as summary) {
             {{ summary.unbilledTotal | number: '1.2-2' }}€
           } @else {
-            <span class="text-body-secondary">—</span>
+            <span class="text-body-secondary">-</span>
           }
         </span>
       </fpc-summary-card>
@@ -233,7 +233,7 @@
           @if (listAmount !== null) {
             {{ listAmount | number: '1.2-2' }} EUR
           } @else {
-            —
+            -
           }
         </span>
         <span class="me-2">
@@ -325,7 +325,7 @@
   @if (invoiceDetailsLoading$ | async) {
     <div class="invoice-preview-modal__loading">
       <fpc-spinner size="sm" />
-      <span i18n="@@featureInvoices-loadingDetails">Loading invoice details…</span>
+      <span i18n="@@featureInvoices-loadingDetails">Loading invoice details...</span>
     </div>
   } @else {
     @if (previewDetail$ | async; as detail) {
@@ -346,15 +346,15 @@
               </div>
               <div class="row g-3 mb-0">
                 <div class="col-auto">
-                  <div class="small text-muted text-uppercase" i18n="@@featureInvoices-issuedAt">Issued</div>
+                  <div class="small text-body-secondary" i18n="@@featureInvoices-issuedAt">Issued</div>
                   <div class="fw-medium">{{ formatDate(detail.issuedAt ?? detail.createdAt) }}</div>
                 </div>
                 <div class="col-auto">
-                  <div class="small text-muted text-uppercase" i18n="@@featureInvoices-dueDate">Due date</div>
+                  <div class="small text-body-secondary" i18n="@@featureInvoices-dueDate">Due date</div>
                   <div class="fw-medium">{{ formatDate(detail.dueDate) }}</div>
                 </div>
                 <div class="col-auto">
-                  <div class="small text-muted text-uppercase" i18n="@@featureInvoices-currency">Currency</div>
+                  <div class="small text-body-secondary" i18n="@@featureInvoices-currency">Currency</div>
                   <div class="fw-medium">{{ detail.currency }}</div>
                 </div>
               </div>
@@ -369,7 +369,7 @@
           <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
               <thead>
-                <tr class="small text-muted">
+                <tr class="small text-body-secondary">
                   <th scope="col" i18n="@@featureInvoices-lineDescription">Description</th>
                   <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineQty">Qty</th>
                   <th scope="col" class="text-end text-nowrap" i18n="@@featureInvoices-lineUnitNet">Unit (net)</th>
@@ -388,7 +388,7 @@
                     <td class="text-end">
                       <span class="text-nowrap">{{ line.lineTax | number: '1.2-2' }} €</span>
                       <br />
-                      <small class="text-muted">{{ line.taxRate | number: '1.0-1' }}%</small>
+                      <small class="text-body-secondary">{{ line.taxRate | number: '1.0-1' }}%</small>
                     </td>
                     <td class="text-end text-nowrap">{{ line.lineGross | number: '1.2-2' }} €</td>
                   </tr>
@@ -405,14 +405,16 @@
                 <fpc-lane-header>
                   <span fpcLaneHeaderTitle i18n="@@featureInvoices-taxBreakdown">Tax breakdown</span>
                 </fpc-lane-header>
-                <ul class="list-group list-group-flush">
+                <fpc-list [flush]="true">
                   @for (tax of detail.taxBreakdown; track $index) {
-                    <li class="list-group-item d-flex justify-content-between bg-transparent text-nowrap">
-                      <span>{{ tax.taxRate | number: '1.0-1' }}%</span>
-                      <span class="fw-medium">{{ tax.taxAmount | number: '1.2-2' }} €</span>
-                    </li>
+                    <fpc-list-item class="bg-transparent">
+                      <div class="d-flex justify-content-between gap-2 text-nowrap">
+                        <span>{{ tax.taxRate | number: '1.0-1' }}%</span>
+                        <span class="fw-medium">{{ tax.taxAmount | number: '1.2-2' }} €</span>
+                      </div>
+                    </fpc-list-item>
                   }
-                </ul>
+                </fpc-list>
               </div>
             </div>
           }
@@ -422,24 +424,32 @@
               <fpc-lane-header>
                 <span fpcLaneHeaderTitle i18n="@@featureInvoices-summary">Summary</span>
               </fpc-lane-header>
-              <ul class="list-group list-group-flush">
-                <li class="list-group-item d-flex justify-content-between bg-transparent">
-                  <span i18n="@@featureInvoices-subtotalNet">Subtotal (net)</span>
-                  <span class="text-nowrap">{{ detail.subtotalNet | number: '1.2-2' }} €</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between bg-transparent">
-                  <span i18n="@@featureInvoices-taxTotal">Tax total</span>
-                  <span class="text-nowrap">{{ detail.taxTotal | number: '1.2-2' }} €</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between fw-semibold border-top">
-                  <span i18n="@@featureInvoices-totalGross">Total</span>
-                  <span class="text-nowrap">{{ detail.totalGross | number: '1.2-2' }} €</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between text-muted small bg-transparent">
-                  <span i18n="@@featureInvoices-balanceDue">Balance due</span>
-                  <span class="text-nowrap">{{ detail.balanceDue | number: '1.2-2' }} €</span>
-                </li>
-              </ul>
+              <fpc-list [flush]="true">
+                <fpc-list-item class="bg-transparent">
+                  <div class="d-flex justify-content-between gap-2">
+                    <span i18n="@@featureInvoices-subtotalNet">Subtotal (net)</span>
+                    <span class="text-nowrap">{{ detail.subtotalNet | number: '1.2-2' }} €</span>
+                  </div>
+                </fpc-list-item>
+                <fpc-list-item class="bg-transparent">
+                  <div class="d-flex justify-content-between gap-2">
+                    <span i18n="@@featureInvoices-taxTotal">Tax total</span>
+                    <span class="text-nowrap">{{ detail.taxTotal | number: '1.2-2' }} €</span>
+                  </div>
+                </fpc-list-item>
+                <fpc-list-item class="fw-semibold">
+                  <div class="d-flex justify-content-between gap-2">
+                    <span i18n="@@featureInvoices-totalGross">Total</span>
+                    <span class="text-nowrap">{{ detail.totalGross | number: '1.2-2' }} €</span>
+                  </div>
+                </fpc-list-item>
+                <fpc-list-item class="text-body-secondary small bg-transparent">
+                  <div class="d-flex justify-content-between gap-2">
+                    <span i18n="@@featureInvoices-balanceDue">Balance due</span>
+                    <span class="text-nowrap">{{ detail.balanceDue | number: '1.2-2' }} €</span>
+                  </div>
+                </fpc-list-item>
+              </fpc-list>
             </div>
           </div>
         </div>

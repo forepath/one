@@ -1,6 +1,6 @@
 /**
  * Mirrors backend `buildConfluenceImportSearchCql` in
- * `feature-agent-controller/.../confluence-import-cql.util.ts` — keep in sync when that logic changes.
+ * `feature-agent-controller/.../confluence-import-cql.util.ts` - keep in sync when that logic changes.
  */
 
 function splitCqlMainAndOrder(trimmed: string): { main: string; order: string | null } {

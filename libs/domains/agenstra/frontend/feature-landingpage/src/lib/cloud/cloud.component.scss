@@ -54,14 +54,7 @@
       right: 8%;
       height: 1px;
       margin-top: -0.5px;
-      background: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(139, 92, 246, 0.2) 20%,
-        rgba(139, 92, 246, 0.35) 50%,
-        rgba(139, 92, 246, 0.2) 80%,
-        transparent 100%
-      );
+      background: var(--bs-border-color);
       z-index: 0;
       pointer-events: none;
     }
@@ -108,41 +101,6 @@
 .provider-logo {
   display: block;
   max-height: 24px;
-}
-
-// Dotted world map
-.cloud-map-figure {
-  max-width: 100%;
-}
-
-.cloud-map-svg {
-  width: 100%;
-  height: auto;
-  max-height: 280px;
-}
-
-.cloud-map-continents circle {
-  opacity: 0.7;
-}
-
-.cloud-map-datacenters circle {
-  stroke: var(--bs-body-bg);
-  stroke-width: 2;
-}
-
-.cloud-map-legend-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.cloud-map-legend-continent {
-  background-color: var(--bs-gray-400);
-}
-
-.cloud-map-legend-datacenter {
-  background-color: var(--bs-primary);
 }
 
 // Placeholder image block (for future screenshots)
@@ -228,16 +186,15 @@
   }
 }
 
-.cloud-teaser-map {
-  max-width: 100%;
-}
-
 @media (width >= 992px) {
   .cloud-plans-row {
     overflow-x: hidden;
   }
 }
 
-.cloud-why-visual-img {
-  margin-top: -8rem;
+// Illustration window inset from the left, running off the card's right and bottom edges (the card
+// clips it), so it reads as a peek into the app rather than a framed picture.
+.cloud-why-illustration {
+  margin: 0 -18% -2.5rem 0;
+  padding-left: 1.5rem;
 }

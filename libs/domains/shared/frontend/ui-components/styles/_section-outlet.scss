@@ -2,7 +2,7 @@
 // Must live in global styles: emulated encapsulation cannot target those hosts from the
 // container/section-container component stylesheets.
 //
-// Only match the routed host (`router-outlet + *`). Do not use `> *:not(router-outlet)` —
+// Only match the routed host (`router-outlet + *`). Do not use `> *:not(router-outlet)` -
 // nested `fpc-section-container` pages (updates, subscriptions) would grow every child
 // (summary bar, alerts, tabs) as if they were page hosts.
 .fpc-section-container > router-outlet + * {

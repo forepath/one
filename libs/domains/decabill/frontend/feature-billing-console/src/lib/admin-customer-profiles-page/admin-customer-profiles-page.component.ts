@@ -286,9 +286,9 @@ export class AdminCustomerProfilesPageComponent implements OnInit {
   }
 
   formatDate(value?: string): string {
-    if (!value) return '—';
+    if (!value) return '-';
 
-    return this.datePipe.transform(value, 'mediumDate') ?? '—';
+    return this.datePipe.transform(value, 'mediumDate') ?? '-';
   }
 
   datevDebtorNumberDisplay(value: number | null | undefined): string {

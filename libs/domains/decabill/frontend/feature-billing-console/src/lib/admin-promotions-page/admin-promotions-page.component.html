@@ -26,7 +26,7 @@
   <div class="flex-grow-1 overflow-auto d-flex flex-column min-h-0">
     @if (loading$ | async) {
       <div class="d-flex justify-content-center align-items-center p-4">
-        <fpc-spinner variant="primary" i18n-label="@@featureAdminPromotions-loading" label="Loading…" />
+        <fpc-spinner variant="primary" i18n-label="@@featureAdminPromotions-loading" label="Loading..." />
       </div>
     } @else {
       @if (error$ | async; as error) {
@@ -346,7 +346,7 @@
   </span>
   @if (redemptionsLoading$ | async) {
     <div class="d-flex justify-content-center align-items-center p-4">
-      <fpc-spinner variant="primary" i18n-label="@@featureAdminPromotions-loading" label="Loading…" />
+      <fpc-spinner variant="primary" i18n-label="@@featureAdminPromotions-loading" label="Loading..." />
     </div>
   } @else if (redemptions$ | async; as redemptions) {
     @if (redemptions.length === 0) {

@@ -1,6 +1,6 @@
 <div class="git-manager-container d-flex flex-column h-100">
   <div class="git-manager-header p-2 ps-3 border-bottom bg-body-tertiary">
-    <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
       <h6 class="mb-0 fw-semibold" i18n="@@featureGitManager-versionControlHeader">Version Control</h6>
       <fpc-button-group size="sm">
         <fpc-button
@@ -79,7 +79,7 @@
     } @else {
       @if (status$ | async; as status) {
         @if (status.isClean && !status.hasUnpushedCommits) {
-          <div class="text-center text-muted p-4">
+          <div class="text-center text-body-secondary p-4">
             <i class="bi bi-check-circle fs-4 d-block mb-2 text-success"></i>
             <p class="mb-0 small" i18n="@@featureGitManager-workingTreeClean">Working tree is clean</p>
           </div>
@@ -124,7 +124,7 @@
                 class="git-section-header px-2 py-1 border-bottom bg-body-tertiary"
                 [class.border-top]="hasStagedTopBorder$ | async"
               >
-                <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex justify-content-between align-items-center gap-2">
                   <h6 class="mb-0 fw-semibold text-success small">
                     <i class="bi bi-check-circle me-1"></i
                     ><span i18n="@@featureGitManager-stagedChanges">Staged Changes</span>
@@ -151,9 +151,7 @@
                       <i class="bi git-file-icon" [ngClass]="[getStatusIcon(file)]"></i>
                       <span class="git-file-name text-truncate" [title]="file.path">{{ file.path }}</span>
                       @if (file.isBinary) {
-                        <fpc-badge color="secondary" class="badge-sm" i18n="@@featureGitManager-binaryBadge"
-                          >Binary</fpc-badge
-                        >
+                        <fpc-badge color="secondary" size="sm" i18n="@@featureGitManager-binaryBadge">Binary</fpc-badge>
                       }
                     </div>
                     <fpc-button-group size="sm" class="ms-2">
@@ -182,7 +180,7 @@
                 class="git-section-header px-2 py-1 border-bottom bg-body-tertiary"
                 [class.border-top]="hasUnstagedTopBorder$ | async"
               >
-                <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex justify-content-between align-items-center gap-2">
                   <h6 class="mb-0 fw-semibold text-warning small">
                     <i class="bi bi-exclamation-circle me-1"></i
                     ><span i18n="@@featureGitManager-unstagedChanges">Unstaged Changes</span>
@@ -209,9 +207,7 @@
                       <i class="bi git-file-icon" [ngClass]="[getStatusIcon(file)]"></i>
                       <span class="git-file-name text-truncate" [title]="file.path">{{ file.path }}</span>
                       @if (file.isBinary) {
-                        <fpc-badge color="secondary" class="badge-sm" i18n="@@featureGitManager-binaryBadge"
-                          >Binary</fpc-badge
-                        >
+                        <fpc-badge color="secondary" size="sm" i18n="@@featureGitManager-binaryBadge">Binary</fpc-badge>
                       }
                     </div>
                     <fpc-button-group size="sm" class="ms-2">

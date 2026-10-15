@@ -18,8 +18,11 @@ import { RouterModule } from '@angular/router';
 import type { PublicServicePlanOffering } from '@forepath/agenstra/frontend/data-access-portal';
 import { formatPublicOfferingPrice, ServicePlansFacade } from '@forepath/agenstra/frontend/data-access-portal';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
+import { SharedLogoGridComponent, type SharedLogoGridLogo } from '@forepath/shared/frontend/feature-landingpage';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
+
+import { CloudIllustrationComponent } from '../illustrations/cloud-illustration.component';
 
 export interface CloudInfrastructureProvider {
   id: string;
@@ -32,13 +35,25 @@ export interface CloudInfrastructureProvider {
 
 @Component({
   selector: 'framework-portal-cloud',
-  imports: [FpcBadgeComponent, FpcButtonComponent, CommonModule, RouterModule],
+  imports: [
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    CommonModule,
+    RouterModule,
+    CloudIllustrationComponent,
+    SharedLogoGridComponent,
+  ],
   styleUrls: ['./cloud.component.scss'],
   templateUrl: './cloud.component.html',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PortalCloudComponent implements OnInit, AfterViewInit {
+  protected readonly providerLogoSlots: readonly (readonly SharedLogoGridLogo[])[] = [
+    [{ id: 'hetzner', name: 'Hetzner', logoUrl: 'assets/images/logos/hetzner.svg', compact: true }],
+    [{ id: 'digitalocean', name: 'DigitalOcean', logoUrl: 'assets/images/logos/digitalocean.svg' }],
+  ];
+
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
   private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);

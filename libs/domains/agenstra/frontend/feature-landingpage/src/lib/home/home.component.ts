@@ -1,32 +1,46 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  inject,
-  LOCALE_ID,
-  OnInit,
-  PLATFORM_ID,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnInit, PLATFORM_ID } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import type { PublicServicePlanOffering } from '@forepath/agenstra/frontend/data-access-portal';
 import { formatPublicOfferingPrice, ServicePlansFacade } from '@forepath/agenstra/frontend/data-access-portal';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
+import { SharedLogoGridComponent, type SharedLogoGridLogo } from '@forepath/shared/frontend/feature-landingpage';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
+import { ConsoleIllustrationComponent } from '../illustrations/console-illustration.component';
+import { IdeIllustrationComponent } from '../illustrations/ide-illustration.component';
+
 @Component({
   selector: 'framework-portal-home',
-  imports: [FpcBadgeComponent, FpcButtonComponent, CommonModule, RouterModule],
+  imports: [
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    CommonModule,
+    RouterModule,
+    ConsoleIllustrationComponent,
+    IdeIllustrationComponent,
+    SharedLogoGridComponent,
+  ],
   styleUrls: ['./home.component.scss'],
   templateUrl: './home.component.html',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PortalHomeComponent implements OnInit {
+  protected readonly agentLogoSlots: readonly (readonly SharedLogoGridLogo[])[] = [
+    [{ id: 'opencode', name: 'OpenCode', logoUrl: 'assets/images/logos/opencode.svg' }],
+    [{ id: 'docker', name: 'Docker', logoUrl: 'assets/images/logos/docker.png' }],
+    [{ id: 'kubernetes', name: 'Kubernetes', logoUrl: 'assets/images/logos/kubernetes.svg' }],
+    [
+      { id: 'proxmox', name: 'Proxmox', logoUrl: 'assets/images/logos/proxmox.svg' },
+      { id: 'hetzner', name: 'Hetzner', logoUrl: 'assets/images/logos/hetzner.svg', compact: true },
+      { id: 'digitalocean', name: 'DigitalOcean', logoUrl: 'assets/images/logos/digitalocean.svg' },
+    ],
+  ];
+
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
   private readonly platformId = inject(PLATFORM_ID);
@@ -34,9 +48,6 @@ export class PortalHomeComponent implements OnInit {
   private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
-
-  activeSlide = signal<number>(1);
-  autoplayInterval = this.initializeAutoplayInterval();
 
   readonly cheapestOffering = toSignal(this.servicePlansFacade.getCheapestServicePlanOffering$(), {
     initialValue: null,
@@ -80,36 +91,6 @@ export class PortalHomeComponent implements OnInit {
         }),
       ),
     );
-  }
-
-  selectSlide(slide: number): void {
-    this.activeSlide.set(Math.max(1, Math.min(4, slide)));
-  }
-
-  pauseAutoplay() {
-    if (this.autoplayInterval) {
-      clearInterval(this.autoplayInterval);
-    }
-
-    this.autoplayInterval = null;
-  }
-
-  resumeAutoplay() {
-    this.autoplayInterval = this.initializeAutoplayInterval();
-  }
-
-  private initializeAutoplayInterval() {
-    if (isPlatformBrowser(this.platformId)) {
-      return setInterval(() => {
-        this.activeSlide.update((prev) => prev + 1);
-
-        if (this.activeSlide() > 4) {
-          this.activeSlide.set(1);
-        }
-      }, 3000);
-    }
-
-    return null;
   }
 
   billingIntervalSuffix(plan: PublicServicePlanOffering): string {

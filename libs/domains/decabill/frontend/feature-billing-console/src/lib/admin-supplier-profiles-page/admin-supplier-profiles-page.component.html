@@ -207,13 +207,13 @@
   i18n-title="@@featureAdminSupplierProfiles-customDataTitle"
   title="Custom data"
 >
-  <p class="text-muted small mb-3" i18n="@@featureAdminSupplierProfiles-customDataHelp">
+  <p class="text-body-secondary small mb-3" i18n="@@featureAdminSupplierProfiles-customDataHelp">
     Admin-only key/value pairs for linking this supplier to external systems. Values are stored encrypted.
   </p>
   @if (customDataProfile) {
-    <div class="d-flex justify-content-between align-items-center gap-3 mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
       <div>
-        <div class="text-muted small" i18n="@@featureAdminSupplierProfiles-customDataFor">Custom data for</div>
+        <div class="text-body-secondary small" i18n="@@featureAdminSupplierProfiles-customDataFor">Custom data for</div>
         <div class="fw-semibold">{{ profilePrimaryTitle(customDataProfile) }}</div>
       </div>
       <fpc-button
@@ -237,7 +237,9 @@
     </div>
   } @else {
     @if (customDataRows.length === 0) {
-      <p class="text-muted mb-3" i18n="@@featureAdminSupplierProfiles-customDataEmpty">No custom data entries yet.</p>
+      <p class="text-body-secondary mb-3" i18n="@@featureAdminSupplierProfiles-customDataEmpty">
+        No custom data entries yet.
+      </p>
     }
     @for (row of customDataRows; track $index; let i = $index) {
       <div class="row g-2 align-items-center mb-2">

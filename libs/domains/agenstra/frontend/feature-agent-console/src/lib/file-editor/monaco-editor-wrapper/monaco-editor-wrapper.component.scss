@@ -62,6 +62,15 @@
   }
 }
 
+.preview-image {
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.preview-audio {
+  max-width: 40rem;
+}
+
 // Markdown preview styling
 .markdown-preview {
   word-wrap: break-word;

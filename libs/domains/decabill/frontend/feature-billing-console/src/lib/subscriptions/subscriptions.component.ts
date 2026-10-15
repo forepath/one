@@ -71,6 +71,7 @@ import {
   FpcInputGroupComponent,
   FpcLaneHeaderComponent,
   FpcListAppendFooterComponent,
+  FpcListItemComponent,
   FpcConfirmDialogComponent,
   FpcModalComponent,
   FpcModalFooterDirective,
@@ -168,6 +169,7 @@ type ConfigChangeWizardStep = {
     FpcInputGroupComponent,
     FpcLaneHeaderComponent,
     FpcListAppendFooterComponent,
+    FpcListItemComponent,
     FpcConfirmDialogComponent,
     FpcModalComponent,
     FpcModalFooterDirective,
@@ -849,7 +851,7 @@ export class SubscriptionsComponent implements OnInit {
       parts.push($localize`:@@featureSubscriptions-meterBillableValue:${meter.billableValue}${unit}:value: billable`);
     }
 
-    return parts.join(' · ');
+    return parts.join(', ');
   }
 
   hasMeterBillingDetails(meter: SubscriptionMeterSummary): boolean {

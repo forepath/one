@@ -9,7 +9,7 @@ const meta: Meta<FpcStatusBadgeComponent> = {
       description: {
         component: `**When to use:** Circular icon wells for status/presence in lists and boards.
 
-**When not to:** Text chips or filter pills → \`fpc-badge\`.`,
+**When not to:** Text chips or filter pills: use \`fpc-badge\`.`,
       },
     },
   },

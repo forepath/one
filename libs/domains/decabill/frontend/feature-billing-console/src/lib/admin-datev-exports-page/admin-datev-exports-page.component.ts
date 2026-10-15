@@ -229,15 +229,15 @@ export class AdminDatevExportsPageComponent implements OnInit {
   }
 
   queuedExportMessage(): string {
-    return $localize`:@@featureAdminDatevExports-queuedMessage:Queued — waiting for export to start…`;
+    return $localize`:@@featureAdminDatevExports-queuedMessage:Queued. Waiting for export to start...`;
   }
 
   formatDate(value?: string): string {
     if (!value) {
-      return '—';
+      return '-';
     }
 
-    return this.datePipe.transform(value, 'medium') ?? '—';
+    return this.datePipe.transform(value, 'medium') ?? '-';
   }
 
   formatCount(value: number): string {

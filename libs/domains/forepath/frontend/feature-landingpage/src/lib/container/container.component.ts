@@ -54,6 +54,8 @@ function isServicesDropdownRoutePath(path: string): boolean {
 })
 export class ForepathContainerComponent {
   protected readonly localeService = inject(LocaleService);
+  /** Footer copyright year, so it never goes stale. */
+  protected readonly currentYear = new Date().getFullYear();
   protected readonly contact = FOREPATH_CONTACT;
   protected readonly socialLinks = FOREPATH_SOCIAL_LINKS;
 

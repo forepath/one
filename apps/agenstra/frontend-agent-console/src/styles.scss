@@ -1,6 +1,6 @@
 // Agenstra design system (Bootstrap 5 overrides via shared FPC brands)
 //
-// Stack: functions → brands/agenstra/palette → brands/chrome → brands/badge-tint → bootstrap → FPC styles → brands extras
+// Stack: functions -> brands/agenstra/palette -> brands/chrome -> brands/badge-tint -> bootstrap -> FPC styles -> brands extras
 @import 'bootstrap/scss/functions';
 @import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/agenstra/palette';
 @import '../../../../libs/domains/shared/frontend/ui-components/styles/brands/chrome';
@@ -34,8 +34,4 @@
   fpc-badge.fpc-badge--info {
     background-color: #692eee !important;
   }
-}
-
-.mh-0 {
-  min-height: 0 !important;
 }

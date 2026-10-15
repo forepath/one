@@ -49,6 +49,7 @@
       z-index: 1050;
       flex: 0 0 100%;
       width: 100%;
+      max-width: 100%;
       height: calc(100% - 115px); // Account for toolbar height
       border: none;
     }
@@ -98,7 +99,7 @@
 }
 
 .git-manager-wrapper {
-  min-height: 0;
+  min-height: 200px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -139,6 +140,12 @@
       background-color: var(--bs-body-bg);
     }
   }
+}
+
+.terminal-body {
+  min-height: 0;
+  overflow: hidden;
+  height: 100%;
 }
 
 .editor-area {

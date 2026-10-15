@@ -7,7 +7,7 @@ function truncate(str: string, max = MAX_INLINE_STRING): string {
     return str;
   }
 
-  return `${str.slice(0, max - 1)}…`;
+  return `${str.slice(0, max - 1)}...`;
 }
 
 /**
@@ -15,11 +15,11 @@ function truncate(str: string, max = MAX_INLINE_STRING): string {
  */
 export function formatUnknownAsMarkdown(value: unknown, depth = 0): string {
   if (depth > 6) {
-    return '_…_';
+    return '_..._';
   }
 
   if (value === null || value === undefined) {
-    return '_—_';
+    return '_-_';
   }
 
   if (typeof value === 'string') {
@@ -206,7 +206,7 @@ function formatToolCall(response: AgentResponseObject): string {
   const isSubagent = name === 'subagent' || name === 'task' || strProp(response, 'subtype') === 'subagent';
   const lines: string[] = [];
 
-  lines.push(isSubagent ? `**Subagent** · ${status}` : `**Tool call** · \`${name}\` · ${status}`);
+  lines.push(isSubagent ? `**Subagent** (${status})` : `**Tool call** \`${name}\` (${status})`);
 
   if (toolCallId) {
     lines.push('');
@@ -266,8 +266,8 @@ function formatToolResult(response: AgentResponseObject): string {
 
   lines.push(
     isSubagent
-      ? `**Subagent result** · ${isError ? '_failed_' : '_success_'}`
-      : `**Tool result** · \`${name}\` · ${isError ? '_failed_' : '_success_'}`,
+      ? `**Subagent result** (${isError ? '_failed_' : '_success_'})`
+      : `**Tool result** \`${name}\` (${isError ? '_failed_' : '_success_'})`,
   );
 
   if (toolCallId) {
@@ -295,7 +295,7 @@ function formatQuestion(response: AgentResponseObject): string {
   }
 
   lines.push('');
-  lines.push(prompt || '_—_');
+  lines.push(prompt || '_-_');
 
   if (Array.isArray(options) && options.length > 0) {
     lines.push('');
@@ -307,7 +307,7 @@ function formatQuestion(response: AgentResponseObject): string {
         const id = typeof o['id'] === 'string' ? o['id'] : '';
         const label = typeof o['label'] === 'string' ? o['label'] : formatUnknownAsMarkdown(opt);
 
-        lines.push(`- \`${id}\` — ${label}`);
+        lines.push(`- \`${id}\`: ${label}`);
       } else {
         lines.push(`- ${formatUnknownAsMarkdown(opt)}`);
       }
@@ -327,7 +327,7 @@ function formatQuestion(response: AgentResponseObject): string {
 function formatDelta(response: AgentResponseObject): string {
   const delta = strProp(response, 'delta');
 
-  return delta ?? '_—_';
+  return delta ?? '_-_';
 }
 
 function formatError(response: AgentResponseObject): string {
@@ -355,7 +355,7 @@ function formatError(response: AgentResponseObject): string {
 function formatInteractionQuery(response: AgentResponseObject): string {
   const preview = extractInteractionQueryPreviewText(response);
 
-  return preview ? truncate(preview.replace(/\s+/g, ' ')) : '_Query…_';
+  return preview ? truncate(preview.replace(/\s+/g, ' ')) : '_Query..._';
 }
 
 function formatGenericResult(response: AgentResponseObject): string {
@@ -452,7 +452,7 @@ export function formatAgentResponseForChatMarkdown(response: AgentResponseObject
       return '';
     }
 
-    return t ? truncate(t.replace(/\s+/g, ' ')) : 'Thinking…';
+    return t ? truncate(t.replace(/\s+/g, ' ')) : 'Thinking...';
   }
 
   if (type === 'status') {

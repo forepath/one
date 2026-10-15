@@ -9,8 +9,8 @@ export type FpcLaneHeaderVisibility = 'always' | 'md-up';
  * section titles ("Line items"). Distinct from `fpc-page-header` (page chrome).
  *
  * Slots:
- * - `[fpcLaneHeaderTitle]` — rich title when the `title` input is not enough
- * - `[fpcLaneHeaderActions]` — trailing actions (usually `fpc-button`)
+ * - `[fpcLaneHeaderTitle]` - rich title when the `title` input is not enough
+ * - `[fpcLaneHeaderActions]` - trailing actions (usually `fpc-button`)
  */
 @Component({
   selector: 'fpc-lane-header',

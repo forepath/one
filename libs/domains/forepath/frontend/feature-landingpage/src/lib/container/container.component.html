@@ -1,5 +1,8 @@
-<header class="header sticky-top bg-body-tertiary grid-section grid-section--navigation" [class.shadow]="isScrolled()">
-  <div class="header-topbar d-none d-md-block border-bottom">
+<header
+  class="header sticky-top bg-dark text-white grid-section grid-section--navigation"
+  [class.shadow]="isScrolled()"
+>
+  <div class="header-topbar d-none d-md-block">
     <div class="container grid-section__container">
       <div class="d-flex align-items-center justify-content-between gap-3 header-topbar__inner">
         <div class="d-flex align-items-center flex-wrap gap-3 gap-lg-4">
@@ -37,7 +40,7 @@
       </div>
     </div>
   </div>
-  <nav class="navbar navbar-expand-md navbar-light p-0">
+  <nav class="navbar navbar-expand-md navbar-dark p-0">
     <div
       class="container grid-section__container grid-section__container--shadow d-flex align-items-center justify-content-between gap-2 navbar-content"
     >
@@ -191,13 +194,13 @@
   </nav>
 </header>
 <router-outlet></router-outlet>
-<footer class="footer bg-body-tertiary position-relative grid-section grid-section--footer pt-10">
+<footer class="footer bg-dark text-white position-relative grid-section grid-section--footer pt-10">
   <div class="container grid-section__container grid-section__container--footer-top">
     <div class="row">
       <div class="col-md-4 mb-3 mb-md-0">
         <img src="assets/images/favicon.svg" i18n-alt="@@featureForepath-brandAlt" alt="ForePath" class="brand-icon" />
         <h5 class="fw-bold my-3" i18n="@@featureForepath-footerBrand">ForePath</h5>
-        <p class="fs-6 mb-4 text-muted" i18n="@@featureForepath-footerTagline">
+        <p class="fs-6 mb-4" i18n="@@featureForepath-footerTagline">
           Practical consulting and engineering for teams that need reliable infrastructure, modern software delivery,
           and products they can operate with confidence.
         </p>
@@ -402,8 +405,8 @@
     <div class="container grid-section__container grid-section__container--footer-bottom">
       <div class="row">
         <div class="col-md-12 text-center">
-          <p class="mb-0 small text-muted" i18n="@@featureForepath-footerCopyright">
-            &copy; 2025 IPvX UG (haftungsbeschränkt). All rights reserved.
+          <p class="mb-0 small" i18n="@@featureForepath-footerCopyright">
+            &copy; {{ currentYear }} IPvX UG (haftungsbeschränkt). All rights reserved.
           </p>
         </div>
       </div>

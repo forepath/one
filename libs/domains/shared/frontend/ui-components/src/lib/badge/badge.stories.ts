@@ -7,9 +7,9 @@ const meta: Meta<FpcBadgeComponent> = {
   parameters: {
     docs: {
       description: {
-        component: `**When to use:** Compact labels — solid Bootstrap badges, console \`variant="info"\` chips (filters, meta rows; \`size="sm"\` matches \`btn-sm\` / language switcher), or landing \`variant="marketing"\` soft chips (\`size="xl"\` for hero feature rows).
+        component: `**When to use:** Compact labels: solid Bootstrap badges, console \`variant="info"\` chips (filters, meta rows; \`size="sm"\` matches \`btn-sm\` / language switcher), or landing \`variant="marketing"\` soft chips (\`size="xl"\` for hero feature rows).
 
-**When not to:** Circular status icon wells → \`fpc-status-badge\`. Do not encode domain status enums inside the badge; pass colour/classes from the feature.`,
+**When not to:** Circular status icon wells: use \`fpc-status-badge\`. Do not encode domain status enums inside the badge; pass colour/classes from the feature.`,
       },
     },
   },

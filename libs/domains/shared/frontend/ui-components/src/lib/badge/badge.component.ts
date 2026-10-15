@@ -13,7 +13,7 @@ export type FpcBadgeSize = 'sm' | 'md' | 'lg' | 'xl';
  * control chrome (e.g. top-bar chips beside language switcher).
  *
  * `marketing` is the landing soft chip (border / subtle fill / feature pills). Use `size="xl"` for
- * hero feature rows (larger padding + light shadow). Solid section eyebrows stay on `badge`.
+ * hero feature rows (light shadow). Marketing chips share the button padding. Solid section eyebrows stay on `badge`.
  *
  * Host classes are additive (not a full `[class]` rewrite) so callers can attach tint modifiers
  * like `tickets-board__chip--status-todo` or layout hooks like `bento-badge`.

@@ -19,7 +19,7 @@
 }
 
 :host(.fpc-loading-overlay--fixed) .fpc-loading-overlay__backdrop--dim {
-  // Match page canvas / #app-boot-loader so the HTML→Angular handoff does not flash a different surface.
+  // Match page canvas / #app-boot-loader so the HTML->Angular handoff does not flash a different surface.
   background-color: var(--bs-body-bg);
 }
 

@@ -116,7 +116,7 @@
                       <div class="d-flex align-items-center gap-2 min-width-0 w-100">
                         <div class="fw-medium text-truncate flex-grow-1 min-width-0" [title]="row.ticket.title">
                           @if (row.ticket.shas.short) {
-                            <small class="text-muted small">{{ row.ticket.shas.short }}</small>
+                            <small class="text-body-secondary small">{{ row.ticket.shas.short }}</small>
                           }
                           {{ row.ticket.title }}
                         </div>
@@ -172,7 +172,7 @@
   <div fpcModalTitle class="d-flex w-100 align-items-center gap-2 min-width-0 flex-grow-1 h5 mb-0">
     @if (detail(); as det) {
       @if (det.shas.short) {
-        <small class="text-muted small flex-shrink-0">{{ det.shas.short }}</small>
+        <small class="text-body-secondary small flex-shrink-0">{{ det.shas.short }}</small>
       }
       @if (isAdmin && !det.locked) {
         @if (detailTitleEditing()) {
@@ -257,11 +257,11 @@
     <div class="project-board__ticket-detail-body d-flex overflow-hidden w-100 flex-grow-1 min-h-0">
       @if (loadingDetail$ | async) {
         <div class="d-flex justify-content-center py-5 w-100">
-          <fpc-spinner variant="primary" i18n-label="@@featureProjectBoard-detailLoading" label="Loading ticket…" />
+          <fpc-spinner variant="primary" i18n-label="@@featureProjectBoard-detailLoading" label="Loading ticket..." />
         </div>
       } @else if (detail(); as d) {
-        <div class="row g-0 w-100 overflow-hidden">
-          <div class="col-lg-7 h-100 overflow-hidden overflow-y-auto p-3">
+        <div class="row g-0 w-100 project-board__ticket-detail-columns">
+          <div class="col-lg-7 project-board__ticket-detail-pane p-3">
             <dl class="row small mb-3 align-items-center project-board__detail-fields">
               @if (d.shas.short || d.shas.long) {
                 <dt class="col-sm-3 mb-2" i18n="@@featureProjectBoard-fieldShas">SHAs</dt>
@@ -331,7 +331,7 @@
                     [compact]="true"
                   />
                 } @else {
-                  <span class="text-muted">{{ milestoneLabel(d.milestoneId) }}</span>
+                  <span class="text-body-secondary">{{ milestoneLabel(d.milestoneId) }}</span>
                 }
               </dd>
               @let acceptanceTotal = d.tasks.open + d.tasks.children.open + d.tasks.done + d.tasks.children.done;
@@ -343,21 +343,18 @@
                   i18n="@@featureProjectBoard-acceptanceLabel"
                 >
                   Acceptance
-                  <span class="text-muted small d-block fw-normal" [attr.aria-label]="acceptancePct + '%'"
+                  <span class="text-body-secondary small d-block fw-normal" [attr.aria-label]="acceptancePct + '%'"
                     >{{ acceptancePct | number: '1.0-0' }}%</span
                   >
                 </dt>
                 <dd class="col-sm-9 mt-2 mb-0 d-flex align-items-center gap-2">
-                  <div
-                    class="progress w-100 rounded-pill"
-                    role="progressbar"
-                    aria-labelledby="projectTicketAcceptanceLabel"
-                    [attr.aria-valuenow]="acceptancePct"
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                  >
-                    <div class="progress-bar" [style.width]="acceptancePct + '%'"></div>
-                  </div>
+                  <fpc-progress
+                    class="project-board__progress w-100"
+                    height="var(--bs-progress-height)"
+                    [value]="acceptancePct"
+                    i18n-ariaLabel="@@featureProjectBoard-acceptanceProgressAria"
+                    ariaLabel="Acceptance progress"
+                  />
                 </dd>
               }
               @if (d.subtaskCounts; as st) {
@@ -370,21 +367,19 @@
                     i18n="@@featureProjectBoard-subtaskProgressLabel"
                   >
                     Subtasks
-                    <span class="text-muted small d-block fw-normal" [attr.aria-label]="stPct + '%'"
+                    <span class="text-body-secondary small d-block fw-normal" [attr.aria-label]="stPct + '%'"
                       >{{ stPct | number: '1.0-0' }}%</span
                     >
                   </dt>
                   <dd class="col-sm-9 mt-2 mb-0 d-flex align-items-center gap-2">
-                    <div
-                      class="progress w-100 rounded-pill"
-                      role="progressbar"
-                      aria-labelledby="projectTicketSubtaskProgressLabel"
-                      [attr.aria-valuenow]="stPct"
-                      aria-valuemin="0"
-                      aria-valuemax="100"
-                    >
-                      <div class="progress-bar bg-secondary" [style.width]="stPct + '%'"></div>
-                    </div>
+                    <fpc-progress
+                      class="project-board__progress w-100"
+                      height="var(--bs-progress-height)"
+                      variant="secondary"
+                      [value]="stPct"
+                      i18n-ariaLabel="@@featureProjectBoard-subtaskProgressAria"
+                      ariaLabel="Subtask progress"
+                    />
                   </dd>
                 }
               }
@@ -429,16 +424,20 @@
                   }
                 </div>
                 @if ((d.attachments ?? []).length === 0) {
-                  <p class="text-muted small mb-0" i18n="@@featureProjectBoard-attachmentsEmpty">No attachments yet.</p>
+                  <p class="text-body-secondary small mb-0" i18n="@@featureProjectBoard-attachmentsEmpty">
+                    No attachments yet.
+                  </p>
                 } @else {
-                  <ul class="list-group list-group-flush border rounded small mb-0" role="list">
+                  <fpc-list class="small mb-0">
                     @for (attachment of d.attachments ?? []; track attachment.id) {
-                      <li class="list-group-item d-flex align-items-center gap-2 justify-content-between">
-                        <span class="text-truncate" [title]="attachment.fileName">
+                      <fpc-list-item variant="condensed">
+                        <div fpcListItemTitle class="fw-normal text-truncate" [title]="attachment.fileName">
                           <i class="bi bi-paperclip me-1" aria-hidden="true"></i>{{ attachment.fileName }}
-                          <span class="text-muted">· {{ attachment.byteSize | number }} B</span>
-                        </span>
-                        <span class="d-inline-flex align-items-center gap-1 flex-shrink-0">
+                        </div>
+                        <div fpcListItemMeta>
+                          <i class="bi bi-hdd me-1" aria-hidden="true"></i>{{ attachment.byteSize | number }} B
+                        </div>
+                        <span fpcListItemActions class="d-inline-flex align-items-center gap-1 flex-shrink-0">
                           <fpc-button
                             variant="outline-secondary"
                             size="sm"
@@ -466,9 +465,9 @@
                             </fpc-button>
                           }
                         </span>
-                      </li>
+                      </fpc-list-item>
                     }
-                  </ul>
+                  </fpc-list>
                 }
               </div>
 
@@ -492,18 +491,16 @@
                   }
                 </div>
                 @if (detailSubtaskRows().length === 0) {
-                  <p class="text-muted small mb-0" i18n="@@featureProjectBoard-subtasksEmpty">No subtasks yet.</p>
+                  <p class="text-body-secondary small mb-0" i18n="@@featureProjectBoard-subtasksEmpty">
+                    No subtasks yet.
+                  </p>
                 } @else {
-                  <ul
-                    class="list-group list-group-flush project-board__detail-subtasks border rounded small mb-0"
-                    role="list"
-                  >
+                  <fpc-list class="project-board__detail-subtasks small mb-0">
                     @for (row of detailSubtaskRows(); track row.ticket.id) {
-                      <li
-                        class="list-group-item project-board__detail-subtask-row py-2 px-3 position-relative"
+                      <fpc-list-item
+                        class="project-board__detail-subtask-row py-2 px-3"
                         [class.project-board__detail-subtask--nested]="row.depth > 0"
                         [style.--project-board-nest-depth]="row.depth"
-                        role="listitem"
                       >
                         <fpc-button
                           variant="link"
@@ -516,7 +513,7 @@
                         >
                           <span class="d-flex align-items-center gap-2 w-100 min-width-0">
                             @if (row.ticket.shas.short) {
-                              <small class="text-muted flex-shrink-0 small fw-medium">{{
+                              <small class="text-body-secondary flex-shrink-0 small fw-medium">{{
                                 row.ticket.shas.short
                               }}</small>
                             }
@@ -537,9 +534,9 @@
                             >{{ laneLabel(row.ticket.status) }}</fpc-badge
                           >
                         </div>
-                      </li>
+                      </fpc-list-item>
                     }
-                  </ul>
+                  </fpc-list>
                 }
               </div>
 
@@ -571,22 +568,19 @@
                       variant="primary"
                       size="sm"
                       i18n-label="@@featureProjectBoard-timeEntriesLoading"
-                      label="Loading time…"
+                      label="Loading time..."
                     />
                   </div>
                 } @else if (ticketTimeEntries().length === 0) {
-                  <p class="text-muted small mb-0" i18n="@@featureProjectBoard-timeEntriesEmpty">
+                  <p class="text-body-secondary small mb-0" i18n="@@featureProjectBoard-timeEntriesEmpty">
                     No time logged on this ticket yet.
                   </p>
                 } @else {
-                  <ul
-                    class="list-group list-group-flush project-board__detail-time-entries border rounded small mb-0"
-                    role="list"
-                  >
+                  <fpc-list class="project-board__detail-time-entries small mb-0">
                     @for (entry of ticketTimeEntries(); track entry.id) {
-                      <li class="list-group-item py-2 px-3" role="listitem">
-                        <div class="fw-semibold mb-1">{{ timeEntryTitle(entry) }}</div>
-                        <div class="text-muted d-flex align-items-center gap-3 flex-wrap">
+                      <fpc-list-item class="py-2 px-3">
+                        <div fpcListItemTitle class="fw-semibold">{{ timeEntryTitle(entry) }}</div>
+                        <div fpcListItemMeta class="d-flex align-items-center gap-3 row-gap-0 flex-wrap">
                           <span [ngClass]="timeEntryBillingStatusTextClass(entry)">
                             <i class="bi me-1" [ngClass]="timeEntryBillingStatusIconClass(entry)" aria-hidden="true"></i
                             >{{ timeEntryBillingStatusLabel(entry) }}
@@ -606,14 +600,14 @@
                             >
                           }
                         </div>
-                      </li>
+                      </fpc-list-item>
                     }
-                  </ul>
+                  </fpc-list>
                 }
               </div>
             </div>
           </div>
-          <div class="col-lg-5 project-board__detail-sidebar h-100 overflow-hidden overflow-y-auto p-3">
+          <div class="col-lg-5 project-board__detail-sidebar project-board__ticket-detail-pane p-3">
             @if (comments$ | async; as comments) {
               @if (comments.length > 0 || !d.locked) {
                 <h3 class="h6" i18n="@@featureProjectBoard-commentsHeading">Comments</h3>
@@ -627,7 +621,7 @@
                       [value]="commentBody()"
                       (input)="commentBody.set($any($event.target).value)"
                       i18n-placeholder="@@featureProjectBoard-commentPlaceholder"
-                      placeholder="Add a comment…"
+                      placeholder="Add a comment..."
                       [attr.aria-label]="commentInputAriaLabel"
                     ></textarea>
                   </div>
@@ -664,7 +658,7 @@
                           <span
                             class="text-body-secondary project-board__activity-actor project-board__comment-author-unknown"
                             i18n="@@featureProjectBoard-commentAuthorDash"
-                            >—</span
+                            >-</span
                           >
                         }
                       </div>
@@ -769,7 +763,7 @@
     />
   </fpc-form-field>
   <div class="mb-2">
-    <label class="form-label small fw-semibold" i18n="@@featureProjectBoard-contentLabel">Description</label>
+    <fpc-label i18n="@@featureProjectBoard-contentLabel">Description</fpc-label>
     <framework-project-ticket-editor [(markdown)]="createForm.content"></framework-project-ticket-editor>
   </div>
   <div class="row g-2">
@@ -860,7 +854,7 @@
           >
             <span class="d-flex flex-wrap align-items-baseline gap-2 w-100 min-width-0">
               @if (ticket.shas.short) {
-                <span class="font-monospace text-muted small flex-shrink-0">{{ ticket.shas.short }}</span>
+                <span class="font-monospace text-body-secondary small flex-shrink-0">{{ ticket.shas.short }}</span>
               }
               <span class="fw-medium text-break flex-grow-1 min-width-0">{{ ticket.title }}</span>
               <fpc-badge
@@ -874,14 +868,14 @@
           </button>
         }
       } @else if (globalSearchQuery().trim()) {
-        <span class="dropdown-item-text text-muted small" i18n="@@featureProjectBoard-globalSearchNoResults"
+        <span class="dropdown-item-text text-body-secondary small" i18n="@@featureProjectBoard-globalSearchNoResults"
           >No matching tickets</span
         >
       }
     </div>
   </fpc-typeahead-select>
   @if (globalSearchQuery().trim() === '') {
-    <p class="text-muted small mb-0 mt-2" i18n="@@featureProjectBoard-globalSearchHint">
+    <p class="text-body-secondary small mb-0 mt-2" i18n="@@featureProjectBoard-globalSearchHint">
       Type to search all tickets in this project, including done and closed.
     </p>
   }

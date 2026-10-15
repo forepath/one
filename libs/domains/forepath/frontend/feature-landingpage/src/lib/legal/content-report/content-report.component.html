@@ -1,5 +1,5 @@
 <!-- Hero Section -->
-<section id="hero" class="py-10 py-lg-6 bg-body-tertiary position-relative overflow-hidden grid-section">
+<section id="hero" class="py-10 py-lg-6 bg-dark text-white position-relative overflow-hidden grid-section">
   <div class="container grid-section__container">
     <div class="row align-items-center">
       <div class="col-md-12">
@@ -24,7 +24,7 @@
   </div>
 </section>
 
-<section id="policy" class="py-10 bg-white grid-section">
+<section id="policy" class="py-10 bg-body grid-section">
   <div class="container grid-section__container">
     <div class="row g-3">
       <!-- Which mechanism -->
@@ -39,9 +39,9 @@
               illegal content use the DSA notice. Competent authorities issuing a binding terrorist-content removal
               order use the TCO contact point.
             </p>
-            <div class="row g-4">
+            <div class="row landing-card-cells">
               <div class="col-md-6">
-                <div class="cr-panel bg-body-tertiary rounded-3 p-4 h-100">
+                <div class="cr-panel h-100">
                   <h3 class="h6 fw-semibold mb-3" i18n="@@featureForepathLegalContentReport-whichDsaTitle">
                     DSA notice (public)
                   </h3>
@@ -62,7 +62,7 @@
                 </div>
               </div>
               <div class="col-md-6">
-                <div class="cr-panel bg-body-tertiary rounded-3 p-4 h-100">
+                <div class="cr-panel h-100">
                   <h3 class="h6 fw-semibold mb-3" i18n="@@featureForepathLegalContentReport-whichTcoTitle">
                     TCO removal order (authorities)
                   </h3>
@@ -222,7 +222,7 @@
                         controlType="textarea"
                         formControlName="contentUrls"
                         [rows]="3"
-                        controlClass="bg-white"
+                        controlClass="bg-body"
                         required
                         [invalid]="form.controls.contentUrls.touched && form.controls.contentUrls.invalid"
                       />
@@ -255,7 +255,7 @@
                         controlId="cr-name"
                         formControlName="name"
                         autocomplete="name"
-                        controlClass="bg-white"
+                        controlClass="bg-body"
                         [placeholder]="isAnonymousDsa ? anonymousNamePlaceholder : null"
                         [invalid]="form.controls.name.touched && form.controls.name.invalid"
                       />
@@ -277,7 +277,7 @@
                         inputType="email"
                         formControlName="email"
                         autocomplete="email"
-                        controlClass="bg-white"
+                        controlClass="bg-body"
                         [placeholder]="isAnonymousDsa ? anonymousEmailPlaceholder : null"
                         [invalid]="form.controls.email.touched && form.controls.email.invalid"
                       />
@@ -309,7 +309,7 @@
                           controlType="textarea"
                           formControlName="explanation"
                           [rows]="4"
-                          controlClass="bg-white"
+                          controlClass="bg-body"
                           [invalid]="form.controls.explanation.touched && form.controls.explanation.invalid"
                         />
                         @if (form.controls.explanation.touched && form.controls.explanation.hasError('required')) {
@@ -328,7 +328,7 @@
                         <fpc-form-control
                           controlId="cr-category"
                           formControlName="illegalContentCategory"
-                          controlClass="bg-white"
+                          controlClass="bg-body"
                         />
                       </fpc-form-field>
                     </div>
@@ -341,7 +341,7 @@
                         <fpc-form-control
                           controlId="cr-additional"
                           formControlName="additionalIdentifiers"
-                          controlClass="bg-white"
+                          controlClass="bg-body"
                         />
                       </fpc-form-field>
                     </div>
@@ -371,7 +371,7 @@
                         <fpc-form-control
                           controlId="cr-authority"
                           formControlName="authorityName"
-                          controlClass="bg-white"
+                          controlClass="bg-body"
                           [invalid]="form.controls.authorityName.touched && form.controls.authorityName.invalid"
                         />
                       </fpc-form-field>
@@ -385,7 +385,7 @@
                         <fpc-form-control
                           controlId="cr-member-state"
                           formControlName="memberState"
-                          controlClass="bg-white"
+                          controlClass="bg-body"
                           [invalid]="form.controls.memberState.touched && form.controls.memberState.invalid"
                         />
                       </fpc-form-field>
@@ -399,7 +399,7 @@
                         <fpc-form-control
                           controlId="cr-official-name"
                           formControlName="officialName"
-                          controlClass="bg-white"
+                          controlClass="bg-body"
                           [invalid]="form.controls.officialName.touched && form.controls.officialName.invalid"
                         />
                       </fpc-form-field>
@@ -413,7 +413,7 @@
                         <fpc-form-control
                           controlId="cr-official-role"
                           formControlName="officialRole"
-                          controlClass="bg-white"
+                          controlClass="bg-body"
                           [invalid]="form.controls.officialRole.touched && form.controls.officialRole.invalid"
                         />
                       </fpc-form-field>
@@ -427,7 +427,7 @@
                         <fpc-form-control
                           controlId="cr-order-ref"
                           formControlName="orderReference"
-                          controlClass="bg-white"
+                          controlClass="bg-body"
                           [invalid]="form.controls.orderReference.touched && form.controls.orderReference.invalid"
                         />
                       </fpc-form-field>
@@ -442,7 +442,7 @@
                           controlId="cr-order-issued"
                           inputType="datetime-local"
                           formControlName="orderIssuedAt"
-                          controlClass="bg-white"
+                          controlClass="bg-body"
                           [invalid]="form.controls.orderIssuedAt.touched && form.controls.orderIssuedAt.invalid"
                         />
                       </fpc-form-field>
@@ -457,7 +457,7 @@
                           controlId="cr-language"
                           controlType="select"
                           formControlName="preferredLanguage"
-                          controlClass="bg-white"
+                          controlClass="bg-body"
                           [invalid]="form.controls.preferredLanguage.touched && form.controls.preferredLanguage.invalid"
                         >
                           <option value="" disabled i18n="@@featureForepathLegalContentReport-formLanguagePlaceholder">
@@ -488,7 +488,7 @@
                           controlType="textarea"
                           formControlName="statementOfReasons"
                           [rows]="4"
-                          controlClass="bg-white"
+                          controlClass="bg-body"
                           [invalid]="
                             form.controls.statementOfReasons.touched && form.controls.statementOfReasons.invalid
                           "
@@ -506,7 +506,7 @@
                           controlType="textarea"
                           formControlName="redressInformation"
                           [rows]="3"
-                          controlClass="bg-white"
+                          controlClass="bg-body"
                           [invalid]="
                             form.controls.redressInformation.touched && form.controls.redressInformation.invalid
                           "
@@ -522,7 +522,7 @@
                         <fpc-form-control
                           controlId="cr-pdf"
                           inputType="file"
-                          controlClass="bg-white"
+                          controlClass="bg-body"
                           accept="application/pdf,.pdf"
                           (filesChange)="onPdfFilesChange($event)"
                         />
@@ -575,7 +575,6 @@
                     <ngx-turnstile
                       [siteKey]="turnstileSiteKey"
                       (resolved)="onTurnstileResolved($event)"
-                      theme="auto"
                     ></ngx-turnstile>
                   </div>
 

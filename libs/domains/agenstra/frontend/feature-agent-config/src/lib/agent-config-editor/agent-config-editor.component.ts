@@ -76,6 +76,7 @@ import {
 } from '@forepath/agenstra/shared/util-opencode-mcp-servers';
 import {
   FpcAlertComponent,
+  FpcBadgeComponent,
   FpcButtonComponent,
   FpcEmptyStateComponent,
   FpcFormControlComponent,
@@ -142,10 +143,14 @@ function isPlainObject(value: unknown): value is JsonObject {
   selector: 'agenstra-agent-config-editor',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.agent-config-editor--page]': "presentation() === 'page'",
+  },
   imports: [
     CommonModule,
     FormsModule,
     FpcAlertComponent,
+    FpcBadgeComponent,
     FpcButtonComponent,
     FpcEmptyStateComponent,
     FpcFormControlComponent,
@@ -188,7 +193,7 @@ export class AgentConfigEditorComponent implements OnInit {
   readonly config = signal<JsonObject>({});
   /** Raw JSON overrides for this layer (merged over `config`). */
   readonly overrides = signal<JsonObject>({});
-  /** Full merged effective config for inherited map summaries (agent → workspace → global). */
+  /** Full merged effective config for inherited map summaries (agent -> workspace -> global). */
   readonly effective = signal<JsonObject>({});
   readonly rawJson = signal('{}');
   readonly rawError = signal<string | null>(null);
@@ -269,7 +274,7 @@ export class AgentConfigEditorComponent implements OnInit {
   readonly secretDrafts = signal<Record<string, string>>({});
   /** Secret keys marked for removal on save (empty draft while key was previously set). */
   readonly clearSecretKeys = signal<Set<string>>(new Set());
-  /** Serialized editor state after last load/save — used for unsaved drift detection. */
+  /** Serialized editor state after last load/save - used for unsaved drift detection. */
   readonly baselineSnapshot = signal('');
   /** Config object captured with the baseline (for per-field dirty checks). */
   readonly baselineConfig = signal<JsonObject>({});
@@ -1216,7 +1221,7 @@ export class AgentConfigEditorComponent implements OnInit {
     const current = new Set(this.locks());
 
     if (locked) {
-      // Freeze the inherited/default value — discard local overlay edits for this path first.
+      // Freeze the inherited/default value - discard local overlay edits for this path first.
       if (!isDraftLockActive([...current], normalized)) {
         this.resetLocalValuesForLock(normalized);
       }
@@ -1266,7 +1271,7 @@ export class AgentConfigEditorComponent implements OnInit {
     return true;
   }
 
-  /** Authors may toggle only locks they own — not parent-enforced locks. */
+  /** Authors may toggle only locks they own - not parent-enforced locks. */
   canToggleLock(pointer: string): boolean {
     return this.canManageLocks() && !this.isParentLocked(pointer);
   }
@@ -1646,7 +1651,7 @@ export class AgentConfigEditorComponent implements OnInit {
     return [...active, ...deleted];
   }
 
-  /** True when a map entry (whole object) differs from baseline — new, updated, or deleted. */
+  /** True when a map entry (whole object) differs from baseline - new, updated, or deleted. */
   isMapEntryDirty(mapPath: string, key: string): boolean {
     if (!this.baselineSnapshot()) {
       return false;
@@ -1834,7 +1839,7 @@ export class AgentConfigEditorComponent implements OnInit {
 
   mcpAuthButtonTitle(configKey: string): string {
     return this.mcpAuthConnected(configKey)
-      ? $localize`:@@featureAgentConfig-mcpAuthConnected:Connected — no authentication needed`
+      ? $localize`:@@featureAgentConfig-mcpAuthConnected:Connected, no authentication needed`
       : $localize`:@@featureAgentConfig-mcpAuthStart:Authenticate`;
   }
 
@@ -3642,7 +3647,7 @@ export class AgentConfigEditorComponent implements OnInit {
     this.validateRaw();
     this.validateOverrides();
     this.captureBaseline();
-    // Seed inherited disable stubs only — do not delete owning-layer entries or clear
+    // Seed inherited disable stubs only - do not delete owning-layer entries or clear
     // models on load (that emptied fields / marked dirty). Destructive reconcile runs
     // when allow/deny lists change and again on save; backend also enforces on PUT.
     this.seedInheritedAllowDenyDisablesOnLoad();
@@ -3957,7 +3962,7 @@ export class AgentConfigEditorComponent implements OnInit {
             ? value['command'].filter((part): part is string => typeof part === 'string').join(' ')
             : '';
 
-      return `${type}${target ? ` · ${target}` : ''}`;
+      return `${type}${target ? `: ${target}` : ''}`;
     }
 
     if (path === 'commands') {
@@ -3968,16 +3973,16 @@ export class AgentConfigEditorComponent implements OnInit {
       const mode = typeof value['mode'] === 'string' ? value['mode'] : 'agent';
       const model = typeof value['model'] === 'string' ? value['model'] : '';
 
-      return model ? `${mode} · ${model}` : mode;
+      return model ? `${mode} (${model})` : mode;
     }
 
     if (path === 'references') {
       if (typeof value['path'] === 'string') {
-        return `path · ${value['path']}`;
+        return `path: ${value['path']}`;
       }
 
       if (typeof value['repository'] === 'string') {
-        return `git · ${value['repository']}`;
+        return `git: ${value['repository']}`;
       }
     }
 
@@ -3986,7 +3991,7 @@ export class AgentConfigEditorComponent implements OnInit {
       const models = isPlainObject(value['models']) ? Object.keys(value['models']).length : 0;
       const modelSummary = models ? `${models} model(s)` : 'provider';
 
-      return catalog ? `${catalog.name} · ${modelSummary}` : modelSummary;
+      return catalog ? `${catalog.name} (${modelSummary})` : modelSummary;
     }
 
     if (path === 'formatter') {
@@ -4018,7 +4023,7 @@ export class AgentConfigEditorComponent implements OnInit {
       return;
     }
 
-    // Child layers may only stub `disabled` / `hidden` onto inherited entries — never copy the parent body.
+    // Child layers may only stub `disabled` / `hidden` onto inherited entries - never copy the parent body.
     if (inherited) {
       const localMap = isPlainObject(this.getPath(path)) ? { ...(this.getPath(path) as JsonObject) } : {};
       const priorLocal = isPlainObject(localMap[key]) ? { ...(localMap[key] as JsonObject) } : {};

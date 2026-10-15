@@ -68,7 +68,7 @@
               <i class="bi bi-x" aria-hidden="true"></i>
             </fpc-button>
           </fpc-page-header>
-          <div class="flex-grow-1 overflow-auto" style="min-height: 0">
+          <div class="min-h-0 flex-grow-1 overflow-auto">
             <framework-deployment-runs-list
               [clientId]="clientId()!"
               [agentId]="agentId()!"
@@ -80,7 +80,7 @@
       }
     } @else {
       <div class="d-flex justify-content-center align-items-center h-100 p-4">
-        <div class="text-center text-muted">
+        <div class="text-center text-body-secondary">
           <i class="bi bi-exclamation-triangle fs-4 d-block mb-2"></i>
           <p class="mb-0 small" i18n="@@featureDeploymentManager-selectWorkspaceAgent">
             Please select a workspace and agent
@@ -107,7 +107,7 @@
             <i class="bi bi-x" aria-hidden="true"></i>
           </fpc-button>
         </fpc-page-header>
-        <div class="flex-grow-1 overflow-auto" style="min-height: 0">
+        <div class="min-h-0 flex-grow-1 overflow-auto">
           <framework-deployment-run-details
             [clientId]="clientId()!"
             [agentId]="agentId()!"

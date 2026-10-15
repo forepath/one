@@ -62,7 +62,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
   private markedLoadPromise: Promise<Marked> | null = null;
   private markedLoaded = signal<boolean>(false);
 
-  // Inputs — prefer FileContentDto fields from the API
+  // Inputs - prefer FileContentDto fields from the API
   filePath = input<string | null>(null);
   fileType = input<AgentFileType | null>(null);
   contentType = input<string | null>(null);
@@ -70,7 +70,7 @@ export class MonacoEditorWrapperComponent implements OnDestroy, DoCheck {
   text = input<string | null>(null);
   /** Opaque body store key for media/binary preview (bytes live outside NgRx). */
   bodyRef = input<string | null>(null);
-  /** Body revision — bumps on overwrite so media preview reloads even when bodyRef is stable. */
+  /** Body revision - bumps on overwrite so media preview reloads even when bodyRef is stable. */
   revision = input<number | null>(null);
   /** True when open used HEAD only and skipped the body. */
   bodyOmitted = input<boolean>(false);

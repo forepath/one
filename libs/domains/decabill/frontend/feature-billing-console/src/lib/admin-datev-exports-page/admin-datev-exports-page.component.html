@@ -42,7 +42,11 @@
   <div class="flex-grow-1 overflow-auto min-h-0 d-flex flex-column">
     @if ((loading$ | async) && items().length === 0) {
       <div class="d-flex justify-content-center align-items-center p-4">
-        <fpc-spinner variant="primary" i18n-label="@@featureAdminDatevExports-loading" label="Loading DATEV exports…" />
+        <fpc-spinner
+          variant="primary"
+          i18n-label="@@featureAdminDatevExports-loading"
+          label="Loading DATEV exports..."
+        />
       </div>
     } @else {
       @if (error$ | async; as err) {
@@ -68,7 +72,7 @@
                   <div class="small">{{ queuedExportMessage() }}</div>
                 } @else if (exportItem(item); as exportItem) {
                   @if (exportSecondaryLine(exportItem); as secondary) {
-                    <div class="small text-muted">{{ secondary }}</div>
+                    <div class="small text-body-secondary">{{ secondary }}</div>
                   }
                 }
               </div>

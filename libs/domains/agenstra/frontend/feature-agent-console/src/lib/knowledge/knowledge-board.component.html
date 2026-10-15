@@ -61,7 +61,7 @@
           (clicked)="openWorkspaceSwitchModal()"
           i18n="@@featureKnowledgeBoard-chooseWorkspace"
         >
-          Choose workspace…
+          Choose workspace...
         </fpc-button>
       </fpc-empty-state>
     }
@@ -97,7 +97,7 @@
           <fpc-page-header>
             <div fpcPageHeaderTitle class="d-flex align-items-center gap-2 min-width-0 flex-grow-1">
               @if (selectedNode()?.shas?.short) {
-                <small class="text-muted small flex-shrink-0">{{ selectedNode()?.shas?.short }}</small>
+                <small class="text-body-secondary small flex-shrink-0">{{ selectedNode()?.shas?.short }}</small>
               }
               @if (selectedNodeTitleEditing()) {
                 <fpc-form-control
@@ -161,18 +161,18 @@
                   </fpc-button>
                 </div>
                 @if ((selectedNode()?.attachments ?? []).length === 0) {
-                  <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-attachmentsEmpty">
+                  <p class="text-body-secondary small mb-0" i18n="@@featureKnowledgeBoard-attachmentsEmpty">
                     No attachments yet.
                   </p>
                 } @else {
-                  <ul class="list-group list-group-flush border rounded small mb-0" role="list">
+                  <fpc-list [flush]="true" class="border rounded small mb-0">
                     @for (attachment of selectedNode()?.attachments ?? []; track attachment.id) {
-                      <li class="list-group-item d-flex align-items-center gap-2 justify-content-between">
-                        <span class="text-truncate" [title]="attachment.fileName">
+                      <fpc-list-item>
+                        <div fpcListItemTitle class="text-truncate" [title]="attachment.fileName">
                           <i class="bi bi-paperclip me-1" aria-hidden="true"></i>{{ attachment.fileName }}
-                          <span class="text-muted">· {{ attachment.byteSize | number }} B</span>
-                        </span>
-                        <span class="d-inline-flex align-items-center gap-1 flex-shrink-0">
+                        </div>
+                        <div fpcListItemMeta>{{ attachment.byteSize | number }} B</div>
+                        <span fpcListItemActions class="d-inline-flex align-items-center gap-1">
                           <fpc-button
                             variant="outline-secondary"
                             size="sm"
@@ -198,9 +198,9 @@
                             <i class="bi bi-trash" aria-hidden="true"></i>
                           </fpc-button>
                         </span>
-                      </li>
+                      </fpc-list-item>
                     }
-                  </ul>
+                  </fpc-list>
                 }
               </div>
 
@@ -221,11 +221,13 @@
                   </fpc-button>
                 </div>
                 @if (relationsLoading()) {
-                  <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-loadingRelations">
+                  <p class="text-body-secondary small mb-0" i18n="@@featureKnowledgeBoard-loadingRelations">
                     Loading relations...
                   </p>
                 } @else if (relations().length === 0) {
-                  <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-relationsEmpty">No relations yet.</p>
+                  <p class="text-body-secondary small mb-0" i18n="@@featureKnowledgeBoard-relationsEmpty">
+                    No relations yet.
+                  </p>
                 } @else {
                   <ul
                     class="list-group list-group-flush knowledge-board__detail-relations border rounded small mb-0"
@@ -253,11 +255,11 @@
                                     : 'Ticket'
                               }}</fpc-badge>
                               @if (relation.targetType === 'ticket') {
-                                <small class="text-muted flex-shrink-0 small fw-medium">{{
+                                <small class="text-body-secondary flex-shrink-0 small fw-medium">{{
                                   relationTicketShortSha(relation.targetTicketLongSha)
                                 }}</small>
                               } @else if (relationNode?.shas?.short) {
-                                <small class="text-muted flex-shrink-0 small fw-medium">{{
+                                <small class="text-body-secondary flex-shrink-0 small fw-medium">{{
                                   relationNode?.shas?.short
                                 }}</small>
                               }
@@ -304,7 +306,7 @@
                             [attr.title]="ev.actionType"
                             >{{ activityActionLabel(ev.actionType) }}</fpc-badge
                           >
-                          <span class="text-body-secondary">{{ ev.occurredAt | date: 'MMM d, y · h:mm a' }}</span>
+                          <span class="text-body-secondary">{{ ev.occurredAt | date: 'MMM d, y, h:mm a' }}</span>
                           @if (ev.actorEmail) {
                             <span class="text-body-secondary text-truncate">{{ ev.actorEmail }}</span>
                           } @else {
@@ -315,7 +317,7 @@
                     }
                   </ul>
                 } @else if (activityLoading()) {
-                  <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-loadingActivity">
+                  <p class="text-body-secondary small mb-0" i18n="@@featureKnowledgeBoard-loadingActivity">
                     Loading activity...
                   </p>
                 } @else {
@@ -377,7 +379,7 @@
           >
             <span class="d-flex flex-wrap align-items-baseline gap-2 w-100 min-width-0">
               @if (node.shas.short) {
-                <span class="font-monospace text-muted small flex-shrink-0">{{ node.shas.short }}</span>
+                <span class="font-monospace text-body-secondary small flex-shrink-0">{{ node.shas.short }}</span>
               }
               <span class="fw-medium text-break flex-grow-1 min-width-0">{{ node.title }}</span>
               <fpc-badge variant="info" color="secondary" class="flex-shrink-0">{{
@@ -387,14 +389,14 @@
           </button>
         }
       } @else if (globalSearchQuery().trim()) {
-        <span class="dropdown-item-text text-muted small" i18n="@@featureKnowledgeBoard-noMatchingNodes"
+        <span class="dropdown-item-text text-body-secondary small" i18n="@@featureKnowledgeBoard-noMatchingNodes"
           >No matching pages or folders</span
         >
       }
     </div>
   </fpc-typeahead-select>
   @if (globalSearchQuery().trim() === '') {
-    <p class="text-muted small mb-0 mt-2" i18n="@@featureKnowledgeBoard-searchPagesHint">
+    <p class="text-body-secondary small mb-0 mt-2" i18n="@@featureKnowledgeBoard-searchPagesHint">
       Type to search all pages and folders in this workspace.
     </p>
   }
@@ -436,14 +438,14 @@
           (mousedown)="onPickRelationCandidate(candidate, $event)"
         >
           <span class="d-flex align-items-baseline gap-2 w-100 min-width-0">
-            <span class="font-monospace text-muted small flex-shrink-0">{{
+            <span class="font-monospace text-body-secondary small flex-shrink-0">{{
               candidate.kind === 'knowledge' ? candidate.node.shas.short : candidate.ticket.shas.short
             }}</span>
             <span class="text-truncate small flex-grow-1 min-width-0">
               {{
                 candidate.kind === 'knowledge'
-                  ? (candidate.node.nodeType === 'folder' ? 'Folder' : 'Page') + ' · ' + candidate.node.title
-                  : 'Ticket · ' + candidate.ticket.title
+                  ? (candidate.node.nodeType === 'folder' ? 'Folder' : 'Page') + ': ' + candidate.node.title
+                  : 'Ticket: ' + candidate.ticket.title
               }}
             </span>
           </span>
@@ -454,12 +456,7 @@
   @if (selectedRelationTargets().length > 0) {
     <div class="d-flex flex-wrap gap-2 mt-2">
       @for (target of selectedRelationTargets(); track relationTargetTrackId(target)) {
-        <fpc-badge
-          variant="info"
-          color="secondary"
-          class="knowledge-board__relation-chip"
-          style="max-width: min(100%, 24rem)"
-        >
+        <fpc-badge variant="info" color="secondary" class="knowledge-board__relation-chip">
           <span class="text-truncate small">{{ relationCandidateChipDisplay(target) }}</span>
           <button
             type="button"
@@ -471,7 +468,7 @@
       }
     </div>
   } @else {
-    <p class="text-muted small mb-0" i18n="@@featureKnowledgeBoard-searchRelationsHint">
+    <p class="text-body-secondary small mb-0" i18n="@@featureKnowledgeBoard-searchRelationsHint">
       Search by title or SHA and add one or more relation targets.
     </p>
   }

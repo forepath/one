@@ -3,12 +3,24 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnIn
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
+import { DesktopSecurityIllustrationComponent } from '../illustrations/desktop-security-illustration.component';
+import { ToolchainIllustrationComponent } from '../illustrations/toolchain-illustration.component';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
+import { DesktopIllustrationComponent } from '../illustrations/desktop-illustration.component';
+
 @Component({
   selector: 'framework-portal-desktop',
-  imports: [FpcBadgeComponent, FpcButtonComponent, CommonModule, RouterModule],
+  imports: [
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    CommonModule,
+    RouterModule,
+    DesktopIllustrationComponent,
+    DesktopSecurityIllustrationComponent,
+    ToolchainIllustrationComponent,
+  ],
   styleUrls: ['./desktop.component.scss'],
   templateUrl: './desktop.component.html',
   standalone: true,

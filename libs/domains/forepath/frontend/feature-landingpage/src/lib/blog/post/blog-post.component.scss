@@ -86,14 +86,14 @@
         padding: 0.875rem;
         color: var(--bs-body-color);
         text-decoration: none;
-        background: var(--bs-white);
+        background: var(--bs-body-bg);
         border: 1px solid var(--bs-border-color);
         border-radius: 0.75rem;
         box-shadow: var(--bs-box-shadow-sm);
 
         &:hover {
           color: var(--bs-body-color);
-          background: var(--bs-white);
+          background: var(--bs-body-bg);
         }
 
         &:focus-visible {
@@ -220,7 +220,6 @@
 .grid-section {
   // Let rails paint through the footer's 1px border-top.
   overflow: visible;
-  margin-bottom: -1px;
 }
 
 // Contain Ghost article margins inside the container height. Collapsed margins otherwise

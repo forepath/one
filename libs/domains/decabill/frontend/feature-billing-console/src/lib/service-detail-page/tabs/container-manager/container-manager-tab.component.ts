@@ -32,14 +32,32 @@ import {
   FpcButtonComponent,
   FpcEmptyStateComponent,
   FpcLaneHeaderComponent,
+  FpcPanelComponent,
+  FpcPanelGridComponent,
+  FpcListComponent,
+  FpcListItemComponent,
   FpcSearchFieldComponent,
   FpcSpinnerComponent,
+  FPC_CHART_AREA_FILL,
+  FPC_CHART_AXIS,
+  FPC_CHART_GRID,
+  FPC_CHART_LABEL_STYLE,
+  fpcChart,
+  fpcChartColor,
 } from '@forepath/shared/frontend/ui-components';
 
-import type { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexTitleSubtitle, ApexXAxis } from 'ng-apexcharts';
+import type {
+  ApexAxisChartSeries,
+  ApexChart,
+  ApexDataLabels,
+  ApexFill,
+  ApexLegend,
+  ApexStroke,
+  ApexTooltip,
+  ApexXAxis,
+} from 'ng-apexcharts';
 import { NgApexchartsModule } from 'ng-apexcharts';
 
-const BS_CHART_COLORS = ['var(--bs-primary)', 'var(--bs-info)', 'var(--bs-success)', 'var(--bs-warning)'] as const;
 /** Pixels from bottom still treated as "pinned" for auto-scroll. */
 const LOGS_STICK_BOTTOM_THRESHOLD_PX = 32;
 
@@ -79,6 +97,10 @@ const TOPOLOGY_NODE_RADIUS = 16;
     FpcButtonComponent,
     FpcAlertComponent,
     FpcLaneHeaderComponent,
+    FpcPanelComponent,
+    FpcPanelGridComponent,
+    FpcListComponent,
+    FpcListItemComponent,
     FpcSearchFieldComponent,
     FpcSpinnerComponent,
     FpcEmptyStateComponent,
@@ -172,6 +194,9 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
       return haystack.includes(term);
     });
   });
+
+  readonly cpuChartTitle = $localize`:@@featureContainerManager-cpuHistoryTitle:CPU`;
+  readonly memoryChartTitle = $localize`:@@featureContainerManager-memoryHistoryTitle:Memory`;
 
   readonly cpuChart = computed(() => this.buildCpuChart(this.statsHistoryPoints()));
   readonly memoryChart = computed(() => this.buildMemoryChart(this.statsHistoryPoints()));
@@ -350,7 +375,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
 
   formatBytes(value: number | null | undefined): string {
     if (value == null || Number.isNaN(value)) {
-      return '—';
+      return '-';
     }
 
     const units = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -367,7 +392,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
 
   formatPercent(value: number | null | undefined): string {
     if (value == null || Number.isNaN(value)) {
-      return '—';
+      return '-';
     }
 
     return `${value.toFixed(1)}%`;
@@ -469,7 +494,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
     }
 
     const categories = points.map((point) => this.datePipe.transform(point.timestamp, 'short') ?? point.timestamp);
-    const cpuColor = BS_CHART_COLORS[0];
+    const cpuColor = fpcChartColor(0);
 
     return {
       series: [
@@ -478,40 +503,26 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
           data: points.map((point) => point.cpuPercent ?? 0),
         },
       ] as ApexAxisChartSeries,
-      chart: {
-        type: 'area',
-        height: 280,
-        toolbar: { show: false },
-        background: 'transparent',
-        zoom: { enabled: false },
-      } as ApexChart,
+      chart: fpcChart('area', 280) as ApexChart,
       colors: [cpuColor],
-      stroke: { colors: [cpuColor], width: 2 },
-      fill: { colors: [cpuColor], opacity: 0.15 },
+      stroke: { curve: 'smooth', width: 2 } as ApexStroke,
+      fill: FPC_CHART_AREA_FILL as ApexFill,
       dataLabels: { enabled: false } as ApexDataLabels,
       xaxis: {
+        ...FPC_CHART_AXIS,
         categories,
-        labels: {
-          style: { colors: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
-        },
-        axisBorder: { color: 'var(--bs-border-color)' },
+        labels: { style: FPC_CHART_LABEL_STYLE },
       } as ApexXAxis,
       yaxis: {
         min: 0,
         max: 100,
         labels: {
-          style: { colors: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
+          style: FPC_CHART_LABEL_STYLE,
           formatter: (value: number) => `${value.toFixed(0)}%`,
         },
       },
-      grid: { borderColor: 'var(--bs-border-color)' },
-      legend: {
-        show: false,
-      },
-      title: {
-        text: $localize`:@@featureContainerManager-cpuHistoryTitle:CPU`,
-        style: { color: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
-      } as ApexTitleSubtitle,
+      grid: FPC_CHART_GRID,
+      legend: { show: false } as ApexLegend,
     };
   }
 
@@ -538,7 +549,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
     }
 
     const categories = points.map((point) => this.datePipe.transform(point.timestamp, 'short') ?? point.timestamp);
-    const memoryColor = BS_CHART_COLORS[1];
+    const memoryColor = fpcChartColor(1);
 
     return {
       series: [
@@ -547,45 +558,31 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
           data: points.map((point) => point.memoryUsageBytes ?? 0),
         },
       ] as ApexAxisChartSeries,
-      chart: {
-        type: 'area',
-        height: 280,
-        toolbar: { show: false },
-        background: 'transparent',
-        zoom: { enabled: false },
-      } as ApexChart,
+      chart: fpcChart('area', 280) as ApexChart,
       colors: [memoryColor],
-      stroke: { colors: [memoryColor], width: 2 },
-      fill: { colors: [memoryColor], opacity: 0.15 },
+      stroke: { curve: 'smooth', width: 2 } as ApexStroke,
+      fill: FPC_CHART_AREA_FILL as ApexFill,
       dataLabels: { enabled: false } as ApexDataLabels,
       xaxis: {
+        ...FPC_CHART_AXIS,
         categories,
-        labels: {
-          style: { colors: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
-        },
-        axisBorder: { color: 'var(--bs-border-color)' },
+        labels: { style: FPC_CHART_LABEL_STYLE },
       } as ApexXAxis,
       yaxis: {
         min: 0,
         max: maxBytes,
         labels: {
-          style: { colors: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
+          style: FPC_CHART_LABEL_STYLE,
           formatter: (value: number) => this.formatBytes(value),
         },
       },
-      grid: { borderColor: 'var(--bs-border-color)' },
-      legend: {
-        show: false,
-      },
-      title: {
-        text: $localize`:@@featureContainerManager-memoryHistoryTitle:Memory`,
-        style: { color: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
-      } as ApexTitleSubtitle,
+      grid: FPC_CHART_GRID,
+      legend: { show: false } as ApexLegend,
       tooltip: {
         y: {
           formatter: (value: number) => this.formatBytes(value),
         },
-      },
+      } as ApexTooltip,
     };
   }
 
@@ -939,7 +936,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
       if (container) {
         rows.push({
           label: $localize`:@@featureContainerManager-topologyImage:Image`,
-          value: container.image || '—',
+          value: container.image || '-',
         });
         rows.push({
           label: $localize`:@@featureContainerManager-topologyStatus:Status`,
@@ -966,11 +963,11 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
       if (iface) {
         rows.push({
           label: $localize`:@@featureContainerManager-topologyStatus:Status`,
-          value: iface.state || '—',
+          value: iface.state || '-',
         });
         rows.push({
           label: $localize`:@@featureContainerManager-topologyAddresses:Addresses`,
-          value: iface.addresses.length > 0 ? iface.addresses.join(', ') : '—',
+          value: iface.addresses.length > 0 ? iface.addresses.join(', ') : '-',
         });
       }
     }
@@ -1119,7 +1116,7 @@ export class ContainerManagerTabComponent implements OnInit, OnChanges {
       ctx.lineWidth = 2 / this.topologyTransform.k;
       ctx.stroke();
 
-      const label = node.label.length > 28 ? `${node.label.slice(0, 26)}…` : node.label;
+      const label = node.label.length > 28 ? `${node.label.slice(0, 26)}...` : node.label;
       ctx.font = `${11 / this.topologyTransform.k}px ${fontFamily}`;
       ctx.fillStyle = bodyColor;
       ctx.textAlign = 'center';

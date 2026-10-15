@@ -5,7 +5,7 @@ import { ActivatedRouteSnapshot, DetachedRouteHandle, RouteReuseStrategy } from 
  * between routes that use the same component.
  *
  * Applies when the route path ends with /editor, or when navigating between the
- * clients shell routes (workspaces → environments → chat). Editor/config/deployments
+ * clients shell routes (workspaces -> environments -> chat). Editor/config/deployments
  * panels use the editor or default rules. Otherwise defaults to
  * Angular's default strategy (no reuse, standard route config matching).
  */
@@ -20,7 +20,7 @@ export class ComponentReuseStrategy implements RouteReuseStrategy {
   }
 
   /**
-   * Main clients shell routes (workspaces list → workspace → environment/chat).
+   * Main clients shell routes (workspaces list -> workspace -> environment/chat).
    * Excludes editor/config/deployments so those keep distinct route-config semantics.
    */
   private isClientsShellRoute(route: ActivatedRouteSnapshot): boolean {

@@ -4,7 +4,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # Theming
 
-FPC components never hard-code colours. They read **Bootstrap 5 CSS variables** (`--bs-primary`, `--bs-body-bg`, `--bs-*-bg-subtle`, …), so they follow the host app theme — including `html[data-bs-theme="dark"]`.
+FPC components never hard-code colours. They read **Bootstrap 5 CSS variables** (`--bs-primary`, `--bs-body-bg`, `--bs-*-bg-subtle`, ...), so they follow the host app theme, including `html[data-bs-theme="dark"]`.
 
 ## How apps theme
 
@@ -63,7 +63,7 @@ Stock Bootstrap behaviour: [Color modes](https://getbootstrap.com/docs/5.3/custo
 
 ## Storybook brand switcher
 
-The **Color set** toolbar sets `data-fpc-brand` to `decabill` | `agenstra` | `forepath` (or clears it for stock Bootstrap). `.storybook/brands/*.scss` are thin scoped emitters over the same `styles/brands/*/palette` files — change the palette once for apps and Storybook.
+The **Color set** toolbar sets `data-fpc-brand` to `decabill` | `agenstra` | `forepath` (or clears it for stock Bootstrap). `.storybook/brands/*.scss` are thin scoped emitters over the same `styles/brands/*/palette` files. Change the palette once for apps and Storybook.
 
 Storybook loads stock `bootstrap.min.css`, then brand overlays re-emit root `--bs-*` **and** remapped component locals (`.btn-*`, pagination active, progress bar, nav pills, form checks/range) so those controls follow the Color set. Apps that compile Bootstrap from Sass already get this for free.
 
@@ -79,7 +79,7 @@ Override in the app the same way as `--bs-*`:
 
 ## Live swatches
 
-Use the **Theme** and **Color set** toolbars — these specimens read live CSS variables (no refresh needed):
+Use the **Theme** and **Color set** toolbars. These specimens read live CSS variables (no refresh needed):
 
 <div className="d-flex flex-wrap gap-3 mb-3">
   <div

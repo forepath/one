@@ -18,13 +18,13 @@
   </div>
 </section>
 
-<section class="py-10 bg-white grid-section">
+<section class="py-10 bg-body grid-section">
   <div class="container grid-section__container">
     <div class="row g-4 justify-content-center align-items-stretch">
       <div class="col-lg-8 col-xl-7">
         @if (submitted$ | async) {
           <div
-            class="card border rounded-3 shadow-sm p-4 p-md-5 text-center bg-white text-body h-100 justify-content-center align-items-center"
+            class="card border rounded-3 shadow-sm p-4 p-md-5 text-center bg-body text-body h-100 justify-content-center align-items-center"
             role="status"
           >
             <i class="bi bi-check-circle-fill text-success icon-lg mb-3" aria-hidden="true"></i>
@@ -35,7 +35,7 @@
           </div>
         } @else {
           <form
-            class="card border rounded-3 shadow-sm p-4 p-md-5 bg-white text-body contact-form h-100"
+            class="card border rounded-3 shadow-sm p-4 p-md-5 bg-body text-body contact-form h-100"
             [formGroup]="form"
             (ngSubmit)="onSubmit()"
             novalidate
@@ -52,7 +52,7 @@
                     controlId="contact-name"
                     formControlName="name"
                     autocomplete="name"
-                    controlClass="bg-white"
+                    controlClass="bg-body"
                     required
                     [invalid]="form.controls.name.touched && form.controls.name.invalid"
                   />
@@ -73,7 +73,7 @@
                     inputType="email"
                     formControlName="email"
                     autocomplete="email"
-                    controlClass="bg-white"
+                    controlClass="bg-body"
                     required
                     [invalid]="form.controls.email.touched && form.controls.email.invalid"
                   />
@@ -103,7 +103,7 @@
                     inputType="tel"
                     formControlName="phone"
                     autocomplete="tel"
-                    controlClass="bg-white"
+                    controlClass="bg-body"
                   />
                 </fpc-form-field>
               </div>
@@ -117,7 +117,7 @@
                     controlId="contact-company"
                     formControlName="company"
                     autocomplete="organization"
-                    controlClass="bg-white"
+                    controlClass="bg-body"
                   />
                 </fpc-form-field>
               </div>
@@ -133,7 +133,7 @@
                     controlType="textarea"
                     formControlName="message"
                     [rows]="6"
-                    controlClass="bg-white"
+                    controlClass="bg-body"
                     required
                     [invalid]="form.controls.message.touched && form.controls.message.invalid"
                   />
@@ -177,11 +177,7 @@
               </div>
               <div class="col-12">
                 @if (turnstileSiteKey) {
-                  <ngx-turnstile
-                    [siteKey]="turnstileSiteKey"
-                    theme="auto"
-                    (resolved)="onTurnstileResolved($event)"
-                  ></ngx-turnstile>
+                  <ngx-turnstile [siteKey]="turnstileSiteKey" (resolved)="onTurnstileResolved($event)"></ngx-turnstile>
                 }
               </div>
               @if (error$ | async; as error) {
@@ -197,7 +193,7 @@
                   [loading]="(submitting$ | async) ?? false"
                 >
                   @if (submitting$ | async) {
-                    <span i18n="@@sharedFeatureLandingpageContact-submitting">Sending…</span>
+                    <span i18n="@@sharedFeatureLandingpageContact-submitting">Sending...</span>
                   } @else {
                     <span i18n="@@sharedFeatureLandingpageContact-submit">Send message</span>
                   }
@@ -210,7 +206,7 @@
 
       <div class="col-lg-4 col-xl-5">
         <aside
-          class="card border rounded-3 shadow-sm p-4 p-md-5 bg-white text-body contact-details h-100 d-flex flex-column justify-content-between"
+          class="card border rounded-3 shadow-sm p-4 p-md-5 bg-body text-body contact-details h-100 d-flex flex-column justify-content-between"
           i18n-aria-label="@@sharedFeatureLandingpageContact-detailsAriaLabel"
           aria-label="Contact information"
         >

@@ -115,10 +115,10 @@ export class AtlassianImportAdminComponent implements OnInit {
   readonly dismissAriaLabel = $localize`:@@featureAtlassianImportAdmin-dismiss:Dismiss`;
   readonly searchConnectionsLabel = $localize`:@@featureAtlassianImportAdmin-searchConnectionsLabel:Search site connections`;
   readonly searchConnectionsPlaceholder = $localize`:@@featureAtlassianImportAdmin-searchConnectionsPlaceholder:Search connections`;
-  readonly loadingConnectionsLabel = $localize`:@@featureAtlassianImportAdmin-loadingConnections:Loading connections…`;
+  readonly loadingConnectionsLabel = $localize`:@@featureAtlassianImportAdmin-loadingConnections:Loading connections...`;
   readonly searchConfigsLabel = $localize`:@@featureAtlassianImportAdmin-searchConfigsLabel:Search import configs`;
   readonly searchConfigsPlaceholder = $localize`:@@featureAtlassianImportAdmin-searchConfigsPlaceholder:Search import configs`;
-  readonly loadingConfigsLabel = $localize`:@@featureAtlassianImportAdmin-loadingConfigs:Loading configs…`;
+  readonly loadingConfigsLabel = $localize`:@@featureAtlassianImportAdmin-loadingConfigs:Loading configs...`;
 
   readonly connections = toSignal(this.facade.connections$, { initialValue: [] as AtlassianSiteConnectionDto[] });
   readonly configs = toSignal(this.facade.configs$, { initialValue: [] as ExternalImportConfigDto[] });
@@ -301,7 +301,7 @@ export class AtlassianImportAdminComponent implements OnInit {
   }
 
   emptyFieldMarker(): string {
-    return $localize`:@@featureAtlassianImportAdmin-emptyField:—`;
+    return $localize`:@@featureAtlassianImportAdmin-emptyField:-`;
   }
 
   connectionLabel(c: AtlassianSiteConnectionDto): string {
@@ -543,11 +543,11 @@ export class AtlassianImportAdminComponent implements OnInit {
   formatTicketPick(t: TicketResponseDto): string {
     const short = t.shas?.short ?? t.id.slice(0, 8);
 
-    return $localize`:@@featureAtlassianImportAdmin-ticketPick:${t.title}:title: · ${short}:sha:`;
+    return $localize`:@@featureAtlassianImportAdmin-ticketPick:${t.title}:title: (${short}:sha:)`;
   }
 
   formatFolderPick(n: KnowledgeNodeDto): string {
-    return $localize`:@@featureAtlassianImportAdmin-folderPick:${n.title}:title: · ${n.shas.short}:sha:`;
+    return $localize`:@@featureAtlassianImportAdmin-folderPick:${n.title}:title: (${n.shas.short}:sha:)`;
   }
 
   onPickNewParentTicket(t: TicketResponseDto, event: Event): void {

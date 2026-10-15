@@ -11,7 +11,7 @@ const meta: Meta<FpcTooltipComponent> = {
 
 **Behavior:** Preferred \`placement\` flips when the nearest scroll/clip ancestor lacks room (same idea as \`fpc-sidebar-popover\`). The bubble is fixed and portaled to \`document.body\` so list isolation / overflow cannot cover it.
 
-**When not to:** Critical instructions — put those in visible copy or form hints.`,
+**When not to:** Critical instructions. Put those in visible copy or form hints.`,
       },
     },
   },

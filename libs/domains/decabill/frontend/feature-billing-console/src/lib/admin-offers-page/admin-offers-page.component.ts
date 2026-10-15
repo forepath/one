@@ -28,6 +28,8 @@ import {
   FpcModalFooterDirective,
   FpcListItemComponent,
   FpcPageHeaderComponent,
+  FpcPanelComponent,
+  FpcPanelGridComponent,
   FpcSearchFieldComponent,
   FpcSpinnerComponent,
   FpcSummaryBarComponent,
@@ -35,14 +37,20 @@ import {
   FpcSummaryCardValueDirective,
   FpcTabComponent,
   FpcTabGroupComponent,
+  FPC_CHART_AREA_FILL,
+  FPC_CHART_AXIS,
+  FPC_CHART_GRID,
+  FPC_CHART_LABEL_STYLE,
+  FPC_CHART_LEGEND,
+  fpcChart,
 } from '@forepath/shared/frontend/ui-components';
 import type {
   ApexAxisChartSeries,
   ApexChart,
   ApexDataLabels,
+  ApexFill,
   ApexLegend,
   ApexStroke,
-  ApexTitleSubtitle,
   ApexXAxis,
   ApexYAxis,
 } from 'ng-apexcharts';
@@ -61,8 +69,6 @@ import {
   mapOfferFormLinesToDto,
   type OfferFormLineItem,
 } from './admin-offer-form.util';
-
-const BS_CHART_COLORS = ['var(--bs-primary)', 'var(--bs-success)', 'var(--bs-danger)'] as const;
 
 type AdminOffersMobilePanel = 'overview' | 'offers';
 
@@ -92,6 +98,8 @@ type AdminOffersMobilePanel = 'overview' | 'offers';
     FpcModalComponent,
     FpcModalFooterDirective,
     FpcPageHeaderComponent,
+    FpcPanelComponent,
+    FpcPanelGridComponent,
     FpcSpinnerComponent,
     FpcSummaryBarComponent,
     FpcSummaryCardComponent,
@@ -171,6 +179,8 @@ export class AdminOffersPageComponent implements OnInit {
     ),
     { initialValue: false },
   );
+
+  readonly offersChartTitle = $localize`:@@featureAdminOffers-chartTitle:Offer activity over time`;
 
   readonly seriesChartOptions = computed(() => this.buildSeriesChart(this.statistics()?.series ?? []));
 
@@ -442,35 +452,23 @@ export class AdminOffersPageComponent implements OnInit {
         { name: $localize`:@@featureAdminOffers-chartAccepted:Accepted`, data: filled.map((p) => p.acceptedCount) },
         { name: $localize`:@@featureAdminOffers-chartDeclined:Declined`, data: filled.map((p) => p.declinedCount) },
       ] as ApexAxisChartSeries,
-      chart: {
-        type: 'area',
-        height: 240,
-        toolbar: { show: false },
-        background: 'transparent',
-        zoom: { enabled: false },
-      } as ApexChart,
-      colors: [...BS_CHART_COLORS],
-      stroke: { width: 2 } as ApexStroke,
+      chart: fpcChart('area', 240) as ApexChart,
+      // Semantic series: archived (neutral), accepted (success), declined (danger).
+      colors: ['var(--bs-secondary)', 'var(--bs-success)', 'var(--bs-danger)'],
+      stroke: { curve: 'smooth', width: 2 } as ApexStroke,
+      fill: FPC_CHART_AREA_FILL as ApexFill,
       dataLabels: { enabled: false } as ApexDataLabels,
-      legend: { position: 'top' } as ApexLegend,
+      legend: { ...FPC_CHART_LEGEND, position: 'top' } as ApexLegend,
       xaxis: {
+        ...FPC_CHART_AXIS,
         type: 'category',
         categories: filled.map((p) => this.formatChartPeriodLabel(p.period)),
-        labels: {
-          style: { colors: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
-        },
-        axisBorder: { color: 'var(--bs-border-color)' },
+        labels: { style: FPC_CHART_LABEL_STYLE },
       } as ApexXAxis,
       yaxis: {
-        labels: {
-          style: { colors: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
-        },
+        labels: { style: FPC_CHART_LABEL_STYLE },
       } as ApexYAxis,
-      grid: { borderColor: 'var(--bs-border-color)' },
-      title: {
-        text: $localize`:@@featureAdminOffers-chartTitle:Offer activity over time`,
-        style: { color: 'var(--bs-body-color)', fontFamily: 'var(--bs-body-font-family)' },
-      } as ApexTitleSubtitle,
+      grid: FPC_CHART_GRID,
     };
   }
 

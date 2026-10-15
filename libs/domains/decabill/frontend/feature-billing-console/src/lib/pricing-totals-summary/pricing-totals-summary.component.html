@@ -6,9 +6,9 @@
   [class.border-primary]="isPrimary"
 >
   @if (loading) {
-    <div class="small d-flex align-items-center gap-2" [class.text-muted]="!isPrimary">
+    <div class="small d-flex align-items-center gap-2" [class.text-body-secondary]="!isPrimary">
       <fpc-spinner size="sm" />
-      <span i18n="@@featureSubscriptions-loadingPrice">Loading price…</span>
+      <span i18n="@@featureSubscriptions-loadingPrice">Loading price...</span>
     </div>
   } @else if (summary; as totals) {
     <dl class="mb-0 small">
@@ -79,6 +79,6 @@
       </div>
     </dl>
   } @else {
-    <p class="small mb-0" [class.text-muted]="!isPrimary">—</p>
+    <p class="small mb-0" [class.text-body-secondary]="!isPrimary">-</p>
   }
 </div>

@@ -1,36 +1,15 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  DestroyRef,
-  inject,
-  LOCALE_ID,
-  OnInit,
-  PLATFORM_ID,
-  signal,
-} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnInit } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { ForepathOneTeaserComponent } from '../forepath-one-teaser/forepath-one-teaser.component';
+import { RentalIllustrationComponent } from '../illustrations/rental-illustration.component';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
+import { SharedLogoGridComponent, type SharedLogoGridLogo } from '@forepath/shared/frontend/feature-landingpage';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
-interface VendorLogo {
-  id: string;
-  name: string;
-  logoUrl: string;
-  compact?: boolean;
-}
-
-interface VisibleVendorLogo extends VendorLogo {
-  instanceKey: string;
-}
-
-const VENDOR_ROTATION_INTERVAL_MS = 4000;
-
-const VENDOR_LOGO_SLOTS: readonly (readonly VendorLogo[])[] = [
+const VENDOR_LOGO_SLOTS: readonly (readonly SharedLogoGridLogo[])[] = [
   [
     { id: 'dell', name: 'Dell', logoUrl: 'assets/images/logos/dell.svg', compact: true },
     { id: 'hp', name: 'HP', logoUrl: 'assets/images/logos/hp.svg' },
@@ -69,31 +48,27 @@ const VENDOR_LOGO_SLOTS: readonly (readonly VendorLogo[])[] = [
 
 @Component({
   selector: 'framework-forepath-it-systems',
-  imports: [FpcButtonComponent, CommonModule, RouterModule, ForepathOneTeaserComponent],
+  imports: [
+    FpcButtonComponent,
+    CommonModule,
+    RouterModule,
+    ForepathOneTeaserComponent,
+    SharedLogoGridComponent,
+    RentalIllustrationComponent,
+  ],
   styleUrls: ['./it-systems.component.scss'],
   templateUrl: './it-systems.component.html',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ForepathItSystemsComponent implements OnInit {
-  readonly vendorSlotIndices = signal([0, 0, 0, 0, 0]);
-  readonly visibleVendorLogos = computed<VisibleVendorLogo[]>(() =>
-    this.vendorSlotIndices().map((index, slotIndex) => {
-      const logo = VENDOR_LOGO_SLOTS[slotIndex][index];
-      return {
-        ...logo,
-        instanceKey: `${slotIndex}-${logo.id}-${index}`,
-      };
-    }),
-  );
+  protected readonly logoSlots = VENDOR_LOGO_SLOTS;
 
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
   private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly platformId = inject(PLATFORM_ID);
-  private vendorRotationIntervalId: ReturnType<typeof setInterval> | undefined;
 
   ngOnInit(): void {
     const metaTitle = $localize`:@@featureForepathItSystems-metaTitle:Managed IT systems :: ForePath`;
@@ -117,26 +92,5 @@ export class ForepathItSystemsComponent implements OnInit {
         }),
       ),
     );
-
-    this.startVendorLogoRotation();
-    this.destroyRef.onDestroy(() => {
-      clearInterval(this.vendorRotationIntervalId);
-    });
-  }
-
-  private startVendorLogoRotation(): void {
-    if (!isPlatformBrowser(this.platformId) || this.prefersReducedMotion()) {
-      return;
-    }
-
-    this.vendorRotationIntervalId = setInterval(() => {
-      this.vendorSlotIndices.update((indices) =>
-        indices.map((index, slotIndex) => (index + 1) % VENDOR_LOGO_SLOTS[slotIndex].length),
-      );
-    }, VENDOR_ROTATION_INTERVAL_MS);
-  }
-
-  private prefersReducedMotion(): boolean {
-    return typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 }

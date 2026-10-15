@@ -14,10 +14,12 @@
 </section>
 
 <!-- Path chooser -->
-<section id="paths" class="py-10 bg-white pricing-paths grid-section">
+<section id="paths" class="py-10 bg-body pricing-paths grid-section">
   <div class="container grid-section__container">
     <div class="text-center pb-10">
-      <h2 class="h2 fw-semibold text-dark mb-3" i18n="@@featurePortalPricing-pathsTitle">Two ways to run Agenstra</h2>
+      <h2 class="h2 fw-semibold text-body-emphasis mb-3" i18n="@@featurePortalPricing-pathsTitle">
+        Two ways to run Agenstra
+      </h2>
       <p class="text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalPricing-pathsLead">
         Most teams start self-hosted; move to managed cloud when you want us to operate the platform.
       </p>
@@ -27,7 +29,9 @@
         <a routerLink="." fragment="self-hosted" class="text-decoration-none d-block h-100">
           <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 pricing-path-card-subtle">
             <i class="bi bi-hdd-stack text-primary icon-lg mb-3 d-block" aria-hidden="true"></i>
-            <h3 class="h5 fw-semibold text-dark mb-2" i18n="@@featurePortalPricing-pathSelfHostedTitle">Self-hosted</h3>
+            <h3 class="h5 fw-semibold text-body-emphasis mb-2" i18n="@@featurePortalPricing-pathSelfHostedTitle">
+              Self-hosted
+            </h3>
             <p class="text-muted small mb-3" i18n="@@featurePortalPricing-pathSelfHostedDesc">
               Open source through enterprise licenses. You control data, networking, and upgrades.
             </p>
@@ -43,7 +47,9 @@
             class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 pricing-path-card pricing-path-card--cloud card-capability card-capability-primary-subtle"
           >
             <i class="bi bi-cloud-check text-primary icon-lg mb-3 d-block" aria-hidden="true"></i>
-            <h3 class="h5 fw-semibold text-dark mb-2" i18n="@@featurePortalPricing-pathManagedTitle">Agenstra Cloud</h3>
+            <h3 class="h5 fw-semibold text-body-emphasis mb-2" i18n="@@featurePortalPricing-pathManagedTitle">
+              Agenstra Cloud
+            </h3>
             <p class="text-muted small mb-3" i18n="@@featurePortalPricing-pathManagedDesc">
               Fully managed platform. We handle infrastructure, updates, and scaling.
             </p>
@@ -61,7 +67,7 @@
 <section id="self-hosted" class="py-10 bg-body-tertiary pricing-tiers grid-section">
   <div class="container grid-section__container">
     <div class="text-center pb-10">
-      <h2 class="h2 fw-semibold text-dark mb-4" i18n="@@featurePortalPricing-tiersTitle">License tiers</h2>
+      <h2 class="h2 fw-semibold text-body-emphasis mb-4" i18n="@@featurePortalPricing-tiersTitle">License tiers</h2>
       <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalPricing-tiersLead">
         Compare self-hosted plans from open source through enterprise. Swipe or use the arrows to review Startup,
         Business, and Enterprise.
@@ -70,7 +76,7 @@
     <div class="position-relative">
       <div class="pricing-carousel-scroll-buttons d-none d-lg-flex justify-content-between align-items-center">
         <fpc-button
-          variant="primary"
+          variant="dark"
           iconOnly
           btnClass="pricing-carousel-scroll-button-left"
           (clicked)="scrollPricingCarousel('left')"
@@ -81,7 +87,7 @@
           <i class="bi bi-arrow-left" aria-hidden="true"></i>
         </fpc-button>
         <fpc-button
-          variant="primary"
+          variant="dark"
           iconOnly
           btnClass="pricing-carousel-scroll-button-right"
           (clicked)="scrollPricingCarousel('right')"
@@ -101,14 +107,10 @@
             <div class="card-body p-4 p-lg-5 d-flex flex-column">
               <div class="text-center mb-4">
                 <h3 class="h4 m-0" i18n="@@featurePortalPricing-openSourceTitle">Open Source</h3>
-                <fpc-badge
-                  variant="marketing"
-                  color="secondary"
-                  class="my-2"
-                  i18n="@@featurePortalPricing-selfHostedBadge"
+                <fpc-badge color="primary" class="my-2" i18n="@@featurePortalPricing-selfHostedBadge"
                   >Self-Hosted</fpc-badge
                 >
-                <div class="card border-0 rounded-3 bg-body-tertiary p-3 my-3">
+                <div class="pricing-price p-3 my-3">
                   <div class="display-6 fw-bold text-primary mb-1" i18n="@@featurePortalPricing-openSourcePrice">
                     Free
                   </div>
@@ -161,14 +163,10 @@
             <div class="card-body p-4 p-lg-5 d-flex flex-column">
               <div class="text-center mb-4">
                 <h3 class="h4 m-0" i18n="@@featurePortalPricing-startupTitle">Startup</h3>
-                <fpc-badge
-                  variant="marketing"
-                  color="secondary"
-                  class="my-2"
-                  i18n="@@featurePortalPricing-selfHostedBadge"
+                <fpc-badge color="primary" class="my-2" i18n="@@featurePortalPricing-selfHostedBadge"
                   >Self-Hosted</fpc-badge
                 >
-                <div class="card border-0 rounded-3 bg-body-tertiary p-3 my-3">
+                <div class="pricing-price p-3 my-3">
                   <div class="display-6 fw-bold text-primary mb-1" i18n="@@featurePortalPricing-startupPrice">Free</div>
                   <p class="text-muted small mb-0" i18n="@@featurePortalPricing-startupLicense">
                     BUSL-1.1 with Additional Use Grant
@@ -229,14 +227,10 @@
             <div class="card-body p-4 p-lg-5 d-flex flex-column">
               <div class="text-center mb-4">
                 <h3 class="h4 m-0" i18n="@@featurePortalPricing-businessTitle">Business</h3>
-                <fpc-badge
-                  variant="marketing"
-                  color="secondary"
-                  class="my-2"
-                  i18n="@@featurePortalPricing-selfHostedBadge"
+                <fpc-badge color="primary" class="my-2" i18n="@@featurePortalPricing-selfHostedBadge"
                   >Self-Hosted</fpc-badge
                 >
-                <div class="card border-0 rounded-3 card-capability card-capability-primary p-3 my-3">
+                <div class="pricing-price p-3 my-3">
                   <div class="display-6 fw-bold text-primary mb-1" i18n="@@featurePortalPricing-businessPrice">
                     €499/mo
                   </div>
@@ -279,14 +273,10 @@
             <div class="card-body p-4 p-lg-5 d-flex flex-column">
               <div class="text-center mb-4">
                 <h3 class="h4 m-0" i18n="@@featurePortalPricing-enterpriseTitle">Enterprise</h3>
-                <fpc-badge
-                  variant="marketing"
-                  color="secondary"
-                  class="my-2"
-                  i18n="@@featurePortalPricing-selfHostedBadge"
+                <fpc-badge color="primary" class="my-2" i18n="@@featurePortalPricing-selfHostedBadge"
                   >Self-Hosted</fpc-badge
                 >
-                <div class="card border-0 rounded-3 bg-body-tertiary p-3 my-3">
+                <div class="pricing-price p-3 my-3">
                   <div class="display-6 fw-bold text-primary mb-1" i18n="@@featurePortalPricing-enterprisePrice">
                     Ask Us
                   </div>
@@ -331,10 +321,10 @@
 </section>
 
 <!-- Managed cloud -->
-<section id="managed" class="py-10 bg-white pricing-managed grid-section">
+<section id="managed" class="py-10 bg-body pricing-managed grid-section">
   <div class="container grid-section__container">
     <div class="text-center pb-10">
-      <h2 class="h2 fw-semibold text-dark mb-4" i18n="@@featurePortalPricing-managedTitle">Agenstra Cloud</h2>
+      <h2 class="h2 fw-semibold text-body-emphasis mb-4" i18n="@@featurePortalPricing-managedTitle">Agenstra Cloud</h2>
       <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalPricing-managedLead">
         Fully managed hosting with predictable monthly pricing. We operate infrastructure, scaling, and updates so your
         teams can focus on delivery.
@@ -388,20 +378,26 @@
           </div>
         </div>
         <div
-          class="col-lg-4 p-4 p-lg-5 text-center card-capability-primary border-start pricing-managed-aside d-flex flex-column justify-content-center"
+          class="col-lg-4 p-4 p-lg-5 text-center landing-surface-tint landing-divider-start pricing-managed-aside d-flex flex-column justify-content-center"
         >
           <p class="small text-muted mb-2" i18n="@@featurePortalPricing-cloudStartingAt">Starting at</p>
-          <div class="h2 fw-bold text-primary mb-4">
+          <div class="mb-4">
             @if (cheapestOfferingLoading() || !cheapestLoaded()) {
-              <span class="text-muted" aria-hidden="true">…</span>
+              <div class="h2 fw-bold text-muted mb-0" aria-hidden="true">...</div>
             } @else {
               @if (cheapestOffering(); as cloudPlan) {
                 @if (formatPublicOfferingPrice(cloudPlan); as price) {
-                  {{ price.prefix }}€{{ price.amount | number: '1.2-2'
-                  }}<span class="fs-6 text-muted fw-normal" i18n="@@featurePortalPricing-cloudPriceUnit">/ month</span>
+                  <div class="h2 fw-bold text-primary mb-0">
+                    {{ price.prefix }}€{{ price.amount | number: '1.2-2'
+                    }}<span class="fs-6 text-muted fw-normal" i18n="@@featurePortalPricing-cloudPriceUnit"
+                      >/ month</span
+                    >
+                  </div>
                 }
               } @else {
-                <span class="text-muted" i18n="@@featurePortalPricing-cloudPriceUnavailable">Not available</span>
+                <div class="h2 fw-bold text-primary mb-0" i18n="@@featurePortalPricing-cloudPriceUnavailable">
+                  On request
+                </div>
               }
             }
           </div>

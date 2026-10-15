@@ -25,16 +25,16 @@ const meta: Meta<FpcListComponent> = {
     template: `<fpc-list [flush]="flush" [bordered]="bordered" [ariaLabel]="ariaLabel">
             <fpc-list-item>
                 <span fpcListItemTitle>INV-2026-001</span>
-                <span fpcListItemMeta>Paid · 1 240,00 €</span>
+                <span fpcListItemMeta>Paid: 1 240,00 €</span>
             </fpc-list-item>
             <fpc-list-item [active]="true">
                 <span fpcListItemTitle>INV-2026-002</span>
-                <span fpcListItemMeta>Open · 980,00 €</span>
+                <span fpcListItemMeta>Open: 980,00 €</span>
                 <fpc-button fpcListItemActions variant="secondary" size="sm">Remind</fpc-button>
             </fpc-list-item>
             <fpc-list-item>
                 <span fpcListItemTitle>INV-2026-003</span>
-                <span fpcListItemMeta>Overdue · 310,00 €</span>
+                <span fpcListItemMeta>Overdue: 310,00 €</span>
                 <fpc-button fpcListItemActions variant="secondary" size="sm">Remind</fpc-button>
             </fpc-list-item>
         </fpc-list>`,

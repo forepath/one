@@ -8,7 +8,7 @@ export type { ServiceDetailTabComponent } from '../contributors/contributor-ui.t
 export type ServiceDetailAddonTabComponent = ServiceDetailTabComponent;
 
 /**
- * Frontend registry: tab id → component.
+ * Frontend registry: tab id -> component.
  * Merged from compile-time first-party contributor UI modules.
  */
 export const SERVICE_DETAIL_TAB_REGISTRY: Record<string, ServiceDetailTabComponent> = collectContributorTabComponents(

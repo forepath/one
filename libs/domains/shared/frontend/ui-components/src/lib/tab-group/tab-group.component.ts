@@ -15,10 +15,10 @@ import { FpcTabComponent } from '../tab/tab.component';
  * Falls back to the first enabled tab when `activeId` is unset or invalid.
  *
  * `orientation="vertical"` lays out a left-hand tab list with section headings (via each tab's
- * optional `section` input) beside the active panel — suitable for settings-style UIs.
+ * optional `section` input) beside the active panel - suitable for settings-style UIs.
  *
  * Selection sync runs in `afterRenderEffect` so projected tab `id` inputs are bound before we
- * read them (`contentChildren` can otherwise surface instances too early — NG0950).
+ * read them (`contentChildren` can otherwise surface instances too early - NG0950).
  */
 @Component({
   selector: 'fpc-tab-group',

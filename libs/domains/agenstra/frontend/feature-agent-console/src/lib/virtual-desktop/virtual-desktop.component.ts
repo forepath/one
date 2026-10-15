@@ -26,7 +26,7 @@ export class VirtualDesktopComponent implements OnDestroy {
   readonly connected = signal(false);
   readonly errorMessage = signal<string | null>(null);
 
-  readonly connectingLabel = $localize`:@@featureVirtualDesktop-connecting:Connecting to desktop…`;
+  readonly connectingLabel = $localize`:@@featureVirtualDesktop-connecting:Connecting to desktop...`;
   readonly errorTitle = $localize`:@@featureVirtualDesktop-errorTitle:Desktop unavailable`;
 
   private rfb: NovncRfbInstance | null = null;

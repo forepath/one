@@ -185,7 +185,7 @@ export interface AgentChatQuestionReplyRequest {
               <div class="agent-chat-event-row__question-prompt text-body mb-2">{{ q.prompt }}</div>
             }
             @if (answered()) {
-              <div class="text-muted" i18n="@@featureChat-questionAnswered">Answered</div>
+              <div class="text-body-secondary" i18n="@@featureChat-questionAnswered">Answered</div>
             } @else {
               @if (q.options.length > 0) {
                 <div class="d-flex flex-wrap gap-2">

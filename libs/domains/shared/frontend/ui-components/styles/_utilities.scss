@@ -1,0 +1,9 @@
+// Layout helpers Bootstrap does not ship. Flex and grid items default to `min-*: auto`, which
+// stops them from shrinking below their content and breaks nested scroll areas.
+.min-h-0 {
+  min-height: 0 !important;
+}
+
+.min-w-0 {
+  min-width: 0 !important;
+}

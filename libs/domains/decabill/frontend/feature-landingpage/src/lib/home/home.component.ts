@@ -1,14 +1,5 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  inject,
-  LOCALE_ID,
-  OnInit,
-  PLATFORM_ID,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnInit, PLATFORM_ID } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
@@ -18,9 +9,21 @@ import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forep
 import { addPageMetaTags, buildPageMetaTags, formatProductMetaTitle } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
+import { OverviewIllustrationComponent } from '../illustrations/overview-illustration.component';
+import { BillingTimelineIllustrationComponent } from '../illustrations/billing-timeline-illustration.component';
+import { PlanConfigIllustrationComponent } from '../illustrations/plan-config-illustration.component';
+
 @Component({
   selector: 'framework-portal-home',
-  imports: [FpcBadgeComponent, FpcButtonComponent, CommonModule, RouterModule],
+  imports: [
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    CommonModule,
+    RouterModule,
+    OverviewIllustrationComponent,
+    PlanConfigIllustrationComponent,
+    BillingTimelineIllustrationComponent,
+  ],
   styleUrls: ['./home.component.scss'],
   templateUrl: './home.component.html',
   standalone: true,
@@ -34,9 +37,6 @@ export class PortalHomeComponent implements OnInit {
   private readonly locale = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
   private readonly platformId = inject(PLATFORM_ID);
-
-  activeSlide = signal<number>(1);
-  autoplayInterval = this.initializeAutoplayInterval();
 
   readonly cheapestOffering = toSignal(this.servicePlansFacade.getCheapestServicePlanOffering$(), {
     initialValue: null,
@@ -53,44 +53,6 @@ export class PortalHomeComponent implements OnInit {
   readonly billingBaseUrl = this.environment.application.production
     ? `${this.environment.landing.urls.portal}/${this.locale}/subscriptions?order=true`
     : `${this.environment.landing.urls.portal}/subscriptions?order=true`;
-
-  readonly billingIntegrations: ReadonlyArray<{
-    id: string;
-    name: string;
-    brandColor: string;
-    logoUrl?: string;
-    wordmark?: boolean;
-    logoClass?: string;
-  }> = [
-    { id: 'stripe', name: 'Stripe', logoUrl: 'assets/images/logos/stripe.svg', brandColor: '#635BFF' },
-    { id: 'hetzner', name: 'Hetzner', logoUrl: 'assets/images/logos/hetzner.svg', brandColor: '#D50C2D' },
-    {
-      id: 'digitalocean',
-      name: 'DigitalOcean',
-      logoUrl: 'assets/images/logos/digitalocean.svg',
-      brandColor: '#0080FF',
-    },
-    {
-      id: 'datev',
-      name: 'DATEV',
-      logoUrl: 'assets/images/logos/datev.svg',
-      brandColor: '#90D033',
-      logoClass: 'home-integration-grid__logo--mark',
-    },
-    {
-      id: 'oidc',
-      name: 'OpenID Connect',
-      logoUrl: 'assets/images/logos/oidc.svg',
-      brandColor: '#FF6200',
-      logoClass: 'home-integration-grid__logo--wide',
-    },
-    {
-      id: 'api',
-      name: $localize`:@@featureDecabillHome-howIntegrationApi:REST API`,
-      brandColor: '#1A1F36',
-      wordmark: true,
-    },
-  ];
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -120,36 +82,6 @@ export class PortalHomeComponent implements OnInit {
         }),
       ),
     );
-  }
-
-  selectSlide(slide: number): void {
-    this.activeSlide.set(Math.max(1, Math.min(4, slide)));
-  }
-
-  pauseAutoplay() {
-    if (this.autoplayInterval) {
-      clearInterval(this.autoplayInterval);
-    }
-
-    this.autoplayInterval = null;
-  }
-
-  resumeAutoplay() {
-    this.autoplayInterval = this.initializeAutoplayInterval();
-  }
-
-  private initializeAutoplayInterval() {
-    if (isPlatformBrowser(this.platformId)) {
-      return setInterval(() => {
-        this.activeSlide.update((prev) => prev + 1);
-
-        if (this.activeSlide() > 4) {
-          this.activeSlide.set(1);
-        }
-      }, 3000);
-    }
-
-    return null;
   }
 
   billingIntervalSuffix(plan: PublicServicePlanOffering): string {

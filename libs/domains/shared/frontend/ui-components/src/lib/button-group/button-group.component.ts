@@ -8,7 +8,7 @@ export type FpcButtonGroupGap = 'xs' | 'sm' | 'md' | 'lg';
  * Toolbar cluster for related `fpc-button`s. Unlike Bootstrap `btn-group`, buttons stay visually
  * separate with a small gap (no shared borders / collapsed radii).
  *
- * - `size` sets the default gap scale (`sm` → tight toolbars, `lg` → roomier clusters).
+ * - `size` sets the default gap scale (`sm` -> tight toolbars, `lg` -> roomier clusters).
  * - `gap` overrides that scale when a one-off spacing is needed.
  *
  * Put `role="group"` / `aria-label` on the host via the inputs; keep `fpcListItemActions` (and
@@ -36,7 +36,7 @@ export type FpcButtonGroupGap = 'xs' | 'sm' | 'md' | 'lg';
 export class FpcButtonGroupComponent {
   /** Semantic size of the cluster; also picks the default gap. */
   readonly size = input<FpcButtonGroupSize>('md');
-  /** Optional gap override (`xs` = 0.125rem … `lg` = 0.5rem). */
+  /** Optional gap override (`xs` = 0.125rem ... `lg` = 0.5rem). */
   readonly gap = input<FpcButtonGroupGap | null>(null);
   readonly ariaLabel = input<string | null>(null);
 

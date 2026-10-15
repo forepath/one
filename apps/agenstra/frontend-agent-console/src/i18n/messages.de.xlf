@@ -6,6 +6,10 @@
         <source>Audit :: Agenstra</source>
         <target>Audit :: Agenstra</target>
       </trans-unit>
+      <trans-unit id="featureAgentConsole-agentConfigTitle" datatype="html">
+        <source>Agent configuration :: Agenstra</source>
+        <target>Agent-Konfiguration :: Agenstra</target>
+      </trans-unit>
       <trans-unit id="featureAgentConsole-atlassianImportTitle" datatype="html">
         <source>Atlassian import :: Agenstra</source>
         <target>Atlassian-Import :: Agenstra</target>
@@ -22,6 +26,18 @@
         <source>Manager :: Agenstra</source>
         <target>Manager :: Agenstra</target>
       </trans-unit>
+      <trans-unit id="featureAgentSelect-clearSelectionAria" datatype="html">
+        <source>Clear selected agent</source>
+        <target>Ausgewählten Agent entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentSelect-noAgents" datatype="html">
+        <source>No agents found.</source>
+        <target>Keine Agents gefunden.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentSelect-placeholder" datatype="html">
+        <source>Search agents by name</source>
+        <target>Agents nach Namen suchen</target>
+      </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-pageTitle" datatype="html">
         <source> Atlassian import (Jira &amp; Confluence) </source>
         <target> Atlassian-Import (Jira &amp; Confluence) </target>
@@ -30,7 +46,6 @@
         <source>Refresh</source>
         <target> Aktualisieren </target>
       </trans-unit>
-
       <trans-unit id="featureAtlassianImportAdmin-dismiss" datatype="html">
         <source> Dismiss </source>
         <target> Ausblenden </target>
@@ -51,6 +66,10 @@
         <source>Add</source>
         <target>Hinzufügen</target>
       </trans-unit>
+      <trans-unit id="featureAtlassianImportAdmin-noSearchResults" datatype="html">
+        <source>No search results</source>
+        <target>Keine Suchergebnisse</target>
+      </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-searchConnectionsLabel" datatype="html">
         <source>Search site connections</source>
         <target>Site-Verbindungen suchen</target>
@@ -60,16 +79,12 @@
         <target>Verbindungen suchen</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-loadingConnections" datatype="html">
-        <source>Loading connections…</source>
-        <target>Verbindungen werden geladen…</target>
+        <source>Loading connections...</source>
+        <target>Verbindungen werden geladen...</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-noConnectionsYet" datatype="html">
-        <source> No connections yet. </source>
-        <target> Noch keine Verbindungen. </target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-noConnectionsMatchSearch" datatype="html">
-        <source> No connections match your search. </source>
-        <target> Keine Verbindungen entsprechen Ihrer Suche. </target>
+        <source>No connections yet</source>
+        <target>Noch keine Verbindungen</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-connectionActionsAria" datatype="html">
         <source>Connection actions</source>
@@ -96,16 +111,12 @@
         <target>Import-Konfigurationen suchen</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-loadingConfigs" datatype="html">
-        <source>Loading configs…</source>
-        <target>Konfigurationen werden geladen…</target>
+        <source>Loading configs...</source>
+        <target>Konfigurationen werden geladen...</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-noConfigsYet" datatype="html">
-        <source> No import configs yet. </source>
-        <target> Noch keine Import-Konfigurationen. </target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-noConfigsMatchSearch" datatype="html">
-        <source> No import configs match your search. </source>
-        <target> Keine Import-Konfigurationen entsprechen Ihrer Suche. </target>
+        <source>No import configs yet</source>
+        <target>Noch keine Import-Konfigurationen</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-badgeOn" datatype="html">
         <source>On</source>
@@ -131,10 +142,6 @@
         <source>Run import now</source>
         <target>Import jetzt ausführen</target>
       </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-runningImport" datatype="html">
-        <source>Running import…</source>
-        <target>Import läuft…</target>
-      </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-clearMarkersTitle" datatype="html">
         <source>Clear sync markers</source>
         <target>Synchronisations-Markierungen löschen</target>
@@ -150,10 +157,6 @@
       <trans-unit id="featureAtlassianImportAdmin-newConnectionTitle" datatype="html">
         <source> New connection </source>
         <target>Neue Verbindung</target>
-      </trans-unit>
-      <trans-unit id="featureAtlassianImportAdmin-closeAria" datatype="html">
-        <source>Close</source>
-        <target>Schließen</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-newConnLabel" datatype="html">
         <source>Label (optional)</source>
@@ -188,8 +191,8 @@
         <target>Verbindung</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-selectPlaceholder" datatype="html">
-        <source>Select…</source>
-        <target>Auswählen…</target>
+        <source>Select...</source>
+        <target>Auswählen...</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-fieldWorkspace" datatype="html">
         <source>Workspace</source>
@@ -272,8 +275,8 @@
         <target>Ordner-Titel oder SHA suchen</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-folderSuggestRow" datatype="html">
-        <source> Folder · <x id="INTERPOLATION" equiv-text="{{ n.title }}"/> </source>
-        <target>Ordner · <x id="INTERPOLATION" equiv-text="{{ n.title }}"/></target>
+        <source> Folder: <x id="INTERPOLATION" equiv-text="{{ n.title }}"/> </source>
+        <target>Ordner: <x id="INTERPOLATION" equiv-text="{{ n.title }}"/></target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-selectedParentFolder" datatype="html">
         <source> Selected: <x id="INTERPOLATION" equiv-text="{{ newConfig.agenstraParentFolderId }}"/> </source>
@@ -300,8 +303,8 @@
         <target>Neuer API-Token (optional)</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-editConfigHeading" datatype="html">
-        <source> Edit import config (<x id="INTERPOLATION" equiv-text="{{ configToEdit.importKind }}"/>) </source>
-        <target>Import-Konfiguration (<x id="INTERPOLATION" equiv-text="{{ configToEdit.importKind }}"/>) bearbeiten</target>
+        <source> Edit import config (<x id="INTERPOLATION" equiv-text="{{ cfg.importKind }}"/>) </source>
+        <target>Import-Konfiguration (<x id="INTERPOLATION" equiv-text="{{ cfg.importKind }}"/>) bearbeiten</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-editBoardId" datatype="html">
         <source>Board ID</source>
@@ -336,16 +339,16 @@
         <target>Verbindung löschen</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-deleteConnectionBody" datatype="html">
-        <source> Delete connection &quot;<x id="INTERPOLATION" equiv-text="{{ connectionLabel(connectionPendingDelete) }}"/>&quot;? Related import configs may stop working. </source>
-        <target>Möchten Sie die Verbindung „<x id="INTERPOLATION" equiv-text="{{ connectionLabel(connectionPendingDelete) }}"/>“ wirklich löschen? Zugehörige Import-Konfigurationen funktionieren möglicherweise nicht mehr.</target>
+        <source> Delete connection &quot;<x id="INTERPOLATION" equiv-text="{{ connectionLabel(pending) }}"/>&quot;? Related import configs may stop working. </source>
+        <target>Möchten Sie die Verbindung „<x id="INTERPOLATION" equiv-text="{{ connectionLabel(pending) }}"/>“ wirklich löschen? Zugehörige Import-Konfigurationen funktionieren möglicherweise nicht mehr.</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-deleteConfigHeading" datatype="html">
         <source> Delete import config </source>
         <target> Import-Konfiguration löschen </target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-deleteConfigBody" datatype="html">
-        <source> Delete <x id="INTERPOLATION" equiv-text="{{ configPendingDelete.importKind }}"/> import config for workspace <x id="INTERPOLATION_1" equiv-text="{{ clientName(configPendingDelete.clientId) }}"/>? </source>
-        <target>Möchten Sie die <x id="INTERPOLATION" equiv-text="{{ configPendingDelete.importKind }}"/>-Import-Konfiguration für Workspace <x id="INTERPOLATION_1" equiv-text="{{ clientName(configPendingDelete.clientId) }}"/> wirklich löschen?</target>
+        <source> Delete <x id="INTERPOLATION" equiv-text="{{ pending.importKind }}"/> import config for workspace <x id="INTERPOLATION_1" equiv-text="{{ clientName(pending.clientId) }}"/>? </source>
+        <target>Möchten Sie die <x id="INTERPOLATION" equiv-text="{{ pending.importKind }}"/>-Import-Konfiguration für Workspace <x id="INTERPOLATION_1" equiv-text="{{ clientName(pending.clientId) }}"/> wirklich löschen?</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
@@ -356,8 +359,8 @@
         <target> Synchronisations-Markierungen löschen </target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-clearMarkersBody" datatype="html">
-        <source> Clear all sync markers for this <x id="INTERPOLATION" equiv-text="{{ configPendingClearMarkers.importKind }}"/> config? External items may be re-imported as duplicates. </source>
-        <target>Alle Synchronisationsmarkierungen für diese <x id="INTERPOLATION" equiv-text="{{ configPendingClearMarkers.importKind }}"/>-Konfiguration löschen? Externe Elemente werden möglicherweise erneut als Duplikate importiert.</target>
+        <source> Clear all sync markers for this <x id="INTERPOLATION" equiv-text="{{ pending.importKind }}"/> config? External items may be re-imported as duplicates. </source>
+        <target>Alle Synchronisationsmarkierungen für diese <x id="INTERPOLATION" equiv-text="{{ pending.importKind }}"/>-Konfiguration löschen? Externe Elemente werden möglicherweise erneut als Duplikate importiert.</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-swimlaneDraft" datatype="html">
         <source>Draft</source>
@@ -396,16 +399,16 @@
         <target>Unbenannte Verbindung</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-emptyField" datatype="html">
-        <source>—</source>
+        <source>-</source>
         <target>-</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-ticketPick" datatype="html">
-        <source><x id="title" equiv-text="t.title"/> · <x id="sha" equiv-text="short"/></source>
-        <target><x id="title" equiv-text="t.title"/> · <x id="sha" equiv-text="short"/></target>
+        <source><x id="title" equiv-text="t.title"/> (<x id="sha" equiv-text="short"/>)</source>
+        <target><x id="title" equiv-text="t.title"/> (<x id="sha" equiv-text="short"/>)</target>
       </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-folderPick" datatype="html">
-        <source><x id="title" equiv-text="n.title"/> · <x id="sha" equiv-text="n.shas.short"/></source>
-        <target><x id="title" equiv-text="n.title"/> · <x id="sha" equiv-text="n.shas.short"/></target>
+        <source><x id="title" equiv-text="n.title"/> (<x id="sha" equiv-text="n.shas.short"/>)</source>
+        <target><x id="title" equiv-text="n.title"/> (<x id="sha" equiv-text="n.shas.short"/>)</target>
       </trans-unit>
       <trans-unit id="featureAudit-pageTitle" datatype="html">
         <source>Audit</source>
@@ -418,10 +421,6 @@
       <trans-unit id="featureAudit-clientLabel" datatype="html">
         <source>Client</source>
         <target>Client</target>
-      </trans-unit>
-      <trans-unit id="featureAudit-allClients" datatype="html">
-        <source>All clients</source>
-        <target>Alle Clients</target>
       </trans-unit>
       <trans-unit id="featureClientSelect-placeholder" datatype="html">
         <source>Search by name or ID</source>
@@ -499,10 +498,6 @@
         <source>Filter drops</source>
         <target>Filter-Abbrüche</target>
       </trans-unit>
-      <trans-unit id="featureAudit-auditTables" datatype="html">
-        <source>Audit Tables</source>
-        <target>Audit-Tabellen</target>
-      </trans-unit>
       <trans-unit id="featureAudit-chatIoTable" datatype="html">
         <source>Chat I/O</source>
         <target>Chat-I/O</target>
@@ -543,14 +538,6 @@
         <source>Showing <x id="INTERPOLATION" equiv-text="{{ list.data.length }}"/> of <x id="INTERPOLATION_1" equiv-text="{{ list.total }}"/></source>
         <target>Zeige <x id="INTERPOLATION" equiv-text="{{ list.data.length }}"/> von <x id="INTERPOLATION_1" equiv-text="{{ list.total }}"/></target>
       </trans-unit>
-      <trans-unit id="featureAudit-prev" datatype="html">
-        <source>Previous</source>
-        <target>Zurück</target>
-      </trans-unit>
-      <trans-unit id="featureAudit-next" datatype="html">
-        <source>Next</source>
-        <target>Weiter</target>
-      </trans-unit>
       <trans-unit id="featureAudit-filterDropsTable" datatype="html">
         <source>Filter Drops</source>
         <target>Filter-Abbrüche</target>
@@ -584,8 +571,8 @@
         <target>Ereignis</target>
       </trans-unit>
       <trans-unit id="featureAudit-noData" datatype="html">
-        <source>No data yet. Apply filters and load statistics.</source>
-        <target>Noch keine Daten. Filter anwenden und Statistiken laden.</target>
+        <source>No data yet</source>
+        <target>Noch keine Daten</target>
       </trans-unit>
       <trans-unit id="featureAudit-chartDropPrefix" datatype="html">
         <source>Drop</source>
@@ -695,6 +682,10 @@
         <source>Error</source>
         <target>Fehler</target>
       </trans-unit>
+      <trans-unit id="featureChat-agentEventKindPermission" datatype="html">
+        <source>Permission</source>
+        <target>Berechtigung</target>
+      </trans-unit>
       <trans-unit id="featureChat-agentEventSummaryUserMessage" datatype="html">
         <source>User message</source>
         <target>Benutzernachricht</target>
@@ -715,25 +706,21 @@
         <source>Assistant message</source>
         <target>Assistentennachricht</target>
       </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryEnrichment" datatype="html">
-        <source>Enrichment</source>
-        <target>Anreicherung</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryToolCall" datatype="html">
-        <source>Tool call · <x id="toolName" equiv-text="name"/></source>
-        <target>Tool-Aufruf · <x id="toolName" equiv-text="name"/></target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryEnrichmentResult" datatype="html">
-        <source>Enrichment result</source>
-        <target>Anreicherungsergebnis</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummaryToolResult" datatype="html">
-        <source>Tool result · <x id="toolName" equiv-text="name"/></source>
-        <target>Tool-Ergebnis · <x id="toolName" equiv-text="name"/></target>
-      </trans-unit>
       <trans-unit id="featureChat-agentEventSummaryErrorWithCode" datatype="html">
         <source>Error (<x id="errorCode" equiv-text="code"/>)</source>
         <target>Fehler (<x id="errorCode" equiv-text="code"/>)</target>
+      </trans-unit>
+      <trans-unit id="featureChat-questionAnswered" datatype="html">
+        <source>Answered</source>
+        <target>Beantwortet</target>
+      </trans-unit>
+      <trans-unit id="featureChat-questionSubmit" datatype="html">
+        <source>Submit</source>
+        <target>Absenden</target>
+      </trans-unit>
+      <trans-unit id="featureChat-questionReject" datatype="html">
+        <source>Reject</source>
+        <target>Ablehnen</target>
       </trans-unit>
       <trans-unit id="featureChat-agentToolInvocationPopover" datatype="html">
         <source>Tool invocation</source>
@@ -767,6 +754,158 @@
         <source>Tool result not received yet</source>
         <target>Tool-Ergebnis steht noch aus</target>
       </trans-unit>
+      <trans-unit id="featureChat-toolDisplayBash" datatype="html">
+        <source>Bash</source>
+        <target>Bash</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayRead" datatype="html">
+        <source>Read</source>
+        <target>Lesen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayWrite" datatype="html">
+        <source>Write</source>
+        <target>Schreiben</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayEdit" datatype="html">
+        <source>Edit</source>
+        <target>Bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayPatch" datatype="html">
+        <source>Apply patch</source>
+        <target>Patch anwenden</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayGlob" datatype="html">
+        <source>Glob</source>
+        <target>Glob</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayGrep" datatype="html">
+        <source>Grep</source>
+        <target>Grep</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayTodos" datatype="html">
+        <source>Todos</source>
+        <target>Aufgaben</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayWebfetch" datatype="html">
+        <source>Web fetch</source>
+        <target>Webabruf</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayWebsearch" datatype="html">
+        <source>Web search</source>
+        <target>Websuche</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayTask" datatype="html">
+        <source>Subagent</source>
+        <target>Subagent</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplaySkill" datatype="html">
+        <source>Skill</source>
+        <target>Skill</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayInvalid" datatype="html">
+        <source>Invalid</source>
+        <target>Ungültig</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayEnrichment" datatype="html">
+        <source>Enrichment</source>
+        <target>Anreicherung</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayTool" datatype="html">
+        <source>Tool</source>
+        <target>Tool</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedTodos" datatype="html">
+        <source>Todos</source>
+        <target>Aufgaben</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedCommand" datatype="html">
+        <source>Command</source>
+        <target>Befehl</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedWorkdir" datatype="html">
+        <source>Working directory</source>
+        <target>Arbeitsverzeichnis</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedOutput" datatype="html">
+        <source>Output</source>
+        <target>Ausgabe</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedFile" datatype="html">
+        <source>File</source>
+        <target>Datei</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedMatches" datatype="html">
+        <source>Matches</source>
+        <target>Treffer</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedNoMatches" datatype="html">
+        <source>No matches</source>
+        <target>Keine Treffer</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedEdit" datatype="html">
+        <source>Edit</source>
+        <target>Bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedWrite" datatype="html">
+        <source>Write</source>
+        <target>Schreiben</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedContent" datatype="html">
+        <source>Content</source>
+        <target>Inhalt</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedDiff" datatype="html">
+        <source>Diff</source>
+        <target>Diff</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedPatch" datatype="html">
+        <source>Patch</source>
+        <target>Patch</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedFetch" datatype="html">
+        <source>Fetch</source>
+        <target>Abruf</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedSearch" datatype="html">
+        <source>Search</source>
+        <target>Suche</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedTask" datatype="html">
+        <source>Subagent</source>
+        <target>Subagent</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedPrompt" datatype="html">
+        <source>Prompt</source>
+        <target>Prompt</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedResult" datatype="html">
+        <source>Result</source>
+        <target>Ergebnis</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedSkill" datatype="html">
+        <source>Skill</source>
+        <target>Skill</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedInvalid" datatype="html">
+        <source>Invalid tool</source>
+        <target>Ungültiges Tool</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedTruncated" datatype="html">
+        <source>Output truncated for display</source>
+        <target>Ausgabe für die Anzeige gekürzt</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedBashFailed" datatype="html">
+        <source>Command reported an error</source>
+        <target>Befehl hat einen Fehler gemeldet</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedFetchFailed" datatype="html">
+        <source>Fetch reported an error</source>
+        <target>Abruf hat einen Fehler gemeldet</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedSearchFailed" datatype="html">
+        <source>Search reported an error</source>
+        <target>Suche hat einen Fehler gemeldet</target>
+      </trans-unit>
       <trans-unit id="featureChat-brandAlt" datatype="html">
         <source>Agenstra</source>
         <target>Agenstra</target>
@@ -778,10 +917,6 @@
       <trans-unit id="featureChat-studio" datatype="html">
         <source>Studio</source>
         <target>Studio</target>
-      </trans-unit>
-      <trans-unit id="featureChat-chat" datatype="html">
-        <source>Chat</source>
-        <target>Chat</target>
       </trans-unit>
       <trans-unit id="featureChat-shareFileLink" datatype="html">
         <source>Share file link</source>
@@ -807,9 +942,13 @@
         <source>Loading workspaces...</source>
         <target>Arbeitsbereiche werden geladen...</target>
       </trans-unit>
+      <trans-unit id="featureChat-noSearchResults" datatype="html">
+        <source>No search results</source>
+        <target>Keine Suchergebnisse</target>
+      </trans-unit>
       <trans-unit id="featureChat-noWorkspaces" datatype="html">
-        <source>No workspaces available</source>
-        <target>Keine Arbeitsbereiche verfügbar</target>
+        <source>No workspaces yet</source>
+        <target>Noch keine Workspaces</target>
       </trans-unit>
       <trans-unit id="featureChat-environmentsAttention" datatype="html">
         <source>Environments need attention</source>
@@ -895,6 +1034,14 @@
         <source>Finalizing</source>
         <target>Abschluss</target>
       </trans-unit>
+      <trans-unit id="featureAgentConfig-workspaceTitle" datatype="html">
+        <source>Workspace agent configuration</source>
+        <target>Agent-Konfiguration des Workspace</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-environmentTitle" datatype="html">
+        <source>Environment agent configuration</source>
+        <target>Agent-Konfiguration der Umgebung</target>
+      </trans-unit>
       <trans-unit id="featureChat-workspaceUnreachable" datatype="html">
         <source>Workspace cannot be reached</source>
         <target>Workspace ist nicht erreichbar</target>
@@ -920,12 +1067,8 @@
         <target>Umgebungen werden geladen...</target>
       </trans-unit>
       <trans-unit id="featureChat-noEnvironments" datatype="html">
-        <source>No environments available</source>
-        <target>Keine Umgebungen verfügbar</target>
-      </trans-unit>
-      <trans-unit id="featureChat-virtualDesktop" datatype="html">
-        <source>Virtual Desktop</source>
-        <target>Virtueller Desktop</target>
+        <source>No environments yet</source>
+        <target>Noch keine Umgebungen</target>
       </trans-unit>
       <trans-unit id="featureChat-ticketAutonomyButtonTitle" datatype="html">
         <source>Prototype autonomy</source>
@@ -943,9 +1086,13 @@
         <source>Delete Environment</source>
         <target>Umgebung löschen</target>
       </trans-unit>
-      <trans-unit id="featureChat-chatHeader" datatype="html">
-        <source>Chat</source>
-        <target>Chat</target>
+      <trans-unit id="featureVirtualDesktop-header" datatype="html">
+        <source>Virtual Desktop</source>
+        <target>Virtueller Desktop</target>
+      </trans-unit>
+      <trans-unit id="featureVirtualDesktop-reconnectTitle" datatype="html">
+        <source>Reconnect</source>
+        <target>Neu verbinden</target>
       </trans-unit>
       <trans-unit id="featureChat-startEnvironmentTitle" datatype="html">
         <source>Start environment</source>
@@ -987,9 +1134,9 @@
         <source>Disconnected</source>
         <target>Getrennt</target>
       </trans-unit>
-      <trans-unit id="featureChat-remoteWorkspaceConfig" datatype="html">
-        <source>Remote Workspace Configuration</source>
-        <target>Remote-Arbeitsbereichskonfiguration</target>
+      <trans-unit id="featureChat-loadingMessages" datatype="html">
+        <source>Loading messages...</source>
+        <target>Nachrichten werden geladen...</target>
       </trans-unit>
       <trans-unit id="featureChat-noMessages" datatype="html">
         <source>No messages yet</source>
@@ -1007,6 +1154,14 @@
         <source>Waiting for response...</source>
         <target>Warte auf Antwort...</target>
       </trans-unit>
+      <trans-unit id="featureChat-scrollToBottomAria" datatype="html">
+        <source>Scroll to latest messages</source>
+        <target>Zu den neuesten Nachrichten scrollen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-scrollToBottomTitle" datatype="html">
+        <source>Scroll to latest messages</source>
+        <target>Zu den neuesten Nachrichten scrollen</target>
+      </trans-unit>
       <trans-unit id="featureChat-reconnectingToServer" datatype="html">
         <source>Reconnecting to server...</source>
         <target>Verbinde erneut mit Server...</target>
@@ -1023,19 +1178,11 @@
         <source>Dismiss</source>
         <target>Schließen</target>
       </trans-unit>
-      <trans-unit id="featureChat-commandsLabel" datatype="html">
-        <source>Commands</source>
-        <target>Befehle</target>
-      </trans-unit>
       <trans-unit id="featureChat-typeMessagePlaceholder" datatype="html">
-        <source>Type a message...</source>
-        <target>Nachricht eingeben...</target>
+        <source>Type a message or /command...</source>
+        <target>Nachricht oder /Befehl eingeben...</target>
       </trans-unit>
       <trans-unit id="featureChat-selectContextTitle" datatype="html">
-        <source>Select context</source>
-        <target>Kontext auswählen</target>
-      </trans-unit>
-      <trans-unit id="featureChat-selectContextAria" datatype="html">
         <source>Select context</source>
         <target>Kontext auswählen</target>
       </trans-unit>
@@ -1043,15 +1190,7 @@
         <source>Enhance prompt with AI</source>
         <target>Prompt mit KI verbessern</target>
       </trans-unit>
-      <trans-unit id="featureChat-enhancePromptAria" datatype="html">
-        <source>Enhance prompt with AI</source>
-        <target>Prompt mit KI verbessern</target>
-      </trans-unit>
       <trans-unit id="featureChat-planPromptTitle" datatype="html">
-        <source>Create plan with AI</source>
-        <target>Plan mit KI erstellen</target>
-      </trans-unit>
-      <trans-unit id="featureChat-planPromptAria" datatype="html">
         <source>Create plan with AI</source>
         <target>Plan mit KI erstellen</target>
       </trans-unit>
@@ -1060,18 +1199,14 @@
         <target>Plan</target>
       </trans-unit>
       <trans-unit id="featureChat-planRefinePlaceholder" datatype="html">
-        <source>Describe changes to the plan…</source>
-        <target>Änderungen am Plan beschreiben …</target>
+        <source>Describe changes to the plan...</source>
+        <target>Änderungen am Plan beschreiben...</target>
       </trans-unit>
       <trans-unit id="featureChat-planRefineSubmit" datatype="html">
         <source>Refine plan</source>
         <target>Plan verfeinern</target>
       </trans-unit>
       <trans-unit id="featureChat-planRefineSubmitTitle" datatype="html">
-        <source>Refine plan</source>
-        <target>Plan verfeinern</target>
-      </trans-unit>
-      <trans-unit id="featureChat-planRefineSubmitAria" datatype="html">
         <source>Refine plan</source>
         <target>Plan verfeinern</target>
       </trans-unit>
@@ -1083,17 +1218,21 @@
         <source>Execute plan</source>
         <target>Plan ausführen</target>
       </trans-unit>
-      <trans-unit id="featureChat-planExecuteAria" datatype="html">
-        <source>Execute plan</source>
-        <target>Plan ausführen</target>
+      <trans-unit id="featureChat-planRetryTitle" datatype="html">
+        <source>Retry plan</source>
+        <target>Plan wiederholen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-planStopTitle" datatype="html">
+        <source>Stop plan</source>
+        <target>Plan stoppen</target>
       </trans-unit>
       <trans-unit id="featureChat-planCancel" datatype="html">
         <source>Cancel plan</source>
         <target>Plan abbrechen</target>
       </trans-unit>
       <trans-unit id="featureChat-planEmptyMarkdown" datatype="html">
-        <source>Plan content will appear here as the agent explores…</source>
-        <target>Der Planinhalt erscheint hier, während der Agent den Bestand erkundet …</target>
+        <source>Plan content will appear here as the agent explores...</source>
+        <target>Der Planinhalt erscheint hier, während der Agent den Bestand erkundet...</target>
       </trans-unit>
       <trans-unit id="featureChat-planStatusPending" datatype="html">
         <source>Pending</source>
@@ -1127,22 +1266,6 @@
         <source>Cancelled</source>
         <target>Abgebrochen</target>
       </trans-unit>
-      <trans-unit id="featureChat-planPhaseExplore" datatype="html">
-        <source>Explore</source>
-        <target>Erkunden</target>
-      </trans-unit>
-      <trans-unit id="featureChat-planPhaseDraft" datatype="html">
-        <source>Draft</source>
-        <target>Entwurf</target>
-      </trans-unit>
-      <trans-unit id="featureChat-planPhaseRefine" datatype="html">
-        <source>Refine</source>
-        <target>Verfeinern</target>
-      </trans-unit>
-      <trans-unit id="featureChat-planPhaseReady" datatype="html">
-        <source>Ready</source>
-        <target>Bereit</target>
-      </trans-unit>
       <trans-unit id="featureChat-planStateDraftAvailable" datatype="html">
         <source>Draft available</source>
         <target>Entwurf verfügbar</target>
@@ -1150,10 +1273,6 @@
       <trans-unit id="featureChat-model" datatype="html">
         <source>Model</source>
         <target>Modell</target>
-      </trans-unit>
-      <trans-unit id="featureChat-modelAuto" datatype="html">
-        <source>Auto</source>
-        <target>Auto</target>
       </trans-unit>
       <trans-unit id="featureChat-responseMode" datatype="html">
         <source>Response</source>
@@ -1170,13 +1289,10 @@
       <trans-unit id="featureChat-connectToSend" datatype="html">
         <source>Connect to socket to send messages</source>
         <target>Mit Socket verbinden, um Nachrichten zu senden</target>
-      </trans-unit>      <trans-unit id="featureChat-selectContextModalTitle" datatype="html">
+      </trans-unit>
+      <trans-unit id="featureChat-selectContextModalTitle" datatype="html">
         <source> Select context </source>
         <target> Kontext auswählen </target>
-      </trans-unit>
-      <trans-unit id="featureChat-closeAriaLabel" datatype="html">
-        <source>Close</source>
-        <target>Schließen</target>
       </trans-unit>
       <trans-unit id="featureChat-includeWorkspaceContextLabel" datatype="html">
         <source>Include workspace context</source>
@@ -1190,6 +1306,10 @@
         <source> Select additional environments to enrich context more specifically. The active environment is included automatically. </source>
         <target> Wähle zusätzliche Umgebungen aus, um den Kontext gezielter anzureichern. Die aktive Umgebung wird automatisch einbezogen. </target>
       </trans-unit>
+      <trans-unit id="featureChat-removeTicketContext" datatype="html">
+        <source>Remove ticket context</source>
+        <target>Ticket-Kontext entfernen</target>
+      </trans-unit>
       <trans-unit id="featureChat-knowledgeContextLabel" datatype="html">
         <source>Knowledge context (SHA)</source>
         <target>Wissenskontext (SHA)</target>
@@ -1197,6 +1317,22 @@
       <trans-unit id="featureChat-knowledgeContextPlaceholder" datatype="html">
         <source>Title or short/long SHA</source>
         <target>Titel oder kurze/lange SHA</target>
+      </trans-unit>
+      <trans-unit id="featureChat-removeKnowledgeContext" datatype="html">
+        <source>Remove knowledge context</source>
+        <target>Wissenskontext entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-attachmentContextLabel" datatype="html">
+        <source>File attachments</source>
+        <target>Dateianhänge</target>
+      </trans-unit>
+      <trans-unit id="featureChat-addAttachmentContext" datatype="html">
+        <source>Attach files</source>
+        <target>Dateien anhängen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-removeAttachmentContext" datatype="html">
+        <source>Remove attachment</source>
+        <target>Anhang entfernen</target>
       </trans-unit>
       <trans-unit id="featureChat-done" datatype="html">
         <source> Done </source>
@@ -1207,8 +1343,10 @@
         <target>Arbeitsbereich löschen</target>
       </trans-unit>
       <trans-unit id="featureChat-deleteWorkspaceConfirm" datatype="html">
-        <source> Are you sure you want to delete the workspace <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ clientToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
-        <target>Möchten Sie den Workspace <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ clientToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> wirklich löschen?</target>
+        <source> Are you sure you want to delete the workspace <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ clientToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+    &gt;"/>? </source>
+        <target>Möchten Sie den Workspace <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ clientToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+    &gt;"/> wirklich löschen?</target>
       </trans-unit>
       <trans-unit id="featureChat-provisionedServerDetected" datatype="html">
         <source>Provisioned Server Detected</source>
@@ -1231,8 +1369,10 @@
         <target>Umgebung löschen</target>
       </trans-unit>
       <trans-unit id="featureChat-deleteEnvironmentConfirm" datatype="html">
-        <source> Are you sure you want to delete the environment <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ agentToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
-        <target>Möchten Sie die Umgebung <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ agentToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> wirklich löschen?</target>
+        <source> Are you sure you want to delete the environment <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ agentToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+    &gt;"/>? </source>
+        <target>Möchten Sie die Umgebung <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ agentToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+    &gt;"/> wirklich löschen?</target>
       </trans-unit>
       <trans-unit id="featureChat-existingWorkspace" datatype="html">
         <source> Existing Workspace </source>
@@ -1251,7 +1391,7 @@
         <target>Beschreibung</target>
       </trans-unit>
       <trans-unit id="featureChat-providerLabel" datatype="html">
-        <source>Anbieter</source>
+        <source>Provider</source>
         <target>Anbieter</target>
       </trans-unit>
       <trans-unit id="featureChat-selectProvider" datatype="html">
@@ -1259,7 +1399,7 @@
         <target>Anbieter auswählen</target>
       </trans-unit>
       <trans-unit id="featureChat-serverTypeLabel" datatype="html">
-        <source>Servertyp</source>
+        <source>Server Type</source>
         <target>Servertyp</target>
       </trans-unit>
       <trans-unit id="featureChat-selectServerType" datatype="html">
@@ -1267,7 +1407,7 @@
         <target>Servertyp auswählen</target>
       </trans-unit>
       <trans-unit id="featureChat-endpointLabel" datatype="html">
-        <source>Endpunkt</source>
+        <source>Endpoint</source>
         <target>Endpunkt</target>
       </trans-unit>
       <trans-unit id="featureChat-endpointPlaceholder" datatype="html">
@@ -1275,7 +1415,7 @@
         <target>https://example.com</target>
       </trans-unit>
       <trans-unit id="featureChat-authTypeLabel" datatype="html">
-        <source>Authentifizierungstyp</source>
+        <source>Authentication Type</source>
         <target>Authentifizierungstyp</target>
       </trans-unit>
       <trans-unit id="featureChat-apiKeyAutoGeneratePlaceholder" datatype="html">
@@ -1315,7 +1455,7 @@
         <target>Maximaler Kosinusabstand für Vektor-Anreicherung</target>
       </trans-unit>
       <trans-unit id="featureChat-provisionVectorMaxCosHint" datatype="html">
-        <source>0–2 (pgvector &lt;=&gt;). Only knowledge chunks at or below this distance are used; default 1.</source>
+        <source>0 to 2 (pgvector &lt;=&gt;). Only knowledge chunks at or below this distance are used; default 1.</source>
         <target>0 bis 2 (pgvector &lt;=&gt;). Es werden nur Wissensabschnitte mit diesem Abstand oder kleiner verwendet; Standard 1.</target>
       </trans-unit>
       <trans-unit id="featureChat-gitRepoPlaceholder" datatype="html">
@@ -1333,14 +1473,6 @@
       <trans-unit id="featureChat-createWorkspace" datatype="html">
         <source>Create</source>
         <target>Erstellen</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentTypeLabel" datatype="html">
-        <source>Agent Type</source>
-        <target>Agententyp</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentTypeDefaultOpencode" datatype="html">
-        <source>Default (OpenCode)</source>
-        <target>Standard (OpenCode)</target>
       </trans-unit>
       <trans-unit id="featureChat-containerTypeLabel" datatype="html">
         <source>Container Type</source>
@@ -1446,10 +1578,6 @@
         <source>Leave empty to keep current</source>
         <target>Leer lassen um aktuell zu behalten</target>
       </trans-unit>
-      <trans-unit id="featureChat-portPlaceholder" datatype="html">
-        <source>8080</source>
-        <target>8080</target>
-      </trans-unit>
       <trans-unit id="featureChat-updateWorkspace" datatype="html">
         <source>Save</source>
         <target>Speichern</target>
@@ -1490,6 +1618,10 @@
         <source>Delete override</source>
         <target>Override löschen</target>
       </trans-unit>
+      <trans-unit id="featureAgentConfig-layerFileEditorTitle" datatype="html">
+        <source>Edit layer file</source>
+        <target>Layer-Datei bearbeiten</target>
+      </trans-unit>
       <trans-unit id="featureChat-manageEnvVarsModalTitle" datatype="html">
         <source> Manage Environment Variables </source>
         <target>Umgebungsvariablen verwalten</target>
@@ -1499,11 +1631,11 @@
         <target>Neue Umgebungsvariable hinzufügen</target>
       </trans-unit>
       <trans-unit id="featureChat-envVarNameLabel" datatype="html">
-        <source>Variablenname</source>
+        <source>Variable Name</source>
         <target>Variablenname</target>
       </trans-unit>
       <trans-unit id="featureChat-envVarValueLabel" datatype="html">
-        <source>Wert</source>
+        <source>Value</source>
         <target>Wert</target>
       </trans-unit>
       <trans-unit id="featureChat-envVarNamePlaceholder" datatype="html">
@@ -1523,8 +1655,8 @@
         <target>Umgebungsvariablen</target>
       </trans-unit>
       <trans-unit id="featureChat-noEnvVars" datatype="html">
-        <source>No environment variables configured</source>
-        <target>Keine Umgebungsvariablen konfiguriert</target>
+        <source>No environment variables yet</source>
+        <target>Noch keine Umgebungsvariablen</target>
       </trans-unit>
       <trans-unit id="featureChat-enterValuePlaceholder" datatype="html">
         <source>Enter value</source>
@@ -1551,8 +1683,8 @@
         <target>Prototyp-Autonomie</target>
       </trans-unit>
       <trans-unit id="featureTicketAutonomyManager-loading" datatype="html">
-        <source>Loading…</source>
-        <target>Wird geladen…</target>
+        <source>Loading...</source>
+        <target>Wird geladen...</target>
       </trans-unit>
       <trans-unit id="featureTicketAutonomyManager-intro" datatype="html">
         <source> Control whether this agent may run autonomous ticket prototyping, including scope and safety limits. </source>
@@ -1818,6 +1950,10 @@
         <source>Users</source>
         <target>Benutzer</target>
       </trans-unit>
+      <trans-unit id="featureContainer-agentConfigTitle" datatype="html">
+        <source>Agent configuration</source>
+        <target>Agent-Konfiguration</target>
+      </trans-unit>
       <trans-unit id="featureContainer-agentConfig" datatype="html">
         <source>Config</source>
         <target>Konfiguration</target>
@@ -1830,65 +1966,13 @@
         <source>Tokens</source>
         <target>Token</target>
       </trans-unit>
-      <trans-unit id="featureContainer-opencodeConfigTitle" datatype="html">
-        <source>OpenCode config</source>
-        <target>OpenCode-Konfiguration</target>
-      </trans-unit>
-      <trans-unit id="featureContainer-opencodeConfig" datatype="html">
-        <source>OpenCode</source>
-        <target>OpenCode</target>
-      </trans-unit>
-      <trans-unit id="featureOpencodeConfig-adminTitle" datatype="html">
-        <source>OpenCode config</source>
-        <target>OpenCode-Konfiguration</target>
-      </trans-unit>
-      <trans-unit id="featureOpencodeConfig-configJson" datatype="html">
-        <source>Config JSON</source>
-        <target>Konfigurations-JSON</target>
-      </trans-unit>
-      <trans-unit id="featureOpencodeConfig-save" datatype="html">
-        <source>Save</source>
-        <target>Speichern</target>
-      </trans-unit>
-      <trans-unit id="featureChat-manageOpencodeConfig" datatype="html">
-        <source>OpenCode configuration</source>
-        <target>OpenCode-Konfiguration</target>
-      </trans-unit>
       <trans-unit id="featureChat-manageOpencodeConfigTitle" datatype="html">
-        <source>Manage OpenCode config</source>
-        <target>OpenCode-Konfiguration verwalten</target>
+        <source>Manage agent configuration</source>
+        <target>Agent-Konfiguration verwalten</target>
       </trans-unit>
       <trans-unit id="featureChat-manageOpencodeConfigEnvironmentTitle" datatype="html">
-        <source>Manage OpenCode config</source>
-        <target>OpenCode-Konfiguration verwalten</target>
-      </trans-unit>
-      <trans-unit id="featureChat-opencodeConfigWorkspaceHelp" datatype="html">
-        <source>Workspace overlay JSON. Admin (global) keys override this layer when set.</source>
-        <target>Workspace-Overlay-JSON. Admin-(globale) Schlüssel überschreiben diese Ebene, wenn gesetzt.</target>
-      </trans-unit>
-      <trans-unit id="featureChat-opencodeConfigEnvironmentHelp" datatype="html">
-        <source>Environment overlay JSON. Workspace and admin keys override this layer when set.</source>
-        <target>Umgebungs-Overlay-JSON. Workspace- und Admin-Schlüssel überschreiben diese Ebene, wenn gesetzt.</target>
-      </trans-unit>
-      <trans-unit id="featureChat-opencodeConfigLockedKeys" datatype="html">
-        <source>Locked by higher layer:</source>
-        <target>Durch höhere Ebene gesperrt:</target>
-      </trans-unit>
-      <trans-unit id="featureChat-opencodeConfigJsonLabel" datatype="html">
-        <source>Config JSON</source>
-        <target>Konfigurations-JSON</target>
-      </trans-unit>
-      <trans-unit id="featureChat-opencodeConfigSave" datatype="html">
-        <source>Save</source>
-        <target>Speichern</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummarySubagent" datatype="html">
-        <source>Subagent</source>
-        <target>Subagent</target>
-      </trans-unit>
-      <trans-unit id="featureChat-agentEventSummarySubagentResult" datatype="html">
-        <source>Subagent result</source>
-        <target>Subagent-Ergebnis</target>
+        <source>Manage agent configuration</source>
+        <target>Agent-Konfiguration verwalten</target>
       </trans-unit>
       <trans-unit id="featureContainer-importTitle" datatype="html">
         <source>Import</source>
@@ -2017,11 +2101,6 @@
       <trans-unit id="featureDeploymentConfig-createConfigButton" datatype="html">
         <source>Create Configuration</source>
         <target>Konfiguration erstellen</target>
-      </trans-unit>
-
-      <trans-unit id="featureDeploymentConfig-closeAriaLabel" datatype="html">
-        <source>Close</source>
-        <target>Schließen</target>
       </trans-unit>
       <trans-unit id="featureDeploymentConfig-providerTypeLabel" datatype="html">
         <source>Provider Type</source>
@@ -2159,10 +2238,6 @@
         <source>No run selected yet</source>
         <target>Noch kein Lauf ausgewählt</target>
       </trans-unit>
-      <trans-unit id="featureDeploymentManager-selectRunHint" datatype="html">
-        <source>Select a run from the list to view details</source>
-        <target>Wählen Sie einen Lauf aus der Liste, um Details anzuzeigen</target>
-      </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-loadingRunDetails" datatype="html">
         <source>Loading run details...</source>
         <target>Laufdetails werden geladen...</target>
@@ -2223,10 +2298,6 @@
         <source> Cancel run </source>
         <target>Lauf abbrechen</target>
       </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-cancelConfirmCloseAria" datatype="html">
-        <source>Close</source>
-        <target>Schließen</target>
-      </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-cancelConfirmBody" datatype="html">
         <source> Are you sure you want to cancel this run? In-progress jobs may be stopped. </source>
         <target>Möchten Sie diesen Lauf wirklich abbrechen? Laufende Jobs können gestoppt werden.</target>
@@ -2255,9 +2326,13 @@
         <source>Search deployment runs</source>
         <target>Deployment-Läufe suchen</target>
       </trans-unit>
+      <trans-unit id="featureDeploymentRunsList-noSearchResults" datatype="html">
+        <source>No search results</source>
+        <target>Keine Suchergebnisse</target>
+      </trans-unit>
       <trans-unit id="featureDeploymentRunsList-noRunsFound" datatype="html">
-        <source>No deployment runs found</source>
-        <target>Keine Deployment-Läufe gefunden</target>
+        <source>No deployment runs yet</source>
+        <target>Noch keine Deployment-Läufe</target>
       </trans-unit>
       <trans-unit id="featureDeploymentRunsList-untitledRun" datatype="html">
         <source>Untitled Run</source>
@@ -2274,6 +2349,10 @@
       <trans-unit id="featureContainerStats-waitingForStats" datatype="html">
         <source>Waiting for container stats...</source>
         <target>Warte auf Container-Statistiken...</target>
+      </trans-unit>
+      <trans-unit id="featureFileEditor-sidebarTabsAria" datatype="html">
+        <source>Workspace sidebar</source>
+        <target>Workspace-Seitenleiste</target>
       </trans-unit>
       <trans-unit id="featureFileEditor-closeFileTreeTitle" datatype="html">
         <source>Close File Tree</source>
@@ -2339,10 +2418,6 @@
         <source>External File Changes Detected</source>
         <target>Externe Dateiänderungen erkannt</target>
       </trans-unit>
-      <trans-unit id="featureFileEditor-closeAriaLabel" datatype="html">
-        <source>Close</source>
-        <target>Schließen</target>
-      </trans-unit>
       <trans-unit id="featureFileEditor-externalChangesMessage" datatype="html">
         <source> The file <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ fileUpdateNotification()?.filePath }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> has been updated by another user while you have unsaved changes. </source>
         <target>Die Datei <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ fileUpdateNotification()?.filePath }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> wurde von einem anderen Benutzer aktualisiert, während Sie ungespeicherte Änderungen haben.</target>
@@ -2372,12 +2447,22 @@
         <target>Neuere Änderungen überschreiben?</target>
       </trans-unit>
       <trans-unit id="featureFileEditor-overrideNewerMessage" datatype="html">
-        <source> You previously rejected external changes to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ selectedFilePath() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>. Saving now will override those newer changes. </source>
-        <target>Sie haben externe Änderungen an <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ selectedFilePath() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> zuvor abgelehnt. Wenn Sie jetzt speichern, überschreiben Sie diese neueren Änderungen.</target>
+        <source> You previously rejected external changes to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ selectedFilePath() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+    &gt;"/>. Saving now will override those newer changes. </source>
+        <target>Sie haben externe Änderungen an <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ selectedFilePath() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+    &gt;"/> zuvor abgelehnt. Wenn Sie jetzt speichern, überschreiben Sie diese neueren Änderungen.</target>
       </trans-unit>
       <trans-unit id="featureFileEditor-overrideNewerConfirm" datatype="html">
         <source>Are you sure you want to proceed?</source>
         <target>Sind Sie sicher, dass Sie fortfahren möchten?</target>
+      </trans-unit>
+      <trans-unit id="featureFileEditor-filesTab" datatype="html">
+        <source>Files</source>
+        <target>Dateien</target>
+      </trans-unit>
+      <trans-unit id="featureFileEditor-searchTab" datatype="html">
+        <source>Search</source>
+        <target>Suche</target>
       </trans-unit>
       <trans-unit id="featureFileTree-filesHeader" datatype="html">
         <source>Files</source>
@@ -2407,9 +2492,17 @@
         <source>No files</source>
         <target>Keine Dateien</target>
       </trans-unit>
+      <trans-unit id="featureFileTree-itemBusy" datatype="html">
+        <source>Working...</source>
+        <target>Wird bearbeitet...</target>
+      </trans-unit>
       <trans-unit id="featureFileTree-deleteTitle" datatype="html">
         <source>Delete</source>
         <target>Löschen</target>
+      </trans-unit>
+      <trans-unit id="featureFileTree-uploading" datatype="html">
+        <source>Uploading...</source>
+        <target>Wird hochgeladen...</target>
       </trans-unit>
       <trans-unit id="featureFileTree-contextNewFile" datatype="html">
         <source>New File</source>
@@ -2435,6 +2528,18 @@
         <source>Open in a new window</source>
         <target>In neuem Fenster öffnen</target>
       </trans-unit>
+      <trans-unit id="featureFileTree-contextCopy" datatype="html">
+        <source>Copy</source>
+        <target>Kopieren</target>
+      </trans-unit>
+      <trans-unit id="featureFileTree-contextCut" datatype="html">
+        <source>Cut</source>
+        <target>Ausschneiden</target>
+      </trans-unit>
+      <trans-unit id="featureFileTree-contextPaste" datatype="html">
+        <source>Paste</source>
+        <target>Einfügen</target>
+      </trans-unit>
       <trans-unit id="featureFileTree-contextRename" datatype="html">
         <source>Rename</source>
         <target>Umbenennen</target>
@@ -2447,19 +2552,34 @@
         <source>Delete</source>
         <target>Löschen</target>
       </trans-unit>
-      <trans-unit id="featureFileTree-closeAriaLabel" datatype="html">
-        <source>Close</source>
-        <target>Schließen</target>
-      </trans-unit>
       <trans-unit id="featureFileTree-deleteModalWarning" datatype="html">
         <source>This action cannot be undone.</source>
         <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureFileTree-nameCollisionTitle" datatype="html">
+        <source>Name already exists</source>
+        <target>Name bereits vorhanden</target>
+      </trans-unit>
+      <trans-unit id="featureFileTree-replace" datatype="html">
+        <source>Replace</source>
+        <target>Ersetzen</target>
+      </trans-unit>
+      <trans-unit id="featureFileTree-keepBoth" datatype="html">
+        <source>Keep both</source>
+        <target>Beide behalten</target>
+      </trans-unit>
+      <trans-unit id="featureFileTree-nameCollisionMessage" datatype="html">
+        <source>A file named</source>
+        <target>Eine Datei namens</target>
+      </trans-unit>
+      <trans-unit id="featureFileTree-nameCollisionMessageSuffix" datatype="html">
+        <source> already exists in this folder. Replace it or keep both with a numbered name? </source>
+        <target>ist in diesem Ordner bereits vorhanden. Möchten Sie sie ersetzen oder beide mit einem nummerierten Namen behalten?</target>
       </trans-unit>
       <trans-unit id="featureFileTree-delete" datatype="html">
         <source> Delete </source>
         <target>Löschen</target>
       </trans-unit>
-
       <trans-unit id="featureFileTree-newNameLabel" datatype="html">
         <source>New Name</source>
         <target>Neuer Name</target>
@@ -2468,7 +2588,6 @@
         <source> Rename </source>
         <target>Umbenennen</target>
       </trans-unit>
-
       <trans-unit id="featureFileTree-destinationPathLabel" datatype="html">
         <source>Destination Path</source>
         <target>Zielpfad</target>
@@ -2485,7 +2604,6 @@
         <source> Move </source>
         <target>Verschieben</target>
       </trans-unit>
-
       <trans-unit id="featureFileTree-enterFileName" datatype="html">
         <source>Enter file name...</source>
         <target>Dateiname eingeben...</target>
@@ -2493,6 +2611,10 @@
       <trans-unit id="featureFileTree-enterFolderName" datatype="html">
         <source>Enter folder name...</source>
         <target>Ordnernamen eingeben...</target>
+      </trans-unit>
+      <trans-unit id="featureFileTree-deleteMultipleTitle" datatype="html">
+        <source>Delete Items</source>
+        <target>Elemente löschen</target>
       </trans-unit>
       <trans-unit id="featureFileTree-statusClean" datatype="html">
         <source>In sync with remote - Click to open Version Control</source>
@@ -2517,6 +2639,10 @@
       <trans-unit id="featureFileTree-deleteFileTitle" datatype="html">
         <source>Delete File</source>
         <target>Datei löschen</target>
+      </trans-unit>
+      <trans-unit id="featureFileTree-deleteMultipleMessage" datatype="html">
+        <source>Are you sure you want to delete <x id="count" equiv-text="count"/> items?</source>
+        <target>Möchten Sie <x id="count" equiv-text="count"/> Elemente wirklich löschen?</target>
       </trans-unit>
       <trans-unit id="featureFileTree-deleteDirectoryMessage" datatype="html">
         <source>Are you sure you want to delete the directory <x id="PH" equiv-text="path"/>?:path:</source>
@@ -2569,10 +2695,6 @@
       <trans-unit id="featureGitBranchModal-header" datatype="html">
         <source>Git Branches</source>
         <target>Git-Branches</target>
-      </trans-unit>
-      <trans-unit id="featureGitBranchModal-closeAriaLabel" datatype="html">
-        <source>Close</source>
-        <target>Schließen</target>
       </trans-unit>
       <trans-unit id="featureGitBranchModal-currentBranchLabel" datatype="html">
         <source>Current Branch</source>
@@ -2742,13 +2864,41 @@
         <source>Stage</source>
         <target>Stagen</target>
       </trans-unit>
+      <trans-unit id="featureGitSidebar-localRepoTitle" datatype="html">
+        <source>Local repository</source>
+        <target>Lokales Repository</target>
+      </trans-unit>
+      <trans-unit id="featureGitSidebar-localRepo" datatype="html">
+        <source>Local</source>
+        <target>Lokal</target>
+      </trans-unit>
       <trans-unit id="featureMonacoEditor-imagePreview" datatype="html">
         <source>Image Preview</source>
         <target>Bildvorschau</target>
       </trans-unit>
+      <trans-unit id="featureMonacoEditor-downloadTitle" datatype="html">
+        <source>Download</source>
+        <target>Herunterladen</target>
+      </trans-unit>
+      <trans-unit id="featureMonacoEditor-pdfPreview" datatype="html">
+        <source>PDF Preview</source>
+        <target>PDF-Vorschau</target>
+      </trans-unit>
+      <trans-unit id="featureMonacoEditor-videoPreview" datatype="html">
+        <source>Video Preview</source>
+        <target>Videovorschau</target>
+      </trans-unit>
+      <trans-unit id="featureMonacoEditor-audioPreview" datatype="html">
+        <source>Audio Preview</source>
+        <target>Audiovorschau</target>
+      </trans-unit>
       <trans-unit id="featureMonacoEditor-binaryFileMessage" datatype="html">
         <source>Binary file - cannot edit</source>
         <target>Binärdatei - kann nicht bearbeitet werden</target>
+      </trans-unit>
+      <trans-unit id="featureMonacoEditor-fileTooLargeMessage" datatype="html">
+        <source>File too large to open in editor</source>
+        <target>Datei ist zu groß, um sie im Editor zu öffnen</target>
       </trans-unit>
       <trans-unit id="featureMonacoEditor-unsavedChanges" datatype="html">
         <source>Unsaved changes</source>
@@ -2802,7 +2952,94 @@
         <source> Create Terminal </source>
         <target>Terminal erstellen</target>
       </trans-unit>
-
+      <trans-unit id="featureWorkspaceSearch-header" datatype="html">
+        <source>Search</source>
+        <target>Suche</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-rebuildTitle" datatype="html">
+        <source>Rebuild index</source>
+        <target>Index neu aufbauen</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-modeLabel" datatype="html">
+        <source>Search for</source>
+        <target>Suchen nach</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-queryLabel" datatype="html">
+        <source>Query</source>
+        <target>Suchbegriff</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-includeLabel" datatype="html">
+        <source>Include paths</source>
+        <target>Pfade einschließen</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-includePlaceholder" datatype="html">
+        <source>Add path prefix...</source>
+        <target>Pfadpräfix hinzufügen...</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-removePathAria" datatype="html">
+        <source>Remove path</source>
+        <target>Pfad entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-addPath" datatype="html">
+        <source>Add</source>
+        <target>Hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-excludeLabel" datatype="html">
+        <source>Exclude paths</source>
+        <target>Pfade ausschließen</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-excludePlaceholder" datatype="html">
+        <source>Exclude path prefix...</source>
+        <target>Pfadpräfix ausschließen...</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-loading" datatype="html">
+        <source>Searching...</source>
+        <target>Wird gesucht...</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-noIndexYet" datatype="html">
+        <source>No index yet</source>
+        <target>Noch kein Index</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-indexing" datatype="html">
+        <source>Indexing...</source>
+        <target>Wird indiziert...</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-unavailable" datatype="html">
+        <source>Index unavailable</source>
+        <target>Index nicht verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-matchesAria" datatype="html">
+        <source>Matches</source>
+        <target>Treffer</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-fileHitAria" datatype="html">
+        <source>File</source>
+        <target>Datei</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-noResults" datatype="html">
+        <source>No results</source>
+        <target>Keine Ergebnisse</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-enterQuery" datatype="html">
+        <source>Enter a search query</source>
+        <target>Geben Sie einen Suchbegriff ein</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-modeFull" datatype="html">
+        <source>Full</source>
+        <target>Volltext</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-modeFiles" datatype="html">
+        <source>Files</source>
+        <target>Dateien</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-queryPlaceholder" datatype="html">
+        <source>Search files and content...</source>
+        <target>Dateien und Inhalte durchsuchen...</target>
+      </trans-unit>
+      <trans-unit id="featureWorkspaceSearch-queryPlaceholderFiles" datatype="html">
+        <source>Search by file path...</source>
+        <target>Nach Dateipfad suchen...</target>
+      </trans-unit>
       <trans-unit id="featureKnowledgeBoard-title" datatype="html">
         <source>Knowledge</source>
         <target>Wissen</target>
@@ -2815,13 +3052,21 @@
         <source>Search pages</source>
         <target>Seiten suchen</target>
       </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-nodeTypeFolder" datatype="html">
+        <source>Folder</source>
+        <target>Ordner</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-nodeTypePage" datatype="html">
+        <source>Page</source>
+        <target>Seite</target>
+      </trans-unit>
       <trans-unit id="featureKnowledgeBoard-noWorkspaceSelected" datatype="html">
         <source>No workspace selected yet</source>
         <target>Noch kein Workspace ausgewählt</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeBoard-chooseWorkspace" datatype="html">
-        <source>Choose workspace…</source>
-        <target>Workspace auswählen…</target>
+        <source> Choose workspace... </source>
+        <target>Workspace auswählen...</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeBoard-addRelations" datatype="html">
         <source>Add relations</source>
@@ -2834,6 +3079,26 @@
       <trans-unit id="featureKnowledgeBoard-descriptionHeading" datatype="html">
         <source>Description</source>
         <target>Beschreibung</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-attachmentsHeading" datatype="html">
+        <source>Attachments</source>
+        <target>Anhänge</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-addAttachment" datatype="html">
+        <source>Add attachment</source>
+        <target>Anhang hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-attachmentsEmpty" datatype="html">
+        <source> No attachments yet. </source>
+        <target>Noch keine Anhänge.</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-downloadAttachment" datatype="html">
+        <source>Download attachment</source>
+        <target>Anhang herunterladen</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeBoard-deleteAttachment" datatype="html">
+        <source>Delete attachment</source>
+        <target>Anhang löschen</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeBoard-relationsEmpty" datatype="html">
         <source>No relations yet.</source>
@@ -2870,10 +3135,6 @@
       <trans-unit id="featureKnowledgeBoard-searchPagesModalTitle" datatype="html">
         <source> Search pages </source>
         <target>Seiten suchen</target>
-      </trans-unit>
-      <trans-unit id="featureKnowledgeBoard-closeAria" datatype="html">
-        <source>Close</source>
-        <target>Schließen</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeBoard-searchPagesLabel" datatype="html">
         <source> Search pages </source>
@@ -2927,9 +3188,9 @@
         <source>Search workspaces</source>
         <target>Workspaces suchen</target>
       </trans-unit>
-      <trans-unit id="featureKnowledgeBoard-noMatchingWorkspaces" datatype="html">
-        <source> No matching workspaces </source>
-        <target>Keine passenden Workspaces</target>
+      <trans-unit id="featureKnowledgeBoard-noSearchResults" datatype="html">
+        <source>No search results</source>
+        <target>Keine Suchergebnisse</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeBoard-currentWorkspace" datatype="html">
         <source> Current </source>
@@ -2947,6 +3208,10 @@
         <source>New folder</source>
         <target>Neuer Ordner</target>
       </trans-unit>
+      <trans-unit id="featureKnowledgeTree-uploadFileTitle" datatype="html">
+        <source>Upload file</source>
+        <target>Datei hochladen</target>
+      </trans-unit>
       <trans-unit id="featureKnowledgeTree-refreshTitle" datatype="html">
         <source>Refresh</source>
         <target>Aktualisieren</target>
@@ -2959,17 +3224,33 @@
         <source>Title</source>
         <target>Titel</target>
       </trans-unit>
-      <trans-unit id="featureKnowledgeTree-duplicateTitle" datatype="html">
-        <source>Duplicate</source>
-        <target>Duplizieren</target>
+      <trans-unit id="featureKnowledgeTree-itemBusy" datatype="html">
+        <source>Working...</source>
+        <target>Wird bearbeitet...</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeTree-deleteTitle" datatype="html">
         <source>Delete</source>
         <target>Löschen</target>
       </trans-unit>
+      <trans-unit id="featureKnowledgeTree-uploading" datatype="html">
+        <source>Uploading...</source>
+        <target>Wird hochgeladen...</target>
+      </trans-unit>
       <trans-unit id="featureKnowledgeTree-refreshAction" datatype="html">
         <source>Refresh</source>
         <target>Aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeTree-copyAction" datatype="html">
+        <source>Copy</source>
+        <target>Kopieren</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeTree-cutAction" datatype="html">
+        <source>Cut</source>
+        <target>Ausschneiden</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeTree-pasteAction" datatype="html">
+        <source>Paste</source>
+        <target>Einfügen</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeTree-renameAction" datatype="html">
         <source>Rename</source>
@@ -3007,13 +3288,49 @@
         <source>Delete item</source>
         <target>Element löschen</target>
       </trans-unit>
+      <trans-unit id="featureKnowledgeTree-deleteMultipleMessage" datatype="html">
+        <source>Are you sure you want to delete <x id="count" equiv-text="count"/> items?</source>
+        <target>Möchten Sie <x id="count" equiv-text="count"/> Elemente wirklich löschen?</target>
+      </trans-unit>
       <trans-unit id="featureKnowledgeTree-deleteConfirmText" datatype="html">
         <source>Are you sure you want to delete this item?</source>
         <target>Möchtest du dieses Element wirklich löschen?</target>
       </trans-unit>
+      <trans-unit id="featureKnowledgeTree-uploadUnsupported" datatype="html">
+        <source>Unsupported file type (only .md, .mmd, and .txt allowed): <x id="names" equiv-text="rejectedNames.join(&apos;, &apos;)"/></source>
+        <target>Nicht unterstützter Dateityp (nur .md, .mmd und .txt erlaubt): <x id="names" equiv-text="rejectedNames.join(&apos;, &apos;)"/></target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-layerFilePickFile" datatype="html">
+        <source>Select a file or create one in this folder</source>
+        <target>Wählen Sie eine Datei aus oder erstellen Sie eine in diesem Ordner</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-layerFileDeleteConfirm" datatype="html">
+        <source>Delete the selected items from the layer VFS?</source>
+        <target>Ausgewählte Elemente aus dem Layer-VFS löschen?</target>
+      </trans-unit>
       <trans-unit id="featureKnowledgeTree-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
         <target>Diese Aktion kann nicht rückgängig gemacht werden.</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeTree-replace" datatype="html">
+        <source>Replace</source>
+        <target>Ersetzen</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeTree-keepBoth" datatype="html">
+        <source>Keep both</source>
+        <target>Beide behalten</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeTree-nameCollisionMessage" datatype="html">
+        <source> Replace the existing page content, or keep both by creating a numbered title. </source>
+        <target>Ersetzen Sie den Inhalt der vorhandenen Seite oder behalten Sie beide, indem ein nummerierter Titel erstellt wird.</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeTree-nameCollisionTitle" datatype="html">
+        <source>A page named <x id="name" equiv-text="name"/> already exists</source>
+        <target>Eine Seite namens <x id="name" equiv-text="name"/> ist bereits vorhanden</target>
+      </trans-unit>
+      <trans-unit id="featureKnowledgeTree-deleteMultipleTitle" datatype="html">
+        <source>Delete Items</source>
+        <target>Elemente löschen</target>
       </trans-unit>
       <trans-unit id="featureKnowledgeTree-delete" datatype="html">
         <source> Delete </source>
@@ -3204,8 +3521,8 @@
         <target>Hinzufügen</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherLoading" datatype="html">
-        <source>Loading workspaces…</source>
-        <target>Workspaces werden geladen…</target>
+        <source>Loading workspaces...</source>
+        <target>Workspaces werden geladen...</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherEmpty" datatype="html">
         <source>No workspaces yet</source>
@@ -3216,16 +3533,16 @@
         <target>Noch kein Workspace ausgewählt</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-chooseWorkspaceButton" datatype="html">
-        <source>Choose workspace…</source>
-        <target>Workspace wählen…</target>
+        <source> Choose workspace... </source>
+        <target>Workspace wählen...</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-goToSpaces" datatype="html">
         <source>Go to Spaces</source>
         <target>Zu Spaces</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-loading" datatype="html">
-        <source>Loading tickets…</source>
-        <target>Tickets werden geladen…</target>
+        <source>Loading tickets...</source>
+        <target>Tickets werden geladen...</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-searchLaneLabel" datatype="html">
         <source>Search tickets</source>
@@ -3248,16 +3565,12 @@
         <target>Tickets hier ablegen</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-noMatchingTickets" datatype="html">
-        <source> No matching tickets </source>
-        <target>Keine passenden Tickets</target>
+        <source>No search results</source>
+        <target>Keine Suchergebnisse</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-modalLoadingTitle" datatype="html">
         <source>Ticket</source>
         <target>Ticket</target>
-      </trans-unit>
-      <trans-unit id="featureTicketsBoard-modalCloseAria" datatype="html">
-        <source>Close</source>
-        <target>Schließen</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-breadcrumbNavAria" datatype="html">
         <source>Ticket hierarchy</source>
@@ -3272,8 +3585,8 @@
         <target>Ticket in einen anderen Arbeitsbereich verschieben</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-detailLoading" datatype="html">
-        <source>Loading ticket…</source>
-        <target>Ticket wird geladen…</target>
+        <source>Loading ticket...</source>
+        <target>Ticket wird geladen...</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-fieldShas" datatype="html">
         <source>SHAs</source>
@@ -3296,12 +3609,12 @@
         <target>Modell für Chat / KI</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-modelPlaceholder" datatype="html">
-        <source> {{ ticketAiModelsLoading() ? 'Loading models…' : 'Select agent to load models…' }} </source>
-        <target> {{ ticketAiModelsLoading() ? 'Modelle werden geladen…' : 'Agent wählen, um Modelle zu laden…' }} </target>
+        <source> <x id="INTERPOLATION" equiv-text="{{ ticketAiModelsLoading() ? &apos;Loading models...&apos; : &apos;Select agent to load models...&apos; }}"/> </source>
+        <target><x id="INTERPOLATION" equiv-text="{{ ticketAiModelsLoading() ? &apos;Loading models...&apos; : &apos;Select agent to load models...&apos; }}"/>{{ ticketAiModelsLoading() ? 'Modelle werden geladen...' : 'Agent wählen, um Modelle zu laden...' }} </target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-agentPlaceholder" datatype="html">
-        <source>Select agent…</source>
-        <target>Agent wählen…</target>
+        <source>Select agent...</source>
+        <target>Agent wählen...</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationPreferredModel" datatype="html">
         <source>Model for automation</source>
@@ -3312,24 +3625,28 @@
         <target> Erforderlich, wenn die Automatisierung aktiviert ist. OpenCode hat keine Auto-Modellauswahl. </target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationModelPlaceholder" datatype="html">
-        <source> {{ ticketAiModelsLoading() ? 'Loading models…' : 'Select an agent to load models…' }} </source>
-        <target> {{ ticketAiModelsLoading() ? 'Modelle werden geladen…' : 'Agent wählen, um Modelle zu laden…' }} </target>
+        <source> <x id="INTERPOLATION" equiv-text="{{
+                                    ticketAiModelsLoading() ? &apos;Loading models...&apos; : &apos;Select an agent to load models...&apos;
+                                  }}"/> </source>
+        <target><x id="INTERPOLATION" equiv-text="{{
+                                    ticketAiModelsLoading() ? &apos;Loading models...&apos; : &apos;Select an agent to load models...&apos;
+                                  }}"/>{{ ticketAiModelsLoading() ? 'Modelle werden geladen...' : 'Agent wählen, um Modelle zu laden...' }} </target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-acceptanceLabel" datatype="html">
-        <source> Acceptance <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;percentage + &apos;%&apos;&quot;
-                        &gt;"/><x id="INTERPOLATION" equiv-text="{{ percentage | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
-                      &gt;"/></source>
-        <target>Akzeptanz <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;percentage + &apos;%&apos;&quot;
-                        &gt;"/><x id="INTERPOLATION" equiv-text="{{ percentage | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
-                      &gt;"/></target>
+        <source> Acceptance <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-body-secondary small d-block fw-normal&quot; [attr.aria-label]=&quot;percentage + &apos;%&apos;&quot;
+                      &gt;"/><x id="INTERPOLATION" equiv-text="{{ percentage | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
+                    &gt;"/></source>
+        <target>Akzeptanz <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-body-secondary small d-block fw-normal&quot; [attr.aria-label]=&quot;percentage + &apos;%&apos;&quot;
+                      &gt;"/><x id="INTERPOLATION" equiv-text="{{ percentage | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
+                    &gt;"/></target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-subtaskProgressLabel" datatype="html">
-        <source> Subtasks <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;stPct + &apos;%&apos;&quot;
-                          &gt;"/><x id="INTERPOLATION" equiv-text="{{ stPct | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
-                        &gt;"/></source>
-        <target>Unteraufgaben <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-muted small d-block fw-normal&quot; [attr.aria-label]=&quot;stPct + &apos;%&apos;&quot;
-                          &gt;"/><x id="INTERPOLATION" equiv-text="{{ stPct | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
-                        &gt;"/></target>
+        <source> Subtasks <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-body-secondary small d-block fw-normal&quot; [attr.aria-label]=&quot;stPct + &apos;%&apos;&quot;
+                        &gt;"/><x id="INTERPOLATION" equiv-text="{{ stPct | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
+                      &gt;"/></source>
+        <target>Unteraufgaben <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-body-secondary small d-block fw-normal&quot; [attr.aria-label]=&quot;stPct + &apos;%&apos;&quot;
+                        &gt;"/><x id="INTERPOLATION" equiv-text="{{ stPct | number: &apos;1.0-0&apos; }}"/>%<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span
+                      &gt;"/></target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-subtaskProgressAria" datatype="html">
         <source>Subtask progress</source>
@@ -3351,11 +3668,30 @@
         <source>Describe the ticket. Changes save when you leave this field.</source>
         <target>Beschreiben Sie das Ticket. Änderungen werden gespeichert, wenn Sie das Feld verlassen.</target>
       </trans-unit>
+      <trans-unit id="featureTicketsBoard-attachmentsHeading" datatype="html">
+        <source>Attachments</source>
+        <target>Anhänge</target>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-addAttachment" datatype="html">
+        <source>Add attachment</source>
+        <target>Anhang hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-attachmentsEmpty" datatype="html">
+        <source> No attachments yet. </source>
+        <target>Noch keine Anhänge.</target>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-downloadAttachment" datatype="html">
+        <source>Download attachment</source>
+        <target>Anhang herunterladen</target>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-deleteAttachment" datatype="html">
+        <source>Delete attachment</source>
+        <target>Anhang löschen</target>
+      </trans-unit>
       <trans-unit id="featureTicketsBoard-addSubtask" datatype="html">
         <source>Add subtask</source>
         <target>Unteraufgabe hinzufügen</target>
       </trans-unit>
-
       <trans-unit id="featureTicketsBoard-subtasksHeading" datatype="html">
         <source>Subtasks</source>
         <target>Unteraufgaben</target>
@@ -3405,8 +3741,8 @@
         <target> Ausblenden </target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationLoadingConfig" datatype="html">
-        <source>Loading automation settings…</source>
-        <target>Automatisierungseinstellungen werden geladen…</target>
+        <source>Loading automation settings...</source>
+        <target>Automatisierungseinstellungen werden geladen...</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationEligible" datatype="html">
         <source>Eligible for automated runs</source>
@@ -3433,8 +3769,8 @@
         <target> Wenn keine ausgewählt sind, darf jeder Agent mit aktiviertem Prototyp-Autonomie für diesen Workspace dieses Ticket ausführen. Wählen Sie bestimmte Agenten aus, um einzuschränken, wer es übernehmen kann. </target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationLoadingAgents" datatype="html">
-        <source>Loading agents…</source>
-        <target>Agenten werden geladen…</target>
+        <source>Loading agents...</source>
+        <target>Agenten werden geladen...</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationNoAgents" datatype="html">
         <source> No agents in this workspace. </source>
@@ -3445,8 +3781,8 @@
         <target> Für diesen Workspace ist bei keinem Agenten die Prototyp-Autonomie aktiviert. Aktivieren Sie sie im Chat unter „Prototyp-Autonomie“. Nur diese Agenten können autonome Ticket-Arbeit ausführen. </target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationOrphanAgentsHeading" datatype="html">
-        <source> Allowed agents not listed above—uncheck to remove (e.g. autonomy off or agent removed) </source>
-        <target> Zulässige Agenten, die oben nicht aufgeführt sind: zum Entfernen abwählen (z. B. Autonomie aus oder Agent entfernt) </target>
+        <source> Allowed agents not listed above. Uncheck to remove them (e.g. autonomy off or agent removed). </source>
+        <target>Zulässige Agenten, die oben nicht aufgeführt sind. Zum Entfernen abwählen (z. B. Autonomie aus oder Agent entfernt).</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationContextHeading" datatype="html">
         <source> Context enrichment </source>
@@ -3469,8 +3805,8 @@
         <target>Standard-Branch-Überschreibung</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationDefaultBranchPh" datatype="html">
-        <source>Optional — leave empty to use repository default</source>
-        <target>Optional: leer lassen, um den Repository-Standard zu verwenden</target>
+        <source>Optional. Leave empty to use the repository default.</source>
+        <target>Optional. Leer lassen, um den Repository-Standard zu verwenden.</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationBranchStrategyLabel" datatype="html">
         <source>Automation branch</source>
@@ -3521,8 +3857,8 @@
         <target>Entfernen</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationSaving" datatype="html">
-        <source><x id="START_TAG_FPC_SPINNER" ctype="x-fpc_spinner" equiv-text="&lt;fpc-spinner size=&quot;sm&quot; variant=&quot;primary&quot;/&gt;"/> Saving automation settings… </source>
-        <target><x id="START_TAG_FPC_SPINNER" ctype="x-fpc_spinner" equiv-text="&lt;fpc-spinner size=&quot;sm&quot; variant=&quot;primary&quot;/&gt;"/> Automatisierungseinstellungen werden gespeichert...</target>
+        <source><x id="START_TAG_FPC_SPINNER" ctype="x-fpc_spinner" equiv-text="&lt;fpc-spinner size=&quot;sm&quot; variant=&quot;primary&quot; /&gt;"/><x id="CLOSE_TAG_FPC_SPINNER" ctype="x-fpc_spinner" equiv-text="&lt;fpc-spinner size=&quot;sm&quot; variant=&quot;primary&quot; /&gt;"/> Saving automation settings... </source>
+        <target><x id="START_TAG_FPC_SPINNER" ctype="x-fpc_spinner" equiv-text="&lt;fpc-spinner size=&quot;sm&quot; variant=&quot;primary&quot; /&gt;"/><x id="CLOSE_TAG_FPC_SPINNER" ctype="x-fpc_spinner" equiv-text="&lt;fpc-spinner size=&quot;sm&quot; variant=&quot;primary&quot; /&gt;"/> Automatisierungseinstellungen werden gespeichert.</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationApprove" datatype="html">
         <source> Approve </source>
@@ -3573,8 +3909,8 @@
         <target>Kommentare</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-commentPlaceholder" datatype="html">
-        <source>Add a comment…</source>
-        <target>Kommentar hinzufügen…</target>
+        <source>Add a comment...</source>
+        <target>Kommentar hinzufügen...</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-addComment" datatype="html">
         <source> Add </source>
@@ -3585,7 +3921,7 @@
         <target>E-Mail des Autors nicht verfügbar</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-commentAuthorDash" datatype="html">
-        <source>—</source>
+        <source>-</source>
         <target>-</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-activityHeading" datatype="html">
@@ -3669,8 +4005,8 @@
         <target>Schritte</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationLoadingTrace" datatype="html">
-        <source>Loading steps…</source>
-        <target>Schritte werden geladen…</target>
+        <source>Loading steps...</source>
+        <target>Schritte werden geladen...</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationStepExcerpt" datatype="html">
         <source>Excerpt</source>
@@ -3752,7 +4088,6 @@
         <source> Create </source>
         <target>Anlegen</target>
       </trans-unit>
-
       <trans-unit id="featureTicketsBoard-globalSearchTitle" datatype="html">
         <source> Search tickets </source>
         <target>Tickets durchsuchen</target>
@@ -3785,9 +4120,9 @@
         <source>Search workspaces</source>
         <target>Workspaces durchsuchen</target>
       </trans-unit>
-      <trans-unit id="featureTicketsBoard-workspaceSwitcherNoMatch" datatype="html">
-        <source> No matching workspaces </source>
-        <target>Keine passenden Workspaces</target>
+      <trans-unit id="featureTicketsBoard-noSearchResults" datatype="html">
+        <source>No search results</source>
+        <target>Keine Suchergebnisse</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-workspaceSwitcherCurrent" datatype="html">
         <source>Current</source>
@@ -3922,7 +4257,7 @@
         <target>Unbekannte Aktivität</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-automationChatAgentLockTitle" datatype="html">
-        <source>Matches Agent for chat / AI — change the chat agent to allow unchecking.</source>
+        <source>Matches Agent for chat / AI. Change the chat agent to allow unchecking.</source>
         <target>Entspricht „Agent für Chat / KI“. Ändern Sie den Chat-Agenten, um die Markierung aufheben zu können.</target>
       </trans-unit>
       <trans-unit id="featureTicketsBoard-createNeedClient" datatype="html">
@@ -3944,6 +4279,22 @@
       <trans-unit id="featureTicketsBoard-requestFailed" datatype="html">
         <source>Request failed</source>
         <target>Anfrage fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureVirtualDesktop-connecting" datatype="html">
+        <source>Connecting to desktop...</source>
+        <target>Verbindung zum Desktop wird hergestellt...</target>
+      </trans-unit>
+      <trans-unit id="featureVirtualDesktop-errorTitle" datatype="html">
+        <source>Desktop unavailable</source>
+        <target>Desktop nicht verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureVirtualDesktop-securityFailure" datatype="html">
+        <source>Desktop authentication failed</source>
+        <target>Desktop-Authentifizierung fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureVirtualDesktop-genericError" datatype="html">
+        <source>Failed to open virtual desktop</source>
+        <target>Virtueller Desktop konnte nicht geöffnet werden</target>
       </trans-unit>
       <trans-unit id="featureUserManager-roleAdmin" datatype="html">
         <source>Admin</source>
@@ -4120,14 +4471,6 @@
       <trans-unit id="featureLogin-patNotAllowed" datatype="html">
         <source>Personal access tokens cannot be used to sign in to the console. Use your account password instead.</source>
         <target>Persönliche Zugriffstoken können nicht zur Anmeldung an der Konsole verwendet werden. Verwenden Sie stattdessen Ihr Kontopasswort.</target>
-      </trans-unit>
-      <trans-unit id="featureOtpInput-ariaLabelCharacter" datatype="html">
-        <source>Character <x id="position" equiv-text="index + 1"/> of 6</source>
-        <target>Zeichen <x id="position" equiv-text="index + 1"/> von 6</target>
-      </trans-unit>
-      <trans-unit id="featureOtpInput-invalid" datatype="html">
-        <source>Invalid verification code</source>
-        <target>Ungültiger Bestätigungscode</target>
       </trans-unit>
       <trans-unit id="featureRegister-title" datatype="html">
         <source>Create an Account</source>
@@ -4470,8 +4813,8 @@
         <target>Benutzer werden geladen...</target>
       </trans-unit>
       <trans-unit id="featureUserManager-noOtherUsers" datatype="html">
-        <source>No other users found</source>
-        <target>Keine weiteren Benutzer gefunden</target>
+        <source>No other users yet</source>
+        <target>Noch keine weiteren Benutzer</target>
       </trans-unit>
       <trans-unit id="featureUserManager-locked" datatype="html">
         <source>Locked</source>
@@ -4509,12 +4852,8 @@
         <source>Create User</source>
         <target>Benutzer erstellen</target>
       </trans-unit>
-      <trans-unit id="featureUserManager-closeAriaLabel" datatype="html">
-        <source>Close</source>
-        <target>Schließen</target>
-      </trans-unit>
       <trans-unit id="featureUserManager-emailLabel" datatype="html">
-        <source>E-Mail</source>
+        <source>Email</source>
         <target>E-Mail</target>
       </trans-unit>
       <trans-unit id="featureUserManager-emailPlaceholder" datatype="html">
@@ -4522,7 +4861,7 @@
         <target>user@example.com</target>
       </trans-unit>
       <trans-unit id="featureUserManager-passwordLabel" datatype="html">
-        <source>Passwort</source>
+        <source>Password</source>
         <target>Passwort</target>
       </trans-unit>
       <trans-unit id="featureUserManager-passwordPlaceholder" datatype="html">
@@ -4562,8 +4901,10 @@
         <target> Benutzer löschen </target>
       </trans-unit>
       <trans-unit id="featureUserManager-deleteUserConfirm" datatype="html">
-        <source> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
-        <target>Möchten Sie den Benutzer <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> wirklich löschen?</target>
+        <source> Are you sure you want to delete the user <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+      &gt;"/>? </source>
+        <target>Möchten Sie den Benutzer <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToDelete.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+      &gt;"/> wirklich löschen?</target>
       </trans-unit>
       <trans-unit id="featureUserManager-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
@@ -4590,8 +4931,12 @@
         <target>Token werden geladen...</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-empty" datatype="html">
-        <source>No personal access tokens</source>
-        <target>Keine persönlichen Zugriffstoken</target>
+        <source>No personal access tokens yet</source>
+        <target>Noch keine persönlichen Zugriffstoken</target>
+      </trans-unit>
+      <trans-unit id="featureUserManager-noSearchResults" datatype="html">
+        <source>No search results</source>
+        <target>Keine Suchergebnisse</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-scopes" datatype="html">
         <source>scopes</source>
@@ -4609,11 +4954,6 @@
         <source> Create personal access token </source>
         <target>Persönliches Zugriffstoken erstellen</target>
       </trans-unit>
-
-      <trans-unit id="featureTokenManager-closeAriaLabel" datatype="html">
-        <source>Close</source>
-        <target>Schließen</target>
-      </trans-unit>
       <trans-unit id="featureTokenManager-plaintextTitle" datatype="html">
         <source>Token value</source>
         <target>Tokenwert</target>
@@ -4622,7 +4962,6 @@
         <source> Copy this token now. It will not be shown again. </source>
         <target>Kopieren Sie dieses Token jetzt. Es wird nicht erneut angezeigt.</target>
       </trans-unit>
-
       <trans-unit id="featureTokenManager-copied" datatype="html">
         <source>Copied</source>
         <target>Kopiert</target>
@@ -4635,7 +4974,6 @@
         <source> Done </source>
         <target>Fertig</target>
       </trans-unit>
-
       <trans-unit id="featureTokenManager-nameLabel" datatype="html">
         <source>Name</source>
         <target>Name</target>
@@ -4668,10 +5006,11 @@
         <source> Revoke token </source>
         <target>Token widerrufen</target>
       </trans-unit>
-
       <trans-unit id="featureTokenManager-revokeConfirm" datatype="html">
-        <source> Are you sure you want to revoke the token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
-        <target>Möchten Sie das Token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> wirklich widerrufen?</target>
+        <source> Are you sure you want to revoke the token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+      &gt;"/>? </source>
+        <target>Möchten Sie das Token <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ tokenToRevoke.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+      &gt;"/> wirklich widerrufen?</target>
       </trans-unit>
       <trans-unit id="featureTokenManager-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
@@ -4684,6 +5023,10 @@
       <trans-unit id="featureDocsBreadcrumbs-documentation" datatype="html">
         <source>Documentation</source>
         <target>Dokumentation</target>
+      </trans-unit>
+      <trans-unit id="featureDocsBreadcrumbs-ariaLabel" datatype="html">
+        <source>Breadcrumb</source>
+        <target>Brotkrümelnavigation</target>
       </trans-unit>
       <trans-unit id="featureDocsLayout-documentation" datatype="html">
         <source>Documentation</source>
@@ -4718,8 +5061,8 @@
         <target> Alle Ergebnisse anzeigen </target>
       </trans-unit>
       <trans-unit id="featureDocsSearch-noResults" datatype="html">
-        <source>No results found</source>
-        <target>Keine Ergebnisse gefunden</target>
+        <source>No search results</source>
+        <target>Keine Suchergebnisse</target>
       </trans-unit>
       <trans-unit id="featureDocsToc-title" datatype="html">
         <source>Table of Contents</source>
@@ -4749,17 +5092,13 @@
         <source>No search query yet</source>
         <target>Noch keine Suchanfrage</target>
       </trans-unit>
+      <trans-unit id="featureDocsSearchPage-resultsAriaLabel" datatype="html">
+        <source>Search results</source>
+        <target>Suchergebnisse</target>
+      </trans-unit>
       <trans-unit id="featureDocsSearchPage-metaTitlePrefix" datatype="html">
         <source>Search Documentation</source>
         <target>Dokumentation durchsuchen</target>
-      </trans-unit>
-      <trans-unit id="featureDocsSearchPage-foundOneResult" datatype="html">
-        <source>Found <x id="PH" equiv-text="count"/> result for &quot;<x id="PH_1" equiv-text="query"/>&quot;</source>
-        <target><x id="PH" equiv-text="count"/> Ergebnis für &quot;<x id="PH_1" equiv-text="query"/>&quot; gefunden</target>
-      </trans-unit>
-      <trans-unit id="featureDocsSearchPage-foundResults" datatype="html">
-        <source>Found <x id="PH" equiv-text="count"/> results for &quot;<x id="PH_1" equiv-text="query"/>&quot;</source>
-        <target><x id="PH" equiv-text="count"/> Ergebnisse für &quot;<x id="PH_1" equiv-text="query"/>&quot; gefunden</target>
       </trans-unit>
       <trans-unit id="featureDocsPage-metaDescriptionFallbackDecabill" datatype="html">
         <source>Official Decabill documentation: install, deploy, secure, and operate billing APIs, subscriptions, payment processors, and the billing console for platform teams.</source>
@@ -4837,10 +5176,6 @@
         <source>Delete</source>
         <target>Löschen</target>
       </trans-unit>
-      <trans-unit id="featureDeploymentRunDetails-cancel" datatype="html">
-        <source> Cancel </source>
-        <target>Abbrechen</target>
-      </trans-unit>
       <trans-unit id="featureDeploymentRunDetails-cancelRun" datatype="html">
         <source>Cancel run</source>
         <target>Lauf abbrechen</target>
@@ -4856,10 +5191,6 @@
       <trans-unit id="featureTicketsBoard-move" datatype="html">
         <source> Move </source>
         <target>Verschieben</target>
-      </trans-unit>
-      <trans-unit id="identityLogoutConfirm-closeAria" datatype="html">
-        <source>Close</source>
-        <target>Schließen</target>
       </trans-unit>
       <trans-unit id="identityLogoutConfirm-cancel" datatype="html">
         <source> Cancel </source>
@@ -4909,7 +5240,6 @@
         <source> Edit personal access token </source>
         <target>Persönlichen Zugriffstoken bearbeiten</target>
       </trans-unit>
-
       <trans-unit id="featureTokenManager-update" datatype="html">
         <source>Update</source>
         <target>Aktualisieren</target>
@@ -4979,8 +5309,8 @@
         <target> Sie müssen die Datenschutzerklärung akzeptieren, um Ihre Nachricht zu senden. </target>
       </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-submitting" datatype="html">
-        <source>Sending…</source>
-        <target> Wird gesendet… </target>
+        <source>Sending...</source>
+        <target>Wird gesendet...</target>
       </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-submit" datatype="html">
         <source>Send message</source>
@@ -5058,9 +5388,13 @@
         <source>Loading webhooks...</source>
         <target>Webhooks werden geladen...</target>
       </trans-unit>
+      <trans-unit id="featureNotifications-noSearchResults" datatype="html">
+        <source>No search results</source>
+        <target>Keine Suchergebnisse</target>
+      </trans-unit>
       <trans-unit id="featureNotifications-empty" datatype="html">
-        <source>No webhooks configured</source>
-        <target>Keine Webhooks konfiguriert</target>
+        <source>No webhooks yet</source>
+        <target>Noch keine Webhooks</target>
       </trans-unit>
       <trans-unit id="featureNotifications-events" datatype="html">
         <source>events</source>
@@ -5089,10 +5423,6 @@
       <trans-unit id="featureNotifications-createWebhookTitle" datatype="html">
         <source> Create webhook </source>
         <target>Webhook erstellen</target>
-      </trans-unit>
-      <trans-unit id="featureNotifications-closeAriaLabel" datatype="html">
-        <source>Close</source>
-        <target>Schließen</target>
       </trans-unit>
       <trans-unit id="featureNotifications-signingSecretTitle" datatype="html">
         <source>Signing secret</source>
@@ -5163,11 +5493,11 @@
         <target>Aktiviert</target>
       </trans-unit>
       <trans-unit id="featureNotifications-authHeaderNameLabel" datatype="html">
-        <source>Header-Name</source>
+        <source>Header name</source>
         <target>Header-Name</target>
       </trans-unit>
       <trans-unit id="featureNotifications-authValueLabel" datatype="html">
-        <source>Auth-Wert</source>
+        <source>Auth value</source>
         <target>Auth-Wert</target>
       </trans-unit>
       <trans-unit id="featureNotifications-authValueKeepHint" datatype="html">
@@ -5175,7 +5505,7 @@
         <target>Leer lassen, um den aktuellen Wert beizubehalten</target>
       </trans-unit>
       <trans-unit id="featureNotifications-subscribedEventsLabel" datatype="html">
-        <source>Abonnierte Ereignisse</source>
+        <source>Subscribed events</source>
         <target>Abonnierte Ereignisse</target>
       </trans-unit>
       <trans-unit id="featureNotifications-loadingEventTypes" datatype="html">
@@ -5191,8 +5521,10 @@
         <target>Webhook löschen</target>
       </trans-unit>
       <trans-unit id="featureNotifications-deleteConfirm" datatype="html">
-        <source> Are you sure you want to delete the webhook <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ endpointToDelete.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
-        <target> Möchten Sie den Webhook <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ endpointToDelete.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> wirklich löschen? </target>
+        <source> Are you sure you want to delete the webhook <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ endpointToDelete.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+      &gt;"/>? </source>
+        <target> Möchten Sie den Webhook <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ endpointToDelete.name }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+      &gt;"/> wirklich löschen? </target>
       </trans-unit>
       <trans-unit id="featureNotifications-cannotUndo" datatype="html">
         <source>This action cannot be undone.</source>
@@ -5254,7 +5586,6 @@
         <source> Response </source>
         <target>Antwort</target>
       </trans-unit>
-
       <trans-unit id="featureNotifications-moreDeliveries" datatype="html">
         <source> More deliveries exist than shown. </source>
         <target>Es gibt mehr Zustellungen als angezeigt.</target>
@@ -5287,18 +5618,17 @@
         <source> Check now </source>
         <target>Jetzt prüfen</target>
       </trans-unit>
-
       <trans-unit id="featureUpdates-loading" datatype="html">
         <source>Loading updates...</source>
-        <target>Updates werden geladen…</target>
+        <target>Updates werden geladen...</target>
       </trans-unit>
       <trans-unit id="featureUpdates-empty" datatype="html">
-        <source>No update information available.</source>
-        <target>Keine Update-Informationen verfügbar.</target>
+        <source>No update information yet</source>
+        <target>Noch keine Update-Informationen</target>
       </trans-unit>
       <trans-unit id="featureUpdates-checkInProgress" datatype="html">
         <source>Checking for updates...</source>
-        <target>Updates werden geprüft…</target>
+        <target>Updates werden geprüft...</target>
       </trans-unit>
       <trans-unit id="featureUpdates-statusUpdateAvailable" datatype="html">
         <source>Update available</source>
@@ -5316,12 +5646,10 @@
         <source> Installed version </source>
         <target>Installierte Version</target>
       </trans-unit>
-
       <trans-unit id="featureUpdates-latestVersion" datatype="html">
         <source> Latest version </source>
         <target>Neueste Version</target>
       </trans-unit>
-
       <trans-unit id="featureUpdates-viewRelease" datatype="html">
         <source>View release</source>
         <target>Release anzeigen</target>
@@ -5330,7 +5658,6 @@
         <source> Frontend version </source>
         <target>Frontend-Version</target>
       </trans-unit>
-
       <trans-unit id="featureUpdates-lastCheck" datatype="html">
         <source>Last check</source>
         <target>Letzte Prüfung</target>
@@ -5339,7 +5666,10 @@
         <source> Service instances </source>
         <target>Service-Instanzen</target>
       </trans-unit>
-
+      <trans-unit id="featureUpdates-noSearchResults" datatype="html">
+        <source>No search results</source>
+        <target>Keine Suchergebnisse</target>
+      </trans-unit>
       <trans-unit id="featureUpdates-mobilePanelInstances" datatype="html">
         <source>Instances</source>
         <target>Instanzen</target>
@@ -5365,29 +5695,25 @@
         <target>Geteiltes Changelog suchen</target>
       </trans-unit>
       <trans-unit id="featureUpdates-noInstances" datatype="html">
-        <source>No service instances reported yet.</source>
-        <target>Noch keine Service-Instanzen gemeldet.</target>
+        <source>No service instances yet</source>
+        <target>Noch keine Service-Instanzen</target>
       </trans-unit>
       <trans-unit id="featureUpdates-changelogProduct" datatype="html">
         <source> Product changelog </source>
         <target>Produkt-Changelog</target>
       </trans-unit>
-
       <trans-unit id="featureUpdates-changelogShared" datatype="html">
         <source> Shared changelog </source>
         <target>Geteiltes Changelog</target>
       </trans-unit>
-
       <trans-unit id="featureUpdates-noChangelogProduct" datatype="html">
-        <source> No product changelog entries. </source>
-        <target>Keine Einträge im Produkt-Changelog.</target>
+        <source>No product changelog entries yet</source>
+        <target>Noch keine Einträge im Produkt-Changelog</target>
       </trans-unit>
-
       <trans-unit id="featureUpdates-noChangelogShared" datatype="html">
-        <source> No shared changelog entries. </source>
-        <target>Keine Einträge im geteilten Changelog.</target>
+        <source>No shared changelog entries yet</source>
+        <target>Noch keine Einträge im geteilten Changelog</target>
       </trans-unit>
-
       <trans-unit id="featureUpdates-dependencyHealthy" datatype="html">
         <source>Healthy</source>
         <target>Gesund</target>
@@ -5480,7 +5806,7 @@
         <source>Breaking changes</source>
         <target>Breaking Changes</target>
       </trans-unit>
-          <trans-unit id="featureAgentConsole-notAvailable" datatype="html">
+      <trans-unit id="featureAgentConsole-notAvailable" datatype="html">
         <source>N/A</source>
         <target>N/V</target>
       </trans-unit>
@@ -5512,13 +5838,11 @@
         <source>Untitled chat</source>
         <target>Unbenannter Chat</target>
       </trans-unit>
-      <trans-unit id="featureChat-deleteChatSessionAria" datatype="html">
-        <source>Delete chat session</source>
-        <target>Chat-Sitzung löschen</target>
-      </trans-unit>
       <trans-unit id="featureChat-deleteChatSessionConfirm" datatype="html">
-        <source> Are you sure you want to delete the chat session <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ chatSessionToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? </source>
-        <target> Möchten Sie die Chat-Sitzung <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ chatSessionToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> wirklich löschen? </target>
+        <source> Are you sure you want to delete the chat session <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ chatSessionToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+    &gt;"/>? </source>
+        <target> Möchten Sie die Chat-Sitzung <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ chatSessionToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+    &gt;"/> wirklich löschen? </target>
       </trans-unit>
       <trans-unit id="featureChat-deleteChatSessionModalTitle" datatype="html">
         <source> Delete Chat Session </source>
@@ -5531,10 +5855,6 @@
       <trans-unit id="featureChat-newChatSession" datatype="html">
         <source> New chat </source>
         <target> Neuer Chat </target>
-      </trans-unit>
-      <trans-unit id="featureChat-renameChatSessionAria" datatype="html">
-        <source>Rename chat session</source>
-        <target>Chat-Sitzung umbenennen</target>
       </trans-unit>
       <trans-unit id="featureChat-renameChatSessionModalTitle" datatype="html">
         <source> Rename Chat Session </source>
@@ -5584,9 +5904,11 @@
         <source>Enter the verification code to finish signing in.</source>
         <target>Geben Sie den Bestätigungscode ein, um die Anmeldung abzuschließen.</target>
       </trans-unit>
-<trans-unit id="featureLogin2fa-emailHint" datatype="html">
-        <source>Enter the 6-character code we sent to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>.</source>
-        <target>Geben Sie den 6-zeichigen Code ein, den wir an <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> ein.</target>
+      <trans-unit id="featureLogin2fa-emailHint" datatype="html">
+        <source>Enter the 6-character code we sent to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+                &gt;"/>.</source>
+        <target>Geben Sie den 6-zeichigen Code ein, den wir an <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+                &gt;"/> ein.</target>
       </trans-unit>
       <trans-unit id="featureLogin2fa-formTitle" datatype="html">
         <source>Verify Sign-In</source>
@@ -5613,8 +5935,10 @@
         <target>Zwei-Faktor-Authentifizierung</target>
       </trans-unit>
       <trans-unit id="featureLogin2fa-totpHint" datatype="html">
-        <source>Enter the 6-digit code from your authenticator app for <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>.</source>
-        <target>Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App für <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> ein.</target>
+        <source>Enter the 6-digit code from your authenticator app for <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+                &gt;"/>.</source>
+        <target>Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App für <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+                &gt;"/> ein.</target>
       </trans-unit>
       <trans-unit id="featureLogin2fa-verifying" datatype="html">
         <source>Verifying...</source>
@@ -5627,6 +5951,10 @@
       <trans-unit id="featureSecuritySettings-authNotAvailable" datatype="html">
         <source> Two-factor authentication settings are only available for users authentication. </source>
         <target> Zwei-Faktor-Authentifizierungseinstellungen sind nur für die Benutzer-Authentifizierung verfügbar. </target>
+      </trans-unit>
+      <trans-unit id="featureTokenManager-noSearchResults" datatype="html">
+        <source>No search results</source>
+        <target>Keine Suchergebnisse</target>
       </trans-unit>
       <trans-unit id="featureSecuritySettings-confirmDisableTotp" datatype="html">
         <source> Disable authenticator </source>
@@ -5768,13 +6096,11 @@
         <source>Authenticator app</source>
         <target>Authenticator-App</target>
       </trans-unit>
-      <trans-unit id="featureUserManager-cancel" datatype="html">
-        <source> Cancel </source>
-        <target> Abbrechen </target>
-      </trans-unit>
       <trans-unit id="featureUserManager-clearTotpConfirm" datatype="html">
-        <source> Remove the authenticator app for <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToClearTotp.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>? They can set up a new authenticator afterwards. </source>
-        <target> Möchten Sie die Authenticator-App für <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToClearTotp.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> entfernen? Anschließend kann ein neuer Authenticator eingerichtet werden. </target>
+        <source> Remove the authenticator app for <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToClearTotp.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+      &gt;"/>? They can set up a new authenticator afterwards. </source>
+        <target> Möchten Sie die Authenticator-App für <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ userToClearTotp.email }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
+      &gt;"/> entfernen? Anschließend kann ein neuer Authenticator eingerichtet werden. </target>
       </trans-unit>
       <trans-unit id="featureUserManager-clearTotpModalTitle" datatype="html">
         <source> Remove Authenticator </source>
@@ -5793,20 +6119,40 @@
         <target>Authenticator</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-providersHelp" datatype="html">
-        <source>Configure provider overrides. Pick a built-in provider to seed credential env names and secret fields, or add a custom id. Inherited provider ids cannot be changed.</source>
-        <target>Provider-Overrides konfigurieren. Wählen Sie einen Built-in-Provider, um Credential-Env-Namen und Geheimfelder vorzubefüllen, oder fügen Sie eine eigene Id hinzu. Geerbte Provider-Ids können nicht geändert werden.</target>
+        <source> Configure provider overrides. Pick a built-in provider to seed credential env names, or add a custom id. Inherited provider ids cannot be changed. </source>
+        <target>Provider-Overrides konfigurieren. Wählen Sie einen Built-in-Provider, um Credential-Env-Namen vorzubefüllen, oder fügen Sie eine eigene Id hinzu. Geerbte Provider-Ids können nicht geändert werden.</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-lockedByHigherLayerAlert" datatype="html">
         <source>Some settings are locked by a higher layer and cannot be edited here.</source>
         <target>Einige Einstellungen sind durch eine höhere Ebene gesperrt und können hier nicht bearbeitet werden.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-inheritedHint" datatype="html">
+        <source>Inherited additive entries are shown read-only where applicable.</source>
+        <target>Geerbte additive Einträge werden gegebenenfalls schreibgeschützt angezeigt.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-unsavedChanges" datatype="html">
+        <source>Unsaved changes</source>
+        <target>Ungespeicherte Änderungen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-unsavedChangesHint" datatype="html">
+        <source>Closing without saving will discard your edits.</source>
+        <target>Wenn Sie ohne Speichern schließen, werden Ihre Änderungen verworfen.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-rawJsonLabel" datatype="html">
+        <source>Configuration JSON</source>
+        <target>Konfigurations-JSON</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-rawJsonHelp" datatype="html">
+        <source> Composed view of structured settings plus Advanced overrides for this layer. Saving absorbs the JSON into structured config and clears overrides. </source>
+        <target>Zusammengesetzte Ansicht der strukturierten Einstellungen plus erweiterte Overrides für diese Ebene. Beim Speichern wird das JSON in die strukturierte Konfiguration übernommen und die Overrides werden geleert.</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-providerSelectLabel" datatype="html">
         <source>Provider</source>
         <target>Provider</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-customProviderOption" datatype="html">
-        <source>Custom</source>
-        <target>Benutzerdefiniert</target>
+        <source> Custom provider </source>
+        <target>Benutzerdefinierter Provider</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-customProviderLabel" datatype="html">
         <source>Custom provider id</source>
@@ -5823,6 +6169,30 @@
       <trans-unit id="featureAgentConfig-addKnownModelLabel" datatype="html">
         <source>Add known model</source>
         <target>Bekanntes Modell hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-clearKnownModelProviderAria" datatype="html">
+        <source>Clear provider</source>
+        <target>Provider zurücksetzen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addEntry" datatype="html">
+        <source>Add</source>
+        <target>Hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldModelDeny" datatype="html">
+        <source>Model denylist</source>
+        <target>Modell-Sperrliste</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldModelDenyHelp" datatype="html">
+        <source>Wins over allowlist</source>
+        <target>Hat Vorrang vor der Erlaubnisliste</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-tabProviders" datatype="html">
+        <source>Providers</source>
+        <target>Provider</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-providersOverridesHeading" datatype="html">
+        <source>Overrides</source>
+        <target>Overrides</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-knownModelProviderPlaceholder" datatype="html">
         <source>Provider</source>
@@ -5847,6 +6217,94 @@
       <trans-unit id="featureAgentConfig-fieldModelPlaceholder" datatype="html">
         <source>provider/model</source>
         <target>provider/modell</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldShell" datatype="html">
+        <source>Shell</source>
+        <target>Shell</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldShellHelp" datatype="html">
+        <source>Default shell for terminal tools</source>
+        <target>Standard-Shell für Terminal-Tools</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldUsername" datatype="html">
+        <source>Username</source>
+        <target>Benutzername</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldUsernameHelp" datatype="html">
+        <source>Display username override</source>
+        <target>Abweichender Anzeige-Benutzername</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-generalBehaviorHeading" datatype="html">
+        <source> Behavior </source>
+        <target>Verhalten</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldShare" datatype="html">
+        <source>Sharing</source>
+        <target>Teilen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldShareHelp" datatype="html">
+        <source>manual, auto, or disabled</source>
+        <target>manual, auto oder disabled</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldUpdate" datatype="html">
+        <source>Updates</source>
+        <target>Updates</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldUpdateHelp" datatype="html">
+        <source>true, false, or notify</source>
+        <target>true, false oder notify</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldSnapshots" datatype="html">
+        <source>Snapshots</source>
+        <target>Snapshots</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldSnapshotsHelp" datatype="html">
+        <source>Enable filesystem snapshots</source>
+        <target>Dateisystem-Snapshots aktivieren</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldSubagentDepth" datatype="html">
+        <source>Subagent depth</source>
+        <target>Subagent-Tiefe</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldSubagentDepthHelp" datatype="html">
+        <source>Maximum nested subagent depth</source>
+        <target>Maximale Verschachtelungstiefe für Subagents</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-generalWorkspaceHeading" datatype="html">
+        <source> Workspace </source>
+        <target>Workspace</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldWorktree" datatype="html">
+        <source>Worktree directory</source>
+        <target>Worktree-Verzeichnis</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldWorktreeHelp" datatype="html">
+        <source>Parent directory for new worktrees</source>
+        <target>Übergeordnetes Verzeichnis für neue Worktrees</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldWatcherIgnore" datatype="html">
+        <source>Watcher ignore</source>
+        <target>Vom Watcher ignoriert</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldWatcherIgnoreHelp" datatype="html">
+        <source>One glob per line</source>
+        <target>Ein Glob pro Zeile</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-tabModels" datatype="html">
+        <source>Models</source>
+        <target>Modelle</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-modelsProvidersHeading" datatype="html">
+        <source> Providers </source>
+        <target>Provider</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEnabledProviders" datatype="html">
+        <source>Provider allowlist</source>
+        <target>Provider-Erlaubnisliste</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldEnabledProvidersHelp" datatype="html">
+        <source>One provider id per line</source>
+        <target>Eine Provider-Id pro Zeile</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-providerCredentialsHeading" datatype="html">
         <source>Credentials (secrets)</source>
@@ -5884,6 +6342,50 @@
         <source>Available models from the provider catalog. Locked for built-in providers.</source>
         <target>Verfügbare Modelle aus dem Provider-Katalog. Für Built-in-Provider gesperrt.</target>
       </trans-unit>
+      <trans-unit id="featureAgentConfig-tabMcp" datatype="html">
+        <source>MCP</source>
+        <target>MCP</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-sectionExtensions" datatype="html">
+        <source>Extensions</source>
+        <target>Erweiterungen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpTimeoutsHeading" datatype="html">
+        <source> Timeouts </source>
+        <target>Timeouts</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMcpTimeoutStartup" datatype="html">
+        <source>Startup timeout (ms)</source>
+        <target>Start-Timeout (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMcpTimeoutStartupHelp" datatype="html">
+        <source>Max wait for an MCP server to become ready</source>
+        <target>Maximale Wartezeit, bis ein MCP-Server bereit ist</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMcpTimeoutRequest" datatype="html">
+        <source>Request timeout (ms)</source>
+        <target>Request-Timeout (ms)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMcpTimeoutRequestHelp" datatype="html">
+        <source>Max wait for a single MCP request round-trip</source>
+        <target>Maximale Wartezeit für einen einzelnen MCP-Request-Roundtrip</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpServersHeading" datatype="html">
+        <source>Servers</source>
+        <target>Server</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMcpAllow" datatype="html">
+        <source>MCP allowlist</source>
+        <target>MCP-Erlaubnisliste</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMcpAllowHelp" datatype="html">
+        <source>Registry names or custom, one per line</source>
+        <target>Registry-Namen oder custom, einer pro Zeile</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addKnownMcpLabel" datatype="html">
+        <source>Add known MCP server</source>
+        <target>Bekannten MCP-Server hinzufügen</target>
+      </trans-unit>
       <trans-unit id="featureAgentConfig-accumulatedJsonLabel" datatype="html">
         <source>Accumulated configuration</source>
         <target>Akkumulierte Konfiguration</target>
@@ -5896,9 +6398,73 @@
         <source>Accumulated configuration JSON</source>
         <target>Akkumulierte Konfiguration (JSON)</target>
       </trans-unit>
+      <trans-unit id="featureAgentConfig-tabGeneral" datatype="html">
+        <source>General</source>
+        <target>Allgemein</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-sectionCore" datatype="html">
+        <source>Core</source>
+        <target>Basis</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-generalIdentityHeading" datatype="html">
+        <source> Identity </source>
+        <target>Identität</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldModel" datatype="html">
+        <source>Default model</source>
+        <target>Standardmodell</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldModelHelp" datatype="html">
+        <source>Pick provider and model, or type provider/model</source>
+        <target>Provider und Modell auswählen oder provider/modell eingeben</target>
+      </trans-unit>
       <trans-unit id="featureAgentConfig-sectionSecurity" datatype="html">
         <source>Security</source>
         <target>Sicherheit</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-permissionsHeading" datatype="html">
+        <source>Permissions</source>
+        <target>Berechtigungen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addPermission" datatype="html">
+        <source>Add permission</source>
+        <target>Berechtigung hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-permissionsEmpty" datatype="html">
+        <source>No permission rules yet.</source>
+        <target>Noch keine Berechtigungsregeln.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-policiesHeading" datatype="html">
+        <source>Policies</source>
+        <target>Richtlinien</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addPolicy" datatype="html">
+        <source>Add policy</source>
+        <target>Richtlinie hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-policiesEmpty" datatype="html">
+        <source>No policy rules yet.</source>
+        <target>Noch keine Richtlinienregeln.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-toolOutputHeading" datatype="html">
+        <source> Tool output </source>
+        <target>Tool-Ausgabe</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldToolOutputLines" datatype="html">
+        <source>Tool output max lines</source>
+        <target>Max. Zeilen der Tool-Ausgabe</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldToolOutputLinesHelp" datatype="html">
+        <source>Truncate tool stdout/stderr after this many lines</source>
+        <target>Tool-stdout/stderr nach dieser Anzahl Zeilen abschneiden</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldToolOutputBytes" datatype="html">
+        <source>Tool output max bytes</source>
+        <target>Max. Bytes der Tool-Ausgabe</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldToolOutputBytesHelp" datatype="html">
+        <source>Truncate tool output after this many bytes</source>
+        <target>Tool-Ausgabe nach dieser Anzahl Bytes abschneiden</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-tabEgress" datatype="html">
         <source>Web traffic</source>
@@ -5921,8 +6487,8 @@
         <target>Filtermodus</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldEgressModeHelp" datatype="html">
-        <source>off: no guard · monitor: record would-be blocks · enforce: apply the lists · offline: block all egress</source>
-        <target>off: kein Guard · monitor: mögliche Sperren protokollieren · enforce: Listen anwenden · offline: gesamten ausgehenden Verkehr sperren</target>
+        <source>off: no guard, monitor: record would-be blocks, enforce: apply the lists, offline: block all egress</source>
+        <target>off: kein Guard, monitor: mögliche Sperren protokollieren, enforce: Listen anwenden, offline: gesamten ausgehenden Verkehr sperren</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-inheritOption" datatype="html">
         <source>(inherit)</source>
@@ -6045,8 +6611,8 @@
         <target>Aktion</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldMessageFilterActionHelp" datatype="html">
-        <source>drop: block the message · replace: rewrite matches · flag: record only</source>
-        <target>drop: Nachricht verwerfen · replace: Treffer ersetzen · flag: nur protokollieren</target>
+        <source>drop: block the message, replace: rewrite matches, flag: record only</source>
+        <target>drop: Nachricht verwerfen, replace: Treffer ersetzen, flag: nur protokollieren</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldMessageFilterReplacement" datatype="html">
         <source>Replacement</source>
@@ -6069,12 +6635,84 @@
         <target>Ausgewertet gegen alle wirksamen Regeln inklusive ungespeicherter Änderungen dieser Ebene</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-directionIncoming" datatype="html">
-        <source>incoming (user → agent)</source>
-        <target>eingehend (Benutzer → Agent)</target>
+        <source>incoming (user to agent)</source>
+        <target>eingehend (Benutzer an Agent)</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-directionOutgoing" datatype="html">
-        <source>outgoing (agent → user)</source>
-        <target>ausgehend (Agent → Benutzer)</target>
+        <source>outgoing (agent to user)</source>
+        <target>ausgehend (Agent an Benutzer)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-tabWebsearch" datatype="html">
+        <source>Websearch &amp; network</source>
+        <target>Websuche &amp; Netzwerk</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-sectionRuntime" datatype="html">
+        <source>Runtime</source>
+        <target>Laufzeit</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-websearchHeading" datatype="html">
+        <source>Websearch</source>
+        <target>Websuche</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-networkHeading" datatype="html">
+        <source> Network (secrets) </source>
+        <target>Netzwerk (Geheimnisse)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-tabCompaction" datatype="html">
+        <source>Compaction</source>
+        <target>Komprimierung</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-compactionHeading" datatype="html">
+        <source> Compaction </source>
+        <target>Komprimierung</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-tabFormatters" datatype="html">
+        <source>Formatters &amp; attachments</source>
+        <target>Formatter &amp; Anhänge</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-formattersHeading" datatype="html">
+        <source>Formatters</source>
+        <target>Formatter</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addFormatterLabel" datatype="html">
+        <source>Formatter</source>
+        <target>Formatter</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mediaHeading" datatype="html">
+        <source> Media / attachments </source>
+        <target>Medien / Anhänge</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-tabWarming" datatype="html">
+        <source>Warming</source>
+        <target>Vorwärmen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-warmingHeading" datatype="html">
+        <source>Warming</source>
+        <target>Vorwärmen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-tabOverrides" datatype="html">
+        <source>Overrides</source>
+        <target>Overrides</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-sectionAdvanced" datatype="html">
+        <source>Advanced</source>
+        <target>Erweitert</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-overridesHeading" datatype="html">
+        <source> Raw overrides </source>
+        <target>Roh-Overrides</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-overridesHelp" datatype="html">
+        <source> Optional JSON merged over the structured settings for this layer. Same heredity locks apply. Included in Configuration JSON. </source>
+        <target>Optionales JSON, das für diese Ebene über die strukturierten Einstellungen gemergt wird. Es gelten dieselben Vererbungssperren. Im Konfigurations-JSON enthalten.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-overridesJsonTitle" datatype="html">
+        <source>Overrides JSON</source>
+        <target>Overrides-JSON</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-save" datatype="html">
+        <source> Save </source>
+        <target>Speichern</target>
       </trans-unit>
       <trans-unit id="featureAgentConfig-fieldEgressBlockPrivate" datatype="html">
         <source>Block private networks</source>
@@ -6123,6 +6761,78 @@
       <trans-unit id="featureAgentConfig-fieldEgressDenyUrlPatternsHelp" datatype="html">
         <source>Regular expressions matched against http:// URLs (HTTPS paths are not visible), one per line.</source>
         <target>Reguläre Ausdrücke für http://-URLs (HTTPS-Pfade sind nicht sichtbar), einer pro Zeile.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-switchToRaw" datatype="html">
+        <source>Switch to raw JSON</source>
+        <target>Zu Roh-JSON wechseln</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-switchToStructured" datatype="html">
+        <source>Switch to structured editor</source>
+        <target>Zum strukturierten Editor wechseln</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-loadFailed" datatype="html">
+        <source>Failed to load configuration</source>
+        <target>Konfiguration konnte nicht geladen werden</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-lockedByHigherLayer" datatype="html">
+        <source>Locked by a higher layer</source>
+        <target>Durch eine höhere Ebene gesperrt</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-unlockedInherited" datatype="html">
+        <source>Not locked by a higher layer</source>
+        <target>Nicht durch eine höhere Ebene gesperrt</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-unlockTabAria" datatype="html">
+        <source>Unlock entire tab for lower layers</source>
+        <target>Gesamten Tab für untere Ebenen entsperren</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-lockTabAria" datatype="html">
+        <source>Lock entire tab for lower layers</source>
+        <target>Gesamten Tab für untere Ebenen sperren</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-unlockList" datatype="html">
+        <source>Unlock list for lower layers</source>
+        <target>Liste für untere Ebenen entsperren</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-lockList" datatype="html">
+        <source>Lock list for lower layers</source>
+        <target>Liste für untere Ebenen sperren</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-invalidSubtreeJson" datatype="html">
+        <source>Invalid JSON in structured field</source>
+        <target>Ungültiges JSON im strukturierten Feld</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-inheritedEntrySummary" datatype="html">
+        <source>Inherited from a higher layer</source>
+        <target>Von einer höheren Ebene geerbt</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-removedEntrySummary" datatype="html">
+        <source>Removed (unsaved)</source>
+        <target>Entfernt (nicht gespeichert)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpStatusConnected" datatype="html">
+        <source>Connected</source>
+        <target>Verbunden</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpStatusDisabled" datatype="html">
+        <source>Disabled</source>
+        <target>Deaktiviert</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpStatusFailed" datatype="html">
+        <source>Failed</source>
+        <target>Fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpStatusNeedsAuth" datatype="html">
+        <source>Needs authentication</source>
+        <target>Authentifizierung erforderlich</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpStatusNeedsClientRegistration" datatype="html">
+        <source>Needs OAuth client registration</source>
+        <target>OAuth-Client-Registrierung erforderlich</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpStatusUnknown" datatype="html">
+        <source>Unknown</source>
+        <target>Unbekannt</target>
       </trans-unit>
       <trans-unit id="featureAudit-egressRuleDenyHost" datatype="html">
         <source>Denylisted destination</source>
@@ -6275,6 +6985,330 @@
       <trans-unit id="featureAudit-chartEgressRulesTitle" datatype="html">
         <source>Blocks by rule</source>
         <target>Sperren nach Regel</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-providerTypeaheadPlaceholder" datatype="html">
+        <source>Search built-in providers...</source>
+        <target>Integrierte Anbieter durchsuchen...</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-providerTypeaheadAria" datatype="html">
+        <source>Search built-in providers</source>
+        <target>Built-in-Provider durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldDisabledProviders" datatype="html">
+        <source>Provider denylist</source>
+        <target>Provider-Sperrliste</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldDisabledProvidersHelp" datatype="html">
+        <source>Overrides allowlist when both match</source>
+        <target>Hat Vorrang vor der Erlaubnisliste, wenn beide zutreffen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-modelsModelsHeading" datatype="html">
+        <source>Models</source>
+        <target>Modelle</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldModelAllow" datatype="html">
+        <source>Model allowlist</source>
+        <target>Modell-Erlaubnisliste</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldModelAllowHelp" datatype="html">
+        <source>provider/model per line</source>
+        <target>provider/modell pro Zeile</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpTypeaheadPlaceholder" datatype="html">
+        <source>Search MCP registry...</source>
+        <target>MCP-Registry durchsuchen...</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpTypeaheadAria" datatype="html">
+        <source>Search MCP registry servers</source>
+        <target>MCP-Registry-Server durchsuchen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addCustomMcpAllowDenyToken" datatype="html">
+        <source> Add “custom” </source>
+        <target>„custom“ hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMcpDeny" datatype="html">
+        <source>MCP denylist</source>
+        <target>MCP-Sperrliste</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-fieldMcpDenyHelp" datatype="html">
+        <source>Overrides allowlist when both match</source>
+        <target>Hat Vorrang vor der Erlaubnisliste, wenn beide zutreffen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpServersHelp" datatype="html">
+        <source> Pick a registry MCP server to seed command/URL and secret names, or add a custom id. Secret values are stored in layer secrets, not in config JSON. </source>
+        <target>Wählen Sie einen MCP-Server aus der Registry, um Befehl/URL und Geheimnis-Namen vorzubefüllen, oder fügen Sie eine eigene Id hinzu. Geheimniswerte werden in den Geheimnissen der Ebene gespeichert, nicht im Konfigurations-JSON.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpSelectLabel" datatype="html">
+        <source>MCP server</source>
+        <target>MCP-Server</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-customMcpOption" datatype="html">
+        <source> Custom MCP server </source>
+        <target>Benutzerdefinierter MCP-Server</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-customMcpLabel" datatype="html">
+        <source>Custom MCP server id</source>
+        <target>Eigene MCP-Server-Id</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-customMcpPlaceholder" datatype="html">
+        <source>my-mcp-server</source>
+        <target>mein-mcp-server</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpLockedOauthOnly" datatype="html">
+        <source> MCP configuration is locked by a higher layer. You can still authenticate servers on this Environment. </source>
+        <target>Die MCP-Konfiguration ist durch eine höhere Ebene gesperrt. Sie können Server in dieser Umgebung trotzdem authentifizieren.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpRuntimeStatusTitle" datatype="html">
+        <source>Runtime status</source>
+        <target>Laufzeitstatus</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpRuntimeStatusHelp" datatype="html">
+        <source>Live OpenCode MCP connection state for this Environment</source>
+        <target>Aktueller OpenCode-MCP-Verbindungsstatus für diese Umgebung</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpOauthSecretTitle" datatype="html">
+        <source>OAuth client secret</source>
+        <target>OAuth-Client-Secret</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpSecretsHeading" datatype="html">
+        <source> Secrets </source>
+        <target>Geheimnisse</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addMcpSecretEnvTitle" datatype="html">
+        <source>Add secret env</source>
+        <target>Geheimnis-Env hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addMcpSecretEnvHelp" datatype="html">
+        <source>Env var name for this MCP server (value stored as a secret)</source>
+        <target>Env-Variablenname für diesen MCP-Server (Wert wird als Geheimnis gespeichert)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addMcpSecretHeaderTitle" datatype="html">
+        <source>Add secret header</source>
+        <target>Geheimnis-Header hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addMcpSecretHeaderHelp" datatype="html">
+        <source>Header name for this remote MCP server (value stored as a secret)</source>
+        <target>Header-Name für diesen Remote-MCP-Server (Wert wird als Geheimnis gespeichert)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-tabSkills" datatype="html">
+        <source>Skills &amp; instructions</source>
+        <target>Skills &amp; Anweisungen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-skillsHeading" datatype="html">
+        <source>Skills</source>
+        <target>Skills</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-skillsEmpty" datatype="html">
+        <source>No skills yet.</source>
+        <target>Noch keine Skills.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addSkillLabel" datatype="html">
+        <source>Skill path or URL</source>
+        <target>Skill-Pfad oder URL</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-instructionsHeading" datatype="html">
+        <source>Instructions</source>
+        <target>Anweisungen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-instructionsEmpty" datatype="html">
+        <source>No instructions yet.</source>
+        <target>Noch keine Anweisungen.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addInstructionLabel" datatype="html">
+        <source>Instruction path or URL</source>
+        <target>Anweisungspfad oder URL</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-tabCommands" datatype="html">
+        <source>Commands &amp; plugins</source>
+        <target>Befehle &amp; Plugins</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-commandsHeading" datatype="html">
+        <source>Commands</source>
+        <target>Befehle</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addCommandLabel" datatype="html">
+        <source>Command</source>
+        <target>Befehl</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-pluginsHeading" datatype="html">
+        <source>Plugins</source>
+        <target>Plugins</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addPlugin" datatype="html">
+        <source>Add plugin</source>
+        <target>Plugin hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-pluginsEmpty" datatype="html">
+        <source>No plugins yet.</source>
+        <target>Noch keine Plugins.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-inheritedBadge" datatype="html">
+        <source>Inherited</source>
+        <target>Geerbt</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-removedBadge" datatype="html">
+        <source>Removed</source>
+        <target>Entfernt</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-openPath" datatype="html">
+        <source>Open</source>
+        <target>Öffnen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-tabAgents" datatype="html">
+        <source>Agents</source>
+        <target>Agents</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-agentsHeading" datatype="html">
+        <source>Agents</source>
+        <target>Agents</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addAgentLabel" datatype="html">
+        <source>Agent</source>
+        <target>Agent</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-tabReferences" datatype="html">
+        <source>References</source>
+        <target>Referenzen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-referencesHeading" datatype="html">
+        <source>References</source>
+        <target>Referenzen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addReferenceLabel" datatype="html">
+        <source>Reference</source>
+        <target>Referenz</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-openUrl" datatype="html">
+        <source>Open URL</source>
+        <target>URL öffnen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-tabPermissions" datatype="html">
+        <source>Permissions &amp; policies</source>
+        <target>Berechtigungen &amp; Richtlinien</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpAuthConnected" datatype="html">
+        <source>Connected, no authentication needed</source>
+        <target>Verbunden, keine Authentifizierung erforderlich</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpAuthStart" datatype="html">
+        <source>Authenticate</source>
+        <target>Authentifizieren</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpStatusLoadFailed" datatype="html">
+        <source>Failed to load MCP runtime status</source>
+        <target>MCP-Laufzeitstatus konnte nicht geladen werden</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpAuthStartFailed" datatype="html">
+        <source>Failed to start MCP authentication</source>
+        <target>MCP-Authentifizierung konnte nicht gestartet werden</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-mcpSeedFailed" datatype="html">
+        <source>Could not seed this MCP server from the registry catalog</source>
+        <target>Dieser MCP-Server konnte nicht aus dem Registry-Katalog vorbefüllt werden</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-invalidPluginOptions" datatype="html">
+        <source>Invalid plugin options JSON</source>
+        <target>Ungültiges JSON für Plugin-Optionen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-saveFailed" datatype="html">
+        <source>Failed to save configuration</source>
+        <target>Konfiguration konnte nicht gespeichert werden</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-invalidJson" datatype="html">
+        <source>Invalid JSON</source>
+        <target>Ungültiges JSON</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-layerFilePathLabel" datatype="html">
+        <source>Path</source>
+        <target>Pfad</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-layerFileContent" datatype="html">
+        <source>Content</source>
+        <target>Inhalt</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-layerFileMissingClient" datatype="html">
+        <source>Workspace id is required</source>
+        <target>Workspace-Id ist erforderlich</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-layerFileSaveFailed" datatype="html">
+        <source>Failed to save file</source>
+        <target>Datei konnte nicht gespeichert werden</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-editEntry" datatype="html">
+        <source>Edit</source>
+        <target>Bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-removeEntry" datatype="html">
+        <source>Remove</source>
+        <target>Entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addNameLabel" datatype="html">
+        <source>Name</source>
+        <target>Name</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addPathEntry" datatype="html">
+        <source>Add</source>
+        <target>Hinzufügen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-editPathEntry" datatype="html">
+        <source>Edit</source>
+        <target>Bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-removePathEntry" datatype="html">
+        <source>Remove</source>
+        <target>Entfernen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addPathLabel" datatype="html">
+        <source>Path or URL</source>
+        <target>Pfad oder URL</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-addPathPlaceholder" datatype="html">
+        <source>/path or https://...</source>
+        <target>/pfad oder https://...</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-lockSetting" datatype="html">
+        <source>Lock for lower layers</source>
+        <target>Für untere Ebenen sperren</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConfig-unlockSetting" datatype="html">
+        <source>Unlock for lower layers</source>
+        <target>Für untere Ebenen entsperren</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedAria" datatype="html">
+        <source>Tool result: <x id="toolKind" equiv-text="kind"/></source>
+        <target>Tool-Ergebnis: <x id="toolKind" equiv-text="kind"/></target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedTodoCompleted" datatype="html">
+        <source>Completed</source>
+        <target>Abgeschlossen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedTodoInProgress" datatype="html">
+        <source>In progress</source>
+        <target>In Bearbeitung</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedTodoCancelled" datatype="html">
+        <source>Cancelled</source>
+        <target>Abgebrochen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedTodoPending" datatype="html">
+        <source>Pending</source>
+        <target>Ausstehend</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedTodoUnknown" datatype="html">
+        <source>Unknown</source>
+        <target>Unbekannt</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedShowingOf" datatype="html">
+        <source>Showing <x id="shown" equiv-text="shown"/> of <x id="total" equiv-text="total"/></source>
+        <target><x id="shown" equiv-text="shown"/> von <x id="total" equiv-text="total"/> angezeigt</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolEmbedInvalidMessage" datatype="html">
+        <source><x id="toolName" equiv-text="tool"/>: <x id="errorText" equiv-text="error"/></source>
+        <target><x id="toolName" equiv-text="tool"/>: <x id="errorText" equiv-text="error"/></target>
+      </trans-unit>
+      <trans-unit id="featureTicketsBoard-acceptanceProgressAria" datatype="html">
+        <source>Acceptance progress</source>
+        <target>Abnahmefortschritt</target>
       </trans-unit>
     </body>
   </file>

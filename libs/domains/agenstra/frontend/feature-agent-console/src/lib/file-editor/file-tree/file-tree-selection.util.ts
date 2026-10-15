@@ -220,13 +220,13 @@ export function suggestCopyBasename(baseName: string, existingNames: Iterable<st
 
 /**
  * Suggest a non-colliding title for knowledge nodes (no file extension).
- * Collision → `Title (1)`, `Title (2)`, …
+ * Collision -> `Title (1)`, `Title (2)`, ...
  */
 export function suggestNumberedTitle(title: string, existingTitles: Iterable<string>): string {
   return suggestCopyBasename(title, existingTitles);
 }
 
-/** Join parent + child path segments for the files API (`.` parent → child only). */
+/** Join parent + child path segments for the files API (`.` parent -> child only). */
 export function joinFileTreePath(parentPath: string, childName: string): string {
   if (!parentPath || parentPath === '.' || parentPath === '/') {
     return childName;

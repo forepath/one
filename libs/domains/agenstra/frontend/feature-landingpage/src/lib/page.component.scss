@@ -2,47 +2,10 @@ section {
   scroll-margin-top: 80px;
 }
 
+// Hero background (contour field) lives in the shared `ui-components/styles/_landing.scss`.
 #hero {
   position: relative;
   overflow: hidden;
-
-  &:before,
-  &:after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(110px);
-    opacity: 0.35;
-    pointer-events: none;
-  }
-
-  &:before {
-    animation: hero-orb-float 18s ease-in-out infinite;
-    width: 420px;
-    height: 420px;
-    top: -60px;
-    left: -40px;
-    background: radial-gradient(circle at 30% 30%, #8b5cf6, transparent 60%);
-  }
-
-  &:after {
-    animation: hero-orb-float 22s ease-in-out infinite reverse;
-    width: 520px;
-    height: 520px;
-    bottom: -120px;
-    right: -80px;
-    background: radial-gradient(circle at 70% 70%, #21808d, transparent 65%);
-  }
-}
-
-@keyframes hero-orb-float {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
-  50% {
-    transform: translate3d(12px, -10px, 0);
-  }
 }
 
 .hero-title {
@@ -105,77 +68,6 @@ section {
   max-width: 700px;
 }
 
-.portal-page-tabs {
-  .nav-link {
-    font-weight: 500;
-    color: var(--bs-secondary);
-    transition: all 0.2s ease;
-
-    &:hover:not(.active) {
-      background-color: rgba(139, 92, 246, 0.08);
-      color: var(--bs-primary);
-    }
-
-    &.active {
-      box-shadow: var(--bs-box-shadow-sm);
-      color: var(--bs-white);
-    }
-  }
-}
-
-.home-governance-card {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(8px);
-}
-
-.home-governance-card-text {
-  color: rgba(255, 255, 255, 0.72);
-}
-
-.problem-box {
-  background: rgba(255, 84, 89, 0.05);
-}
-
-.problem-icon {
-  color: var(--bs-danger);
-  font-size: 1.25rem;
-}
-
-// Card icon container
-.card-icon {
-  width: 48px;
-  height: 48px;
-  background: rgba(139, 92, 246, 0.1);
-  flex-shrink: 0;
-}
-
-.card-capability-primary {
-  background: linear-gradient(to right, rgba(139, 92, 246, 0.05) 0%, transparent 100%);
-}
-
-.card-capability-success {
-  background: linear-gradient(to right, rgba(33, 128, 141, 0.05) 0%, transparent 100%);
-}
-
-.card-capability-warning {
-  background: linear-gradient(to right, rgba(230, 129, 97, 0.05) 0%, transparent 100%);
-}
-
-.card-capability-secondary {
-  background: linear-gradient(to right, rgba(98, 108, 113, 0.05) 0%, transparent 100%);
-}
-
-// Integration card with dashed border
-.card-integration {
-  background: #fff;
-  border: 2px dashed rgba(33, 128, 141, 0.3) !important;
-}
-
-// Problem card background
-.card-problem {
-  background: rgba(139, 92, 246, 0.03);
-}
-
 // Iteration/step badge
 .iteration-badge {
   width: 32px;
@@ -183,19 +75,21 @@ section {
   font-size: 0.875rem;
 }
 
+// White marks on the dark landing pages, so dark logos stay visible.
 .logo-partner {
-  filter: grayscale(100%);
+  filter: brightness(0) invert(1);
   opacity: 0.5;
-  transition: all 0.3s ease;
+  transition: opacity 0.3s ease;
   max-height: 24px;
 
   &:hover {
-    filter: grayscale(0%);
-    opacity: 1;
+    opacity: 0.9;
   }
 }
 
 // Marketing CTA sizing + #cta/#fit/#hero tones live on `fpc-button` (`size="xl"`).
+
+// Card, tab and icon-tile helpers live in the shared `ui-components/styles/_landing.scss`.
 
 .bento-badge {
   position: relative;

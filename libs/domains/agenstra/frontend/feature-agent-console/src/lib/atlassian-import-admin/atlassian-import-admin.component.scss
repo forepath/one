@@ -33,6 +33,10 @@
   min-height: 12rem;
 }
 
+.atlassian-import-admin__connection-meta {
+  max-width: min(100%, 22rem);
+}
+
 .atlassian-import-admin__lane .card-header {
   background: var(--bs-secondary-bg);
   border-radius: 0;

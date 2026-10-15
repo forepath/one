@@ -432,7 +432,7 @@
                           [disabled]="(updating$ | async) === true"
                           [placeholder]="
                             isProviderDefaultConfigured('edit', field.envKey)
-                              ? 'Override configured — leave blank to clear'
+                              ? 'Override configured. Leave blank to clear.'
                               : 'Using environment default'
                           "
                         />
@@ -452,7 +452,7 @@
                       [disabled]="(updating$ | async) === true"
                       [placeholder]="
                         isProviderDefaultConfigured('edit', field.envKey)
-                          ? 'Override configured — leave blank to clear'
+                          ? 'Override configured. Leave blank to clear.'
                           : 'Using environment default'
                       "
                     />
@@ -520,12 +520,16 @@
           <div class="row g-2 mb-2 align-items-end">
             <div class="col-12">
               <div class="fw-semibold">{{ declared.name }}</div>
-              <div class="small text-muted">
-                {{ declared.key }} · {{ declared.aggregator }} · €{{ declared.defaultUnitPriceNet }}
-                @if (declared.unitLabel) {
-                  <span>/ {{ declared.unitLabel }}</span>
-                }
-                · <span i18n="@@featureServiceTypes-requiredMeter">Required</span>
+              <div class="d-flex flex-wrap align-items-center gap-2 small">
+                <span class="font-monospace text-break">{{ declared.key }}</span>
+                <span class="text-body-secondary">{{ declared.aggregator }}</span>
+                <span class="text-body-secondary"
+                  >€{{ declared.defaultUnitPriceNet }}
+                  @if (declared.unitLabel) {
+                    / {{ declared.unitLabel }}
+                  }
+                </span>
+                <span class="text-body-secondary" i18n="@@featureServiceTypes-requiredMeter">Required</span>
               </div>
             </div>
           </div>
@@ -533,25 +537,29 @@
       }
     }
     @if (mode === 'edit' && meterAttachLoading && attachedMetersFor('edit').length === 0) {
-      <div class="text-muted small mb-2" i18n="@@featureServiceTypes-metersLoading">Loading meters…</div>
+      <div class="text-body-secondary small mb-2" i18n="@@featureServiceTypes-metersLoading">Loading meters...</div>
     }
     @for (attached of attachedMetersFor(mode); track attached.meterId) {
       <div class="row g-2 mb-2 align-items-end">
         <div class="col-12 col-md-4">
           <div class="fw-semibold">{{ attached.name }}</div>
-          <div class="small text-muted">
-            {{ attached.key }} · {{ attached.aggregator }} · €{{ attached.effectiveUnitPriceNet }}
-            @if (attached.unitLabel) {
-              <span>/ {{ attached.unitLabel }}</span>
-            }
+          <div class="d-flex flex-wrap align-items-center gap-2 small">
+            <span class="font-monospace text-break">{{ attached.key }}</span>
+            <span class="text-body-secondary">{{ attached.aggregator }}</span>
+            <span class="text-body-secondary"
+              >€{{ attached.effectiveUnitPriceNet }}
+              @if (attached.unitLabel) {
+                / {{ attached.unitLabel }}
+              }
+            </span>
           </div>
           @if (attached.required) {
-            <div class="small text-muted" i18n="@@featureServiceTypes-requiredMeter">Required</div>
+            <div class="small text-body-secondary" i18n="@@featureServiceTypes-requiredMeter">Required</div>
           }
         </div>
         <div class="col-12 col-md-5">
           <div class="row g-2">
-            <div class="col-6">
+            <div class="col-12 col-md-6">
               <fpc-form-field
                 [forId]="mode + 'ServiceTypeMeterOverride' + attached.meterId"
                 i18n-label="@@featureServiceTypes-meterUnitPriceOverride"
@@ -569,7 +577,7 @@
                 />
               </fpc-form-field>
             </div>
-            <div class="col-6">
+            <div class="col-12 col-md-6">
               <fpc-form-field
                 [forId]="mode + 'ServiceTypeMeterIncludedUsage' + attached.meterId"
                 i18n-label="@@featureServiceTypes-meterIncludedUsageOverride"
@@ -602,12 +610,6 @@
             variant="primary"
             size="sm"
             iconOnly
-            click
-            updateAttachedServiceTypeMeter
-            mode
-            attached
-            serviceTypeMeterOverride.value()
-            serviceTypeMeterIncludedUsage.value()
             [disabled]="disabled || (mode === 'edit' && meterAttachLoading)"
             title="Update price"
             i18n-title="@@featureServiceTypes-updateMeterPrice"
@@ -635,7 +637,7 @@
       </div>
     } @empty {
       @if (mode === 'edit' && !meterAttachLoading) {
-        <p class="text-muted small mb-3" i18n="@@featureServiceTypes-noMetersAttached">
+        <p class="text-body-secondary small mb-3" i18n="@@featureServiceTypes-noMetersAttached">
           No meters attached to this service type yet.
         </p>
       }
@@ -684,7 +686,7 @@
               </div>
               <div class="col-12 col-md-5">
                 <div class="row g-2">
-                  <div class="col-6">
+                  <div class="col-12 col-md-6">
                     <fpc-form-field
                       [forId]="mode + 'AttachServiceTypeMeterPrice'"
                       i18n-label="@@featureServiceTypes-attachMeterPrice"
@@ -715,7 +717,7 @@
                       }
                     </fpc-form-field>
                   </div>
-                  <div class="col-6">
+                  <div class="col-12 col-md-6">
                     <fpc-form-field
                       [forId]="mode + 'AttachServiceTypeMeterIncludedUsage'"
                       i18n-label="@@featureServiceTypes-attachMeterIncludedUsage"
@@ -769,14 +771,16 @@
               </div>
             </div>
           } @else if (meters.length === 0) {
-            <p class="text-muted small mb-0" i18n="@@featureServiceTypes-noCatalogMeters">
-              No active meters in the catalog. Create meters under Administration → Usage meters first.
+            <p class="text-body-secondary small mb-0" i18n="@@featureServiceTypes-noCatalogMeters">
+              No active meters in the catalog. Create meters under Administration &gt; Usage meters first.
             </p>
           }
         }
       }
     } @else {
-      <p class="text-muted small mb-0" i18n="@@featureServiceTypes-metersCatalogLoading">Loading meter catalog…</p>
+      <p class="text-body-secondary small mb-0" i18n="@@featureServiceTypes-metersCatalogLoading">
+        Loading meter catalog...
+      </p>
     }
   </div>
 </ng-template>

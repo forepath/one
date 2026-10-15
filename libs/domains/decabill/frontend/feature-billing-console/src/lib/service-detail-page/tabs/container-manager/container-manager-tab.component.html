@@ -49,7 +49,7 @@
             @if (loadingNetworks()) {
               <div class="d-flex align-items-center gap-2 text-body-secondary px-3 pb-3">
                 <fpc-spinner size="sm" />
-                <span i18n="@@featureContainerManager-loadingNetworks">Loading networks…</span>
+                <span i18n="@@featureContainerManager-loadingNetworks">Loading networks...</span>
               </div>
             } @else if (topologyLayout().length === 0) {
               <p class="text-body-secondary mb-0 px-3 pb-3" i18n="@@featureContainerManager-noNetworks">
@@ -103,7 +103,7 @@
                   class="container-manager-tab__topology-hint small text-body-secondary mb-0"
                   i18n="@@featureContainerManager-topologyHint"
                 >
-                  Hover a node for details · scroll to zoom · drag to pan
+                  Hover over a node for details, scroll to zoom, and drag to pan.
                 </p>
               </div>
             }
@@ -124,14 +124,14 @@
                 } @else if (loadingStatsHistory()) {
                   <div class="d-flex align-items-center gap-2 text-body-secondary">
                     <fpc-spinner size="sm" />
-                    <span i18n="@@featureContainerManager-loadingStats">Loading resource history…</span>
+                    <span i18n="@@featureContainerManager-loadingStats">Loading resource history...</span>
                   </div>
                 } @else if (cpuChart(); as chart) {
                   @if (selectedContainer(); as container) {
                     <dl class="row small mb-3">
-                      <dt class="col-sm-3 text-muted" i18n="@@featureContainerManager-cpu">CPU</dt>
+                      <dt class="col-sm-3 text-body-secondary" i18n="@@featureContainerManager-cpu">CPU</dt>
                       <dd class="col-sm-9">{{ formatPercent(container.stats?.cpuPercent) }}</dd>
-                      <dt class="col-sm-3 text-muted" i18n="@@featureContainerManager-memory">Memory</dt>
+                      <dt class="col-sm-3 text-body-secondary" i18n="@@featureContainerManager-memory">Memory</dt>
                       <dd class="col-sm-9">
                         {{ formatPercent(container.stats?.memoryPercent) }}
                         @if (container.stats?.memoryUsageBytes !== null) {
@@ -142,7 +142,7 @@
                           )
                         }
                       </dd>
-                      <dt class="col-sm-3 text-muted" i18n="@@featureContainerManager-network">Network</dt>
+                      <dt class="col-sm-3 text-body-secondary" i18n="@@featureContainerManager-network">Network</dt>
                       <dd class="col-sm-9">
                         <div class="container-manager-tab__metric-row">
                           <span class="container-manager-tab__metric">
@@ -159,7 +159,7 @@
                           </span>
                         </div>
                       </dd>
-                      <dt class="col-sm-3 text-muted" i18n="@@featureContainerManager-blockIo">Block I/O</dt>
+                      <dt class="col-sm-3 text-body-secondary" i18n="@@featureContainerManager-blockIo">Block I/O</dt>
                       <dd class="col-sm-9">
                         <div class="container-manager-tab__metric-row">
                           <span class="container-manager-tab__metric">
@@ -174,8 +174,8 @@
                       </dd>
                     </dl>
                   }
-                  <div class="d-flex flex-column gap-3">
-                    <div class="container-manager-tab__stats-chart border rounded overflow-hidden p-3">
+                  <fpc-panel-grid class="container-manager-tab__stats-panels" [columns]="2" [bordered]="false">
+                    <fpc-panel [title]="cpuChartTitle" [span]="memoryChart() ? 1 : 2">
                       <apx-chart
                         [series]="chart.series"
                         [chart]="chart.chart"
@@ -187,11 +187,10 @@
                         [yaxis]="chart.yaxis"
                         [grid]="chart.grid"
                         [legend]="chart.legend"
-                        [title]="chart.title"
                       ></apx-chart>
-                    </div>
+                    </fpc-panel>
                     @if (memoryChart(); as memory) {
-                      <div class="container-manager-tab__stats-chart border rounded overflow-hidden p-3">
+                      <fpc-panel [title]="memoryChartTitle">
                         <apx-chart
                           [series]="memory.series"
                           [chart]="memory.chart"
@@ -203,12 +202,11 @@
                           [yaxis]="memory.yaxis"
                           [grid]="memory.grid"
                           [legend]="memory.legend"
-                          [title]="memory.title"
                           [tooltip]="memory.tooltip"
                         ></apx-chart>
-                      </div>
+                      </fpc-panel>
                     }
-                  </div>
+                  </fpc-panel-grid>
                 } @else {
                   <p class="text-body-secondary mb-0" i18n="@@featureContainerManager-noStatsHistory">
                     No resource history is available for this container yet.
@@ -237,7 +235,7 @@
                 } @else if (loadingLogs() && logLines().length === 0) {
                   <div class="d-flex align-items-center gap-2 text-body-secondary p-3">
                     <fpc-spinner size="sm" />
-                    <span i18n="@@featureContainerManager-loadingLogs">Loading logs…</span>
+                    <span i18n="@@featureContainerManager-loadingLogs">Loading logs...</span>
                   </div>
                 } @else if (logLines().length === 0) {
                   <p class="text-body-secondary mb-0 p-3" i18n="@@featureContainerManager-noLogs">
@@ -315,7 +313,7 @@
           @if (loadingContainers()) {
             <div class="d-flex align-items-center gap-2 text-body-secondary p-3">
               <fpc-spinner size="sm" />
-              <span i18n="@@featureContainerManager-loadingContainers">Loading containers…</span>
+              <span i18n="@@featureContainerManager-loadingContainers">Loading containers...</span>
             </div>
           } @else if (containers().length === 0) {
             <fpc-empty-state
@@ -331,53 +329,48 @@
               i18n-message="@@featureContainerManager-noSearchResults"
             />
           } @else {
-            <div class="list-group list-group-flush">
+            <fpc-list [flush]="true">
               @for (container of filteredContainers(); track container.id) {
-                <button
-                  type="button"
-                  class="list-group-item list-group-item-action"
-                  [class.active]="contentView() === 'container' && selectedContainerId() === container.id"
-                  (click)="selectContainer(container.id)"
+                <fpc-list-item
+                  [clickable]="true"
+                  [active]="contentView() === 'container' && selectedContainerId() === container.id"
+                  (selected)="selectContainer(container.id)"
                 >
-                  <div class="d-flex justify-content-between align-items-center gap-2">
-                    <div class="container-manager-tab__container-meta min-w-0">
-                      <div class="d-flex align-items-center gap-2 min-w-0">
-                        <span
-                          class="container-manager-tab__status-dot rounded-circle flex-shrink-0"
-                          [ngClass]="containerStatusDotClass(container)"
-                          [attr.title]="containerStatusLabel(container)"
-                          [attr.aria-label]="containerStatusLabel(container)"
-                        ></span>
-                        <div class="fw-semibold text-truncate">{{ container.name }}</div>
-                      </div>
-                      <div class="small text-body-secondary text-truncate">{{ container.image }}</div>
-                    </div>
-                    <div class="container-manager-tab__stat-badges">
-                      <fpc-badge
-                        variant="info"
-                        color="secondary"
-                        class="container-manager-tab__stat-badge"
-                        title="CPU"
-                        i18n-title="@@featureContainerManager-cpu"
-                      >
-                        <i class="bi bi-cpu" aria-hidden="true"></i>
-                        <span>{{ formatPercent(container.stats?.cpuPercent) }}</span>
-                      </fpc-badge>
-                      <fpc-badge
-                        variant="info"
-                        color="secondary"
-                        class="container-manager-tab__stat-badge"
-                        title="Memory"
-                        i18n-title="@@featureContainerManager-memory"
-                      >
-                        <i class="bi bi-memory" aria-hidden="true"></i>
-                        <span>{{ formatBytes(container.stats?.memoryUsageBytes) }}</span>
-                      </fpc-badge>
-                    </div>
+                  <div fpcListItemTitle class="d-flex align-items-center gap-2 min-w-0">
+                    <span
+                      class="container-manager-tab__status-dot rounded-circle flex-shrink-0"
+                      [ngClass]="containerStatusDotClass(container)"
+                      [attr.title]="containerStatusLabel(container)"
+                      [attr.aria-label]="containerStatusLabel(container)"
+                    ></span>
+                    <span class="fw-semibold text-truncate">{{ container.name }}</span>
                   </div>
-                </button>
+                  <div fpcListItemMeta class="text-truncate">{{ container.image }}</div>
+                  <div fpcListItemActions class="container-manager-tab__stat-badges">
+                    <fpc-badge
+                      variant="info"
+                      color="secondary"
+                      class="container-manager-tab__stat-badge"
+                      title="CPU"
+                      i18n-title="@@featureContainerManager-cpu"
+                    >
+                      <i class="bi bi-cpu" aria-hidden="true"></i>
+                      <span>{{ formatPercent(container.stats?.cpuPercent) }}</span>
+                    </fpc-badge>
+                    <fpc-badge
+                      variant="info"
+                      color="secondary"
+                      class="container-manager-tab__stat-badge"
+                      title="Memory"
+                      i18n-title="@@featureContainerManager-memory"
+                    >
+                      <i class="bi bi-memory" aria-hidden="true"></i>
+                      <span>{{ formatBytes(container.stats?.memoryUsageBytes) }}</span>
+                    </fpc-badge>
+                  </div>
+                </fpc-list-item>
               }
-            </div>
+            </fpc-list>
           }
         </div>
       </div>

@@ -1,0 +1,118 @@
+// ApexCharts chrome mapped onto Bootstrap tokens.
+//
+// ApexCharts draws its own light-theme chrome (white tooltips, white slice and marker borders,
+// grey grid lines) and ignores `data-bs-theme`. These rules restyle that chrome with Bootstrap
+// variables so charts follow light/dark mode without re-rendering. Series colours, axis labels
+// and titles come from the shared options in `src/lib/chart-theme/chart-theme.ts`.
+//
+// ApexCharts injects its stylesheet at runtime after the app styles, so every rule is scoped
+// under `.apexcharts-canvas` to win on specificity rather than load order.
+
+.apexcharts-canvas {
+  // Surface the chart sits on; slice and marker borders use it so they read as gaps.
+  --fpc-chart-surface: var(--bs-card-bg, var(--bs-body-bg));
+
+  // Tooltip: same panel look as `fpc-tooltip` (appearance="panel").
+  .apexcharts-tooltip.apexcharts-theme-light,
+  .apexcharts-tooltip.apexcharts-theme-dark {
+    color: var(--bs-body-color);
+    background: var(--bs-body-bg);
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    border-radius: 0.25rem;
+    box-shadow: 0 0.25rem 0.75rem rgb(0 0 0 / 0.08);
+    font-family: var(--bs-body-font-family);
+    font-size: 0.75rem;
+
+    .apexcharts-tooltip-title {
+      background: var(--bs-tertiary-bg);
+      border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+      font-family: var(--bs-body-font-family) !important;
+      font-size: 0.75rem !important;
+      font-weight: 600;
+    }
+  }
+
+  .apexcharts-tooltip-text-y-value,
+  .apexcharts-tooltip-text-goals-value,
+  .apexcharts-tooltip-text-z-value {
+    font-weight: 600;
+  }
+
+  // Axis tooltips (value bubble under the x axis while hovering).
+  .apexcharts-xaxistooltip,
+  .apexcharts-yaxistooltip {
+    color: var(--bs-body-color);
+    background: var(--bs-body-bg);
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    border-radius: 0.25rem;
+    font-family: var(--bs-body-font-family);
+    font-size: 0.75rem;
+  }
+
+  .apexcharts-xaxistooltip-bottom::before {
+    border-bottom-color: var(--bs-border-color);
+  }
+
+  .apexcharts-xaxistooltip-bottom::after {
+    border-bottom-color: var(--bs-body-bg);
+  }
+
+  .apexcharts-xaxistooltip-top::before {
+    border-top-color: var(--bs-border-color);
+  }
+
+  .apexcharts-xaxistooltip-top::after {
+    border-top-color: var(--bs-body-bg);
+  }
+
+  .apexcharts-yaxistooltip-left::before {
+    border-left-color: var(--bs-border-color);
+  }
+
+  .apexcharts-yaxistooltip-left::after {
+    border-left-color: var(--bs-body-bg);
+  }
+
+  .apexcharts-yaxistooltip-right::before {
+    border-right-color: var(--bs-border-color);
+  }
+
+  .apexcharts-yaxistooltip-right::after {
+    border-right-color: var(--bs-body-bg);
+  }
+
+  // Toolbar menu (export etc.), in case a chart enables the toolbar.
+  .apexcharts-menu {
+    color: var(--bs-body-color);
+    background: var(--bs-body-bg);
+    border: var(--bs-border-width) solid var(--bs-border-color);
+    border-radius: 0.25rem;
+  }
+
+  .apexcharts-menu-item:hover,
+  .apexcharts-menu-item:focus-visible {
+    background: var(--bs-tertiary-bg);
+  }
+
+  // Donut / pie slice borders and line markers default to white.
+  .apexcharts-pie-area,
+  .apexcharts-marker {
+    stroke: var(--fpc-chart-surface);
+  }
+
+  // Grid, axis ticks and hover crosshairs default to fixed greys.
+  .apexcharts-gridline,
+  .apexcharts-grid-borders line,
+  .apexcharts-xaxis-tick {
+    stroke: var(--bs-border-color);
+  }
+
+  .apexcharts-xcrosshairs,
+  .apexcharts-ycrosshairs {
+    stroke: var(--bs-secondary-color);
+  }
+
+  .apexcharts-text-nodata {
+    fill: var(--bs-secondary-color);
+  }
+}

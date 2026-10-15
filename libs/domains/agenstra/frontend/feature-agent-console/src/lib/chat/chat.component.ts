@@ -187,7 +187,7 @@ interface Marked {
   parse(markdown: string, options?: { breaks?: boolean; gfm?: boolean }): string;
 }
 
-/** Labels for context chips next to the chat “Select context” control. */
+/** Labels for context chips next to the chat "Select context" control. */
 interface ContextToolbarChip {
   readonly trackKey: string;
   readonly label: string;
@@ -277,11 +277,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   readonly openTicketFromChatButtonLabel = $localize`:@@featureChat-openTicketFromAutomationCard:Open ticket`;
   readonly chatPlanModalTitle = $localize`:@@featureChat-planModalTitle:Plan`;
-  readonly chatPlanRefinePlaceholder = $localize`:@@featureChat-planRefinePlaceholder:Describe changes to the plan…`;
+  readonly chatPlanRefinePlaceholder = $localize`:@@featureChat-planRefinePlaceholder:Describe changes to the plan...`;
   readonly chatPlanRefineSubmitLabel = $localize`:@@featureChat-planRefineSubmit:Refine plan`;
   readonly chatPlanExecuteLabel = $localize`:@@featureChat-planExecute:Execute`;
   readonly chatPlanCancelLabel = $localize`:@@featureChat-planCancel:Cancel plan`;
-  readonly chatPlanEmptyMarkdown = $localize`:@@featureChat-planEmptyMarkdown:Plan content will appear here as the agent explores…`;
+  readonly chatPlanEmptyMarkdown = $localize`:@@featureChat-planEmptyMarkdown:Plan content will appear here as the agent explores...`;
   readonly workspacesHeaderTitle = $localize`:@@featureChat-workspaces:Workspaces`;
   readonly environmentsHeaderTitle = $localize`:@@featureChat-environments:Environments`;
   readonly addWorkspaceTitle = $localize`:@@featureChat-addWorkspaceTitle:Add Workspace`;
@@ -1599,9 +1599,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   /**
    * Permissions for the client users modal, inferred from the loaded users list.
-   * - User not in list (or no auth user): super admin → can add any role, remove anyone
-   * - User in list with role 'admin': client admin → can add only 'user' role, remove only users
-   * - User in list with role 'user': client user → cannot add or remove
+   * - User not in list (or no auth user): super admin -> can add any role, remove anyone
+   * - User in list with role 'admin': client admin -> can add only 'user' role, remove only users
+   * - User in list with role 'user': client user -> cannot add or remove
    */
   readonly clientUsersModalPermissions$: Observable<{
     canAddUser: boolean;
@@ -2234,7 +2234,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       }
     });
 
-    // Merged thread can grow when automation cards hydrate or appear without new `chatMessage` rows — still scroll.
+    // Merged thread can grow when automation cards hydrate or appear without new `chatMessage` rows, so still scroll.
     this.displayChatThread$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((thread) => {
       const len = thread.length;
 
@@ -2411,7 +2411,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
           this.deepLinkFileLoaded = true;
 
-          // Keep the boot overlay until the editor has painted file content (avoids blank → second spinner).
+          // Keep the boot overlay until the editor has painted file content (avoids blank -> second spinner).
           afterNextRender(
             () => {
               this.loadingOverlayService.setLoading(false);
@@ -2680,7 +2680,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
           this.enhanceErrorMessage.set(null);
         }
 
-        // Do not setActive without a chatSessionId — null was treated as "viewing primary" and
+        // Do not setActive without a chatSessionId: null was treated as "viewing primary" and
         // swallowed primary unread. selectedChatId$ sync in ngOnInit sets active + mark-read.
         this.loadChatSessionsForAgent(clientId, agentId);
       }
@@ -3547,7 +3547,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   ticketContextChipDisplay(longSha: string): string {
     const { shortSha, title } = this.ticketContextChipLabel(longSha);
 
-    return `${shortSha} · ${title}`;
+    return `${title} (${shortSha})`;
   }
 
   onRemoveTicketContextSha(longSha: string): void {
@@ -3598,10 +3598,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     if (node?.shas?.short) {
       const kind = node.nodeType === 'folder' ? 'Folder' : 'Page';
 
-      return `${node.shas.short} · ${kind}: ${node.title}`;
+      return `${kind}: ${node.title} (${node.shas.short})`;
     }
 
-    return `${longSha.slice(0, 7)} · Unavailable knowledge`;
+    return `Unavailable knowledge (${longSha.slice(0, 7)})`;
   }
 
   onRemoveKnowledgeContextSha(longSha: string): void {
@@ -5759,20 +5759,20 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   getToolResultBodyMarkdown(messageData: ChatMessageData): string {
     if (!('response' in messageData)) {
-      return '_—_';
+      return '_-_';
     }
 
     const r = messageData.response;
 
     if (typeof r !== 'object' || r === null) {
-      return '_—_';
+      return '_-_';
     }
 
     return formatUnknownAsMarkdown((r as AgentResponseObject)['result']);
   }
 
   /**
-   * Stable keys for @for — do not include $index or rows remount on unrelated list rebuilds.
+   * Stable keys for @for; do not include $index or rows remount on unrelated list rebuilds.
    */
   trackChatDisplayItem(item: ChatDisplayThreadItem): string {
     if (item.kind === 'user') {
@@ -6331,7 +6331,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   /**
-   * Static model list from environment config (fallback until GET …/models returns or if unset).
+   * Static model list from environment config (fallback until GET .../models returns or if unset).
    */
   getChatModelOptions(provider: string): { value: string; label: string }[] {
     const options = this.environment.chatModelOptions?.[provider] ?? {};

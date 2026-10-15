@@ -32,11 +32,11 @@
           @for (client of filteredClients(); track client.id) {
             <button type="button" class="dropdown-item py-2 text-start" (mousedown)="pickClient(client, $event)">
               <span class="d-block small fw-medium text-truncate">{{ client.name }}</span>
-              <span class="d-block font-monospace text-muted small text-truncate">{{ client.id }}</span>
+              <span class="d-block font-monospace text-body-secondary small text-truncate">{{ client.id }}</span>
             </button>
           }
         } @else if (searchQuery().trim() && !loading()) {
-          <span class="dropdown-item-text text-muted small" i18n="@@featureClientSelect-noClients"
+          <span class="dropdown-item-text text-body-secondary small" i18n="@@featureClientSelect-noClients"
             >No clients found.</span
           >
         }

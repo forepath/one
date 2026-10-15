@@ -865,12 +865,12 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
     const node = this.treeNodeById(nodeId);
 
     if (!node) {
-      return `${nodeId.slice(0, 7)} · Unavailable knowledge`;
+      return `Unavailable knowledge (${nodeId.slice(0, 7)})`;
     }
 
     const type = node.nodeType === 'folder' ? 'Folder' : 'Page';
 
-    return `${node.shas.short} · ${type}: ${node.title}`;
+    return `${type}: ${node.title} (${node.shas.short})`;
   }
 
   relationTargetTrackId(
@@ -888,10 +888,10 @@ export class KnowledgeBoardComponent implements AfterViewInit, OnDestroy {
       const ticket = this.ticketByLongSha(target.ticketLongSha);
 
       if (!ticket) {
-        return `${target.ticketLongSha.slice(0, 7)} · Ticket: Unavailable ticket`;
+        return `Ticket: Unavailable ticket (${target.ticketLongSha.slice(0, 7)})`;
       }
 
-      return `${ticket.shas.short} · Ticket: ${ticket.title ?? ''}`;
+      return `Ticket: ${ticket.title ?? ''} (${ticket.shas.short})`;
     }
 
     return this.relationCandidateDisplay(target.nodeId);

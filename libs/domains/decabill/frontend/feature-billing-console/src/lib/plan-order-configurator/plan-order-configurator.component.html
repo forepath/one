@@ -3,9 +3,9 @@
 
   <div class="plan-order-configurator__main mt-1">
     @if (addonsLoading) {
-      <div class="text-muted small d-flex align-items-center gap-2 mb-2">
+      <div class="text-body-secondary small d-flex align-items-center gap-2 mb-2">
         <fpc-spinner size="sm" />
-        <span i18n="@@featureSubscriptions-loadingAddons">Loading addons…</span>
+        <span i18n="@@featureSubscriptions-loadingAddons">Loading addons...</span>
       </div>
     } @else if (addons.length > 0) {
       <fieldset class="border rounded p-3 mb-3">
@@ -63,9 +63,9 @@
           </fpc-form-field>
         }
         @if (serverTypesLoading) {
-          <div class="text-muted small d-flex align-items-center gap-2 mb-2">
+          <div class="text-body-secondary small d-flex align-items-center gap-2 mb-2">
             <fpc-spinner size="sm" />
-            <span>Loading server types…</span>
+            <span>Loading server types...</span>
           </div>
         } @else if (serverTypeOptions.length > 0) {
           <fpc-form-field [forId]="fieldId('ServerType')" label="Server type">
@@ -104,9 +104,9 @@
       <div class="border rounded p-3 mb-3">
         <h6 class="mb-3" i18n="@@featureSubscriptions-cloudInitConfig">Instance configuration</h6>
         @if (provisioningOptionsLoading) {
-          <div class="text-muted small d-flex align-items-center gap-2">
+          <div class="text-body-secondary small d-flex align-items-center gap-2">
             <fpc-spinner size="sm" />
-            <span i18n="@@featureSubscriptions-loadingProvisioningOptions">Loading provisioning options…</span>
+            <span i18n="@@featureSubscriptions-loadingProvisioningOptions">Loading provisioning options...</span>
           </div>
         } @else if (provisioningOptionsError) {
           <fpc-alert class="py-2 mb-0 small" variant="danger"
@@ -136,9 +136,9 @@
           }
           @if (showCustomConfiguration()) {
             @if (customOrderFieldsLoading) {
-              <div class="text-muted small d-flex align-items-center gap-2">
+              <div class="text-body-secondary small d-flex align-items-center gap-2">
                 <fpc-spinner size="sm" />
-                <span i18n="@@featureSubscriptions-loadingCustomOrderFields">Loading configuration fields…</span>
+                <span i18n="@@featureSubscriptions-loadingCustomOrderFields">Loading configuration fields...</span>
               </div>
             } @else if (customOrderFieldsError) {
               <fpc-alert class="py-2 mb-0 small" variant="danger"

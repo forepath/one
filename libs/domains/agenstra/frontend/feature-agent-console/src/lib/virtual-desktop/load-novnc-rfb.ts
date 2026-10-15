@@ -22,7 +22,7 @@ export type NovncRfbConstructor = new (
 
 export async function loadNovncRfb(): Promise<NovncRfbConstructor> {
   // Package ships JS only; keep a local constructor type instead of ambient augmentation.
-  // @ts-expect-error TS7016 — @novnc/novnc has no declaration file
+  // @ts-expect-error TS7016 - @novnc/novnc has no declaration file
   const mod = await import('@novnc/novnc/lib/rfb.js');
 
   return (mod as { default: NovncRfbConstructor }).default;

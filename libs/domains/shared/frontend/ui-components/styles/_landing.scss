@@ -1,0 +1,421 @@
+// Landing pages (Agenstra, Decabill, ForePath): one topographic map runs through the page.
+//
+// - Hero: a contour field in the brand colour, cleared around the headline and gathering toward
+//   the edges. Replaces the blurred colour orbs.
+// - Closing CTA section and footer: one continuous field that gathers toward the boundary between
+//   them, like the horizon of the map.
+//
+// The sign-in column (`_section-marketing.scss`) uses the same artwork, so the journey from the
+// landing page into the product reads as one place. All lines are masks over `--bs-primary`, so
+// every brand and colour mode gets its own tint without extra rules.
+//
+// Selectors only match landing markup (`grid-section` with `#hero` / `#cta` / `#fit`,
+// `.footer.grid-section--footer`, `.landing-logo-section`).
+@use 'contours' as *;
+
+// Shared layer: `mask` the contour tile over a coloured fill. The fade is a second mask layer
+// intersected with the tile, so it needs no knowledge of the background colour.
+@mixin fpc-landing-contour-layer($color, $fade) {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: $color;
+  mask:
+    $fpc-contour-tile 0 0 / #{$fpc-contour-tile-size} #{$fpc-contour-tile-size} repeat,
+    $fade;
+  mask-composite: intersect;
+}
+
+// ---- Hero ----------------------------------------------------------------------------------------
+// Two layers: `::before` carries the contours and drifts with a composited transform (oversized by
+// one tile so the loop is seamless); `::after` is a static wash in the hero's own surface colour
+// that keeps the headline area clear. Animating the mask position instead would repaint the whole
+// hero every frame.
+
+.grid-section#hero {
+  --fpc-landing-contour: color-mix(in srgb, var(--bs-primary) 42%, transparent);
+  --fpc-landing-hero-surface: rgb(var(--bs-dark-rgb));
+  position: relative;
+  isolation: isolate;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: (-$fpc-contour-tile-size) 0 0 (-$fpc-contour-tile-size);
+    z-index: -1;
+    pointer-events: none;
+    background-color: var(--fpc-landing-contour);
+    // Anchored to the bottom edge so a following `landing-hero-continuation` section can pick the
+    // lines up exactly where the hero ends.
+    mask: $fpc-contour-tile left 0 bottom 0 / #{$fpc-contour-tile-size} #{$fpc-contour-tile-size} repeat;
+    animation: fpc-landing-hero-drift 240s linear infinite;
+    will-change: transform;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(ellipse 75% 70% at 50% 30%, var(--fpc-landing-hero-surface) 40%, transparent 95%);
+  }
+
+  // Light heroes (ForePath, contact): thinner tint on the pale surface.
+  &.bg-body-tertiary {
+    --fpc-landing-contour: color-mix(in srgb, var(--bs-primary) 20%, transparent);
+    --fpc-landing-hero-surface: var(--bs-tertiary-bg);
+  }
+}
+
+// The section right after a hero can continue its contour field: the layer is anchored to the
+// section's top edge (where the hero's lines end), runs the same drift so both stay in step, and a
+// static wash fades it out toward the bottom. Use on a section with the same surface as the hero.
+.grid-section.landing-hero-continuation {
+  --fpc-landing-contour: color-mix(in srgb, var(--bs-primary) 42%, transparent);
+  --fpc-landing-hero-surface: rgb(var(--bs-dark-rgb));
+  position: relative;
+  isolation: isolate;
+
+  &.bg-body-tertiary {
+    --fpc-landing-contour: color-mix(in srgb, var(--bs-primary) 20%, transparent);
+    --fpc-landing-hero-surface: var(--bs-tertiary-bg);
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: (-$fpc-contour-tile-size) 0 0 (-$fpc-contour-tile-size);
+    z-index: -1;
+    pointer-events: none;
+    background-color: var(--fpc-landing-contour);
+    mask: $fpc-contour-tile 0 0 / #{$fpc-contour-tile-size} #{$fpc-contour-tile-size} repeat;
+    animation: fpc-landing-hero-drift 240s linear infinite;
+    will-change: transform;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(to bottom, transparent 0, var(--fpc-landing-hero-surface) 22rem);
+  }
+}
+
+@keyframes fpc-landing-hero-drift {
+  to {
+    transform: translate(#{$fpc-contour-tile-size}, #{$fpc-contour-tile-size});
+  }
+}
+
+// ---- CTA section + footer ------------------------------------------------------------------------
+// The closing CTA section (`#cta`, or `#fit` on comparison pages) is always followed by the
+// footer, so both share one continuous field: the CTA layer anchors the tile to its bottom edge and
+// fades in from the top, the footer anchors it to its top edge and fades out downward. The tile is
+// seamless, so lines run straight across the boundary whatever the CTA height. Both layers are
+// static so they cannot drift apart.
+
+.grid-section#cta,
+.grid-section#fit,
+.footer.grid-section--footer {
+  --fpc-landing-contour: color-mix(in srgb, var(--bs-primary) 34%, transparent);
+  position: relative;
+  isolation: isolate;
+}
+
+.grid-section#cta::before,
+.grid-section#fit::before {
+  @include fpc-landing-contour-layer(var(--fpc-landing-contour), linear-gradient(to bottom, transparent 0, #000 100%));
+  mask-position:
+    left 0 bottom 0,
+    0 0;
+}
+
+.footer.grid-section--footer::before {
+  @include fpc-landing-contour-layer(var(--fpc-landing-contour), linear-gradient(to bottom, #000 0, transparent 18rem));
+}
+
+// Light sections (ForePath): thinner tint on the pale surface.
+.grid-section#cta.bg-body-tertiary,
+.grid-section#fit.bg-body-tertiary,
+.footer.grid-section--footer.bg-body-tertiary {
+  --fpc-landing-contour: color-mix(in srgb, var(--bs-primary) 22%, transparent);
+}
+
+// ---- Section content ------------------------------------------------------------------------------
+// The landing sections use the same flat language as the consoles: hairline borders, no drop
+// shadows, no tinted gradient washes, brand colour only as an accent. These helpers were copied
+// per product with hard-coded brand tints; they now live here once and follow `--bs-primary`.
+
+// Cards sit on the section surface with a hairline border only.
+.grid-section .card {
+  box-shadow: none !important;
+}
+
+.grid-section.bg-dark .card,
+.grid-section.bg-primary .card {
+  --bs-card-bg: rgb(255 255 255 / 0.04);
+  --bs-card-border-color: rgb(255 255 255 / 0.1);
+  --bs-card-color: inherit;
+  color: inherit;
+}
+
+// Former gradient "capability" washes: flat now (kept as hooks for existing markup).
+.card-capability-primary,
+.card-capability-success,
+.card-capability-warning,
+.card-capability-secondary {
+  background-image: none;
+}
+
+// Main bento cards (the ones holding a drawn app scene): a soft brand tint plus the landing contour
+// lines, both fading out from the top-left corner, so the scene sits on a surface rather than plain
+// white. Follows each brand colour.
+.landing-bento-visual {
+  position: relative;
+  isolation: isolate;
+  background-image: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--bs-primary) 10%, transparent) 0%,
+    transparent 70%
+  ) !important;
+
+  // The landing contour lines, gathering in the tinted corner and washing out across the card.
+  &::before {
+    @include fpc-landing-contour-layer(
+      color-mix(in srgb, var(--bs-primary) 28%, transparent),
+      radial-gradient(ellipse 85% 75% at 0% 0%, #000 0%, transparent 100%)
+    );
+  }
+}
+
+// Secondary intro surfaces (stacked feature panels, price asides): the soft brand tint of the main
+// bento cards, mirrored, with a summit of rings instead of the contour field, so the two surfaces
+// belong together without repeating the same graphic.
+.landing-surface-tint {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--bs-body-bg);
+  background-image: linear-gradient(
+    200deg,
+    color-mix(in srgb, var(--bs-primary) 8%, transparent) 0%,
+    transparent 65%
+  ) !important;
+
+  // A summit of concentric rings rising from the right edge and washing out to the left.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: color-mix(in srgb, var(--bs-primary) 26%, transparent);
+    // The rings image is 44rem x 22rem with its centre 10rem in from the right edge. The radial
+    // fade ends inside that box (like the tint behind it), so no ring is cut by the image edges.
+    mask:
+      $fpc-contour-summit right -12rem center / 44rem 22rem no-repeat,
+      radial-gradient(20rem 10rem at calc(100% - 10rem) 50%, #000 0%, #000 25%, transparent 100%);
+    mask-composite: intersect;
+  }
+}
+
+// Benefit points under a panel intro: cells divided by hairlines (stacked on phones, a row of
+// three from md up), the same cell language as the logo strips.
+.landing-panel-points > .row {
+  --bs-gutter-x: 0;
+  --bs-gutter-y: 0;
+  margin: 0;
+
+  > .col {
+    padding: 1.5rem;
+
+    @media (min-width: 992px) {
+      padding: 2rem 2.5rem;
+    }
+  }
+
+  > .col + .col {
+    border-top: var(--bs-border-width) solid var(--bs-border-color);
+
+    @media (min-width: 768px) {
+      border-top: 0;
+      border-left: var(--bs-border-width) solid var(--bs-border-color);
+    }
+  }
+}
+
+// A list of related items separated by hairlines instead of nested bordered cards. It sits in a
+// column padded by 1.5rem (`p-4`) and bleeds to the column edges, so every line spans the full width.
+.landing-hairline-list {
+  margin-inline: -1.5rem;
+
+  > * {
+    padding-inline: 1.5rem;
+    border-top: var(--bs-border-width) solid var(--bs-border-color);
+  }
+}
+
+// Sub-sections inside a text card (legal pages): a row of cells running edge to edge through the
+// card, divided by hairlines instead of filled tiles. Every cell draws its top and left border; the
+// row is shifted one border width to the left and clipped there, so the leftmost dividers vanish
+// instead of doubling the card border (the border colour is translucent, overlaps would darken it).
+// Put it on the `.row` directly inside a `card-body p-5`.
+.row.landing-card-cells {
+  --bs-gutter-x: 0;
+  --bs-gutter-y: 0;
+  --landing-card-cells-inset: 3rem;
+
+  margin-right: calc(-1 * var(--landing-card-cells-inset));
+  margin-left: calc(-1 * var(--landing-card-cells-inset) - var(--bs-border-width));
+  clip-path: inset(0 0 0 var(--bs-border-width));
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+
+  > * {
+    padding: 1.75rem var(--landing-card-cells-inset);
+    border-top: var(--bs-border-width) solid var(--bs-border-color);
+    border-left: var(--bs-border-width) solid var(--bs-border-color);
+  }
+
+  // Last thing in the card: run down to the card edge.
+  &:last-child {
+    margin-bottom: calc(-1 * var(--landing-card-cells-inset));
+    border-bottom: 0;
+  }
+}
+
+// Divider between a main column and its aside: on top when they stack, on the left from lg up. Used
+// in rows that stretch their columns, so the line always runs the full height or width.
+.landing-divider-start {
+  border-top: var(--bs-border-width) solid var(--bs-border-color);
+
+  @media (min-width: 992px) {
+    border-top: 0;
+    border-left: var(--bs-border-width) solid var(--bs-border-color);
+  }
+}
+
+// Wrapper around a drawn scene (`shared-app-illustration`) inside a bento card or column: takes the
+// remaining height and hands it down to the scene component, so the scene fills the card.
+.landing-illustration-fill {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+
+  > * {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+  }
+}
+
+// Icon tiles: plain brand-coloured icons, no tinted square behind them.
+.card-icon {
+  width: auto;
+  height: auto;
+  background: none;
+  flex-shrink: 0;
+}
+
+// Pill tabs become one segmented bar with hairline dividers (the `fpc-tab-group` look).
+.portal-page-tabs.nav-pills {
+  gap: 0 !important;
+  overflow: hidden;
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-lg);
+  background-color: var(--bs-body-bg);
+
+  .nav-item + .nav-item {
+    border-left: var(--bs-border-width) solid var(--bs-border-color);
+  }
+
+  .nav-link {
+    border-radius: 0;
+    font-weight: 500;
+    color: var(--bs-secondary-color);
+    box-shadow: none;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+
+    &:hover:not(.active) {
+      color: var(--bs-body-color);
+      background-color: var(--bs-tertiary-bg);
+    }
+
+    &.active {
+      color: #fff;
+      background-color: var(--bs-primary);
+    }
+  }
+
+  // Phones: the bar wraps; keep a divider between the wrapped rows too.
+  @media (max-width: 767.98px) {
+    flex-wrap: wrap;
+
+    .nav-item {
+      flex: 1 1 50%;
+      border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+    }
+  }
+}
+
+// Dark "glass" cards: flat on the dark surface.
+.home-governance-card {
+  background: rgb(255 255 255 / 0.04);
+}
+
+.home-governance-card-text {
+  color: rgb(255 255 255 / 0.72);
+}
+
+.problem-box {
+  background: color-mix(in srgb, var(--bs-danger) 5%, transparent);
+}
+
+.problem-icon {
+  color: var(--bs-danger);
+  font-size: 1.25rem;
+}
+
+.card-integration {
+  background: var(--bs-body-bg);
+  border: var(--bs-border-width) dashed var(--bs-border-color) !important;
+}
+
+.card-problem {
+  background: none;
+}
+
+// Price block inside a pricing tier or a price aside: an inner card with a hairline border, the same
+// on every tier (featured or not) and wherever a starting price is shown.
+.pricing-price {
+  background-color: var(--bs-body-bg);
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius-lg);
+}
+
+// ---- Logo strips (`shared-logo-grid`) -------------------------------------------------------------
+// Flush on desktop so the cell borders meet the section edges; breathing room around the rounded
+// list on smaller screens.
+.grid-section.landing-logo-section {
+  overflow: hidden;
+  padding-top: 2rem !important;
+  padding-bottom: 2.5rem !important;
+
+  @media (min-width: 992px) {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grid-section#hero::before,
+  .grid-section.landing-hero-continuation::before {
+    animation: none;
+  }
+}

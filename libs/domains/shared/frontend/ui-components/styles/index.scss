@@ -3,17 +3,25 @@
 // Brand tokens live under `styles/brands/` and are loaded by each app *before* Bootstrap:
 //
 //   @import 'bootstrap/scss/functions';
-//   @import '…/styles/brands/<brand>/palette';
-//   @import '…/styles/brands/chrome';
-//   @import '…/styles/brands/badge-tint';
+//   @import '.../styles/brands/<brand>/palette';
+//   @import '.../styles/brands/chrome';
+//   @import '.../styles/brands/badge-tint';
 //   @import 'bootstrap/scss/bootstrap';
-//   @import '…/styles';
-//   @import '…/styles/brands/extras';
-//   @import '…/styles/brands/<brand>/extras';
+//   @import '.../styles';
+//   @import '.../styles/brands/extras';
+//   @import '.../styles/brands/<brand>/extras';
 //
 // What stays global by design:
 // - scrollbar: shared thin scrollbar using `--bs-scrollbar-*` from brands/extras
 // - section-outlet: fill routed hosts under `fpc-section-container` (crosses encapsulation)
+// - utilities: `min-h-0` / `min-w-0` flex helpers used across feature templates
+// - charts: ApexCharts tooltip / slice border / grid chrome on Bootstrap tokens (light + dark)
+// - section-marketing: `.section__column--marketing` wash + brand contour pattern (auth / public pages)
+// - landing: contour hero and one continuous contour field across the CTA / fit section and footer; logo strips
 // Modal / sidebar-popover / icon-button chrome live on their components.
 @forward 'scrollbar';
 @forward 'section-outlet';
+@forward 'utilities';
+@forward 'charts';
+@forward 'section-marketing';
+@forward 'landing';

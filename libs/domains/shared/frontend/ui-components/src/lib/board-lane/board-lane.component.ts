@@ -3,10 +3,10 @@ import { ChangeDetectionStrategy, Component, ElementRef, booleanAttribute, input
 /**
  * Column of a kanban-style board or console list lane. Four slots, all optional except the body:
  *
- * - `[fpcBoardLaneHeader]` — prefer `<fpc-lane-header flush>` for the title strip
- * - `[fpcBoardLaneSearch]` — lane filter, usually an `fpc-search-field`
- * - default content — the scrollable lane body
- * - `[fpcBoardLaneFooter]` — append footer, totals
+ * - `[fpcBoardLaneHeader]` - prefer `<fpc-lane-header flush>` for the title strip
+ * - `[fpcBoardLaneSearch]` - lane filter, usually an `fpc-search-field`
+ * - default content - the scrollable lane body
+ * - `[fpcBoardLaneFooter]` - append footer, totals
  *
  * Export as `fpcBoardLane` and bind `[root]="lane.scrollRoot"` for `fpcInfiniteScroll` when
  * `scrollBody` is true.

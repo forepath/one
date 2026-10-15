@@ -1,0 +1,65 @@
+// Positioned like the Bootstrap `.card` it replaces: absolutely positioned content (e.g.
+// `.visually-hidden` labels in the header) must not escape to the viewport and stretch the page.
+:host {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--bs-body-bg);
+
+  @media (min-width: 992px) {
+    grid-column: span var(--fpc-panel-span, 1);
+  }
+}
+
+// Outside a `.card` the lane header has no card variables for its bottom edge; draw it here.
+// Sticky within its own panel: the header of the section being read stays visible and the next
+// panel's header pushes it off when its panel scrolls in.
+.fpc-panel__header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  border-bottom: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.fpc-panel__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0.75rem 1rem;
+}
+
+:host(.fpc-panel--flush) .fpc-panel__body {
+  padding: 0;
+}
+
+// Flush tables: align the first and last columns with the header text and let the panel
+// edges (footer / grid hairline) close the table instead of a last-row border.
+:host(.fpc-panel--flush) ::ng-deep .fpc-panel__body .table {
+  margin-bottom: 0;
+
+  > :not(caption) > * > *:first-child {
+    padding-left: 1rem;
+  }
+
+  > :not(caption) > * > *:last-child {
+    padding-right: 1rem;
+  }
+
+  > tbody > tr:last-child > * {
+    border-bottom-width: 0;
+  }
+}
+
+.fpc-panel__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-top: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.fpc-panel__footer:empty {
+  display: none;
+}

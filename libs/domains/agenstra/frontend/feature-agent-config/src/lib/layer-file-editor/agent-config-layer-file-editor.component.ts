@@ -42,7 +42,7 @@ import { catchError, take } from 'rxjs/operators';
         @if (error(); as err) {
           <fpc-alert variant="danger">{{ err }}</fpc-alert>
         }
-        <div class="small text-muted">
+        <div class="small text-body-secondary">
           <span i18n="@@featureAgentConfig-layerFilePathLabel">Path</span>:
           <code>{{ displayPath() }}</code>
         </div>

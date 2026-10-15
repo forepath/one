@@ -23,12 +23,15 @@
       i18n-closeAriaLabel="@@featureNotifications-dismissTestResult"
       (closed)="dismissTestResult()"
     >
-      @if (delivery.success) {
-        <span i18n="@@featureNotifications-testSuccess">Test delivery succeeded.</span>
-      } @else {
-        <span i18n="@@featureNotifications-testFailed">Test delivery failed.</span>
-      }
-      <span class="ms-2 text-muted">{{ delivery.eventType }} · HTTP {{ delivery.httpStatus ?? '—' }}</span>
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        @if (delivery.success) {
+          <span i18n="@@featureNotifications-testSuccess">Test delivery succeeded.</span>
+        } @else {
+          <span i18n="@@featureNotifications-testFailed">Test delivery failed.</span>
+        }
+        <span class="text-body-secondary">{{ delivery.eventType }}</span>
+        <span class="text-body-secondary">HTTP {{ delivery.httpStatus ?? '-' }}</span>
+      </div>
       @if (delivery.errorMessage) {
         <div class="small mt-1">{{ delivery.errorMessage }}</div>
       }
@@ -70,7 +73,7 @@
             <fpc-list-item>
               <div fpcListItemTitle>
                 <div class="fw-semibold">{{ endpoint.name }}</div>
-                <div class="small text-muted text-break">{{ endpoint.url }}</div>
+                <div class="small text-body-secondary text-break">{{ endpoint.url }}</div>
               </div>
               <div fpcListItemMeta class="small d-flex align-items-center gap-3 row-gap-0 flex-wrap">
                 <fpc-badge variant="info" color="secondary">{{ endpoint.httpMethod }}</fpc-badge>
@@ -393,9 +396,11 @@
     <div class="col-12">
       <fpc-label i18n="@@featureNotifications-subscribedEventsLabel" [required]="true">Subscribed events</fpc-label>
       @if ((eventTypesLoading$ | async) === true) {
-        <div class="text-muted small" i18n="@@featureNotifications-loadingEventTypes">Loading event types...</div>
+        <div class="text-body-secondary small" i18n="@@featureNotifications-loadingEventTypes">
+          Loading event types...
+        </div>
       } @else if (eventTypes().length === 0) {
-        <div class="text-muted small" i18n="@@featureNotifications-noEventTypes">No event types available</div>
+        <div class="text-body-secondary small" i18n="@@featureNotifications-noEventTypes">No event types available</div>
       } @else {
         <div class="event-type-list border rounded p-2">
           @for (eventType of eventTypes(); track eventType.type) {
@@ -484,7 +489,7 @@
                     <span class="text-danger" i18n="@@featureNotifications-deliveryFailed">Failed</span>
                   }
                   @if (delivery.httpStatus) {
-                    <span class="text-muted ms-1">({{ delivery.httpStatus }})</span>
+                    <span class="text-body-secondary ms-1">({{ delivery.httpStatus }})</span>
                   }
                 </td>
                 <td>{{ delivery.attempt }}</td>
@@ -510,12 +515,12 @@
         </table>
       </div>
       @if (deliveriesHasMore$ | async) {
-        <div class="text-muted small" i18n="@@featureNotifications-moreDeliveries">
+        <div class="text-body-secondary small" i18n="@@featureNotifications-moreDeliveries">
           More deliveries exist than shown.
         </div>
       }
       @if (deliveriesTotal$ | async; as total) {
-        <div class="text-muted small">
+        <div class="text-body-secondary small">
           {{ total }} <ng-container i18n="@@featureNotifications-totalDeliveries">total deliveries</ng-container>
         </div>
       }

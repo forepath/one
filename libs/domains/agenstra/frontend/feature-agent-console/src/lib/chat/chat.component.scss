@@ -85,7 +85,7 @@
 
 // Host for messages + jump-to-bottom FAB. Must bound height so the inner scroller works.
 .chat-messages-scroll-host {
-  min-height: 0; // Critical for flex scrolling (min-h-0 utility is not available)
+  min-height: 0; // Critical for flex scrolling
   overflow: hidden;
   flex-shrink: 1;
 }
@@ -478,12 +478,12 @@ span {
   }
 }
 
-// Active dropdown rows still use a solid primary surface — keep inverted labels/actions.
+// Active dropdown rows still use a solid primary surface, so keep inverted labels/actions.
 .dropdown-item.active {
   color: white;
 
   strong,
-  .text-muted,
+  .text-body-secondary,
   small {
     color: white !important;
     opacity: 0.9;
@@ -585,14 +585,26 @@ span {
   flex-shrink: 0;
 }
 
-.editor-toolbar-badge {
-  font-size: 0.5rem;
-}
-
 .brand-icon-container {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.chat-scroll-to-bottom-btn {
+  z-index: 2;
+}
+
+.chat-status-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+// Bleeds the brand tile into the toolbar's vertical padding.
+.brand-icon-container--toolbar {
+  margin-left: -0.5rem;
+  margin-top: -1rem;
+  margin-bottom: -1rem;
 }
 
 .brand-icon {
@@ -672,6 +684,18 @@ span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.chat-plan-detail-panel {
+  overflow: auto;
+}
+
+.chat-plan-detail-panel--events {
+  max-height: 18rem;
+}
+
+.chat-plan-detail-panel--markdown {
+  max-height: 24rem;
 }
 
 .chat-context-chip {

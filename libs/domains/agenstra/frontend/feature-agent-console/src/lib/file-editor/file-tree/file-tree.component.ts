@@ -99,7 +99,7 @@ interface PendingUpload {
   name: string;
   parentPath: string;
   type: 'file' | 'directory';
-  /** Upload progress 0–100 when available. */
+  /** Upload progress 0-100 when available. */
   progress?: number;
 }
 
@@ -147,7 +147,7 @@ export class FileTreeComponent implements OnInit {
   readonly selectionAnchorPath = signal<string | null>(null);
   readonly batchError = signal<string | null>(null);
   readonly pendingUploads = signal<PendingUpload[]>([]);
-  /** Paths currently writing/deleting/moving — spinner on the matching tree row. */
+  /** Paths currently writing/deleting/moving - spinner on the matching tree row. */
   readonly busyPaths = signal<ReadonlySet<string>>(new Set());
   readonly loadingDirectoryPaths = signal<ReadonlySet<string>>(new Set());
   private previousExpandedPaths = new Set<string>();
@@ -180,7 +180,7 @@ export class FileTreeComponent implements OnInit {
   // Internal state
   treeNodes = signal<TreeNode[]>([]);
   treeCache = signal<Map<string, FileNodeDto[]>>(new Map());
-  /** Must be created in an injection context — do not call toObservable inside switchMap. */
+  /** Must be created in an injection context - do not call toObservable inside switchMap. */
   private readonly treeCache$ = toObservable(this.treeCache);
   contextMenuPath = signal<string | null>(null);
   contextMenuPosition = signal<{ x: number; y: number } | null>(null);
@@ -253,7 +253,7 @@ export class FileTreeComponent implements OnInit {
       }
 
       // Only show loading if we don't have cached data (silent refresh).
-      // Use local treeCache — store listings are invalidated on create/delete/move.
+      // Use local treeCache - store listings are invalidated on create/delete/move.
       return combineLatest([
         this.filesFacade.isListingDirectory$(config.clientId, config.agentId, '.', config.context),
         this.treeCache$,
@@ -759,7 +759,7 @@ export class FileTreeComponent implements OnInit {
     try {
       await navigator.clipboard.writeText(paths.join('\n'));
     } catch {
-      // Permissions / insecure context — paste may still prefer stale OS files.
+      // Permissions / insecure context - paste may still prefer stale OS files.
     }
   }
 
@@ -2226,7 +2226,7 @@ export class FileTreeComponent implements OnInit {
       const clientId = this.clientId();
       const agentId = this.agentId();
       const context = this.fileManagerContext();
-      // Snapshot before HTTP — large uploads may detach/transfer the request ArrayBuffer.
+      // Snapshot before HTTP - large uploads may detach/transfer the request ArrayBuffer.
       const snapshot: WriteFileDto = {
         ...writeDto,
         bytes: writeDto.bytes.slice(0),

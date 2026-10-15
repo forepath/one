@@ -1,123 +1,59 @@
-import { CommonModule, isPlatformBrowser } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  DestroyRef,
-  inject,
-  LOCALE_ID,
-  OnInit,
-  PLATFORM_ID,
-  signal,
-} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnInit } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 
 import { ForepathOneTeaserComponent } from '../forepath-one-teaser/forepath-one-teaser.component';
+import { CodeIllustrationComponent } from '../illustrations/code-illustration.component';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
-type SkeletonLineWidth = 'long' | 'medium' | 'short';
-
-interface SkeletonLine {
-  id: number;
-  width: SkeletonLineWidth;
-  indent: boolean;
-}
-
-const SKELETON_WIDTHS: readonly SkeletonLineWidth[] = ['long', 'medium', 'short'];
-
-const SKELETON_LINE_PATTERN: ReadonlyArray<{ width: SkeletonLineWidth; indent?: boolean }> = [
-  { width: 'medium' },
-  { width: 'short' },
-  { width: 'long' },
-  { width: 'medium' },
-  { width: 'short' },
-  { width: 'long', indent: true },
-  { width: 'medium', indent: true },
-  { width: 'long' },
-  { width: 'short' },
-  { width: 'medium', indent: true },
-  { width: 'long', indent: true },
-  { width: 'medium' },
-  { width: 'long', indent: true },
-  { width: 'short', indent: true },
-  { width: 'long' },
-  { width: 'medium', indent: true },
-  { width: 'long', indent: true },
-  { width: 'short' },
-  { width: 'medium' },
-  { width: 'long', indent: true },
-  { width: 'medium', indent: true },
-  { width: 'long' },
-  { width: 'short', indent: true },
-  { width: 'medium' },
-  { width: 'long', indent: true },
-  { width: 'medium' },
-  { width: 'long' },
-  { width: 'short', indent: true },
-  { width: 'medium', indent: true },
-  { width: 'long', indent: true },
-  { width: 'short' },
-  { width: 'long' },
-  { width: 'medium', indent: true },
-  { width: 'short', indent: true },
-  { width: 'long', indent: true },
-  { width: 'medium' },
-  { width: 'long' },
-  { width: 'short', indent: true },
-  { width: 'medium', indent: true },
-  { width: 'long' },
-  { width: 'medium' },
-  { width: 'short' },
-  { width: 'long', indent: true },
-  { width: 'medium', indent: true },
-  { width: 'long', indent: true },
-  { width: 'short' },
-  { width: 'medium' },
-  { width: 'long' },
-];
-
-const SKELETON_LINE_LIMIT_XS = 10;
-const SKELETON_LINE_LIMIT_MD = 18;
-const SKELETON_LINE_LIMIT_LG = SKELETON_LINE_PATTERN.length;
-const SKELETON_LANGUAGE_ROTATION_INTERVAL = 3;
-
-interface SkeletonLanguage {
-  id: 'php' | 'typescript' | 'java';
-  label: string;
-  badgeClass: string;
-  logoUrl: string;
-}
-
-const SKELETON_LANGUAGES: readonly SkeletonLanguage[] = [
-  { id: 'php', label: 'PHP', badgeClass: 'dev-code-skeleton__badge--php', logoUrl: 'assets/images/logos/php.svg' },
-  {
-    id: 'typescript',
-    label: 'TypeScript',
-    badgeClass: 'dev-code-skeleton__badge--typescript',
-    logoUrl: 'assets/images/logos/typescript.svg',
-  },
-  { id: 'java', label: 'Java', badgeClass: 'dev-code-skeleton__badge--java', logoUrl: 'assets/images/logos/java.svg' },
-];
-
 @Component({
   selector: 'framework-forepath-software-development',
-  imports: [FpcButtonComponent, CommonModule, RouterModule, ForepathOneTeaserComponent],
+  imports: [FpcButtonComponent, CommonModule, RouterModule, ForepathOneTeaserComponent, CodeIllustrationComponent],
   styleUrls: ['./software-development.component.scss'],
   templateUrl: './software-development.component.html',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ForepathSoftwareDevelopmentComponent implements OnInit {
-  readonly stackTechnologies = [
-    { id: 'laravel', name: 'Laravel', logoUrl: 'assets/images/logos/laravel.svg' },
-    { id: 'vuedotjs', name: 'Vue.js', logoUrl: 'assets/images/logos/vuedotjs.svg' },
-    { id: 'angular', name: 'Angular', logoUrl: 'assets/images/logos/angular.svg' },
-    { id: 'nestjs', name: 'NestJS', logoUrl: 'assets/images/logos/nestjs.svg' },
-    { id: 'postgresql', name: 'PostgreSQL', logoUrl: 'assets/images/logos/postgresql.svg' },
-    { id: 'kubernetes', name: 'Kubernetes', logoUrl: 'assets/images/logos/kubernetes.svg' },
+  // The stack from the user-facing layer down to the platform it runs on.
+  readonly stackLayers = [
+    {
+      id: 'interface',
+      label: $localize`:@@featureForepathSoftwareDevelopment-stackLayerInterface:Interface`,
+      technologies: [
+        { id: 'angular', name: 'Angular', logoUrl: 'assets/images/logos/angular.svg' },
+        { id: 'vuedotjs', name: 'Vue.js', logoUrl: 'assets/images/logos/vuedotjs.svg' },
+      ],
+    },
+    {
+      id: 'services',
+      label: $localize`:@@featureForepathSoftwareDevelopment-stackLayerServices:Services`,
+      technologies: [
+        { id: 'laravel', name: 'Laravel', logoUrl: 'assets/images/logos/laravel.svg' },
+        { id: 'nestjs', name: 'NestJS', logoUrl: 'assets/images/logos/nestjs.svg' },
+      ],
+    },
+    {
+      id: 'data',
+      label: $localize`:@@featureForepathSoftwareDevelopment-stackLayerData:Data`,
+      technologies: [
+        { id: 'postgresql', name: 'PostgreSQL', logoUrl: 'assets/images/logos/postgresql.svg' },
+        { id: 'opensearch', name: 'OpenSearch', logoUrl: 'assets/images/logos/opensearch.svg' },
+        { id: 'influxdb', name: 'InfluxDB', logoUrl: 'assets/images/logos/influxdb.svg' },
+      ],
+    },
+    {
+      id: 'platform',
+      label: $localize`:@@featureForepathSoftwareDevelopment-stackLayerPlatform:Platform`,
+      technologies: [
+        { id: 'docker', name: 'Docker', logoUrl: 'assets/images/logos/docker.svg' },
+        { id: 'kubernetes', name: 'Kubernetes', logoUrl: 'assets/images/logos/kubernetes.svg' },
+        { id: 'proxmox', name: 'Proxmox', logoUrl: 'assets/images/logos/proxmox-icon.svg' },
+      ],
+    },
   ] as const;
 
   readonly buildCapabilities = [
@@ -153,27 +89,11 @@ export class ForepathSoftwareDevelopmentComponent implements OnInit {
     },
   ] as const;
 
-  readonly skeletonLines = signal<SkeletonLine[]>(
-    SKELETON_LINE_PATTERN.map((line, index) => ({
-      id: index,
-      width: line.width,
-      indent: line.indent ?? false,
-    })),
-  );
-
-  readonly skeletonLineLimit = signal(SKELETON_LINE_LIMIT_LG);
-  readonly visibleSkeletonLines = computed(() => this.skeletonLines().slice(0, this.skeletonLineLimit()));
-  readonly activeSkeletonLanguageIndex = signal(0);
-  readonly activeSkeletonLanguage = computed(() => SKELETON_LANGUAGES[this.activeSkeletonLanguageIndex()]);
-
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);
   private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly platformId = inject(PLATFORM_ID);
-  private skeletonMutationTimeoutId: ReturnType<typeof setTimeout> | undefined;
-  private skeletonMutationCount = 0;
 
   ngOnInit(): void {
     const metaTitle = $localize`:@@featureForepathSoftwareDevelopment-metaTitle:Software development services :: ForePath`;
@@ -197,91 +117,5 @@ export class ForepathSoftwareDevelopmentComponent implements OnInit {
         }),
       ),
     );
-
-    this.initResponsiveSkeletonLineLimit();
-    this.startSkeletonLineMutations();
-    this.destroyRef.onDestroy(() => {
-      clearTimeout(this.skeletonMutationTimeoutId);
-    });
-  }
-
-  private startSkeletonLineMutations(): void {
-    if (!isPlatformBrowser(this.platformId) || this.prefersReducedMotion()) {
-      return;
-    }
-
-    const scheduleNextMutation = (): void => {
-      const delayMs = 1200 + Math.random() * 800;
-      this.skeletonMutationTimeoutId = setTimeout(() => {
-        this.mutateRandomSkeletonLineWidths();
-        scheduleNextMutation();
-      }, delayMs);
-    };
-
-    scheduleNextMutation();
-  }
-
-  private mutateRandomSkeletonLineWidths(): void {
-    const lines = [...this.skeletonLines()];
-    const visibleLimit = this.skeletonLineLimit();
-    const changeCount = Math.min(6 + Math.floor(Math.random() * 7), Math.max(3, Math.floor(visibleLimit * 0.4)));
-    const indices = new Set<number>();
-
-    while (indices.size < changeCount && indices.size < visibleLimit) {
-      indices.add(Math.floor(Math.random() * visibleLimit));
-    }
-
-    for (const index of indices) {
-      const currentWidth = lines[index].width;
-      const nextWidths = SKELETON_WIDTHS.filter((width) => width !== currentWidth);
-      const nextWidth = nextWidths[Math.floor(Math.random() * nextWidths.length)];
-      lines[index] = { ...lines[index], width: nextWidth };
-    }
-
-    this.skeletonLines.set(lines);
-    this.skeletonMutationCount += 1;
-
-    if (this.skeletonMutationCount % SKELETON_LANGUAGE_ROTATION_INTERVAL === 0) {
-      this.activeSkeletonLanguageIndex.update((index) => (index + 1) % SKELETON_LANGUAGES.length);
-    }
-  }
-
-  private initResponsiveSkeletonLineLimit(): void {
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
-    }
-
-    const updateLimit = (): void => {
-      if (window.matchMedia('(min-width: 992px)').matches) {
-        this.skeletonLineLimit.set(SKELETON_LINE_LIMIT_LG);
-        return;
-      }
-
-      if (window.matchMedia('(min-width: 576px)').matches) {
-        this.skeletonLineLimit.set(SKELETON_LINE_LIMIT_MD);
-        return;
-      }
-
-      this.skeletonLineLimit.set(SKELETON_LINE_LIMIT_XS);
-    };
-
-    updateLimit();
-
-    const mediaQueries = [window.matchMedia('(min-width: 576px)'), window.matchMedia('(min-width: 992px)')];
-    const onChange = (): void => updateLimit();
-
-    for (const mediaQuery of mediaQueries) {
-      mediaQuery.addEventListener('change', onChange);
-    }
-
-    this.destroyRef.onDestroy(() => {
-      for (const mediaQuery of mediaQueries) {
-        mediaQuery.removeEventListener('change', onChange);
-      }
-    });
-  }
-
-  private prefersReducedMotion(): boolean {
-    return typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 }

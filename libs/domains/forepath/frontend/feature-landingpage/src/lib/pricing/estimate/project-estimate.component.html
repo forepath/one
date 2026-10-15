@@ -1,5 +1,5 @@
 <!-- Hero -->
-<section id="hero" class="py-10 py-lg-6 bg-body-tertiary position-relative overflow-hidden grid-section">
+<section id="hero" class="py-10 py-lg-6 bg-dark text-white position-relative overflow-hidden grid-section">
   <div class="container grid-section__container">
     <div class="text-center">
       <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureForepathProjectEstimate-heroTitle">
@@ -13,7 +13,7 @@
   </div>
 </section>
 
-<section class="py-10 bg-white grid-section">
+<section class="py-10 bg-body grid-section">
   <div class="container grid-section__container">
     @if (showDebugPanel()) {
       <framework-forepath-project-estimate-debug-panel
@@ -153,7 +153,7 @@
         }
 
         @if (hasEstimate()) {
-          <div class="estimate-chat__footer px-4 bg-white mt-4 d-flex flex-wrap gap-3">
+          <div class="estimate-chat__footer px-4 bg-body mt-4 d-flex flex-wrap gap-3">
             <fpc-button
               type="button"
               variant="primary"
@@ -173,7 +173,7 @@
           </div>
         } @else {
           <div
-            class="estimate-chat__composer px-4 bg-white"
+            class="estimate-chat__composer px-4 bg-body"
             [class.pt-4]="hasMessages() && showMemoryProfile()"
             [class.border-top]="hasMessages()"
           >
@@ -243,7 +243,7 @@
             <textarea
               #promptInput
               id="project-estimate-prompt"
-              class="form-control bg-white w-100"
+              class="form-control bg-body w-100"
               rows="4"
               [ngModel]="prompt()"
               (ngModelChange)="prompt.set($event)"
@@ -275,7 +275,7 @@
   </div>
 </section>
 
-<section id="cta" class="py-10 bg-body-tertiary grid-section">
+<section id="cta" class="py-10 bg-dark grid-section">
   <div class="container grid-section__container">
     <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
       <h2 class="h2 fw-semibold mb-4" i18n="@@featureForepathProjectEstimate-ctaTitle">Need a confirmed quote?</h2>

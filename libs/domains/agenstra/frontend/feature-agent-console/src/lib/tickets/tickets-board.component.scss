@@ -376,3 +376,62 @@ fpc-badge.tickets-board__chip--activity-ai {
 .tickets-board__ticket-detail-body {
   min-height: 0;
 }
+
+// Detail columns scroll independently on wide screens; below `lg` they stack and the row scrolls.
+.tickets-board__ticket-detail-columns {
+  overflow: hidden;
+}
+
+.tickets-board__ticket-detail-pane {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+@media (max-width: 991.98px) {
+  .tickets-board__ticket-detail-columns {
+    overflow-y: auto;
+  }
+
+  .tickets-board__ticket-detail-pane {
+    height: auto;
+    overflow: visible;
+  }
+
+  .tickets-board__ticket-detail-pane + .tickets-board__ticket-detail-pane {
+    border-top: var(--bs-border-width) solid var(--bs-border-color);
+  }
+}
+
+// Pill-shaped progress bars (acceptance / subtasks) in the detail field list.
+:host ::ng-deep .tickets-board__progress .progress {
+  border-radius: var(--bs-border-radius-pill);
+}
+
+.tickets-board__relation-chip {
+  max-width: min(100%, 24rem);
+}
+
+.tickets-board__run-summary {
+  max-height: 12rem;
+}
+
+.tickets-board__step-payload {
+  max-height: 16rem;
+}
+
+@media (max-width: 767.98px) {
+  .tickets-board__ticket-detail-modal {
+    ::ng-deep .modal-dialog {
+      --bs-modal-margin: 0.5rem;
+    }
+  }
+
+  .tickets-board__hierarchy-box {
+    flex-basis: 100%;
+  }
+
+  :host ::ng-deep .tickets-board__ticket-detail-modal fpc-breadcrumb-item {
+    max-width: 45vw;
+  }
+}

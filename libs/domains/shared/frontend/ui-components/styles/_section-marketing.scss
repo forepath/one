@@ -1,0 +1,75 @@
+// Marketing column (sign-in flow, public forms): a topographic contour map in the brand colour,
+// drifting very slowly, layered under the soft corner wash.
+//
+// - The contour tile is a seamless 480px SVG (generated from a periodic height field). It is used
+//   as a mask, so the lines take `--bs-primary` and follow every brand and colour mode.
+// - `::before` carries the contours and is oversized by one tile so it can drift with a cheap
+//   transform and loop seamlessly.
+// - `::after` sits above it with the corner wash and a fade to the column surface, so the lines
+//   gather in the bottom-right corner and stay out of the way of the copy.
+// - Both layers sit below the column content (`isolation` + negative z-index).
+@use 'contours' as *;
+
+$fpc-marketing-contours: $fpc-contour-tile;
+$fpc-marketing-tile: $fpc-contour-tile-size;
+
+.section__column--marketing {
+  --fpc-marketing-surface: var(--bs-tertiary-bg);
+  --fpc-marketing-shade: color-mix(in srgb, var(--bs-white) 22%, transparent);
+  --fpc-marketing-shade-angle: 155deg;
+  --fpc-marketing-contour: color-mix(in srgb, var(--bs-primary) 34%, transparent);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  &::before {
+    inset: (-$fpc-marketing-tile) 0 0 (-$fpc-marketing-tile);
+    background-color: var(--fpc-marketing-contour);
+    mask: $fpc-marketing-contours 0 0 / #{$fpc-marketing-tile} #{$fpc-marketing-tile} repeat;
+    animation: fpc-marketing-drift 240s linear infinite;
+  }
+
+  &::after {
+    inset: 0;
+    background:
+      linear-gradient(var(--fpc-marketing-shade-angle), var(--fpc-marketing-shade) 0%, transparent 55%),
+      radial-gradient(
+        circle at 100% 100%,
+        transparent 0%,
+        transparent 20%,
+        color-mix(in srgb, var(--fpc-marketing-surface) 70%, transparent) 55%,
+        var(--fpc-marketing-surface) 85%
+      );
+  }
+
+  @media (max-width: 767.98px) {
+    display: none;
+  }
+}
+
+[data-bs-theme='dark'] .section__column--marketing {
+  --fpc-marketing-shade: color-mix(in srgb, var(--bs-black) 22%, transparent);
+  --fpc-marketing-shade-angle: 205deg;
+  // Brand colours stay the same in dark mode; lift the lines a little on the darker surface.
+  --fpc-marketing-contour: color-mix(in srgb, var(--bs-primary) 46%, transparent);
+}
+
+@keyframes fpc-marketing-drift {
+  to {
+    transform: translate(#{$fpc-marketing-tile}, #{$fpc-marketing-tile});
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section__column--marketing::before {
+    animation: none;
+  }
+}

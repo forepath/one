@@ -60,7 +60,7 @@
         <source>What we optimize for</source>
         </trans-unit>
       <trans-unit id="featureDecabillComparison-matrixHeading" datatype="html">
-        <source>Feature comparison</source>
+        <source> Feature comparison </source>
         </trans-unit>
       <trans-unit id="featureDecabillComparison-matrixIntro" datatype="html">
         <source> The same thirteen capabilities appear on every page. You can compare vendors without chasing different rubrics. </source>
@@ -72,10 +72,10 @@
         <source> Build with technology that fits your needs </source>
         </trans-unit>
       <trans-unit id="featureDecabillComparison-ctaDemo" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calendar-check&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Book a demo</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calendar-check&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Book a demo </source>
         </trans-unit>
       <trans-unit id="featureDecabillComparison-ctaPricing" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-tags&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>View pricing</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-tags&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>View pricing </source>
         </trans-unit>
       <trans-unit id="featureDecabillComparison-moreHeading" datatype="html">
         <source> More comparisons </source>
@@ -521,11 +521,11 @@
       <trans-unit id="sharedFeatureLandingpageBlog-footerLink" datatype="html">
         <source>Blog</source>
         </trans-unit>
-      <trans-unit id="sharedFeatureLandingpageContact-footerLink" datatype="html">
-        <source>Contact</source>
-        </trans-unit>
       <trans-unit id="sharedFeatureLandingpagePortal-footerLink" datatype="html">
         <source>Portal</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-footerLink" datatype="html">
+        <source>Contact</source>
         </trans-unit>
       <trans-unit id="featureDecabillPortal-footerLegal" datatype="html">
         <source>Legal</source>
@@ -549,7 +549,7 @@
         <source>Right of Withdrawal</source>
         </trans-unit>
       <trans-unit id="featureDecabillPortal-footerCopyright" datatype="html">
-        <source> © 2025 IPvX UG (haftungsbeschränkt). All rights reserved. </source>
+        <source> © <x id="INTERPOLATION" equiv-text="{{ currentYear }}"/> IPvX UG (haftungsbeschränkt). All rights reserved. </source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-heroTitle" datatype="html">
         <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Billing for agencies<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> and digital products </source>
@@ -576,25 +576,13 @@
         <source>Multi-tenant</source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-getStartedHero" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get started</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get started </source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-productTour" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-play-circle&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>View product tour</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-play-circle&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>View product tour </source>
         </trans-unit>
-      <trans-unit id="featureDecabillHome-heroSlideOverview" datatype="html">
-        <source>Decabill overview dashboard with cloud instances</source>
-        </trans-unit>
-      <trans-unit id="featureDecabillHome-heroSlidePlans" datatype="html">
-        <source>Decabill plans and subscriptions</source>
-        </trans-unit>
-      <trans-unit id="featureDecabillHome-heroSlideBilling" datatype="html">
-        <source>Decabill customer billing and invoices</source>
-        </trans-unit>
-      <trans-unit id="featureDecabillHome-heroSlideAdmin" datatype="html">
-        <source>Decabill admin billing and revenue statistics</source>
-        </trans-unit>
-      <trans-unit id="featureDecabillHome-heroSlideIndicatorsAriaLabel" datatype="html">
-        <source>Hero screenshot slides</source>
+      <trans-unit id="featureDecabillHome-heroIllustration" datatype="html">
+        <source>Decabill overview with plans, services and invoices</source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-solutionTitle" datatype="html">
         <source> Turn revenue complexity into billing you can trust </source>
@@ -776,18 +764,6 @@
       <trans-unit id="featureDecabillHome-howExampleLead" datatype="html">
         <source> Customers subscribe from the marketing site, pay through Stripe, and receive compliant invoices. Hosting orders provision on Hetzner when plans include infrastructure. At month end, finance exports to DATEV without re-keying line items from side spreadsheets. </source>
         </trans-unit>
-      <trans-unit id="featureDecabillHome-howExampleStep1" datatype="html">
-        <source>Subscribe</source>
-        </trans-unit>
-      <trans-unit id="featureDecabillHome-howExampleStep2" datatype="html">
-        <source>Pay</source>
-        </trans-unit>
-      <trans-unit id="featureDecabillHome-howExampleStep3" datatype="html">
-        <source>Provision</source>
-        </trans-unit>
-      <trans-unit id="featureDecabillHome-howExampleStep4" datatype="html">
-        <source>Export</source>
-        </trans-unit>
       <trans-unit id="featureDecabillHome-howIntegrationGridLabel" datatype="html">
         <source>Billing integrations and connected systems</source>
         </trans-unit>
@@ -816,7 +792,7 @@
         <source> Improvements land in the codebase we operate every day, not in a sandbox demo. Compliance paths stay current as regulations and integrations evolve. </source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-useCasesTitle" datatype="html">
-        <source>Built for how you sell</source>
+        <source> Built for how you sell </source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-useCasesLead" datatype="html">
         <source> Decabill is where your team runs revenue operations. It sits beside the products and services you already sell so billing follows how agencies and product teams actually go to market. </source>
@@ -909,7 +885,7 @@
         <source>Starting at</source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-ecosystemCloudUnavailable" datatype="html">
-        <source>Contact us</source>
+        <source> On request </source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-ecosystemCloudGetStarted" datatype="html">
         <source>Get started</source>
@@ -924,13 +900,10 @@
         <source> Book a demo to see how Decabill fits your agency or product stack. We can also help with managed hosting for your tenants. </source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-ctaBookDemo" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calendar-check&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Book a demo</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calendar-check&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Book a demo </source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-ctaDocs" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-book&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Read the docs</source>
-        </trans-unit>
-      <trans-unit id="featureDecabillHome-howIntegrationApi" datatype="html">
-        <source>REST API</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-book&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Read the docs </source>
         </trans-unit>
       <trans-unit id="featureDecabillHome-metaTitlePage" datatype="html">
         <source>Billing for agencies and digital products</source>
@@ -1059,7 +1032,7 @@
         <source> If you have questions about our company information, registration details, or any other legal matters, we&apos;re happy to help. </source>
         </trans-unit>
       <trans-unit id="featureDecabillLegalDisclosure-ctaContact" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
         </trans-unit>
       <trans-unit id="featureDecabillLegalDisclosure-metaTitlePage" datatype="html">
         <source>Legal Disclosure</source>
@@ -1249,7 +1222,7 @@
         <source> We take data protection seriously. If you have questions about how we handle your data, want to exercise your rights, or need clarification on any aspect of our privacy policy, please reach out. </source>
         </trans-unit>
       <trans-unit id="featureDecabillLegalPrivacy-ctaContact" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
         </trans-unit>
       <trans-unit id="featureDecabillLegalPrivacy-metaTitlePage" datatype="html">
         <source>Privacy Policy</source>
@@ -1495,7 +1468,7 @@
         <source> If you need clarification on licenses, the Cloud Service, or contractual conditions, please contact us using the details above. </source>
         </trans-unit>
       <trans-unit id="featureDecabillLegalTerms-ctaContact" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
         </trans-unit>
       <trans-unit id="featureDecabillLegalTerms-metaTitlePage" datatype="html">
         <source>Terms of Service</source>
@@ -1513,7 +1486,7 @@
         <source> Run Decabill on your own infrastructure or let us host it with predictable pricing as you grow from early deployments to enterprise revenue operations. </source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-pathsTitle" datatype="html">
-        <source>Two ways to run Decabill</source>
+        <source> Two ways to run Decabill </source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-pathsLead" datatype="html">
         <source> Most teams start self-hosted; move to managed cloud when you want us to operate the platform. </source>
@@ -1656,7 +1629,7 @@
         <source>Contact Sales</source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-managedTitle" datatype="html">
-        <source>Decabill Cloud</source>
+        <source> Decabill Cloud </source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-managedLead" datatype="html">
         <source> Fully managed hosting with predictable monthly pricing. We operate infrastructure, scaling, and updates so your teams can focus on billing and delivery. </source>
@@ -1689,7 +1662,7 @@
         <source>/ month</source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-cloudPriceUnavailable" datatype="html">
-        <source>Not available</source>
+        <source> On request </source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-getStartedNow" datatype="html">
         <source>Get Started Now</source>
@@ -1704,10 +1677,10 @@
         <source> Whether you are starting with our open source version or need enterprise features, we are here to help you run reliable billing for agencies and digital products. </source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-ctaGetStarted" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get Started Free</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get Started Free </source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-ctaTalkToSales" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-chat-dots&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Talk to Sales</source>
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-chat-dots&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Talk to Sales </source>
         </trans-unit>
       <trans-unit id="featureDecabillPricing-metaTitlePage" datatype="html">
         <source>Licensing from open source to enterprise</source>
@@ -1734,16 +1707,16 @@
         <source>Name</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-nameRequired" datatype="html">
-        <source> Name is required. </source>
+        <source>Name is required.</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-emailLabel" datatype="html">
         <source>Email</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-emailRequired" datatype="html">
-        <source> Email is required. </source>
+        <source>Email is required.</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-emailInvalid" datatype="html">
-        <source> Enter a valid email address. </source>
+        <source>Enter a valid email address.</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-phoneLabel" datatype="html">
         <source>Phone (optional)</source>
@@ -1767,7 +1740,7 @@
         <source> You must accept the Privacy Policy to send your message. </source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-submitting" datatype="html">
-        <source>Sending…</source>
+        <source>Sending...</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-submit" datatype="html">
         <source>Send message</source>

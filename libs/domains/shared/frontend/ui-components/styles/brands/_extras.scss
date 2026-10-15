@@ -1,6 +1,6 @@
 // Portal extras shared by all brands. Load after Bootstrap so `--bs-primary` exists.
 
-// Solid buttons (except light): white label like primary — softer a11y tradeoff for brand chrome.
+// Solid buttons (except light): white label like primary - softer a11y tradeoff for brand chrome.
 $fpc-btn-solid-colors: primary, secondary, success, danger, warning, info, light, dark;
 $fpc-btn-white-label-colors: primary, secondary, success, danger, warning, info, dark;
 
@@ -40,7 +40,7 @@ $fpc-btn-white-label-colors: primary, secondary, success, danger, warning, info,
 // Lift the fill above tertiary (same white-wash idea as `sidebar__item.active`), a bit
 // stronger so it still reads as a solid control. Hover/active go lighter, not darker.
 // Border vars already track `--bs-btn-*-bg` via the solid-button loop above.
-// `--fpc-btn-dark-bg` is shared (e.g. active list open-dot) so fills stay in sync.
+// `--fpc-btn-dark-bg` is shared so fills stay in sync with other dark surfaces.
 [data-bs-theme='dark'] {
   --fpc-btn-dark-bg: color-mix(in srgb, var(--bs-tertiary-bg) 82%, white);
   --fpc-btn-dark-hover-bg: color-mix(in srgb, var(--bs-tertiary-bg) 74%, white);

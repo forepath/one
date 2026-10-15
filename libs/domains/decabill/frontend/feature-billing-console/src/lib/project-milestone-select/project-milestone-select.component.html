@@ -32,12 +32,12 @@
             <button type="button" class="dropdown-item py-2 text-start" (mousedown)="pickMilestone(milestone, $event)">
               <span class="d-block small fw-medium text-truncate">{{ milestone.name }}</span>
               @if (milestone.targetDate) {
-                <span class="d-block text-muted small">{{ milestone.targetDate | date: 'mediumDate' }}</span>
+                <span class="d-block text-body-secondary small">{{ milestone.targetDate | date: 'mediumDate' }}</span>
               }
             </button>
           }
         } @else if (searchQuery().trim() && !loading()) {
-          <span class="dropdown-item-text text-muted small" i18n="@@featureProjectMilestoneSelect-noMilestones"
+          <span class="dropdown-item-text text-body-secondary small" i18n="@@featureProjectMilestoneSelect-noMilestones"
             >No milestones found.</span
           >
         }

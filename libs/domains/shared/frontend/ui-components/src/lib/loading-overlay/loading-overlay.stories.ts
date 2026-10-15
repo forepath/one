@@ -17,7 +17,7 @@ const meta: Meta<FpcLoadingOverlayComponent> = {
   title: 'Feedback/Loading Overlay',
   component: FpcLoadingOverlayComponent,
   decorators: [moduleMetadata({ imports: [FpcLoadingOverlayComponent] })],
-  args: { loading: true, message: 'Loading invoices…', dim: true, spinnerSize: 'md' },
+  args: { loading: true, message: 'Loading invoices...', dim: true, spinnerSize: 'md' },
   render: (args) => ({
     props: args,
     template: `<div class="position-relative border rounded p-3" style="height: 14rem">

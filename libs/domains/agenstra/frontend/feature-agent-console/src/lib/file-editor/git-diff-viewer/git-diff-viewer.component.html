@@ -1,22 +1,28 @@
 <div class="git-diff-viewer-container d-flex flex-column h-100">
   <div
-    class="git-diff-viewer-header p-2 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center"
+    class="git-diff-viewer-header p-2 border-bottom bg-body-tertiary d-flex justify-content-between align-items-center gap-2"
   >
-    <div class="d-flex align-items-center gap-2">
+    <div class="d-flex flex-wrap align-items-center gap-2 min-w-0">
       <h6 class="mb-0 fw-semibold">
         <i class="bi bi-file-diff me-2"></i><span i18n="@@featureGitDiffViewer-header">File Diff</span>
       </h6>
       @if (filePath()) {
-        <span class="text-muted small">{{ filePath() }}</span>
+        <span class="text-body-secondary small text-break">{{ filePath() }}</span>
       }
     </div>
-    <button
-      type="button"
-      class="btn btn-sm btn-close"
-      (click)="onClose()"
-      i18n-aria-label="@@featureGitDiffViewer-closeAriaLabel"
-      aria-label="Close"
-    ></button>
+    <fpc-button
+      class="flex-shrink-0"
+      variant="dark"
+      size="sm"
+      iconOnly
+      (clicked)="onClose()"
+      i18n-ariaLabel="@@featureGitDiffViewer-closeAriaLabel"
+      ariaLabel="Close"
+      i18n-title="@@featureGitDiffViewer-closeAriaLabel"
+      title="Close"
+    >
+      <i class="bi bi-x" aria-hidden="true"></i>
+    </fpc-button>
   </div>
 
   <div class="git-diff-viewer-content flex-grow-1 position-relative">
