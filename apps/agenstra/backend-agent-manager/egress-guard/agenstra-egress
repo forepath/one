@@ -56,6 +56,35 @@ render_resolver_rules() {
   printf -- '-A %s -j RETURN\n' "$RESOLVERS_CHAIN"
 }
 
+# Git over SSH: dnsmasq adds the addresses it resolves for the allowed Git hosts to these ipsets and
+# netfilter only accepts TCP 22 to them. Sets live in the guard's network namespace (recreated on
+# every activation, e.g. after a guard restart).
+GIT_SSH_SET_V4=agenstra_git_ssh4
+GIT_SSH_SET_V6=agenstra_git_ssh6
+
+ensure_git_ssh_sets() {
+  command -v ipset >/dev/null 2>&1 || return 1
+  ipset create -exist "$GIT_SSH_SET_V4" hash:ip family inet timeout 3600 2>/dev/null || return 1
+  ipset create -exist "$GIT_SSH_SET_V6" hash:ip family inet6 timeout 3600 2>/dev/null || return 1
+}
+
+# Without kernel ipset support the Git SSH allowance is removed from the bundle (TCP 22 stays
+# rejected) instead of failing the whole policy.
+prepare_git_ssh() {
+  local dir="$1"
+
+  if ensure_git_ssh_sets; then
+    printf 'available\n' > "$RUN_DIR/git_ssh"
+
+    return 0
+  fi
+
+  printf 'unavailable\n' > "$RUN_DIR/git_ssh"
+  printf 'ipset unavailable: Git over SSH disabled\n' >&2
+  sed -i '/^ipset=/d' "$dir/dnsmasq.conf"
+  sed -i "/--match-set $GIT_SSH_SET_V4 /d;/--match-set $GIT_SSH_SET_V6 /d" "$dir/rules.v4" "$dir/rules.v6"
+}
+
 ensure_jump() {
   local bin="$1" table="$2" parent="$3" chain="$4"
 
@@ -167,6 +196,7 @@ signal_reload_and_wait() {
 
 cmd_activate() {
   [ -d "$ACTIVE" ] || fail "no active policy"
+  prepare_git_ssh "$ACTIVE"
   iptables-restore --noflush "$ACTIVE/rules.v4"
 
   if ipv6_available; then
@@ -185,6 +215,7 @@ cmd_apply() {
   chown -R root:egressproxy "$STAGED"
   find "$STAGED" -type f -exec chmod 0640 {} +
   chmod 0750 "$STAGED"
+  prepare_git_ssh "$STAGED"
   validate_dir "$STAGED"
 
   rm -rf -- "$PREVIOUS"
@@ -227,8 +258,9 @@ cmd_status() {
   process_running "$RUN_DIR/squid.pid" && squid=true
   process_running "$RUN_DIR/dnsmasq.pid" && dnsmasq=true
 
-  printf '{"revision":"%s","mode":"%s","applied":"%s","squid":%s,"dnsmasq":%s}\n' \
-    "$revision" "$mode" "$(cat "$RUN_DIR/applied" 2>/dev/null || true)" "$squid" "$dnsmasq"
+  printf '{"revision":"%s","mode":"%s","applied":"%s","squid":%s,"dnsmasq":%s,"gitSsh":"%s"}\n' \
+    "$revision" "$mode" "$(cat "$RUN_DIR/applied" 2>/dev/null || true)" "$squid" "$dnsmasq" \
+    "$(cat "$RUN_DIR/git_ssh" 2>/dev/null || echo unknown)"
 }
 
 cmd_counters() {

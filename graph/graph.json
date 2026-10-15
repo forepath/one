@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-15T22:13:08.435Z",
+  "generatedAt": "2026-10-15T23:10:59.480Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -26728,6 +26728,16 @@
       }
     },
     {
+      "id": "concept:agenstra-git-over-ssh",
+      "type": "concept",
+      "attrs": {
+        "title": "Git over SSH",
+        "docPath": "docs/agenstra/features/egress-filtering.md",
+        "sectionAnchor": "git-over-ssh",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-fail-closed-behavior",
       "type": "concept",
       "attrs": {
@@ -49597,6 +49607,11 @@
     {
       "from": "file:docs/agenstra/features/egress-filtering.md",
       "to": "concept:agenstra-protocol-denials",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/egress-filtering.md",
+      "to": "concept:agenstra-git-over-ssh",
       "type": "contains"
     },
     {
@@ -83076,6 +83091,11 @@
     },
     {
       "from": "concept:agenstra-protocol-denials",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-git-over-ssh",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

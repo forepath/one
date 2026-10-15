@@ -222,6 +222,66 @@ describe('renderEgressGuardArtifacts', () => {
   });
 });
 
+describe('Git over SSH', () => {
+  const gitHosts = ['bitbucket.org', 'github.com', 'gitlab.com'];
+
+  it('accepts TCP 22 only to addresses dnsmasq resolved for Git hosts (enforce)', () => {
+    const { files } = renderEgressGuardArtifacts(policyFor({ mode: 'enforce' }), null, gitHosts);
+
+    expect(files['dnsmasq.conf']).toContain(
+      'ipset=/bitbucket.org/github.com/gitlab.com/agenstra_git_ssh4,agenstra_git_ssh6',
+    );
+    expect(files['rules.v4']).toContain(
+      '-A AGENSTRA_EGRESS_OUT -p tcp --dport 22 -m set --match-set agenstra_git_ssh4 dst -m comment --comment "agenstra:git_ssh" -j ACCEPT',
+    );
+    expect(files['rules.v6']).toContain('--match-set agenstra_git_ssh6 dst');
+    // The accept rule precedes the final reject of undeclared protocols.
+    expect(files['rules.v4'].indexOf('agenstra:git_ssh')).toBeLessThan(
+      files['rules.v4'].indexOf('agenstra:undeclared_protocol'),
+    );
+    // No IP is ever accepted on port 22 without the set match.
+    expect(files['rules.v4']).not.toMatch(/--dport 22 (?!-m set)/);
+  });
+
+  it('lets Git hosts resolve under an allowlist (web access is still decided by Squid)', () => {
+    const { files } = renderEgressGuardArtifacts(
+      policyFor({ mode: 'enforce', allow_hosts: ['example.org'] }),
+      null,
+      gitHosts,
+    );
+
+    expect(files['dnsmasq.conf']).toContain('server=/github.com/#');
+    expect(files['allow-domains.txt']).toBe('.example.org\n');
+  });
+
+  it('honours the deny list and never applies to offline, monitor or off policies', () => {
+    const denied = renderEgressGuardArtifacts(
+      policyFor({ mode: 'enforce', deny_hosts: ['github.com'] }),
+      null,
+      gitHosts,
+    ).files;
+
+    expect(denied['dnsmasq.conf']).toContain('ipset=/bitbucket.org/gitlab.com/agenstra_git_ssh4');
+    expect(denied['dnsmasq.conf']).not.toContain('ipset=/bitbucket.org/github.com');
+
+    for (const mode of ['offline', 'monitor', 'off']) {
+      const files = renderEgressGuardArtifacts(policyFor({ mode }), null, gitHosts).files;
+
+      expect(files['dnsmasq.conf']).not.toContain('ipset=');
+      expect(files['rules.v4']).not.toContain('agenstra_git_ssh4');
+    }
+  });
+
+  it('renders nothing when Git over SSH is disabled and changes the revision with the host list', () => {
+    const policy = policyFor({ mode: 'enforce' });
+    const { files, revision } = renderEgressGuardArtifacts(policy, null, []);
+
+    expect(files['dnsmasq.conf']).not.toContain('ipset=');
+    expect(files['rules.v4']).not.toContain('--dport 22');
+    expect(revision).not.toBe(computeEgressPolicyRevision(policy, null, gitHosts));
+  });
+});
+
 describe('computeEgressPolicyRevision', () => {
   it('is stable and changes with policy or upstream', () => {
     const policy = policyFor({ mode: 'enforce', deny_hosts: ['a.example'] });

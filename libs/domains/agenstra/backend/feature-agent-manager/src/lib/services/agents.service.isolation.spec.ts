@@ -123,7 +123,12 @@ describe('AgentsService container isolation', () => {
         }),
       }),
     );
-    expect(created.isolation).toEqual(expect.objectContaining({ level: 'sandboxed', runtime: 'runsc-systrap' }));
+    expect(created.isolation).toEqual(
+      expect.objectContaining({
+        level: 'sandboxed',
+        runtime: process.env.AGENT_DOCKER_NETWORK?.trim() ? 'runsc-systrap-hostnet' : 'runsc-systrap',
+      }),
+    );
     expect(isolation.recordRuntimeSuccess).toHaveBeenCalledWith('sandboxed');
   });
 
