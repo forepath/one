@@ -70,6 +70,7 @@ export * from './lib/services/workspace-configuration-overrides.service';
 export * from './lib/utils/agent-file-manager-context';
 export * from './lib/constants/chat-session.constants';
 export * from './lib/constants/container-isolation.constants';
+export * from './lib/constants/container-naming.constants';
 export * from './lib/constants/egress-guard.constants';
 export * from './lib/utils/container-isolation.utils';
 export * from './lib/constants/environment-progress.constants';

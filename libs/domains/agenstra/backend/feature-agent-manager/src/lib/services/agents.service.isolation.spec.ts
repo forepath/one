@@ -76,7 +76,11 @@ describe('AgentsService container isolation', () => {
     };
     const chatSessions = {
       ensurePrimarySession: jest.fn().mockResolvedValue(primarySession),
-      getSummariesByAgentIds: jest.fn().mockResolvedValue(new Map([['agent-1', [primarySession]]])),
+      getSummariesByAgentIds: jest
+        .fn()
+        .mockImplementation(
+          async (ids: string[]) => new Map(ids.map((id) => [id, [{ ...primarySession, agentId: id }]])),
+        ),
       mapToSummaryDto: jest.fn().mockImplementation((s) => ({ id: s.id, kind: s.kind })),
     };
 
@@ -176,5 +180,36 @@ describe('AgentsService container isolation', () => {
     expect(docker.createContainer).toHaveBeenCalledTimes(1);
     expect(isolation.recordRuntimeFailure).toHaveBeenCalledWith('sandboxed');
     expect(repository.create).not.toHaveBeenCalled();
+  });
+
+  it('names the worker after the pre-assigned agent id', async () => {
+    const created = await service.create(dto());
+    const options = docker.createContainer.mock.calls[0][0];
+
+    expect(options.name).toBe(`agenstra-worker-${created.id}`);
+    expect(options.labels).toEqual({ 'io.agenstra.agent-id': created.id, 'io.agenstra.worker': '1' });
+    expect(repository.create).toHaveBeenCalledWith(expect.objectContaining({ id: created.id }));
+  });
+
+  it('renames containers of existing environments to the naming pattern on startup', async () => {
+    const findAllWithContainers = jest.fn().mockResolvedValue([
+      { id: 'agent-a', containerId: 'worker-a', egressGuardContainerId: 'guard-a' },
+      { id: 'agent-b', containerId: 'worker-b', egressGuardContainerId: null },
+    ]);
+
+    (repository as unknown as Record<string, jest.Mock>)['findAllWithContainers'] = findAllWithContainers;
+    docker['renameContainerIfNeeded'] = jest
+      .fn()
+      .mockResolvedValueOnce('renamed')
+      .mockResolvedValueOnce('conflict')
+      .mockResolvedValueOnce('unchanged');
+
+    await service.normalizeContainerNames();
+
+    expect(docker['renameContainerIfNeeded'].mock.calls).toEqual([
+      ['worker-a', 'agenstra-worker-agent-a'],
+      ['guard-a', 'agenstra-egress-agent-a'],
+      ['worker-b', 'agenstra-worker-agent-b'],
+    ]);
   });
 });

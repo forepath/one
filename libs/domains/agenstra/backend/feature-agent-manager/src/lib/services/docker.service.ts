@@ -120,8 +120,11 @@ export class DockerService {
      * Always set explicitly so the effective isolation never depends on the daemon default.
      */
     runtime?: string;
+    /** Container name (`agenstra-worker-<agentId>`); Docker generates one when omitted. */
+    name?: string;
+    labels?: Record<string, string>;
   }): Promise<string> {
-    const { image, env, volumes = [], network, sharedNetworkContainerId, capDrop, runtime } = options;
+    const { image, env, volumes = [], network, sharedNetworkContainerId, capDrop, runtime, name, labels } = options;
     // Docker rejects port publishing / exposing for containers sharing another network namespace.
     const ports = sharedNetworkContainerId ? [] : (options.ports ?? []);
     // Resolve image: explicit -> env -> default placeholder
@@ -159,6 +162,8 @@ export class DockerService {
 
     try {
       const container = await this.docker.createContainer({
+        ...(name ? { name } : {}),
+        ...(labels && Object.keys(labels).length ? { Labels: labels } : {}),
         Image: resolvedImage,
         Env: useEnvironmentMount ? undefined : env ? toDockerEnvList(envMap) : undefined,
         ExposedPorts: Object.keys(exposedPorts).length ? exposedPorts : undefined,
@@ -2912,6 +2917,44 @@ export class DockerService {
     const firstNewline = tail.indexOf('\n');
 
     return firstNewline === -1 ? '' : tail.slice(firstNewline + 1);
+  }
+
+  /**
+   * Rename a container unless it already has the name. Returns `conflict` when another container
+   * holds the name and `missing` when the container does not exist (both leave everything unchanged).
+   */
+  async renameContainerIfNeeded(
+    containerId: string,
+    name: string,
+  ): Promise<'renamed' | 'unchanged' | 'conflict' | 'missing'> {
+    const container = this.docker.getContainer(containerId);
+    let currentName: string;
+
+    try {
+      currentName = ((await container.inspect()).Name ?? '').replace(/^\//, '');
+    } catch (error: unknown) {
+      if ((error as { statusCode?: number }).statusCode === 404) {
+        return 'missing';
+      }
+
+      throw error;
+    }
+
+    if (currentName === name) {
+      return 'unchanged';
+    }
+
+    try {
+      await container.rename({ name });
+
+      return 'renamed';
+    } catch (error: unknown) {
+      if ((error as { statusCode?: number }).statusCode === 409) {
+        return 'conflict';
+      }
+
+      throw error;
+    }
   }
 
   /** Lightweight inspect (null when the container does not exist). */

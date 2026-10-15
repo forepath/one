@@ -3192,6 +3192,42 @@ describe('DockerService', () => {
       mockContainer.remove.mockResolvedValue(undefined);
     });
 
+    it('names and labels the worker container when requested', async () => {
+      await service.createContainer({
+        image: 'worker:latest',
+        name: 'agenstra-worker-agent-1',
+        labels: { 'io.agenstra.agent-id': 'agent-1', 'io.agenstra.worker': '1' },
+      });
+
+      expect((mockDocker as any).createContainer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'agenstra-worker-agent-1',
+          Labels: { 'io.agenstra.agent-id': 'agent-1', 'io.agenstra.worker': '1' },
+        }),
+      );
+    });
+
+    it('renames containers only when needed and reports conflicts', async () => {
+      const rename = jest.fn().mockResolvedValue(undefined);
+
+      (mockContainer as any).rename = rename;
+      mockContainer.inspect.mockResolvedValue({ Name: '/great_matsumoto' });
+      await expect(service.renameContainerIfNeeded('c1', 'agenstra-worker-a')).resolves.toBe('renamed');
+      expect(rename).toHaveBeenCalledWith({ name: 'agenstra-worker-a' });
+
+      mockContainer.inspect.mockResolvedValue({ Name: '/agenstra-worker-a' });
+      rename.mockClear();
+      await expect(service.renameContainerIfNeeded('c1', 'agenstra-worker-a')).resolves.toBe('unchanged');
+      expect(rename).not.toHaveBeenCalled();
+
+      mockContainer.inspect.mockResolvedValue({ Name: '/other' });
+      rename.mockRejectedValue({ statusCode: 409 });
+      await expect(service.renameContainerIfNeeded('c1', 'agenstra-worker-a')).resolves.toBe('conflict');
+
+      mockContainer.inspect.mockRejectedValue({ statusCode: 404 });
+      await expect(service.renameContainerIfNeeded('c1', 'agenstra-worker-a')).resolves.toBe('missing');
+    });
+
     it('sets the runtime explicitly on create', async () => {
       await service.createContainer({ image: 'worker:latest', runtime: 'runsc-systrap' });
 

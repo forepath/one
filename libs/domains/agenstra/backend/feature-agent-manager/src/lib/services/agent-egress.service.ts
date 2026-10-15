@@ -10,7 +10,7 @@ import {
   EGRESS_GUARD_CLI,
   EGRESS_GUARD_FORWARDED_AGENT_PORTS,
   EGRESS_GUARD_LABEL,
-  EGRESS_GUARD_NAME_PREFIX,
+  egressGuardContainerName,
   EGRESS_GUARD_NO_PROXY_DEFAULTS,
   EGRESS_GUARD_PROXY_ENV_KEYS,
   EGRESS_GUARD_PROXY_URL,
@@ -165,22 +165,21 @@ export class AgentEgressService {
   // Guard container primitives
   // -------------------------------------------------------------------------
 
-  private async createGuard(agentId: string | null): Promise<string> {
+  private async createGuard(agentId: string): Promise<string> {
     const network = this.env['AGENT_DOCKER_NETWORK']?.trim() || undefined;
 
     if (network) {
       await this.dockerService.ensureNetworkExists(network);
     }
 
-    const suffix = agentId ?? `pending-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-    const name = `${EGRESS_GUARD_NAME_PREFIX}${suffix}`;
+    const name = egressGuardContainerName(agentId);
     const create = () =>
       this.dockerService.createEgressGuardContainer({
         name,
         image: resolveEgressGuardImage(this.env),
         labels: {
           [EGRESS_GUARD_LABEL]: '1',
-          ...(agentId ? { [EGRESS_GUARD_AGENT_LABEL]: agentId } : {}),
+          [EGRESS_GUARD_AGENT_LABEL]: agentId,
         },
         network,
         publishPorts: EGRESS_GUARD_FORWARDED_AGENT_PORTS,
@@ -284,14 +283,16 @@ export class AgentEgressService {
   }
 
   /**
-   * Create a guard and apply the policy before the agent exists (fail closed at agent creation).
+   * Create a guard and apply the policy before the agent's worker exists (fail closed at agent creation).
+   * The agent id is assigned upfront, so the guard is named `agenstra-egress-<agentId>` from the start.
    * The guard is removed again when provisioning fails.
    */
   async provisionGuardForNewAgent(
+    agentId: string,
     policy: EffectiveEgressPolicy,
     upstream: EgressUpstreamProxy | null,
   ): Promise<{ guardId: string; revision: string }> {
-    const guardId = await this.createGuard(null);
+    const guardId = await this.createGuard(agentId);
 
     try {
       await this.waitForGuardReady(guardId);

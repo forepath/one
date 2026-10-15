@@ -347,6 +347,8 @@ describe('AgentsService', () => {
         expect.any(Function),
       );
       expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
+        name: expect.stringMatching(/^agenstra-worker-[0-9a-f-]{36}$/),
+        labels: { 'io.agenstra.agent-id': expect.any(String), 'io.agenstra.worker': '1' },
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
         env: expect.objectContaining({
           AGENT_NAME: createDto.name,
@@ -422,6 +424,7 @@ describe('AgentsService', () => {
         { user: 'agenstra' },
       );
       expect(repository.create).toHaveBeenCalledWith({
+        id: expect.stringMatching(/^[0-9a-f-]{36}$/),
         name: createDto.name,
         description: createDto.description,
         hashedPassword,
@@ -472,6 +475,8 @@ describe('AgentsService', () => {
       expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('opencode');
       expect(mockAgentProvider.getDockerImage).toHaveBeenCalled();
       expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
+        name: expect.stringMatching(/^agenstra-worker-[0-9a-f-]{36}$/),
+        labels: { 'io.agenstra.agent-id': expect.any(String), 'io.agenstra.worker': '1' },
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
         env: expect.objectContaining({
           AGENT_NAME: createDto.name,
@@ -507,6 +512,7 @@ describe('AgentsService', () => {
       // Verify .netrc file creation was called
       expect(dockerService.sendCommandToContainer).toHaveBeenCalledTimes(5); // 2 for .netrc + config mkdir + config chown + git clone
       expect(repository.create).toHaveBeenCalledWith({
+        id: expect.stringMatching(/^[0-9a-f-]{36}$/),
         name: createDto.name,
         description: undefined,
         agentType: 'opencode',
@@ -811,6 +817,8 @@ describe('AgentsService', () => {
       expect(agentProviderFactory.getProvider).toHaveBeenCalledWith('opencode');
       expect(mockAgentProvider.getDockerImage).toHaveBeenCalled();
       expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
+        name: expect.stringMatching(/^agenstra-worker-[0-9a-f-]{36}$/),
+        labels: { 'io.agenstra.agent-id': expect.any(String), 'io.agenstra.worker': '1' },
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
         env: expect.objectContaining({
           AGENT_NAME: createDto.name,
@@ -1258,6 +1266,8 @@ describe('AgentsService', () => {
 
       expect(mockAgentProvider.getBasePath).toHaveBeenCalled();
       expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
+        name: expect.stringMatching(/^agenstra-worker-[0-9a-f-]{36}$/),
+        labels: { 'io.agenstra.agent-id': expect.any(String), 'io.agenstra.worker': '1' },
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
         env: expect.objectContaining({
           AGENT_NAME: createDto.name,
@@ -1381,6 +1391,8 @@ describe('AgentsService', () => {
       expect(mockAgentProvider.getRepositoryPath).toHaveBeenCalled();
       // Verify volume mount uses custom base path
       expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
+        name: expect.stringMatching(/^agenstra-worker-[0-9a-f-]{36}$/),
+        labels: { 'io.agenstra.agent-id': expect.any(String), 'io.agenstra.worker': '1' },
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
         env: expect.objectContaining({
           AGENT_NAME: createDto.name,
@@ -1499,6 +1511,8 @@ describe('AgentsService', () => {
       await service.create(createDto);
 
       expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
+        name: expect.stringMatching(/^agenstra-worker-[0-9a-f-]{36}$/),
+        labels: { 'io.agenstra.agent-id': expect.any(String), 'io.agenstra.worker': '1' },
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
         env: expect.objectContaining({
           AGENT_NAME: createDto.name,
@@ -1573,6 +1587,8 @@ describe('AgentsService', () => {
 
       expect(mockAgentProvider.getBasePath).toHaveBeenCalled();
       expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
+        name: expect.stringMatching(/^agenstra-worker-[0-9a-f-]{36}$/),
+        labels: { 'io.agenstra.agent-id': expect.any(String), 'io.agenstra.worker': '1' },
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
         env: expect.objectContaining({
           AGENT_NAME: createDto.name,
@@ -1652,6 +1668,8 @@ describe('AgentsService', () => {
 
       expect(mockAgentProvider.getEnvironmentVariables).toHaveBeenCalled();
       expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
+        name: expect.stringMatching(/^agenstra-worker-[0-9a-f-]{36}$/),
+        labels: { 'io.agenstra.agent-id': expect.any(String), 'io.agenstra.worker': '1' },
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
         env: expect.objectContaining({
           AGENT_NAME: createDto.name,
@@ -1720,6 +1738,8 @@ describe('AgentsService', () => {
       // Verify that getEnvironmentVariables was not called (since it doesn't exist)
       expect(mockAgentProvider.getEnvironmentVariables).toBeUndefined();
       expect(dockerService.createContainer).toHaveBeenNthCalledWith(1, {
+        name: expect.stringMatching(/^agenstra-worker-[0-9a-f-]{36}$/),
+        labels: { 'io.agenstra.agent-id': expect.any(String), 'io.agenstra.worker': '1' },
         image: 'ghcr.io/forepath/agenstra-manager-worker:latest',
         env: expect.objectContaining({
           AGENT_NAME: createDto.name,
@@ -2787,7 +2807,11 @@ describe('AgentsService', () => {
     it('provisions the guard before the agent and starts the agent inside its namespace', async () => {
       const result = await guardedService.create({ name: 'Guarded', egressPolicy: enforcePolicy } as CreateAgentDto);
 
-      expect(egress.provisionGuardForNewAgent).toHaveBeenCalledWith(expect.objectContaining({ mode: 'enforce' }), null);
+      expect(egress.provisionGuardForNewAgent).toHaveBeenCalledWith(
+        expect.stringMatching(/^[0-9a-f-]{36}$/),
+        expect.objectContaining({ mode: 'enforce' }),
+        null,
+      );
       expect(egress.provisionGuardForNewAgent.mock.invocationCallOrder[0]).toBeLessThan(
         mockDockerService.createContainer.mock.invocationCallOrder[0],
       );
