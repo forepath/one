@@ -12,6 +12,7 @@ import {
 } from '@forepath/agenstra/shared/util-opencode-config';
 
 import {
+  EGRESS_GIT_SSH_COUNTER_CATEGORY,
   EGRESS_GUARD_COUNTER_COMMENT_PREFIX,
   EGRESS_GUARD_EVENT_LOG_MARKER,
   EGRESS_GUARD_WEB_LOG_MARKER,
@@ -386,7 +387,8 @@ export function diffEgressCounters(
       continue;
     }
 
-    const allowedException = sample.category === 'network_allow';
+    // Declared network exceptions and Git over SSH are accepted traffic, not blocks.
+    const allowedException = sample.category === 'network_allow' || sample.category === EGRESS_GIT_SSH_COUNTER_CATEGORY;
     const rule = allowedException
       ? null
       : RULE_SET.has(sample.category)

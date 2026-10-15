@@ -198,13 +198,15 @@ Optional runtime extensions for provisioning and context import. See [Dynamic pr
 - `AGENT_EGRESS_EVENTS_COLLECTOR_ENABLED` - Collect guard decision events (default: `true`).
 - `AGENT_EGRESS_EVENTS_POLL_INTERVAL_MS` - Collector poll interval (default: `15000`).
 - `AGENT_EGRESS_EVENTS_RETENTION_HOURS` - Event retention on the manager (default: `72`).
+- `AGENT_EGRESS_GIT_SSH_ENABLED` - Allow Git over SSH (TCP/22) through the guard to curated Git hosting providers (default: `true`). See [Egress Filtering](../features/egress-filtering.md#git-over-ssh).
+- `AGENT_EGRESS_GIT_SSH_HOSTS` - Additional Git SSH host names, e.g. self-hosted GitLab (comma separated; default: empty).
 
 See [Egress Filtering](../features/egress-filtering.md).
 
 ### Container isolation levels
 
 - `AGENT_SANDBOX_RUNTIME` - Docker runtime name of the sandboxed (gVisor) level (default: `runsc-systrap`; must match `[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}`, otherwise the default is used).
-- `AGENT_SANDBOX_SHARED_NETNS_RUNTIME` - gVisor runtime with `--network=host` for sandboxed workers that share their egress guard's network namespace (default: `runsc-systrap-hostnet`; required for the sandboxed level while egress guards are enabled).
+- `AGENT_SANDBOX_SHARED_NETNS_RUNTIME` - gVisor runtime with `--network=host` for sandboxed workers that share their egress guard's network namespace or are attached to `AGENT_DOCKER_NETWORK` (default: `runsc-systrap-hostnet`; required for the sandboxed level while egress guards are enabled or an agent network is configured).
 - `AGENT_ISOLATION_SANDBOX_ENABLED` - `false` disables the sandboxed level on this manager (default: `true`).
 - `AGENT_ISOLATION_PROBE_ENABLED` - `false` disables the periodic re-probe; startup, on-demand and failure-triggered probes still run (default: `true`).
 - `AGENT_ISOLATION_PROBE_INTERVAL_MS` - Periodic re-probe interval, ±10 % jitter (default: `21600000`, minimum `60000`).

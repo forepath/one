@@ -3086,7 +3086,18 @@ describe('DockerService', () => {
           RestartPolicy: { Name: 'unless-stopped' },
         }),
       );
-      expect(args.HostConfig.CapAdd).not.toContain('NET_RAW');
+      // NET_RAW only for iptables' ipset lookups (Git SSH sets); agents in the namespace drop it.
+      expect(args.HostConfig.CapAdd).toEqual([
+        'NET_ADMIN',
+        'NET_RAW',
+        'NET_BIND_SERVICE',
+        'SETUID',
+        'SETGID',
+        'CHOWN',
+        'DAC_OVERRIDE',
+        'FOWNER',
+        'KILL',
+      ]);
 
       (mockDocker as any).createContainer.mockClear();
       await service.createEgressGuardContainer({
@@ -3245,7 +3256,8 @@ describe('DockerService', () => {
 
       await service.updateContainer('agent-id', { env: { B: '2' } });
 
-      expect((mockDocker as any).createContainer.mock.calls[0][0].HostConfig.Runtime).toBe('runsc-systrap');
+      // User-defined network: Docker's embedded DNS needs the kernel network stack variant.
+      expect((mockDocker as any).createContainer.mock.calls[0][0].HostConfig.Runtime).toBe('runsc-systrap-hostnet');
     });
 
     it('forces the expected runtime when recreating (sandboxed never comes back on runc)', async () => {
@@ -3253,7 +3265,24 @@ describe('DockerService', () => {
 
       await service.updateContainer('agent-id', { env: { B: '2' }, runtime: 'runsc-systrap' });
 
+      expect((mockDocker as any).createContainer.mock.calls[0][0].HostConfig.Runtime).toBe('runsc-systrap-hostnet');
+    });
+
+    it('keeps Netstack only on the default bridge', async () => {
+      mockContainer.inspect.mockResolvedValue({
+        ...inspectWithRuntime('runc'),
+        HostConfig: { NetworkMode: 'bridge', Runtime: 'runc' },
+      });
+
+      await service.updateContainer('agent-id', { env: { B: '2' }, runtime: 'runsc-systrap' });
+
       expect((mockDocker as any).createContainer.mock.calls[0][0].HostConfig.Runtime).toBe('runsc-systrap');
+    });
+
+    it('uses the kernel network stack variant for sandboxed workers on the agent network', async () => {
+      await service.createContainer({ image: 'worker:latest', runtime: 'runsc-systrap', network: 'agent-net' });
+
+      expect((mockDocker as any).createContainer.mock.calls[0][0].HostConfig.Runtime).toBe('runsc-systrap-hostnet');
     });
 
     it('keeps the expected runtime when joining the egress guard namespace', async () => {
@@ -3372,6 +3401,10 @@ describe('DockerService', () => {
       });
 
       it('passes and cleans up every probe container and volume', async () => {
+        const previousNetwork = process.env.AGENT_DOCKER_NETWORK;
+
+        process.env.AGENT_DOCKER_NETWORK = 'agent-net';
+
         const result = await service.runIsolationProbe({
           runtime: 'runsc-systrap',
           image: 'worker:latest',
@@ -3380,10 +3413,24 @@ describe('DockerService', () => {
           sharedNetworkNamespaceRuntime: 'runsc-systrap-hostnet',
         });
 
-        expect(result).toEqual({ ok: true, gvisorKernelDetected: true });
-        expect(probeContainers).toHaveLength(3);
+        if (previousNetwork === undefined) {
+          delete process.env.AGENT_DOCKER_NETWORK;
+        } else {
+          process.env.AGENT_DOCKER_NETWORK = previousNetwork;
+        }
 
-        const [main, owner, member] = (mockDocker as any).createContainer.mock.calls.map((call: any[]) => call[0]);
+        expect(result).toEqual({ ok: true, gvisorKernelDetected: true });
+        expect(probeContainers).toHaveLength(4);
+
+        const [main, owner, member, networkMember] = (mockDocker as any).createContainer.mock.calls.map(
+          (call: any[]) => call[0],
+        );
+
+        // Name resolution through Docker's embedded DNS on the agent network.
+        expect(owner.HostConfig.NetworkMode).toBe('agent-net');
+        expect(networkMember.HostConfig).toEqual(
+          expect.objectContaining({ NetworkMode: 'agent-net', Runtime: 'runsc-systrap-hostnet' }),
+        );
 
         expect(main.HostConfig).toEqual(
           expect.objectContaining({ Runtime: 'runsc-systrap', CapDrop: ['ALL'], SecurityOpt: ['no-new-privileges'] }),

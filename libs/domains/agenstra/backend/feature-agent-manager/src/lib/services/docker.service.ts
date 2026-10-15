@@ -181,7 +181,16 @@ export class DockerService {
               ? network
               : undefined,
           ...(capDrop?.length ? { CapDrop: capDrop } : {}),
-          ...(runtime ? { Runtime: this.mapSandboxRuntimeForNetwork(runtime, !!sharedNetworkContainerId) } : {}),
+          ...(runtime
+            ? {
+                Runtime: this.mapSandboxRuntimeForNetwork(
+                  runtime,
+                  this.needsKernelNetworkStack(
+                    sharedNetworkContainerId ? `container:${sharedNetworkContainerId}` : network,
+                  ),
+                ),
+              }
+            : {}),
         },
       });
 
@@ -215,7 +224,7 @@ export class DockerService {
    */
   async getEnvironmentApplyStrategy(containerId: string, expectedRuntime?: string): Promise<EnvironmentApplyStrategy> {
     const inspectInfo = await this.inspectContainerOrThrow(containerId);
-    const sharesNamespace = (inspectInfo.HostConfig?.NetworkMode ?? '').startsWith('container:');
+    const sharesNamespace = this.needsKernelNetworkStack(inspectInfo.HostConfig?.NetworkMode);
 
     // A runtime change cannot be applied in place (see updateContainer): the container is recreated.
     if (
@@ -261,7 +270,7 @@ export class DockerService {
 
     try {
       const inspectInfo = await this.inspectContainerOrThrow(containerId);
-      const currentlySharesNamespace = (inspectInfo.HostConfig?.NetworkMode ?? '').startsWith('container:');
+      const currentlySharesNamespace = this.needsKernelNetworkStack(inspectInfo.HostConfig?.NetworkMode);
       const runtimeMismatch = this.hasRuntimeMismatch(
         inspectInfo,
         runtime ? this.mapSandboxRuntimeForNetwork(runtime, currentlySharesNamespace) : undefined,
@@ -388,9 +397,10 @@ export class DockerService {
             : {}),
         }
       : inspectedHostConfig;
-    const resolvedRuntime = this.resolveTargetRuntime(inspectInfo, runtime, sharesNetworkNamespace);
+    const kernelNetworkStack = this.needsKernelNetworkStack(targetNetworkMode);
+    const resolvedRuntime = this.resolveTargetRuntime(inspectInfo, runtime, kernelNetworkStack);
     const targetRuntime = resolvedRuntime
-      ? this.mapSandboxRuntimeForNetwork(resolvedRuntime, sharesNetworkNamespace)
+      ? this.mapSandboxRuntimeForNetwork(resolvedRuntime, kernelNetworkStack)
       : undefined;
     const exposedPorts = sharesNetworkNamespace ? {} : inspectInfo.Config?.ExposedPorts || {};
     const labels = inspectInfo.Config?.Labels || {};
@@ -586,9 +596,23 @@ export class DockerService {
   }
 
   /**
-   * Sandboxed workers sharing their egress guard's network namespace must use the gVisor runtime
-   * variant with the namespace's kernel network stack (Netstack would bypass the guard); workers
-   * with their own namespace use Netstack. Other runtimes are returned unchanged.
+   * Whether a sandboxed container with this network mode needs gVisor's kernel network stack variant
+   * (`--network=host`, i.e. the container namespace's stack instead of Netstack):
+   * - `container:<id>` (egress guard namespace): Netstack would take over the guard's interfaces and
+   *   bypass its netfilter rules and loopback proxy;
+   * - user-defined networks: Docker's embedded DNS (127.0.0.11) relies on netfilter rules inside the
+   *   container namespace, which Netstack bypasses (no name resolution at all).
+   * Only the default bridge (resolv.conf points at the host's resolvers) works with Netstack.
+   */
+  private needsKernelNetworkStack(networkMode: string | null | undefined): boolean {
+    const mode = (networkMode ?? '').trim();
+
+    return mode !== '' && !['default', 'bridge', 'host', 'none'].includes(mode);
+  }
+
+  /**
+   * Map a sandbox runtime to the variant required by the container's network (see
+   * {@link needsKernelNetworkStack}). Other runtimes are returned unchanged.
    */
   private mapSandboxRuntimeForNetwork(runtime: string, sharesNetworkNamespace: boolean): string {
     const netstack = resolveSandboxedIsolationRuntime();
@@ -2851,7 +2875,19 @@ export class DockerService {
         PortBindings: Object.keys(portBindings).length ? portBindings : undefined,
         RestartPolicy: { Name: 'unless-stopped' },
         CapDrop: ['ALL'],
-        CapAdd: ['NET_ADMIN', 'NET_BIND_SERVICE', 'SETUID', 'SETGID', 'CHOWN', 'DAC_OVERRIDE', 'FOWNER', 'KILL'],
+        // NET_RAW: iptables talks to the ipset subsystem (Git SSH sets) through a raw socket. The agent
+        // sharing this namespace keeps NET_RAW dropped (capabilities are per process).
+        CapAdd: [
+          'NET_ADMIN',
+          'NET_RAW',
+          'NET_BIND_SERVICE',
+          'SETUID',
+          'SETGID',
+          'CHOWN',
+          'DAC_OVERRIDE',
+          'FOWNER',
+          'KILL',
+        ],
         SecurityOpt: ['no-new-privileges'],
         Sysctls: {
           'net.ipv6.conf.all.disable_ipv6': '1',
@@ -3284,6 +3320,34 @@ export class DockerService {
 
       track(member);
       await member.start();
+
+      // Workers attached directly to the agent network resolve names via Docker's embedded DNS.
+      if (ownerNetwork) {
+        const networkMember = await this.createProbeContainer(
+          options,
+          `${volumeName}-net-member`,
+          { NetworkMode: ownerNetwork },
+          sharedRuntime,
+        );
+
+        track(networkMember);
+        await networkMember.start();
+
+        const resolved = await this.execProbeCommand(
+          networkMember,
+          `python3 -c "import socket; socket.gethostbyname('${volumeName}-netns-owner')"`,
+        );
+
+        if (resolved.exitCode !== 0) {
+          return {
+            ok: false,
+            reasonCode: IsolationReasonCode.SHARED_NETNS_FAILED,
+            reason: `Sandboxed workers cannot resolve names on the agent network '${ownerNetwork}'`,
+          };
+        }
+
+        await networkMember.stop({ t: 5 });
+      }
 
       const fetchScript =
         'for i in 1 2 3 4 5 6 7 8 9 10; do ' +

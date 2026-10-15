@@ -184,7 +184,9 @@ export class IsolationCapabilitiesService implements OnApplicationBootstrap, OnM
     const env = this.env;
     const sandboxRuntime = resolveSandboxedIsolationRuntime(env);
     // Workers behind an egress guard share its network namespace and need the guard-compatible runtime.
-    const guarded = this.egressGuardEnabled(env);
+    // Workers behind an egress guard or on a user-defined agent network need gVisor's kernel network
+    // stack variant (Netstack bypasses the guard's netfilter rules and Docker's embedded DNS).
+    const guarded = this.egressGuardEnabled(env) || !!env['AGENT_DOCKER_NETWORK']?.trim();
     const sharedNetnsRuntime = resolveSandboxedSharedNetnsIsolationRuntime(env);
     const image = resolveIsolationProbeImage(env);
     const timeoutMs = resolveIsolationProbeTimeoutMs(env);
@@ -268,7 +270,7 @@ export class IsolationCapabilitiesService implements OnApplicationBootstrap, OnM
         ...levels.sandboxed,
         state: 'unsupported',
         reasonCode: IsolationReasonCode.SHARED_NETNS_RUNTIME_NOT_REGISTERED,
-        reason: `Docker runtime '${sharedNetnsRuntime}' (gVisor for egress-guarded workers) is not registered on this host`,
+        reason: `Docker runtime '${sharedNetnsRuntime}' (gVisor for workers behind an egress guard or on the agent network) is not registered on this host`,
       };
     } else if (levels.standard.state !== 'ready') {
       levels.sandboxed = this.failed(

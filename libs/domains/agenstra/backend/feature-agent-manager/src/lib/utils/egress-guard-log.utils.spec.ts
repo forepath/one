@@ -249,6 +249,19 @@ describe('counters', () => {
   });
 });
 
+describe('Git SSH counters', () => {
+  it('reports accepted Git SSH connections as allowed network events', () => {
+    const line = (packets: number) =>
+      `[${packets}:120] -A AGENSTRA_EGRESS_OUT -p tcp -m tcp --dport 22 -m set --match-set agenstra_git_ssh4 dst -m comment --comment "agenstra:git_ssh" -j ACCEPT`;
+    const first = diffEgressCounters(null, parseEgressCounters(line(1)), 'enforce', new Date());
+    const second = diffEgressCounters(first.snapshot, parseEgressCounters(line(3)), 'enforce', new Date());
+
+    expect(second.observations).toEqual([
+      expect.objectContaining({ kind: 'network', decision: 'allowed', rule: null, count: 2, method: 'tcp/22' }),
+    ]);
+  });
+});
+
 describe('aggregateEgressObservations', () => {
   it('collapses identical decisions and sums counters', () => {
     const base = {
