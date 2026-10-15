@@ -19,6 +19,8 @@ import {
 } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
+import { AGENT_ID_LABEL, AGENT_WORKER_LABEL, agentWorkerContainerName } from '../constants/container-naming.constants';
+import { egressGuardContainerName } from '../constants/egress-guard.constants';
 import {
   type IsolationLevel,
   resolveSandboxedSharedNetnsIsolationRuntime,
@@ -338,6 +340,9 @@ export class AgentsService implements OnApplicationBootstrap {
     const hashedPassword = await this.passwordService.hashPassword(generatedPassword);
     // Define a folder name for the agent
     const agentVolumePath = `/opt/agents/${uuidv4()}`;
+    // Assigned before any container exists so worker and egress guard are named after the agent
+    // (`agenstra-worker-<agentId>`, `agenstra-egress-<agentId>`) from the start.
+    const agentId = uuidv4();
     const gitRepositorySetupMode = resolveGitRepositorySetupMode(
       createAgentDto.gitRepositorySetupMode,
       process.env.GIT_REPOSITORY_SETUP_MODE,
@@ -392,7 +397,7 @@ export class AgentsService implements OnApplicationBootstrap {
         );
       }
 
-      egressGuard = await this.agentEgress.provisionGuardForNewAgent(egressPolicy, null);
+      egressGuard = await this.agentEgress.provisionGuardForNewAgent(agentId, egressPolicy, null);
     }
 
     const egressProxyEnv = egressGuard
@@ -408,6 +413,8 @@ export class AgentsService implements OnApplicationBootstrap {
 
     try {
       containerId = await this.dockerService.createContainer({
+        name: agentWorkerContainerName(agentId),
+        labels: { [AGENT_ID_LABEL]: agentId, [AGENT_WORKER_LABEL]: '1' },
         image: dockerImage,
         env: {
           AGENT_NAME: createAgentDto.name,
@@ -494,6 +501,7 @@ export class AgentsService implements OnApplicationBootstrap {
       // Create the agent entity
       progress?.advance('persisting');
       const agent = await this.agentsRepository.create({
+        id: agentId,
         name: createAgentDto.name,
         description: createAgentDto.description,
         hashedPassword,
@@ -1120,6 +1128,49 @@ export class AgentsService implements OnApplicationBootstrap {
   async onApplicationBootstrap(): Promise<void> {
     this.logger.log('🚀 Application fully bootstrapped, cleaning up legacy sidecars and restarting containers...');
     await this.removeLegacySidecarContainers();
+    await this.normalizeContainerNames();
     await this.restartAllContainers();
+  }
+
+  /**
+   * Rename containers of existing environments to the naming pattern (`agenstra-worker-<agentId>`,
+   * `agenstra-egress-<agentId>`). Renaming does not interrupt running containers; names held by
+   * another container are left alone (logged).
+   */
+  async normalizeContainerNames(): Promise<void> {
+    let agents: AgentEntity[];
+
+    try {
+      agents = await this.agentsRepository.findAllWithContainers();
+    } catch (error) {
+      this.logger.warn(`Skipping container name normalization: ${(error as Error).message}`);
+
+      return;
+    }
+
+    for (const agent of agents) {
+      const targets: Array<[string | null | undefined, string]> = [
+        [agent.containerId, agentWorkerContainerName(agent.id)],
+        [agent.egressGuardContainerId, egressGuardContainerName(agent.id)],
+      ];
+
+      for (const [containerId, name] of targets) {
+        if (!containerId) {
+          continue;
+        }
+
+        try {
+          const result = await this.dockerService.renameContainerIfNeeded(containerId, name);
+
+          if (result === 'renamed') {
+            this.logger.log(`Renamed container ${containerId.slice(0, 12)} of agent ${agent.id} to ${name}`);
+          } else if (result === 'conflict') {
+            this.logger.warn(`Cannot rename container ${containerId.slice(0, 12)} to ${name}: name already in use`);
+          }
+        } catch (error) {
+          this.logger.warn(`Failed to rename container ${containerId.slice(0, 12)}: ${(error as Error).message}`);
+        }
+      }
+    }
   }
 }

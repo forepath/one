@@ -21,7 +21,7 @@ Agenstra can filter the **outbound network traffic of every agent environment**.
                        agent container
 ```
 
-- **Sidecar** One guard container per agent (`agenstra-egress-<agentId>`, labels `io.agenstra.egress-guard=1` and `io.agenstra.agent-id`). Only the guard holds `CAP_NET_ADMIN`; the agent has none and cannot change the rules.
+- **Sidecar** One guard container per agent (`agenstra-egress-<agentId>`, labels `io.agenstra.egress-guard=1` and `io.agenstra.agent-id`; the agent's worker is `agenstra-worker-<agentId>`). The name is final from creation on: the agent id is assigned before the guard is provisioned. Only the guard holds `CAP_NET_ADMIN`; the agent has none and cannot change the rules.
 - **Network namespace sharing** The agent container joins the guard's namespace with `NetworkMode: container:<guard>`. The agent's published ports (OpenCode serve `4096`, VNC websockify `6080`) are therefore published on the guard.
 - **Components** `iptables` redirects traffic; **Squid 7** makes web decisions; **dnsmasq** enforces DNS policy. Squid runs as UID `10901` and marks its upstream connections (`tcp_outgoing_mark`, which needs `CAP_NET_ADMIN`); netfilter exempts only **marked** traffic, so a process that merely switches to Squid's UID gains nothing. Squid resolves names through dnsmasq. dnsmasq runs as UID `10902` and may only reach the upstream resolvers from the guard's `resolv.conf` on port 53.
 - **No TLS decryption** HTTPS is handled with Squid `peek` / `splice` / `terminate`. The guard reads the TLS SNI, never decrypts, and no CA has to be trusted by the agent.
