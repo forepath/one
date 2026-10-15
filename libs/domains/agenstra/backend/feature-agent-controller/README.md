@@ -70,6 +70,7 @@ All diagrams are available in the [`docs/`](./docs/) directory:
 
 - **[Overview Diagram](./docs/overview.mmd)** - High-level flowchart showing HTTP REST API for clients, proxied agent operations, and WebSocket event forwarding
 - **[Egress Events Ingestion](./docs/egress-events-ingest.mmd)** - `egress-events-ingest` coordinator/unit jobs pulling guard decisions from managers into `statistics_egress_events`; see [Egress Filtering](../../../../docs/agenstra/features/egress-filtering.md)
+- **[Isolation Capabilities](./docs/isolation-capabilities.mmd)** - Container isolation probes on the agent manager, workspace summaries and `client_isolation_snapshots`, `isolation-capabilities` coordinator/unit jobs, transition notifications and isolation validation on environment creation; see [Container Isolation Levels](../../../../docs/agenstra/features/container-isolation.md)
 - **[Statistics Model](./docs/statistics-architecture.mmd)** - Flowchart of shadow tables and statistics/event tables; persistent statistics (chat I/O, filter drops, entity lifecycle), collection points, REST API
 - **[HTTP Statistics Sequence Diagram](./docs/sequence-http-statistics.mmd)** - Sequence diagram for Statistics REST API (client-scoped and aggregate endpoints)
 - **[HTTP Sequence Diagram](./docs/sequence-http.mmd)** - Detailed sequence diagram for all HTTP CRUD operations (client management and proxied agent operations)

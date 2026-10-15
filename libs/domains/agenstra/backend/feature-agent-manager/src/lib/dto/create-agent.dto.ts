@@ -1,5 +1,6 @@
-import { IsEnum, IsIn, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsIn, IsNotEmpty, IsObject, IsOptional, IsString, MaxLength } from 'class-validator';
 
+import { ISOLATION_LEVELS, type IsolationLevel } from '../constants/container-isolation.constants';
 import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 import { ContainerType } from '../entities/agent.entity';
 
@@ -43,6 +44,32 @@ export class CreateAgentDto {
   @IsOptional()
   @IsObject({ message: 'Egress policy must be an object' })
   egressPolicy?: Record<string, unknown>;
+
+  /**
+   * Container isolation level (`sandboxed` = gVisor, `standard` = runc). When omitted, the strongest
+   * level that is ready on the agent manager host is used. An explicit level is never replaced by
+   * another one: an unavailable level is rejected.
+   */
+  @IsOptional()
+  @IsIn([...ISOLATION_LEVELS], { message: 'Isolation level must be one of: standard, sandboxed' })
+  isolationLevel?: IsolationLevel;
+
+  /**
+   * Host isolation capability revision the selection was made against. When set and the host's
+   * capabilities changed in the meantime, the request is rejected as stale.
+   */
+  @IsOptional()
+  @IsString({ message: 'Capability revision must be a string' })
+  @MaxLength(128, { message: 'Capability revision must not exceed 128 characters' })
+  capabilityRevision?: string;
+
+  /**
+   * Selection metadata (set by the agent controller; e.g. the selecting user). Every other field of
+   * the persisted selection record is derived by the agent manager.
+   */
+  @IsOptional()
+  @IsObject({ message: 'Isolation selection must be an object' })
+  isolationSelection?: Record<string, unknown>;
 
   /**
    * CI/CD deployment configuration (optional).

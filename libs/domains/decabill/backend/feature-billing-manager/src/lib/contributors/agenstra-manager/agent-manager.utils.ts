@@ -1,5 +1,7 @@
 import { randomBytes } from 'crypto';
 
+import { buildGvisorInstallScript } from '@forepath/shared/backend/util-container-runtime';
+
 import { buildCertbotBootstrapScript } from '../../utils/cloud-init/certbot-bootstrap.script';
 import { buildComposeBridgeNetwork, buildComposeNamedVolumes } from '../../utils/cloud-init/compose-service.utils';
 import { formatEnvLines } from '../../utils/cloud-init/env.utils';
@@ -456,6 +458,8 @@ if ! docker info > /dev/null 2>&1; then
     log "ERROR: Docker is not working properly"
     exit 1
 fi
+
+${buildGvisorInstallScript()}
 
 # Create directory for agent-manager
 log "Creating agent-manager directory..."

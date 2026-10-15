@@ -2,7 +2,19 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
-import { catchError, exhaustMap, filter, map, mergeMap, of, switchMap, withLatestFrom } from 'rxjs';
+import {
+  catchError,
+  defer,
+  exhaustMap,
+  filter,
+  finalize,
+  groupBy,
+  map,
+  mergeMap,
+  of,
+  switchMap,
+  withLatestFrom,
+} from 'rxjs';
 
 import { ClientsService } from '../../services/clients.service';
 
@@ -46,6 +58,9 @@ import {
   provisionServer,
   provisionServerFailure,
   provisionServerSuccess,
+  refreshClientIsolation,
+  refreshClientIsolationFailure,
+  refreshClientIsolationSuccess,
   removeClientUser,
   removeClientUserFailure,
   removeClientUserSuccess,
@@ -57,10 +72,38 @@ import {
 } from './clients.actions';
 import { selectClientById, selectClientsState } from './clients.selectors';
 
+/** Longest plain-text error body shown verbatim (longer bodies are proxy/error pages, not messages). */
+const MAX_DISPLAYABLE_ERROR_TEXT_LENGTH = 500;
+
+/** True for short plain-text error bodies; HTML pages (e.g. proxy 502/504 responses) are not shown verbatim. */
+function isDisplayableErrorText(body: unknown): body is string {
+  if (typeof body !== 'string') {
+    return false;
+  }
+
+  const text = body.trim();
+
+  return text.length > 0 && text.length <= MAX_DISPLAYABLE_ERROR_TEXT_LENGTH && !text.startsWith('<');
+}
+
 /**
  * Normalizes error messages from HTTP errors.
  */
 function normalizeError(error: unknown): string {
+  if (error instanceof HttpErrorResponse) {
+    const body = error.error as { message?: unknown } | string | null | undefined;
+
+    if (isDisplayableErrorText(body)) {
+      return body.trim();
+    }
+
+    if (body && typeof body === 'object' && typeof body.message === 'string' && body.message.trim().length > 0) {
+      return body.message;
+    }
+
+    return error.message || String(error.status);
+  }
+
   if (error instanceof Error) {
     return error.message;
   }
@@ -202,6 +245,43 @@ export const setActiveClient$ = createEffect(
         // For now, setActiveClient is a local state operation
         // If it requires an API call in the future, inject the service here
         return of(setActiveClientSuccess({ id }));
+      }),
+    );
+  },
+  { functional: true },
+);
+
+// Container Isolation Effects
+export const refreshClientIsolation$ = createEffect(
+  (actions$ = inject(Actions), clientsService = inject(ClientsService)) => {
+    return actions$.pipe(
+      ofType(refreshClientIsolation),
+      // Latest request wins per workspace: an older response must not overwrite a newer probe result.
+      // A plain refresh never cancels an in-flight re-probe ("Re-check isolation") of the same workspace.
+      groupBy(({ clientId }) => clientId),
+      mergeMap((group$) => {
+        let probeInFlight = false;
+
+        return group$.pipe(
+          filter(({ probe }) => !!probe || !probeInFlight),
+          switchMap(({ clientId, probe }) =>
+            defer(() => {
+              probeInFlight = !!probe;
+
+              return probe
+                ? clientsService.probeClientIsolation(clientId)
+                : clientsService.getClientIsolation(clientId);
+            }).pipe(
+              map((isolation) => refreshClientIsolationSuccess({ clientId, isolation })),
+              catchError((error) => of(refreshClientIsolationFailure({ clientId, error: normalizeError(error) }))),
+              finalize(() => {
+                if (probe) {
+                  probeInFlight = false;
+                }
+              }),
+            ),
+          ),
+        );
       }),
     );
   },

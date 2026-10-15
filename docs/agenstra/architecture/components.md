@@ -18,6 +18,7 @@ This document provides a detailed breakdown of all system components, their resp
 - `ClientsGateway` - WebSocket `socket/clients` namespace (manager proxy, ticket hints for chat)
 - `TicketsBoardGateway` - WebSocket `socket/tickets` namespace (ticket board realtime)
 - `ClientAgentProxyService` - Proxies HTTP requests to remote agent-managers
+- `ClientIsolationController` / `ClientIsolationService` - Workspace container isolation summaries (`/api/clients/:id/isolation`), creation validation, capability snapshots and transition notifications
 - `ProvisioningService` - Automated cloud server provisioning
 - Ticket, automation, statistics, and egress-event ingestion services and repositories (see library source)
 
@@ -49,6 +50,7 @@ This document provides a detailed breakdown of all system components, their resp
 - `DockerService` - Container management and log streaming
 - `AgentProviderFactory` - Plugin-based agent provider system
 - `AgentEgressService`, `AgentEgressEventsCollectorService` and `AgentsEgressController` for the per-agent egress guard sidecar (`/api/agents/:id/egress`, `/api/egress/events`)
+- `IsolationCapabilitiesService` and `IsolationController` - Container isolation probes (`runc` / gVisor `runsc-systrap`) and capability record (`/api/isolation`, `/api/isolation/probe`)
 
 **Dependencies**:
 
@@ -111,6 +113,7 @@ This document provides a detailed breakdown of all system components, their resp
 - Ticket, comment, activity, automation, and body-generation entities
 - Statistics shadow and event entities (`statistics_*` tables)
 - Egress event entities (`statistics_egress_events`, ingest cursors)
+- `ClientIsolationSnapshotEntity` - Last observed container isolation capabilities per workspace host
 - `ClientsRepository` - Data access layer
 - `ClientUsersRepository` - Client-user relationship data access
 - `ClientsService` - Business logic with permission checks
@@ -134,6 +137,7 @@ This document provides a detailed breakdown of all system components, their resp
 - Deployment configuration and deployment run entities
 - `AgentEnvironmentVariableEntity` - Per-agent environment variables
 - `AgentEgressEventEntity` - Aggregated egress guard decisions (agent entity also stores the effective `egressPolicy`, `messageFilters` and guard status)
+- Container isolation level and selection record on `AgentEntity` (`isolation_level`, `isolation_selection`)
 - `AgentMessageEventEntity` - Structured agent message stream events
 - `AgentsRepository` - Data access layer
 - `AgentsService` - Business logic
@@ -276,8 +280,8 @@ graph TB
 
 ### Database
 
-- **Agent Controller**: Clients, credentials, provisioning references, client users, tickets (`tickets`, `ticket_comments`, `ticket_activity`, `ticket_body_generation_sessions`), ticket automation (`client_agent_autonomy`, `ticket_automation`, `ticket_automation_run`, `ticket_automation_lease`, `ticket_automation_run_step`), statistics shadow and event tables (`statistics_users`, `statistics_clients`, `statistics_agents`, `statistics_provisioning_references`, `statistics_client_users`, `statistics_chat_io`, `statistics_chat_filter_drops`, `statistics_chat_filter_flags`, `statistics_entity_events`, `statistics_egress_events`), egress ingest cursors
-- **Agent Manager**: Agents, chat messages (`agent_chat_messages`), agent message events (`agent_message_events`), environment variables (`agent_environment_variables`), `deployment_configurations`, `deployment_runs`, egress guard events (`agent_egress_events`)
+- **Agent Controller**: Clients, credentials, provisioning references, client users, tickets (`tickets`, `ticket_comments`, `ticket_activity`, `ticket_body_generation_sessions`), ticket automation (`client_agent_autonomy`, `ticket_automation`, `ticket_automation_run`, `ticket_automation_lease`, `ticket_automation_run_step`), statistics shadow and event tables (`statistics_users`, `statistics_clients`, `statistics_agents`, `statistics_provisioning_references`, `statistics_client_users`, `statistics_chat_io`, `statistics_chat_filter_drops`, `statistics_chat_filter_flags`, `statistics_entity_events`, `statistics_egress_events`), egress ingest cursors, container isolation snapshots (`client_isolation_snapshots`)
+- **Agent Manager**: Agents, chat messages (`agent_chat_messages`), agent message events (`agent_message_events`), environment variables (`agent_environment_variables`), `deployment_configurations`, `deployment_runs`, egress guard events (`agent_egress_events`); agents carry `isolation_level` and `isolation_selection`
 
 ## Related documentation
 

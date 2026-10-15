@@ -12,6 +12,7 @@ import {
   shieldAgentEnvironmentVariables,
   withAgentEnvironmentLock,
 } from '../utils/agent-environment-baseline.utils';
+import { isolationRuntimeArgs, isolationRuntimeOptions } from '../utils/container-isolation.utils';
 
 import { touchesGitCredentialEnvironment } from './agent-git-credentials.service';
 import { AgentMessagesService } from './agent-messages.service';
@@ -29,6 +30,8 @@ interface ApplyEnvironmentTarget {
   id: string;
   name: string;
   agentType: string;
+  /** Persisted container isolation level (recreated containers keep its runtime). */
+  isolationLevel?: string | null;
 }
 
 /**
@@ -92,7 +95,10 @@ export class AgentEnvironmentVariablesService {
       progress?.advance('restartingContainer');
     }
 
-    const newContainerId = await this.dockerService.updateContainer(containerId, { env });
+    const newContainerId = await this.dockerService.updateContainer(containerId, {
+      env,
+      ...isolationRuntimeOptions(agent),
+    });
 
     this.agentRuntimeRefresh?.invalidateConnections(agent.id);
 
@@ -316,7 +322,10 @@ export class AgentEnvironmentVariablesService {
         return;
       }
 
-      const strategy = await this.dockerService.getEnvironmentApplyStrategy(agent.containerId);
+      const strategy = await this.dockerService.getEnvironmentApplyStrategy(
+        agent.containerId,
+        ...isolationRuntimeArgs(agent),
+      );
 
       progress = this.startUpdateProgress(agent.id, agent.name, strategy);
 
@@ -418,7 +427,10 @@ export class AgentEnvironmentVariablesService {
         continue;
       }
 
-      const strategy = await this.dockerService.getEnvironmentApplyStrategy(agent.containerId);
+      const strategy = await this.dockerService.getEnvironmentApplyStrategy(
+        agent.containerId,
+        ...isolationRuntimeArgs(agent),
+      );
 
       pending.push({ agent, containerId: agent.containerId, relevantOverrides, strategy });
     }

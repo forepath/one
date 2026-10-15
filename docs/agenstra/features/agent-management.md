@@ -22,13 +22,15 @@ Agents are AI-powered entities that run in Docker containers. Each agent has:
    - **Name**: A descriptive name for the agent
    - **Description**: Optional description
    - **Agent Type**: Choose an agent type (e.g., `opencode`)
+   - **Isolation level**: `Sandboxed (gVisor)` or `Standard Docker`. The strongest level that is ready on the workspace host is preselected; unavailable levels are disabled with the reason. Choosing a weaker level than recommended requires confirmation (see [Container Isolation Levels](./container-isolation.md))
 4. Click "Create"
 
 The system will:
 
 - Create the agent in the remote agent-manager
 - Generate a secure password
-- Create a Docker container for the agent
+- Validate the isolation level against the host's current capabilities (stale or unavailable selections are rejected with `409`, never downgraded)
+- Create a Docker container for the agent on the runtime of the selected level (`runc` or gVisor `runsc-systrap`)
 - Clone the Git repository (if configured) into the container
 - Store credentials in the controller for automatic login
 - Return the agent details including the password
@@ -48,9 +50,12 @@ sequenceDiagram
     participant G as Git
 
     U->>AC: Create Agent
+    AC->>AM: GET /api/isolation
+    AC->>AC: Validate isolation level
     AC->>AM: POST /api/agents
+    AM->>AM: Re-validate isolation level
     AM->>AM: Generate Password
-    AM->>D: Create Container
+    AM->>D: Create Container (runtime of the level)
     D-->>AM: Container Created
     AM->>G: Clone Repository
     G-->>AM: Repository Cloned
@@ -71,6 +76,15 @@ Creating an environment and updates that apply a changed environment to its cont
 - For workspaces that are not selected, the controller includes running operations in the `socket/status` `statusSnapshot` / `statusPatch` (`environmentProgress`) and polls faster (`STATUS_PROVISIONING_POLL_INTERVAL_MS`) while operations are running.
 - The console shows an `fpc-progress` bar with the current step on each environment (and placeholder rows for environments still being created) and a stacked bar (one segment per environment) on the workspace entry. Bars disappear once the operation completes or fails.
 - While the **Create** / **Save** button of the environment modals is loading, the same bar (operation, step and percentage) is shown in front of it. New environments are matched by name until they have an id.
+
+### Container isolation
+
+Each environment runs with an isolation level that is fixed at creation:
+
+- **`standard`** Docker's default `runc` runtime (shares the host kernel). Environments created before isolation levels existed are `standard`.
+- **`sandboxed`** gVisor (`runsc`, `systrap` platform). Offered only when the runtime is registered on the host and passes the manager's probe.
+
+The level and how it was selected (automatic, user-confirmed, user override, selecting user, capability revision) are returned as `isolation` on agent responses and shown as a badge in the console. If a sandboxed container cannot be started, creation fails and is **not** retried on `runc`. See [Container Isolation Levels](./container-isolation.md).
 
 ### Authentication
 
@@ -210,12 +224,14 @@ Message filters are part of the layered agent configuration and are enforced on 
 - `GET /api/clients/:id/agents` - List all agents for a client
 - `GET /api/clients/:id/agents/progress` - Running environment create / update operations (step + percentage)
 - `GET /api/clients/:id/agents/:agentId` - Get a single agent by UUID
-- `POST /api/clients/:id/agents` - Create a new agent
+- `POST /api/clients/:id/agents` - Create a new agent (optional `isolationLevel`, `capabilityRevision`; `409` stale or unavailable level, `503` host cannot run environments)
 - `POST /api/clients/:id/agents/:agentId` - Update an existing agent
 - `DELETE /api/clients/:id/agents/:agentId` - Delete an agent
 - `POST /api/clients/:id/agents/:agentId/start` - Start agent container (proxied)
 - `POST /api/clients/:id/agents/:agentId/stop` - Stop agent container (proxied)
 - `POST /api/clients/:id/agents/:agentId/restart` - Restart agent container (proxied)
+- `GET /api/clients/:id/isolation` - Isolation levels of the workspace host (recommendation, ready levels, revision)
+- `POST /api/clients/:id/isolation/probe` - Re-check the isolation levels of the workspace host
 
 For detailed API documentation, see the application and API reference docs linked below.
 
@@ -228,6 +244,7 @@ For detailed API documentation, see the application and API reference docs linke
 - **[Usage Statistics](./usage-statistics.md)** Controller-side usage metrics
 - **[Message Filters](./message-filters.md)** Regex filters
 - **[Egress Filtering](./egress-filtering.md)** Web traffic filtering
+- **[Container Isolation Levels](./container-isolation.md)** Standard and gVisor-sandboxed environments
 - **[Dynamic provider plugins](./dynamic-provider-plugins.md)** Custom agent, pipeline, and filter providers
 - **[Backend Agent Manager Application](../applications/backend-agent-manager.md)** Application details
 

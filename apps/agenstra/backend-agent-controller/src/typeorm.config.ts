@@ -1,5 +1,6 @@
 import {
   EgressEventIngestCursorEntity,
+  ClientIsolationSnapshotEntity,
   ProvisioningReferenceEntity,
   StatisticsAgentEntity,
   StatisticsChatFilterDropEntity,
@@ -98,6 +99,7 @@ export const typeormConfig: DataSourceOptions = {
     StatisticsEgressEventEntity,
     StatisticsEntityEventEntity,
     EgressEventIngestCursorEntity,
+    ClientIsolationSnapshotEntity,
     TicketEntity,
     TicketCommentEntity,
     TicketActivityEntity,

@@ -24,6 +24,9 @@ import {
   loadLocations,
   loadLocationsFailure,
   loadLocationsSuccess,
+  refreshClientIsolation,
+  refreshClientIsolationFailure,
+  refreshClientIsolationSuccess,
   removeClientUserSuccess,
   setActiveClient,
   setActiveClientFailure,
@@ -33,7 +36,7 @@ import {
   updateClientSuccess,
 } from './clients.actions';
 import { clientsReducer, initialClientsState, type ClientsState } from './clients.reducer';
-import type { ClientResponseDto, ServerInfo } from './clients.types';
+import type { ClientIsolationSummaryDto, ClientResponseDto, ServerInfo } from './clients.types';
 
 describe('clientsReducer', () => {
   const mockClient: ClientResponseDto = {
@@ -771,6 +774,68 @@ describe('clientsReducer', () => {
       expect(newState.clientUsers['client-1']).toHaveLength(1);
       expect(newState.clientUsers['client-1'][0].id).toBe('rel-1');
       expect(newState.removingClientUser['rel-2']).toBeUndefined();
+    });
+  });
+
+  describe('client isolation', () => {
+    const mockIsolation: ClientIsolationSummaryDto = {
+      supported: true,
+      recommendedLevel: 'sandboxed',
+      availableLevels: ['sandboxed', 'standard'],
+      levels: {
+        standard: { rank: 1, runtime: 'runc', state: 'ready' },
+        sandboxed: { rank: 2, runtime: 'runsc-systrap', state: 'ready' },
+      },
+      revision: 'rev-1',
+      probedAt: '2024-01-01T00:00:00Z',
+      probing: false,
+      stale: false,
+    };
+
+    it('should set refreshingIsolation and clear the isolation error on refreshClientIsolation', () => {
+      const state: ClientsState = {
+        ...initialClientsState,
+        isolationErrors: { 'client-1': 'Previous error' },
+      };
+      const newState = clientsReducer(state, refreshClientIsolation({ clientId: 'client-1', probe: true }));
+
+      expect(newState.refreshingIsolation['client-1']).toBe(true);
+      expect(newState.isolationErrors['client-1']).toBeNull();
+    });
+
+    it('should merge isolation into the matching client and selected client on success', () => {
+      const otherClient: ClientResponseDto = { ...mockClient, id: 'client-2' };
+      const state: ClientsState = {
+        ...initialClientsState,
+        entities: [mockClient, otherClient],
+        selectedClient: mockClient,
+        refreshingIsolation: { 'client-1': true },
+      };
+      const newState = clientsReducer(
+        state,
+        refreshClientIsolationSuccess({ clientId: 'client-1', isolation: mockIsolation }),
+      );
+
+      expect(newState.entities[0].isolation).toEqual(mockIsolation);
+      expect(newState.entities[0].name).toBe(mockClient.name);
+      expect(newState.entities[1].isolation).toBeUndefined();
+      expect(newState.selectedClient?.isolation).toEqual(mockIsolation);
+      expect(newState.refreshingIsolation['client-1']).toBe(false);
+    });
+
+    it('should keep the error per client without touching the global error on failure', () => {
+      const state: ClientsState = {
+        ...initialClientsState,
+        refreshingIsolation: { 'client-1': true },
+      };
+      const newState = clientsReducer(
+        state,
+        refreshClientIsolationFailure({ clientId: 'client-1', error: 'Probe failed' }),
+      );
+
+      expect(newState.refreshingIsolation['client-1']).toBe(false);
+      expect(newState.isolationErrors['client-1']).toBe('Probe failed');
+      expect(newState.error).toBeNull();
     });
   });
 });

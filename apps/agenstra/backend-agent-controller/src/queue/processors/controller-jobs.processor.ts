@@ -3,6 +3,7 @@ import {
   AgenstraNotificationPublisher,
   AgenstraSearchIndexService,
   AutonomousRunOrchestratorService,
+  ClientIsolationService,
   ContextImportOrchestratorService,
   EgressEventsIngestService,
   ExternalImportConfigService,
@@ -39,6 +40,7 @@ import {
   getContextImportConfigBatch,
   getContextImportItemBudget,
   getEgressEventsIngestBatchSize,
+  getIsolationCapabilitiesBatchSize,
   getKnowledgeEmbeddingPageBatchSize,
   getOpencodeConfigSyncBatchSize,
   getOpencodeLayerFilesSyncBatchSize,
@@ -69,6 +71,7 @@ export class ControllerJobsProcessor extends WorkerHost {
     private readonly opencodeMcpServersCatalog: OpencodeMcpServersCatalogService,
     private readonly opencodeConfigSyncTargets: OpencodeConfigSyncTargetsService,
     private readonly opencodeLayerFiles: OpencodeLayerFilesService,
+    private readonly clientIsolation: ClientIsolationService,
   ) {
     super();
   }
@@ -100,6 +103,12 @@ export class ControllerJobsProcessor extends WorkerHost {
         break;
       case ControllerJobName.EGRESS_EVENTS_INGEST_UNIT:
         await this.egressEventsIngest.ingestClient((job.data as { clientId: string }).clientId);
+        break;
+      case ControllerJobName.ISOLATION_CAPABILITIES_COORDINATOR:
+        await this.runIsolationCapabilitiesCoordinator();
+        break;
+      case ControllerJobName.ISOLATION_CAPABILITIES_UNIT:
+        await this.clientIsolation.refresh((job.data as { clientId: string }).clientId);
         break;
       case ControllerJobName.OPENCODE_CONFIG_SYNC_COORDINATOR:
         await this.runOpencodeConfigSyncCoordinator();
@@ -320,6 +329,20 @@ export class ControllerJobsProcessor extends WorkerHost {
         jobName: ControllerJobName.EGRESS_EVENTS_INGEST_UNIT,
         payload: { clientId },
         jobIdNamespace: 'egress-events:client',
+        jobIdParts: [clientId],
+      });
+    }
+  }
+
+  private async runIsolationCapabilitiesCoordinator(): Promise<void> {
+    const clientIds = await this.clientIsolation.findClientIdsDue(getIsolationCapabilitiesBatchSize());
+
+    for (const clientId of clientIds) {
+      await enqueueUnitJob({
+        queue: this.controllerQueue,
+        jobName: ControllerJobName.ISOLATION_CAPABILITIES_UNIT,
+        payload: { clientId },
+        jobIdNamespace: 'isolation-capabilities:client',
         jobIdParts: [clientId],
       });
     }

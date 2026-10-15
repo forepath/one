@@ -2,9 +2,11 @@ import { initialClientsState, type ClientsState } from './clients.reducer';
 import {
   selectActiveClient,
   selectActiveClientId,
+  selectActiveClientIsolation,
   selectClientById,
   selectClientCreating,
   selectClientDeleting,
+  selectClientIsolationError,
   selectClientLoading,
   selectClientUpdating,
   selectClients,
@@ -18,9 +20,10 @@ import {
   selectLoadingClientUsers,
   selectLocations,
   selectLoadingLocations,
+  selectRefreshingClientIsolation,
   selectSelectedClient,
 } from './clients.selectors';
-import type { ClientResponseDto } from './clients.types';
+import type { ClientIsolationSummaryDto, ClientResponseDto } from './clients.types';
 
 describe('Clients Selectors', () => {
   const mockClient: ClientResponseDto = {
@@ -399,6 +402,57 @@ describe('Clients Selectors', () => {
       const result = selectLoadingLocations('hetzner')(rootState as any);
 
       expect(result).toBe(true);
+    });
+  });
+
+  describe('client isolation', () => {
+    const mockIsolation: ClientIsolationSummaryDto = {
+      supported: true,
+      recommendedLevel: 'sandboxed',
+      availableLevels: ['sandboxed', 'standard'],
+      levels: {
+        standard: { rank: 1, runtime: 'runc', state: 'ready' },
+        sandboxed: { rank: 2, runtime: 'runsc-systrap', state: 'ready' },
+      },
+      revision: 'rev-1',
+      probedAt: '2024-01-01T00:00:00Z',
+      probing: false,
+      stale: false,
+    };
+
+    it('selectActiveClientIsolation should return the isolation of the active client', () => {
+      const state = createState({
+        entities: [{ ...mockClient, isolation: mockIsolation }, mockClient2],
+        activeClientId: 'client-1',
+      });
+      const result = selectActiveClientIsolation({ clients: state } as any);
+
+      expect(result).toEqual(mockIsolation);
+    });
+
+    it('selectActiveClientIsolation should return null without an active client or isolation', () => {
+      expect(selectActiveClientIsolation({ clients: createState({ entities: [mockClient] }) } as any)).toBeNull();
+      expect(
+        selectActiveClientIsolation({
+          clients: createState({ entities: [mockClient], activeClientId: 'client-1' }),
+        } as any),
+      ).toBeNull();
+    });
+
+    it('selectRefreshingClientIsolation should return the refreshing state per client', () => {
+      const state = createState({ refreshingIsolation: { 'client-1': true } });
+      const rootState = { clients: state };
+
+      expect(selectRefreshingClientIsolation('client-1')(rootState as any)).toBe(true);
+      expect(selectRefreshingClientIsolation('client-2')(rootState as any)).toBe(false);
+    });
+
+    it('selectClientIsolationError should return the error per client', () => {
+      const state = createState({ isolationErrors: { 'client-1': 'Probe failed' } });
+      const rootState = { clients: state };
+
+      expect(selectClientIsolationError('client-1')(rootState as any)).toBe('Probe failed');
+      expect(selectClientIsolationError('client-2')(rootState as any)).toBeNull();
     });
   });
 });

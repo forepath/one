@@ -10,6 +10,7 @@ import type {
 } from '../state/client-agent-autonomy/client-agent-autonomy.types';
 import type {
   AddClientUserDto,
+  ClientIsolationSummaryDto,
   ClientResponseDto,
   ClientUserResponseDto,
   CreateClientDto,
@@ -87,6 +88,20 @@ export class ClientsService {
    */
   deleteClient(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/clients/${id}`);
+  }
+
+  /**
+   * Get the container isolation levels of a client's workspace host.
+   */
+  getClientIsolation(clientId: string): Observable<ClientIsolationSummaryDto> {
+    return this.http.get<ClientIsolationSummaryDto>(`${this.apiUrl}/clients/${clientId}/isolation`);
+  }
+
+  /**
+   * Re-probe the container isolation levels of a client's workspace host now.
+   */
+  probeClientIsolation(clientId: string): Observable<ClientIsolationSummaryDto> {
+    return this.http.post<ClientIsolationSummaryDto>(`${this.apiUrl}/clients/${clientId}/isolation/probe`, {});
   }
 
   /**

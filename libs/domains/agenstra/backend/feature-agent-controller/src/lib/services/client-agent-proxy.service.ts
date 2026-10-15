@@ -9,9 +9,18 @@ import {
   CreateAgentResponseDto,
   EnvironmentProgressDto,
   UpdateAgentDto,
+  HostIsolationCapabilitiesDto,
 } from '@forepath/agenstra/backend/feature-agent-manager';
 import { AuthenticationType, ClientAgentCredentialsService } from '@forepath/identity/backend';
-import { BadRequestException, forwardRef, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  forwardRef,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
@@ -147,6 +156,9 @@ export class ClientAgentProxyService {
           throw new NotFoundException(errorMessage);
         } else if (response.status === 400) {
           throw new BadRequestException(errorMessage);
+        } else if (response.status === 409) {
+          // e.g. stale or unavailable container isolation level (agent manager re-validation)
+          throw new ConflictException(errorMessage);
         } else {
           throw new BadRequestException(`Request failed: ${errorMessage}`);
         }
@@ -154,7 +166,11 @@ export class ClientAgentProxyService {
 
       return response.data;
     } catch (error) {
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException ||
+        error instanceof ConflictException
+      ) {
         throw error;
       }
 
@@ -191,6 +207,28 @@ export class ClientAgentProxyService {
         throw new BadRequestException(`Request setup failed: ${axiosError.message}`);
       }
     }
+  }
+
+  /**
+   * Container isolation capabilities of the workspace host (`GET /api/isolation`).
+   */
+  async getClientIsolation(clientId: string): Promise<HostIsolationCapabilitiesDto> {
+    return await this.makeRequest<HostIsolationCapabilitiesDto>(
+      clientId,
+      { method: 'GET', url: '/isolation', timeout: 10_000 },
+      'api',
+    );
+  }
+
+  /**
+   * Re-probe the container isolation capabilities of the workspace host (`POST /api/isolation/probe`).
+   */
+  async probeClientIsolation(clientId: string): Promise<HostIsolationCapabilitiesDto> {
+    return await this.makeRequest<HostIsolationCapabilitiesDto>(
+      clientId,
+      { method: 'POST', url: '/isolation/probe', timeout: 5 * 60_000 },
+      'api',
+    );
   }
 
   /**
@@ -373,6 +411,7 @@ export class ClientAgentProxyService {
             clientId,
             agentType: createAgentDto.agentType ?? 'opencode',
             containerType: createAgentDto.containerType?.toString() ?? 'generic',
+            isolationLevel: result.isolation?.level ?? 'standard',
             name: createAgentDto.name,
             description: createAgentDto.description,
           },

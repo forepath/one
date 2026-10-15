@@ -10,7 +10,15 @@ import {
   KeycloakTokenService,
   UserRole,
 } from '@forepath/identity/backend';
-import { BadRequestException, ForbiddenException, forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  forwardRef,
+  Inject,
+  Injectable,
+  Logger,
+  Optional,
+} from '@nestjs/common';
 
 import { ClientResponseDto } from '../dto/client-response.dto';
 import { CreateClientResponseDto } from '../dto/create-client-response.dto';
@@ -25,6 +33,7 @@ import { mapClientToSearchDocument } from '../search/agenstra-search-document.ma
 import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
 import { sanitizeListSearch, tryAgenstraSearchIds } from '../search/agenstra-search-list.util';
 import { ClientAgentProxyService } from './client-agent-proxy.service';
+import { ClientIsolationService } from './client-isolation.service';
 import { StatisticsService } from './statistics.service';
 
 /**
@@ -46,7 +55,27 @@ export class ClientsService {
     private readonly statisticsService: StatisticsService,
     private readonly notificationPublisher: AgenstraNotificationPublisher,
     private readonly searchIndex: AgenstraSearchIndexService,
+    @Optional()
+    @Inject(forwardRef(() => ClientIsolationService))
+    private readonly clientIsolation?: ClientIsolationService,
   ) {}
+
+  /** Attach the workspace host's container isolation summary (never fails the response). */
+  private async attachIsolation(dto: ClientResponseDto): Promise<void> {
+    if (!this.clientIsolation) {
+      return;
+    }
+
+    try {
+      const isolation = await this.clientIsolation.summaryForClient(dto.id, dto.config);
+
+      if (isolation) {
+        dto.isolation = isolation;
+      }
+    } catch {
+      // Isolation is optional, continue without it
+    }
+  }
 
   /**
    * Generate a secure random API key.
@@ -167,6 +196,8 @@ export class ClientsService {
           } catch (error) {
             // Config is optional, continue without it
           }
+
+          await this.attachIsolation(dto);
 
           return dto;
         }),
@@ -320,6 +351,8 @@ export class ClientsService {
       // Config is optional, continue without it
     }
 
+    await this.attachIsolation(dto);
+
     return dto;
   }
 
@@ -438,6 +471,8 @@ export class ClientsService {
     } catch (error) {
       // Config is optional, continue without it
     }
+
+    await this.attachIsolation(dto);
 
     return dto;
   }

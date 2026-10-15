@@ -26,6 +26,8 @@ export const selectActiveClient = createSelector(
   },
 );
 
+export const selectActiveClientIsolation = createSelector(selectActiveClient, (client) => client?.isolation ?? null);
+
 // Loading state selectors
 export const selectClientsLoading = createSelector(selectClientsState, (state) => state.loading);
 
@@ -107,3 +109,10 @@ export const selectAddingClientUser = (clientId: string) =>
 
 export const selectRemovingClientUser = (relationshipId: string) =>
   createSelector(selectClientsState, (state) => state.removingClientUser[relationshipId] ?? false);
+
+// Container isolation selectors
+export const selectRefreshingClientIsolation = (clientId: string) =>
+  createSelector(selectClientsState, (state) => state.refreshingIsolation[clientId] ?? false);
+
+export const selectClientIsolationError = (clientId: string) =>
+  createSelector(selectClientsState, (state) => state.isolationErrors[clientId] ?? null);

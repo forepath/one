@@ -2,6 +2,7 @@ import { createAction, props } from '@ngrx/store';
 
 import type {
   AddClientUserDto,
+  ClientIsolationSummaryDto,
   ClientResponseDto,
   ClientUserResponseDto,
   CreateClientDto,
@@ -78,6 +79,23 @@ export const setActiveClientFailure = createAction('[Clients] Set Active Client 
 
 // Clear Active Client Actions
 export const clearActiveClient = createAction('[Clients] Clear Active Client');
+
+// Container Isolation Actions
+/** Reload the isolation levels of a workspace host; `probe` re-runs the runtime probes first. */
+export const refreshClientIsolation = createAction(
+  '[Clients] Refresh Client Isolation',
+  props<{ clientId: string; probe?: boolean }>(),
+);
+
+export const refreshClientIsolationSuccess = createAction(
+  '[Clients] Refresh Client Isolation Success',
+  props<{ clientId: string; isolation: ClientIsolationSummaryDto }>(),
+);
+
+export const refreshClientIsolationFailure = createAction(
+  '[Clients] Refresh Client Isolation Failure',
+  props<{ clientId: string; error: string }>(),
+);
 
 // Provisioning Actions
 export const loadProvisioningProviders = createAction('[Clients] Load Provisioning Providers');

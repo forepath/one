@@ -61,6 +61,20 @@ Container images use **Node.js 24.14.1** on **debian:trixie-slim**. API images r
 
 Host path **`/opt/agents`** must exist and be writable by UID **10001** on manager hosts (or rely on entrypoint `chown` after bind mount).
 
+### Optional: gVisor (sandboxed isolation level)
+
+Manager hosts can additionally offer the **sandboxed** [container isolation level](../features/container-isolation.md). It is optional; hosts without it run every environment on `runc` (standard).
+
+| Requirement      | Value                                                                                                            |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **Kernel**       | Linux **5.6** or newer                                                                                           |
+| **Architecture** | x86_64 (amd64) or arm64                                                                                          |
+| **cgroups**      | cgroup v2 recommended                                                                                            |
+| **Docker**       | gVisor registered as an additional runtime (`runsc-systrap`, `--platform=systrap`); default runtime stays `runc` |
+| **KVM**          | Not required (`systrap` works on ordinary cloud VMs without nested virtualization)                               |
+
+Plan some extra CPU and memory headroom per sandboxed agent: gVisor adds memory for its Sentry and gofer processes and slows filesystem-metadata- and network-heavy work (for example `npm install`, large builds).
+
 ## Controller Stack
 
 ### PostgreSQL (pgvector)
@@ -106,7 +120,7 @@ HTTP **3100** (REST `/api/`, Socket.IO namespaces under `/socket/`, VNC `/socket
 
 ### Controller Worker (`QUEUE_ROLE=worker`)
 
-Processes unit jobs: context import, **knowledge embedding reindex**, egress event ingestion, autonomous ticket automation. Default **`QUEUE_WORKER_CONCURRENCY=5`**.
+Processes unit jobs: context import, **knowledge embedding reindex**, egress event ingestion, isolation capability refresh, autonomous ticket automation. Default **`QUEUE_WORKER_CONCURRENCY=5`**.
 
 | Profile         | vCPU | Memory limit | Notes                                             |
 | --------------- | ---- | ------------ | ------------------------------------------------- |

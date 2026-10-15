@@ -109,6 +109,14 @@ Accepted risk: **AR-002** in **[Accepted risks](./accepted-risks.md)**.
 - Lower configuration layers can narrow but never widen an inherited allowlist; URL patterns and message filters reject regexes at risk of catastrophic backtracking.
 - HTTPS is filtered by SNI without decryption. `host_verify_strict` prevents connecting to an IP other than what DNS resolves for the name, but **domain fronting on shared CDNs is not prevented**. Details and limitations: [Egress Filtering](../features/egress-filtering.md).
 
+## Container isolation levels (gVisor)
+
+- Environments run either on Docker's default **`runc`** (standard, shares the host kernel) or, on prepared hosts, on **gVisor** (`runsc-systrap`, sandboxed), where system calls are served by gVisor's userspace application kernel (Sentry) and networking by its own stack instead of the host kernel. gVisor reduces the host kernel attack surface but is **not** a VM boundary.
+- Levels are offered only after **real runtime probes** pass on the host (worker image, filesystem, exec, logs, shared egress namespace); a `daemon.json` entry or binary alone is never trusted. The probe re-runs periodically and after repeated sandboxed runtime failures.
+- **No silent downgrade**: an explicitly requested level is never replaced, stale capability revisions are rejected (`409`), a sandboxed container that fails to start is never retried on `runc`, and every recreate pins the persisted runtime. Choosing a weaker level than recommended requires confirmation, is recorded with the selecting user and publishes `agent.isolation_override`.
+- The selection record is derived server-side (controller and manager); clients cannot forge the selection source. `AGENT_SANDBOX_RUNTIME` is restricted to a conservative charset so it cannot inject Docker options.
+- Host preparation installs a **pinned, checksum-verified** gVisor release, keeps `runc` as Docker's default runtime and rolls back on failure. The egress guard sidecar stays on `runc`. Details and limitations: [Container Isolation Levels](../features/container-isolation.md).
+
 ## Origin allowlist (unsafe HTTP methods)
 
 Browser-originated **state-changing** requests can be restricted by origin allowlist middleware on backends (see `origin-allowlist.middleware.ts` in identity util-auth). Configure per deployment expectations.

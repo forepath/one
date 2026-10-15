@@ -24,7 +24,7 @@ import {
   UserRole,
   WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE,
 } from '@forepath/identity/backend';
-import { BadRequestException, ForbiddenException, HttpStatus, StreamableFile } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, HttpStatus, StreamableFile } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import type { Response } from 'express';
 
@@ -544,6 +544,78 @@ describe('ClientsController', () => {
         response: { message: WORKSPACE_MANAGEMENT_FORBIDDEN_MESSAGE },
       });
       expect(proxyService.createClientAgent).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('createClientAgent with container isolation', () => {
+    const mockReq = { apiKeyAuthenticated: true } as any;
+    const plan = {
+      forward: { capabilityRevision: 'sha256:rev', isolationSelection: {} },
+      resolution: { level: 'sandboxed', automaticSelection: 'sandboxed', selectionSource: 'automatic' },
+      capabilities: null,
+    };
+    let clientIsolation: { planCreation: jest.Mock; notifyCreated: jest.Mock; notifyCreationFailed: jest.Mock };
+
+    beforeEach(() => {
+      clientIsolation = {
+        planCreation: jest.fn().mockResolvedValue(plan),
+        notifyCreated: jest.fn(),
+        notifyCreationFailed: jest.fn(),
+      };
+      (controller as any).clientIsolation = clientIsolation;
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+    });
+
+    it('validates the selection and forwards only server-derived isolation fields', async () => {
+      proxyService.createClientAgent.mockResolvedValue(mockCreateAgentResponse);
+
+      await controller.createClientAgent(
+        'client-uuid',
+        {
+          name: 'New Agent',
+          isolationLevel: 'sandboxed',
+          capabilityRevision: 'sha256:rev',
+          isolationSelection: { selectedBy: 'someone-else', selectionSource: 'automatic' },
+        },
+        mockReq,
+      );
+
+      expect(clientIsolation.planCreation).toHaveBeenCalledWith(
+        'client-uuid',
+        { isolationLevel: 'sandboxed', capabilityRevision: 'sha256:rev' },
+        undefined,
+      );
+      expect(proxyService.createClientAgent).toHaveBeenCalledWith(
+        'client-uuid',
+        {
+          name: 'New Agent',
+          capabilityRevision: 'sha256:rev',
+          isolationSelection: {},
+          egressPolicy: { mode: 'enforce', allowHosts: [], denyHosts: [] },
+        },
+        undefined,
+      );
+      expect(clientIsolation.notifyCreated).toHaveBeenCalledWith('client-uuid', plan, mockCreateAgentResponse);
+    });
+
+    it('rejects invalid selections before anything is created', async () => {
+      clientIsolation.planCreation.mockRejectedValue(new ConflictException('stale'));
+
+      await expect(controller.createClientAgent('client-uuid', { name: 'New Agent' }, mockReq)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+      expect(proxyService.createClientAgent).not.toHaveBeenCalled();
+    });
+
+    it('reports creation failures without retrying on another level', async () => {
+      const error = new BadRequestException('The sandboxed (gVisor) container could not be started: boom');
+
+      proxyService.createClientAgent.mockRejectedValue(error);
+
+      await expect(controller.createClientAgent('client-uuid', { name: 'New Agent' }, mockReq)).rejects.toBe(error);
+      expect(proxyService.createClientAgent).toHaveBeenCalledTimes(1);
+      expect(clientIsolation.notifyCreationFailed).toHaveBeenCalledWith('client-uuid', plan, 'New Agent', error);
     });
   });
 

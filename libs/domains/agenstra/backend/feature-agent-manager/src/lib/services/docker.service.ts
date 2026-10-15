@@ -27,6 +27,13 @@ import {
   serializeEnvironmentFile,
   toDockerEnvList,
 } from '../utils/agent-environment-file.utils';
+import {
+  ISOLATION_PROBE_LABEL,
+  ISOLATION_PROBE_NAME_PREFIX,
+  IsolationReasonCode,
+  resolveSandboxedIsolationRuntime,
+  resolveSandboxedSharedNetnsIsolationRuntime,
+} from '../constants/container-isolation.constants';
 import { DockerPullProgressAggregator, type DockerPullProgressEvent } from '../utils/docker-pull-progress.utils';
 
 const execAsync = promisify(exec);
@@ -58,6 +65,31 @@ export interface DockerExecSession {
   close(): Promise<void>;
 }
 
+export interface DockerHostInfo {
+  serverVersion: string | null;
+  kernelVersion: string | null;
+  defaultRuntime: string | null;
+  /** Registered runtimes (name -> binary path / runtime type). */
+  runtimes: Record<string, string | null>;
+}
+
+export interface IsolationProbeOptions {
+  /** Runtime requested for the probe container; omitted = Docker's default runtime. */
+  runtime?: string;
+  /** Runtime the probe container must report (defaults to `runtime`). */
+  expectedRuntime?: string;
+  image: string;
+  timeoutMs: number;
+  /** Also verify the egress guard topology (joining a namespace owned by a default-runtime container). */
+  sharedNetworkNamespace?: boolean;
+  /** Runtime used for the shared-namespace member (defaults to `runtime`). */
+  sharedNetworkNamespaceRuntime?: string;
+}
+
+export type IsolationProbeResult =
+  | { ok: true; gvisorKernelDetected?: boolean }
+  | { ok: false; reasonCode: IsolationReasonCode; reason: string };
+
 @Injectable()
 export class DockerService {
   private readonly logger = new Logger(DockerService.name);
@@ -83,8 +115,13 @@ export class DockerService {
      */
     sharedNetworkContainerId?: string;
     capDrop?: string[];
+    /**
+     * Docker runtime of the container (container isolation level, e.g. `runc` / `runsc-systrap`).
+     * Always set explicitly so the effective isolation never depends on the daemon default.
+     */
+    runtime?: string;
   }): Promise<string> {
-    const { image, env, volumes = [], network, sharedNetworkContainerId, capDrop } = options;
+    const { image, env, volumes = [], network, sharedNetworkContainerId, capDrop, runtime } = options;
     // Docker rejects port publishing / exposing for containers sharing another network namespace.
     const ports = sharedNetworkContainerId ? [] : (options.ports ?? []);
     // Resolve image: explicit -> env -> default placeholder
@@ -139,6 +176,7 @@ export class DockerService {
               ? network
               : undefined,
           ...(capDrop?.length ? { CapDrop: capDrop } : {}),
+          ...(runtime ? { Runtime: this.mapSandboxRuntimeForNetwork(runtime, !!sharedNetworkContainerId) } : {}),
         },
       });
 
@@ -167,10 +205,20 @@ export class DockerService {
    *   (same container ID, writable layer preserved).
    * - `recreate`: legacy container (or custom image without the contract). It is recreated once;
    *   if the image supports the contract it is migrated to the mounted environment.
+   * - A container whose runtime differs from `expectedRuntime` (its isolation level) is recreated.
    * @throws NotFoundException if container is not found
    */
-  async getEnvironmentApplyStrategy(containerId: string): Promise<EnvironmentApplyStrategy> {
+  async getEnvironmentApplyStrategy(containerId: string, expectedRuntime?: string): Promise<EnvironmentApplyStrategy> {
     const inspectInfo = await this.inspectContainerOrThrow(containerId);
+    const sharesNamespace = (inspectInfo.HostConfig?.NetworkMode ?? '').startsWith('container:');
+
+    // A runtime change cannot be applied in place (see updateContainer): the container is recreated.
+    if (
+      expectedRuntime &&
+      this.hasRuntimeMismatch(inspectInfo, this.mapSandboxRuntimeForNetwork(expectedRuntime, sharesNamespace))
+    ) {
+      return 'recreate';
+    }
 
     return this.resolveEnvironmentApplyStrategy(inspectInfo);
   }
@@ -196,27 +244,45 @@ export class DockerService {
        */
       sharedNetworkContainerId?: string;
       capDrop?: string[];
+      /**
+       * Docker runtime the container must run on (the environment's persisted isolation level).
+       * A recreated container always gets it explicitly, so a sandboxed environment can never come
+       * back on another runtime. Without it the runtime of the current container is preserved.
+       */
+      runtime?: string;
     },
   ): Promise<string> {
-    const { env, sharedNetworkContainerId, capDrop } = options;
+    const { env, sharedNetworkContainerId, capDrop, runtime } = options;
 
     try {
       const inspectInfo = await this.inspectContainerOrThrow(containerId);
+      const currentlySharesNamespace = (inspectInfo.HostConfig?.NetworkMode ?? '').startsWith('container:');
+      const runtimeMismatch = this.hasRuntimeMismatch(
+        inspectInfo,
+        runtime ? this.mapSandboxRuntimeForNetwork(runtime, currentlySharesNamespace) : undefined,
+      );
 
       if (sharedNetworkContainerId) {
         return await this.withEnvironmentLock(inspectInfo.Id, () =>
-          this.recreateWithUpdatedEnvironment(containerId, inspectInfo, env, { sharedNetworkContainerId, capDrop }),
+          this.recreateWithUpdatedEnvironment(
+            containerId,
+            inspectInfo,
+            env,
+            { sharedNetworkContainerId, capDrop },
+            runtime,
+          ),
         );
       }
 
-      if (this.resolveEnvironmentApplyStrategy(inspectInfo) === 'restart') {
+      // A runtime change cannot be applied in place (HostConfig.Runtime is immutable): recreate.
+      if (!runtimeMismatch && this.resolveEnvironmentApplyStrategy(inspectInfo) === 'restart') {
         return await this.withEnvironmentLock(inspectInfo.Id, () =>
           this.restartWithUpdatedEnvironment(containerId, inspectInfo, env),
         );
       }
 
       return await this.withEnvironmentLock(inspectInfo.Id, () =>
-        this.recreateWithUpdatedEnvironment(containerId, inspectInfo, env),
+        this.recreateWithUpdatedEnvironment(containerId, inspectInfo, env, undefined, runtime),
       );
     } catch (error: unknown) {
       if (error instanceof NotFoundException) {
@@ -284,6 +350,7 @@ export class DockerService {
     inspectInfo: Docker.ContainerInspectInfo,
     env: Record<string, string | undefined> | undefined,
     topology?: { sharedNetworkContainerId: string; capDrop?: string[] },
+    runtime?: string,
   ): Promise<string> {
     const container = this.docker.getContainer(containerId);
     const existingEnvironmentMount = this.findEnvironmentMount(inspectInfo);
@@ -316,6 +383,10 @@ export class DockerService {
             : {}),
         }
       : inspectedHostConfig;
+    const resolvedRuntime = this.resolveTargetRuntime(inspectInfo, runtime, sharesNetworkNamespace);
+    const targetRuntime = resolvedRuntime
+      ? this.mapSandboxRuntimeForNetwork(resolvedRuntime, sharesNetworkNamespace)
+      : undefined;
     const exposedPorts = sharesNetworkNamespace ? {} : inspectInfo.Config?.ExposedPorts || {};
     const labels = inspectInfo.Config?.Labels || {};
     const networkSettings = inspectInfo.NetworkSettings;
@@ -399,6 +470,7 @@ export class DockerService {
           Binds: binds.length ? binds : undefined,
           Mounts: hostMounts.length ? hostMounts : undefined,
           AutoRemove: hostConfig.AutoRemove ?? false,
+          ...(targetRuntime ? { Runtime: targetRuntime } : {}),
         },
         Labels: Object.keys(labels).length ? labels : undefined,
       });
@@ -486,6 +558,52 @@ export class DockerService {
     );
 
     return newContainerId;
+  }
+
+  /**
+   * Runtime a recreated container must use: the expected (persisted) runtime wins; otherwise the
+   * current container's runtime is carried over so recreation never changes the isolation level.
+   */
+  private resolveTargetRuntime(
+    inspectInfo: Docker.ContainerInspectInfo,
+    expected?: string,
+    sharesNetworkNamespace = false,
+  ): string | undefined {
+    const current = (inspectInfo.HostConfig as { Runtime?: string } | undefined)?.Runtime || undefined;
+
+    if (expected && current && current !== this.mapSandboxRuntimeForNetwork(expected, sharesNetworkNamespace)) {
+      this.logger.warn(
+        `Container ${inspectInfo.Id} runs on runtime '${current}' but its environment expects '${expected}'; recreating on '${expected}'`,
+      );
+    }
+
+    return expected || current;
+  }
+
+  /**
+   * Sandboxed workers sharing their egress guard's network namespace must use the gVisor runtime
+   * variant with the namespace's kernel network stack (Netstack would bypass the guard); workers
+   * with their own namespace use Netstack. Other runtimes are returned unchanged.
+   */
+  private mapSandboxRuntimeForNetwork(runtime: string, sharesNetworkNamespace: boolean): string {
+    const netstack = resolveSandboxedIsolationRuntime();
+    const sharedNetns = resolveSandboxedSharedNetnsIsolationRuntime();
+
+    if (runtime !== netstack && runtime !== sharedNetns) {
+      return runtime;
+    }
+
+    return sharesNetworkNamespace ? sharedNetns : netstack;
+  }
+
+  private hasRuntimeMismatch(inspectInfo: Docker.ContainerInspectInfo, expected?: string): boolean {
+    if (!expected) {
+      return false;
+    }
+
+    const current = (inspectInfo.HostConfig as { Runtime?: string } | undefined)?.Runtime || 'runc';
+
+    return current !== expected;
   }
 
   private async inspectContainerOrThrow(containerId: string): Promise<Docker.ContainerInspectInfo> {
@@ -2835,6 +2953,366 @@ export class DockerService {
       labels: summary.Labels ?? {},
       createdAt: new Date((summary.Created ?? 0) * 1000),
     }));
+  }
+
+  /**
+   * Docker daemon facts relevant for container isolation (registered runtimes, versions).
+   */
+  async getDockerHostInfo(): Promise<DockerHostInfo> {
+    const info = (await this.docker.info()) as {
+      ServerVersion?: string;
+      KernelVersion?: string;
+      DefaultRuntime?: string;
+      Runtimes?: Record<string, { path?: string; runtimeType?: string } | null>;
+    };
+    const runtimes: Record<string, string | null> = {};
+
+    for (const [name, definition] of Object.entries(info.Runtimes ?? {})) {
+      runtimes[name] = definition?.path ?? definition?.runtimeType ?? null;
+    }
+
+    return {
+      serverVersion: info.ServerVersion ?? null,
+      kernelVersion: info.KernelVersion ?? null,
+      defaultRuntime: info.DefaultRuntime ?? null,
+      runtimes,
+    };
+  }
+
+  /** Image id of a local image (`null` when it does not exist locally). */
+  async getImageId(image: string): Promise<string | null> {
+    try {
+      const info = await this.docker.getImage(image).inspect();
+
+      return info.Id ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Exercise a Docker runtime with the worker image contract: start, runtime identity, non-root and
+   * root exec with exit codes, file create / fsync / rename / readback on a volume, stdout/stderr
+   * logs, SIGTERM stop and removal. Optionally joins a runc-owned network namespace the way agents
+   * join their egress guard. Probe containers are always removed, also on failure or timeout.
+   */
+  async runIsolationProbe(options: IsolationProbeOptions): Promise<IsolationProbeResult> {
+    const probeId = uuidv4().slice(0, 12);
+    const created: string[] = [];
+    const volumeName = `${ISOLATION_PROBE_NAME_PREFIX}${probeId}`;
+    let volumeCreated = false;
+    let finished = false;
+    let timer: NodeJS.Timeout | undefined;
+    // Idempotent cleanup: runs when the probe settles (or times out) and again once a timed-out probe
+    // run finally settles, so containers created after a timeout are removed as well.
+    const cleanup = async (): Promise<void> => {
+      for (const id of created.splice(0).reverse()) {
+        await this.docker
+          .getContainer(id)
+          .remove({ force: true, v: true })
+          .catch(() => undefined);
+      }
+
+      if (volumeCreated) {
+        await this.docker
+          .getVolume(volumeName)
+          .remove({ force: true })
+          .then(() => (volumeCreated = false))
+          .catch(() => undefined);
+      }
+    };
+    const track = (container: Docker.Container): void => {
+      created.push(container.id as unknown as string);
+
+      if (finished) {
+        throw new Error('Isolation probe aborted');
+      }
+    };
+
+    const run = async (): Promise<IsolationProbeResult> => {
+      await this.docker.createVolume({ Name: volumeName, Labels: { [ISOLATION_PROBE_LABEL]: '1' } });
+      volumeCreated = true;
+
+      let container: Docker.Container;
+
+      try {
+        container = await this.createProbeContainer(options, `${volumeName}-main`, {
+          Binds: [`${volumeName}:/probe`],
+        });
+        track(container);
+        await container.start();
+      } catch (error) {
+        return this.probeFailure(IsolationReasonCode.PROBE_START_FAILED, 'Probe container failed to start', error);
+      }
+
+      const inspect = await container.inspect();
+      const actualRuntime = (inspect.HostConfig as { Runtime?: string } | undefined)?.Runtime || 'runc';
+
+      const expectedRuntime = options.expectedRuntime ?? options.runtime ?? 'runc';
+
+      if (actualRuntime !== expectedRuntime || inspect.State?.Running !== true) {
+        return {
+          ok: false,
+          reasonCode: IsolationReasonCode.PROBE_RUNTIME_MISMATCH,
+          reason: `Probe container runs on '${actualRuntime}' instead of '${expectedRuntime}'`,
+        };
+      }
+
+      const fileCheck = await this.execProbeCommand(
+        container,
+        'set -e; printf agenstra > /probe/probe.tmp; sync; mv /probe/probe.tmp /probe/probe.txt; test "$(cat /probe/probe.txt)" = agenstra; rm /probe/probe.txt',
+      );
+
+      if (fileCheck.exitCode !== 0) {
+        return {
+          ok: false,
+          reasonCode: IsolationReasonCode.PROBE_FILESYSTEM_FAILED,
+          reason: 'Volume file operations failed',
+        };
+      }
+
+      const exitCodeCheck = await this.execProbeCommand(container, 'exit 7');
+      const nonRootCheck = await this.execProbeCommand(container, 'id -u', '65534');
+
+      if (exitCodeCheck.exitCode !== 7 || nonRootCheck.exitCode !== 0 || nonRootCheck.output.trim() !== '65534') {
+        return {
+          ok: false,
+          reasonCode: IsolationReasonCode.PROBE_EXEC_FAILED,
+          reason: 'Exec exit codes or non-root exec failed',
+        };
+      }
+
+      const logs = await this.readProbeLogs(container);
+
+      if (!logs.includes('agenstra-probe-stdout') || !logs.includes('agenstra-probe-stderr')) {
+        return {
+          ok: false,
+          reasonCode: IsolationReasonCode.PROBE_LOGS_FAILED,
+          reason: 'Container logs were not captured',
+        };
+      }
+
+      const kernel = await this.execProbeCommand(container, 'dmesg 2>/dev/null | head -n 5 || true');
+
+      await container.stop({ t: 5 });
+
+      if (options.sharedNetworkNamespace) {
+        const namespaceResult = await this.probeSharedNetworkNamespace(options, volumeName, track);
+
+        if (!namespaceResult.ok) {
+          return namespaceResult;
+        }
+      }
+
+      return { ok: true, gvisorKernelDetected: /gvisor/i.test(kernel.output) };
+    };
+
+    try {
+      // Pulling a large worker image must not count against the probe timeout.
+      await this.ensureImageExists(options.image);
+    } catch (error) {
+      return this.probeFailure(IsolationReasonCode.PROBE_IMAGE_UNAVAILABLE, 'Probe image is not available', error);
+    }
+
+    const running = run();
+
+    // A timed-out run keeps going until its current Docker call returns: clean up again afterwards.
+    void running.catch(() => undefined).finally(() => (finished ? cleanup() : undefined));
+
+    try {
+      return await Promise.race([
+        running,
+        new Promise<IsolationProbeResult>((resolve) => {
+          timer = setTimeout(
+            () =>
+              resolve({
+                ok: false,
+                reasonCode: IsolationReasonCode.PROBE_TIMEOUT,
+                reason: `Probe did not finish within ${options.timeoutMs} ms`,
+              }),
+            options.timeoutMs,
+          );
+          timer.unref?.();
+        }),
+      ]);
+    } catch (error) {
+      return this.probeFailure(IsolationReasonCode.PROBE_START_FAILED, 'Runtime probe failed', error);
+    } finally {
+      finished = true;
+
+      if (timer) {
+        clearTimeout(timer);
+      }
+
+      await cleanup();
+    }
+  }
+
+  /** Remove probe containers / volumes left behind by an interrupted manager process. */
+  async removeStaleIsolationProbes(): Promise<number> {
+    let removed = 0;
+    const containers = await this.docker.listContainers({ all: true, filters: { label: [ISOLATION_PROBE_LABEL] } });
+
+    for (const summary of containers) {
+      await this.docker
+        .getContainer(summary.Id)
+        .remove({ force: true, v: true })
+        .then(() => (removed += 1))
+        .catch(() => undefined);
+    }
+
+    const volumes = await this.docker.listVolumes({ filters: { label: [ISOLATION_PROBE_LABEL] } }).catch(() => null);
+
+    for (const volume of volumes?.Volumes ?? []) {
+      await this.docker
+        .getVolume(volume.Name)
+        .remove({ force: true })
+        .catch(() => undefined);
+    }
+
+    return removed;
+  }
+
+  private async createProbeContainer(
+    options: IsolationProbeOptions,
+    name: string,
+    hostConfig: Docker.HostConfig,
+    runtime: string | null | undefined = options.runtime,
+    cmd: string[] = [
+      'echo agenstra-probe-stdout; echo agenstra-probe-stderr 1>&2; trap "exit 0" TERM INT; while :; do sleep 1; done',
+    ],
+  ): Promise<Docker.Container> {
+    return this.docker.createContainer({
+      Image: options.image,
+      name,
+      Labels: { [ISOLATION_PROBE_LABEL]: '1' },
+      Entrypoint: ['/bin/sh', '-c'],
+      Cmd: cmd,
+      Tty: false,
+      HostConfig: {
+        AutoRemove: false,
+        CapDrop: ['ALL'],
+        SecurityOpt: ['no-new-privileges'],
+        PidsLimit: 128,
+        Memory: 256 * 1024 * 1024,
+        LogConfig: { Type: 'json-file', Config: { 'max-size': '1m', 'max-file': '1' } },
+        ...hostConfig,
+        ...(runtime ? { Runtime: runtime } : {}),
+      },
+    });
+  }
+
+  /**
+   * Agents behind an egress guard join the guard's network namespace and reach its proxy on the
+   * namespace's loopback. Verify the shared-namespace sandbox runtime can do exactly that: the owner
+   * (Docker's default runtime, like the guard) serves on 127.0.0.1 and keeps its interface address
+   * while the sandboxed member runs (gVisor's Netstack would take the interfaces over instead).
+   */
+  private async probeSharedNetworkNamespace(
+    options: IsolationProbeOptions,
+    volumeName: string,
+    track: (container: Docker.Container) => void,
+  ): Promise<IsolationProbeResult> {
+    const sharedRuntime = options.sharedNetworkNamespaceRuntime ?? options.runtime;
+
+    try {
+      // Like the guard, the owner joins the agent network when one is configured.
+      const ownerNetwork = process.env.AGENT_DOCKER_NETWORK?.trim();
+      const owner = await this.createProbeContainer(
+        options,
+        `${volumeName}-netns-owner`,
+        ownerNetwork ? { NetworkMode: ownerNetwork } : {},
+        null,
+        [
+          'mkdir -p /tmp/agenstra-probe && echo agenstra-netns-ok > /tmp/agenstra-probe/index.html && ' +
+            'exec python3 -m http.server 18765 --bind 127.0.0.1 --directory /tmp/agenstra-probe',
+        ],
+      );
+
+      track(owner);
+      await owner.start();
+
+      const member = await this.createProbeContainer(
+        options,
+        `${volumeName}-netns-member`,
+        { NetworkMode: `container:${owner.id as unknown as string}` },
+        sharedRuntime,
+      );
+
+      track(member);
+      await member.start();
+
+      const fetchScript =
+        'for i in 1 2 3 4 5 6 7 8 9 10; do ' +
+        'python3 -c "import urllib.request,sys; sys.stdout.write(urllib.request.urlopen(\'http://127.0.0.1:18765/\', timeout=3).read().decode())" ' +
+        '2>/dev/null && exit 0; sleep 1; done; exit 1';
+      const fetched = await this.execProbeCommand(member, fetchScript);
+      // The owner must keep a non-loopback interface (Netstack would take it over).
+      const ownerRoutes = await this.execProbeCommand(owner, 'awk \'NR>1 && $1!="lo"\' /proc/net/route | grep -q .');
+
+      if (fetched.exitCode !== 0 || !fetched.output.includes('agenstra-netns-ok') || ownerRoutes.exitCode !== 0) {
+        return {
+          ok: false,
+          reasonCode: IsolationReasonCode.SHARED_NETNS_FAILED,
+          reason: 'Sandboxed workers cannot use the egress guard network namespace (loopback proxy or interfaces)',
+        };
+      }
+
+      await member.stop({ t: 5 });
+      await owner.stop({ t: 5 });
+
+      return { ok: true };
+    } catch (error) {
+      return this.probeFailure(
+        IsolationReasonCode.SHARED_NETNS_FAILED,
+        'Runtime could not join a shared network namespace',
+        error,
+      );
+    }
+  }
+
+  private async execProbeCommand(
+    container: Docker.Container,
+    script: string,
+    user?: string,
+  ): Promise<{ exitCode: number | null; output: string }> {
+    const execInstance = await container.exec({
+      Cmd: ['/bin/sh', '-c', script],
+      AttachStdout: true,
+      AttachStderr: true,
+      Tty: true,
+      ...(user ? { User: user } : {}),
+    });
+    const stream = (await execInstance.start({ hijack: true, stdin: false, Tty: true })) as NodeJS.ReadableStream;
+    const chunks: Buffer[] = [];
+
+    await new Promise<void>((resolve) => {
+      stream.on('data', (chunk: Buffer | string) => {
+        if (chunks.reduce((total, c) => total + c.length, 0) < 64 * 1024) {
+          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        }
+      });
+      stream.on('end', () => resolve());
+      stream.on('error', () => resolve());
+    });
+
+    const info = await this.inspectExecUntilExited(execInstance);
+
+    return { exitCode: info.ExitCode ?? null, output: Buffer.concat(chunks).toString('utf-8') };
+  }
+
+  private async readProbeLogs(container: Docker.Container): Promise<string> {
+    const raw = (await container.logs({ stdout: true, stderr: true, follow: false })) as unknown as Buffer | string;
+
+    return (Buffer.isBuffer(raw) ? raw : Buffer.from(String(raw), 'utf-8')).toString('utf-8');
+  }
+
+  private probeFailure(reasonCode: IsolationReasonCode, reason: string, error: unknown): IsolationProbeResult {
+    const message = (error as { message?: string })?.message;
+
+    this.logger.warn(`${reason}: ${message ?? 'unknown error'}`);
+
+    return { ok: false, reasonCode, reason };
   }
 
   /**

@@ -16,6 +16,7 @@ This application provides:
 - **Tickets and Automation** Workspace tickets, migration, and automation APIs with optional ticket board WebSocket namespace
 - **Usage Statistics** Aggregated chat, filter, and entity metrics for operators and admins
 - **Message filters and egress policy** Layered `message_filters` and `egress` (web traffic) policy in the agent configuration, resolved and synced to managers; egress events ingested for the audit page
+- **Container isolation levels** Workspace isolation summaries, server-side validation of the isolation level on environment creation, and capability transition notifications; see [Container Isolation Levels](../features/container-isolation.md)
 - **Atlassian import** Admin-managed Atlassian site connections and Jira/Confluence import configurations (scheduled and on-demand)
 - **Agent configuration** Three-layer OpenCode V2 overlays (`/admin/opencode/config`, client and agent `/opencode/config`) with heredity locks and worker sync; see [Agent configuration](../features/agent-configuration.md)
 - **Per-Client Permissions** Fine-grained access control with user roles per client (keycloak/users mode)
@@ -49,6 +50,17 @@ All HTTP endpoints are prefixed with `/api` and protected by Keycloak authentica
 - `POST /api/clients/:id` - Update an existing client
 - `DELETE /api/clients/:id` - Delete a client
 
+Client responses include `isolation`, the container isolation summary of the workspace host (falls back to the last stored snapshot with `stale: true` when the manager is unreachable).
+
+### Container isolation
+
+See [Container Isolation Levels](../features/container-isolation.md).
+
+- `GET /api/clients/:id/isolation` - Isolation summary of the workspace host (`clients:read`, workspace access)
+- `POST /api/clients/:id/isolation/probe` - Re-probe the workspace host (`clients:write`, workspace management access)
+
+Capability transitions are stored in `client_isolation_snapshots` and published as `isolation.sandbox_available`, `isolation.sandbox_unavailable` and `isolation.baseline_failed`; environment creation publishes `agent.isolation_override` and `agent.sandbox_creation_failed` (see [Webhooks](../features/webhooks.md)). The `isolation-capabilities` coordinator job refreshes snapshots in the background.
+
 ### Client User Management (keycloak/users authentication only)
 
 - `GET /api/clients/:id/users` - List users associated with a client
@@ -62,7 +74,7 @@ In api-key mode, users do not play a role; these endpoints are not applicable.
 - `GET /api/clients/:id/agents` - List all agents for a client
 - `GET /api/clients/:id/agents/progress` - Running environment create / update operations of the workspace (proxied)
 - `GET /api/clients/:id/agents/:agentId` - Get a single agent by UUID
-- `POST /api/clients/:id/agents` - Create a new agent for a client (returns auto-generated password, saves credentials)
+- `POST /api/clients/:id/agents` - Create a new agent for a client (returns auto-generated password, saves credentials). Optional `isolationLevel` / `capabilityRevision` are validated against the host's current capabilities (`400` invalid, `409` stale or unavailable, `503` host cannot run environments); the selection record is derived server-side
 - `POST /api/clients/:id/agents/:agentId` - Update an existing agent
 - `DELETE /api/clients/:id/agents/:agentId` - Delete an agent (also deletes stored credentials)
 - `GET /api/clients/:id/agents/:agentId/models` - List models for an agent (proxied)
@@ -425,6 +437,10 @@ See the application docs and environment configuration for complete environment 
 
 See [Dynamic provider plugins](../features/dynamic-provider-plugins.md) and [Environment configuration](../deployment/environment-configuration.md).
 
+**Container isolation:** `ISOLATION_CAPABILITIES_INTERVAL_MS` - Interval of the isolation capability refresh job (default: `900000`; `0` disables)
+
+- `ISOLATION_CAPABILITIES_BATCH_SIZE` - Workspaces refreshed per run (default: `25`)
+
 ## Database Setup
 
 The application uses TypeORM and requires a database connection to be configured. See the application docs for database setup requirements and entity schema.
@@ -477,6 +493,7 @@ Before deploying to production, ensure:
 - **[Usage Statistics](../features/usage-statistics.md)** Controller usage metrics
 - **[Message Filters](../features/message-filters.md)** Layered chat message filters
 - **[Egress Filtering](../features/egress-filtering.md)** Per-environment web traffic filtering
+- **[Container Isolation Levels](../features/container-isolation.md)** Standard (`runc`) and gVisor-sandboxed environments
 - **[Atlassian import](../features/atlassian-import.md)** Atlassian site connections and Jira/Confluence import configurations
 - **[Agent configuration](../features/agent-configuration.md)** Three-layer runtime overlays and worker sync
 - **[Dynamic provider plugins](../features/dynamic-provider-plugins.md)** Runtime provisioning and import provider extensions

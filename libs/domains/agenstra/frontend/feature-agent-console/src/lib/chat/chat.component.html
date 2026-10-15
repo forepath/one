@@ -188,6 +188,11 @@
                               </span>
                             }
                           }
+                          @if (workspaceIsolationIndicatorLabel(client); as isolationIndicator) {
+                            <span class="me-2">
+                              <i class="bi bi-shield-lock me-1" aria-hidden="true"></i>{{ isolationIndicator }}
+                            </span>
+                          }
                         </div>
                       </div>
                       @if (workspaceProgressBars[client.id]; as progressBar) {
@@ -455,6 +460,16 @@
                             <span class="me-2">
                               <i class="bi bi-box me-1" aria-hidden="true"></i
                               >{{ getContainerTypeDisplayName(agent.containerType) }}
+                            </span>
+                            @let agentIsolationLevel = environmentIsolationLevel(agent);
+                            <span class="me-2">
+                              <i
+                                class="bi me-1"
+                                [class.bi-shield-lock]="agentIsolationLevel === 'sandboxed'"
+                                [class.bi-shield]="agentIsolationLevel !== 'sandboxed'"
+                                aria-hidden="true"
+                              ></i
+                              >{{ isolationLevelLabel(agentIsolationLevel) }}
                             </span>
                             @if (activeClient$ | async; as activeClient) {
                               @if (getAgentGitRepositoryLabel(agent, activeClient); as repo) {
@@ -2036,6 +2051,19 @@
     <span i18n="@@featureChat-cannotUndo">This action cannot be undone.</span>
   </p>
 </fpc-confirm-dialog>
+<!-- Standard Docker downgrade confirmation (stacked over the Add Environment modal) -->
+<fpc-confirm-dialog
+  [(open)]="confirmStandardIsolationOpen"
+  i18n-title="@@featureChat-isolationConfirmStandardTitle"
+  title="Use Standard Docker?"
+  i18n-message="@@featureChat-isolationConfirmStandardMessage"
+  message="Standard Docker has lower isolation than the recommended gVisor sandbox. The container will interact with the workspace host's Linux kernel through Docker's normal namespace, capability and seccomp controls."
+  i18n-confirmLabel="@@featureChat-isolationConfirmStandardConfirm"
+  confirmLabel="Use Standard Docker"
+  [warning]="true"
+  (confirmed)="onConfirmStandardIsolation()"
+  (cancelled)="onCancelStandardIsolation()"
+/>
 <!-- Delete Chat Session Confirmation Modal -->
 <fpc-confirm-dialog
   [(open)]="deleteChatSessionModalOpen"
@@ -2564,6 +2592,93 @@
         >The type of content this agent holds. Defaults to Generic if not specified.</small
       >
     </fpc-form-field>
+    @let addAgentIsolationRefreshing = (activeClientIsolationRefreshing$ | async) === true;
+    <fpc-form-check-group
+      class="d-block mb-3"
+      legendId="agentIsolationLevelLegend"
+      i18n-label="@@featureChat-isolationLabel"
+      label="Container isolation"
+    >
+      <fpc-form-check
+        [type]="'radio'"
+        name="agentIsolationLevel"
+        checkId="agentIsolationSandboxed"
+        value="sandboxed"
+        [checked]="addAgentIsolationLevel() === 'sandboxed'"
+        (valueSelect)="onAddAgentIsolationLevelSelect($event)"
+        [disabled]="(agentsCreating$ | async) === true || !!addAgentSandboxedUnavailableReason()"
+        [label]="isolationLevelLabel('sandboxed')"
+        class="px-3 py-2 border rounded"
+      >
+        @if (addAgentRecommendedIsolationLevel() === 'sandboxed') {
+          <fpc-badge class="ms-2" color="success" [pill]="true" i18n="@@featureChat-isolationRecommended"
+            >Recommended</fpc-badge
+          >
+        }
+        <div class="form-text mt-0" i18n="@@featureChat-isolationSandboxedDescription">
+          Runs through gVisor's userspace application kernel.
+        </div>
+        @if (addAgentSandboxedUnavailableReason(); as sandboxedReason) {
+          <div class="form-text text-warning mt-0">
+            <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i
+            ><span i18n="@@featureChat-isolationSandboxedUnavailable">Not available on this workspace:</span>
+            {{ sandboxedReason }}
+          </div>
+        }
+      </fpc-form-check>
+      <fpc-form-check
+        [type]="'radio'"
+        name="agentIsolationLevel"
+        checkId="agentIsolationStandard"
+        value="standard"
+        [checked]="addAgentIsolationLevel() === 'standard'"
+        (valueSelect)="onAddAgentIsolationLevelSelect($event)"
+        [disabled]="(agentsCreating$ | async) === true"
+        [label]="isolationLevelLabel('standard')"
+        class="px-3 py-2 border rounded"
+      >
+        <div class="form-text mt-0" i18n="@@featureChat-isolationStandardDescription">
+          Maximum compatibility; shares the workspace host's Linux kernel.
+        </div>
+      </fpc-form-check>
+    </fpc-form-check-group>
+    @switch (addAgentIsolationSubmission().blockedReason) {
+      @case ('review-required') {
+        <fpc-alert
+          class="d-block mb-3"
+          variant="warning"
+          i18n-message="@@featureChat-isolationCapabilitiesChanged"
+          message="The isolation capabilities of this workspace changed. Review the isolation level."
+        />
+      }
+      @case ('level-unavailable') {
+        <fpc-alert
+          class="d-block mb-3"
+          variant="warning"
+          i18n-message="@@featureChat-isolationSelectedLevelUnavailable"
+          message="The selected isolation level is no longer available on this workspace. Select an available level."
+        />
+      }
+      @case ('no-level-available') {
+        <fpc-alert
+          class="d-block mb-3"
+          variant="warning"
+          i18n-message="@@featureChat-isolationNoLevelAvailable"
+          message="No isolation level is ready on this workspace host, so no environment can be created right now."
+        />
+      }
+    }
+    @if (addAgentIsolationRefreshing) {
+      <div class="form-text mt-n2 mb-3" role="status" i18n="@@featureChat-isolationChecking">
+        Checking isolation support…
+      </div>
+    } @else if ((activeClient$ | async)?.isolation?.stale) {
+      <div class="form-text mt-n2 mb-3">
+        <small i18n="@@featureChat-isolationStaleHint"
+          >The workspace host could not be reached; isolation support may be outdated.</small
+        >
+      </div>
+    }
     <fpc-form-field
       forId="agentGitRepositorySetupMode"
       i18n-label="@@featureChat-repositorySetupLabel"
@@ -2612,6 +2727,11 @@
         >
       </fpc-form-field>
     }
+    @if (addAgentSubmitAttempted() && (agentsCreating$ | async) !== true) {
+      @if (agentsError$ | async; as createError) {
+        <fpc-alert variant="danger" [message]="createError" />
+      }
+    }
     <div *fpcModalFooter class="d-flex align-items-center justify-content-end gap-3 w-100">
       @if ((agentsCreating$ | async) === true) {
         @if (addAgentProgress$ | async; as progress) {
@@ -2637,7 +2757,9 @@
         variant="primary"
         type="submit"
         [loading]="(agentsCreating$ | async) === true"
-        [disabled]="!addAgentForm.valid || (agentsCreating$ | async) === true"
+        [disabled]="
+          !addAgentForm.valid || (agentsCreating$ | async) === true || !!addAgentIsolationSubmission().blockedReason
+        "
       >
         <span i18n="@@featureChat-createEnvironment">Create</span>
       </fpc-button>
@@ -2754,6 +2876,72 @@
       </fpc-form-field>
     }
 
+    <!-- Container isolation of the workspace host (read-only, re-probe on demand) -->
+    @let editingIsolationRefreshing = (editingClientIsolationRefreshing$ | async) === true;
+    <div class="mb-3">
+      <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+        <span class="form-label mb-0" i18n="@@featureChat-isolationLabel">Container isolation</span>
+        <fpc-button
+          variant="secondary"
+          size="sm"
+          [loading]="editingIsolationRefreshing"
+          [disabled]="editingIsolationRefreshing || (clientsUpdating$ | async) === true"
+          (clicked)="onRecheckClientIsolation()"
+        >
+          <i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i
+          ><span i18n="@@featureChat-isolationRecheck">Re-check isolation</span>
+        </fpc-button>
+      </div>
+      @if (editingClientIsolation$ | async; as editingIsolation) {
+        @if (!editingIsolation.supported) {
+          <p class="small text-body-secondary mb-0" i18n="@@featureChat-isolationLegacyManagerSummary">
+            The workspace's agent manager does not support isolation levels yet; environments run with Standard Docker.
+          </p>
+        } @else {
+          <ul class="list-unstyled small mb-0">
+            @for (level of isolationLevels; track level) {
+              @let levelCapability = editingIsolation.levels[level];
+              <li class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                <strong>{{ isolationLevelLabel(level) }}</strong>
+                <fpc-badge [color]="levelCapability.state === 'ready' ? 'success' : 'warning'" [pill]="true">{{
+                  isolationRuntimeStateLabel(levelCapability.state)
+                }}</fpc-badge>
+                @if (editingIsolation.recommendedLevel === level) {
+                  <fpc-badge color="info" [pill]="true" i18n="@@featureChat-isolationRecommended"
+                    >Recommended</fpc-badge
+                  >
+                }
+                @if (levelCapability.state !== 'ready' && levelCapability.reason) {
+                  <span class="text-body-secondary w-100">{{ levelCapability.reason }}</span>
+                }
+              </li>
+            }
+          </ul>
+          @if (editingIsolation.probing) {
+            <small class="d-block text-body-secondary" i18n="@@featureChat-isolationProbing"
+              >A check is running; states reflect the previous check.</small
+            >
+          } @else if (editingIsolation.probedAt) {
+            <small class="d-block text-body-secondary" i18n="@@featureChat-isolationLastChecked"
+              >Last checked: {{ editingIsolation.probedAt | date: 'short' }}</small
+            >
+          }
+          @if (editingIsolation.stale) {
+            <small class="d-block text-warning" i18n="@@featureChat-isolationStaleHint"
+              >The workspace host could not be reached; isolation support may be outdated.</small
+            >
+          }
+        }
+      } @else {
+        <p class="small text-body-secondary mb-0" i18n="@@featureChat-isolationUnknown">
+          Isolation support has not been checked yet.
+        </p>
+      }
+      @if (editingClientIsolationError$ | async; as editingIsolationError) {
+        <fpc-alert class="mt-2" variant="danger" [message]="editingIsolationError" />
+      }
+    </div>
+
     <div *fpcModalFooter>
       <fpc-button
         variant="primary"
@@ -2816,6 +3004,20 @@
         <option [value]="ContainerType.KUBERNETES">Kubernetes</option>
       </fpc-form-control>
       <small fpcFormFieldHint i18n="@@featureChat-containerTypeHintShort">The type of content this agent holds.</small>
+    </fpc-form-field>
+    @let editingIsolationLevel = editingAgentIsolation()?.level ?? 'standard';
+    <fpc-form-field i18n-label="@@featureChat-isolationLabel" label="Container isolation">
+      <div class="d-flex align-items-center gap-2">
+        <fpc-badge [color]="isolationBadgeColor(editingIsolationLevel)" [pill]="true">{{
+          isolationLevelLabel(editingIsolationLevel)
+        }}</fpc-badge>
+        @if (editingAgentIsolation()?.runtime; as editingIsolationRuntime) {
+          <small class="text-body-secondary font-monospace">{{ editingIsolationRuntime }}</small>
+        }
+      </div>
+      <small fpcFormFieldHint i18n="@@featureChat-isolationFixedHint"
+        >The isolation level is fixed when the environment is created.</small
+      >
     </fpc-form-field>
     <div *fpcModalFooter class="d-flex align-items-center justify-content-end gap-3 w-100">
       @if ((agentsUpdating$ | async) === true) {

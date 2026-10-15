@@ -109,6 +109,11 @@ These variables tune the **Atlassian Cloud** import scheduler and provider on th
 - `EGRESS_EVENTS_INGEST_INTERVAL_MS` - Milliseconds between coordinator runs that pull egress guard events from agent managers (default: `30000`; `0` disables). See [Egress Filtering](../features/egress-filtering.md).
 - `EGRESS_EVENTS_INGEST_BATCH_SIZE` - Workspaces polled per coordinator run (default: `10`).
 
+### Container isolation capabilities
+
+- `ISOLATION_CAPABILITIES_INTERVAL_MS` - Milliseconds between coordinator runs that refresh the container isolation capabilities of workspace hosts and publish `isolation.*` transitions (default: `900000`; `0` disables). See [Container Isolation Levels](../features/container-isolation.md).
+- `ISOLATION_CAPABILITIES_BATCH_SIZE` - Workspaces refreshed per coordinator run, oldest snapshots first (default: `25`).
+
 ### Dynamic provider plugins
 
 Optional runtime extensions for provisioning and context import. See [Dynamic provider plugins](../features/dynamic-provider-plugins.md) for resolution order, post-build mounts, and export contract.
@@ -195,6 +200,19 @@ Optional runtime extensions for provisioning and context import. See [Dynamic pr
 - `AGENT_EGRESS_EVENTS_RETENTION_HOURS` - Event retention on the manager (default: `72`).
 
 See [Egress Filtering](../features/egress-filtering.md).
+
+### Container isolation levels
+
+- `AGENT_SANDBOX_RUNTIME` - Docker runtime name of the sandboxed (gVisor) level (default: `runsc-systrap`; must match `[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}`, otherwise the default is used).
+- `AGENT_SANDBOX_SHARED_NETNS_RUNTIME` - gVisor runtime with `--network=host` for sandboxed workers that share their egress guard's network namespace (default: `runsc-systrap-hostnet`; required for the sandboxed level while egress guards are enabled).
+- `AGENT_ISOLATION_SANDBOX_ENABLED` - `false` disables the sandboxed level on this manager (default: `true`).
+- `AGENT_ISOLATION_PROBE_ENABLED` - `false` disables the periodic re-probe; startup, on-demand and failure-triggered probes still run (default: `true`).
+- `AGENT_ISOLATION_PROBE_INTERVAL_MS` - Periodic re-probe interval, ±10 % jitter (default: `21600000`, minimum `60000`).
+- `AGENT_ISOLATION_PROBE_TIMEOUT_MS` - Upper bound of one level probe, excluding the image pull (default: `90000`, minimum `5000`).
+- `AGENT_ISOLATION_PROBE_IMAGE` - Probe image (default: empty, uses `OPENCODE_AGENT_DOCKER_IMAGE` / `AGENT_DEFAULT_IMAGE`).
+- `AGENT_ISOLATION_FAILURE_THRESHOLD` - Consecutive sandboxed runtime failures that trigger a re-probe (default: `3`).
+
+The gVisor runtime is installed on the Docker host, not in the manager container (cloud-init on provisioned servers, or `apps/agenstra/backend-agent-manager/host/agenstra-gvisor.sh`; the release and checksums are pinned; `GVISOR_RELEASE` / `GVISOR_SHA512` override them for the standalone script only). See [Container Isolation Levels](../features/container-isolation.md).
 
 ### Agent Client Protocol (ACP)
 

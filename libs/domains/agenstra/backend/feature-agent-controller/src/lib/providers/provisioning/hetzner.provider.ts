@@ -6,6 +6,7 @@ import {
   getOrSetProviderLocationsCatalog,
   resolveHetznerLocationNameFromMetadata,
 } from '@forepath/shared/backend/util-provisioning-geography';
+import { buildGvisorInstallScript } from '@forepath/shared/backend/util-container-runtime';
 import { readRedisConnectionConfig } from '@forepath/shared/backend/util-queue';
 import { RedisCacheService } from '@forepath/shared/backend/util-redis-cache';
 
@@ -421,6 +422,8 @@ if ! docker info > /dev/null 2>&1; then
     log "ERROR: Docker is not working properly"
     exit 1
 fi
+
+${buildGvisorInstallScript()}
 
 # Pull agent-manager image
 log "Pulling agent-manager image..."

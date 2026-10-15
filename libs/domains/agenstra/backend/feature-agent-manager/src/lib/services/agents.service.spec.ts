@@ -432,6 +432,8 @@ describe('AgentsService', () => {
         opencodeServerPassword: expect.any(String),
         gitRepositoryUrl: undefined,
         environmentVariableBaseline: '{}',
+        isolationLevel: 'standard',
+        isolationSelection: null,
       });
       expect(mockOpenCodeClientFactory.waitForHealthy).toHaveBeenCalledWith(mockAgent.id, containerId, {
         password: expect.any(String),
@@ -515,6 +517,8 @@ describe('AgentsService', () => {
         opencodeServerPassword: expect.any(String),
         gitRepositoryUrl: undefined,
         environmentVariableBaseline: '{}',
+        isolationLevel: 'standard',
+        isolationSelection: null,
       });
     });
 

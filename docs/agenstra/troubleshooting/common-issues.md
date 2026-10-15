@@ -85,6 +85,20 @@ Common problems and their solutions in the Agenstra system.
 - Verify agent image is available
 - Check container resource limits
 
+### Sandboxed isolation level unavailable or creation rejected
+
+**Symptoms**: The **Sandboxed (gVisor)** option is disabled in the create environment dialog; creation fails with `409 Conflict`, `503 Service Unavailable`, or "The sandboxed (gVisor) container could not be started"
+
+**Solutions**:
+
+- Check the reason code: `GET /api/clients/:id/isolation` (or `GET /api/isolation` on the manager)
+- `E_RUNTIME_NOT_REGISTERED`: prepare the host (`sudo apps/agenstra/backend-agent-manager/host/agenstra-gvisor.sh check` / `install`), verify `docker info --format '{{json .Runtimes}}'` lists `runsc-systrap` (or your `AGENT_SANDBOX_RUNTIME`), then **Re-check isolation**
+- `E_DISABLED_BY_ADMIN`: `AGENT_ISOLATION_SANDBOX_ENABLED=false` on the manager
+- `409` on creation: the host capabilities changed while the dialog was open (stale revision) or the level is no longer ready; reopen the dialog and confirm the level again
+- `503` on creation: the standard `runc` baseline failed (`E_DOCKER_BASELINE_UNAVAILABLE`, `E_RUNC_PROBE_FAILED`); check Docker and the worker image
+- Sandboxed start failures are never retried on `runc`. Retry, or create the environment with the **standard** level if the workload needs features gVisor does not support (`io_uring`, KVM, Docker-in-Docker, in-sandbox `iptables`)
+- See **[Container Isolation Levels](../features/container-isolation.md#troubleshooting)**
+
 ### Agent workspace permission errors
 
 **Symptoms**: `git clone` fails in the worker container; permission denied writing under `/app` or `/home/agenstra/environment`; entrypoint `chown` failures
@@ -199,6 +213,7 @@ Common problems and their solutions in the Agenstra system.
 ## Related documentation
 
 - **[Debugging Guide](./debugging-guide.md)** Debugging strategies
+- **[Container Isolation Levels](../features/container-isolation.md)** Sandboxed (gVisor) environments
 - **[Deployment Guide](../deployment/README.md)** Deployment troubleshooting
 
 ---

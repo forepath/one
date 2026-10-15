@@ -88,6 +88,44 @@ export type EgressPolicyNotificationPayload = {
   error?: string | null;
 };
 
+export type IsolationHostTransitionType =
+  | 'isolation.sandbox_available'
+  | 'isolation.sandbox_unavailable'
+  | 'isolation.baseline_failed';
+
+/** Isolation capability transition of a workspace host (agent manager). */
+export type IsolationHostNotificationPayload = {
+  clientId: string;
+  clientName?: string | null;
+  level: 'standard' | 'sandboxed';
+  runtime: string;
+  previousState?: string | null;
+  state: string;
+  reasonCode?: string | null;
+  recommendedLevel?: string | null;
+  revision: string;
+  probedAt?: string | null;
+};
+
+/** An environment was created with weaker isolation than recommended (explicit user choice). */
+export type AgentIsolationOverrideNotificationPayload = {
+  agentId: string;
+  agentName?: string | null;
+  automaticSelection: string;
+  effectiveSelection: string;
+  selectedBy?: string | null;
+  capabilityRevision?: string | null;
+};
+
+/** Creating a sandboxed environment failed (never retried on a weaker runtime). */
+export type AgentSandboxCreationFailedNotificationPayload = {
+  agentName: string;
+  isolationLevel: 'sandboxed';
+  runtime: string;
+  error: string;
+  occurredAt: string;
+};
+
 export type EnvironmentNotificationPayload = {
   id: string;
   agentId: string;
@@ -195,6 +233,22 @@ export class AgenstraNotificationPublisher implements IIdentityNotificationPubli
     payload: EgressPolicyNotificationPayload,
   ): void {
     this.publish(type, payload, clientId);
+  }
+
+  publishIsolationHostTransition(
+    type: IsolationHostTransitionType,
+    clientId: string,
+    payload: IsolationHostNotificationPayload,
+  ): void {
+    this.publish(type, payload, clientId);
+  }
+
+  publishAgentIsolationOverride(clientId: string, payload: AgentIsolationOverrideNotificationPayload): void {
+    this.publish('agent.isolation_override', payload, clientId);
+  }
+
+  publishAgentSandboxCreationFailed(clientId: string, payload: AgentSandboxCreationFailedNotificationPayload): void {
+    this.publish('agent.sandbox_creation_failed', payload, clientId);
   }
 
   publishEnvironment(

@@ -164,6 +164,10 @@ describe('agent-manager.utils', () => {
       const b64 = buildAgentManagerCloudInitUserData(config);
       const script = Buffer.from(b64, 'base64').toString('utf-8');
 
+      // Container isolation: optional gVisor runtime installed right after Docker (never fatal).
+      expect(script).toContain('if ( agenstra_prepare_gvisor ); then');
+      expect(script.indexOf('agenstra_prepare_gvisor')).toBeGreaterThan(script.indexOf('get-docker.sh'));
+
       expect(script).toContain('location /');
       expect(script).toContain('location /socket/');
       expect(script).toContain('location /socket.io/');

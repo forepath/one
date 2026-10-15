@@ -1,4 +1,5 @@
 import type { AgentChatSessionSummaryDto } from '../chat-sessions/chat-sessions.types';
+import type { IsolationLevel } from '../clients/clients.types';
 
 // Types based on OpenAPI spec
 export interface AgentTypeCapabilities {
@@ -24,8 +25,31 @@ export interface AgentResponseDto {
   chats: AgentChatSessionSummaryDto[];
   /** Id of the primary chat session for this agent. */
   primaryChatId: string;
+  /** Container isolation level of this environment (runtime and selection record). */
+  isolation?: AgentIsolationDto;
   createdAt: string;
   updatedAt: string;
+}
+
+/** How the isolation level of an environment was selected (audit record). */
+export interface AgentIsolationSelectionDto {
+  /** Level that was automatically recommended when the environment was created. */
+  automaticSelection?: IsolationLevel | null;
+  /** Level the environment actually runs with. */
+  effectiveSelection: IsolationLevel;
+  selectionSource: 'automatic' | 'user-confirmed' | 'user-override';
+  selectedBy?: string | null;
+  selectedAt: string;
+  /** Host capability revision the selection was validated against. */
+  capabilityRevision?: string | null;
+}
+
+/** Effective container isolation of an environment. */
+export interface AgentIsolationDto {
+  level: IsolationLevel;
+  /** Docker runtime the environment's worker container runs on. */
+  runtime: string;
+  selection?: AgentIsolationSelectionDto | null;
 }
 
 export interface CreateAgentDto {
@@ -35,6 +59,10 @@ export interface CreateAgentDto {
   containerType?: ContainerType;
   gitRepositorySetupMode?: 'clone' | 'empty';
   gitRepositoryUrl?: string;
+  /** Container isolation level; omitted = the host's recommended level. */
+  isolationLevel?: IsolationLevel;
+  /** Isolation capability revision the selection was made against (`ClientIsolationSummaryDto.revision`). */
+  capabilityRevision?: string;
 }
 
 export interface UpdateAgentDto {

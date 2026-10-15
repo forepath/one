@@ -365,4 +365,47 @@ describe('AgenstraNotificationPublisher', () => {
       }),
     );
   });
+
+  it('publishes container isolation events with workspace client id', () => {
+    const dispatcher = {
+      publishFireAndForget: jest.fn(),
+    } as unknown as NotificationDispatcherService;
+    const publisher = new AgenstraNotificationPublisher(dispatcher);
+
+    publisher.publishIsolationHostTransition('isolation.sandbox_unavailable', 'client-1', {
+      clientId: 'client-1',
+      level: 'sandboxed',
+      runtime: 'runsc-systrap',
+      previousState: 'ready',
+      state: 'probe-failed',
+      reasonCode: 'E_PROBE_EXEC_FAILED',
+      recommendedLevel: 'standard',
+      revision: 'sha256:x',
+    });
+    publisher.publishAgentIsolationOverride('client-1', {
+      agentId: 'agent-1',
+      automaticSelection: 'sandboxed',
+      effectiveSelection: 'standard',
+    });
+    publisher.publishAgentSandboxCreationFailed('client-1', {
+      agentName: 'env',
+      isolationLevel: 'sandboxed',
+      runtime: 'runsc-systrap',
+      error: 'boom',
+      occurredAt: '2026-10-15T20:00:00.000Z',
+    });
+
+    expect(dispatcher.publishFireAndForget).toHaveBeenCalledWith({
+      type: 'isolation.sandbox_unavailable',
+      scopeKey: INSTANCE_SCOPE_KEY,
+      clientId: 'client-1',
+      data: expect.objectContaining({ state: 'probe-failed', reasonCode: 'E_PROBE_EXEC_FAILED' }),
+    });
+    expect(dispatcher.publishFireAndForget).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'agent.isolation_override', clientId: 'client-1' }),
+    );
+    expect(dispatcher.publishFireAndForget).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'agent.sandbox_creation_failed', clientId: 'client-1' }),
+    );
+  });
 });
