@@ -105,7 +105,17 @@ A reset carries no reason, so clients cannot tell a policy block from a network 
 
 - **QUIC / HTTP/3** (UDP/443) is denied so clients fall back to TCP, where SNI is inspectable.
 - **DNS over TLS** (TCP/853) is denied to prevent bypassing the DNS policy.
-- **Undeclared protocols** (anything not web, DNS or `network_allow`) are denied.
+- **Undeclared protocols** (anything not web, DNS, Git over SSH or `network_allow`) are denied.
+
+## Git over SSH
+
+Cloning and pushing over SSH (TCP/22) must work behind the guard, so `enforce` policies always allow it to curated Git hosting providers: GitHub, GitLab, Bitbucket, Azure DevOps (`ssh.dev.azure.com`, `vs-ssh.visualstudio.com`), Codeberg, Gitea, sourcehut (`git.sr.ht`), Gitee, Framagit, Salsa (Debian), GNOME / freedesktop.org GitLab, KDE Invent, Launchpad, SourceForge and Google Cloud Source Repositories (subdomains included, e.g. `ssh.github.com`).
+
+- **Resolve, then allow** The guard's DNS proxy (dnsmasq) adds the addresses it resolves for these host names to kernel ipsets (`agenstra_git_ssh4` / `agenstra_git_ssh6`, entries expire after an hour and are refreshed by every lookup); netfilter accepts TCP/22 only to addresses in those sets. The agent can therefore reach port 22 exclusively on addresses the guard itself resolved for a Git host — never an arbitrary IP, a host it resolved elsewhere, or another SSH server.
+- **Policy precedence** A Git host on the policy's **deny list** is excluded (subdomain denies are enforced by DNS). Under an allowlist, Git hosts still resolve so SSH works; HTTPS access to them is still decided by the allowlist. `offline` stays offline; `monitor` and `off` do not restrict SSH anyway.
+- **Self-hosted servers** Add host names with `AGENT_EGRESS_GIT_SSH_HOSTS` on the agent manager (or use `network_allow` with IP ranges). `AGENT_EGRESS_GIT_SSH_ENABLED=false` disables the allowance.
+- **Audit** Accepted connections are counted and reported as `allowed` network events (`tcp/22`).
+- **Requirements** The guard uses `ipset` (kernel `ip_set` / `xt_set`, standard on Linux distributions) and therefore holds `CAP_NET_RAW` next to `CAP_NET_ADMIN` (iptables queries ipsets through a raw socket; agents in the namespace still lose both). Without kernel ipset support the guard drops the allowance from the bundle instead of failing (TCP/22 stays denied) and reports `"gitSsh":"unavailable"` in `agenstra-egress status`.
 
 ## Fail-closed behavior
 
@@ -143,8 +153,10 @@ The controller ingests them with the BullMQ job **`egress-events-ingest`** (coor
 | `AGENT_EGRESS_EVENTS_COLLECTOR_ENABLED` | `true`                                                  | Collect guard events                                               |
 | `AGENT_EGRESS_EVENTS_POLL_INTERVAL_MS`  | `15000`                                                 | Collector poll interval                                            |
 | `AGENT_EGRESS_EVENTS_RETENTION_HOURS`   | `72`                                                    | Retention of events on the manager (the controller keeps its copy) |
+| `AGENT_EGRESS_GIT_SSH_ENABLED`          | `true`                                                  | Allow Git over SSH (TCP/22) to curated Git hosts                   |
+| `AGENT_EGRESS_GIT_SSH_HOSTS`            | _(empty)_                                               | Additional Git SSH host names (comma separated, e.g. self-hosted)  |
 
-The manager needs access to the Docker socket (as for agent containers) and the ability to grant `CAP_NET_ADMIN` to the guard.
+The manager needs access to the Docker socket (as for agent containers) and the ability to grant `CAP_NET_ADMIN` and `CAP_NET_RAW` to the guard.
 
 ### Agent controller
 

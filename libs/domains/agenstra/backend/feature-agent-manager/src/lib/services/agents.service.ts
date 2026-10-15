@@ -871,7 +871,8 @@ export class AgentsService implements OnApplicationBootstrap {
       level,
       runtime:
         level === 'sandboxed'
-          ? agent.egressGuardContainerId
+          ? // Behind a guard or on the agent network the kernel network stack variant is used (DockerService).
+            agent.egressGuardContainerId || process.env.AGENT_DOCKER_NETWORK?.trim()
             ? resolveSandboxedSharedNetnsIsolationRuntime()
             : runtimeForIsolationLevel(level)
           : (this.isolationCapabilities?.getCapabilities().levels.standard.runtime ?? runtimeForIsolationLevel(level)),

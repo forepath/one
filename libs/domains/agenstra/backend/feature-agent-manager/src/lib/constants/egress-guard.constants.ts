@@ -71,6 +71,64 @@ export function resolveEgressGuardImage(env: NodeJS.ProcessEnv = process.env): s
   return env['AGENT_EGRESS_GUARD_IMAGE']?.trim() || EGRESS_GUARD_DEFAULT_IMAGE;
 }
 
+/**
+ * Git over SSH through the guard (TCP 22): the guard's DNS proxy (dnsmasq) adds the addresses it
+ * resolves for curated Git hosting providers to these ipsets, and netfilter only accepts TCP 22 to
+ * addresses in them. The agent can therefore reach port 22 exclusively on addresses the guard itself
+ * resolved for those host names (no arbitrary IPs, no spoofed DNS answers). Entries expire with the
+ * set timeout and are refreshed by every resolution.
+ */
+export const EGRESS_GIT_SSH_SET_V4 = 'agenstra_git_ssh4';
+export const EGRESS_GIT_SSH_SET_V6 = 'agenstra_git_ssh6';
+export const EGRESS_GIT_SSH_PORT = 22;
+/** Counter category of accepted Git SSH connections (reported as `allowed` network events). */
+export const EGRESS_GIT_SSH_COUNTER_CATEGORY = 'git_ssh';
+
+/**
+ * Curated Git hosting providers reachable over SSH by default (subdomains included, e.g.
+ * `ssh.github.com`, `altssh.gitlab.com`). Extend with `AGENT_EGRESS_GIT_SSH_HOSTS` for self-hosted
+ * servers; an entry on the policy deny list always wins.
+ */
+export const EGRESS_GIT_SSH_DEFAULT_HOSTS: readonly string[] = [
+  'github.com',
+  'gitlab.com',
+  'bitbucket.org',
+  'ssh.dev.azure.com',
+  'vs-ssh.visualstudio.com',
+  'codeberg.org',
+  'gitea.com',
+  'git.sr.ht',
+  'gitee.com',
+  'framagit.org',
+  'salsa.debian.org',
+  'gitlab.gnome.org',
+  'gitlab.freedesktop.org',
+  'invent.kde.org',
+  'git.launchpad.net',
+  'git.code.sf.net',
+  'source.developers.google.com',
+];
+
+const GIT_SSH_HOST_PATTERN = /^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
+
+/**
+ * Git SSH hosts for the guard: the curated defaults plus `AGENT_EGRESS_GIT_SSH_HOSTS` (comma or
+ * whitespace separated host names). `AGENT_EGRESS_GIT_SSH_ENABLED=false` disables Git over SSH.
+ * Invalid entries are ignored (every value ends up in dnsmasq configuration).
+ */
+export function resolveEgressGitSshHosts(env: NodeJS.ProcessEnv = process.env): string[] {
+  if ((env['AGENT_EGRESS_GIT_SSH_ENABLED'] ?? 'true').trim().toLowerCase() === 'false') {
+    return [];
+  }
+
+  const extra = (env['AGENT_EGRESS_GIT_SSH_HOSTS'] ?? '')
+    .split(/[\s,]+/)
+    .map((host) => host.trim().toLowerCase().replace(/\.$/, ''))
+    .filter((host) => GIT_SSH_HOST_PATTERN.test(host));
+
+  return [...new Set([...EGRESS_GIT_SSH_DEFAULT_HOSTS, ...extra])].sort();
+}
+
 export function egressGuardContainerName(agentId: string): string {
   return `${EGRESS_GUARD_NAME_PREFIX}${agentId}`;
 }

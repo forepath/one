@@ -80,6 +80,9 @@ services:
       AGENT_EGRESS_EVENTS_COLLECTOR_ENABLED: ${AGENT_EGRESS_EVENTS_COLLECTOR_ENABLED:-true}
       AGENT_EGRESS_EVENTS_POLL_INTERVAL_MS: ${AGENT_EGRESS_EVENTS_POLL_INTERVAL_MS:-15000}
       AGENT_EGRESS_EVENTS_RETENTION_HOURS: ${AGENT_EGRESS_EVENTS_RETENTION_HOURS:-72}
+      # Git over SSH (TCP 22) to curated Git hosts through the egress guard (see egress-filtering.md)
+      AGENT_EGRESS_GIT_SSH_ENABLED: ${AGENT_EGRESS_GIT_SSH_ENABLED:-true}
+      AGENT_EGRESS_GIT_SSH_HOSTS: ${AGENT_EGRESS_GIT_SSH_HOSTS:-}
       # Container isolation levels (standard = runc, sandboxed = gVisor; see docs/agenstra/features/container-isolation.md)
       AGENT_SANDBOX_RUNTIME: ${AGENT_SANDBOX_RUNTIME:-runsc-systrap}
       AGENT_SANDBOX_SHARED_NETNS_RUNTIME: ${AGENT_SANDBOX_SHARED_NETNS_RUNTIME:-runsc-systrap-hostnet}

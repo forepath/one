@@ -24,6 +24,7 @@ RUN apk add --no-cache \
       bash \
       coreutils \
       dnsmasq \
+      ipset \
       ip6tables \
       iptables \
       openssl \
