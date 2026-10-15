@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Store } from '@ngrx/store';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import { ClientsService } from '../../services/clients.service';
 
@@ -35,6 +35,9 @@ import {
   loadLocations,
   loadLocationsFailure,
   loadLocationsSuccess,
+  refreshClientIsolation,
+  refreshClientIsolationFailure,
+  refreshClientIsolationSuccess,
   removeClientUser,
   removeClientUserFailure,
   removeClientUserSuccess,
@@ -54,11 +57,13 @@ import {
   loadMoreClients$,
   loadServerInfo$,
   loadLocations$,
+  refreshClientIsolation$,
   removeClientUser$,
   setActiveClient$,
   updateClient$,
 } from './clients.effects';
 import type {
+  ClientIsolationSummaryDto,
   ClientResponseDto,
   CreateClientDto,
   CreateClientResponseDto,
@@ -119,6 +124,8 @@ describe('ClientsEffects', () => {
       getClientUsers: jest.fn(),
       addClientUser: jest.fn(),
       removeClientUser: jest.fn(),
+      getClientIsolation: jest.fn(),
+      probeClientIsolation: jest.fn(),
     } as any;
 
     store = {
@@ -766,6 +773,153 @@ describe('ClientsEffects', () => {
         expect(result).toEqual(outcome);
         done();
       });
+    });
+  });
+
+  describe('refreshClientIsolation$', () => {
+    const mockIsolation: ClientIsolationSummaryDto = {
+      supported: true,
+      recommendedLevel: 'sandboxed',
+      availableLevels: ['sandboxed', 'standard'],
+      levels: {
+        standard: { rank: 1, runtime: 'runc', state: 'ready' },
+        sandboxed: { rank: 2, runtime: 'runsc-systrap', state: 'ready' },
+      },
+      revision: 'rev-1',
+      probedAt: '2024-01-01T00:00:00Z',
+      probing: false,
+      stale: false,
+    };
+
+    it('should GET the isolation summary without probe', (done) => {
+      actions$ = of(refreshClientIsolation({ clientId: 'client-1' }));
+      clientsService.getClientIsolation.mockReturnValue(of(mockIsolation));
+
+      refreshClientIsolation$(actions$, clientsService).subscribe((result) => {
+        expect(result).toEqual(refreshClientIsolationSuccess({ clientId: 'client-1', isolation: mockIsolation }));
+        expect(clientsService.getClientIsolation).toHaveBeenCalledWith('client-1');
+        expect(clientsService.probeClientIsolation).not.toHaveBeenCalled();
+        done();
+      });
+    });
+
+    it('should re-probe the host when probe is set', (done) => {
+      actions$ = of(refreshClientIsolation({ clientId: 'client-1', probe: true }));
+      clientsService.probeClientIsolation.mockReturnValue(of(mockIsolation));
+
+      refreshClientIsolation$(actions$, clientsService).subscribe((result) => {
+        expect(result).toEqual(refreshClientIsolationSuccess({ clientId: 'client-1', isolation: mockIsolation }));
+        expect(clientsService.probeClientIsolation).toHaveBeenCalledWith('client-1');
+        expect(clientsService.getClientIsolation).not.toHaveBeenCalled();
+        done();
+      });
+    });
+
+    it('should return refreshClientIsolationFailure with the server message on error', (done) => {
+      const error = new HttpErrorResponse({
+        status: 403,
+        statusText: 'Forbidden',
+        error: { message: 'Workspace management access required' },
+      });
+
+      actions$ = of(refreshClientIsolation({ clientId: 'client-1', probe: true }));
+      clientsService.probeClientIsolation.mockReturnValue(throwError(() => error));
+
+      refreshClientIsolation$(actions$, clientsService).subscribe((result) => {
+        expect(result).toEqual(
+          refreshClientIsolationFailure({ clientId: 'client-1', error: 'Workspace management access required' }),
+        );
+        done();
+      });
+    });
+
+    it('should let the latest request win per workspace', () => {
+      const actionsSubject = new Subject<ReturnType<typeof refreshClientIsolation>>();
+      const olderGet = new Subject<ClientIsolationSummaryDto>();
+      const newerProbe = new Subject<ClientIsolationSummaryDto>();
+      const otherClientGet = new Subject<ClientIsolationSummaryDto>();
+      const probedIsolation: ClientIsolationSummaryDto = { ...mockIsolation, revision: 'rev-2' };
+      const results: unknown[] = [];
+
+      clientsService.getClientIsolation.mockImplementation((clientId: string) =>
+        clientId === 'client-1' ? olderGet : otherClientGet,
+      );
+      clientsService.probeClientIsolation.mockReturnValue(newerProbe);
+
+      refreshClientIsolation$(actionsSubject, clientsService).subscribe((result) => results.push(result));
+
+      actionsSubject.next(refreshClientIsolation({ clientId: 'client-1' }));
+      actionsSubject.next(refreshClientIsolation({ clientId: 'client-2' }));
+      actionsSubject.next(refreshClientIsolation({ clientId: 'client-1', probe: true }));
+
+      newerProbe.next(probedIsolation);
+      // The superseded GET of client-1 is cancelled; its late response is ignored.
+      olderGet.next(mockIsolation);
+      // Other workspaces are not affected by client-1's newer request.
+      otherClientGet.next(mockIsolation);
+
+      expect(results).toEqual([
+        refreshClientIsolationSuccess({ clientId: 'client-1', isolation: probedIsolation }),
+        refreshClientIsolationSuccess({ clientId: 'client-2', isolation: mockIsolation }),
+      ]);
+    });
+
+    it('should not cancel an in-flight re-probe with a plain refresh', () => {
+      const actionsSubject = new Subject<ReturnType<typeof refreshClientIsolation>>();
+      const probe = new Subject<ClientIsolationSummaryDto>();
+      const probedIsolation: ClientIsolationSummaryDto = { ...mockIsolation, revision: 'rev-3' };
+      const results: unknown[] = [];
+
+      clientsService.probeClientIsolation.mockReturnValue(probe);
+      clientsService.getClientIsolation.mockReturnValue(of(mockIsolation));
+
+      refreshClientIsolation$(actionsSubject, clientsService).subscribe((result) => results.push(result));
+
+      actionsSubject.next(refreshClientIsolation({ clientId: 'client-1', probe: true }));
+      actionsSubject.next(refreshClientIsolation({ clientId: 'client-1' }));
+      probe.next(probedIsolation);
+      probe.complete();
+      // After the probe finished, plain refreshes run again.
+      actionsSubject.next(refreshClientIsolation({ clientId: 'client-1' }));
+
+      expect(results).toEqual([
+        refreshClientIsolationSuccess({ clientId: 'client-1', isolation: probedIsolation }),
+        refreshClientIsolationSuccess({ clientId: 'client-1', isolation: mockIsolation }),
+      ]);
+      expect(clientsService.getClientIsolation).toHaveBeenCalledTimes(1);
+    });
+
+    it('should show short plain-text error bodies', (done) => {
+      const error = new HttpErrorResponse({ status: 503, statusText: 'Service Unavailable', error: ' Host offline ' });
+
+      actions$ = of(refreshClientIsolation({ clientId: 'client-1' }));
+      clientsService.getClientIsolation.mockReturnValue(throwError(() => error));
+
+      refreshClientIsolation$(actions$, clientsService).subscribe((result) => {
+        expect(result).toEqual(refreshClientIsolationFailure({ clientId: 'client-1', error: 'Host offline' }));
+        done();
+      });
+    });
+
+    it.each([
+      ['an HTML error page', '<html><body><h1>502 Bad Gateway</h1></body></html>'],
+      ['an overly long text body', 'x'.repeat(501)],
+    ])('should not show %s verbatim', (_case, body) => {
+      const error = new HttpErrorResponse({
+        status: 502,
+        statusText: 'Bad Gateway',
+        url: 'http://localhost/api/clients/client-1/isolation',
+        error: body,
+      });
+
+      actions$ = of(refreshClientIsolation({ clientId: 'client-1' }));
+      clientsService.getClientIsolation.mockReturnValue(throwError(() => error));
+
+      const results: unknown[] = [];
+
+      refreshClientIsolation$(actions$, clientsService).subscribe((result) => results.push(result));
+
+      expect(results).toEqual([refreshClientIsolationFailure({ clientId: 'client-1', error: error.message })]);
     });
   });
 });

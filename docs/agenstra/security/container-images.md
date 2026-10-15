@@ -30,6 +30,8 @@ When the agent manager creates an agent, it bind-mounts host paths into child co
 
 The per-agent **egress guard** sidecar uses its own image (`agenstra-manager-egress-guard`, built by the `egress-guard-container-image` target); it is not an agent type.
 
+Worker containers of **sandboxed** environments run the same worker image on the gVisor runtime (`runsc-systrap`) instead of `runc`; images, users and bind mounts are unchanged. The manager's isolation probe uses the worker image as well (`AGENT_ISOLATION_PROBE_IMAGE` to override) and checks volume file operations and non-root `exec` on each runtime. See [Container Isolation Levels](../features/container-isolation.md).
+
 Each agent worker mounts its host directory at the provider **`basePath`** (typically `/app`).
 
 ### Host directory ownership

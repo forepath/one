@@ -1,5 +1,7 @@
 import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 
+import type { HostIsolationCapabilitiesDto } from './container-isolation.dto';
+
 /**
  * Capabilities advertised for an agent provider type.
  */
@@ -43,4 +45,8 @@ export class ConfigResponseDto {
   gitRepositoryUrl?: string;
   gitRepositorySetupMode?: GitRepositorySetupMode;
   agentTypes!: AgentTypeInfo[];
+  /**
+   * Container isolation levels this agent manager host can run (from real runtime probes).
+   */
+  isolation?: HostIsolationCapabilitiesDto;
 }

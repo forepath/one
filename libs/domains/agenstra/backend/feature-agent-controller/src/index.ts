@@ -67,6 +67,7 @@ export {
 
 // Framework-owned exports (files that stay in this library)
 export * from './lib/dto/client-response.dto';
+export * from './lib/dto/client-isolation.dto';
 export * from './lib/dto/create-client-response.dto';
 export * from './lib/dto/create-client.dto';
 export * from './lib/dto/update-client.dto';
@@ -102,6 +103,7 @@ export * from './lib/entities/statistics-chat-filter-drop.entity';
 export * from './lib/entities/statistics-chat-filter-flag.entity';
 export * from './lib/entities/statistics-egress-event.entity';
 export * from './lib/entities/egress-event-ingest-cursor.entity';
+export * from './lib/entities/client-isolation-snapshot.entity';
 export * from './lib/entities/statistics-chat-io.entity';
 export * from './lib/entities/statistics-client-user.entity';
 export * from './lib/entities/statistics-client.entity';
@@ -126,6 +128,7 @@ export * from './lib/services/opencode-mcp-servers-bootstrap.service';
 export * from './lib/services/opencode-effective-config-sync.service';
 export * from './lib/services/opencode-config-sync-targets.service';
 export * from './lib/services/egress-events-ingest.service';
+export * from './lib/services/client-isolation.service';
 export * from './lib/services/opencode-layer-files.service';
 export * from './lib/controllers/opencode-providers.controller';
 export * from './lib/controllers/opencode-mcp-servers.controller';
@@ -178,3 +181,4 @@ export * from './lib/notifications/agenstra-notification.publisher';
 export * from './lib/utils/mcp-oauth-callback-global-prefix';
 export * from './lib/utils/client-endpoint-security';
 export * from './lib/controllers/client-agent-egress.controller';
+export * from './lib/controllers/client-isolation.controller';

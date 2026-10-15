@@ -72,6 +72,23 @@ describe('controller job-registry', () => {
     delete process.env.EGRESS_EVENTS_INGEST_INTERVAL_MS;
   });
 
+  it('schedules the isolation capabilities coordinator every 15 minutes by default', () => {
+    const job = getControllerRepeatableJobs().find(
+      (entry) => entry.name === ControllerJobName.ISOLATION_CAPABILITIES_COORDINATOR,
+    );
+
+    expect(ControllerJobName.ISOLATION_CAPABILITIES_UNIT).toBe('isolation-capabilities.unit');
+    expect(job?.everyMs).toBe(900_000);
+  });
+
+  it('getControllerRepeatableJobs skips isolation capability checks when disabled', () => {
+    process.env.ISOLATION_CAPABILITIES_INTERVAL_MS = '0';
+    const names = getControllerRepeatableJobs().map((job) => job.name);
+
+    expect(names).not.toContain(ControllerJobName.ISOLATION_CAPABILITIES_COORDINATOR);
+    delete process.env.ISOLATION_CAPABILITIES_INTERVAL_MS;
+  });
+
   it('coordinator job ids are valid for BullMQ (no colons)', () => {
     for (const job of getControllerRepeatableJobs()) {
       expect(job.coordinatorJobId).not.toContain(':');

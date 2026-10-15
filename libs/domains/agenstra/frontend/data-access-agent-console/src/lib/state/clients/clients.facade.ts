@@ -17,6 +17,7 @@ import {
   loadServerTypes,
   loadLocations,
   provisionServer,
+  refreshClientIsolation,
   removeClientUser,
   setActiveClient,
   updateClient,
@@ -24,10 +25,12 @@ import {
 import {
   selectActiveClient,
   selectActiveClientId,
+  selectActiveClientIsolation,
   selectAddingClientUser,
   selectClientById,
   selectClientCreating,
   selectClientDeleting,
+  selectClientIsolationError,
   selectClientLoading,
   selectClientUpdating,
   selectClients,
@@ -49,6 +52,7 @@ import {
   selectLocations,
   selectProvisioning,
   selectProvisioningProviders,
+  selectRefreshingClientIsolation,
   selectRemovingClientUser,
   selectSelectedClient,
   selectServerInfo,
@@ -56,6 +60,7 @@ import {
 } from './clients.selectors';
 import type {
   AddClientUserDto,
+  ClientIsolationSummaryDto,
   ClientResponseDto,
   ClientUserResponseDto,
   CreateClientDto,
@@ -83,6 +88,8 @@ export class ClientsFacade {
   readonly selectedClient$: Observable<ClientResponseDto | null> = this.store.select(selectSelectedClient);
   readonly activeClientId$: Observable<string | null> = this.store.select(selectActiveClientId);
   readonly activeClient$: Observable<ClientResponseDto | null> = this.store.select(selectActiveClient);
+  readonly activeClientIsolation$: Observable<ClientIsolationSummaryDto | null> =
+    this.store.select(selectActiveClientIsolation);
 
   // Loading state observables
   readonly loading$: Observable<boolean> = this.store.select(selectClientsLoading);
@@ -167,6 +174,35 @@ export class ClientsFacade {
    */
   getClientById$(id: string): Observable<ClientResponseDto | null> {
     return this.store.select(selectClientById(id));
+  }
+
+  // Container isolation
+
+  /**
+   * Reload the container isolation levels of a workspace host.
+   * @param clientId - The client ID
+   * @param probe - Re-run the runtime probes on the host first (workspace managers only)
+   */
+  refreshClientIsolation(clientId: string, probe = false): void {
+    this.store.dispatch(refreshClientIsolation({ clientId, probe }));
+  }
+
+  /**
+   * Get the refreshing state of a workspace host's isolation levels as an observable.
+   * @param clientId - The client ID
+   * @returns Observable of refreshing state
+   */
+  isRefreshingClientIsolation$(clientId: string): Observable<boolean> {
+    return this.store.select(selectRefreshingClientIsolation(clientId));
+  }
+
+  /**
+   * Get the last isolation refresh error of a workspace host as an observable.
+   * @param clientId - The client ID
+   * @returns Observable of the error message or null
+   */
+  getClientIsolationError$(clientId: string): Observable<string | null> {
+    return this.store.select(selectClientIsolationError(clientId));
   }
 
   // Provisioning state observables

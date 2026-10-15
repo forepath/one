@@ -23,6 +23,7 @@ import { AgentsOpencodeMcpController } from '../controllers/agents-opencode-mcp.
 import { AgentsPermissionsController } from '../controllers/agents-permissions.controller';
 import { AgentsWorkspaceIndexController } from '../controllers/agents-workspace-index.controller';
 import { ConfigController } from '../controllers/config.controller';
+import { IsolationController } from '../controllers/isolation.controller';
 import { WorkspaceConfigurationOverridesController } from '../controllers/workspace-configuration-overrides.controller';
 import { AgentChatSessionEntity } from '../entities/agent-chat-session.entity';
 import { AgentEnvironmentVariableEntity } from '../entities/agent-environment-variable.entity';
@@ -94,6 +95,7 @@ import { AgentsVerificationService } from '../services/agents-verification.servi
 import { AgentsService } from '../services/agents.service';
 import { ConfigService } from '../services/config.service';
 import { InstanceStatusService } from '../services/instance-status.service';
+import { IsolationCapabilitiesService } from '../services/isolation-capabilities.service';
 import { DeploymentsService } from '../services/deployments.service';
 import { DockerService } from '../services/docker.service';
 import { EnvironmentProgressService } from '../services/environment-progress.service';
@@ -141,6 +143,7 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     AgentsChatSessionsController,
     AgentsEgressController,
     ConfigController,
+    IsolationController,
     InstanceStatusController,
     WorkspaceConfigurationOverridesController,
   ],
@@ -169,6 +172,7 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     AgentGitCredentialsService,
     AgentsVerificationService,
     ConfigService,
+    IsolationCapabilitiesService,
     InstanceStatusService,
     PasswordService,
     DeploymentsService,

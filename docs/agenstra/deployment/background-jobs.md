@@ -43,6 +43,7 @@ Application update check (same queue):
 - `opencode-config-sync.coordinator` / `.unit`: retry durable per-agent OpenCode effective-config sync targets (`pending`/`failed`). Interval `OPENCODE_CONFIG_SYNC_INTERVAL_MS` (default 30s), batch `OPENCODE_CONFIG_SYNC_BATCH_SIZE`.
 - `opencode-layer-files-sync.coordinator` / `.unit`: retry layer-file emit targets (`pending`/`failed`). Interval `OPENCODE_LAYER_FILES_SYNC_INTERVAL_MS` (default 30s), batch `OPENCODE_LAYER_FILES_SYNC_BATCH_SIZE`.
 - `egress-events-ingest.coordinator` / `.unit`: pull aggregated egress guard decisions from each workspace's agent manager (`GET /api/egress/events`) into `statistics_egress_events` and publish `egress.*` notifications. Interval `EGRESS_EVENTS_INGEST_INTERVAL_MS` (default 30s; `0` disables), batch `EGRESS_EVENTS_INGEST_BATCH_SIZE` (default 10). See [Egress Filtering](../features/egress-filtering.md).
+- `isolation-capabilities.coordinator` / `.unit`: refresh the container isolation capabilities of each workspace's agent manager (`GET /api/isolation`), update `client_isolation_snapshots` and publish `isolation.*` transition notifications. Workspaces with the oldest snapshot go first. Interval `ISOLATION_CAPABILITIES_INTERVAL_MS` (default 15m; `0` disables), batch `ISOLATION_CAPABILITIES_BATCH_SIZE` (default 25). See [Container Isolation Levels](../features/container-isolation.md).
 
 See [Application updates](../features/application-updates.md).
 

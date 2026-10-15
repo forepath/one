@@ -19,6 +19,7 @@ import { KEYCLOAK_CONNECT_OPTIONS, KEYCLOAK_INSTANCE } from 'nest-keycloak-conne
 
 import { ClientsController } from '../controllers/clients.controller';
 import { EgressEventIngestCursorEntity } from '../entities/egress-event-ingest-cursor.entity';
+import { ClientIsolationSnapshotEntity } from '../entities/client-isolation-snapshot.entity';
 import { StatisticsEgressEventEntity } from '../entities/statistics-egress-event.entity';
 import { AgenstraAttachmentEntity } from '../entities/agenstra-attachment.entity';
 import { AtlassianSiteConnectionEntity } from '../entities/atlassian-site-connection.entity';
@@ -253,6 +254,8 @@ describe('ClientsModule', () => {
       .overrideProvider(getRepositoryToken(StatisticsEgressEventEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(EgressEventIngestCursorEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(ClientIsolationSnapshotEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(AtlassianSiteConnectionEntity))
       .useValue(mockRepository)

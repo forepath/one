@@ -8,7 +8,7 @@ import {
   UpdateAgentDto,
 } from '@forepath/agenstra/backend/feature-agent-manager';
 import { AuthenticationType, ClientAgentCredentialsService, ClientEntity } from '@forepath/identity/backend';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import axios, { AxiosError } from 'axios';
 
@@ -243,6 +243,20 @@ describe('ClientAgentProxyService', () => {
       await expect(service.getClientAgents('client-uuid', 10, 0)).rejects.toThrow('Invalid request');
     });
 
+    it('should map 409 conflicts (e.g. stale isolation selections)', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({
+        data: { message: 'stale capability revision' },
+        status: 409,
+        statusText: 'Conflict',
+        headers: {},
+        config: {} as any,
+      });
+
+      await expect(service.getClientAgents('client-uuid', 10, 0)).rejects.toThrow(ConflictException);
+      await expect(service.getClientAgents('client-uuid', 10, 0)).rejects.toThrow('stale capability revision');
+    });
+
     it('should handle connection error', async () => {
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       const axiosError = {
@@ -254,6 +268,29 @@ describe('ClientAgentProxyService', () => {
 
       await expect(service.getClientAgents('client-uuid', 10, 0)).rejects.toThrow(BadRequestException);
       await expect(service.getClientAgents('client-uuid', 10, 0)).rejects.toThrow('Failed to connect');
+    });
+  });
+
+  describe('isolation capabilities', () => {
+    it('reads and re-probes the agent manager isolation capabilities', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({
+        data: { revision: 'sha256:x' },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {} as any,
+      });
+
+      await expect(service.getClientIsolation('client-uuid')).resolves.toEqual({ revision: 'sha256:x' });
+      expect(mockedAxios.request).toHaveBeenLastCalledWith(
+        expect.objectContaining({ method: 'GET', url: expect.stringMatching(/\/api\/isolation$/), timeout: 10_000 }),
+      );
+
+      await service.probeClientIsolation('client-uuid');
+      expect(mockedAxios.request).toHaveBeenLastCalledWith(
+        expect.objectContaining({ method: 'POST', url: expect.stringMatching(/\/api\/isolation\/probe$/) }),
+      );
     });
   });
 

@@ -50,6 +50,16 @@ Events are published from the **agent-controller** service after proxied operati
 - `egress.guard_failed`, an egress guard sidecar reported an error
 - `egress.policy_applied`, `egress.policy_failed`, an egress policy bundle was activated or rejected (last known good stays active)
 
+### Container isolation
+
+- `isolation.sandbox_available`, the sandboxed (gVisor) isolation level of a workspace host became ready
+- `isolation.sandbox_unavailable`, the sandboxed level of a workspace host was ready and is not anymore (probe failed, runtime removed or disabled)
+- `isolation.baseline_failed`, the standard (`runc`) baseline of a workspace host failed; the host cannot run environments
+- `agent.isolation_override`, an environment was created with a weaker isolation level than recommended (confirmed user choice)
+- `agent.sandbox_creation_failed`, a sandboxed environment could not be started (never retried on a weaker runtime)
+
+Host transitions are detected against the controller's last stored capability snapshot and published once per transition. See [Container Isolation Levels](./container-isolation.md).
+
 ### Agent environment variables
 
 - `environment.created`, `environment.updated`, `environment.deleted`
@@ -183,6 +193,52 @@ Values are never included, only the changed root keys. Global-layer saves carry 
 ```
 
 `egress.guard_failed` uses the payload above. `egress.policy_applied` and `egress.policy_failed` carry `{ "agentId", "mode", "revision", "error" }`.
+
+### `isolation.sandbox_available` / `isolation.sandbox_unavailable` / `isolation.baseline_failed`
+
+```json
+{
+  "clientId": "client-uuid",
+  "clientName": "Production workspace",
+  "level": "sandboxed",
+  "runtime": "runsc-systrap",
+  "previousState": "ready",
+  "state": "probe-failed",
+  "reasonCode": "E_SHARED_NETNS_FAILED",
+  "recommendedLevel": "standard",
+  "revision": "sha256:4f1c...",
+  "probedAt": "2026-10-15T09:00:00.000Z"
+}
+```
+
+`level` is `sandboxed` for `isolation.sandbox_*` and `standard` for `isolation.baseline_failed` (then `recommendedLevel` is `null`). `previousState` is `null` for the first observation of a workspace host. `reasonCode` is `null` when the level is `ready`.
+
+### `agent.isolation_override`
+
+```json
+{
+  "agentId": "agent-uuid",
+  "agentName": "build-agent",
+  "automaticSelection": "sandboxed",
+  "effectiveSelection": "standard",
+  "selectedBy": "user-uuid",
+  "capabilityRevision": "sha256:4f1c..."
+}
+```
+
+### `agent.sandbox_creation_failed`
+
+```json
+{
+  "agentName": "build-agent",
+  "isolationLevel": "sandboxed",
+  "runtime": "runsc-systrap",
+  "error": "The sandboxed (gVisor) container could not be started: ...",
+  "occurredAt": "2026-10-15T09:12:00.000Z"
+}
+```
+
+No `agentId` is included because the environment was not created. `error` is truncated to 500 characters.
 
 ### `environment.created` / `environment.updated` / `environment.deleted`
 

@@ -1846,6 +1846,15 @@
         <source> Are you sure you want to delete the environment <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ agentToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
     &gt;"/>? </source>
         </trans-unit>
+      <trans-unit id="featureChat-isolationConfirmStandardTitle" datatype="html">
+        <source>Use Standard Docker?</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationConfirmStandardMessage" datatype="html">
+        <source>Standard Docker has lower isolation than the recommended gVisor sandbox. The container will interact with the workspace host&apos;s Linux kernel through Docker&apos;s normal namespace, capability and seccomp controls.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationConfirmStandardConfirm" datatype="html">
+        <source>Use Standard Docker</source>
+        </trans-unit>
       <trans-unit id="featureChat-deleteChatSessionModalTitle" datatype="html">
         <source>Delete Chat Session</source>
         </trans-unit>
@@ -1993,6 +2002,36 @@
       <trans-unit id="featureChat-containerTypeHint" datatype="html">
         <source>The type of content this agent holds. Defaults to Generic if not specified.</source>
         </trans-unit>
+      <trans-unit id="featureChat-isolationLabel" datatype="html">
+        <source>Container isolation</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationRecommended" datatype="html">
+        <source>Recommended</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationSandboxedDescription" datatype="html">
+        <source> Runs through gVisor&apos;s userspace application kernel. </source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationSandboxedUnavailable" datatype="html">
+        <source>Not available on this workspace:</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationStandardDescription" datatype="html">
+        <source> Maximum compatibility; shares the workspace host&apos;s Linux kernel. </source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationCapabilitiesChanged" datatype="html">
+        <source>The isolation capabilities of this workspace changed. Review the isolation level.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationSelectedLevelUnavailable" datatype="html">
+        <source>The selected isolation level is no longer available on this workspace. Select an available level.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationNoLevelAvailable" datatype="html">
+        <source>No isolation level is ready on this workspace host, so no environment can be created right now.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationChecking" datatype="html">
+        <source> Checking isolation support… </source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationStaleHint" datatype="html">
+        <source>The workspace host could not be reached; isolation support may be outdated.</source>
+        </trans-unit>
       <trans-unit id="featureChat-agentGitSetupModeHint" datatype="html">
         <source>Choose whether to clone a repository or initialize an empty local Git repository.</source>
         </trans-unit>
@@ -2014,6 +2053,21 @@
       <trans-unit id="featureChat-leaveEmptyKeepCurrentPlaceholder" datatype="html">
         <source>Leave empty to keep current</source>
         </trans-unit>
+      <trans-unit id="featureChat-isolationRecheck" datatype="html">
+        <source>Re-check isolation</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationLegacyManagerSummary" datatype="html">
+        <source> The workspace&apos;s agent manager does not support isolation levels yet; environments run with Standard Docker. </source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationProbing" datatype="html">
+        <source>A check is running; states reflect the previous check.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationLastChecked" datatype="html">
+        <source>Last checked: <x id="INTERPOLATION" equiv-text="{{ editingIsolation.probedAt | date: &apos;short&apos; }}"/></source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationUnknown" datatype="html">
+        <source> Isolation support has not been checked yet. </source>
+        </trans-unit>
       <trans-unit id="featureChat-updateWorkspace" datatype="html">
         <source>Save</source>
         </trans-unit>
@@ -2022,6 +2076,9 @@
         </trans-unit>
       <trans-unit id="featureChat-containerTypeHintShort" datatype="html">
         <source>The type of content this agent holds.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationFixedHint" datatype="html">
+        <source>The isolation level is fixed when the environment is created.</source>
         </trans-unit>
       <trans-unit id="featureChat-updateEnvironment" datatype="html">
         <source>Save</source>
@@ -3241,6 +3298,39 @@
         </trans-unit>
       <trans-unit id="featureWorkspaceSearch-queryPlaceholderFiles" datatype="html">
         <source>Search by file path...</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationLevelSandboxed" datatype="html">
+        <source>Sandboxed (gVisor)</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationLevelStandard" datatype="html">
+        <source>Standard Docker</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationStateReady" datatype="html">
+        <source>Ready</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationStateUnsupported" datatype="html">
+        <source>Not supported</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationStateInstallationFailed" datatype="html">
+        <source>Installation failed</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationStateProbeFailed" datatype="html">
+        <source>Check failed</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationStateDisabledByAdmin" datatype="html">
+        <source>Disabled by administrator</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationLegacyManager" datatype="html">
+        <source>The workspace&apos;s agent manager does not support isolation levels yet.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationSandboxAvailable" datatype="html">
+        <source>Sandbox available</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationNoRuntimeReady" datatype="html">
+        <source>No runtime ready</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationStandardOnly" datatype="html">
+        <source>Standard only</source>
         </trans-unit>
       <trans-unit id="featureKnowledgeBoard-noWorkspaces" datatype="html">
         <source>No workspaces yet</source>

@@ -7,7 +7,7 @@ Automated cloud server provisioning with Docker and agent-manager deployment. Su
 Server provisioning enables you to automatically:
 
 1. Create a cloud server instance
-2. Install Docker CE
+2. Install Docker CE (and, where supported, the gVisor runtime for [sandboxed environments](./container-isolation.md))
 3. Deploy PostgreSQL and agent-manager containers
 4. Configure authentication, Git repositories, and agent settings
 5. Create a client entity in the controller
@@ -45,6 +45,7 @@ sequenceDiagram
     AC->>P: Create Server
     P->>S: Provision Server
     S->>S: Install Docker (cloud-init)
+    S->>S: Install and verify gVisor runtime (optional, rolls back on failure)
     S->>D: Start PostgreSQL Container
     S->>D: Start Agent-Manager Container
     S-->>P: Server Ready
@@ -84,14 +85,15 @@ The provisioning endpoint accepts a `ProvisionServerDto` with the following fiel
 
 1. **Server Creation**: The provider creates a cloud server instance
 2. **Docker Installation**: The server automatically installs Docker CE via cloud-init user data script
-3. **Database Setup**: PostgreSQL container is started with health checks
-4. **Agent-Manager Deployment**: Agent-manager container is deployed with:
+3. **gVisor Runtime (optional)**: The script installs a pinned, checksum-verified gVisor release, registers the Docker runtime `runsc-systrap` (`--platform=systrap`, no KVM required) next to the default `runc` runtime, and verifies it. On any failure the installation is rolled back; provisioning continues and the host offers the standard level only. See [Host preparation](./container-isolation.md#host-preparation)
+4. **Database Setup**: PostgreSQL container is started with health checks
+5. **Agent-Manager Deployment**: Agent-manager container is deployed with:
    - Authentication configuration (API key or Keycloak)
    - Database connection to PostgreSQL
    - Git repository configuration (if provided)
    - Agent default image override (if provided)
-5. **Client Creation**: A client entity is created in the database with the server's endpoint
-6. **Reference Storage**: A provisioning reference links the client to the cloud server
+6. **Client Creation**: A client entity is created in the database with the server's endpoint
+7. **Reference Storage**: A provisioning reference links the client to the cloud server
 
 ## Server Configuration
 
@@ -106,6 +108,7 @@ All configuration values are properly interpolated into the docker-compose.yml f
 - **Authentication**: `STATIC_API_KEY` or Keycloak variables
 - **Git Configuration**: `GIT_REPOSITORY_URL`, `GIT_USERNAME`, `GIT_TOKEN`, `GIT_PASSWORD`
 - **Agent Image**: `AGENT_DEFAULT_IMAGE` (optional override for worker image)
+- **Container isolation**: the manager uses its defaults (`AGENT_SANDBOX_RUNTIME=runsc-systrap`, probes enabled); the gVisor release and its SHA-512 checksums are pinned in the generated cloud-init script (the same step runs for Hetzner, DigitalOcean and Decabill-provisioned agent manager hosts)
 
 Values are securely passed from the frontend through the backend to the user data script, which generates the docker-compose.yml with all environment variables properly set.
 
@@ -146,6 +149,7 @@ For detailed API documentation, see the application and API reference docs linke
 ## Related documentation
 
 - **[Client Management](./client-management.md)** Managing clients
+- **[Container Isolation Levels](./container-isolation.md)** gVisor host preparation and sandboxed environments
 - **[Dynamic provider plugins](./dynamic-provider-plugins.md)** Adding custom provisioning providers
 - **[Backend Agent Controller Application](../applications/backend-agent-controller.md)** Application details
 

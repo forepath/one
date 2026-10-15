@@ -11,6 +11,7 @@ import {
   loadClientUsers,
   loadClients,
   loadMoreClients,
+  refreshClientIsolation,
   removeClientUser,
   setActiveClient,
   updateClient,
@@ -364,6 +365,27 @@ describe('ClientsFacade', () => {
     it('should dispatch removeClientUser action', () => {
       facade.removeClientUser('client-1', 'rel-1');
       expect(store.dispatch).toHaveBeenCalledWith(removeClientUser({ clientId: 'client-1', relationshipId: 'rel-1' }));
+    });
+  });
+
+  describe('Client Isolation', () => {
+    it('should dispatch refreshClientIsolation without probe by default', () => {
+      facade.refreshClientIsolation('client-1');
+      expect(store.dispatch).toHaveBeenCalledWith(refreshClientIsolation({ clientId: 'client-1', probe: false }));
+    });
+
+    it('should dispatch refreshClientIsolation with probe', () => {
+      facade.refreshClientIsolation('client-1', true);
+      expect(store.dispatch).toHaveBeenCalledWith(refreshClientIsolation({ clientId: 'client-1', probe: true }));
+    });
+
+    it('should select the refreshing state per client', (done) => {
+      const mockFacade = createFacadeWithMock(true);
+
+      mockFacade.isRefreshingClientIsolation$('client-1').subscribe((result) => {
+        expect(result).toBe(true);
+        done();
+      });
     });
   });
 });

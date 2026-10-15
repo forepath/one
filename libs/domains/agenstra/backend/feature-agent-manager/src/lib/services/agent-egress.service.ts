@@ -29,6 +29,7 @@ import {
   renderEgressGuardArtifacts,
   type EgressUpstreamProxy,
 } from '../utils/egress-guard-config.utils';
+import { isolationRuntimeOptions } from '../utils/container-isolation.utils';
 
 import { DockerService } from './docker.service';
 
@@ -590,6 +591,7 @@ export class AgentEgressService {
         await this.waitForGuardReady(guardId);
         const { revision } = await this.applyPolicyToGuard(guardId, policy, this.resolveUpstream(secrets), true);
         const newContainerId = await this.dockerService.updateContainer(fresh.containerId, {
+          ...isolationRuntimeOptions(fresh),
           sharedNetworkContainerId: guardId,
           capDrop: [...EGRESS_GUARDED_AGENT_CAP_DROP],
         });

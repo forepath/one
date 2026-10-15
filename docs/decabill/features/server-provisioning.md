@@ -64,6 +64,8 @@ Containers share a defined application directory on the host (typically under `/
 
 OpenSearch on `agenstra-controller` and `decabill-billing` is single-node, bound only to the compose network (no host port), with `vm.max_map_count=262144` set during cloud-init. Existing provisioned hosts do not pick this up from image pull alone; re-provision or replace the host compose file.
 
+On `agenstra-manager` hosts, cloud-init additionally installs a pinned, checksum-verified gVisor release right after Docker and registers the Docker runtimes `runsc-systrap` and `runsc-systrap-hostnet` (Docker's default runtime stays `runc`). This enables the **sandboxed** container isolation level for Agenstra environments; the step is optional and never fails provisioning (on any failure it is rolled back and the host offers standard Docker only). Existing hosts do not pick this up from image updates; re-provision them or run `agenstra-gvisor.sh install` on the host. See [Agenstra Container Isolation Levels](../../agenstra/features/container-isolation.md).
+
 Operators choose service kind and image tags through service type and plan configuration; the update scheduler pulls latest tagged images on a schedule.
 
 ## Custom Service Kind

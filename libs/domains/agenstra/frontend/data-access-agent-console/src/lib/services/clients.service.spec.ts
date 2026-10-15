@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { ENVIRONMENT } from '@forepath/agenstra/frontend/util-configuration';
 
 import type {
+  ClientIsolationSummaryDto,
   ClientResponseDto,
   CreateClientDto,
   CreateClientResponseDto,
@@ -319,6 +320,46 @@ describe('ClientsService', () => {
 
       expect(req.request.method).toBe('GET');
       req.flush(mockLocations);
+    });
+  });
+
+  describe('client isolation', () => {
+    const mockIsolation: ClientIsolationSummaryDto = {
+      supported: true,
+      recommendedLevel: 'sandboxed',
+      availableLevels: ['sandboxed', 'standard'],
+      levels: {
+        standard: { rank: 1, runtime: 'runc', state: 'ready' },
+        sandboxed: { rank: 2, runtime: 'runsc-systrap', state: 'ready' },
+      },
+      revision: 'rev-1',
+      probedAt: '2024-01-01T00:00:00Z',
+      probing: false,
+      stale: false,
+    };
+
+    it('getClientIsolation GETs the isolation summary', (done) => {
+      service.getClientIsolation('client-1').subscribe((isolation) => {
+        expect(isolation).toEqual(mockIsolation);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/clients/client-1/isolation`);
+
+      expect(req.request.method).toBe('GET');
+      req.flush(mockIsolation);
+    });
+
+    it('probeClientIsolation POSTs a re-probe', (done) => {
+      service.probeClientIsolation('client-1').subscribe((isolation) => {
+        expect(isolation).toEqual(mockIsolation);
+        done();
+      });
+
+      const req = httpMock.expectOne(`${apiUrl}/clients/client-1/isolation/probe`);
+
+      expect(req.request.method).toBe('POST');
+      req.flush(mockIsolation);
     });
   });
 });

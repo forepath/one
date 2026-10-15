@@ -42,6 +42,7 @@ import { AdminOpencodeLayerFilesController } from '../controllers/admin-opencode
 import { ClientOpencodeLayerFilesController } from '../controllers/client-opencode-layer-files.controller';
 import { ClientOpencodeConfigController } from '../controllers/client-opencode-config.controller';
 import { ClientAgentEgressController } from '../controllers/client-agent-egress.controller';
+import { ClientIsolationController } from '../controllers/client-isolation.controller';
 import { McpOAuthCallbackController } from '../controllers/mcp-oauth-callback.controller';
 import { OpencodeMcpServersController } from '../controllers/opencode-mcp-servers.controller';
 import { OpencodeProvidersController } from '../controllers/opencode-providers.controller';
@@ -60,6 +61,7 @@ import { OpencodeProviderEntity } from '../entities/opencode-provider.entity';
 import { OpencodeLayerFileEntity } from '../entities/opencode-layer-file.entity';
 import { OpencodeLayerFileSyncTargetEntity } from '../entities/opencode-layer-file-sync-target.entity';
 import { EgressEventIngestCursorEntity } from '../entities/egress-event-ingest-cursor.entity';
+import { ClientIsolationSnapshotEntity } from '../entities/client-isolation-snapshot.entity';
 import { OpencodeConfigSyncTargetEntity } from '../entities/opencode-config-sync-target.entity';
 import { KnowledgeNodeEmbeddingEntity } from '../entities/knowledge-node-embedding.entity';
 import { KnowledgeNodeEntity } from '../entities/knowledge-node.entity';
@@ -117,6 +119,7 @@ import { OpencodeProvidersBootstrapService } from '../services/opencode-provider
 import { OpencodeProvidersCatalogService } from '../services/opencode-providers-catalog.service';
 import { OpencodeEffectiveConfigSyncService } from '../services/opencode-effective-config-sync.service';
 import { EgressEventsIngestService } from '../services/egress-events-ingest.service';
+import { ClientIsolationService } from '../services/client-isolation.service';
 import { OpencodeConfigSyncTargetsService } from '../services/opencode-config-sync-targets.service';
 import { OpencodeLayerFilesService } from '../services/opencode-layer-files.service';
 import { KnowledgeEmbeddingIndexService } from '../services/embeddings/knowledge-embedding-index.service';
@@ -184,6 +187,7 @@ const authMethod = getAuthenticationMethod();
       OpencodeLayerFileSyncTargetEntity,
       OpencodeConfigSyncTargetEntity,
       EgressEventIngestCursorEntity,
+      ClientIsolationSnapshotEntity,
     ]),
     BullModule.registerQueue({ name: AGENSTRA_CONTROLLER_QUEUE_NAME }),
     RedisCacheModule,
@@ -216,6 +220,7 @@ const authMethod = getAuthenticationMethod();
     AdminOpencodeLayerFilesController,
     ClientOpencodeConfigController,
     ClientAgentEgressController,
+    ClientIsolationController,
     McpOAuthCallbackController,
     ClientOpencodeLayerFilesController,
     OpencodeProvidersController,
@@ -261,6 +266,7 @@ const authMethod = getAuthenticationMethod();
     OpencodeEffectiveConfigSyncService,
     OpencodeConfigSyncTargetsService,
     EgressEventsIngestService,
+    ClientIsolationService,
     OpencodeLayerFilesService,
     ClientAgentCredentialsRepository,
     ClientAgentCredentialsService,
@@ -339,6 +345,7 @@ const authMethod = getAuthenticationMethod();
     OpencodeMcpServersCatalogService,
     OpencodeConfigSyncTargetsService,
     EgressEventsIngestService,
+    ClientIsolationService,
     OpencodeLayerFilesService,
   ],
 })

@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { Actions } from '@ngrx/effects';
 import { provideMockActions } from '@ngrx/effects/testing';
@@ -7,6 +8,7 @@ import { firstValueFrom, of, Subject, throwError, toArray } from 'rxjs';
 
 import { AgentsService } from '../../services/agents.service';
 import { OpencodeConfigService, type OpencodeCommandsListDto } from '../../services/opencode-config.service';
+import { refreshClientIsolation } from '../clients/clients.actions';
 import {
   forwardedEventReceived,
   remoteReconnected,
@@ -498,6 +500,60 @@ describe('AgentsEffects', () => {
         expect(result).toEqual(outcome);
         done();
       });
+    });
+
+    it('should surface the server message and refresh isolation on 409', async () => {
+      const createDto: CreateAgentDto = {
+        name: 'New Agent',
+        isolationLevel: 'sandboxed',
+        capabilityRevision: 'rev-1',
+      };
+      const error = new HttpErrorResponse({
+        status: 409,
+        statusText: 'Conflict',
+        error: { message: 'Sandboxed isolation is not available on this workspace' },
+      });
+
+      actions$ = of(createClientAgent({ clientId, agent: createDto }));
+      agentsService.createClientAgent.mockReturnValue(throwError(() => error));
+
+      const results = await firstValueFrom(createClientAgent$(actions$, agentsService).pipe(toArray()));
+
+      expect(results).toEqual([
+        createClientAgentFailure({ clientId, error: 'Sandboxed isolation is not available on this workspace' }),
+        refreshClientIsolation({ clientId }),
+      ]);
+    });
+
+    it('should show short plain-text error bodies verbatim', async () => {
+      const error = new HttpErrorResponse({ status: 400, statusText: 'Bad Request', error: 'Invalid name' });
+
+      actions$ = of(createClientAgent({ clientId, agent: { name: 'New Agent' } }));
+      agentsService.createClientAgent.mockReturnValue(throwError(() => error));
+
+      const results = await firstValueFrom(createClientAgent$(actions$, agentsService).pipe(toArray()));
+
+      expect(results).toEqual([createClientAgentFailure({ clientId, error: 'Invalid name' })]);
+    });
+
+    it.each([
+      ['an HTML proxy error page', '<!DOCTYPE html><html><body><h1>504 Gateway Time-out</h1></body></html>'],
+      ['an overly long text body', 'x'.repeat(501)],
+    ])('should fall back to the generic message for %s', async (_case, body) => {
+      const error = new HttpErrorResponse({
+        status: 504,
+        statusText: 'Gateway Timeout',
+        url: 'http://localhost/api/clients/client-1/agents',
+        error: body,
+      });
+
+      actions$ = of(createClientAgent({ clientId, agent: { name: 'New Agent' } }));
+      agentsService.createClientAgent.mockReturnValue(throwError(() => error));
+
+      const results = await firstValueFrom(createClientAgent$(actions$, agentsService).pipe(toArray()));
+
+      expect(results).toEqual([createClientAgentFailure({ clientId, error: error.message })]);
+      expect(error.message).not.toContain('<');
     });
   });
 

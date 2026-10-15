@@ -25,6 +25,8 @@ export const ControllerJobName = {
   KNOWLEDGE_EMBEDDING_UNIT: 'knowledge-embedding.unit',
   EGRESS_EVENTS_INGEST_COORDINATOR: 'egress-events-ingest.coordinator',
   EGRESS_EVENTS_INGEST_UNIT: 'egress-events-ingest.unit',
+  ISOLATION_CAPABILITIES_COORDINATOR: 'isolation-capabilities.coordinator',
+  ISOLATION_CAPABILITIES_UNIT: 'isolation-capabilities.unit',
   OPENCODE_CONFIG_SYNC_COORDINATOR: 'opencode-config-sync.coordinator',
   OPENCODE_CONFIG_SYNC_UNIT: 'opencode-config-sync.unit',
   OPENCODE_LAYER_FILES_SYNC_COORDINATOR: 'opencode-layer-files-sync.coordinator',
@@ -132,6 +134,17 @@ export function getControllerRepeatableJobs(): ControllerRepeatableJobDefinition
     });
   }
 
+  // Container isolation capability transitions of workspace hosts (notifications, stale fallback).
+  const isolationCapabilitiesInterval = parseIntervalMs('ISOLATION_CAPABILITIES_INTERVAL_MS', 900_000);
+
+  if (isolationCapabilitiesInterval > 0) {
+    jobs.push({
+      name: ControllerJobName.ISOLATION_CAPABILITIES_COORDINATOR,
+      coordinatorJobId: buildCoordinatorJobId('isolation-capabilities'),
+      everyMs: isolationCapabilitiesInterval,
+    });
+  }
+
   if (contextImportInterval > 0) {
     jobs.push({
       name: ControllerJobName.CONTEXT_IMPORT_COORDINATOR,
@@ -202,6 +215,10 @@ export function getContextImportConfigBatch(): number {
 
 export function getEgressEventsIngestBatchSize(): number {
   return parseInt(process.env.EGRESS_EVENTS_INGEST_BATCH_SIZE ?? '10', 10);
+}
+
+export function getIsolationCapabilitiesBatchSize(): number {
+  return parseInt(process.env.ISOLATION_CAPABILITIES_BATCH_SIZE ?? '25', 10);
 }
 
 export function getOpencodeConfigSyncBatchSize(): number {

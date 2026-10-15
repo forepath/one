@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-14T21:00:37.127Z",
+  "generatedAt": "2026-10-15T22:13:08.435Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -496,6 +496,27 @@
         "domain": "forepath",
         "context": "frontend",
         "featureGroup": "feature"
+      }
+    },
+    {
+      "id": "project:shared-backend-util-container-runtime",
+      "type": "lib",
+      "attrs": {
+        "name": "shared-backend-util-container-runtime",
+        "root": "libs/domains/shared/backend/util-container-runtime",
+        "tags": [
+          "domain:shared",
+          "scope:backend",
+          "type:util"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "test"
+        ],
+        "domain": "shared",
+        "context": "backend",
+        "featureGroup": "util"
       }
     },
     {
@@ -4484,6 +4505,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/docs/isolation-capabilities.mmd",
+      "type": "diagram",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/docs/isolation-capabilities.mmd",
+        "languageOrKind": "mmd",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/docs/knowledge-relations-matrix.mmd",
       "type": "diagram",
       "attrs": {
@@ -4772,6 +4802,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-isolation.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-isolation.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-config.controller.ts",
       "type": "controller",
       "attrs": {
@@ -4956,6 +4995,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/chat-plan/chat-plan-response.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/client-isolation.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/client-isolation.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -5388,6 +5436,15 @@
       "type": "entity",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/client-agent-autonomy.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/client-isolation-snapshot.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/client-isolation-snapshot.entity.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -6153,6 +6210,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-automation-chat-realtime.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-isolation.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-isolation.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -10753,6 +10819,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/isolation.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/isolation.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/workspace-configuration-overrides.controller.ts",
       "type": "controller",
       "attrs": {
@@ -10820,6 +10895,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/config-response.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/container-isolation.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/container-isolation.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -11585,6 +11669,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/instance-status.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/isolation-capabilities.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/isolation-capabilities.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -14029,6 +14122,14 @@
       }
     },
     {
+      "id": "file:docs/agenstra/features/container-isolation.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/agenstra/features/container-isolation.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:docs/agenstra/features/deployment.md",
       "type": "doc",
       "attrs": {
@@ -16345,6 +16446,28 @@
       }
     },
     {
+      "id": "api:HTTP:GET:/clients/{id}/isolation",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/isolation",
+        "operationId": "getClientIsolation",
+        "summary": "Get container isolation summary of a workspace host",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{id}/isolation/probe",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{id}/isolation/probe",
+        "operationId": "probeClientIsolation",
+        "summary": "Re-probe container isolation levels of a workspace host",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/clients/{id}/agents",
       "type": "endpoint",
       "attrs": {
@@ -17778,6 +17901,24 @@
       }
     },
     {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:agent.isolation_override",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "agent.isolation_override",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:agent.sandbox_creation_failed",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "agent.sandbox_creation_failed",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
       "id": "webhook-event:agenstra-backend-feature-agent-controller:application.dependency_health_changed",
       "type": "webhook-event",
       "attrs": {
@@ -17980,6 +18121,33 @@
       "type": "webhook-event",
       "attrs": {
         "eventName": "environment.updated",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:isolation.baseline_failed",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "isolation.baseline_failed",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:isolation.sandbox_available",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "isolation.sandbox_available",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:isolation.sandbox_unavailable",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "isolation.sandbox_unavailable",
         "projectName": "agenstra-backend-feature-agent-controller",
         "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
       }
@@ -22774,6 +22942,28 @@
       }
     },
     {
+      "id": "api:HTTP:GET:/isolation",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/isolation",
+        "operationId": "getIsolationCapabilities",
+        "summary": "Get container isolation capabilities",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/isolation/probe",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/isolation/probe",
+        "operationId": "probeIsolationCapabilities",
+        "summary": "Re-probe container isolation capabilities",
+        "specKind": "openapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/agents/{agentId}/files",
       "type": "endpoint",
       "attrs": {
@@ -26138,6 +26328,16 @@
       }
     },
     {
+      "id": "concept:agenstra-workspace-isolation-summary",
+      "type": "concept",
+      "attrs": {
+        "title": "Workspace Isolation Summary",
+        "docPath": "docs/agenstra/features/client-management.md",
+        "sectionAnchor": "workspace-isolation-summary",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-managing-clients",
       "type": "concept",
       "attrs": {
@@ -26154,6 +26354,106 @@
         "title": "Authentication Types",
         "docPath": "docs/agenstra/features/client-management.md",
         "sectionAnchor": "authentication-types",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-container-isolation-levels",
+      "type": "concept",
+      "attrs": {
+        "title": "Container Isolation Levels",
+        "docPath": "docs/agenstra/features/container-isolation.md",
+        "sectionAnchor": "container-isolation-levels",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-levels",
+      "type": "concept",
+      "attrs": {
+        "title": "Levels",
+        "docPath": "docs/agenstra/features/container-isolation.md",
+        "sectionAnchor": "levels",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-selection",
+      "type": "concept",
+      "attrs": {
+        "title": "Selection",
+        "docPath": "docs/agenstra/features/container-isolation.md",
+        "sectionAnchor": "selection",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-failure-behavior",
+      "type": "concept",
+      "attrs": {
+        "title": "Failure behavior",
+        "docPath": "docs/agenstra/features/container-isolation.md",
+        "sectionAnchor": "failure-behavior",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-capability-probing",
+      "type": "concept",
+      "attrs": {
+        "title": "Capability probing",
+        "docPath": "docs/agenstra/features/container-isolation.md",
+        "sectionAnchor": "capability-probing",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-egress-guard-interaction",
+      "type": "concept",
+      "attrs": {
+        "title": "Egress guard interaction",
+        "docPath": "docs/agenstra/features/container-isolation.md",
+        "sectionAnchor": "egress-guard-interaction",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-legacy-agent-managers",
+      "type": "concept",
+      "attrs": {
+        "title": "Legacy agent managers",
+        "docPath": "docs/agenstra/features/container-isolation.md",
+        "sectionAnchor": "legacy-agent-managers",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-api",
+      "type": "concept",
+      "attrs": {
+        "title": "API",
+        "docPath": "docs/agenstra/features/container-isolation.md",
+        "sectionAnchor": "api",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-host-preparation",
+      "type": "concept",
+      "attrs": {
+        "title": "Host preparation",
+        "docPath": "docs/agenstra/features/container-isolation.md",
+        "sectionAnchor": "host-preparation",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-limitations-and-performance",
+      "type": "concept",
+      "attrs": {
+        "title": "Limitations and performance",
+        "docPath": "docs/agenstra/features/container-isolation.md",
+        "sectionAnchor": "limitations-and-performance",
         "domain": "agenstra"
       }
     },
@@ -27754,6 +28054,16 @@
         "title": "Agent egress (web traffic) guard",
         "docPath": "docs/agenstra/security/operational-hardening.md",
         "sectionAnchor": "agent-egress-web-traffic-guard",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-container-isolation-levels-gvisor",
+      "type": "concept",
+      "attrs": {
+        "title": "Container isolation levels (gVisor)",
+        "docPath": "docs/agenstra/security/operational-hardening.md",
+        "sectionAnchor": "container-isolation-levels-gvisor",
         "domain": "agenstra"
       }
     },
@@ -34036,6 +34346,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "project:shared-backend-util-container-runtime",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "project:shared-backend-util-queue",
       "type": "depends_on"
     },
@@ -34137,6 +34452,11 @@
     {
       "from": "project:decabill-backend-feature-billing-manager",
       "to": "project:shared-shared-util-network-address",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:decabill-backend-feature-billing-manager",
+      "to": "project:shared-backend-util-container-runtime",
       "type": "depends_on"
     },
     {
@@ -37706,6 +38026,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/docs/isolation-capabilities.mmd",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/docs/knowledge-relations-matrix.mmd",
       "type": "contains"
     },
@@ -37866,6 +38191,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-isolation.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-config.controller.ts",
       "type": "contains"
     },
@@ -37967,6 +38297,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/chat-plan/chat-plan-response.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/client-isolation.dto.ts",
       "type": "contains"
     },
     {
@@ -38207,6 +38542,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/client-agent-autonomy.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/client-isolation-snapshot.entity.ts",
       "type": "contains"
     },
     {
@@ -38632,6 +38972,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-automation-chat-realtime.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-isolation.service.ts",
       "type": "contains"
     },
     {
@@ -41171,6 +41516,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/isolation.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/workspace-configuration-overrides.controller.ts",
       "type": "contains"
     },
@@ -41207,6 +41557,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/config-response.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/container-isolation.dto.ts",
       "type": "contains"
     },
     {
@@ -41632,6 +41987,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/instance-status.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/isolation-capabilities.service.ts",
       "type": "contains"
     },
     {
@@ -43436,6 +43796,16 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/isolation",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{id}/isolation/probe",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:GET:/clients/{id}/agents",
       "type": "contains"
     },
@@ -44096,6 +44466,16 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:agent.isolation_override",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:agent.sandbox_creation_failed",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "webhook-event:agenstra-backend-feature-agent-controller:application.dependency_health_changed",
       "type": "contains"
     },
@@ -44207,6 +44587,21 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "webhook-event:agenstra-backend-feature-agent-controller:environment.updated",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:isolation.baseline_failed",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:isolation.sandbox_available",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:isolation.sandbox_unavailable",
       "type": "contains"
     },
     {
@@ -46696,6 +47091,16 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/isolation",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/isolation/probe",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/agents/{agentId}/files",
       "type": "contains"
     },
@@ -48906,6 +49311,11 @@
     },
     {
       "from": "file:docs/agenstra/features/client-management.md",
+      "to": "concept:agenstra-workspace-isolation-summary",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/client-management.md",
       "to": "concept:agenstra-managing-clients",
       "type": "contains"
     },
@@ -48926,6 +49336,76 @@
     },
     {
       "from": "file:docs/agenstra/features/client-management.md",
+      "to": "concept:agenstra-related-documentation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/container-isolation.md",
+      "to": "concept:agenstra-container-isolation-levels",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/container-isolation.md",
+      "to": "concept:agenstra-levels",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/container-isolation.md",
+      "to": "concept:agenstra-selection",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/container-isolation.md",
+      "to": "concept:agenstra-failure-behavior",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/container-isolation.md",
+      "to": "concept:agenstra-capability-probing",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/container-isolation.md",
+      "to": "concept:agenstra-egress-guard-interaction",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/container-isolation.md",
+      "to": "concept:agenstra-legacy-agent-managers",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/container-isolation.md",
+      "to": "concept:agenstra-api",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/container-isolation.md",
+      "to": "concept:agenstra-notifications",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/container-isolation.md",
+      "to": "concept:agenstra-host-preparation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/container-isolation.md",
+      "to": "concept:agenstra-configuration",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/container-isolation.md",
+      "to": "concept:agenstra-limitations-and-performance",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/container-isolation.md",
+      "to": "concept:agenstra-troubleshooting",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/container-isolation.md",
       "to": "concept:agenstra-related-documentation",
       "type": "contains"
     },
@@ -50117,6 +50597,11 @@
     {
       "from": "file:docs/agenstra/security/operational-hardening.md",
       "to": "concept:agenstra-agent-egress-web-traffic-guard",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/security/operational-hardening.md",
+      "to": "concept:agenstra-container-isolation-levels-gvisor",
       "type": "contains"
     },
     {
@@ -54316,6 +54801,26 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/isolation",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/isolation",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{id}/isolation/probe",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{id}/isolation/probe",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
       "to": "api:HTTP:GET:/clients/{id}/agents",
       "type": "implements"
     },
@@ -61230,6 +61735,26 @@
       "type": "implements"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/isolation.controller.ts",
+      "to": "api:HTTP:GET:/isolation",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:GET:/isolation",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/isolation.controller.ts",
+      "to": "api:HTTP:POST:/isolation/probe",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "api:HTTP:POST:/isolation/probe",
+      "type": "implements"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/workspace-configuration-overrides.controller.ts",
       "to": "api:HTTP:GET:/configuration-overrides",
       "type": "implements"
@@ -61765,6 +62290,21 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-isolation.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-isolation.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-isolation.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-isolation.controller.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-opencode-config.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-config.service.ts",
       "type": "injects"
@@ -61967,6 +62507,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/opencode-effective-config-sync.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-isolation.service.ts",
       "type": "injects"
     },
     {
@@ -62550,6 +63095,16 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-isolation.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-isolation.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-workspace-configuration-overrides-proxy.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/clients.service.ts",
       "type": "injects"
@@ -62592,6 +63147,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/clients.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/search/agenstra-search-index.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/clients.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-isolation.service.ts",
       "type": "injects"
     },
     {
@@ -66600,8 +67160,18 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/config.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/isolation-capabilities.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/instance-status.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/instance-status.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/isolation.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/isolation-capabilities.service.ts",
       "type": "injects"
     },
     {
@@ -66980,6 +67550,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/isolation-capabilities.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/deployments.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/deployment-configurations.repository.ts",
       "type": "injects"
@@ -66992,6 +67567,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/deployments.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agents.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/isolation-capabilities.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/docker.service.ts",
       "type": "injects"
     },
     {
@@ -67285,6 +67865,11 @@
       "type": "injects"
     },
     {
+      "from": "file:apps/agenstra/backend-agent-controller/src/queue/processors/controller-jobs.processor.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-isolation.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:apps/decabill/backend-billing-manager/src/queue/processors/billing-jobs.processor.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-tenant.service.ts",
       "type": "injects"
@@ -67566,6 +68151,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-isolation.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/mcp-oauth-callback.controller.ts",
       "type": "provides"
     },
@@ -67777,6 +68367,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/egress-events-ingest.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-isolation.service.ts",
       "type": "provides"
     },
     {
@@ -69426,6 +70021,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/isolation.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/instance-status.controller.ts",
       "type": "provides"
     },
@@ -69547,6 +70147,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/config.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/isolation-capabilities.service.ts",
       "type": "provides"
     },
     {
@@ -70882,6 +71487,16 @@
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/clients.service.ts",
       "to": "api:HTTP:DELETE:/clients/{id}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/clients.service.ts",
+      "to": "api:HTTP:GET:/clients/{id}/isolation",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/clients.service.ts",
+      "to": "api:HTTP:POST:/clients/{id}/isolation/probe",
       "type": "calls"
     },
     {
@@ -72225,6 +72840,16 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-agent-controller-api",
+      "to": "api:HTTP:GET:/isolation",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-agent-controller-api",
+      "to": "api:HTTP:POST:/isolation/probe",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-agent-manager-api",
       "to": "api:HTTP:GET:/otel/metrics",
       "type": "documents"
@@ -72277,6 +72902,16 @@
     {
       "from": "concept:agenstra-agent-manager-api",
       "to": "api:HTTP:GET:/config",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-agent-manager-api",
+      "to": "api:HTTP:GET:/isolation",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-agent-manager-api",
+      "to": "api:HTTP:POST:/isolation/probe",
       "type": "documents"
     },
     {
@@ -72522,6 +73157,16 @@
     {
       "from": "concept:agenstra-backend-applications",
       "to": "api:HTTP:GET:/egress/events",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-backend-applications",
+      "to": "api:HTTP:GET:/isolation",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-backend-applications",
+      "to": "api:HTTP:POST:/isolation/probe",
       "type": "documents"
     },
     {
@@ -72911,6 +73556,11 @@
     },
     {
       "from": "concept:agenstra-platform-prerequisites",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-platform-prerequisites",
       "to": "api:HTTP:GET:/agents",
       "type": "documents"
     },
@@ -73101,6 +73751,11 @@
     },
     {
       "from": "concept:agenstra-agent-lifecycle",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-agent-lifecycle",
       "to": "api:HTTP:GET:/clients",
       "type": "documents"
     },
@@ -73122,6 +73777,11 @@
     {
       "from": "concept:agenstra-agent-lifecycle",
       "to": "api:HTTP:GET:/agents/progress",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-agent-lifecycle",
+      "to": "api:HTTP:GET:/isolation",
       "type": "documents"
     },
     {
@@ -73715,6 +74375,111 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-workspace-isolation-summary",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-workspace-isolation-summary",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-workspace-isolation-summary",
+      "to": "api:HTTP:GET:/isolation",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-workspace-isolation-summary",
+      "to": "api:HTTP:POST:/isolation/probe",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-levels",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-selection",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-capability-probing",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-capability-probing",
+      "to": "api:HTTP:GET:/isolation",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-capability-probing",
+      "to": "api:HTTP:POST:/isolation/probe",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-egress-guard-interaction",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-legacy-agent-managers",
+      "to": "api:HTTP:GET:/isolation",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api",
+      "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api",
+      "to": "api:HTTP:GET:/config",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api",
+      "to": "api:HTTP:GET:/isolation",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-api",
+      "to": "api:HTTP:POST:/isolation/probe",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-host-preparation",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-host-preparation",
+      "to": "api:HTTP:GET:/isolation",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-host-preparation",
+      "to": "api:HTTP:POST:/isolation/probe",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-supported-providers",
       "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
@@ -74032,6 +74797,11 @@
     {
       "from": "concept:agenstra-provisioning-request",
       "to": "api:HTTP:POST:/clients/provisioning/provision",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-provisioning-steps",
+      "to": "api:HTTP:POST:/auth/register",
       "type": "documents"
     },
     {
@@ -74446,12 +75216,32 @@
     },
     {
       "from": "concept:agenstra-container-issues",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-container-issues",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-container-issues",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-container-issues",
       "to": "api:HTTP:GET:/agents",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-container-issues",
       "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-container-issues",
+      "to": "api:HTTP:GET:/isolation",
       "type": "documents"
     },
     {
@@ -77480,6 +78270,11 @@
       "type": "documents"
     },
     {
+      "from": "concept:decabill-bundled-product-stack",
+      "to": "api:HTTP:POST:/auth/register",
+      "type": "documents"
+    },
+    {
       "from": "concept:decabill-custom-service-kind",
       "to": "api:HTTP:GET:/cloud-init-configs",
       "type": "documents"
@@ -79215,6 +80010,21 @@
       "type": "belongs_to"
     },
     {
+      "from": "project:shared-backend-util-container-runtime",
+      "to": "domain:shared",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-backend-util-container-runtime",
+      "to": "context:backend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:shared-backend-util-container-runtime",
+      "to": "feature-group:util",
+      "type": "belongs_to"
+    },
+    {
       "from": "project:shared-frontend-feature-notifications",
       "to": "domain:shared",
       "type": "belongs_to"
@@ -80201,6 +81011,11 @@
     },
     {
       "from": "file:docs/agenstra/features/client-management.md",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/agenstra/features/container-isolation.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -82065,12 +82880,67 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:agenstra-workspace-isolation-summary",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:agenstra-managing-clients",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
     {
       "from": "concept:agenstra-authentication-types",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-container-isolation-levels",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-levels",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-selection",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-failure-behavior",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-capability-probing",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-egress-guard-interaction",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-legacy-agent-managers",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-api",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-host-preparation",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-limitations-and-performance",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -82871,6 +83741,11 @@
     },
     {
       "from": "concept:agenstra-agent-egress-web-traffic-guard",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-container-isolation-levels-gvisor",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

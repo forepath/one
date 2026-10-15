@@ -2,6 +2,7 @@ import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 import { ContainerType } from '../entities/agent.entity';
 
 import type { AgentEgressStatusDto } from './agent-egress.dto';
+import type { AgentIsolationDto } from './container-isolation.dto';
 import type { AgentChatSessionSummaryDto } from './chat-session-response.dto';
 import type { AgentTypeCapabilities } from './config-response.dto';
 
@@ -35,6 +36,10 @@ export class AgentResponseDto {
    * Egress guard (web traffic filtering) status of this environment.
    */
   egress?: AgentEgressStatusDto;
+  /**
+   * Container isolation level of this environment (runtime and selection record).
+   */
+  isolation?: AgentIsolationDto;
   createdAt!: Date;
   updatedAt!: Date;
 }

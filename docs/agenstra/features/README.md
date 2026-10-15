@@ -23,6 +23,7 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **Usage Statistics** Controller-backed usage and filter metrics (distinct from container stats)
 - **Message Filters** Layered regex policies for chat traffic
 - **Egress Filtering** Per-environment web traffic filtering via an egress guard sidecar
+- **Container Isolation Levels** Per-environment choice between standard Docker (`runc`) and a gVisor sandbox, validated by runtime probes
 - **Atlassian import** Admin-managed site connections and import configs (Jira and Confluence) into tickets and knowledge
 - **Dynamic provider plugins** Extend provisioning, agents, pipelines, context import, and chat filters via env-configured packages
 - **OpenTelemetry** Optional Prometheus metrics and OTLP export (disabled by default)
@@ -215,6 +216,18 @@ Per-environment web traffic filtering through an egress guard sidecar (Squid, dn
 - Agent-specific tuning on each manager
 - Metrics integration with usage statistics
 
+### [Container Isolation Levels](./container-isolation.md)
+
+Per-environment container isolation: **standard** (Docker `runc`) or **sandboxed** (gVisor `runsc`, `systrap` platform). Levels are offered only after real runtime probes pass on the agent manager host and are never silently downgraded.
+
+**Key Capabilities**:
+
+- Automatic selection of the strongest ready level, with confirmed user overrides
+- Runtime probes (worker image, filesystem, exec, logs, shared egress namespace) with stable reason codes
+- Stale-selection protection through capability revisions
+- Capability transition and override notifications
+- gVisor host preparation in cloud-init and a standalone host script
+
 ### [Atlassian import](./atlassian-import.md)
 
 Admin-only **Atlassian Cloud** integrations: store encrypted site credentials, define Jira or Confluence import scopes per workspace, run on a scheduler or on demand, and manage sync markers for idempotent imports.
@@ -268,6 +281,7 @@ graph TB
     ST[Usage Statistics]
     FR[Message Filters]
     EG[Egress Filtering]
+    CI[Container Isolation]
     DP[Dynamic Provider Plugins]
 
     SP --> CM
@@ -292,6 +306,9 @@ graph TB
     DP --> SP
     DP --> AM
     DP --> DEP
+    SP --> CI
+    CI --> AM
+    EG --> CI
 ```
 
 ## Related documentation

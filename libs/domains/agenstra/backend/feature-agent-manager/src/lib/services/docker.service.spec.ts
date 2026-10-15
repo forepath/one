@@ -3162,4 +3162,324 @@ describe('DockerService', () => {
       expect((mockDocker as any).listContainers).toHaveBeenCalledWith({ all: true, filters: { label: ['l=1'] } });
     });
   });
+  describe('container isolation runtime', () => {
+    let createdContainer: { id: string; start: jest.Mock; rename: jest.Mock; remove: jest.Mock; putArchive: jest.Mock };
+
+    function inspectWithRuntime(runtime?: string) {
+      return {
+        Id: 'agent-id',
+        Name: '/agent',
+        Image: 'worker:latest',
+        State: { Running: true },
+        Config: { Image: 'worker:latest', Env: ['A=1'], ExposedPorts: {}, Labels: {} },
+        HostConfig: { NetworkMode: 'agent-net', ...(runtime ? { Runtime: runtime } : {}) },
+        NetworkSettings: { Networks: {} },
+        Mounts: [],
+      };
+    }
+
+    beforeEach(() => {
+      createdContainer = {
+        id: 'created-id',
+        start: jest.fn().mockResolvedValue(undefined),
+        rename: jest.fn().mockResolvedValue(undefined),
+        remove: jest.fn().mockResolvedValue(undefined),
+        putArchive: jest.fn().mockResolvedValue(undefined),
+      };
+      (mockDocker as any).createContainer = jest.fn().mockResolvedValue(createdContainer);
+      jest.spyOn(service, 'ensureImageExists').mockResolvedValue(undefined);
+      mockContainer.stop.mockResolvedValue(undefined);
+      mockContainer.remove.mockResolvedValue(undefined);
+    });
+
+    it('sets the runtime explicitly on create', async () => {
+      await service.createContainer({ image: 'worker:latest', runtime: 'runsc-systrap' });
+
+      expect((mockDocker as any).createContainer.mock.calls[0][0].HostConfig.Runtime).toBe('runsc-systrap');
+    });
+
+    it('does not set a runtime when none is requested', async () => {
+      await service.createContainer({ image: 'worker:latest' });
+
+      expect((mockDocker as any).createContainer.mock.calls[0][0].HostConfig.Runtime).toBeUndefined();
+    });
+
+    it('carries the current runtime over when recreating without an expected runtime', async () => {
+      mockContainer.inspect.mockResolvedValue(inspectWithRuntime('runsc-systrap'));
+
+      await service.updateContainer('agent-id', { env: { B: '2' } });
+
+      expect((mockDocker as any).createContainer.mock.calls[0][0].HostConfig.Runtime).toBe('runsc-systrap');
+    });
+
+    it('forces the expected runtime when recreating (sandboxed never comes back on runc)', async () => {
+      mockContainer.inspect.mockResolvedValue(inspectWithRuntime('runc'));
+
+      await service.updateContainer('agent-id', { env: { B: '2' }, runtime: 'runsc-systrap' });
+
+      expect((mockDocker as any).createContainer.mock.calls[0][0].HostConfig.Runtime).toBe('runsc-systrap');
+    });
+
+    it('keeps the expected runtime when joining the egress guard namespace', async () => {
+      mockContainer.inspect.mockResolvedValue(inspectWithRuntime('runsc-systrap'));
+
+      await service.updateContainer('agent-id', {
+        sharedNetworkContainerId: 'guard-1',
+        capDrop: ['NET_ADMIN'],
+        runtime: 'runsc-systrap',
+      });
+
+      const args = (mockDocker as any).createContainer.mock.calls[0][0];
+
+      // Netstack would bypass the guard: guarded sandboxed workers use the namespace network stack.
+      expect(args.HostConfig.Runtime).toBe('runsc-systrap-hostnet');
+      expect(args.HostConfig.NetworkMode).toBe('container:guard-1');
+    });
+
+    it('reports the recreate strategy when the runtime must change', async () => {
+      mockContainer.inspect.mockResolvedValue(inspectWithRuntime('runc'));
+
+      await expect(service.getEnvironmentApplyStrategy('agent-id', 'runsc-systrap')).resolves.toBe('recreate');
+
+      mockContainer.inspect.mockResolvedValue({
+        ...inspectWithRuntime('runsc-systrap-hostnet'),
+        HostConfig: { NetworkMode: 'container:guard-1', Runtime: 'runsc-systrap-hostnet' },
+      });
+
+      // A guarded sandboxed container already runs on the guard-compatible variant: no mismatch.
+      await expect(service.getEnvironmentApplyStrategy('agent-id', 'runsc-systrap')).resolves.toBe('recreate');
+      expect(
+        (service as unknown as { hasRuntimeMismatch: (i: unknown, r: string) => boolean }).hasRuntimeMismatch(
+          { HostConfig: { Runtime: 'runsc-systrap-hostnet' } },
+          'runsc-systrap-hostnet',
+        ),
+      ).toBe(false);
+    });
+
+    it('reports registered runtimes and versions', async () => {
+      (mockDocker as any).info = jest.fn().mockResolvedValue({
+        ServerVersion: '29.0.0',
+        KernelVersion: '6.8.0',
+        DefaultRuntime: 'runc',
+        Runtimes: { runc: { path: 'runc' }, 'runsc-systrap': { path: '/usr/local/bin/runsc' } },
+      });
+
+      await expect(service.getDockerHostInfo()).resolves.toEqual({
+        serverVersion: '29.0.0',
+        kernelVersion: '6.8.0',
+        defaultRuntime: 'runc',
+        runtimes: { runc: 'runc', 'runsc-systrap': '/usr/local/bin/runsc' },
+      });
+    });
+
+    describe('runIsolationProbe', () => {
+      let probeContainers: any[];
+      let volume: { remove: jest.Mock };
+
+      function execFor(script: string, user?: string) {
+        let exitCode = 0;
+        let output = '';
+
+        if (script === 'exit 7') {
+          exitCode = 7;
+        } else if (script === 'id -u') {
+          output = user ?? '0';
+        } else if (script.startsWith('dmesg')) {
+          output = '[   0.000000] Starting gVisor...';
+        } else if (script.includes('urllib')) {
+          output = 'agenstra-netns-ok';
+        }
+
+        return {
+          start: jest.fn().mockImplementation(async () => {
+            const stream = new PassThrough();
+
+            setImmediate(() => {
+              stream.end(output);
+            });
+
+            return stream;
+          }),
+          inspect: jest.fn().mockResolvedValue({ Running: false, ExitCode: exitCode }),
+        };
+      }
+
+      function probeContainer(id: string, runtime: string) {
+        return {
+          id,
+          start: jest.fn().mockResolvedValue(undefined),
+          stop: jest.fn().mockResolvedValue(undefined),
+          remove: jest.fn().mockResolvedValue(undefined),
+          inspect: jest.fn().mockResolvedValue({ State: { Running: true }, HostConfig: { Runtime: runtime } }),
+          exec: jest
+            .fn()
+            .mockImplementation(async (opts: { Cmd: string[]; User?: string }) => execFor(opts.Cmd[2], opts.User)),
+          logs: jest.fn().mockResolvedValue(Buffer.from('agenstra-probe-stdout\nagenstra-probe-stderr\n')),
+        };
+      }
+
+      beforeEach(() => {
+        probeContainers = [];
+        volume = { remove: jest.fn().mockResolvedValue(undefined) };
+        (mockDocker as any).createVolume = jest.fn().mockResolvedValue({});
+        (mockDocker as any).getVolume = jest.fn().mockReturnValue(volume);
+        (mockDocker as any).createContainer = jest.fn().mockImplementation(async (opts: any) => {
+          const container = probeContainer(`probe-${probeContainers.length}`, opts.HostConfig.Runtime);
+
+          probeContainers.push(container);
+
+          return container;
+        });
+        mockDocker.getContainer.mockImplementation(
+          (id: string) => probeContainers.find((c) => c.id === id) ?? mockContainer,
+        );
+      });
+
+      it('passes and cleans up every probe container and volume', async () => {
+        const result = await service.runIsolationProbe({
+          runtime: 'runsc-systrap',
+          image: 'worker:latest',
+          timeoutMs: 10_000,
+          sharedNetworkNamespace: true,
+          sharedNetworkNamespaceRuntime: 'runsc-systrap-hostnet',
+        });
+
+        expect(result).toEqual({ ok: true, gvisorKernelDetected: true });
+        expect(probeContainers).toHaveLength(3);
+
+        const [main, owner, member] = (mockDocker as any).createContainer.mock.calls.map((call: any[]) => call[0]);
+
+        expect(main.HostConfig).toEqual(
+          expect.objectContaining({ Runtime: 'runsc-systrap', CapDrop: ['ALL'], SecurityOpt: ['no-new-privileges'] }),
+        );
+        expect(main.Labels).toEqual({ 'io.agenstra.isolation-probe': '1' });
+        expect(owner.HostConfig.Runtime).toBeUndefined();
+        expect(member.HostConfig.NetworkMode).toBe('container:probe-1');
+        expect(member.HostConfig.Runtime).toBe('runsc-systrap-hostnet');
+        expect(owner.Cmd[0]).toContain('http.server 18765 --bind 127.0.0.1');
+
+        for (const container of probeContainers) {
+          expect(container.remove).toHaveBeenCalledWith({ force: true, v: true });
+        }
+
+        expect(volume.remove).toHaveBeenCalled();
+      });
+
+      it('fails when the sandboxed member cannot reach the guard loopback proxy', async () => {
+        (mockDocker as any).createContainer = jest.fn().mockImplementation(async (opts: any) => {
+          const container = probeContainer(`probe-${probeContainers.length}`, opts.HostConfig.Runtime);
+
+          if (opts.HostConfig.NetworkMode?.startsWith('container:')) {
+            container.exec.mockImplementation(async () => ({
+              start: jest.fn().mockImplementation(async () => {
+                const stream = new PassThrough();
+
+                setImmediate(() => stream.end('Connection refused'));
+
+                return stream;
+              }),
+              inspect: jest.fn().mockResolvedValue({ Running: false, ExitCode: 1 }),
+            }));
+          }
+
+          probeContainers.push(container);
+
+          return container;
+        });
+
+        const result = await service.runIsolationProbe({
+          runtime: 'runsc-systrap',
+          image: 'worker:latest',
+          timeoutMs: 10_000,
+          sharedNetworkNamespace: true,
+          sharedNetworkNamespaceRuntime: 'runsc-systrap-hostnet',
+        });
+
+        expect(result).toEqual(expect.objectContaining({ ok: false, reasonCode: 'E_SHARED_NETNS_FAILED' }));
+
+        for (const container of probeContainers) {
+          expect(container.remove).toHaveBeenCalled();
+        }
+      });
+
+      it('removes containers created after a probe timeout', async () => {
+        let releaseCreate: () => void = () => undefined;
+
+        (mockDocker as any).createContainer = jest.fn().mockImplementation(async (opts: any) => {
+          await new Promise<void>((resolve) => (releaseCreate = resolve));
+          const container = probeContainer('late-probe', opts.HostConfig.Runtime);
+
+          probeContainers.push(container);
+
+          return container;
+        });
+
+        const result = await service.runIsolationProbe({
+          runtime: 'runsc-systrap',
+          image: 'worker:latest',
+          timeoutMs: 20,
+        });
+
+        expect(result).toEqual(expect.objectContaining({ ok: false, reasonCode: 'E_PROBE_TIMEOUT' }));
+
+        releaseCreate();
+
+        // The late container is removed once the timed-out run settles (poll instead of a fixed delay).
+        for (let attempt = 0; attempt < 100 && !probeContainers[0]?.remove.mock.calls.length; attempt++) {
+          await new Promise((resolve) => setTimeout(resolve, 10));
+        }
+
+        expect(probeContainers[0].remove).toHaveBeenCalledWith({ force: true, v: true });
+      });
+
+      it('fails with a runtime mismatch when Docker ran another runtime', async () => {
+        (mockDocker as any).createContainer = jest.fn().mockImplementation(async () => {
+          const container = probeContainer('probe-x', 'runc');
+
+          probeContainers.push(container);
+
+          return container;
+        });
+
+        const result = await service.runIsolationProbe({
+          runtime: 'runsc-systrap',
+          image: 'worker:latest',
+          timeoutMs: 10_000,
+        });
+
+        expect(result).toEqual(expect.objectContaining({ ok: false, reasonCode: 'E_PROBE_RUNTIME_MISMATCH' }));
+        expect(probeContainers[0].remove).toHaveBeenCalled();
+      });
+
+      it('fails when the container cannot start and still cleans up', async () => {
+        (mockDocker as any).createContainer = jest.fn().mockImplementation(async () => {
+          const container = probeContainer('probe-y', 'runsc-systrap');
+
+          container.start.mockRejectedValue(new Error('unknown runtime'));
+          probeContainers.push(container);
+
+          return container;
+        });
+
+        const result = await service.runIsolationProbe({
+          runtime: 'runsc-systrap',
+          image: 'worker:latest',
+          timeoutMs: 10_000,
+        });
+
+        expect(result).toEqual(expect.objectContaining({ ok: false, reasonCode: 'E_PROBE_START_FAILED' }));
+        expect(probeContainers[0].remove).toHaveBeenCalled();
+        expect(volume.remove).toHaveBeenCalled();
+      });
+
+      it('reports an unavailable probe image without creating anything', async () => {
+        (service.ensureImageExists as jest.Mock).mockRejectedValue(new Error('pull denied'));
+
+        const result = await service.runIsolationProbe({ runtime: 'runc', image: 'worker:latest', timeoutMs: 10_000 });
+
+        expect(result).toEqual(expect.objectContaining({ ok: false, reasonCode: 'E_PROBE_IMAGE_UNAVAILABLE' }));
+        expect((mockDocker as any).createVolume).not.toHaveBeenCalled();
+      });
+    });
+  });
 });

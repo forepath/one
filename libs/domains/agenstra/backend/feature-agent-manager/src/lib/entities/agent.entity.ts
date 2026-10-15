@@ -2,7 +2,9 @@ import type { EffectiveEgressPolicy, EffectiveMessageFilterRule } from '@forepat
 import { createAes256GcmTransformer } from '@forepath/shared/backend';
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
+import type { IsolationLevel } from '../constants/container-isolation.constants';
 import { GitRepositorySetupMode } from '../constants/git-repository-setup-mode';
+import type { AgentIsolationSelectionDto } from '../dto/container-isolation.dto';
 
 export type AgentEgressStatus = 'inactive' | 'active' | 'failed';
 
@@ -141,6 +143,17 @@ export class AgentEntity {
   /** Effective chat message filter rules (global → workspace → environment) last received from the controller. */
   @Column({ type: 'jsonb', nullable: true, name: 'message_filters' })
   messageFilters?: EffectiveMessageFilterRule[] | null;
+
+  /**
+   * Container isolation level of the worker container (`standard` = runc, `sandboxed` = gVisor).
+   * Environments created before isolation levels existed are `standard`.
+   */
+  @Column({ type: 'varchar', length: 16, default: 'standard', name: 'isolation_level' })
+  isolationLevel?: IsolationLevel;
+
+  /** Audit record of how the isolation level was selected (recommendation, override, revision). */
+  @Column({ type: 'jsonb', nullable: true, name: 'isolation_selection' })
+  isolationSelection?: AgentIsolationSelectionDto | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

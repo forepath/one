@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
@@ -9,6 +10,7 @@ import {
   type OpencodeCommandInfoDto,
   type OpencodeConfigDto,
 } from '../../services/opencode-config.service';
+import { refreshClientIsolation } from '../clients/clients.actions';
 import { setContainerRunningStatus } from '../stats/stats.actions';
 import {
   forwardedEventReceived,
@@ -55,10 +57,38 @@ import {
 import { selectAgentsState } from './agents.selectors';
 import type { AgentSlashCommand } from './agents.types';
 
+/** Longest plain-text error body shown verbatim (longer bodies are proxy/error pages, not messages). */
+const MAX_DISPLAYABLE_ERROR_TEXT_LENGTH = 500;
+
+/** True for short plain-text error bodies; HTML pages (e.g. proxy 502/504 responses) are not shown verbatim. */
+function isDisplayableErrorText(body: unknown): body is string {
+  if (typeof body !== 'string') {
+    return false;
+  }
+
+  const text = body.trim();
+
+  return text.length > 0 && text.length <= MAX_DISPLAYABLE_ERROR_TEXT_LENGTH && !text.startsWith('<');
+}
+
 /**
  * Normalizes error messages from HTTP errors.
  */
 function normalizeError(error: unknown): string {
+  if (error instanceof HttpErrorResponse) {
+    const body = error.error as { message?: unknown } | string | null | undefined;
+
+    if (isDisplayableErrorText(body)) {
+      return body.trim();
+    }
+
+    if (body && typeof body === 'object' && typeof body.message === 'string' && body.message.trim().length > 0) {
+      return body.message;
+    }
+
+    return error.message || String(error.status);
+  }
+
   if (error instanceof Error) {
     return error.message;
   }
@@ -334,7 +364,14 @@ export const createClientAgent$ = createEffect(
       exhaustMap(({ clientId, agent }) =>
         agentsService.createClientAgent(clientId, agent).pipe(
           map((created) => createClientAgentSuccess({ clientId, agent: created })),
-          catchError((error) => of(createClientAgentFailure({ clientId, error: normalizeError(error) }))),
+          catchError((error) => {
+            const failure = createClientAgentFailure({ clientId, error: normalizeError(error) });
+
+            // 409 = stale capability revision or unavailable isolation level: reload the host's levels.
+            return error instanceof HttpErrorResponse && error.status === 409
+              ? of(failure, refreshClientIsolation({ clientId }))
+              : of(failure);
+          }),
         ),
       ),
     );

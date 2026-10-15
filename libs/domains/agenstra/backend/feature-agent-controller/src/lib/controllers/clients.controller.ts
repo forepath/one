@@ -41,6 +41,7 @@ import {
   Headers,
   HttpCode,
   HttpStatus,
+  Optional,
   Param,
   ParseIntPipe,
   ParseUUIDPipe,
@@ -68,6 +69,7 @@ import { ClientAgentEnvironmentVariablesProxyService } from '../services/client-
 import { ClientAgentFileSystemProxyService } from '../services/client-agent-file-system-proxy.service';
 import { ClientAgentProxyService } from '../services/client-agent-proxy.service';
 import { ClientAgentVncProxyService } from '../services/client-agent-vnc-proxy.service';
+import { ClientIsolationService } from '../services/client-isolation.service';
 import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 import { ClientsService } from '../services/clients.service';
 import { OpencodeLayerFilesService } from '../services/opencode-layer-files.service';
@@ -97,6 +99,7 @@ export class ClientsController {
     private readonly opencodeLayerFilesService: OpencodeLayerFilesService,
     private readonly configSyncTargets: OpencodeConfigSyncTargetsService,
     private readonly effectiveConfigSync: OpencodeEffectiveConfigSyncService,
+    @Optional() private readonly clientIsolation?: ClientIsolationService,
   ) {}
 
   private syncAgentRuntime(clientId: string, agentId: string): void {
@@ -391,11 +394,40 @@ export class ClientsController {
     // The egress policy is always derived from the layered agent configuration (never from the request),
     // so the manager can provision the egress guard before the environment first starts.
     const { egress } = await this.effectiveConfigSync.buildCreationPlatformPolicy(id);
-    const created = await this.clientAgentProxyService.createClientAgent(
-      id,
-      { ...createAgentDto, egressPolicy: egress as unknown as Record<string, unknown> },
-      userInfo.userId,
-    );
+    // Container isolation is validated against the host's current capabilities (stale or unavailable
+    // selections are rejected, never downgraded); the selection record is derived server-side.
+    const { isolationLevel, capabilityRevision, isolationSelection: _ignored, ...agentFields } = createAgentDto;
+    const isolationPlan = this.clientIsolation
+      ? await this.clientIsolation.planCreation(id, { isolationLevel, capabilityRevision }, userInfo.userId)
+      : null;
+    let created: CreateAgentResponseDto;
+
+    try {
+      created = await this.clientAgentProxyService.createClientAgent(
+        id,
+        {
+          ...agentFields,
+          ...(isolationPlan
+            ? isolationPlan.forward
+            : {
+                ...(isolationLevel ? { isolationLevel } : {}),
+                ...(capabilityRevision ? { capabilityRevision } : {}),
+              }),
+          egressPolicy: egress as unknown as Record<string, unknown>,
+        },
+        userInfo.userId,
+      );
+    } catch (error) {
+      if (isolationPlan) {
+        this.clientIsolation?.notifyCreationFailed(id, isolationPlan, createAgentDto.name, error);
+      }
+
+      throw error;
+    }
+
+    if (isolationPlan) {
+      this.clientIsolation?.notifyCreated(id, isolationPlan, created);
+    }
 
     this.syncAgentRuntime(id, created.id);
 

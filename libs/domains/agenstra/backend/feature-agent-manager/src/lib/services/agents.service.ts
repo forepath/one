@@ -7,6 +7,7 @@ import {
 import { PasswordService } from '@forepath/identity/backend';
 import {
   BadRequestException,
+  ConflictException,
   forwardRef,
   HttpException,
   Inject,
@@ -14,10 +15,16 @@ import {
   Logger,
   OnApplicationBootstrap,
   Optional,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
+import {
+  type IsolationLevel,
+  resolveSandboxedSharedNetnsIsolationRuntime,
+} from '../constants/container-isolation.constants';
 import { GitRepositorySetupMode, resolveGitRepositorySetupMode } from '../constants/git-repository-setup-mode';
+import type { AgentIsolationSelectionDto } from '../dto/container-isolation.dto';
 import { AgentResponseDto } from '../dto/agent-response.dto';
 import { CreateAgentResponseDto } from '../dto/create-agent-response.dto';
 import { CreateAgentDto } from '../dto/create-agent.dto';
@@ -31,6 +38,14 @@ import { OPENCODE_SERVER_PORT, OPENCODE_SERVER_USERNAME_DEFAULT } from '../provi
 import { VNC_WEBSOCKIFY_PORT } from '../constants/vnc.constants';
 import { AgentsRepository } from '../repositories/agents.repository';
 import { serializeAgentEnvironmentBaseline } from '../utils/agent-environment-baseline.utils';
+import {
+  buildIsolationSelection,
+  containerRuntimeForIsolationLevel,
+  effectiveIsolationLevel,
+  IsolationResolutionError,
+  resolveIsolationRequest,
+  runtimeForIsolationLevel,
+} from '../utils/container-isolation.utils';
 import { expandProviderPathTildeInContainer } from '../utils/provider-container-path.utils';
 
 import { AgentChatSessionsService } from './agent-chat-sessions.service';
@@ -38,6 +53,7 @@ import { AgentEgressService, EGRESS_GUARDED_AGENT_CAP_DROP } from './agent-egres
 import { AgentGitCredentialsService } from './agent-git-credentials.service';
 import { DeploymentsService } from './deployments.service';
 import { DockerService } from './docker.service';
+import { IsolationCapabilitiesService } from './isolation-capabilities.service';
 import {
   CREATE_ENVIRONMENT_PROGRESS_STEPS,
   EnvironmentProgressService,
@@ -74,7 +90,48 @@ export class AgentsService implements OnApplicationBootstrap {
     private readonly environmentProgress?: EnvironmentProgressService,
     @Optional()
     private readonly agentEgress?: AgentEgressService,
+    @Optional()
+    private readonly isolationCapabilities?: IsolationCapabilitiesService,
   ) {}
+
+  /**
+   * Resolve the container isolation level of a new environment against the host's current (probed)
+   * capabilities. Rejects stale capability revisions and unavailable levels instead of silently
+   * running the workload with a different isolation level.
+   */
+  private async resolveCreationIsolation(
+    createAgentDto: CreateAgentDto,
+  ): Promise<{ level: IsolationLevel; runtime?: string; selection: AgentIsolationSelectionDto | null }> {
+    if (!this.isolationCapabilities) {
+      return { level: 'standard', selection: null };
+    }
+
+    const capabilities = await this.isolationCapabilities.getCapabilitiesForCreation();
+
+    try {
+      const resolution = resolveIsolationRequest(capabilities, createAgentDto);
+
+      return {
+        level: resolution.level,
+        runtime: containerRuntimeForIsolationLevel(resolution.level),
+        selection: buildIsolationSelection(resolution, capabilities.revision, createAgentDto.isolationSelection),
+      };
+    } catch (error) {
+      if (error instanceof IsolationResolutionError) {
+        if (error.code === 'invalid-level') {
+          throw new BadRequestException(error.message);
+        }
+
+        if (error.code === 'host-not-runnable') {
+          throw new ServiceUnavailableException(error.message);
+        }
+
+        throw new ConflictException(error.message);
+      }
+
+      throw error;
+    }
+  }
 
   /**
    * Generate a secure random password.
@@ -273,6 +330,8 @@ export class AgentsService implements OnApplicationBootstrap {
     createAgentDto: CreateAgentDto,
     progress?: EnvironmentProgressTracker,
   ): Promise<CreateAgentResponseDto> {
+    // Validate the requested isolation level before any container or guard is provisioned.
+    const isolation = await this.resolveCreationIsolation(createAgentDto);
     // Generate a random password
     const generatedPassword = this.generateRandomPassword();
     // Hash the password
@@ -372,6 +431,7 @@ export class AgentsService implements OnApplicationBootstrap {
             readOnly: true,
           },
         ],
+        ...(isolation.runtime ? { runtime: isolation.runtime } : {}),
         ...(egressGuard
           ? {
               // The guard owns the network namespace (agent network attachment / published ports).
@@ -402,10 +462,23 @@ export class AgentsService implements OnApplicationBootstrap {
         await this.agentEgress?.removeGuardContainer(egressGuard.guardId);
       }
 
+      // Never retry on a weaker runtime: report the failure and let the user decide.
+      this.isolationCapabilities?.recordRuntimeFailure(isolation.level);
+
+      if (isolation.level === 'sandboxed' && !(error instanceof HttpException)) {
+        const message = (error as { message?: string })?.message || 'unknown error';
+
+        throw new BadRequestException(
+          `The sandboxed (gVisor) container could not be started: ${message}. The environment was not created; ` +
+            'retry or explicitly choose the standard isolation level.',
+        );
+      }
+
       throw error;
     }
 
     let persistedAgentId: string | undefined;
+    let workerRuntimeFailed = false;
 
     try {
       progress?.advance('preparingRepository');
@@ -436,6 +509,8 @@ export class AgentsService implements OnApplicationBootstrap {
             ? GitRepositorySetupMode.EMPTY
             : createAgentDto.gitRepositorySetupMode,
         environmentVariableBaseline: serializeAgentEnvironmentBaseline({}),
+        isolationLevel: isolation.level,
+        isolationSelection: isolation.selection,
         ...(egressPolicy
           ? {
               egressPolicy,
@@ -454,11 +529,19 @@ export class AgentsService implements OnApplicationBootstrap {
       persistedAgentId = agent.id;
       progress?.setAgentId(agent.id);
       progress?.advance('waitingForHealthy');
-      await this.openCodeClientFactory.waitForHealthy(agent.id, containerId, {
-        password: opencodeServerPassword,
-      });
+
+      try {
+        await this.openCodeClientFactory.waitForHealthy(agent.id, containerId, {
+          password: opencodeServerPassword,
+        });
+      } catch (error) {
+        // Only a worker that never becomes healthy counts as a runtime failure (not e.g. Git or DB errors).
+        workerRuntimeFailed = true;
+        throw error;
+      }
 
       progress?.advance('finalizing');
+      this.isolationCapabilities?.recordRuntimeSuccess(isolation.level);
 
       // Full three-layer OpenCode config + secrets are applied by the controller
       // via durable sync targets after create/start/restart (not agent-only defaults).
@@ -533,6 +616,17 @@ export class AgentsService implements OnApplicationBootstrap {
       const message = err.message || 'Unknown agent creation error';
 
       this.logger.error(`Agent creation failed after container start: ${message}`, err.stack);
+
+      if (isolation.level === 'sandboxed' && workerRuntimeFailed) {
+        // e.g. the worker never became healthy on gVisor: count it as a runtime failure (re-probe after
+        // repeated failures) and never retry on a weaker runtime.
+        this.isolationCapabilities?.recordRuntimeFailure(isolation.level);
+        throw new BadRequestException(
+          `The sandboxed (gVisor) container could not be started: ${message}. The environment was not created; ` +
+            'retry or explicitly choose the standard isolation level.',
+        );
+      }
+
       // Surface the real cause through the controller proxy (avoids opaque Nest 500).
       throw new BadRequestException(message);
     }
@@ -760,6 +854,24 @@ export class AgentsService implements OnApplicationBootstrap {
   }
 
   /**
+   * Map the environment's container isolation for API responses.
+   */
+  private mapAgentIsolation(agent: AgentEntity): NonNullable<AgentResponseDto['isolation']> {
+    const level = effectiveIsolationLevel(agent.isolationLevel);
+
+    return {
+      level,
+      runtime:
+        level === 'sandboxed'
+          ? agent.egressGuardContainerId
+            ? resolveSandboxedSharedNetnsIsolationRuntime()
+            : runtimeForIsolationLevel(level)
+          : (this.isolationCapabilities?.getCapabilities().levels.standard.runtime ?? runtimeForIsolationLevel(level)),
+      selection: agent.isolationSelection ?? null,
+    };
+  }
+
+  /**
    * Map agent Git metadata for API responses.
    */
   private mapAgentGit(agent: AgentEntity): AgentResponseDto['git'] | undefined {
@@ -831,6 +943,7 @@ export class AgentsService implements OnApplicationBootstrap {
       chats,
       primaryChatId: primary.id,
       ...(this.agentEgress ? { egress: await this.agentEgress.describe(agent) } : {}),
+      isolation: this.mapAgentIsolation(agent),
       createdAt: agent.createdAt,
       updatedAt: agent.updatedAt,
     };

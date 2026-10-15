@@ -49,6 +49,11 @@ paths:
         Prepares the workspace repository and Git credentials as the worker runtime user.
         Repository preparation failures (including authentication or clone errors) abort creation
         and clean up the container; a failed clone is not reported as a ready environment.
+
+        The container isolation level is validated against the host's current (probed) isolation
+        capabilities before anything is provisioned. When `isolationLevel` is omitted, the strongest
+        ready level is used. An explicit level is never replaced by another one, and a sandboxed
+        container that fails to start is never retried on the standard runtime.
       operationId: createAgent
       requestBody:
         required: true
@@ -63,6 +68,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateAgentResponseDto'
+        '400':
+          description: |
+            Validation error (including an invalid `isolationLevel`), repository preparation failure, or
+            the sandboxed (gVisor) container could not be started (the environment was not created)
+        '409':
+          description: |
+            The requested isolation level is not available on this host, or `capabilityRevision` does not
+            match the current isolation capabilities (stale selection)
+        '503':
+          description: The host cannot run environments (the standard Docker `runc` baseline is not available)
   /agents/progress:
     get:
       summary: List active environment provisioning operations
@@ -724,6 +739,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConfigResponseDto'
+  /isolation:
+    get:
+      summary: Get container isolation capabilities
+      description: |
+        Current isolation capability record of this host (from the last completed runtime probe):
+        state of the `standard` (runc) and `sandboxed` (gVisor) levels, recommended level and
+        capability revision. `probing` is true while a probe is running.
+      operationId: getIsolationCapabilities
+      responses:
+        '200':
+          description: Isolation capabilities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostIsolationCapabilitiesDto'
+  /isolation/probe:
+    post:
+      summary: Re-probe container isolation capabilities
+      description: |
+        Runs a runtime probe of every isolation level now and returns the result. Joins a probe that is
+        already running; results younger than 30 seconds are returned without a new probe.
+      operationId: probeIsolationCapabilities
+      responses:
+        '200':
+          description: Isolation capabilities after the probe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HostIsolationCapabilitiesDto'
   /agents/{agentId}/files:
     description: |
       User-facing file API, confined to the agent workspace (normally /app). Relative paths resolve under
@@ -2443,6 +2487,8 @@ components:
           type: string
           enum: [opencode]
           description: Agent provider type (defaults to 'opencode' if not provided)
+        containerType:
+          $ref: '#/components/schemas/ContainerType'
         gitRepositorySetupMode:
           type: string
           enum: [clone, empty]
@@ -2452,6 +2498,34 @@ components:
         gitRepositoryUrl:
           type: [string, 'null']
           description: Git repository URL to clone when creating the agent (required for clone mode unless GIT_REPOSITORY_URL is set on the instance)
+        egressPolicy:
+          $ref: '#/components/schemas/EffectiveEgressPolicy'
+          description: |
+            Effective egress policy (set by the agent controller from the layered agent configuration).
+            When it requires filtering, the egress guard is provisioned and its policy applied before the
+            agent container starts.
+        isolationLevel:
+          $ref: '#/components/schemas/IsolationLevel'
+          description: |
+            Container isolation level (`sandboxed` = gVisor, `standard` = runc). When omitted, the strongest
+            level that is ready on this host is used. An explicit level is never replaced by another one:
+            an unavailable level is rejected with 409.
+        capabilityRevision:
+          type: string
+          maxLength: 128
+          description: |
+            Isolation capability revision the selection was made against (`HostIsolationCapabilitiesDto.revision`).
+            When set and the host's capabilities changed in the meantime, the request is rejected with 409.
+        isolationSelection:
+          type: object
+          additionalProperties: true
+          description: |
+            Selection metadata set by the agent controller. Only `selectedBy` (user id, max 255 characters)
+            is used; every other field of the persisted selection record is derived by the agent manager.
+          properties:
+            selectedBy:
+              type: string
+              maxLength: 255
         deploymentConfiguration:
           type: object
           description: CI/CD deployment configuration (optional). If provided, a deployment configuration will be created for this agent.
@@ -2535,6 +2609,8 @@ components:
         agentType:
           type: string
           description: Agent provider type identifier
+        containerType:
+          $ref: '#/components/schemas/ContainerType'
         capabilities:
           $ref: '#/components/schemas/AgentTypeCapabilities'
         git:
@@ -2560,6 +2636,9 @@ components:
         egress:
           $ref: '#/components/schemas/AgentEgressStatusDto'
           description: Egress guard (web traffic filtering) status of this environment
+        isolation:
+          $ref: '#/components/schemas/AgentIsolationDto'
+          description: Container isolation level of this environment (runtime and selection record)
         createdAt:
           type: string
           format: date-time
@@ -2651,6 +2730,129 @@ components:
           items:
             $ref: '#/components/schemas/AgentTypeInfo'
           description: Array of available agent provider types with display names
+        isolation:
+          $ref: '#/components/schemas/HostIsolationCapabilitiesDto'
+          description: Container isolation levels this host can run (from real runtime probes)
+    ContainerType:
+      type: string
+      enum: [generic, docker, terraform, kubernetes]
+      default: generic
+      description: Container type of the environment
+    IsolationLevel:
+      type: string
+      enum: [standard, sandboxed]
+      description: |
+        Container isolation level. `standard` runs the worker on Docker's default runtime (runc, shares
+        the host kernel); `sandboxed` runs it on gVisor (`runsc`, systrap platform).
+    IsolationRuntimeState:
+      type: string
+      enum:
+        [
+          ready,
+          unsupported,
+          installation-failed,
+          probe-failed,
+          disabled-by-admin,
+        ]
+      description: Runtime state of an isolation level on a host (derived from real probes, never from configuration alone)
+    IsolationLevelCapabilityDto:
+      type: object
+      required: [rank, runtime, state]
+      properties:
+        rank:
+          type: integer
+          description: Strength rank (`1` = standard, `2` = sandboxed); higher is stronger
+        runtime:
+          type: string
+          description: Docker runtime name used for this level (`runc`, `runsc-systrap`)
+        state:
+          $ref: '#/components/schemas/IsolationRuntimeState'
+        reasonCode:
+          type: string
+          description: |
+            Stable machine-readable reason when the level is not `ready`, e.g. `E_RUNTIME_NOT_REGISTERED`,
+            `E_DOCKER_BASELINE_UNAVAILABLE`, `E_RUNC_PROBE_FAILED`, `E_PROBE_PENDING`, `E_PROBE_IMAGE_UNAVAILABLE`,
+            `E_PROBE_START_FAILED`, `E_PROBE_EXEC_FAILED`, `E_PROBE_FILESYSTEM_FAILED`, `E_PROBE_LOGS_FAILED`,
+            `E_PROBE_RUNTIME_MISMATCH`, `E_PROBE_TIMEOUT`, `E_SHARED_NETNS_FAILED`, `E_REPEATED_RUNTIME_FAILURES`,
+            `E_DISABLED_BY_ADMIN`
+        reason:
+          type: string
+          description: Short operator-facing explanation (never contains secrets or workspace content)
+    HostIsolationCapabilitiesDto:
+      type: object
+      required:
+        [revision, probedAt, probing, levels, recommendedLevel, availableLevels]
+      properties:
+        revision:
+          type: string
+          description: Content hash (`sha256:...`) of the probed host state; changes whenever capabilities change
+        probedAt:
+          type: [string, 'null']
+          format: date-time
+          description: Time of the last completed probe (`null` before the first probe finished)
+        probing:
+          type: boolean
+          description: True while a probe is running (states reflect the previous probe)
+        levels:
+          type: object
+          required: [standard, sandboxed]
+          properties:
+            standard:
+              $ref: '#/components/schemas/IsolationLevelCapabilityDto'
+            sandboxed:
+              $ref: '#/components/schemas/IsolationLevelCapabilityDto'
+        recommendedLevel:
+          oneOf:
+            - $ref: '#/components/schemas/IsolationLevel'
+            - type: 'null'
+          description: Strongest ready level, or `null` when the host cannot run environments (standard baseline not ready)
+        availableLevels:
+          type: array
+          items:
+            $ref: '#/components/schemas/IsolationLevel'
+          description: Ready levels, strongest first (empty when the standard baseline is not ready)
+    AgentIsolationSelectionDto:
+      type: object
+      required: [effectiveSelection, selectionSource, selectedAt]
+      description: How the isolation level of an environment was selected (audit record)
+      properties:
+        automaticSelection:
+          oneOf:
+            - $ref: '#/components/schemas/IsolationLevel'
+            - type: 'null'
+          description: Level that was automatically recommended when the environment was created
+        effectiveSelection:
+          $ref: '#/components/schemas/IsolationLevel'
+        selectionSource:
+          type: string
+          enum: [automatic, user-confirmed, user-override]
+          description: |
+            `automatic` (no explicit level), `user-confirmed` (explicit level at least as strong as the
+            recommendation), `user-override` (explicit weaker level than recommended)
+        selectedBy:
+          type: [string, 'null']
+          description: Controller user id that made the selection (when known)
+        selectedAt:
+          type: string
+          format: date-time
+        capabilityRevision:
+          type: [string, 'null']
+          description: Host capability revision the selection was validated against
+    AgentIsolationDto:
+      type: object
+      required: [level, runtime]
+      description: Effective container isolation of an environment
+      properties:
+        level:
+          $ref: '#/components/schemas/IsolationLevel'
+        runtime:
+          type: string
+          description: Docker runtime the environment's worker container runs on (`runsc-systrap-hostnet` for sandboxed workers behind an egress guard)
+        selection:
+          oneOf:
+            - $ref: '#/components/schemas/AgentIsolationSelectionDto'
+            - type: 'null'
+          description: Selection record (`null` for environments created before isolation levels existed)
     AgentFileType:
       type: string
       enum: [text, binary, pdf, image, video, audio]

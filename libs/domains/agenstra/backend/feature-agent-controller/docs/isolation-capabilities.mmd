@@ -1,0 +1,89 @@
+sequenceDiagram
+    participant UI as Agent Console
+    participant Ctl as ClientsController /<br/>ClientIsolationController
+    participant Iso as ClientIsolationService
+    participant Proxy as ClientAgentProxyService
+    participant Sched as BullMQ repeatable job
+    participant Mgr as Agent Manager<br/>(IsolationCapabilitiesService, AgentsService)
+    participant Docker as Docker daemon<br/>(runc, runsc-systrap)
+    participant DB as Database<br/>(client_isolation_snapshots)
+    participant Pub as AgenstraNotificationPublisher
+
+    Note over Mgr,Docker: Probe on the agent manager: startup, every AGENT_ISOLATION_PROBE_INTERVAL_MS (default 6h, jitter),<br/>POST /api/isolation/probe, and after AGENT_ISOLATION_FAILURE_THRESHOLD sandboxed runtime failures
+
+    Mgr->>Docker: docker info (version, kernel, registered runtimes)
+    Mgr->>Docker: standard probe on runc (worker image: start, runtime check, volume I/O, exec, non-root exec, logs)
+    alt Sandboxed disabled (AGENT_ISOLATION_SANDBOX_ENABLED=false)
+        Mgr->>Mgr: sandboxed = disabled-by-admin
+    else Runtime not registered
+        Mgr->>Mgr: sandboxed = unsupported (E_RUNTIME_NOT_REGISTERED)
+    else Standard floor ready
+        Mgr->>Docker: sandboxed probe on runsc-systrap (same checks)
+        Mgr->>Docker: shared netns: runc owner + sandboxed member (NetworkMode container:owner)
+    end
+    Mgr->>Mgr: revision = sha256(facts + states), recommendedLevel = strongest ready level
+
+    Note over Ctl,Pub: Controller fetch, snapshot and transitions
+
+    alt Workspace response / GET /api/clients/:id/isolation
+        UI->>Ctl: GET /api/clients/:id (or /isolation)
+        Ctl->>Iso: summaryForClient / getSummary
+        Iso->>Proxy: getClientIsolation(clientId)
+        Proxy->>Mgr: GET /api/isolation
+        Mgr-->>Proxy: HostIsolationCapabilitiesDto (404 on legacy managers)
+    else POST /api/clients/:id/isolation/probe (Re-check)
+        UI->>Ctl: POST /api/clients/:id/isolation/probe
+        Ctl->>Iso: probe(clientId)
+        Iso->>Proxy: probeClientIsolation(clientId)
+        Proxy->>Mgr: POST /api/isolation/probe
+        Mgr-->>Proxy: HostIsolationCapabilitiesDto
+    else isolation-capabilities.coordinator / .unit (ISOLATION_CAPABILITIES_INTERVAL_MS, default 15m)
+        Sched->>Iso: findClientIdsDue(ISOLATION_CAPABILITIES_BATCH_SIZE) then refresh(clientId)
+        Iso->>Proxy: getClientIsolation(clientId)
+        Proxy->>Mgr: GET /api/isolation
+        Mgr-->>Proxy: HostIsolationCapabilitiesDto
+    end
+
+    alt Capabilities received (completed probe, revision changed)
+        Iso->>DB: conditional UPDATE / INSERT snapshot (winner publishes)
+        Iso->>Pub: isolation.sandbox_available / isolation.sandbox_unavailable / isolation.baseline_failed
+        Iso-->>Ctl: ClientIsolationSummaryDto (supported, stale=false)
+    else Manager unreachable
+        Iso->>DB: load last snapshot
+        Iso-->>Ctl: ClientIsolationSummaryDto (stale=true)
+    else Legacy manager (no isolation endpoint)
+        Iso-->>Ctl: supported=false, standard only (E_MANAGER_UNSUPPORTED)
+    end
+
+    Note over UI,Pub: Environment creation
+
+    UI->>Ctl: POST /api/clients/:id/agents { isolationLevel?, capabilityRevision }
+    Ctl->>Iso: planCreation(clientId, request, userId)
+    Iso->>Proxy: getClientIsolation(clientId)
+    Proxy->>Mgr: GET /api/isolation
+    alt Invalid level
+        Iso-->>UI: 400
+    else Standard baseline not ready
+        Iso-->>UI: 503
+    else Stale revision or level not ready
+        Iso-->>UI: 409 (never downgraded)
+    else Valid
+        Ctl->>Proxy: createClientAgent(isolationLevel, current revision, selectedBy)
+        Proxy->>Mgr: POST /api/agents
+        Mgr->>Mgr: re-validate against current capabilities (400 / 409 / 503)
+        Mgr->>Docker: create egress guard (runc) and worker on runtime of the level
+        alt Worker started
+            Mgr->>Mgr: persist isolation_level + isolation_selection, recordRuntimeSuccess
+            Mgr-->>Ctl: 201 AgentResponseDto (isolation)
+            opt Weaker level than recommended
+                Ctl->>Pub: agent.isolation_override
+            end
+            Ctl-->>UI: 201
+        else Sandboxed worker failed
+            Mgr->>Mgr: recordRuntimeFailure (re-probe after threshold), no runc retry
+            Mgr-->>Ctl: 400 sandboxed (gVisor) container could not be started
+            Ctl->>Pub: agent.sandbox_creation_failed
+            Ctl->>Iso: refresh(clientId)
+            Ctl-->>UI: 400
+        end
+    end

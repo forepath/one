@@ -41,6 +41,9 @@ import {
   provisionServer,
   provisionServerFailure,
   provisionServerSuccess,
+  refreshClientIsolation,
+  refreshClientIsolationFailure,
+  refreshClientIsolationSuccess,
   removeClientUser,
   removeClientUserFailure,
   removeClientUserSuccess,
@@ -91,6 +94,9 @@ export interface ClientsState {
   loadingClientUsers: Record<string, boolean>; // keyed by clientId
   addingClientUser: Record<string, boolean>; // keyed by clientId
   removingClientUser: Record<string, boolean>; // keyed by relationshipId
+  // Container isolation (merged into the client entities on success)
+  refreshingIsolation: Record<string, boolean>; // keyed by clientId
+  isolationErrors: Record<string, string | null>; // keyed by clientId
 }
 
 export const initialClientsState: ClientsState = {
@@ -122,6 +128,8 @@ export const initialClientsState: ClientsState = {
   loadingClientUsers: {},
   addingClientUser: {},
   removingClientUser: {},
+  refreshingIsolation: {},
+  isolationErrors: {},
 };
 
 export const clientsReducer = createReducer(
@@ -475,4 +483,24 @@ export const clientsReducer = createReducer(
       error,
     };
   }),
+  // Container Isolation
+  on(refreshClientIsolation, (state, { clientId }) => ({
+    ...state,
+    refreshingIsolation: { ...state.refreshingIsolation, [clientId]: true },
+    isolationErrors: { ...state.isolationErrors, [clientId]: null },
+  })),
+  on(refreshClientIsolationSuccess, (state, { clientId, isolation }) => ({
+    ...state,
+    entities: state.entities.map((c) => (c.id === clientId ? { ...c, isolation } : c)),
+    selectedClient:
+      state.selectedClient?.id === clientId ? { ...state.selectedClient, isolation } : state.selectedClient,
+    refreshingIsolation: { ...state.refreshingIsolation, [clientId]: false },
+    isolationErrors: { ...state.isolationErrors, [clientId]: null },
+  })),
+  // Kept per client (not in `error`) so a failed refresh does not block unrelated workspace modals.
+  on(refreshClientIsolationFailure, (state, { clientId, error }) => ({
+    ...state,
+    refreshingIsolation: { ...state.refreshingIsolation, [clientId]: false },
+    isolationErrors: { ...state.isolationErrors, [clientId]: error },
+  })),
 );

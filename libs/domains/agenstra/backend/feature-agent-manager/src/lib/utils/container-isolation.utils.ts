@@ -1,0 +1,217 @@
+import { createHash } from 'crypto';
+
+import {
+  ISOLATION_LEVEL_RANK,
+  ISOLATION_LEVELS,
+  type IsolationLevel,
+  type IsolationSelectionSource,
+  resolveSandboxedIsolationRuntime,
+  STANDARD_ISOLATION_RUNTIME,
+} from '../constants/container-isolation.constants';
+import type {
+  AgentIsolationSelectionDto,
+  HostIsolationCapabilitiesDto,
+  IsolationLevelCapabilityDto,
+} from '../dto/container-isolation.dto';
+
+export function isIsolationLevel(value: unknown): value is IsolationLevel {
+  return typeof value === 'string' && (ISOLATION_LEVELS as readonly string[]).includes(value);
+}
+
+/** Docker runtime name backing an isolation level on this host. */
+export function runtimeForIsolationLevel(level: IsolationLevel, env: NodeJS.ProcessEnv = process.env): string {
+  return level === 'sandboxed' ? resolveSandboxedIsolationRuntime(env) : STANDARD_ISOLATION_RUNTIME;
+}
+
+/** Isolation level persisted for an environment; rows created before isolation levels are `standard`. */
+export function effectiveIsolationLevel(stored: string | null | undefined): IsolationLevel {
+  return isIsolationLevel(stored) ? stored : 'standard';
+}
+
+/**
+ * `updateContainer` options pinning the environment's runtime on every recreate path. Sandboxed
+ * environments always get the gVisor runtime explicitly (they never silently come back on runc);
+ * standard environments keep Docker's default runtime exactly as before isolation levels existed
+ * (the current container's runtime is carried over).
+ */
+export function isolationRuntimeOptions(
+  agent: { isolationLevel?: string | null } | null | undefined,
+  env: NodeJS.ProcessEnv = process.env,
+): { runtime?: string } {
+  return agent && effectiveIsolationLevel(agent.isolationLevel) === 'sandboxed'
+    ? { runtime: runtimeForIsolationLevel('sandboxed', env) }
+    : {};
+}
+
+/** Expected-runtime argument list for `getEnvironmentApplyStrategy` (empty for standard environments). */
+export function isolationRuntimeArgs(
+  agent: { isolationLevel?: string | null } | null | undefined,
+  env: NodeJS.ProcessEnv = process.env,
+): [] | [string] {
+  const { runtime } = isolationRuntimeOptions(agent, env);
+
+  return runtime ? [runtime] : [];
+}
+
+/**
+ * Docker runtime to request when creating a container of a level: the sandbox runtime for
+ * `sandboxed`; nothing (Docker's default runtime, normally runc) for `standard`.
+ */
+export function containerRuntimeForIsolationLevel(
+  level: IsolationLevel,
+  env: NodeJS.ProcessEnv = process.env,
+): string | undefined {
+  return level === 'sandboxed' ? runtimeForIsolationLevel('sandboxed', env) : undefined;
+}
+
+/** Ready levels, strongest first. */
+export function availableIsolationLevels(levels: HostIsolationCapabilitiesDto['levels']): IsolationLevel[] {
+  return [...ISOLATION_LEVELS]
+    .filter((level) => levels[level]?.state === 'ready')
+    .sort((a, b) => ISOLATION_LEVEL_RANK[b] - ISOLATION_LEVEL_RANK[a]);
+}
+
+/**
+ * Strongest ready level. The standard (runc) floor is mandatory: when it is not ready the host
+ * cannot run environments at all and no level is recommended, even if gVisor would work.
+ */
+export function strongestAvailableIsolationLevel(
+  levels: HostIsolationCapabilitiesDto['levels'],
+): IsolationLevel | null {
+  if (levels.standard?.state !== 'ready') {
+    return null;
+  }
+
+  return availableIsolationLevels(levels)[0] ?? null;
+}
+
+export type IsolationResolutionErrorCode =
+  | 'invalid-level'
+  | 'host-not-runnable'
+  | 'level-unavailable'
+  | 'stale-revision';
+
+export class IsolationResolutionError extends Error {
+  constructor(
+    readonly code: IsolationResolutionErrorCode,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'IsolationResolutionError';
+  }
+}
+
+export interface IsolationResolution {
+  level: IsolationLevel;
+  automaticSelection: IsolationLevel;
+  selectionSource: IsolationSelectionSource;
+}
+
+/**
+ * Validate an isolation request against the current host capabilities.
+ * - Omitted level resolves to the recommendation (strongest ready level).
+ * - An explicit level must be ready; it is never silently replaced by another level.
+ * - A capability revision, when supplied, must match the current one (stale forms are rejected).
+ */
+export function resolveIsolationRequest(
+  capabilities: Pick<HostIsolationCapabilitiesDto, 'revision' | 'levels'>,
+  request: { isolationLevel?: unknown; capabilityRevision?: unknown },
+): IsolationResolution {
+  const requested = request.isolationLevel;
+
+  if (requested !== undefined && requested !== null && !isIsolationLevel(requested)) {
+    throw new IsolationResolutionError(
+      'invalid-level',
+      `Isolation level must be one of: ${ISOLATION_LEVELS.join(', ')}`,
+    );
+  }
+
+  const automaticSelection = strongestAvailableIsolationLevel(capabilities.levels);
+
+  if (!automaticSelection) {
+    throw new IsolationResolutionError(
+      'host-not-runnable',
+      'This agent manager host cannot run environments: the standard Docker (runc) baseline is not available',
+    );
+  }
+
+  const revision = request.capabilityRevision;
+
+  if (revision !== undefined && revision !== null && revision !== '' && revision !== capabilities.revision) {
+    throw new IsolationResolutionError(
+      'stale-revision',
+      'The isolation capabilities of this workspace changed since the form was opened. Review the isolation level and try again.',
+    );
+  }
+
+  if (!isIsolationLevel(requested)) {
+    return { level: automaticSelection, automaticSelection, selectionSource: 'automatic' };
+  }
+
+  if (capabilities.levels[requested]?.state !== 'ready') {
+    throw new IsolationResolutionError(
+      'level-unavailable',
+      `Isolation level '${requested}' is not available on this agent manager host`,
+    );
+  }
+
+  return {
+    level: requested,
+    automaticSelection,
+    selectionSource:
+      ISOLATION_LEVEL_RANK[requested] < ISOLATION_LEVEL_RANK[automaticSelection] ? 'user-override' : 'user-confirmed',
+  };
+}
+
+function optionalString(value: unknown, maxLength: number): string | null {
+  return typeof value === 'string' && value.length > 0 && value.length <= maxLength ? value : null;
+}
+
+/**
+ * Build the persisted selection record. Only the selecting user id is taken from the (controller
+ * supplied) input; every other field is derived from the resolution so callers cannot forge it.
+ */
+export function buildIsolationSelection(
+  resolution: IsolationResolution,
+  capabilityRevision: string,
+  input?: unknown,
+  now: Date = new Date(),
+): AgentIsolationSelectionDto {
+  const selectedBy =
+    input && typeof input === 'object' ? optionalString((input as Record<string, unknown>)['selectedBy'], 255) : null;
+
+  return {
+    automaticSelection: resolution.automaticSelection,
+    effectiveSelection: resolution.level,
+    selectionSource: resolution.selectionSource,
+    selectedBy,
+    selectedAt: now.toISOString(),
+    capabilityRevision,
+  };
+}
+
+/** Deterministic `sha256:` revision over the probed host state. */
+export function computeIsolationCapabilityRevision(input: {
+  dockerVersion?: string | null;
+  kernelVersion?: string | null;
+  runtimes: Record<string, string | null | undefined>;
+  probeImageId?: string | null;
+  levels: Record<IsolationLevel, Pick<IsolationLevelCapabilityDto, 'runtime' | 'state' | 'reasonCode'>>;
+}): string {
+  const canonical = JSON.stringify({
+    dockerVersion: input.dockerVersion ?? null,
+    kernelVersion: input.kernelVersion ?? null,
+    runtimes: Object.keys(input.runtimes)
+      .sort()
+      .map((name) => [name, input.runtimes[name] ?? null]),
+    probeImageId: input.probeImageId ?? null,
+    levels: ISOLATION_LEVELS.map((level) => [
+      level,
+      input.levels[level].runtime,
+      input.levels[level].state,
+      input.levels[level].reasonCode ?? null,
+    ]),
+  });
+
+  return `sha256:${createHash('sha256').update(canonical).digest('hex')}`;
+}

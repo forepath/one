@@ -58,6 +58,7 @@ import {
   shieldAgentEnvironmentVariables,
   withAgentEnvironmentLock,
 } from '../../utils/agent-environment-baseline.utils';
+import { isolationRuntimeArgs, isolationRuntimeOptions } from '../../utils/container-isolation.utils';
 
 import { OpenCodeClientFactory } from './opencode-client.factory';
 import type { OpenCodeAgentInfo } from './opencode-sdk.types';
@@ -805,7 +806,9 @@ mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
 
     try {
       // Containers with the mounted environment are restarted in place; legacy ones are recreated once.
-      const strategy = joinGuardId ? 'recreate' : await this.dockerService.getEnvironmentApplyStrategy(containerId);
+      const strategy = joinGuardId
+        ? 'recreate'
+        : await this.dockerService.getEnvironmentApplyStrategy(containerId, ...isolationRuntimeArgs(agent));
 
       progressRef.tracker = this.environmentProgress?.start({
         agentId,
@@ -819,6 +822,7 @@ mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
       progressRef.tracker?.advance(strategy === 'restart' ? 'restartingContainer' : 'recreatingContainer');
       const newContainerId = await this.dockerService.updateContainer(containerId, {
         env: desiredEnv,
+        ...isolationRuntimeOptions(agent),
         ...(joinGuardId ? { sharedNetworkContainerId: joinGuardId, capDrop: [...EGRESS_GUARDED_AGENT_CAP_DROP] } : {}),
       });
 

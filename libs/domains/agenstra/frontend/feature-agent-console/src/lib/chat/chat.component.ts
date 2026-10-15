@@ -13,6 +13,7 @@ import {
   OnDestroy,
   OnInit,
   signal,
+  untracked,
   ViewChild,
 } from '@angular/core';
 import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -66,6 +67,7 @@ import {
   type EnvironmentVariableResponseDto,
   type FileManagerContext,
   type ForwardedEventPayload,
+  type IsolationLevel,
   type KnowledgeNodeDto,
   type ProvisionServerDto,
   type TicketAutomationRunChatEventPayload,
@@ -143,6 +145,22 @@ import {
   parseGitRepository as parseGitRepositoryLabel,
   resolveGitRepositorySetupMode,
 } from '../git-repository-display';
+import {
+  getDisplayedIsolationLevel,
+  getEnvironmentIsolationLevel,
+  getIsolationBadgeColor,
+  getIsolationLevelUnavailableReason,
+  getRecommendedIsolationLevel,
+  getWorkspaceIsolationIndicatorLabel,
+  INITIAL_ISOLATION_SELECTION,
+  isIsolationDowngrade,
+  ISOLATION_LEVELS_STRONGEST_FIRST,
+  type IsolationSelectionState,
+  isolationLevelLabel,
+  isolationRuntimeStateLabel,
+  reconcileIsolationSelection,
+  resolveIsolationSubmission,
+} from '../isolation/isolation-level.util';
 import { LayerFileIdeComponent } from '../layer-file-ide/layer-file-ide.component';
 import { readAndClearAgentConsoleChatDraft } from '../tickets/chat-draft-storage';
 import {
@@ -274,6 +292,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly automationRunPhaseLabel = ticketAutomationRunPhaseLabelFn;
   readonly chatPlanStateLabel = chatPlanStateLabelFn;
   readonly chatPlanStateBadgeColor = chatPlanStateBadgeColorFn;
+  readonly isolationLevels = ISOLATION_LEVELS_STRONGEST_FIRST;
+  readonly isolationLevelLabel = isolationLevelLabel;
+  readonly isolationRuntimeStateLabel = isolationRuntimeStateLabel;
+  readonly isolationBadgeColor = getIsolationBadgeColor;
+  readonly environmentIsolationLevel = getEnvironmentIsolationLevel;
+  readonly workspaceIsolationIndicatorLabel = getWorkspaceIsolationIndicatorLabel;
 
   readonly openTicketFromChatButtonLabel = $localize`:@@featureChat-openTicketFromAutomationCard:Open ticket`;
   readonly chatPlanModalTitle = $localize`:@@featureChat-planModalTitle:Plan`;
@@ -962,6 +986,42 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     initialValue: null as ClientResponseDto | null,
   });
 
+  /**
+   * Isolation selection of the Add Environment modal: explicit radio choice (`null` = follow the host
+   * recommendation), the capability revision the displayed levels are based on, and whether a capability
+   * change after an explicit choice requires the user to pick again.
+   */
+  readonly addAgentIsolationSelection = signal<IsolationSelectionState>(INITIAL_ISOLATION_SELECTION);
+  readonly addAgentRecommendedIsolationLevel = computed(() => getRecommendedIsolationLevel(this.activeClientSignal()));
+  /** Level shown as selected (never silently replaces an explicit choice; `null` = none selected). */
+  readonly addAgentIsolationLevel = computed<IsolationLevel | null>(() =>
+    getDisplayedIsolationLevel(this.addAgentIsolationSelection(), this.activeClientSignal()),
+  );
+  /** Isolation fields to submit, or why the selection blocks the submission. */
+  readonly addAgentIsolationSubmission = computed(() => {
+    const selection = this.addAgentIsolationSelection();
+
+    return resolveIsolationSubmission({
+      explicitLevel: selection.explicitLevel,
+      pinnedRevision: selection.pinnedRevision,
+      reviewRequired: selection.reviewRequired,
+      isolation: this.activeClientSignal()?.isolation,
+    });
+  });
+  readonly addAgentSandboxedUnavailableReason = computed(() =>
+    getIsolationLevelUnavailableReason(this.activeClientSignal(), 'sandboxed'),
+  );
+  readonly activeClientIsolationRefreshing$: Observable<boolean> = this.activeClientId$.pipe(
+    switchMap((clientId) => (clientId ? this.clientsFacade.isRefreshingClientIsolation$(clientId) : of(false))),
+  );
+  /** Downgrade confirmation (Standard Docker while gVisor is recommended), stacked over the Add Environment modal. */
+  readonly confirmStandardIsolationOpen = signal(false);
+  private readonly standardIsolationConfirmSwapState: AgentModalSwapState = { suspended: false };
+  /** Selection restored when the Standard Docker confirmation is cancelled. */
+  private standardIsolationRevertSelection: IsolationSelectionState | null = null;
+  /** Show create errors in the Add Environment modal only after a submit from the current session. */
+  readonly addAgentSubmitAttempted = signal(false);
+
   /** Tickets the user may use as chat context: current board only, with SHA materialized. */
   readonly ticketContextPermittedTickets = computed(() => {
     const clientId = this.activeClientIdSignal();
@@ -1417,6 +1477,21 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     description: '',
     containerType: undefined,
   });
+  /** Read-only isolation of the environment being edited (fixed at creation). */
+  readonly editingAgentIsolation = signal<AgentResponseDto['isolation'] | null>(null);
+
+  /** Isolation levels of the workspace being edited (Update Workspace modal). */
+  private readonly editingClientId$ = toObservable(this.editingClientId);
+  readonly editingClientIsolation$ = this.editingClientId$.pipe(
+    switchMap((clientId) => (clientId ? this.clientsFacade.getClientById$(clientId) : of(null))),
+    map((client) => client?.isolation ?? null),
+  );
+  readonly editingClientIsolationRefreshing$: Observable<boolean> = this.editingClientId$.pipe(
+    switchMap((clientId) => (clientId ? this.clientsFacade.isRefreshingClientIsolation$(clientId) : of(false))),
+  );
+  readonly editingClientIsolationError$: Observable<string | null> = this.editingClientId$.pipe(
+    switchMap((clientId) => (clientId ? this.clientsFacade.getClientIsolationError$(clientId) : of(null))),
+  );
 
   /** Live progress of the environment being created in the add modal (matched by name until it has an id). */
   readonly addAgentProgress$: Observable<EnvironmentProgress | null> = combineLatest([
@@ -1662,6 +1737,18 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   constructor() {
+    // Pin the displayed capability revision; a change after an explicit choice requires a new selection.
+    effect(() => {
+      const isolation = this.activeClientSignal()?.isolation;
+
+      if (!this.addAgentModalOpen()) {
+        return;
+      }
+
+      untracked(() =>
+        this.addAgentIsolationSelection.update((selection) => reconcileIsolationSelection(selection, isolation)),
+      );
+    });
     effect(() => {
       this.filteredSlashCommands();
       this.slashHighlightIndex.set(0);
@@ -4198,6 +4285,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
   cancelAddAgent(): void {
     hideAgentModal(this.addAgentModalOpen);
+    this.resetAddAgentIsolationSelection();
+    this.addAgentSubmitAttempted.set(false);
     this.newAgent.set({
       name: '',
       description: '',
@@ -4226,6 +4315,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   cancelUpdateAgent(): void {
     hideAgentModal(this.updateAgentModalOpen);
     this.editingAgentId.set(null);
+    this.editingAgentIsolation.set(null);
     this.editingAgent.set({
       name: '',
       description: '',
@@ -4288,6 +4378,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       open: this.addAgentModalOpen,
       destroyRef: this.destroyRef,
       onSuccess: () => {
+        this.resetAddAgentIsolationSelection();
+        this.addAgentSubmitAttempted.set(false);
         this.newAgent.set({
           name: '',
           description: '',
@@ -4324,6 +4416,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       destroyRef: this.destroyRef,
       onSuccess: () => {
         this.editingAgentId.set(null);
+        this.editingAgentIsolation.set(null);
         this.editingAgent.set({
           name: '',
           description: '',
@@ -4380,7 +4473,71 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       gitRepositorySetupMode: this.getDefaultAgentGitRepositorySetupMode(),
       gitRepositoryUrl: undefined,
     });
+    this.resetAddAgentIsolationSelection();
+    this.addAgentSubmitAttempted.set(false);
+
+    // Preselect from fresh host capabilities (the list payload may predate a runtime change).
+    if (this.activeClientId) {
+      this.clientsFacade.refreshClientIsolation(this.activeClientId);
+    }
+
     showAgentModal(this.addAgentModalOpen);
+  }
+
+  /** Start a new Add Environment session pinned to the currently displayed capability revision. */
+  private resetAddAgentIsolationSelection(): void {
+    this.standardIsolationRevertSelection = null;
+    this.addAgentIsolationSelection.set({
+      ...INITIAL_ISOLATION_SELECTION,
+      pinnedRevision: this.activeClientSignal()?.isolation?.revision ?? null,
+    });
+  }
+
+  onAddAgentIsolationLevelSelect(value: string): void {
+    const level = value as IsolationLevel;
+    const previous = this.addAgentIsolationSelection();
+
+    if (level === previous.explicitLevel) {
+      return;
+    }
+
+    // An explicit choice (also of the preselected recommendation) keeps the revision pinned when it was displayed.
+    this.addAgentIsolationSelection.set({ ...previous, explicitLevel: level, reviewRequired: false });
+
+    if (isIsolationDowngrade(level, this.addAgentRecommendedIsolationLevel())) {
+      this.standardIsolationRevertSelection = previous;
+      swapToOverlayAgentModal({
+        underlyingOpen: this.addAgentModalOpen,
+        overlayOpen: this.confirmStandardIsolationOpen,
+        swapState: this.standardIsolationConfirmSwapState,
+      });
+    }
+  }
+
+  onConfirmStandardIsolation(): void {
+    this.standardIsolationRevertSelection = null;
+    restoreUnderlyingAgentModal({
+      underlyingOpen: this.addAgentModalOpen,
+      swapState: this.standardIsolationConfirmSwapState,
+    });
+  }
+
+  onCancelStandardIsolation(): void {
+    const revertSelection = this.standardIsolationRevertSelection;
+
+    this.standardIsolationRevertSelection = null;
+
+    if (revertSelection) {
+      // Keep a revision pinned by a capability refresh while the confirmation was open.
+      this.addAgentIsolationSelection.update((current) =>
+        current.pinnedRevision === revertSelection.pinnedRevision ? revertSelection : current,
+      );
+    }
+
+    restoreUnderlyingAgentModal({
+      underlyingOpen: this.addAgentModalOpen,
+      swapState: this.standardIsolationConfirmSwapState,
+    });
   }
 
   onClientAuthTypeChange(): void {
@@ -4642,8 +4799,25 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       createDto.containerType = agentData.containerType;
     }
 
+    // Explicit level only for a user choice (otherwise the server applies its recommendation), pinned to the
+    // displayed capability revision so a capability change is rejected (409) instead of silently applied.
+    const { isolationLevel, capabilityRevision, blockedReason } = this.addAgentIsolationSubmission();
+
+    if (blockedReason) {
+      return;
+    }
+
+    if (isolationLevel) {
+      createDto.isolationLevel = isolationLevel;
+    }
+
+    if (capabilityRevision) {
+      createDto.capabilityRevision = capabilityRevision;
+    }
+
     // Include boolean fields (default to true if not set)
 
+    this.addAgentSubmitAttempted.set(true);
     this.agentsFacade.createClientAgent(clientId, createDto);
   }
 
@@ -4763,7 +4937,16 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       keycloakClientSecret: undefined,
       keycloakRealm: undefined,
     });
+    this.clientsFacade.refreshClientIsolation(client.id);
     showAgentModal(this.updateClientModalOpen);
+  }
+
+  onRecheckClientIsolation(): void {
+    const clientId = this.editingClientId();
+
+    if (clientId) {
+      this.clientsFacade.refreshClientIsolation(clientId, true);
+    }
   }
 
   onEditAgentClick(agent: AgentResponseDto): void {
@@ -4774,6 +4957,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       description: agent.description,
       containerType: agent.containerType,
     });
+    this.editingAgentIsolation.set(agent.isolation ?? null);
     showAgentModal(this.updateAgentModalOpen);
   }
 
