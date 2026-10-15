@@ -12,7 +12,7 @@ This application provides:
 
 - **HTTP REST API** Full CRUD operations for agent management
 - **WebSocket Gateway** Real-time bidirectional communication with agents
-- **Container Integration** Docker container management for agent execution
+- **Container Integration** Docker container management for agent execution. Containers of an environment are named `agenstra-<role>-<agentId>`: `agenstra-worker-<agentId>` (worker) and `agenstra-egress-<agentId>` (egress guard), both labelled `io.agenstra.agent-id=<agentId>` (workers also `io.agenstra.worker=1`). The agent id is assigned before any container is created, recreated containers keep the name, and containers of existing environments are renamed to the pattern on startup
 - **Container isolation levels** Per-environment Docker runtime (`runc` or gVisor `runsc-systrap`), offered only after runtime probes pass; see [Container Isolation Levels](../features/container-isolation.md)
 - **Egress guard** Per-agent sidecar that filters outbound web traffic (Squid/dnsmasq/iptables) and reports decision events; see [Egress Filtering](../features/egress-filtering.md)
 - **Secure Authentication** Keycloak integration for HTTP endpoints and database-backed authentication for WebSocket

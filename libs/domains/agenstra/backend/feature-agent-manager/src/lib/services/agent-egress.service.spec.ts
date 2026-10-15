@@ -283,10 +283,17 @@ describe('AgentEgressService', () => {
   });
 
   it('provisions a guard for a new agent and removes it when apply fails', async () => {
-    await expect(service.provisionGuardForNewAgent(enforce, null)).resolves.toEqual({
+    await expect(service.provisionGuardForNewAgent('agent-new', enforce, null)).resolves.toEqual({
       guardId: 'guard-1',
       revision: computeEgressPolicyRevision(enforce, null),
     });
+    // Named after the (pre-assigned) agent id from the start, never a temporary "pending" name.
+    expect(docker.createEgressGuardContainer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'agenstra-egress-agent-new',
+        labels: expect.objectContaining({ 'io.agenstra.agent-id': 'agent-new' }),
+      }),
+    );
 
     docker.sendCommandToContainer.mockImplementation(async (_id: string, argv: string[]) => {
       if (argv[1] === 'apply') {
@@ -296,7 +303,7 @@ describe('AgentEgressService', () => {
       return argv[1] === 'status' ? JSON.stringify(guardStatus) : '';
     });
 
-    await expect(service.provisionGuardForNewAgent(enforce, null)).rejects.toThrow('boom');
+    await expect(service.provisionGuardForNewAgent('agent-new', enforce, null)).rejects.toThrow('boom');
     expect(docker.deleteContainer).toHaveBeenCalledWith('guard-1');
   });
 
