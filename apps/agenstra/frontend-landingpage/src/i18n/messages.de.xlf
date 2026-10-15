@@ -294,10 +294,6 @@
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-play-circle&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>See how it works </source>
         <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-play-circle&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> So funktioniert es</target>
       </trans-unit>
-      <trans-unit id="featurePortalCloud-providersTagline" datatype="html">
-        <source>Hosted on cloud providers your platform team already trusts</source>
-        <target> Gehostet bei Cloud-Anbietern, denen Ihr Plattform-Team bereits vertraut </target>
-      </trans-unit>
       <trans-unit id="featurePortalCloud-teaserTitle" datatype="html">
         <source>The same platform without running it yourself</source>
         <target> Dieselbe Control Plane, ohne sie selbst zu betreiben </target>
@@ -3405,6 +3401,618 @@
       <trans-unit id="featurePortalDesktop-securityIllustration" datatype="html">
         <source>Agenstra Desktop connected through company sign-in, with the permissions of your role</source>
         <target state="translated">Agenstra Desktop, verbunden über die Unternehmensanmeldung, mit den Berechtigungen Ihrer Rolle</target>
+      </trans-unit>
+      <trans-unit id="featurePortal-navHowItWorks" datatype="html">
+        <source>How it works</source>
+        <target>Funktionsweise</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>How Agenstra works<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/>, from the first prompt to the last packet </source>
+        <target><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>So funktioniert Agenstra<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/>, vom ersten Prompt bis zum letzten Paket</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-heroLead" datatype="html">
+        <source> A control plane that decides and agent managers that execute. Every environment runs in its own container, can run inside a gVisor sandbox, and reaches the internet only through its own egress guard. </source>
+        <target>Eine Steuerungsebene, die entscheidet, und Agent Manager, die ausführen. Jede Umgebung läuft in einem eigenen Container, kann in einer gVisor-Sandbox laufen und erreicht das Internet nur über ihren eigenen Egress Guard.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-heroCtaLine" datatype="html">
+        <source> This page goes one level deeper than the rest of the site: the components, how they talk to each other, and the boundaries around every agent. </source>
+        <target>Diese Seite geht eine Ebene tiefer als der Rest der Website: die Komponenten, wie sie miteinander sprechen, und die Grenzen um jeden Agenten.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-heroCtaPrimary" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-signpost-split&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Follow a request </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-signpost-split&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Einer Anfrage folgen</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-heroCtaDocs" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-book&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Read the documentation </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-book&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Dokumentation lesen</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-heroIllustration" datatype="html">
+        <source>Agenstra architecture: the console signs in through the agent controller, which provisions a sandboxed agent container behind its own egress guard on your host. A prompt passes the message filters, the guard allows one web request and blocks another, and both decisions land in the audit log.</source>
+        <target>Agenstra-Architektur: Die Konsole meldet sich über den Agent Controller an, der auf Ihrem Host einen Agent-Container in der Sandbox hinter einem eigenen Egress Guard bereitstellt. Ein Prompt passiert die Nachrichtenfilter, der Guard erlaubt eine Webanfrage und blockiert eine andere, und beide Entscheidungen landen im Audit-Log.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-componentsTitle" datatype="html">
+        <source> Six moving parts, one clear chain of command </source>
+        <target>Sechs Bausteine, eine klare Befehlskette</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-componentsLead" datatype="html">
+        <source> Agenstra separates deciding from doing. The control plane knows who you are and what is allowed. The hosts run the agents and enforce those decisions right next to the workload. </source>
+        <target>Agenstra trennt Entscheiden von Ausführen. Die Steuerungsebene weiß, wer Sie sind und was erlaubt ist. Die Hosts führen die Agenten aus und setzen diese Entscheidungen direkt neben der Arbeitslast durch.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-componentConsoleTitle" datatype="html">
+        <source> Console and desktop app </source>
+        <target>Konsole und Desktop-App</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-componentConsoleDesc" datatype="html">
+        <source> Where people work with agents: chat, files, Git, a terminal, tickets, deployments and the audit log, in the browser or as a desktop app. </source>
+        <target>Hier arbeiten Menschen mit Agenten: Chat, Dateien, Git, ein Terminal, Tickets, Deployments und das Audit-Log, im Browser oder als Desktop-App.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-componentControllerTitle" datatype="html">
+        <source> Agent controller </source>
+        <target>Agent Controller</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-componentControllerDesc" datatype="html">
+        <source> The control plane. It authenticates people, resolves policy, keeps tickets, knowledge and audit events, and routes every request to the host that runs the workspace. </source>
+        <target>Die Steuerungsebene. Sie authentifiziert Personen, löst Richtlinien auf, verwaltet Tickets, Wissen und Audit-Ereignisse und leitet jede Anfrage an den Host weiter, auf dem der Workspace läuft.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-componentManagerTitle" datatype="html">
+        <source>Agent manager</source>
+        <target>Agent Manager</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-componentManagerDesc" datatype="html">
+        <source> One per Docker host. It owns the containers, probes which isolation levels the host can really run, applies message filters and collects every egress decision. </source>
+        <target>Einer pro Docker-Host. Er verwaltet die Container, prüft, welche Isolationsstufen der Host wirklich ausführen kann, wendet Nachrichtenfilter an und sammelt jede Egress-Entscheidung.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-componentWorkerTitle" datatype="html">
+        <source>Agent worker</source>
+        <target>Agent Worker</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-componentWorkerDesc" datatype="html">
+        <source> One container per environment. It holds the cloned repository, the agent runtime, a terminal and a full desktop with a browser, and runs as an unprivileged user without sudo. </source>
+        <target>Ein Container pro Umgebung. Er enthält das geklonte Repository, die Agent-Laufzeit, ein Terminal und einen vollständigen Desktop mit Browser und läuft als unprivilegierter Benutzer ohne sudo.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-componentGuardTitle" datatype="html">
+        <source>Egress guard</source>
+        <target>Egress Guard</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-componentGuardDesc" datatype="html">
+        <source> A small sidecar per environment that owns the worker&apos;s network. DNS lookups and web requests pass through it and are checked against your policy. </source>
+        <target>Ein kleiner Sidecar pro Umgebung, dem das Netzwerk des Workers gehört. DNS-Abfragen und Webanfragen laufen über ihn und werden gegen Ihre Richtlinie geprüft.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-componentIdentityTitle" datatype="html">
+        <source> Identity and access </source>
+        <target>Identität und Zugriff</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-componentIdentityDesc" datatype="html">
+        <source> Single sign-on through Keycloak, built-in users or API keys. Workspace roles decide who may see, chat with and change which environments. </source>
+        <target>Single Sign-on über Keycloak, integrierte Benutzerkonten oder API-Schlüssel. Workspace-Rollen legen fest, wer welche Umgebungen sehen, nutzen und ändern darf.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-wire1Title" datatype="html">
+        <source>Connections go one way</source>
+        <target>Verbindungen in eine Richtung</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-wire1Desc" datatype="html">
+        <source> The controller connects out to each agent manager, and managers never call back. Hosts only need to accept connections from the control plane. </source>
+        <target>Der Controller verbindet sich zu jedem Agent Manager, Manager rufen nie zurück. Hosts müssen nur Verbindungen von der Steuerungsebene annehmen.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-wire2Title" datatype="html">
+        <source>REST and live events</source>
+        <target>REST und Live-Ereignisse</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-wire2Desc" datatype="html">
+        <source> HTTP for state, WebSockets for chat, terminals, desktop streams and boards. Both share one port per service. </source>
+        <target>HTTP für Zustand, WebSockets für Chat, Terminals, Desktop-Streams und Boards. Beides teilt sich einen Port pro Dienst.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-wire3Title" datatype="html">
+        <source>Secrets stay out of sight</source>
+        <target>Geheimnisse bleiben verborgen</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-wire3Desc" datatype="html">
+        <source> Credentials are encrypted at rest and reach a worker through a root-only volume, not container variables that show up in a docker inspect. </source>
+        <target>Zugangsdaten werden verschlüsselt gespeichert und erreichen einen Worker über ein nur für root lesbares Volume, nicht über Container-Variablen, die in einem docker inspect auftauchen.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-lifecycleTitle" datatype="html">
+        <source> What happens when you send a prompt </source>
+        <target>Was passiert, wenn Sie einen Prompt senden</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-lifecycleLead" datatype="html">
+        <source> The same six steps apply whether a developer types in the console or a ticket automation starts an autonomous run. Each step has an owner, and each leaves a trace. </source>
+        <target>Dieselben sechs Schritte gelten, ob jemand in der Konsole tippt oder eine Ticket-Automatisierung einen autonomen Lauf startet. Jeder Schritt hat einen Verantwortlichen, und jeder hinterlässt eine Spur.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-step1Title" datatype="html">
+        <source>Sign in and authorize</source>
+        <target>Anmelden und autorisieren</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-step1Desc" datatype="html">
+        <source> You authenticate with single sign-on, a built-in account or a scoped token. The controller checks your role in the workspace before anything reaches a host. </source>
+        <target>Sie melden sich per Single Sign-on, mit einem integrierten Konto oder einem Token mit festgelegten Rechten an. Der Controller prüft Ihre Rolle im Workspace, bevor irgendetwas einen Host erreicht.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-step2Title" datatype="html">
+        <source>Resolve the policy</source>
+        <target>Richtlinie auflösen</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-step2Desc" datatype="html">
+        <source> Global, workspace and environment configuration are merged into one effective policy: models, tools, permissions, web traffic and message filters. It is synced to the host. </source>
+        <target>Globale, Workspace- und Umgebungskonfiguration werden zu einer wirksamen Richtlinie zusammengeführt: Modelle, Werkzeuge, Berechtigungen, Webverkehr und Nachrichtenfilter. Sie wird auf den Host synchronisiert.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-step3Title" datatype="html">
+        <source>Filter the message</source>
+        <target>Nachricht filtern</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-step3Desc" datatype="html">
+        <source> Message filters check every message in both directions. A rule can drop it, rewrite matches or flag it for review. When several rules match, the most restrictive one wins. </source>
+        <target>Nachrichtenfilter prüfen jede Nachricht in beide Richtungen. Eine Regel kann sie verwerfen, Treffer ersetzen oder sie zur Prüfung markieren. Greifen mehrere Regeln, gewinnt die strengste.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-step4Title" datatype="html">
+        <source>Work in the environment</source>
+        <target>In der Umgebung arbeiten</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-step4Desc" datatype="html">
+        <source> The agent reads and edits the cloned repository, runs commands and tests, and opens a browser if it needs one. All of it inside its own container, optionally on gVisor. </source>
+        <target>Der Agent liest und bearbeitet das geklonte Repository, führt Befehle und Tests aus und öffnet bei Bedarf einen Browser. Alles in seinem eigenen Container, optional auf gVisor.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-step5Title" datatype="html">
+        <source>Reach out, within limits</source>
+        <target>Nach außen, mit Grenzen</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-step5Desc" datatype="html">
+        <source> Package installs, API calls and Git pushes leave through the guard. Each connection is allowed, blocked or, in monitor mode, observed against the web traffic policy. </source>
+        <target>Paketinstallationen, API-Aufrufe und Git-Pushes verlassen die Umgebung über den Guard. Jede Verbindung wird gegen die Webverkehrs-Richtlinie erlaubt, blockiert oder im Monitor-Modus beobachtet.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-step6Title" datatype="html">
+        <source>Record and notify</source>
+        <target>Aufzeichnen und benachrichtigen</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-step6Desc" datatype="html">
+        <source> The controller pulls filter hits and traffic decisions into the audit log and can send signed webhooks, so your security tooling sees what the agent did. </source>
+        <target>Der Controller holt Filtertreffer und Verkehrsentscheidungen in das Audit-Log und kann signierte Webhooks senden, damit Ihre Sicherheitswerkzeuge sehen, was der Agent getan hat.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-isolationTitle" datatype="html">
+        <source> Two isolation levels, never a silent downgrade </source>
+        <target>Zwei Isolationsstufen, nie eine stille Herabstufung</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-isolationLead" datatype="html">
+        <source> A regular container shares the host kernel with everything else on the machine. Agent code is code you have not reviewed yet, so Agenstra can put a second kernel in between: gVisor. </source>
+        <target>Ein normaler Container teilt sich den Host-Kernel mit allem anderen auf der Maschine. Agenten-Code ist Code, den Sie noch nicht geprüft haben. Deshalb kann Agenstra einen zweiten Kernel dazwischenschalten: gVisor.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-isolationFact1Title" datatype="html">
+        <source> Probed, not assumed </source>
+        <target>Geprüft, nicht angenommen</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-isolationFact1Desc" datatype="html">
+        <source> Each host proves with real test containers what it can run: at startup, every six hours and on demand. </source>
+        <target>Jeder Host weist mit echten Testcontainern nach, was er ausführen kann: beim Start, alle sechs Stunden und auf Anfrage.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-isolationFact2Title" datatype="html">
+        <source> Fails closed, overrides are on record </source>
+        <target>Scheitert sicher, Ausnahmen werden protokolliert</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-isolationFact2Desc" datatype="html">
+        <source> If the sandbox cannot start, the environment is not created. Choosing a weaker level needs a confirmation and is recorded with the person who chose it. </source>
+        <target>Kann die Sandbox nicht starten, wird die Umgebung nicht erstellt. Eine schwächere Stufe zu wählen erfordert eine Bestätigung und wird mit der Person festgehalten, die sie gewählt hat.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-isolationFact3Title" datatype="html">
+        <source> Runs on ordinary cloud VMs </source>
+        <target>Läuft auf gewöhnlichen Cloud-VMs</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-isolationFact3Desc" datatype="html">
+        <source> gVisor runs on its systrap platform, so no KVM or nested virtualization is needed. Provisioned hosts get it installed and verified automatically. </source>
+        <target>gVisor läuft auf seiner systrap-Plattform, daher sind weder KVM noch verschachtelte Virtualisierung nötig. Bereitgestellte Hosts bekommen es automatisch installiert und geprüft.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-isolationBadge" datatype="html">
+        <source>Where a system call ends up</source>
+        <target>Wo ein Systemaufruf ankommt</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-standardTitle" datatype="html">
+        <source>Standard</source>
+        <target>Standard</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-layerAgent" datatype="html">
+        <source>Agent and its tools</source>
+        <target>Agent und seine Werkzeuge</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-layerHostKernel" datatype="html">
+        <source>Host kernel</source>
+        <target>Host-Kernel</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-layerHostKernelStandard" datatype="html">
+        <source>namespaces, cgroups, seccomp</source>
+        <target>Namespaces, cgroups, seccomp</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-standardDesc" datatype="html">
+        <source> Docker&apos;s default. Available on every host. Choose it for workloads that need Docker-in-Docker, eBPF, io_uring or KVM. </source>
+        <target>Docker-Standard. Auf jedem Host verfügbar. Wählen Sie ihn für Arbeitslasten, die Docker-in-Docker, eBPF, io_uring oder KVM benötigen.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-sandboxedTitle" datatype="html">
+        <source> Sandboxed </source>
+        <target>Sandbox</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-layerSentry" datatype="html">
+        <source>gVisor Sentry</source>
+        <target>gVisor Sentry</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-layerSentryDesc" datatype="html">
+        <source>Linux implemented in user space</source>
+        <target>Linux, im User Space implementiert</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-layerHostKernelSandboxed" datatype="html">
+        <source>small, filtered set of calls</source>
+        <target>kleine, gefilterte Menge an Aufrufen</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-sandboxedDesc" datatype="html">
+        <source> Preselected wherever the host is ready. A kernel exploit has to break the Sentry first before it can reach the host. </source>
+        <target>Vorausgewählt, wo immer der Host bereit ist. Ein Kernel-Exploit muss erst den Sentry überwinden, bevor er den Host erreicht.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-egressTitle" datatype="html">
+        <source> One guard per environment, and nothing gets around it </source>
+        <target>Ein Guard pro Umgebung, und nichts führt an ihm vorbei</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-egressLead" datatype="html">
+        <source> The worker does not have a network of its own. It joins the network namespace of its egress guard, the only container allowed to change firewall rules. Requests that ignore proxy settings are intercepted anyway. </source>
+        <target>Der Worker hat kein eigenes Netzwerk. Er tritt dem Netzwerk-Namespace seines Egress Guards bei, des einzigen Containers, der Firewall-Regeln ändern darf. Anfragen, die Proxy-Einstellungen ignorieren, werden trotzdem abgefangen.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-egressPolicyCaption" datatype="html">
+        <source>Web traffic policy of one environment</source>
+        <target>Webverkehrs-Richtlinie einer Umgebung</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-egressPolicyBadge" datatype="html">
+        <source>Enforcing</source>
+        <target>Wird durchgesetzt</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-egressFact1Title" datatype="html">
+        <source>No TLS decryption</source>
+        <target>Keine TLS-Entschlüsselung</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-egressFact1Desc" datatype="html">
+        <source> HTTPS is decided on the server name of the handshake. Nothing is decrypted and the agent does not have to trust an extra certificate. </source>
+        <target>Bei HTTPS entscheidet der Servername aus dem Handshake. Nichts wird entschlüsselt, und der Agent muss keinem zusätzlichen Zertifikat vertrauen.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-egressFact2Title" datatype="html">
+        <source>Locked down first</source>
+        <target>Zuerst abgeriegelt</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-egressFact2Desc" datatype="html">
+        <source> The guard blocks everything before its policy loads, and it exists before the worker does. An invalid policy never replaces the last one that worked. </source>
+        <target>Der Guard blockiert alles, bevor seine Richtlinie geladen ist, und er existiert, bevor der Worker startet. Eine ungültige Richtlinie ersetzt nie die letzte funktionierende.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-egressFact3Title" datatype="html">
+        <source>No side doors</source>
+        <target>Keine Hintertüren</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-egressFact3Desc" datatype="html">
+        <source> QUIC, DNS over TLS and undeclared protocols are denied. Private networks are blocked by default. Deny rules always win over allow rules. </source>
+        <target>QUIC, DNS over TLS und nicht deklarierte Protokolle werden abgelehnt. Private Netzwerke sind standardmäßig gesperrt. Sperrregeln gewinnen immer gegen Freigaben.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-egressFact4Title" datatype="html">
+        <source> Fits your corporate proxy </source>
+        <target>Passt zu Ihrem Unternehmensproxy</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-egressFact4Desc" datatype="html">
+        <source> If your network requires a proxy, the guard forwards allowed traffic to it. Your existing controls still see every request. </source>
+        <target>Wenn Ihr Netzwerk einen Proxy verlangt, leitet der Guard erlaubten Verkehr dorthin weiter. Ihre bestehenden Kontrollen sehen weiterhin jede Anfrage.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-modesTitle" datatype="html">
+        <source>Four modes, roll out at your pace</source>
+        <target>Vier Modi, Einführung in Ihrem Tempo</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-modeOffDesc" datatype="html">
+        <source> No filtering. The default for environments that do not need a guard yet. </source>
+        <target>Keine Filterung. Der Standard für Umgebungen, die noch keinen Guard brauchen.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-modeMonitorDesc" datatype="html">
+        <source> Everything is allowed, would-be blocks are recorded. Test a policy against real traffic first. </source>
+        <target>Alles ist erlaubt, mögliche Sperren werden protokolliert. Testen Sie eine Richtlinie zuerst mit echtem Verkehr.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-modeEnforceDesc" datatype="html">
+        <source> Allow and deny lists apply. Hosts, IP ranges, plain HTTP URL patterns and non-web exceptions. </source>
+        <target>Freigabe- und Sperrlisten greifen. Hosts, IP-Bereiche, URL-Muster für unverschlüsseltes HTTP und Ausnahmen jenseits des Webs.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-modeOfflineDesc" datatype="html">
+        <source> No outbound traffic at all. The console, chat and file access keep working. </source>
+        <target>Überhaupt kein ausgehender Verkehr. Konsole, Chat und Dateizugriff funktionieren weiter.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-visibilityTitle" datatype="html">
+        <source>What the guard can see</source>
+        <target>Was der Guard sehen kann</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-visibilityHttpTitle" datatype="html">
+        <source>Plain HTTP</source>
+        <target>Unverschlüsseltes HTTP</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-visibilityHttpDesc" datatype="html">
+        <source> Full URL, method and status </source>
+        <target>Vollständige URL, Methode und Status</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-visibilityHttpsTitle" datatype="html">
+        <source>HTTPS</source>
+        <target>HTTPS</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-visibilityHttpsDesc" datatype="html">
+        <source> Hostname only, never paths or content </source>
+        <target>Nur den Hostnamen, nie Pfade oder Inhalte</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-visibilityDnsTitle" datatype="html">
+        <source>DNS</source>
+        <target>DNS</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-visibilityDnsDesc" datatype="html">
+        <source> Every lookup, filtered and logged </source>
+        <target>Jede Abfrage, gefiltert und protokolliert</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-visibilityOtherTitle" datatype="html">
+        <source> Other TCP and UDP </source>
+        <target>Anderes TCP und UDP</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-visibilityOtherDesc" datatype="html">
+        <source> Denied unless explicitly allowed </source>
+        <target>Abgelehnt, sofern nicht ausdrücklich erlaubt</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-policyTitle" datatype="html">
+        <source> Policy flows downhill </source>
+        <target>Richtlinien fließen bergab</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-policyLead" datatype="html">
+        <source> Security sets the floor once, globally. Workspaces and environments can add to it but never take anything away, so a new team cannot opt out of what everyone agreed on. </source>
+        <target>Die Sicherheit legt die Untergrenze einmal global fest. Workspaces und Umgebungen können ergänzen, aber nie etwas wegnehmen. So kann sich kein neues Team von dem abmelden, worauf sich alle geeinigt haben.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-policySub" datatype="html">
+        <source> The same heredity covers models and providers, MCP servers, permissions, web traffic and message filters. Lock a whole section on a higher layer and lower layers cannot touch it at all. </source>
+        <target>Dieselbe Vererbung gilt für Modelle und Anbieter, MCP-Server, Berechtigungen, Webverkehr und Nachrichtenfilter. Sperren Sie einen ganzen Bereich auf einer höheren Ebene, können niedrigere Ebenen ihn gar nicht mehr anfassen.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-layerGlobalTitle" datatype="html">
+        <source>Global</source>
+        <target>Global</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-layerGlobalDesc" datatype="html">
+        <source> Platform and security teams: approved models, blocked hosts, mandatory message filters. </source>
+        <target>Plattform- und Sicherheitsteams: freigegebene Modelle, gesperrte Hosts, verpflichtende Nachrichtenfilter.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-layerWorkspaceTitle" datatype="html">
+        <source>Workspace</source>
+        <target>Workspace</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-layerWorkspaceDesc" datatype="html">
+        <source> Team leads: the package registries and APIs this team needs, inside what global allows. </source>
+        <target>Teamleitungen: die Paket-Registries und APIs, die dieses Team braucht, innerhalb dessen, was global erlaubt ist.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-layerEnvironmentTitle" datatype="html">
+        <source>Environment</source>
+        <target>Umgebung</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-layerEnvironmentDesc" datatype="html">
+        <source> One agent: narrower still, for example offline for a sensitive repository. </source>
+        <target>Ein Agent: noch enger gefasst, zum Beispiel offline für ein sensibles Repository.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-limitsTitle" datatype="html">
+        <source> Known limits, stated plainly </source>
+        <target>Bekannte Grenzen, klar benannt</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-limitsLead" datatype="html">
+        <source> Good security decisions need to know where a control ends. These are the edges we document for every deployment. </source>
+        <target>Gute Sicherheitsentscheidungen müssen wissen, wo eine Kontrolle endet. Diese Grenzen dokumentieren wir für jede Installation.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-limit1Title" datatype="html">
+        <source>gVisor is not a virtual machine</source>
+        <target>gVisor ist keine virtuelle Maschine</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-limit1Desc" datatype="html">
+        <source> It shrinks the host kernel&apos;s attack surface considerably, but it is not a hardware boundary. It works together with unprivileged workloads, the egress guard and a hardened host. </source>
+        <target>Es verkleinert die Angriffsfläche des Host-Kernels deutlich, ist aber keine Hardware-Grenze. Es wirkt zusammen mit unprivilegierten Arbeitslasten, dem Egress Guard und einem gehärteten Host.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-limit2Title" datatype="html">
+        <source>The sandbox costs some speed</source>
+        <target>Die Sandbox kostet etwas Tempo</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-limit2Desc" datatype="html">
+        <source> CPU-bound work runs at near-native speed. Dependency installs and builds that touch many small files are noticeably slower than on the standard level. </source>
+        <target>CPU-lastige Arbeit läuft nahezu mit nativer Geschwindigkeit. Abhängigkeitsinstallationen und Builds, die viele kleine Dateien anfassen, sind spürbar langsamer als auf der Standardstufe.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-limit3Title" datatype="html">
+        <source>HTTPS filtering trusts the name</source>
+        <target>HTTPS-Filterung vertraut dem Namen</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-limit3Desc" datatype="html">
+        <source> Without decryption, domain fronting on shared CDNs and encrypted client hellos cannot be told apart by name. Narrow allowlists, blocked IP literals or offline mode close that gap. </source>
+        <target>Ohne Entschlüsselung lassen sich Domain Fronting auf geteilten CDNs und verschlüsselte Client Hellos nicht am Namen unterscheiden. Enge Freigabelisten, gesperrte IP-Literale oder der Offline-Modus schließen diese Lücke.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-limit4Title" datatype="html">
+        <source>Non-root matters</source>
+        <target>Ohne root ist wichtig</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-limit4Desc" datatype="html">
+        <source> A process with root rights inside a worker could bypass the DNS policy, though not the web rules. That is why workers run as an unprivileged user without sudo. </source>
+        <target>Ein Prozess mit root-Rechten in einem Worker könnte die DNS-Richtlinie umgehen, nicht aber die Webregeln. Deshalb laufen Worker als unprivilegierter Benutzer ohne sudo.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-deploymentTitle" datatype="html">
+        <source> The same architecture, wherever it runs </source>
+        <target>Dieselbe Architektur, wo auch immer sie läuft</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-deploymentLead" datatype="html">
+        <source> Run the control plane yourself or let us operate it. Either way, agents run on hosts that belong to you. </source>
+        <target>Betreiben Sie die Steuerungsebene selbst oder lassen Sie uns das übernehmen. So oder so laufen Agenten auf Hosts, die Ihnen gehören.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-selfHostedTitle" datatype="html">
+        <source>Self-hosted</source>
+        <target>Selbst gehostet</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-selfHostedDesc" datatype="html">
+        <source> Container images for the controller and for every agent manager. Add hosts by hand, or let the controller provision them on Hetzner Cloud or DigitalOcean with Docker and gVisor prepared and verified. </source>
+        <target>Container-Images für den Controller und für jeden Agent Manager. Fügen Sie Hosts von Hand hinzu oder lassen Sie den Controller sie bei Hetzner Cloud oder DigitalOcean bereitstellen, mit vorbereitetem und geprüftem Docker und gVisor.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-selfHostedCta" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-book&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Deployment guide </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-book&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Deployment-Leitfaden</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-cloudTitle" datatype="html">
+        <source>Agenstra Cloud</source>
+        <target>Agenstra Cloud</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-cloudDesc" datatype="html">
+        <source> We run the controller, keep it current and scale it. You get the same isolation levels, egress guards and policy layers as a self-hosted installation. </source>
+        <target>Wir betreiben den Controller, halten ihn aktuell und skalieren ihn. Sie erhalten dieselben Isolationsstufen, Egress Guards und Richtlinienebenen wie bei einer selbst gehosteten Installation.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-cloudCta" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Explore Agenstra Cloud </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Agenstra Cloud entdecken</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-ctaTitle" datatype="html">
+        <source> Walk through the architecture with your security team </source>
+        <target>Gehen Sie die Architektur mit Ihrem Sicherheitsteam durch</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-ctaLead" datatype="html">
+        <source> Bring your threat model. We show you a live environment, its sandbox and its guard, and answer the questions your review will ask. </source>
+        <target>Bringen Sie Ihr Bedrohungsmodell mit. Wir zeigen Ihnen eine laufende Umgebung, ihre Sandbox und ihren Guard und beantworten die Fragen, die Ihr Review stellen wird.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-ctaPrimary" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-chat-dots&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Book a technical demo </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-chat-dots&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Technische Demo buchen</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-ctaSecondary" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get started </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-rocket-takeoff&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Loslegen</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-metaTitle" datatype="html">
+        <source>How Agenstra works: architecture, sandboxing and egress control :: Agenstra</source>
+        <target>So funktioniert Agenstra: Architektur, Sandboxing und Egress-Kontrolle :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-metaDescription" datatype="html">
+        <source>A technical look at Agenstra: control plane, agent managers, gVisor-sandboxed agent containers, per-environment egress guards, layered policy and audit trails.</source>
+        <target>Ein technischer Blick auf Agenstra: Steuerungsebene, Agent Manager, Agent-Container in der gVisor-Sandbox, Egress Guards pro Umgebung, mehrstufige Richtlinien und Audit-Trails.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-metaKeywords" datatype="html">
+        <source>Agenstra architecture, AI agent sandbox, gVisor coding agents, agent container isolation, egress filtering for AI agents, agent control plane, self-hosted coding agents</source>
+        <target>Agenstra Architektur, KI-Agenten Sandbox, gVisor Coding-Agenten, Container-Isolation für Agenten, Egress-Filterung für KI-Agenten, Agent-Steuerungsebene, selbst gehostete Coding-Agenten</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-modesScaleOpen" datatype="html">
+        <source>Open</source>
+        <target>Offen</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-modesScaleClosed" datatype="html">
+        <source>Closed</source>
+        <target>Geschlossen</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-modeOffTitle" datatype="html">
+        <source>Off</source>
+        <target>Aus</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-modeMonitorTitle" datatype="html">
+        <source>Monitor</source>
+        <target>Beobachten</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-modeEnforceTitle" datatype="html">
+        <source>Enforce</source>
+        <target>Durchsetzen</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-modeOfflineTitle" datatype="html">
+        <source>Offline</source>
+        <target>Offline</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-visibilityFieldUrl" datatype="html">
+        <source>URL</source>
+        <target>URL</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-visibilityFieldMethod" datatype="html">
+        <source>Method</source>
+        <target>Methode</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-visibilityFieldStatus" datatype="html">
+        <source>Status</source>
+        <target>Status</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-visibilityFieldHostname" datatype="html">
+        <source>Hostname</source>
+        <target>Hostname</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-visibilityFieldPath" datatype="html">
+        <source>Path</source>
+        <target>Pfad</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-visibilityFieldContent" datatype="html">
+        <source>Content</source>
+        <target>Inhalt</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-visibilityFieldQuery" datatype="html">
+        <source>Query name</source>
+        <target>Abgefragter Name</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-visibilityFieldAnswer" datatype="html">
+        <source>Answer</source>
+        <target>Antwort</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-visibilityFieldIpPort" datatype="html">
+        <source>IP and port</source>
+        <target>IP und Port</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-visibilityFieldPayload" datatype="html">
+        <source>Payload</source>
+        <target>Nutzdaten</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-depthBadge" datatype="html">
+        <source>Defense in depth</source>
+        <target>Mehrschichtige Verteidigung</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-ringHost" datatype="html">
+        <source>Hardened host</source>
+        <target>Gehärteter Host</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-ringGuard" datatype="html">
+        <source>Egress guard</source>
+        <target>Egress Guard</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-ringSandbox" datatype="html">
+        <source>gVisor sandbox</source>
+        <target>gVisor-Sandbox</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-ringUser" datatype="html">
+        <source>Unprivileged user</source>
+        <target>Unprivilegierter Benutzer</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-ringAgent" datatype="html">
+        <source>Agent</source>
+        <target>Agent</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-depthCaption" datatype="html">
+        <source> No single layer has to be perfect. Where one control ends, the next one takes over. </source>
+        <target>Keine einzelne Schicht muss perfekt sein. Wo eine Kontrolle endet, übernimmt die nächste.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-mitigationLabel" datatype="html">
+        <source>Mitigated</source>
+        <target>Abgedeckt</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-mitigationNonRoot" datatype="html">
+        <source>Non-root workloads</source>
+        <target>Arbeitslasten ohne root</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-mitigationGuard" datatype="html">
+        <source>Egress guard</source>
+        <target>Egress Guard</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-mitigationStandard" datatype="html">
+        <source>Standard level per environment, on record</source>
+        <target>Standardstufe pro Umgebung, protokolliert</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-mitigationAllowlist" datatype="html">
+        <source>Narrow allowlists</source>
+        <target>Enge Freigabelisten</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-mitigationIpLiterals" datatype="html">
+        <source>Blocked IP literals</source>
+        <target>Gesperrte IP-Literale</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-mitigationOffline" datatype="html">
+        <source>Offline mode</source>
+        <target>Offline-Modus</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-mitigationNoSudo" datatype="html">
+        <source>No sudo</source>
+        <target>Kein sudo</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-topologyOwnHost" datatype="html">
+        <source>Your container host</source>
+        <target>Ihr Container-Host</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-topologyProvisioned" datatype="html">
+        <source>Provisioned for you</source>
+        <target>Automatisch bereitgestellt</target>
       </trans-unit>
     </body>
   </file>

@@ -22,6 +22,7 @@ import { PortalComparisonTabnineEnterpriseComponent } from './comparison/tabnine
 import { PortalContainerComponent } from './container/container.component';
 import { PortalDesktopComponent } from './desktop/desktop.component';
 import { PortalHomeComponent } from './home/home.component';
+import { PortalHowItWorksComponent } from './how-it-works/how-it-works.component';
 import { PortalLegalDisclosureComponent } from './legal/disclosure/disclosure.component';
 import { PortalLegalPrivacyComponent } from './legal/privacy/privacy.component';
 import { PortalLegalTermsComponent } from './legal/terms/terms.component';
@@ -56,6 +57,10 @@ export const portalRoutes: Route[] = [
       {
         path: 'cloud',
         component: PortalCloudComponent,
+      },
+      {
+        path: 'how-it-works',
+        component: PortalHowItWorksComponent,
       },
       {
         path: 'pricing',

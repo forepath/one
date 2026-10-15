@@ -1,0 +1,707 @@
+@import '../page.component.scss';
+
+.hero-container {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-lead {
+  max-width: 700px;
+  line-height: 1.6;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+}
+
+// Architecture scene below the hero copy, like the console scene on the home page.
+.hero-illustration {
+  position: relative;
+  z-index: 3;
+  max-width: 72rem;
+  margin: 3rem auto 0;
+}
+
+// The scene sits on the section edge, so only its top corners are rounded.
+.hero-illustration ::ng-deep .shared-app-illustration__window {
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+// Technical one-liners (stack, owner of a step): monospace and quiet.
+.hiw-meta {
+  font-family: var(--bs-font-monospace);
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color);
+}
+
+code.hiw-meta {
+  padding: 0.125rem 0.5rem;
+  color: var(--bs-primary);
+  background-color: color-mix(in srgb, var(--bs-primary) 8%, transparent);
+  border-radius: 0.375rem;
+}
+
+// Cards keep their meta line at the bottom, whatever the description length.
+#components article {
+  display: flex;
+  flex-direction: column;
+}
+
+.hiw-component--accent {
+  border-color: color-mix(in srgb, var(--bs-primary) 35%, var(--bs-border-color)) !important;
+}
+
+// Step header: the number on the landing contour surface, so the six steps read as one sequence.
+.hiw-step-head {
+  display: flex;
+  align-items: center;
+}
+
+.hiw-step-num {
+  position: relative;
+  box-shadow: 0 0 0 0.375rem color-mix(in srgb, var(--bs-primary) 18%, transparent);
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+// Isolation: what sits between the agent and the host kernel, top to bottom.
+.hiw-stacks {
+  position: relative;
+  z-index: 1;
+}
+
+.hiw-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.hiw-layer {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 0.75rem;
+  align-items: center;
+  padding: 0.875rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background-color: var(--bs-body-bg);
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: 0.5rem;
+
+  > i {
+    grid-row: span 2;
+    color: var(--bs-primary);
+    font-size: 1.125rem;
+  }
+
+  > small {
+    font-weight: 400;
+    font-size: 0.75rem;
+    color: var(--bs-secondary-color);
+  }
+
+  // Connector to the layer below: every system call travels down this line.
+  & + &::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    width: 1px;
+    height: 1.75rem;
+    background: repeating-linear-gradient(to bottom, var(--bs-primary) 0 0.25rem, transparent 0.25rem 0.5rem);
+  }
+}
+
+.hiw-layer--sandbox {
+  color: var(--bs-primary);
+  background-color: color-mix(in srgb, var(--bs-primary) 8%, var(--bs-body-bg));
+  border-color: color-mix(in srgb, var(--bs-primary) 55%, transparent);
+}
+
+.hiw-layer--host {
+  background-color: var(--bs-tertiary-bg);
+}
+
+// Egress facts: divided by hairlines instead of nested cards.
+.hiw-list {
+  display: flex;
+  flex-direction: column;
+
+  > * + * {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: var(--bs-border-width) solid var(--bs-border-color);
+  }
+}
+
+.hiw-code {
+  height: 100%;
+  border-radius: 0;
+  line-height: 1.6;
+
+  code {
+    background: none;
+    padding: 0;
+    color: inherit;
+  }
+}
+
+// Policy layers: each one indented a step further and joined to the one above.
+.hiw-layers {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  > li {
+    position: relative;
+  }
+
+  @media (min-width: 768px) {
+    > li:nth-child(2) {
+      margin-left: 2.5rem;
+    }
+
+    > li:nth-child(3) {
+      margin-left: 5rem;
+    }
+  }
+
+  > li + li::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 2.25rem;
+    width: 1px;
+    height: 1.5rem;
+    background-color: color-mix(in srgb, var(--bs-primary) 55%, transparent);
+  }
+}
+
+// Egress modes: how much traffic each one lets through, from open to closed.
+.hiw-scale {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hiw-meter {
+  display: flex;
+  gap: 0.25rem;
+
+  > i {
+    flex: 1 1 0;
+    height: 0.25rem;
+    border-radius: 50rem;
+    background-color: var(--bs-border-color);
+  }
+
+  > .hiw-meter__on {
+    background-color: var(--bs-primary);
+  }
+}
+
+// What the guard can see: one line per field, visible or not.
+.hiw-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+// Defense in depth: every boundary around the agent, from the host inwards.
+.hiw-rings {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: stretch;
+  min-height: 20rem;
+
+  > .hiw-ring {
+    flex: 1 1 auto;
+  }
+}
+
+.hiw-ring {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 2.25rem 1rem 1rem;
+  border: var(--bs-border-width) dashed color-mix(in srgb, var(--bs-primary) 40%, var(--bs-border-color));
+  border-radius: 1rem;
+  background-color: color-mix(in srgb, var(--bs-primary) 4%, transparent);
+
+  > .hiw-ring {
+    flex: 1 1 auto;
+  }
+}
+
+.hiw-ring__label {
+  position: absolute;
+  top: 0.625rem;
+  left: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--bs-secondary-color);
+
+  .bi {
+    color: var(--bs-primary);
+  }
+}
+
+.hiw-ring__core {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-height: 4.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #fff;
+  background-color: var(--bs-primary);
+  border-radius: 0.625rem;
+
+  .bi {
+    font-size: 1.5rem;
+  }
+}
+
+// "Mitigation" row under each limit.
+.hiw-mitigation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+// Each mitigation on its own, checked off after the badge.
+.hiw-mitigation__items {
+  display: contents;
+}
+
+.hiw-mitigation__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8125rem;
+  color: var(--bs-body-color);
+
+  .bi {
+    color: var(--bs-success);
+  }
+}
+
+// Deployment: one control plane (yours or ours) wired to the hosts that run the agents.
+//
+// One cycle (`--hiw-cycle`) moves a request through the whole track, in three legs:
+//   1. out of both control plane tiles into the gap between them (0-20 %),
+//   2. down the track between them and on to the hosts (20-58 %),
+//   3. split into three, which reach their hosts at the same moment (58-100 %); the hosts light up.
+.hiw-topology {
+  --hiw-cycle: 3.2s;
+  --hiw-dash: repeating-linear-gradient(to bottom, var(--bs-primary) 0 0.375rem, transparent 0.375rem 0.75rem);
+  --hiw-dash-across: repeating-linear-gradient(to right, var(--bs-primary) 0 0.375rem, transparent 0.375rem 0.75rem);
+
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+
+  // Every travelling dot; the legs only differ in their path and timing.
+  b {
+    position: absolute;
+    z-index: 1;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin: -0.25rem 0 0 -0.25rem;
+    border-radius: 50%;
+    background-color: var(--bs-primary);
+    box-shadow: 0 0 0.75rem var(--bs-primary);
+    opacity: 0;
+    animation: hiw-leg-join var(--hiw-cycle) linear infinite;
+  }
+}
+
+.hiw-topology__planes {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 3rem;
+}
+
+.hiw-topology__tile {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.875rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background-color: var(--bs-body-bg);
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: 0.625rem;
+
+  .bi {
+    font-size: 1.25rem;
+    color: var(--bs-primary);
+  }
+}
+
+.hiw-topology__tile--accent {
+  border-color: color-mix(in srgb, var(--bs-primary) 55%, transparent);
+}
+
+// The gap between the two tiles: a bar into both of them and the start of the track down.
+.hiw-topology__join {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 1.5rem);
+  width: 3rem;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--hiw-dash-across);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    background: var(--hiw-dash);
+  }
+
+  > b {
+    top: 50%;
+    animation-name: hiw-leg-join;
+  }
+
+  > b:nth-child(1) {
+    --hiw-join-start: 0%;
+  }
+
+  > b:nth-child(2) {
+    --hiw-join-start: 100%;
+  }
+
+  > b:nth-child(3) {
+    left: 50%;
+    animation-name: hiw-leg-join-down;
+  }
+}
+
+.hiw-topology__wire {
+  position: relative;
+  height: 3rem;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 50%;
+    width: 1px;
+    background: var(--hiw-dash);
+  }
+
+  > b {
+    left: 50%;
+    animation-name: hiw-leg-wire;
+  }
+}
+
+.hiw-topology__hosts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+
+  @media (max-width: 575.98px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.hiw-topology__host {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background-color: var(--bs-body-bg);
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: 0.625rem;
+  animation: hiw-host-ping var(--hiw-cycle) linear infinite;
+
+  > small {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-family: var(--bs-font-monospace);
+    font-size: 0.6875rem;
+    font-weight: 400;
+    color: var(--bs-success);
+  }
+}
+
+// White marks, like the logo strips on the dark landing pages.
+.hiw-topology__logo {
+  height: 1.5rem;
+  max-width: 7rem;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+  opacity: 0.85;
+}
+
+.hiw-topology__logo-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+  color: #fff;
+  opacity: 0.85;
+}
+
+// Splits the track into one drop per host: same grid as the hosts, so every drop lands on a tile's
+// centre and the horizontal bar bridges the gaps between the cells.
+.hiw-topology__fan {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  height: 2rem;
+
+  > i {
+    position: relative;
+
+    // Drop into the tile.
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      background: var(--hiw-dash);
+    }
+
+    // Bar across, from the first tile's centre to the last one's.
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -0.375rem;
+      right: -0.375rem;
+      height: 1px;
+      background: var(--hiw-dash-across);
+    }
+
+    &:first-child::after {
+      left: 50%;
+    }
+
+    &:last-child::after {
+      right: 50%;
+    }
+
+    // Split dots start where the track ends: the middle tile's centre.
+    > b {
+      top: 0;
+      left: 50%;
+      animation-name: hiw-leg-fan-side;
+    }
+
+    &:nth-child(1) > b {
+      // One tile width plus one gap to the right of this tile's centre.
+      --hiw-fan-start: calc(150% + 0.75rem);
+    }
+
+    &:nth-child(2) > b {
+      animation-name: hiw-leg-fan-middle;
+    }
+
+    &:nth-child(3) > b {
+      --hiw-fan-start: calc(-50% - 0.75rem);
+    }
+  }
+
+  @media (max-width: 575.98px) {
+    display: none;
+  }
+}
+
+// Leg 1: from each tile's inner edge into the gap.
+@keyframes hiw-leg-join {
+  0% {
+    left: var(--hiw-join-start);
+    opacity: 0;
+  }
+
+  4% {
+    opacity: 1;
+  }
+
+  20% {
+    left: 50%;
+    opacity: 1;
+  }
+
+  20.1%,
+  100% {
+    left: 50%;
+    opacity: 0;
+  }
+}
+
+// Leg 2a: merged, down the rest of the gap.
+@keyframes hiw-leg-join-down {
+  0%,
+  19.9% {
+    top: 50%;
+    opacity: 0;
+  }
+
+  20% {
+    top: 50%;
+    opacity: 1;
+  }
+
+  30% {
+    top: 100%;
+    opacity: 1;
+  }
+
+  30.1%,
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+// Leg 2b: down the track to the hosts.
+@keyframes hiw-leg-wire {
+  0%,
+  29.9% {
+    top: 0;
+    opacity: 0;
+  }
+
+  30% {
+    top: 0;
+    opacity: 1;
+  }
+
+  58% {
+    top: 100%;
+    opacity: 1;
+  }
+
+  58.1%,
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+// Leg 3, outer dots: along the bar to their drop, then down.
+@keyframes hiw-leg-fan-side {
+  0%,
+  57.9% {
+    left: var(--hiw-fan-start);
+    top: 0;
+    opacity: 0;
+  }
+
+  58% {
+    left: var(--hiw-fan-start);
+    top: 0;
+    opacity: 1;
+  }
+
+  78% {
+    left: 50%;
+    top: 0;
+  }
+
+  96% {
+    opacity: 1;
+  }
+
+  100% {
+    left: 50%;
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+// Leg 3, middle dot: straight down, timed to land with the outer ones.
+@keyframes hiw-leg-fan-middle {
+  0%,
+  57.9% {
+    top: 0;
+    opacity: 0;
+  }
+
+  58% {
+    top: 0;
+    opacity: 1;
+  }
+
+  96% {
+    opacity: 1;
+  }
+
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes hiw-host-ping {
+  0% {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 1rem -0.25rem var(--bs-primary);
+  }
+
+  20%,
+  100% {
+    border-color: var(--bs-border-color);
+    box-shadow: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hiw-topology b {
+    display: none;
+  }
+
+  .hiw-topology__host {
+    animation: none;
+  }
+}
