@@ -38,194 +38,266 @@
     </div>
     <div class="row g-4">
       <div class="col-lg-6">
-        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-body">
-          <i class="bi bi-hdd-network text-primary icon-md mb-3" aria-hidden="true"></i>
-          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-domainNetworkTitle">
-            Network and connectivity
-          </h3>
-          <p class="text-muted mb-4" i18n="@@featureForepathItSystems-domainNetworkDesc">
-            We design and operate LAN, WAN, Wi-Fi, firewalls, and unified communications so connectivity stays reliable
-            from the office floor to remote sites.
-          </p>
-          <ul class="list-unstyled mb-0">
-            <li class="mb-2 d-flex gap-2 align-items-center">
-              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
-              <span i18n="@@featureForepathItSystems-domainNetworkItem1"
-                >Firewall and WAN changes with scheduled windows and failover testing</span
-              >
-            </li>
-            <li class="mb-2 d-flex gap-2 align-items-center">
-              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
-              <span i18n="@@featureForepathItSystems-domainNetworkItem2"
-                >Wi-Fi coverage surveys with ongoing performance tuning</span
-              >
-            </li>
-            <li class="d-flex gap-2 align-items-center">
-              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
-              <span i18n="@@featureForepathItSystems-domainNetworkItem3"
-                >Voice, Teams, and dial plan support with call quality monitoring</span
-              >
-            </li>
-          </ul>
+        <article class="card border rounded-3 shadow-sm h-100 overflow-hidden bg-body d-flex flex-column">
+          <div class="it-domain-card__top p-4 p-lg-5 border-bottom landing-surface-tint">
+            <i class="bi bi-hdd-network text-primary icon-xl d-block mb-4" aria-hidden="true"></i>
+            <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-domainNetworkTitle">
+              Network and connectivity
+            </h3>
+            <p class="text-muted mb-0" i18n="@@featureForepathItSystems-domainNetworkDesc">
+              We design and operate LAN, WAN, Wi-Fi, firewalls, and unified communications so connectivity stays
+              reliable from the office floor to remote sites.
+            </p>
+          </div>
+          <div class="it-domain-card__bottom p-4 p-lg-5 d-flex flex-column">
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2 d-flex gap-2 align-items-center">
+                <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                <span i18n="@@featureForepathItSystems-domainNetworkItem1"
+                  >Firewall and WAN changes with scheduled windows and failover testing</span
+                >
+              </li>
+              <li class="mb-2 d-flex gap-2 align-items-center">
+                <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                <span i18n="@@featureForepathItSystems-domainNetworkItem2"
+                  >Wi-Fi coverage surveys with ongoing performance tuning</span
+                >
+              </li>
+              <li class="d-flex gap-2 align-items-center">
+                <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                <span i18n="@@featureForepathItSystems-domainNetworkItem3"
+                  >Voice, Teams, and dial plan support with call quality monitoring</span
+                >
+              </li>
+            </ul>
+            <a
+              routerLink="/it-systems/network"
+              class="small fw-semibold text-primary text-decoration-none pt-4"
+              i18n="@@featureForepathItSystems-domainNetworkLink"
+              >Learn more <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i
+            ></a>
+          </div>
         </article>
       </div>
       <div class="col-lg-6">
-        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-body">
-          <i class="bi bi-server text-primary icon-md mb-3" aria-hidden="true"></i>
-          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-domainComputeTitle">
-            Compute and platforms
-          </h3>
-          <p class="text-muted mb-4" i18n="@@featureForepathItSystems-domainComputeDesc">
-            Physical and virtual servers plus hypervisors stay patched, monitored, and rightsized across their full
-            lifecycle.
-          </p>
-          <ul class="list-unstyled mb-0">
-            <li class="mb-2 d-flex gap-2 align-items-center">
-              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
-              <span i18n="@@featureForepathItSystems-domainComputeItem1"
-                >Operating system patching and vulnerability remediation</span
-              >
-            </li>
-            <li class="mb-2 d-flex gap-2 align-items-center">
-              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
-              <span i18n="@@featureForepathItSystems-domainComputeItem2"
-                >Cluster health monitoring with coordinated patching and failover procedures</span
-              >
-            </li>
-            <li class="d-flex gap-2 align-items-center">
-              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
-              <span i18n="@@featureForepathItSystems-domainComputeItem3"
-                >Capacity planning for seasonal and project driven peaks</span
-              >
-            </li>
-          </ul>
+        <article class="card border rounded-3 shadow-sm h-100 overflow-hidden bg-body d-flex flex-column">
+          <div class="it-domain-card__top p-4 p-lg-5 border-bottom landing-surface-tint">
+            <i class="bi bi-server text-primary icon-xl d-block mb-4" aria-hidden="true"></i>
+            <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-domainComputeTitle">
+              Compute and platforms
+            </h3>
+            <p class="text-muted mb-0" i18n="@@featureForepathItSystems-domainComputeDesc">
+              Physical and virtual servers plus hypervisors stay patched, monitored, and rightsized across their full
+              lifecycle.
+            </p>
+          </div>
+          <div class="it-domain-card__bottom p-4 p-lg-5 d-flex flex-column">
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2 d-flex gap-2 align-items-center">
+                <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                <span i18n="@@featureForepathItSystems-domainComputeItem1"
+                  >Operating system patching and vulnerability remediation</span
+                >
+              </li>
+              <li class="mb-2 d-flex gap-2 align-items-center">
+                <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                <span i18n="@@featureForepathItSystems-domainComputeItem2"
+                  >Cluster health monitoring with coordinated patching and failover procedures</span
+                >
+              </li>
+              <li class="d-flex gap-2 align-items-center">
+                <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                <span i18n="@@featureForepathItSystems-domainComputeItem3"
+                  >Capacity planning for seasonal and project driven peaks</span
+                >
+              </li>
+            </ul>
+            <a
+              routerLink="/it-systems/compute"
+              class="small fw-semibold text-primary text-decoration-none pt-4"
+              i18n="@@featureForepathItSystems-domainComputeLink"
+              >Learn more <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i
+            ></a>
+          </div>
         </article>
       </div>
       <div class="col-lg-6">
-        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-body">
-          <i class="bi bi-pc-display text-primary icon-md mb-3" aria-hidden="true"></i>
-          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-domainEndpointsTitle">
-            Endpoints and workplace
-          </h3>
-          <p class="text-muted mb-4" i18n="@@featureForepathItSystems-domainEndpointsDesc">
-            Workstations and collaboration platforms are provisioned consistently so employees can work without daily IT
-            friction.
-          </p>
-          <ul class="list-unstyled mb-0">
-            <li class="mb-2 d-flex gap-2 align-items-center">
-              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
-              <span i18n="@@featureForepathItSystems-domainEndpointsItem1"
-                >Standardized imaging with approved software baselines</span
-              >
-            </li>
-            <li class="mb-2 d-flex gap-2 align-items-center">
-              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
-              <span i18n="@@featureForepathItSystems-domainEndpointsItem2"
-                >Microsoft 365 administration, licensing reviews, and workspace governance</span
-              >
-            </li>
-            <li class="d-flex gap-2 align-items-center">
-              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
-              <span i18n="@@featureForepathItSystems-domainEndpointsItem3"
-                >Remote and on-site support through refresh and disposal cycles</span
-              >
-            </li>
-          </ul>
+        <article class="card border rounded-3 shadow-sm h-100 overflow-hidden bg-body d-flex flex-column">
+          <div class="it-domain-card__top p-4 p-lg-5 border-bottom landing-surface-tint">
+            <i class="bi bi-pc-display text-primary icon-xl d-block mb-4" aria-hidden="true"></i>
+            <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-domainEndpointsTitle">
+              Endpoints and workplace
+            </h3>
+            <p class="text-muted mb-0" i18n="@@featureForepathItSystems-domainEndpointsDesc">
+              Workstations and collaboration platforms are provisioned consistently so employees can work without daily
+              IT friction.
+            </p>
+          </div>
+          <div class="it-domain-card__bottom p-4 p-lg-5 d-flex flex-column">
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2 d-flex gap-2 align-items-center">
+                <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                <span i18n="@@featureForepathItSystems-domainEndpointsItem1"
+                  >Standardized imaging with approved software baselines</span
+                >
+              </li>
+              <li class="mb-2 d-flex gap-2 align-items-center">
+                <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                <span i18n="@@featureForepathItSystems-domainEndpointsItem2"
+                  >Microsoft 365 administration, licensing reviews, and workspace governance</span
+                >
+              </li>
+              <li class="d-flex gap-2 align-items-center">
+                <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                <span i18n="@@featureForepathItSystems-domainEndpointsItem3"
+                  >Remote and on-site support through refresh and disposal cycles</span
+                >
+              </li>
+            </ul>
+            <a
+              routerLink="/it-systems/workplace"
+              class="small fw-semibold text-primary text-decoration-none pt-4"
+              i18n="@@featureForepathItSystems-domainEndpointsLink"
+              >Learn more <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i
+            ></a>
+          </div>
         </article>
       </div>
       <div class="col-lg-6">
-        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-body">
-          <i class="bi bi-door-open text-primary icon-md mb-3" aria-hidden="true"></i>
-          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-domainIdentityTitle">Identity and access</h3>
-          <p class="text-muted mb-4" i18n="@@featureForepathItSystems-domainIdentityDesc">
-            Digital and physical access policies are enforced so the right people reach the right resources at the right
-            time.
-          </p>
-          <ul class="list-unstyled mb-0">
-            <li class="mb-2 d-flex gap-2 align-items-center">
-              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
-              <span i18n="@@featureForepathItSystems-domainIdentityItem1"
-                >Identity reviews and role based access administration</span
-              >
-            </li>
-            <li class="mb-2 d-flex gap-2 align-items-center">
-              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
-              <span i18n="@@featureForepathItSystems-domainIdentityItem2"
-                >Badge and door access provisioning with audit trails</span
-              >
-            </li>
-            <li class="d-flex gap-2 align-items-center">
-              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
-              <span i18n="@@featureForepathItSystems-domainIdentityItem3"
-                >Privileged account monitoring and periodic recertification</span
-              >
-            </li>
-          </ul>
+        <article class="card border rounded-3 shadow-sm h-100 overflow-hidden bg-body d-flex flex-column">
+          <div class="it-domain-card__top p-4 p-lg-5 border-bottom landing-surface-tint">
+            <i class="bi bi-door-open text-primary icon-xl d-block mb-4" aria-hidden="true"></i>
+            <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-domainIdentityTitle">
+              Identity and access
+            </h3>
+            <p class="text-muted mb-0" i18n="@@featureForepathItSystems-domainIdentityDesc">
+              Digital and physical access policies are enforced so the right people reach the right resources at the
+              right time.
+            </p>
+          </div>
+          <div class="it-domain-card__bottom p-4 p-lg-5 d-flex flex-column">
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2 d-flex gap-2 align-items-center">
+                <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                <span i18n="@@featureForepathItSystems-domainIdentityItem1"
+                  >Identity reviews and role based access administration</span
+                >
+              </li>
+              <li class="mb-2 d-flex gap-2 align-items-center">
+                <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                <span i18n="@@featureForepathItSystems-domainIdentityItem2"
+                  >Badge and door access provisioning with audit trails</span
+                >
+              </li>
+              <li class="d-flex gap-2 align-items-center">
+                <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                <span i18n="@@featureForepathItSystems-domainIdentityItem3"
+                  >Privileged account monitoring and periodic recertification</span
+                >
+              </li>
+            </ul>
+            <a
+              routerLink="/it-systems/identity"
+              class="small fw-semibold text-primary text-decoration-none pt-4"
+              i18n="@@featureForepathItSystems-domainIdentityLink"
+              >Learn more <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i
+            ></a>
+          </div>
         </article>
       </div>
       <div class="col-lg-6">
-        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-body">
-          <i class="bi bi-shield-lock text-primary icon-md mb-3" aria-hidden="true"></i>
-          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-domainSecurityTitle">
-            Security and protection
-          </h3>
-          <p class="text-muted mb-4" i18n="@@featureForepathItSystems-domainSecurityDesc">
-            Endpoints and users are protected through layered controls and a documented response process.
-          </p>
-          <ul class="list-unstyled mb-0">
-            <li class="mb-2 d-flex gap-2 align-items-center">
-              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
-              <span i18n="@@featureForepathItSystems-domainSecurityItem1"
-                >Endpoint detection and antivirus policy management</span
-              >
-            </li>
-            <li class="mb-2 d-flex gap-2 align-items-center">
-              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
-              <span i18n="@@featureForepathItSystems-domainSecurityItem2"
-                >Security patch compliance with regular reporting</span
-              >
-            </li>
-            <li class="d-flex gap-2 align-items-center">
-              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
-              <span i18n="@@featureForepathItSystems-domainSecurityItem3"
-                >Phishing triage and incident response runbooks</span
-              >
-            </li>
-          </ul>
+        <article class="card border rounded-3 shadow-sm h-100 overflow-hidden bg-body d-flex flex-column">
+          <div class="it-domain-card__top p-4 p-lg-5 border-bottom landing-surface-tint">
+            <i class="bi bi-shield-lock text-primary icon-xl d-block mb-4" aria-hidden="true"></i>
+            <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-domainSecurityTitle">
+              Security and protection
+            </h3>
+            <p class="text-muted mb-0" i18n="@@featureForepathItSystems-domainSecurityDesc">
+              Endpoints and users are protected through layered controls and a documented response process.
+            </p>
+          </div>
+          <div class="it-domain-card__bottom p-4 p-lg-5 d-flex flex-column">
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2 d-flex gap-2 align-items-center">
+                <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                <span i18n="@@featureForepathItSystems-domainSecurityItem1"
+                  >Endpoint detection and antivirus policy management</span
+                >
+              </li>
+              <li class="mb-2 d-flex gap-2 align-items-center">
+                <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                <span i18n="@@featureForepathItSystems-domainSecurityItem2"
+                  >Security patch compliance with regular reporting</span
+                >
+              </li>
+              <li class="d-flex gap-2 align-items-center">
+                <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                <span i18n="@@featureForepathItSystems-domainSecurityItem3"
+                  >Phishing triage and incident response runbooks</span
+                >
+              </li>
+            </ul>
+            <a
+              routerLink="/it-systems/security"
+              class="small fw-semibold text-primary text-decoration-none pt-4"
+              i18n="@@featureForepathItSystems-domainSecurityLink"
+              >Learn more <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i
+            ></a>
+          </div>
         </article>
       </div>
       <div class="col-lg-6">
-        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-body">
-          <i class="bi bi-graph-up text-primary icon-md mb-3" aria-hidden="true"></i>
-          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-domainResilienceTitle">
-            Resilience and operations
-          </h3>
-          <p class="text-muted mb-4" i18n="@@featureForepathItSystems-domainResilienceDesc">
-            Backup, recovery, and monitoring are tuned so issues surface early and recovery targets stay achievable.
-          </p>
-          <ul class="list-unstyled mb-0">
-            <li class="mb-2 d-flex gap-2 align-items-center">
-              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
-              <span i18n="@@featureForepathItSystems-domainResilienceItem1"
-                >Backup monitoring with scheduled restore drills</span
-              >
-            </li>
-            <li class="mb-2 d-flex gap-2 align-items-center">
-              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
-              <span i18n="@@featureForepathItSystems-domainResilienceItem2"
-                >Alert threshold tuning to reduce noise and fatigue</span
-              >
-            </li>
-            <li class="d-flex gap-2 align-items-center">
-              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
-              <span i18n="@@featureForepathItSystems-domainResilienceItem3"
-                >SLA aligned ticket routing with monthly operational health reports</span
-              >
-            </li>
-          </ul>
+        <article class="card border rounded-3 shadow-sm h-100 overflow-hidden bg-body d-flex flex-column">
+          <div class="it-domain-card__top p-4 p-lg-5 border-bottom landing-surface-tint">
+            <i class="bi bi-graph-up text-primary icon-xl d-block mb-4" aria-hidden="true"></i>
+            <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItSystems-domainResilienceTitle">
+              Resilience and operations
+            </h3>
+            <p class="text-muted mb-0" i18n="@@featureForepathItSystems-domainResilienceDesc">
+              Backup, recovery, and monitoring are tuned so issues surface early and recovery targets stay achievable.
+            </p>
+          </div>
+          <div class="it-domain-card__bottom p-4 p-lg-5 d-flex flex-column">
+            <ul class="list-unstyled mb-0">
+              <li class="mb-2 d-flex gap-2 align-items-center">
+                <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                <span i18n="@@featureForepathItSystems-domainResilienceItem1"
+                  >Backup monitoring with scheduled restore drills</span
+                >
+              </li>
+              <li class="mb-2 d-flex gap-2 align-items-center">
+                <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                <span i18n="@@featureForepathItSystems-domainResilienceItem2"
+                  >Alert threshold tuning to reduce noise and fatigue</span
+                >
+              </li>
+              <li class="d-flex gap-2 align-items-center">
+                <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                <span i18n="@@featureForepathItSystems-domainResilienceItem3"
+                  >SLA aligned ticket routing with monthly operational health reports</span
+                >
+              </li>
+            </ul>
+            <a
+              routerLink="/it-systems/resilience"
+              class="small fw-semibold text-primary text-decoration-none pt-4"
+              i18n="@@featureForepathItSystems-domainResilienceLink"
+              >Learn more <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i
+            ></a>
+          </div>
         </article>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="bg-body-tertiary grid-section landing-logo-section">
+  <div class="container grid-section__container">
+    <shared-logo-grid
+      [slots]="distributorSlots"
+      i18n-ariaLabel="@@featureForepathItSystems-distributorGridLabel"
+      ariaLabel="Distribution partners we source hardware and licences through"
+    />
   </div>
 </section>
 
@@ -312,6 +384,7 @@
         need right now, tell us about your environment and gaps. We will outline a service scope and SLA proposal for IT
         systems alone.
       </p>
+      <shared-contact-person brand="forepath" />
       <fpc-button
         variant="primary"
         size="xl"

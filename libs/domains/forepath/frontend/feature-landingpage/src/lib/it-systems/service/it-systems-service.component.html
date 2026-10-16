@@ -1,0 +1,201 @@
+<section id="hero" class="py-10 py-lg-6 bg-dark text-white grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center">
+      <a
+        routerLink="/it-systems"
+        class="it-service-eyebrow fw-semibold text-primary text-decoration-none d-inline-flex align-items-center gap-2 mb-4"
+      >
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        <span i18n="@@featureForepathItService-heroEyebrow">IT systems</span>
+      </a>
+      <h1 class="display-4 fw-semibold mb-4 hero-title">
+        <span class="text-primary">{{ service.heroAccent }}</span> {{ service.heroRest }}
+      </h1>
+      <p class="lead mx-auto hero-lead section-lead mb-0">{{ service.heroLead }}</p>
+    </div>
+  </div>
+</section>
+
+<section class="bg-body-tertiary grid-section landing-logo-section">
+  <div class="container grid-section__container">
+    <shared-logo-grid
+      [slots]="service.logoSlots"
+      i18n-ariaLabel="@@featureForepathItService-vendorGridLabel"
+      ariaLabel="Technology vendors we work with"
+    />
+  </div>
+</section>
+
+<section id="value" class="pt-10 bg-body grid-section it-service-value-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 mx-auto it-service-title text-body-emphasis">{{ service.valueTitle }}</h2>
+      <p class="lead mx-auto text-muted section-lead mb-0">{{ service.valueLead }}</p>
+    </div>
+    <div class="row row-gap-3 g-0 align-items-stretch it-service-value-row">
+      <div class="col-lg-6 it-service-visual-col order-2 order-lg-1">
+        <framework-forepath-operations-illustration
+          [label]="service.sceneLabel"
+          [scene]="service.scene"
+          [railIcons]="railIcons"
+          [activeIcon]="service.icon"
+        />
+      </div>
+      <div class="col-lg-6 it-service-cards-col order-1 order-lg-2">
+        <div class="row g-3">
+          @for (advantage of service.advantages; track advantage.icon) {
+            <div class="col-sm-6">
+              <article class="card border rounded-3 shadow-sm h-100 p-4 bg-body">
+                <i class="bi text-primary icon-md mb-3" [ngClass]="advantage.icon" aria-hidden="true"></i>
+                <h3 class="h6 fw-semibold mb-2">{{ advantage.title }}</h3>
+                <p class="text-muted small mb-0">{{ advantage.description }}</p>
+              </article>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="solutions" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureForepathItService-solutionsTitle">
+        Ready-to-run solutions
+      </h2>
+      <p class="lead mx-auto text-muted section-lead mb-0" i18n="@@featureForepathItService-solutionsLead">
+        Proven building blocks on the platforms we know best. Each one starts with a clear scope and moves into
+        day-to-day operations with the same SLA as the rest of your environment.
+      </p>
+    </div>
+    <div class="row g-4">
+      @for (solution of service.solutions; track solution.id) {
+        <div [ngClass]="service.solutions.length === 3 ? 'col-lg-4' : 'col-lg-6'">
+          <article
+            class="card border rounded-3 shadow-sm h-100 overflow-hidden bg-body d-flex flex-column it-service-solution"
+            [id]="solution.id"
+          >
+            <div class="it-service-solution__top p-4 p-lg-5 border-bottom landing-surface-tint">
+              <i class="bi text-primary icon-xl d-block mb-4" [ngClass]="solution.icon" aria-hidden="true"></i>
+              <h3 class="h5 fw-semibold mb-3">{{ solution.title }}</h3>
+              <p class="text-muted mb-0">{{ solution.description }}</p>
+              @if (solution.link; as link) {
+                <a
+                  [routerLink]="link.route"
+                  [fragment]="link.fragment"
+                  class="small fw-semibold text-primary text-decoration-none d-inline-block mt-3"
+                  >{{ link.label }} <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i
+                ></a>
+              }
+            </div>
+            <div class="it-service-solution__bottom p-4 p-lg-5 d-flex flex-column">
+              <ul class="list-unstyled mb-0">
+                @for (item of solution.items; track item; let last = $last) {
+                  <li class="d-flex gap-2 align-items-center" [class.mb-2]="!last">
+                    <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                    <span>{{ item }}</span>
+                  </li>
+                }
+              </ul>
+            </div>
+          </article>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<section class="bg-body-tertiary grid-section landing-logo-section">
+  <div class="container grid-section__container">
+    <shared-logo-grid
+      [slots]="distributorSlots"
+      i18n-ariaLabel="@@featureForepathItService-distributorGridLabel"
+      ariaLabel="Distribution partners we source hardware and licences through"
+    />
+  </div>
+</section>
+
+<section id="how-it-works" class="py-10 bg-body grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureForepathItService-howTitle">
+        How we take over
+      </h2>
+      <p class="lead text-muted mx-auto section-lead mb-0" i18n="@@featureForepathItService-howLead">
+        Whether we start with a single solution or your whole environment, the path into operations is the same. No big
+        bang, no blind spots.
+      </p>
+    </div>
+    <div class="row g-4 it-service-steps">
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-body it-service-step">
+          <span class="it-service-step__badge" aria-hidden="true">1</span>
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItService-howStep1Title">Assess</h3>
+          <p class="text-muted mb-0" i18n="@@featureForepathItService-howStep1Desc">
+            We take stock of your systems, documentation, and open issues, and agree on priorities and service levels
+            with you.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-body it-service-step">
+          <span class="it-service-step__badge" aria-hidden="true">2</span>
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItService-howStep2Title">Take over</h3>
+          <p class="text-muted mb-0" i18n="@@featureForepathItService-howStep2Desc">
+            Monitoring, access, and runbooks are set up before we touch production, so we can operate safely from the
+            first day.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5 bg-body it-service-step">
+          <span class="it-service-step__badge" aria-hidden="true">3</span>
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureForepathItService-howStep3Title">Operate and improve</h3>
+          <p class="text-muted mb-0" i18n="@@featureForepathItService-howStep3Desc">
+            Daily operations run within the agreed SLA, and monthly reviews show what to improve next.
+          </p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="forepath-one" class="bg-body-tertiary grid-section">
+  <framework-forepath-one-teaser activeThread="it-systems">
+    <p class="text-muted mb-4" i18n="@@featureForepathItService-oneTeaserLead">
+      We keep this part of your environment running. ForePath One connects that operations work with consulting,
+      software delivery, and community we run ourselves. Same engineers, one thread, fewer handoffs between phases.
+    </p>
+  </framework-forepath-one-teaser>
+</section>
+
+<section id="cta" class="py-10 bg-dark grid-section">
+  <div class="container grid-section__container">
+    <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
+      <h2 class="h2 fw-semibold mb-4">{{ service.ctaTitle }}</h2>
+      <p class="lead mb-5 mx-auto cta-lead-light">{{ service.ctaLead }}</p>
+      <shared-contact-person brand="forepath" />
+      <div class="d-flex flex-wrap gap-3 justify-content-center">
+        <fpc-button
+          variant="primary"
+          size="xl"
+          btnClass="rounded-3"
+          routerLink="/pricing/estimate"
+          i18n="@@featureForepathItService-ctaEstimateButton"
+        >
+          <i class="bi bi-calculator" aria-hidden="true"></i>Get an instant quote
+        </fpc-button>
+        <fpc-button
+          variant="primary"
+          size="xl"
+          btnClass="rounded-3"
+          routerLink="/contact"
+          i18n="@@featureForepathItService-ctaButton"
+        >
+          <i class="bi bi-envelope" aria-hidden="true"></i>Contact us
+        </fpc-button>
+      </div>
+    </div>
+  </div>
+</section>

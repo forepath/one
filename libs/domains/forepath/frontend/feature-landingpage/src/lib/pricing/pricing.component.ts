@@ -5,10 +5,11 @@ import { RouterModule } from '@angular/router';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
+import { SharedContactPersonComponent } from '@forepath/shared/frontend/feature-landingpage';
 
 @Component({
   selector: 'framework-forepath-pricing',
-  imports: [FpcButtonComponent, CommonModule, RouterModule],
+  imports: [SharedContactPersonComponent, FpcButtonComponent, CommonModule, RouterModule],
   styleUrls: ['./pricing.component.scss'],
   templateUrl: './pricing.component.html',
   standalone: true,

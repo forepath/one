@@ -109,6 +109,7 @@ export const portalRoutes: Route[] = [
       createSharedContactRoute({
         canonicalUrl: 'https://agenstra.com/contact',
         heroTheme: 'dark',
+        contactPerson: 'agenstra',
         contactDetails: createBrandContactDetails({
           email: 'hi@agenstra.com',
           websiteUrl: 'https://agenstra.com',

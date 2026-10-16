@@ -64,3 +64,28 @@ export const Closed: Story = { args: { open: false } };
 export const AlignedEnd: Story = { args: { alignment: 'end' } };
 
 export const StaysOpenOnSelect: Story = { args: { closeOnSelect: false } };
+
+/** Multi-column panel spanning a positioned wrapper (e.g. the landing navbar container). */
+export const ContainerWidth: Story = {
+  render: (args) => ({
+    props: args,
+    template: `<div style="position: relative; min-height: 14rem; display: flex; justify-content: flex-end">
+            <fpc-dropdown [open]="open" width="container" alignment="end" (openChange)="openChange($event)">
+                <button class="btn btn-secondary" type="button" fpcDropdownTrigger>
+                    Services <i class="bi bi-chevron-down"></i>
+                </button>
+                <div class="row g-0 p-2">
+                    <div class="col-4">
+                        <fpc-dropdown-item icon="compass">Consulting</fpc-dropdown-item>
+                        <fpc-dropdown-item icon="code-slash">Development</fpc-dropdown-item>
+                    </div>
+                    <div class="col-4">
+                        <fpc-dropdown-item icon="hdd-network">Network</fpc-dropdown-item>
+                        <fpc-dropdown-item icon="server">Compute</fpc-dropdown-item>
+                    </div>
+                    <div class="col-4 p-3 small text-muted">Information text, logos or a highlighted action.</div>
+                </div>
+            </fpc-dropdown>
+        </div>`,
+  }),
+};

@@ -1,3 +1,5 @@
+import type { SharedContactPersonBrand } from '../contact-person/contact-person.component';
+
 import type { SharedContactDetails } from './shared-contact-details.constants';
 
 export const SHARED_CONTACT_PAGE_DATA_KEY = 'contactPage';
@@ -10,4 +12,6 @@ export interface SharedContactPageConfig {
   canonicalUrl: string;
   heroTheme: SharedContactPageHeroTheme;
   contactDetails: SharedContactDetails;
+  /** Shows who reads the messages under the hero, with the brand's line (see `shared-contact-person`). */
+  contactPerson?: SharedContactPersonBrand;
 }

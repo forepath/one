@@ -7,10 +7,18 @@ import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/ut
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
 import { ArchitectureIllustrationComponent } from '../illustrations/architecture-illustration.component';
+import { SharedContactPersonComponent } from '@forepath/shared/frontend/feature-landingpage';
 
 @Component({
   selector: 'framework-portal-how-it-works',
-  imports: [FpcBadgeComponent, FpcButtonComponent, CommonModule, RouterModule, ArchitectureIllustrationComponent],
+  imports: [
+    SharedContactPersonComponent,
+    FpcBadgeComponent,
+    FpcButtonComponent,
+    CommonModule,
+    RouterModule,
+    ArchitectureIllustrationComponent,
+  ],
   styleUrls: ['./how-it-works.component.scss'],
   templateUrl: './how-it-works.component.html',
   standalone: true,

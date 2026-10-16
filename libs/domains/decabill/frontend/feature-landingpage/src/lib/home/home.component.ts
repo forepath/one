@@ -12,10 +12,12 @@ import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend
 import { OverviewIllustrationComponent } from '../illustrations/overview-illustration.component';
 import { BillingTimelineIllustrationComponent } from '../illustrations/billing-timeline-illustration.component';
 import { PlanConfigIllustrationComponent } from '../illustrations/plan-config-illustration.component';
+import { SharedContactPersonComponent } from '@forepath/shared/frontend/feature-landingpage';
 
 @Component({
   selector: 'framework-portal-home',
   imports: [
+    SharedContactPersonComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
     CommonModule,

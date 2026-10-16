@@ -42,7 +42,7 @@
   </div>
   <nav class="navbar navbar-expand-md navbar-dark p-0">
     <div
-      class="container grid-section__container grid-section__container--shadow d-flex align-items-center justify-content-between gap-2 navbar-content"
+      class="container grid-section__container grid-section__container--shadow d-flex align-items-center justify-content-between gap-2 navbar-content position-relative"
     >
       <div class="d-flex align-items-center">
         <a routerLink="/" class="brand-icon-container fs-3 bg-primary p-3">
@@ -68,8 +68,8 @@
         </button>
         <div class="collapse navbar-collapse mobile-navbar" [class.mobile-open]="mobileMenuOpen()" id="navbarNav">
           <ul class="navbar-nav ms-auto align-items-center">
-            <li class="nav-item portal-nav-dropdown portal-nav-dropdown--wide">
-              <fpc-dropdown class="w-100" alignment="end" [(open)]="servicesNavOpen">
+            <li class="nav-item portal-nav-dropdown portal-nav-dropdown--mega">
+              <fpc-dropdown class="w-100" alignment="end" width="container" [(open)]="servicesNavOpen">
                 <a
                   fpcDropdownTrigger
                   class="nav-link dropdown-toggle portal-nav-dropdown-toggle"
@@ -83,50 +83,81 @@
                   <span i18n="@@featureForepath-navServices">Services</span>
                   <i class="bi bi-chevron-down portal-nav-dropdown-chevron" aria-hidden="true"></i>
                 </a>
-                <fpc-dropdown-item
-                  routerLink="/consulting"
-                  itemClass="portal-nav-dropdown-item portal-nav-dropdown-item--stacked"
-                  (selected)="closeMobileMenu()"
-                >
-                  <span i18n="@@featureForepath-navConsulting">Consulting</span>
-                  <span class="small text-muted" i18n="@@featureForepath-navConsultingCaption"
-                    >Shape strategy and architecture with your team</span
-                  >
-                </fpc-dropdown-item>
-                <fpc-dropdown-item
-                  routerLink="/it-systems"
-                  itemClass="portal-nav-dropdown-item portal-nav-dropdown-item--stacked"
-                  (selected)="closeMobileMenu()"
-                >
-                  <span i18n="@@featureForepath-navItSystems">IT Systems</span>
-                  <span class="small text-muted" i18n="@@featureForepath-navItSystemsCaption"
-                    >Run and support platforms with operators</span
-                  >
-                </fpc-dropdown-item>
-                <fpc-dropdown-item
-                  routerLink="/software-development"
-                  itemClass="portal-nav-dropdown-item portal-nav-dropdown-item--stacked"
-                  (selected)="closeMobileMenu()"
-                >
-                  <span i18n="@@featureForepath-navSoftwareDevelopment">Software Development</span>
-                  <span class="small text-muted" i18n="@@featureForepath-navSoftwareDevelopmentCaption"
-                    >Ship and own software in production</span
-                  >
-                </fpc-dropdown-item>
-                <fpc-dropdown-item
-                  routerLink="/pricing/estimate"
-                  itemClass="portal-nav-dropdown-item portal-nav-dropdown-item--stacked portal-nav-dropdown-item--highlight"
-                  (selected)="closeMobileMenu()"
-                >
-                  <span i18n="@@featureForepath-navProjectEstimate">Instant quote</span>
-                  <span class="small" i18n="@@featureForepath-navProjectEstimateCaption"
-                    >From your project description, in seconds</span
-                  >
-                </fpc-dropdown-item>
+                <div class="portal-nav-mega">
+                  <div class="portal-nav-mega__column portal-nav-mega__column--advise">
+                    <p class="portal-nav-mega__heading" i18n="@@featureForepath-navMegaAdviseBuild">Advise and build</p>
+                    <fpc-dropdown-item
+                      routerLink="/consulting"
+                      icon="compass"
+                      itemClass="portal-nav-dropdown-item portal-nav-dropdown-item--stacked"
+                      (selected)="closeMobileMenu()"
+                    >
+                      <span i18n="@@featureForepath-navConsulting">Consulting</span>
+                      <span class="small text-muted" i18n="@@featureForepath-navConsultingCaption"
+                        >Shape strategy and architecture with your team</span
+                      >
+                    </fpc-dropdown-item>
+                    <fpc-dropdown-item
+                      routerLink="/software-development"
+                      icon="code-slash"
+                      itemClass="portal-nav-dropdown-item portal-nav-dropdown-item--stacked"
+                      (selected)="closeMobileMenu()"
+                    >
+                      <span i18n="@@featureForepath-navSoftwareDevelopment">Software Development</span>
+                      <span class="small text-muted" i18n="@@featureForepath-navSoftwareDevelopmentCaption"
+                        >Ship and own software in production</span
+                      >
+                    </fpc-dropdown-item>
+                  </div>
+                  <div class="portal-nav-mega__column portal-nav-mega__column--it">
+                    <p class="portal-nav-mega__heading">
+                      <a
+                        routerLink="/it-systems"
+                        class="portal-nav-mega__heading-link text-decoration-none"
+                        (click)="closeMobileMenu()"
+                        ><span i18n="@@featureForepath-navItSystems">IT Systems</span>
+                        <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i
+                      ></a>
+                    </p>
+                    <div class="portal-nav-mega__grid">
+                      @for (service of itServices; track service.id) {
+                        <fpc-dropdown-item
+                          [routerLink]="service.route"
+                          [icon]="service.navIcon"
+                          itemClass="portal-nav-dropdown-item portal-nav-dropdown-item--stacked"
+                          (selected)="closeMobileMenu()"
+                        >
+                          <span>{{ service.title }}</span>
+                          <span class="small text-muted">{{ service.navCaption }}</span>
+                        </fpc-dropdown-item>
+                      }
+                    </div>
+                  </div>
+                  <aside class="portal-nav-mega__aside">
+                    <p class="portal-nav-mega__aside-title fw-semibold mb-2" i18n="@@featureForepath-navMegaAsideTitle">
+                      One team, one thread
+                    </p>
+                    <p class="small text-muted mb-3" i18n="@@featureForepath-navMegaAsideText">
+                      Consulting, delivery, and operations from the same engineers. Hardware and licences come through
+                      our distribution partners.
+                    </p>
+                    <ul
+                      class="portal-nav-mega__logos list-unstyled d-flex align-items-center flex-wrap gap-3 mb-0"
+                      i18n-aria-label="@@featureForepath-navMegaDistributorsLabel"
+                      aria-label="Distribution partners"
+                    >
+                      @for (logo of distributorLogos; track logo.id) {
+                        <li>
+                          <img [src]="logo.logoUrl" [alt]="logo.name" class="portal-nav-mega__logo" />
+                        </li>
+                      }
+                    </ul>
+                  </aside>
+                </div>
               </fpc-dropdown>
             </li>
-            <li class="nav-item portal-nav-dropdown">
-              <fpc-dropdown class="w-100" alignment="end" [(open)]="productsNavOpen">
+            <li class="nav-item portal-nav-dropdown portal-nav-dropdown--mega">
+              <fpc-dropdown class="w-100" alignment="end" width="container" [(open)]="productsNavOpen">
                 <a
                   fpcDropdownTrigger
                   class="nav-link dropdown-toggle portal-nav-dropdown-toggle"
@@ -139,30 +170,94 @@
                   <span i18n="@@featureForepath-navProducts">Products</span>
                   <i class="bi bi-chevron-down portal-nav-dropdown-chevron" aria-hidden="true"></i>
                 </a>
-                <fpc-dropdown-item
-                  href="https://agenstra.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  itemClass="portal-nav-dropdown-item portal-nav-dropdown-item--stacked"
-                  (selected)="closeMobileMenu()"
-                >
-                  <span i18n="@@featureForepath-navAgenstra">Agenstra</span>
-                  <span class="small text-muted" i18n="@@featureForepath-navAgenstraCaption"
-                    >Run and ship with coding agents</span
+                <div class="portal-nav-products">
+                  <a
+                    href="https://agenstra.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    role="menuitem"
+                    class="portal-nav-product portal-nav-product--agenstra"
+                    (click)="closeMobileMenu()"
                   >
-                </fpc-dropdown-item>
-                <fpc-dropdown-item
-                  href="https://decabill.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  itemClass="portal-nav-dropdown-item portal-nav-dropdown-item--stacked"
-                  (selected)="closeMobileMenu()"
-                >
-                  <span i18n="@@featureForepath-navDecabill">Decabill</span>
-                  <span class="small text-muted" i18n="@@featureForepath-navDecabillCaption"
-                    >Bill services and SaaS with one platform</span
+                    <span class="portal-nav-product__head">
+                      <img src="assets/images/products/agenstra.svg" alt="" class="portal-nav-product__icon" />
+                      <span class="portal-nav-product__name" i18n="@@featureForepath-navAgenstra">Agenstra</span>
+                    </span>
+                    <span class="portal-nav-product__tagline" i18n="@@featureForepath-navAgenstraCaption"
+                      >Run and ship with coding agents</span
+                    >
+                    <span class="portal-nav-product__points">
+                      <span class="portal-nav-product__point" i18n="@@featureForepath-navAgenstraPoint1"
+                        >Workspaces, tickets, and knowledge in one place</span
+                      >
+                      <span class="portal-nav-product__point" i18n="@@featureForepath-navAgenstraPoint2"
+                        >On infrastructure you own or in Agenstra Cloud</span
+                      >
+                      <span class="portal-nav-product__point" i18n="@@featureForepath-navAgenstraPoint3"
+                        >Desktop app for your whole team</span
+                      >
+                    </span>
+                    <span class="portal-nav-product__link"
+                      >agenstra.com <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i
+                    ></span>
+                  </a>
+                  <a
+                    href="https://decabill.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    role="menuitem"
+                    class="portal-nav-product portal-nav-product--decabill"
+                    (click)="closeMobileMenu()"
                   >
-                </fpc-dropdown-item>
+                    <span class="portal-nav-product__head">
+                      <img src="assets/images/products/decabill.svg" alt="" class="portal-nav-product__icon" />
+                      <span class="portal-nav-product__name" i18n="@@featureForepath-navDecabill">Decabill</span>
+                    </span>
+                    <span class="portal-nav-product__tagline" i18n="@@featureForepath-navDecabillCaption"
+                      >Bill services and SaaS with one platform</span
+                    >
+                    <span class="portal-nav-product__points">
+                      <span class="portal-nav-product__point" i18n="@@featureForepath-navDecabillPoint1"
+                        >Client services, projects, and SaaS subscriptions</span
+                      >
+                      <span class="portal-nav-product__point" i18n="@@featureForepath-navDecabillPoint2"
+                        >Managed hosting billed on the same invoice run</span
+                      >
+                      <span class="portal-nav-product__point" i18n="@@featureForepath-navDecabillPoint3"
+                        >DATEV export for your accountant</span
+                      >
+                    </span>
+                    <span class="portal-nav-product__link"
+                      >decabill.com <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i
+                    ></span>
+                  </a>
+                  <div class="portal-nav-product portal-nav-product--loadweaver" aria-disabled="true">
+                    <span class="portal-nav-product__head">
+                      <img src="assets/images/products/loadweaver.svg" alt="" class="portal-nav-product__icon" />
+                      <span class="portal-nav-product__name">Loadweaver</span>
+                      <span class="portal-nav-product__badge" i18n="@@featureForepath-navLoadweaverBadge"
+                        >Coming soon</span
+                      >
+                    </span>
+                    <span class="portal-nav-product__tagline" i18n="@@featureForepath-navLoadweaverCaption"
+                      >Resilient clusters from a handful of servers</span
+                    >
+                    <span class="portal-nav-product__points">
+                      <span class="portal-nav-product__point" i18n="@@featureForepath-navLoadweaverPoint1"
+                        >Encrypted network between your sites</span
+                      >
+                      <span class="portal-nav-product__point" i18n="@@featureForepath-navLoadweaverPoint2"
+                        >Shared storage on every node</span
+                      >
+                      <span class="portal-nav-product__point" i18n="@@featureForepath-navLoadweaverPoint3"
+                        >Ingress that fails over on its own</span
+                      >
+                    </span>
+                    <span class="portal-nav-product__link portal-nav-product__link--disabled"
+                      >loadweaver.com <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i
+                    ></span>
+                  </div>
+                </div>
               </fpc-dropdown>
             </li>
             <li class="nav-item">
@@ -173,6 +268,16 @@
                 (click)="closeMobileMenu()"
                 i18n="@@featureForepath-navOne"
                 >One</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                routerLink="/about"
+                class="nav-link"
+                routerLinkActive="active"
+                (click)="closeMobileMenu()"
+                i18n="@@featureForepath-navAbout"
+                >About Us</a
               >
             </li>
             <li class="nav-item ms-md-3">
@@ -307,11 +412,22 @@
               >Decabill</a
             >
           </li>
+          <li class="mb-2">
+            <span class="footer-link footer-link--disabled small" aria-disabled="true"
+              >Loadweaver
+              <span class="footer-link__badge" i18n="@@featureForepath-footerLoadweaverSoon">Coming soon</span></span
+            >
+          </li>
         </ul>
       </div>
       <div class="col-md-3">
         <h6 class="fw-bold mb-3" i18n="@@featureForepath-footerCompany">Company</h6>
         <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <a routerLink="/about" class="text-decoration-none footer-link small" i18n="@@featureForepath-navAbout"
+              >About Us</a
+            >
+          </li>
           <li class="mb-2">
             <a routerLink="/pricing" class="text-decoration-none footer-link small" i18n="@@featureForepath-navPricing"
               >Pricing</a

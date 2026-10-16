@@ -1,0 +1,105 @@
+@import '../../page.component.scss';
+
+.it-service-title {
+  max-width: 800px;
+}
+
+// Value section: the advantage cards set the row height. The operations board keeps its drawn size
+// next to them, runs into the section's bottom edge and fades out there instead of shrinking.
+.it-service-visual-col {
+  position: relative;
+  overflow: hidden;
+  height: 24rem;
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+
+  @media (min-width: 992px) {
+    height: auto;
+  }
+
+  > framework-forepath-operations-illustration {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: block;
+  }
+}
+
+.it-service-cards-col {
+  padding-left: var(--bs-gutter-x, 0.75rem);
+  padding-right: var(--bs-gutter-x, 0.75rem);
+  padding-bottom: 1.5rem;
+
+  @media (min-width: 992px) {
+    padding-left: 2.5rem;
+    padding-bottom: var(--grid-section-padding-y);
+  }
+}
+
+.it-service-eyebrow {
+  letter-spacing: 0.02em;
+
+  &:hover {
+    color: rgb(245 245 245 / 0.95) !important;
+  }
+}
+
+// Solution cards, like the consulting module panels: a tinted intro (ring summit fading in from the
+// right) above a hairline, the scope list below. The intro takes the spare height, so the lists of
+// cards in one row start on the same line.
+.it-service-solution__top {
+  flex: 1 1 auto;
+  border-color: var(--bs-border-color) !important;
+}
+
+.it-service-solution__bottom {
+  flex: 0 0 auto;
+}
+
+// Numbered take-over steps joined by one hairline, as on the consulting page.
+.it-service-step {
+  position: relative;
+}
+
+.it-service-step__badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  margin-bottom: 1rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--bs-primary) 12%, transparent);
+  color: var(--bs-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+@media (min-width: 768px) {
+  .it-service-steps {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: calc(var(--bs-gutter-y, 1.5rem) * 0.5 + 1.5rem + 1rem + 0.75rem);
+      left: 16.666%;
+      right: 16.666%;
+      height: 1px;
+      background: var(--bs-border-color);
+      z-index: 0;
+    }
+
+    @media (min-width: 992px) {
+      &::before {
+        top: calc(var(--bs-gutter-y, 1.5rem) * 0.5 + 3rem + 1rem + 0.75rem);
+      }
+    }
+  }
+
+  .it-service-step {
+    z-index: 1;
+  }
+}

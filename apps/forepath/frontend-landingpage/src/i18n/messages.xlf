@@ -2,6 +2,196 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="en" datatype="plaintext" original="ng2.template">
     <body>
+      <trans-unit id="featureForepathAbout-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Ten years<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> of IT systems and software from one hand </source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-heroLead" datatype="html">
+        <source> ForePath is the brand of IPvX UG (haftungsbeschränkt) in Herford. Since 2016 we have planned, built, and operated technology for businesses that need it to work every day. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-storyStatLabel" datatype="html">
+        <source> the year it all started </source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-storyTitle" datatype="html">
+        <source> From a one-person business to ForePath </source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-storyParagraph1" datatype="html">
+        <source> ForePath started in June 2016 with a simple idea. IT systems and software development from one hand, delivered by people who also run what they build. That combination has not changed since. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-storyParagraph2" datatype="html">
+        <source> In 2022 the business became a limited company. A year later we co-founded a cloud start-up, and since 2025 we have shipped products of our own. Every one of these steps taught us something, and all of it flows back into the services we offer today. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-storyLink" datatype="html">
+        <source>Our milestones <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-down ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+        &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-timelineTitle" datatype="html">
+        <source> Our story so far </source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-timelineLead" datatype="html">
+        <source> Ten years, two legal forms, one start-up, and a growing family of products. These are the moments that shaped how we work. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-evolutionTitle" datatype="html">
+        <source> From hands-on to AI native </source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-evolutionLead" datatype="html">
+        <source> We did not jump on AI overnight. We grew into it one layer at a time, and kept what made the work good in the first place. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-evolutionIllustration" datatype="html">
+        <source>The same certificate renewal on 40 services, done by hand in 2016, through a pipeline in 2023, and by a coding agent with an engineer&apos;s review in 2025</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-evolutionStage1Title" datatype="html">
+        <source>Hands-on</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-evolutionStage1Desc" datatype="html">
+        <source> Every server, every script, every ticket by hand. We learned systems from the inside, the way only manual work teaches. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-evolutionStage2Title" datatype="html">
+        <source>Automated</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-evolutionStage2Desc" datatype="html">
+        <source> Running Kubernetes platforms at VMMX made automation the default. Infrastructure as code, pipelines, and monitoring took over the repetitive work. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-evolutionStage3Title" datatype="html">
+        <source>AI native</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-evolutionStage3Desc" datatype="html">
+        <source> Coding agents work in our delivery through Agenstra, and our instant quote runs a language model right in your browser. An engineer still reviews every change. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-constantsTitle" datatype="html">
+        <source> What has stayed the same since day one </source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-constant1" datatype="html">
+        <source>One partner for systems and software</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-constant2" datatype="html">
+        <source>People decide, machines assist</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-constant3" datatype="html">
+        <source>We run what we build, on open standards</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-constant4" datatype="html">
+        <source>Close to our clients in Ostwestfalen-Lippe</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-ceoPhotoAlt" datatype="html">
+        <source>Portrait of Marcel Menk, founder and CEO of ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-ceoRole" datatype="html">
+        <source>Founder and CEO</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-leadershipTitle" datatype="html">
+        <source> Led by its founder </source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-leadershipParagraph1" datatype="html">
+        <source> Marcel Menk founded the company in 2016 and has led it ever since: through the step to a limited company, as managing director of VMMX Cloud GmbH, and through the launch of Agenstra and Decabill. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-leadershipParagraph2" datatype="html">
+        <source> His focus is the point where infrastructure and software meet. That is where most projects either succeed or stall, and where ForePath does its best work. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-leadershipLink" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-linkedin me-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Marcel Menk on LinkedIn</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-partnersGridLabel" datatype="html">
+        <source>Distribution and rental partners</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-ctaTitle" datatype="html">
+        <source>Let us write the next chapter together</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-ctaLead" datatype="html">
+        <source> Whether you need advice, software, or someone to run your systems, tell us where you are today. We will propose a practical path and the people to walk it with you. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-ctaButton" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneFoundingDate" datatype="html">
+        <source>June 2016</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneFoundingTitle" datatype="html">
+        <source>Founded as a sole proprietorship</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneFoundingDesc" datatype="html">
+        <source>IT systems and software development from the very first day, for clients who wanted one partner for both.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneUgDate" datatype="html">
+        <source>February 2022</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneUgTitle" datatype="html">
+        <source>Re-formed as IPvX UG (haftungsbeschränkt)</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneUgDesc" datatype="html">
+        <source>A limited company as the foundation for longer engagements and growth, with the same services and the same people behind them.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneVmmxDate" datatype="html">
+        <source>May 2023</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneVmmxTitle" datatype="html">
+        <source>Co-founded VMMX Cloud GmbH</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneVmmxDesc" datatype="html">
+        <source>Together with the hosting provider dataforest GmbH, we founded VMMX to make scalable app hosting on Kubernetes simple for European companies, with one-click deployments from a data centre in Frankfurt.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneGarage33Date" datatype="html">
+        <source>June 2024</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneGarage33Title" datatype="html">
+        <source>VMMX wins at garage33</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneGarage33Desc" datatype="html">
+        <source>VMMX went through the garage33 incubator in Paderborn and came out on top. The program sharpened our product thinking and showed us what young companies need from their infrastructure.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneOpenSourceDate" datatype="html">
+        <source>July 2025</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneOpenSourceTitle" datatype="html">
+        <source>OBMS and Kublade released as open source</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneOpenSourceDesc" datatype="html">
+        <source>We published two of our tools under the Apache 2.0 licence. OBMS is an ERP system for digital business models, and Kublade is a templating engine for Kubernetes deployments.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneAgenstraDate" datatype="html">
+        <source>November 2025</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneAgenstraTitle" datatype="html">
+        <source>Agenstra released</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneAgenstraDesc" datatype="html">
+        <source>Our first product: a platform to run and ship with coding agents on infrastructure you control, built in the open.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneDecabillDate" datatype="html">
+        <source>June 2026</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneDecabillTitle" datatype="html">
+        <source>Decabill released</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneDecabillDesc" datatype="html">
+        <source>OBMS and Kublade grow together into Decabill, our billing platform for services and SaaS, from cloud usage and projects to invoices and DATEV exports.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneFocusDate" datatype="html">
+        <source>October 2026</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneFocusTitle" datatype="html">
+        <source>Full focus on ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneFocusDesc" datatype="html">
+        <source>Today ForePath has our full attention, with AI at the centre, while our VMMX partners return to their own core business. It was a great time. However, we collectively decided not to continue VMMX. In its place, you can look forward to something great from ForePath, built on everything VMMX taught us.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneLoadweaverDate" datatype="html">
+        <source>Coming soon</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneLoadweaverTitle" datatype="html">
+        <source>Loadweaver</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-milestoneLoadweaverDesc" datatype="html">
+        <source>Our next product turns a handful of servers into a resilient multi-site cluster. It gives applications built with AI, and the agents behind them, a protected home on infrastructure you control, with encrypted traffic between sites and services that keep running when a location goes down.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-metaTitle" datatype="html">
+        <source>About us :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-metaDescription" datatype="html">
+        <source>Since 2016, ForePath has planned, built, and operated IT systems and software for businesses. Our story, our principles, and the people behind ForePath.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathAbout-metaKeywords" datatype="html">
+        <source>ForePath, about us, IPvX UG, company history, Herford, Ostwestfalen-Lippe, IT systems, software development</source>
+        </trans-unit>
       <trans-unit id="featureForepathBlog-heroTitle" datatype="html">
         <source>Blog</source>
         </trans-unit>
@@ -311,17 +501,14 @@
       <trans-unit id="featureForepath-navServices" datatype="html">
         <source>Services</source>
         </trans-unit>
+      <trans-unit id="featureForepath-navMegaAdviseBuild" datatype="html">
+        <source>Advise and build</source>
+        </trans-unit>
       <trans-unit id="featureForepath-navConsulting" datatype="html">
         <source>Consulting</source>
         </trans-unit>
       <trans-unit id="featureForepath-navConsultingCaption" datatype="html">
         <source>Shape strategy and architecture with your team</source>
-        </trans-unit>
-      <trans-unit id="featureForepath-navItSystems" datatype="html">
-        <source>IT Systems</source>
-        </trans-unit>
-      <trans-unit id="featureForepath-navItSystemsCaption" datatype="html">
-        <source>Run and support platforms with operators</source>
         </trans-unit>
       <trans-unit id="featureForepath-navSoftwareDevelopment" datatype="html">
         <source>Software Development</source>
@@ -329,11 +516,17 @@
       <trans-unit id="featureForepath-navSoftwareDevelopmentCaption" datatype="html">
         <source>Ship and own software in production</source>
         </trans-unit>
-      <trans-unit id="featureForepath-navProjectEstimate" datatype="html">
-        <source>Instant quote</source>
+      <trans-unit id="featureForepath-navItSystems" datatype="html">
+        <source>IT Systems</source>
         </trans-unit>
-      <trans-unit id="featureForepath-navProjectEstimateCaption" datatype="html">
-        <source>From your project description, in seconds</source>
+      <trans-unit id="featureForepath-navMegaAsideTitle" datatype="html">
+        <source> One team, one thread </source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navMegaAsideText" datatype="html">
+        <source> Consulting, delivery, and operations from the same engineers. Hardware and licences come through our distribution partners. </source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navMegaDistributorsLabel" datatype="html">
+        <source>Distribution partners</source>
         </trans-unit>
       <trans-unit id="featureForepath-navProducts" datatype="html">
         <source>Products</source>
@@ -344,14 +537,50 @@
       <trans-unit id="featureForepath-navAgenstraCaption" datatype="html">
         <source>Run and ship with coding agents</source>
         </trans-unit>
+      <trans-unit id="featureForepath-navAgenstraPoint1" datatype="html">
+        <source>Workspaces, tickets, and knowledge in one place</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navAgenstraPoint2" datatype="html">
+        <source>On infrastructure you own or in Agenstra Cloud</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navAgenstraPoint3" datatype="html">
+        <source>Desktop app for your whole team</source>
+        </trans-unit>
       <trans-unit id="featureForepath-navDecabill" datatype="html">
         <source>Decabill</source>
         </trans-unit>
       <trans-unit id="featureForepath-navDecabillCaption" datatype="html">
         <source>Bill services and SaaS with one platform</source>
         </trans-unit>
+      <trans-unit id="featureForepath-navDecabillPoint1" datatype="html">
+        <source>Client services, projects, and SaaS subscriptions</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navDecabillPoint2" datatype="html">
+        <source>Managed hosting billed on the same invoice run</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navDecabillPoint3" datatype="html">
+        <source>DATEV export for your accountant</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navLoadweaverBadge" datatype="html">
+        <source>Coming soon</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navLoadweaverCaption" datatype="html">
+        <source>Resilient clusters from a handful of servers</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navLoadweaverPoint1" datatype="html">
+        <source>Encrypted network between your sites</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navLoadweaverPoint2" datatype="html">
+        <source>Shared storage on every node</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navLoadweaverPoint3" datatype="html">
+        <source>Ingress that fails over on its own</source>
+        </trans-unit>
       <trans-unit id="featureForepath-navOne" datatype="html">
         <source>One</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navAbout" datatype="html">
+        <source>About Us</source>
         </trans-unit>
       <trans-unit id="featureForepath-contactUsButton" datatype="html">
         <source>Contact us</source>
@@ -383,11 +612,17 @@
       <trans-unit id="featureForepath-footerDecabillLink" datatype="html">
         <source>Decabill</source>
         </trans-unit>
+      <trans-unit id="featureForepath-footerLoadweaverSoon" datatype="html">
+        <source>Coming soon</source>
+        </trans-unit>
       <trans-unit id="featureForepath-footerCompany" datatype="html">
         <source>Company</source>
         </trans-unit>
       <trans-unit id="featureForepath-navPricing" datatype="html">
         <source>Pricing</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navProjectEstimate" datatype="html">
+        <source>Instant quote</source>
         </trans-unit>
       <trans-unit id="featureForepath-navBlog" datatype="html">
         <source>Blog</source>
@@ -565,6 +800,10 @@
       <trans-unit id="featureForepathHome-proofArea6" datatype="html">
         <source>AI and automation</source>
         </trans-unit>
+      <trans-unit id="featureForepathHome-proofAboutLink" datatype="html">
+        <source>Read our story <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+        &gt;"/></source>
+        </trans-unit>
       <trans-unit id="featureForepathHome-platformGridLabel" datatype="html">
         <source>Cloud platforms and operating systems we work with</source>
         </trans-unit>
@@ -664,6 +903,10 @@
       <trans-unit id="featureForepathItSystems-domainNetworkItem3" datatype="html">
         <source>Voice, Teams, and dial plan support with call quality monitoring</source>
         </trans-unit>
+      <trans-unit id="featureForepathItSystems-domainNetworkLink" datatype="html">
+        <source>Learn more <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+            &gt;"/></source>
+        </trans-unit>
       <trans-unit id="featureForepathItSystems-domainComputeTitle" datatype="html">
         <source> Compute and platforms </source>
         </trans-unit>
@@ -678,6 +921,10 @@
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainComputeItem3" datatype="html">
         <source>Capacity planning for seasonal and project driven peaks</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-domainComputeLink" datatype="html">
+        <source>Learn more <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+            &gt;"/></source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainEndpointsTitle" datatype="html">
         <source> Endpoints and workplace </source>
@@ -694,8 +941,12 @@
       <trans-unit id="featureForepathItSystems-domainEndpointsItem3" datatype="html">
         <source>Remote and on-site support through refresh and disposal cycles</source>
         </trans-unit>
+      <trans-unit id="featureForepathItSystems-domainEndpointsLink" datatype="html">
+        <source>Learn more <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+            &gt;"/></source>
+        </trans-unit>
       <trans-unit id="featureForepathItSystems-domainIdentityTitle" datatype="html">
-        <source>Identity and access</source>
+        <source> Identity and access </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainIdentityDesc" datatype="html">
         <source> Digital and physical access policies are enforced so the right people reach the right resources at the right time. </source>
@@ -708,6 +959,10 @@
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainIdentityItem3" datatype="html">
         <source>Privileged account monitoring and periodic recertification</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-domainIdentityLink" datatype="html">
+        <source>Learn more <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+            &gt;"/></source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainSecurityTitle" datatype="html">
         <source> Security and protection </source>
@@ -724,6 +979,10 @@
       <trans-unit id="featureForepathItSystems-domainSecurityItem3" datatype="html">
         <source>Phishing triage and incident response runbooks</source>
         </trans-unit>
+      <trans-unit id="featureForepathItSystems-domainSecurityLink" datatype="html">
+        <source>Learn more <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+            &gt;"/></source>
+        </trans-unit>
       <trans-unit id="featureForepathItSystems-domainResilienceTitle" datatype="html">
         <source> Resilience and operations </source>
         </trans-unit>
@@ -738,6 +997,13 @@
         </trans-unit>
       <trans-unit id="featureForepathItSystems-domainResilienceItem3" datatype="html">
         <source>SLA aligned ticket routing with monthly operational health reports</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-domainResilienceLink" datatype="html">
+        <source>Learn more <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+            &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathItSystems-distributorGridLabel" datatype="html">
+        <source>Distribution partners we source hardware and licences through</source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-rentalIllustration" datatype="html">
         <source>topi checkout renting laptops, a server and network gear together with ForePath managed services for one monthly rate</source>
@@ -783,6 +1049,750 @@
         </trans-unit>
       <trans-unit id="featureForepathItSystems-metaKeywords" datatype="html">
         <source>ForePath Managed IT, network operations, workplace IT, server management, endpoint security, backup</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-heroEyebrow" datatype="html">
+        <source>IT systems</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-vendorGridLabel" datatype="html">
+        <source>Technology vendors we work with</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-solutionsTitle" datatype="html">
+        <source> Ready-to-run solutions </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-solutionsLead" datatype="html">
+        <source> Proven building blocks on the platforms we know best. Each one starts with a clear scope and moves into day-to-day operations with the same SLA as the rest of your environment. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-distributorGridLabel" datatype="html">
+        <source>Distribution partners we source hardware and licences through</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-howTitle" datatype="html">
+        <source> How we take over </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-howLead" datatype="html">
+        <source> Whether we start with a single solution or your whole environment, the path into operations is the same. No big bang, no blind spots. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-howStep1Title" datatype="html">
+        <source>Assess</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-howStep1Desc" datatype="html">
+        <source> We take stock of your systems, documentation, and open issues, and agree on priorities and service levels with you. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-howStep2Title" datatype="html">
+        <source>Take over</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-howStep2Desc" datatype="html">
+        <source> Monitoring, access, and runbooks are set up before we touch production, so we can operate safely from the first day. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-howStep3Title" datatype="html">
+        <source>Operate and improve</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-howStep3Desc" datatype="html">
+        <source> Daily operations run within the agreed SLA, and monthly reviews show what to improve next. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-oneTeaserLead" datatype="html">
+        <source> We keep this part of your environment running. ForePath One connects that operations work with consulting, software delivery, and community we run ourselves. Same engineers, one thread, fewer handoffs between phases. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-ctaEstimateButton" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calculator&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get an instant quote </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-ctaButton" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkTitle" datatype="html">
+        <source>Network and connectivity</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkNavCaption" datatype="html">
+        <source>LAN, Wi-Fi, firewalls, and telephony</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkMetaTitle" datatype="html">
+        <source>Managed network, firewall, and telephony :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkMetaDescription" datatype="html">
+        <source>ForePath plans and operates LAN, WAN, Wi-Fi, firewalls, and cloud telephony with planned changes, tested failover, and clear documentation.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkMetaKeywords" datatype="html">
+        <source>managed firewall, Fortinet, OPNsense, Wi-Fi, switching, Placetel, Teams telephony, network operations</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkHeroAccent" datatype="html">
+        <source>Networks</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkHeroRest" datatype="html">
+        <source>that stay connected from office floor to remote site</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkHeroLead" datatype="html">
+        <source>We plan, operate, and document LAN, WAN, Wi-Fi, firewalls, and telephony so your people and sites stay connected without surprises.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkValueTitle" datatype="html">
+        <source>Connectivity your business can count on</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkValueLead" datatype="html">
+        <source>Every meeting, order, and backup depends on the network. We treat it as critical infrastructure, with planned changes, tested failover, and documentation your team can read.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkSceneLabel" datatype="html">
+        <source>ForePath operations board for a managed network: firewall pair, core switches, Wi-Fi and cloud telephony, all healthy, with the next maintenance window</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkAdvantage1Title" datatype="html">
+        <source>Planned, not improvised</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkAdvantage1Desc" datatype="html">
+        <source>Changes run in agreed maintenance windows with rollback steps written down beforehand.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkAdvantage2Title" datatype="html">
+        <source>Failover that is tested</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkAdvantage2Desc" datatype="html">
+        <source>Redundant links and firewall pairs are switched over on purpose, not for the first time during an outage.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkAdvantage3Title" datatype="html">
+        <source>Coverage where people work</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkAdvantage3Desc" datatype="html">
+        <source>Wi-Fi is planned from site surveys, then tuned from real usage data instead of guesswork.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkAdvantage4Title" datatype="html">
+        <source>Documented end to end</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkAdvantage4Desc" datatype="html">
+        <source>Topology, VLANs, rules, and access live in one place your team can reach.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkSolution1Title" datatype="html">
+        <source>Managed firewall</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkSolution1Desc" datatype="html">
+        <source>FortiGate or OPNsense firewalls with site-to-site and remote access VPN, run by us from the first rule set to every firmware update.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkSolution1Item1" datatype="html">
+        <source>Rule set reviews and change requests with an audit trail</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkSolution1Item2" datatype="html">
+        <source>Firmware and signature updates in maintenance windows</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkSolution1Item3" datatype="html">
+        <source>High-availability pairs with regular failover tests</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkSolution2Title" datatype="html">
+        <source>Managed switching and Wi-Fi</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkSolution2Desc" datatype="html">
+        <source>Campus and data centre switching plus business Wi-Fi, designed around your floor plan and operated with central monitoring.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkSolution2Item1" datatype="html">
+        <source>VLAN design and segmentation for office, guest, and IoT</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkSolution2Item2" datatype="html">
+        <source>Site surveys, access point placement, and roaming tuning</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkSolution2Item3" datatype="html">
+        <source>Port, uplink, and PoE monitoring with alerting</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkSolution3Title" datatype="html">
+        <source>Cloud telephony</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkSolution3Desc" datatype="html">
+        <source>Placetel cloud PBX and Microsoft Teams telephony replace the phone system in the server room, with number porting and dial plans handled for you.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkSolution3Item1" datatype="html">
+        <source>Number porting, dial plans, and call routing</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkSolution3Item2" datatype="html">
+        <source>Desk phones, softphones, and Teams integration</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkSolution3Item3" datatype="html">
+        <source>Call quality monitoring and user changes on request</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkCtaTitle" datatype="html">
+        <source>Is your network ready for what comes next?</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-networkCtaLead" datatype="html">
+        <source>Tell us about your sites, links, and pain points. We will propose a network scope, from a single firewall to a fully managed estate.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeTitle" datatype="html">
+        <source>Compute and platforms</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeNavCaption" datatype="html">
+        <source>Servers, virtualization, and storage</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeMetaTitle" datatype="html">
+        <source>Managed servers, virtualization, and storage :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeMetaDescription" datatype="html">
+        <source>ForePath sizes, procures, and operates servers, Proxmox VE virtualization, and Ceph storage with scheduled patching and capacity planning.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeMetaKeywords" datatype="html">
+        <source>managed servers, Proxmox VE, Ceph storage, Windows Server, Linux server, virtualization, server hardware</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeHeroAccent" datatype="html">
+        <source>Servers and platforms</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeHeroRest" datatype="html">
+        <source>that stay patched, sized, and monitored</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeHeroLead" datatype="html">
+        <source>We run physical servers, hypervisors, and storage across their full lifecycle, from sizing and procurement to patching and refresh.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeValueTitle" datatype="html">
+        <source>Compute that fits the workload</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeValueLead" datatype="html">
+        <source>Servers should be neither a bottleneck nor a budget sink. We size for real workloads, keep platforms current, and plan capacity before it runs out.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSceneLabel" datatype="html">
+        <source>ForePath operations board for managed servers: Proxmox VE cluster, Ceph storage, Windows and Ubuntu servers, with the next patch window</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeAdvantage1Title" datatype="html">
+        <source>Rightsized from the start</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeAdvantage1Desc" datatype="html">
+        <source>Sizing is based on measured workloads, so you pay for capacity you actually use.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeAdvantage2Title" datatype="html">
+        <source>Patched on a schedule</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeAdvantage2Desc" datatype="html">
+        <source>Operating systems and firmware follow a documented patch cycle with a tested way back.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeAdvantage3Title" datatype="html">
+        <source>Open platforms, no lock-in</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeAdvantage3Desc" datatype="html">
+        <source>Proxmox, Ceph, and Linux keep licence costs predictable and leave you free to move.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeAdvantage4Title" datatype="html">
+        <source>Capacity planned ahead</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeAdvantage4Desc" datatype="html">
+        <source>CPU, memory, and storage trends are reviewed before peaks turn into incidents.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution1Title" datatype="html">
+        <source>Managed virtualization with Proxmox VE</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution1Desc" datatype="html">
+        <source>Proxmox VE clusters as an open alternative to proprietary hypervisors, including the migration of existing virtual machines and day-to-day operations.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution1Item1" datatype="html">
+        <source>Cluster design, high availability, and live migration</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution1Item2" datatype="html">
+        <source>Migration planning from your current hypervisor</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution1Item3" datatype="html">
+        <source>Coordinated host patching without workload downtime</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution2Title" datatype="html">
+        <source>Managed storage with Ceph</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution2Desc" datatype="html">
+        <source>Hyperconverged or dedicated Ceph storage on enterprise SSDs that grows with your data instead of forcing a new array every few years.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution2Item1" datatype="html">
+        <source>Capacity and performance planning per pool</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution2Item2" datatype="html">
+        <source>Health monitoring and disk replacement handling</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution2Item3" datatype="html">
+        <source>Scale-out by adding nodes, not by replacing arrays</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution3Title" datatype="html">
+        <source>Managed Windows and Linux servers</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution3Desc" datatype="html">
+        <source>Windows Server, Ubuntu, and Red Hat Enterprise Linux systems run with a fixed baseline, patch cycle, and monitoring.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution3Item1" datatype="html">
+        <source>Hardened baselines and configuration management</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution3Item2" datatype="html">
+        <source>Monthly patching with vulnerability remediation</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution3Item3" datatype="html">
+        <source>Service monitoring with alerts routed to on-call</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution4Title" datatype="html">
+        <source>Server hardware from sizing to rack</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution4Desc" datatype="html">
+        <source>Vendor-neutral server selection, procurement through our distribution partners, and installation in your rack or data centre.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution4Item1" datatype="html">
+        <source>Vendor-neutral sizing based on your workloads</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution4Item2" datatype="html">
+        <source>Procurement, warranty, and lifecycle tracking</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeSolution4Item3" datatype="html">
+        <source>Purchase or monthly rental through topi</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-rentalLink" datatype="html">
+        <source>How hardware rental works</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeCtaTitle" datatype="html">
+        <source>Planning a refresh or a migration?</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-computeCtaLead" datatype="html">
+        <source>Tell us about your servers, workloads, and growth plans. We will propose a platform and an operating scope that fits your budget.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceTitle" datatype="html">
+        <source>Endpoints and workplace</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceNavCaption" datatype="html">
+        <source>Devices, Microsoft 365, and support</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceMetaTitle" datatype="html">
+        <source>Managed Microsoft 365 and managed workplace :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceMetaDescription" datatype="html">
+        <source>ForePath runs Microsoft 365, business laptops, and desktops with standardized images, patching, licence reviews, and fast support.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceMetaKeywords" datatype="html">
+        <source>Managed Microsoft 365, managed workplace, device management, IT support, hardware rental, topi</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceHeroAccent" datatype="html">
+        <source>Workplaces</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceHeroRest" datatype="html">
+        <source>where IT simply works</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceHeroLead" datatype="html">
+        <source>Laptops, desktops, and collaboration tools are set up consistently and supported quickly, so your people can focus on their work.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceValueTitle" datatype="html">
+        <source>Less friction, more focus</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceValueLead" datatype="html">
+        <source>Every minute spent waiting on IT is a minute lost. Standardized devices, managed Microsoft 365, and fast support keep your teams productive from first login to device refresh.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceSceneLabel" datatype="html">
+        <source>ForePath operations board for a managed workplace: Microsoft 365 tenant, business laptops, a feature update rollout and a new hire ready for Monday</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceAdvantage1Title" datatype="html">
+        <source>Ready on day one</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceAdvantage1Desc" datatype="html">
+        <source>New colleagues find a configured device and working accounts on their first morning.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceAdvantage2Title" datatype="html">
+        <source>One baseline for every device</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceAdvantage2Desc" datatype="html">
+        <source>Approved software and settings are rolled out the same way on every machine.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceAdvantage3Title" datatype="html">
+        <source>Help when it is needed</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceAdvantage3Desc" datatype="html">
+        <source>Remote support for quick fixes, on-site visits when hands are needed.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceAdvantage4Title" datatype="html">
+        <source>A clean lifecycle</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceAdvantage4Desc" datatype="html">
+        <source>Refresh and disposal follow a plan, including certified data wiping.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceSolution1Title" datatype="html">
+        <source>Managed Microsoft 365</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceSolution1Desc" datatype="html">
+        <source>Microsoft 365 administration covering licensing, Exchange Online, Teams, SharePoint, and OneDrive, with licences sourced through our distribution partners.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceSolution1Item1" datatype="html">
+        <source>Tenant setup, migration, and secure defaults</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceSolution1Item2" datatype="html">
+        <source>Licence reviews that remove unused seats</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceSolution1Item3" datatype="html">
+        <source>User lifecycle, shared mailboxes, and Teams governance</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceSolution2Title" datatype="html">
+        <source>Managed workplace</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceSolution2Desc" datatype="html">
+        <source>Business laptops and desktops with standardized images, automated software deployment, and patch management across your fleet.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceSolution2Item1" datatype="html">
+        <source>Standardized imaging with approved software baselines</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceSolution2Item2" datatype="html">
+        <source>Operating system and application patching</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceSolution2Item3" datatype="html">
+        <source>Remote and on-site support through refresh and disposal cycles</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceSolution3Title" datatype="html">
+        <source>Workplace as a service</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceSolution3Desc" datatype="html">
+        <source>Rent devices together with ForePath managed services for one monthly rate through our partnership with topi.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceSolution3Item1" datatype="html">
+        <source>Predictable monthly rates instead of upfront purchases</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceSolution3Item2" datatype="html">
+        <source>Warranty included, optional topi Care for repairs</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceSolution3Item3" datatype="html">
+        <source>Add devices for new hires without a new capital cycle</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceCtaTitle" datatype="html">
+        <source>Want IT your team stops noticing?</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-workplaceCtaLead" datatype="html">
+        <source>Tell us how many people and devices you support today. We will propose a workplace scope, from Microsoft 365 alone to fully managed devices.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityTitle" datatype="html">
+        <source>Identity and access</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityNavCaption" datatype="html">
+        <source>Accounts, permissions, and door access</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityMetaTitle" datatype="html">
+        <source>Managed identity and access :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityMetaDescription" datatype="html">
+        <source>ForePath manages Microsoft Entra ID, Active Directory, single sign-on, MFA, and physical access with clear roles and audit trails.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityMetaKeywords" datatype="html">
+        <source>Microsoft Entra ID, Active Directory, single sign-on, MFA, access control, identity management</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityHeroAccent" datatype="html">
+        <source>Access</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityHeroRest" datatype="html">
+        <source>for the right people at the right time</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityHeroLead" datatype="html">
+        <source>We manage digital and physical access as one discipline, with clear roles, fast onboarding, and audit trails that stand up to review.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityValueTitle" datatype="html">
+        <source>Access under control</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityValueLead" datatype="html">
+        <source>Every account and every badge is a door into your business. We keep track of who can open which one, and close it the day someone leaves.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identitySceneLabel" datatype="html">
+        <source>ForePath operations board for identity and access: directory sync, MFA coverage, a completed offboarding and an upcoming access review</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityAdvantage1Title" datatype="html">
+        <source>Fast onboarding</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityAdvantage1Desc" datatype="html">
+        <source>New colleagues get exactly the access their role needs, on their first day.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityAdvantage2Title" datatype="html">
+        <source>Clean offboarding</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityAdvantage2Desc" datatype="html">
+        <source>Accounts, licences, and badges are revoked on the day someone leaves.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityAdvantage3Title" datatype="html">
+        <source>Strong sign-in</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityAdvantage3Desc" datatype="html">
+        <source>Multi-factor authentication and single sign-on reduce the risk of stolen passwords.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityAdvantage4Title" datatype="html">
+        <source>Audit-ready records</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityAdvantage4Desc" datatype="html">
+        <source>Regular access reviews leave a trail that auditors and insurers can follow.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identitySolution1Title" datatype="html">
+        <source>Entra ID and Active Directory Managed</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identitySolution1Desc" datatype="html">
+        <source>Hybrid identity across on-premises Active Directory and Microsoft Entra ID, with conditional access, MFA, and group-based permissions.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identitySolution1Item1" datatype="html">
+        <source>Directory clean-up, group design, and role-based access</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identitySolution1Item2" datatype="html">
+        <source>Conditional access and multi-factor authentication rollout</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identitySolution1Item3" datatype="html">
+        <source>Joiner, mover, and leaver processes tied to HR</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identitySolution2Title" datatype="html">
+        <source>Single sign-on and MFA</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identitySolution2Desc" datatype="html">
+        <source>Single sign-on for cloud and business applications plus app-based or hardware second factors, including for VPN and remote access.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identitySolution2Item1" datatype="html">
+        <source>Single sign-on for cloud and internal applications</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identitySolution2Item2" datatype="html">
+        <source>MFA for VPN, remote desktop, and admin access</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identitySolution2Item3" datatype="html">
+        <source>Privileged account monitoring and periodic recertification</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identitySolution3Title" datatype="html">
+        <source>Physical access control</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identitySolution3Desc" datatype="html">
+        <source>Badge and door access tied to the same joiner and leaver process as digital accounts.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identitySolution3Item1" datatype="html">
+        <source>Badge and door access provisioning with audit trails</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identitySolution3Item2" datatype="html">
+        <source>Time-based access profiles for staff, visitors, and contractors</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identitySolution3Item3" datatype="html">
+        <source>Revocation in step with account offboarding</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityCtaTitle" datatype="html">
+        <source>Do you know who can access what?</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-identityCtaLead" datatype="html">
+        <source>Tell us about your directories, applications, and doors. We will start with an access review and propose how to keep it clean from then on.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityTitle" datatype="html">
+        <source>Security and protection</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityNavCaption" datatype="html">
+        <source>Endpoint protection, patching, and response</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityMetaTitle" datatype="html">
+        <source>Managed IT security :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityMetaDescription" datatype="html">
+        <source>ForePath protects endpoints, users, and data with Microsoft Defender, managed firewalls, patch management, and practiced incident response.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityMetaKeywords" datatype="html">
+        <source>managed security, Microsoft Defender, endpoint protection, patch management, incident response, Fortinet, Cloudflare</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityHeroAccent" datatype="html">
+        <source>Security</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityHeroRest" datatype="html">
+        <source>that works every day, not only on paper</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityHeroLead" datatype="html">
+        <source>Layered controls, steady patching, and a documented response process protect your endpoints, users, and data.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityValueTitle" datatype="html">
+        <source>Protection without paralysis</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityValueLead" datatype="html">
+        <source>Good security keeps attackers out without slowing your people down. We combine sensible defaults, steady patching, and practiced response so incidents stay small.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySceneLabel" datatype="html">
+        <source>ForePath operations board for IT security: Microsoft Defender, triaged phishing reports, patch compliance with devices pending reboot and an updated firewall</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityAdvantage1Title" datatype="html">
+        <source>Layered defence</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityAdvantage1Desc" datatype="html">
+        <source>Firewall, endpoint, email, and identity controls back each other up.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityAdvantage2Title" datatype="html">
+        <source>Patch status you can prove</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityAdvantage2Desc" datatype="html">
+        <source>Regular reports show which systems are current and which need attention.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityAdvantage3Title" datatype="html">
+        <source>Fast, practiced response</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityAdvantage3Desc" datatype="html">
+        <source>Runbooks define who does what when an alert or a phishing report comes in.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityAdvantage4Title" datatype="html">
+        <source>People as a line of defence</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityAdvantage4Desc" datatype="html">
+        <source>Awareness training turns employees into reliable reporters of phishing attempts.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution1Title" datatype="html">
+        <source>Microsoft Defender Managed</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution1Desc" datatype="html">
+        <source>Microsoft Defender for endpoints and email, configured, tuned, and watched. It is part of several Microsoft 365 plans you may already pay for.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution1Item1" datatype="html">
+        <source>Endpoint detection and antivirus policy management</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution1Item2" datatype="html">
+        <source>Email protection against phishing and malicious attachments</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution1Item3" datatype="html">
+        <source>Alert triage with clear escalation to your team</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution2Title" datatype="html">
+        <source>Perimeter and web protection</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution2Desc" datatype="html">
+        <source>Firewalls with intrusion prevention and web filtering, plus Cloudflare in front of your public websites and applications.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution2Item1" datatype="html">
+        <source>Intrusion prevention and web filtering policies</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution2Item2" datatype="html">
+        <source>DDoS protection and web application firewall for public services</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution2Item3" datatype="html">
+        <source>Regular rule and exposure reviews</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution3Title" datatype="html">
+        <source>Patch and vulnerability management</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution3Desc" datatype="html">
+        <source>Operating systems and third-party applications patched on a fixed cycle, with vulnerability scans that show what is left.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution3Item1" datatype="html">
+        <source>Security patch compliance with regular reporting</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution3Item2" datatype="html">
+        <source>Remediation prioritized by real exposure</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution3Item3" datatype="html">
+        <source>Emergency patching when critical vulnerabilities appear</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution4Title" datatype="html">
+        <source>Incident response readiness</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution4Desc" datatype="html">
+        <source>Runbooks, contact chains, and drills, so a security incident becomes a process instead of a panic.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution4Item1" datatype="html">
+        <source>Phishing triage and incident response runbooks</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution4Item2" datatype="html">
+        <source>Contact chains for insurers, authorities, and partners</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securitySolution4Item3" datatype="html">
+        <source>Tabletop exercises with your leadership team</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityCtaTitle" datatype="html">
+        <source>How well protected are you today?</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-securityCtaLead" datatype="html">
+        <source>Tell us about your systems and what worries you most. We will start with a short assessment and propose the controls that matter first.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceTitle" datatype="html">
+        <source>Resilience and operations</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceNavCaption" datatype="html">
+        <source>Backup, archiving, monitoring, and power</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceMetaTitle" datatype="html">
+        <source>Managed backup, archiving, and monitoring :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceMetaDescription" datatype="html">
+        <source>ForePath runs backups with restore drills, MailStore email archiving, UPS power protection, and monitoring with monthly health reports.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceMetaKeywords" datatype="html">
+        <source>managed backup, Proxmox Backup Server, MailStore, email archiving, APC UPS, monitoring, disaster recovery</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceHeroAccent" datatype="html">
+        <source>Resilience</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceHeroRest" datatype="html">
+        <source>that is tested before you need it</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceHeroLead" datatype="html">
+        <source>Backup, archiving, monitoring, and power protection are tuned so issues surface early and recovery targets stay achievable.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceValueTitle" datatype="html">
+        <source>Ready for the bad day</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceValueLead" datatype="html">
+        <source>Hardware fails, files get deleted, and power goes out. What matters is how fast you are back. We plan for those moments and rehearse them, so recovery is routine.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSceneLabel" datatype="html">
+        <source>ForePath operations board for resilience: nightly backups, MailStore archive, UPS status and the next scheduled restore drill</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceAdvantage1Title" datatype="html">
+        <source>Restores that are proven</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceAdvantage1Desc" datatype="html">
+        <source>Scheduled restore drills show that backups actually bring data back.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceAdvantage2Title" datatype="html">
+        <source>Alerts that matter</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceAdvantage2Desc" datatype="html">
+        <source>Tuned thresholds cut the noise, so real issues get attention fast.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceAdvantage3Title" datatype="html">
+        <source>Compliant archiving</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceAdvantage3Desc" datatype="html">
+        <source>Email is archived completely and tamper-proof to meet retention duties.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceAdvantage4Title" datatype="html">
+        <source>Transparent operations</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceAdvantage4Desc" datatype="html">
+        <source>Monthly health reports show SLA performance, incidents, and trends.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution1Title" datatype="html">
+        <source>Managed backup with Proxmox Backup Server</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution1Desc" datatype="html">
+        <source>Incremental, deduplicated, and encrypted backups of virtual machines and servers, with an offsite copy and regular restore tests.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution1Item1" datatype="html">
+        <source>Backup monitoring with scheduled restore drills</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution1Item2" datatype="html">
+        <source>Offsite and immutable copies against ransomware</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution1Item3" datatype="html">
+        <source>Recovery targets agreed and documented per system</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution2Title" datatype="html">
+        <source>Email archiving with MailStore</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution2Desc" datatype="html">
+        <source>Complete, tamper-proof archiving of all business email from Microsoft 365, Exchange, and other mail servers, supporting legal retention duties such as GoBD.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution2Item1" datatype="html">
+        <source>Incoming and outgoing email archived from day one</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution2Item2" datatype="html">
+        <source>Fast full-text search for users and auditors</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution2Item3" datatype="html">
+        <source>Retention policies aligned with legal requirements</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution3Title" datatype="html">
+        <source>Power protection with APC</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution3Desc" datatype="html">
+        <source>Uninterruptible power supplies sized for your racks and network closets, monitored and wired for a controlled shutdown.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution3Item1" datatype="html">
+        <source>UPS sizing and battery runtime planning</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution3Item2" datatype="html">
+        <source>Monitoring of power events and battery health</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution3Item3" datatype="html">
+        <source>Automated, graceful shutdown of servers and storage</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution4Title" datatype="html">
+        <source>Monitoring and operational reporting</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution4Desc" datatype="html">
+        <source>Central monitoring of servers, networks, services, and certificates, with alert routing and monthly operational health reports.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution4Item1" datatype="html">
+        <source>Alert threshold tuning to reduce noise and fatigue</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution4Item2" datatype="html">
+        <source>SLA aligned ticket routing with monthly operational health reports</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceSolution4Item3" datatype="html">
+        <source>Certificate and licence expiry tracking</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceCtaTitle" datatype="html">
+        <source>When did you last test a restore?</source>
+        </trans-unit>
+      <trans-unit id="featureForepathItService-resilienceCtaLead" datatype="html">
+        <source>Tell us how you back up, archive, and monitor today. We will propose recovery targets and the operating scope to meet them.</source>
         </trans-unit>
       <trans-unit id="featureForepathLegalContentReport-title" datatype="html">
         <source> Content Report </source>
@@ -2402,6 +3412,42 @@
         </trans-unit>
       <trans-unit id="featureForepathSoftwareDevelopment-metaKeywords" datatype="html">
         <source>ForePath software development, platform engineering, integrations, custom applications</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-role" datatype="html">
+        <source>Founder and CEO</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-photoAlt" datatype="html">
+        <source>Portrait of Marcel Menk</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-linkedInLabel" datatype="html">
+        <source>Marcel Menk on LinkedIn</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageForepath" datatype="html">
+        <source>We work with AI every day, because it makes us faster and our results better.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageAgenstra" datatype="html">
+        <source>We build Agenstra with AI every day, because it makes the product better and lets us ship faster.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageDecabill" datatype="html">
+        <source>We build Decabill with AI every day, because it makes the product better and lets us ship faster.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaRole" datatype="html">
+        <source>Virtual Customer Success</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaPhotoAlt" datatype="html">
+        <source>AI-generated portrait of Maya Keller, our virtual team member</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageForepath" datatype="html">
+        <source>I am part of that, but your message still reaches real people on our team, and a person takes responsibility for every answer.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageAgenstra" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Agenstra, and a person takes responsibility for every answer.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageDecabill" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Decabill, and a person takes responsibility for every answer.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-aiLabel" datatype="html">
+        <source>AI</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-heroTitle" datatype="html">
         <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Contact<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> us </source>

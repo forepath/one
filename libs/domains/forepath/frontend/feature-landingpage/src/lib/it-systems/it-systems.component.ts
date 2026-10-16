@@ -5,9 +5,15 @@ import { RouterModule } from '@angular/router';
 import { ForepathOneTeaserComponent } from '../forepath-one-teaser/forepath-one-teaser.component';
 import { RentalIllustrationComponent } from '../illustrations/rental-illustration.component';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
-import { SharedLogoGridComponent, type SharedLogoGridLogo } from '@forepath/shared/frontend/feature-landingpage';
+import {
+  SharedContactPersonComponent,
+  SharedLogoGridComponent,
+  type SharedLogoGridLogo,
+} from '@forepath/shared/frontend/feature-landingpage';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
+
+import { FOREPATH_DISTRIBUTOR_LOGOS } from './services/it-systems-services';
 
 const VENDOR_LOGO_SLOTS: readonly (readonly SharedLogoGridLogo[])[] = [
   [
@@ -49,6 +55,7 @@ const VENDOR_LOGO_SLOTS: readonly (readonly SharedLogoGridLogo[])[] = [
 @Component({
   selector: 'framework-forepath-it-systems',
   imports: [
+    SharedContactPersonComponent,
     FpcButtonComponent,
     CommonModule,
     RouterModule,
@@ -63,6 +70,7 @@ const VENDOR_LOGO_SLOTS: readonly (readonly SharedLogoGridLogo[])[] = [
 })
 export class ForepathItSystemsComponent implements OnInit {
   protected readonly logoSlots = VENDOR_LOGO_SLOTS;
+  protected readonly distributorSlots = FOREPATH_DISTRIBUTOR_LOGOS.map((logo) => [logo]);
 
   private readonly titleService = inject(Title);
   private readonly metaService = inject(Meta);

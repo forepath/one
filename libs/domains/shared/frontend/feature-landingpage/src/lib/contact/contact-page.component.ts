@@ -28,6 +28,8 @@ import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forep
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { NgxTurnstileComponent, NgxTurnstileModule } from 'ngx-turnstile';
 
+import { SharedContactPersonComponent } from '../contact-person/contact-person.component';
+
 import type { SharedContactPageConfig, SharedContactPageHeroTheme } from './contact-page.config';
 import { SHARED_CONTACT_PAGE_DATA_KEY } from './contact-page.config';
 import { readAndClearContactMessagePrefill } from './contact-message-prefill.storage';
@@ -44,6 +46,7 @@ import { readAndClearContactMessagePrefill } from './contact-message-prefill.sto
     FpcFormCheckComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
+    SharedContactPersonComponent,
   ],
   templateUrl: './contact-page.component.html',
   styleUrls: ['./contact-page.component.scss'],
@@ -86,6 +89,7 @@ export class SharedContactPageComponent implements OnInit {
 
   readonly heroTheme: SharedContactPageHeroTheme = this.pageConfig.heroTheme;
   readonly contactDetails = this.pageConfig.contactDetails;
+  readonly contactPerson = this.pageConfig.contactPerson ?? null;
 
   constructor() {
     this.turnstileSiteKey = this.environment.communication.turnstileSiteKey;
