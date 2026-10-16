@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.3.1](https://github.com/forepath/one/compare/v3.3.0...v3.3.1) (2026-10-16)
+
+
+### Bug Fixes
+
+* **agenstra:** landingpage subeading removal ([#682](https://github.com/forepath/one/issues/682)) ([2050ecb](https://github.com/forepath/one/commit/2050ecbec736bf0addc48dc4de9b2275df3e398e))
+
 ## [3.3.0](https://github.com/forepath/one/compare/v3.2.0...v3.3.0) (2026-10-16)
 
 
