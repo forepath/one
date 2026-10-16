@@ -3414,10 +3414,6 @@
         <source> A control plane that decides and agent managers that execute. Every environment runs in its own container, can run inside a gVisor sandbox, and reaches the internet only through its own egress guard. </source>
         <target>Eine Steuerungsebene, die entscheidet, und Agent Manager, die ausführen. Jede Umgebung läuft in einem eigenen Container, kann in einer gVisor-Sandbox laufen und erreicht das Internet nur über ihren eigenen Egress Guard.</target>
       </trans-unit>
-      <trans-unit id="featurePortalHowItWorks-heroCtaLine" datatype="html">
-        <source> This page goes one level deeper than the rest of the site: the components, how they talk to each other, and the boundaries around every agent. </source>
-        <target>Diese Seite geht eine Ebene tiefer als der Rest der Website: die Komponenten, wie sie miteinander sprechen, und die Grenzen um jeden Agenten.</target>
-      </trans-unit>
       <trans-unit id="featurePortalHowItWorks-heroCtaPrimary" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-signpost-split&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Follow a request </source>
         <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-signpost-split&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Einer Anfrage folgen</target>
