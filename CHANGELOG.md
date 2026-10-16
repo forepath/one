@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.3.0](https://github.com/forepath/one/compare/v3.2.0...v3.3.0) (2026-10-16)
+
+
+### Features
+
+* **agenstra:** container isolation levels with gvisor sandboxing ([#675](https://github.com/forepath/one/issues/675)) ([2f24974](https://github.com/forepath/one/commit/2f249741d5fc0e14d70b92fb3b83d562a6389547))
+* **agenstra:** how it works landing page with animated architecture scene ([#679](https://github.com/forepath/one/issues/679)) ([0f87bb0](https://github.com/forepath/one/commit/0f87bb0abe633eddd0dda7ecc604abe3efcd9b4e))
+* **agenstra:** proxy-based web traffic filters ([#671](https://github.com/forepath/one/issues/671)) ([c3df45a](https://github.com/forepath/one/commit/c3df45a0bf025107003425c38de8ce967ca39bd1))
+* **shared:** file upload support ([#670](https://github.com/forepath/one/issues/670)) ([36b0b1b](https://github.com/forepath/one/commit/36b0b1b2c87ad30b605d28b83940869d2b1c5da2))
+
+
+### Bug Fixes
+
+* **agenstra:** confine agent file api to the workspace ([#674](https://github.com/forepath/one/issues/674)) ([65d41a7](https://github.com/forepath/one/commit/65d41a7d4dbf43306afd5f54a91e6a35ff49adcf))
+* **agenstra:** consistent container names for workers and egress guards ([#676](https://github.com/forepath/one/issues/676)) ([b9483a8](https://github.com/forepath/one/commit/b9483a89ae0374623559b177d67bdcf087cdb79a))
+* **agenstra:** git over ssh behind the egress guard and agent network dns ([#678](https://github.com/forepath/one/issues/678)) ([8b5b4b0](https://github.com/forepath/one/commit/8b5b4b05cc28123d60dde830647cb4f3eb71f3d9))
+* **shared:** mermaid charts migration ([#680](https://github.com/forepath/one/issues/680)) ([ac412b5](https://github.com/forepath/one/commit/ac412b502a10fc9c8409e9b500ad1722a6f1f69c))
+* **shared:** unified ui concept ([#673](https://github.com/forepath/one/issues/673)) ([f5408f2](https://github.com/forepath/one/commit/f5408f286536266783c8810131f254b3a3c33415))
+
 ## [3.2.0](https://github.com/forepath/one/compare/v3.1.0...v3.2.0) (2026-10-11)
 
 
