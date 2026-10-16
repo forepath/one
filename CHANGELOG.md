@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.4.0](https://github.com/forepath/one/compare/v3.3.1...v3.4.0) (2026-10-16)
+
+
+### Features
+
+* **forepath:** granular service pages ([#683](https://github.com/forepath/one/issues/683)) ([cd93cd8](https://github.com/forepath/one/commit/cd93cd8fad8b80bbaca86c0511ea6b1eddcd2903))
+
 ## [3.3.1](https://github.com/forepath/one/compare/v3.3.0...v3.3.1) (2026-10-16)
 
 
