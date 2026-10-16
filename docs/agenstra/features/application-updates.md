@@ -32,14 +32,20 @@ mirrors the notifications/webhook extension pattern. Agenstra registers it in
 State lives in **Redis** (same Redis as BullMQ, keyed under `REDIS_KEY_PREFIX`).
 There are no TypeORM tables for update state.
 
-```text
-scheduler ──daily update-check──► GitHub Releases API
-     │                                   │
-     ▼                                   ▼
-  Redis (release snapshot + instance rows)
-     ▲
-api / worker / scheduler heartbeats
-agent-controller scrape ──► agent-manager GET /api/instance-status
+```mermaid
+flowchart TD
+  Scheduler[scheduler]
+  GitHub[GitHub Releases API]
+  Redis[(Redis<br/>release snapshot + instance rows)]
+  Heartbeats[api / worker / scheduler heartbeats]
+  Controller[agent-controller]
+  Manager[agent-manager]
+
+  Scheduler -->|daily update-check| GitHub
+  Scheduler --> Redis
+  GitHub --> Redis
+  Heartbeats --> Redis
+  Controller -->|scrape GET /api/instance-status| Manager
 ```
 
 ## Instance identity

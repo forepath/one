@@ -31,13 +31,17 @@ mirrors the notifications/webhook extension pattern. Decabill registers it in
 State lives in **Redis** (same Redis as BullMQ, keyed under `REDIS_KEY_PREFIX`).
 There are no TypeORM tables for update state.
 
-```text
-scheduler ──daily update-check──► GitHub Releases API
-     │                                   │
-     ▼                                   ▼
-  Redis (release snapshot + instance rows)
-     ▲
-api / worker / scheduler heartbeats
+```mermaid
+flowchart TD
+  Scheduler[scheduler]
+  GitHub[GitHub Releases API]
+  Redis[(Redis<br/>release snapshot + instance rows)]
+  Heartbeats[api / worker / scheduler heartbeats]
+
+  Scheduler -->|daily update-check| GitHub
+  Scheduler --> Redis
+  GitHub --> Redis
+  Heartbeats --> Redis
 ```
 
 ## Instance identity
