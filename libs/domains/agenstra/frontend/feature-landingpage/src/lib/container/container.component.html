@@ -88,6 +88,16 @@
             </li>
             <li class="nav-item">
               <a
+                routerLink="/how-it-works"
+                class="nav-link text-white"
+                routerLinkActive="active"
+                (click)="closeMobileMenu()"
+                i18n="@@featurePortal-navHowItWorks"
+                >How it works</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
                 routerLink="/pricing"
                 class="nav-link text-white"
                 routerLinkActive="active"
@@ -263,6 +273,14 @@
           <li class="mb-2">
             <a routerLink="/cloud" class="text-decoration-none footer-link small" i18n="@@featurePortal-navCloud"
               >Cloud</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/how-it-works"
+              class="text-decoration-none footer-link small"
+              i18n="@@featurePortal-navHowItWorks"
+              >How it works</a
             >
           </li>
           <li class="mb-2">
