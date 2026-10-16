@@ -4,21 +4,19 @@ Agenstra can filter the **outbound network traffic of every agent environment**.
 
 ## Architecture
 
-```text
-                      agent manager (Docker API)
-                              |
-              creates / configures / reads logs
-                              |
-   +---------------------------v----------------------------+
-   | egress guard  (agenstra-egress-<agentId>, CAP_NET_ADMIN) |
-   |  iptables  - DNS -> dnsmasq, TCP/80 -> Squid, TCP/443 -> Squid |
-   |  dnsmasq   - DNS policy proxy  (127.0.0.1:5353)          |
-   |  Squid 7   - explicit proxy 3128, HTTP intercept 3129,   |
-   |              TLS peek/splice/terminate 3130              |
-   +---------------------------^----------------------------+
-                              | shared network namespace
-                              | (NetworkMode: container:<guard>)
-                       agent container
+```mermaid
+flowchart TB
+  Manager["agent manager (Docker API)"]
+  Agent[agent container]
+
+  subgraph Guard["egress guard (agenstra-egress-&lt;agentId&gt;, CAP_NET_ADMIN)"]
+    Iptables["iptables<br/>DNS → dnsmasq, TCP/80 → Squid, TCP/443 → Squid"]
+    Dnsmasq["dnsmasq<br/>DNS policy proxy (127.0.0.1:5353)"]
+    Squid["Squid 7<br/>explicit proxy 3128, HTTP intercept 3129,<br/>TLS peek/splice/terminate 3130"]
+  end
+
+  Manager -->|creates / configures / reads logs| Guard
+  Agent -->|"shared network namespace<br/>(NetworkMode: container:&lt;guard&gt;)"| Guard
 ```
 
 - **Sidecar** One guard container per agent (`agenstra-egress-<agentId>`, labels `io.agenstra.egress-guard=1` and `io.agenstra.agent-id`; the agent's worker is `agenstra-worker-<agentId>`). The name is final from creation on: the agent id is assigned before the guard is provisioned. Only the guard holds `CAP_NET_ADMIN`; the agent has none and cannot change the rules.
