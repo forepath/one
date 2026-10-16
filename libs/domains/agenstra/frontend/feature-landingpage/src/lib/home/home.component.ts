@@ -6,7 +6,11 @@ import { RouterModule } from '@angular/router';
 import type { PublicServicePlanOffering } from '@forepath/agenstra/frontend/data-access-portal';
 import { formatPublicOfferingPrice, ServicePlansFacade } from '@forepath/agenstra/frontend/data-access-portal';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
-import { SharedLogoGridComponent, type SharedLogoGridLogo } from '@forepath/shared/frontend/feature-landingpage';
+import {
+  SharedContactPersonComponent,
+  SharedLogoGridComponent,
+  type SharedLogoGridLogo,
+} from '@forepath/shared/frontend/feature-landingpage';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
@@ -16,6 +20,7 @@ import { IdeIllustrationComponent } from '../illustrations/ide-illustration.comp
 @Component({
   selector: 'framework-portal-home',
   imports: [
+    SharedContactPersonComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
     CommonModule,

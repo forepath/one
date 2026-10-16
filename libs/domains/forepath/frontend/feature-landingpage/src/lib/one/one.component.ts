@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
+import { SharedContactPersonComponent } from '@forepath/shared/frontend/feature-landingpage';
 
 export interface ForepathProduct {
   id: string;
@@ -18,7 +19,7 @@ export interface ForepathProduct {
 
 @Component({
   selector: 'framework-forepath-one',
-  imports: [FpcBadgeComponent, FpcButtonComponent, CommonModule, RouterModule],
+  imports: [SharedContactPersonComponent, FpcBadgeComponent, FpcButtonComponent, CommonModule, RouterModule],
   styleUrls: ['./one.component.scss'],
   templateUrl: './one.component.html',
   standalone: true,

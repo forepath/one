@@ -4,6 +4,17 @@
   max-width: 800px;
 }
 
+// Domain cards, like the consulting module panels: a tinted intro above a hairline, the scope list
+// below. The intro takes the spare height, so the lists of cards in one row start on the same line.
+.it-domain-card__top {
+  flex: 1 1 auto;
+  border-color: var(--bs-border-color) !important;
+}
+
+.it-domain-card__bottom {
+  flex: 0 0 auto;
+}
+
 .it-topi-copy {
   padding-left: var(--bs-gutter-x, 0.75rem);
   padding-right: var(--bs-gutter-x, 0.75rem);

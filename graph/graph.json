@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-15T23:10:59.480Z",
+  "generatedAt": "2026-10-16T15:17:37.483Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -34626,17 +34626,22 @@
     },
     {
       "from": "project:forepath-frontend-feature-landingpage",
-      "to": "project:shared-frontend-ui-components",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:forepath-frontend-feature-landingpage",
       "to": "project:shared-frontend-util-configuration",
       "type": "depends_on"
     },
     {
       "from": "project:forepath-frontend-feature-landingpage",
+      "to": "project:shared-frontend-feature-landingpage",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:forepath-frontend-feature-landingpage",
       "to": "project:shared-frontend-util-meta",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:forepath-frontend-feature-landingpage",
+      "to": "project:shared-frontend-ui-components",
       "type": "depends_on"
     },
     {
@@ -34652,11 +34657,6 @@
     {
       "from": "project:forepath-frontend-feature-landingpage",
       "to": "project:shared-frontend-data-access-communication",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:forepath-frontend-feature-landingpage",
-      "to": "project:shared-frontend-feature-landingpage",
       "type": "depends_on"
     },
     {

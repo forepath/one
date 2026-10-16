@@ -108,7 +108,7 @@ export { FpcBreadcrumbsComponent } from './lib/breadcrumbs/breadcrumbs.component
 export type { FpcBreadcrumbsSize } from './lib/breadcrumbs/breadcrumbs.component';
 export { FpcTopBarComponent } from './lib/top-bar/top-bar.component';
 export { FpcDropdownComponent } from './lib/dropdown/dropdown.component';
-export type { FpcDropdownAlignment, FpcDropdownDirection } from './lib/dropdown/dropdown.component';
+export type { FpcDropdownAlignment, FpcDropdownDirection, FpcDropdownWidth } from './lib/dropdown/dropdown.component';
 export { FpcDropdownItemComponent } from './lib/dropdown-item/dropdown-item.component';
 export { FpcLanguageSwitcherComponent } from './lib/language-switcher/language-switcher.component';
 export type {

@@ -13,6 +13,9 @@ export type FpcDropdownAlignment = 'start' | 'end';
 
 export type FpcDropdownDirection = 'down' | 'up';
 
+/** `trigger`: the menu hangs off the trigger. `container`: it spans the nearest positioned ancestor. */
+export type FpcDropdownWidth = 'trigger' | 'container';
+
 /**
  * Bootstrap dropdown without the Bootstrap JavaScript bundle. Project the trigger with
  * `[fpcDropdownTrigger]`; everything else becomes the menu content.
@@ -25,6 +28,7 @@ export type FpcDropdownDirection = 'down' | 'up';
     class: 'fpc-dropdown',
     '[class.dropdown]': 'direction() === "down"',
     '[class.dropup]': 'direction() === "up"',
+    '[class.fpc-dropdown--container]': 'width() === "container"',
   },
   template: `
     <div class="fpc-dropdown__trigger" (click)="toggle()">
@@ -45,6 +49,11 @@ export class FpcDropdownComponent {
   readonly open = model(false);
   readonly alignment = input<FpcDropdownAlignment>('start');
   readonly direction = input<FpcDropdownDirection>('down');
+  /**
+   * `container` lets the menu span the nearest positioned ancestor (e.g. a navbar container) instead
+   * of the trigger, for multi-column panels.
+   */
+  readonly width = input<FpcDropdownWidth>('trigger');
   readonly disabled = input(false);
   /** Keeps the menu open after an item is activated (useful for multi-select filters). */
   readonly closeOnSelect = input(true);

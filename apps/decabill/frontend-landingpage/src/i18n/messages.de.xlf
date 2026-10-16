@@ -2406,6 +2406,54 @@
         <source>Decabill overview with plans, services and invoices</source>
         <target state="translated">Decabill-Übersicht mit Tarifen, Diensten und Rechnungen</target>
       </trans-unit>
-    </body>
+        <trans-unit id="sharedFeatureLandingpageContactPerson-role" datatype="html">
+        <source>Founder and CEO</source>
+        <target>Gründer und CEO</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-photoAlt" datatype="html">
+        <source>Portrait of Marcel Menk</source>
+        <target>Porträt von Marcel Menk</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageAgenstra" datatype="html">
+        <source>We build Agenstra with AI every day, because it makes the product better and lets us ship faster.</source>
+        <target>Wir entwickeln Agenstra jeden Tag mit KI, weil sie das Produkt besser macht und uns schneller ausliefern lässt.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageDecabill" datatype="html">
+        <source>We build Decabill with AI every day, because it makes the product better and lets us ship faster.</source>
+        <target>Wir entwickeln Decabill jeden Tag mit KI, weil sie das Produkt besser macht und uns schneller ausliefern lässt.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageForepath" datatype="html">
+        <source>We work with AI every day, because it makes us faster and our results better.</source>
+        <target>Wir arbeiten jeden Tag mit KI, weil sie uns schneller und unsere Ergebnisse besser macht.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaRole" datatype="html">
+        <source>Virtual Customer Success</source>
+        <target>Virtuelle Support-Agentin</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaPhotoAlt" datatype="html">
+        <source>AI-generated portrait of Maya Keller, our virtual team member</source>
+        <target>KI-generiertes Porträt von Maya Keller, unserem virtuellen Teammitglied</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageForepath" datatype="html">
+        <source>I am part of that, but your message still reaches real people on our team, and a person takes responsibility for every answer.</source>
+        <target>Ich bin ein Teil davon, aber Ihre Nachricht erreicht trotzdem echte Menschen in unserem Team, und für jede Antwort übernimmt ein Mensch die Verantwortung.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageAgenstra" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Agenstra, and a person takes responsibility for every answer.</source>
+        <target>Ich bin ein Teil davon, aber Ihre Nachricht erreicht trotzdem echte Menschen, die Agenstra kennen, und für jede Antwort übernimmt ein Mensch die Verantwortung.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageDecabill" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Decabill, and a person takes responsibility for every answer.</source>
+        <target>Ich bin ein Teil davon, aber Ihre Nachricht erreicht trotzdem echte Menschen, die Decabill kennen, und für jede Antwort übernimmt ein Mensch die Verantwortung.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-aiLabel" datatype="html">
+        <source>AI</source>
+        <target>KI</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-linkedInLabel" datatype="html">
+        <source>Marcel Menk on LinkedIn</source>
+        <target>Marcel Menk auf LinkedIn</target>
+      </trans-unit>
+  </body>
   </file>
 </xliff>

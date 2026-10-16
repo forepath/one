@@ -16,6 +16,7 @@ import {
 } from '@forepath/shared/frontend/ui-components';
 import { filter, map, startWith } from 'rxjs';
 import { FOREPATH_CONTACT, FOREPATH_SOCIAL_LINKS } from '../forepath-contact.config';
+import { FOREPATH_DISTRIBUTOR_LOGOS, FOREPATH_IT_SERVICES } from '../it-systems/services/it-systems-services';
 
 const FOREPATH_LOCALE_PREFIXES = new Set(['en', 'de']);
 
@@ -33,7 +34,11 @@ function forepathRoutePathFromRouterUrl(url: string): string {
 
 function isServicesDropdownRoutePath(path: string): boolean {
   return (
-    path === 'consulting' || path === 'it-systems' || path === 'software-development' || path === 'pricing/estimate'
+    path === 'consulting' ||
+    path === 'it-systems' ||
+    path.startsWith('it-systems/') ||
+    path === 'software-development' ||
+    path === 'pricing/estimate'
   );
 }
 
@@ -58,6 +63,12 @@ export class ForepathContainerComponent {
   protected readonly currentYear = new Date().getFullYear();
   protected readonly contact = FOREPATH_CONTACT;
   protected readonly socialLinks = FOREPATH_SOCIAL_LINKS;
+  /** IT domains in the services menu; `fpc-dropdown-item` takes the icon name without the `bi-` prefix. */
+  protected readonly itServices = FOREPATH_IT_SERVICES.map((service) => ({
+    ...service,
+    navIcon: service.icon.replace(/^bi-/, ''),
+  }));
+  protected readonly distributorLogos = FOREPATH_DISTRIBUTOR_LOGOS;
 
   private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);

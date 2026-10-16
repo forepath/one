@@ -1,0 +1,267 @@
+<section id="hero" class="py-10 py-lg-6 bg-dark text-white grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center">
+      <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureForepathAbout-heroTitle">
+        <span class="text-primary">Ten years</span> of IT systems and software from one hand
+      </h1>
+      <p class="lead mx-auto hero-lead section-lead mb-0" i18n="@@featureForepathAbout-heroLead">
+        ForePath is the brand of IPvX UG (haftungsbeschränkt) in Herford. Since 2016 we have planned, built, and
+        operated technology for businesses that need it to work every day.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Story -->
+<section id="story" class="py-10 bg-body grid-section">
+  <div class="container grid-section__container">
+    <div class="row align-items-center g-4 g-lg-5">
+      <div class="col-lg-4 text-center text-lg-start">
+        <p class="about-stat fw-semibold text-primary mb-1">2016</p>
+        <p class="h4 fw-semibold text-body-emphasis mb-0" i18n="@@featureForepathAbout-storyStatLabel">
+          the year it all started
+        </p>
+      </div>
+      <div class="col-lg-8">
+        <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureForepathAbout-storyTitle">
+          From a one-person business to ForePath
+        </h2>
+        <p class="text-muted mb-4" i18n="@@featureForepathAbout-storyParagraph1">
+          ForePath started in June 2016 with a simple idea. IT systems and software development from one hand, delivered
+          by people who also run what they build. That combination has not changed since.
+        </p>
+        <p class="text-muted mb-4" i18n="@@featureForepathAbout-storyParagraph2">
+          In 2022 the business became a limited company. A year later we co-founded a cloud start-up, and since 2025 we
+          have shipped products of our own. Every one of these steps taught us something, and all of it flows back into
+          the services we offer today.
+        </p>
+        <a
+          routerLink="/about"
+          fragment="timeline"
+          class="small fw-semibold text-primary text-decoration-none"
+          i18n="@@featureForepathAbout-storyLink"
+          >Our milestones <i class="bi bi-arrow-down ms-1" aria-hidden="true"></i
+        ></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Timeline -->
+<section id="timeline" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureForepathAbout-timelineTitle">
+        Our story so far
+      </h2>
+      <p class="lead text-muted mx-auto section-lead mb-0" i18n="@@featureForepathAbout-timelineLead">
+        Ten years, two legal forms, one start-up, and a growing family of products. These are the moments that shaped
+        how we work.
+      </p>
+    </div>
+    <ol class="about-timeline list-unstyled mb-0 mx-auto">
+      @for (milestone of milestones; track milestone.id) {
+        <li
+          class="about-timeline__item"
+          [class.about-timeline__item--current]="milestone.current"
+          [class.about-timeline__item--upcoming]="milestone.upcoming"
+        >
+          <span class="about-timeline__marker" aria-hidden="true">
+            <i class="bi" [ngClass]="milestone.icon"></i>
+          </span>
+          <article
+            class="card border rounded-3 shadow-sm p-4 about-timeline__card"
+            [ngClass]="milestone.current ? 'overflow-hidden landing-surface-tint' : 'bg-body'"
+          >
+            @if (milestone.upcoming) {
+              <span class="small fw-semibold text-primary d-block mb-2">{{ milestone.date }}</span>
+            } @else {
+              <time class="small fw-semibold text-primary d-block mb-2" [attr.datetime]="milestone.datetime">{{
+                milestone.date
+              }}</time>
+            }
+            <h3 class="h6 fw-semibold mb-2">{{ milestone.title }}</h3>
+            <p class="small text-muted mb-0">{{ milestone.description }}</p>
+            @if (milestone.link; as link) {
+              @if (link.disabled) {
+                <span
+                  class="about-timeline__link--disabled small fw-semibold text-decoration-none mt-3 d-inline-block"
+                  aria-disabled="true"
+                  >{{ link.label }} <i class="bi bi-box-arrow-up-right ms-1" aria-hidden="true"></i
+                ></span>
+              } @else {
+                <a
+                  [href]="link.href"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="small fw-semibold text-primary text-decoration-none mt-3 d-inline-block"
+                  >{{ link.label }} <i class="bi bi-box-arrow-up-right ms-1" aria-hidden="true"></i
+                ></a>
+              }
+            }
+          </article>
+        </li>
+      }
+    </ol>
+  </div>
+</section>
+
+<!-- Evolution -->
+<section id="evolution" class="py-10 bg-body grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureForepathAbout-evolutionTitle">
+        From hands-on to AI native
+      </h2>
+      <p class="lead text-muted mx-auto section-lead mb-0" i18n="@@featureForepathAbout-evolutionLead">
+        We did not jump on AI overnight. We grew into it one layer at a time, and kept what made the work good in the
+        first place.
+      </p>
+    </div>
+    <div class="row row-gap-3 g-0 align-items-stretch">
+      <div class="col-lg-6 about-evolution-visual-col landing-illustration-fill order-2 order-lg-1">
+        <framework-forepath-evolution-illustration
+          label="The same certificate renewal on 40 services, done by hand in 2016, through a pipeline in 2023, and by a coding agent with an engineer's review in 2025"
+          i18n-label="@@featureForepathAbout-evolutionIllustration"
+        />
+      </div>
+      <div class="col-lg-6 about-evolution-copy d-flex flex-column order-1 order-lg-2">
+        <article class="card border rounded-3 shadow-sm p-4 bg-body">
+          <ol class="about-evolution list-unstyled mb-0">
+            <li class="about-evolution__stage">
+              <span class="about-evolution__year">2016</span>
+              <div>
+                <h3 class="h6 fw-semibold mb-2" i18n="@@featureForepathAbout-evolutionStage1Title">Hands-on</h3>
+                <p class="small text-muted mb-0" i18n="@@featureForepathAbout-evolutionStage1Desc">
+                  Every server, every script, every ticket by hand. We learned systems from the inside, the way only
+                  manual work teaches.
+                </p>
+              </div>
+            </li>
+            <li class="about-evolution__stage">
+              <span class="about-evolution__year">2023</span>
+              <div>
+                <h3 class="h6 fw-semibold mb-2" i18n="@@featureForepathAbout-evolutionStage2Title">Automated</h3>
+                <p class="small text-muted mb-0" i18n="@@featureForepathAbout-evolutionStage2Desc">
+                  Running Kubernetes platforms at VMMX made automation the default. Infrastructure as code, pipelines,
+                  and monitoring took over the repetitive work.
+                </p>
+              </div>
+            </li>
+            <li class="about-evolution__stage">
+              <span class="about-evolution__year">2025</span>
+              <div>
+                <h3 class="h6 fw-semibold mb-2" i18n="@@featureForepathAbout-evolutionStage3Title">AI native</h3>
+                <p class="small text-muted mb-0" i18n="@@featureForepathAbout-evolutionStage3Desc">
+                  Coding agents work in our delivery through Agenstra, and our instant quote runs a language model right
+                  in your browser. An engineer still reviews every change.
+                </p>
+              </div>
+            </li>
+          </ol>
+        </article>
+        <article class="card border rounded-3 shadow-sm p-4 bg-body about-evolution__constants">
+          <p class="small fw-semibold text-body-emphasis mb-3" i18n="@@featureForepathAbout-constantsTitle">
+            What has stayed the same since day one
+          </p>
+          <ul class="list-unstyled mb-0">
+            <li class="mb-2 d-flex gap-2 align-items-center">
+              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+              <span i18n="@@featureForepathAbout-constant1">One partner for systems and software</span>
+            </li>
+            <li class="mb-2 d-flex gap-2 align-items-center">
+              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+              <span i18n="@@featureForepathAbout-constant2">People decide, machines assist</span>
+            </li>
+            <li class="mb-2 d-flex gap-2 align-items-center">
+              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+              <span i18n="@@featureForepathAbout-constant3">We run what we build, on open standards</span>
+            </li>
+            <li class="d-flex gap-2 align-items-center">
+              <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+              <span i18n="@@featureForepathAbout-constant4">Close to our clients in Ostwestfalen-Lippe</span>
+            </li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Leadership -->
+<section id="leadership" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="row align-items-center g-4 g-lg-5">
+      <div class="col-lg-4 col-xl-3 text-center">
+        <figure class="about-person mb-0 p-5 rounded-3 border shadow-sm overflow-hidden landing-surface-tint">
+          <img
+            src="assets/images/team/marcel-menk.jpg"
+            width="800"
+            height="800"
+            class="about-person__photo"
+            i18n-alt="@@featureForepathAbout-ceoPhotoAlt"
+            alt="Portrait of Marcel Menk, founder and CEO of ForePath"
+            loading="lazy"
+          />
+          <figcaption class="mt-4">
+            <span class="d-block fw-semibold text-body-emphasis">Marcel Menk</span>
+            <span class="d-block small text-muted" i18n="@@featureForepathAbout-ceoRole">Founder and CEO</span>
+          </figcaption>
+        </figure>
+      </div>
+      <div class="col-lg-8 col-xl-9">
+        <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureForepathAbout-leadershipTitle">
+          Led by its founder
+        </h2>
+        <p class="text-muted mb-4" i18n="@@featureForepathAbout-leadershipParagraph1">
+          Marcel Menk founded the company in 2016 and has led it ever since: through the step to a limited company, as
+          managing director of VMMX Cloud GmbH, and through the launch of Agenstra and Decabill.
+        </p>
+        <p class="text-muted mb-4" i18n="@@featureForepathAbout-leadershipParagraph2">
+          His focus is the point where infrastructure and software meet. That is where most projects either succeed or
+          stall, and where ForePath does its best work.
+        </p>
+        <a
+          [href]="ceoLinkedInUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="small fw-semibold text-primary text-decoration-none"
+          i18n="@@featureForepathAbout-leadershipLink"
+          ><i class="bi bi-linkedin me-1" aria-hidden="true"></i> Marcel Menk on LinkedIn</a
+        >
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Partners -->
+<section id="partners" class="bg-body grid-section landing-logo-section">
+  <div class="container grid-section__container">
+    <shared-logo-grid
+      [slots]="partnerSlots"
+      i18n-ariaLabel="@@featureForepathAbout-partnersGridLabel"
+      ariaLabel="Distribution and rental partners"
+    />
+  </div>
+</section>
+
+<section id="cta" class="py-10 bg-dark grid-section">
+  <div class="container grid-section__container">
+    <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
+      <h2 class="h2 fw-semibold mb-4" i18n="@@featureForepathAbout-ctaTitle">Let us write the next chapter together</h2>
+      <p class="lead mb-5 mx-auto cta-lead-light" i18n="@@featureForepathAbout-ctaLead">
+        Whether you need advice, software, or someone to run your systems, tell us where you are today. We will propose
+        a practical path and the people to walk it with you.
+      </p>
+      <fpc-button
+        variant="primary"
+        size="xl"
+        btnClass="rounded-3"
+        routerLink="/contact"
+        i18n="@@featureForepathAbout-ctaButton"
+      >
+        <i class="bi bi-envelope" aria-hidden="true"></i>Contact us
+      </fpc-button>
+    </div>
+  </div>
+</section>

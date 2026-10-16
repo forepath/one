@@ -3,7 +3,11 @@ import { ChangeDetectionStrategy, Component, DestroyRef, inject, LOCALE_ID, OnIn
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
-import { SharedLogoGridComponent, type SharedLogoGridLogo } from '@forepath/shared/frontend/feature-landingpage';
+import {
+  SharedContactPersonComponent,
+  SharedLogoGridComponent,
+  type SharedLogoGridLogo,
+} from '@forepath/shared/frontend/feature-landingpage';
 import { AgentctxIllustrationComponent } from '../illustrations/agentctx-illustration.component';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
@@ -11,6 +15,7 @@ import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend
 @Component({
   selector: 'framework-portal-agentctx',
   imports: [
+    SharedContactPersonComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
     CommonModule,

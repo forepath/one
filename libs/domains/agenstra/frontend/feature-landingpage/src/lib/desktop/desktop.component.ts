@@ -9,10 +9,12 @@ import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/ut
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 
 import { DesktopIllustrationComponent } from '../illustrations/desktop-illustration.component';
+import { SharedContactPersonComponent } from '@forepath/shared/frontend/feature-landingpage';
 
 @Component({
   selector: 'framework-portal-desktop',
   imports: [
+    SharedContactPersonComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
     CommonModule,

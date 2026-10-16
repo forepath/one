@@ -1,0 +1,203 @@
+@import '../page.component.scss';
+
+.about-stat {
+  font-size: clamp(2.75rem, 5vw, 3.75rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+// Milestones on one hairline: a single column with the line on the left on phones, alternating
+// sides of a centred line from lg up.
+.about-timeline {
+  --about-timeline-marker: 2.5rem;
+  position: relative;
+  max-width: 60rem;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(var(--about-timeline-marker) / 2);
+    width: 1px;
+    // Fades in above the first milestone and out below the last; the markers stay solid on top.
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      var(--bs-border-color) 8%,
+      var(--bs-border-color) 92%,
+      transparent 100%
+    );
+
+    @media (min-width: 992px) {
+      left: 50%;
+    }
+  }
+}
+
+.about-timeline__item {
+  position: relative;
+  padding-left: calc(var(--about-timeline-marker) + 1.25rem);
+
+  & + & {
+    margin-top: 1.5rem;
+  }
+
+  @media (min-width: 992px) {
+    width: 50%;
+    padding-left: 0;
+    padding-right: calc(var(--about-timeline-marker) / 2 + 2rem);
+
+    &:nth-child(even) {
+      margin-left: 50%;
+      padding-left: calc(var(--about-timeline-marker) / 2 + 2rem);
+      padding-right: 0;
+    }
+
+    & + & {
+      margin-top: -2rem;
+    }
+  }
+}
+
+.about-timeline__marker {
+  position: absolute;
+  top: 1.25rem;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--about-timeline-marker);
+  height: var(--about-timeline-marker);
+  border-radius: 50%;
+  border: var(--bs-border-width) solid color-mix(in srgb, var(--bs-primary) 35%, transparent);
+  background: var(--bs-body-bg);
+  color: var(--bs-primary);
+  font-size: 1rem;
+
+  @media (min-width: 992px) {
+    left: auto;
+    right: calc(var(--about-timeline-marker) / -2);
+
+    .about-timeline__item:nth-child(even) & {
+      left: calc(var(--about-timeline-marker) / -2);
+      right: auto;
+    }
+  }
+}
+
+// Today: a filled marker on a tinted card. Upcoming: dashed marker and card, not there yet.
+.about-timeline__item--current .about-timeline__marker {
+  background: var(--bs-primary);
+  border-color: var(--bs-primary);
+  color: #fff;
+}
+
+.about-timeline__item--upcoming {
+  .about-timeline__marker,
+  .about-timeline__card {
+    border-style: dashed !important;
+  }
+
+  .about-timeline__card {
+    background-color: transparent !important;
+  }
+}
+
+// Evolution: the scene fills the column, which stretches to the height of the stages beside it (the
+// software development "What we build" layout). Stages hang on one hairline, newest last.
+.about-evolution-visual-col {
+  align-self: stretch;
+}
+
+.about-evolution-copy {
+  padding-left: var(--bs-gutter-x, 0.75rem);
+  padding-right: var(--bs-gutter-x, 0.75rem);
+
+  @media (min-width: 992px) {
+    padding-left: 2.5rem;
+  }
+}
+
+.about-evolution {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0.75rem;
+    // Runs on below the last stage into the card border (the card is padded by 1.5rem, `p-4`).
+    bottom: -1.5rem;
+    left: 1.75rem;
+    width: 1px;
+    background: var(--bs-border-color);
+  }
+}
+
+.about-evolution__stage {
+  position: relative;
+  display: flex;
+  gap: 1.25rem;
+
+  & + & {
+    margin-top: 1.75rem;
+  }
+}
+
+.about-evolution__year {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 3.5rem;
+  align-self: flex-start;
+  padding: 0.25rem 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--bs-primary);
+  background-color: var(--bs-body-bg);
+  border: var(--bs-border-width) solid color-mix(in srgb, var(--bs-primary) 35%, transparent);
+  border-radius: 999px;
+
+  .about-evolution__stage:last-child & {
+    color: #fff;
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+  }
+}
+
+// Two cards in the column: the stages on top, the constants at the foot. The spare height of the
+// stretched row opens up between them, so the lower card lines up with the bottom of the scene.
+.about-evolution__constants {
+  margin-top: auto;
+
+  @media (max-width: 991.98px) {
+    margin-top: 1rem;
+  }
+}
+
+// A link that is announced but not live yet: shown in the link style, muted and not clickable.
+.about-timeline__link--disabled {
+  color: var(--bs-secondary-color);
+  opacity: 0.6;
+  cursor: default;
+}
+
+.about-person {
+  max-width: 14rem;
+  margin-inline: auto;
+
+  @media (min-width: 992px) {
+    max-width: 16rem;
+  }
+}
+
+.about-person__photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 50%;
+  border: var(--bs-border-width) solid var(--bs-border-color);
+}

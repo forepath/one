@@ -4,7 +4,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import { ENVIRONMENT, type EnvironmentWithLandingAndCommunication } from '@forepath/shared/frontend/util-configuration';
-import { SharedLogoGridComponent, type SharedLogoGridLogo } from '@forepath/shared/frontend/feature-landingpage';
+import {
+  SharedContactPersonComponent,
+  SharedLogoGridComponent,
+  type SharedLogoGridLogo,
+} from '@forepath/shared/frontend/feature-landingpage';
 import { addPageMetaTags, buildPageMetaTags } from '@forepath/shared/frontend/util-meta';
 import { FpcBadgeComponent, FpcButtonComponent } from '@forepath/shared/frontend/ui-components';
 import { catchError, of } from 'rxjs';
@@ -37,6 +41,7 @@ const PLATFORM_LOGO_SLOTS: readonly (readonly SharedLogoGridLogo[])[] = [
 @Component({
   selector: 'framework-forepath-home',
   imports: [
+    SharedContactPersonComponent,
     FpcBadgeComponent,
     FpcButtonComponent,
     CommonModule,

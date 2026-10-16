@@ -31,12 +31,18 @@ import {
 } from '@forepath/shared/frontend/data-access-communication';
 import { createSharedContactRoute, createBrandContactDetails } from '@forepath/shared/frontend/feature-landingpage';
 
+import { ForepathAboutComponent } from './about/about.component';
 import { ForepathBlogComponent } from './blog/blog.component';
 import { ForepathBlogPostComponent } from './blog/post/blog-post.component';
 import { ForepathConsultingComponent } from './consulting/consulting.component';
 import { ForepathContainerComponent } from './container/container.component';
 import { ForepathHomeComponent } from './home/home.component';
 import { ForepathItSystemsComponent } from './it-systems/it-systems.component';
+import {
+  FOREPATH_IT_SERVICE_ROUTE_DATA_KEY,
+  ForepathItSystemsServiceComponent,
+} from './it-systems/service/it-systems-service.component';
+import { FOREPATH_IT_SERVICES } from './it-systems/services/it-systems-services';
 import { ForepathLegalContentReportComponent } from './legal/content-report/content-report.component';
 import { ForepathLegalDisclosureComponent } from './legal/disclosure/disclosure.component';
 import { ForepathLegalPrivacyComponent } from './legal/privacy/privacy.component';
@@ -64,6 +70,14 @@ export const forepathRoutes: Route[] = [
         path: 'it-systems',
         component: ForepathItSystemsComponent,
       },
+      // One static route per IT domain, so every service page is prerendered.
+      ...FOREPATH_IT_SERVICES.map(
+        (service): Route => ({
+          path: `it-systems/${service.id}`,
+          component: ForepathItSystemsServiceComponent,
+          data: { [FOREPATH_IT_SERVICE_ROUTE_DATA_KEY]: service.id },
+        }),
+      ),
       {
         path: 'software-development',
         component: ForepathSoftwareDevelopmentComponent,
@@ -71,6 +85,10 @@ export const forepathRoutes: Route[] = [
       {
         path: 'one',
         component: ForepathOneComponent,
+      },
+      {
+        path: 'about',
+        component: ForepathAboutComponent,
       },
       {
         path: 'pricing',
@@ -133,6 +151,7 @@ export const forepathRoutes: Route[] = [
       createSharedContactRoute({
         canonicalUrl: 'https://forepath.io/contact',
         heroTheme: 'dark',
+        contactPerson: 'forepath',
         contactDetails: createBrandContactDetails({
           email: 'hi@forepath.io',
           websiteUrl: 'https://forepath.io',

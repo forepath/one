@@ -8,6 +8,8 @@ import {
 import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 
+import type { SharedContactPersonBrand } from '../contact-person/contact-person.component';
+
 import { SharedContactPageComponent } from './contact-page.component';
 import type { SharedContactPageConfig, SharedContactPageHeroTheme } from './contact-page.config';
 import { SHARED_CONTACT_PAGE_DATA_KEY } from './contact-page.config';
@@ -21,6 +23,8 @@ export interface CreateSharedContactRouteOptions {
   /** Hero styling variant; use `forepath` for ForePath, `dark` for Agenstra and Decabill. */
   heroTheme: SharedContactPageHeroTheme;
   contactDetails: SharedContactDetails;
+  /** Shows who reads the messages under the hero, with the brand's line. */
+  contactPerson?: SharedContactPersonBrand;
 }
 
 export function createSharedContactRoute(options: CreateSharedContactRouteOptions): Route {
@@ -28,6 +32,7 @@ export function createSharedContactRoute(options: CreateSharedContactRouteOption
     canonicalUrl: options.canonicalUrl,
     heroTheme: options.heroTheme,
     contactDetails: options.contactDetails,
+    contactPerson: options.contactPerson,
   };
 
   return {

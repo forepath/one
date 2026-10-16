@@ -34,3 +34,14 @@
   inset-inline-start: auto;
   inset-inline-end: 0;
 }
+
+// Container-wide panel: the host stops being the containing block, so the menu anchors to the
+// nearest positioned ancestor and spans it edge to edge.
+:host(.fpc-dropdown--container) {
+  position: static;
+}
+
+:host(.fpc-dropdown--container) .fpc-dropdown__menu {
+  inset-inline: 0;
+  width: auto;
+}

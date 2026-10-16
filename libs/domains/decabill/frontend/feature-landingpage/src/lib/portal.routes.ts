@@ -94,6 +94,7 @@ export const portalRoutes: Route[] = [
       createSharedContactRoute({
         canonicalUrl: 'https://decabill.com/contact',
         heroTheme: 'dark',
+        contactPerson: 'decabill',
         contactDetails: createBrandContactDetails({
           email: 'hi@decabill.com',
           websiteUrl: 'https://decabill.com',
