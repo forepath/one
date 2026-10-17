@@ -1,0 +1,175 @@
+%% Loadweaver - high-level architecture sketch (see loadweaver.md for all decisions)
+flowchart TB
+  Operator(["Users<br/>web, desktop + mobile console, CLI, API, PATs, Terraform"])
+  AIAgents(["AI agents incl. Agenstra<br/>MCP: local CLI or remote endpoint"])
+  Releases(["Signed release bundles<br/>stable / beta, or air-gap import"])
+  Fleet(["Multi-cluster console<br/>other Loadweaver clusters"])
+  Decabill(["Decabill<br/>provisions + bills the initial node (service kind loadweaver)<br/>Loadweaver Cloud: dedicated cluster per customer<br/>metering only for hosters' own clusters"])
+  Git(["Git repos per cluster / project<br/>YAML for everything declarative<br/>secret refs, SOPS optional"])
+  Clients(["External clients<br/>HTTP/HTTPS + TCP/UDP port forwards"])
+  Internet(["Internet"])
+  Upstreams(["Upstreams, IXP route servers, provider BGP<br/>own ASN + prefixes, RPKI"])
+  Receivers(["Notifications, email, webhooks"])
+  External(["Prometheus / OTLP / SIEM"])
+  Providers(["Server providers<br/>Hetzner, DigitalOcean, plugins"])
+  BackupExt[("External backup targets<br/>S3-compatible, SFTP")]
+  DockerHost(["Existing Docker host<br/>or former Loadweaver node"])
+  RemoteUsers(["Remote users<br/>signed desktop app (Electron) + mobile apps (Ionic)<br/>own tunnel, posture, console, push alerts<br/>official WireGuard apps still possible"])
+  Offices(["Office networks<br/>routers as machine clients, site-to-site"])
+  Posture(["IdP, MDM, EDR<br/>Keycloak, Intune, Jamf, Kandji<br/>Defender, CrowdStrike, SentinelOne"])
+
+  subgraph CP["Control plane (1 node up to 3/5 designated nodes, Patroni + etcd)"]
+    Auth["Authentication<br/>api-key, users, Keycloak"]
+    API["Loadweaver API<br/>projects, roles, quotas<br/>plan / approve / apply, per-resource locks<br/>failure analysis, drift"]
+    Policy["Policy compiler<br/>groups + allow-only policies<br/>BGP peers + announcements"]
+    IPAM["Public IPAM<br/>own prefixes, ingress / SNAT IPs, PTR"]
+    RA["Remote access<br/>client groups, enrollment, expiring keys<br/>posture conditions, sessions"]
+    DNSFO["DNS failover + steering engine<br/>probe quorum, hysteresis, fail-back<br/>weighted, geo, latency"]
+    Sched["Scheduler + autoscaler<br/>selectors, runtime capabilities, capacity, quotas<br/>jobs, cron (exactly once)"]
+    ACME["ACME + workload CA<br/>certs and mTLS identities"]
+    Secrets["Secrets<br/>envelope encryption, split master key / KMS"]
+    Registry["Registry + apt cache<br/>images, release bundles, OS packages<br/>scans, signatures"]
+    Updater["Update orchestrator<br/>control plane first, canary, waves<br/>health gates, auto-rollback"]
+    ProvLib["Shared provider lib<br/>servers, failover IPs, DNS"]
+    Alerts["Alerting<br/>built-in + custom rules"]
+    Live["Live gateway<br/>Socket.IO: plans, operation progress, flows, logs, terminals, files"]
+    UI["Console (Angular)<br/>overview + health tree, graphs, logs, audit, search, wallboard, fleet view<br/>canvas: DNS, IPs, routes, tunnels, certs, storage, policies, traffic + path trace<br/>custom dashboards"]
+    Reports["Report jobs<br/>periodic, util-file-storage, file tree"]
+    State[("Postgres + TimescaleDB<br/>desired state, plans, audit log (hash-chained)<br/>metrics, aggregated flows")]
+    Logs[("OpenSearch<br/>all logs + audit mirror")]
+  end
+
+  Operator --> UI
+  Operator --> API
+  Git -.push creates plans.-> API
+  API -.UI edits as PRs or commits, plan status.-> Git
+  PlanBot(["Plan bot<br/>GitHub App, GitLab integration"])
+  Git <-.PR events, comment commands.-> PlanBot
+  PlanBot -.plan, apply, unlock, approve, drift<br/>as linked Loadweaver user.-> API
+  AIAgents -.MCP, same access rules and approvals.-> API
+  Releases -.download once, verify.-> Registry
+  Fleet <-.cluster APIs.-> API
+  API -.usage metering (hosters' own clusters).-> Decabill
+  Decabill -.cloud-init: initial node, provider tokens from order fields or defaults.-> Providers
+  AgentMgr(["Agenstra agent-manager<br/>runtime per workspace: Docker host or Loadweaver"])
+  AgentMgr -.agent envs as deployments on gVisor nodes<br/>egress compiled to Envoy policies.-> API
+  UI --> API
+  API --> Auth
+  API --> State
+  API --> Sched
+  API --> Policy
+  API --> IPAM
+  API --> RA
+  RA -.client groups + posture into policies.-> Policy
+  Posture -.groups, compliance, risk.-> RA
+  RemoteUsers & Offices -->|"WireGuard to one endpoint name<br/>split or full tunnel"| VPNGW
+  VPNGW{{"VPN gateways (vpn node group)<br/>failover IP / anycast / DNS failover"}}
+  VPNGW --> N1 & N3
+  IPAM -.assigned IPs.-> Policy
+  API --> ACME
+  API --> Secrets
+  API --> Updater
+  Updater -.rolling updates in maintenance windows.-> A1 & A2 & A3
+  Registry -.agent, components, packages.-> A1 & A2 & A3
+  Registry -.stored in.-> G1 & G3
+  Registry -.images by digest.-> D1 & D2 & D3
+  Secrets -.tmpfs secrets, LUKS volume keys.-> A1 & A2 & A3
+  API --> ProvLib
+  Logs --> API
+  State --> Alerts
+  Logs --> Alerts
+  Alerts --> Receivers
+  State --> Reports
+  Reports -.report files.-> G1 & G3
+  StatusPage(["Public status pages<br/>per project"])
+  I1 & I2 & I3 -.serve.-> StatusPage
+  API -.export.-> External
+  ProvLib -.order nodes, move failover IPs<br/>with provider tokens: user keys or set at ordering.-> Providers
+  ProvLib -.backup targets.-> BackupExt
+  DockerHost -.discovery, import wizard, join plan.-> API
+  Live <--> UI
+
+  subgraph SiteA["Site A"]
+    subgraph N1["Node 1 (control plane, ingress, edge)"]
+      A1["Node agent (TypeScript, SEA, systemd)<br/>compose to Docker API"]
+      D1["Docker<br/>runc / gVisor runsc"]
+      F1["nftables + node DNS resolver"]
+      P1["Envoy node proxy<br/>egress, east-west L7 + mTLS"]
+      I1["Envoy ingress<br/>L7 + L4, rate limits, WAF"]
+      B1["BIRD"]
+      S1[("DRBD volume replicas<br/>LUKS encrypted")]
+      G1[("Garage object storage")]
+    end
+    subgraph N2["Node 2 (control plane, ingress, dns)"]
+      A2["Node agent (TypeScript, SEA, systemd)<br/>compose to Docker API"]
+      D2["Docker<br/>runc / gVisor runsc"]
+      F2["nftables + node DNS resolver"]
+      P2["Envoy node proxy<br/>egress, east-west L7 + mTLS"]
+      I2["Envoy ingress<br/>L7 + L4, rate limits, WAF"]
+      B2["BIRD"]
+      S2[("DRBD volume replicas<br/>LUKS encrypted")]
+      Bind2[("bind9<br/>DNSSEC, GeoIP views, anycast NS")]
+    end
+  end
+
+  subgraph SiteB["Site B"]
+    subgraph N3["Node 3 (control plane, ingress, dns, edge)"]
+      A3["Node agent (TypeScript, SEA, systemd)<br/>compose to Docker API"]
+      D3["Docker<br/>runc / gVisor runsc"]
+      F3["nftables + node DNS resolver"]
+      P3["Envoy node proxy<br/>egress, east-west L7 + mTLS"]
+      I3["Envoy ingress<br/>L7 + L4, rate limits, WAF"]
+      B3["BIRD"]
+      S3[("DRBD volume replicas<br/>LUKS encrypted")]
+      Bind3[("bind9<br/>DNSSEC, GeoIP views, anycast NS")]
+      G3[("Garage object storage")]
+    end
+  end
+
+  Sched -.placement.-> A1 & A2 & A3
+  Policy -.WireGuard peers, BIRD filters, nftables, DNS answers.-> A1 & A2 & A3
+  Policy -.xDS: L7 policies.-> P1 & P2 & P3 & I1 & I2 & I3
+  ACME -.certs + identities.-> P1 & P2 & P3 & I1 & I2 & I3
+  A1 --> D1
+  A2 --> D2
+  A3 --> D3
+
+  A1 & A2 & A3 -.metrics, aggregated flows.-> State
+  A1 & A2 & A3 -.labeled logs.-> Logs
+  A1 & A2 & A3 <-.outbound gRPC stream (mTLS): live flows, log tail, terminals, files, tunnels.-> Live
+
+  VIP{{"Failover IPs, IPv4 + IPv6<br/>VRRP / BGP / provider API"}}
+  Clients --> VIP
+  VIP --> I1
+  VIP -.failover.-> I2
+  VIP -.failover.-> I3
+
+  N1 <-->|"WireGuard (only where policies need it)"| N2
+  N1 <-->|"WireGuard"| N3
+  N2 <-->|"WireGuard"| N3
+
+  B1 <-.BGP over WireGuard.-> B2 & B3
+  B1 & B3 <-->|"eBGP, BFD, graceful shutdown<br/>anycast or primary/backup"| Upstreams
+  Upstreams --> Clients
+  N2 -.egress via edge nodes, SNAT from own prefixes.-> N1
+  S1 <-.sync in site.-> S2
+  S1 & S2 <-.async across sites.-> S3
+
+  P1 & P2 & P3 -->|"egress policies"| Internet
+
+  N1 -.live migration, drain, failover.-> N3
+
+  S1 & S2 & S3 & State & Logs -.encrypted backups, WAL archive, snapshots.-> G1 & G3
+  G1 <-.zone-aware replication.-> G3
+  G1 & G3 -.secondary copy.-> BackupExt
+
+  Cloudflare[("Cloudflare<br/>DNS provider / secondary")]
+  ProvLib -.records.-> Cloudflare
+  A1 & A3 -.multi-site endpoint probes.-> DNSFO
+  DNSFO -.switch records, verify all authoritative servers.-> ProvLib & Bind2 & Bind3
+  Policy -.zones pushed to every instance.-> Bind2 & Bind3
+  Bind2 & Bind3 -.zone transfer.-> Cloudflare
+  Clients -.resolve.-> Cloudflare & Bind2 & Bind3
+
+  Witness(["Optional witness<br/>tie-breaker for 2-node setups"])
+  Witness -.vote.-> CP
