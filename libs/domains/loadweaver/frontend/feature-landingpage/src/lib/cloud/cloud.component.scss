@@ -1,0 +1,8 @@
+@import '../page.component.scss';
+
+// Ordering flow (same idea as Agenstra Desktop's workflow row): arrows turn downwards when stacked.
+@media (max-width: 767.98px) {
+  .cloud-flow-arrow .bi {
+    transform: rotate(90deg);
+  }
+}

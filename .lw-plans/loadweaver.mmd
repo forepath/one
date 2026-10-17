@@ -12,13 +12,14 @@ flowchart TB
   Receivers(["Notifications, email, webhooks"])
   External(["Prometheus / OTLP / SIEM"])
   Providers(["Server providers<br/>Hetzner, DigitalOcean, plugins"])
-  BackupExt[("External backup targets<br/>S3-compatible, SFTP")]
+  BackupExt[("External backup targets<br/>S3-compatible, SFTP, object lock")]
+  RecoveryKit(["Recovery kit<br/>Shamir shares, optional KMS escrow"])
   DockerHost(["Existing Docker host<br/>or former Loadweaver node"])
   RemoteUsers(["Remote users<br/>signed desktop app (Electron) + mobile apps (Ionic)<br/>own tunnel, posture, console, push alerts<br/>official WireGuard apps still possible"])
   Offices(["Office networks<br/>routers as machine clients, site-to-site"])
   Posture(["IdP, MDM, EDR<br/>Keycloak, Intune, Jamf, Kandji<br/>Defender, CrowdStrike, SentinelOne"])
 
-  subgraph CP["Control plane (1 node up to 3/5 designated nodes, Patroni + etcd)"]
+  subgraph CP["Control plane (quorum: 1 node up to 3/5 designated nodes, Patroni + etcd)"]
     Auth["Authentication<br/>api-key, users, Keycloak"]
     API["Loadweaver API<br/>projects, roles, quotas<br/>plan / approve / apply, per-resource locks<br/>failure analysis, drift"]
     Policy["Policy compiler<br/>groups + allow-only policies<br/>BGP peers + announcements"]
@@ -148,7 +149,10 @@ flowchart TB
   N1 <-->|"WireGuard"| N3
   N2 <-->|"WireGuard"| N3
 
-  B1 <-.BGP over WireGuard.-> B2 & B3
+  B1 <-.BGP over WireGuard<br/>direct when small, route reflectors per site when large.-> B2 & B3
+  Workers(["Further worker nodes, no cap<br/>target ~1,000 per cluster<br/>per-site hubs, collectors, data node groups as it grows"])
+  Workers <-.tunnels only where policies need them<br/>built-in traffic via site hubs.-> N1 & N3
+  Workers -.telemetry via per-site collectors.-> State & Logs
   B1 & B3 <-->|"eBGP, BFD, graceful shutdown<br/>anycast or primary/backup"| Upstreams
   Upstreams --> Clients
   N2 -.egress via edge nodes, SNAT from own prefixes.-> N1
@@ -162,6 +166,8 @@ flowchart TB
   S1 & S2 & S3 & State & Logs -.encrypted backups, WAL archive, snapshots.-> G1 & G3
   G1 <-.zone-aware replication.-> G3
   G1 & G3 -.secondary copy.-> BackupExt
+  RecoveryKit -.decrypts backups for DR and cross-cluster restore.-> BackupExt
+  Fleet -.restore / clone into other clusters.-> BackupExt
 
   Cloudflare[("Cloudflare<br/>DNS provider / secondary")]
   ProvLib -.records.-> Cloudflare

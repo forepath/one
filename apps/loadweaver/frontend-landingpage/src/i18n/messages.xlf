@@ -1,0 +1,2410 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en" datatype="plaintext" original="ng2.template">
+    <body>
+      <trans-unit id="featureLoadweaverApps-heroTitle" datatype="html">
+        <source> Your cluster on <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>every screen<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/>, and in every terminal </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-heroLead" datatype="html">
+        <source> The web console is the center. Around it: a code-signed desktop app with its own VPN tunnel, mobile apps for alerts and approvals on the go, a CLI for scripts and pipelines, and an MCP server for your agents. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-heroCtaEarlyAccess" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope-paper&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Request early access </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-heroCtaRemote" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-person-lock&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Remote access </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-desktopTitle" datatype="html">
+        <source> Loadweaver Desktop </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-desktopLead" datatype="html">
+        <source> The console as a native app, with the fleet view, OS notifications for alerts, and terminals and tunnels one click away. It runs your VPN tunnel too. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-desktopTunnelTitle" datatype="html">
+        <source>OS-native WireGuard</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-desktopTunnelDesc" datatype="html">
+        <source> Kernel WireGuard on Linux, wireguard-nt on Windows and WireGuardKit in a Network Extension on macOS. No own crypto. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-desktopPostureTitle" datatype="html">
+        <source> Enrollment and posture </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-desktopPostureDesc" datatype="html">
+        <source> Enrollment, key renewal after sign-in and posture reports, plus a view of the services you may reach. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-desktopSignedTitle" datatype="html">
+        <source>Code-signed</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-desktopSignedDesc" datatype="html">
+        <source> Apple Developer ID with notarization, Windows Authenticode, and signed apt and rpm repositories on Linux, with checksums on top. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-desktopUpdatesTitle" datatype="html">
+        <source>Verified updates</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-desktopUpdatesDesc" datatype="html">
+        <source> In-app updates on stable and beta channels, verified by signature and manifest before install, and never silently downgraded. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-desktopIllustration" datatype="html">
+        <source>Loadweaver Desktop with a connected tunnel through gateway gw1, company sign-in, a device key that renews after sign-in, passed posture checks and the internal services the user&apos;s policies allow.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-mobileTitle" datatype="html">
+        <source> Loadweaver for phones and tablets </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-mobileLead" datatype="html">
+        <source> The console in a mobile layout: the overview and the needs-attention inbox, alerts as push notifications, approvals on the go, logs and the map. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-mobileSub" datatype="html">
+        <source> Available in the App Store and Google Play, and through managed distribution with Intune, Jamf or Kandji. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-mobileAlertsTitle" datatype="html">
+        <source> Alerts and approvals </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-mobileAlertsDesc" datatype="html">
+        <source> Push notifications when something needs attention, and approvals for plans wherever you are. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-mobileTunnelTitle" datatype="html">
+        <source> A tunnel in your pocket </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-mobileTunnelDesc" datatype="html">
+        <source> WireGuardKit in a Packet Tunnel extension on iOS and the official wireguard-android library on Android. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-mobilePostureTitle" datatype="html">
+        <source> Posture you can trust </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-mobilePostureDesc" datatype="html">
+        <source> Passcode or biometrics, OS patch level, jailbreak and root detection, and app attestation so reports cannot be faked by a modified app. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-cliTitle" datatype="html">
+        <source> A CLI for people, an MCP server for agents </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-cliLead" datatype="html">
+        <source> Both work against the same API as the console, with the same access rules, approvals and audit trail. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-planIllustration" datatype="html">
+        <source>A Loadweaver plan in the terminal: a new deployment, a changed policy that adds a WireGuard peer and a route, a DNS record and a certificate, followed by the failure analysis with one unacknowledged pin.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-cliCardTitle" datatype="html">
+        <source>Loadweaver CLI</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-cliCardDesc" datatype="html">
+        <source> Single binaries for Linux, macOS and Windows on amd64 and arm64. Published on npm, GitHub releases, an install script, Homebrew, a deb / rpm repository and as a container image, signed with cosign and checksums. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-mcpCardTitle" datatype="html">
+        <source>MCP server</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-mcpCardDesc" datatype="html">
+        <source> loadweaver mcp in the CLI for local agents, and a remote MCP endpoint for hosted agents, including Agenstra&apos;s. Agents can read state, query logs and metrics, create plans and request approvals, but never bypass them. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-ctaTitle" datatype="html">
+        <source>Run your cluster from anywhere</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-ctaLead" datatype="html">
+        <source> The apps ship with Loadweaver. Request early access and tell us which platforms your team uses. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-ctaEarlyAccess" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope-paper&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Request early access </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-ctaHowItWorks" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-diagram-3&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>How it works </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-metaTitle" datatype="html">
+        <source>Desktop, mobile, CLI and MCP :: Loadweaver</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-metaDescription" datatype="html">
+        <source>Loadweaver on every screen: a code-signed desktop app with its own VPN tunnel and posture reporting, mobile apps for alerts, approvals and remote access, a CLI for every platform and an MCP server for your agents.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverApps-metaKeywords" datatype="html">
+        <source>Loadweaver desktop app, Loadweaver mobile app, Loadweaver CLI, MCP server, WireGuard client, device posture, code-signed</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Loadweaver Cloud<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/>: your own cluster, operated by us </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-heroLead" datatype="html">
+        <source> A dedicated cluster per customer, with its own control plane, nodes and keys. We set it up and operate it for you, so your teams only deal with what runs on it. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-heroCtaEarlyAccess" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope-paper&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Request early access </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-heroCtaPricing" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-tags&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Compare with self-hosted </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-heroIllustration" datatype="html">
+        <source>Loadweaver topology map: two sites with five nodes, encrypted WireGuard tunnels between the sites, a failover IP on an ingress node with a standby at the other site, a volume replicated synchronously within a site and asynchronously across sites, and live traffic from the internet.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-dedicatedTitle" datatype="html">
+        <source> The same product, without running it yourself </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-dedicatedLead" datatype="html">
+        <source> Loadweaver Cloud is not a shared platform. Each customer gets a cluster of their own, and it is a full Loadweaver cluster from the first node. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-ownTitle" datatype="html">
+        <source>Your own control plane</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-ownDesc" datatype="html">
+        <source> Control plane, nodes and keys belong to your cluster alone. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-readyTitle" datatype="html">
+        <source>Ready from day one</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-readyDesc" datatype="html">
+        <source> The first node already runs the control plane and the console, so your cluster is complete before the second node joins. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-growTitle" datatype="html">
+        <source>Grows like any cluster</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-growDesc" datatype="html">
+        <source> Add nodes and sites whenever you need them, through plan and apply, bounded by your quotas. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-nodesTitle" datatype="html">
+        <source> More nodes, on your provider accounts </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-nodesLead" datatype="html">
+        <source> Your cluster orders further nodes itself, through plan and apply, with the provider tokens you configure in it. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-flowAccountTitle" datatype="html">
+        <source> Your provider account </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-flowAccountDesc" datatype="html">
+        <source> Hetzner Cloud, DigitalOcean or another provider plugin, with your token </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-flowClusterTitle" datatype="html">
+        <source> Your Loadweaver cluster </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-flowClusterDesc" datatype="html">
+        <source> Orders the node through plan and apply, within your quotas </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-flowNodeTitle" datatype="html">
+        <source>A new node</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-flowNodeDesc" datatype="html">
+        <source> Joins the cluster, and is drained before it is ever deleted </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-tokensOwnTitle" datatype="html">
+        <source>Your own keys</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-tokensOwnDesc" datatype="html">
+        <source> Add your provider accounts to the cluster, or hand over the tokens when you order. With your own keys you pay the provider directly. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-tokensSecretTitle" datatype="html">
+        <source>Kept as secrets</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-tokensSecretDesc" datatype="html">
+        <source> Tokens end up as Loadweaver secrets and are never shown in plans, logs or the audit trail. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-tokensProvidersTitle" datatype="html">
+        <source>Provider plugins</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-tokensProvidersDesc" datatype="html">
+        <source> Hetzner Cloud and DigitalOcean out of the box, and more providers through dynamic provider plugins. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-leavingTitle" datatype="html">
+        <source> Leaving is data-safe too </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-leavingLead" datatype="html">
+        <source> Removing a node or cancelling the subscription follows the same rule as everything else: nothing is lost without your choice. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-leaving1Title" datatype="html">
+        <source>Final backup</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-leaving1Desc" datatype="html">
+        <source> Before teardown, a final backup goes to your external backup target, if you configured one. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-leaving2Title" datatype="html">
+        <source>Read-only grace period</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-leaving2Desc" datatype="html">
+        <source> You keep read-only access for export during a grace period. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-leaving3Title" datatype="html">
+        <source>Only what we deployed</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-leaving3Desc" datatype="html">
+        <source> We delete the server we provisioned, its IPs and DNS records. Nodes in your own provider accounts are not deleted; Loadweaver offers to decommission them or leaves them for re-use. Every step is audited. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-ctaTitle" datatype="html">
+        <source>Interested in Loadweaver Cloud?</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-ctaLead" datatype="html">
+        <source> Loadweaver Cloud is part of early access. Tell us what you would like to run, and we will get back to you. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-ctaEarlyAccess" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope-paper&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Request early access </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-ctaHowItWorks" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-diagram-3&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>How it works </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-metaTitle" datatype="html">
+        <source>Loadweaver Cloud: a dedicated cluster, operated by us :: Loadweaver</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-metaDescription" datatype="html">
+        <source>Loadweaver Cloud is a dedicated cluster per customer with its own control plane, nodes and keys, set up and operated by us. Add nodes with your own provider accounts and leave safely with a final backup.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverCloud-metaKeywords" datatype="html">
+        <source>Loadweaver Cloud, managed cluster, dedicated cluster, managed high availability, Hetzner, DigitalOcean</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-heroVs" datatype="html">
+        <source> vs. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-overviewHeading" datatype="html">
+        <source> Two approaches to running containers on your servers </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-overviewThemTitle" datatype="html">
+        <source> What they optimize for </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-overviewUsTitle" datatype="html">
+        <source> What we optimize for </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixHeading" datatype="html">
+        <source> Capability comparison </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixIntro" datatype="html">
+        <source> The same ten capabilities appear on every page, so you can compare without chasing different rubrics. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixLegend" datatype="html">
+        <source> Hover an icon for a short rationale. Ratings follow a public research pass (Strong / Partial / Weak / N.A.) and are meant for orientation. They are not a substitute for your own procurement review. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-technologyFitHeading" datatype="html">
+        <source> Pick the platform that fits your fleet </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-technologyFitBody" datatype="html">
+        <source> The right platform depends on how many servers you run, where they are and who operates them. If you want high availability for a handful of servers without adopting Kubernetes, Loadweaver could be a good fit. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-ctaEarlyAccess" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope-paper&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Request early access </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-ctaHowItWorks" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-diagram-3&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>How it works </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-moreHeading" datatype="html">
+        <source> More comparisons </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-metaKeywords" datatype="html">
+        <source>Loadweaver comparison, Kubernetes alternative, Docker Compose cluster, high availability, self-hosted cluster, multi-site</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixDim1" datatype="html">
+        <source>Docker Compose as the deployment unit</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixQ1" datatype="html">
+        <source>Can we deploy the Compose files we already have?</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixDim2" datatype="html">
+        <source>Encrypted multi-site network</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixQ2" datatype="html">
+        <source>Are nodes at different sites connected over an encrypted overlay?</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixDim3" datatype="html">
+        <source>Replicated storage</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixQ3" datatype="html">
+        <source>Do volumes stay available when a node goes down?</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixDim4" datatype="html">
+        <source>Ingress and IP failover</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixQ4" datatype="html">
+        <source>Does public traffic move to a healthy node on its own, also for TCP / UDP?</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixDim5" datatype="html">
+        <source>Policies between groups</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixQ5" datatype="html">
+        <source>Is connectivity default-deny and expressed as policies between groups?</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixDim6" datatype="html">
+        <source>Plan and apply with failure analysis</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixQ6" datatype="html">
+        <source>Do we see a reviewed diff and every single point of failure before a change goes live?</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixDim7" datatype="html">
+        <source>Workload migration</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixQ7" datatype="html">
+        <source>Can workloads move between nodes, including stateful ones?</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixDim8" datatype="html">
+        <source>Topology map and unified logs</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixQ8" datatype="html">
+        <source>Can we see traffic flows and every platform log in one place?</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixDim9" datatype="html">
+        <source>Made for a handful of servers</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixQ9" datatype="html">
+        <source>Does it run well on one to a few servers without a dedicated platform team?</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixDim10" datatype="html">
+        <source>Remote access for people and offices</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixQ10" datatype="html">
+        <source>Can people and offices reach internal services over a VPN governed by the same policies?</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-loadweaverT1" datatype="html">
+        <source>Compose projects with x-loadweaver extension fields; the file stays valid for plain docker compose.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-loadweaverT2" datatype="html">
+        <source>WireGuard between nodes and sites, with tunnels and routes generated from policies.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-loadweaverT3" datatype="html">
+        <source>Block-level replicated volumes, synchronous within a site and asynchronous across sites.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-loadweaverT4" datatype="html">
+        <source>Failover IPs via VRRP, BGP or provider APIs, DNS failover where an IP cannot move, HTTP and L4.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-loadweaverT5" datatype="html">
+        <source>Allow-only policies between node and workload groups, compiled into every network layer.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-loadweaverT6" datatype="html">
+        <source>Every change is a plan with per-resource locks, rollback and a failure analysis per node and site.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-loadweaverT7" datatype="html">
+        <source>Live migration where eligible, blue / green where replicas allow, a short stop otherwise.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-loadweaverT8" datatype="html">
+        <source>Live, timeline and plan views of the map; all platform logs correlated by labels.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-loadweaverT9" datatype="html">
+        <source>A single node is a full setup. The control plane grows to three members (optionally five) on its own, and every further node joins as a worker.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-loadweaverT10" datatype="html">
+        <source>WireGuard clients and site-to-site offices with SSO enrollment and device posture.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-kubernetesT1" datatype="html">
+        <source>Uses its own manifests; Compose files need a conversion step, for example with Kompose.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-kubernetesT2" datatype="html">
+        <source>CNI plugins can encrypt pod traffic, for example with WireGuard; spanning sites needs its own design.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-kubernetesT3" datatype="html">
+        <source>Through CSI drivers and storage add-ons that you choose and operate.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-kubernetesT4" datatype="html">
+        <source>Ingress controllers plus a load balancer implementation for bare metal, such as MetalLB or kube-vip.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-kubernetesT5" datatype="html">
+        <source>NetworkPolicy resources, enforced by a CNI plugin that supports them.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-kubernetesT6" datatype="html">
+        <source>kubectl diff and GitOps tools show changes; there is no built-in failure analysis.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-kubernetesT7" datatype="html">
+        <source>Pods are rescheduled and replaced; stateful moves depend on the storage layer.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-kubernetesT8" datatype="html">
+        <source>Through observability and logging add-ons.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-kubernetesT9" datatype="html">
+        <source>k3s is a lightweight distribution for small clusters; operating it still needs Kubernetes know-how.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-kubernetesT10" datatype="html">
+        <source>Not part of Kubernetes; usually a separate VPN product.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-swarmT1" datatype="html">
+        <source>Deploys stacks from Compose files, with some Compose options not supported in Swarm mode.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-swarmT2" datatype="html">
+        <source>Overlay networks can be encrypted; Swarm is designed for nodes on low-latency networks.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-swarmT3" datatype="html">
+        <source>No built-in replicated storage; volumes rely on volume plugins.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-swarmT4" datatype="html">
+        <source>The routing mesh publishes ports on every node; a floating public IP needs external tooling.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-swarmT5" datatype="html">
+        <source>Isolation per overlay network; no policy model between groups.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-swarmT6" datatype="html">
+        <source>Stack deploys apply directly, without a plan or diff step.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-swarmT7" datatype="html">
+        <source>Services are rescheduled on other nodes; no live migration.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-swarmT8" datatype="html">
+        <source>Service logs through the Docker CLI; no traffic map.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-swarmT9" datatype="html">
+        <source>Built into Docker Engine and quick to set up on a few nodes.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-swarmT10" datatype="html">
+        <source>Not included.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-nomadT1" datatype="html">
+        <source>Jobs are written in HCL; Compose files are not used directly.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-nomadT2" datatype="html">
+        <source>Multi-region federation is built in; encrypted service traffic usually comes from a service mesh such as Consul.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-nomadT3" datatype="html">
+        <source>Host volumes and CSI plugins; replication comes from the storage system.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-nomadT4" datatype="html">
+        <source>Ingress through a load balancer or gateway job; floating IPs need external tooling.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-nomadT5" datatype="html">
+        <source>Service-to-service rules through a service mesh such as Consul.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-nomadT6" datatype="html">
+        <source>nomad job plan shows a diff and a placement dry run; no failure analysis across nodes or sites.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-nomadT7" datatype="html">
+        <source>Allocations are rescheduled on other nodes; no live migration.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-nomadT8" datatype="html">
+        <source>The UI shows jobs, allocations and their logs; traffic flows need extra tooling.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-nomadT9" datatype="html">
+        <source>A single binary, often combined with Consul and Vault in production setups.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-nomadT10" datatype="html">
+        <source>Not included.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-coolifyT1" datatype="html">
+        <source>Both deploy Docker Compose projects to your servers.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-coolifyT2" datatype="html">
+        <source>Servers are added for deployments, not joined into an encrypted multi-site network.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-coolifyT3" datatype="html">
+        <source>Volumes live on the server that runs the app.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-coolifyT4" datatype="html">
+        <source>A built-in reverse proxy with automatic certificates; no IP failover between servers.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-coolifyT5" datatype="html">
+        <source>No policy model between groups.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-coolifyT6" datatype="html">
+        <source>Deployments apply directly, without a plan or failure analysis.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-coolifyT7" datatype="html">
+        <source>Apps run on the server they are deployed to.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-coolifyT8" datatype="html">
+        <source>Logs and basic monitoring per app in the dashboard.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-coolifyT9" datatype="html">
+        <source>Made for single servers and small fleets, with a friendly web UI.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-coolifyT10" datatype="html">
+        <source>Not included.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-portainerT1" datatype="html">
+        <source>Deploys Compose stacks to Docker and Swarm environments.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-portainerT2" datatype="html">
+        <source>A management UI; networking comes from the environment underneath.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-portainerT3" datatype="html">
+        <source>Storage comes from the environment underneath.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-portainerT4" datatype="html">
+        <source>Ingress and failover come from the environment underneath.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-portainerT5" datatype="html">
+        <source>Role-based access for users and teams; network policies come from the environment.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-portainerT6" datatype="html">
+        <source>Changes apply directly, without a plan or failure analysis.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-portainerT7" datatype="html">
+        <source>Scheduling comes from the environment underneath.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-portainerT8" datatype="html">
+        <source>Container logs, stats and a console in the UI.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-portainerT9" datatype="html">
+        <source>Quick to install on a single host or a few environments.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-portainerT10" datatype="html">
+        <source>Not included.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixLabelStrong" datatype="html">
+        <source>Strong fit</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixLabelPartial" datatype="html">
+        <source>Partial / gaps</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixLabelWeak" datatype="html">
+        <source>Weak / not a focus</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixLabelNa" datatype="html">
+        <source>Not applicable</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixColCapability" datatype="html">
+        <source> Capability </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixColLoadweaver" datatype="html">
+        <source> Loadweaver </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-matrixCaption" datatype="html">
+        <source>Capabilities of Loadweaver compared with <x id="competitor" equiv-text="this.competitorColumnLabel()"/></source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-navKubernetes" datatype="html">
+        <source>Kubernetes / k3s</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-navDockerSwarm" datatype="html">
+        <source>Docker Swarm</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-navNomad" datatype="html">
+        <source>Nomad</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-navCoolifyDokploy" datatype="html">
+        <source>Coolify / Dokploy</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-navPortainer" datatype="html">
+        <source>Portainer</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-overviewLoadweaver" datatype="html">
+        <source>Loadweaver starts with a handful of servers, often spread across sites, grows to around 1,000 nodes per cluster, and keeps the Docker Compose files you already have. Encrypted networking, replicated storage, ingress failover and policies are built in, and every change is a reviewed plan, so teams get high availability without running Kubernetes.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-kubernetes-metaTitle" datatype="html">
+        <source>Kubernetes / k3s vs Loadweaver :: Loadweaver</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-kubernetes-metaDescription" datatype="html">
+        <source>Compare Kubernetes and k3s with Loadweaver: high availability for a handful of servers with Docker Compose, encrypted multi-site networking, replicated storage and plan and apply, without Kubernetes complexity.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-kubernetes-heroSubtitle" datatype="html">
+        <source>The standard container orchestrator versus high availability for a handful of servers with Docker Compose.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-kubernetes-overviewCompetitor" datatype="html">
+        <source>Kubernetes is the industry standard for container orchestration, with a large ecosystem of add-ons for networking, storage and observability. k3s packages it as a lightweight distribution for small clusters and the edge. It fits when you want the Kubernetes API and ecosystem and have the know-how to operate it.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-swarm-metaTitle" datatype="html">
+        <source>Docker Swarm vs Loadweaver :: Loadweaver</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-swarm-metaDescription" datatype="html">
+        <source>Compare Docker Swarm with Loadweaver: both start from Docker and Compose; Loadweaver adds encrypted multi-site networking, replicated storage, ingress failover, policies and plan and apply.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-swarm-heroSubtitle" datatype="html">
+        <source>The orchestrator built into Docker versus a resilient cluster that keeps your Compose files.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-swarm-overviewCompetitor" datatype="html">
+        <source>Docker Swarm is the orchestrator built into Docker Engine. It runs Compose-style stacks across a few nodes with little setup, which makes it a familiar step up from a single Docker host.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-nomad-metaTitle" datatype="html">
+        <source>Nomad vs Loadweaver :: Loadweaver</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-nomad-metaDescription" datatype="html">
+        <source>Compare HashiCorp Nomad with Loadweaver: a general workload scheduler versus high availability for a handful of servers with Docker Compose, built-in encrypted networking, replicated storage and policies.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-nomad-heroSubtitle" datatype="html">
+        <source>A general workload scheduler versus a resilient cluster with networking, storage and policies built in.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-nomad-overviewCompetitor" datatype="html">
+        <source>Nomad is HashiCorp&apos;s workload orchestrator for containers and other kinds of workloads, with multi-region federation built in. It is often combined with Consul for service networking and Vault for secrets.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-coolify-metaTitle" datatype="html">
+        <source>Coolify / Dokploy vs Loadweaver :: Loadweaver</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-coolify-metaDescription" datatype="html">
+        <source>Compare Coolify and Dokploy with Loadweaver: easy app deployment to your own servers versus a resilient multi-site cluster where no single server failure takes an app down.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-coolify-heroSubtitle" datatype="html">
+        <source>Easy deployments to your own servers versus a cluster that survives losing one of them.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-coolify-overviewCompetitor" datatype="html">
+        <source>Coolify and Dokploy are self-hosted platforms that make deploying apps and Docker Compose projects to your own servers easy, with a web UI, Git integration and automatic certificates.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-portainer-metaTitle" datatype="html">
+        <source>Portainer vs Loadweaver :: Loadweaver</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-portainer-metaDescription" datatype="html">
+        <source>Compare Portainer with Loadweaver: a management UI for container environments versus a resilient cluster with networking, storage, failover and policies built in.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-portainer-heroSubtitle" datatype="html">
+        <source>A management UI for container environments versus the cluster underneath, built for high availability.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverComparison-portainer-overviewCompetitor" datatype="html">
+        <source>Portainer is a management UI for Docker, Swarm and Kubernetes environments. It makes containers, stacks and access easy to manage, while scheduling, networking and storage come from the environment underneath.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-navAriaLabel" datatype="html">
+        <source>Main</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-homeAriaLabel" datatype="html">
+        <source>Loadweaver home</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-toggleNavAriaLabel" datatype="html">
+        <source>Toggle navigation</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-navProduct" datatype="html">
+        <source>Product</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-navPlatform" datatype="html">
+        <source>Platform</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-navApps" datatype="html">
+        <source>Apps</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-navRemoteAccess" datatype="html">
+        <source>Remote access</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-navCloud" datatype="html">
+        <source>Cloud</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-navHowItWorks" datatype="html">
+        <source>How it works</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-navPricing" datatype="html">
+        <source>Pricing</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-navComparison" datatype="html">
+        <source>Comparison</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-githubAriaLabel" datatype="html">
+        <source>Loadweaver on GitHub (opens in a new tab)</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-githubTitle" datatype="html">
+        <source>View on GitHub</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-earlyAccessButton" datatype="html">
+        <source>Request early access</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-footerBrand" datatype="html">
+        <source>Loadweaver</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-earlyAccessBadge" datatype="html">
+        <source>Early access</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-footerAbout" datatype="html">
+        <source> Loadweaver turns a handful of servers into a resilient multi-site cluster, with encrypted traffic between sites and services that keep running when a location goes down. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-languageSwitcherAriaLabel" datatype="html">
+        <source>Select language</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-language" datatype="html">
+        <source>Language</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-footerProduct" datatype="html">
+        <source>Product</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-footerDownloads" datatype="html">
+        <source>Downloads</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-footerDocumentation" datatype="html">
+        <source>Documentation</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-footerCompany" datatype="html">
+        <source>Company</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-footerForepath" datatype="html">
+        <source>ForePath</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageBlog-footerLink" datatype="html">
+        <source>Blog</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-footerLink" datatype="html">
+        <source>Contact</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-footerLegal" datatype="html">
+        <source>Legal</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-legalDisclosureLink" datatype="html">
+        <source>Legal Disclosure</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-termsOfServiceLink" datatype="html">
+        <source>Terms of Service</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-privacyPolicyLink" datatype="html">
+        <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-vulnerabilityDisclosureLink" datatype="html">
+        <source>Vulnerability Disclosure</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-contentReportLink" datatype="html">
+        <source>Content Report</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-withdrawalLink" datatype="html">
+        <source>Right of Withdrawal</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-footerCopyright" datatype="html">
+        <source> © <x id="INTERPOLATION" equiv-text="{{ currentYear }}"/> IPvX UG (haftungsbeschränkt). All rights reserved. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Resilient clusters<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> from a handful of servers </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-heroLead" datatype="html">
+        <source> Loadweaver turns a handful of servers into a resilient multi-site cluster. It gives applications built with AI, and the agents behind them, a protected home on infrastructure you control, with encrypted traffic between sites and services that keep running when a location goes down. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-heroCtaLine" datatype="html">
+        <source> Bring the Docker Compose files you already have. Every change is a plan you review before it is applied, and no single server failure takes an app down. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-heroFeatureBadge1" datatype="html">
+        <source>Multi-site clusters</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-heroFeatureBadge2" datatype="html">
+        <source>Encrypted network</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-heroFeatureBadge3" datatype="html">
+        <source>Shared storage</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-heroFeatureBadge4" datatype="html">
+        <source>Self-healing ingress</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-heroFeatureBadge5" datatype="html">
+        <source>Policies everywhere</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-heroFeatureBadge6" datatype="html">
+        <source>Plan &amp; apply</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-heroFeatureBadge7" datatype="html">
+        <source>Live topology map</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-heroFeatureBadge8" datatype="html">
+        <source>Your servers or ours</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-heroCtaEarlyAccess" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope-paper&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Request early access </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-heroCtaHowItWorks" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-diagram-3&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>How it works </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-prelaunchNote" datatype="html">
+        <source> Loadweaver is not released yet. Early access means we talk about your setup first. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-solutionTitle" datatype="html">
+        <source> High availability for the servers you already have </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-solutionLead" datatype="html">
+        <source> Loadweaver starts where small fleets are: a handful of nodes, often spread across sites. You get a cluster that survives the loss of a server, without the overhead of running Kubernetes, and it grows with you to around 1,000 nodes per cluster. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-solutionGrowTitle" datatype="html">
+        <source> Start with one node, grow when you need to </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-solutionGrowLead" datatype="html">
+        <source> A single node is already a complete setup. Nodes can join and leave over and over again: growing from one to many and shrinking back is a normal operation, not a migration project. When a node leaves, it is drained first, and nothing is dropped without your choice. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-solutionGrowTagline" datatype="html">
+        <source> One node to start. More sites when you need them. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-tabNetwork" datatype="html">
+        <source>Network</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-tabStorage" datatype="html">
+        <source>Storage</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-tabIngress" datatype="html">
+        <source>Ingress</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-tabPolicies" datatype="html">
+        <source>Policies</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-tabPlan" datatype="html">
+        <source>Plan &amp; apply</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-tabObserve" datatype="html">
+        <source>Observability</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-networkHeadline" datatype="html">
+        <source> Encrypted network between your sites </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-networkLead" datatype="html">
+        <source> Every node runs the network itself. Nodes connect across sites over WireGuard, and routes between them are exchanged with BIRD, so your sites behave like one cluster. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-networkPoint1Title" datatype="html">
+        <source> Tunnels only where needed </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-networkPoint1Desc" datatype="html">
+        <source> WireGuard peers exist only between nodes that a policy lets talk to each other. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-networkPoint2Title" datatype="html">
+        <source> Addresses that follow </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-networkPoint2Desc" datatype="html">
+        <source> Every service gets a stable IP and DNS name that moves with it when it migrates. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-networkPoint3Title" datatype="html">
+        <source> Policy-aware discovery </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-networkPoint3Desc" datatype="html">
+        <source> Cluster DNS only answers for services the caller is allowed to reach. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-storageHeadline" datatype="html">
+        <source> Shared storage on every node </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-storageLead" datatype="html">
+        <source> Volumes are replicated at block level and show up in Docker as a volume plugin. Stateful workloads stay available when a node goes down, from a single node upwards. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-storagePoint1Title" datatype="html">
+        <source> Sync nearby, async far away </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-storagePoint1Desc" datatype="html">
+        <source> Synchronous within a site, asynchronous across sites, configurable per volume. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-storagePoint2Title" datatype="html">
+        <source> Loss you can see up front </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-storagePoint2Desc" datatype="html">
+        <source> Losing a node loses no data; for losing a site, the plan shows the bounded loss as RPO. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-storagePoint3Title" datatype="html">
+        <source> Placement as a policy </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-storagePoint3Desc" datatype="html">
+        <source> For example two synchronous replicas in one site and one asynchronous replica in another. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ingressHeadline" datatype="html">
+        <source> Ingress that fails over on its own </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ingressLead" datatype="html">
+        <source> When the node holding a public IP goes down, the IP moves to a healthy node. Where an IP cannot move, DNS failover takes over. Web traffic and TCP / UDP port forwards are both covered. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ingressPoint1Title" datatype="html">
+        <source> Fits your environment </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ingressPoint1Desc" datatype="html">
+        <source> Floating IP on a shared network, BGP announcements, or your provider&apos;s failover IP API. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ingressPoint2Title" datatype="html">
+        <source> Certificates already there </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ingressPoint2Desc" datatype="html">
+        <source> Built-in ACME; certificates sit on every ingress node, so a failover never waits on issuance. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ingressPoint3Title" datatype="html">
+        <source> Limits that hold everywhere </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ingressPoint3Desc" datatype="html">
+        <source> Cluster-wide rate limits, connection limits for port forwards and an optional WAF per hostname. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-policiesHeadline" datatype="html">
+        <source> Everything is a policy </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-policiesLead" datatype="html">
+        <source> Routing, tunnels, filtering and exposure exist only because a policy allows them. Policies connect groups, like security groups in the cloud, and stay valid when a workload moves to another node. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-policiesPoint1Title" datatype="html">
+        <source>Deny by default</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-policiesPoint1Desc" datatype="html">
+        <source> Nothing talks across groups unless an allow rule says so, and rules are never transitive. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-policiesPoint2Title" datatype="html">
+        <source> One rule, every layer </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-policiesPoint2Desc" datatype="html">
+        <source> An allow rule is compiled into tunnels, routes, firewall rules, the proxy and ingress for you. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-policiesPoint3Title" datatype="html">
+        <source> Monitor before you enforce </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-policiesPoint3Desc" datatype="html">
+        <source> Roll out a policy in monitor mode and see what it would block before it blocks anything. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-planHeadline" datatype="html">
+        <source> See every change before it happens </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-planLead" datatype="html">
+        <source> Every change produces a plan: the difference between what you want and what runs, reviewed and then applied. Like Terraform, for your whole cluster. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-planPoint1Title" datatype="html">
+        <source> Failure analysis built in </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-planPoint1Desc" datatype="html">
+        <source> The plan simulates the loss of every node and site and lists each single point of failure. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-planPoint2Title" datatype="html">
+        <source> Locks that stay out of the way </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-planPoint2Desc" datatype="html">
+        <source> A plan locks only what it touches, so unrelated changes run in parallel. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-planPoint3Title" datatype="html">
+        <source>Rollback and drift</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-planPoint3Desc" datatype="html">
+        <source> Failed applies roll back on their own. Changes made outside Loadweaver are reported, never overwritten. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-observeHeadline" datatype="html">
+        <source> Everything is observable </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-observeLead" datatype="html">
+        <source> A live map of every site, node, workload, tunnel and volume, with the traffic between them. Every log the platform produces is one click away. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-observePoint1Title" datatype="html">
+        <source> Live, timeline and plan </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-observePoint1Desc" datatype="html">
+        <source> Watch traffic live, scrub back through a failover, or overlay a pending plan on the map. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-observePoint2Title" datatype="html">
+        <source> All logs, one query </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-observePoint2Desc" datatype="html">
+        <source> Containers, proxy, firewall, routing, tunnels and ingress, correlated by deployment, node and policy. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-observePoint3Title" datatype="html">
+        <source>Trace any path</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-observePoint3Desc" datatype="html">
+        <source> Pick a hostname and see how a request is routed right now, with every policy it passes. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-composeTitle" datatype="html">
+        <source> Built around the Docker Compose files you already have </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-composeLead" datatype="html">
+        <source> Docker is the base. A deployment is a Compose project, and Loadweaver settings live in extension fields, so the same file still works with plain docker compose. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-composeExampleCaption" datatype="html">
+        <source>compose.yaml with Loadweaver extensions (example)</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-composeTile1Title" datatype="html">
+        <source>Migration without drama</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-composeTile1Desc" datatype="html">
+        <source> Every Compose deployment can move between nodes: live where eligible, blue / green where replicas allow, a short stop otherwise. A failed live attempt falls back without data loss. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-composeTile2Title" datatype="html">
+        <source>Pins are explicit</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-composeTile2Desc" datatype="html">
+        <source> Pinning data, a deployment or traffic to one host is allowed, but the plan warns about it up front. You acknowledge a pin with a reason in the file. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-composeTile3Title" datatype="html">
+        <source>Git if you want it</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-composeTile3Desc" datatype="html">
+        <source> Everything works in the UI. Connect a repository and pushes create plans, with a plan bot for GitHub and GitLab pull requests. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-composeTile4Title" datatype="html">
+        <source>Runtimes per node</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-composeTile4Desc" datatype="html">
+        <source> Loadweaver manages the container runtimes on each node, including gVisor next to runc for workloads that need a sandbox. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-composeTile5Title" datatype="html">
+        <source>Capacity kept honest</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-composeTile5Desc" datatype="html">
+        <source> Every service has CPU and memory requests. The plan warns when the remaining nodes could not take over after a node loss. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-planReviewTitle" datatype="html">
+        <source> Know what breaks before anything breaks </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-planReviewLead" datatype="html">
+        <source> No single host failure takes an app down, unless you pin something to that host on purpose. The plan checks this for every deployment before you apply. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-planReviewSub" datatype="html">
+        <source> It shows the effect per layer, the DNS records it creates, the capacity left after a node loss and every single point of failure with its cause. The same analysis keeps running afterwards and flags the cluster as at risk until redundancy is back. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-planReviewLink" datatype="html">
+        <source>How plan and apply work <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+        &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemTitle" datatype="html">
+        <source> One cluster, every way to reach it </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemLead" datatype="html">
+        <source> The Loadweaver console is where you run your cluster. Use it in the browser, on the desktop, on your phone, from the command line or through your agents, on your servers or ours. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemConsoleBadge" datatype="html">
+        <source>Core platform</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemConsoleTitle" datatype="html">
+        <source>Loadweaver console</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemConsoleLead" datatype="html">
+        <source> Topology map, plan review with failure analysis, log explorer, groups and policies, nodes and sites, deployments and DNS zones. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemConsoleCta" datatype="html">
+        <source>See how it works</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemSurfacesLabel" datatype="html">
+        <source> Around the console </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemAppsTitle" datatype="html">
+        <source> Desktop, mobile, CLI and MCP </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemAppsDesc" datatype="html">
+        <source> A code-signed desktop app with its own VPN tunnel, mobile apps, a CLI and an MCP server for agents. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemAppsCta" datatype="html">
+        <source>Explore the apps</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemRemoteTitle" datatype="html">
+        <source>Remote access</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemRemoteDesc" datatype="html">
+        <source> People, machines and whole offices connect over WireGuard and reach only what their policies allow. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemRemoteCta" datatype="html">
+        <source>Explore remote access</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemAgenstraTitle" datatype="html">
+        <source> A home for Agenstra agents </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemAgenstraDesc" datatype="html">
+        <source> Agenstra&apos;s agent manager runs as a Compose deployment on Loadweaver, and nodes with gVisor are valid Agenstra hosts. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemAgenstraCta" datatype="html">
+        <source>Visit agenstra.com <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-box-arrow-up-right&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+                  &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemCloudTitle" datatype="html">
+        <source>Loadweaver Cloud</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemCloudDesc" datatype="html">
+        <source> Prefer not to run it yourself? We operate a dedicated cluster for you, with its own control plane, nodes and keys. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemCloudEarlyAccess" datatype="html">
+        <source>Request early access</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ecosystemCloudCta" datatype="html">
+        <source>Explore Cloud</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ctaTitle" datatype="html">
+        <source> Be among the first to run Loadweaver </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ctaLead" datatype="html">
+        <source> Loadweaver is in early access. Tell us about your servers, your sites and what you want to run on them, and we will get back to you. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ctaEarlyAccess" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope-paper&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Request early access </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-ctaHowItWorks" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-diagram-3&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>How it works </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-metaTitle" datatype="html">
+        <source>Resilient clusters from a handful of servers :: Loadweaver</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-metaDescription" datatype="html">
+        <source>Loadweaver turns a handful of servers into a resilient multi-site cluster: encrypted network between sites, shared storage on every node, ingress that fails over on its own, and Docker Compose deployments that go through plan and apply.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHome-metaKeywords" datatype="html">
+        <source>Loadweaver, high availability, Docker Compose cluster, multi-site cluster, WireGuard, replicated storage, IP failover, self-hosted, Kubernetes alternative</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>How Loadweaver works<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/>, from the first policy to the next failover </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-heroLead" datatype="html">
+        <source> A control plane that plans and a node agent on every server that applies. Everything you change is declarative YAML, every change is a plan, and every connection exists only because a policy allows it. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-heroCtaPrimary" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-signpost-split&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Start with policies </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-heroCtaEarlyAccess" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope-paper&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Request early access </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-heroIllustration" datatype="html">
+        <source>Loadweaver policy graph: groups for the internet, web, api, database and an office, connected by allow policies with ports and an HTTP rule. A flow from web to the database has no policy and therefore no route. A side panel shows how the api to database policy compiles into a WireGuard peer, a route export and a firewall rule.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-policiesTitle" datatype="html">
+        <source> Groups, and policies between them </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-policiesLead" datatype="html">
+        <source> Everything else builds on this. Nodes and workloads join groups, and a policy grants one group access to another, the way security groups work in the cloud. No policy, no connection. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-nodeGroupsTitle" datatype="html">
+        <source>Node groups</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-nodeGroupsDesc" datatype="html">
+        <source> Decide which nodes share a network, which get tunnels to each other and which routes are exchanged. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-workloadGroupsTitle" datatype="html">
+        <source>Workload groups</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-workloadGroupsDesc" datatype="html">
+        <source> Services join by label, independent of the node they run on, so a rule stays valid when a workload migrates. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-selectorsTitle" datatype="html">
+        <source>Selectors</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-selectorsDesc" datatype="html">
+        <source> Membership by selector, such as site = fra1, role = ingress or runtime = sandboxed. Rights add up across all groups. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-builtinGroupsTitle" datatype="html">
+        <source>Built-in groups</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-builtinGroupsDesc" datatype="html">
+        <source> internet, cluster, control-plane and one group per site. Platform traffic is a built-in policy too, so it cannot be broken by accident. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-policyExampleCaption" datatype="html">
+        <source>One policy, one edge on the map (example)</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-policyExampleBadge" datatype="html">
+        <source>Enforcing</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layersTitle" datatype="html">
+        <source> The control plane compiles each allow rule into every layer it affects </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerTunneling" datatype="html">
+        <source>Tunneling</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerTunnelingDesc" datatype="html">
+        <source> WireGuard peers only exist between nodes that need to talk, with AllowedIPs limited accordingly. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerRouting" datatype="html">
+        <source>Routing</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerRoutingDesc" datatype="html">
+        <source> BIRD only exchanges the prefixes of groups that are allowed to talk. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerFiltering" datatype="html">
+        <source>Filtering</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerFilteringDesc" datatype="html">
+        <source> Stateful nftables rules on each node, so return traffic is allowed automatically. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerProxy" datatype="html">
+        <source>Proxy (L7)</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerProxyDesc" datatype="html">
+        <source> Hostname, URL and SNI rules in Envoy, with mTLS between the node proxies and deny wins inside L7. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerExposure" datatype="html">
+        <source>Exposure</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-layerExposureDesc" datatype="html">
+        <source> Ingress and port forwards: &quot;internet&quot; is a group, and exposing a service is an allow from it. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-planTitle" datatype="html">
+        <source> What happens when you change something </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-planLead" datatype="html">
+        <source> The same steps apply whether you click in the console, run the CLI, call the API or push to Git. The control plane is the source of truth; all of them create plans against it. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-step1Title" datatype="html">
+        <source>Describe what you want</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-step1Desc" datatype="html">
+        <source> YAML, the same language as Docker Compose, with a JSON Schema for editor validation. The UI writes the same YAML. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-step2Title" datatype="html">
+        <source>Get a plan</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-step2Desc" datatype="html">
+        <source> The difference between desired and actual state, with the compiled effect per layer and every DNS record it creates. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-step3Title" datatype="html">
+        <source>Read the failure analysis</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-step3Desc" datatype="html">
+        <source> Every single point of failure is listed with its cause, plus the capacity left after losing a node. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-step4Title" datatype="html">
+        <source>Lock only what changes</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-step4Desc" datatype="html">
+        <source> A plan locks the deployments, groups, policies or nodes its diff touches. Unrelated plans run in parallel. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-step5Title" datatype="html">
+        <source>Apply, or roll back</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-step5Desc" datatype="html">
+        <source> Failed or cancelled applies roll back on their own. If a rollback fails, you see the real state and a proposed fix-forward plan. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-step6Title" datatype="html">
+        <source>Heal or report drift</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-step6Desc" datatype="html">
+        <source> What the platform owns is healed automatically. Changes made outside Loadweaver become a proposed plan, never silently overwritten. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-resilienceTitle" datatype="html">
+        <source> No single host failure takes an app down </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-resilienceLead" datatype="html">
+        <source> For every deployment, the plan simulates the loss of each single node and each site and checks whether data, deployment and traffic survive. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-resilienceSub" datatype="html">
+        <source> The failure domain is the node by default. Surviving the loss of a whole site is an opt-in per deployment or cluster, available from three sites, and validated by the same analysis. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-resilienceRuntime" datatype="html">
+        <source> The analysis keeps running after the apply: when a replica is lost or a node degrades, the cluster shows as at risk on the map and in notifications until redundancy is restored. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-pinsTitle" datatype="html">
+        <source> Pinning is allowed, and visible </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-pinsLead" datatype="html">
+        <source> You may tie something to one host on purpose. The plan warns about it up front, and you acknowledge it with a reason in the config. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-pinData" datatype="html">
+        <source>Data</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-pinDataDesc" datatype="html">
+        <source> A volume without replicas, replicas only on one node, or bind mounts to host paths. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-pinDeployment" datatype="html">
+        <source>Deployment</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-pinDeploymentDesc" datatype="html">
+        <source> A placement selector that matches one node, one replica without failover, or device access. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-pinTraffic" datatype="html">
+        <source>Traffic</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-pinTrafficDesc" datatype="html">
+        <source> A failover IP that only one node may hold, or a policy whose only allowed path runs via one node. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-failoverTitle" datatype="html">
+        <source> Ingress that fails over on its own </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-failoverLead" datatype="html">
+        <source> Which nodes may hold a failover IP is a node group. When the holder goes down, the IP moves to a healthy member, using whatever your environment supports. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-failoverIllustration" datatype="html">
+        <source>Ingress failover: node n1 in site fra1 becomes unhealthy and releases the failover IP 203.0.113.10; node n4 in site ams1 takes it over and serves web and port-forward traffic. The IP moves via a floating IP, a BGP announcement, a provider failover IP or, where no IP can move, DNS failover.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-dnsFailoverTitle" datatype="html">
+        <source> DNS failover where an IP cannot move </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-dnsFailoverItem1" datatype="html">
+        <source>Modes: failover to ordered backups, healthy multi-value answers, weighted answers and geo or latency steering.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-dnsFailoverItem2" datatype="html">
+        <source>Endpoints are probed from at least two sites; a switch needs a quorum of probes and the control plane, so one isolated site cannot flip records on its own.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-dnsFailoverItem3" datatype="html">
+        <source>Hysteresis against flapping and automatic fail-back after a stable period, or manual fail-back per hostname.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-dnsFailoverItem4" datatype="html">
+        <source>Failover records get a low TTL of 30 seconds by default. The plan shows the expected recovery time and is honest that DNS failover is slower and fuzzier than a floating IP.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-dnsProvidersTitle" datatype="html">
+        <source> DNS under the same plan </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-dnsProvidersItem1" datatype="html">
+        <source>Records are desired state: ingress hostnames create their records, and the plan shows the DNS diff per provider.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-dnsProvidersItem2" datatype="html">
+        <source>Cloudflare or bind9 hosted in the cluster, behind one provider interface. Loadweaver only touches records it owns, so existing zones can be adopted safely.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-dnsProvidersItem3" datatype="html">
+        <source>Zones with a primary and secondary providers, and opt-in DNSSEC with automatic key rollovers for hosted zones.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-dnsProvidersItem4" datatype="html">
+        <source>Every switch is an event on the timeline, in the audit log and raises an alert.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-gitTitle" datatype="html">
+        <source> Configuration in Git, if you want it </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-gitLead" datatype="html">
+        <source> Everything can be done in the UI, and everything that is configuration can also live in Git. UI and Git are two editors of the same YAML. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-gitModesTitle" datatype="html">
+        <source> Two ways to combine them </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-gitModesDesc" datatype="html">
+        <source> Git is authoritative and UI edits open a pull request, or bidirectional and Loadweaver commits UI changes back with plan id and author. Conflicts show in the plan. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-gitSecretsTitle" datatype="html">
+        <source> No secrets in the repo </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-gitSecretsDesc" datatype="html">
+        <source> YAML only holds secret references. SOPS-encrypted files are optional, and plaintext secrets in a push are rejected. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-gitHostsTitle" datatype="html">
+        <source>Your Git host</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-gitHostsDesc" datatype="html">
+        <source> GitHub, GitLab, Gitea / Forgejo and plain Git over SSH or HTTPS, triggered by webhooks or polling, per cluster or per project. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-botBadge" datatype="html">
+        <source>GitHub &amp; GitLab</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-botTitle" datatype="html">
+        <source> A plan bot in your pull requests </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-botLead" datatype="html">
+        <source> Opening or pushing to a pull request plans automatically. One sticky comment shows the plan diff, pins and failure analysis warnings, quota and capacity impact, image scan results, drift and locks held by other pull requests. A status check links to the plan on the map. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-botFlowTitle" datatype="html">
+        <source> Comments trigger actions, merging does nothing </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-botFlow1" datatype="html">
+        <source> Applies run on a comment, once the pull request is mergeable and the approval rules are met. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-botFlow2" datatype="html">
+        <source> Touched resources stay locked until the pull request is applied, closed or unlocked. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-botFlow3" datatype="html">
+        <source> After a successful apply the bot merges the pull request, so the default branch matches what runs. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-botCommands" datatype="html">
+        <source>Commands</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-ctaTitle" datatype="html">
+        <source>Want to see it on your servers?</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-ctaLead" datatype="html">
+        <source> Loadweaver is in early access. Tell us how many servers and sites you run, and we will walk you through how Loadweaver would fit. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-ctaEarlyAccess" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope-paper&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Request early access </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-ctaPricing" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-tags&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>View pricing </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-metaTitle" datatype="html">
+        <source>How Loadweaver works: policies, plan and apply, failure analysis and failover :: Loadweaver</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-metaDescription" datatype="html">
+        <source>A technical look at Loadweaver: groups and allow-only policies compiled into every network layer, plan and apply with locks and rollback, failure analysis and pinning, IP and DNS failover, and configuration in Git with a plan bot.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverHowItWorks-metaKeywords" datatype="html">
+        <source>Loadweaver architecture, policy model, security groups, WireGuard, BIRD, nftables, Envoy, plan and apply, failure analysis, IP failover, DNS failover, GitOps, plan bot</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-title" datatype="html">
+        <source> Legal Disclosure </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-ddgInfo" datatype="html">
+        <source> Information in accordance with Section 5 of the Digital Services Act (DDG) </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-generalInfo" datatype="html">
+        <source>General Information</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-companyName" datatype="html">
+        <source>IPvX UG (haftungsbeschränkt)</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-streetAddress" datatype="html">
+        <source>Leopoldstraße 2-8</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-postalCity" datatype="html">
+        <source>32051 Herford</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-addressRegion" datatype="html">
+        <source>Nordrhein-Westfalen, Germany</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-commercialRegisterLabel" datatype="html">
+        <source>Commercial Register Number:</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-registerCourtLabel" datatype="html">
+        <source>Register Court:</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-representedByLabel" datatype="html">
+        <source>Represented by:</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-contact" datatype="html">
+        <source>Contact</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-phoneLabel" datatype="html">
+        <source>Phone:</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-faxLabel" datatype="html">
+        <source>Fax:</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-emailLabel" datatype="html">
+        <source>Email:</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-vatTitle" datatype="html">
+        <source> VAT Identification Number </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-vatId" datatype="html">
+        <source>DE361636567</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-vatNote" datatype="html">
+        <source> (in accordance with Section 27a of the German VAT Act) </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-contentTitle" datatype="html">
+        <source> Content Responsibility </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-contentDesc" datatype="html">
+        <source> Responsible for content in accordance with Section 55, Paragraph 2 of the German Interstate Broadcasting Treaty (RStV): </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-contentResponsibleName" datatype="html">
+        <source>Marcel Menk</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-addressNote" datatype="html">
+        <source>Address as stated above</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-liabilityContentTitle" datatype="html">
+        <source> Liability for Content </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-liabilityContentDesc" datatype="html">
+        <source> As a service provider, we are responsible for our own content on these pages in accordance with general laws. However, according to Article 8 of the Digital Services Act (DSA), as a service provider, we are not obligated to monitor transmitted or stored third-party information or to investigate circumstances that indicate illegal activity. Obligations to remove or block the use of information in accordance with general laws remain unaffected. However, liability in this regard is only possible from the time of knowledge of a specific legal violation. Upon becoming aware of such legal violations, we will remove this content immediately. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-contentReportDsaLink" datatype="html">
+        <source>Report illegal content (DSA)</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-contentReportTcoLink" datatype="html">
+        <source>Report removal order (TCO-VO)</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-liabilityLinksTitle" datatype="html">
+        <source> Liability for Links </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-liabilityLinksDesc" datatype="html">
+        <source> Our website contains links to external third-party websites, over whose content we have no influence. Therefore, we cannot assume any liability for these external contents. The respective provider or operator of the linked pages is always responsible for the content of the linked pages. The linked pages were checked for possible legal violations at the time of linking. Illegal content was not recognizable at the time of linking. However, a permanent content control of the linked pages is not reasonable without concrete evidence of a legal violation. Upon becoming aware of legal violations, we will remove such links immediately. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-copyrightTitle" datatype="html">
+        <source>Copyright</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-copyrightDesc" datatype="html">
+        <source> The content and works created by the site operators on these pages are subject to German copyright law. The reproduction, processing, distribution and any kind of exploitation outside the limits of copyright require the written consent of the respective author or creator. Downloads and copies of this site are only permitted for private, non-commercial use. Insofar as the content on this site was not created by the operator, the copyrights of third parties are observed. In particular, third-party content is identified as such. Should you nevertheless become aware of a copyright infringement, please inform us accordingly. Upon becoming aware of legal violations, we will remove such content immediately. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-ctaTitle" datatype="html">
+        <source> Questions about our legal disclosure? </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-ctaLead" datatype="html">
+        <source> If you have questions about our company information, registration details, or any other legal matters, we&apos;re happy to help. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-ctaContact" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-metaTitlePage" datatype="html">
+        <source>Legal Disclosure</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-metaDescription" datatype="html">
+        <source>Imprint and legal disclosure for Loadweaver by IPvX UG (haftungsbeschränkt). Company details, representation, and regulatory information for Germany.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalDisclosure-metaKeywords" datatype="html">
+        <source>Loadweaver, legal disclosure, resilient clusters</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-title" datatype="html">
+        <source> Privacy Policy </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-gdprInfo" datatype="html">
+        <source> Information in accordance with Section 13 of the GDPR </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-lastUpdated" datatype="html">
+        <source> Last updated: January 1, 2026 </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-generalInfo" datatype="html">
+        <source>General Information</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-companyName" datatype="html">
+        <source>IPvX UG (haftungsbeschränkt)</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-streetAddress" datatype="html">
+        <source>Leopoldstraße 2-8</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-postalCity" datatype="html">
+        <source>32051 Herford</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-addressRegion" datatype="html">
+        <source>Nordrhein-Westfalen, Germany</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-commercialRegisterLabel" datatype="html">
+        <source>Commercial Register Number:</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-registerCourtLabel" datatype="html">
+        <source>Register Court:</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-representedByLabel" datatype="html">
+        <source>Represented by:</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-contact" datatype="html">
+        <source>Contact</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-phoneLabel" datatype="html">
+        <source>Phone:</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-faxLabel" datatype="html">
+        <source>Fax:</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-emailLabel" datatype="html">
+        <source>Email:</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-collectionTitle" datatype="html">
+        <source> Collection of General Information </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-collectionDesc" datatype="html">
+        <source> When you access our website, information of a general nature is automatically collected. This information (server log files) includes, for example, the type of web browser, the operating system used, the domain name of your Internet service provider, and similar information. This is exclusively information that does not allow any conclusions to be drawn about your person. This information is technically necessary to correctly deliver the content of websites requested by you and is mandatory when using the Internet. Anonymous information of this kind is statistically evaluated by us to optimize our Internet presence and the technology behind it. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-personalizedTitle" datatype="html">
+        <source> Personalized Services </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-personalizedDesc" datatype="html">
+        <source> When registering to use our personalized services, some personal data is collected, such as name, address, contact and communication data such as telephone number and email address. If you are registered with us, you can access content and services that we only offer to registered users. Registered users also have the option to change or delete the data provided during registration at any time if necessary. Of course, we will also provide you with information about the personal data we have stored about you at any time. We will be happy to correct or delete this data at your request, provided there are no legal retention obligations to the contrary. To contact us in this regard, please use the contact details provided at the end of this privacy policy. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-sslTitle" datatype="html">
+        <source>SSL Encryption</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-sslDesc" datatype="html">
+        <source> To protect the security of your data during transmission, we use state-of-the-art encryption methods (e.g., SSL) over HTTPS. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-emailTitle" datatype="html">
+        <source>Contact via Email</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-emailDesc" datatype="html">
+        <source> If you contact us by email or contact form, the information you provide will be stored for the purpose of processing your inquiry and for possible follow-up questions. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-rightsTitle" datatype="html">
+        <source> Right to Information, Correction, Blocking, Deletion, and Objection </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-rightsDesc1" datatype="html">
+        <source> You have the right to receive information about your personal data stored by us at any time. You also have the right to correction, blocking or, apart from the prescribed data storage for business processing, deletion of your personal data. Please contact our data protection officer for this purpose. You can find the contact details at the very bottom. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-rightsDesc2" datatype="html">
+        <source> For a data block to be taken into account at any time, this data must be kept in a lock file for control purposes. You can also request the deletion of the data, provided there is no legal archiving obligation. If such an obligation exists, we will block your data upon request. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-rightsDesc3" datatype="html">
+        <source> You can make changes or revoke consent by sending us a corresponding notification with effect for the future. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-cookiesTitle" datatype="html">
+        <source>Cookies</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-cookiesDesc1" datatype="html">
+        <source> Like many other websites, we also use so-called &quot;cookies&quot;. Cookies are small text files that are transferred from a website server to your hard drive. This automatically gives us certain data such as IP address, browser used, operating system about your computer and your connection to the Internet. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-cookiesDesc2" datatype="html">
+        <source> Cookies cannot be used to launch programs or transfer viruses to a computer. Based on the information contained in cookies, we can make navigation easier for you and enable the correct display of our websites. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-cookiesDesc3" datatype="html">
+        <source> Under no circumstances will the data we collect be passed on to third parties or linked to personal data without your consent. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-cookiesDesc4" datatype="html">
+        <source> Of course, you can generally view our website without cookies. Internet browsers are regularly set to accept cookies. You can deactivate the use of cookies at any time via the settings of your browser. Please use the help functions of your Internet browser to find out how to change these settings. Please note that some functions of our website may not work if you have deactivated the use of cookies. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-newsletterTitle" datatype="html">
+        <source>Newsletter</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-newsletterDesc" datatype="html">
+        <source> For sending our newsletter, we use the open-source software Listmonk, which we operate independently on our servers within the European Union. No personal data is passed on to third parties. As part of the newsletter dispatch, we process in particular your email address as well as any other voluntarily provided information (e.g., name or preferences). The processing is carried out exclusively for the purpose of sending and analyzing our newsletter on the basis of your consent in accordance with Art. 6 para. 1 lit. a GDPR. You can revoke your consent at any time with effect for the future, e.g., via the unsubscribe link in the newsletter or by sending us a message. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-liveChatTitle" datatype="html">
+        <source> Live Chat and Support Communication </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-liveChatDesc" datatype="html">
+        <source> For processing support requests and providing a live chat on our website, we use the open-source software Chatwoot, which we operate ourselves on servers within the European Union. The data you provide in the chat, such as name, email address, and the content of the communication, are processed. The processing serves to efficiently process your request and is based on Art. 6 para. 1 lit. b GDPR (fulfillment of a contract or pre-contractual measures) or on the basis of our legitimate interest in accordance with Art. 6 para. 1 lit. f GDPR in user-friendly and fast customer communication. Your data will not be passed on to third parties. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-gtmTitle" datatype="html">
+        <source>Google Tag Manager</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-gtmDesc" datatype="html">
+        <source> We use Google Tag Manager, a service of Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland. Google Tag Manager is used to manage website tags via an interface. The tool itself (which implements the tags) does not process any personal data of users. Google Tag Manager only triggers other tags, which in turn may collect data. Google only receives information about the use of the Tag Manager itself. Further information can be found in Google&apos;s privacy policy at: <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://policies.google.com/privacy&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; class=&quot;text-decoration-none&quot;
+                &gt;"/>https://policies.google.com/privacy<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. The processing is based on our legitimate interest in accordance with Art. 6 para. 1 lit. f GDPR in an efficient and technically flawless integration of analysis and marketing services. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-cloudflareCdnTitle" datatype="html">
+        <source>Cloudflare CDN</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-cloudflareCdnDesc" datatype="html">
+        <source> We use the Content Delivery Network (CDN) of Cloudflare Germany GmbH, Rosental 7, c/o Mindspace, 80331 Munich, Germany (Cloudflare), to increase the security and delivery speed of our website. This corresponds to our legitimate interest (Art. 6 para. 1 lit. f GDPR). A CDN is a network of servers distributed worldwide that is able to deliver optimized content to website users. For this purpose, personal data may be processed in server log files by Cloudflare. Cloudflare is a recipient of your personal data and acts as a processor for us. Further information on objection and removal options against Cloudflare can be found at: <x id="START_LINK" ctype="x-a" equiv-text="&lt;a
+                href=&quot;https://www.cloudflare.com/resources/assets/slt3lc6tev37/1M1j5uuFDuLTYiZJJDPBag/770322411bcac7f8bcc350e31b1e8319/Customer_DPA_v.3_1_-_de-de_19_Oct_2020.pdf&quot;
+                target=&quot;_blank&quot;
+                rel=&quot;noopener&quot;
+                class=&quot;text-decoration-none&quot;
+                &gt;"/>Cloudflare DPA<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-plausibleTitle" datatype="html">
+        <source>Plausible Analytics</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-plausibleDesc" datatype="html">
+        <source> We use Plausible Analytics, a self-hosted open-source web analytics service running on our own EU-based infrastructure. Plausible collects aggregated, anonymized usage statistics about our website. It does not use cookies, local storage, or any persistent identifiers. Only anonymized data such as page views, referrers, approximate geographic location (country/region), device type, and browser information is processed. No individual user profiles or cross-site tracking occurs. The processing is based on our legitimate interest in accordance with Art. 6 para. 1 lit. f GDPR in understanding and improving the website experience for all visitors. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-cloudflareAnalyticsTitle" datatype="html">
+        <source> Cloudflare Analytics </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-cloudflareAnalyticsDesc" datatype="html">
+        <source> We use Cloudflare Analytics, a service of Cloudflare, Inc., 101 Townsend St, San Francisco, CA 94107, USA (EU representative: Cloudflare Ireland Limited, 5th Floor, One Albert Quay, Cork, Ireland). Cloudflare Analytics is only activated after explicit user consent. It collects aggregated website traffic data such as page views, unique visitors, referrers, and performance metrics. Data is processed in accordance with Cloudflare&apos;s privacy policy at <x id="START_LINK" ctype="x-a" equiv-text="&lt;a
+                href=&quot;https://www.cloudflare.com/privacypolicy/&quot;
+                target=&quot;_blank&quot;
+                rel=&quot;noopener&quot;
+                class=&quot;text-decoration-none&quot;
+                &gt;"/>https://www.cloudflare.com/privacypolicy/<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. The processing is based on user consent in accordance with Art. 6 para. 1 lit. a GDPR and § 25 para. 1 TTDSG. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-gaTitle" datatype="html">
+        <source>Google Analytics</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-gaDesc" datatype="html">
+        <source> We use Google Analytics, a service of Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Ireland (US parent: Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA). Google Analytics is only activated after explicit user consent. It collects data on website usage including page views, sessions, user behavior, and demographics for optimization purposes. IP addresses are anonymized, and data is processed in accordance with Google&apos;s privacy policy at <x id="START_LINK" ctype="x-a" equiv-text="&lt;a href=&quot;https://policies.google.com/privacy&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot; class=&quot;text-decoration-none&quot;
+                &gt;"/>https://policies.google.com/privacy<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. The processing is based on user consent in accordance with Art. 6 para. 1 lit. a GDPR and § 25 para. 1 TTDSG. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-mailgunTitle" datatype="html">
+        <source>Mailgun</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-mailgunDesc" datatype="html">
+        <source> For sending system-related emails (e.g., confirmation, notification, or transaction emails), we use the &quot;Mailgun&quot; service of the provider Mailgun Technologies, Inc., 112 E Pecan St. #1135, San Antonio, TX 78205, USA. The sending takes place via server locations within the European Union. Mailgun acts as a processor in accordance with Art. 28 GDPR. A corresponding data processing agreement has been concluded with Mailgun, which ensures compliance with European data protection standards. The processing includes in particular email addresses as well as the content of the sent emails. Further information on data processing by Mailgun can be found at: <x id="START_LINK" ctype="x-a" equiv-text="&lt;a
+                href=&quot;https://www.mailgun.com/de/legal/privacy-policy&quot;
+                target=&quot;_blank&quot;
+                rel=&quot;noopener&quot;
+                class=&quot;text-decoration-none&quot;
+                &gt;"/>https://www.mailgun.com/de/legal/privacy-policy<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a
+              &gt;"/>. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-changesTitle" datatype="html">
+        <source>Changes</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-changesDesc" datatype="html">
+        <source> We reserve the right to occasionally adapt this privacy policy so that it always complies with current legal requirements or to implement changes to our services in the privacy policy, e.g., when introducing new services. The new privacy policy will then apply to your next visit. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-ctaTitle" datatype="html">
+        <source> Questions about your privacy or data? </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-ctaLead" datatype="html">
+        <source> We take data protection seriously. If you have questions about how we handle your data, want to exercise your rights, or need clarification on any aspect of our privacy policy, please reach out. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-ctaContact" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-metaTitlePage" datatype="html">
+        <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-metaDescription" datatype="html">
+        <source>How Loadweaver and IPvX process personal data when you use our platform, websites, and support. Cookies, retention, your rights, and how to contact us.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalPrivacy-metaKeywords" datatype="html">
+        <source>Loadweaver, privacy policy, resilient clusters</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-title" datatype="html">
+        <source> Terms of Service </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-heroLead" datatype="html">
+        <source> Terms governing Loadweaver software, licenses, and managed cloud services under German and European Union law. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-lastUpdated" datatype="html">
+        <source> Last updated: September 9, 2026 </source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-generalInfo" datatype="html">
+        <source>General Information</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-companyName" datatype="html">
+        <source>IPvX UG (haftungsbeschränkt)</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-streetAddress" datatype="html">
+        <source>Leopoldstraße 2-8</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-postalCity" datatype="html">
+        <source>32051 Herford</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-addressRegion" datatype="html">
+        <source>Nordrhein-Westfalen, Germany</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-commercialRegisterLabel" datatype="html">
+        <source>Commercial Register Number:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-registerCourtLabel" datatype="html">
+        <source>Register Court:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-representedByLabel" datatype="html">
+        <source>Represented by:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-contact" datatype="html">
+        <source>Contact</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-phoneLabel" datatype="html">
+        <source>Phone:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-faxLabel" datatype="html">
+        <source>Fax:</source>
+        </trans-unit>
+      <trans-unit id="featurePortalPrivacy-emailLabel" datatype="html">
+        <source>Email:</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-scopeTitle" datatype="html">
+        <source>Scope and Definitions</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-scopeDesc1" datatype="html">
+        <source> These Terms of Service (&quot;Terms&quot;) apply to all contracts and legal relationships between IPvX UG (haftungsbeschränkt) (&quot;we&quot;, &quot;us&quot;) and you regarding the Loadweaver software, related documentation, self-hosted license offerings, professional and support services, and our managed cloud offering including provision of the software on infrastructure operated or procured by us (&quot;Cloud Service&quot;), unless expressly agreed otherwise in writing (including individual enterprise agreements or separate order forms). </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-scopeDesc2" datatype="html">
+        <source> &quot;Consumer&quot; means any natural person who enters into a legal transaction for purposes that are predominantly outside their trade, business, or profession (Section 13 of the German Civil Code, Bürgerliches Gesetzbuch - BGB). &quot;Entrepreneur&quot; means a natural or legal person or a partnership with legal personality who or which acts in exercise of their trade, business, or profession when entering into a legal transaction (Section 14 BGB). </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-scopeDesc3" datatype="html">
+        <source> Conflicting or deviating terms of you shall not apply unless we have expressly agreed to their validity in writing. Individual agreements take precedence over these Terms (Section 305b BGB). </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-offeringsTitle" datatype="html">
+        <source> Product Types, License Models, and Services </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-offeringsDesc1" datatype="html">
+        <source> We offer (a) self-hosted software under open-source and source-available license terms (including editions made available under the GNU Affero General Public License version 3 (&quot;AGPL-3.0&quot;) and under the Business Source License 1.1 with Additional Use Grant (&quot;BUSL-1.1&quot;)), (b) paid self-hosted subscriptions and commercial license arrangements (including the &quot;Business&quot; and &quot;Enterprise&quot; tiers described on our pricing pages), (c) ancillary services such as onboarding, support, training, and custom development agreed separately, and (d) the Cloud Service: operation of Loadweaver on our or our subprocessors&apos; infrastructure, including server hosting, maintenance, scaling, and backup or monitoring measures as specified in the applicable service description or order. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-offeringsDesc2" datatype="html">
+        <source> The respective open-source or source-available license text supplied with the software governs your rights and obligations for the corresponding edition to the extent it is mandatory law or expressly designated as prevailing. Where you obtain a commercial license, subscription, or Cloud Service from us, these Terms supplement and, in case of conflict on commercial and operational matters, prevail over generic source-available terms only to the extent permitted by law and as expressly stated in your order or license grant. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-offeringsDesc3" datatype="html">
+        <source> Features, limits, support channels, and eligibility criteria (such as financial thresholds for specific self-hosted tiers) are as described on our website at the time of order unless otherwise agreed in writing. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-contractFormationTitle" datatype="html">
+        <source> Conclusion of Contract and Pre-Contractual Information </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-contractFormationDesc1" datatype="html">
+        <source> Presentations on our website, in demos, or in marketing materials constitute an invitation to treat (invitatio ad offerendum) and not a binding offer under Sections 145, 146 BGB, unless explicitly marked as binding. A contract is formed when we accept your order, when you accept our written or electronic offer, or when we grant access to paid or Cloud resources, whichever occurs first. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-contractFormationDesc2" datatype="html">
+        <source> For consumers and distance contracts, we comply with the statutory information duties for digital products and services under the BGB and the EU Directives implemented therein (including Articles 246a, 246b, 246c Einführungsgesetz zum BGB - EGBGB as applicable). You will receive confirmation of the contract on a durable medium where required by law. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-contractFormationDesc3" datatype="html">
+        <source> You are responsible for the accuracy of registration and billing data. Automated technical steps (e.g., provisioning of a tenant or license key) may constitute acceptance without a separate declaration if this is customary and you have been informed accordingly. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-pricingTitle" datatype="html">
+        <source> Prices, Taxes, and Payment </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-pricingDesc1" datatype="html">
+        <source> Prices are as stated in the order, checkout flow, or written offer, in euros unless otherwise specified. Statutory value-added tax (Umsatzsteuer) or other applicable taxes are added where required by law. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-pricingDesc2" datatype="html">
+        <source> Payment methods may include payment cards, direct debit where offered, bank transfer (e.g., for annual commitments or purchase orders), and other means we communicate at checkout. Recurring fees for subscriptions and Cloud Service are due in advance for each billing period unless agreed otherwise. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-pricingDesc3" datatype="html">
+        <source> If you default on payment, we may charge statutory default interest (Section 288 BGB) and suspend or terminate services in accordance with law and these Terms. Offsetting against our claims is permitted only with undisputed or legally established counterclaims. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-withdrawalTitle" datatype="html">
+        <source> Statutory Right of Withdrawal for Consumers (EU / Germany) </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-withdrawalDesc1" datatype="html">
+        <source> If you are a Consumer and the contract is a distance or off-premises contract, you generally have a right of withdrawal of fourteen (14) days without giving any reason, in accordance with Sections 355 et seq. BGB and Directive 2011/83/EU (Consumer Rights Directive) as transposed into German law. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-withdrawalDesc2" datatype="html">
+        <source> For contracts concerning digital content not supplied on a tangible medium, the right of withdrawal expires if we have begun performance with your prior express consent and you have acknowledged that you thereby lose your right of withdrawal once performance has begun (Section 356(5) BGB). Similar consequences may apply where you request immediate commencement of a service. We will provide the statutory withdrawal information and, where required, a model withdrawal form in a durable medium before or at contract conclusion. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-withdrawalDesc3" datatype="html">
+        <source> Entrepreneurs are not entitled to a statutory withdrawal right unless individually agreed. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-selfHostedTitle" datatype="html">
+        <source> Self-Hosted Software: Rights of Use and Compliance </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-selfHostedDesc1" datatype="html">
+        <source> Subject to payment (if applicable) and the applicable license text, we grant you a non-exclusive, non-transferable right to install and run the licensed software in your own environment within the agreed scope (e.g., number of instances, production vs. non-production, or organizational limits in enterprise agreements). </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-selfHostedDesc2" datatype="html">
+        <source> You must comply with all applicable license conditions, including AGPL-3.0 and BUSL-1.1 obligations such as source-sharing, network-use, and additional-use-grant limits where they apply. You may not circumvent technical protection measures, remove proprietary notices, or sublicense beyond what the license permits. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-selfHostedDesc3" datatype="html">
+        <source> You operate the infrastructure and are responsible for backups, security hardening, regulatory compliance in your environment, and lawful use of third-party systems, payment processors, APIs, or data you connect to Loadweaver. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-cloudTitle" datatype="html">
+        <source> Cloud Service, Hosting, and Subprocessors </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-cloudDesc1" datatype="html">
+        <source> For the Cloud Service we provide access to a managed instance of Loadweaver, including hosting on servers operated by us or by qualified infrastructure providers (subprocessors). The primary place of processing, data residency options, and security measures will be described in the applicable order, product documentation, and our Privacy Policy. Processing of personal data is governed by Regulation (EU) 2016/679 (GDPR) and, where applicable, a data processing agreement (Art. 28 GDPR) concluded with you. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-cloudDesc2" datatype="html">
+        <source> We strive to maintain service availability in line with any SLA expressly agreed in your contract. Unless otherwise stated, planned maintenance will, where reasonably practicable, be announced in advance. Temporary interruptions may occur for security, capacity, or legal reasons. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-cloudDesc3" datatype="html">
+        <source> You retain responsibility for the content and lawfulness of data and workloads you upload or configure, for user management within your organization, and for credentials and API keys you control. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-supportTitle" datatype="html">
+        <source> Support, Service Levels, and Individual Services </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-supportDesc1" datatype="html">
+        <source> Support channels (e.g., community, email, telephone, chat, or Microsoft Teams) and response targets depend on the purchased tier or enterprise agreement. Any uptime percentage or SLA applies only if and as expressly agreed in writing; otherwise statutory remedies remain unaffected. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-supportDesc2" datatype="html">
+        <source> Professional services such as onboarding, training, customization, or development are provided on the basis of separate written specifications, statements of work, or order forms. Unless agreed otherwise, we grant you the rights of use to deliverables as required for the intended use under the contract. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-supportDesc3" datatype="html">
+        <source> Credits or fee reductions for SLA failures, if any, are governed solely by the applicable SLA exhibit. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-conductTitle" datatype="html">
+        <source> Your Obligations and Acceptable Use </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-conductDesc1" datatype="html">
+        <source> You will use Loadweaver and related services only in compliance with applicable law, including export control, sanctions, telecommunications, and AI-related regulations where relevant. You must not misuse the services (e.g., to distribute malware, infringe third-party rights, conduct illegal surveillance, or overload systems without authorization). </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-conductDesc2" datatype="html">
+        <source> You are obliged to keep access credentials confidential, to inform us without undue delay of security incidents that may affect our systems, and to cooperate reasonably in troubleshooting. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-conductDesc3" datatype="html">
+        <source> We may take proportionate countermeasures, including suspension of access, if you materially breach these obligations or if continued provision would expose us to undue legal or security risk. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-updatesTitle" datatype="html">
+        <source> Updates, Maintenance, and Changes </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-updatesDesc1" datatype="html">
+        <source> We may provide updates, patches, and new versions of the software or Cloud Service. For self-hosted deployments, you decide when to apply updates unless security-critical measures are required by law or expressly mandated under your enterprise agreement. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-updatesDesc2" datatype="html">
+        <source> We may modify the Cloud Service for technical, security, or legal reasons if the contractual purpose remains substantially preserved. Material adverse changes will be communicated with reasonable notice where required by law; your statutory rights remain unaffected. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-updatesDesc3" datatype="html">
+        <source> Beta or preview features may be offered &quot;as is&quot; without warranty of any particular fitness until generally released. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-ipTitle" datatype="html">
+        <source> Intellectual Property and Third-Party Components </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-ipDesc1" datatype="html">
+        <source> We or our licensors retain all rights to Loadweaver not expressly granted to you. The provisions of the German Act on Copyright and Related Rights (Urheberrechtsgesetz - UrhG) and EU copyright law remain unaffected. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-ipDesc2" datatype="html">
+        <source> The software may include third-party open-source components under their respective licenses. Corresponding notices and license texts are supplied with the software or in documentation. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-ipDesc3" datatype="html">
+        <source> Feedback you provide may be used by us without restriction or royalty, subject to applicable personal data rules. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-dataTitle" datatype="html">
+        <source>Data Protection</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-dataDesc" datatype="html">
+        <source> Processing of personal data in connection with our website, contractual relationship, and Cloud Service is described in our Privacy Policy. That policy explains categories of data, purposes, legal bases under the GDPR (including Art. 6 and, where relevant, Art. 28 GDPR for processing on your instructions), retention, and your data subject rights under Chapter III GDPR. In case of conflict between these Terms and the Privacy Policy on data-protection matters, the Privacy Policy prevails. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-liabilityTitle" datatype="html">
+        <source> Defects, Warranty, and Liability </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-liabilityDesc1" datatype="html">
+        <source> For contracts with Consumers, statutory rights regarding defects in digital products or services (including Sections 327 et seq. BGB and the remedies thereunder) apply without restriction, except where mandatory law permits limitation. For Entrepreneurs, warranty for defects is governed by Sections 434 et seq. BGB unless stricter individual agreements exist. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-liabilityDesc2" datatype="html">
+        <source> We are liable without limitation for intent (Vorsatz) and gross negligence (grobe Fahrlässigkeit), for injury to life, body, or health, under the German Product Liability Act (Produkthaftungsgesetz - ProdHaftG) where applicable, and under a guarantee (Garantie) if assumed. For simple negligence we are liable only for breach of material contractual obligations (Kardinalpflichten), limited to typical, foreseeable damage, except in the cases in the preceding sentence. The above does not imply a reversal of the burden of proof to your disadvantage. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-liabilityDesc3" datatype="html">
+        <source> Any further exclusion or limitation of liability must be measured against Sections 307 et seq. BGB (including transparency control and content control for standard terms, Section 309 BGB for Consumers). Invalid provisions are replaced by the statutory rule closest in economic purpose. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-termTitle" datatype="html">
+        <source> Term, Termination, and Notice </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-termDesc1" datatype="html">
+        <source> Subscriptions and Cloud Service run for the term selected at order (e.g., monthly or annual) and renew for equivalent periods unless terminated with notice. Unless otherwise agreed in your order, ordinary termination of recurring plans may require fourteen (14) days&apos; notice to the end of the current billing period, in line with the arrangements published on our pricing pages. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-termDesc2" datatype="html">
+        <source> Either party may terminate for cause (außerordentliche Kündigung) where good cause exists under Section 314 BGB or applicable special provisions. Good cause for us includes persistent payment default, serious acceptable-use violations, or legally required shutdown. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-termDesc3" datatype="html">
+        <source> Upon termination, your right to use the affected software or Cloud Service ceases; we may delete tenant data after any statutory or agreed retention period. Sections that by nature should survive (e.g., liability, confidentiality, applicable law) remain in effect. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-finalTitle" datatype="html">
+        <source> Amendments, Governing Law, Venue, and Dispute Resolution </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-changesDesc1" datatype="html">
+        <source> We may update these Terms to reflect legal requirements, technical developments, or changed service scope. For Consumers, amendments during an ongoing contract require consent unless the change is exclusively to your benefit, is purely ancillary, or is required by law with no disadvantage to you (Section 305c(2) BGB in conjunction with transparency requirements under Sections 307 et seq. BGB). </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-changesDesc2" datatype="html">
+        <source> For Entrepreneurs, we may notify you of amended Terms with reasonable notice. If you do not object within the stated period, the amendments may be deemed accepted where legally permissible; we will highlight this consequence in the notice. Your statutory rights, including termination rights, remain unaffected. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-finalDesc1" datatype="html">
+        <source> These Terms and the contractual relationship are governed by the laws of the Federal Republic of Germany to the exclusion of the UN Convention on Contracts for the International Sale of Goods (CISG). Mandatory consumer protections of the state in which you habitually reside remain unaffected (Article 6(2) of Regulation (EU) No 593/2008 - Rome I). </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-finalDesc2" datatype="html">
+        <source> If you are a merchant (Kaufmann) within the meaning of the German Commercial Code (Handelsgesetzbuch - HGB), a legal entity under public law, or a special fund (öffentlich-rechtliches Sondervermögen), the exclusive place of jurisdiction for all disputes arising from or in connection with these Terms is our registered seat, where permissible. We remain free to bring action at your general place of jurisdiction. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-finalDesc3" datatype="html">
+        <source> We are not obliged and not willing to participate in dispute resolution proceedings before a consumer arbitration board (Verbraucherschlichtungsstelle) within the meaning of the German Act on Alternative Dispute Resolution in Consumer Matters (Verbraucherstreitbeilegungsgesetz - VSBG), unless we are required to state a different participation status under mandatory law. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-finalDesc4" datatype="html">
+        <source> Should individual provisions of these Terms be or become invalid or unenforceable, the remaining provisions shall remain in effect. The invalid or unenforceable provision shall be replaced by a valid provision that comes closest to the economic purpose of the original, to the extent permitted by law (including Sections 306, 307 BGB for standard terms). </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-ctaTitle" datatype="html">
+        <source> Questions about these terms? </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-ctaLead" datatype="html">
+        <source> If you need clarification on licenses, the Cloud Service, or contractual conditions, please contact us using the details above. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-ctaContact" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-metaTitlePage" datatype="html">
+        <source>Terms of Service</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-metaDescription" datatype="html">
+        <source>Terms governing use of the Loadweaver platform, websites, and related services. Accounts, licensing, acceptable use, liability, and contact information.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverLegalTerms-metaKeywords" datatype="html">
+        <source>Loadweaver, terms of service, resilient clusters</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-heroTitle" datatype="html">
+        <source> Choose your <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>license<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-heroDescription" datatype="html">
+        <source> Every feature is public source, and the license is set per component. A single-site cluster is open source; multi-site needs a business license that is free for smaller companies. Prices are flat per tier. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-tiersTitle" datatype="html">
+        <source>License tiers</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-tiersLead" datatype="html">
+        <source> Run Loadweaver on your own servers. The line between the tiers is drawn at multi-site, not at the number of nodes, clusters or sites. Swipe or use the arrows to review Startup, Business, and Enterprise. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-scrollPrev" datatype="html">
+        <source>Previous plans</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-scrollNext" datatype="html">
+        <source>Next plans</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-openSourceTitle" datatype="html">
+        <source>Open Source</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-selfHostedBadge" datatype="html">
+        <source>Self-Hosted</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-freePrice" datatype="html">
+        <source> Free </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-openSourceLicense" datatype="html">
+        <source> AGPL-3.0 License </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-openSourceFeature1" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Full single-site cluster<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> including high availability</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-openSourceFeature2" datatype="html">
+        <source>Groups and policies, Compose deployments, migration</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-openSourceFeature3" datatype="html">
+        <source>Topology map and logs</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-openSourceFeature4" datatype="html">
+        <source>Remote access within a site</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-openSourceNote" datatype="html">
+        <source>Must share modifications if used as a service (AGPL requirement)</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-requestEarlyAccess" datatype="html">
+        <source>Request early access</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-startupTitle" datatype="html">
+        <source>Startup</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-buslLicense" datatype="html">
+        <source> BUSL-1.1 with Additional Use Grant </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-startupFeature1" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Includes Open Source<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-startupFeature2" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Multi-site<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> with cross-site BGP and site failover</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-startupFeature3" datatype="html">
+        <source>Own ASN, multi-homing and anycast</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-startupFeature4" datatype="html">
+        <source>Cross-site storage replication</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-startupNote" datatype="html">
+        <source>For businesses with total finances &lt; €2,000,000 per year</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-mostPopularBadge" datatype="html">
+        <source>Most Popular</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-businessTitle" datatype="html">
+        <source>Business</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-businessPrice" datatype="html">
+        <source> €499/mo </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-businessFeature1" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Includes Startup<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-businessFeature2" datatype="html">
+        <source>Onboarding</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-businessFeature3" datatype="html">
+        <source>Standard support</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-businessNote" datatype="html">
+        <source>For businesses with total finances ≥ €2,000,000 per year</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-enterpriseTitle" datatype="html">
+        <source>Enterprise</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-enterprisePrice" datatype="html">
+        <source> Ask us </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-enterpriseLicense" datatype="html">
+        <source> Commercial License </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-enterpriseFeature1" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Includes Business<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-enterpriseFeature2" datatype="html">
+        <source>Priority support and SLA</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-enterpriseFeature3" datatype="html">
+        <source>Custom development</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-contactSales" datatype="html">
+        <source>Contact sales</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-splitTitle" datatype="html">
+        <source> Nothing is closed </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-splitLead" datatype="html">
+        <source> All features are public source. The commercial limitation comes from the license terms of each component, not from hidden code. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-splitPanelTitle" datatype="html">
+        <source> Public source, licensed per component </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-splitPanelLead" datatype="html">
+        <source> Every app and library carries its own LICENSE file. Single-site components are open source, multi-site components use the business license, and the line between them is visible in the repository. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-splitAgplTitle" datatype="html">
+        <source>AGPL-3.0: single-site</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-splitAgplDesc" datatype="html">
+        <source> The node agent, the single-site control plane and the console basics. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-splitBuslTitle" datatype="html">
+        <source>BUSL-1.1: multi-site</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-splitBuslDesc" datatype="html">
+        <source> Cross-site orchestration, multi-site storage replication, site failover, own-ASN BGP, multi-homing and anycast, and the fleet console. Free in production below €2M total finances per year, and every release converts to AGPL-3.0 three years after it ships. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-splitFlatTitle" datatype="html">
+        <source>Flat per tier</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-splitFlatDesc" datatype="html">
+        <source> No node counting and no per-node license enforcement, so starting with one node and growing stays simple. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-managedTitle" datatype="html">
+        <source> Loadweaver Cloud </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-managedLead" datatype="html">
+        <source> Prefer not to run it yourself? We operate a cluster of your own for you, so your teams can focus on what runs on it. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-cloudTitle" datatype="html">
+        <source>Loadweaver Cloud</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-managedBadge" datatype="html">
+        <source>Managed</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-cloudDescription" datatype="html">
+        <source> A dedicated cluster per customer, operated by us through our multi-cluster console. It is the same product as self-hosted Loadweaver. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-cloudFeature1" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>Dedicated.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Own control plane, nodes and keys per customer</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-cloudFeature2" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>Ready from day one.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> The first node already runs the control plane and console</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-cloudFeature3" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>Grows with you.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Add nodes with your own provider accounts</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-cloudFeature4" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong class=&quot;text-body&quot;&gt;"/>Data-safe exit.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> Final backup and a read-only grace period</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-cloudAvailability" datatype="html">
+        <source>Availability</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-cloudPriceNote" datatype="html">
+        <source> Pricing is not published yet. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-cloudEarlyAccess" datatype="html">
+        <source>Request early access</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-exploreCloud" datatype="html">
+        <source>Explore Cloud</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-ctaTitle" datatype="html">
+        <source>Not sure which tier fits?</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-ctaLead" datatype="html">
+        <source> Tell us how many sites you run and how your company is set up, and we will help you pick the right license. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-ctaEarlyAccess" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope-paper&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Request early access </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-ctaCompare" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-layout-split&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Compare alternatives </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-enterprisePrefill" datatype="html">
+        <source>Hi, I am interested in Loadweaver Enterprise. Please get in touch about support, an SLA and licensing.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-metaTitle" datatype="html">
+        <source>Licensing from open source to enterprise :: Loadweaver</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-metaDescription" datatype="html">
+        <source>Loadweaver licensing: a full single-site cluster as AGPL-3.0 open source, multi-site under BUSL-1.1 (free below €2M total finances), Business at a flat €499 per month, Enterprise on request and the managed Loadweaver Cloud.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPricing-metaKeywords" datatype="html">
+        <source>Loadweaver pricing, Loadweaver license, AGPL, BUSL, open source cluster, high availability pricing</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-heroTitle" datatype="html">
+        <source> Remote access that <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>follows your policies<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-heroLead" datatype="html">
+        <source> People, machines and whole offices connect to the cluster over WireGuard and reach internal services according to the policies assigned to them, so a full company can run on Loadweaver. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-heroCtaEarlyAccess" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope-paper&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Request early access </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-heroCtaPolicies" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-diagram-3&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>The policy model </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-heroIllustration" datatype="html">
+        <source>Remote access: a laptop with good posture, a phone with an outdated OS, an office router and a CI runner connect through one endpoint to two WireGuard gateways at different sites. Each reaches only the internal service its group may use; the phone lands in a restricted group that only reaches the helpdesk.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-clientsTitle" datatype="html">
+        <source> Users, machines and offices </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-clientsLead" datatype="html">
+        <source> Every client belongs to groups in the same policy model as your workloads. Policies stay allow-only: a client sees nothing unless a policy allows it. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-usersTitle" datatype="html">
+        <source>People</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-usersDesc" datatype="html">
+        <source> A client is a device that belongs to a user. Identity-provider groups map to client groups, so &quot;sales may reach the CRM on 443&quot; is just a policy. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-machinesTitle" datatype="html">
+        <source>Machines</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-machinesDesc" datatype="html">
+        <source> CI runners, servers elsewhere and office routers connect as machine clients with their own group membership, enrolled by admins. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-officesTitle" datatype="html">
+        <source>Offices</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-officesDesc" datatype="html">
+        <source> Any WireGuard-capable router or firewall, such as OPNsense, pfSense, MikroTik, Fritz!Box or Linux, announces its office subnets. They become a group; overlapping subnets are rejected in the plan. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-connectTitle" datatype="html">
+        <source> One endpoint, short-lived keys, routes from policies </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-connectLead" datatype="html">
+        <source> Clients never need to know which gateway they use, keys do not live forever, and every client only gets the routes its policies allow. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-gatewaysBadge" datatype="html">
+        <source>Gateways</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-gatewaysTitle" datatype="html">
+        <source> Gateways without a single point of failure </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-gatewaysDesc" datatype="html">
+        <source> Nodes in a vpn group act as gateways. Clients get one endpoint hostname that resolves via failover IP, anycast or DNS failover, and a client&apos;s key is valid on all gateways. A gateway failure means a short reconnect, not a reconfiguration, and a single gateway shows up as a pin. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-enrollTitle" datatype="html">
+        <source> Self-service enrollment </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-enrollDesc" datatype="html">
+        <source> In the console, desktop app or CLI. The keypair is generated on the device where possible, so the private key never leaves it. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-keysTitle" datatype="html">
+        <source>Keys that expire</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-keysExpireDesc" datatype="html">
+        <source> For example after 30 days, renewed after a fresh sign-in with MFA, since WireGuard itself has no login. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-revokeTitle" datatype="html">
+        <source>Instant revocation</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-revokeDesc" datatype="html">
+        <source> A revoked device is gone from all gateways at once, and offboarding a user in Keycloak revokes all their devices. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-routingTitle" datatype="html">
+        <source> Split tunnel by default </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-splitDesc" datatype="html">
+        <source> Only the prefixes and service IPs a client&apos;s policies allow are routed, and internal names resolve through the policy-aware cluster DNS. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-fullTunnelTitle" datatype="html">
+        <source> Full tunnel where needed </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-fullTunnelDesc" datatype="html">
+        <source> Groups that need it send all their traffic through the cluster, past the egress proxy and egress policies. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-postureTitle" datatype="html">
+        <source> Device posture as a policy condition </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-postureLead" datatype="html">
+        <source> &quot;Finance needs an encrypted disk, an OS patched within 30 days and a low EDR risk&quot; is a condition on a client group. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-postureSub" datatype="html">
+        <source> A device that fails its posture moves into a restricted group instead of being disconnected, for example with only the helpdesk and the wiki in reach, and the user sees why. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-postureCoreTitle" datatype="html">
+        <source>Core checks</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-postureCoreDesc" datatype="html">
+        <source> Disk encryption, OS version and patch level, screen lock, OS firewall and app version, reported at connect and periodically. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-postureMdmTitle" datatype="html">
+        <source>MDM</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-postureMdmDesc" datatype="html">
+        <source> Compliance state from Microsoft Intune, Jamf and Kandji, behind a posture plugin interface. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-postureEdrTitle" datatype="html">
+        <source>EDR</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-postureEdrDesc" datatype="html">
+        <source> Risk level from Microsoft Defender for Endpoint, CrowdStrike and SentinelOne. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-postureCertTitle" datatype="html">
+        <source> Device certificates </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-postureCertDesc" datatype="html">
+        <source> From your company CA, or from Loadweaver&apos;s own CA, issued at enrollment. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-visibilityTitle" datatype="html">
+        <source> alice@laptop, not 10.99.0.17 </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-visibilityLead" datatype="html">
+        <source> Every client IP maps to a user and a device, so proxy and firewall decisions, logs and the audit trail name the person behind a connection. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-mapTitle" datatype="html">
+        <source>On the map</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-mapDesc" datatype="html">
+        <source> Remote clients appear as a group at the border of the topology map, with live connections and the path trace. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-sessionsTitle" datatype="html">
+        <source> Sessions under control </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-sessionsDesc" datatype="html">
+        <source> Admins see active sessions and disconnect or revoke a device instantly. Users see their own devices and last connections. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-alertsTitle" datatype="html">
+        <source>Alerts</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-alertsDesc" datatype="html">
+        <source> For unusual patterns such as a new country, many denies or posture changes. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-activityIllustration" datatype="html">
+        <source>Remote access in the console: active sessions named by user and device with their groups, and recent decisions that show alice on her laptop reaching the CRM, bob on his phone being blocked from the CRM by the restricted group but reaching the helpdesk, and the Berlin office reaching the intranet.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-ctaTitle" datatype="html">
+        <source>Connect your whole company</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-ctaLead" datatype="html">
+        <source> Tell us about your users, devices and offices, and we will show you how remote access on Loadweaver would look for you. </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-ctaEarlyAccess" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope-paper&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Request early access </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-ctaApps" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-display&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>See the apps </source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-metaTitle" datatype="html">
+        <source>Remote access with WireGuard, governed by policies :: Loadweaver</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-metaDescription" datatype="html">
+        <source>People, machines and whole offices connect to your Loadweaver cluster over WireGuard and reach internal services only as their policies allow, with SSO enrollment, expiring keys, split tunneling, site-to-site and device posture.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverRemoteAccess-metaKeywords" datatype="html">
+        <source>Loadweaver remote access, WireGuard VPN, device posture, site-to-site VPN, split tunnel, SSO VPN, Intune, Jamf, CrowdStrike</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-earlyAccessPrefill" datatype="html">
+        <source>Hi, I would like early access to Loadweaver. My setup: number of servers, sites and the workloads I want to run.</source>
+        </trans-unit>
+      <trans-unit id="featureLoadweaverPortal-cloudEarlyAccessPrefill" datatype="html">
+        <source>Hi, I am interested in Loadweaver Cloud. Please tell me more about early access for a dedicated cluster.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-role" datatype="html">
+        <source>Founder and CEO</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-photoAlt" datatype="html">
+        <source>Portrait of Marcel Menk</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-linkedInLabel" datatype="html">
+        <source>Marcel Menk on LinkedIn</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageForepath" datatype="html">
+        <source>We work with AI every day, because it makes us faster and our results better.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageAgenstra" datatype="html">
+        <source>We build Agenstra with AI every day, because it makes the product better and lets us ship faster.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageDecabill" datatype="html">
+        <source>We build Decabill with AI every day, because it makes the product better and lets us ship faster.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageLoadweaver" datatype="html">
+        <source>We build Loadweaver with AI every day, because it makes the product better and lets us ship faster.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaRole" datatype="html">
+        <source>Virtual Customer Success</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaPhotoAlt" datatype="html">
+        <source>AI-generated portrait of Maya Keller, our virtual team member</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageForepath" datatype="html">
+        <source>I am part of that, but your message still reaches real people on our team, and a person takes responsibility for every answer.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageAgenstra" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Agenstra, and a person takes responsibility for every answer.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageDecabill" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Decabill, and a person takes responsibility for every answer.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageLoadweaver" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Loadweaver, and a person takes responsibility for every answer.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-aiLabel" datatype="html">
+        <source>AI</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-heroTitle" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Contact<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> us </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-heroLead" datatype="html">
+        <source> Tell us about your project or question. We typically reply within one business day. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-successTitle" datatype="html">
+        <source>Message sent</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-successLead" datatype="html">
+        <source> Thank you for reaching out. We received your message and will get back to you soon. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-nameLabel" datatype="html">
+        <source>Name</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-nameRequired" datatype="html">
+        <source>Name is required.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-emailLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-emailRequired" datatype="html">
+        <source>Email is required.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-emailInvalid" datatype="html">
+        <source>Enter a valid email address.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-phoneLabel" datatype="html">
+        <source>Phone (optional)</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-companyLabel" datatype="html">
+        <source>Company (optional)</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-messageLabel" datatype="html">
+        <source>Message</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-messageRequired" datatype="html">
+        <source> Message is required. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyAcceptPrefix" datatype="html">
+        <source>I accept the</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyPolicyLink" datatype="html">
+        <source>Privacy Policy</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-privacyRequired" datatype="html">
+        <source> You must accept the Privacy Policy to send your message. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-submitting" datatype="html">
+        <source>Sending...</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-submit" datatype="html">
+        <source>Send message</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsAriaLabel" datatype="html">
+        <source>Contact information</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsTitle" datatype="html">
+        <source> Contact information </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsLead" datatype="html">
+        <source> Prefer to reach us directly? Use the details below. </source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsEmailLabel" datatype="html">
+        <source>Email</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsPhoneLabel" datatype="html">
+        <source>Phone</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsFaxLabel" datatype="html">
+        <source>Fax</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-detailsWebLabel" datatype="html">
+        <source>Web</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-metaTitle" datatype="html">
+        <source>Contact :: <x id="productName" equiv-text="productName"/></source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-metaDescription" datatype="html">
+        <source>Send us a message. We typically reply within one business day.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContact-metaKeywords" datatype="html">
+        <source>contact, support, <x id="productName" equiv-text="productName"/></source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-message" datatype="html">
+        <source>This website uses cookies to ensure you get the best experience on our website.</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-dismiss" datatype="html">
+        <source>Got it!</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-allow" datatype="html">
+        <source>Accept</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-deny" datatype="html">
+        <source>Decline</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-link" datatype="html">
+        <source>Learn more</source>
+        </trans-unit>
+      <trans-unit id="utilCookieConsent-policy" datatype="html">
+        <source>Cookie Policy</source>
+        </trans-unit>
+    </body>
+  </file>
+</xliff>

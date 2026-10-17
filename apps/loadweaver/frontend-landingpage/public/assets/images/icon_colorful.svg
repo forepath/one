@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 315 314" version="1.1" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <!-- Two nested open rings on the ForePath ring canvas, one wall weight (48) and an even gap (20):
+         the outer ring opens bottom right, the inner ring top left, so they read as woven together. -->
+    <path d="M157.5,314A157,157 0 1 1 314.5,157L266.5,157A109,109 0 1 0 157.5,266Z M157.5,68A89,89 0 1 1 68.5,157L116.5,157A41,41 0 1 0 157.5,116Z" style="fill:rgb(255,194,26);"/>
+</svg>

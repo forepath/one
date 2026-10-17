@@ -176,13 +176,6 @@
   }
 }
 
-// A link that is announced but not live yet: shown in the link style, muted and not clickable.
-.about-timeline__link--disabled {
-  color: var(--bs-secondary-color);
-  opacity: 0.6;
-  cursor: default;
-}
-
 .about-person {
   max-width: 14rem;
   margin-inline: auto;

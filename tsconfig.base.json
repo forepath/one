@@ -240,6 +240,24 @@
       ],
       "@forepath/agenstra/backend/util-microvm-bridge": [
         "libs/domains/agenstra/backend/util-microvm-bridge/src/index.ts"
+      ],
+      "@forepath/loadweaver/backend": [
+        "libs/domains/loadweaver/backend/index.ts"
+      ],
+      "@forepath/loadweaver/frontend": [
+        "libs/domains/loadweaver/frontend/index.ts"
+      ],
+      "@forepath/loadweaver/keycloak": [
+        "libs/domains/loadweaver/keycloak/index.ts"
+      ],
+      "@forepath/loadweaver/shared": [
+        "libs/domains/loadweaver/shared/index.ts"
+      ],
+      "@forepath/loadweaver/frontend/util-configuration": [
+        "libs/domains/loadweaver/frontend/util-configuration/src/index.ts"
+      ],
+      "@forepath/loadweaver/frontend/feature-landingpage": [
+        "libs/domains/loadweaver/frontend/feature-landingpage/src/index.ts"
       ]
     }
   },

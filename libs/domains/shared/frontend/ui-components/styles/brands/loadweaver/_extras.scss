@@ -1,0 +1,7 @@
+// Loadweaver-only portal extras (after shared brands/_extras.scss).
+
+:root {
+  --bs-body-bg-alt: #fbfaf6;
+  // Gold is a light fill: labels on it are dark (see `--fpc-primary-contrast` in brands/_extras.scss).
+  --fpc-primary-contrast: #0f0f11;
+}

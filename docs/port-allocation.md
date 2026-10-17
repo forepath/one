@@ -1,6 +1,6 @@
 # Application Port Allocation
 
-Application listeners use separate numeric bands: backend HTTP services use `3xxx`, frontend HTTP servers use `4xxx`, and networked MCP transports are reserved for `5xxx`. Port assignments are unique across this workspace so apps can run together without local binding conflicts.
+Application listeners use separate numeric bands: backend HTTP services use `3xxx`, frontend HTTP servers use `4xxx`, and networked MCP transports are reserved for `5xxx`. Port assignments are unique across this workspace so apps can run together without local binding conflicts. Frontends are grouped in blocks of 100 per product (Agenstra `41xx`, Decabill `42xx`, ForePath `43xx`, shared `44xx`, Loadweaver `46xx`); `4500` is skipped because the landing environments still use it as the placeholder portal URL (`host.docker.internal:4500`).
 
 ## Application Listeners
 
@@ -21,6 +21,8 @@ Application listeners use separate numeric bands: backend HTTP services use `3xx
 | Forepath billing console      | 4301 | Frontend                       |
 | Shared documentation          | 4400 | Frontend                       |
 | Shared UI Storybook           | 4401 | Frontend tooling               |
+| Loadweaver landing page       | 4600 | Frontend                       |
+| Loadweaver billing console    | 4601 | Frontend                       |
 
 The `ai`, `code`, `graph`, and shared MCP proxy servers use stdio transport and do not bind network ports. Reserve `5xxx` for MCP servers that introduce a network transport. The native agent console selects an available local port at runtime.
 
