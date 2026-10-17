@@ -240,6 +240,10 @@ jobs:
           marker: '<!-- nx-test-report -->'
           body-path: pr-tests.md
 
+      # Integration suites start their own throwaway containers (Docker is available on the runner).
+      - name: Run integration tests
+        run: npx nx affected --target=integration-test --parallel=1
+
       - name: Run end-to-end tests
         if: needs.detect-affected.outputs.has_e2e == 'true'
         run: npx nx affected --target=e2e --parallel=3

@@ -105,6 +105,7 @@
                 "sourceTag": "domain:loadweaver",
                 "onlyDependOnLibsWithTags": [
                   "domain:loadweaver",
+                  "domain:identity",
                   "domain:shared"
                 ]
               }

@@ -1,0 +1,58 @@
+# -----------------------------------------------------------------------------
+# Image:      loadweaver-control-plane-api
+# Project:    loadweaver-backend-control-plane — Nx target `api-container-image`
+# Registry:   ghcr.io/forepath/loadweaver-control-plane-api
+# Base:       debian:trixie-slim (pinned by digest, section 6)
+# User:       loadweaver (APP_UID / APP_GID, default 10001)
+# Exposes:    3400 (HTTP API + WebSocket), 7443 (node agent gRPC stream, mTLS)
+# Build:      npx nx run loadweaver-backend-control-plane:api-container-image
+# -----------------------------------------------------------------------------
+#
+FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+
+ARG APP_UID=10001
+ARG APP_GID=10001
+# Release sets VERSION via --build-arg (see api-container-image / release.yml).
+ARG VERSION=0.0.0
+
+ENV HOST=0.0.0.0
+ENV PORT=3400
+ENV LOADWEAVER_GRPC_PORT=7443
+ENV NVM_DIR=/home/loadweaver/.nvm
+ENV NODE_VERSION=24.14.1
+ENV HOME=/home/loadweaver
+ENV PATH="/home/loadweaver/.nvm/versions/node/v${NODE_VERSION}/bin:${PATH}"
+ENV VERSION=${VERSION}
+
+WORKDIR /app
+
+EXPOSE ${PORT} ${LOADWEAVER_GRPC_PORT}
+
+RUN apt-get update && \
+    apt-get upgrade -y --no-install-recommends && \
+    apt-get install -y --no-install-recommends curl bash ca-certificates && \
+    groupadd --gid "${APP_GID}" loadweaver && \
+    useradd --uid "${APP_UID}" --gid "${APP_GID}" --create-home --home-dir /home/loadweaver --shell /bin/bash loadweaver && \
+    chown "${APP_UID}:${APP_GID}" /app && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+USER loadweaver
+
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | PROFILE=/dev/null bash && \
+    . "${NVM_DIR}/nvm.sh" && \
+    nvm install "${NODE_VERSION}" && \
+    nvm alias default "${NODE_VERSION}" && \
+    npm install -g npm@11.18.0 && \
+    npm cache clean --force
+
+COPY --chown=${APP_UID}:${APP_GID} package*.json ./
+
+RUN . "${NVM_DIR}/nvm.sh" && npm ci --ignore-scripts && npm cache clean --force
+
+COPY --chown=${APP_UID}:${APP_GID} . /app
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f "http://localhost:${PORT}/api/health" || exit 1
+
+ENTRYPOINT ["bash", "-c", ". \"${NVM_DIR}/nvm.sh\" && exec node main.js"]

@@ -1,0 +1,69 @@
+x-backend-control-plane-environment: &backend-control-plane-environment
+  HOST: ${HOST:-0.0.0.0}
+  PORT: ${PORT:-3400}
+  NODE_ENV: ${NODE_ENV:-development}
+  DB_HOST: ${DB_HOST:-postgres}
+  DB_PORT: ${DB_PORT:-5432}
+  DB_USERNAME: ${DB_USERNAME:-postgres}
+  DB_PASSWORD: ${DB_PASSWORD:-postgres}
+  DB_DATABASE: ${DB_DATABASE:-loadweaver}
+  ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+  AUTHENTICATION_METHOD: ${AUTHENTICATION_METHOD:-api-key}
+  STATIC_API_KEY: ${STATIC_API_KEY:-}
+  JWT_SECRET: ${JWT_SECRET:-}
+  DISABLE_SIGNUP: ${DISABLE_SIGNUP:-false}
+  CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:4602}
+  RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-}
+  KEYCLOAK_SERVER_URL: ${KEYCLOAK_SERVER_URL:-}
+  KEYCLOAK_AUTH_SERVER_URL: ${KEYCLOAK_AUTH_SERVER_URL:-}
+  KEYCLOAK_REALM: ${KEYCLOAK_REALM:-}
+  KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-}
+  KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-}
+  LOADWEAVER_CLUSTER_ID: ${LOADWEAVER_CLUSTER_ID:-}
+  LOADWEAVER_CLUSTER_NAME: ${LOADWEAVER_CLUSTER_NAME:-}
+  LOADWEAVER_GRPC_PORT: ${LOADWEAVER_GRPC_PORT:-7443}
+  LOADWEAVER_GRPC_HOSTNAMES: ${LOADWEAVER_GRPC_HOSTNAMES:-localhost}
+  LOADWEAVER_GRPC_ENDPOINTS: ${LOADWEAVER_GRPC_ENDPOINTS:-localhost:7443}
+  OTEL_ENABLED: ${OTEL_ENABLED:-false}
+
+services:
+  postgres:
+    image: docker.io/library/postgres:16.10-alpine@sha256:029660641a0cfc575b14f336ba448fb8a75fd595d42e1fa316b9fb4378742297
+    container_name: loadweaver-control-plane-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: loadweaver
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - loadweaver-control-plane-network
+    restart: unless-stopped
+
+  backend-control-plane:
+    image: ghcr.io/forepath/loadweaver-control-plane-api:latest
+    pull_policy: never
+    container_name: loadweaver-control-plane-api
+    environment:
+      <<: *backend-control-plane-environment
+    ports:
+      - '${PORT:-3400}:${PORT:-3400}'
+      - '${LOADWEAVER_GRPC_PORT:-7443}:${LOADWEAVER_GRPC_PORT:-7443}'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - loadweaver-control-plane-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  loadweaver-control-plane-network:
+    driver: bridge
