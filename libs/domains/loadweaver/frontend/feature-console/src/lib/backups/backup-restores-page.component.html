@@ -1,0 +1,148 @@
+<fpc-page-header [title]="title" icon="arrow-counterclockwise">
+  <div fpcPageHeaderActions class="d-flex flex-wrap align-items-center gap-2">
+    <fpc-button variant="link" size="sm" routerLink="/backups">
+      <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>{{ backLabel }}
+    </fpc-button>
+    <select
+      class="form-select form-select-sm w-auto"
+      [attr.aria-label]="allProjectsLabel"
+      [ngModel]="project() ?? ''"
+      (ngModelChange)="selectProject($event)"
+      data-testid="restores-project"
+    >
+      <option value="">{{ allProjectsLabel }}</option>
+      @for (p of projects(); track p) {
+        <option [value]="p">{{ p }}</option>
+      }
+    </select>
+    <fpc-button
+      variant="outline-secondary"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </div>
+</fpc-page-header>
+
+@if (error(); as message) {
+  <fpc-alert class="d-block m-3" variant="danger" [message]="message" />
+}
+
+@if (loading() && !loaded()) {
+  <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
+} @else {
+  <fpc-tab-group class="d-block px-3" [activeId]="activeTab()" (activeIdChange)="selectTab($event)">
+    <fpc-tab id="restores" [label]="tabRestores" icon="arrow-counterclockwise">
+      <div class="py-3">
+        <p class="small text-body-secondary" i18n="@@lwConsoleBackupRestores-hint">
+          Restores are started from the catalog (restore wizard) as plans; once the plan is applied they run here.
+        </p>
+        <fpc-list [flush]="true" data-testid="restores-list">
+          @for (r of restores(); track r.id) {
+            <fpc-list-item>
+              <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                <fpc-badge [color]="restoreTone[r.status]" size="sm">{{ restoreLabel(r.status) }}</fpc-badge>
+                <span class="fw-semibold">{{ r.name }}</span>
+                <fpc-badge color="light" size="sm">{{ r.project }}</fpc-badge>
+                @if (r.kind === 'path') {
+                  <fpc-badge color="info" size="sm" i18n="@@lwConsoleBackupRestores-kindPath">Single path</fpc-badge>
+                } @else {
+                  <fpc-badge color="secondary" size="sm" i18n="@@lwConsoleBackupRestores-kindVolume"
+                    >Whole volume</fpc-badge
+                  >
+                }
+                @if (r.status === 'running' && r.progress?.phase) {
+                  <span class="small text-body-secondary">{{ r.progress?.phase }}</span>
+                }
+              </div>
+              <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap align-items-center gap-3">
+                <span
+                  ><i class="bi bi-hdd me-1" aria-hidden="true"></i
+                  ><span class="font-monospace">{{ r.volume }}</span></span
+                >
+                <a [routerLink]="['/backups', r.backupId]" i18n="@@lwConsoleBackupRestores-backup">Backup</a>
+                @if (r.progress; as p) {
+                  @if (p.bytes !== undefined) {
+                    <span>{{ bytes(p.bytes) }}</span>
+                  }
+                  @if (p.files !== undefined) {
+                    <span>{{ p.files }} <span i18n="@@lwConsoleBackupRestores-files">files</span></span>
+                  }
+                }
+                @if (r.node) {
+                  <span><i class="bi bi-hdd-network me-1" aria-hidden="true"></i>{{ r.node }}</span>
+                }
+                @if (r.startedAt) {
+                  <span>{{ r.startedAt | date: 'short' }}</span>
+                }
+                @if (r.finishedAt) {
+                  <span>→ {{ r.finishedAt | date: 'short' }}</span>
+                }
+                @if (r.error) {
+                  <span class="text-danger text-break w-100">{{ r.error }}</span>
+                }
+              </div>
+            </fpc-list-item>
+          } @empty {
+            <fpc-empty-state
+              icon="arrow-counterclockwise"
+              size="sm"
+              i18n-title="@@lwConsoleBackupRestores-none"
+              title="No restores yet"
+            />
+          }
+        </fpc-list>
+      </div>
+    </fpc-tab>
+    <fpc-tab id="tests" [label]="tabTests" icon="clipboard-check">
+      <div class="py-3">
+        <fpc-list [flush]="true" data-testid="restore-tests-list">
+          @for (t of tests(); track t.id) {
+            <fpc-list-item>
+              <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                <fpc-badge [color]="testTone[t.status]" size="sm">{{ testLabel(t.status) }}</fpc-badge>
+                <span class="fw-semibold font-monospace">{{ t.resource }}</span>
+                <span class="small text-body-secondary"
+                  ><span i18n="@@lwConsoleBackupRestores-keyGeneration">key generation</span>
+                  {{ t.keyGeneration }}</span
+                >
+              </div>
+              <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap align-items-center gap-3">
+                <a [routerLink]="['/backups', t.backupId]" i18n="@@lwConsoleBackupRestores-backup">Backup</a>
+                <span>{{ t.startedAt | date: 'short' }}</span>
+                @if (t.node) {
+                  <span><i class="bi bi-hdd-network me-1" aria-hidden="true"></i>{{ t.node }}</span>
+                }
+                @if (t.check; as c) {
+                  @if (c.command) {
+                    <span class="font-monospace">{{ c.command.join(' ') }}</span>
+                  }
+                  @if (c.exitCode !== null) {
+                    <span><span i18n="@@lwConsoleBackupRestores-exitCode">exit code</span> {{ c.exitCode }}</span>
+                  }
+                }
+                @if (t.error) {
+                  <span class="text-danger text-break w-100">{{ t.error }}</span>
+                }
+                @if (t.check?.output) {
+                  <pre class="small mb-0 w-100 text-break" style="white-space: pre-wrap">{{ t.check?.output }}</pre>
+                }
+              </div>
+            </fpc-list-item>
+          } @empty {
+            <fpc-empty-state
+              icon="clipboard-check"
+              size="sm"
+              i18n-title="@@lwConsoleBackupRestores-noTests"
+              title="No restore tests yet"
+            />
+          }
+        </fpc-list>
+      </div>
+    </fpc-tab>
+  </fpc-tab-group>
+}

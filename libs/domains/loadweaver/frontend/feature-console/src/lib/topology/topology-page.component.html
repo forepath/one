@@ -1,0 +1,305 @@
+<fpc-page-header [title]="title" icon="diagram-3">
+  <div fpcPageHeaderActions class="d-flex align-items-center gap-2 flex-wrap">
+    <div class="btn-group btn-group-sm" role="group" [attr.aria-label]="modeLabel" data-testid="topology-modes">
+      <button
+        type="button"
+        class="btn"
+        [class.btn-primary]="mode() === 'live'"
+        [class.btn-outline-primary]="mode() !== 'live'"
+        (click)="setMode('live')"
+      >
+        <i class="bi bi-broadcast me-1" aria-hidden="true"></i>{{ liveLabel }}
+      </button>
+      @if (clusterRole()) {
+        <button
+          type="button"
+          class="btn"
+          [class.btn-primary]="mode() === 'timeline'"
+          [class.btn-outline-primary]="mode() !== 'timeline'"
+          (click)="setMode('timeline')"
+        >
+          <i class="bi bi-clock-history me-1" aria-hidden="true"></i>{{ timelineLabel }}
+        </button>
+      }
+      <button
+        type="button"
+        class="btn"
+        [class.btn-primary]="mode() === 'plan'"
+        [class.btn-outline-primary]="mode() !== 'plan'"
+        (click)="setMode('plan')"
+      >
+        <i class="bi bi-file-diff me-1" aria-hidden="true"></i>{{ planLabel }}
+      </button>
+    </div>
+    <fpc-button
+      variant="outline-secondary"
+      size="sm"
+      iconOnly
+      [ariaLabel]="fitLabel"
+      [title]="fitLabel"
+      (clicked)="fit()"
+    >
+      <i class="bi bi-arrows-fullscreen" aria-hidden="true"></i>
+    </fpc-button>
+    <fpc-button
+      variant="outline-secondary"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </div>
+</fpc-page-header>
+
+<div class="p-3">
+  @if (error(); as message) {
+    <fpc-alert class="d-block mb-3" variant="danger" [message]="message" />
+  }
+  @if (mode() === 'live' && liveError(); as message) {
+    <fpc-alert class="d-block mb-3" variant="warning" [message]="message" />
+  }
+
+  <div class="d-flex flex-wrap align-items-center gap-3 mb-2" data-testid="topology-toolbar">
+    @switch (mode()) {
+      @case ('live') {
+        @if (clusterRole()) {
+          <span class="small d-flex align-items-center gap-2" data-testid="topology-live-status">
+            <fpc-badge size="sm" [color]="liveConnected() ? 'success' : 'secondary'">
+              @if (liveConnected()) {
+                <span i18n="@@lwConsoleTopology-liveOn">Live</span>
+              } @else {
+                <span i18n="@@lwConsoleTopology-liveOff">Connecting</span>
+              }
+            </fpc-badge>
+            @if (at(); as time) {
+              <span class="text-body-secondary"
+                ><span i18n="@@lwConsoleTopology-flowsAt">Traffic of the minute before</span>
+                {{ time | date: 'mediumTime' }}</span
+              >
+            }
+          </span>
+        } @else {
+          <span class="small text-body-secondary" i18n="@@lwConsoleTopology-noTraffic"
+            >Traffic is shown to cluster roles only.</span
+          >
+        }
+      }
+      @case ('timeline') {
+        <div class="d-flex align-items-center gap-2 flex-wrap" data-testid="topology-timeline">
+          <label class="small text-body-secondary" for="lw-topology-slider">{{ sliderLabel }}</label>
+          <input
+            id="lw-topology-slider"
+            type="range"
+            class="form-range lw-topology__slider"
+            min="0"
+            [max]="timelineMinutes"
+            step="5"
+            [ngModel]="timelineMinutes - minutesBack()"
+            (ngModelChange)="onSlider(timelineMinutes - $event)"
+          />
+          <span class="small font-monospace">{{ sliderAt() | date: 'short' }}</span>
+          <label class="visually-hidden" for="lw-topology-at">{{ atLabel }}</label>
+          <input
+            id="lw-topology-at"
+            type="datetime-local"
+            class="form-control form-control-sm w-auto"
+            [ngModel]="localAt()"
+            (ngModelChange)="onAtInput($event)"
+          />
+        </div>
+      }
+      @case ('plan') {
+        <div class="d-flex align-items-center gap-2">
+          <label class="small text-body-secondary" for="lw-topology-plan">{{ planSelectLabel }}</label>
+          <select
+            id="lw-topology-plan"
+            class="form-select form-select-sm w-auto"
+            [ngModel]="planId()"
+            (ngModelChange)="onPlanChange($event)"
+            data-testid="topology-plan"
+          >
+            <option [ngValue]="null" i18n="@@lwConsoleTopology-noPlan">None</option>
+            @for (plan of pendingPlans(); track plan.id) {
+              <option [ngValue]="plan.id">{{ planName(plan) }}</option>
+            }
+          </select>
+          @if (plansLoading()) {
+            <fpc-spinner size="sm" />
+          } @else if (pendingPlans().length === 0) {
+            <span class="small text-body-secondary" i18n="@@lwConsoleTopology-noPendingPlans">No pending plans.</span>
+          }
+          @if (planId(); as id) {
+            <a class="small" [routerLink]="['/plans', id]" i18n="@@lwConsoleTopology-openPlan">Open plan</a>
+          }
+        </div>
+        <span class="small d-flex align-items-center gap-2">
+          <fpc-badge size="sm" color="success" i18n="@@lwConsoleTopology-legendCreate">create</fpc-badge>
+          <fpc-badge size="sm" color="warning" i18n="@@lwConsoleTopology-legendUpdate">update</fpc-badge>
+          <fpc-badge size="sm" color="danger" i18n="@@lwConsoleTopology-legendDelete">delete</fpc-badge>
+          <span class="text-body-secondary" i18n="@@lwConsoleTopology-legendProposed">dashed: proposed edges</span>
+        </span>
+      }
+    }
+
+    @if (mode() !== 'plan' && flowTotals().count > 0) {
+      <span class="small text-body-secondary" data-testid="topology-flow-totals">
+        {{ flowTotals().count }} <span i18n="@@lwConsoleTopology-flows">flows</span> ·
+        {{ formatRate(flowTotals().bytesPerSecond) }}
+        @if (flowTotals().denied > 0) {
+          ·
+          <span class="text-danger"
+            >{{ flowTotals().denied }} <span i18n="@@lwConsoleTopology-denied">denied</span></span
+          >
+        }
+      </span>
+    }
+  </div>
+
+  <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+    <span class="small fw-semibold">{{ layersLabel }}</span>
+    @for (layer of allLayers; track layer) {
+      @if (layer !== 'traffic' || clusterRole()) {
+        <div class="form-check form-switch mb-0">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            role="switch"
+            [id]="'lw-topology-layer-' + layer"
+            [ngModel]="layers().has(layer)"
+            (ngModelChange)="toggleLayer(layer, $event)"
+          />
+          <label class="form-check-label small" [for]="'lw-topology-layer-' + layer">{{ layerLabel(layer) }}</label>
+        </div>
+      }
+    }
+    <form class="d-flex align-items-center gap-2 ms-auto" (ngSubmit)="trace()" data-testid="topology-trace-form">
+      <label class="visually-hidden" for="lw-topology-host">{{ traceLabel }}</label>
+      <input
+        id="lw-topology-host"
+        name="host"
+        type="text"
+        class="form-control form-control-sm"
+        [placeholder]="tracePlaceholder"
+        [ngModel]="hostInput()"
+        (ngModelChange)="hostInput.set($event)"
+      />
+      <fpc-button type="submit" variant="outline-primary" size="sm" [loading]="traceLoading()">
+        <i class="bi bi-signpost-split me-1" aria-hidden="true"></i
+        ><span i18n="@@lwConsoleTopology-traceButton">Trace</span>
+      </fpc-button>
+    </form>
+  </div>
+
+  <div class="lw-topology">
+    <div class="lw-topology__canvas">
+      @if (loading()) {
+        <div class="lw-topology__loading"><fpc-spinner size="sm" /></div>
+      }
+      @if (graph() && canvasInput().elements.length === 0) {
+        <fpc-empty-state icon="diagram-3" i18n-title="@@lwConsoleTopology-empty" title="Nothing on the map yet" />
+      } @else {
+        <fpc-graph-canvas
+          [elements]="canvasInput().elements"
+          [edges]="canvasInput().edges"
+          [hiddenKinds]="hiddenKinds()"
+          [highlight]="highlight()"
+          [selectedId]="selection()?.id ?? null"
+          [ariaLabel]="mapLabel"
+          (elementSelect)="onElementSelect($event)"
+          (edgeSelect)="onEdgeSelect($event)"
+          (selectionClear)="clearSelection()"
+        />
+      }
+    </div>
+
+    @if (selection() || traceHost()) {
+      <aside class="lw-topology__side d-flex flex-column gap-3">
+        @if (traceHost(); as host) {
+          <fpc-panel [title]="traceLabel + ': ' + host" [flush]="true" data-testid="topology-trace">
+            <div fpcPanelActions>
+              <fpc-button variant="link" size="sm" iconOnly [ariaLabel]="closeLabel" (clicked)="clearTrace()">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+              </fpc-button>
+            </div>
+            @if (traceError(); as message) {
+              <fpc-alert variant="danger" [message]="message" />
+            } @else if (traceLoading()) {
+              <div class="d-flex justify-content-center p-3"><fpc-spinner size="sm" /></div>
+            } @else {
+              <ol class="list-group list-group-flush list-group-numbered">
+                @for (step of traceSteps(); track step.id) {
+                  <li class="list-group-item list-group-item-action small" role="button" (click)="focus(step)">
+                    <fpc-badge size="sm" color="light">{{ step.kind }}</fpc-badge>
+                    <span class="font-monospace ms-1">{{ step.label }}</span>
+                  </li>
+                }
+              </ol>
+            }
+          </fpc-panel>
+        }
+
+        @if (selectedElement() || selectedEdge()) {
+          <fpc-panel [title]="selectedElement()?.label ?? detailsTitle" [flush]="true" data-testid="topology-details">
+            <div fpcPanelActions>
+              <fpc-button variant="link" size="sm" iconOnly [ariaLabel]="closeLabel" (clicked)="clearSelection()">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+              </fpc-button>
+            </div>
+            <div class="p-3 pb-0 small">
+              @if (selectedElement(); as element) {
+                <fpc-badge size="sm" color="light">{{ element.kind }}</fpc-badge>
+                @if (element.kind === 'replica' && element.data['state'] === 'draining') {
+                  <fpc-badge
+                    size="sm"
+                    color="warning"
+                    class="ms-1"
+                    data-testid="topology-draining"
+                    i18n-title="@@lwConsoleTopology-drainingHint"
+                    title="Removed: out of routing, stopped after its grace period"
+                    i18n="@@lwConsoleTopology-draining"
+                    >draining</fpc-badge
+                  >
+                }
+              } @else if (selectedEdge(); as edge) {
+                <fpc-badge size="sm" [color]="edge.data['decision'] === 'denied' ? 'danger' : 'light'">{{
+                  edge.kind
+                }}</fpc-badge>
+                <div class="font-monospace mt-1 text-break">{{ edge.source }} → {{ edge.target }}</div>
+              }
+            </div>
+            <dl class="row small p-3 mb-0">
+              @for (row of selectedDetails(); track row.key) {
+                <dt class="col-5 text-body-secondary fw-normal">{{ row.key }}</dt>
+                <dd class="col-7 font-monospace text-break mb-1">{{ row.value }}</dd>
+              }
+            </dl>
+            @if (selectedLinks().length > 0 || selectedElement()?.kind === 'hostname') {
+              <ul class="list-group list-group-flush" data-testid="topology-links">
+                @for (link of selectedLinks(); track link.label) {
+                  <li class="list-group-item small">
+                    <a [routerLink]="link.route" [queryParams]="link.queryParams ?? null"
+                      ><i class="bi {{ link.icon }} me-1" aria-hidden="true"></i>{{ link.label }}</a
+                    >
+                  </li>
+                }
+                @if (selectedElement(); as element) {
+                  @if (element.kind === 'hostname') {
+                    <li class="list-group-item small">
+                      <a href="" (click)="$event.preventDefault(); traceFrom(element)"
+                        ><i class="bi bi-signpost-split me-1" aria-hidden="true"></i
+                        ><span i18n="@@lwConsoleTopology-traceHost">Trace this hostname</span></a
+                      >
+                    </li>
+                  }
+                }
+              </ul>
+            }
+          </fpc-panel>
+        }
+      </aside>
+    }
+  </div>
+</div>

@@ -1,0 +1,219 @@
+<fpc-page-header [title]="title" icon="broadcast-pin">
+  <div fpcPageHeaderActions class="d-flex align-items-center gap-2 flex-wrap">
+    <fpc-button
+      variant="outline-secondary"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </div>
+</fpc-page-header>
+
+@if (actionError(); as message) {
+  @if (!modalOpen()) {
+    <fpc-alert class="m-3" variant="danger" [message]="message" [dismissible]="true" (closed)="dismissActionError()" />
+  }
+}
+
+<fpc-tab-group class="d-block px-3" [activeId]="activeTab()" (activeIdChange)="activeTab.set($event)">
+  <fpc-tab id="pages" [label]="tabPages" icon="broadcast-pin">
+    <div class="d-flex flex-wrap align-items-center gap-2 py-2">
+      <span class="small text-body-secondary" i18n="@@lwConsoleStatusPages-pagesHint"
+        >Status pages are project resources: change them through a plan.</span
+      >
+      @if (project(); as p) {
+        @if (mayPlan()) {
+          <a
+            class="btn btn-sm btn-primary ms-auto"
+            routerLink="/resources/new"
+            [queryParams]="{ kind: 'StatusPage', project: p }"
+            data-testid="status-page-new"
+          >
+            <i class="bi bi-plus-lg me-1" aria-hidden="true"></i
+            ><span i18n="@@lwConsoleStatusPages-newPage">New status page</span>
+          </a>
+        }
+      }
+    </div>
+
+    @if (pagesError(); as message) {
+      <fpc-alert variant="danger" [message]="message" />
+    }
+
+    @if (pagesLoading() && pages().length === 0) {
+      <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
+    } @else if (pages().length === 0) {
+      <fpc-empty-state icon="broadcast-pin" i18n-title="@@lwConsoleStatusPages-noPages" title="No status pages" />
+    } @else {
+      <fpc-list data-testid="status-pages-list">
+        @for (page of pages(); track page.metadata.project + '/' + page.metadata.name) {
+          <fpc-list-item>
+            <div fpcListItemTitle class="d-flex align-items-center gap-2 flex-wrap min-w-0">
+              <i class="bi bi-broadcast-pin" aria-hidden="true"></i>
+              <a
+                class="fw-semibold text-truncate"
+                [routerLink]="pageLink(page)"
+                [queryParams]="{ project: page.metadata.project }"
+                >{{ page.spec.title }}</a
+              >
+              <fpc-badge color="secondary" size="sm">{{ page.metadata.project }}/{{ page.metadata.name }}</fpc-badge>
+            </div>
+            <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap gap-3">
+              <span class="font-monospace"
+                ><i class="bi bi-globe me-1" aria-hidden="true"></i>{{ page.spec.host }}</span
+              >
+              <span
+                ><i class="bi bi-boxes me-1" aria-hidden="true"></i>{{ page.spec.services.length }}
+                <span i18n="@@lwConsoleStatusPages-services">services</span></span
+              >
+              @if (page.spec.showUptime !== false) {
+                <span
+                  ><i class="bi bi-calendar-check me-1" aria-hidden="true"></i
+                  ><span i18n="@@lwConsoleStatusPages-showsUptime">shows uptime</span></span
+                >
+              }
+              @if (page.spec.description) {
+                <span class="text-truncate">{{ page.spec.description }}</span>
+              }
+            </div>
+            <div fpcListItemActions class="d-flex gap-2">
+              <a
+                class="btn btn-sm btn-outline-secondary"
+                [href]="pageUrl(page)"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="status-page-open"
+              >
+                <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i
+                ><span i18n="@@lwConsoleStatusPages-openPage">Open</span>
+              </a>
+              <a
+                class="btn btn-sm btn-outline-primary"
+                [routerLink]="pageEditLink(page)"
+                [queryParams]="{ project: page.metadata.project }"
+                data-testid="status-page-edit"
+              >
+                <i class="bi bi-pencil me-1" aria-hidden="true"></i><span i18n="@@lwConsoleStatusPages-edit">Edit</span>
+              </a>
+            </div>
+          </fpc-list-item>
+        }
+      </fpc-list>
+    }
+  </fpc-tab>
+
+  <fpc-tab id="incidents" [label]="tabIncidents" icon="exclamation-octagon">
+    <div class="d-flex flex-wrap align-items-center gap-2 py-2">
+      @if (projects().length > 0) {
+        <label class="visually-hidden" for="lw-incidents-project">{{ projectLabel }}</label>
+        <select
+          id="lw-incidents-project"
+          class="form-select form-select-sm w-auto"
+          [ngModel]="project()"
+          (ngModelChange)="selectProject($event)"
+        >
+          @for (p of projects(); track p) {
+            <option [value]="p">{{ p }}</option>
+          }
+        </select>
+      }
+      @if (openCount() > 0) {
+        <fpc-badge color="danger" size="sm"
+          >{{ openCount() }} <span i18n="@@lwConsoleStatusPages-open">open</span></fpc-badge
+        >
+      }
+      @if (mayWrite()) {
+        <fpc-button class="ms-auto" variant="primary" size="sm" (clicked)="newIncident()" data-testid="incident-new">
+          <i class="bi bi-plus-lg me-1" aria-hidden="true"></i
+          ><span i18n="@@lwConsoleStatusPages-newIncident">New incident</span>
+        </fpc-button>
+      }
+    </div>
+
+    @if (incidentsError(); as message) {
+      <fpc-alert variant="danger" [message]="message" />
+    }
+
+    @if (!project()) {
+      <fpc-empty-state icon="folder" i18n-title="@@lwConsoleStatusPages-noProject" title="No project to show" />
+    } @else if (incidentsLoading() && incidents().length === 0) {
+      <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
+    } @else if (incidents().length === 0) {
+      <fpc-empty-state icon="check2-circle" i18n-title="@@lwConsoleStatusPages-noIncidents" title="No incidents" />
+    } @else {
+      <fpc-list data-testid="incidents-list">
+        @for (incident of sortedIncidents(); track incident.id) {
+          <fpc-list-item [clickable]="true" (selected)="toggle(incident)">
+            <div fpcListItemTitle class="d-flex align-items-center gap-2 flex-wrap min-w-0">
+              <i
+                class="bi"
+                [class.bi-chevron-right]="!expanded().has(incident.id)"
+                [class.bi-chevron-down]="expanded().has(incident.id)"
+                aria-hidden="true"
+              ></i>
+              <fpc-badge [color]="statusTone[incident.status]" size="sm">{{ statusLabel(incident.status) }}</fpc-badge>
+              <span class="fw-semibold text-truncate">{{ incident.title }}</span>
+            </div>
+            <div fpcListItemMeta class="small text-body-secondary">
+              <div class="d-flex flex-wrap gap-3">
+                <span><i class="bi bi-clock me-1" aria-hidden="true"></i>{{ incident.createdAt | date: 'short' }}</span>
+                @if (incident.resolvedAt) {
+                  <span
+                    ><i class="bi bi-check2 me-1" aria-hidden="true"></i>{{ incident.resolvedAt | date: 'short' }}</span
+                  >
+                }
+                <span
+                  ><i class="bi bi-chat-left-text me-1" aria-hidden="true"></i>{{ incident.updates.length }}
+                  <span i18n="@@lwConsoleStatusPages-updates">updates</span></span
+                >
+              </div>
+              @if (expanded().has(incident.id)) {
+                <ol class="list-unstyled mt-2 mb-0 border-start ps-3" data-testid="incident-updates">
+                  @for (update of updatesOf(incident); track $index) {
+                    <li class="mb-2">
+                      <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <fpc-badge [color]="statusTone[update.status]" size="sm">{{
+                          statusLabel(update.status)
+                        }}</fpc-badge>
+                        <span>{{ update.at | date: 'short' }}</span>
+                        @if (update.by) {
+                          <span><i class="bi bi-person me-1" aria-hidden="true"></i>{{ update.by }}</span>
+                        }
+                      </div>
+                      <div class="text-body mt-1 text-break" style="white-space: pre-wrap">{{ update.message }}</div>
+                    </li>
+                  }
+                </ol>
+              } @else if (latestUpdate(incident); as last) {
+                <div class="text-truncate mt-1">{{ last.message }}</div>
+              }
+            </div>
+            @if (mayWrite()) {
+              <div fpcListItemActions>
+                <fpc-button
+                  variant="outline-primary"
+                  size="sm"
+                  (clicked)="postUpdate(incident, $event)"
+                  data-testid="incident-update"
+                >
+                  <span i18n="@@lwConsoleStatusPages-postUpdate">Update</span>
+                </fpc-button>
+              </div>
+            }
+          </fpc-list-item>
+        }
+      </fpc-list>
+    }
+  </fpc-tab>
+</fpc-tab-group>
+
+<loadweaver-incident-modal
+  [open]="modalOpen()"
+  (openChange)="modalOpen.set($event)"
+  [project]="project()"
+  [incident]="modalIncident()"
+/>

@@ -1,0 +1,38 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 6rem;
+  overflow: hidden;
+  border: var(--bs-border-width) solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background-color: var(--bs-body-bg);
+  transition:
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
+}
+
+:host(:focus-within) {
+  border-color: var(--bs-primary);
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--bs-primary) 20%, transparent);
+}
+
+:host(.fpc-code-editor--invalid) {
+  border-color: var(--bs-danger);
+}
+
+:host(.fpc-code-editor--readonly) {
+  background-color: var(--bs-tertiary-bg);
+}
+
+.fpc-code-editor__editor {
+  display: block;
+  flex: 1 1 auto;
+  min-height: 0;
+  // ngx-monaco-editor ships a fixed 200px host height.
+  height: auto !important;
+}
+
+:host ::ng-deep .editor-container,
+:host ::ng-deep .monaco-editor {
+  height: 100% !important;
+}

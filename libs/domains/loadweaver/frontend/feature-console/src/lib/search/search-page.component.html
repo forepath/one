@@ -1,0 +1,47 @@
+<fpc-page-header [title]="title" icon="search" />
+
+<div class="p-3">
+  <label class="visually-hidden" for="lw-search-page-input">{{ inputLabel }}</label>
+  <div class="input-group mb-3">
+    <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
+    <input
+      id="lw-search-page-input"
+      type="search"
+      class="form-control"
+      autocomplete="off"
+      [placeholder]="placeholder"
+      [value]="query()"
+      (input)="onQueryChange($any($event.target).value)"
+      data-testid="search-page-input"
+    />
+  </div>
+
+  @if (error(); as message) {
+    <fpc-alert variant="danger" [message]="message" />
+  }
+
+  @if (loading() && count() === 0) {
+    <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
+  } @else if (count() === 0) {
+    @if (query().trim()) {
+      <fpc-empty-state icon="search" i18n-title="@@lwConsoleSearch-pageEmpty" title="Nothing found" />
+    } @else {
+      <fpc-empty-state
+        icon="search"
+        i18n-title="@@lwConsoleSearch-pageStart"
+        title="Search the console"
+        i18n-message="@@lwConsoleSearch-pageStartMessage"
+        message="Projects, deployments, services, nodes, plans and alerts you may see; Ctrl / ⌘ + K opens the palette anywhere."
+      />
+    }
+  } @else {
+    <loadweaver-search-results
+      [sections]="sections()"
+      idPrefix="lw-search-page-entry"
+      (picked)="pick($event)"
+      (starred)="star($event)"
+    />
+  }
+</div>
+
+<loadweaver-search-action-confirm [action]="pendingAction()" (actionChange)="pendingAction.set($event)" />

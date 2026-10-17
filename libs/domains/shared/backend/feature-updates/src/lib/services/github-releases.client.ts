@@ -24,7 +24,13 @@ export class GitHubReleasesClient {
 
   constructor(@Inject(UPDATES_MODULE_OPTIONS) private readonly options: UpdatesModuleOptions) {}
 
-  async fetchLatestRelease(): Promise<GitHubLatestRelease | null> {
+  /**
+   * The newest release. GitHub's `latest` excludes prereleases; with `includePrereleases` (beta channel) the newest
+   * published release or prerelease by version is taken from the release list instead.
+   */
+  async fetchLatestRelease(options: { includePrereleases?: boolean } = {}): Promise<GitHubLatestRelease | null> {
+    if (options.includePrereleases) return await this.fetchNewestIncludingPrereleases();
+
     const { owner, repo } = this.resolveRepository();
     const url = `https://api.github.com/repos/${owner}/${repo}/releases/latest`;
 
@@ -51,7 +57,10 @@ export class GitHubReleasesClient {
    * Returns published non-prerelease releases newer than `installedVersion` (newest first).
    * Paginates until a release at or below the installed version is reached, or the page cap.
    */
-  async fetchReleasesNewerThan(installedVersion: string): Promise<GitHubLatestRelease[] | null> {
+  async fetchReleasesNewerThan(
+    installedVersion: string,
+    options: { includePrereleases?: boolean } = {},
+  ): Promise<GitHubLatestRelease[] | null> {
     const { owner, repo } = this.resolveRepository();
     const collected: GitHubLatestRelease[] = [];
 
@@ -75,7 +84,7 @@ export class GitHubReleasesClient {
         let reachedInstalledOrOlder = false;
 
         for (const item of payload) {
-          if (item.draft || item.prerelease) {
+          if (item.draft || (item.prerelease && !options.includePrereleases)) {
             continue;
           }
 
@@ -112,6 +121,44 @@ export class GitHubReleasesClient {
     }
   }
 
+  private async fetchNewestIncludingPrereleases(): Promise<GitHubLatestRelease | null> {
+    const { owner, repo } = this.resolveRepository();
+    const url = `https://api.github.com/repos/${owner}/${repo}/releases?per_page=${RELEASES_PER_PAGE}&page=1`;
+
+    try {
+      const response = await fetch(url, { headers: this.buildHeaders() });
+
+      if (!response.ok) {
+        this.logger.warn(`GitHub releases list request failed with status ${response.status}`);
+
+        return null;
+      }
+
+      const payload = (await response.json()) as GitHubReleaseApiResponse[];
+      let newest: GitHubLatestRelease | null = null;
+
+      for (const item of Array.isArray(payload) ? payload : []) {
+        const release = item.draft ? null : this.mapRelease(item, url);
+
+        if (!release) {
+          continue;
+        }
+
+        const comparison = newest ? compareVersions(release.tagName, newest.tagName) : 1;
+
+        if (comparison !== null && comparison > 0) {
+          newest = release;
+        }
+      }
+
+      return newest;
+    } catch (error) {
+      this.logger.warn(`GitHub releases list request failed: ${(error as Error).message}`);
+
+      return null;
+    }
+  }
+
   private resolveRepository(): { owner: string; repo: string } {
     return {
       owner: this.options.github?.owner?.trim() || 'forepath',
@@ -141,6 +188,7 @@ export class GitHubReleasesClient {
       body: payload.body ?? '',
       htmlUrl: payload.html_url ?? fallbackUrl,
       publishedAt: payload.published_at ?? new Date().toISOString(),
+      ...(payload.prerelease ? { prerelease: true } : {}),
     };
   }
 }

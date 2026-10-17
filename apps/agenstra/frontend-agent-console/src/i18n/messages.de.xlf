@@ -7910,6 +7910,18 @@
         <source>Open task run</source>
         <target>Aufgabenlauf öffnen</target>
       </trans-unit>
+      <trans-unit id="featureUpdates-channel" datatype="html">
+        <source>Channel</source>
+        <target>Kanal</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-channelBeta" datatype="html">
+        <source>Beta</source>
+        <target>Beta</target>
+      </trans-unit>
+      <trans-unit id="featureUpdates-channelStable" datatype="html">
+        <source>Stable</source>
+        <target>Stabil</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

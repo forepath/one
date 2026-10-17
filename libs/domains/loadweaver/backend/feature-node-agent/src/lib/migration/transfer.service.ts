@@ -1,0 +1,446 @@
+import { createHash, timingSafeEqual } from 'node:crypto';
+import { once } from 'node:events';
+import { constants } from 'node:fs';
+import { lstat, mkdir, open, rename, rm, symlink } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { finished } from 'node:stream/promises';
+import { connect, createServer, type PeerCertificate, type Server, type TLSSocket } from 'node:tls';
+
+import type { TransferEndpoint } from '@forepath/loadweaver/shared/util-agent-protocol';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
+
+import {
+  encodeFrame,
+  FrameReader,
+  listEntries,
+  MAX_BATCH_ENTRIES,
+  MAX_FILE_BYTES,
+  safeLinkEntry,
+  safeRelativePath,
+  sendBatch,
+  TRANSFER_PROTOCOL_VERSION,
+  writeChunk,
+  type TransferEnd,
+  type TransferEntry,
+  type TransferHello,
+  type TransferResult,
+  type TransferSum,
+} from './transfer-protocol';
+
+export function transferPort(env: NodeJS.ProcessEnv = process.env): number {
+  return Number(env['LOADWEAVER_MIGRATION_PORT'] || 7460);
+}
+
+/** TLS material of this node (the node certificate issued at join, 3.21) and the cluster it belongs to. */
+export interface TransferCredentials {
+  clusterId: string;
+  privateKeyPem: string;
+  certificatePem: string;
+  caCertificatePem: string;
+}
+
+/** The node identity a peer certificate must carry (URI SAN, see util-pki). */
+export function nodeIdentityUri(clusterId: string, node: string): string {
+  return `spiffe://${clusterId}.loadweaver/node/${node}`;
+}
+
+/** Whether a verified peer certificate is the expected node's. */
+export function isNodeCertificate(cert: Pick<PeerCertificate, 'subjectaltname'> | undefined, uri: string): boolean {
+  const names = (cert?.subjectaltname ?? '').split(',').map((n) => n.trim());
+
+  return names.includes(`URI:${uri}`);
+}
+
+function tokenMatches(expected: string, presented: unknown): boolean {
+  if (typeof presented !== 'string') return false;
+
+  const a = Buffer.from(expected);
+  const b = Buffer.from(presented);
+
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+interface ReceiveSession {
+  key: string;
+  token: string;
+  peer: string;
+  dir: string;
+  batches: Set<string>;
+  bytes: number;
+  waiters: (() => void)[];
+  idle: NodeJS.Timeout;
+  expiresInMs: number;
+  /** Batches of one attempt are received one after another (no link can appear between check and write). */
+  queue: Promise<unknown>;
+}
+
+const NO_FOLLOW_WRITE = constants.O_WRONLY | constants.O_CREAT | constants.O_TRUNC | constants.O_NOFOLLOW;
+
+/**
+ * Refuses a path any of whose existing components (below `root`, the entry itself included unless `self` is false)
+ * is a symlink: the receiver never creates, writes or removes anything through a link (M6 review M2).
+ */
+export async function assertNoLinkedComponent(root: string, relative: string, self: boolean): Promise<void> {
+  const segments = relative.split('/');
+  const last = self ? segments.length : segments.length - 1;
+
+  for (let i = 1; i <= last; i++) {
+    const info = await lstat(join(root, ...segments.slice(0, i))).catch((error: NodeJS.ErrnoException) => {
+      if (error.code === 'ENOENT') return null;
+
+      throw error;
+    });
+
+    if (!info) return;
+
+    if (info.isSymbolicLink()) throw new Error(`refusing to follow the link at ${segments.slice(0, i).join('/')}`);
+
+    if (i < segments.length && !info.isDirectory())
+      throw new Error(`not a directory: ${segments.slice(0, i).join('/')}`);
+  }
+}
+
+export interface OpenTransfer {
+  migration: string;
+  attempt: number;
+  token: string;
+  /** The only node allowed to connect (its certificate must name it). */
+  peer: string;
+  /** Where the batches land (`<dir>/<batch paths>`). */
+  dir: string;
+  expiresInSeconds: number;
+  /** This node's overlay address the endpoint listens on. */
+  address: string;
+  credentials: TransferCredentials;
+}
+
+const IDLE_SOCKET_MS = 60_000;
+
+/**
+ * The node-to-node checkpoint transfer (3.10): the target listens on its overlay address with its node certificate;
+ * only the source node of an open attempt (its certificate) presenting the attempt's single-use token may send, and
+ * only into that attempt's directory. The endpoint closes when the attempt ends or stays unused for its expiry.
+ */
+@Injectable()
+export class TransferService implements OnModuleDestroy {
+  private readonly logger = new Logger(TransferService.name);
+  private server: Server | null = null;
+  private listening: { address: string; port: number } | null = null;
+  private readonly sessions = new Map<string, ReceiveSession>();
+  /** Fixed per agent (the firewall allowance names it); `LOADWEAVER_MIGRATION_PORT=0` picks a free one (tests). */
+  private readonly port = transferPort();
+
+  private static key(migration: string, attempt: number): string {
+    return `${migration}#${attempt}`;
+  }
+
+  /** Opens the endpoint for one attempt (idempotent); returns where it listens. */
+  async open(request: OpenTransfer): Promise<TransferEndpoint> {
+    const key = TransferService.key(request.migration, request.attempt);
+    const existing = this.sessions.get(key);
+
+    if (existing) {
+      existing.idle.refresh();
+
+      return { ...(this.listening as { address: string; port: number }) };
+    }
+
+    if (this.listening && this.listening.address !== request.address && this.sessions.size === 0) await this.stop();
+
+    if (!this.server) await this.listen(request.address, request.credentials);
+
+    const expiresInMs = request.expiresInSeconds * 1000;
+    const session: ReceiveSession = {
+      key,
+      token: request.token,
+      peer: nodeIdentityUri(request.credentials.clusterId, request.peer),
+      dir: request.dir,
+      batches: new Set(),
+      bytes: 0,
+      waiters: [],
+      expiresInMs,
+      queue: Promise.resolve(),
+      idle: setTimeout(() => this.close(request.migration, request.attempt, 'expired'), expiresInMs),
+    };
+
+    session.idle.unref?.();
+    await mkdir(request.dir, { recursive: true, mode: 0o700 });
+    this.sessions.set(key, session);
+
+    return { ...(this.listening as { address: string; port: number }) };
+  }
+
+  /** Ends an attempt's endpoint; the listener stops with the last attempt. */
+  close(migration: string, attempt: number, reason = 'closed'): void {
+    const key = TransferService.key(migration, attempt);
+    const session = this.sessions.get(key);
+
+    if (!session) return;
+
+    clearTimeout(session.idle);
+    this.sessions.delete(key);
+    session.waiters.forEach((w) => w());
+    this.logger.log(`Transfer endpoint for ${key} ${reason}`);
+
+    if (this.sessions.size === 0) void this.stop();
+  }
+
+  received(migration: string, attempt: number): { batches: ReadonlySet<string>; bytes: number } | null {
+    const session = this.sessions.get(TransferService.key(migration, attempt));
+
+    return session ? { batches: session.batches, bytes: session.bytes } : null;
+  }
+
+  /** Resolves once `batch` arrived (or rejects after `timeoutMs` / when the endpoint closed). */
+  async waitFor(migration: string, attempt: number, batch: string, timeoutMs: number): Promise<void> {
+    const deadline = Date.now() + timeoutMs;
+
+    for (;;) {
+      const session = this.sessions.get(TransferService.key(migration, attempt));
+
+      if (!session) throw new Error('transfer endpoint closed');
+
+      if (session.batches.has(batch)) return;
+
+      const left = deadline - Date.now();
+
+      if (left <= 0) throw new Error(`checkpoint batch ${batch} did not arrive`);
+
+      await new Promise<void>((resolve) => {
+        const timer = setTimeout(resolve, Math.min(left, 1000));
+
+        session.waiters.push(() => {
+          clearTimeout(timer);
+          resolve();
+        });
+      });
+    }
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    for (const session of this.sessions.values()) clearTimeout(session.idle);
+
+    this.sessions.clear();
+    await this.stop();
+  }
+
+  private async listen(address: string, credentials: TransferCredentials): Promise<void> {
+    const server = createServer(
+      {
+        key: credentials.privateKeyPem,
+        cert: credentials.certificatePem,
+        ca: credentials.caCertificatePem,
+        requestCert: true,
+        rejectUnauthorized: true,
+        minVersion: 'TLSv1.3',
+      },
+      (socket) => void this.handle(socket),
+    );
+
+    server.on('tlsClientError', () => undefined);
+    await new Promise<void>((resolve, reject) => {
+      server.once('error', reject);
+      server.listen(this.port, address, () => resolve());
+    });
+
+    const bound = server.address();
+
+    this.server = server;
+    this.listening = { address, port: typeof bound === 'object' && bound ? bound.port : this.port };
+    this.logger.log(`Transfer endpoint listening on ${address}:${this.listening.port}`);
+  }
+
+  private async stop(): Promise<void> {
+    const server = this.server;
+
+    this.server = null;
+    this.listening = null;
+
+    if (server) await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
+
+  private async handle(socket: TLSSocket): Promise<void> {
+    socket.setTimeout(IDLE_SOCKET_MS, () => socket.destroy());
+    socket.on('error', () => undefined);
+
+    const reply = async (result: Omit<TransferResult, 'type'>) => {
+      await writeChunk(socket, encodeFrame({ type: 'result', ...result })).catch(() => undefined);
+      socket.end();
+    };
+
+    try {
+      const reader = new FrameReader(socket);
+      const hello = await reader.frame<TransferHello>();
+      const session =
+        hello.type === 'hello' && hello.v === TRANSFER_PROTOCOL_VERSION
+          ? this.sessions.get(TransferService.key(String(hello.migration), Number(hello.attempt)))
+          : undefined;
+
+      // One answer for every refusal: an unknown attempt, a wrong token or a wrong node look the same.
+      if (
+        !session ||
+        !tokenMatches(session.token, hello.token) ||
+        !isNodeCertificate(socket.getPeerCertificate(), session.peer) ||
+        typeof hello.batch !== 'string' ||
+        !safeRelativePath(hello.batch)
+      )
+        return await reply({ ok: false, error: 'not authorized' });
+
+      session.idle.refresh();
+
+      const received = session.queue.then(() => this.receive(reader, session));
+
+      session.queue = received.catch(() => undefined);
+
+      const bytes = await received;
+
+      session.batches.add(hello.batch);
+      session.bytes += bytes;
+      session.waiters.splice(0).forEach((w) => w());
+      await reply({ ok: true, bytes });
+    } catch (error) {
+      this.logger.warn(`Transfer failed: ${error instanceof Error ? error.message : String(error)}`);
+      await reply({ ok: false, error: (error instanceof Error ? error.message : String(error)).slice(0, 500) });
+    }
+  }
+
+  private async receive(reader: FrameReader, session: ReceiveSession): Promise<number> {
+    let bytes = 0;
+    let files = 0;
+
+    for (let count = 0; ; count++) {
+      if (count > MAX_BATCH_ENTRIES) throw new Error('too many entries');
+
+      const frame = await reader.frame<TransferEntry | TransferEnd>();
+
+      if (frame.type === 'end') {
+        if (frame.files !== files || frame.bytes !== bytes) throw new Error('batch incomplete');
+
+        return bytes;
+      }
+
+      if (!safeRelativePath(frame.path)) throw new Error('invalid path');
+
+      const target = join(session.dir, frame.path);
+
+      if (frame.type === 'dir') {
+        await assertNoLinkedComponent(session.dir, frame.path, true);
+        await mkdir(target, { recursive: true, mode: 0o700 });
+      } else if (frame.type === 'symlink') {
+        if (!safeLinkEntry(frame.path, frame.target)) throw new Error('invalid link');
+
+        // The link itself may be replaced (a re-sent batch), never anything through a link above it.
+        await assertNoLinkedComponent(session.dir, frame.path, false);
+        await mkdir(dirname(target), { recursive: true, mode: 0o700 });
+        await rm(target, { force: true });
+        await symlink(frame.target, target);
+      } else if (frame.type === 'file') {
+        if (!Number.isSafeInteger(frame.size) || frame.size < 0 || frame.size > MAX_FILE_BYTES)
+          throw new Error('invalid size');
+
+        await assertNoLinkedComponent(session.dir, frame.path, false);
+        await mkdir(dirname(target), { recursive: true, mode: 0o700 });
+
+        const part = `${target}.part`;
+        const out = (await open(part, NO_FOLLOW_WRITE, 0o600)).createWriteStream();
+        const hash = createHash('sha256');
+
+        try {
+          for await (const chunk of reader.bytes(frame.size)) {
+            hash.update(chunk);
+
+            if (!out.write(chunk)) await once(out, 'drain');
+          }
+
+          out.end();
+          await finished(out);
+        } catch (error) {
+          out.destroy();
+          await rm(part, { force: true });
+          throw error;
+        }
+
+        const sum = await reader.frame<TransferSum>();
+
+        if (sum.type !== 'sum' || sum.sha256 !== hash.digest('hex')) {
+          await rm(part, { force: true });
+          throw new Error(`checksum mismatch for ${frame.path}`);
+        }
+
+        await rename(part, target);
+        bytes += frame.size;
+        files++;
+      } else {
+        throw new Error('unexpected frame');
+      }
+    }
+  }
+}
+
+export interface SendRequest {
+  endpoint: TransferEndpoint;
+  credentials: TransferCredentials;
+  /** The target node (its certificate must name it). */
+  peer: string;
+  token: string;
+  migration: string;
+  attempt: number;
+  batch: string;
+  /** Root on this node the paths are relative to. */
+  root: string;
+  /** Files / directories below `root` to send (same relative paths on the target). */
+  paths: string[];
+  timeoutMs?: number;
+}
+
+/** Sends one batch to a target's transfer endpoint; resolves with the bytes the target confirmed. */
+export async function sendCheckpointBatch(request: SendRequest): Promise<number> {
+  const entries: TransferEntry[] = [];
+
+  for (const path of request.paths) entries.push(...(await listEntries(request.root, path)));
+
+  const expected = nodeIdentityUri(request.credentials.clusterId, request.peer);
+  const socket = connect({
+    host: request.endpoint.address,
+    port: request.endpoint.port,
+    key: request.credentials.privateKeyPem,
+    cert: request.credentials.certificatePem,
+    ca: request.credentials.caCertificatePem,
+    minVersion: 'TLSv1.3',
+    // The target is identified by its node certificate, not by a hostname.
+    checkServerIdentity: (_host, cert) =>
+      isNodeCertificate(cert, expected) ? undefined : new Error(`endpoint is not node ${request.peer}`),
+  });
+  const timer = setTimeout(() => socket.destroy(new Error('transfer timed out')), request.timeoutMs ?? 600_000);
+
+  try {
+    await once(socket, 'secureConnect');
+    socket.setTimeout(IDLE_SOCKET_MS, () => socket.destroy(new Error('transfer stalled')));
+
+    const reader = new FrameReader(socket);
+    const result = reader.frame<TransferResult>();
+
+    // A refusal can arrive while we are still sending: stop sending (a pending write fails with the reason).
+    result.then(
+      (answer) => {
+        if (!answer.ok) socket.destroy(new Error(`target refused the checkpoint: ${answer.error ?? 'unknown error'}`));
+      },
+      () => undefined,
+    );
+    await sendBatch(
+      socket,
+      { token: request.token, migration: request.migration, attempt: request.attempt, batch: request.batch },
+      request.root,
+      entries,
+    );
+
+    const answer = await result;
+
+    if (!answer.ok) throw new Error(`target refused the checkpoint: ${answer.error ?? 'unknown error'}`);
+
+    return answer.bytes ?? 0;
+  } finally {
+    clearTimeout(timer);
+    socket.destroy();
+  }
+}

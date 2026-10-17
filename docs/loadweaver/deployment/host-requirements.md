@@ -1,0 +1,82 @@
+# Host Requirements
+
+| Requirement  | Value                                                                                                                                       |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| OS           | Debian 12 / 13, Ubuntu 22.04 / 24.04 LTS                                                                                                    |
+| Architecture | amd64, arm64                                                                                                                                |
+| Privileges   | root / sudo for the installer                                                                                                               |
+| Outbound     | HTTPS to the control plane, TCP 7443 to the control plane (agent stream)                                                                    |
+| WireGuard    | UDP reachability between nodes where policies need a tunnel; at least one side of each pair must be reachable (the other may be behind NAT) |
+
+The installer sets up Docker (with live-restore), gVisor, WireGuard tools, nftables, BIRD 2, keepalived and the node agent, enables IPv4 / IPv6 forwarding and lets services bind addresses a node doesn't hold yet (`ip_nonlocal_bind`, for floating addresses). Nothing is configured over SSH; nodes join with a token only. With `--discover` (hosts that already run containers, former nodes) the installer installs only the agent; the components are installed later by the approved join plan with the same, idempotent steps (only missing packages, plus `rsync` for the data copy; Docker is reloaded, never restarted) — see [Importing Docker hosts and former nodes](../features/import.md). With `--restore` (and the saved agent binary, `--agent-file`) the same installer sets up a fresh host for a whole-cluster disaster recovery instead of a join — see [Disaster recovery](../features/disaster-recovery.md#with-the-node-installer).
+
+Updates (see [Updates](../features/updates.md)): the installer turns off `unattended-upgrades` and the `apt-daily-upgrade` timer — OS packages and kernels are updated by Loadweaver's rolling host updates from the cluster-local apt snapshot, so reboots never happen uncoordinated. The agent runs host updates and its own binary swap as transient systemd units (`systemd-run`), keeps its apt configuration below `/var/lib/loadweaver/apt` (the host's own sources stay untouched) and needs the distribution's archive keyring (`debian-archive-keyring` / `ubuntu-keyring`) and Docker's repository key at `/etc/apt/keyrings/docker.gpg` (as the installer sets it up). Docker's live-restore keeps containers running while the agent or Docker itself is updated. Nodes with Secure Boot need a signed DRBD module from the release bundle; modules built on the node are unsigned. **Air-gapped nodes**: host updates need no internet — packages come from the cluster-local snapshot (on air-gapped clusters the bundle's snapshot with its packages: base system, Loadweaver's host packages, kernels and headers; packages installed by hand outside that set can't be upgraded from it), and the DRBD module for a new kernel is built from the bundle's source with the compat patch the bundle pre-generated for that kernel (LINBIT's SPAAS is disabled, nothing is fetched); a kernel the release has no compat patch or prebuilt module for is refused before the update changes anything (a patch release of the bundle covers newer kernels). On **online clusters** such a kernel is built with SPAAS instead (nodes then need HTTPS to `spaas.drbd.io`; checked before the update changes anything).
+
+## Storage for volumes
+
+[Volumes](../features/volumes.md) are LVM thin volumes encrypted with LUKS2 and replicated with DRBD 9. The installer installs the userland pinned per OS (on Debian 13 the versions Loadweaver's VM lab runs: `lvm2 2.03.31-2`, `cryptsetup 2:2.7.5-2`, `drbd-utils 9.22.0-1.1`, `thin-provisioning-tools 1.1.0-4+b1`; the other supported releases get their distribution's current versions, pinned in the installer).
+
+- **DRBD 9 kernel module:** distribution kernels ship DRBD 8.4, which Loadweaver can't use. The DRBD 9 module (built for the host's kernel and signed for Secure Boot) comes with the Loadweaver release bundle. The installer builds nothing (no SPAAS / internet involved): it only checks for one (`modinfo drbd`) and loads it at boot if present; the agent reports it as node capability `drbd9`, and nodes without it get no volume copies.
+- **Volume group:** volumes live in the LVM thin pool `loadweaver/pool` (override with `LOADWEAVER_STORAGE_VG` / `LOADWEAVER_STORAGE_THINPOOL` in the agent's environment). Create it on a dedicated disk before placing volumes, e.g. `pvcreate /dev/sdb && vgcreate loadweaver /dev/sdb && lvcreate -l 90%FREE -T loadweaver/pool`.
+- **Host name:** DRBD matches hosts by `uname -n`; the agent reports it, so it may differ from the node name, but it must be unique among the nodes and stay stable (renaming a host re-renders its volumes' DRBD configuration).
+- **tmpfs:** `/run` must be tmpfs (the default with systemd): the agent passes LUKS volume keys to `cryptsetup` only through files there.
+
+## Kernel settings on control-plane members
+
+With more than one control-plane member, the log store (OpenSearch) needs `vm.max_map_count` of at least 262144. The agent raises it with `sysctl -w` when it is lower, which doesn't survive a reboot; persist it so the log store comes up right after boot:
+
+```bash
+echo 'vm.max_map_count = 262144' > /etc/sysctl.d/90-loadweaver-logs.conf
+sysctl --system
+```
+
+See [Logs](../features/logs.md).
+
+## Outbound for GitOps
+
+Control-plane members reach connected Git repositories (see [GitOps](../features/gitops.md)): HTTPS (443) to the Git host and its API, or SSH (22 or the host's SSH port) for SSH repositories. The control-plane image ships `git` and `openssh-client` as pinned Debian trixie packages (`git 1:2.47.3-0+deb13u1`, `openssh-client 1:10.0p1-7+deb13u4`); nothing is needed on the hosts. Webhooks from the Git host need to reach `https://<api>/api/git/webhooks/<connection>`; without that, use polling.
+
+## What the agent adds for live sessions
+
+- **Debug tunnels:** while a tunnel is open the agent keeps a rule in its own nftables table `inet lw_live` (chain `output`, priority -10) that marks its connection to exactly one replica address and port; the `inet loadweaver` table accepts that mark. Leave the `lw_live` table alone; it is separate from `loadweaver` because that table is replaced on every apply. See [Terminals, files and tunnels](../features/terminals-files-and-tunnels.md#debug-tunnels).
+- **Node shells** (only when the `Cluster` enables `nodeShellEnabled`): the agent pulls `alpine:3.22` (pinned by digest) on first use and runs it briefly as a privileged container with the host's PID and network namespaces, labelled `loadweaver.com/node-shell`, to `nsenter` into the host. Nodes that can't pull from Docker Hub need the image in a mirror.
+
+## Live migration
+
+[Live migration](../features/migration.md) checkpoints containers with CRIU through runc (Docker's own checkpoint commands aren't used, so Docker's experimental mode is **not** needed):
+
+- **CRIU** (Debian / Ubuntu package `criu`; the VM lab runs `4.1.1-1` on Debian 13) and **runc** with checkpoint support (Docker CE's `containerd.io` ships it; the lab runs 1.5.2). The agent reports `capabilities.checkpoint.runc` only when `criu check` passes, with the CRIU version.
+- **gVisor** for sandboxed services (stop-and-copy with `runsc checkpoint` / `runsc restore`, no CRIU involved): the installer's Docker runtime `runsc-systrap` (gVisor's own network stack, systrap platform). The agent reports `capabilities.checkpoint.runsc` when that runtime is registered (a `--network=host` / `none` runtime doesn't count: a restored sandbox copies its interfaces from the placeholder's network namespace), its `runsc` runs and the host has cgroup v2. Source and target should run the same gVisor release (the release bundle pins it).
+- **cgroup v2** (restored replicas run in a child cgroup of their container).
+- **Disk:** checkpoint data (the replica's memory and writable layer) under `/var/lib/loadweaver/migrations` on both nodes while an attempt runs; removed at its end.
+- **Transfer rate:** set `LOADWEAVER_TRANSFER_BPS` in the agent's environment where the link speed isn't readable (virtual NICs); the control plane uses it for the freeze estimate.
+
+What the agent adds on the host: nftables tables `inet lw_migration` (the transfer allowance between the two nodes of a session, priority -10) and `inet lw_kept` (anti-spoofing for kept-address veths); a Docker network + IPAM plugin (`/run/docker/plugins/loadweaver-kept.sock`) with the networks `loadweaver-kept-4` / `-6` / `-46` and veths `lwk…`, accepted in `DOCKER-USER`; `/etc/criu/runc.conf` for the duration of a final dump (an existing file is extended and restored); the placeholder binary `/var/lib/loadweaver/bin/lw-hold`; runc / runsc state of restored replicas in `/run/loadweaver/runc` and `/run/loadweaver/runsc`.
+
+## Ports
+
+| Port                                     | Where                                                               | Purpose                                                                                                                                                |
+| ---------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 3400 / tcp                               | control-plane members                                               | Loadweaver API (behind the ingress in production); from the ingress nodes over the overlay while a status page exists (built-in policy `status-pages`) |
+| 7443 / tcp                               | control-plane members                                               | Node agent stream (gRPC, mutual TLS)                                                                                                                   |
+| 51820+ / udp                             | every node with tunnels                                             | WireGuard, one port per peer                                                                                                                           |
+| 2379, 2380, 5432, 8008 / tcp             | control-plane members, overlay only                                 | etcd, Postgres, Patroni                                                                                                                                |
+| 3900, 3901, 3903, 3910, 3911, 3913 / tcp | object-store nodes (control-plane members), overlay only            | Garage S3, RPC and admin of two generations                                                                                                            |
+| 9200, 9300 / tcp                         | control-plane members, overlay and loopback only                    | Log store (OpenSearch HTTP and transport)                                                                                                              |
+| 5000-5016 / tcp                          | control-plane members, overlay only                                 | Built-in registry (private instance and mirrors)                                                                                                       |
+| 7479 / tcp                               | every node, loopback only                                           | Pull router of the built-in registry                                                                                                                   |
+| 6390 / tcp                               | control-plane members, loopback only                                | Valkey of the rate-limit service (password-protected)                                                                                                  |
+| 6391 / tcp                               | control-plane members, loopback only                                | Valkey of the API's job queue (`lw-queue`, password)                                                                                                   |
+| 8081 / tcp                               | control-plane members, overlay only                                 | Cluster-wide rate-limit service of the ingress                                                                                                         |
+| 80, 443 / tcp                            | ingress nodes                                                       | Ingress (HTTP, HTTPS); published ports as well                                                                                                         |
+| 53 / udp, tcp                            | bind9 nodes                                                         | Hosted authoritative DNS                                                                                                                               |
+| 179 / tcp, 3784-3785 / udp               | edge nodes                                                          | External BGP sessions and BFD                                                                                                                          |
+| 15001 / tcp                              | every node, pod gateway                                             | Service mesh outbound (local workloads to the node proxy)                                                                                              |
+| 15443 / tcp                              | every node, overlay only                                            | Service mesh inbound (proxy to proxy, mutual TLS)                                                                                                      |
+| 15080, 15444 / tcp                       | every node, pod gateway; active VPN gateway, client-network address | Egress filtering (HTTP by Host, TLS by SNI)                                                                                                            |
+| 51800 / udp                              | remote access gateways                                              | WireGuard for remote clients (`remoteAccess.port`)                                                                                                     |
+| 53 / udp, tcp                            | active VPN gateway, client-network address                          | Split DNS for remote clients                                                                                                                           |
+| 7800-17799 / tcp                         | nodes holding volume copies, overlay only                           | DRBD replication, one port per volume                                                                                                                  |
+| 7500-7755 / tcp                          | control-plane members, overlay only                                 | Backup repository servers (Kopia over TLS), one port per repository; nodes connect for backups and restores                                            |
+| 7460 / tcp                               | target node of a live migration, overlay only, from the source only | Checkpoint transfer (TLS 1.3, node certificates + single-use token; `LOADWEAVER_MIGRATION_PORT`)                                                       |
+| IP protocol 112                          | VRRP pool members                                                   | keepalived (VRRP) between candidates                                                                                                                   |

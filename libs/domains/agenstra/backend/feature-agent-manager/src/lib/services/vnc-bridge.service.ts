@@ -4,7 +4,7 @@ import WebSocket = require('ws');
 import { VNC_WEBSOCKIFY_PORT } from '../constants/vnc.constants';
 import { OpenCodeClientFactory } from '../providers/opencode/opencode-client.factory';
 
-import { DockerService } from './docker.service';
+import { AgentRuntime } from '../runtime/agent-runtime';
 
 export interface VncBridgeCallbacks {
   onMessage: (data: WebSocket.RawData, isBinary: boolean) => void;
@@ -27,7 +27,7 @@ export class VncBridgeService implements OnModuleDestroy {
   private readonly sessions = new Map<string, ActiveVncBridgeSession>();
 
   constructor(
-    private readonly dockerService: DockerService,
+    private readonly runtime: AgentRuntime,
     private readonly openCodeClientFactory: OpenCodeClientFactory,
   ) {}
 
@@ -46,7 +46,7 @@ export class VncBridgeService implements OnModuleDestroy {
       this.close(sessionId);
     }
 
-    const httpBase = await this.dockerService.resolveContainerHttpBaseUrl(containerId, VNC_WEBSOCKIFY_PORT);
+    const httpBase = await this.runtime.resolveContainerHttpBaseUrl(containerId, VNC_WEBSOCKIFY_PORT);
     const wsUrl = httpBase.replace(/^http/i, 'ws');
     const { authorization } = await this.openCodeClientFactory.resolveConnection(agentId, containerId);
 

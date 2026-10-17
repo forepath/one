@@ -54,6 +54,10 @@ export class FileStorageService {
     }
   }
 
+  async deleteFile(scope: FileStorageScopeType, storageKey: string): Promise<void> {
+    await this.getActiveProvider().deleteFile(resolveCanonicalScopeRoot(scope), storageKey);
+  }
+
   async fileExists(scope: FileStorageScopeType, storageKey: string): Promise<boolean> {
     const root = resolveCanonicalScopeRoot(scope);
     const provider = this.getActiveProvider();

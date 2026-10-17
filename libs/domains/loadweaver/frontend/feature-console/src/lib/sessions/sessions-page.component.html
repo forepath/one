@@ -1,0 +1,277 @@
+<fpc-page-header [title]="title" icon="record-circle">
+  <div fpcPageHeaderActions class="d-flex align-items-center gap-2">
+    @if (projects().length > 0) {
+      <select
+        class="form-select form-select-sm w-auto"
+        i18n-aria-label="@@lwConsoleSessions-project"
+        aria-label="Project"
+        data-testid="sessions-project"
+        [ngModel]="project()"
+        (ngModelChange)="onProjectChange($event)"
+      >
+        <option value="" i18n="@@lwConsoleSessions-allProjects">All projects</option>
+        @for (p of projects(); track p) {
+          <option [value]="p">{{ p }}</option>
+        }
+      </select>
+    }
+    <fpc-button
+      variant="outline-secondary"
+      size="sm"
+      [iconOnly]="true"
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      [loading]="sessionsLoading() || tunnelsLoading()"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </div>
+</fpc-page-header>
+
+<div class="p-3 d-flex flex-column gap-4">
+  @if (playing(); as p) {
+    <section data-testid="sessions-player">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <h2 class="h6 mb-0">
+          <i class="bi bi-play-circle me-1" aria-hidden="true"></i>
+          <span class="font-monospace">{{ targetLabel(p.session) }}</span>
+        </h2>
+        <span class="small text-body-secondary">{{ p.session.startedAt | date: 'MMM d, y HH:mm:ss' }}</span>
+        <button
+          type="button"
+          class="btn-close ms-auto"
+          i18n-aria-label="@@lwConsoleSessions-closePlayer"
+          aria-label="Close player"
+          (click)="closePlayer()"
+        ></button>
+      </div>
+      <loadweaver-cast-player [cast]="p.cast" [title]="targetLabel(p.session)" />
+    </section>
+  }
+
+  <section>
+    <h2 class="h6" i18n="@@lwConsoleSessions-sessions">Terminal sessions</h2>
+    @if (sessionsError(); as message) {
+      <fpc-alert class="d-block mb-2" variant="danger" [message]="message" />
+    }
+    @if (recordingError(); as message) {
+      <fpc-alert
+        class="d-block mb-2"
+        variant="danger"
+        [message]="message"
+        [dismissible]="true"
+        (closed)="recordingError.set(null)"
+      />
+    }
+    @if (sessionsLoading() && sessions().length === 0) {
+      <div class="d-flex justify-content-center p-4"><fpc-spinner /></div>
+    } @else if (sessions().length === 0 && !sessionsError()) {
+      <fpc-empty-state
+        icon="terminal"
+        size="sm"
+        i18n-title="@@lwConsoleSessions-empty"
+        title="No terminal sessions"
+        i18n-message="@@lwConsoleSessions-emptyHint"
+        message="Sessions show up here for auditors, cluster admins and project admins."
+      />
+    } @else if (sessions().length > 0) {
+      <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle small mb-0" data-testid="sessions-table">
+          <thead>
+            <tr>
+              <th scope="col" i18n="@@lwConsoleSessions-colStarted">Started</th>
+              <th scope="col" i18n="@@lwConsoleSessions-colTarget">Target</th>
+              <th scope="col" i18n="@@lwConsoleSessions-colNode">Node</th>
+              <th scope="col" i18n="@@lwConsoleSessions-colUser">User</th>
+              <th scope="col" i18n="@@lwConsoleSessions-colDuration">Duration</th>
+              <th scope="col" i18n="@@lwConsoleSessions-colExit">Exit</th>
+              <th scope="col" i18n="@@lwConsoleSessions-colRecording">Recording</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of sessions(); track s.id) {
+              <tr [class.table-active]="playing()?.session?.id === s.id">
+                <td class="text-nowrap">{{ s.startedAt | date: 'MMM d, y HH:mm:ss' }}</td>
+                <td class="font-monospace text-break">
+                  @if (s.target.startsWith('node/')) {
+                    <i class="bi bi-hdd-rack text-danger me-1" aria-hidden="true"></i>
+                  }
+                  {{ targetLabel(s) }}
+                </td>
+                <td>{{ s.node }}</td>
+                <td class="font-monospace text-body-secondary text-truncate" style="max-width: 10rem">
+                  {{ s.userId ?? '—' }}
+                </td>
+                <td class="text-nowrap">
+                  @if (duration(s.startedAt, s.endedAt); as d) {
+                    {{ d }}
+                  } @else {
+                    <fpc-badge size="sm" color="success" i18n="@@lwConsoleSessions-running">running</fpc-badge>
+                  }
+                </td>
+                <td class="font-monospace">{{ s.exitCode ?? '' }}</td>
+                <td class="text-nowrap">
+                  @if (s.hasRecording) {
+                    <fpc-button
+                      variant="outline-primary"
+                      size="sm"
+                      [loading]="loadingRecording() === s.id"
+                      (clicked)="play(s)"
+                      data-testid="sessions-play"
+                    >
+                      <i class="bi bi-play-fill me-1" aria-hidden="true"></i>{{ playLabel }}
+                    </fpc-button>
+                    <fpc-button
+                      class="ms-1"
+                      variant="outline-secondary"
+                      size="sm"
+                      [iconOnly]="true"
+                      [ariaLabel]="downloadLabel"
+                      [title]="downloadLabel"
+                      [disabled]="loadingRecording() === s.id"
+                      (clicked)="download(s)"
+                    >
+                      <i class="bi bi-download" aria-hidden="true"></i>
+                    </fpc-button>
+                  } @else if (s.recorded) {
+                    <span class="text-body-secondary" i18n="@@lwConsoleSessions-recordedPending"
+                      >recorded (stored when it ends)</span
+                    >
+                  } @else {
+                    <span class="text-body-secondary">—</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  <section>
+    <h2 class="h6" i18n="@@lwConsoleSessions-tunnels">Open debug tunnels</h2>
+    @if (tunnelsError(); as message) {
+      <fpc-alert class="d-block mb-2" variant="danger" [message]="message" />
+    }
+    @if (tunnels().length === 0 && !tunnelsError()) {
+      <p class="small text-body-secondary" i18n="@@lwConsoleSessions-noTunnels">No tunnel is open.</p>
+    } @else if (tunnels().length > 0) {
+      <div class="table-responsive">
+        <table class="table table-sm align-middle small" data-testid="tunnels-table">
+          <thead>
+            <tr>
+              <th scope="col" i18n="@@lwConsoleSessions-colReplica">Replica</th>
+              <th scope="col" i18n="@@lwConsoleSessions-colPort">Port</th>
+              <th scope="col" i18n="@@lwConsoleSessions-colNode">Node</th>
+              <th scope="col" i18n="@@lwConsoleSessions-colUser">User</th>
+              <th scope="col" i18n="@@lwConsoleSessions-colOpened">Opened</th>
+              <th scope="col" i18n="@@lwConsoleSessions-colExpires">Expires</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (t of tunnels(); track t.id) {
+              <tr [class.text-body-secondary]="expired(t)">
+                <td class="font-monospace">{{ t.replica }}</td>
+                <td class="font-monospace">{{ t.port }}</td>
+                <td>{{ t.node }}</td>
+                <td class="font-monospace text-truncate" style="max-width: 10rem">{{ t.userId ?? '—' }}</td>
+                <td class="text-nowrap">{{ t.openedAt | date: 'MMM d, HH:mm' }}</td>
+                <td class="text-nowrap">{{ t.expiresAt | date: 'MMM d, HH:mm' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <div class="border rounded p-3 mt-2" data-testid="port-forward">
+      <h3 class="h6 mb-1" i18n="@@lwConsoleSessions-forwardTitle">Open a tunnel</h3>
+      <p class="small text-body-secondary" i18n="@@lwConsoleSessions-forwardHint">
+        Tunnels are opened by the CLI on your machine (operators and admins of the project). Pick a replica and a port:
+      </p>
+      <div class="d-flex flex-wrap align-items-end gap-2 mb-2">
+        <div style="min-width: 16rem">
+          <label class="form-label small mb-1" for="lw-forward-replica" i18n="@@lwConsoleSessions-forwardReplica"
+            >Replica</label
+          >
+          <select
+            id="lw-forward-replica"
+            class="form-select form-select-sm"
+            data-testid="forward-replica"
+            [ngModel]="forwardReplica()"
+            (ngModelChange)="forwardReplica.set($event)"
+          >
+            <option value="" disabled i18n="@@lwConsoleSessions-chooseReplica">Choose a replica</option>
+            @for (group of groups(); track group.label) {
+              <optgroup [label]="group.label">
+                @for (r of group.replicas; track r.id) {
+                  <option [value]="r.id">{{ r.id }}</option>
+                }
+              </optgroup>
+            }
+            @if (forwardReplica() && !groups().length) {
+              <option [value]="forwardReplica()">{{ forwardReplica() }}</option>
+            }
+          </select>
+        </div>
+        <div style="width: 8rem">
+          <label class="form-label small mb-1" for="lw-forward-remote" i18n="@@lwConsoleSessions-remotePort"
+            >Replica port</label
+          >
+          <input
+            id="lw-forward-remote"
+            type="number"
+            min="1"
+            max="65535"
+            class="form-control form-control-sm"
+            data-testid="forward-remote"
+            [ngModel]="remotePort()"
+            (ngModelChange)="remotePort.set(port($event))"
+          />
+        </div>
+        <div style="width: 8rem">
+          <label class="form-label small mb-1" for="lw-forward-local" i18n="@@lwConsoleSessions-localPort"
+            >Local port</label
+          >
+          <input
+            id="lw-forward-local"
+            type="number"
+            min="1"
+            max="65535"
+            class="form-control form-control-sm"
+            [ngModel]="localPort()"
+            (ngModelChange)="localPort.set(port($event))"
+          />
+        </div>
+        <div style="width: 8rem">
+          <label class="form-label small mb-1" for="lw-forward-ttl" i18n="@@lwConsoleSessions-ttl">TTL (seconds)</label>
+          <input
+            id="lw-forward-ttl"
+            type="number"
+            min="60"
+            max="28800"
+            placeholder="3600"
+            class="form-control form-control-sm"
+            [ngModel]="ttl()"
+            (ngModelChange)="ttl.set(ttlSeconds($event))"
+          />
+        </div>
+      </div>
+      @if (command(); as cmd) {
+        <div class="d-flex align-items-center gap-2">
+          <code
+            class="d-block flex-grow-1 p-2 bg-body-tertiary rounded user-select-all"
+            data-testid="forward-command"
+            >{{ cmd }}</code
+          >
+          <fpc-button variant="outline-secondary" size="sm" (clicked)="copy()">
+            <i class="bi me-1" [class.bi-clipboard]="!copied()" [class.bi-check2]="copied()" aria-hidden="true"></i
+            >{{ copied() ? copiedLabel : copyLabel }}
+          </fpc-button>
+        </div>
+      }
+    </div>
+  </section>
+</div>

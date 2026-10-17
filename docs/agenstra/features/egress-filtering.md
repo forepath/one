@@ -169,6 +169,10 @@ The manager needs access to the Docker socket (as for agent containers) and the 
 
 See [Background Jobs](../deployment/background-jobs.md).
 
+## On Loadweaver (`AGENT_RUNTIME=loadweaver`)
+
+When the agent manager runs its environments on a Loadweaver cluster there is no guard sidecar: the same effective policy is compiled into Loadweaver policies of the environment and enforced by Loadweaver's node proxies (Envoy), with identical semantics for modes, allow / deny hosts (domains and IPs / CIDRs), URL deny patterns, `network_allow`, private-network and IP-literal blocks and explicit-allow exceptions. Policy changes are applied as Loadweaver plans; decisions come back from Loadweaver's logs into the same egress events, so the audit and the console views stay the same. Details and the few differences (for example, a `block_private_networks: false` can't loosen a stricter cluster setting) are in [Agenstra on Loadweaver](../../loadweaver/guides/agenstra-on-loadweaver.md#egress).
+
 ## Building the guard image
 
 ```bash

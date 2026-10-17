@@ -1,0 +1,81 @@
+# Agenstra agent manager as a Loadweaver deployment, environments scheduled by Loadweaver (AGENT_RUNTIME=loadweaver).
+# Guide: docs/loadweaver/guides/agenstra-on-loadweaver.md
+#
+# Deploy into the workspace project (e.g. `agenstra-acme`) as the `spec.compose` of a Deployment resource
+# (`metadata: { name: agent-manager, project: agenstra-acme }`), then `loadweaver plan -f agent-manager.yaml --apply`.
+# Secrets (set before the first plan, never in this file):
+#   agent-manager-env     shell-style KEY=value lines: DB_PASSWORD, ENCRYPTION_KEY, STATIC_API_KEY or JWT_SECRET, ...
+#   loadweaver-token      the manager's Loadweaver PAT (project operator, scopes below)
+#   agent-manager-db      the Postgres password (same value as DB_PASSWORD)
+# PAT scopes: projects:read resources:read plans:create plans:apply secrets:write logs:read metrics:read
+#             live:access live:exec
+
+services:
+  postgres:
+    image: postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+    environment:
+      POSTGRES_USER: agenstra
+      POSTGRES_DB: agenstra
+      POSTGRES_PASSWORD_FILE: /run/secrets/agent-manager-db
+    secrets: [agent-manager-db]
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U agenstra']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    x-loadweaver:
+      # Stateful: one replica; its volume is replicated by Loadweaver.
+      replicas: 1
+
+  api:
+    image: ghcr.io/forepath/agenstra-manager-api:latest@sha256:d42ef09fcb7f21dcbd33c39ddddbd345244a15dfc2a70a6f2498f8bd06340d50 # replace with the release you deploy (pinned)
+    # Secrets come from a mounted secret file (tmpfs), never from the plan.
+    entrypoint:
+      - /bin/bash
+      - -c
+      - set -a; . /run/secrets/agent-manager-env; set +a; exec /usr/local/bin/docker-entrypoint.sh
+    environment:
+      HOST: 0.0.0.0
+      PORT: '3000'
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: '5432'
+      DB_USERNAME: agenstra
+      DB_DATABASE: agenstra
+      # Environments are Loadweaver deployments in this project.
+      AGENT_RUNTIME: loadweaver
+      # Replace with your control plane and the workspace project.
+      LOADWEAVER_URL: https://loadweaver.example.com
+      LOADWEAVER_PROJECT: agenstra-acme
+      LOADWEAVER_TOKEN_FILE: /run/secrets/loadweaver-token
+      LOADWEAVER_ENVIRONMENT_VOLUME_SIZE: 20g
+      AGENT_DEFAULT_IMAGE: ghcr.io/forepath/agenstra-manager-worker:latest
+      # Egress is filtered by Loadweaver's node proxies (no guard sidecars); events come from Loadweaver's logs.
+      AGENT_EGRESS_EVENTS_COLLECTOR_ENABLED: 'true'
+      AGENT_ISOLATION_SANDBOX_ENABLED: 'true'
+    secrets: [agent-manager-env, loadweaver-token]
+    labels:
+      agenstra.io/role: manager
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    x-loadweaver:
+      replicas: 1
+      # The Agenstra controller (on its own servers) reaches the manager through the ingress; replace the hostname.
+      exposure:
+        http: [{ host: agents.example.com, port: 3000 }]
+      # The manager holds no Docker socket here: it can run in gVisor like its environments.
+      runtime: sandboxed
+
+volumes:
+  postgres-data:
+    x-loadweaver: { size: 10g }
+
+secrets:
+  agent-manager-env: { external: true }
+  agent-manager-db: { external: true }
+  loadweaver-token: { external: true }

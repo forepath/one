@@ -1,0 +1,92 @@
+<fpc-page-header [title]="title" icon="file-diff">
+  <div fpcPageHeaderActions>
+    <fpc-button variant="link" size="sm" routerLink="/backups">
+      <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>{{ backLabel }}
+    </fpc-button>
+  </div>
+</fpc-page-header>
+
+@if (error(); as message) {
+  <fpc-alert class="d-block m-3" variant="danger" [message]="message" data-testid="backup-diff-error" />
+} @else if (loading() || !result()) {
+  <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
+} @else if (result(); as r) {
+  <div class="p-3 d-flex flex-column gap-3">
+    <div class="small">
+      <span class="font-monospace">{{ r.from.resource }}</span
+      >:
+      <a [routerLink]="['/backups', r.from.id]">{{ r.from.startedAt | date: 'medium' }}</a>
+      →
+      <a [routerLink]="['/backups', r.to.id]">{{ r.to.startedAt | date: 'medium' }}</a>
+    </div>
+
+    <fpc-summary-bar [columns]="4">
+      <fpc-summary-card
+        [label]="addedTitle"
+        [value]="r.diff.added.length + ' · ' + bytes(addedBytes())"
+        tone="success"
+      />
+      <fpc-summary-card
+        [label]="removedTitle"
+        [value]="r.diff.removed.length + ' · ' + bytes(removedBytes())"
+        tone="danger"
+      />
+      <fpc-summary-card [label]="changedTitle" [value]="'' + r.diff.changed.length" tone="info" />
+      <fpc-summary-card [label]="sizeChangeTitle" [value]="signed(r.to.bytes - r.from.bytes)" />
+    </fpc-summary-bar>
+
+    @if (r.diff.added.length + r.diff.removed.length + r.diff.changed.length === 0) {
+      <fpc-empty-state
+        icon="check2-circle"
+        i18n-title="@@lwConsoleBackupDiff-same"
+        title="No files changed between these backups"
+      />
+    }
+
+    @if (r.diff.added.length > 0) {
+      <fpc-panel [title]="addedTitle + ' (' + r.diff.added.length + ')'" [flush]="true">
+        <ul class="list-group list-group-flush small font-monospace" data-testid="backup-diff-added">
+          @for (a of r.diff.added; track a.path) {
+            <li class="list-group-item d-flex gap-2">
+              <span class="text-success">+</span>
+              <span class="text-break">{{ a.path }}{{ a.directory ? '/' : '' }}</span>
+              <span class="ms-auto text-nowrap text-body-secondary">{{ a.size !== null ? bytes(a.size) : '' }}</span>
+            </li>
+          }
+        </ul>
+      </fpc-panel>
+    }
+
+    @if (r.diff.removed.length > 0) {
+      <fpc-panel [title]="removedTitle + ' (' + r.diff.removed.length + ')'" [flush]="true">
+        <ul class="list-group list-group-flush small font-monospace" data-testid="backup-diff-removed">
+          @for (d of r.diff.removed; track d.path) {
+            <li class="list-group-item d-flex gap-2">
+              <span class="text-danger">−</span>
+              <span class="text-break">{{ d.path }}{{ d.directory ? '/' : '' }}</span>
+              <span class="ms-auto text-nowrap text-body-secondary">{{ d.size !== null ? bytes(d.size) : '' }}</span>
+            </li>
+          }
+        </ul>
+      </fpc-panel>
+    }
+
+    @if (r.diff.changed.length > 0) {
+      <fpc-panel [title]="changedTitle + ' (' + r.diff.changed.length + ')'" [flush]="true">
+        <ul class="list-group list-group-flush small font-monospace" data-testid="backup-diff-changed">
+          @for (c of r.diff.changed; track c.path) {
+            <li class="list-group-item d-flex flex-wrap gap-2">
+              <span class="text-info">~</span>
+              <span class="text-break">{{ c.path }}</span>
+              <span class="ms-auto text-nowrap text-body-secondary">
+                {{ c.before !== null ? bytes(c.before) : '?' }} → {{ c.after !== null ? bytes(c.after) : '?' }} ({{
+                  signed(delta(c.before, c.after))
+                }})
+              </span>
+            </li>
+          }
+        </ul>
+      </fpc-panel>
+    }
+  </div>
+}

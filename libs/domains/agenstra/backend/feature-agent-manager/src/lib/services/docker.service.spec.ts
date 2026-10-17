@@ -2457,19 +2457,17 @@ describe('DockerService', () => {
     beforeEach(() => {
       mockContainer.inspect.mockResolvedValue({});
       mockContainer.modem.demuxStream = jest.fn((stream, stdout) => {
-        setTimeout(() => {
-          stdout.write(Buffer.from(''));
-          stdout.end();
-        }, 5);
+        // Synchronous like dockerode's demux of buffered chunks: the stream's 'end' (10 ms) can't overtake the data.
+        stdout.write(Buffer.from(''));
+        stdout.end();
       });
     });
 
     it('should return trimmed HOME from container exec output', async () => {
       mockContainer.modem.demuxStream = jest.fn((stream, stdout) => {
-        setTimeout(() => {
-          stdout.write(Buffer.from('  /custom/home  '));
-          stdout.end();
-        }, 5);
+        // Synchronous like dockerode's demux of buffered chunks: the stream's 'end' (10 ms) can't overtake the data.
+        stdout.write(Buffer.from('  /custom/home  '));
+        stdout.end();
       });
 
       const home = await service.getContainerHomeDirectory(containerId);
@@ -2487,10 +2485,9 @@ describe('DockerService', () => {
 
     it('should fall back to /home/agenstra when exec output is empty', async () => {
       mockContainer.modem.demuxStream = jest.fn((stream, stdout) => {
-        setTimeout(() => {
-          stdout.write(Buffer.from('   '));
-          stdout.end();
-        }, 5);
+        // Synchronous like dockerode's demux of buffered chunks: the stream's 'end' (10 ms) can't overtake the data.
+        stdout.write(Buffer.from('   '));
+        stdout.end();
       });
 
       const home = await service.getContainerHomeDirectory(containerId);

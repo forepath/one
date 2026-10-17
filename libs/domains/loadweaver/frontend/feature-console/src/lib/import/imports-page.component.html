@@ -1,0 +1,54 @@
+<fpc-page-header [title]="title" icon="box-arrow-in-down" />
+
+@if (error(); as message) {
+  <fpc-alert class="m-3" variant="danger" [message]="message" />
+}
+
+<p class="small text-body-secondary px-3 pt-3 mb-0" i18n="@@lwConsoleImport-listIntro">
+  Hosts that already run containers or compose projects (or were Loadweaver nodes before) join with
+  <code>install.sh --discover</code>: only the agent is installed, it discovers read-only and waits here. Nothing on the
+  host changes until its join plan is approved.
+</p>
+
+@if (imports(); as list) {
+  @if (list.length === 0) {
+    <fpc-empty-state
+      class="m-3"
+      icon="box-arrow-in-down"
+      i18n-title="@@lwConsoleImport-empty"
+      title="No host waits for an import"
+    />
+  } @else {
+    <div class="p-3">
+      <fpc-list data-testid="imports-list">
+        @for (entry of list; track entry.node) {
+          <fpc-list-item>
+            <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+              <a [routerLink]="['/imports', entry.node]" class="fw-semibold">{{ entry.node }}</a>
+              <span class="small text-body-secondary">{{ entry.hostname }}</span>
+              <fpc-badge size="sm" color="secondary">{{ entry.lifecycle }}</fpc-badge>
+              @if (entry.selection; as s) {
+                <fpc-badge size="sm" [color]="statusTone[s.status]">{{ s.status }}</fpc-badge>
+              }
+              @if (entry.former !== 'none') {
+                <fpc-badge size="sm" color="warning" i18n="@@lwConsoleImport-formerBadge">former node</fpc-badge>
+              }
+              @if (!entry.connected) {
+                <fpc-badge size="sm" color="danger" i18n="@@lwConsoleImport-offline">offline</fpc-badge>
+              }
+            </div>
+            <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap gap-3">
+              <span i18n="@@lwConsoleImport-counts"
+                >{{ entry.composeProjects }} compose projects, {{ entry.containers }} containers,
+                {{ entry.volumes }} volumes</span
+              >
+              <span><i class="bi bi-clock me-1" aria-hidden="true"></i>{{ entry.discoveredAt | date: 'short' }}</span>
+            </div>
+          </fpc-list-item>
+        }
+      </fpc-list>
+    </div>
+  }
+} @else if (!error()) {
+  <div class="p-4 text-center"><fpc-spinner /></div>
+}

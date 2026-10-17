@@ -1,0 +1,52 @@
+@if (requests().length === 0) {
+  <fpc-empty-state
+    icon="inbox"
+    size="sm"
+    i18n-title="@@lwConsoleAccess-requestsEmpty"
+    title="No requests from other projects"
+  />
+} @else {
+  <fpc-list [flush]="true" data-testid="access-requests">
+    @for (r of requests(); track key(r)) {
+      <fpc-list-item>
+        <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+          <span class="fw-semibold">{{ r.project }}</span>
+          <i class="bi bi-arrow-right text-body-secondary" aria-hidden="true"></i>
+          <span class="font-monospace">{{ r.policy }}</span>
+          @if (r.accepted) {
+            <fpc-badge color="success" size="sm" i18n="@@lwConsoleAccess-requestAccepted">Accepted</fpc-badge>
+          } @else {
+            <fpc-badge color="warning" size="sm" i18n="@@lwConsoleAccess-requestOpen">Waiting</fpc-badge>
+          }
+          @if (r.planId) {
+            <fpc-badge color="info" size="sm" i18n="@@lwConsoleAccess-requestPending">Pending plan</fpc-badge>
+          } @else {
+            <fpc-badge color="light" size="sm" i18n="@@lwConsoleAccess-requestApplied">Applied policy</fpc-badge>
+          }
+        </div>
+        <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap gap-3">
+          <span
+            ><span i18n="@@lwConsoleAccess-requestVersion">Version</span>
+            <span class="font-monospace">{{ r.specHash.slice(0, 12) }}</span></span
+          >
+          @if (r.planId) {
+            <a [routerLink]="['/plans', r.planId]" i18n="@@lwConsoleAccess-requestOpenPlan">Open plan</a>
+          }
+        </div>
+        @if (mayAccept() && !r.accepted) {
+          <div fpcListItemActions>
+            <fpc-button
+              variant="outline-success"
+              size="sm"
+              [disabled]="changing()"
+              (clicked)="accept.emit(r)"
+              [attr.data-testid]="'access-accept-' + r.project + '-' + r.policy"
+            >
+              <span i18n="@@lwConsoleAccess-accept">Accept</span>
+            </fpc-button>
+          </div>
+        }
+      </fpc-list-item>
+    }
+  </fpc-list>
+}

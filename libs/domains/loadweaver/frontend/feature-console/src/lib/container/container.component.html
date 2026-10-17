@@ -1,0 +1,140 @@
+<fpc-top-bar brandSrc="assets/images/icon_light.svg" [brandAlt]="productName">
+  @if (showChrome() && (isAuthenticated$ | async)) {
+    <!-- Global search and command palette (3.25); Ctrl / Cmd + K opens it too. -->
+    <fpc-button
+      variant="link"
+      size="sm"
+      iconOnly
+      class="fpc-top-bar__action"
+      i18n-title="@@lwConsoleContainer-searchTitle"
+      title="Search (Ctrl / ⌘ + K)"
+      i18n-ariaLabel="@@lwConsoleContainer-search"
+      ariaLabel="Search"
+      (clicked)="searchPalette.show()"
+      data-testid="console-search"
+    >
+      <i class="bi bi-search" aria-hidden="true"></i>
+    </fpc-button>
+  }
+  @if (isUsersAuth && (isAuthenticated$ | async)) {
+    <fpc-button
+      routerLink="/settings/security"
+      routerLinkActive="active"
+      variant="link"
+      size="sm"
+      iconOnly
+      class="fpc-top-bar__action position-relative"
+      i18n-title="@@lwConsoleContainer-securityTitle"
+      title="Security"
+      i18n-ariaLabel="@@lwConsoleContainer-security"
+      ariaLabel="Security"
+    >
+      <i class="bi bi-shield-lock" aria-hidden="true"></i>
+      @if (showSecurityAuthenticatorBadge$ | async) {
+        <fpc-notification-indicator kind="security-warning" placement="absolute" />
+        <span class="visually-hidden" i18n="@@lwConsoleContainer-securityAuthenticatorSuggested"
+          >Authenticator app is not enabled</span
+        >
+      }
+    </fpc-button>
+  }
+  <fpc-language-switcher
+    data-bs-theme="dark"
+    [locales]="localeService.getAvailableLocales()"
+    [locale]="localeService.getCurrentLocale()"
+    [ariaLabel]="languageSwitcherAriaLabel"
+    (localeChange)="onLocaleChange($event)"
+  />
+  <fpc-theme-switcher
+    [dark]="themeService.isDarkMode()"
+    [ariaLabel]="toggleDarkModeTitle"
+    (darkChange)="themeService.toggleTheme()"
+  />
+  @if (isAuthenticated$ | async) {
+    <fpc-button variant="primary" size="sm" (clicked)="onLogoutClick()" i18n="@@lwConsoleContainer-logout"
+      >Logout</fpc-button
+    >
+  }
+</fpc-top-bar>
+<div class="d-flex justify-content-end flex-grow-1 overflow-hidden" [class.border-top]="!showChrome()">
+  @if (showChrome() && (isAuthenticated$ | async)) {
+    <fpc-sidebar [ariaLabel]="sidebarAriaLabel">
+      @for (item of navItems(); track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          class="sidebar__item"
+          [title]="item.title"
+          [attr.aria-label]="item.title"
+        >
+          <i class="bi {{ item.icon }} me-1" aria-hidden="true"></i>
+          <span class="small">{{ item.label }}</span>
+        </a>
+      }
+      @if (isPatUiEnabled) {
+        <a
+          routerLink="/settings/tokens"
+          routerLinkActive="active"
+          class="sidebar__item"
+          i18n-title="@@lwConsoleContainer-tokensTitle"
+          title="Access Tokens"
+        >
+          <i class="bi bi-key me-1" aria-hidden="true"></i>
+          <span class="small" i18n="@@lwConsoleContainer-tokens">Tokens</span>
+        </a>
+      }
+      <!-- Git accounts linked for the plan bot (3.30): the caller's own setting. -->
+      <a
+        routerLink="/settings/git-accounts"
+        routerLinkActive="active"
+        class="sidebar__item"
+        i18n-title="@@lwConsoleContainer-gitAccountsTitle"
+        title="Linked Git accounts"
+        data-testid="console-git-accounts"
+      >
+        <i class="bi bi-link-45deg me-1" aria-hidden="true"></i>
+        <span class="small" i18n="@@lwConsoleContainer-gitAccounts">Git accounts</span>
+      </a>
+      @if (adminNavItems().length > 0) {
+        <div fpcSidebarFooter>
+          <fpc-sidebar-popover [(open)]="adminPopoverOpen" [ariaLabel]="adminPopoverAriaLabel">
+            <span
+              fpcSidebarPopoverTrigger
+              class="sidebar__item border-top position-relative"
+              [class.active]="isAdminRouteActive()"
+              tabindex="0"
+              role="button"
+              i18n-title="@@lwConsoleContainer-adminTitle"
+              title="Admin"
+              i18n-aria-label="@@lwConsoleContainer-adminTitle"
+              aria-label="Admin"
+            >
+              <i class="bi bi-gear me-1" aria-hidden="true"></i>
+              <span class="small" i18n="@@lwConsoleContainer-admin">Admin</span>
+            </span>
+            @for (item of adminNavItems(); track item.path) {
+              <a
+                [routerLink]="item.path"
+                routerLinkActive="active"
+                class="sidebar__item"
+                [title]="item.title"
+                [attr.aria-label]="item.title"
+                (click)="adminPopoverOpen = false"
+              >
+                <i class="bi {{ item.icon }} me-1" aria-hidden="true"></i>
+                <span class="small">{{ item.label }}</span>
+              </a>
+            }
+          </fpc-sidebar-popover>
+        </div>
+      }
+    </fpc-sidebar>
+  }
+  <fpc-section-container>
+    <router-outlet></router-outlet>
+  </fpc-section-container>
+</div>
+
+<identity-logout-confirm-modal (confirmed)="onLogoutConfirmed($event)" />
+
+<loadweaver-search-palette #searchPalette [enabled]="showChrome() && !!(isAuthenticated$ | async)" />

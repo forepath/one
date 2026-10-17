@@ -1,0 +1,41 @@
+{
+  "name": "loadweaver-backend-feature-node-agent",
+  "$schema": "../../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/domains/loadweaver/backend/feature-node-agent/src",
+  "projectType": "library",
+  "tags": ["domain:loadweaver", "scope:backend", "type:feature"],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/domains/loadweaver/backend/feature-node-agent/jest.config.cts"
+      }
+    },
+    "integration-test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}-integration"],
+      "options": {
+        "jestConfig": "libs/domains/loadweaver/backend/feature-node-agent/jest.integration.config.cts",
+        "runInBand": true
+      },
+      "cache": false
+    },
+    "vm-lab": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}-vm-lab"],
+      "options": {
+        "jestConfig": "libs/domains/loadweaver/backend/feature-node-agent/jest.vm-lab.config.cts",
+        "runInBand": true
+      },
+      "cache": false
+    },
+    "vm-lab-cleanup": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash libs/domains/loadweaver/backend/feature-node-agent/src/integration/vm-lab/cleanup.sh"
+      },
+      "cache": false
+    }
+  }
+}

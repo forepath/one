@@ -1,0 +1,7 @@
+{{#> email-layout}}
+<h1 class="email-title">Resolved: {{title}}</h1>
+<p>
+  {{#if project}}<strong>Project:</strong> {{project}}<br />{{/if}}{{#if entity}}<strong>Affected:</strong>
+  {{entity}}<br />{{/if}}Firing since {{since}}, resolved at {{resolvedAt}}.
+</p>
+{{/email-layout}}

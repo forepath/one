@@ -1,0 +1,54 @@
+@if (error(); as message) {
+  <fpc-alert variant="danger" [message]="message" />
+} @else if (services().length > 0) {
+  <fpc-panel [title]="title" [flush]="true" data-testid="autoscaling-panel">
+    <ul class="list-group list-group-flush">
+      @for (s of services(); track s.id) {
+        <li class="list-group-item small" [attr.data-testid]="'autoscaling-' + s.service">
+          <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="fw-semibold font-monospace">{{ s.service }}</span>
+            <fpc-badge size="sm" [color]="tone(s)">{{ actionLabel(s) }}</fpc-badge>
+            <span class="ms-auto" i18n="@@lwConsoleAutoscaling-replicas"
+              >{{ s.replicas }} replicas ({{ s.min }}..{{ s.max }})</span
+            >
+          </div>
+          <dl class="row mb-0 mt-1">
+            <dt class="col-4 fw-normal text-body-secondary" i18n="@@lwConsoleAutoscaling-metric">Metric</dt>
+            <dd class="col-8 mb-0">
+              <span class="font-monospace">{{ metricName(s) }}</span> {{ value(s) }}
+              <span class="text-body-secondary" i18n="@@lwConsoleAutoscaling-target">target {{ target(s) }}</span>
+            </dd>
+            @if (s.status; as st) {
+              <dt class="col-4 fw-normal text-body-secondary" i18n="@@lwConsoleAutoscaling-lastEvaluation">
+                Last evaluation
+              </dt>
+              <dd class="col-8 mb-0">
+                {{ st.reason }}
+                <span class="text-body-secondary">({{ st.evaluatedAt | date: 'short' }})</span>
+              </dd>
+            }
+            <dt class="col-4 fw-normal text-body-secondary" i18n="@@lwConsoleAutoscaling-lastScale">Last scaling</dt>
+            <dd class="col-8 mb-0">
+              @if (s.lastScaleAt) {
+                {{ s.lastScaleAt | date: 'short' }} · {{ s.lastReason }}
+              } @else {
+                <span i18n="@@lwConsoleAutoscaling-never">never</span>
+              }
+            </dd>
+          </dl>
+          @if (s.status?.blocked; as blocked) {
+            <div class="alert alert-warning py-1 px-2 mt-2 mb-0" role="status" data-testid="autoscaling-blocked">
+              <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>
+              <span i18n="@@lwConsoleAutoscaling-blockedReason">Scale-up blocked: {{ blocked }}</span>
+            </div>
+          }
+        </li>
+      }
+    </ul>
+    <p class="small text-body-secondary px-3 py-2 mb-0" i18n="@@lwConsoleAutoscaling-hint">
+      Scaling is automatic and audited; min, max and the metric change through a plan.
+    </p>
+  </fpc-panel>
+} @else if (loading()) {
+  <div class="d-flex justify-content-center p-3"><fpc-spinner /></div>
+}

@@ -1252,8 +1252,57 @@ Applies to **every implementation step** of Loadweaver, independent of the featu
   4. **M4** Envoy node proxies: egress, east-west L7 with mTLS, workload identities, image policies; remote access gateways, client groups, enrollment, site-to-site (3.31).
   5. **M5** Plan / apply with failure analysis, locks, approvals and automatic rollback; overview, health tree, SLOs, search, wallboard (3.25); custom dashboards (3.18); projects / roles / quotas (3.17); live plans, terminals, file browser, tunnels (3.19); Git configuration (3.29); plan bot (3.30); UI: topology map (live / timeline / plan), graphs, filters, logs, audit, alerting, export (3.18).
   6. **M6** Operations: live migration with fallback (3.10), Agenstra runtime on Loadweaver (section 4), update rollout (3.26), backups / DR with Garage (3.20), periodic reports and status pages (3.25), import of existing Docker hosts and rolling upgrades (3.21), autoscaling (3.23).
+- **decided** **Milestone P** (after the MVP): the postponed concepts in section P, starting with the app store (P1).
 - **decided** In parallel to M5 / M6, because they only need a stable API: desktop app tunnel helpers, shared desktop release pipeline incl. Agenstra Desktop (3.32), Ionic mobile apps (3.33), posture integrations incl. mobile via MDM (3.31), Loadweaver Cloud operations (section 5), multi-cluster console, Terraform provider, usage metering, docs app and loadweaver.com (3.24).
 - Note: that is a big first release, and it grew with 3.20-3.24. M1, M3 (cross-site BGP failover) and M4 (east-west mTLS) carry most of the technical risk, so they come first; the parallel track keeps the product surface from delaying them.
+
+---
+
+## P. Milestone P: postponed (concept decided, implemented after the MVP)
+
+**Milestone P** is the first milestone **after the MVP** (after M6 and the parallel track). Its concepts are decided now and implemented then. (The smaller after-MVP items stay in section 7.)
+
+### P1. App store
+
+A catalog of apps that can be deployed into a Loadweaver cluster with a few clicks. First apps: **Agenstra** and **Decabill**, more added over time.
+
+- **Revises section 4 once implemented**: section 4 keeps the Agenstra controller / console and Decabill off Loadweaver for the MVP. With the app store, both become installable apps on Loadweaver.
+- **decided** The app store is an **additional** way to deploy Agenstra and Decabill, **never a replacement**. **All existing deployment variants stay available and supported**:
+  - **self-hosted Docker Compose** (the apps' own `docker-compose.yaml` setups and deployment docs);
+  - **bare-server provisioning via Decabill's bundled stacks** (`agenstra-controller`, `agenstra-manager`, `decabill-billing`, see [server-provisioning.md](../docs/decabill/features/server-provisioning.md#bundled-product-stack));
+  - **Agenstra Cloud** (managed);
+  - Agenstra's agent-manager with the **Docker-host runtime** next to the Loadweaver runtime (section 4).
+- **decided** App store packages are built from the **same images and versions** as the other variants (one release, several deployment channels), so no variant falls behind.
+
+**Catalogs**
+
+- **decided** An **official ForePath catalog** (Agenstra, Decabill first; curated and signed by ForePath).
+- **decided** **Private catalogs**: companies / hosters add their own Git repo or OCI registry as a catalog for internal apps.
+- **decided** A **community catalog from the start** (third-party submissions, see below).
+- **decided** Every catalog is a source the **cluster admin enables**; projects only see enabled catalogs, and admins decide **which trust labels** their projects may install.
+
+**Package format**
+
+- **decided** An app is **Docker Compose with `x-loadweaver`** (it is just a deployment, P7) plus a **manifest**: version; parameters with JSON Schema (rendered as the install form); required secrets; dependencies (e.g. the Agenstra controller needs Postgres / Redis / OpenSearch, bundled or provided); suggested groups, policies, ingress and DNS; backup policies; health checks; upgrade migrations; license and docs links.
+- **decided** Published as **signed OCI artifacts** (cosign) in the registry (3.22); images pinned by digest; exact versions throughout (section 6).
+
+**Lifecycle: everything as plans, Git-able**
+
+- **decided** **Install** = form → **plan** (failure analysis, quotas, policies, DNS) → apply. The installed app is a **normal deployment** (YAML, Git, plan bot, 3.29, 3.30).
+- **decided** **Updates** show up as available versions per channel and run as **plans** with the manifest's migrations and a **backup first**; rollback as usual (3.19).
+- **decided** **Uninstall** asks what to do with the data (keep volumes, final backup, or delete) and **never deletes silently**.
+
+**Community apps: trust model**
+
+- **decided** Publishers submit via **pull request** to the community catalog repo and sign their packages with their own cosign identity.
+- **decided** **Automated checks** on every submission: manifest / JSON Schema validation, Trivy scan of all images, signature verification, policy lint (e.g. no host networking or privileged containers without a declared reason, no plaintext secrets), and a **test install in a sandbox cluster**.
+- **decided** Then a **human review** before listing.
+- **decided** **Trust labels**: **Official** (ForePath), **Verified publisher**, **Community**.
+- **decided** Users can **report** apps; a **takedown** removes the app from the catalog and flags installed copies in affected clusters.
+
+**Licensing**
+
+- **decided** **Free apps only**: the store lists free / open-source apps and free tiers (e.g. Agenstra's AGPL / free Startup tier). Commercial licenses are handled **outside** the store; Loadweaver doesn't become a payment or license platform.
 
 ---
 
@@ -1324,3 +1373,11 @@ None right now. New questions go here.
 | 2026-10-17 | UI built from shared `fpc-*` components first; missing components are added to `ui-components` as new `fpc-*` components with Storybook stories and all brands, not app-local; Ionic components on mobile only where no `fpc-*` fits (section 6).                                                                                                                                                                                                                                                                                                                                                                                |
 | 2026-10-17 | No node cap (only the control-plane quorum is 3 / 5): target 1 to ~1,000 nodes per cluster, fleets beyond; automatic route reflectors and per-site hubs above ~16 nodes, direct tunnels only where policies need them; dedicated data node groups and per-site telemetry collectors as clusters grow; incremental failure analysis / compiler; scale tests per release; positioning 'start small, grow without limits' (P2, 3.34).                                                                                                                                                                                               |
 | 2026-10-17 | Backup management: dedicated backup key hierarchy with mandatory confirmed recovery kit (Shamir shares) and optional KMS escrow, DR asks for kit first; object lock (compliance mode) with second-admin approval and delay for deletions; catalog per cluster / project with self-service restores, diffs and quotas; cross-cluster restore and cloning via fleet (3.20).                                                                                                                                                                                                                                                        |
+| 2026-10-18 | Live migration keeps replica addresses (own IPAM plugin over a cluster pod supernet + host routes in BIRD): memory state and service IPs always follow, established direct / ingress connections follow, meshed (mTLS) flows reconnect via Envoy retries (3.10).                                                                                                                                                                                                                                                                                                                                                                 |
+| 2026-10-18 | Backups use Kopia (digest-pinned image) behind an append-only S3 gateway on the members: nodes never hold Garage keys, only the control plane's retention job deletes (after second-admin approval + delay); object lock on external targets (3.20).                                                                                                                                                                                                                                                                                                                                                                             |
+| 2026-10-18 | Every control-plane backup carries a DR envelope (master key + control-plane environment, encrypted under the backup key, unlocked by the recovery kit or KMS escrow), so whole-cluster DR restores secrets, CA and identities (3.20).                                                                                                                                                                                                                                                                                                                                                                                           |
+| 2026-10-18 | Live migration restores at the runc level (Docker's checkpoint restore is broken upstream): restored replicas run as agent-managed runc containers until their next restart, then return to Docker; gVisor services migrate stop-and-copy via runsc (3.10).                                                                                                                                                                                                                                                                                                                                                                      |
+| 2026-10-18 | The append-only backup gateway is Kopia's repository server with ACLs on the members (one repository per trust boundary: cluster and each project); WAL-G and OpenSearch snapshots go through a minimal S3 gateway that enforces no-overwrite (3.20).                                                                                                                                                                                                                                                                                                                                                                            |
+| 2026-10-19 | New section P (postponed: concept decided, implementation later). P1 app store: official ForePath catalog (Agenstra, Decabill first), private catalogs, community catalog from the start with PR submission, automated checks, sandbox install, human review and trust labels; apps = compose + manifest as signed OCI artifacts; install / update / uninstall as plans, Git-able; free apps only. Revises the section 4 exclusions once implemented.                                                                                                                                                                            |
+| 2026-10-19 | App store is an additional channel only: self-hosted Docker Compose, Decabill bare-server stacks, Agenstra Cloud and the Docker-host agent-manager runtime all stay available; store packages use the same images and versions (P1).                                                                                                                                                                                                                                                                                                                                                                                             |
+| 2026-10-19 | P is a milestone: Milestone P comes after the MVP (after M6 and the parallel track) and contains the postponed concepts, starting with the app store (P1).                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |

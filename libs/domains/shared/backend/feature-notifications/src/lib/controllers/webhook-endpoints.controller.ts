@@ -15,6 +15,7 @@ import {
   Req,
   SetMetadata,
 } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import type { Request } from 'express';
 
 import { NOTIFICATIONS_MODULE_OPTIONS } from '../constants/notification.constants';
@@ -42,15 +43,16 @@ export class WebhookEndpointsController {
     private readonly notificationDispatcherService: NotificationDispatcherService,
     private readonly webhookDeliveriesRepository: WebhookDeliveriesRepository,
     @Inject(NOTIFICATIONS_MODULE_OPTIONS) private readonly options: NotificationsModuleOptions,
+    private readonly moduleRef: ModuleRef,
   ) {}
 
-  private assertAdmin(req: Request): void {
-    this.options.assertAdmin(req);
+  private async assertAdmin(req: Request): Promise<void> {
+    await this.options.assertAdmin(req, this.moduleRef);
   }
 
   @Get('event-types')
-  listEventTypes(@Req() req: Request): WebhookEventTypeResponseDto[] {
-    this.assertAdmin(req);
+  async listEventTypes(@Req() req: Request): Promise<WebhookEventTypeResponseDto[]> {
+    await this.assertAdmin(req);
 
     return this.webhookEndpointService.listEventTypes();
   }
@@ -61,7 +63,7 @@ export class WebhookEndpointsController {
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
   ): Promise<WebhookEndpointResponseDto[]> {
-    this.assertAdmin(req);
+    await this.assertAdmin(req);
 
     return await this.webhookEndpointService.list(limit ?? 10, offset ?? 0);
   }
@@ -69,7 +71,7 @@ export class WebhookEndpointsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Req() req: Request, @Body() dto: CreateWebhookEndpointDto): Promise<WebhookEndpointResponseDto> {
-    this.assertAdmin(req);
+    await this.assertAdmin(req);
 
     return await this.webhookEndpointService.create(dto);
   }
@@ -79,7 +81,7 @@ export class WebhookEndpointsController {
     @Req() req: Request,
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ): Promise<WebhookEndpointResponseDto> {
-    this.assertAdmin(req);
+    await this.assertAdmin(req);
 
     return await this.webhookEndpointService.get(id);
   }
@@ -90,7 +92,7 @@ export class WebhookEndpointsController {
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() dto: UpdateWebhookEndpointDto,
   ): Promise<WebhookEndpointResponseDto> {
-    this.assertAdmin(req);
+    await this.assertAdmin(req);
 
     return await this.webhookEndpointService.update(id, dto);
   }
@@ -98,7 +100,7 @@ export class WebhookEndpointsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Req() req: Request, @Param('id', new ParseUUIDPipe({ version: '4' })) id: string): Promise<void> {
-    this.assertAdmin(req);
+    await this.assertAdmin(req);
 
     await this.webhookEndpointService.delete(id);
   }
@@ -108,7 +110,7 @@ export class WebhookEndpointsController {
     @Req() req: Request,
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ): Promise<WebhookDeliveryResponseDto> {
-    this.assertAdmin(req);
+    await this.assertAdmin(req);
 
     const endpoint = await this.webhookEndpointService.requireEnabledInScope(id);
     const sampleType = endpoint.subscribedEvents[0] ?? 'test.event';
@@ -129,7 +131,7 @@ export class WebhookEndpointsController {
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
     @Query('offset', new ParseIntPipe({ optional: true })) offset?: number,
   ): Promise<PaginatedWebhookDeliveriesResponseDto> {
-    this.assertAdmin(req);
+    await this.assertAdmin(req);
 
     await this.webhookEndpointService.get(id);
     const result = await this.webhookDeliveriesRepository.findByEndpointId(id, limit ?? 10, offset ?? 0);

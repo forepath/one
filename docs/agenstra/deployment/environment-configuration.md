@@ -198,6 +198,17 @@ Optional runtime extensions for provisioning and context import. See [Dynamic pr
 
 See [Agent Context MCP](../ai-agents/context-mcp.md).
 
+### Agent runtime (where environments run)
+
+One runtime per agent manager, i.e. per workspace. Existing installs keep `docker`.
+
+- `AGENT_RUNTIME` - `docker` (default): environments are containers on this manager's Docker host, egress filtered by the per-agent guard sidecar. `loadweaver`: environments are deployments on a Loadweaver cluster (scheduled by Loadweaver, gVisor for the sandboxed level), egress filtered by Loadweaver's node proxies with the same policy semantics; see [Agenstra on Loadweaver](../../loadweaver/guides/agenstra-on-loadweaver.md).
+- `LOADWEAVER_URL` - Loadweaver control plane (`https://...`, the API under `/api`). Required for `loadweaver`.
+- `LOADWEAVER_PROJECT` - The workspace's Loadweaver project. Required for `loadweaver`.
+- `LOADWEAVER_TOKEN_FILE` - File with the manager's Loadweaver personal access token (a project operator's PAT; mount it as a secret). Read on every use, so a rotated token takes effect without a restart. `LOADWEAVER_TOKEN` (inline) is accepted for development.
+- `LOADWEAVER_ENVIRONMENT_VOLUME_SIZE` - Size of a new environment's workspace volume (default `20g`).
+- Custom CAs for the control plane's certificate: `NODE_EXTRA_CA_CERTS`.
+
 ### Egress guard (web traffic filtering)
 
 - `AGENT_EGRESS_GUARD_ENABLED` - Allow per-agent egress guard sidecars on this manager (default: `true`).

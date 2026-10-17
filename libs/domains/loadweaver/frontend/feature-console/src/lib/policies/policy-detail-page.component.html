@@ -1,0 +1,128 @@
+<fpc-page-header [title]="name() ?? title" icon="shield-check">
+  <div fpcPageHeaderActions class="d-flex flex-wrap align-items-center gap-2">
+    <fpc-button variant="link" size="sm" routerLink="/policies">
+      <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>{{ backLabel }}
+    </fpc-button>
+    <fpc-button variant="outline-secondary" size="sm" routerLink="/topology" data-testid="policy-map">
+      <i class="bi bi-diagram-3 me-1" aria-hidden="true"></i><span i18n="@@lwConsolePolicyDetail-map">Map</span>
+    </fpc-button>
+    @if (policy() && key(); as k) {
+      <fpc-button
+        variant="outline-secondary"
+        size="sm"
+        [routerLink]="resourceLink(k)"
+        [queryParams]="projectParams(k.project)"
+        data-testid="policy-yaml"
+      >
+        <i class="bi bi-file-earmark-code me-1" aria-hidden="true"></i
+        ><span i18n="@@lwConsolePolicyDetail-yaml">YAML</span>
+      </fpc-button>
+      <fpc-button
+        variant="primary"
+        size="sm"
+        [routerLink]="editLink(k)"
+        [queryParams]="projectParams(k.project)"
+        data-testid="policy-edit"
+      >
+        <i class="bi bi-pencil me-1" aria-hidden="true"></i><span i18n="@@lwConsolePolicyDetail-edit">Edit</span>
+      </fpc-button>
+    }
+  </div>
+</fpc-page-header>
+
+@if (error(); as message) {
+  <fpc-alert class="m-3" variant="danger" [message]="message" />
+}
+
+@if (policy(); as p) {
+  <div class="row g-3 p-3">
+    <div class="col-lg-4">
+      <fpc-panel [title]="overviewTitle">
+        <dl class="row small mb-0" data-testid="policy-overview">
+          <dt class="col-5" i18n="@@lwConsolePolicyDetail-project">Project</dt>
+          <dd class="col-7">
+            @if (p.metadata.project) {
+              {{ p.metadata.project }}
+            } @else {
+              <span i18n="@@lwConsolePolicyDetail-clusterWide">Cluster-wide</span>
+            }
+          </dd>
+          <dt class="col-5" i18n="@@lwConsolePolicyDetail-mode">Mode</dt>
+          <dd class="col-7">
+            @if (p.spec.mode === 'monitor') {
+              <fpc-badge color="warning" size="sm" i18n="@@lwConsolePolicyDetail-monitor">Monitor</fpc-badge>
+              <div class="text-body-secondary" i18n="@@lwConsolePolicyDetail-monitorHint">
+                Would-be blocks are recorded, not enforced.
+              </div>
+            } @else {
+              <fpc-badge color="success" size="sm" i18n="@@lwConsolePolicyDetail-enforce">Enforce</fpc-badge>
+            }
+          </dd>
+          <dt class="col-5" i18n="@@lwConsolePolicyDetail-action">Action</dt>
+          <dd class="col-7">
+            @if (p.spec.action === 'deny') {
+              <fpc-badge color="danger" size="sm" i18n="@@lwConsolePolicyDetail-deny">Deny (L7)</fpc-badge>
+            } @else {
+              <fpc-badge color="primary" size="sm" i18n="@@lwConsolePolicyDetail-allow">Allow</fpc-badge>
+            }
+          </dd>
+          @if (p.spec.description) {
+            <dt class="col-5" i18n="@@lwConsolePolicyDetail-description">Description</dt>
+            <dd class="col-7">{{ p.spec.description }}</dd>
+          }
+          @if (p.spec.egress; as egress) {
+            <dt class="col-5" i18n="@@lwConsolePolicyDetail-egress">Egress addresses</dt>
+            <dd class="col-7 font-monospace">
+              {{ egress.pools.join(', ') }}
+              @if (egress.reverseDns) {
+                <div>{{ egress.reverseDns }}</div>
+              }
+            </dd>
+          }
+        </dl>
+      </fpc-panel>
+    </div>
+    <div class="col-lg-8 d-flex flex-column gap-3">
+      <div class="row g-3">
+        @for (side of sides(); track side.id) {
+          <div class="col-md-6">
+            <fpc-panel [title]="side.title">
+              <ul class="list-unstyled small mb-0" [attr.data-testid]="'policy-' + side.id">
+                @for (peer of side.peers; track $index) {
+                  <li class="py-1 d-flex align-items-center gap-2">
+                    <i class="bi {{ peerIcon(peer) }} text-body-secondary" aria-hidden="true"></i>
+                    @if (groupLink(peer); as link) {
+                      <a [routerLink]="link.commands" [queryParams]="link.params">{{ peerLabel(peer) }}</a>
+                    } @else {
+                      <span>{{ peerLabel(peer) }}</span>
+                    }
+                    @if (memberCount(peer); as count) {
+                      <fpc-badge color="light" size="sm"
+                        >{{ count }} <span i18n="@@lwConsolePolicyDetail-members">members</span></fpc-badge
+                      >
+                    } @else if (memberCount(peer) === 0) {
+                      <fpc-badge color="warning" size="sm" i18n="@@lwConsolePolicyDetail-noMembers"
+                        >no members</fpc-badge
+                      >
+                    }
+                  </li>
+                }
+              </ul>
+            </fpc-panel>
+          </div>
+        }
+      </div>
+      <fpc-panel [title]="rulesTitle">
+        <ul class="list-unstyled small font-monospace mb-0" data-testid="policy-rules">
+          @for (rule of p.spec.rules; track $index) {
+            <li class="py-1">{{ ruleLabel(rule) }}</li>
+          }
+        </ul>
+      </fpc-panel>
+    </div>
+  </div>
+} @else if (loading()) {
+  <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
+} @else if (!error()) {
+  <fpc-empty-state icon="shield-x" i18n-title="@@lwConsolePolicyDetail-notFound" title="Policy not found" />
+}

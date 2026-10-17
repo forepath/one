@@ -5960,6 +5960,15 @@
       <trans-unit id="utilCookieConsent-policy" datatype="html">
         <source>Cookie Policy</source>
         </trans-unit>
+      <trans-unit id="featureUpdates-channel" datatype="html">
+        <source>Channel</source>
+        </trans-unit>
+      <trans-unit id="featureUpdates-channelBeta" datatype="html">
+        <source>Beta</source>
+        </trans-unit>
+      <trans-unit id="featureUpdates-channelStable" datatype="html">
+        <source>Stable</source>
+        </trans-unit>
     </body>
   </file>
 </xliff>

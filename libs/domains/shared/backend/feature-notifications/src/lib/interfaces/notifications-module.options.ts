@@ -1,3 +1,4 @@
+import type { ModuleRef } from '@nestjs/core';
 import type { Request } from 'express';
 import type { EmailSubjectRegistry } from '@forepath/shared/backend/util-email';
 
@@ -26,6 +27,7 @@ export interface NotificationsModuleOptions {
   controllerPath: string;
   queueName: string;
   resolveScopeKey: () => string;
-  assertAdmin: (req: Request) => void;
+  /** Throws unless the caller may manage webhook endpoints; may resolve app services through `moduleRef`. */
+  assertAdmin: (req: Request, moduleRef: ModuleRef) => void | Promise<void>;
   email?: NotificationsEmailOptions;
 }

@@ -1,0 +1,414 @@
+<fpc-modal
+  [open]="open()"
+  (openChange)="onOpenChange($event)"
+  [title]="created() ? createdTitle : editing() ? editTitle : createTitle"
+  size="lg"
+  [scrollable]="true"
+>
+  @if (created(); as c) {
+    <fpc-alert
+      variant="warning"
+      i18n-heading="@@lwConsoleGitConnection-secretHeading"
+      heading="Copy the webhook secret now"
+      i18n-message="@@lwConsoleGitConnection-secretMessage"
+      message="It is sensitive: whoever has it can trigger syncs of this repository. Admins can read it again later (audited)."
+    />
+    <label class="form-label small" for="lw-git-created-url" i18n="@@lwConsoleGitConnection-webhookUrl"
+      >Webhook URL</label
+    >
+    <div class="input-group input-group-sm mb-2">
+      <input
+        id="lw-git-created-url"
+        class="form-control font-monospace"
+        readonly
+        [value]="createdWebhookUrl()"
+        data-testid="git-created-url"
+      />
+      <fpc-button variant="outline-secondary" size="sm" (clicked)="copy(createdWebhookUrl())">
+        <i class="bi bi-clipboard me-1" aria-hidden="true"></i><span i18n="@@lwConsoleGitConnection-copy">Copy</span>
+      </fpc-button>
+    </div>
+    <label class="form-label small" for="lw-git-created-secret" i18n="@@lwConsoleGitConnection-webhookSecret"
+      >Webhook secret</label
+    >
+    <div class="input-group input-group-sm mb-2">
+      <input
+        id="lw-git-created-secret"
+        class="form-control font-monospace"
+        readonly
+        [value]="c.webhookSecret"
+        data-testid="git-created-secret"
+      />
+      <fpc-button variant="outline-secondary" size="sm" (clicked)="copy(c.webhookSecret)">
+        <i class="bi bi-clipboard me-1" aria-hidden="true"></i
+        ><span i18n="@@lwConsoleGitConnection-copySecret">Copy</span>
+      </fpc-button>
+    </div>
+    <p class="small text-body-secondary mb-0">{{ webhookHint(c.provider) }}</p>
+  } @else {
+    @let f = form();
+    <div class="row g-2">
+      @if (!editing()) {
+        <div class="col-md-6">
+          <label class="form-label small" for="lw-git-scope" i18n="@@lwConsoleGitConnection-scope">Scope</label>
+          <select
+            id="lw-git-scope"
+            class="form-select form-select-sm"
+            [class.is-invalid]="isInvalid('scope')"
+            [ngModel]="f.scope"
+            (ngModelChange)="update('scope', $event)"
+            data-testid="git-form-scope"
+          >
+            @for (s of scopes(); track s) {
+              <option [value]="s">{{ scopeLabel(s || null) }}</option>
+            }
+          </select>
+          @if (scopes().length === 0) {
+            <div class="small text-body-secondary mt-1" i18n="@@lwConsoleGitConnection-noScopes">
+              Every scope you administer is connected already.
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="col-md-6">
+          <div class="form-label small" i18n="@@lwConsoleGitConnection-scope">Scope</div>
+          <div class="small fw-semibold">{{ scopeLabel(f.scope || null) }}</div>
+        </div>
+      }
+      <div class="col-md-6">
+        <label class="form-label small" for="lw-git-provider" i18n="@@lwConsoleGitConnection-provider">Provider</label>
+        <select
+          id="lw-git-provider"
+          class="form-select form-select-sm"
+          [ngModel]="f.provider"
+          (ngModelChange)="update('provider', $event)"
+        >
+          @for (p of providers; track p) {
+            <option [value]="p">{{ providerLabel(p) }}</option>
+          }
+        </select>
+      </div>
+      <div class="col-12">
+        <label class="form-label small" for="lw-git-url" i18n="@@lwConsoleGitConnection-repoUrl">Repository URL</label>
+        <input
+          id="lw-git-url"
+          class="form-control form-control-sm font-monospace"
+          [class.is-invalid]="isInvalid('repoUrl')"
+          placeholder="https://github.com/acme/infra.git"
+          maxlength="2048"
+          [ngModel]="f.repoUrl"
+          (ngModelChange)="update('repoUrl', $event)"
+          data-testid="git-form-url"
+        />
+        <div class="invalid-feedback" i18n="@@lwConsoleGitConnection-repoUrlInvalid">
+          Only https://… or SSH (ssh://user&#64;host/path, user&#64;host:path) without credentials, query or fragment.
+        </div>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label small" for="lw-git-branch" i18n="@@lwConsoleGitConnection-branch">Branch</label>
+        <input
+          id="lw-git-branch"
+          class="form-control form-control-sm font-monospace"
+          [class.is-invalid]="isInvalid('branch')"
+          maxlength="200"
+          [ngModel]="f.branch"
+          (ngModelChange)="update('branch', $event)"
+        />
+        <div class="invalid-feedback" i18n="@@lwConsoleGitConnection-branchInvalid">Not a valid branch name.</div>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label small" for="lw-git-path" i18n="@@lwConsoleGitConnection-path"
+          >Path in the repository (empty: the root)</label
+        >
+        <input
+          id="lw-git-path"
+          class="form-control form-control-sm font-monospace"
+          [class.is-invalid]="isInvalid('path')"
+          maxlength="512"
+          [ngModel]="f.path"
+          (ngModelChange)="update('path', $event)"
+        />
+        <div class="invalid-feedback" i18n="@@lwConsoleGitConnection-pathInvalid">
+          A relative directory without .. or .git.
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="form-label small" i18n="@@lwConsoleGitConnection-mode">Mode</div>
+        @for (m of modes; track m) {
+          <div class="form-check">
+            <input
+              [id]="'lw-git-mode-' + m"
+              type="radio"
+              class="form-check-input"
+              name="lw-git-mode"
+              [value]="m"
+              [checked]="f.mode === m"
+              (change)="update('mode', m)"
+              [attr.data-testid]="'git-form-mode-' + m"
+            />
+            <label class="form-check-label small" [for]="'lw-git-mode-' + m">
+              <span class="fw-semibold">{{ modeLabel(m) }}</span>
+              <span class="d-block text-body-secondary">{{ modeHint(m) }}</span>
+            </label>
+          </div>
+        }
+      </div>
+      <div class="col-12">
+        <label class="form-label small" for="lw-git-credentials" i18n="@@lwConsoleGitConnection-credentials"
+          >Credentials (secret reference)</label
+        >
+        <input
+          id="lw-git-credentials"
+          class="form-control form-control-sm font-monospace"
+          [class.is-invalid]="isInvalid('credentials')"
+          [placeholder]="'secret://' + (f.scope || 'project') + '/git-token'"
+          [ngModel]="f.credentials"
+          (ngModelChange)="update('credentials', $event)"
+          data-testid="git-form-credentials"
+        />
+        <div class="form-text small" i18n="@@lwConsoleGitConnection-credentialsHint">
+          A secret holding a token (HTTPS), an SSH private key (deploy key), or JSON with token, sshPrivateKey and
+          username. Never the value itself.
+        </div>
+        <div class="invalid-feedback" i18n="@@lwConsoleGitConnection-credentialsInvalid">
+          Use secret://project/name. SSH repositories need one, and a project's connection only its own project's
+          secrets.
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="form-label small" i18n="@@lwConsoleGitConnection-trigger">Trigger</div>
+        <div class="d-flex flex-wrap align-items-center gap-3">
+          <div class="form-check form-switch mb-0">
+            <input
+              id="lw-git-webhook"
+              type="checkbox"
+              role="switch"
+              class="form-check-input"
+              [ngModel]="f.webhook"
+              (ngModelChange)="update('webhook', $event)"
+            />
+            <label class="form-check-label small" for="lw-git-webhook" i18n="@@lwConsoleGitConnection-webhook"
+              >Webhooks</label
+            >
+          </div>
+          <div class="form-check form-switch mb-0">
+            <input
+              id="lw-git-polling"
+              type="checkbox"
+              role="switch"
+              class="form-check-input"
+              [ngModel]="f.polling"
+              (ngModelChange)="update('polling', $event)"
+            />
+            <label class="form-check-label small" for="lw-git-polling" i18n="@@lwConsoleGitConnection-polling"
+              >Polling every</label
+            >
+          </div>
+          <input
+            id="lw-git-poll-interval"
+            type="number"
+            class="form-control form-control-sm w-auto"
+            [class.is-invalid]="isInvalid('trigger') && f.polling"
+            [min]="pollMin"
+            [max]="pollMax"
+            [disabled]="!f.polling"
+            [ngModel]="f.pollIntervalSeconds"
+            (ngModelChange)="update('pollIntervalSeconds', '' + $event)"
+            i18n-aria-label="@@lwConsoleGitConnection-pollInterval"
+            aria-label="Polling interval in seconds"
+          />
+          <span class="small" i18n="@@lwConsoleGitConnection-seconds">seconds</span>
+        </div>
+        @if (isInvalid('trigger')) {
+          <div class="small text-danger mt-1" i18n="@@lwConsoleGitConnection-triggerInvalid">
+            Enable webhooks or polling (every 10 to 86,400 seconds), otherwise nothing is synced.
+          </div>
+        }
+      </div>
+      <div class="col-12">
+        <div class="form-label small" i18n="@@lwConsoleGitConnection-options">Options</div>
+        <div class="form-check">
+          <input
+            id="lw-git-review"
+            type="checkbox"
+            class="form-check-input"
+            [ngModel]="f.approvalByMergeReview"
+            (ngModelChange)="update('approvalByMergeReview', $event)"
+          />
+          <label class="form-check-label small" for="lw-git-review" i18n="@@lwConsoleGitConnection-review"
+            >A merge review counts as the approval (plan bot)</label
+          >
+        </div>
+        <div class="form-check">
+          <input
+            id="lw-git-auto-merge"
+            type="checkbox"
+            class="form-check-input"
+            [ngModel]="f.autoMerge"
+            (ngModelChange)="update('autoMerge', $event)"
+          />
+          <label class="form-check-label small" for="lw-git-auto-merge" i18n="@@lwConsoleGitConnection-autoMerge"
+            >Merge the pull request after a successful apply by the plan bot</label
+          >
+        </div>
+        <div class="form-check">
+          <input
+            id="lw-git-memberships"
+            type="checkbox"
+            class="form-check-input"
+            [ngModel]="f.membershipsFromGit"
+            (ngModelChange)="update('membershipsFromGit', $event)"
+          />
+          <label class="form-check-label small" for="lw-git-memberships" i18n="@@lwConsoleGitConnection-memberships"
+            >Memberships from Git (access.yaml in the path; direct changes are committed back)</label
+          >
+        </div>
+        @if (f.membershipsFromGit && !connection()?.membershipsFromGit) {
+          <div class="small text-warning-emphasis ms-4 mb-1" i18n="@@lwConsoleGitConnection-membershipsWarning">
+            access.yaml can grant and revoke every role of the scope, admins included. Only cluster admins and the
+            project's creator may enable this.
+          </div>
+        }
+        <div class="form-check">
+          <input
+            id="lw-git-sops"
+            type="checkbox"
+            class="form-check-input"
+            [ngModel]="f.sops"
+            (ngModelChange)="update('sops', $event)"
+          />
+          <label class="form-check-label small" for="lw-git-sops" i18n="@@lwConsoleGitConnection-sops"
+            >Decrypt SOPS-encrypted files with the cluster's age identity</label
+          >
+        </div>
+        @if (showGithubApp()) {
+          <div class="form-check">
+            <input
+              id="lw-git-github-app"
+              type="checkbox"
+              class="form-check-input"
+              [disabled]="!clusterAdmin()"
+              [ngModel]="f.githubApp"
+              (ngModelChange)="update('githubApp', $event)"
+              data-testid="git-form-github-app"
+            />
+            <label class="form-check-label small" for="lw-git-github-app" i18n="@@lwConsoleGitConnection-githubApp"
+              >Use the cluster's GitHub App</label
+            >
+          </div>
+          <div class="small text-body-secondary ms-4 mb-1" i18n="@@lwConsoleGitConnection-githubAppHint">
+            Only cluster admins may enable it. It applies to GitHub connections without their own token, and the
+            connection's API URL must be the cluster's GitHub API (Cluster.spec.git.github.apiUrl). A change of the
+            repository, API URL or provider turns it off unless a cluster admin makes it.
+          </div>
+        }
+        @if (githubAppReset()) {
+          <div
+            class="small text-warning-emphasis ms-4 mb-1"
+            i18n="@@lwConsoleGitConnection-githubAppReset"
+            data-testid="git-form-github-app-reset"
+          >
+            This change turns the GitHub App off for the connection; only a cluster admin can enable it again.
+          </div>
+        }
+      </div>
+      <div class="col-12">
+        <fpc-button variant="link" size="sm" (clicked)="showAdvanced.set(!showAdvanced())">
+          <i class="bi me-1" [class.bi-chevron-down]="!showAdvanced()" [class.bi-chevron-up]="showAdvanced()"></i
+          ><span i18n="@@lwConsoleGitConnection-advanced">Self-hosted provider and private CA</span>
+        </fpc-button>
+      </div>
+      @if (showAdvanced()) {
+        <div class="col-12">
+          <label class="form-label small" for="lw-git-api-url" i18n="@@lwConsoleGitConnection-apiUrl"
+            >Provider API URL (empty: derived from the repository host)</label
+          >
+          <input
+            id="lw-git-api-url"
+            class="form-control form-control-sm font-monospace"
+            [class.is-invalid]="isInvalid('apiUrl')"
+            placeholder="https://git.example.com/api/v4"
+            maxlength="2048"
+            [disabled]="f.provider === 'git'"
+            [ngModel]="f.apiUrl"
+            (ngModelChange)="update('apiUrl', $event)"
+          />
+          <div class="invalid-feedback" i18n="@@lwConsoleGitConnection-apiUrlInvalid">
+            An https:// URL without credentials, query or fragment (plain Git has no API).
+          </div>
+        </div>
+        <div class="col-12">
+          <label class="form-label small" for="lw-git-ca" i18n="@@lwConsoleGitConnection-ca"
+            >CA certificate (PEM, for a Git host behind a private CA)</label
+          >
+          <textarea
+            id="lw-git-ca"
+            class="form-control form-control-sm font-monospace"
+            [class.is-invalid]="isInvalid('caCertificate')"
+            rows="4"
+            placeholder="-----BEGIN CERTIFICATE-----"
+            [ngModel]="f.caCertificate"
+            (ngModelChange)="update('caCertificate', $event)"
+          ></textarea>
+          <div class="invalid-feedback" i18n="@@lwConsoleGitConnection-caInvalid">
+            PEM certificates only, never a private key.
+          </div>
+        </div>
+      }
+    </div>
+    @if (editing() && connection(); as c) {
+      @if (f.repoUrl.trim() !== c.repoUrl || f.branch.trim() !== c.branch || f.path.trim() !== c.path) {
+        <fpc-alert
+          class="d-block mt-3"
+          variant="info"
+          i18n-message="@@lwConsoleGitConnection-resyncHint"
+          message="Another repository, branch or path is another history: the next sync starts from scratch (another host also pins its SSH host key anew)."
+        />
+      }
+    }
+    @if (nothingChanged()) {
+      <fpc-alert
+        class="d-block mt-3"
+        variant="info"
+        i18n-message="@@lwConsoleGitConnection-nothingChanged"
+        message="Nothing changed."
+      />
+    }
+    @if (invalid().length > 0) {
+      <fpc-alert
+        class="d-block mt-3"
+        variant="warning"
+        i18n-message="@@lwConsoleGitConnection-invalid"
+        message="Check the marked fields."
+        data-testid="git-form-invalid"
+      />
+    }
+    @if (saveError(); as message) {
+      <fpc-alert class="d-block mt-3" variant="danger" [message]="message" data-testid="git-form-error" />
+    }
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    @if (created()) {
+      <fpc-button variant="primary" (clicked)="close()">
+        <span i18n="@@lwConsoleGitConnection-done">Done</span>
+      </fpc-button>
+    } @else {
+      <fpc-button variant="outline-secondary" (clicked)="close()">
+        <span i18n="@@lwConsoleGitConnection-cancel">Cancel</span>
+      </fpc-button>
+      <fpc-button
+        variant="primary"
+        [loading]="saving()"
+        [disabled]="!editing() && scopes().length === 0"
+        (clicked)="save()"
+        data-testid="git-form-save"
+      >
+        @if (editing()) {
+          <span i18n="@@lwConsoleGitConnection-save">Save</span>
+        } @else {
+          <span i18n="@@lwConsoleGitConnection-connect">Connect</span>
+        }
+      </fpc-button>
+    }
+  </div>
+</fpc-modal>

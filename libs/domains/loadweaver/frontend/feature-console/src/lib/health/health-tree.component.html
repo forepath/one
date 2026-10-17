@@ -1,0 +1,58 @@
+<ng-template #branch let-nodes let-depth="depth">
+  <ul class="list-unstyled mb-0" [class.ms-4]="depth > 0" role="group">
+    @for (node of nodes; track node.entity.key) {
+      <li class="py-1" role="treeitem" [attr.aria-expanded]="node.children.length ? isOpen(node, depth) : null">
+        <div class="d-flex align-items-start gap-2">
+          @if (node.children.length > 0) {
+            <button
+              type="button"
+              class="btn btn-link btn-sm p-0 text-body-secondary"
+              [attr.aria-label]="isOpen(node, depth) ? collapseLabel : expandLabel"
+              (click)="toggle(node, depth)"
+            >
+              <i
+                class="bi"
+                [class.bi-chevron-down]="isOpen(node, depth)"
+                [class.bi-chevron-right]="!isOpen(node, depth)"
+                aria-hidden="true"
+              ></i>
+            </button>
+          } @else {
+            <span class="d-inline-block" style="width: 1rem"></span>
+          }
+          <fpc-status-badge [tone]="toneOf(node)" size="sm" [ariaLabel]="healthLabel(node.entity.state)">
+            <i class="bi {{ iconOf(node) }}" aria-hidden="true"></i>
+          </fpc-status-badge>
+          <div class="flex-grow-1 min-w-0">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <i class="bi {{ kindIconOf(node) }} text-body-secondary" aria-hidden="true"></i>
+              <a [routerLink]="link(node.entity.key)" class="text-decoration-none fw-semibold">{{
+                node.entity.name
+              }}</a>
+              <span class="small text-body-secondary">{{ kindLabel(node.entity.kind) }}</span>
+              <span class="small">{{ healthLabel(node.entity.state) }}</span>
+              <span class="small text-body-secondary"
+                ><span i18n="@@lwConsoleHealthTree-since">since</span> {{ node.entity.since | date: 'short' }}</span
+              >
+            </div>
+            @for (reason of node.entity.reasons; track reason.code + reason.message) {
+              <div class="small text-body-secondary">
+                <fpc-badge color="light" size="sm"
+                  ><span class="font-monospace">{{ reason.code }}</span></fpc-badge
+                >
+                {{ reason.message }}
+              </div>
+            }
+          </div>
+        </div>
+        @if (node.children.length > 0 && isOpen(node, depth)) {
+          <ng-container *ngTemplateOutlet="branch; context: { $implicit: node.children, depth: depth + 1 }" />
+        }
+      </li>
+    }
+  </ul>
+</ng-template>
+
+<div role="tree" data-testid="health-tree">
+  <ng-container *ngTemplateOutlet="branch; context: { $implicit: nodes(), depth: 0 }" />
+</div>

@@ -1,0 +1,250 @@
+<fpc-page-header [title]="title" icon="graph-up">
+  <div fpcPageHeaderActions>
+    <fpc-button
+      variant="outline-secondary"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </div>
+</fpc-page-header>
+
+<fpc-tab-group class="d-block px-3" [activeId]="tab()" (activeIdChange)="onTabChange($event)">
+  <fpc-tab id="explore" [label]="tabExplore" icon="graph-up">
+    <form class="d-flex flex-wrap align-items-center gap-2 py-2" (ngSubmit)="show()" data-testid="metrics-form">
+      <label class="visually-hidden" for="lw-metrics-metric">{{ metricLabel }}</label>
+      <input
+        id="lw-metrics-metric"
+        name="metric"
+        type="text"
+        class="form-control form-control-sm w-auto font-monospace"
+        style="min-width: 16rem"
+        list="lw-metrics-names"
+        autocomplete="off"
+        [placeholder]="metricLabel"
+        [ngModel]="metric()"
+        (ngModelChange)="metric.set($event)"
+      />
+      <datalist id="lw-metrics-names">
+        @for (name of names(); track name) {
+          <option [value]="name"></option>
+        }
+      </datalist>
+      <label class="visually-hidden" for="lw-metrics-range">{{ rangeFilterLabel }}</label>
+      <select
+        id="lw-metrics-range"
+        name="range"
+        class="form-select form-select-sm w-auto"
+        [ngModel]="range()"
+        (ngModelChange)="range.set($event)"
+      >
+        @for (r of ranges; track r) {
+          <option [value]="r">{{ rangeLabel(r) }}</option>
+        }
+      </select>
+      <label class="visually-hidden" for="lw-metrics-group">{{ groupByLabel }}</label>
+      <select
+        id="lw-metrics-group"
+        name="groupBy"
+        class="form-select form-select-sm w-auto"
+        [ngModel]="groupBy()"
+        (ngModelChange)="groupBy.set($event)"
+      >
+        @for (g of groupBys; track g) {
+          <option [value]="g">{{ groupByName(g) }}</option>
+        }
+      </select>
+      <label class="visually-hidden" for="lw-metrics-aggregation">{{ aggregationLabel }}</label>
+      <select
+        id="lw-metrics-aggregation"
+        name="aggregation"
+        class="form-select form-select-sm w-auto"
+        [ngModel]="aggregation()"
+        (ngModelChange)="aggregation.set($event)"
+      >
+        @for (a of aggregations; track a) {
+          <option [value]="a">{{ a }}</option>
+        }
+      </select>
+      <input
+        name="entity"
+        type="text"
+        class="form-control form-control-sm w-auto"
+        [attr.aria-label]="entityLabel"
+        [placeholder]="entityLabel"
+        [ngModel]="entity()"
+        (ngModelChange)="entity.set($event)"
+      />
+      @if (clusterRole()) {
+        <input
+          name="node"
+          type="text"
+          class="form-control form-control-sm w-auto"
+          [attr.aria-label]="nodeLabel"
+          [placeholder]="nodeLabel"
+          [ngModel]="node()"
+          (ngModelChange)="node.set($event)"
+        />
+      }
+      @if (projects().length > 0) {
+        <select
+          name="project"
+          class="form-select form-select-sm w-auto"
+          [attr.aria-label]="projectLabel"
+          [ngModel]="project()"
+          (ngModelChange)="project.set($event)"
+        >
+          <option value="" i18n="@@lwConsoleMetrics-allProjects">All projects</option>
+          @for (p of projects(); track p) {
+            <option [value]="p">{{ p }}</option>
+          }
+        </select>
+      }
+      <fpc-button type="submit" variant="primary" size="sm" [loading]="loading()" [disabled]="!metric().trim()">
+        {{ showLabel }}
+      </fpc-button>
+    </form>
+
+    @if (namesError(); as message) {
+      <fpc-alert class="d-block mb-2" variant="warning" [message]="message" />
+    }
+    @if (error(); as message) {
+      <fpc-alert class="d-block mb-2" variant="danger" [message]="message" />
+    }
+
+    @if (!metric().trim() && !result()) {
+      <fpc-empty-state icon="graph-up" i18n-title="@@lwConsoleMetrics-pick" title="Pick a metric to graph">
+        @if (names().length > 0) {
+          <div class="d-flex flex-wrap justify-content-center gap-2 mt-2" data-testid="metrics-names">
+            @for (name of names().slice(0, 12); track name) {
+              <fpc-button variant="outline-secondary" size="sm" (clicked)="metric.set(name); show()">
+                <span class="font-monospace">{{ name }}</span>
+              </fpc-button>
+            }
+          </div>
+        }
+      </fpc-empty-state>
+    } @else {
+      <fpc-panel [title]="metric() + (result()?.step ? ' · ' + result()!.step : '')">
+        <div fpcPanelActions>
+          <label class="visually-hidden" for="lw-metrics-chart">{{ chartTypeLabel }}</label>
+          <select
+            id="lw-metrics-chart"
+            class="form-select form-select-sm w-auto"
+            [ngModel]="chartType()"
+            (ngModelChange)="chartType.set($event)"
+          >
+            @for (t of chartTypes; track t) {
+              <option [value]="t">{{ t }}</option>
+            }
+          </select>
+        </div>
+        @if (loading() && !result()) {
+          <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
+        } @else if (series().length === 0) {
+          <p class="small text-body-secondary mb-0" i18n="@@lwConsoleMetrics-noSeries" data-testid="metrics-empty">
+            No samples in this range.
+          </p>
+        } @else {
+          <loadweaver-metric-chart
+            data-testid="metrics-chart"
+            [type]="chartType()"
+            [series]="series()"
+            [unit]="unit()"
+            [height]="360"
+            [events]="events()"
+          />
+          @if (series().length >= 200) {
+            <p class="small text-body-secondary mb-0" i18n="@@lwConsoleMetrics-capped">
+              Showing the first 200 series; narrow the entity or group differently.
+            </p>
+          }
+        }
+      </fpc-panel>
+    }
+  </fpc-tab>
+
+  <fpc-tab id="dashboards" [label]="tabDashboards" icon="grid-1x2">
+    @if (dashboardsError(); as message) {
+      <fpc-alert class="d-block my-2" variant="danger" [message]="message" />
+    }
+    @if (dashboardsLoading() && dashboards().length === 0) {
+      <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
+    } @else if (dashboards().length === 0) {
+      <fpc-empty-state
+        icon="grid-1x2"
+        i18n-title="@@lwConsoleDashboards-empty"
+        title="No dashboards yet"
+        i18n-message="@@lwConsoleDashboards-emptyHint"
+        message="Dashboards are Dashboard resources: add one as YAML in the resources."
+      />
+    } @else {
+      <div class="d-flex flex-wrap align-items-center gap-2 py-2" data-testid="dashboards-filter">
+        <label class="visually-hidden" for="lw-dashboards-select">{{ dashboardLabel }}</label>
+        <select
+          id="lw-dashboards-select"
+          class="form-select form-select-sm w-auto"
+          [ngModel]="dashboardSelection()"
+          (ngModelChange)="onDashboardChange($event)"
+        >
+          @for (d of dashboards(); track dashboardKey(d)) {
+            <option [value]="dashboardKey(d)">
+              {{ d.spec.title }}{{ d.metadata.project ? ' (' + d.metadata.project + ')' : '' }}
+            </option>
+          }
+        </select>
+        <label class="visually-hidden" for="lw-dashboards-range">{{ rangeFilterLabel }}</label>
+        <select
+          id="lw-dashboards-range"
+          class="form-select form-select-sm w-auto"
+          [ngModel]="effectiveDashboardRange()"
+          (ngModelChange)="onDashboardRangeChange($event)"
+        >
+          @for (r of dashboardRanges(); track r) {
+            <option [value]="r">{{ rangeLabel(r) }}</option>
+          }
+        </select>
+        @if (projects().length > 0) {
+          <select
+            class="form-select form-select-sm w-auto"
+            [attr.aria-label]="projectLabel"
+            [ngModel]="dashboardProject()"
+            (ngModelChange)="onDashboardProjectChange($event)"
+          >
+            <option value="" i18n="@@lwConsoleDashboards-allProjects">All projects</option>
+            @for (p of projects(); track p) {
+              <option [value]="p">{{ p }}</option>
+            }
+          </select>
+        }
+      </div>
+
+      @if (dashboard(); as d) {
+        @if (d.spec.description) {
+          <p class="small text-body-secondary">{{ d.spec.description }}</p>
+        }
+        <div
+          class="lw-dashboard-grid pb-3"
+          data-testid="dashboard-grid"
+          [style.display]="'grid'"
+          [style.grid-template-columns]="'repeat(12, minmax(0, 1fr))'"
+          [style.grid-auto-rows]="rowPx + 'px'"
+          [style.gap]="'0.75rem'"
+        >
+          @for (placed of placedWidgets(); track trackWidget(placed.widget, placed.index)) {
+            <loadweaver-dashboard-widget
+              [style.grid-column]="placed.column"
+              [style.grid-row]="placed.row"
+              [widget]="placed.widget"
+              [state]="widgetState(placed.index)"
+            />
+          }
+        </div>
+      }
+    }
+  </fpc-tab>
+</fpc-tab-group>

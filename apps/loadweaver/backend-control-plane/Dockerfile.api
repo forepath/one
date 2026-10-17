@@ -1,0 +1,70 @@
+# -----------------------------------------------------------------------------
+# Image:      loadweaver-control-plane-api
+# Project:    loadweaver-backend-control-plane — Nx target `api-container-image`
+# Registry:   ghcr.io/forepath/loadweaver-control-plane-api
+# Base:       debian:trixie-slim (pinned by digest, section 6)
+# User:       loadweaver (APP_UID / APP_GID, default 10001)
+# Exposes:    3400 (HTTP API + WebSocket), 7443 (node agent gRPC stream, mTLS)
+# Build:      npx nx run loadweaver-backend-control-plane:api-container-image
+# -----------------------------------------------------------------------------
+#
+# Backups (3.20): the control plane runs the `kopia` client (retention, catalog, diff, restores) against the
+# repository servers; the binary comes from the same digest-pinned (multi-arch) image the nodes run
+# (`COMPONENT_IMAGES.kopia` in util-release).
+FROM docker.io/kopia/kopia:0.23.1@sha256:89fd95ee2942880ca00eae964266958a394421ddbdf69bca62e38afc55f5900e AS kopia
+
+FROM docker.io/library/debian:trixie-slim@sha256:a29215f6a35e51e22adffa17f89e9d2ef06214e64a2bad10d765c46aea49f11f
+
+ARG APP_UID=10001
+ARG APP_GID=10001
+# Release sets VERSION via --build-arg (see api-container-image / release.yml).
+ARG VERSION=0.0.0
+
+ENV HOST=0.0.0.0
+ENV PORT=3400
+ENV LOADWEAVER_GRPC_PORT=7443
+ENV NVM_DIR=/home/loadweaver/.nvm
+ENV NODE_VERSION=24.14.1
+ENV HOME=/home/loadweaver
+ENV PATH="/home/loadweaver/.nvm/versions/node/v${NODE_VERSION}/bin:${PATH}"
+ENV VERSION=${VERSION}
+
+WORKDIR /app
+
+EXPOSE ${PORT} ${LOADWEAVER_GRPC_PORT}
+
+# GitOps (3.29): the git CLI and the OpenSSH client, pinned to the Debian trixie package versions (section 6).
+ARG GIT_VERSION=1:2.47.3-0+deb13u1
+ARG OPENSSH_CLIENT_VERSION=1:10.0p1-7+deb13u4
+
+RUN apt-get update && \
+    apt-get upgrade -y --no-install-recommends && \
+    apt-get install -y --no-install-recommends curl bash ca-certificates \
+      "git=${GIT_VERSION}" "openssh-client=${OPENSSH_CLIENT_VERSION}" && \
+    groupadd --gid "${APP_GID}" loadweaver && \
+    useradd --uid "${APP_UID}" --gid "${APP_GID}" --create-home --home-dir /home/loadweaver --shell /bin/bash loadweaver && \
+    chown "${APP_UID}:${APP_GID}" /app && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=kopia /bin/kopia /usr/local/bin/kopia
+
+USER loadweaver
+
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | PROFILE=/dev/null bash && \
+    . "${NVM_DIR}/nvm.sh" && \
+    nvm install "${NODE_VERSION}" && \
+    nvm alias default "${NODE_VERSION}" && \
+    npm install -g npm@11.18.0 && \
+    npm cache clean --force
+
+COPY --chown=${APP_UID}:${APP_GID} package*.json ./
+
+RUN . "${NVM_DIR}/nvm.sh" && npm ci --ignore-scripts && npm cache clean --force
+
+COPY --chown=${APP_UID}:${APP_GID} . /app
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD curl -f "http://localhost:${PORT}/api/health" || exit 1
+
+ENTRYPOINT ["bash", "-c", ". \"${NVM_DIR}/nvm.sh\" && exec node main.js"]

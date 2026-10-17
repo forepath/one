@@ -1,0 +1,64 @@
+:host {
+  --fpc-progress-ring-color: var(--bs-primary);
+
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+:host([data-tone='success']) {
+  --fpc-progress-ring-color: var(--bs-success);
+}
+
+:host([data-tone='warning']) {
+  --fpc-progress-ring-color: var(--bs-warning);
+}
+
+:host([data-tone='danger']) {
+  --fpc-progress-ring-color: var(--bs-danger);
+}
+
+:host([data-tone='info']) {
+  --fpc-progress-ring-color: var(--bs-info);
+}
+
+.fpc-progress-ring__svg {
+  display: block;
+  overflow: visible;
+}
+
+.fpc-progress-ring__track {
+  fill: none;
+  stroke: var(--bs-secondary-bg, var(--bs-border-color));
+}
+
+.fpc-progress-ring__indicator {
+  fill: none;
+  stroke: var(--fpc-progress-ring-color);
+  stroke-linecap: round;
+  transition:
+    stroke-dashoffset 0.35s ease,
+    stroke 0.2s ease;
+}
+
+.fpc-progress-ring__label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bs-body-color);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fpc-progress-ring__indicator {
+    transition: none;
+  }
+}

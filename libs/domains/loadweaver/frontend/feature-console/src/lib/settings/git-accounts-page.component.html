@@ -1,0 +1,175 @@
+<fpc-page-header [title]="title" icon="link-45deg" />
+
+<div class="p-3 d-flex flex-column gap-3">
+  @if (pendingLinkState() === 'loading') {
+    <div class="d-flex justify-content-center p-2" data-testid="git-accounts-pending-loading"><fpc-spinner /></div>
+  }
+  @if (pendingLink(); as p) {
+    <fpc-alert
+      variant="info"
+      icon="link-45deg"
+      i18n-heading="@@lwConsoleGitAccounts-confirmHeading"
+      heading="Confirm the link"
+      data-testid="git-accounts-confirm"
+    >
+      <p class="small mb-2">
+        <span i18n="@@lwConsoleGitAccounts-confirmQuestion"
+          >Link <span class="fw-semibold">{{ p.login }}</span> on {{ providerLabel(p.provider) }} to your account?</span
+        >
+      </p>
+      <p class="small text-body-secondary mb-2" i18n="@@lwConsoleGitAccounts-confirmHint">
+        Plan bot commands from this Git account will run with your roles. Only confirm if you just started linking this
+        account yourself.
+      </p>
+      <div class="d-flex flex-wrap gap-2">
+        <fpc-button
+          variant="primary"
+          size="sm"
+          [loading]="pendingLinkState() === 'confirming'"
+          [disabled]="pendingLinkState() !== 'ready'"
+          (clicked)="confirmLink()"
+          data-testid="git-accounts-confirm-link"
+        >
+          <span i18n="@@lwConsoleGitAccounts-confirmLink">Link account</span>
+        </fpc-button>
+        <fpc-button
+          variant="outline-secondary"
+          size="sm"
+          [loading]="pendingLinkState() === 'cancelling'"
+          [disabled]="pendingLinkState() !== 'ready'"
+          (clicked)="cancelLink()"
+          data-testid="git-accounts-confirm-cancel"
+        >
+          <span i18n="@@lwConsoleGitAccounts-confirmCancel">Cancel</span>
+        </fpc-button>
+      </div>
+    </fpc-alert>
+  }
+  @if (linkConfirmed(); as account) {
+    <fpc-alert
+      variant="success"
+      [dismissible]="true"
+      (closed)="dismissPendingResult()"
+      data-testid="git-accounts-confirmed"
+    >
+      <span i18n="@@lwConsoleGitAccounts-confirmed"
+        >{{ account.login }} on {{ providerLabel(account.provider) }} is linked to your account.</span
+      >
+    </fpc-alert>
+  }
+  @if (pendingErrorMessage(); as reason) {
+    <fpc-alert
+      variant="danger"
+      [dismissible]="true"
+      (closed)="dismissPendingResult()"
+      i18n-heading="@@lwConsoleGitAccounts-linkFailed"
+      heading="Linking the account failed"
+      [message]="reason"
+      data-testid="git-accounts-confirm-error"
+    />
+  }
+  @if (returned().linked; as provider) {
+    <fpc-alert variant="success" [dismissible]="true" (closed)="dismissReturned()" data-testid="git-accounts-linked">
+      <span i18n="@@lwConsoleGitAccounts-linked">Your {{ providerLabel(provider) }} account is linked.</span>
+    </fpc-alert>
+  }
+  @if (returned().error; as reason) {
+    <fpc-alert
+      variant="danger"
+      [dismissible]="true"
+      (closed)="dismissReturned()"
+      i18n-heading="@@lwConsoleGitAccounts-linkFailed"
+      heading="Linking the account failed"
+      [message]="reason"
+      data-testid="git-accounts-error"
+    />
+  }
+  @if (error(); as message) {
+    <fpc-alert variant="danger" [message]="message" />
+  }
+  @if (changeError(); as message) {
+    <fpc-alert variant="danger" [message]="message" [dismissible]="true" (closed)="dismissChangeError()" />
+  }
+  <p class="small text-body-secondary mb-0" i18n="@@lwConsoleGitAccounts-hint">
+    The plan bot runs commands from pull request comments (loadweaver plan, apply, approve, unlock, drift) only for Git
+    accounts linked to a Loadweaver user, and only with that user's roles. Loadweaver keeps the provider's user id and
+    login, never a token.
+  </p>
+
+  @if (unavailable()) {
+    <fpc-alert
+      variant="info"
+      i18n-message="@@lwConsoleGitAccounts-unavailable"
+      message="This control plane doesn't offer Git account linking yet."
+      data-testid="git-accounts-unavailable"
+    />
+  } @else {
+    <fpc-panel [title]="accountsTitle + ' (' + accounts().length + ')'" [flush]="true">
+      @if (loading() && accounts().length === 0) {
+        <div class="d-flex justify-content-center p-4"><fpc-spinner /></div>
+      } @else if (accounts().length === 0) {
+        <fpc-empty-state
+          icon="link-45deg"
+          size="sm"
+          i18n-title="@@lwConsoleGitAccounts-empty"
+          title="No account linked"
+        />
+      } @else {
+        <fpc-list [flush]="true" data-testid="git-accounts-list">
+          @for (a of accounts(); track a.id) {
+            <fpc-list-item>
+              <div fpcListItemTitle class="d-flex align-items-center gap-2">
+                <i class="bi {{ providerIcon[a.provider] }}" aria-hidden="true"></i>
+                <span class="fw-semibold">{{ a.login }}</span>
+                <span class="small text-body-secondary">{{ providerLabel(a.provider) }}</span>
+              </div>
+              <div fpcListItemMeta class="small text-body-secondary">
+                <span i18n="@@lwConsoleGitAccounts-linkedAt">Linked</span> {{ a.createdAt | date: 'short' }}
+              </div>
+              <div fpcListItemActions>
+                <fpc-button
+                  variant="outline-danger"
+                  size="sm"
+                  [loading]="unlinking() === a.id"
+                  (clicked)="unlinkFor.set(a)"
+                  [attr.data-testid]="'git-accounts-unlink-' + a.id"
+                >
+                  <span i18n="@@lwConsoleGitAccounts-unlink">Unlink</span>
+                </fpc-button>
+              </div>
+            </fpc-list-item>
+          }
+        </fpc-list>
+      }
+    </fpc-panel>
+
+    @if (linkable().length > 0) {
+      <div class="d-flex flex-wrap gap-2" data-testid="git-accounts-link">
+        @for (p of linkable(); track p) {
+          <fpc-button
+            variant="outline-primary"
+            size="sm"
+            [loading]="linking() === p"
+            [disabled]="linking() !== null"
+            (clicked)="link(p)"
+            [attr.data-testid]="'git-accounts-link-' + p"
+          >
+            <i class="bi {{ providerIcon[p] }} me-1" aria-hidden="true"></i
+            ><span i18n="@@lwConsoleGitAccounts-link">Link {{ providerLabel(p) }} account</span>
+          </fpc-button>
+        }
+      </div>
+    }
+  }
+</div>
+
+<fpc-confirm-dialog
+  [open]="unlinkFor() !== null"
+  (openChange)="$event || unlinkFor.set(null)"
+  [title]="unlinkTitle"
+  [message]="unlinkMessage"
+  [confirmLabel]="unlinkConfirm"
+  [cancelLabel]="keepLabel"
+  [danger]="true"
+  (confirmed)="confirmUnlink()"
+/>

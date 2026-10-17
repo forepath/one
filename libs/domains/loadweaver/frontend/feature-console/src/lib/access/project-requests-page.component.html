@@ -1,0 +1,56 @@
+<fpc-page-header [title]="title" [subtitle]="project()" icon="inbox">
+  <div fpcPageHeaderActions class="d-flex flex-wrap align-items-center gap-2">
+    <a
+      class="btn btn-sm btn-outline-secondary"
+      routerLink="/access"
+      [queryParams]="{ project: project() }"
+      i18n="@@lwConsoleProjectRequests-access"
+      >Project access</a
+    >
+    <fpc-button
+      variant="outline-secondary"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </div>
+</fpc-page-header>
+
+<div class="p-3 d-flex flex-column gap-3">
+  @if (error(); as message) {
+    <fpc-alert variant="danger" [message]="message" />
+  }
+  @if (changeError(); as message) {
+    <fpc-alert variant="danger" [message]="message" />
+  }
+  <p class="small text-body-secondary mb-0" i18n="@@lwConsoleProjectRequests-hint">
+    Policies of other projects that reach this project's groups need its acceptance, bound to the exact version. To
+    reject one, don't accept it (the plan stays blocked) or reject the requesting plan.
+  </p>
+  @if (loading() && !ready()) {
+    <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
+  } @else if (ready()) {
+    <fpc-panel [flush]="true">
+      <loadweaver-access-requests
+        [requests]="requests()"
+        [mayAccept]="mayAccept()"
+        [changing]="changing()"
+        (accept)="acceptFor.set($event)"
+      />
+    </fpc-panel>
+  }
+</div>
+
+<fpc-confirm-dialog
+  [open]="acceptFor() !== null"
+  (openChange)="onAcceptOpenChange($event)"
+  [title]="acceptTitle"
+  [message]="acceptMessage()"
+  [confirmLabel]="acceptLabel"
+  [cancelLabel]="cancelLabel"
+  (confirmed)="confirmAccept()"
+/>

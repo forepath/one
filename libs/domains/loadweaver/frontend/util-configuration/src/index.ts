@@ -9,6 +9,7 @@ export {
   LocaleService,
   buildPageTitle,
   CLOUDFLARE_TURNSTILE_TEST_SITE_KEY,
+  resolveApiWebsocketUrl,
 } from '@forepath/shared/frontend/util-configuration';
 export type {
   ApiConfig,

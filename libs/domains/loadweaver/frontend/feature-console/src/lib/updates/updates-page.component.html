@@ -1,0 +1,648 @@
+<fpc-page-header [title]="title" icon="cloud-arrow-down">
+  <div fpcPageHeaderActions class="d-flex flex-wrap align-items-center gap-2">
+    @if (globalAdmin()) {
+      <fpc-button
+        variant="outline-secondary"
+        size="sm"
+        routerLink="/updates/announcements"
+        data-testid="updates-announcements"
+      >
+        <i class="bi bi-megaphone me-1" aria-hidden="true"></i
+        ><span i18n="@@lwConsoleUpdates-announcements">Announcements</span>
+      </fpc-button>
+    }
+    @if (isClusterAdmin()) {
+      <fpc-button variant="primary" size="sm" (clicked)="openPlan()" data-testid="updates-plan">
+        <i class="bi bi-plus-lg me-1" aria-hidden="true"></i
+        ><span i18n="@@lwConsoleUpdates-planButton">Plan update</span>
+      </fpc-button>
+    }
+    <fpc-button
+      variant="outline-secondary"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </div>
+</fpc-page-header>
+
+@if (error(); as message) {
+  <fpc-alert class="d-block m-3" variant="danger" [message]="message" />
+}
+
+@if (loading() && !loaded()) {
+  <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
+} @else if (status(); as s) {
+  @if (activeRollout(); as active) {
+    <div class="px-3 pt-3">
+      <fpc-panel data-testid="updates-active">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <fpc-badge [color]="statusTone[active.status]" size="sm">{{ statusLabel(active.status) }}</fpc-badge>
+          <span class="fw-semibold">{{ version(active.fromVersion) }} → {{ active.toVersion }}</span>
+          <span class="small text-body-secondary">
+            {{ active.progress.done }} / {{ active.progress.total }}
+            <span i18n="@@lwConsoleUpdates-stepsDone">steps done</span>
+          </span>
+          <fpc-button class="ms-auto" variant="link" size="sm" [routerLink]="['/updates/rollouts', active.id]">
+            <span i18n="@@lwConsoleUpdates-openActive">Open the update</span>
+          </fpc-button>
+        </div>
+        <fpc-progress
+          class="d-block mt-2"
+          [value]="percent(active)"
+          height="0.5rem"
+          [striped]="active.status === 'running'"
+          [animated]="active.status === 'running'"
+          [variant]="active.status === 'paused' || active.status === 'rolling-back' ? 'warning' : 'primary'"
+        />
+        @if (active.pauseReason) {
+          <div class="small text-body-secondary mt-1">{{ active.pauseReason }}</div>
+        }
+      </fpc-panel>
+    </div>
+  }
+
+  <fpc-tab-group class="d-block px-3" [activeId]="activeTab()" (activeIdChange)="selectTab($event)">
+    <fpc-tab id="overview" [label]="tabOverview" icon="speedometer2">
+      <div class="d-flex flex-column gap-3 py-3">
+        <fpc-summary-bar [columns]="3">
+          <fpc-summary-card [label]="clusterVersionLabel" [value]="version(s.clusterVersion)" />
+          <fpc-summary-card [label]="controlPlaneVersionLabel" [value]="version(s.controlPlaneVersion)" />
+          <fpc-summary-card
+            [label]="latestLabel"
+            [value]="version(s.latestAvailable)"
+            [tone]="s.latestAvailable ? 'info' : 'default'"
+          />
+        </fpc-summary-bar>
+
+        <fpc-panel [title]="policyTitle" data-testid="updates-policy">
+          <div class="row small g-3">
+            <div class="col-sm-6 col-lg-3">
+              <div class="text-body-secondary" i18n="@@lwConsoleUpdates-policy">Policy</div>
+              <div class="fw-semibold">{{ policyLabel(s.policy.policy) }}</div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div class="text-body-secondary" i18n="@@lwConsoleUpdates-channel">Channel</div>
+              <div class="fw-semibold">{{ s.policy.channel === 'beta' ? betaTitle : stableTitle }}</div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div class="text-body-secondary" i18n="@@lwConsoleUpdates-source">Bundles from</div>
+              <div class="fw-semibold">{{ sourceLabel(s.policy.source) }}</div>
+              @if (s.policy.mirrorUrl) {
+                <div class="font-monospace text-body-secondary text-truncate">{{ s.policy.mirrorUrl }}</div>
+              }
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div class="text-body-secondary" i18n="@@lwConsoleUpdates-osUpdates">OS updates</div>
+              <div class="fw-semibold">
+                @if (s.policy.osUpdates) {
+                  <span i18n="@@lwConsoleUpdates-osUpdatesOn">Included in automatic patches</span>
+                } @else {
+                  <span i18n="@@lwConsoleUpdates-osUpdatesOff">Not included</span>
+                }
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div class="text-body-secondary" i18n="@@lwConsoleUpdates-gates">Health gates</div>
+              <div>
+                <span i18n="@@lwConsoleUpdates-settle">settle</span> {{ s.policy.settleSeconds }} s ·
+                <span i18n="@@lwConsoleUpdates-timeout">timeout</span> {{ s.policy.stepTimeoutMinutes }} min
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-9 d-flex align-items-end justify-content-sm-end">
+              @if (clusterResourceLink(isClusterAdmin()); as link) {
+                <fpc-button variant="link" size="sm" [routerLink]="link" data-testid="updates-policy-edit">
+                  <i class="bi bi-pencil me-1" aria-hidden="true"></i>
+                  @if (isClusterAdmin()) {
+                    <span i18n="@@lwConsoleUpdates-policyEdit">Change in the Cluster resource</span>
+                  } @else {
+                    <span i18n="@@lwConsoleUpdates-policyView">Show the Cluster resource</span>
+                  }
+                </fpc-button>
+              }
+            </div>
+          </div>
+          @if (!s.contractMigrations.ready && s.contractMigrations.blockers.length > 0) {
+            <fpc-alert class="d-block mt-3" variant="info" [showIcon]="true">
+              <span i18n="@@lwConsoleUpdates-contractBlocked"
+                >Contract migrations wait until every component runs the new release:</span
+              >
+              {{ s.contractMigrations.blockers.join('; ') }}
+            </fpc-alert>
+          }
+        </fpc-panel>
+
+        <fpc-panel [title]="nodesTitle + ' (' + s.nodes.length + ')'" [flush]="true">
+          @if (s.nodes.length === 0) {
+            <fpc-empty-state icon="hdd-network" size="sm" i18n-title="@@lwConsoleUpdates-noNodes" title="No nodes" />
+          } @else {
+            <fpc-list [flush]="true" data-testid="updates-nodes">
+              @for (n of s.nodes; track n.name) {
+                <fpc-list-item>
+                  <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                    <span class="fw-semibold">{{ n.name }}</span>
+                    <fpc-badge color="light" size="sm">{{ n.site }}</fpc-badge>
+                    @if (n.controlPlane) {
+                      <fpc-badge color="primary" size="sm" i18n="@@lwConsoleUpdates-controlPlaneBadge"
+                        >Control plane</fpc-badge
+                      >
+                    }
+                    @if (!n.connected) {
+                      <fpc-badge color="danger" size="sm" i18n="@@lwConsoleUpdates-disconnected"
+                        >Disconnected</fpc-badge
+                      >
+                    }
+                    @if (n.rebootRequired) {
+                      <fpc-badge color="warning" size="sm" i18n="@@lwConsoleUpdates-rebootRequired"
+                        >Reboot required</fpc-badge
+                      >
+                    }
+                    @if (n.target && n.target !== n.release) {
+                      <fpc-badge color="info" size="sm">→ {{ n.target }}</fpc-badge>
+                    }
+                    @if (!n.components) {
+                      <fpc-badge color="secondary" size="sm" i18n="@@lwConsoleUpdates-agentOnly"
+                        >Agent without component updates</fpc-badge
+                      >
+                    }
+                  </div>
+                  <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap align-items-center gap-3">
+                    <span
+                      ><i class="bi bi-box-seam me-1" aria-hidden="true"></i
+                      ><span i18n="@@lwConsoleUpdates-release">Release</span> {{ version(n.release) }}</span
+                    >
+                    <span
+                      ><i class="bi bi-cpu me-1" aria-hidden="true"></i
+                      ><span i18n="@@lwConsoleUpdates-agent">Agent</span> {{ version(n.agentVersion) }}</span
+                    >
+                    @if (n.os) {
+                      <span><i class="bi bi-pc-display me-1" aria-hidden="true"></i>{{ n.os }}</span>
+                    }
+                    @if (n.kernel) {
+                      <span class="font-monospace">{{ n.kernel }}</span>
+                    }
+                    @if (n.overrides.length > 0) {
+                      <span
+                        ><span i18n="@@lwConsoleUpdates-overrides">Overrides</span>:
+                        <span class="font-monospace">{{ n.overrides.join(', ') }}</span></span
+                      >
+                    }
+                    <span [attr.data-testid]="'updates-node-window-' + n.name">
+                      <fpc-status-badge [tone]="windowTone(n.window)" size="sm" class="me-1">
+                        <i class="bi bi-calendar-week" aria-hidden="true"></i>
+                      </fpc-status-badge>
+                      @if (n.window.open) {
+                        <span i18n="@@lwConsoleUpdates-windowOpen">Window open</span>
+                        @if (n.window.closesAt) {
+                          <span i18n="@@lwConsoleUpdates-windowUntil">until</span>
+                          {{ n.window.closesAt | date: 'short' }}
+                        }
+                      } @else if (n.window.opensAt) {
+                        <span i18n="@@lwConsoleUpdates-windowNext">Next window</span>
+                        {{ n.window.opensAt | date: 'short' }}
+                      } @else {
+                        <span i18n="@@lwConsoleUpdates-windowNone">No maintenance window</span>
+                      }
+                    </span>
+                  </div>
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+        </fpc-panel>
+      </div>
+    </fpc-tab>
+
+    <fpc-tab id="releases" [label]="tabReleases" icon="box-seam">
+      <div class="d-flex flex-column gap-3 py-3">
+        @if (downloadError(); as message) {
+          <fpc-alert variant="danger" [message]="message" />
+        }
+
+        @if (isClusterAdmin()) {
+          <fpc-panel [title]="uploadTitle" data-testid="updates-upload">
+            <p class="small text-body-secondary" i18n="@@lwConsoleUpdates-uploadHint">
+              Air-gapped clusters import a release bundle as a single file. The control plane verifies its signature and
+              checksums before anything is stored.
+            </p>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+              <label class="visually-hidden" for="lw-bundle-file" i18n="@@lwConsoleUpdates-bundleFile"
+                >Bundle file</label
+              >
+              <input
+                id="lw-bundle-file"
+                type="file"
+                class="form-control form-control-sm w-auto flex-grow-1"
+                accept=".tar,application/x-tar"
+                [disabled]="upload() !== null"
+                (change)="onBundleSelected($event)"
+                data-testid="updates-upload-file"
+              />
+              @if (upload()) {
+                <fpc-button variant="outline-secondary" size="sm" (clicked)="cancelUpload()">
+                  <span i18n="@@lwConsoleUpdates-uploadCancel">Cancel upload</span>
+                </fpc-button>
+              } @else {
+                <fpc-button
+                  variant="primary"
+                  size="sm"
+                  [disabled]="!bundleFile()"
+                  (clicked)="startUpload()"
+                  data-testid="updates-upload-start"
+                >
+                  <i class="bi bi-upload me-1" aria-hidden="true"></i
+                  ><span i18n="@@lwConsoleUpdates-uploadStart">Upload</span>
+                </fpc-button>
+              }
+            </div>
+            @if (upload(); as u) {
+              <div class="mt-2 small" data-testid="updates-upload-progress">
+                <fpc-progress [value]="uploadPercent()" height="0.5rem" [striped]="true" [animated]="true" />
+                <div class="text-body-secondary mt-1">
+                  {{ u.fileName }}: {{ bytes(u.loaded) }} / {{ bytes(u.total) }} ({{ uploadPercent() }} %)
+                  @if (uploadPercent() >= 100) {
+                    · <span i18n="@@lwConsoleUpdates-uploadVerifying">verifying and importing…</span>
+                  }
+                </div>
+              </div>
+            }
+            @if (uploadError(); as message) {
+              <fpc-alert class="d-block mt-2" variant="danger" [message]="message" />
+            }
+            @if (uploaded(); as r) {
+              <fpc-alert class="d-block mt-2" variant="success">
+                <span i18n="@@lwConsoleUpdates-uploaded">Imported release</span> {{ r.version }}
+              </fpc-alert>
+            }
+          </fpc-panel>
+        }
+
+        @for (channel of ['stable', 'beta']; track channel) {
+          @let list = channel === 'beta' ? releasesByChannel().beta : releasesByChannel().stable;
+          @if (channel === 'stable' || list.length > 0 || s.policy.channel === 'beta') {
+            <fpc-panel
+              [title]="(channel === 'beta' ? betaTitle : stableTitle) + ' (' + list.length + ')'"
+              [flush]="true"
+            >
+              @if (list.length === 0) {
+                <fpc-empty-state
+                  icon="box-seam"
+                  size="sm"
+                  i18n-title="@@lwConsoleUpdates-noReleases"
+                  title="No releases"
+                />
+              } @else {
+                <fpc-list [flush]="true" [attr.data-testid]="'updates-releases-' + channel">
+                  @for (r of list; track r.version) {
+                    <fpc-list-item>
+                      <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                        <span class="fw-semibold">{{ r.version }}</span>
+                        <fpc-badge [color]="releaseTone[r.status]" size="sm">{{ releaseLabel(r.status) }}</fpc-badge>
+                        @if (r.channel === 'beta') {
+                          <fpc-badge color="warning" size="sm" i18n="@@lwConsoleUpdates-betaBadge">Beta</fpc-badge>
+                        }
+                        @if (r.status !== 'announced') {
+                          @if (r.signed) {
+                            <fpc-badge color="success" size="sm" [attr.title]="r.keyId">
+                              <i class="bi bi-patch-check me-1" aria-hidden="true"></i
+                              ><span i18n="@@lwConsoleUpdates-signed">Signed</span>
+                            </fpc-badge>
+                          } @else {
+                            <fpc-badge color="danger" size="sm">
+                              <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i
+                              ><span i18n="@@lwConsoleUpdates-unsigned">Unsigned</span>
+                            </fpc-badge>
+                          }
+                        }
+                        @if (r.version === s.clusterVersion) {
+                          <fpc-badge color="primary" size="sm" i18n="@@lwConsoleUpdates-running">Running</fpc-badge>
+                        }
+                      </div>
+                      <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap align-items-center gap-3">
+                        <span>{{ sourceLabel(r.source) }}</span>
+                        @if (r.announcement?.publishedAt; as published) {
+                          <span
+                            ><span i18n="@@lwConsoleUpdates-published">Published</span>
+                            {{ published | date: 'mediumDate' }}</span
+                          >
+                        }
+                        @if (r.importedAt) {
+                          <span
+                            ><span i18n="@@lwConsoleUpdates-imported">Imported</span> {{ r.importedAt | date: 'short' }}
+                            @if (r.importedBy) {
+                              · {{ r.importedBy }}
+                            }
+                          </span>
+                        }
+                        @if (r.announcement?.htmlUrl; as url) {
+                          <a [href]="url" target="_blank" rel="noopener noreferrer">
+                            <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i
+                            ><span i18n="@@lwConsoleUpdates-releaseNotes">Release page</span>
+                          </a>
+                        }
+                      </div>
+                      <div fpcListItemActions class="d-flex gap-2">
+                        @if (mayDownload(r)) {
+                          <fpc-button
+                            variant="outline-primary"
+                            size="sm"
+                            [loading]="downloading().includes(r.version)"
+                            (clicked)="download(r)"
+                            [attr.data-testid]="'updates-download-' + r.version"
+                          >
+                            <i class="bi bi-cloud-download me-1" aria-hidden="true"></i
+                            ><span i18n="@@lwConsoleUpdates-download">Download</span>
+                          </fpc-button>
+                        }
+                        @if (r.status === 'importing') {
+                          <fpc-spinner size="sm" i18n-label="@@lwConsoleUpdates-importing" label="Importing…" />
+                        }
+                        @if (isClusterAdmin() && r.status === 'available') {
+                          <fpc-button
+                            variant="primary"
+                            size="sm"
+                            (clicked)="openPlan(r)"
+                            [attr.data-testid]="'updates-plan-' + r.version"
+                          >
+                            <span i18n="@@lwConsoleUpdates-planRelease">Plan update</span>
+                          </fpc-button>
+                        }
+                      </div>
+                      @if (r.error) {
+                        <fpc-alert class="d-block mt-2" variant="danger" [message]="r.error" />
+                      }
+                      @if (
+                        r.notes.length > 0 || r.components.length > 0 || (r.announcement?.changelog?.length ?? 0) > 0
+                      ) {
+                        <fpc-accordion class="d-block mt-2" [flush]="true" [multi]="true">
+                          @if (r.notes.length > 0 || (r.announcement?.changelog?.length ?? 0) > 0) {
+                            <fpc-accordion-item
+                              variant="condensed"
+                              icon="journal-text"
+                              i18n-heading="@@lwConsoleUpdates-notes"
+                              heading="Notes"
+                            >
+                              <ul class="small mb-0">
+                                @for (note of r.notes; track $index) {
+                                  <li>{{ note }}</li>
+                                }
+                                @for (entry of r.announcement?.changelog ?? []; track $index) {
+                                  <li class="text-body-secondary">{{ entry }}</li>
+                                }
+                              </ul>
+                            </fpc-accordion-item>
+                          }
+                          @if (r.components.length > 0) {
+                            <fpc-accordion-item
+                              variant="condensed"
+                              icon="boxes"
+                              [heading]="componentsLabel + ' (' + r.components.length + ')'"
+                            >
+                              <table class="table table-sm small mb-0">
+                                <tbody>
+                                  @for (c of r.components; track c.name) {
+                                    <tr>
+                                      <td class="font-monospace">{{ c.name }}</td>
+                                      <td class="text-body-secondary">{{ c.kind }}</td>
+                                      <td class="font-monospace">{{ c.version }}</td>
+                                    </tr>
+                                  }
+                                </tbody>
+                              </table>
+                            </fpc-accordion-item>
+                          }
+                        </fpc-accordion>
+                      }
+                    </fpc-list-item>
+                  }
+                </fpc-list>
+              }
+            </fpc-panel>
+          }
+        }
+      </div>
+    </fpc-tab>
+
+    <fpc-tab id="plans" [label]="tabPlans" icon="list-check">
+      <div class="py-3">
+        @if (rollouts().length === 0) {
+          <fpc-empty-state icon="list-check" i18n-title="@@lwConsoleUpdates-noPlans" title="No update plans yet" />
+        } @else {
+          <fpc-panel [flush]="true">
+            <fpc-list [flush]="true" data-testid="updates-rollouts">
+              @for (r of rollouts(); track r.id) {
+                <fpc-list-item [clickable]="true" (selected)="open(r)">
+                  <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                    <fpc-badge [color]="statusTone[r.status]" size="sm">{{ statusLabel(r.status) }}</fpc-badge>
+                    <span class="fw-semibold">{{ version(r.fromVersion) }} → {{ r.toVersion }}</span>
+                    <fpc-badge color="light" size="sm">{{ kindLabel(r.kind) }}</fpc-badge>
+                    @if (r.options.emergency) {
+                      <fpc-badge color="danger" size="sm" i18n="@@lwConsoleUpdates-emergencyBadge">Emergency</fpc-badge>
+                    }
+                    @if (r.options.automatic) {
+                      <fpc-badge color="info" size="sm" i18n="@@lwConsoleUpdates-automaticBadge">Automatic</fpc-badge>
+                    }
+                    @if (r.warnings.length > 0) {
+                      <fpc-badge color="warning" size="sm">
+                        <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>{{ r.warnings.length }}
+                      </fpc-badge>
+                    }
+                  </div>
+                  <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap align-items-center gap-3">
+                    <span>{{ r.createdAt | date: 'short' }}</span>
+                    @if (r.createdBy) {
+                      <span><i class="bi bi-person me-1" aria-hidden="true"></i>{{ r.createdBy }}</span>
+                    }
+                    <span class="d-inline-flex align-items-center gap-2" style="min-width: 10rem">
+                      <fpc-progress class="flex-grow-1" [value]="percent(r)" height="0.4rem" />
+                      <span>{{ r.progress.done }}/{{ r.progress.total }}</span>
+                    </span>
+                  </div>
+                </fpc-list-item>
+              }
+            </fpc-list>
+          </fpc-panel>
+        }
+      </div>
+    </fpc-tab>
+
+    <fpc-tab id="windows" [label]="tabWindows" icon="calendar-week">
+      <div class="d-flex flex-column gap-3 py-3">
+        <fpc-panel [title]="windowsTitle + ' (' + (windows()?.length ?? 0) + ')'" [flush]="true">
+          <div class="d-flex flex-wrap align-items-center gap-2 p-2 border-bottom">
+            <span class="small text-body-secondary" i18n="@@lwConsoleUpdates-windowsHint"
+              >Maintenance windows are cluster resources: change them through a plan. Updates that restart, drain or
+              reboot nodes run only inside them.</span
+            >
+            @if (isClusterAdmin()) {
+              <fpc-button
+                class="ms-auto"
+                variant="outline-primary"
+                size="sm"
+                routerLink="/resources/new"
+                [queryParams]="{ kind: 'MaintenanceWindow' }"
+                data-testid="updates-window-new"
+              >
+                <i class="bi bi-plus-lg me-1" aria-hidden="true"></i
+                ><span i18n="@@lwConsoleUpdates-windowNew">New window</span>
+              </fpc-button>
+            }
+          </div>
+          @if (windows() === null) {
+            <fpc-alert
+              class="d-block m-2"
+              variant="warning"
+              i18n-message="@@lwConsoleUpdates-windowsUnavailable"
+              message="The maintenance windows couldn't be loaded."
+            />
+          } @else if (windows()!.length === 0) {
+            <fpc-empty-state
+              icon="calendar-week"
+              size="sm"
+              i18n-title="@@lwConsoleUpdates-noWindows"
+              title="No maintenance windows"
+              i18n-message="@@lwConsoleUpdates-noWindowsMessage"
+              message="Without a window, updates that disturb nodes only run as approved emergency updates."
+            />
+          } @else {
+            <fpc-list [flush]="true" data-testid="updates-windows">
+              @for (w of windows(); track w.metadata.name) {
+                <fpc-list-item>
+                  <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                    <a class="fw-semibold" [routerLink]="['/resources', 'MaintenanceWindow', w.metadata.name]">{{
+                      w.metadata.name
+                    }}</a>
+                    <span>{{ schedule(w.spec) }}</span>
+                  </div>
+                  <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap align-items-center gap-3">
+                    <span>{{ scope(w.spec) }}</span>
+                    @if (w.spec.description) {
+                      <span>{{ w.spec.description }}</span>
+                    }
+                  </div>
+                  @if (isClusterAdmin()) {
+                    <div fpcListItemActions>
+                      <fpc-button
+                        variant="link"
+                        size="sm"
+                        [routerLink]="['/resources', 'MaintenanceWindow', w.metadata.name, 'edit']"
+                      >
+                        <i class="bi bi-pencil me-1" aria-hidden="true"></i
+                        ><span i18n="@@lwConsoleUpdates-windowEdit">Edit</span>
+                      </fpc-button>
+                    </div>
+                  }
+                </fpc-list-item>
+              }
+            </fpc-list>
+          }
+        </fpc-panel>
+
+        <fpc-panel [title]="nodeWindowsTitle" [flush]="true">
+          @if (nodesWithoutWindow() > 0) {
+            <fpc-alert class="d-block m-2" variant="warning">
+              {{ nodesWithoutWindow() }}
+              <span i18n="@@lwConsoleUpdates-nodesWithoutWindow">nodes have no maintenance window.</span>
+            </fpc-alert>
+          }
+          <fpc-list [flush]="true" data-testid="updates-node-windows">
+            @for (n of s.nodes; track n.name) {
+              <fpc-list-item>
+                <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                  <fpc-status-badge [tone]="windowTone(n.window)" size="sm">
+                    <i class="bi bi-calendar-week" aria-hidden="true"></i>
+                  </fpc-status-badge>
+                  <span class="fw-semibold">{{ n.name }}</span>
+                  <fpc-badge color="light" size="sm">{{ n.site }}</fpc-badge>
+                  @for (name of n.window.windows; track name) {
+                    <fpc-badge color="secondary" size="sm">{{ name }}</fpc-badge>
+                  }
+                </div>
+                <div fpcListItemMeta class="small text-body-secondary">
+                  @if (n.window.open) {
+                    <span i18n="@@lwConsoleUpdates-windowOpen">Window open</span>
+                    @if (n.window.closesAt) {
+                      <span i18n="@@lwConsoleUpdates-windowUntil">until</span> {{ n.window.closesAt | date: 'short' }}
+                    }
+                  } @else if (n.window.opensAt) {
+                    <span i18n="@@lwConsoleUpdates-windowNext">Next window</span> {{ n.window.opensAt | date: 'short' }}
+                    @if (n.window.closesAt) {
+                      – {{ n.window.closesAt | date: 'shortTime' }}
+                    }
+                  } @else {
+                    <span i18n="@@lwConsoleUpdates-windowNone">No maintenance window</span>
+                  }
+                </div>
+              </fpc-list-item>
+            } @empty {
+              <fpc-empty-state icon="hdd-network" size="sm" i18n-title="@@lwConsoleUpdates-noNodes" title="No nodes" />
+            }
+          </fpc-list>
+        </fpc-panel>
+      </div>
+    </fpc-tab>
+  </fpc-tab-group>
+}
+
+<fpc-modal [open]="planOpen()" (openChange)="planOpen.set($event)" [title]="planTitle">
+  <p class="small" i18n="@@lwConsolePlanUpdate-hint">
+    An update is a plan: it shows the diff per node and component, notes, warnings and what each wave puts at risk. It
+    runs only after an approval: control plane first, then a canary node, then waves.
+  </p>
+  <div class="mb-3">
+    <label class="form-label small" for="lw-plan-version" i18n="@@lwConsolePlanUpdate-release">Release</label>
+    <select
+      id="lw-plan-version"
+      class="form-select form-select-sm"
+      [ngModel]="planVersion"
+      (ngModelChange)="onPlanVersionChange($event)"
+      data-testid="updates-plan-version"
+    >
+      @for (r of plannable(); track r.version) {
+        @if (r.version !== status()?.clusterVersion) {
+          <option [value]="r.version">{{ r.version }}{{ r.channel === 'beta' ? ' (beta)' : '' }}</option>
+        }
+      }
+      <option [value]="hostOnly" i18n="@@lwConsolePlanUpdate-hostOnly">
+        The running release: host and OS updates only
+      </option>
+    </select>
+    @if (plannable().length === 0) {
+      <div class="form-text" i18n="@@lwConsolePlanUpdate-noRelease">
+        No release bundle is imported yet: download or upload one under Releases first.
+      </div>
+    }
+  </div>
+  <fpc-form-check
+    checkId="lw-plan-host"
+    [checked]="planHost"
+    [disabled]="planHostOnly()"
+    (checkedChange)="onPlanHostChange($event)"
+    i18n-label="@@lwConsolePlanUpdate-host"
+    label="Host updates: OS packages, kernel, gVisor and DRBD (drain, update, reboot, rejoin, one node at a time)"
+  />
+  <fpc-form-check
+    class="d-block mt-2"
+    checkId="lw-plan-os-upgrade"
+    [checked]="planOsUpgrade"
+    [disabled]="!planHost"
+    (checkedChange)="planOsUpgrade = $event"
+    i18n-label="@@lwConsolePlanUpdate-osUpgrade"
+    label="Full OS upgrade: every package to the cluster's current snapshot, not only the release's pins"
+  />
+  @if (createError(); as message) {
+    <fpc-alert class="d-block mt-3" variant="danger" [message]="message" />
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    <fpc-button variant="outline-secondary" (clicked)="planOpen.set(false)">
+      <span i18n="@@lwConsolePlanUpdate-cancel">Cancel</span>
+    </fpc-button>
+    <fpc-button variant="primary" [loading]="creating()" (clicked)="createPlan()" data-testid="updates-plan-create">
+      <span i18n="@@lwConsolePlanUpdate-create">Create plan</span>
+    </fpc-button>
+  </div>
+</fpc-modal>

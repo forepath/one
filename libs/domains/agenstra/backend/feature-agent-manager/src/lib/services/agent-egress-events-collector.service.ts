@@ -1,4 +1,9 @@
-import { normalizeEffectiveEgressPolicy } from '@forepath/agenstra/shared/util-opencode-config';
+import {
+  EGRESS_RULES,
+  explainEgressRule,
+  normalizeEffectiveEgressPolicy,
+  type EgressRule,
+} from '@forepath/agenstra/shared/util-opencode-config';
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 
 import {
@@ -20,7 +25,7 @@ import {
 } from '../utils/egress-guard-log.utils';
 
 import { AgentEgressService } from './agent-egress.service';
-import { DockerService } from './docker.service';
+import { AgentRuntime } from '../runtime/agent-runtime';
 
 const PRUNE_EVERY_MS = 10 * 60 * 1000;
 
@@ -44,7 +49,7 @@ export class AgentEgressEventsCollectorService implements OnModuleInit, OnModule
   constructor(
     private readonly agentsRepository: AgentsRepository,
     private readonly eventsRepository: AgentEgressEventsRepository,
-    private readonly dockerService: DockerService,
+    private readonly runtime: AgentRuntime,
     private readonly agentEgress: AgentEgressService,
   ) {}
 
@@ -73,7 +78,12 @@ export class AgentEgressEventsCollectorService implements OnModuleInit, OnModule
     this.running = true;
 
     try {
-      const agents = await this.agentsRepository.findAllWithEgressGuards();
+      // Runtime-managed egress (Loadweaver): decisions come from the runtime, for every filtered environment.
+      const agents = this.runtime.egress
+        ? (await this.agentsRepository.findAllWithContainers()).filter(
+            (agent) => normalizeEffectiveEgressPolicy(agent.egressPolicy).mode !== 'off',
+          )
+        : await this.agentsRepository.findAllWithEgressGuards();
 
       for (const agent of agents) {
         try {
@@ -108,6 +118,10 @@ export class AgentEgressEventsCollectorService implements OnModuleInit, OnModule
   }
 
   async collectForAgent(agent: AgentEntity): Promise<number> {
+    if (this.runtime.egress) {
+      return await this.collectThroughRuntime(agent, this.runtime.egress);
+    }
+
     const guardId = agent.egressGuardContainerId;
 
     if (!guardId) {
@@ -116,7 +130,7 @@ export class AgentEgressEventsCollectorService implements OnModuleInit, OnModule
 
     const policy = agent.egressPolicy ? normalizeEffectiveEgressPolicy(agent.egressPolicy) : null;
     const mode = policy?.mode ?? 'off';
-    const guard = await this.dockerService.inspectContainerSummary(guardId);
+    const guard = await this.runtime.inspectContainerSummary(guardId);
     const observations: EgressGuardObservation[] = [];
 
     if (!guard) {
@@ -141,9 +155,7 @@ export class AgentEgressEventsCollectorService implements OnModuleInit, OnModule
       return observations.length;
     }
 
-    const agentContainer = agent.containerId
-      ? await this.dockerService.inspectContainerSummary(agent.containerId)
-      : null;
+    const agentContainer = agent.containerId ? await this.runtime.inspectContainerSummary(agent.containerId) : null;
 
     if (!guard.running && agentContainer?.running) {
       observations.push({
@@ -184,6 +196,42 @@ export class AgentEgressEventsCollectorService implements OnModuleInit, OnModule
     return await this.persist(agent, observations, mode);
   }
 
+  /** Decisions of the runtime's own egress filtering since the agent's cursor (`egressLogCursor`). */
+  private async collectThroughRuntime(
+    agent: AgentEntity,
+    egress: NonNullable<AgentRuntime['egress']>,
+  ): Promise<number> {
+    if (!agent.containerId) {
+      return 0;
+    }
+
+    const policy = normalizeEffectiveEgressPolicy(agent.egressPolicy);
+    const { observations, cursor } = await egress.collectEvents(agent.containerId, agent.egressLogCursor ?? null);
+
+    if (cursor && cursor !== agent.egressLogCursor) {
+      await this.agentsRepository.update(agent.id, { egressLogCursor: cursor });
+    }
+
+    return await this.persist(
+      agent,
+      observations.map(
+        (o): EgressGuardObservation => ({
+          kind: o.kind,
+          decision: o.decision,
+          occurredAt: o.occurredAt,
+          host: o.host,
+          rule: (EGRESS_RULES as readonly string[]).includes(o.rule ?? '') ? (o.rule as EgressRule) : null,
+          ...explainEgressRule(policy, (o.rule as EgressRule | null) ?? null, o.host),
+          ...(o.method ? { method: o.method } : {}),
+          ...(o.httpStatus ? { httpStatus: o.httpStatus } : {}),
+          ...(o.message ? { message: o.message } : {}),
+          count: o.count,
+        }),
+      ),
+      policy.mode,
+    );
+  }
+
   private async collectLogs(
     agent: AgentEntity,
     guardId: string,
@@ -193,10 +241,7 @@ export class AgentEgressEventsCollectorService implements OnModuleInit, OnModule
   ): Promise<string | null> {
     const cursor = agent.egressLogCursor ?? null;
     const sinceSeconds = cursor ? Math.floor(new Date(cursor).getTime() / 1000) : 0;
-    const raw = await this.dockerService.getContainerLogsSince(
-      guardId,
-      Number.isFinite(sinceSeconds) ? sinceSeconds : 0,
-    );
+    const raw = await this.runtime.getContainerLogsSince(guardId, Number.isFinite(sinceSeconds) ? sinceSeconds : 0);
     let latest = cursor;
 
     for (const rawLine of raw.split('\n')) {
@@ -228,15 +273,9 @@ export class AgentEgressEventsCollectorService implements OnModuleInit, OnModule
     let output: string;
 
     try {
-      output = await this.dockerService.sendCommandToContainer(
-        guardId,
-        [EGRESS_GUARD_CLI, 'counters'],
-        undefined,
-        true,
-        {
-          user: '0',
-        },
-      );
+      output = await this.runtime.sendCommandToContainer(guardId, [EGRESS_GUARD_CLI, 'counters'], undefined, true, {
+        user: '0',
+      });
     } catch {
       return;
     }

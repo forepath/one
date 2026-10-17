@@ -1,6 +1,6 @@
 # @forepath/shared/backend/util-file-storage
 
-Shared NestJS file storage with a provider registry. Built-in backends: **local** filesystem and **s3** (S3-compatible object storage).
+Shared NestJS file storage with a provider registry. Built-in backends: **local** filesystem and **s3** (S3-compatible object storage). Apps can register further providers with `FileStorageProviderFactory.registerProvider` (Loadweaver's control plane registers **garage**, its own object store).
 
 ## Usage
 
@@ -24,28 +24,29 @@ await fileStorage.writeFile(FileStorageScope.customerInvoices, storageKey, buffe
 {scope-segment}/{storageKey}
 ```
 
-| Scope                | Segment               | Example (local path / S3 key without prefix) |
-| -------------------- | --------------------- | -------------------------------------------- |
-| `customerInvoices`   | `customer/invoices`   | `customer/invoices/sub-1/inv-1.pdf`          |
-| `customerOffers`     | `customer/offers`     | `customer/offers/{userId}/{offerId}.pdf`     |
-| `customerTimesheets` | `customer/timesheets` | `customer/timesheets/.../id-time-report.pdf` |
-| `supplierInvoices`   | `supplier/invoices`   | `supplier/invoices/{id}.pdf`                 |
-| `datevExports`       | `export/datev`        | `export/datev/default/2026/01/export.zip`    |
+| Scope                | Segment               | Example (local path / S3 key without prefix)     |
+| -------------------- | --------------------- | ------------------------------------------------ |
+| `customerInvoices`   | `customer/invoices`   | `customer/invoices/sub-1/inv-1.pdf`              |
+| `customerOffers`     | `customer/offers`     | `customer/offers/{userId}/{offerId}.pdf`         |
+| `customerTimesheets` | `customer/timesheets` | `customer/timesheets/.../id-time-report.pdf`     |
+| `supplierInvoices`   | `supplier/invoices`   | `supplier/invoices/{id}.pdf`                     |
+| `datevExports`       | `export/datev`        | `export/datev/default/2026/01/export.zip`        |
+| `loadweaverReports`  | `loadweaver/reports`  | `loadweaver/reports/cluster/2026/09/report.html` |
 
 - **local:** `{FILE_STORAGE_ROOT}/{segment}/{storageKey}`
 - **s3:** `{FILE_STORAGE_S3_KEY_PREFIX?/}{segment}/{storageKey}` in `FILE_STORAGE_S3_BUCKET` (segment is the full nested path relative to `FILE_STORAGE_ROOT`)
 
 ## Environment
 
-| Variable                                | Default                         | Purpose                                                            |
-| --------------------------------------- | ------------------------------- | ------------------------------------------------------------------ |
-| `FILE_STORAGE_PROVIDER`                 | `local`                         | Active provider: `local` or `s3`                                   |
-| `FILE_STORAGE_ROOT`                     | `{cwd}/data` (compose: `/data`) | Canonical base directory (local provider)                          |
-| `FILE_STORAGE_LEGACY_MIGRATION_ENABLED` | `true`                          | Startup copy from legacy Decabill env roots into previous segments |
-| `FILE_STORAGE_LAYOUT_MIGRATION_ENABLED` | `true`                          | Startup copy previous flat segments into customer/supplier/export  |
-| `FILE_STORAGE_LAYOUT_DUAL_READ_ENABLED` | `true`                          | Read fallback from previous segments when new path is missing      |
-| `BILLING_INVOICE_PDF_STORAGE_PATH`      | _(unset)_                       | **Deprecated.** Migration source for old invoices root             |
-| `BILLING_DATEV_EXPORT_STORAGE_PATH`     | _(unset)_                       | **Deprecated.** Migration source for old DATEV root                |
+| Variable                                | Default                         | Purpose                                                                        |
+| --------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------ |
+| `FILE_STORAGE_PROVIDER`                 | `local`                         | Active provider: `local`, `s3`, or one an app registers (Loadweaver: `garage`) |
+| `FILE_STORAGE_ROOT`                     | `{cwd}/data` (compose: `/data`) | Canonical base directory (local provider)                                      |
+| `FILE_STORAGE_LEGACY_MIGRATION_ENABLED` | `true`                          | Startup copy from legacy Decabill env roots into previous segments             |
+| `FILE_STORAGE_LAYOUT_MIGRATION_ENABLED` | `true`                          | Startup copy previous flat segments into customer/supplier/export              |
+| `FILE_STORAGE_LAYOUT_DUAL_READ_ENABLED` | `true`                          | Read fallback from previous segments when new path is missing                  |
+| `BILLING_INVOICE_PDF_STORAGE_PATH`      | _(unset)_                       | **Deprecated.** Migration source for old invoices root                         |
+| `BILLING_DATEV_EXPORT_STORAGE_PATH`     | _(unset)_                       | **Deprecated.** Migration source for old DATEV root                            |
 
 ### S3-compatible provider (`FILE_STORAGE_PROVIDER=s3`)
 

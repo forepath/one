@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root {
+        /* Neutral palette shared with invoice-pdf.template.html */
+        --body-bg: #ffffff;
+        --body-color: #404040;
+        --body-emphasis: #111111;
+        --surface-subtle: #f4f4f4;
+        --border: #cccccc;
+        --secondary: #666666;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Plus Jakarta Sans', Arial, Helvetica, sans-serif;
+        font-size: 15px;
+        line-height: 1.5;
+        color: var(--body-color);
+        background: var(--body-bg);
+      }
+
+      .email-page {
+        max-width: 560px;
+        margin: 0 auto;
+        padding: 32px 24px;
+      }
+
+      .email-header {
+        margin-bottom: 28px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .email-header-company {
+        margin: 0;
+        font-size: 22px;
+        color: var(--body-emphasis);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .email-title {
+        margin: 0 0 16px;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--body-emphasis);
+        letter-spacing: -0.02em;
+      }
+
+      p {
+        margin: 0 0 14px;
+      }
+
+      strong {
+        color: var(--body-emphasis);
+        font-weight: 600;
+      }
+
+      .code-box {
+        display: inline-block;
+        margin: 8px 0 16px;
+        padding: 12px 16px;
+        background: var(--surface-subtle);
+        border: 1px solid var(--border);
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: var(--body-emphasis);
+      }
+
+      .muted {
+        color: var(--secondary);
+        font-size: 13px;
+      }
+
+      .email-issuer-footer {
+        margin-top: 28px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+        color: var(--secondary);
+        font-size: 11px;
+        line-height: 1.45;
+      }
+
+      .email-issuer-footer p {
+        margin: 0 0 2px;
+      }
+
+      .email-issuer-footer-name {
+        color: var(--body-color);
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-page">
+      {{#if companyName}}
+      <header class="email-header">
+        <p class="email-header-company">{{companyName}}</p>
+      </header>
+      {{/if}} {{> @partial-block }} {{#if companyFrom}}
+      <footer class="email-issuer-footer">
+        <p class="email-issuer-footer-name">{{companyFrom.name}}</p>
+        {{#each companyFrom.lines}}
+        <p>{{this}}</p>
+        {{/each}} {{#if companyFrom.vatId}}
+        <p>VAT: {{companyFrom.vatId}}</p>
+        {{/if}} {{#if companyFrom.email}}
+        <p>{{companyFrom.email}}</p>
+        {{/if}}
+      </footer>
+      {{/if}}
+    </div>
+  </body>
+</html>

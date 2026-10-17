@@ -9,6 +9,7 @@ describe('FileStorageProviderFactory', () => {
       writeFile: jest.fn(),
       readFile: jest.fn(),
       fileExists: jest.fn(),
+      deleteFile: jest.fn(),
     };
 
     factory.registerProvider(provider);
@@ -24,6 +25,7 @@ describe('FileStorageProviderFactory', () => {
       writeFile: jest.fn(),
       readFile: jest.fn(),
       fileExists: jest.fn(),
+      deleteFile: jest.fn(),
     };
 
     factory.registerProvider(provider);

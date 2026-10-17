@@ -1,0 +1,317 @@
+<fpc-page-header [title]="title" icon="hdd-network">
+  <div fpcPageHeaderActions class="d-flex flex-wrap align-items-center gap-2">
+    @if (mayOperate()) {
+      <fpc-button variant="primary" size="sm" (clicked)="openJoin()" data-testid="nodes-add">
+        <i class="bi bi-plus-lg me-1" aria-hidden="true"></i><span i18n="@@lwConsoleNodes-add">Add node</span>
+      </fpc-button>
+    }
+    <fpc-button
+      variant="outline-secondary"
+      size="sm"
+      iconOnly
+      [ariaLabel]="refreshLabel"
+      [title]="refreshLabel"
+      (clicked)="refresh()"
+    >
+      <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+    </fpc-button>
+  </div>
+</fpc-page-header>
+
+@if (error(); as message) {
+  <fpc-alert class="m-3" variant="danger" [message]="message" />
+}
+
+@if (loading() && nodes().length === 0) {
+  <div class="d-flex justify-content-center p-5"><fpc-spinner /></div>
+} @else {
+  <div class="p-3 d-flex flex-column gap-3">
+    @if (cluster(); as c) {
+      <fpc-panel [title]="clusterTitle">
+        <div class="row small g-3" data-testid="nodes-cluster">
+          <div class="col-sm-6 col-lg-3">
+            <div class="text-body-secondary" i18n="@@lwConsoleNodes-clusterName">Name</div>
+            <div class="fw-semibold">{{ c.displayName }}</div>
+            <div class="font-monospace text-body-secondary text-truncate">{{ c.clusterId }}</div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="text-body-secondary" i18n="@@lwConsoleNodes-connected">Connected</div>
+            <div class="fw-semibold">{{ connectedCount() }} / {{ memberCount() }}</div>
+            <div class="text-body-secondary">
+              {{ c.nodes.sites.length }} <span i18n="@@lwConsoleNodes-sitesCount">sites</span>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="text-body-secondary" i18n="@@lwConsoleNodes-controlPlane">Control plane</div>
+            <div class="fw-semibold font-monospace">{{ c.controlPlane.members.join(', ') || '–' }}</div>
+            @if (c.controlPlane.votingWitnesses.length > 0) {
+              <div class="text-body-secondary">
+                <span i18n="@@lwConsoleNodes-witnesses">Witnesses</span>:
+                <span class="font-monospace">{{ c.controlPlane.votingWitnesses.join(', ') }}</span>
+              </div>
+            }
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="text-body-secondary" i18n="@@lwConsoleNodes-failover">Failover</div>
+            @if (c.controlPlane.automaticFailover) {
+              <fpc-badge color="success" size="sm" i18n="@@lwConsoleNodes-automatic">Automatic</fpc-badge>
+            } @else {
+              <fpc-badge color="warning" size="sm" i18n="@@lwConsoleNodes-manual">Manual</fpc-badge>
+            }
+            <div class="text-body-secondary">
+              <span i18n="@@lwConsoleNodes-revision">Desired revision</span> {{ c.desiredRevision }}
+            </div>
+          </div>
+        </div>
+        @for (warning of c.controlPlane.warnings; track warning) {
+          <fpc-alert class="d-block mt-3" variant="warning" [message]="warning" />
+        }
+      </fpc-panel>
+    }
+
+    @for (s of sites(); track s.site) {
+      <fpc-panel [title]="s.site + ' (' + s.nodes.length + ')'" [flush]="true">
+        <fpc-list [flush]="true" [attr.data-testid]="'nodes-site-' + s.site">
+          @for (n of s.nodes; track n.name) {
+            <fpc-list-item [clickable]="true" (selected)="open(n)">
+              <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                <fpc-status-badge [tone]="tone(n)" size="sm" [ariaLabel]="lifecycleLabel(n.lifecycle)">
+                  <i class="bi {{ icon(n) }}" aria-hidden="true"></i>
+                </fpc-status-badge>
+                <span class="fw-semibold">{{ n.name }}</span>
+                @if (n.controlPlane) {
+                  <fpc-badge color="primary" size="sm" i18n="@@lwConsoleNodes-controlPlaneBadge"
+                    >Control plane</fpc-badge
+                  >
+                }
+                @if (n.witness) {
+                  <fpc-badge color="info" size="sm" i18n="@@lwConsoleNodes-witnessBadge">Witness</fpc-badge>
+                }
+                @if (n.lifecycle !== 'active') {
+                  <fpc-badge color="warning" size="sm">{{ lifecycleLabel(n.lifecycle) }}</fpc-badge>
+                }
+                @if (n.lifecycle === 'pending' || n.lifecycle === 'importing') {
+                  <a class="small" [routerLink]="['/imports', n.name]" i18n="@@lwConsoleNodes-openImport"
+                    >Import wizard</a
+                  >
+                }
+                @if (!n.connected && n.lifecycle !== 'left') {
+                  <fpc-badge color="danger" size="sm" i18n="@@lwConsoleNodes-disconnected">Disconnected</fpc-badge>
+                }
+                @if (n.applyStatus === 'failed') {
+                  <fpc-badge color="danger" size="sm" i18n="@@lwConsoleNodes-applyFailed">Apply failed</fpc-badge>
+                }
+              </div>
+              <div fpcListItemMeta class="small text-body-secondary d-flex flex-wrap align-items-center gap-3">
+                @if (n.capacity; as cap) {
+                  <span class="d-inline-flex align-items-center gap-2" style="min-width: 11rem">
+                    <i class="bi bi-cpu" aria-hidden="true"></i>
+                    <fpc-progress
+                      class="flex-grow-1"
+                      [value]="percent(n.usage?.cpuMillis, cap.cpuMillis) ?? 0"
+                      height="0.4rem"
+                    />
+                    <span>{{ cores(n.usage?.cpuMillis ?? 0) }}/{{ cores(cap.cpuMillis) }}</span>
+                  </span>
+                  <span class="d-inline-flex align-items-center gap-2" style="min-width: 13rem">
+                    <i class="bi bi-memory" aria-hidden="true"></i>
+                    <fpc-progress
+                      class="flex-grow-1"
+                      [value]="percent(n.usage?.memoryBytes, cap.memoryBytes) ?? 0"
+                      height="0.4rem"
+                    />
+                    <span>{{ bytes(n.usage?.memoryBytes ?? 0) }}/{{ bytes(cap.memoryBytes) }}</span>
+                  </span>
+                }
+                @if (n.agentVersion) {
+                  <span><i class="bi bi-tag me-1" aria-hidden="true"></i>{{ n.agentVersion }}</span>
+                }
+                @if (n.endpointHost) {
+                  <span class="font-monospace">{{ n.endpointHost }}</span>
+                }
+                @if (!n.connected && n.lastSeenAt) {
+                  <span
+                    ><span i18n="@@lwConsoleNodes-lastSeen">Last seen</span> {{ n.lastSeenAt | date: 'short' }}</span
+                  >
+                }
+              </div>
+            </fpc-list-item>
+          }
+        </fpc-list>
+      </fpc-panel>
+    } @empty {
+      <fpc-empty-state icon="hdd-network" i18n-title="@@lwConsoleNodes-empty" title="No nodes" />
+    }
+
+    @if (mayOperate()) {
+      <fpc-panel [title]="tokensTitle + ' (' + tokens().length + ')'" [flush]="true">
+        @if (tokensError(); as message) {
+          <fpc-alert class="d-block m-2" variant="danger" [message]="message" />
+        }
+        @if (tokenError(); as message) {
+          <fpc-alert class="d-block m-2" variant="danger" [message]="message" />
+        }
+        @if (tokens().length === 0) {
+          <fpc-empty-state icon="key" size="sm" i18n-title="@@lwConsoleNodes-noTokens" title="No active join tokens" />
+        } @else {
+          <fpc-list [flush]="true" data-testid="nodes-tokens">
+            @for (t of tokens(); track t.id) {
+              <fpc-list-item>
+                <div fpcListItemTitle class="d-flex flex-wrap align-items-center gap-2">
+                  <span class="font-monospace">{{ t.tokenPrefix }}…</span>
+                  <fpc-badge color="light" size="sm">{{ t.site }}</fpc-badge>
+                  @if (t.witness) {
+                    <fpc-badge color="info" size="sm" i18n="@@lwConsoleNodes-tokenWitness">Witness</fpc-badge>
+                  }
+                  @if (t.description) {
+                    <span class="text-body-secondary small">{{ t.description }}</span>
+                  }
+                </div>
+                <div fpcListItemMeta class="small text-body-secondary">
+                  <span i18n="@@lwConsoleNodes-expires">Expires</span> {{ t.expiresAt | date: 'short' }}
+                </div>
+                <div fpcListItemActions>
+                  <fpc-button
+                    variant="outline-danger"
+                    size="sm"
+                    [loading]="revokingToken() === t.id"
+                    (clicked)="revokeFor.set(t)"
+                  >
+                    <span i18n="@@lwConsoleNodes-revoke">Revoke</span>
+                  </fpc-button>
+                </div>
+              </fpc-list-item>
+            }
+          </fpc-list>
+        }
+      </fpc-panel>
+    }
+  </div>
+}
+
+<fpc-modal [open]="joinOpen()" (openChange)="onJoinOpenChange($event)" [title]="joinTitle">
+  @if (createdToken(); as t) {
+    <p class="small" i18n="@@lwConsoleNodes-createdHint">
+      Run the installer on the new server. The token is shown only now and works once.
+    </p>
+    <p class="small text-body-secondary" i18n="@@lwConsoleNodes-tokenPrompt">
+      The installer line asks for the token without showing it, so it stays out of the shell history: paste the token
+      when it asks.
+    </p>
+    <label class="form-label small" for="lw-join-command" i18n="@@lwConsoleNodes-command">Installer</label>
+    <textarea
+      id="lw-join-command"
+      class="form-control form-control-sm font-monospace"
+      rows="4"
+      readonly
+      [value]="joinCommand()"
+      data-testid="nodes-join-command"
+    ></textarea>
+    <div class="d-flex justify-content-end mt-1 small">
+      <fpc-button variant="link" size="sm" (clicked)="copy(joinCommand() ?? '')">
+        <i class="bi bi-clipboard me-1" aria-hidden="true"></i><span i18n="@@lwConsoleNodes-copy">Copy</span>
+      </fpc-button>
+    </div>
+    <label class="form-label small" for="lw-join-token" i18n="@@lwConsoleNodes-token">Join token</label>
+    <div class="input-group input-group-sm">
+      <input
+        id="lw-join-token"
+        class="form-control font-monospace"
+        type="text"
+        readonly
+        autocomplete="off"
+        spellcheck="false"
+        [value]="t.token"
+        data-testid="nodes-join-token"
+      />
+      <fpc-button variant="outline-secondary" size="sm" (clicked)="copy(t.token)" data-testid="nodes-join-token-copy">
+        <i class="bi bi-clipboard me-1" aria-hidden="true"></i><span i18n="@@lwConsoleNodes-copyToken">Copy token</span>
+      </fpc-button>
+    </div>
+    <div class="mt-2 small text-body-secondary">
+      <span><span i18n="@@lwConsoleNodes-expires">Expires</span> {{ t.expiresAt | date: 'short' }} · {{ t.site }}</span>
+    </div>
+  } @else {
+    <p class="small" i18n="@@lwConsoleNodes-joinHint">
+      A join token fixes the site, labels and witness role of the node that joins with it. It is single use.
+    </p>
+    <div class="mb-2">
+      <label class="form-label small" for="lw-join-site" i18n="@@lwConsoleNodes-site">Site</label>
+      <input id="lw-join-site" class="form-control form-control-sm" list="lw-join-sites" [(ngModel)]="site" />
+      <datalist id="lw-join-sites">
+        @for (s of sites(); track s.site) {
+          <option [value]="s.site"></option>
+        }
+      </datalist>
+    </div>
+    <div class="mb-2">
+      <label class="form-label small" for="lw-join-description" i18n="@@lwConsoleNodes-description">Description</label>
+      <input id="lw-join-description" class="form-control form-control-sm" maxlength="255" [(ngModel)]="description" />
+    </div>
+    <div class="mb-2">
+      <label class="form-label small" for="lw-join-labels" i18n="@@lwConsoleNodes-labels">Labels (key=value, …)</label>
+      <input id="lw-join-labels" class="form-control form-control-sm font-monospace" [(ngModel)]="labels" />
+    </div>
+    <div class="row g-2 mb-2">
+      <div class="col-6">
+        <label class="form-label small" for="lw-join-ttl" i18n="@@lwConsoleNodes-ttl">Valid for (minutes)</label>
+        <input
+          id="lw-join-ttl"
+          type="number"
+          min="1"
+          [max]="maxTtl"
+          class="form-control form-control-sm"
+          [(ngModel)]="ttlMinutes"
+        />
+      </div>
+      <div class="col-6 d-flex align-items-end">
+        <div class="form-check">
+          <input id="lw-join-witness" type="checkbox" class="form-check-input" [(ngModel)]="witness" />
+          <label class="form-check-label small" for="lw-join-witness" i18n="@@lwConsoleNodes-witness"
+            >Witness only</label
+          >
+        </div>
+      </div>
+    </div>
+    @if (invalid()) {
+      <fpc-alert
+        variant="warning"
+        i18n-message="@@lwConsoleNodes-invalid"
+        message="The site needs a lowercase name (letters, digits, dashes) and the lifetime 1 to 1,440 minutes."
+      />
+    }
+    @if (tokenError(); as message) {
+      <fpc-alert variant="danger" [message]="message" />
+    }
+  }
+  <div *fpcModalFooter class="d-flex justify-content-end gap-2">
+    @if (createdToken()) {
+      <fpc-button variant="primary" (clicked)="onJoinOpenChange(false)">
+        <span i18n="@@lwConsoleNodes-done">Done</span>
+      </fpc-button>
+    } @else {
+      <fpc-button variant="outline-secondary" (clicked)="onJoinOpenChange(false)">
+        <span i18n="@@lwConsoleNodes-cancel">Cancel</span>
+      </fpc-button>
+      <fpc-button
+        variant="primary"
+        [loading]="creatingToken()"
+        (clicked)="createToken()"
+        data-testid="nodes-create-token"
+      >
+        <span i18n="@@lwConsoleNodes-createToken">Create token</span>
+      </fpc-button>
+    }
+  </div>
+</fpc-modal>
+
+<fpc-confirm-dialog
+  [open]="revokeFor() !== null"
+  (openChange)="onRevokeOpenChange($event)"
+  [title]="revokeTitle"
+  [message]="revokeMessage"
+  [confirmLabel]="revokeConfirm"
+  [cancelLabel]="keepLabel"
+  [danger]="true"
+  (confirmed)="confirmRevoke()"
+/>

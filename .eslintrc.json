@@ -48,6 +48,10 @@
                 "onlyDependOnLibsWithTags": ["type:util"]
               },
               {
+                "sourceTag": "type:tool",
+                "onlyDependOnLibsWithTags": ["type:util"]
+              },
+              {
                 "sourceTag": "domain:shared",
                 "onlyDependOnLibsWithTags": ["domain:shared"]
               },
@@ -105,6 +109,7 @@
                 "sourceTag": "domain:loadweaver",
                 "onlyDependOnLibsWithTags": [
                   "domain:loadweaver",
+                  "domain:identity",
                   "domain:shared"
                 ]
               }

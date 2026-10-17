@@ -1,0 +1,925 @@
+asyncapi: 3.0.0
+info:
+  title: Loadweaver control plane WebSocket (plans, logs, terminals, machine exec, tunnels, topology)
+  version: 1.0.0
+  description: |
+    Socket.IO events of the Loadweaver control plane on the shared HTTP `PORT` (default 3400). Engine.IO path is
+    `/socket.io/`; REST stays under `/api/` (see `openapi.yaml`). Namespace **socket/plans**
+    (env `LOADWEAVER_PLANS_WEBSOCKET_NAMESPACE`, default "socket/plans") sends live plans (3.19): approvals,
+    applies, progress and rollbacks. Namespace **socket/logs** (env `LOADWEAVER_LOGS_WEBSOCKET_NAMESPACE`, default
+    "socket/logs") live-tails log lines (3.14). Namespace **socket/terminals** (env
+    `LOADWEAVER_TERMINALS_WEBSOCKET_NAMESPACE`, default "socket/terminals") runs terminals in replicas and node
+    shells (3.19). Namespace **socket/tunnels** (env `LOADWEAVER_TUNNELS_WEBSOCKET_NAMESPACE`, default
+    "socket/tunnels") carries debug tunnels to a replica's port (3.19, `loadweaver port-forward`). Namespace
+    **socket/topology** (env `LOADWEAVER_TOPOLOGY_WEBSOCKET_NAMESPACE`, default "socket/topology") sends live
+    traffic for the topology map (3.9). Namespace **socket/exec** (env `LOADWEAVER_EXEC_WEBSOCKET_NAMESPACE`, default
+    "socket/exec") runs non-interactive commands in replicas for machines (3.19 machine exec, Agenstra on
+    Loadweaver): no TTY, binary stdin / stdout / stderr, exit code.
+    Connections authenticate with the `Authorization` header in the handshake (`Bearer <token>`: static API key,
+    users-mode JWT or Keycloak token), or `handshake.auth.Authorization` for browser WebSockets. Personal access
+    tokens (machine sessions) are refused on every namespace except **socket/exec**, which accepts them with the
+    scope `live:exec` (validated like API requests: revocation, expiry and demotion apply at once). Unauthenticated connections are rejected with
+    connect_error "Unauthorized".
+    Each socket only gets plans the user may see (cluster role for cluster-level changes, read access to every
+    touched project). Changes are read from the database, so every control-plane replica serves every plan.
+    Log tails are scoped like `GET /api/logs` and read from the log store, so every replica serves every tail.
+    Live flows are scoped like `GET /api/topology` and read from the database, so every replica serves them.
+    Terminals and tunnels live on the replica the socket is connected to; the control plane reaches the node over
+    the node's stream (on whichever replica holds it, relayed through Postgres LISTEN / NOTIFY), so every replica
+    serves every node. On the node stream (gRPC envelope, `agent.proto`) each session has its own envelope
+    `channel`; the payloads are defined in `libs/domains/loadweaver/shared/util-agent-protocol/src/lib/live.ts`:
+    control plane → node `execOpen` {target: {kind: replica, replica} | {kind: node}, command?, cols, rows, tty?,
+    user?, workingDir?, env?}, `execInput` {data, eof?}, `execResize` {cols, rows}, `execClose` {}, `fileRequest` {op: list | stat | read | write |
+    mkdir | delete | move | copy, target: {kind: replica, replica} | {kind: volume, volume}, path, …},
+    `tunnelOpen` {replica, port}, `tunnelData` {data}, `tunnelClose` {reason?}; node → control plane
+    `execOutput` {data, stream?}, `execExit` {code, error?}, `fileResponse` {ok, error?, entries?, entry?, data?},
+    `tunnelData` {data}, `tunnelClose` {reason?}. `data` is base64, at most 256 KiB per message. The desired state
+    carries `liveAccess.nodeShell` (the Cluster's `nodeShellEnabled`); the node refuses node shells without it.
+    `tty: false` (with `user`, `workingDir`, `env`), `execInput.eof` and `execOutput.stream: stderr` are machine exec
+    (protocol feature `exec-stdio`): only sent to nodes that advertise it.
+servers:
+  local:
+    host: localhost:3400
+    protocol: ws
+    description: |
+      Socket.IO on shared HTTP PORT (env `PORT`, default 3400); Engine.IO path `/socket.io/`.
+      Namespaces **socket/plans** (LOADWEAVER_PLANS_WEBSOCKET_NAMESPACE), **socket/logs**
+      (LOADWEAVER_LOGS_WEBSOCKET_NAMESPACE), **socket/terminals** (LOADWEAVER_TERMINALS_WEBSOCKET_NAMESPACE),
+      **socket/tunnels** (LOADWEAVER_TUNNELS_WEBSOCKET_NAMESPACE), **socket/exec**
+      (LOADWEAVER_EXEC_WEBSOCKET_NAMESPACE) and **socket/topology** (LOADWEAVER_TOPOLOGY_WEBSOCKET_NAMESPACE). CORS via WEBSOCKET_CORS_ORIGIN
+      (falls back to CORS_ORIGIN).
+      Pass Authorization header in handshake (or handshake.auth.Authorization for browser WebSockets).
+channels:
+  plans/plansSnapshot:
+    address: plans/plansSnapshot
+    messages:
+      plansSnapshotEvent:
+        $ref: '#/components/messages/PlansSnapshot'
+    description: |
+      Unicast to the connecting socket only, once on connect: up to 50 visible plans in `pending`, `applying`,
+      `rolling-back` or `rollback-failed`, newest first.
+  plans/planPatch:
+    address: plans/planPatch
+    messages:
+      planPatchEvent:
+        $ref: '#/components/messages/PlanPatch'
+    description: |
+      The whole plan each time a visible plan changed (status, approvals, progress, rollback), polled from the
+      database about every second. A plan can arrive more than once; the latest one wins.
+  logs/subscribe:
+    address: logs/subscribe
+    messages:
+      subscribeCommand:
+        $ref: '#/components/messages/LogSubscribe'
+    description: |
+      Client → server on **socket/logs**: start (or replace) the socket's tail with a filter. Access is checked
+      right away; an invalid filter, a project the caller can't see, a caller who sees no logs or more than 5000
+      tails on the replica answer with `error` and start no tail. The tail starts at the time of subscribing.
+  logs/unsubscribe:
+    address: logs/unsubscribe
+    messages:
+      unsubscribeCommand:
+        $ref: '#/components/messages/LogUnsubscribe'
+    description: "Client → server on **socket/logs**: end the socket's tail (disconnecting does the same)."
+  logs/logLines:
+    address: logs/logLines
+    messages:
+      logLinesEvent:
+        $ref: '#/components/messages/LogLines'
+    description: |
+      Unicast to the subscribed socket: new matching lines, oldest first, polled from the log store about every
+      2 seconds (at most 500 per poll). Each poll continues after the last line sent; lines that arrive later with
+      an older timestamp are not sent (query them with `GET /api/logs`).
+  logs/error:
+    address: logs/error
+    messages:
+      logsErrorEvent:
+        $ref: '#/components/messages/LogsError'
+    description: Unicast to the socket whose `subscribe` was refused.
+  terminals/createTerminal:
+    address: terminals/createTerminal
+    messages:
+      createTerminalCommand:
+        $ref: '#/components/messages/CreateTerminal'
+    description: |
+      Client → server on **socket/terminals**: open a terminal in a replica (`docker exec` with a TTY; project
+      operators / admins, developers with the project's `developerExec`) or a root shell on a node (cluster admins,
+      only while the Cluster's `nodeShellEnabled` is on). At most 10 sessions per socket; sessions belong to their
+      socket and close on disconnect or after 30 minutes without input or output. Audited as `terminal.open`.
+  terminals/terminalCreated:
+    address: terminals/terminalCreated
+    messages:
+      terminalCreatedEvent:
+        $ref: '#/components/messages/TerminalCreated'
+    description: Unicast to the socket once the node was asked to start the session.
+  terminals/terminalInput:
+    address: terminals/terminalInput
+    messages:
+      terminalInputCommand:
+        $ref: '#/components/messages/TerminalInput'
+    description: 'Client → server on **socket/terminals**: keystrokes / pasted text for a session of this socket.'
+  terminals/terminalResize:
+    address: terminals/terminalResize
+    messages:
+      terminalResizeCommand:
+        $ref: '#/components/messages/TerminalResize'
+    description: 'Client → server on **socket/terminals**: new terminal size.'
+  terminals/terminalOutput:
+    address: terminals/terminalOutput
+    messages:
+      terminalOutputEvent:
+        $ref: '#/components/messages/TerminalOutput'
+    description: Unicast to the owning socket; the node batches output every 20 ms or 32 KiB.
+  terminals/closeTerminal:
+    address: terminals/closeTerminal
+    messages:
+      closeTerminalCommand:
+        $ref: '#/components/messages/CloseTerminal'
+    description: "Client → server on **socket/terminals**: end a session (the shell's stdin is closed)."
+  terminals/terminalClosed:
+    address: terminals/terminalClosed
+    messages:
+      terminalClosedEvent:
+        $ref: '#/components/messages/TerminalClosed'
+    description: |
+      Unicast to the owning socket when the session ended (shell exited, closed, idle, disconnected, or the node
+      didn't confirm a close within 5 seconds). Audited as `terminal.close`; a recording is stored now.
+  terminals/error:
+    address: terminals/error
+    messages:
+      terminalsErrorEvent:
+        $ref: '#/components/messages/TerminalsError'
+    description: Unicast to the socket whose request was refused.
+  exec/exec:
+    address: exec/exec
+    messages:
+      execExecMessage:
+        $ref: '#/components/messages/Exec'
+    description: |
+      Client → server on **socket/exec**: start a command in a replica without a TTY (operators / admins of
+      the replica's project; PATs need `live:exec`). 20 starts per second per user (bursts of 200), 128 sessions per
+      socket, 256 per user, 24 h per session. The node needs the protocol feature `exec-stdio`.
+  exec/started:
+    address: exec/started
+    messages:
+      execStartedMessage:
+        $ref: '#/components/messages/ExecStarted'
+    description: |
+      Unicast to the socket once the node was asked to start the command.
+  exec/stdin:
+    address: exec/stdin
+    messages:
+      execStdinMessage:
+        $ref: '#/components/messages/ExecStdin'
+    description: |
+      Client → server on **socket/exec**: binary stdin (at most 8 MiB/s, bursts of 32 MiB, per session);
+      `eof` closes the program's stdin after `data`.
+  exec/stdout:
+    address: exec/stdout
+    messages:
+      execStdoutMessage:
+        $ref: '#/components/messages/ExecOutput'
+    description: |
+      Unicast: binary stdout of the program.
+  exec/stderr:
+    address: exec/stderr
+    messages:
+      execStderrMessage:
+        $ref: '#/components/messages/ExecOutput'
+    description: |
+      Unicast: binary stderr of the program.
+  exec/kill:
+    address: exec/kill
+    messages:
+      execKillMessage:
+        $ref: '#/components/messages/ExecKill'
+    description: |
+      Client → server on **socket/exec**: end the program.
+  exec/exit:
+    address: exec/exit
+    messages:
+      execExitMessage:
+        $ref: '#/components/messages/ExecExit'
+    description: |
+      Unicast when the program ended (or the session failed / was killed / timed out: `exitCode` null with
+      `error`). Audited as `exec.run` (node, program, exit code, duration, bytes).
+  exec/error:
+    address: exec/error
+    messages:
+      execErrorMessage:
+        $ref: '#/components/messages/ExecError'
+    description: |
+      Unicast to the socket whose request was refused.
+  tunnels/openTunnel:
+    address: tunnels/openTunnel
+    messages:
+      openTunnelCommand:
+        $ref: '#/components/messages/OpenTunnel'
+    description: |
+      Client → server on **socket/tunnels**: open a TCP connection from the replica's node to `port` of the replica
+      (project operators / admins). At most 16 per socket. Recorded in `lw_tunnels` and audited as `tunnel.open`;
+      the node adds a temporary nftables allowance for exactly that address and port while it is open.
+  tunnels/tunnelOpened:
+    address: tunnels/tunnelOpened
+    messages:
+      tunnelOpenedEvent:
+        $ref: '#/components/messages/TunnelOpened'
+    description: Unicast to the socket once the node was asked to connect; data may be sent from now on.
+  tunnels/tunnelData:
+    address: tunnels/tunnelData
+    messages:
+      tunnelDataMessage:
+        $ref: '#/components/messages/TunnelData'
+    description: "Both directions on **socket/tunnels**: bytes of the tunnel's TCP stream, base64."
+  tunnels/closeTunnel:
+    address: tunnels/closeTunnel
+    messages:
+      closeTunnelCommand:
+        $ref: '#/components/messages/CloseTunnel'
+    description: 'Client → server on **socket/tunnels**: close a tunnel of this socket.'
+  tunnels/tunnelClosed:
+    address: tunnels/tunnelClosed
+    messages:
+      tunnelClosedEvent:
+        $ref: '#/components/messages/TunnelClosed'
+    description: |
+      Unicast to the owning socket when the tunnel ended: closed by the client, `expired` (TTL), `disconnected`,
+      or closed by the node / replica (with its reason). Audited as `tunnel.close`.
+  tunnels/tunnelError:
+    address: tunnels/tunnelError
+    messages:
+      tunnelErrorEvent:
+        $ref: '#/components/messages/TunnelError'
+    description: Unicast to the socket whose `openTunnel` was refused.
+  topology/subscribe:
+    address: topology/subscribe
+    messages:
+      topologySubscribeCommand:
+        $ref: '#/components/messages/TopologySubscribe'
+    description: |
+      Client → server on **socket/topology**: start receiving live flows. The caller's access is resolved once, at
+      subscribe; a replica holds up to 2000 subscribers (beyond that `error`). The first `flows` usually follows
+      right away.
+  topology/unsubscribe:
+    address: topology/unsubscribe
+    messages:
+      topologyUnsubscribeCommand:
+        $ref: '#/components/messages/TopologyUnsubscribe'
+    description: 'Client → server on **socket/topology**: stop the live flows (disconnecting does the same).'
+  topology/flows:
+    address: topology/flows
+    messages:
+      topologyFlowsEvent:
+        $ref: '#/components/messages/TopologyFlows'
+    description: |
+      Unicast to each subscribed socket about every 10 seconds: the flow edges of the last minute, computed once per
+      tick for all subscribers and scoped per socket like `GET /api/topology?flows=true`.
+  topology/error:
+    address: topology/error
+    messages:
+      topologyErrorEvent:
+        $ref: '#/components/messages/TopologyError'
+    description: Unicast to the socket whose `subscribe` was refused.
+operations:
+  plansServerEmitsPlansSnapshot:
+    action: receive
+    channel:
+      $ref: '#/channels/plans~1plansSnapshot'
+  plansServerEmitsPlanPatch:
+    action: receive
+    channel:
+      $ref: '#/channels/plans~1planPatch'
+  logsClientSendsSubscribe:
+    action: send
+    channel:
+      $ref: '#/channels/logs~1subscribe'
+  logsClientSendsUnsubscribe:
+    action: send
+    channel:
+      $ref: '#/channels/logs~1unsubscribe'
+  logsServerEmitsLogLines:
+    action: receive
+    channel:
+      $ref: '#/channels/logs~1logLines'
+  logsServerEmitsError:
+    action: receive
+    channel:
+      $ref: '#/channels/logs~1error'
+  terminalsClientSendsCreateTerminal:
+    action: send
+    channel:
+      $ref: '#/channels/terminals~1createTerminal'
+  terminalsServerEmitsTerminalCreated:
+    action: receive
+    channel:
+      $ref: '#/channels/terminals~1terminalCreated'
+  terminalsClientSendsTerminalInput:
+    action: send
+    channel:
+      $ref: '#/channels/terminals~1terminalInput'
+  terminalsClientSendsTerminalResize:
+    action: send
+    channel:
+      $ref: '#/channels/terminals~1terminalResize'
+  terminalsServerEmitsTerminalOutput:
+    action: receive
+    channel:
+      $ref: '#/channels/terminals~1terminalOutput'
+  terminalsClientSendsCloseTerminal:
+    action: send
+    channel:
+      $ref: '#/channels/terminals~1closeTerminal'
+  terminalsServerEmitsTerminalClosed:
+    action: receive
+    channel:
+      $ref: '#/channels/terminals~1terminalClosed'
+  terminalsServerEmitsError:
+    action: receive
+    channel:
+      $ref: '#/channels/terminals~1error'
+  execClientSendsExec:
+    action: send
+    channel:
+      $ref: '#/channels/exec~1exec'
+  execServerEmitsStarted:
+    action: receive
+    channel:
+      $ref: '#/channels/exec~1started'
+  execClientSendsStdin:
+    action: send
+    channel:
+      $ref: '#/channels/exec~1stdin'
+  execServerEmitsStdout:
+    action: receive
+    channel:
+      $ref: '#/channels/exec~1stdout'
+  execServerEmitsStderr:
+    action: receive
+    channel:
+      $ref: '#/channels/exec~1stderr'
+  execClientSendsKill:
+    action: send
+    channel:
+      $ref: '#/channels/exec~1kill'
+  execServerEmitsExit:
+    action: receive
+    channel:
+      $ref: '#/channels/exec~1exit'
+  execServerEmitsError:
+    action: receive
+    channel:
+      $ref: '#/channels/exec~1error'
+  tunnelsClientSendsOpenTunnel:
+    action: send
+    channel:
+      $ref: '#/channels/tunnels~1openTunnel'
+  tunnelsServerEmitsTunnelOpened:
+    action: receive
+    channel:
+      $ref: '#/channels/tunnels~1tunnelOpened'
+  tunnelsClientSendsTunnelData:
+    action: send
+    channel:
+      $ref: '#/channels/tunnels~1tunnelData'
+  tunnelsServerEmitsTunnelData:
+    action: receive
+    channel:
+      $ref: '#/channels/tunnels~1tunnelData'
+  tunnelsClientSendsCloseTunnel:
+    action: send
+    channel:
+      $ref: '#/channels/tunnels~1closeTunnel'
+  tunnelsServerEmitsTunnelClosed:
+    action: receive
+    channel:
+      $ref: '#/channels/tunnels~1tunnelClosed'
+  tunnelsServerEmitsTunnelError:
+    action: receive
+    channel:
+      $ref: '#/channels/tunnels~1tunnelError'
+  topologyClientSendsSubscribe:
+    action: send
+    channel:
+      $ref: '#/channels/topology~1subscribe'
+  topologyClientSendsUnsubscribe:
+    action: send
+    channel:
+      $ref: '#/channels/topology~1unsubscribe'
+  topologyServerEmitsFlows:
+    action: receive
+    channel:
+      $ref: '#/channels/topology~1flows'
+  topologyServerEmitsError:
+    action: receive
+    channel:
+      $ref: '#/channels/topology~1error'
+components:
+  messages:
+    PlansSnapshot:
+      name: PlansSnapshot
+      title: Active plans on connect
+      contentType: application/json
+      payload:
+        type: object
+        required: [plans]
+        properties:
+          plans:
+            type: array
+            description: Plans in the shape of OpenAPI `PlanResponseDto`; `approvals` is always empty here
+            items:
+              type: object
+              additionalProperties: true
+    PlanPatch:
+      name: PlanPatch
+      title: Plan changed
+      contentType: application/json
+      payload:
+        type: object
+        required: [plan]
+        properties:
+          plan:
+            type: object
+            description: |
+              The plan in the shape of OpenAPI `PlanResponseDto`, including `status`, `progress` (step, percent,
+              per node and layer) and `resolves`. `approvals` is always empty here; read them with `GET /api/plans/{id}`.
+            additionalProperties: true
+    LogSubscribe:
+      name: LogSubscribe
+      title: Start a tail
+      contentType: application/json
+      payload:
+        type: object
+        additionalProperties: false
+        description: |
+          The filter of `GET /api/logs`. Unknown properties are refused. `from`, `to`, `cursor`, `order` and
+          `limit` are accepted but ignored.
+        properties:
+          sources:
+            description: Array or comma-separated string
+            oneOf:
+              - type: array
+                items: { $ref: '#/components/schemas/LogSource' }
+              - type: string
+          levels:
+            description: Array or comma-separated string
+            oneOf:
+              - type: array
+                items: { $ref: '#/components/schemas/LogLevel' }
+              - type: string
+          project:
+            { type: string, pattern: '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$' }
+          deployment:
+            { type: string, pattern: '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$' }
+          service: { type: string, pattern: '^[a-z0-9_.-]{1,63}$' }
+          replica:
+            {
+              type: string,
+              pattern: '^[a-z0-9-]+/[a-z0-9_.-]+/[a-z0-9_.-]+/\d{1,9}$',
+            }
+          node:
+            { type: string, pattern: '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$' }
+          policy: { type: string, maxLength: 256 }
+          text:
+            {
+              type: string,
+              maxLength: 256,
+              description: Full text over the message,
+            }
+          from: { type: string, format: date-time }
+          to: { type: string, format: date-time }
+          cursor: { type: string, maxLength: 512 }
+          order: { type: string, enum: [asc, desc] }
+          limit: { type: integer, minimum: 1, maximum: 1000 }
+    LogUnsubscribe:
+      name: LogUnsubscribe
+      title: End the tail
+      contentType: application/json
+      payload:
+        description: No payload
+    LogLines:
+      name: LogLines
+      title: New log lines
+      contentType: application/json
+      payload:
+        type: object
+        required: [lines]
+        properties:
+          lines:
+            type: array
+            items: { $ref: '#/components/schemas/LogLine' }
+    LogsError:
+      name: LogsError
+      title: Subscribe refused
+      contentType: application/json
+      payload:
+        type: object
+        required: [message]
+        properties:
+          message:
+            type: string
+            description: '`invalid filter`, `too many tails`, `project not found`, `no logs visible`, or another access error'
+    CreateTerminal:
+      name: CreateTerminal
+      title: Open a terminal
+      contentType: application/json
+      payload:
+        type: object
+        additionalProperties: false
+        required: [target]
+        properties:
+          sessionId:
+            type: string
+            pattern: '^[A-Za-z0-9_-]{1,64}$'
+            description: Chosen by the client (unique per socket); generated when missing
+          target:
+            oneOf:
+              - type: object
+                additionalProperties: false
+                required: [replica]
+                properties:
+                  replica:
+                    type: string
+                    pattern: '^[a-z0-9-]{1,63}/[a-z0-9-]{1,63}/[a-z0-9_.-]{1,63}/\d{1,4}$'
+              - type: object
+                additionalProperties: false
+                required: [node]
+                properties:
+                  node:
+                    type: string
+                    pattern: '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$'
+          shell:
+            type: string
+            pattern: '^/[A-Za-z0-9_./-]{1,64}$'
+            description: Program to start; default `bash -l` if present, else `sh -l`
+          cols: { type: integer, minimum: 1, maximum: 1000, default: 80 }
+          rows: { type: integer, minimum: 1, maximum: 1000, default: 24 }
+    Exec:
+      name: Exec
+      title: Start a command (machine exec)
+      contentType: application/json
+      payload:
+        type: object
+        additionalProperties: false
+        required: [execId, replica, command]
+        properties:
+          execId: { type: string, pattern: '^[A-Za-z0-9_-]{1,64}$' }
+          replica:
+            {
+              type: string,
+              description: '`<project>/<deployment>/<service>/<index>`',
+            }
+          command:
+            {
+              type: array,
+              minItems: 1,
+              maxItems: 256,
+              items: { type: string, maxLength: 32768 },
+            }
+          user: { type: string, description: 'name, uid or uid:gid' }
+          workingDir: { type: string, description: absolute path }
+          env:
+            {
+              type: array,
+              maxItems: 256,
+              items: { type: string, description: '`NAME=value`' },
+            }
+    ExecStarted:
+      name: ExecStarted
+      title: Command started
+      contentType: application/json
+      payload:
+        type: object
+        required: [execId]
+        properties:
+          execId: { type: string }
+    ExecStdin:
+      name: ExecStdin
+      title: Stdin (binary)
+      contentType: application/octet-stream
+      payload:
+        type: object
+        additionalProperties: false
+        required: [execId]
+        properties:
+          execId: { type: string }
+          data:
+            {
+              type: string,
+              format: binary,
+              description: Socket.IO binary attachment,
+            }
+          eof: { type: boolean }
+    ExecOutput:
+      name: ExecOutput
+      title: Stdout / stderr (binary)
+      contentType: application/octet-stream
+      payload:
+        type: object
+        required: [execId, data]
+        properties:
+          execId: { type: string }
+          data:
+            {
+              type: string,
+              format: binary,
+              description: Socket.IO binary attachment,
+            }
+    ExecKill:
+      name: ExecKill
+      title: End a command
+      contentType: application/json
+      payload:
+        type: object
+        additionalProperties: false
+        required: [execId]
+        properties:
+          execId: { type: string }
+    ExecExit:
+      name: ExecExit
+      title: Command ended
+      contentType: application/json
+      payload:
+        type: object
+        required: [execId, exitCode]
+        properties:
+          execId: { type: string }
+          exitCode: { type: [integer, 'null'] }
+          error: { type: string }
+    ExecError:
+      name: ExecError
+      title: Request refused
+      contentType: application/json
+      payload:
+        type: object
+        required: [message]
+        properties:
+          execId: { type: string }
+          message: { type: string }
+    TerminalCreated:
+      name: TerminalCreated
+      title: Terminal started
+      contentType: application/json
+      payload:
+        type: object
+        required: [sessionId, recorded]
+        properties:
+          sessionId: { type: string }
+          recorded:
+            type: boolean
+            description: The session is recorded (node shells always; replicas per Cluster / project policy)
+    TerminalInput:
+      name: TerminalInput
+      title: Terminal input
+      contentType: application/json
+      payload:
+        type: object
+        additionalProperties: false
+        required: [sessionId, data]
+        properties:
+          sessionId: { type: string, pattern: '^[A-Za-z0-9_-]{1,64}$' }
+          data: { type: string, maxLength: 65536, description: UTF-8 text }
+    TerminalResize:
+      name: TerminalResize
+      title: Terminal resized
+      contentType: application/json
+      payload:
+        type: object
+        additionalProperties: false
+        required: [sessionId, cols, rows]
+        properties:
+          sessionId: { type: string, pattern: '^[A-Za-z0-9_-]{1,64}$' }
+          cols: { type: integer, minimum: 1, maximum: 1000 }
+          rows: { type: integer, minimum: 1, maximum: 1000 }
+    TerminalOutput:
+      name: TerminalOutput
+      title: Terminal output
+      contentType: application/json
+      payload:
+        type: object
+        required: [sessionId, data]
+        properties:
+          sessionId: { type: string }
+          data:
+            {
+              type: string,
+              description: UTF-8 text (split multi-byte characters are joined),
+            }
+    CloseTerminal:
+      name: CloseTerminal
+      title: Close a terminal
+      contentType: application/json
+      payload:
+        type: object
+        additionalProperties: false
+        required: [sessionId]
+        properties:
+          sessionId: { type: string, pattern: '^[A-Za-z0-9_-]{1,64}$' }
+    TerminalClosed:
+      name: TerminalClosed
+      title: Terminal ended
+      contentType: application/json
+      payload:
+        type: object
+        required: [sessionId, exitCode]
+        properties:
+          sessionId: { type: string }
+          exitCode: { type: [integer, 'null'] }
+          error:
+            type: string
+            description: Why the session ended without an exit code (e.g. `node shells are disabled for this cluster`, `idle`, `node not connected`)
+    TerminalsError:
+      name: TerminalsError
+      title: Terminal request refused
+      contentType: application/json
+      payload:
+        type: object
+        required: [message]
+        properties:
+          sessionId: { type: string }
+          message:
+            type: string
+            description: '`invalid payload`, `too many terminals`, `session exists`, `unknown session`, `replica not found`, `exec not allowed`, `cluster admin role required`, `node shells are disabled for this cluster`, …'
+    OpenTunnel:
+      name: OpenTunnel
+      title: Open a debug tunnel
+      contentType: application/json
+      payload:
+        type: object
+        additionalProperties: false
+        required: [tunnelId, replica, port]
+        properties:
+          tunnelId:
+            type: string
+            pattern: '^[A-Za-z0-9_-]{1,64}$'
+            description: Chosen by the client, unique per socket
+          replica:
+            type: string
+            pattern: '^[a-z0-9-]{1,63}/[a-z0-9-]{1,63}/[a-z0-9_.-]{1,63}/\d{1,4}$'
+          port: { type: integer, minimum: 1, maximum: 65535 }
+          ttlSeconds:
+            { type: integer, minimum: 60, maximum: 28800, default: 3600 }
+    TunnelOpened:
+      name: TunnelOpened
+      title: Tunnel opened
+      contentType: application/json
+      payload:
+        type: object
+        required: [tunnelId, expiresAt]
+        properties:
+          tunnelId: { type: string }
+          expiresAt: { type: string, format: date-time }
+    TunnelData:
+      name: TunnelData
+      title: Tunnel bytes
+      contentType: application/json
+      payload:
+        type: object
+        required: [tunnelId, data]
+        properties:
+          tunnelId: { type: string, pattern: '^[A-Za-z0-9_-]{1,64}$' }
+          data:
+            type: string
+            contentEncoding: base64
+            description: At most 256 KiB of bytes per message
+    CloseTunnel:
+      name: CloseTunnel
+      title: Close a tunnel
+      contentType: application/json
+      payload:
+        type: object
+        additionalProperties: false
+        required: [tunnelId]
+        properties:
+          tunnelId: { type: string, pattern: '^[A-Za-z0-9_-]{1,64}$' }
+    TunnelClosed:
+      name: TunnelClosed
+      title: Tunnel closed
+      contentType: application/json
+      payload:
+        type: object
+        required: [tunnelId, reason]
+        properties:
+          tunnelId: { type: string }
+          reason: { type: string }
+    TunnelError:
+      name: TunnelError
+      title: Tunnel refused
+      contentType: application/json
+      payload:
+        type: object
+        required: [message]
+        properties:
+          tunnelId: { type: string }
+          message:
+            type: string
+            description: '`invalid payload`, `too many tunnels or duplicate id`, `replica not found`, `operator role required`, …'
+    TopologySubscribe:
+      name: TopologySubscribe
+      title: Start live flows
+      contentType: application/json
+      payload:
+        description: No payload
+    TopologyUnsubscribe:
+      name: TopologyUnsubscribe
+      title: Stop live flows
+      contentType: application/json
+      payload:
+        description: No payload
+    TopologyFlows:
+      name: TopologyFlows
+      title: Flows of the last minute
+      contentType: application/json
+      payload:
+        type: object
+        required: [at, edges]
+        properties:
+          at: { type: string, format: date-time }
+          edges:
+            type: array
+            items: { $ref: '#/components/schemas/TopologyFlowEdge' }
+    TopologyError:
+      name: TopologyError
+      title: Subscribe refused
+      contentType: application/json
+      payload:
+        type: object
+        required: [message]
+        properties:
+          message:
+            type: string
+            description: '`too many subscribers`'
+  schemas:
+    TopologyFlowEdge:
+      type: object
+      description: |
+        A flow edge in the shape of OpenAPI `TopologyEdge` (`kind: flow`, layer `policies`). `source` and `target`
+        are element ids of `GET /api/topology`: `replica:<id>`, or `external:<address>` for endpoints that aren't
+        replicas (not in the map's elements unless the map was loaded with `flows=true`).
+      required: [id, kind, source, target, layer, data]
+      properties:
+        id: { type: string }
+        kind: { type: string, enum: [flow] }
+        source: { type: string }
+        target: { type: string }
+        layer: { type: string, enum: [policies] }
+        data:
+          type: object
+          properties:
+            protocol: { type: string }
+            port: { type: integer }
+            decision: { type: string }
+            policy: { type: [string, 'null'] }
+            packets: { type: integer }
+            bytes: { type: integer }
+            bytesPerSecond: { type: number }
+    LogSource:
+      type: string
+      enum:
+        [
+          container,
+          proxy,
+          firewall,
+          routing,
+          tunnel,
+          ingress,
+          failover,
+          storage,
+          runtime,
+          control-plane,
+        ]
+    LogLevel:
+      type: string
+      enum: [debug, info, warn, error]
+    LogLine:
+      type: object
+      description: The same shape as OpenAPI `LogLine`.
+      required: [id, at, source, level, message, node, labels, fields]
+      properties:
+        id: { type: string, format: uuid }
+        at: { type: string, format: date-time }
+        source: { $ref: '#/components/schemas/LogSource' }
+        level: { $ref: '#/components/schemas/LogLevel' }
+        message: { type: string, maxLength: 16384 }
+        node:
+          type: string
+          description: Sending node, or `control-plane` for the control plane's own events
+        site: { type: [string, 'null'] }
+        cluster: { type: string }
+        labels:
+          type: object
+          properties:
+            project: { type: string }
+            deployment: { type: string }
+            service: { type: string }
+            replica:
+              {
+                type: string,
+                description: '`<project>/<deployment>/<service>/<index>`',
+              }
+            policy: { type: string }
+            peer: { type: string }
+            component: { type: string }
+            stream: { type: string, enum: [stdout, stderr] }
+        fields:
+          type: object
+          additionalProperties: { type: [string, number, boolean] }

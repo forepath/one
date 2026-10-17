@@ -2,6 +2,8 @@ import { environment as developmentEnvironment } from './environment.landingpage
 import { environment as productionEnvironment } from './environment.landingpage.production';
 import { environment as billingDevelopmentEnvironment } from './environment.billing-console';
 import { environment as billingProductionEnvironment } from './environment.billing-console.production';
+import { environment as consoleDevelopmentEnvironment } from './environment.console';
+import { environment as consoleProductionEnvironment } from './environment.console.production';
 import { createLoadweaverShell } from './shell';
 
 describe('Loadweaver landing environments', () => {
@@ -39,5 +41,21 @@ describe('Loadweaver landing environments', () => {
 
   it('points the landing page portal link at the Loadweaver billing console in development', () => {
     expect(developmentEnvironment.landing.urls.portal).toBe('http://localhost:4601');
+  });
+});
+
+describe('Loadweaver console environments', () => {
+  it.each([
+    ['development', consoleDevelopmentEnvironment, false],
+    ['production', consoleProductionEnvironment, true],
+  ])('%s environment names every socket namespace the console uses', (_name, environment, production) => {
+    expect(environment.application.production).toBe(production);
+    expect(environment.cookieConsent.enabled).toBe(false);
+    expect(environment.console.urls.restApi).toMatch(/\/api$/);
+
+    const websocket = environment.console.urls.websocket as Record<string, string>;
+
+    for (const namespace of ['plans', 'logs', 'terminals', 'tunnels', 'topology'])
+      expect(websocket[namespace]).toMatch(new RegExp(`/socket/${namespace}$`));
   });
 });
