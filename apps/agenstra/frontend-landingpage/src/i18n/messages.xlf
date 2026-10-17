@@ -2912,6 +2912,9 @@
       <trans-unit id="sharedFeatureLandingpageContactPerson-messageDecabill" datatype="html">
         <source>We build Decabill with AI every day, because it makes the product better and lets us ship faster.</source>
         </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageLoadweaver" datatype="html">
+        <source>We build Loadweaver with AI every day, because it makes the product better and lets us ship faster.</source>
+        </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContactPerson-mayaRole" datatype="html">
         <source>Virtual Customer Success</source>
         </trans-unit>
@@ -2926,6 +2929,9 @@
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageDecabill" datatype="html">
         <source>I am part of that, but your message still reaches real people who know Decabill, and a person takes responsibility for every answer.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageLoadweaver" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Loadweaver, and a person takes responsibility for every answer.</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContactPerson-aiLabel" datatype="html">
         <source>AI</source>

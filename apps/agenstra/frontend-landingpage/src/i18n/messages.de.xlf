@@ -4026,6 +4026,10 @@
         <source>We build Decabill with AI every day, because it makes the product better and lets us ship faster.</source>
         <target>Wir entwickeln Decabill jeden Tag mit KI, weil sie das Produkt besser macht und uns schneller ausliefern lässt.</target>
       </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageLoadweaver" datatype="html">
+        <source>We build Loadweaver with AI every day, because it makes the product better and lets us ship faster.</source>
+        <target>Wir entwickeln Loadweaver jeden Tag mit KI, weil sie das Produkt besser macht und uns schneller ausliefern lässt.</target>
+      </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContactPerson-messageForepath" datatype="html">
         <source>We work with AI every day, because it makes us faster and our results better.</source>
         <target>Wir arbeiten jeden Tag mit KI, weil sie uns schneller und unsere Ergebnisse besser macht.</target>
@@ -4049,6 +4053,10 @@
       <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageDecabill" datatype="html">
         <source>I am part of that, but your message still reaches real people who know Decabill, and a person takes responsibility for every answer.</source>
         <target>Ich bin ein Teil davon, aber Ihre Nachricht erreicht trotzdem echte Menschen, die Decabill kennen, und für jede Antwort übernimmt ein Mensch die Verantwortung.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageLoadweaver" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Loadweaver, and a person takes responsibility for every answer.</source>
+        <target>Ich bin ein Teil davon, aber Ihre Nachricht erreicht trotzdem echte Menschen, die Loadweaver kennen, und für jede Antwort übernimmt ein Mensch die Verantwortung.</target>
       </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContactPerson-aiLabel" datatype="html">
         <source>AI</source>

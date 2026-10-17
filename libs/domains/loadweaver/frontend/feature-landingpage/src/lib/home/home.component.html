@@ -1,0 +1,864 @@
+<!-- Hero -->
+<section id="hero" class="pt-10 pb-10 pb-md-0 py-lg-6 bg-dark text-white grid-section">
+  <div class="container hero-content grid-section__container grid-section__container--hero-top">
+    <div class="row justify-content-center">
+      <div class="col-12 text-center hero-container">
+        <fpc-badge color="primary" class="mb-4" i18n="@@featureLoadweaverPortal-earlyAccessBadge"
+          >Early access</fpc-badge
+        >
+        <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureLoadweaverHome-heroTitle">
+          <span class="text-primary">Resilient clusters</span> from a handful of servers
+        </h1>
+        <p class="hero-lead lead fs-5 mb-4 mx-auto" i18n="@@featureLoadweaverHome-heroLead">
+          Loadweaver turns a handful of servers into a resilient multi-site cluster. It gives applications built with
+          AI, and the agents behind them, a protected home on infrastructure you control, with encrypted traffic between
+          sites and services that keep running when a location goes down.
+        </p>
+        <p class="fs-6 fw-light mb-5 hero-cta-line" i18n="@@featureLoadweaverHome-heroCtaLine">
+          Bring the Docker Compose files you already have. Every change is a plan you review before it is applied, and
+          no single server failure takes an app down.
+        </p>
+        <ul class="list-unstyled d-flex gap-2 justify-content-center flex-wrap hero-feature-badges mb-5">
+          <li>
+            <fpc-badge variant="marketing" color="primary" size="xl">
+              <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+              <span i18n="@@featureLoadweaverHome-heroFeatureBadge1">Multi-site clusters</span>
+            </fpc-badge>
+          </li>
+          <li>
+            <fpc-badge variant="marketing" color="primary" size="xl">
+              <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+              <span i18n="@@featureLoadweaverHome-heroFeatureBadge2">Encrypted network</span>
+            </fpc-badge>
+          </li>
+          <li>
+            <fpc-badge variant="marketing" color="primary" size="xl">
+              <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+              <span i18n="@@featureLoadweaverHome-heroFeatureBadge3">Shared storage</span>
+            </fpc-badge>
+          </li>
+          <li>
+            <fpc-badge variant="marketing" color="primary" size="xl">
+              <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+              <span i18n="@@featureLoadweaverHome-heroFeatureBadge4">Self-healing ingress</span>
+            </fpc-badge>
+          </li>
+          <li>
+            <fpc-badge variant="marketing" color="primary" size="xl">
+              <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+              <span i18n="@@featureLoadweaverHome-heroFeatureBadge5">Policies everywhere</span>
+            </fpc-badge>
+          </li>
+          <li>
+            <fpc-badge variant="marketing" color="primary" size="xl">
+              <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+              <span i18n="@@featureLoadweaverHome-heroFeatureBadge6">Plan &amp; apply</span>
+            </fpc-badge>
+          </li>
+          <li>
+            <fpc-badge variant="marketing" color="primary" size="xl">
+              <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+              <span i18n="@@featureLoadweaverHome-heroFeatureBadge7">Live topology map</span>
+            </fpc-badge>
+          </li>
+          <li>
+            <fpc-badge variant="marketing" color="primary" size="xl">
+              <i class="bi bi-check-circle me-2" aria-hidden="true"></i>
+              <span i18n="@@featureLoadweaverHome-heroFeatureBadge8">Your servers or ours</span>
+            </fpc-badge>
+          </li>
+        </ul>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+          <fpc-button
+            variant="primary"
+            size="xl"
+            btnClass="rounded-3"
+            routerLink="/contact"
+            loadweaverEarlyAccess
+            i18n="@@featureLoadweaverHome-heroCtaEarlyAccess"
+          >
+            <i class="bi bi-envelope-paper" aria-hidden="true"></i>Request early access
+          </fpc-button>
+          <fpc-button
+            variant="dark"
+            size="xl"
+            btnClass="rounded-3"
+            routerLink="/how-it-works"
+            i18n="@@featureLoadweaverHome-heroCtaHowItWorks"
+          >
+            <i class="bi bi-diagram-3" aria-hidden="true"></i>How it works
+          </fpc-button>
+        </div>
+        <p class="small mt-4 mb-0 prelaunch-note" i18n="@@featureLoadweaverHome-prelaunchNote">
+          Loadweaver is not released yet. Early access means we talk about your setup first.
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="container grid-section__container grid-section__container--hero-bottom">
+    <div class="row">
+      <div class="col-md-12 hero-illustration d-none d-md-block">
+        <loadweaver-portal-topology-illustration
+          label="Loadweaver topology map: two sites with five nodes, encrypted WireGuard tunnels between the sites, a failover IP on an ingress node with a standby at the other site, a volume replicated synchronously within a site and asynchronously across sites, and live traffic from the internet."
+          i18n-label="@@featureLoadweaverHome-heroIllustration"
+        />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Value proposition -->
+<section id="solution" class="py-10 bg-body grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2
+        class="h2 fw-semibold mb-4 mx-auto section-title-lg text-body-emphasis"
+        i18n="@@featureLoadweaverHome-solutionTitle"
+      >
+        High availability for the servers you already have
+      </h2>
+      <p class="lead mx-auto text-muted section-lead mb-0" i18n="@@featureLoadweaverHome-solutionLead">
+        Loadweaver starts where small fleets are: a handful of nodes, often spread across sites. You get a cluster that
+        survives the loss of a server, without the overhead of running Kubernetes, and it grows with you to around 1,000
+        nodes per cluster.
+      </p>
+    </div>
+
+    <div class="card border rounded-3 shadow-sm overflow-hidden mb-5 landing-bento-visual">
+      <div class="row g-0 align-items-stretch">
+        <div class="col-lg-8 p-4 p-lg-5 d-flex flex-column justify-content-center">
+          <h3 class="h4 fw-semibold mb-3" i18n="@@featureLoadweaverHome-solutionGrowTitle">
+            Start with one node, grow when you need to
+          </h3>
+          <p class="text-muted mb-0 lh-lg" i18n="@@featureLoadweaverHome-solutionGrowLead">
+            A single node is already a complete setup. Nodes can join and leave over and over again: growing from one to
+            many and shrinking back is a normal operation, not a migration project. When a node leaves, it is drained
+            first, and nothing is dropped without your choice.
+          </p>
+        </div>
+        <div class="col-lg-4 p-4 p-lg-5 d-flex align-items-center justify-content-center landing-divider-start bg-body">
+          <p class="fw-semibold mb-0 text-center" i18n="@@featureLoadweaverHome-solutionGrowTagline">
+            One node to start. More sites when you need them.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <ul class="nav nav-pills nav-fill flex-wrap gap-2 justify-content-center mb-4 portal-page-tabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link active px-3 py-2"
+          id="solution-tab-network"
+          data-bs-toggle="tab"
+          data-bs-target="#solution-pane-network"
+          type="button"
+          role="tab"
+          aria-controls="solution-pane-network"
+          aria-selected="true"
+        >
+          <i class="bi bi-shield-lock me-2" aria-hidden="true"></i>
+          <span i18n="@@featureLoadweaverHome-tabNetwork">Network</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-3 py-2"
+          id="solution-tab-storage"
+          data-bs-toggle="tab"
+          data-bs-target="#solution-pane-storage"
+          type="button"
+          role="tab"
+          aria-controls="solution-pane-storage"
+          aria-selected="false"
+        >
+          <i class="bi bi-hdd-stack me-2" aria-hidden="true"></i>
+          <span i18n="@@featureLoadweaverHome-tabStorage">Storage</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-3 py-2"
+          id="solution-tab-ingress"
+          data-bs-toggle="tab"
+          data-bs-target="#solution-pane-ingress"
+          type="button"
+          role="tab"
+          aria-controls="solution-pane-ingress"
+          aria-selected="false"
+        >
+          <i class="bi bi-signpost-split me-2" aria-hidden="true"></i>
+          <span i18n="@@featureLoadweaverHome-tabIngress">Ingress</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-3 py-2"
+          id="solution-tab-policies"
+          data-bs-toggle="tab"
+          data-bs-target="#solution-pane-policies"
+          type="button"
+          role="tab"
+          aria-controls="solution-pane-policies"
+          aria-selected="false"
+        >
+          <i class="bi bi-diagram-3 me-2" aria-hidden="true"></i>
+          <span i18n="@@featureLoadweaverHome-tabPolicies">Policies</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-3 py-2"
+          id="solution-tab-plan"
+          data-bs-toggle="tab"
+          data-bs-target="#solution-pane-plan"
+          type="button"
+          role="tab"
+          aria-controls="solution-pane-plan"
+          aria-selected="false"
+        >
+          <i class="bi bi-list-check me-2" aria-hidden="true"></i>
+          <span i18n="@@featureLoadweaverHome-tabPlan">Plan &amp; apply</span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link px-3 py-2"
+          id="solution-tab-observe"
+          data-bs-toggle="tab"
+          data-bs-target="#solution-pane-observe"
+          type="button"
+          role="tab"
+          aria-controls="solution-pane-observe"
+          aria-selected="false"
+        >
+          <i class="bi bi-activity me-2" aria-hidden="true"></i>
+          <span i18n="@@featureLoadweaverHome-tabObserve">Observability</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      <!-- Network -->
+      <div
+        class="tab-pane fade show active"
+        id="solution-pane-network"
+        role="tabpanel"
+        aria-labelledby="solution-tab-network"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden card-capability-primary">
+          <div class="p-4 p-lg-5 border-bottom landing-surface-tint">
+            <div class="plain-icon mb-4 mx-auto mx-lg-0" aria-hidden="true">
+              <i class="bi bi-shield-lock-fill text-primary icon-xl"></i>
+            </div>
+            <h3 class="h4 fw-semibold mb-3 text-center text-lg-start" i18n="@@featureLoadweaverHome-networkHeadline">
+              Encrypted network between your sites
+            </h3>
+            <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featureLoadweaverHome-networkLead">
+              Every node runs the network itself. Nodes connect across sites over WireGuard, and routes between them are
+              exchanged with BIRD, so your sites behave like one cluster.
+            </p>
+          </div>
+          <div class="landing-panel-points">
+            <div class="row row-cols-1 row-cols-md-3 g-0">
+              <div class="col">
+                <i class="bi bi-bounding-box-circles text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHome-networkPoint1Title">
+                  Tunnels only where needed
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-networkPoint1Desc">
+                  WireGuard peers exist only between nodes that a policy lets talk to each other.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-geo-alt text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHome-networkPoint2Title">
+                  Addresses that follow
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-networkPoint2Desc">
+                  Every service gets a stable IP and DNS name that moves with it when it migrates.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-search text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHome-networkPoint3Title">
+                  Policy-aware discovery
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-networkPoint3Desc">
+                  Cluster DNS only answers for services the caller is allowed to reach.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Storage -->
+      <div
+        class="tab-pane fade"
+        id="solution-pane-storage"
+        role="tabpanel"
+        aria-labelledby="solution-tab-storage"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden card-capability-primary">
+          <div class="p-4 p-lg-5 border-bottom landing-surface-tint">
+            <div class="plain-icon mb-4 mx-auto mx-lg-0" aria-hidden="true">
+              <i class="bi bi-hdd-stack-fill text-primary icon-xl"></i>
+            </div>
+            <h3 class="h4 fw-semibold mb-3 text-center text-lg-start" i18n="@@featureLoadweaverHome-storageHeadline">
+              Shared storage on every node
+            </h3>
+            <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featureLoadweaverHome-storageLead">
+              Volumes are replicated at block level and show up in Docker as a volume plugin. Stateful workloads stay
+              available when a node goes down, from a single node upwards.
+            </p>
+          </div>
+          <div class="landing-panel-points">
+            <div class="row row-cols-1 row-cols-md-3 g-0">
+              <div class="col">
+                <i class="bi bi-arrow-repeat text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHome-storagePoint1Title">
+                  Sync nearby, async far away
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-storagePoint1Desc">
+                  Synchronous within a site, asynchronous across sites, configurable per volume.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-clock-history text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHome-storagePoint2Title">
+                  Loss you can see up front
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-storagePoint2Desc">
+                  Losing a node loses no data; for losing a site, the plan shows the bounded loss as RPO.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-sliders text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHome-storagePoint3Title">
+                  Placement as a policy
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-storagePoint3Desc">
+                  For example two synchronous replicas in one site and one asynchronous replica in another.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ingress -->
+      <div
+        class="tab-pane fade"
+        id="solution-pane-ingress"
+        role="tabpanel"
+        aria-labelledby="solution-tab-ingress"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden card-capability-primary">
+          <div class="p-4 p-lg-5 border-bottom landing-surface-tint">
+            <div class="plain-icon mb-4 mx-auto mx-lg-0" aria-hidden="true">
+              <i class="bi bi-signpost-split-fill text-primary icon-xl"></i>
+            </div>
+            <h3 class="h4 fw-semibold mb-3 text-center text-lg-start" i18n="@@featureLoadweaverHome-ingressHeadline">
+              Ingress that fails over on its own
+            </h3>
+            <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featureLoadweaverHome-ingressLead">
+              When the node holding a public IP goes down, the IP moves to a healthy node. Where an IP cannot move, DNS
+              failover takes over. Web traffic and TCP / UDP port forwards are both covered.
+            </p>
+          </div>
+          <div class="landing-panel-points">
+            <div class="row row-cols-1 row-cols-md-3 g-0">
+              <div class="col">
+                <i class="bi bi-arrow-left-right text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHome-ingressPoint1Title">
+                  Fits your environment
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-ingressPoint1Desc">
+                  Floating IP on a shared network, BGP announcements, or your provider's failover IP API.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-patch-check text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHome-ingressPoint2Title">
+                  Certificates already there
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-ingressPoint2Desc">
+                  Built-in ACME; certificates sit on every ingress node, so a failover never waits on issuance.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-speedometer2 text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHome-ingressPoint3Title">
+                  Limits that hold everywhere
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-ingressPoint3Desc">
+                  Cluster-wide rate limits, connection limits for port forwards and an optional WAF per hostname.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Policies -->
+      <div
+        class="tab-pane fade"
+        id="solution-pane-policies"
+        role="tabpanel"
+        aria-labelledby="solution-tab-policies"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden card-capability-primary">
+          <div class="p-4 p-lg-5 border-bottom landing-surface-tint">
+            <div class="plain-icon mb-4 mx-auto mx-lg-0" aria-hidden="true">
+              <i class="bi bi-diagram-3-fill text-primary icon-xl"></i>
+            </div>
+            <h3 class="h4 fw-semibold mb-3 text-center text-lg-start" i18n="@@featureLoadweaverHome-policiesHeadline">
+              Everything is a policy
+            </h3>
+            <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featureLoadweaverHome-policiesLead">
+              Routing, tunnels, filtering and exposure exist only because a policy allows them. Policies connect groups,
+              like security groups in the cloud, and stay valid when a workload moves to another node.
+            </p>
+          </div>
+          <div class="landing-panel-points">
+            <div class="row row-cols-1 row-cols-md-3 g-0">
+              <div class="col">
+                <i class="bi bi-slash-circle text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHome-policiesPoint1Title">Deny by default</p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-policiesPoint1Desc">
+                  Nothing talks across groups unless an allow rule says so, and rules are never transitive.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-layers text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHome-policiesPoint2Title">
+                  One rule, every layer
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-policiesPoint2Desc">
+                  An allow rule is compiled into tunnels, routes, firewall rules, the proxy and ingress for you.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-eye text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHome-policiesPoint3Title">
+                  Monitor before you enforce
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-policiesPoint3Desc">
+                  Roll out a policy in monitor mode and see what it would block before it blocks anything.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Plan & apply -->
+      <div
+        class="tab-pane fade"
+        id="solution-pane-plan"
+        role="tabpanel"
+        aria-labelledby="solution-tab-plan"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden card-capability-primary">
+          <div class="p-4 p-lg-5 border-bottom landing-surface-tint">
+            <div class="plain-icon mb-4 mx-auto mx-lg-0" aria-hidden="true">
+              <i class="bi bi-list-check text-primary icon-xl"></i>
+            </div>
+            <h3 class="h4 fw-semibold mb-3 text-center text-lg-start" i18n="@@featureLoadweaverHome-planHeadline">
+              See every change before it happens
+            </h3>
+            <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featureLoadweaverHome-planLead">
+              Every change produces a plan: the difference between what you want and what runs, reviewed and then
+              applied. Like Terraform, for your whole cluster.
+            </p>
+          </div>
+          <div class="landing-panel-points">
+            <div class="row row-cols-1 row-cols-md-3 g-0">
+              <div class="col">
+                <i class="bi bi-exclamation-triangle text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHome-planPoint1Title">
+                  Failure analysis built in
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-planPoint1Desc">
+                  The plan simulates the loss of every node and site and lists each single point of failure.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-lock text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHome-planPoint2Title">
+                  Locks that stay out of the way
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-planPoint2Desc">
+                  A plan locks only what it touches, so unrelated changes run in parallel.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-arrow-counterclockwise text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHome-planPoint3Title">Rollback and drift</p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-planPoint3Desc">
+                  Failed applies roll back on their own. Changes made outside Loadweaver are reported, never
+                  overwritten.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Observability -->
+      <div
+        class="tab-pane fade"
+        id="solution-pane-observe"
+        role="tabpanel"
+        aria-labelledby="solution-tab-observe"
+        tabindex="0"
+      >
+        <div class="card border rounded-3 shadow-sm overflow-hidden card-capability-primary">
+          <div class="p-4 p-lg-5 border-bottom landing-surface-tint">
+            <div class="plain-icon mb-4 mx-auto mx-lg-0" aria-hidden="true">
+              <i class="bi bi-activity text-primary icon-xl"></i>
+            </div>
+            <h3 class="h4 fw-semibold mb-3 text-center text-lg-start" i18n="@@featureLoadweaverHome-observeHeadline">
+              Everything is observable
+            </h3>
+            <p class="text-muted mb-0 text-center text-lg-start" i18n="@@featureLoadweaverHome-observeLead">
+              A live map of every site, node, workload, tunnel and volume, with the traffic between them. Every log the
+              platform produces is one click away.
+            </p>
+          </div>
+          <div class="landing-panel-points">
+            <div class="row row-cols-1 row-cols-md-3 g-0">
+              <div class="col">
+                <i class="bi bi-broadcast text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHome-observePoint1Title">
+                  Live, timeline and plan
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-observePoint1Desc">
+                  Watch traffic live, scrub back through a failover, or overlay a pending plan on the map.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-journal-text text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHome-observePoint2Title">
+                  All logs, one query
+                </p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-observePoint2Desc">
+                  Containers, proxy, firewall, routing, tunnels and ingress, correlated by deployment, node and policy.
+                </p>
+              </div>
+              <div class="col">
+                <i class="bi bi-signpost text-primary mb-3 d-inline-block icon-md" aria-hidden="true"></i>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHome-observePoint3Title">Trace any path</p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-observePoint3Desc">
+                  Pick a hostname and see how a request is routed right now, with every policy it passes.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Compose: bento -->
+<section id="compose" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="row justify-content-center text-center pb-10">
+      <div class="col-lg-9">
+        <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureLoadweaverHome-composeTitle">
+          Built around the Docker Compose files you already have
+        </h2>
+        <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureLoadweaverHome-composeLead">
+          Docker is the base. A deployment is a Compose project, and Loadweaver settings live in extension fields, so
+          the same file still works with plain docker compose.
+        </p>
+      </div>
+    </div>
+
+    <div class="row g-3 g-lg-4">
+      <div class="col-lg-7">
+        <div class="card border rounded-3 shadow-sm overflow-hidden h-100 card-capability card-capability-primary">
+          <div class="d-flex align-items-center justify-content-between gap-2 px-4 py-3 border-bottom">
+            <span class="small fw-semibold" i18n="@@featureLoadweaverHome-composeExampleCaption"
+              >compose.yaml with Loadweaver extensions (example)</span
+            >
+            <fpc-badge color="primary" variant="marketing">x-loadweaver</fpc-badge>
+          </div>
+          <pre
+            class="bg-dark text-light font-monospace small p-4 mb-0 flex-grow-1 code-sample"
+          ><code>{{ composeExample }}</code></pre>
+        </div>
+      </div>
+      <div class="col-lg-5 d-flex flex-column gap-3">
+        <article class="card border rounded-3 shadow-sm p-4 h-100">
+          <i class="bi bi-arrow-left-right text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHome-composeTile1Title">Migration without drama</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-composeTile1Desc">
+            Every Compose deployment can move between nodes: live where eligible, blue / green where replicas allow, a
+            short stop otherwise. A failed live attempt falls back without data loss.
+          </p>
+        </article>
+        <article class="card border rounded-3 shadow-sm p-4 h-100">
+          <i class="bi bi-pin-angle text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHome-composeTile2Title">Pins are explicit</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-composeTile2Desc">
+            Pinning data, a deployment or traffic to one host is allowed, but the plan warns about it up front. You
+            acknowledge a pin with a reason in the file.
+          </p>
+        </article>
+      </div>
+    </div>
+    <div class="row g-3 g-lg-4 mt-0 mt-lg-1">
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm p-4 h-100">
+          <i class="bi bi-git text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHome-composeTile3Title">Git if you want it</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-composeTile3Desc">
+            Everything works in the UI. Connect a repository and pushes create plans, with a plan bot for GitHub and
+            GitLab pull requests.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm p-4 h-100">
+          <i class="bi bi-box-seam text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHome-composeTile4Title">Runtimes per node</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-composeTile4Desc">
+            Loadweaver manages the container runtimes on each node, including gVisor next to runc for workloads that
+            need a sandbox.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-4">
+        <article class="card border rounded-3 shadow-sm p-4 h-100">
+          <i class="bi bi-cpu text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHome-composeTile5Title">Capacity kept honest</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverHome-composeTile5Desc">
+            Every service has CPU and memory requests. The plan warns when the remaining nodes could not take over after
+            a node loss.
+          </p>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Plan review -->
+<section id="plan" class="py-10 bg-body grid-section">
+  <div class="container grid-section__container">
+    <div class="row g-5 align-items-center">
+      <div class="col-lg-5">
+        <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureLoadweaverHome-planReviewTitle">
+          Know what breaks before anything breaks
+        </h2>
+        <p class="lead text-muted mb-4" i18n="@@featureLoadweaverHome-planReviewLead">
+          No single host failure takes an app down, unless you pin something to that host on purpose. The plan checks
+          this for every deployment before you apply.
+        </p>
+        <p class="text-muted mb-4" i18n="@@featureLoadweaverHome-planReviewSub">
+          It shows the effect per layer, the DNS records it creates, the capacity left after a node loss and every
+          single point of failure with its cause. The same analysis keeps running afterwards and flags the cluster as at
+          risk until redundancy is back.
+        </p>
+        <a
+          routerLink="/how-it-works"
+          fragment="plan"
+          class="fw-semibold text-decoration-none"
+          i18n="@@featureLoadweaverHome-planReviewLink"
+          >How plan and apply work <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i
+        ></a>
+      </div>
+      <div class="col-lg-7">
+        <loadweaver-portal-plan-diff-illustration
+          class="lw-scene--rounded"
+          label="A Loadweaver plan in the terminal: a new deployment, a changed policy that adds a WireGuard peer and a route, a DNS record and a certificate, followed by the failure analysis with one unacknowledged pin."
+          i18n-label="@@featureLoadweaverHome-planIllustration"
+        />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Ecosystem -->
+<section id="ecosystem" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureLoadweaverHome-ecosystemTitle">
+        One cluster, every way to reach it
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureLoadweaverHome-ecosystemLead">
+        The Loadweaver console is where you run your cluster. Use it in the browser, on the desktop, on your phone, from
+        the command line or through your agents, on your servers or ours.
+      </p>
+    </div>
+
+    <article class="card border rounded-3 shadow-sm card-capability card-capability-primary mb-4 overflow-hidden">
+      <div class="row g-0 align-items-lg-stretch stack-on-mobile">
+        <div class="col-lg-6 p-4 p-lg-5 d-flex flex-column landing-bento-visual border-end">
+          <fpc-badge color="primary" class="mb-3 align-self-start" i18n="@@featureLoadweaverHome-ecosystemConsoleBadge"
+            >Core platform</fpc-badge
+          >
+          <h3 class="h3 fw-semibold mb-3" i18n="@@featureLoadweaverHome-ecosystemConsoleTitle">Loadweaver console</h3>
+          <p class="text-muted mb-4 lh-lg" i18n="@@featureLoadweaverHome-ecosystemConsoleLead">
+            Topology map, plan review with failure analysis, log explorer, groups and policies, nodes and sites,
+            deployments and DNS zones.
+          </p>
+          <div class="mt-auto">
+            <fpc-button
+              routerLink="/how-it-works"
+              variant="primary"
+              btnClass="rounded-3"
+              i18n="@@featureLoadweaverHome-ecosystemConsoleCta"
+              >See how it works</fpc-button
+            >
+          </div>
+        </div>
+        <div class="col-lg-6 bg-body p-4 p-lg-4">
+          <p class="small fw-semibold text-muted mb-3 mb-lg-4" i18n="@@featureLoadweaverHome-ecosystemSurfacesLabel">
+            Around the console
+          </p>
+          <div class="d-flex flex-column landing-hairline-list">
+            <article class="py-3">
+              <div class="d-flex gap-3">
+                <i class="bi bi-display text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+                <div>
+                  <h4 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHome-ecosystemAppsTitle">
+                    Desktop, mobile, CLI and MCP
+                  </h4>
+                  <p class="small text-muted mb-3" i18n="@@featureLoadweaverHome-ecosystemAppsDesc">
+                    A code-signed desktop app with its own VPN tunnel, mobile apps, a CLI and an MCP server for agents.
+                  </p>
+                  <a
+                    routerLink="/apps"
+                    class="small fw-semibold text-decoration-none"
+                    i18n="@@featureLoadweaverHome-ecosystemAppsCta"
+                    >Explore the apps</a
+                  >
+                </div>
+              </div>
+            </article>
+            <article class="py-3">
+              <div class="d-flex gap-3">
+                <i class="bi bi-person-lock text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+                <div>
+                  <h4 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHome-ecosystemRemoteTitle">Remote access</h4>
+                  <p class="small text-muted mb-3" i18n="@@featureLoadweaverHome-ecosystemRemoteDesc">
+                    People, machines and whole offices connect over WireGuard and reach only what their policies allow.
+                  </p>
+                  <a
+                    routerLink="/remote-access"
+                    class="small fw-semibold text-decoration-none"
+                    i18n="@@featureLoadweaverHome-ecosystemRemoteCta"
+                    >Explore remote access</a
+                  >
+                </div>
+              </div>
+            </article>
+            <article class="py-3">
+              <div class="d-flex gap-3">
+                <i class="bi bi-robot text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+                <div>
+                  <h4 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHome-ecosystemAgenstraTitle">
+                    A home for Agenstra agents
+                  </h4>
+                  <p class="small text-muted mb-3" i18n="@@featureLoadweaverHome-ecosystemAgenstraDesc">
+                    Agenstra's agent manager runs as a Compose deployment on Loadweaver, and nodes with gVisor are valid
+                    Agenstra hosts.
+                  </p>
+                  <a
+                    href="https://agenstra.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="small fw-semibold text-decoration-none"
+                    i18n="@@featureLoadweaverHome-ecosystemAgenstraCta"
+                    >Visit agenstra.com <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i
+                  ></a>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="card border rounded-3 shadow-sm overflow-hidden">
+      <div class="row g-0 align-items-stretch">
+        <div class="col-lg-8 p-4 p-lg-5 bg-body">
+          <div class="mb-3">
+            <i class="bi bi-cloud-check text-primary icon-md mb-3 d-block" aria-hidden="true"></i>
+            <h3 class="h5 fw-semibold mb-0" i18n="@@featureLoadweaverHome-ecosystemCloudTitle">Loadweaver Cloud</h3>
+          </div>
+          <p class="text-muted mb-4 mb-lg-0" i18n="@@featureLoadweaverHome-ecosystemCloudDesc">
+            Prefer not to run it yourself? We operate a dedicated cluster for you, with its own control plane, nodes and
+            keys.
+          </p>
+        </div>
+        <div
+          class="col-lg-4 p-4 p-lg-5 text-center landing-surface-tint landing-divider-start d-flex flex-column justify-content-center"
+        >
+          <fpc-button
+            routerLink="/contact"
+            variant="primary"
+            btnClass="mb-2"
+            [loadweaverEarlyAccess]="cloudEarlyAccessMessage"
+            i18n="@@featureLoadweaverHome-ecosystemCloudEarlyAccess"
+            >Request early access</fpc-button
+          >
+          <a
+            routerLink="/cloud"
+            class="fw-semibold small text-decoration-none"
+            i18n="@@featureLoadweaverHome-ecosystemCloudCta"
+            >Explore Cloud</a
+          >
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- Final CTA -->
+<section id="cta" class="py-10 bg-dark grid-section">
+  <div class="container grid-section__container">
+    <div class="row">
+      <div class="col-12">
+        <div class="bg-primary rounded-4 text-center py-10 px-5 shadow-sm cta-box">
+          <h2 class="h2 fw-semibold mb-4" i18n="@@featureLoadweaverHome-ctaTitle">
+            Be among the first to run Loadweaver
+          </h2>
+          <p class="lead mb-5 mx-auto cta-lead" i18n="@@featureLoadweaverHome-ctaLead">
+            Loadweaver is in early access. Tell us about your servers, your sites and what you want to run on them, and
+            we will get back to you.
+          </p>
+          <shared-contact-person brand="loadweaver" />
+          <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <fpc-button
+              variant="primary"
+              size="xl"
+              btnClass="rounded-3"
+              routerLink="/contact"
+              loadweaverEarlyAccess
+              i18n="@@featureLoadweaverHome-ctaEarlyAccess"
+            >
+              <i class="bi bi-envelope-paper" aria-hidden="true"></i>Request early access
+            </fpc-button>
+            <fpc-button
+              variant="dark"
+              size="xl"
+              btnClass="rounded-3"
+              routerLink="/how-it-works"
+              i18n="@@featureLoadweaverHome-ctaHowItWorks"
+            >
+              <i class="bi bi-diagram-3" aria-hidden="true"></i>How it works
+            </fpc-button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

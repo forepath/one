@@ -20,7 +20,7 @@ Loadweaver is announced as "Coming soon" on the ForePath landing page. That copy
 
 Takeaways for positioning:
 
-- Target scale is **"a handful of servers"**, possibly spread across **multiple sites/locations**. Not a Kubernetes-scale competitor; it targets small fleets that need HA without the k8s overhead.
+- Entry story is **"a handful of servers"**, possibly spread across **multiple sites/locations**: small fleets that need HA without the Kubernetes overhead. That is where Loadweaver **starts**, not where it ends: clusters **grow to ~1,000 nodes** and fleets of clusters (3.34).
 - Audience is **AI-built applications and the agents behind them**, which ties it to Agenstra.
 - **Self-hosted / infrastructure you control** is a core promise.
 
@@ -28,18 +28,18 @@ Takeaways for positioning:
 
 ## 2. Core principles
 
-| #   | Principle                                                                                                                                                                                                                                                                           | Status                      |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-| P1  | **Docker is the base.** Workloads are containers on the Docker Engine of every node.                                                                                                                                                                                                | decided                     |
-| P2  | Small fleets first: a handful of nodes, multi-site, no k8s-level complexity.                                                                                                                                                                                                        | decided (from landing page) |
-| P3  | Everything is declarative and goes through **plan → apply** with locking (Terraform-like).                                                                                                                                                                                          | decided                     |
-| P4  | Policies (traffic, placement, ...) apply cluster wide by default and are narrowed by **selectors**.                                                                                                                                                                                 | decided                     |
-| P5  | Agenstra hosts must be able to integrate into a Loadweaver cluster later on.                                                                                                                                                                                                        | decided                     |
-| P6  | **Everything is a policy.** Routing, tunneling, filtering, exposure: any connectivity exists only because a policy allows it, expressed between **groups** (AWS security group style).                                                                                              | decided                     |
-| P7  | **Deployments are Docker Compose projects** (with Loadweaver extensions), and every one of them is seamlessly migratable between nodes.                                                                                                                                             | decided                     |
-| P8  | **No single host failure takes an app down**, unless a policy explicitly pins its data, deployment or traffic to that host. Pinning is allowed, but the plan warns about it up front.                                                                                               | decided                     |
-| P9  | **Everything is observable.** Every log the platform produces (containers, proxy, routing, tunnels, ingress, storage, control plane) can be viewed in the UI and queried through the backend API, scoped to a deployment, service, node, group or policy.                           | decided                     |
-| P10 | **Reuse before building, and verify until clean.** Existing patterns, shared libs and generators are reused or extended; every change passes the full quality gate (tests, regressions, self-rated security review) in a loop until nothing medium-to-critical is left (section 6). | decided                     |
+| #   | Principle                                                                                                                                                                                                                                                                           | Status  |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| P1  | **Docker is the base.** Workloads are containers on the Docker Engine of every node.                                                                                                                                                                                                | decided |
+| P2  | **Start small, grow without limits**: a single node is a full setup, a handful of nodes is the sweet spot of the story, and a cluster grows to ~1,000 nodes across many sites; beyond that, fleets of clusters (3.34). No k8s-level complexity at any size.                         | decided |
+| P3  | Everything is declarative and goes through **plan → apply** with locking (Terraform-like).                                                                                                                                                                                          | decided |
+| P4  | Policies (traffic, placement, ...) apply cluster wide by default and are narrowed by **selectors**.                                                                                                                                                                                 | decided |
+| P5  | Agenstra hosts must be able to integrate into a Loadweaver cluster later on.                                                                                                                                                                                                        | decided |
+| P6  | **Everything is a policy.** Routing, tunneling, filtering, exposure: any connectivity exists only because a policy allows it, expressed between **groups** (AWS security group style).                                                                                              | decided |
+| P7  | **Deployments are Docker Compose projects** (with Loadweaver extensions), and every one of them is seamlessly migratable between nodes.                                                                                                                                             | decided |
+| P8  | **No single host failure takes an app down**, unless a policy explicitly pins its data, deployment or traffic to that host. Pinning is allowed, but the plan warns about it up front.                                                                                               | decided |
+| P9  | **Everything is observable.** Every log the platform produces (containers, proxy, routing, tunnels, ingress, storage, control plane) can be viewed in the UI and queried through the backend API, scoped to a deployment, service, node, group or policy.                           | decided |
+| P10 | **Reuse before building, and verify until clean.** Existing patterns, shared libs and generators are reused or extended; every change passes the full quality gate (tests, regressions, self-rated security review) in a loop until nothing medium-to-critical is left (section 6). | decided |
 
 ---
 
@@ -59,7 +59,7 @@ Takeaways for positioning:
 - **decided** **Nodes can join and leave over and over again.** Growing from 1 to n and shrinking back is a normal operation, not a migration project.
 - **decided** No data loss when a node leaves. The only exception is missing capacity on the remaining nodes. Then the user is warned and **chooses which workloads to keep** and which to drop.
 - **decided** Capacity is calculated continuously. When the potential load approaches the cluster limits, further selections that would exceed them are **locked** (e.g. you can't deploy, scale up or pick more workloads to keep than fit).
-- **decided** Control plane on **3 or 5 designated nodes** (a node group like everything else). All other nodes are workers. Control-plane nodes may run workloads too.
+- **decided** Control plane on **3 or 5 designated nodes** (a node group like everything else). All other nodes are workers, **without a limit on their number** (target scale ~1,000 nodes per cluster, 3.34). Control-plane nodes may run workloads too.
 - **decided** Below 3 nodes the control plane runs on whatever is there (1 or 2 nodes), without HA. As nodes join, it grows to 3 (and optionally 5) members automatically; when they leave, it shrinks.
 - **decided** Cluster state lives in **Postgres, Patroni-style**: streaming replication across the control-plane nodes, automatic leader failover, coordinated by a small consensus store (etcd), which also serves leader election for Loadweaver's own controllers.
 - **decided** 2-node setups: an **optional lightweight witness** (tie-breaker / etcd member only, no workloads, e.g. a 1 vCPU VPS or a Raspberry Pi) provides the third vote and enables automatic failover. Without a witness, data is still replicated to both nodes, but failover requires a manual confirm, and the plan warns about it.
@@ -108,7 +108,7 @@ The foundation everything else in this document builds on (P6).
 
 - **decided** Networking on every node; nodes are connected **across sites with WireGuard** (encrypted overlay). This is the landing page's "Encrypted network between your sites".
 - **decided** Which nodes are connected, and what is routed between them, is driven by group policies (3.3).
-- **decided** Use **BIRD** for routing: announce container/service subnets between nodes (BGP over the WireGuard links), and optionally peer with upstream routers / provider BGP for announcing public IPs. Export filters are generated from policies.
+- **decided** Use **BIRD** for routing: announce container/service subnets between nodes (BGP over the WireGuard links; direct peering in small clusters, **route reflectors** in larger ones, 3.34), and optionally peer with upstream routers / provider BGP for announcing public IPs. Export filters are generated from policies.
 - **decided** Addressing: **one subnet per node** for its containers, announced via BIRD. Every service additionally gets a **stable service IP** (and DNS name) that follows it on migration. Group rules compile to the current member IPs (nftables sets), so prefixes don't have to match groups.
 - **decided** Service discovery: **policy-aware cluster DNS**. A node-local resolver answers `<service>.<project>.lw`-style names with the stable service IP, and only for services the caller's groups may reach. Compose service names keep working inside a project.
 
@@ -574,6 +574,31 @@ Replication is not a backup: a deleted volume or a `DROP TABLE` is replicated to
 - **decided** Optional **automated restore tests** (restore into a scratch volume, run a check hook, report), shown on the volume and in alerts.
 - **decided** **Whole-cluster disaster recovery**: a fresh node bootstraps from a backup target (external copy) and restores control plane first, then volumes, then redeploys. Documented and tested as part of the multi-site lab.
 
+**Backup keys & recovery kit**
+
+- **decided** Backups use a **dedicated backup key hierarchy**, separate from the cluster's day-to-day secrets (3.22), so losing the cluster doesn't lose the ability to decrypt backups.
+- **decided** At cluster setup (and on every key rotation) admins must download / print a **recovery kit**: the recovery key **split Shamir-style** (e.g. 2 of 3 shares for different people) and **confirm** it. Without a confirmed kit, the cluster shows **"backups not recoverable"** as a pin (3.12).
+- **decided** Optionally the backup key is **also escrowed in an external KMS / Vault**.
+- **decided** Disaster recovery from a fresh node (above) **asks for the recovery kit or the KMS first**.
+- **decided** Restore tests also prove that the kit still decrypts current backups.
+
+**Immutability (ransomware / compromised admin)**
+
+- **decided** Backups are written with **S3 Object Lock** / retention for their retention period: on Garage where supported, on external S3 targets in **compliance mode**.
+- **decided** **Deleting backups or shortening retention** needs a **second admin approval** and only takes effect **after a delay** (e.g. 72 h), with alerts (3.18).
+- **decided** The control plane's credentials for external targets are **write / append-only** where the provider allows it.
+
+**Backup catalog & self-service**
+
+- **decided** A **catalog page** per cluster and per project: all backups by resource, with time, size, target, encryption, restore-test result and immutability state; a **timeline view**; and a **diff between backups** (changed files, size).
+- **decided** **Self-service restores** for project operators / admins on their own resources, as plans with live progress (3.19). Cluster-level restores (control plane) only for cluster admins.
+- **decided** **Backup storage counts against project quotas** (3.17).
+
+**Cross-cluster restore & cloning**
+
+- **decided** Through the **fleet console** (3.24), a backup can be restored **into another cluster** the user has access to: disaster recovery to a standby cluster, or **cloning** a deployment with its data for staging / testing.
+- **decided** The target cluster needs the **backup key** (recovery kit / KMS); the import follows the normal plan, with groups and policies **remapped** to the target cluster.
+
 ### 3.21 Node bootstrap, joining & upgrades
 
 **Supported hosts & bootstrap**
@@ -1029,6 +1054,37 @@ Today Agenstra Desktop (`apps/agenstra/native-agent-console`, Electron Forge) sh
 - **decided** **In the MVP**, on the parallel track (needs the API and the remote-access gateways from M4).
 - **decided** **Distribution**: public **App Store** and **Play Store** listings, plus **managed distribution via MDM** (Intune / Jamf / Kandji app configuration with pre-filled endpoint and device ID). Signing through the shared release pipeline (3.32), extended with Apple / Google mobile signing.
 
+### 3.34 Scale: from one node to ~1,000
+
+**Target**
+
+- **decided** **No cap on the number of nodes.** Only the control-plane _quorum_ is 3 or 5 members (3.2); every other node is a worker.
+- **decided** Supported target: **1 to ~1,000 nodes per cluster**, across many sites. Beyond that: **several clusters** managed together through the fleet console (3.24).
+- **decided** Small setups stay first-class (P2): everything below applies automatically as a cluster grows, nothing has to be configured up front, and small clusters keep the simple layout.
+
+**Routing & tunnels**
+
+- **decided** Small clusters keep **direct iBGP peering and direct tunnels**.
+- **decided** Above a threshold (e.g. **16 nodes**), Loadweaver automatically designates **BIRD route reflectors per site** (a node group, redundant pairs) instead of full-mesh iBGP.
+- **decided** **Cluster-wide built-in traffic** (control plane, telemetry, storage control) goes via **per-site hub nodes**; **direct node-to-node tunnels** are only built where workload policies actually need them, so the tunnel count grows with policies, not with N².
+- **decided** Still compiled from groups and policies (P6) and shown in the plan ("promotes n4 / n9 to route reflectors for `fra1`").
+
+**Data stores & telemetry**
+
+- **decided** Default stays: control plane, Postgres / TimescaleDB, OpenSearch and Garage on the control-plane nodes (3.13, 3.14, 3.20), fine for small clusters.
+- **decided** As the cluster grows, the plan **recommends** (and the capacity checks **enforce**) **dedicated node groups** for OpenSearch data nodes, a **separate Postgres / TimescaleDB cluster for metrics and flows** (keeping desired state small and fast), and Garage.
+- **decided** Agents ship telemetry to **per-site collectors** that batch and forward, instead of every agent writing to the central stores.
+
+**Control plane load** (consequences of the target, part of the same decision)
+
+- The agent streams (3.19) terminate on all control-plane members / per-site collectors, not on a single leader.
+- The failure analysis (3.12) and the policy compiler work **incrementally** (only what a change touches is recomputed), so plans stay fast at ~1,000 nodes.
+- The canvas (3.9) relies on semantic zoom and aggregation (site → node → service) for large clusters.
+
+**Verification**
+
+- **decided** The multi-site lab (section 6) gets a **scale test** per release: real nodes plus **simulated nodes / agents** up to the target size, checking plan times, convergence after failover, and control-plane / store load.
+
 ---
 
 ## 4. Agenstra integration
@@ -1147,6 +1203,7 @@ Applies to **every implementation step** of Loadweaver, independent of the featu
 - **decided** **Chaos tests**: kill nodes, partition sites, fill disks, break DNS providers / upstream sessions, asserting P8 and the health tree.
 - **decided** **Upgrade tests** N-1 → N, including step rollback and failed-rollback handling (3.19, 3.26).
 - **decided** **Timing tests** for migration, failover and DNS failover against the recovery times the plan promises (3.12, 3.28).
+- **decided** **Scale tests** up to ~1,000 (partly simulated) nodes per release (3.34).
 - **decided** **Policy compiler property tests**: the compiled tunnels / routes / rules equal the policies, never more (never transitive, 3.3).
 - **decided** Lab and chaos suites run **per milestone** and **before every release**; unit / integration / e2e run on every change.
 
@@ -1156,7 +1213,7 @@ Applies to **every implementation step** of Loadweaver, independent of the featu
 
 - **decided** **Multi-site from day one.** The MVP fully matches the landing page promise.
 - **decided** MVP contents:
-  - Node join / leave from 1 node upwards, control plane growing to 3 / 5, optional witness for 2 nodes, capacity checks with workload selection on shrink.
+  - Node join / leave from 1 node upwards (no node cap, target ~1,000 per cluster, route reflectors / per-site hubs / dedicated data node groups as the cluster grows, 3.34), control plane growing to 3 / 5, optional witness for 2 nodes, capacity checks with workload selection on shrink.
   - WireGuard tunnels and **BIRD / BGP**, both compiled from groups and policies; policy-aware DNS; stable service IPs.
   - DRBD volumes, sync in site, **async across sites**.
   - Compose deployments with migration (v1 target, 3.10), drain on node leave, failover on node loss, **site failover opt-in**.
@@ -1166,6 +1223,7 @@ Applies to **every implementation step** of Loadweaver, independent of the featu
   - Plan / apply with failure analysis, per-resource locks, drift handling.
   - Logs (OpenSearch), metrics / flows (TimescaleDB), topology map with live, timeline and plan views.
   - Projects, project and cluster roles, approvals, cross-project acceptance, quotas, PATs (3.17).
+  - Backup management: recovery kit (Shamir shares) + optional KMS escrow, object lock with delayed, approved deletion, backup catalog with self-service restores and quotas, cross-cluster restore / cloning via fleet (3.20).
   - Backups to built-in Garage + external targets, PITR for the control plane, restore tests, cluster DR (3.20).
   - Moved in from the former after-MVP list: custom dashboards (3.18), DNSSEC and anycast name servers (3.15), weighted / geo / latency DNS steering (3.28), live migration with automatic fallback (3.10), Agenstra step 2 with per-workspace runtimes (section 4), mobile posture via MDM (3.31), Loadweaver Cloud with a dedicated cluster per customer (section 5).
   - Ionic mobile apps (iOS / Android): mobile console, push alerts, approvals, tunnel (WireGuardKit / wireguard-android), posture with app attestation + MDM, App Store / Play Store / MDM distribution (3.33).
@@ -1264,3 +1322,5 @@ None right now. New questions go here.
 | 2026-10-17 | Install-script dependencies follow the existing pattern in `.github/actions/setup-env/action.yml` (explicit, package-scoped install step like "Electron binary install"); new steps fail loudly instead of `                                                                                                                                                                                                                                                                                                                                                                                                                     |     | true` (section 6). |
 | 2026-10-17 | Agenstra's progress pattern adopted 1:1 for all long-running operations (step + %, snapshot + live events, status channel for entities out of view, fpc-progress bars, stacked bars on parents, bar on the triggering button), also on canvas, mobile (incl. push on finish / failure), CLI `--watch`, plan bot comment and MCP (3.19).                                                                                                                                                                                                                                                                                          |
 | 2026-10-17 | UI built from shared `fpc-*` components first; missing components are added to `ui-components` as new `fpc-*` components with Storybook stories and all brands, not app-local; Ionic components on mobile only where no `fpc-*` fits (section 6).                                                                                                                                                                                                                                                                                                                                                                                |
+| 2026-10-17 | No node cap (only the control-plane quorum is 3 / 5): target 1 to ~1,000 nodes per cluster, fleets beyond; automatic route reflectors and per-site hubs above ~16 nodes, direct tunnels only where policies need them; dedicated data node groups and per-site telemetry collectors as clusters grow; incremental failure analysis / compiler; scale tests per release; positioning 'start small, grow without limits' (P2, 3.34).                                                                                                                                                                                               |
+| 2026-10-17 | Backup management: dedicated backup key hierarchy with mandatory confirmed recovery kit (Shamir shares) and optional KMS escrow, DR asks for kit first; object lock (compliance mode) with second-admin approval and delay for deletions; catalog per cluster / project with self-service restores, diffs and quotas; cross-cluster restore and cloning via fleet (3.20).                                                                                                                                                                                                                                                        |

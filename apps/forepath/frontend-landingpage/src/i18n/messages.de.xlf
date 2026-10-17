@@ -410,6 +410,10 @@
         <source>Decabill</source>
         <target>Decabill</target>
       </trans-unit>
+      <trans-unit id="featureForepath-footerLoadweaverLink" datatype="html">
+        <source>Loadweaver</source>
+        <target>Loadweaver</target>
+      </trans-unit>
       <trans-unit id="featureForepath-footerCompany" datatype="html">
         <source>Company</source>
         <target>Unternehmen</target>
@@ -4667,8 +4671,8 @@
         <target>Wir haben zwei unserer Werkzeuge unter der Apache-2.0-Lizenz veröffentlicht. OBMS ist ein ERP-System für digitale Geschäftsmodelle, Kublade eine Templating-Engine für Kubernetes-Deployments.</target>
       </trans-unit>
       <trans-unit id="featureForepathAbout-milestoneLoadweaverDate" datatype="html">
-        <source>Coming soon</source>
-        <target>Demnächst</target>
+        <source>Early access</source>
+        <target>Early Access</target>
       </trans-unit>
       <trans-unit id="featureForepathAbout-milestoneLoadweaverTitle" datatype="html">
         <source>Loadweaver</source>
@@ -4694,6 +4698,10 @@
         <source>We build Decabill with AI every day, because it makes the product better and lets us ship faster.</source>
         <target>Wir entwickeln Decabill jeden Tag mit KI, weil sie das Produkt besser macht und uns schneller ausliefern lässt.</target>
       </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageLoadweaver" datatype="html">
+        <source>We build Loadweaver with AI every day, because it makes the product better and lets us ship faster.</source>
+        <target>Wir entwickeln Loadweaver jeden Tag mit KI, weil sie das Produkt besser macht und uns schneller ausliefern lässt.</target>
+      </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContactPerson-messageForepath" datatype="html">
         <source>We work with AI every day, because it makes us faster and our results better.</source>
         <target>Wir arbeiten jeden Tag mit KI, weil sie uns schneller und unsere Ergebnisse besser macht.</target>
@@ -4717,6 +4725,10 @@
       <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageDecabill" datatype="html">
         <source>I am part of that, but your message still reaches real people who know Decabill, and a person takes responsibility for every answer.</source>
         <target>Ich bin ein Teil davon, aber Ihre Nachricht erreicht trotzdem echte Menschen, die Decabill kennen, und für jede Antwort übernimmt ein Mensch die Verantwortung.</target>
+      </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageLoadweaver" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Loadweaver, and a person takes responsibility for every answer.</source>
+        <target>Ich bin ein Teil davon, aber Ihre Nachricht erreicht trotzdem echte Menschen, die Loadweaver kennen, und für jede Antwort übernimmt ein Mensch die Verantwortung.</target>
       </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContactPerson-aiLabel" datatype="html">
         <source>AI</source>
@@ -4751,8 +4763,8 @@
         <target>DATEV-Export für Ihre Steuerberatung</target>
       </trans-unit>
       <trans-unit id="featureForepath-navLoadweaverBadge" datatype="html">
-        <source>Coming soon</source>
-        <target>Demnächst</target>
+        <source>Early access</source>
+        <target>Early Access</target>
       </trans-unit>
       <trans-unit id="featureForepath-navLoadweaverCaption" datatype="html">
         <source>Resilient clusters from a handful of servers</source>
@@ -4771,8 +4783,8 @@
         <target>Ingress, der bei Ausfällen selbstständig umschaltet</target>
       </trans-unit>
       <trans-unit id="featureForepath-footerLoadweaverSoon" datatype="html">
-        <source>Coming soon</source>
-        <target>Demnächst</target>
+        <source>Early access</source>
+        <target>Early Access</target>
       </trans-unit>
   </body>
   </file>

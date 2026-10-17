@@ -100,6 +100,13 @@
                   "domain:identity",
                   "domain:shared"
                 ]
+              },
+              {
+                "sourceTag": "domain:loadweaver",
+                "onlyDependOnLibsWithTags": [
+                  "domain:loadweaver",
+                  "domain:shared"
+                ]
               }
             ]
           }

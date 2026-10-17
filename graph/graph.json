@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-16T15:17:37.483Z",
+  "generatedAt": "2026-10-17T10:39:09.476Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -372,6 +372,27 @@
       }
     },
     {
+      "id": "project:loadweaver-frontend-feature-landingpage",
+      "type": "lib",
+      "attrs": {
+        "name": "loadweaver-frontend-feature-landingpage",
+        "root": "libs/domains/loadweaver/frontend/feature-landingpage",
+        "tags": [
+          "domain:loadweaver",
+          "scope:frontend",
+          "type:feature"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "test"
+        ],
+        "domain": "loadweaver",
+        "context": "frontend",
+        "featureGroup": "feature"
+      }
+    },
+    {
       "id": "project:agenstra-backend-feature-agent-manager",
       "type": "lib",
       "attrs": {
@@ -412,6 +433,27 @@
         "domain": "agenstra",
         "context": "frontend",
         "featureGroup": "feature"
+      }
+    },
+    {
+      "id": "project:loadweaver-frontend-util-configuration",
+      "type": "lib",
+      "attrs": {
+        "name": "loadweaver-frontend-util-configuration",
+        "root": "libs/domains/loadweaver/frontend/util-configuration",
+        "tags": [
+          "domain:loadweaver",
+          "scope:frontend",
+          "type:util"
+        ],
+        "type": "lib",
+        "targets": [
+          "lint",
+          "test"
+        ],
+        "domain": "loadweaver",
+        "context": "frontend",
+        "featureGroup": "util"
       }
     },
     {
@@ -1138,6 +1180,38 @@
       }
     },
     {
+      "id": "project:loadweaver-frontend-billing-console",
+      "type": "app",
+      "attrs": {
+        "name": "loadweaver-frontend-billing-console",
+        "root": "apps/loadweaver/frontend-billing-console",
+        "tags": [
+          "domain:loadweaver",
+          "type:app",
+          "scope:frontend"
+        ],
+        "type": "app",
+        "targets": [
+          "lint",
+          "stage-monaco-assets",
+          "build",
+          "serve",
+          "extract-i18n-angular",
+          "extract-i18n",
+          "test",
+          "serve-static",
+          "prebuild-server",
+          "server",
+          "server-container-image",
+          "start-containers",
+          "sbom"
+        ],
+        "domain": "loadweaver",
+        "context": "frontend",
+        "featureGroup": "app"
+      }
+    },
+    {
       "id": "project:shared-backend-util-webhook",
       "type": "lib",
       "attrs": {
@@ -1481,6 +1555,37 @@
           "sbom"
         ],
         "domain": "agenstra",
+        "context": "frontend",
+        "featureGroup": "app"
+      }
+    },
+    {
+      "id": "project:loadweaver-frontend-landingpage",
+      "type": "app",
+      "attrs": {
+        "name": "loadweaver-frontend-landingpage",
+        "root": "apps/loadweaver/frontend-landingpage",
+        "tags": [
+          "domain:loadweaver",
+          "type:app",
+          "scope:frontend"
+        ],
+        "type": "app",
+        "targets": [
+          "lint",
+          "build",
+          "serve",
+          "extract-i18n-angular",
+          "extract-i18n",
+          "test",
+          "serve-static",
+          "build-delegating-server",
+          "postbuild",
+          "server-container-image",
+          "start-containers",
+          "sbom"
+        ],
+        "domain": "loadweaver",
         "context": "frontend",
         "featureGroup": "app"
       }
@@ -1955,6 +2060,230 @@
       }
     },
     {
+      "id": "package:@angular/animations",
+      "type": "package",
+      "attrs": {
+        "name": "@angular/animations",
+        "version": "21.2.6"
+      }
+    },
+    {
+      "id": "package:@angular/cdk",
+      "type": "package",
+      "attrs": {
+        "name": "@angular/cdk",
+        "version": "21.2.6"
+      }
+    },
+    {
+      "id": "package:@angular/common",
+      "type": "package",
+      "attrs": {
+        "name": "@angular/common",
+        "version": "21.2.6"
+      }
+    },
+    {
+      "id": "package:@angular/compiler",
+      "type": "package",
+      "attrs": {
+        "name": "@angular/compiler",
+        "version": "21.2.6"
+      }
+    },
+    {
+      "id": "package:@angular/core",
+      "type": "package",
+      "attrs": {
+        "name": "@angular/core",
+        "version": "21.2.6"
+      }
+    },
+    {
+      "id": "package:@angular/forms",
+      "type": "package",
+      "attrs": {
+        "name": "@angular/forms",
+        "version": "21.2.6"
+      }
+    },
+    {
+      "id": "package:@angular/platform-browser",
+      "type": "package",
+      "attrs": {
+        "name": "@angular/platform-browser",
+        "version": "21.2.6"
+      }
+    },
+    {
+      "id": "package:@angular/platform-server",
+      "type": "package",
+      "attrs": {
+        "name": "@angular/platform-server",
+        "version": "21.2.6"
+      }
+    },
+    {
+      "id": "package:@angular/router",
+      "type": "package",
+      "attrs": {
+        "name": "@angular/router",
+        "version": "21.2.6"
+      }
+    },
+    {
+      "id": "package:@angular/ssr",
+      "type": "package",
+      "attrs": {
+        "name": "@angular/ssr",
+        "version": "21.2.6"
+      }
+    },
+    {
+      "id": "package:@milkdown/crepe",
+      "type": "package",
+      "attrs": {
+        "name": "@milkdown/crepe",
+        "version": "7.20.0"
+      }
+    },
+    {
+      "id": "package:@milkdown/plugin-listener",
+      "type": "package",
+      "attrs": {
+        "name": "@milkdown/plugin-listener",
+        "version": "7.20.0"
+      }
+    },
+    {
+      "id": "package:@ngrx/effects",
+      "type": "package",
+      "attrs": {
+        "name": "@ngrx/effects",
+        "version": "21.1.0"
+      }
+    },
+    {
+      "id": "package:@ngrx/store",
+      "type": "package",
+      "attrs": {
+        "name": "@ngrx/store",
+        "version": "21.1.0"
+      }
+    },
+    {
+      "id": "package:apexcharts",
+      "type": "package",
+      "attrs": {
+        "name": "apexcharts",
+        "version": "5.10.4"
+      }
+    },
+    {
+      "id": "package:cookieconsent",
+      "type": "package",
+      "attrs": {
+        "name": "cookieconsent",
+        "version": "3.1.1"
+      }
+    },
+    {
+      "id": "package:express",
+      "type": "package",
+      "attrs": {
+        "name": "express",
+        "version": "4.21.2"
+      }
+    },
+    {
+      "id": "package:i18n-iso-countries",
+      "type": "package",
+      "attrs": {
+        "name": "i18n-iso-countries",
+        "version": "7.14.0"
+      }
+    },
+    {
+      "id": "package:keycloak-angular",
+      "type": "package",
+      "attrs": {
+        "name": "keycloak-angular",
+        "version": "21.0.0"
+      }
+    },
+    {
+      "id": "package:keycloak-js",
+      "type": "package",
+      "attrs": {
+        "name": "keycloak-js",
+        "version": "26.2.1"
+      }
+    },
+    {
+      "id": "package:monaco-editor",
+      "type": "package",
+      "attrs": {
+        "name": "monaco-editor",
+        "version": "0.55.1"
+      }
+    },
+    {
+      "id": "package:ng-apexcharts",
+      "type": "package",
+      "attrs": {
+        "name": "ng-apexcharts",
+        "version": "2.3.0"
+      }
+    },
+    {
+      "id": "package:ngx-cookieconsent",
+      "type": "package",
+      "attrs": {
+        "name": "ngx-cookieconsent",
+        "version": "8.0.0"
+      }
+    },
+    {
+      "id": "package:ngx-monaco-editor-v2",
+      "type": "package",
+      "attrs": {
+        "name": "ngx-monaco-editor-v2",
+        "version": "21.1.4"
+      }
+    },
+    {
+      "id": "package:react",
+      "type": "package",
+      "attrs": {
+        "name": "react",
+        "version": "18.3.1"
+      }
+    },
+    {
+      "id": "package:rxjs",
+      "type": "package",
+      "attrs": {
+        "name": "rxjs",
+        "version": "7.8.2"
+      }
+    },
+    {
+      "id": "package:socket.io-client",
+      "type": "package",
+      "attrs": {
+        "name": "socket.io-client",
+        "version": "4.8.3"
+      }
+    },
+    {
+      "id": "package:zone.js",
+      "type": "package",
+      "attrs": {
+        "name": "zone.js",
+        "version": "0.16.1"
+      }
+    },
+    {
       "id": "package:@agentclientprotocol/sdk",
       "type": "package",
       "attrs": {
@@ -2219,14 +2548,6 @@
       }
     },
     {
-      "id": "package:express",
-      "type": "package",
-      "attrs": {
-        "name": "express",
-        "version": "4.21.2"
-      }
-    },
-    {
       "id": "package:handlebars",
       "type": "package",
       "attrs": {
@@ -2291,27 +2612,11 @@
       }
     },
     {
-      "id": "package:rxjs",
-      "type": "package",
-      "attrs": {
-        "name": "rxjs",
-        "version": "7.8.2"
-      }
-    },
-    {
       "id": "package:socket.io",
       "type": "package",
       "attrs": {
         "name": "socket.io",
         "version": "4.8.1"
-      }
-    },
-    {
-      "id": "package:socket.io-client",
-      "type": "package",
-      "attrs": {
-        "name": "socket.io-client",
-        "version": "4.8.3"
       }
     },
     {
@@ -2376,206 +2681,6 @@
       "attrs": {
         "name": "zod",
         "version": "4.3.6"
-      }
-    },
-    {
-      "id": "package:@angular/animations",
-      "type": "package",
-      "attrs": {
-        "name": "@angular/animations",
-        "version": "21.2.6"
-      }
-    },
-    {
-      "id": "package:@angular/cdk",
-      "type": "package",
-      "attrs": {
-        "name": "@angular/cdk",
-        "version": "21.2.6"
-      }
-    },
-    {
-      "id": "package:@angular/common",
-      "type": "package",
-      "attrs": {
-        "name": "@angular/common",
-        "version": "21.2.6"
-      }
-    },
-    {
-      "id": "package:@angular/compiler",
-      "type": "package",
-      "attrs": {
-        "name": "@angular/compiler",
-        "version": "21.2.6"
-      }
-    },
-    {
-      "id": "package:@angular/core",
-      "type": "package",
-      "attrs": {
-        "name": "@angular/core",
-        "version": "21.2.6"
-      }
-    },
-    {
-      "id": "package:@angular/forms",
-      "type": "package",
-      "attrs": {
-        "name": "@angular/forms",
-        "version": "21.2.6"
-      }
-    },
-    {
-      "id": "package:@angular/platform-browser",
-      "type": "package",
-      "attrs": {
-        "name": "@angular/platform-browser",
-        "version": "21.2.6"
-      }
-    },
-    {
-      "id": "package:@angular/platform-server",
-      "type": "package",
-      "attrs": {
-        "name": "@angular/platform-server",
-        "version": "21.2.6"
-      }
-    },
-    {
-      "id": "package:@angular/router",
-      "type": "package",
-      "attrs": {
-        "name": "@angular/router",
-        "version": "21.2.6"
-      }
-    },
-    {
-      "id": "package:@angular/ssr",
-      "type": "package",
-      "attrs": {
-        "name": "@angular/ssr",
-        "version": "21.2.6"
-      }
-    },
-    {
-      "id": "package:@milkdown/crepe",
-      "type": "package",
-      "attrs": {
-        "name": "@milkdown/crepe",
-        "version": "7.20.0"
-      }
-    },
-    {
-      "id": "package:@milkdown/plugin-listener",
-      "type": "package",
-      "attrs": {
-        "name": "@milkdown/plugin-listener",
-        "version": "7.20.0"
-      }
-    },
-    {
-      "id": "package:@ngrx/effects",
-      "type": "package",
-      "attrs": {
-        "name": "@ngrx/effects",
-        "version": "21.1.0"
-      }
-    },
-    {
-      "id": "package:@ngrx/store",
-      "type": "package",
-      "attrs": {
-        "name": "@ngrx/store",
-        "version": "21.1.0"
-      }
-    },
-    {
-      "id": "package:apexcharts",
-      "type": "package",
-      "attrs": {
-        "name": "apexcharts",
-        "version": "5.10.4"
-      }
-    },
-    {
-      "id": "package:cookieconsent",
-      "type": "package",
-      "attrs": {
-        "name": "cookieconsent",
-        "version": "3.1.1"
-      }
-    },
-    {
-      "id": "package:i18n-iso-countries",
-      "type": "package",
-      "attrs": {
-        "name": "i18n-iso-countries",
-        "version": "7.14.0"
-      }
-    },
-    {
-      "id": "package:keycloak-angular",
-      "type": "package",
-      "attrs": {
-        "name": "keycloak-angular",
-        "version": "21.0.0"
-      }
-    },
-    {
-      "id": "package:keycloak-js",
-      "type": "package",
-      "attrs": {
-        "name": "keycloak-js",
-        "version": "26.2.1"
-      }
-    },
-    {
-      "id": "package:monaco-editor",
-      "type": "package",
-      "attrs": {
-        "name": "monaco-editor",
-        "version": "0.55.1"
-      }
-    },
-    {
-      "id": "package:ng-apexcharts",
-      "type": "package",
-      "attrs": {
-        "name": "ng-apexcharts",
-        "version": "2.3.0"
-      }
-    },
-    {
-      "id": "package:ngx-cookieconsent",
-      "type": "package",
-      "attrs": {
-        "name": "ngx-cookieconsent",
-        "version": "8.0.0"
-      }
-    },
-    {
-      "id": "package:ngx-monaco-editor-v2",
-      "type": "package",
-      "attrs": {
-        "name": "ngx-monaco-editor-v2",
-        "version": "21.1.4"
-      }
-    },
-    {
-      "id": "package:react",
-      "type": "package",
-      "attrs": {
-        "name": "react",
-        "version": "18.3.1"
-      }
-    },
-    {
-      "id": "package:zone.js",
-      "type": "package",
-      "attrs": {
-        "name": "zone.js",
-        "version": "0.16.1"
       }
     },
     {
@@ -2659,19 +2764,19 @@
       }
     },
     {
-      "id": "package:nest-cloudflare-turnstile",
-      "type": "package",
-      "attrs": {
-        "name": "nest-cloudflare-turnstile",
-        "version": "0.0.17"
-      }
-    },
-    {
       "id": "package:ngx-turnstile",
       "type": "package",
       "attrs": {
         "name": "ngx-turnstile",
         "version": "0.2.5"
+      }
+    },
+    {
+      "id": "package:nest-cloudflare-turnstile",
+      "type": "package",
+      "attrs": {
+        "name": "nest-cloudflare-turnstile",
+        "version": "0.0.17"
       }
     },
     {
@@ -10495,6 +10600,15 @@
       }
     },
     {
+      "id": "file:libs/domains/loadweaver/frontend/feature-landingpage/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/loadweaver/frontend/feature-landingpage/README.md",
+        "languageOrKind": "md",
+        "projectName": "loadweaver-frontend-feature-landingpage"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/README.md",
       "type": "readme",
       "attrs": {
@@ -11752,6 +11866,15 @@
         "path": "libs/domains/agenstra/frontend/feature-agent-config/README.md",
         "languageOrKind": "md",
         "projectName": "agenstra-frontend-feature-agent-config"
+      }
+    },
+    {
+      "id": "file:libs/domains/loadweaver/frontend/util-configuration/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "libs/domains/loadweaver/frontend/util-configuration/README.md",
+        "languageOrKind": "md",
+        "projectName": "loadweaver-frontend-util-configuration"
       }
     },
     {
@@ -13323,6 +13446,15 @@
         "path": "libs/domains/shared/backend/util-otel/src/lib/otel.module.ts",
         "languageOrKind": "ts",
         "projectName": "shared-backend-util-otel"
+      }
+    },
+    {
+      "id": "file:apps/loadweaver/frontend-landingpage/src/app/viewport-scroller-offset.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "apps/loadweaver/frontend-landingpage/src/app/viewport-scroller-offset.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "loadweaver-frontend-landingpage"
       }
     },
     {
@@ -34208,6 +34340,16 @@
       }
     },
     {
+      "id": "domain:loadweaver",
+      "type": "domain",
+      "attrs": {
+        "name": "loadweaver",
+        "kind": "domain",
+        "label": "domain",
+        "source": "tag"
+      }
+    },
+    {
       "id": "domain:identity",
       "type": "domain",
       "attrs": {
@@ -34525,6 +34667,31 @@
       "type": "depends_on"
     },
     {
+      "from": "project:loadweaver-frontend-feature-landingpage",
+      "to": "project:shared-frontend-feature-landingpage",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-feature-landingpage",
+      "to": "project:shared-frontend-ui-components",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-feature-landingpage",
+      "to": "project:shared-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-feature-landingpage",
+      "to": "project:shared-frontend-util-meta",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-feature-landingpage",
+      "to": "project:loadweaver-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "project:shared-backend-util-dynamic-provider-registry",
       "type": "depends_on"
@@ -34572,6 +34739,11 @@
     {
       "from": "project:agenstra-frontend-feature-agent-config",
       "to": "project:shared-frontend-ui-components",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-util-configuration",
+      "to": "project:shared-frontend-util-configuration",
       "type": "depends_on"
     },
     {
@@ -34855,6 +35027,26 @@
       "type": "depends_on"
     },
     {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "project:shared-platform-authentication",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "project:decabill-backend-billing-manager",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "project:loadweaver-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "project:decabill-frontend-billing-console",
+      "type": "depends_on"
+    },
+    {
       "from": "project:shared-backend-util-webhook",
       "to": "project:shared-backend-util-otel",
       "type": "depends_on"
@@ -35070,6 +35262,26 @@
       "type": "depends_on"
     },
     {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "project:loadweaver-frontend-util-configuration",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "project:shared-frontend-util-cookie-consent",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "project:loadweaver-frontend-feature-landingpage",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "project:shared-frontend-util-express-server",
+      "type": "depends_on"
+    },
+    {
       "from": "project:agenstra-backend-agent-manager",
       "to": "project:shared-platform-authentication",
       "type": "depends_on"
@@ -35232,6 +35444,146 @@
     {
       "from": "project:shared-mcp-proxy",
       "to": "project:shared-mcp-devkit",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:@angular/animations",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:@angular/cdk",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:@angular/common",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:@angular/compiler",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:@angular/core",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:@angular/forms",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:@angular/platform-browser",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:@angular/platform-server",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:@angular/router",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:@angular/ssr",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:@milkdown/crepe",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:@milkdown/plugin-listener",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:@ngrx/effects",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:@ngrx/store",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:apexcharts",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:cookieconsent",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:express",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:i18n-iso-countries",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:keycloak-angular",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:keycloak-js",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:monaco-editor",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:ng-apexcharts",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:ngx-cookieconsent",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:ngx-monaco-editor-v2",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:react",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:rxjs",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:socket.io-client",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "package:zone.js",
       "type": "depends_on"
     },
     {
@@ -36335,6 +36687,96 @@
       "type": "depends_on"
     },
     {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "package:@angular/animations",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "package:@angular/common",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "package:@angular/compiler",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "package:@angular/core",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "package:@angular/forms",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "package:@angular/platform-browser",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "package:@angular/platform-server",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "package:@angular/router",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "package:@angular/ssr",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "package:@ngrx/effects",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "package:@ngrx/store",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "package:cookieconsent",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "package:express",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "package:ngx-cookieconsent",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "package:ngx-turnstile",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "package:react",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "package:rxjs",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "package:zone.js",
+      "type": "depends_on"
+    },
+    {
       "from": "project:agenstra-backend-agent-manager",
       "to": "package:@agentclientprotocol/sdk",
       "type": "depends_on"
@@ -37205,6 +37647,16 @@
       "type": "depends_on"
     },
     {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "project:sbom",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "tool:ci",
+      "type": "depends_on"
+    },
+    {
       "from": "project:agenstra-backend-agent-controller",
       "to": "project:sbom",
       "type": "depends_on"
@@ -37262,6 +37714,11 @@
     {
       "from": "project:agenstra-frontend-agent-console",
       "to": "tool:ci",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "project:sbom",
       "type": "depends_on"
     },
     {
@@ -41345,6 +41802,11 @@
       "type": "contains"
     },
     {
+      "from": "project:loadweaver-frontend-feature-landingpage",
+      "to": "file:libs/domains/loadweaver/frontend/feature-landingpage/README.md",
+      "type": "contains"
+    },
+    {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/README.md",
       "type": "contains"
@@ -42042,6 +42504,11 @@
     {
       "from": "project:agenstra-frontend-feature-agent-config",
       "to": "file:libs/domains/agenstra/frontend/feature-agent-config/README.md",
+      "type": "contains"
+    },
+    {
+      "from": "project:loadweaver-frontend-util-configuration",
+      "to": "file:libs/domains/loadweaver/frontend/util-configuration/README.md",
       "type": "contains"
     },
     {
@@ -42892,6 +43359,11 @@
     {
       "from": "project:shared-backend-util-otel",
       "to": "file:libs/domains/shared/backend/util-otel/src/lib/otel.module.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "file:apps/loadweaver/frontend-landingpage/src/app/viewport-scroller-offset.service.ts",
       "type": "contains"
     },
     {
@@ -79935,6 +80407,21 @@
       "type": "belongs_to"
     },
     {
+      "from": "project:loadweaver-frontend-feature-landingpage",
+      "to": "domain:loadweaver",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:loadweaver-frontend-feature-landingpage",
+      "to": "context:frontend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:loadweaver-frontend-feature-landingpage",
+      "to": "feature-group:feature",
+      "type": "belongs_to"
+    },
+    {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -79962,6 +80449,21 @@
     {
       "from": "project:agenstra-frontend-feature-agent-config",
       "to": "feature-group:feature",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:loadweaver-frontend-util-configuration",
+      "to": "domain:loadweaver",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:loadweaver-frontend-util-configuration",
+      "to": "context:frontend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:loadweaver-frontend-util-configuration",
+      "to": "feature-group:util",
       "type": "belongs_to"
     },
     {
@@ -80475,6 +80977,21 @@
       "type": "belongs_to"
     },
     {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "domain:loadweaver",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "context:frontend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:loadweaver-frontend-billing-console",
+      "to": "feature-group:app",
+      "type": "belongs_to"
+    },
+    {
       "from": "project:shared-backend-util-webhook",
       "to": "domain:shared",
       "type": "belongs_to"
@@ -80666,6 +81183,21 @@
     },
     {
       "from": "project:agenstra-frontend-agent-console",
+      "to": "feature-group:app",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "domain:loadweaver",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
+      "to": "context:frontend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:loadweaver-frontend-landingpage",
       "to": "feature-group:app",
       "type": "belongs_to"
     },

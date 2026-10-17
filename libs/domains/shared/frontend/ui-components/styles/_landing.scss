@@ -348,7 +348,7 @@
     }
 
     &.active {
-      color: #fff;
+      color: var(--fpc-primary-contrast, #fff);
       background-color: var(--bs-primary);
     }
   }

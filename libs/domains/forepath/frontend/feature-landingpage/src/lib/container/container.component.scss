@@ -120,17 +120,11 @@
   }
 }
 
-// Announced product without a live site yet: listed, but muted and not clickable.
-.footer-link--disabled {
+// Product link with a small status badge (e.g. Loadweaver in early access).
+.footer-link--badged {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: rgb(245 245 245 / 0.5);
-  cursor: default;
-
-  &:hover {
-    color: rgb(245 245 245 / 0.5);
-  }
 }
 
 .footer-link__badge {
@@ -717,12 +711,10 @@
   --portal-nav-product-color: #32a852;
 }
 
-// Loadweaver is not released yet: a popping gold, with dark text on the gold surfaces.
+// Loadweaver is in early access: a popping gold, with dark text on the gold surfaces.
 .portal-nav-product--loadweaver {
   --portal-nav-product-color: #ffc21a;
   --portal-nav-product-on-color: #1a1a1a;
-
-  cursor: default;
 }
 
 // Same height with or without a product mark, so the taglines of all columns line up.
@@ -797,8 +789,4 @@
   .bi {
     font-size: 0.75rem;
   }
-}
-
-.portal-nav-product__link--disabled {
-  opacity: 0.6;
 }

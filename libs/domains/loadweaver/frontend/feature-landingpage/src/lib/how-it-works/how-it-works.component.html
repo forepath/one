@@ -1,0 +1,548 @@
+<!-- Hero -->
+<section id="hero" class="pt-10 pb-10 pb-md-0 py-lg-6 bg-dark text-white grid-section">
+  <div class="container hero-content grid-section__container grid-section__container--hero-top">
+    <div class="row justify-content-center">
+      <div class="col-12 text-center hero-container">
+        <h1 class="display-4 fw-semibold mb-4 hero-title" i18n="@@featureLoadweaverHowItWorks-heroTitle">
+          <span class="text-primary">How Loadweaver works</span>, from the first policy to the next failover
+        </h1>
+        <p class="hero-lead lead fs-5 mb-5 mx-auto" i18n="@@featureLoadweaverHowItWorks-heroLead">
+          A control plane that plans and a node agent on every server that applies. Everything you change is declarative
+          YAML, every change is a plan, and every connection exists only because a policy allows it.
+        </p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+          <fpc-button
+            variant="primary"
+            size="xl"
+            btnClass="rounded-3"
+            routerLink="."
+            fragment="policies"
+            i18n="@@featureLoadweaverHowItWorks-heroCtaPrimary"
+          >
+            <i class="bi bi-signpost-split" aria-hidden="true"></i>Start with policies
+          </fpc-button>
+          <fpc-button
+            variant="dark"
+            size="xl"
+            btnClass="rounded-3"
+            routerLink="/contact"
+            loadweaverEarlyAccess
+            i18n="@@featureLoadweaverHowItWorks-heroCtaEarlyAccess"
+          >
+            <i class="bi bi-envelope-paper" aria-hidden="true"></i>Request early access
+          </fpc-button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container grid-section__container grid-section__container--hero-bottom">
+    <div class="row">
+      <div class="col-md-12 hero-illustration d-none d-md-block">
+        <loadweaver-portal-policy-graph-illustration
+          label="Loadweaver policy graph: groups for the internet, web, api, database and an office, connected by allow policies with ports and an HTTP rule. A flow from web to the database has no policy and therefore no route. A side panel shows how the api to database policy compiles into a WireGuard peer, a route export and a firewall rule."
+          i18n-label="@@featureLoadweaverHowItWorks-heroIllustration"
+        />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Policies -->
+<section id="policies" class="py-10 bg-body grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureLoadweaverHowItWorks-policiesTitle">
+        Groups, and policies between them
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureLoadweaverHowItWorks-policiesLead">
+        Everything else builds on this. Nodes and workloads join groups, and a policy grants one group access to
+        another, the way security groups work in the cloud. No policy, no connection.
+      </p>
+    </div>
+
+    <div class="row g-4 mb-5">
+      <div class="col-md-6 col-xl-3">
+        <article class="card border rounded-3 shadow-sm h-100 p-4">
+          <i class="bi bi-hdd-network text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHowItWorks-nodeGroupsTitle">Node groups</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-nodeGroupsDesc">
+            Decide which nodes share a network, which get tunnels to each other and which routes are exchanged.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="card border rounded-3 shadow-sm h-100 p-4">
+          <i class="bi bi-boxes text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHowItWorks-workloadGroupsTitle">Workload groups</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-workloadGroupsDesc">
+            Services join by label, independent of the node they run on, so a rule stays valid when a workload migrates.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="card border rounded-3 shadow-sm h-100 p-4">
+          <i class="bi bi-funnel text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHowItWorks-selectorsTitle">Selectors</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-selectorsDesc">
+            Membership by selector, such as site = fra1, role = ingress or runtime = sandboxed. Rights add up across all
+            groups.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="card border rounded-3 shadow-sm h-100 p-4">
+          <i class="bi bi-globe text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHowItWorks-builtinGroupsTitle">Built-in groups</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-builtinGroupsDesc">
+            internet, cluster, control-plane and one group per site. Platform traffic is a built-in policy too, so it
+            cannot be broken by accident.
+          </p>
+        </article>
+      </div>
+    </div>
+
+    <div class="row g-4 align-items-stretch">
+      <div class="col-lg-5">
+        <div class="card border rounded-3 shadow-sm overflow-hidden h-100 d-flex flex-column">
+          <div class="d-flex align-items-center justify-content-between gap-2 px-4 py-3 border-bottom">
+            <span class="small fw-semibold" i18n="@@featureLoadweaverHowItWorks-policyExampleCaption"
+              >One policy, one edge on the map (example)</span
+            >
+            <fpc-badge color="success" variant="marketing" i18n="@@featureLoadweaverHowItWorks-policyExampleBadge"
+              >Enforcing</fpc-badge
+            >
+          </div>
+          <pre
+            class="bg-dark text-light font-monospace small p-4 mb-0 flex-grow-1 code-sample"
+          ><code>{{ policyExample }}</code></pre>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="card border rounded-3 shadow-sm h-100 overflow-hidden">
+          <div class="px-4 py-3 border-bottom">
+            <h3 class="h6 fw-semibold mb-0" i18n="@@featureLoadweaverHowItWorks-layersTitle">
+              The control plane compiles each allow rule into every layer it affects
+            </h3>
+          </div>
+          <ul class="list-unstyled mb-0 hiw-icon-list">
+            <li class="d-flex gap-3 px-4 py-3">
+              <i class="bi bi-shield-lock text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+              <div>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-layerTunneling">Tunneling</p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-layerTunnelingDesc">
+                  WireGuard peers only exist between nodes that need to talk, with AllowedIPs limited accordingly.
+                </p>
+              </div>
+            </li>
+            <li class="d-flex gap-3 px-4 py-3">
+              <i class="bi bi-signpost-split text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+              <div>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-layerRouting">Routing</p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-layerRoutingDesc">
+                  BIRD only exchanges the prefixes of groups that are allowed to talk.
+                </p>
+              </div>
+            </li>
+            <li class="d-flex gap-3 px-4 py-3">
+              <i class="bi bi-bricks text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+              <div>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-layerFiltering">Filtering</p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-layerFilteringDesc">
+                  Stateful nftables rules on each node, so return traffic is allowed automatically.
+                </p>
+              </div>
+            </li>
+            <li class="d-flex gap-3 px-4 py-3">
+              <i class="bi bi-arrow-left-right text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+              <div>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-layerProxy">Proxy (L7)</p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-layerProxyDesc">
+                  Hostname, URL and SNI rules in Envoy, with mTLS between the node proxies and deny wins inside L7.
+                </p>
+              </div>
+            </li>
+            <li class="d-flex gap-3 px-4 py-3">
+              <i class="bi bi-box-arrow-up-right text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+              <div>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-layerExposure">Exposure</p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-layerExposureDesc">
+                  Ingress and port forwards: "internet" is a group, and exposing a service is an allow from it.
+                </p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Plan & apply -->
+<section id="plan" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureLoadweaverHowItWorks-planTitle">
+        What happens when you change something
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureLoadweaverHowItWorks-planLead">
+        The same steps apply whether you click in the console, run the CLI, call the API or push to Git. The control
+        plane is the source of truth; all of them create plans against it.
+      </p>
+    </div>
+    <ol class="list-unstyled row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-5">
+      <li class="col">
+        <article class="card border rounded-3 shadow-sm h-100 p-4">
+          <span class="step-num mb-4" aria-hidden="true">1</span>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHowItWorks-step1Title">Describe what you want</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-step1Desc">
+            YAML, the same language as Docker Compose, with a JSON Schema for editor validation. The UI writes the same
+            YAML.
+          </p>
+        </article>
+      </li>
+      <li class="col">
+        <article class="card border rounded-3 shadow-sm h-100 p-4">
+          <span class="step-num mb-4" aria-hidden="true">2</span>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHowItWorks-step2Title">Get a plan</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-step2Desc">
+            The difference between desired and actual state, with the compiled effect per layer and every DNS record it
+            creates.
+          </p>
+        </article>
+      </li>
+      <li class="col">
+        <article class="card border rounded-3 shadow-sm h-100 p-4">
+          <span class="step-num mb-4" aria-hidden="true">3</span>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHowItWorks-step3Title">Read the failure analysis</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-step3Desc">
+            Every single point of failure is listed with its cause, plus the capacity left after losing a node.
+          </p>
+        </article>
+      </li>
+      <li class="col">
+        <article class="card border rounded-3 shadow-sm h-100 p-4">
+          <span class="step-num mb-4" aria-hidden="true">4</span>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHowItWorks-step4Title">Lock only what changes</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-step4Desc">
+            A plan locks the deployments, groups, policies or nodes its diff touches. Unrelated plans run in parallel.
+          </p>
+        </article>
+      </li>
+      <li class="col">
+        <article class="card border rounded-3 shadow-sm h-100 p-4">
+          <span class="step-num mb-4" aria-hidden="true">5</span>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHowItWorks-step5Title">Apply, or roll back</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-step5Desc">
+            Failed or cancelled applies roll back on their own. If a rollback fails, you see the real state and a
+            proposed fix-forward plan.
+          </p>
+        </article>
+      </li>
+      <li class="col">
+        <article class="card border rounded-3 shadow-sm h-100 p-4">
+          <span class="step-num mb-4" aria-hidden="true">6</span>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHowItWorks-step6Title">Heal or report drift</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-step6Desc">
+            What the platform owns is healed automatically. Changes made outside Loadweaver become a proposed plan,
+            never silently overwritten.
+          </p>
+        </article>
+      </li>
+    </ol>
+    <loadweaver-portal-plan-diff-illustration
+      class="lw-scene--rounded"
+      label="A Loadweaver plan in the terminal: a new deployment, a changed policy that adds a WireGuard peer and a route, a DNS record and a certificate, followed by the failure analysis with one unacknowledged pin."
+      i18n-label="@@featureLoadweaverHome-planIllustration"
+    />
+  </div>
+</section>
+
+<!-- Failure analysis & pinning -->
+<section id="resilience" class="py-10 bg-body grid-section">
+  <div class="container grid-section__container">
+    <div class="row g-5 align-items-start">
+      <div class="col-lg-5">
+        <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureLoadweaverHowItWorks-resilienceTitle">
+          No single host failure takes an app down
+        </h2>
+        <p class="lead text-muted mb-4" i18n="@@featureLoadweaverHowItWorks-resilienceLead">
+          For every deployment, the plan simulates the loss of each single node and each site and checks whether data,
+          deployment and traffic survive.
+        </p>
+        <p class="text-muted mb-4" i18n="@@featureLoadweaverHowItWorks-resilienceSub">
+          The failure domain is the node by default. Surviving the loss of a whole site is an opt-in per deployment or
+          cluster, available from three sites, and validated by the same analysis.
+        </p>
+        <p class="text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-resilienceRuntime">
+          The analysis keeps running after the apply: when a replica is lost or a node degrades, the cluster shows as at
+          risk on the map and in notifications until redundancy is restored.
+        </p>
+      </div>
+      <div class="col-lg-7">
+        <div class="card border rounded-3 shadow-sm overflow-hidden">
+          <div class="px-4 py-3 border-bottom">
+            <h3 class="h6 fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-pinsTitle">
+              Pinning is allowed, and visible
+            </h3>
+            <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-pinsLead">
+              You may tie something to one host on purpose. The plan warns about it up front, and you acknowledge it
+              with a reason in the config.
+            </p>
+          </div>
+          <ul class="list-unstyled mb-0 hiw-icon-list">
+            <li class="d-flex gap-3 px-4 py-3">
+              <i class="bi bi-database text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+              <div>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-pinData">Data</p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-pinDataDesc">
+                  A volume without replicas, replicas only on one node, or bind mounts to host paths.
+                </p>
+              </div>
+            </li>
+            <li class="d-flex gap-3 px-4 py-3">
+              <i class="bi bi-box-seam text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+              <div>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-pinDeployment">Deployment</p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-pinDeploymentDesc">
+                  A placement selector that matches one node, one replica without failover, or device access.
+                </p>
+              </div>
+            </li>
+            <li class="d-flex gap-3 px-4 py-3">
+              <i class="bi bi-broadcast text-primary icon-md flex-shrink-0" aria-hidden="true"></i>
+              <div>
+                <p class="small fw-semibold mb-1" i18n="@@featureLoadweaverHowItWorks-pinTraffic">Traffic</p>
+                <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-pinTrafficDesc">
+                  A failover IP that only one node may hold, or a policy whose only allowed path runs via one node.
+                </p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Failover -->
+<section id="failover" class="py-10 bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureLoadweaverHowItWorks-failoverTitle">
+        Ingress that fails over on its own
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureLoadweaverHowItWorks-failoverLead">
+        Which nodes may hold a failover IP is a node group. When the holder goes down, the IP moves to a healthy member,
+        using whatever your environment supports.
+      </p>
+    </div>
+    <loadweaver-portal-failover-illustration
+      class="lw-scene--rounded mb-5"
+      label="Ingress failover: node n1 in site fra1 becomes unhealthy and releases the failover IP 203.0.113.10; node n4 in site ams1 takes it over and serves web and port-forward traffic. The IP moves via a floating IP, a BGP announcement, a provider failover IP or, where no IP can move, DNS failover."
+      i18n-label="@@featureLoadweaverHowItWorks-failoverIllustration"
+    />
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5">
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureLoadweaverHowItWorks-dnsFailoverTitle">
+            DNS failover where an IP cannot move
+          </h3>
+          <ul class="list-unstyled small mb-0">
+            <li class="d-flex align-items-start gap-2 mb-3">
+              <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+              <span class="text-muted" i18n="@@featureLoadweaverHowItWorks-dnsFailoverItem1"
+                >Modes: failover to ordered backups, healthy multi-value answers, weighted answers and geo or latency
+                steering.</span
+              >
+            </li>
+            <li class="d-flex align-items-start gap-2 mb-3">
+              <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+              <span class="text-muted" i18n="@@featureLoadweaverHowItWorks-dnsFailoverItem2"
+                >Endpoints are probed from at least two sites; a switch needs a quorum of probes and the control plane,
+                so one isolated site cannot flip records on its own.</span
+              >
+            </li>
+            <li class="d-flex align-items-start gap-2 mb-3">
+              <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+              <span class="text-muted" i18n="@@featureLoadweaverHowItWorks-dnsFailoverItem3"
+                >Hysteresis against flapping and automatic fail-back after a stable period, or manual fail-back per
+                hostname.</span
+              >
+            </li>
+            <li class="d-flex align-items-start gap-2">
+              <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+              <span class="text-muted" i18n="@@featureLoadweaverHowItWorks-dnsFailoverItem4"
+                >Failover records get a low TTL of 30 seconds by default. The plan shows the expected recovery time and
+                is honest that DNS failover is slower and fuzzier than a floating IP.</span
+              >
+            </li>
+          </ul>
+        </article>
+      </div>
+      <div class="col-lg-6">
+        <article class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5">
+          <h3 class="h5 fw-semibold mb-3" i18n="@@featureLoadweaverHowItWorks-dnsProvidersTitle">
+            DNS under the same plan
+          </h3>
+          <ul class="list-unstyled small mb-0">
+            <li class="d-flex align-items-start gap-2 mb-3">
+              <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+              <span class="text-muted" i18n="@@featureLoadweaverHowItWorks-dnsProvidersItem1"
+                >Records are desired state: ingress hostnames create their records, and the plan shows the DNS diff per
+                provider.</span
+              >
+            </li>
+            <li class="d-flex align-items-start gap-2 mb-3">
+              <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+              <span class="text-muted" i18n="@@featureLoadweaverHowItWorks-dnsProvidersItem2"
+                >Cloudflare or bind9 hosted in the cluster, behind one provider interface. Loadweaver only touches
+                records it owns, so existing zones can be adopted safely.</span
+              >
+            </li>
+            <li class="d-flex align-items-start gap-2 mb-3">
+              <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+              <span class="text-muted" i18n="@@featureLoadweaverHowItWorks-dnsProvidersItem3"
+                >Zones with a primary and secondary providers, and opt-in DNSSEC with automatic key rollovers for hosted
+                zones.</span
+              >
+            </li>
+            <li class="d-flex align-items-start gap-2">
+              <i class="bi bi-check-circle-fill text-success mt-1 flex-shrink-0" aria-hidden="true"></i>
+              <span class="text-muted" i18n="@@featureLoadweaverHowItWorks-dnsProvidersItem4"
+                >Every switch is an event on the timeline, in the audit log and raises an alert.</span
+              >
+            </li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Git & plan bot -->
+<section id="git" class="py-10 bg-body grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureLoadweaverHowItWorks-gitTitle">
+        Configuration in Git, if you want it
+      </h2>
+      <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featureLoadweaverHowItWorks-gitLead">
+        Everything can be done in the UI, and everything that is configuration can also live in Git. UI and Git are two
+        editors of the same YAML.
+      </p>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <article class="card border rounded-3 shadow-sm h-100 p-4">
+          <i class="bi bi-arrow-left-right text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHowItWorks-gitModesTitle">
+            Two ways to combine them
+          </h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-gitModesDesc">
+            Git is authoritative and UI edits open a pull request, or bidirectional and Loadweaver commits UI changes
+            back with plan id and author. Conflicts show in the plan.
+          </p>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="card border rounded-3 shadow-sm h-100 p-4">
+          <i class="bi bi-key text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHowItWorks-gitSecretsTitle">
+            No secrets in the repo
+          </h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-gitSecretsDesc">
+            YAML only holds secret references. SOPS-encrypted files are optional, and plaintext secrets in a push are
+            rejected.
+          </p>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="card border rounded-3 shadow-sm h-100 p-4">
+          <i class="bi bi-git text-primary icon-md mb-3" aria-hidden="true"></i>
+          <h3 class="h6 fw-semibold mb-2" i18n="@@featureLoadweaverHowItWorks-gitHostsTitle">Your Git host</h3>
+          <p class="small text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-gitHostsDesc">
+            GitHub, GitLab, Gitea / Forgejo and plain Git over SSH or HTTPS, triggered by webhooks or polling, per
+            cluster or per project.
+          </p>
+        </article>
+      </div>
+    </div>
+
+    <div class="card border rounded-3 shadow-sm overflow-hidden mt-4 card-capability card-capability-primary">
+      <div class="row g-0 stack-on-mobile">
+        <div class="col-lg-6 p-4 p-lg-5 landing-bento-visual border-end">
+          <fpc-badge color="primary" class="mb-3" i18n="@@featureLoadweaverHowItWorks-botBadge"
+            >GitHub &amp; GitLab</fpc-badge
+          >
+          <h3 class="h4 fw-semibold mb-3" i18n="@@featureLoadweaverHowItWorks-botTitle">
+            A plan bot in your pull requests
+          </h3>
+          <p class="text-muted mb-0" i18n="@@featureLoadweaverHowItWorks-botLead">
+            Opening or pushing to a pull request plans automatically. One sticky comment shows the plan diff, pins and
+            failure analysis warnings, quota and capacity impact, image scan results, drift and locks held by other pull
+            requests. A status check links to the plan on the map.
+          </p>
+        </div>
+        <div class="col-lg-6 p-4 p-lg-5 bg-body">
+          <h4 class="h6 fw-semibold mb-3" i18n="@@featureLoadweaverHowItWorks-botFlowTitle">
+            Comments trigger actions, merging does nothing
+          </h4>
+          <ul class="small text-muted ps-3 mb-4">
+            <li class="mb-2" i18n="@@featureLoadweaverHowItWorks-botFlow1">
+              Applies run on a comment, once the pull request is mergeable and the approval rules are met.
+            </li>
+            <li class="mb-2" i18n="@@featureLoadweaverHowItWorks-botFlow2">
+              Touched resources stay locked until the pull request is applied, closed or unlocked.
+            </li>
+            <li i18n="@@featureLoadweaverHowItWorks-botFlow3">
+              After a successful apply the bot merges the pull request, so the default branch matches what runs.
+            </li>
+          </ul>
+          <p class="small fw-semibold mb-2" i18n="@@featureLoadweaverHowItWorks-botCommands">Commands</p>
+          <div class="d-flex flex-wrap gap-2">
+            <code class="small px-2 py-1 rounded bg-body-tertiary">loadweaver plan</code>
+            <code class="small px-2 py-1 rounded bg-body-tertiary">loadweaver apply</code>
+            <code class="small px-2 py-1 rounded bg-body-tertiary">loadweaver unlock</code>
+            <code class="small px-2 py-1 rounded bg-body-tertiary">loadweaver approve</code>
+            <code class="small px-2 py-1 rounded bg-body-tertiary">loadweaver drift</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta" class="py-10 bg-dark grid-section">
+  <div class="container grid-section__container">
+    <div class="bg-primary rounded-4 text-center py-10 px-5 shadow-sm cta-box">
+      <h2 class="h2 fw-semibold mb-4" i18n="@@featureLoadweaverHowItWorks-ctaTitle">Want to see it on your servers?</h2>
+      <p class="lead mb-5 mx-auto cta-lead" i18n="@@featureLoadweaverHowItWorks-ctaLead">
+        Loadweaver is in early access. Tell us how many servers and sites you run, and we will walk you through how
+        Loadweaver would fit.
+      </p>
+      <shared-contact-person brand="loadweaver" />
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <fpc-button
+          variant="primary"
+          size="xl"
+          btnClass="rounded-3"
+          routerLink="/contact"
+          loadweaverEarlyAccess
+          i18n="@@featureLoadweaverHowItWorks-ctaEarlyAccess"
+        >
+          <i class="bi bi-envelope-paper" aria-hidden="true"></i>Request early access
+        </fpc-button>
+        <fpc-button
+          variant="dark"
+          size="xl"
+          btnClass="rounded-3"
+          routerLink="/pricing"
+          i18n="@@featureLoadweaverHowItWorks-ctaPricing"
+        >
+          <i class="bi bi-tags" aria-hidden="true"></i>View pricing
+        </fpc-button>
+      </div>
+    </div>
+  </div>
+</section>
