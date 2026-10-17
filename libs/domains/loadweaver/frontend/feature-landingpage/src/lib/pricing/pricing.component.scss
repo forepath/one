@@ -1,0 +1,58 @@
+@import '../page.component.scss';
+
+// Tier carousel (same pattern as Agenstra's pricing page): three columns on large screens, the
+// arrows shift between "Open Source to Business" and "Startup to Enterprise".
+.pricing-tier-col {
+  min-width: min(100%, 300px);
+}
+
+.pricing-carousel-scroll-buttons {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  z-index: 1;
+  width: 100%;
+  pointer-events: none;
+
+  // Reach inner `.btn` / btnClass hooks inside `fpc-button`.
+  ::ng-deep {
+    .btn {
+      pointer-events: auto;
+
+      &:disabled {
+        --bs-btn-disabled-opacity: 1;
+        --bs-btn-disabled-bg: rgba(var(--bs-tertiary-bg-rgb), var(--bs-bg-opacity)) !important;
+        --bs-btn-disabled-border-color: rgba(var(--bs-tertiary-bg-rgb), var(--bs-bg-opacity)) !important;
+
+        i {
+          opacity: 0.25;
+        }
+      }
+    }
+
+    .pricing-carousel-scroll-button-left {
+      transform: translateX(-50%);
+    }
+
+    .pricing-carousel-scroll-button-right {
+      transform: translateX(50%);
+    }
+  }
+}
+
+.pricing-managed-aside {
+  @media (max-width: 991.98px) {
+    border-left: 0 !important;
+    border-top: 1px solid var(--bs-border-color);
+  }
+}
+
+.pricing-featured-label {
+  color: var(--bs-dark);
+}
+
+.bi-check-circle-fill,
+.bi-info-circle-fill {
+  line-height: 1;
+}

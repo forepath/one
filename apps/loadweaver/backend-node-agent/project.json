@@ -1,0 +1,105 @@
+{
+  "name": "loadweaver-backend-node-agent",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/loadweaver/backend-node-agent/src",
+  "projectType": "application",
+  "tags": ["domain:loadweaver", "type:app", "scope:backend"],
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/loadweaver/backend-node-agent",
+        "main": "apps/loadweaver/backend-node-agent/src/main.ts",
+        "tsConfig": "apps/loadweaver/backend-node-agent/tsconfig.app.json",
+        "assets": ["apps/loadweaver/backend-node-agent/src/assets"],
+        "webpackConfig": "apps/loadweaver/backend-node-agent/webpack.config.cjs",
+        "generatePackageJson": true
+      },
+      "configurations": {
+        "development": {
+          "outputHashing": "none"
+        },
+        "production": {},
+        "sea": {
+          "externalDependencies": "none",
+          "generatePackageJson": false,
+          "outputHashing": "none",
+          "sourceMap": false
+        }
+      },
+      "dependsOn": []
+    },
+    "prune-lockfile": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "executor": "@nx/js:prune-lockfile",
+      "outputs": [
+        "{workspaceRoot}/dist/apps/loadweaver/backend-node-agent/package.json",
+        "{workspaceRoot}/dist/apps/loadweaver/backend-node-agent/package-lock.json"
+      ],
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "copy-workspace-modules": {
+      "dependsOn": ["build"],
+      "cache": true,
+      "outputs": [
+        "{workspaceRoot}/dist/apps/loadweaver/backend-node-agent/workspace_modules"
+      ],
+      "executor": "@nx/js:copy-workspace-modules",
+      "options": {
+        "buildTarget": "build"
+      }
+    },
+    "prune": {
+      "dependsOn": ["prune-lockfile", "copy-workspace-modules"],
+      "executor": "nx:noop"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "dependsOn": ["build"],
+      "options": {
+        "buildTarget": "loadweaver-backend-node-agent:build",
+        "runBuildTargetDependencies": false
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "loadweaver-backend-node-agent:build:development"
+        },
+        "production": {
+          "buildTarget": "loadweaver-backend-node-agent:build:production"
+        }
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/loadweaver/backend-node-agent/jest.config.cts",
+        "passWithNoTests": true
+      }
+    },
+    "sea": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "options": {
+        "commands": [
+          "npx nx run loadweaver-backend-node-agent:build:sea",
+          "node apps/loadweaver/backend-node-agent/scripts/build-sea.mjs --bundle dist/apps/loadweaver/backend-node-agent/main.js --out dist/apps/loadweaver/backend-node-agent/sea"
+        ],
+        "parallel": false
+      }
+    },
+    "sbom": {
+      "executor": "@forepath/sbom:sbom",
+      "dependsOn": ["sbom:build", "build"]
+    }
+  }
+}

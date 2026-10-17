@@ -1,0 +1,4 @@
+{
+  "extends": "../../decabill/frontend-billing-console/tsconfig.app.json",
+  "files": ["src/main.ts", "src/polyfills.ts"]
+}

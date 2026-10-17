@@ -1,0 +1,1420 @@
+openapi: 3.1.0
+info:
+  title: Loadweaver Control Plane API
+  version: 1.0.0
+  description: |
+    HTTP API of the Loadweaver control plane: cluster identity, desired state (resources), plan → apply,
+    nodes, join tokens, cron runs, the built-in registry, image scans, ingress certificates, DNS (zones, DNSSEC,
+    failover), remote access (VPN devices) and the audit log. Node agents use a separate mutually
+    authenticated gRPC stream (`loadweaver.agent.v1.NodeAgent/Connect`, see
+    `libs/domains/loadweaver/shared/util-agent-protocol/proto/agent.proto`).
+
+    The built-in private registry is served under `/v2` (outside the `/api` prefix) for `docker login`,
+    `docker push` and `docker pull` of `registry.lw/<project>/<repository>` images: requests are streamed to the
+    registry instances on the control-plane members, which authenticate with tokens from `/registry/token`.
+  contact:
+    name: ForePath
+    email: hi@forepath.io
+    url: https://loadweaver.com
+servers:
+  - url: http://localhost:3400/api
+    description: HTTP API (global prefix `/api`). Listen port from env `PORT` (default 3400).
+security:
+  - bearerAuth: []
+paths:
+  /cluster:
+    get:
+      summary: Cluster summary
+      description: Cluster id, CA certificate, node counts and control-plane membership (1 → 3 → 5, witness). Scope `cluster:read`.
+      operationId: getCluster
+      responses:
+        '200':
+          description: Cluster summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClusterSummaryDto'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /cluster/audit/verify:
+    get:
+      summary: Verify the hash-chained audit log
+      description: Recomputes the chain and reports the first broken entry. Requires the auditor or cluster-admin role, scope `audit:read`.
+      operationId: verifyAuditLog
+      responses:
+        '200':
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditVerification'
+  /nodes/join:
+    post:
+      summary: Join a node
+      description: |
+        Called by the one-line installer. Authenticated by a single-use, short-lived join token instead of a user
+        session. The control plane decides the node identity, site, labels and addresses; the CSR only provides
+        the public key. Rate limited to 10 requests per minute.
+      operationId: joinNode
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JoinRequest'
+      responses:
+        '200':
+          description: Node certificate and control-plane endpoints
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JoinResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Invalid, used, revoked or expired join token (always the same error)
+        '409':
+          description: A node with this name is already part of the cluster
+  /nodes:
+    get:
+      summary: List nodes
+      operationId: listNodes
+      description: Scope `cluster:read`.
+      responses:
+        '200':
+          description: Nodes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NodeResponseDto'
+  /nodes/{name}:
+    get:
+      summary: Get a node
+      operationId: getNode
+      parameters:
+        - $ref: '#/components/parameters/NodeName'
+      responses:
+        '200':
+          description: Node
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeResponseDto'
+        '404':
+          description: Unknown node
+  /nodes/{name}/cordon:
+    post:
+      summary: Cordon a node (no new workloads)
+      operationId: cordonNode
+      description: Runtime action, audited. Infra operators and cluster admins, scope `cluster:nodes`.
+      parameters:
+        - $ref: '#/components/parameters/NodeName'
+      responses:
+        '200':
+          description: Updated node
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeResponseDto'
+  /nodes/{name}/uncordon:
+    post:
+      summary: Uncordon a node
+      operationId: uncordonNode
+      parameters:
+        - $ref: '#/components/parameters/NodeName'
+      responses:
+        '200':
+          description: Updated node
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeResponseDto'
+  /nodes/{name}/drain:
+    post:
+      summary: Drain a node before it leaves
+      operationId: drainNode
+      parameters:
+        - $ref: '#/components/parameters/NodeName'
+      responses:
+        '200':
+          description: Updated node
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeResponseDto'
+  /nodes/{name}/confirm-lost:
+    post:
+      summary: Confirm that a node is gone
+      description: |
+        Operator confirmation that a node is permanently lost, so its stateful workloads may fail over without
+        control-plane quorum (3.2). Revokes the node identity. Cluster admins, scope `cluster:nodes`.
+      operationId: confirmNodeLost
+      parameters:
+        - $ref: '#/components/parameters/NodeName'
+      responses:
+        '200':
+          description: Updated node
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeResponseDto'
+  /nodes/{name}/leave:
+    post:
+      summary: Remove a drained node from the cluster
+      description: |
+        Revokes the node identity immediately and recompiles the network. Refused while the node still runs
+        replicas, holds volume copies or object-store data (no data loss on leave, 3.2). The last node cannot leave.
+      operationId: leaveNode
+      parameters:
+        - $ref: '#/components/parameters/NodeName'
+      responses:
+        '200':
+          description: Node marked as left
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeResponseDto'
+        '409':
+          description: Node not drained, or last node
+  /join-tokens:
+    post:
+      summary: Create a join token
+      description: The plaintext token is returned once; only its SHA-256 hash is stored. Scope `cluster:nodes`.
+      operationId: createJoinToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJoinTokenDto'
+      responses:
+        '201':
+          description: Created token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedJoinTokenDto'
+    get:
+      summary: List active join tokens
+      operationId: listJoinTokens
+      responses:
+        '200':
+          description: Active tokens (without secrets)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JoinTokenResponseDto'
+  /join-tokens/{id}:
+    delete:
+      summary: Revoke a join token
+      operationId: revokeJoinToken
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Revoked
+  /plans:
+    post:
+      summary: Create a plan
+      description: |
+        Diffs the submitted YAML bundle (and deletions) against the current desired state and compiles the
+        effect on every network layer. Nothing changes until the plan is applied. Scope `plans:create`.
+      operationId: createPlan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlanDto'
+      responses:
+        '201':
+          description: Plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponseDto'
+        '400':
+          description: Invalid resources (issues per document and path)
+    get:
+      summary: List plans
+      operationId: listPlans
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+      responses:
+        '200':
+          description: Plans, newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlanResponseDto'
+  /plans/{id}:
+    get:
+      summary: Get a plan
+      operationId: getPlan
+      parameters:
+        - $ref: '#/components/parameters/PlanId'
+      responses:
+        '200':
+          description: Plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponseDto'
+  /plans/{id}/apply:
+    post:
+      summary: Apply a plan
+      description: |
+        Locks exactly the resources the plan touches and refuses if any of them changed since the plan was created
+        (create a new plan then). Workloads are planned again at apply time; a different outcome refuses the apply.
+        Unacknowledged pins in the plan's warnings need `confirm: true`. Recorded in the audit log in the same
+        transaction. Scope `plans:apply`.
+      operationId: applyPlan
+      parameters:
+        - $ref: '#/components/parameters/PlanId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                confirm:
+                  {
+                    type: boolean,
+                    description: Confirms the unacknowledged pins listed in the plan's warnings,
+                  }
+      responses:
+        '200':
+          description: Applied plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponseDto'
+        '409':
+          description: Plan not pending, or stale, or pins not confirmed
+  /plans/{id}/discard:
+    post:
+      summary: Discard a pending plan
+      operationId: discardPlan
+      parameters:
+        - $ref: '#/components/parameters/PlanId'
+      responses:
+        '200':
+          description: Discarded plan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanResponseDto'
+  /resources:
+    get:
+      summary: List desired state
+      operationId: listResources
+      parameters:
+        - in: query
+          name: kind
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Resources
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Resource'
+  /resources/export:
+    get:
+      summary: Export desired state as one YAML bundle
+      operationId: exportResources
+      responses:
+        '200':
+          description: YAML bundle
+          content:
+            application/yaml:
+              schema:
+                type: string
+  /resources/{kind}/{name}:
+    get:
+      summary: Get one resource
+      operationId: getResource
+      parameters:
+        - in: path
+          name: kind
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: project
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+        '404':
+          description: Unknown resource
+  /projects/{project}/cron-runs:
+    get:
+      summary: Cron job runs of a project
+      description: |
+        Every run of the project's cron jobs (3.23), newest first: due time, attempt, node, state and exit code.
+        The last 50 runs per job are kept. Scope `cluster:read`.
+      operationId: listCronRuns
+      parameters:
+        - in: path
+          name: project
+          required: true
+          schema:
+            { type: string, pattern: '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$' }
+        - in: query
+          name: job
+          description: '`<deployment>/<service>`'
+          schema: { type: string }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 500, default: 100 }
+      responses:
+        '200':
+          description: Runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CronRun'
+  /registry/token:
+    get:
+      summary: Token realm of the built-in registry
+      description: |
+        Docker token authentication for `docker login` / `push` / `pull` against `/v2` (3.22). Docker sends the
+        API key or a personal access token as the Basic password. Pull needs scope `registry:pull`; push additionally
+        `registry:push` and deploy rights. Repositories live under existing project names. The token is an ES256
+        JWT with an x5c chain to the cluster CA, valid for 5 minutes.
+      operationId: registryToken
+      security:
+        - basicAuth: []
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: service
+          schema: { type: string, const: loadweaver-registry }
+        - in: query
+          name: scope
+          description: '`repository:<project>/<repository>:pull[,push]`, repeatable'
+          schema: { type: array, items: { type: string } }
+          style: form
+          explode: true
+      responses:
+        '200':
+          description: Token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  access_token: { type: string }
+                  expires_in: { type: integer }
+                  issued_at: { type: string, format: date-time }
+        '401':
+          description: Missing or invalid credentials
+  /certificates:
+    get:
+      summary: Ingress certificates
+      description: |
+        Certificates of the ingress (3.6): issued by the built-in ACME client for every exposed hostname (renewed
+        30 days before expiry, with backoff after failures) or uploaded. Private keys are never returned. Scope
+        `cluster:read`.
+      operationId: listCertificates
+      responses:
+        '200':
+          description: Certificates
+          content:
+            application/json:
+              schema:
+                {
+                  type: array,
+                  items: { $ref: '#/components/schemas/CertificateSummary' },
+                }
+  /certificates/{id}:
+    put:
+      summary: Upload a certificate
+      description: |
+        Uploaded certificates take precedence over ACME for the names they cover. The chain and key are validated
+        (key matches, not expired); the key is stored encrypted and only reaches ingress nodes at push time.
+        Scope `certificates:write`, infra rights.
+      operationId: uploadCertificate
+      parameters:
+        - $ref: '#/components/parameters/CertificateId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [certificatePem, privateKeyPem]
+              properties:
+                certificatePem:
+                  {
+                    type: string,
+                    maxLength: 65536,
+                    description: Leaf first,
+                    then intermediates,
+                  }
+                privateKeyPem: { type: string, maxLength: 16384 }
+      responses:
+        '200':
+          description: Stored
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CertificateSummary' }
+        '400':
+          description: Invalid certificate or key
+    delete:
+      summary: Delete an uploaded certificate
+      description: ACME-issued certificates are managed by the cluster and can't be deleted. Scope `certificates:write`.
+      operationId: deleteCertificate
+      parameters:
+        - $ref: '#/components/parameters/CertificateId'
+      responses:
+        '204':
+          description: Deleted
+        '400':
+          description: Not an uploaded certificate
+  /dns/zones:
+    get:
+      summary: State of the managed zones per provider
+      description: |
+        Last reconciliation per zone and provider (3.15): when, errors, names other owners manage (never changed),
+        changes made, and for secondaries how far they are behind the primary (`drift`). Scope `cluster:read`.
+      operationId: listDnsZones
+      responses:
+        '200':
+          description: Zone states
+          content:
+            application/json:
+              schema:
+                {
+                  type: array,
+                  items: { $ref: '#/components/schemas/DnsZoneStatus' },
+                }
+  /dns/dnssec:
+    get:
+      summary: DNSSEC state of bind9-hosted zones
+      description: |
+        Per signed zone (3.15): its keys, whether the parent publishes each key's DS, the DS records the parent
+        should publish now (by hand, unless a registrar plugin does it) and the next yearly rollover. Scope
+        `cluster:read`.
+      operationId: listDnssec
+      responses:
+        '200':
+          description: Zones
+          content:
+            application/json:
+              schema:
+                {
+                  type: array,
+                  items: { $ref: '#/components/schemas/DnssecZone' },
+                }
+  /dns/failover:
+    get:
+      summary: DNS failover state
+      description: |
+        Per `DnsFailover` (3.28): endpoint health from the probe votes, the endpoints answered now, a pending manual
+        fail-back, latency choices, and whether the last switch reached every authoritative server. Scope
+        `cluster:read`.
+      operationId: listDnsFailovers
+      responses:
+        '200':
+          description: States
+          content:
+            application/json:
+              schema:
+                {
+                  type: array,
+                  items: { $ref: '#/components/schemas/DnsFailoverState' },
+                }
+  /dns/failover/{name}/failback:
+    post:
+      summary: Confirm a manual fail-back
+      description: 'For `failback: manual`: moves the answer back to the primary endpoint once it is healthy again. Scope `cluster:nodes`.'
+      operationId: confirmDnsFailback
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            { type: string, pattern: '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$' }
+      responses:
+        '200':
+          description: Confirmed
+          content:
+            application/json:
+              schema:
+                {
+                  type: object,
+                  properties: { confirmed: { type: boolean, const: true } },
+                }
+        '404':
+          description: No fail-back pending
+  /images/scans:
+    get:
+      summary: Image vulnerability scans
+      description: |
+        The latest scan per image digest (3.22), as the nodes reported them (Trivy, at most once a day per digest;
+        only for images of workloads the reporting node runs). Newest first, at most 500. Scope `cluster:read`.
+      operationId: listImageScans
+      responses:
+        '200':
+          description: Scans
+          content:
+            application/json:
+              schema:
+                {
+                  type: array,
+                  items: { $ref: '#/components/schemas/ImageScan' },
+                }
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /vpn/devices:
+    get:
+      summary: Remote access devices
+      description: |
+        The caller's own devices (3.31); with `all=true`, every client (users and machines, at most 5000), which
+        needs the `infra` cluster role. Scope `vpn:read`.
+      operationId: listVpnDevices
+      parameters:
+        - in: query
+          name: all
+          required: false
+          schema: { type: string, enum: ['true', 'false'] }
+      responses:
+        '200':
+          description: Devices
+          content:
+            application/json:
+              schema:
+                {
+                  type: array,
+                  items: { $ref: '#/components/schemas/VpnClientSummary' },
+                }
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      summary: Enroll a device
+      description: |
+        Self-service enrollment of a user device (3.31). The key pair is generated on the device; only the public
+        key is sent. The device joins every client group whose `idpGroups` contain one of the caller's roles. Needs
+        an interactive login (no API key or personal access token), with a second factor (`amr`) when a group sets
+        `requireMfa`. At most 20 active devices and 20 enrollments per day per user. The returned configuration has
+        a placeholder for the private key.
+      operationId: enrollVpnDevice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/EnrollVpnDeviceDto' }
+      responses:
+        '201':
+          description: Enrolled
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VpnClientConfigResponse' }
+        '400':
+          description: Invalid name or public key
+        '403':
+          description: No interactive login, not in any client group, or second factor missing
+        '409':
+          description: Remote access not configured, device name taken, device or daily enrollment limit reached, key already enrolled or client network full
+  /vpn/devices/{id}/config:
+    get:
+      summary: Device configuration
+      description: |
+        The device's wg-quick configuration (without the private key), its routes, DNS address and the names it may
+        resolve, compiled from the current policies. Empty for expired or revoked devices. Owner or infra rights.
+        Scope `vpn:read`.
+      operationId: getVpnDeviceConfig
+      parameters:
+        - $ref: '#/components/parameters/VpnClientId'
+      responses:
+        '200':
+          description: Configuration
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VpnClientConfigResponse' }
+        '404':
+          description: Device not found
+        '409':
+          description: Remote access not configured
+  /vpn/devices/{id}/renew:
+    post:
+      summary: Renew a device
+      description: |
+        Extends the device's expiry by the shortest `keyLifetimeDays` of its groups, takes the groups from the
+        caller's current roles and optionally rotates the public key. Own user devices only; needs an interactive
+        login (with a second factor when a group sets `requireMfa`). Machines are renewed with
+        `POST /vpn/machines/{id}/renew`.
+      operationId: renewVpnDevice
+      parameters:
+        - $ref: '#/components/parameters/VpnClientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RenewVpnDeviceDto' }
+      responses:
+        '201':
+          description: Renewed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VpnClientSummary' }
+        '400':
+          description: Invalid public key
+        '403':
+          description: No interactive login, not in any client group, or second factor missing
+        '404':
+          description: Device not found or revoked
+        '409':
+          description: Remote access not configured, or key already enrolled
+  /vpn/devices/{id}/posture:
+    post:
+      summary: Report device posture
+      description: |
+        Core posture checks reported by the device; the control plane adds the verdicts of the posture plugins its
+        groups require (10 s timeout each). Devices failing a group's requirements get its `restrictedGroup`
+        instead. Reports older than 24 hours count as missing. A user device reports only for itself; infra admins
+        only for machines. Needs an interactive login. Once a plugin recognised the `deviceId` (verdict other than
+        `unknown`), it is pinned: later reports with another id are rejected, and no other valid client may report
+        a pinned id.
+      operationId: reportVpnPosture
+      parameters:
+        - $ref: '#/components/parameters/VpnClientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PostureReportDto' }
+      responses:
+        '201':
+          description: Recorded
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VpnClientSummary' }
+        '400':
+          description: Invalid report, or a `deviceId` other than the pinned one
+        '404':
+          description: Device not found
+        '409':
+          description: The `deviceId` belongs to another enrolled device
+  /vpn/devices/{id}:
+    delete:
+      summary: Revoke a device
+      description: Takes effect with the next push to the gateways. Owners revoke their own devices, infra admins any client. Scope `vpn:write`.
+      operationId: revokeVpnDevice
+      parameters:
+        - $ref: '#/components/parameters/VpnClientId'
+      responses:
+        '204':
+          description: Revoked (or already revoked)
+        '404':
+          description: Device not found
+  /vpn/machines:
+    post:
+      summary: Add a machine client
+      description: |
+        A machine client, optionally with office networks behind it (site-to-site). Subnets must be IPv4 and may not
+        overlap the client network, the pod, service and overlay ranges or other machines' subnets. Infra rights.
+        Scope `vpn:write`.
+      operationId: createVpnMachine
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateVpnMachineDto' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VpnClientConfigResponse' }
+        '400':
+          description: Invalid input, unknown client groups or overlapping subnets
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Remote access not configured, machine name taken, key already enrolled or client network full
+  /vpn/machines/{id}/renew:
+    post:
+      summary: Renew a machine client
+      description: |
+        Machines have no login to renew with: infra admins extend them. The new expiry is `lifetimeDays` (default
+        365) from now. Revoked machines can't be renewed. Scope `vpn:write`.
+      operationId: renewVpnMachine
+      parameters:
+        - $ref: '#/components/parameters/VpnClientId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RenewVpnMachineDto' }
+      responses:
+        '201':
+          description: Renewed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VpnClientSummary' }
+        '400':
+          description: Invalid lifetime
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Machine not found or revoked
+  /vpn/users/{userId}/revoke:
+    post:
+      summary: Revoke all devices of a user
+      description: Offboarding, e.g. when the identity provider removed the user. Infra rights. Scope `vpn:write`.
+      operationId: revokeVpnUser
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string, maxLength: 255 }
+      responses:
+        '201':
+          description: Revoked
+          content:
+            application/json:
+              schema:
+                { type: object, properties: { revoked: { type: integer } } }
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /vpn/sessions:
+    get:
+      summary: Active remote access sessions
+      description: Active clients with a handshake on the active gateway in the last 3 minutes. Needs the `infra` cluster role. Scope `cluster:read`.
+      operationId: listVpnSessions
+      responses:
+        '200':
+          description: Sessions
+          content:
+            application/json:
+              schema:
+                {
+                  type: array,
+                  items: { $ref: '#/components/schemas/VpnClientSummary' },
+                }
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /install/install.sh:
+    get:
+      summary: Node installer script
+      description: Installs the node agent and joins or bootstraps the node (3.21).
+      operationId: installScript
+      security: []
+      responses:
+        '200':
+          description: Shell script
+          content:
+            text/x-shellscript:
+              schema: { type: string }
+  /install/agent/{arch}:
+    get:
+      summary: Node agent binary
+      operationId: agentBinary
+      security: []
+      parameters:
+        - in: path
+          name: arch
+          required: true
+          schema: { type: string, enum: [amd64, arm64] }
+      responses:
+        '200':
+          description: Single executable
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+  /install/waf/coraza.wasm:
+    get:
+      summary: WAF module of the ingress
+      description: Coraza proxy-wasm with the OWASP Core Rule Set from the release bundle (3.6); agents verify its pinned SHA-256.
+      operationId: wafModule
+      security: []
+      responses:
+        '200':
+          description: WebAssembly module
+          content:
+            application/wasm:
+              schema: { type: string, format: binary }
+        '404':
+          description: Not in the release bundle
+  /install/geoip/country.mmdb:
+    get:
+      summary: GeoIP country database
+      description: |
+        For geo and latency DNS steering on hosted bind9 (3.28): DB-IP Lite from the release bundle, or the
+        operator's own database (`LOADWEAVER_GEOIP_DB`). Agents verify the SHA-256 their desired state carries.
+      operationId: geoipDatabase
+      security: []
+      responses:
+        '200':
+          description: MaxMind DB file
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        '404':
+          description: No database configured
+  /install/loadweaver-agent.service:
+    get:
+      summary: systemd unit of the node agent
+      operationId: agentUnit
+      security: []
+      responses:
+        '200':
+          description: Unit file
+          content:
+            text/plain:
+              schema: { type: string }
+  /schemas:
+    get:
+      summary: List resource kinds
+      operationId: listResourceSchemas
+      security: []
+      responses:
+        '200':
+          description: Kinds with descriptions
+  /schemas/{kind}:
+    get:
+      summary: JSON Schema of a resource kind
+      operationId: getResourceSchema
+      security: []
+      parameters:
+        - in: path
+          name: kind
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: JSON Schema (draft 2020-12)
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Static API key, users-mode JWT, Keycloak token or personal access token (scopes in `LOADWEAVER_PAT_SCOPES`).
+    basicAuth:
+      type: http
+      scheme: basic
+      description: '`docker login`: any user name, the API key or a personal access token as password (registry token realm only).'
+  responses:
+    Forbidden:
+      description: Missing cluster permission
+  parameters:
+    NodeName:
+      in: path
+      name: name
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$'
+    CertificateId:
+      in: path
+      name: id
+      required: true
+      schema: { type: string, pattern: '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$' }
+    PlanId:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        format: uuid
+    VpnClientId:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    ClusterSummaryDto:
+      type: object
+      properties:
+        clusterId: { type: string }
+        displayName: { type: string }
+        caCertificate: { type: string }
+        desiredRevision: { type: integer }
+        nodes:
+          type: object
+          properties:
+            total: { type: integer }
+            connected: { type: integer }
+            sites: { type: array, items: { type: string } }
+        controlPlane:
+          type: object
+          properties:
+            members: { type: array, items: { type: string } }
+            votingWitnesses: { type: array, items: { type: string } }
+            automaticFailover: { type: boolean }
+            warnings: { type: array, items: { type: string } }
+    AuditVerification:
+      type: object
+      properties:
+        ok: { type: boolean }
+        checked: { type: integer }
+        brokenAt: { type: string }
+        head: { type: string }
+    JoinRequest:
+      type: object
+      required: [token, nodeName, csrPem, hello]
+      properties:
+        token: { type: string }
+        nodeName: { type: string }
+        csrPem:
+          { type: string, description: PKCS#10 CSR with an ECDSA P-256 key }
+        hello:
+          {
+            type: object,
+            description: Agent inventory (see agent protocol `hello`),
+          }
+        site: { type: string }
+        labels: { type: object, additionalProperties: { type: string } }
+    JoinResponse:
+      type: object
+      properties:
+        clusterId: { type: string }
+        nodeName: { type: string }
+        certificatePem: { type: string }
+        caCertificatePem: { type: string }
+        controlPlaneEndpoints: { type: array, items: { type: string } }
+    NodeResponseDto:
+      type: object
+      properties:
+        name: { type: string }
+        site: { type: string }
+        lifecycle:
+          { type: string, enum: [active, cordoned, draining, leaving, left] }
+        labels: { type: object, additionalProperties: { type: string } }
+        controlPlane: { type: boolean }
+        witness: { type: boolean }
+        agentVersion: { type: [string, 'null'] }
+        endpointHost: { type: [string, 'null'] }
+        overlayV4: { type: [string, 'null'] }
+        overlayV6: { type: [string, 'null'] }
+        podSubnetV4: { type: [string, 'null'] }
+        podSubnetV6: { type: [string, 'null'] }
+        appliedRevision: { type: integer }
+        applyStatus: { type: [string, 'null'] }
+        connected: { type: boolean }
+        lastSeenAt: { type: [string, 'null'], format: date-time }
+        joinedAt: { type: string, format: date-time }
+    CreateJoinTokenDto:
+      type: object
+      properties:
+        site: { type: string }
+        labels: { type: object, additionalProperties: { type: string } }
+        witness: { type: boolean }
+        ttlMinutes: { type: integer, minimum: 1, maximum: 1440 }
+        description: { type: string, maxLength: 255 }
+    JoinTokenResponseDto:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tokenPrefix: { type: string }
+        site: { type: string }
+        witness: { type: boolean }
+        expiresAt: { type: string, format: date-time }
+        usedAt: { type: [string, 'null'], format: date-time }
+        usedByNode: { type: [string, 'null'] }
+        revokedAt: { type: [string, 'null'], format: date-time }
+    CreatedJoinTokenDto:
+      allOf:
+        - $ref: '#/components/schemas/JoinTokenResponseDto'
+        - type: object
+          properties:
+            token: { type: string, description: Shown once }
+    CreatePlanDto:
+      type: object
+      properties:
+        documents:
+          { type: string, description: Multi-document YAML bundle (max 2 MiB) }
+        delete:
+          type: array
+          items:
+            type: object
+            required: [kind, name]
+            properties:
+              kind: { type: string }
+              name: { type: string }
+              project: { type: string }
+        refresh:
+          type: array
+          description: Deployments whose image digests and secret versions are resolved again (3.22)
+          items:
+            type: object
+            required: [kind, name]
+            properties:
+              kind: { type: string, const: Deployment }
+              name: { type: string }
+              project: { type: string }
+    CertificateSummary:
+      type: object
+      properties:
+        id: { type: string }
+        names: { type: array, items: { type: string } }
+        source: { type: string, enum: [acme, custom] }
+        notAfter: { type: [string, 'null'], format: date-time }
+        failures: { type: integer, description: Consecutive ACME failures }
+        lastError: { type: [string, 'null'] }
+    DnsZoneStatus:
+      type: object
+      properties:
+        zone: { type: string, description: DnsZone resource name }
+        provider: { type: string }
+        syncedAt: { type: [string, 'null'], format: date-time }
+        error: { type: [string, 'null'] }
+        conflicts:
+          {
+            type: array,
+            items: { type: string },
+            description: Names managed by someone else,
+          }
+        changes: { type: integer }
+        drift:
+          {
+            type: [string, 'null'],
+            description: 'Secondaries: which servers are behind the primary',
+          }
+    DnssecZone:
+      type: object
+      properties:
+        zone: { type: string }
+        name: { type: string, description: DnsZone resource name }
+        mode: { type: [string, 'null'], enum: [signed, insecure, null] }
+        registrar: { type: [string, 'null'] }
+        expectedDs:
+          {
+            type: array,
+            items: { type: string },
+            description: 'e.g. `example.com. IN DS 12345 13 2 <hex>`',
+          }
+        keys:
+          type: array
+          items:
+            type: object
+            properties:
+              keyTag: { type: integer }
+              state: { type: string, enum: [active, retired] }
+              createdAt: { type: string, format: date-time }
+              retiredAt: { type: [string, 'null'], format: date-time }
+              dsAtParent: { type: boolean }
+              dsCheckedAt: { type: [string, 'null'], format: date-time }
+              ds: { type: string }
+        nextRolloverAt: { type: [string, 'null'], format: date-time }
+    DnsFailoverState:
+      type: object
+      properties:
+        name: { type: string }
+        state:
+          type: object
+          properties:
+            endpoints:
+              type: object
+              additionalProperties:
+                type: object
+                properties:
+                  healthy: { type: boolean }
+                  streak:
+                    {
+                      type: integer,
+                      description: Consecutive rounds,
+                      positive healthy,
+                      negative failed,
+                    }
+                  since: { type: string, format: date-time }
+            active:
+              {
+                type: array,
+                items: { type: string },
+                description: Endpoints answered now,
+              }
+            failbackPending: { type: boolean }
+            latency:
+              type: object
+              properties:
+                default: { type: string }
+                byContinent:
+                  { type: object, additionalProperties: { type: string } }
+        switchedAt: { type: [string, 'null'], format: date-time }
+        failbackConfirmed: { type: boolean }
+        propagation:
+          type: [object, 'null']
+          properties:
+            done: { type: boolean }
+            lagging: { type: array, items: { type: string } }
+            checkedAt: { type: string, format: date-time }
+    CronRun:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        cron: { type: string, description: '`project/deployment/service`' }
+        project: { type: string }
+        scheduledAt: { type: string, format: date-time }
+        attempt: { type: integer }
+        workload: { type: [string, 'null'] }
+        node: { type: [string, 'null'] }
+        state:
+          {
+            type: string,
+            enum:
+              [
+                running,
+                succeeded,
+                failed,
+                timed-out,
+                cancelled,
+                skipped,
+                node-lost,
+              ],
+          }
+        exitCode: { type: [integer, 'null'] }
+        message: { type: [string, 'null'] }
+        startedAt: { type: [string, 'null'], format: date-time }
+        finishedAt: { type: [string, 'null'], format: date-time }
+        createdAt: { type: string, format: date-time }
+    ImageScan:
+      type: object
+      properties:
+        digest: { type: string, description: '`sha256:<hex>`' }
+        image: { type: string }
+        scannedAt: { type: string, format: date-time }
+        node: { type: string, description: Node that reported the scan }
+        scanner: { type: string, description: 'e.g. `trivy 0.76.0`' }
+        summary:
+          type: object
+          properties:
+            counts:
+              type: object
+              description: Per severity (CRITICAL, HIGH, MEDIUM, LOW, UNKNOWN)
+              additionalProperties:
+                type: object
+                properties:
+                  total: { type: integer }
+                  fixable:
+                    {
+                      type: integer,
+                      description: Findings with a fixed version,
+                    }
+        findings:
+          type: array
+          description: The most severe findings (at most 50)
+          items:
+            type: object
+            properties:
+              id: { type: string, description: 'e.g. a CVE id' }
+              severity: { type: string }
+              package: { type: string }
+              installed: { type: string }
+              fixed: { type: [string, 'null'] }
+    EnrollVpnDeviceDto:
+      type: object
+      required: [name, publicKey]
+      properties:
+        name: { type: string, pattern: '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$' }
+        publicKey:
+          type: string
+          pattern: '^[A-Za-z0-9+/]{42}[AEIMQUYcgkosw480]=$'
+          description: WireGuard public key generated on the device
+    RenewVpnDeviceDto:
+      type: object
+      properties:
+        publicKey:
+          type: string
+          pattern: '^[A-Za-z0-9+/]{42}[AEIMQUYcgkosw480]=$'
+          description: New public key (optional key rotation)
+    CreateVpnMachineDto:
+      type: object
+      required: [name, publicKey, groups, subnets]
+      properties:
+        name: { type: string, pattern: '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$' }
+        publicKey:
+          { type: string, pattern: '^[A-Za-z0-9+/]{42}[AEIMQUYcgkosw480]=$' }
+        groups:
+          type: array
+          maxItems: 32
+          items:
+            { type: string, pattern: '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$' }
+          description: Client groups
+        subnets:
+          type: array
+          maxItems: 32
+          items: { type: string, maxLength: 18 }
+          description: IPv4 office networks behind the machine
+        lifetimeDays:
+          {
+            type: integer,
+            minimum: 1,
+            maximum: 3650,
+            description: 'Default 365',
+          }
+    RenewVpnMachineDto:
+      type: object
+      properties:
+        lifetimeDays:
+          {
+            type: integer,
+            minimum: 1,
+            maximum: 3650,
+            description: 'Default 365',
+          }
+    PostureReportDto:
+      type: object
+      required: [platform, osVersion]
+      properties:
+        platform: { type: string, enum: [macos, windows, linux, ios, android] }
+        osVersion: { type: string, pattern: '^[0-9A-Za-z.+-]{1,32}$' }
+        appVersion: { type: string, pattern: '^[0-9A-Za-z.+-]{1,32}$' }
+        diskEncryption: { type: boolean }
+        firewall: { type: boolean }
+        screenLock: { type: boolean }
+        deviceId:
+          type: string
+          pattern: '^[0-9A-Za-z._:-]{1,128}$'
+          description: MDM / EDR device id or serial, passed to posture plugins
+    VpnClientSummary:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        kind: { type: string, enum: [user, machine] }
+        name: { type: string }
+        owner: { type: string, description: 'Email / user name, or `machine`' }
+        address: { type: string, description: Address in the client network }
+        subnets: { type: array, items: { type: string } }
+        groups: { type: array, items: { type: string } }
+        effectiveGroups:
+          type: array
+          items: { type: string }
+          description: Groups after posture (failing ones replaced by their restricted group); empty when not active
+        restrictions:
+          type: object
+          additionalProperties: { type: array, items: { type: string } }
+          description: Why the device fails, per group
+        status: { type: string, enum: [active, expired, revoked] }
+        createdAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+        revokedAt: { type: [string, 'null'], format: date-time }
+        lastHandshakeAt: { type: [string, 'null'], format: date-time }
+        lastEndpoint: { type: [string, 'null'] }
+    VpnClientConfigResponse:
+      type: object
+      properties:
+        client: { $ref: '#/components/schemas/VpnClientSummary' }
+        config:
+          type: string
+          description: wg-quick configuration with a placeholder for the private key; empty when the device isn't active
+        routes:
+          { type: array, items: { type: string }, description: AllowedIPs }
+        dns: { type: string, description: The gateway's client-network address }
+        names:
+          {
+            type: array,
+            items: { type: string },
+            description: Names the device may resolve,
+          }
+    PlanResponseDto:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        status:
+          {
+            type: string,
+            enum: [pending, applying, applied, failed, discarded],
+          }
+        changes:
+          type: array
+          items:
+            type: object
+            properties:
+              action:
+                { type: string, enum: [create, update, delete, unchanged] }
+              kind: { type: string }
+              name: { type: string }
+              project: { type: [string, 'null'] }
+              baseGeneration: { type: integer }
+        networkChanges:
+          type: array
+          items:
+            type: object
+            properties:
+              layer:
+                {
+                  type: string,
+                  enum: [tunnels, routing, filtering, dns, services],
+                }
+              action: { type: string }
+              node: { type: string }
+              summary: { type: string }
+        diagnostics: { type: array, items: { type: object } }
+        workloadChanges:
+          type: array
+          description: Replicas started, stopped or moved (blue / green or short stop, 3.10)
+          items: { type: object }
+        failureAnalysis:
+          type: [object, 'null']
+          description: Single points of failure and N+1 capacity (3.12)
+        deploymentStates:
+          type: object
+          description: Per deployment the image digests and secret versions this plan deploys (3.22)
+          additionalProperties:
+            type: object
+            properties:
+              images: { type: object, additionalProperties: { type: string } }
+              secretVersions:
+                { type: object, additionalProperties: { type: integer } }
+        warnings:
+          type: array
+          description: Pins (need confirm at apply), uncached registries, compose warnings
+          items: { type: object }
+        createdBy: { type: [string, 'null'] }
+        error: { type: [string, 'null'] }
+        createdAt: { type: string, format: date-time }
+        appliedAt: { type: [string, 'null'], format: date-time }
+    Resource:
+      type: object
+      description: Declarative resource; per-kind JSON Schemas are served at `/schemas/{kind}`.
+      required: [apiVersion, kind, metadata, spec]
+      properties:
+        apiVersion: { type: string, const: loadweaver.com/v1 }
+        kind: { type: string }
+        metadata:
+          type: object
+          properties:
+            name: { type: string }
+            project: { type: string }
+            labels: { type: object, additionalProperties: { type: string } }
+        spec: { type: object }

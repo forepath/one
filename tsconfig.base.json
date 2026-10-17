@@ -234,6 +234,57 @@
       ],
       "@forepath/forepath/frontend/util-configuration": [
         "libs/domains/forepath/frontend/util-configuration/src/index.ts"
+      ],
+      "@forepath/loadweaver/backend": [
+        "libs/domains/loadweaver/backend/index.ts"
+      ],
+      "@forepath/loadweaver/frontend": [
+        "libs/domains/loadweaver/frontend/index.ts"
+      ],
+      "@forepath/loadweaver/keycloak": [
+        "libs/domains/loadweaver/keycloak/index.ts"
+      ],
+      "@forepath/loadweaver/shared": [
+        "libs/domains/loadweaver/shared/index.ts"
+      ],
+      "@forepath/loadweaver/frontend/util-configuration": [
+        "libs/domains/loadweaver/frontend/util-configuration/src/index.ts"
+      ],
+      "@forepath/loadweaver/frontend/feature-landingpage": [
+        "libs/domains/loadweaver/frontend/feature-landingpage/src/index.ts"
+      ],
+      "@forepath/loadweaver/shared/util-model": [
+        "libs/domains/loadweaver/shared/util-model/src/index.ts"
+      ],
+      "@forepath/loadweaver/shared/util-network": [
+        "libs/domains/loadweaver/shared/util-network/src/index.ts"
+      ],
+      "@forepath/loadweaver/shared/util-policy-compiler": [
+        "libs/domains/loadweaver/shared/util-policy-compiler/src/index.ts"
+      ],
+      "@forepath/loadweaver/shared/util-pki": [
+        "libs/domains/loadweaver/shared/util-pki/src/index.ts"
+      ],
+      "@forepath/loadweaver/backend/feature-control-plane": [
+        "libs/domains/loadweaver/backend/feature-control-plane/src/index.ts"
+      ],
+      "@forepath/loadweaver/shared/util-agent-protocol": [
+        "libs/domains/loadweaver/shared/util-agent-protocol/src/index.ts"
+      ],
+      "@forepath/loadweaver/backend/feature-node-agent": [
+        "libs/domains/loadweaver/backend/feature-node-agent/src/index.ts"
+      ],
+      "@forepath/loadweaver/shared/util-secrets": [
+        "libs/domains/loadweaver/shared/util-secrets/src/index.ts"
+      ],
+      "@forepath/loadweaver/shared/util-compose": [
+        "libs/domains/loadweaver/shared/util-compose/src/index.ts"
+      ],
+      "@forepath/loadweaver/shared/util-scheduler": [
+        "libs/domains/loadweaver/shared/util-scheduler/src/index.ts"
+      ],
+      "@forepath/shared/backend/util-hosting-providers": [
+        "libs/domains/shared/backend/util-hosting-providers/src/index.ts"
       ]
     }
   },

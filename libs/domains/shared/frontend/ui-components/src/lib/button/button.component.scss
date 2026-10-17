@@ -102,16 +102,17 @@
 // cannot pierce encapsulation to the inner `.btn`).
 :host-context(#cta) .fpc-button__btn--xl.btn-primary,
 :host-context(#fit) .fpc-button__btn--xl.btn-primary {
-  --bs-btn-color: #fff;
+  // `--fpc-primary-contrast`: dark ink for brands with a light primary (see brands/_extras.scss).
+  --bs-btn-color: var(--fpc-primary-contrast, #fff);
   --bs-btn-bg: color-mix(in srgb, var(--bs-primary) 88%, #000);
   --bs-btn-border-color: color-mix(in srgb, var(--bs-primary) 88%, #000);
-  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-color: var(--fpc-primary-contrast, #fff);
   --bs-btn-hover-bg: color-mix(in srgb, var(--bs-primary) 80%, #000);
   --bs-btn-hover-border-color: color-mix(in srgb, var(--bs-primary) 80%, #000);
-  --bs-btn-active-color: #fff;
+  --bs-btn-active-color: var(--fpc-primary-contrast, #fff);
   --bs-btn-active-bg: color-mix(in srgb, var(--bs-primary) 74%, #000);
   --bs-btn-active-border-color: color-mix(in srgb, var(--bs-primary) 74%, #000);
-  --bs-btn-disabled-color: #fff;
+  --bs-btn-disabled-color: var(--fpc-primary-contrast, #fff);
   --bs-btn-disabled-bg: color-mix(in srgb, var(--bs-primary) 88%, #000);
   --bs-btn-disabled-border-color: color-mix(in srgb, var(--bs-primary) 88%, #000);
 }

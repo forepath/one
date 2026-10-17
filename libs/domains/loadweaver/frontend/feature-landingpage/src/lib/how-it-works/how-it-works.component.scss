@@ -1,0 +1,10 @@
+@import '../page.component.scss';
+
+// Layer and pin lists inside a card: hairlines between the items, no scroll container.
+.hiw-icon-list > li + li {
+  border-top: var(--bs-border-width) solid var(--bs-border-color);
+}
+
+.bi-check-circle-fill {
+  line-height: 1;
+}

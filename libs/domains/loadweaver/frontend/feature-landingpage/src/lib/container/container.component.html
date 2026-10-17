@@ -1,0 +1,392 @@
+<header
+  class="header sticky-top bg-dark text-white grid-section grid-section--navigation"
+  [class.shadow]="isScrolled()"
+>
+  <nav
+    class="navbar navbar-expand-md navbar-dark p-0"
+    i18n-aria-label="@@featureLoadweaverPortal-navAriaLabel"
+    aria-label="Main"
+  >
+    <div
+      class="container grid-section__container grid-section__container--shadow d-flex align-items-center justify-content-between gap-2 navbar-content"
+    >
+      <div class="d-flex align-items-center">
+        <a
+          routerLink="/"
+          class="brand-icon-container fs-3 bg-primary p-3"
+          i18n-aria-label="@@featureLoadweaverPortal-homeAriaLabel"
+          aria-label="Loadweaver home"
+        >
+          <img src="assets/images/icon_dark.svg" alt="" class="brand-icon" width="40" height="40" />
+        </a>
+        <div class="d-flex align-items-center gap-2 bg-body-tertiary p-3 overflow-hidden border-end made-in-container">
+          <div class="flag d-flex flex-column overflow-hidden" aria-hidden="true">
+            <span class="flag-color"></span>
+            <span class="flag-color"></span>
+            <span class="flag-color"></span>
+          </div>
+          <div class="text-white text-uppercase lh-1 small made-in">
+            <span class="d-block text-body-emphasis">Made in</span>
+            <span class="d-block fw-bold text-body-emphasis">Germany</span>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-2 flex-grow-1 justify-content-end">
+        <button
+          class="navbar-toggler d-md-none d-block"
+          type="button"
+          (click)="toggleMobileMenu()"
+          [attr.aria-expanded]="mobileMenuOpen()"
+          aria-controls="navbarNav"
+          i18n-aria-label="@@featureLoadweaverPortal-toggleNavAriaLabel"
+          aria-label="Toggle navigation"
+        >
+          <i class="bi bi-list fs-4" aria-hidden="true"></i>
+        </button>
+        <div class="collapse navbar-collapse mobile-navbar" [class.mobile-open]="mobileMenuOpen()" id="navbarNav">
+          <ul class="navbar-nav ms-auto align-items-center">
+            <li class="nav-item portal-nav-dropdown">
+              <fpc-dropdown class="w-100" alignment="end" [(open)]="productNavOpen">
+                <a
+                  fpcDropdownTrigger
+                  class="nav-link dropdown-toggle text-white portal-nav-dropdown-toggle"
+                  [class.active]="productDropdownActive()"
+                  href="#"
+                  id="productNavDropdown"
+                  role="button"
+                  [attr.aria-expanded]="productNavOpen()"
+                  (click)="$event.preventDefault()"
+                >
+                  <span i18n="@@featureLoadweaverPortal-navProduct">Product</span>
+                  <i class="bi bi-chevron-down portal-nav-dropdown-chevron" aria-hidden="true"></i>
+                </a>
+                <fpc-dropdown-item
+                  routerLink="/"
+                  itemClass="portal-nav-dropdown-item"
+                  (selected)="closeMobileMenu()"
+                  i18n="@@featureLoadweaverPortal-navPlatform"
+                  >Platform</fpc-dropdown-item
+                >
+                <fpc-dropdown-item
+                  routerLink="/apps"
+                  itemClass="portal-nav-dropdown-item"
+                  (selected)="closeMobileMenu()"
+                  i18n="@@featureLoadweaverPortal-navApps"
+                  >Apps</fpc-dropdown-item
+                >
+                <fpc-dropdown-item
+                  routerLink="/remote-access"
+                  itemClass="portal-nav-dropdown-item"
+                  (selected)="closeMobileMenu()"
+                  i18n="@@featureLoadweaverPortal-navRemoteAccess"
+                  >Remote access</fpc-dropdown-item
+                >
+                <fpc-dropdown-item
+                  routerLink="/cloud"
+                  itemClass="portal-nav-dropdown-item"
+                  (selected)="closeMobileMenu()"
+                  i18n="@@featureLoadweaverPortal-navCloud"
+                  >Cloud</fpc-dropdown-item
+                >
+              </fpc-dropdown>
+            </li>
+            <li class="nav-item">
+              <a
+                routerLink="/how-it-works"
+                class="nav-link text-white"
+                routerLinkActive="active"
+                (click)="closeMobileMenu()"
+                i18n="@@featureLoadweaverPortal-navHowItWorks"
+                >How it works</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                routerLink="/pricing"
+                class="nav-link text-white"
+                routerLinkActive="active"
+                (click)="closeMobileMenu()"
+                i18n="@@featureLoadweaverPortal-navPricing"
+                >Pricing</a
+              >
+            </li>
+            <li class="nav-item portal-nav-dropdown portal-nav-dropdown--wide">
+              <fpc-dropdown class="w-100" alignment="end" [(open)]="comparisonNavOpen">
+                <a
+                  fpcDropdownTrigger
+                  class="nav-link dropdown-toggle text-white portal-nav-dropdown-toggle"
+                  [class.active]="comparisonDropdownActive()"
+                  href="#"
+                  id="comparisonNavDropdown"
+                  role="button"
+                  [attr.aria-expanded]="comparisonNavOpen()"
+                  (click)="$event.preventDefault()"
+                >
+                  <span i18n="@@featureLoadweaverPortal-navComparison">Comparison</span>
+                  <i class="bi bi-chevron-down portal-nav-dropdown-chevron" aria-hidden="true"></i>
+                </a>
+                @for (item of comparisonNavItems; track item.slug) {
+                  <fpc-dropdown-item
+                    [routerLink]="item.routerLink"
+                    itemClass="portal-nav-dropdown-item"
+                    (selected)="closeMobileMenu()"
+                    >{{ item.label }}</fpc-dropdown-item
+                  >
+                }
+              </fpc-dropdown>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link text-white ms-3 d-none d-md-block"
+                href="https://github.com/forepath/one"
+                target="_blank"
+                rel="noopener noreferrer"
+                i18n-aria-label="@@featureLoadweaverPortal-githubAriaLabel"
+                aria-label="Loadweaver on GitHub (opens in a new tab)"
+                i18n-title="@@featureLoadweaverPortal-githubTitle"
+                title="View on GitHub"
+              >
+                <i class="bi bi-github fs-5" aria-hidden="true"></i>
+              </a>
+            </li>
+            <li class="nav-item ms-md-3">
+              <fpc-button
+                routerLink="/contact"
+                variant="primary"
+                loadweaverEarlyAccess
+                (clicked)="closeMobileMenu()"
+                i18n="@@featureLoadweaverPortal-earlyAccessButton"
+                >Request early access</fpc-button
+              >
+            </li>
+          </ul>
+          @if (mobileMenuOpen()) {
+            <div class="mobile-navbar-overlay" (click)="closeMobileMenu()" aria-hidden="true"></div>
+          }
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+<main id="main-content">
+  <router-outlet></router-outlet>
+</main>
+<footer class="footer bg-dark text-white position-relative grid-section grid-section--footer pt-10">
+  <div class="container grid-section__container grid-section__container--footer-top">
+    <div class="row">
+      <div class="col-md-4 mb-3 mb-md-0">
+        <img src="assets/images/favicon.svg" alt="" class="brand-icon" width="40" height="40" />
+        <h2 class="h5 fw-bold my-3 d-flex align-items-center gap-2">
+          <span i18n="@@featureLoadweaverPortal-footerBrand">Loadweaver</span>
+          <fpc-badge color="primary" i18n="@@featureLoadweaverPortal-earlyAccessBadge">Early access</fpc-badge>
+        </h2>
+        <p class="small mb-5" i18n="@@featureLoadweaverPortal-footerAbout">
+          Loadweaver turns a handful of servers into a resilient multi-site cluster, with encrypted traffic between
+          sites and services that keep running when a location goes down.
+        </p>
+        <div class="d-flex align-items-center gap-3 mt-4 fs-3">
+          <a
+            href="https://github.com/forepath/one"
+            class="text-decoration-none footer-link small d-inline-flex align-items-center gap-1"
+            target="_blank"
+            rel="noopener noreferrer"
+            i18n-aria-label="@@featureLoadweaverPortal-githubAriaLabel"
+            aria-label="Loadweaver on GitHub (opens in a new tab)"
+          >
+            <i class="bi bi-github" aria-hidden="true"></i>
+          </a>
+        </div>
+        <fpc-language-switcher
+          class="portal-nav-dropdown mt-4"
+          appearance="footer"
+          [locales]="footerLocales"
+          [locale]="localeService.getCurrentLocale()"
+          i18n-ariaLabel="@@featureLoadweaverPortal-languageSwitcherAriaLabel"
+          ariaLabel="Select language"
+          i18n-triggerLabel="@@featureLoadweaverPortal-language"
+          triggerLabel="Language"
+        />
+      </div>
+      <div class="col-md-3 offset-md-2">
+        <h2 class="h6 fw-bold mb-3" i18n="@@featureLoadweaverPortal-footerProduct">Product</h2>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <a
+              routerLink="/"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureLoadweaverPortal-navPlatform"
+              >Platform</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/apps"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureLoadweaverPortal-navApps"
+              >Apps</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/remote-access"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureLoadweaverPortal-navRemoteAccess"
+              >Remote access</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/cloud"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureLoadweaverPortal-navCloud"
+              >Cloud</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/how-it-works"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureLoadweaverPortal-navHowItWorks"
+              >How it works</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/pricing"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureLoadweaverPortal-navPricing"
+              >Pricing</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              href="https://downloads.loadweaver.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureLoadweaverPortal-footerDownloads"
+              >Downloads</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              href="https://docs.loadweaver.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureLoadweaverPortal-footerDocumentation"
+              >Documentation</a
+            >
+          </li>
+        </ul>
+        <h2 class="h6 fw-bold mb-3 mt-4" i18n="@@featureLoadweaverPortal-navComparison">Comparison</h2>
+        <ul class="list-unstyled mb-0">
+          @for (item of comparisonNavItems; track item.slug) {
+            <li class="mb-2">
+              <a [routerLink]="item.routerLink" class="text-decoration-none footer-link small">{{ item.label }}</a>
+            </li>
+          }
+        </ul>
+      </div>
+      <div class="col-md-3">
+        <h2 class="h6 fw-bold mb-3" i18n="@@featureLoadweaverPortal-footerCompany">Company</h2>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <a
+              href="https://forepath.io"
+              class="text-decoration-none footer-link small"
+              target="_blank"
+              rel="noopener noreferrer"
+              i18n="@@featureLoadweaverPortal-footerForepath"
+              >ForePath</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              href="https://forepath.io/blog"
+              class="text-decoration-none footer-link small"
+              target="_blank"
+              rel="noopener noreferrer"
+              i18n="@@sharedFeatureLandingpageBlog-footerLink"
+              >Blog</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/contact"
+              class="text-decoration-none footer-link small"
+              i18n="@@sharedFeatureLandingpageContact-footerLink"
+              >Contact</a
+            >
+          </li>
+        </ul>
+        <h2 class="h6 fw-bold mb-3 mt-4" i18n="@@featureLoadweaverPortal-footerLegal">Legal</h2>
+        <ul class="list-unstyled mb-0">
+          <li class="mb-2">
+            <a
+              routerLink="/legal/disclosure"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureLoadweaverPortal-legalDisclosureLink"
+              >Legal Disclosure</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/legal/terms"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureLoadweaverPortal-termsOfServiceLink"
+              >Terms of Service</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              routerLink="/legal/privacy"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureLoadweaverPortal-privacyPolicyLink"
+              >Privacy Policy</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              href="https://forepath.io/legal/vulnerability-disclosure"
+              class="text-decoration-none footer-link small"
+              target="_blank"
+              rel="noopener noreferrer"
+              i18n="@@featureLoadweaverPortal-vulnerabilityDisclosureLink"
+              >Vulnerability Disclosure</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              href="https://forepath.io/legal/content-report"
+              class="text-decoration-none footer-link small"
+              target="_blank"
+              rel="noopener noreferrer"
+              i18n="@@featureLoadweaverPortal-contentReportLink"
+              >Content Report</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              [href]="withdrawalUrl"
+              class="text-decoration-none footer-link small"
+              i18n="@@featureLoadweaverPortal-withdrawalLink"
+              >Right of Withdrawal</a
+            >
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="text-white py-5">
+    <div class="container grid-section__container grid-section__container--dark grid-section__container--footer-bottom">
+      <div class="row">
+        <div class="col-md-12 text-center">
+          <p class="mb-0 small" i18n="@@featureLoadweaverPortal-footerCopyright">
+            &copy; {{ currentYear }} IPvX UG (haftungsbeschränkt). All rights reserved.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>

@@ -13,6 +13,15 @@ $fpc-btn-white-label-colors: primary, secondary, success, danger, warning, info,
   }
 }
 
+// Label colour on primary fills. White by default; brands with a light primary (Loadweaver gold)
+// set `--fpc-primary-contrast` to a dark ink in their extras.
+.btn-primary {
+  --bs-btn-color: var(--fpc-primary-contrast, #fff);
+  --bs-btn-hover-color: var(--fpc-primary-contrast, #fff);
+  --bs-btn-active-color: var(--fpc-primary-contrast, #fff);
+  --bs-btn-disabled-color: var(--fpc-primary-contrast, #fff);
+}
+
 // Solid buttons: thin edge as a shade of the fill (same idea as landing CTAs /
 // `--bs-primary-dark`). Track hover/active bg so the border never fights the fill.
 @each $name in $fpc-btn-solid-colors {
