@@ -1,0 +1,179 @@
+<section id="hero" class="py-10 py-lg-6 bg-dark text-white grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center">
+      <h1 class="display-4 fw-semibold mb-4 hero-title">
+        <span class="text-primary">{{ industry.heroAccent }}</span> {{ industry.heroRest }}
+      </h1>
+      <p class="lead mx-auto hero-lead section-lead mb-0">{{ industry.heroLead }}</p>
+    </div>
+  </div>
+</section>
+
+<section id="challenges" class="py-10 bg-body grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 mx-auto industry-title text-body-emphasis">{{ industry.challengesTitle }}</h2>
+      <p class="lead mx-auto text-muted section-lead mb-0">{{ industry.challengesLead }}</p>
+    </div>
+    <div class="row g-3 g-lg-4">
+      @for (challenge of industry.challenges; track challenge.icon) {
+        <div class="col-sm-6 col-lg-3">
+          <article class="card border rounded-3 shadow-sm h-100 p-4 bg-body">
+            <i class="bi text-primary icon-md mb-3" [ngClass]="challenge.icon" aria-hidden="true"></i>
+            <h3 class="h6 fw-semibold mb-2">{{ challenge.title }}</h3>
+            <p class="text-muted small mb-0">{{ challenge.description }}</p>
+          </article>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- Fit: how we help, next to a photo of the industry (the home page's human meets machine layout) -->
+<section id="how-we-help" class="bg-body-tertiary grid-section">
+  <div class="container grid-section__container">
+    <div class="row g-0 align-items-stretch industry-fit-row">
+      <div class="col-lg-6 industry-fit-copy py-10 order-lg-1">
+        <h2 class="h2 fw-semibold mb-4">{{ industry.fitTitle }}</h2>
+        <p class="text-muted mb-4">{{ industry.fitLead }}</p>
+        <ul class="list-unstyled mb-4 row g-3">
+          @for (item of industry.fitItems; track item.icon) {
+            <li class="col-12 col-sm-6">
+              <article class="card border rounded-3 shadow-sm p-4 bg-body h-100">
+                <i class="bi text-primary icon-md mb-3 d-block" [ngClass]="item.icon" aria-hidden="true"></i>
+                <p class="mb-0 small">{{ item.text }}</p>
+              </article>
+            </li>
+          }
+        </ul>
+        <p class="text-muted mb-4" i18n="@@featureForepathIndustry-fitClosing">
+          Every engagement starts with a clear scope and grows only where it pays off. The same engineers advise, build,
+          and operate, so nothing gets lost between phases.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          <a
+            routerLink="/consulting"
+            class="small fw-semibold text-primary text-decoration-none"
+            i18n="@@featureForepathIndustry-fitLinkConsulting"
+            >Consulting <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i
+          ></a>
+          <a
+            routerLink="/it-systems"
+            class="small fw-semibold text-primary text-decoration-none"
+            i18n="@@featureForepathIndustry-fitLinkItSystems"
+            >IT systems <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i
+          ></a>
+          <a
+            routerLink="/software-development"
+            class="small fw-semibold text-primary text-decoration-none"
+            i18n="@@featureForepathIndustry-fitLinkSoftwareDevelopment"
+            >Software development <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i
+          ></a>
+        </div>
+      </div>
+      <div class="col-lg-6 industry-fit-visual-col order-lg-2">
+        <div
+          class="industry-fit__photo"
+          role="img"
+          [attr.aria-label]="industry.photoLabel"
+          [style.--landing-photo]="'url(' + industry.photoUrl + ')'"
+        ></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="solutions" class="py-10 bg-body grid-section">
+  <div class="container grid-section__container">
+    <div class="text-center pb-10">
+      <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featureForepathIndustry-solutionsTitle">
+        What we deliver
+      </h2>
+      <p class="lead mx-auto text-muted section-lead mb-0" i18n="@@featureForepathIndustry-solutionsLead">
+        Each solution builds on a ForePath service or product. Start with the one that hurts most today and add the rest
+        when you are ready.
+      </p>
+    </div>
+    <div class="row g-4">
+      @for (solution of industry.solutions; track solution.id) {
+        <div class="col-lg-6">
+          <article
+            class="card border rounded-3 shadow-sm h-100 overflow-hidden bg-body d-flex flex-column industry-solution"
+            [id]="solution.id"
+          >
+            <div class="industry-solution__top p-4 p-lg-5 border-bottom landing-surface-tint">
+              <i class="bi text-primary icon-xl d-block mb-4" [ngClass]="solution.icon" aria-hidden="true"></i>
+              <h3 class="h5 fw-semibold mb-3">{{ solution.title }}</h3>
+              <p class="text-muted mb-0">{{ solution.description }}</p>
+              @if (solution.link.href; as href) {
+                <a
+                  [href]="href"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="small fw-semibold text-primary text-decoration-none d-inline-block mt-3"
+                  >{{ solution.link.label }} <i class="bi bi-box-arrow-up-right ms-1" aria-hidden="true"></i
+                ></a>
+              } @else {
+                <a
+                  [routerLink]="solution.link.route"
+                  [fragment]="solution.link.fragment"
+                  class="small fw-semibold text-primary text-decoration-none d-inline-block mt-3"
+                  >{{ solution.link.label }} <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i
+                ></a>
+              }
+            </div>
+            <div class="industry-solution__bottom p-4 p-lg-5 d-flex flex-column">
+              <ul class="list-unstyled mb-0">
+                @for (item of solution.items; track item; let last = $last) {
+                  <li class="d-flex gap-2 align-items-center" [class.mb-2]="!last">
+                    <i class="bi bi-check-circle text-primary icon-solution lh-1 flex-shrink-0" aria-hidden="true"></i>
+                    <span>{{ item }}</span>
+                  </li>
+                }
+              </ul>
+            </div>
+          </article>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<section id="forepath-one" class="bg-body-tertiary grid-section">
+  <framework-forepath-one-teaser [activeThread]="industry.oneThread">
+    <p class="text-muted mb-4" i18n="@@featureForepathIndustry-oneTeaserLead">
+      Industry problems rarely stop at one discipline. ForePath One connects consulting, software delivery, and
+      operations with community we run ourselves. Same engineers, one thread, fewer handoffs between phases.
+    </p>
+  </framework-forepath-one-teaser>
+</section>
+
+<section id="cta" class="py-10 bg-dark grid-section">
+  <div class="container grid-section__container">
+    <div class="bg-primary rounded-4 text-center text-white py-10 px-5 shadow-sm">
+      <h2 class="h2 fw-semibold mb-4">{{ industry.ctaTitle }}</h2>
+      <p class="lead mb-5 mx-auto cta-lead-light">{{ industry.ctaLead }}</p>
+      <shared-contact-person brand="forepath" />
+      <div class="d-flex flex-wrap gap-3 justify-content-center">
+        <fpc-button
+          variant="primary"
+          size="xl"
+          btnClass="rounded-3"
+          routerLink="/pricing/estimate"
+          i18n="@@featureForepathIndustry-ctaEstimateButton"
+        >
+          <i class="bi bi-calculator" aria-hidden="true"></i>Get an instant quote
+        </fpc-button>
+        <fpc-button
+          variant="primary"
+          size="xl"
+          btnClass="rounded-3"
+          routerLink="/contact"
+          i18n="@@featureForepathIndustry-ctaButton"
+        >
+          <i class="bi bi-envelope" aria-hidden="true"></i>Contact us
+        </fpc-button>
+      </div>
+    </div>
+  </div>
+</section>
