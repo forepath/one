@@ -544,6 +544,28 @@
   }
 }
 
+// Industries: one column of industries (three across, two down from lg) and the aside, which sits
+// beside it from xl up and below it before that, like the services menu.
+.portal-nav-mega--industries {
+  @media (min-width: 768px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  @media (min-width: 1200px) {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
+  }
+}
+
+.portal-nav-mega__grid.portal-nav-mega__grid--industries {
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (min-width: 992px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .portal-nav-mega__column {
   @media (min-width: 768px) {
     padding: 1.25rem 1rem;

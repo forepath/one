@@ -528,6 +528,22 @@
       <trans-unit id="featureForepath-navMegaDistributorsLabel" datatype="html">
         <source>Distribution partners</source>
         </trans-unit>
+      <trans-unit id="featureForepath-navIndustries" datatype="html">
+        <source>Industries</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navMegaIndustriesHeading" datatype="html">
+        <source> Industries we serve </source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navMegaIndustriesAsideTitle" datatype="html">
+        <source> Your industry is not listed? </source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navMegaIndustriesAsideText" datatype="html">
+        <source> Our services work across sectors. Tell us how your business runs, and we will show you where consulting, delivery, and operations fit. </source>
+        </trans-unit>
+      <trans-unit id="featureForepath-navMegaIndustriesAsideLink" datatype="html">
+        <source>Talk to us <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+                    &gt;"/></source>
+        </trans-unit>
       <trans-unit id="featureForepath-navProducts" datatype="html">
         <source>Products</source>
         </trans-unit>
@@ -614,6 +630,9 @@
         </trans-unit>
       <trans-unit id="featureForepath-footerLoadweaverSoon" datatype="html">
         <source>Coming soon</source>
+        </trans-unit>
+      <trans-unit id="featureForepath-footerIndustries" datatype="html">
+        <source>Industries</source>
         </trans-unit>
       <trans-unit id="featureForepath-footerCompany" datatype="html">
         <source>Company</source>
@@ -872,6 +891,903 @@
         </trans-unit>
       <trans-unit id="featureForepathHome-metaKeywords" datatype="html">
         <source>ForePath, IT consulting, cloud infrastructure, DevOps, software development, digital sovereignty, Germany</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-linkConsulting" datatype="html">
+        <source>Consulting</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-linkDevelopment" datatype="html">
+        <source>Software development</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-linkNetwork" datatype="html">
+        <source>Network and connectivity</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-linkWorkplace" datatype="html">
+        <source>Endpoints and workplace</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-linkIdentity" datatype="html">
+        <source>Identity and access</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-linkSecurity" datatype="html">
+        <source>Security and protection</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-linkResilience" datatype="html">
+        <source>Resilience and operations</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingTitle" datatype="html">
+        <source>Manufacturing</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingNavCaption" datatype="html">
+        <source>Plants, production IT, and ERP integrations</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingMetaTitle" datatype="html">
+        <source>IT and software for manufacturing companies :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingMetaDescription" datatype="html">
+        <source>ForePath plans, builds, and operates IT for manufacturers: production networks, servers and backups for shift operations, ERP integrations, and modernization roadmaps.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingMetaKeywords" datatype="html">
+        <source>manufacturing IT, production network, ERP integration, MES, Mittelstand, shop floor security, managed IT</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingHeroAccent" datatype="html">
+        <source>Manufacturing IT</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingHeroRest" datatype="html">
+        <source>that keeps the line running</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingHeroLead" datatype="html">
+        <source>We connect shop floor, office, and ERP with networks, platforms, and software built for production hours, not office hours.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingChallengesTitle" datatype="html">
+        <source>Where production IT gets hard</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingChallengesLead" datatype="html">
+        <source>Factories run on systems that grew over decades. Machines, ERP, and office IT have to work together, and every outage shows up on the delivery schedule.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingChallenge1Title" datatype="html">
+        <source>One flat network for everything</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingChallenge1Desc" datatype="html">
+        <source>Machines, scanners, and office devices often share a network that nobody dares to touch.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingChallenge2Title" datatype="html">
+        <source>Downtime costs output</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingChallenge2Desc" datatype="html">
+        <source>A failed server or switch stops more than email. It stops orders, labels, and shipments.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingChallenge3Title" datatype="html">
+        <source>Systems that do not talk</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingChallenge3Desc" datatype="html">
+        <source>ERP, MES, and spreadsheets hold the same data in different versions.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingChallenge4Title" datatype="html">
+        <source>Older machines, newer threats</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingChallenge4Desc" datatype="html">
+        <source>Machine PCs and controllers run software that cannot be patched like an office laptop.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingPhotoLabel" datatype="html">
+        <source>Engineers in a production hall reviewing data on a tablet</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingFitTitle" datatype="html">
+        <source>Built for the plant floor and the office</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingFitLead" datatype="html">
+        <source>We advise, build, and operate the systems a manufacturer depends on, from the network in the hall to the integration behind every order.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingFit1" datatype="html">
+        <source>Segmented networks keep production, office, and guest traffic apart, with Wi-Fi planned for halls and warehouses.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingFit2" datatype="html">
+        <source>Servers and backups are sized for shift operations, patched in agreed windows, and restored in regular drills.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingFit3" datatype="html">
+        <source>Integrations connect ERP, MES, and shop floor data, so planning works from one set of numbers.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingFit4" datatype="html">
+        <source>Architecture reviews give you a modernization roadmap that fits your maintenance calendar.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution1Title" datatype="html">
+        <source>Production networks and Wi-Fi</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution1Desc" datatype="html">
+        <source>Segmented networks for machines, office, and guests, with firewalls between them and Wi-Fi that covers halls and yards.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution1Item1" datatype="html">
+        <source>Network zones for production, office, and IoT devices</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution1Item2" datatype="html">
+        <source>Firewall rules between shop floor and office IT</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution1Item3" datatype="html">
+        <source>Wi-Fi surveys for halls, warehouses, and yards</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution2Title" datatype="html">
+        <source>Servers and backups for shift operations</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution2Desc" datatype="html">
+        <source>Virtualization, storage, and backups run with patch windows that respect your shifts and restore drills that prove recovery.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution2Item1" datatype="html">
+        <source>Patch windows planned around production shifts</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution2Item2" datatype="html">
+        <source>Restore drills for ERP and file servers</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution2Item3" datatype="html">
+        <source>UPS protection with a controlled shutdown</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution3Title" datatype="html">
+        <source>ERP and shop floor integrations</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution3Desc" datatype="html">
+        <source>Interfaces between ERP, MES, machines, and partner portals, built with tests and documentation your team can maintain.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution3Item1" datatype="html">
+        <source>Order, stock, and production data in sync</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution3Item2" datatype="html">
+        <source>Interfaces to supplier and customer portals</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution3Item3" datatype="html">
+        <source>Handover with documentation and runbooks</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution4Title" datatype="html">
+        <source>Modernization and security roadmap</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution4Desc" datatype="html">
+        <source>An independent review of your IT and production systems, with a roadmap ordered by risk and effort.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution4Item1" datatype="html">
+        <source>Inventory of systems, dependencies, and risks</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution4Item2" datatype="html">
+        <source>Security baseline for production and office IT</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingSolution4Item3" datatype="html">
+        <source>Roadmap with effort ranges and sequencing</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingCtaTitle" datatype="html">
+        <source>Planning the next step for your plant?</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-manufacturingCtaLead" datatype="html">
+        <source>Tell us about your sites, systems, and production hours. We will propose a scope that fits your maintenance calendar.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsTitle" datatype="html">
+        <source>Logistics and wholesale</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsNavCaption" datatype="html">
+        <source>Warehouses, depots, and connected partners</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsMetaTitle" datatype="html">
+        <source>IT and integrations for logistics and wholesale :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsMetaDescription" datatype="html">
+        <source>ForePath connects warehouses and depots with reliable Wi-Fi and site networks, builds carrier and partner integrations, and monitors the systems behind every shift.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsMetaKeywords" datatype="html">
+        <source>logistics IT, warehouse Wi-Fi, wholesale, carrier integration, EDI, site networking, managed IT</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsHeroAccent" datatype="html">
+        <source>Logistics</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsHeroRest" datatype="html">
+        <source>where every scan reaches the system</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsHeroLead" datatype="html">
+        <source>We keep warehouses, depots, and offices connected and build the integrations that move orders between you, your carriers, and your customers.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsChallengesTitle" datatype="html">
+        <source>What slows logistics down</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsChallengesLead" datatype="html">
+        <source>Goods move around the clock, and so does the data about them. When a scanner, a link, or an interface fails, trucks wait.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsChallenge1Title" datatype="html">
+        <source>Gaps in warehouse Wi-Fi</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsChallenge1Desc" datatype="html">
+        <source>Handheld scanners drop out between racks and at the loading docks.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsChallenge2Title" datatype="html">
+        <source>Many sites, no standard</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsChallenge2Desc" datatype="html">
+        <source>Depots and branches grew with different equipment and no shared documentation.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsChallenge3Title" datatype="html">
+        <source>Interfaces to every partner</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsChallenge3Desc" datatype="html">
+        <source>Carriers, marketplaces, and customers each expect their own formats and portals.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsChallenge4Title" datatype="html">
+        <source>Operations that never stop</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsChallenge4Desc" datatype="html">
+        <source>Night shifts and weekends need monitoring and a clear escalation path outside office hours.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsPhotoLabel" datatype="html">
+        <source>Warehouse employee checking stock on a tablet between pallet racks</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsFitTitle" datatype="html">
+        <source>Connected from dock to dashboard</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsFitLead" datatype="html">
+        <source>We advise, build, and operate the systems that keep goods and data moving together, across every site.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsFit1" datatype="html">
+        <source>Wi-Fi planned from site surveys covers racks, docks, and yards, so scanners stay online.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsFit2" datatype="html">
+        <source>Sites are connected through managed firewalls and VPNs on one documented standard.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsFit3" datatype="html">
+        <source>Integrations exchange orders, stock, and tracking data with carriers, shops, and customers.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsFit4" datatype="html">
+        <source>Monitoring and alert routing catch failures before the next shift does.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution1Title" datatype="html">
+        <source>Warehouse Wi-Fi and site networks</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution1Desc" datatype="html">
+        <source>Wi-Fi for racks, docks, and yards plus firewalls and site-to-site VPN that connect every depot on the same network standard.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution1Item1" datatype="html">
+        <source>Site surveys and access point placement for warehouses</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution1Item2" datatype="html">
+        <source>Site-to-site VPN between depots and headquarters</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution1Item3" datatype="html">
+        <source>Separate networks for scanners, office, and guests</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution2Title" datatype="html">
+        <source>Carrier and partner integrations</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution2Desc" datatype="html">
+        <source>Interfaces between your warehouse management, ERP, carriers, and marketplaces, built with automated tests and monitoring.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution2Item1" datatype="html">
+        <source>Order, stock, and tracking data exchanged automatically</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution2Item2" datatype="html">
+        <source>Customer and partner portals on modern stacks</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution2Item3" datatype="html">
+        <source>Alerts when a transfer fails, not when a customer calls</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution3Title" datatype="html">
+        <source>Monitoring for every shift</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution3Desc" datatype="html">
+        <source>Central monitoring of servers, networks, and interfaces, with alerts routed to the right people and monthly health reports.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution3Item1" datatype="html">
+        <source>Alert routing for night and weekend shifts</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution3Item2" datatype="html">
+        <source>Backups with restore drills for warehouse systems</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution3Item3" datatype="html">
+        <source>Monthly reports on incidents and trends</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution4Title" datatype="html">
+        <source>Devices for office and warehouse</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution4Desc" datatype="html">
+        <source>Laptops, tablets, and accessories rolled out on one baseline, bought or rented monthly through topi.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution4Item1" datatype="html">
+        <source>Standardized devices for office and warehouse staff</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution4Item2" datatype="html">
+        <source>Monthly rental instead of upfront purchases</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsSolution4Item3" datatype="html">
+        <source>Devices for seasonal staff without a new capital cycle</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsCtaTitle" datatype="html">
+        <source>Where does your data get stuck?</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-logisticsCtaLead" datatype="html">
+        <source>Tell us about your sites, systems, and partners. We will propose where to start, from warehouse Wi-Fi to a new carrier interface.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailTitle" datatype="html">
+        <source>Retail and e-commerce</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailNavCaption" datatype="html">
+        <source>Stores, online shops, and checkout</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailMetaTitle" datatype="html">
+        <source>IT and software for retail and e-commerce :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailMetaDescription" datatype="html">
+        <source>ForePath builds shop and marketplace integrations, protects online shops with Cloudflare, and runs store networks, so checkout, stock, and orders stay in sync.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailMetaKeywords" datatype="html">
+        <source>retail IT, e-commerce, online shop development, marketplace integration, store network, Cloudflare, managed IT</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailHeroAccent" datatype="html">
+        <source>Retail</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailHeroRest" datatype="html">
+        <source>that sells in store and online without friction</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailHeroLead" datatype="html">
+        <source>We build and operate the shops, store networks, and integrations behind your checkout, so stock, orders, and payments stay in sync.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailChallengesTitle" datatype="html">
+        <source>What makes retail IT demanding</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailChallengesLead" datatype="html">
+        <source>Customers expect the same prices, stock, and service in every channel. Behind the counter, that means many systems that have to agree.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailChallenge1Title" datatype="html">
+        <source>Channels out of sync</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailChallenge1Desc" datatype="html">
+        <source>Store, online shop, and marketplaces show different stock and prices.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailChallenge2Title" datatype="html">
+        <source>Peaks you cannot miss</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailChallenge2Desc" datatype="html">
+        <source>Sales, holidays, and campaigns bring traffic that has to work on the first try.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailChallenge3Title" datatype="html">
+        <source>Checkout must always work</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailChallenge3Desc" datatype="html">
+        <source>When the store network or a payment terminal fails, the queue grows by the minute.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailChallenge4Title" datatype="html">
+        <source>Customer data to protect</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailChallenge4Desc" datatype="html">
+        <source>Online accounts and orders attract attacks and come with data protection duties.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailPhotoLabel" datatype="html">
+        <source>Bright clothing store with garment rails and a large plant</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailFitTitle" datatype="html">
+        <source>One view across store and shop</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailFitLead" datatype="html">
+        <source>We advise, build, and operate the systems that connect your stores, your online shop, and the warehouse behind them.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailFit1" datatype="html">
+        <source>Online shops and integrations keep stock, prices, and orders consistent across all channels.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailFit2" datatype="html">
+        <source>Cloudflare and capacity planning keep shops fast and protected during campaigns.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailFit3" datatype="html">
+        <source>Store networks keep checkout, payment terminals, and guest Wi-Fi apart and online.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailFit4" datatype="html">
+        <source>Devices for stores and back office are set up on one baseline and supported quickly.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution1Title" datatype="html">
+        <source>Shop and marketplace integrations</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution1Desc" datatype="html">
+        <source>Online shops, marketplace connectors, and interfaces to ERP and warehouse, built on maintainable stacks with automated tests.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution1Item1" datatype="html">
+        <source>Stock and prices synchronized across all channels</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution1Item2" datatype="html">
+        <source>Order flow from shop to warehouse and invoice</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution1Item3" datatype="html">
+        <source>Load tests before campaigns and sales</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution2Title" datatype="html">
+        <source>Fast and protected shops</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution2Desc" datatype="html">
+        <source>Cloudflare in front of your shop with DDoS protection and a web application firewall, plus monitoring of availability and certificates.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution2Item1" datatype="html">
+        <source>DDoS protection and web application firewall</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution2Item2" datatype="html">
+        <source>Availability and certificate monitoring</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution2Item3" datatype="html">
+        <source>Regular reviews of what is exposed to the internet</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution3Title" datatype="html">
+        <source>Store networks and checkout</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution3Desc" datatype="html">
+        <source>Networks for every branch with separate zones for checkout, staff, and guests, connected to headquarters through a managed firewall.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution3Item1" datatype="html">
+        <source>Separate networks for checkout, staff, and guest Wi-Fi</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution3Item2" datatype="html">
+        <source>Site-to-site VPN from every store to headquarters</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution3Item3" datatype="html">
+        <source>Changes rolled out to all branches in one window</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution4Title" datatype="html">
+        <source>Cloud and platform architecture</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution4Desc" datatype="html">
+        <source>Architecture for shops and services that scale with demand, with guardrails for cost and security from day one.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution4Item1" datatype="html">
+        <source>Platform choice with effort ranges and tradeoffs</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution4Item2" datatype="html">
+        <source>Cost models for normal days and peak season</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailSolution4Item3" datatype="html">
+        <source>Security review before launch</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailCtaTitle" datatype="html">
+        <source>Ready for your next peak season?</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-retailCtaLead" datatype="html">
+        <source>Tell us about your stores, your shop, and the systems behind them. We will propose where to start, from a store network to a new integration.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareTitle" datatype="html">
+        <source>Healthcare and care</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareNavCaption" datatype="html">
+        <source>Practices, clinics, and care providers</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareMetaTitle" datatype="html">
+        <source>IT for medical practices and care providers :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareMetaDescription" datatype="html">
+        <source>ForePath runs segmented networks, role-based access, ransomware-resistant backups, and security reviews for medical practices, clinics, and care providers.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareMetaKeywords" datatype="html">
+        <source>IT for medical practices, healthcare IT, care provider IT, patient data protection, backup, ransomware, managed IT</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareHeroAccent" datatype="html">
+        <source>Healthcare IT</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareHeroRest" datatype="html">
+        <source>that is there when patients are</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareHeroLead" datatype="html">
+        <source>Practices, medical care centres, and care providers trust us with workplaces, networks, and backups that protect patient data and keep appointments running.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareChallengesTitle" datatype="html">
+        <source>What healthcare IT has to handle</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareChallengesLead" datatype="html">
+        <source>Care cannot wait for a slow computer. At the same time, patient data is among the most sensitive data there is.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareChallenge1Title" datatype="html">
+        <source>Sensitive patient data</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareChallenge1Desc" datatype="html">
+        <source>Records, findings, and correspondence need strict access control and protection.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareChallenge2Title" datatype="html">
+        <source>No time for outages</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareChallenge2Desc" datatype="html">
+        <source>A failed server or network in the morning means a waiting room full of patients.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareChallenge3Title" datatype="html">
+        <source>Many people, many shifts</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareChallenge3Desc" datatype="html">
+        <source>Staff in shifts and part time need quick access and clean offboarding.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareChallenge4Title" datatype="html">
+        <source>A target for attacks</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareChallenge4Desc" datatype="html">
+        <source>Ransomware hits practices and care providers that have no IT team of their own.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcarePhotoLabel" datatype="html">
+        <source>Two clinic staff members reviewing data at a workstation</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareFitTitle" datatype="html">
+        <source>IT that supports care, not the other way around</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareFitLead" datatype="html">
+        <source>We operate the systems behind your practice or facility, so your staff can focus on patients, and we document every change.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareFit1" datatype="html">
+        <source>Separate networks for practice systems, medical devices, and guest Wi-Fi keep sensitive traffic apart.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareFit2" datatype="html">
+        <source>Role-based access and multi-factor sign-in protect patient data across shifts and locations.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareFit3" datatype="html">
+        <source>Encrypted backups with offsite copies and restore drills keep data recoverable after an attack.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareFit4" datatype="html">
+        <source>Remote support handles quick fixes, and we come on site when hands are needed.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution1Title" datatype="html">
+        <source>Segmented practice networks</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution1Desc" datatype="html">
+        <source>Firewalls and switching that keep practice software, medical devices, and guest Wi-Fi in separate zones.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution1Item1" datatype="html">
+        <source>Separate zones for staff, devices, and patients</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution1Item2" datatype="html">
+        <source>Managed firewall with documented rule changes</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution1Item3" datatype="html">
+        <source>Wi-Fi for treatment rooms and waiting areas</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution2Title" datatype="html">
+        <source>Access for shifts and roles</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution2Desc" datatype="html">
+        <source>Accounts and permissions that follow roles, shifts, and locations, with door access tied to the same process.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution2Item1" datatype="html">
+        <source>Role-based access to patient data</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution2Item2" datatype="html">
+        <source>MFA for remote access and administration</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution2Item3" datatype="html">
+        <source>Accounts and badges revoked on the last day</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution3Title" datatype="html">
+        <source>Backup and recovery against ransomware</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution3Desc" datatype="html">
+        <source>Encrypted, immutable backups with an offsite copy and restore drills, so an attack does not end in data loss.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution3Item1" datatype="html">
+        <source>Offsite and immutable backup copies</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution3Item2" datatype="html">
+        <source>Recovery targets agreed per system</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution3Item3" datatype="html">
+        <source>Restore drills on a fixed schedule</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution4Title" datatype="html">
+        <source>Data protection and security review</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution4Desc" datatype="html">
+        <source>An assessment of your systems against data protection and security requirements, with a prioritized list of measures.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution4Item1" datatype="html">
+        <source>Inventory of systems and data flows</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution4Item2" datatype="html">
+        <source>Gaps ranked by risk and effort</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareSolution4Item3" datatype="html">
+        <source>Evidence your auditors and insurers can follow</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareCtaTitle" datatype="html">
+        <source>How well protected is your patient data?</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-healthcareCtaLead" datatype="html">
+        <source>Tell us about your practice or facility and its systems. We will start with a short assessment and propose the measures that matter first.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalTitle" datatype="html">
+        <source>Professional services</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalNavCaption" datatype="html">
+        <source>Law, tax, consulting, and agencies</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalMetaTitle" datatype="html">
+        <source>IT for law firms, tax advisors, and agencies :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalMetaDescription" datatype="html">
+        <source>ForePath runs secure Microsoft 365 workplaces, MFA and access reviews, MailStore email archiving, and Decabill billing for law firms, tax advisors, consultancies, and agencies.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalMetaKeywords" datatype="html">
+        <source>IT for law firms, IT for tax advisors, agency IT, Microsoft 365, MailStore, GoBD, DATEV, Decabill</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalHeroAccent" datatype="html">
+        <source>Professional services</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalHeroRest" datatype="html">
+        <source>with IT that keeps client data confidential</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalHeroLead" datatype="html">
+        <source>Law firms, tax advisors, consultancies, and agencies rely on us for secure workplaces, compliant archiving, and billing that matches how they work.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalChallengesTitle" datatype="html">
+        <source>What firms need from their IT</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalChallengesLead" datatype="html">
+        <source>Your people sell expertise and time. IT should protect client data and stay out of the way, without an IT department of your own.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalChallenge1Title" datatype="html">
+        <source>Confidential client data</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalChallenge1Desc" datatype="html">
+        <source>Mandates, files, and correspondence must be protected, and every access must be traceable.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalChallenge2Title" datatype="html">
+        <source>Retention duties</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalChallenge2Desc" datatype="html">
+        <source>Email and documents have to be archived completely and found again years later.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalChallenge3Title" datatype="html">
+        <source>Work from anywhere</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalChallenge3Desc" datatype="html">
+        <source>Partners and staff work in the office, at clients, and from home on the same files.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalChallenge4Title" datatype="html">
+        <source>Hours that become invoices</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalChallenge4Desc" datatype="html">
+        <source>Time tracking, projects, and invoices often live in separate tools.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalPhotoLabel" datatype="html">
+        <source>Partner and associate reviewing documents together at a desk</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalFitTitle" datatype="html">
+        <source>IT that lets your experts focus</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalFitLead" datatype="html">
+        <source>We advise, build, and operate the workplace, security, and billing tools that a firm without its own IT department needs.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalFit1" datatype="html">
+        <source>Managed Microsoft 365 brings mail, files, and Teams under secure defaults and clear permissions.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalFit2" datatype="html">
+        <source>Multi-factor sign-in and access reviews protect client data wherever your team works.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalFit3" datatype="html">
+        <source>MailStore archives every email tamper-proof to support retention duties such as GoBD.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalFit4" datatype="html">
+        <source>Decabill turns client services and projects into invoices, with DATEV export for your accountant.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution1Title" datatype="html">
+        <source>Secure workplace with Microsoft 365</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution1Desc" datatype="html">
+        <source>Microsoft 365 and business laptops set up with secure defaults, so your team can work in the office, at clients, and from home.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution1Item1" datatype="html">
+        <source>Tenant setup, migration, and secure sharing defaults</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution1Item2" datatype="html">
+        <source>Laptops on one baseline with approved software</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution1Item3" datatype="html">
+        <source>Fast remote support for everyday questions</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution2Title" datatype="html">
+        <source>Access control and MFA</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution2Desc" datatype="html">
+        <source>Multi-factor authentication, role-based permissions, and access reviews that show who can open which client file.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution2Item1" datatype="html">
+        <source>MFA for mail, files, and remote access</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution2Item2" datatype="html">
+        <source>Permissions by role, team, and mandate</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution2Item3" datatype="html">
+        <source>Accounts closed on the day someone leaves</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution3Title" datatype="html">
+        <source>Email archiving and backup</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution3Desc" datatype="html">
+        <source>MailStore archiving and tested backups keep correspondence and files available for as long as retention rules require.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution3Item1" datatype="html">
+        <source>Complete, tamper-proof email archive</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution3Item2" datatype="html">
+        <source>Full-text search for staff and auditors</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution3Item3" datatype="html">
+        <source>Backups with scheduled restore drills</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution4Title" datatype="html">
+        <source>Billing with Decabill</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution4Desc" datatype="html">
+        <source>Decabill bills client services, projects, and subscriptions on one platform and exports to DATEV for your accountant.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution4Item1" datatype="html">
+        <source>Client services and projects billed from one platform</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution4Item2" datatype="html">
+        <source>DATEV export for your accountant</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalSolution4Item3" datatype="html">
+        <source>Built and run by the team that runs your IT</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalCtaTitle" datatype="html">
+        <source>Does your IT match your professional standards?</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-professionalCtaLead" datatype="html">
+        <source>Tell us how your firm works today. We will start with a short review and propose the steps that protect client data first.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareTitle" datatype="html">
+        <source>Software and SaaS</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareNavCaption" datatype="html">
+        <source>Product teams, startups, and SaaS vendors</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareMetaTitle" datatype="html">
+        <source>Engineering for software companies and SaaS vendors :: ForePath</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareMetaDescription" datatype="html">
+        <source>ForePath extends product teams with cloud and platform engineering, delivery pipelines, Agenstra coding agents, and Decabill SaaS billing.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareMetaKeywords" datatype="html">
+        <source>SaaS engineering, platform engineering, Kubernetes, CI/CD, coding agents, Agenstra, Decabill, startup</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareHeroAccent" datatype="html">
+        <source>Software companies</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareHeroRest" datatype="html">
+        <source>that ship faster without losing control</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareHeroLead" datatype="html">
+        <source>We extend product teams with platform engineering, delivery pipelines, and coding agents, and we bill SaaS with the platform we run ourselves.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareChallengesTitle" datatype="html">
+        <source>What holds product teams back</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareChallengesLead" datatype="html">
+        <source>Roadmaps grow faster than teams. Platforms, pipelines, and billing compete with features for the same engineers.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareChallenge1Title" datatype="html">
+        <source>Platform work crowds out features</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareChallenge1Desc" datatype="html">
+        <source>Clusters, environments, and upgrades eat into time meant for the product.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareChallenge2Title" datatype="html">
+        <source>Releases that feel risky</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareChallenge2Desc" datatype="html">
+        <source>Manual steps and missing tests turn every deployment into an event.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareChallenge3Title" datatype="html">
+        <source>AI without a plan</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareChallenge3Desc" datatype="html">
+        <source>Coding agents promise speed, but need guardrails, review, and a place to run.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareChallenge4Title" datatype="html">
+        <source>Billing that does not scale</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareChallenge4Desc" datatype="html">
+        <source>Subscriptions, usage, and services end up in spreadsheets as customers grow.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwarePhotoLabel" datatype="html">
+        <source>Developers working at their monitors in a software office</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareFitTitle" datatype="html">
+        <source>An extension of your engineering team</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareFitLead" datatype="html">
+        <source>We advise, build, and operate alongside your engineers, on stacks they can own after we step back.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareFit1" datatype="html">
+        <source>Cloud and Kubernetes platforms with networking, identity, and upgrades your operators can sustain.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareFit2" datatype="html">
+        <source>CI/CD pipelines, GitOps, and infrastructure as code make releases routine.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareFit3" datatype="html">
+        <source>Agenstra runs coding agents with workspaces, tickets, and knowledge on infrastructure you own.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareFit4" datatype="html">
+        <source>Decabill bills SaaS subscriptions and services together, with DATEV export.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution1Title" datatype="html">
+        <source>Cloud and platform engineering</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution1Desc" datatype="html">
+        <source>Account strategy, Kubernetes estates, and FinOps discipline, designed with your team and built to be operated by it.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution1Item1" datatype="html">
+        <source>Reference architectures for cloud and Kubernetes</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution1Item2" datatype="html">
+        <source>Cost models that scale with usage</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution1Item3" datatype="html">
+        <source>Runbooks and on-call patterns for your engineers</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution2Title" datatype="html">
+        <source>Delivery pipelines and product engineering</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution2Desc" datatype="html">
+        <source>Pipelines, tests, and environments that make releases routine, plus engineers who ship features together with your team.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution2Item1" datatype="html">
+        <source>CI/CD foundations and GitOps</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution2Item2" datatype="html">
+        <source>Pairing and knowledge transfer built in</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution2Item3" datatype="html">
+        <source>Delivery metrics tracked against DORA baselines</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution3Title" datatype="html">
+        <source>Coding agents with Agenstra</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution3Desc" datatype="html">
+        <source>Agenstra lets your team run and ship with coding agents, on infrastructure you own or in Agenstra Cloud.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution3Item1" datatype="html">
+        <source>Workspaces, tickets, and knowledge in one place</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution3Item2" datatype="html">
+        <source>On infrastructure you own or in Agenstra Cloud</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution3Item3" datatype="html">
+        <source>Desktop app for your whole team</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution4Title" datatype="html">
+        <source>SaaS billing with Decabill</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution4Desc" datatype="html">
+        <source>Decabill bills SaaS subscriptions, client services, and managed hosting with one platform.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution4Item1" datatype="html">
+        <source>Client services, projects, and SaaS subscriptions</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution4Item2" datatype="html">
+        <source>Managed hosting billed on the same invoice run</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareSolution4Item3" datatype="html">
+        <source>DATEV export for your accountant</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareCtaTitle" datatype="html">
+        <source>What would your team ship with more time?</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-softwareCtaLead" datatype="html">
+        <source>Tell us about your product, stack, and roadmap. We will propose a team shape and the platform work that frees your engineers first.</source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-fitClosing" datatype="html">
+        <source> Every engagement starts with a clear scope and grows only where it pays off. The same engineers advise, build, and operate, so nothing gets lost between phases. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-fitLinkConsulting" datatype="html">
+        <source>Consulting <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+          &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-fitLinkItSystems" datatype="html">
+        <source>IT systems <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+          &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-fitLinkSoftwareDevelopment" datatype="html">
+        <source>Software development <x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-arrow-right ms-1&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i
+          &gt;"/></source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-solutionsTitle" datatype="html">
+        <source> What we deliver </source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-solutionsLead" datatype="html">
+        <source> Each solution builds on a ForePath service or product. Start with the one that hurts most today and add the rest when you are ready. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-oneTeaserLead" datatype="html">
+        <source> Industry problems rarely stop at one discipline. ForePath One connects consulting, software delivery, and operations with community we run ourselves. Same engineers, one thread, fewer handoffs between phases. </source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-ctaEstimateButton" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calculator&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Get an instant quote </source>
+        </trans-unit>
+      <trans-unit id="featureForepathIndustry-ctaButton" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-envelope&quot; aria-hidden=&quot;true&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/>Contact us </source>
         </trans-unit>
       <trans-unit id="featureForepathItSystems-heroTitle" datatype="html">
         <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>IT systems<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> that keep platforms running </source>

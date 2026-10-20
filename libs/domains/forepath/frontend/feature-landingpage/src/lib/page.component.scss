@@ -99,3 +99,45 @@ section {
   position: relative;
   z-index: 1;
 }
+
+// Photo panels (home "human meets machine", industry pages). The photos are bright daylight shots, so
+// they are graded towards the dark landing surfaces: dimmed and slightly desaturated, with a faint
+// brand-orange wash and a darker bottom edge. From lg up, where the photo sits flush against the copy
+// column, its copy side also fades into the section colour. The photo is drawn on `::before` (set
+// `--landing-photo` to its `url()`), so the filter never touches the panel's children, like the AI label.
+@mixin landing-photo-grade($fade-into: var(--bs-tertiary-bg)) {
+  isolation: isolate;
+  background-color: var(--bs-dark);
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  &::before {
+    background-image: var(--landing-photo);
+    background-size: cover;
+    background-position: center center;
+    filter: brightness(0.68) saturate(0.72) contrast(1.06);
+  }
+
+  &::after {
+    background:
+      linear-gradient(to top, rgb(15 15 17 / 0.5) 0%, transparent 45%),
+      color-mix(in srgb, var(--bs-primary) 7%, transparent);
+  }
+
+  @media (min-width: 992px) {
+    &::after {
+      background:
+        linear-gradient(to right, #{$fade-into} 0%, transparent 30%),
+        linear-gradient(to top, rgb(15 15 17 / 0.5) 0%, transparent 45%),
+        color-mix(in srgb, var(--bs-primary) 7%, transparent);
+    }
+  }
+}

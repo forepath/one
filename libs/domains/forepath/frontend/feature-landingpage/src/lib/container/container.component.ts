@@ -16,6 +16,7 @@ import {
 } from '@forepath/shared/frontend/ui-components';
 import { filter, map, startWith } from 'rxjs';
 import { FOREPATH_CONTACT, FOREPATH_SOCIAL_LINKS } from '../forepath-contact.config';
+import { FOREPATH_INDUSTRIES } from '../industries/industries';
 import { FOREPATH_DISTRIBUTOR_LOGOS, FOREPATH_IT_SERVICES } from '../it-systems/services/it-systems-services';
 
 const FOREPATH_LOCALE_PREFIXES = new Set(['en', 'de']);
@@ -40,6 +41,10 @@ function isServicesDropdownRoutePath(path: string): boolean {
     path === 'software-development' ||
     path === 'pricing/estimate'
   );
+}
+
+function isIndustriesDropdownRoutePath(path: string): boolean {
+  return path.startsWith('industries/');
 }
 
 @Component({
@@ -69,6 +74,11 @@ export class ForepathContainerComponent {
     navIcon: service.icon.replace(/^bi-/, ''),
   }));
   protected readonly distributorLogos = FOREPATH_DISTRIBUTOR_LOGOS;
+  /** Industries in the industries menu and the footer, icons without the `bi-` prefix like `itServices`. */
+  protected readonly industries = FOREPATH_INDUSTRIES.map((industry) => ({
+    ...industry,
+    navIcon: industry.icon.replace(/^bi-/, ''),
+  }));
 
   private readonly environment = inject<EnvironmentWithLandingAndCommunication>(ENVIRONMENT);
   private readonly locale = inject(LOCALE_ID);
@@ -100,8 +110,13 @@ export class ForepathContainerComponent {
     isServicesDropdownRoutePath(forepathRoutePathFromRouterUrl(this.navUrl() ?? '')),
   );
 
+  readonly industriesDropdownActive = computed(() =>
+    isIndustriesDropdownRoutePath(forepathRoutePathFromRouterUrl(this.navUrl() ?? '')),
+  );
+
   readonly mobileMenuOpen = signal<boolean>(false);
   readonly servicesNavOpen = signal(false);
+  readonly industriesNavOpen = signal(false);
   readonly productsNavOpen = signal(false);
   readonly isScrolled = signal<boolean>(false);
 
@@ -117,6 +132,7 @@ export class ForepathContainerComponent {
   closeMobileMenu(): void {
     this.mobileMenuOpen.set(false);
     this.servicesNavOpen.set(false);
+    this.industriesNavOpen.set(false);
     this.productsNavOpen.set(false);
   }
 }

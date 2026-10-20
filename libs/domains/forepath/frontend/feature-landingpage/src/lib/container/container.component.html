@@ -157,6 +157,64 @@
               </fpc-dropdown>
             </li>
             <li class="nav-item portal-nav-dropdown portal-nav-dropdown--mega">
+              <fpc-dropdown class="w-100" alignment="end" width="container" [(open)]="industriesNavOpen">
+                <a
+                  fpcDropdownTrigger
+                  class="nav-link dropdown-toggle portal-nav-dropdown-toggle"
+                  [class.active]="industriesDropdownActive()"
+                  href="#"
+                  id="industriesNavDropdown"
+                  role="button"
+                  [attr.aria-expanded]="industriesNavOpen()"
+                  (click)="$event.preventDefault()"
+                >
+                  <span i18n="@@featureForepath-navIndustries">Industries</span>
+                  <i class="bi bi-chevron-down portal-nav-dropdown-chevron" aria-hidden="true"></i>
+                </a>
+                <div class="portal-nav-mega portal-nav-mega--industries">
+                  <div class="portal-nav-mega__column">
+                    <p class="portal-nav-mega__heading" i18n="@@featureForepath-navMegaIndustriesHeading">
+                      Industries we serve
+                    </p>
+                    <div class="portal-nav-mega__grid portal-nav-mega__grid--industries">
+                      @for (industry of industries; track industry.id) {
+                        <fpc-dropdown-item
+                          [routerLink]="industry.route"
+                          [icon]="industry.navIcon"
+                          itemClass="portal-nav-dropdown-item portal-nav-dropdown-item--stacked"
+                          (selected)="closeMobileMenu()"
+                        >
+                          <span>{{ industry.title }}</span>
+                          <span class="small text-muted">{{ industry.navCaption }}</span>
+                        </fpc-dropdown-item>
+                      }
+                    </div>
+                  </div>
+                  <aside class="portal-nav-mega__aside justify-content-between">
+                    <div>
+                      <p
+                        class="portal-nav-mega__aside-title fw-semibold mb-2"
+                        i18n="@@featureForepath-navMegaIndustriesAsideTitle"
+                      >
+                        Your industry is not listed?
+                      </p>
+                      <p class="small text-muted mb-3" i18n="@@featureForepath-navMegaIndustriesAsideText">
+                        Our services work across sectors. Tell us how your business runs, and we will show you where
+                        consulting, delivery, and operations fit.
+                      </p>
+                    </div>
+                    <a
+                      routerLink="/contact"
+                      class="small fw-semibold text-primary text-decoration-none"
+                      (click)="closeMobileMenu()"
+                      i18n="@@featureForepath-navMegaIndustriesAsideLink"
+                      >Talk to us <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i
+                    ></a>
+                  </aside>
+                </div>
+              </fpc-dropdown>
+            </li>
+            <li class="nav-item portal-nav-dropdown portal-nav-dropdown--mega">
               <fpc-dropdown class="w-100" alignment="end" width="container" [(open)]="productsNavOpen">
                 <a
                   fpcDropdownTrigger
@@ -302,7 +360,7 @@
 <footer class="footer bg-dark text-white position-relative grid-section grid-section--footer pt-10">
   <div class="container grid-section__container grid-section__container--footer-top">
     <div class="row">
-      <div class="col-md-4 mb-3 mb-md-0">
+      <div class="col-lg-4 mb-5 mb-lg-0">
         <img src="assets/images/favicon.svg" i18n-alt="@@featureForepath-brandAlt" alt="ForePath" class="brand-icon" />
         <h5 class="fw-bold my-3" i18n="@@featureForepath-footerBrand">ForePath</h5>
         <p class="fs-6 mb-4" i18n="@@featureForepath-footerTagline">
@@ -359,7 +417,7 @@
           triggerLabel="Language"
         />
       </div>
-      <div class="col-md-3 offset-md-2">
+      <div class="col-sm-6 col-md-4 col-lg-2 offset-lg-1 mb-4 mb-md-0">
         <h6 class="fw-bold mb-3" i18n="@@featureForepath-footerServices">Services</h6>
         <ul class="list-unstyled mb-0">
           <li class="mb-2">
@@ -420,7 +478,17 @@
           </li>
         </ul>
       </div>
-      <div class="col-md-3">
+      <div class="col-sm-6 col-md-4 col-lg-2 mb-4 mb-md-0">
+        <h6 class="fw-bold mb-3" i18n="@@featureForepath-footerIndustries">Industries</h6>
+        <ul class="list-unstyled mb-0">
+          @for (industry of industries; track industry.id) {
+            <li class="mb-2">
+              <a [routerLink]="industry.route" class="text-decoration-none footer-link small">{{ industry.title }}</a>
+            </li>
+          }
+        </ul>
+      </div>
+      <div class="col-md-4 col-lg-3">
         <h6 class="fw-bold mb-3" i18n="@@featureForepath-footerCompany">Company</h6>
         <ul class="list-unstyled mb-0">
           <li class="mb-2">

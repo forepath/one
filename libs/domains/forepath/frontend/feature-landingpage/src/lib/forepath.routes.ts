@@ -38,6 +38,8 @@ import { ForepathBlogPostComponent } from './blog/post/blog-post.component';
 import { ForepathConsultingComponent } from './consulting/consulting.component';
 import { ForepathContainerComponent } from './container/container.component';
 import { ForepathHomeComponent } from './home/home.component';
+import { FOREPATH_INDUSTRIES } from './industries/industries';
+import { FOREPATH_INDUSTRY_ROUTE_DATA_KEY, ForepathIndustryComponent } from './industries/industry/industry.component';
 import { ForepathItSystemsComponent } from './it-systems/it-systems.component';
 import {
   FOREPATH_IT_SERVICE_ROUTE_DATA_KEY,
@@ -83,6 +85,14 @@ export const forepathRoutes: Route[] = [
         path: 'software-development',
         component: ForepathSoftwareDevelopmentComponent,
       },
+      // One static route per industry, so every industry page is prerendered.
+      ...FOREPATH_INDUSTRIES.map(
+        (industry): Route => ({
+          path: `industries/${industry.id}`,
+          component: ForepathIndustryComponent,
+          data: { [FOREPATH_INDUSTRY_ROUTE_DATA_KEY]: industry.id },
+        }),
+      ),
       {
         path: 'one',
         component: ForepathOneComponent,

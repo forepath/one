@@ -1,0 +1,71 @@
+@import '../../page.component.scss';
+
+.industry-title {
+  max-width: 800px;
+}
+
+// How we help: copy on the left, the industry photo on the right, laid out like the home page's
+// human meets machine section. From lg up the photo runs from the column edge to the right grid line
+// and fills the section's full height.
+.industry-fit-copy {
+  padding-left: var(--bs-gutter-x, 0.75rem);
+  padding-right: var(--bs-gutter-x, 0.75rem);
+
+  @media (min-width: 992px) {
+    padding-right: 2.5rem;
+    padding-left: 0;
+  }
+}
+
+.industry-fit-visual-col {
+  min-height: 14rem;
+
+  @media (min-width: 992px) {
+    min-height: 0;
+  }
+}
+
+.industry-fit__photo {
+  @include landing-photo-grade;
+
+  position: relative;
+  width: 100%;
+  min-height: 14rem;
+  border-top: 1px solid var(--bs-border-color);
+  border-bottom: 1px solid var(--bs-border-color);
+  border-left: 1px solid var(--bs-border-color);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  margin-bottom: 3rem;
+
+  @media (min-width: 768px) {
+    min-height: 21rem;
+    margin-bottom: 6rem;
+  }
+
+  @media (min-width: 992px) {
+    border-top: 0;
+    border-bottom: 0;
+    border-radius: 0;
+    overflow: visible;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    right: var(--grid-section-line-right);
+    width: auto;
+    min-height: 100%;
+    margin-bottom: 0;
+  }
+}
+
+// Solution cards, like the IT service solutions: a tinted intro above a hairline, the scope list
+// below. The intro takes the spare height, so the lists of cards in one row start on the same line.
+.industry-solution__top {
+  flex: 1 1 auto;
+  border-color: var(--bs-border-color) !important;
+}
+
+.industry-solution__bottom {
+  flex: 0 0 auto;
+}
