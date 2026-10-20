@@ -22,6 +22,98 @@ servers:
 security:
   - bearerAuth: []
 paths:
+  /projects/{project}/secrets:
+    parameters:
+      - in: path
+        name: project
+        required: true
+        schema: { type: string }
+    get:
+      summary: List project secret version metadata
+      description: Cluster admins only. PATs require `secrets:read`. Values are never returned.
+      operationId: listProjectSecrets
+      responses:
+        '200':
+          description: Secret names and version metadata, never values
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    project: { type: string }
+                    name: { type: string }
+                    versions:
+                      type: array
+                      items: { $ref: '#/components/schemas/SecretVersionDto' }
+        '403':
+          description: Missing cluster-admin role or PAT without `secrets:read`
+  /projects/{project}/secrets/{name}:
+    parameters:
+      - in: path
+        name: project
+        required: true
+        schema: { type: string }
+      - in: path
+        name: name
+        required: true
+        schema: { type: string, pattern: '^[a-z0-9][a-z0-9._-]{0,127}$' }
+    put:
+      summary: Set a project secret (new version)
+      description: |
+        Project admins and operators, or cluster admins. Infra operators must also hold an allowed role in this
+        project; developers, viewers and non-members cannot write. Names starting with `lw-` are platform-reserved
+        and require a cluster admin, including via PAT. PATs require `secrets:write` and are bounded by their owner's
+        current effective roles. Authorization precedes project lookup so denied callers cannot discover project
+        existence. Audits actor, project and secret name, never the value. Values remain unreadable through the API.
+      operationId: setProjectSecret
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                value:
+                  {
+                    type: string,
+                    maxLength: 1048576,
+                    description: UTF-8 value (1 byte to 1 MiB),
+                  }
+                valueBase64:
+                  {
+                    type: string,
+                    format: byte,
+                    description: Binary value (1 byte to 1 MiB); takes precedence over value,
+                  }
+      responses:
+        '200':
+          description: New version metadata, never the value
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SecretVersionDto' }
+        '400':
+          description: Invalid name or value (empty or over 1 MiB)
+        '403':
+          description: Missing project admin/operator or cluster-admin role, reserved `lw-` name without cluster-admin role, or PAT without `secrets:write`
+        '404':
+          description: Project does not exist (authorized callers only)
+    delete:
+      summary: Delete all versions of a project secret
+      description: |
+        Project admins and operators, or cluster admins. Infra operators must also hold an allowed project role.
+        Platform-reserved `lw-` names require a cluster admin, including via PAT. PATs require `secrets:write` and
+        never exceed their owner's current effective roles. Denied callers receive 403 before any lookup, regardless
+        of project existence. Audits actor, project and secret name, never the value. No values are returned.
+      operationId: deleteProjectSecret
+      responses:
+        '204':
+          description: All versions deleted
+        '403':
+          description: Missing project admin/operator or cluster-admin role, reserved `lw-` name without cluster-admin role, or PAT without `secrets:write`
+        '404':
+          description: Secret not found (authorized callers only)
   /cluster:
     get:
       summary: Cluster summary
@@ -5083,6 +5175,15 @@ components:
       description: 'Relative path (`cluster/2026/09`, `projects/shop/2026/09/report.html`); empty: the top'
       schema: { type: string, maxLength: 512 }
   schemas:
+    SecretVersionDto:
+      type: object
+      required: [version, fingerprint, createdBy, createdAt]
+      properties:
+        version: { type: integer, minimum: 1 }
+        fingerprint:
+          { type: string, description: 'Keyed fingerprint, never the value' }
+        createdBy: { type: [string, 'null'] }
+        createdAt: { type: string, format: date-time }
     ClusterSummaryDto:
       type: object
       properties:

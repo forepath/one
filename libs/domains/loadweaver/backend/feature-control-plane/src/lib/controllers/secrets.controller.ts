@@ -1,7 +1,20 @@
 import { RequireScopes, type RequestWithUser } from '@forepath/identity/backend';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Put, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  ForbiddenException,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Put,
+  Req,
+} from '@nestjs/common';
 import { IsBase64, IsOptional, IsString, MaxLength } from 'class-validator';
 
+import { atLeast, projectRole } from '../access/access.utils';
+import { ProjectAccessService } from '../access/project-access.service';
 import { actorFromRequest } from '../services/audit-log.service';
 import { ClusterAccessService } from '../services/cluster-access.service';
 import { MAX_SECRET_BYTES, SecretsService, type SecretDto, type SecretVersionDto } from '../services/secrets.service';
@@ -23,14 +36,26 @@ export class SetSecretDto {
 
 /**
  * Project secrets (3.22). Values are write-only: the API returns versions and fingerprints, never values.
- * Until project roles exist (M5) only cluster admins manage secrets.
+ * Project admins and operators manage ordinary secrets; platform-reserved names require a cluster admin.
  */
 @Controller('projects/:project/secrets')
 export class SecretsController {
   constructor(
     private readonly secrets: SecretsService,
     private readonly access: ClusterAccessService,
+    private readonly projectAccess: ProjectAccessService,
   ) {}
+
+  private async assertWrite(req: RequestWithUser | undefined, project: string, name: string): Promise<void> {
+    const caller = await this.projectAccess.caller(req);
+
+    // Check roles before looking up the project, so non-members cannot discover whether it exists.
+    if (!atLeast(projectRole(caller, project), 'operator'))
+      throw new ForbiddenException('project operator or admin role required');
+
+    if (name.startsWith('lw-') && caller.clusterRole !== 'cluster-admin')
+      throw new ForbiddenException('platform-reserved secrets require a cluster admin');
+  }
 
   @Get()
   @RequireScopes('secrets:read')
@@ -48,13 +73,13 @@ export class SecretsController {
     @Body() dto: SetSecretDto,
     @Req() req?: RequestWithUser,
   ): Promise<SecretVersionDto> {
-    await this.access.assert(req, 'admin');
+    await this.assertWrite(req, project, name);
 
     const value =
       dto.valueBase64 !== undefined ? Buffer.from(dto.valueBase64, 'base64') : Buffer.from(dto.value ?? '', 'utf8');
 
     try {
-      return await this.secrets.setValue(project, name, value, actorFromRequest(req));
+      return await this.secrets.setValue(project, name, value, actorFromRequest(req), { req });
     } finally {
       value.fill(0);
     }
@@ -68,7 +93,7 @@ export class SecretsController {
     @Param('name') name: string,
     @Req() req?: RequestWithUser,
   ): Promise<void> {
-    await this.access.assert(req, 'admin');
-    await this.secrets.remove(project, name, actorFromRequest(req));
+    await this.assertWrite(req, project, name);
+    await this.secrets.remove(project, name, actorFromRequest(req), { req });
   }
 }

@@ -282,20 +282,6 @@ describe('Agenstra runtime on Loadweaver (integration)', () => {
 
     expect((await api('PUT', `/projects/${PROJECT}/members/${userId}`, { role: 'operator' })).status).toBeLessThan(300);
 
-    // KNOWN GAP (open point of M6 step 5): the project secrets API (`PUT|DELETE /projects/:p/secrets/:name`) still
-    // authorizes cluster admins only, so creating / deleting an environment (its env file is a project secret) needs a
-    // cluster role for now. The manager gets it only around those calls; everything else below runs with the
-    // project-operator role alone (cluster membership removed; PAT roles are re-evaluated on every request).
-    const clusterAdmin = async (on: boolean) =>
-      expect(
-        (on
-          ? await api('PUT', `/cluster/members/${userId}`, { role: 'cluster-admin' })
-          : await api('DELETE', `/cluster/members/${userId}`)
-        ).status,
-      ).toBeLessThan(300);
-
-    await clusterAdmin(true);
-
     const pat = await api('POST', '/auth/tokens', { name: 'agent-manager', scopes: SCOPES });
 
     expect(pat.status).toBe(201);
@@ -309,6 +295,18 @@ describe('Agenstra runtime on Loadweaver (integration)', () => {
     const runtime = new LoadweaverRuntime(client);
 
     try {
+      const machine = await client.bearer();
+
+      // The manager has only its project role, including for environment secrets.
+      expect(
+        (await api('PUT', `/projects/${PROJECT}/secrets/operator-check`, { value: 'private' }, machine)).status,
+      ).toBe(200);
+      expect((await api('DELETE', `/projects/${PROJECT}/secrets/operator-check`, undefined, machine)).status).toBe(204);
+      expect((await api('PUT', `/projects/${PROJECT}/secrets/lw-reserved`, { value: 'private' }, machine)).status).toBe(
+        403,
+      );
+      expect((await api('DELETE', `/projects/${PROJECT}/secrets/lw-reserved`, undefined, machine)).status).toBe(403);
+
       // Create: one plan (source api), the env file as a secret, the replica reported running.
       const id = await runtime.createContainer({
         name: `agenstra-worker-${AGENT}`,
@@ -330,10 +328,6 @@ describe('Agenstra runtime on Loadweaver (integration)', () => {
       expect(await runtime.getContainerStatus(id)).toEqual({ running: true });
       expect(await runtime.resolveContainerHttpBaseUrl(id, 4096)).toMatch(/^http:\/\/[0-9.]+:4096$/);
 
-      // From here on: project operator only.
-      await clusterAdmin(false);
-      const machine = await client.bearer();
-
       // Its own project only: a plan in another project is refused.
       expect(
         (
@@ -347,11 +341,6 @@ describe('Agenstra runtime on Loadweaver (integration)', () => {
           )
         ).status,
       ).toBe(403);
-      // The known gap: an env change (new secret version) is refused for project roles today.
-      await expect(runtime.updateContainer(id, { env: { AGENT_NAME: 'changed' } })).rejects.toMatchObject({
-        status: 403,
-      });
-
       // Machine exec, binary-safe both ways, with the environment's variables and the requested user.
       const binary = Buffer.from([0, 1, 2, 0xff, 0xfe, 0x0a, 0x0d, 0x80]);
       const result = await client.exec(`${PROJECT}/${deployment}/worker/0`, ['cat'], {
@@ -369,6 +358,11 @@ describe('Agenstra runtime on Loadweaver (integration)', () => {
       expect(execOpens.at(-1)?.['env']).toEqual(
         expect.arrayContaining(['AGENT_NAME=it', 'OPENCODE_SERVER_PASSWORD=opencode-secret']),
       );
+
+      // Changing the environment writes a new secret version with the same project-operator PAT.
+      await runtime.updateContainer(id, { env: { AGENT_NAME: 'changed' } });
+      await expect(runtime.sendCommandToContainer(id, 'cat', 'hello')).resolves.toBe('hello\nerr');
+      expect(execOpens.at(-1)?.['env']).toContain('AGENT_NAME=changed');
 
       // Files through /live/files.
       await runtime.putFilesIntoContainer(id, '/etc/agenstra', [{ name: 'note.bin', content: binary }]);
@@ -444,8 +438,7 @@ describe('Agenstra runtime on Loadweaver (integration)', () => {
         revocableClient.close();
       }
 
-      // Delete: the deployment and its secret are gone (the secret delete needs the cluster role, see above).
-      await clusterAdmin(true);
+      // Delete: the deployment and its secret are gone, with the project-operator PAT only.
       await runtime.deleteContainer(id);
       // The removed replica drains first (two-phase removal, default stop grace 10 s) and reports `draining` (M6
       // gate), then the status is gone.

@@ -79,6 +79,8 @@ import { docker } from './postgres.container';
 import { removeContainers, startGarage, type GarageContainer } from './garage.containers';
 import { wafModule } from './waf-module';
 import { geoipTestDb, GEOIP_TEST_DB_SHA256 } from './geoip-test-db';
+// eslint-disable-next-line @nx/enforce-module-boundaries -- exercise the registered controller without adding a public library export just for this integration test
+import { SecretsController } from '../../../../../libs/domains/loadweaver/backend/feature-control-plane/src/lib/controllers/secrets.controller';
 
 const PEBBLE_IMAGE =
   'ghcr.io/letsencrypt/pebble:2.10.1@sha256:ddf230642b1a584f519f32e347de1b05a6e4c1f6c35c1863b33effeab5f78199';
@@ -547,7 +549,8 @@ spec:
     expect(
       (await dataSource.query(`SELECT count(*)::int AS n FROM lw_secrets WHERE name = 'lw-volume-store.data'`))[0].n,
     ).toBe(1);
-    expect((await api('PUT', '/projects/shop/secrets/lw-volume-store.data', { value: 'x' })).status).toBe(400);
+    expect((await api('PUT', '/projects/shop/secrets/lw-admin-check', { value: 'x' })).status).toBe(200);
+    expect((await api('DELETE', '/projects/shop/secrets/lw-admin-check')).status).toBe(204);
 
     const volumeState = await waitFor(async () => {
       const rows = await dataSource.query(`SELECT state FROM lw_node_desired_states WHERE node_name = $1`, [db.node]);
@@ -3142,6 +3145,23 @@ spec: ${JSON.stringify({
     // Project admins add operators, developers and viewers, never admins.
     await expect(access.setMember(user('paula'), 'alpha', ids.bea, 'admin')).rejects.toThrow('project creator');
     await access.setMember(user('paula'), 'alpha', ids.bea, 'viewer');
+
+    // The real controller and database memberships: operators manage ordinary secrets, never platform names.
+    const secrets = app.get(SecretsController);
+
+    await expect(
+      secrets.set('alpha', 'operator-check', { value: 'private-project-value' }, user('oscar')),
+    ).resolves.toMatchObject({ version: 1 });
+    await expect(secrets.remove('alpha', 'operator-check', user('bea'))).rejects.toMatchObject({ status: 403 });
+    await expect(secrets.set('alpha', 'viewer-check', { value: 'private' }, user('bea'))).rejects.toMatchObject({
+      status: 403,
+    });
+    await expect(secrets.set('alpha', 'lw-reserved', { value: 'private' }, user('oscar'))).rejects.toMatchObject({
+      status: 403,
+    });
+    await expect(secrets.remove('alpha', 'lw-reserved', user('oscar'))).rejects.toMatchObject({ status: 403 });
+    await secrets.remove('alpha', 'operator-check', user('oscar'));
+
     await expect(access.setMember(user('oscar'), 'alpha', ids.bea, 'developer')).rejects.toThrow(
       'project admin role required',
     );

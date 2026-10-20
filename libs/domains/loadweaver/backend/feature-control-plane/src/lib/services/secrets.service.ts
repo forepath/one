@@ -1,12 +1,14 @@
 import { createHmac, hkdfSync, randomBytes } from 'node:crypto';
 
 import { volumeKeyRef } from '@forepath/loadweaver/shared/util-agent-protocol';
+import type { RequestWithUser } from '@forepath/identity/backend';
 
 import { envelopeDecrypt, envelopeEncrypt } from '@forepath/loadweaver/shared/util-secrets';
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
+import { ProjectAccessService } from '../access/project-access.service';
 import { DeploymentStateEntity } from '../entities/deployment-state.entity';
 import { ResourceEntity } from '../entities/resource.entity';
 import { SecretEntity } from '../entities/secret.entity';
@@ -54,7 +56,13 @@ export class SecretsService {
     private readonly masterKey: MasterKeyService,
     private readonly audit: AuditLogService,
     private readonly planner: WorkloadPlannerService,
+    private readonly access: ProjectAccessService,
   ) {}
+
+  private async assertReservedName(name: string, req?: RequestWithUser): Promise<void> {
+    if (name.startsWith('lw-') && (await this.access.caller(req)).clusterRole !== 'cluster-admin')
+      throw new ForbiddenException('platform-reserved secrets require a cluster admin');
+  }
 
   private fingerprint(masterKey: Buffer, value: Buffer): string {
     const key = Buffer.from(hkdfSync('sha256', masterKey, Buffer.alloc(0), 'loadweaver secret fingerprint', 32));
@@ -67,12 +75,13 @@ export class SecretsService {
     name: string,
     value: Buffer,
     actor: AuditActor,
-    options: { internal?: boolean } = {},
+    options: { internal?: boolean; req?: RequestWithUser } = {},
   ): Promise<SecretVersionDto> {
     if (!SECRET_NAME.test(name)) throw new BadRequestException('invalid secret name');
 
-    if (name.startsWith('lw-') && !options.internal)
-      throw new BadRequestException('secret names starting with lw- are reserved for the platform');
+    // Only request-free system callers (volume-key creation) may use the internal platform path.
+    if (!(options.internal && actor.type === 'system' && !options.req))
+      await this.assertReservedName(name, options.req);
 
     if (value.length === 0 || value.length > MAX_SECRET_BYTES)
       throw new BadRequestException(`secret values must be 1 byte to ${MAX_SECRET_BYTES} bytes`);
@@ -149,7 +158,14 @@ export class SecretsService {
     return [...byName.entries()].map(([name, versions]) => ({ project, name, versions }));
   }
 
-  async remove(project: string, name: string, actor: AuditActor): Promise<void> {
+  async remove(
+    project: string,
+    name: string,
+    actor: AuditActor,
+    options: { req?: RequestWithUser } = {},
+  ): Promise<void> {
+    await this.assertReservedName(name, options.req);
+
     await this.dataSource.transaction(async (manager) => {
       const result = await manager.getRepository(SecretEntity).delete({ project, name });
 

@@ -131,7 +131,8 @@ A plan with a project policy using a pool its project isn't listed in is rejecte
 ## Who sees what
 
 - Cluster-level resources: anyone with a cluster role.
-- Project resources and plans: the project's members, cluster admins, auditors and infra operators (they manage the nodes the project runs on). Infra operators don't get the project's logs or secrets.
+- Project resources and plans: the project's members, cluster admins, auditors and infra operators (they manage the nodes the project runs on). A cluster infra-operator role alone doesn't grant access to the project's logs or secrets.
+- Secret writes and deletes: project admins and operators, plus cluster admins; developers, viewers and non-members receive `403`. Infra operators must also hold an allowed project role. Platform-reserved `lw-` names require a cluster admin. PATs need `secrets:write` and never exceed their owner's effective roles. Values remain unreadable through the API; changes are audited without values. See [secrets and encryption](./secrets-and-encryption.md).
 - A plan is visible to whoever may read everything it touches. Others get `404`, as for resources they can't read.
 - Lists (`GET /api/resources`, `GET /api/resources/export`, `GET /api/plans`) only contain what the caller may read.
 - Members, settings and requests of a project: whoever may read the project. Cluster members: anyone with a cluster role.

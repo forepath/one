@@ -54,8 +54,6 @@ Both compose files are in `apps/agenstra/backend-agent-manager/loadweaver/`.
 
 3. **Service user and token.** Create a user for the manager, add it to the project as **operator** (not admin), and create a personal access token for it with the scopes `projects:read resources:read plans:create plans:apply secrets:write logs:read metrics:read live:access live:exec`. The token can never exceed the user's role: the manager can change only its own project.
 
-   > **Current limitation:** the project secrets API (`PUT` / `DELETE /api/projects/{project}/secrets/{name}`) still accepts cluster admins only. Creating, changing the variables of and deleting an environment store its environment file as a project secret, so with a project operator alone these calls fail with `403`; everything else (plans, machine exec, files, logs, metrics) works with the operator role. Until the secrets API accepts project roles, don't use the Loadweaver runtime in production (granting the manager a cluster role would let it act on every project).
-
 4. **Secrets** in the project (values never appear in plans, logs or the audit log):
    - `loadweaver-token`: the PAT from step 3;
    - `agent-manager-env`: shell-style `KEY=value` lines with the manager's own secrets (`DB_PASSWORD`, `ENCRYPTION_KEY`, `STATIC_API_KEY` or `JWT_SECRET`, ...), loaded by the entrypoint from tmpfs;
