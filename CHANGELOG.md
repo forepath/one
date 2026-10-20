@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.5.0](https://github.com/forepath/one/compare/v3.4.0...v3.5.0) (2026-10-20)
+
+
+### Features
+
+* **forepath:** industry landingpages ([#687](https://github.com/forepath/one/issues/687)) ([987c9f1](https://github.com/forepath/one/commit/987c9f10de0f751a628f46880dc83045295cb43d))
+
+
+### Bug Fixes
+
+* **forepath:** force blog to english locale ([#686](https://github.com/forepath/one/issues/686)) ([4f01da8](https://github.com/forepath/one/commit/4f01da809d194c9cf1f7dd9e83c59312b0c836f9))
+
+
+### Chores
+
+* **shared:** reworked readme ([#684](https://github.com/forepath/one/issues/684)) ([9332a9f](https://github.com/forepath/one/commit/9332a9f97327aacf5f8ed18ddceedd0176a404af))
+
 ## [3.4.0](https://github.com/forepath/one/compare/v3.3.1...v3.4.0) (2026-10-16)
 
 
