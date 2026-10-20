@@ -360,7 +360,7 @@
       </trans-unit>
       <trans-unit id="featureForepath-navOne" datatype="html">
         <source>One</source>
-        <target>ForePath One</target>
+        <target>One</target>
       </trans-unit>
       <trans-unit id="featureForepath-navBlog" datatype="html">
         <source>Blog</source>
