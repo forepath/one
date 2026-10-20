@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.5.1](https://github.com/forepath/one/compare/v3.5.0...v3.5.1) (2026-10-20)
+
+
+### Bug Fixes
+
+* **forepath:** unified product names ([#689](https://github.com/forepath/one/issues/689)) ([2e26416](https://github.com/forepath/one/commit/2e2641641b3e6fb468de7bc8c4ad06a8d929dfc1))
+
 ## [3.5.0](https://github.com/forepath/one/compare/v3.4.0...v3.5.0) (2026-10-20)
 
 
