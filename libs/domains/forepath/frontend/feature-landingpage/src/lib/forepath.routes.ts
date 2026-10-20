@@ -32,6 +32,7 @@ import {
 import { createSharedContactRoute, createBrandContactDetails } from '@forepath/shared/frontend/feature-landingpage';
 
 import { ForepathAboutComponent } from './about/about.component';
+import { blogLocaleGuard } from './blog/blog-locale.guard';
 import { ForepathBlogComponent } from './blog/blog.component';
 import { ForepathBlogPostComponent } from './blog/post/blog-post.component';
 import { ForepathConsultingComponent } from './consulting/consulting.component';
@@ -160,10 +161,12 @@ export const forepathRoutes: Route[] = [
       {
         path: 'blog',
         component: ForepathBlogComponent,
+        canActivate: [blogLocaleGuard],
       },
       {
         path: 'blog/:slug',
         component: ForepathBlogPostComponent,
+        canActivate: [blogLocaleGuard],
       },
       {
         path: '**',
