@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-16T15:17:37.483Z",
+  "generatedAt": "2026-10-20T08:08:17.916Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -11814,6 +11814,15 @@
       "attrs": {
         "path": "libs/domains/forepath/frontend/feature-landingpage/README.md",
         "languageOrKind": "md",
+        "projectName": "forepath-frontend-feature-landingpage"
+      }
+    },
+    {
+      "id": "file:libs/domains/forepath/frontend/feature-landingpage/src/lib/blog/blog-locale.guard.ts",
+      "type": "guard",
+      "attrs": {
+        "path": "libs/domains/forepath/frontend/feature-landingpage/src/lib/blog/blog-locale.guard.ts",
+        "languageOrKind": "ts",
         "projectName": "forepath-frontend-feature-landingpage"
       }
     },
@@ -42077,6 +42086,11 @@
     {
       "from": "project:forepath-frontend-feature-landingpage",
       "to": "file:libs/domains/forepath/frontend/feature-landingpage/README.md",
+      "type": "contains"
+    },
+    {
+      "from": "project:forepath-frontend-feature-landingpage",
+      "to": "file:libs/domains/forepath/frontend/feature-landingpage/src/lib/blog/blog-locale.guard.ts",
       "type": "contains"
     },
     {

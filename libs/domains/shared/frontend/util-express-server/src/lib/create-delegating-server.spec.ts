@@ -303,6 +303,46 @@ describe('create-delegating-server', () => {
       }
     });
 
+    it('redirects localized requests to the forced locale and preserves path and query', async () => {
+      const handle = createDelegatingServer({
+        serverRoot,
+        availableLocales: ['en', 'de'],
+        defaultLocale: 'en',
+        port: 0,
+        shouldBypassStatic: (pathname) => pathname.startsWith('/blog'),
+        resolveForcedLocale: (pathname) => (pathname === '/blog' || pathname.startsWith('/blog/') ? 'en' : undefined),
+        loadLocaleServerModule: createLocaleLoader({ en: enHandler, de: deHandler }),
+      });
+
+      await handle.listen();
+      const address = handle.server.address();
+      const port = typeof address === 'object' && address ? address.port : 0;
+
+      try {
+        const overview = await httpGet(port, '/de/blog');
+        expect(overview.status).toBe(302);
+        expect(overview.headers['location']).toBe('/en/blog');
+
+        const post = await httpGet(port, '/de/blog/my-post?ref=newsletter');
+        expect(post.status).toBe(302);
+        expect(post.headers['location']).toBe('/en/blog/my-post?ref=newsletter');
+
+        const unprefixed = await httpGet(port, '/blog/my-post', { 'accept-language': 'de-DE,de;q=0.9' });
+        expect(unprefixed.status).toBe(200);
+        expect(unprefixed.body).toBe('ssr-en:/blog/my-post');
+
+        const english = await httpGet(port, '/en/blog/my-post');
+        expect(english.status).toBe(200);
+        expect(english.body).toBe('ssr-en:/blog/my-post');
+
+        const otherGermanPage = await httpGet(port, '/de/contact');
+        expect(otherGermanPage.status).toBe(200);
+        expect(otherGermanPage.body).toBe('ssr-de:/contact');
+      } finally {
+        await closeServer(handle.server);
+      }
+    });
+
     it('serves from disk when the memory cache was cleared after warm', async () => {
       const handle = createDelegatingServer({
         serverRoot,

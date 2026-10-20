@@ -29,6 +29,14 @@ export interface CreateDelegatingServerOptions {
   port?: number | string;
   shouldBypassStatic?: (pathname: string) => boolean;
   /**
+   * Optional hook that pins a (locale-stripped) pathname to a single locale, e.g.
+   * content that only exists in English. Requests that explicitly target another
+   * locale (`/de/blog/post`) are 302-redirected to the forced locale
+   * (`/en/blog/post`), preserving path and query; unprefixed requests are served
+   * by the forced locale directly. Return `undefined` to keep the resolved locale.
+   */
+  resolveForcedLocale?: (pathname: string) => string | undefined;
+  /**
    * Optional override for loading locale `server.mjs` modules (tests).
    * Defaults to a dynamic `import()` of the file URL.
    */
@@ -197,7 +205,7 @@ export function createDelegatingServer(options: CreateDelegatingServerOptions): 
   const availableLocales = options.availableLocales ?? ['en', 'de'];
   const defaultLocale = options.defaultLocale ?? 'en';
   const port = options.port ?? process.env['PORT'] ?? 4000;
-  const { serverRoot, shouldBypassStatic } = options;
+  const { serverRoot, shouldBypassStatic, resolveForcedLocale } = options;
   const loadLocaleServerModule = options.loadLocaleServerModule ?? defaultLoadLocaleServerModule;
   let localeServers = new Map<string, LocaleExpressHandler>();
 
@@ -212,7 +220,18 @@ export function createDelegatingServer(options: CreateDelegatingServerOptions): 
         return;
       }
 
-      const locale = resolveLocaleFromRequest(req, availableLocales, defaultLocale);
+      const resolvedLocale = resolveLocaleFromRequest(req, availableLocales, defaultLocale);
+      const resolvedPathname = stripLocalePrefixFromPath(requestUrl.pathname, resolvedLocale);
+      const forcedLocale = resolveForcedLocale?.(resolvedPathname);
+      const locale = forcedLocale && availableLocales.includes(forcedLocale) ? forcedLocale : resolvedLocale;
+
+      if (locale !== resolvedLocale && resolvedPathname !== requestUrl.pathname) {
+        res.writeHead(302, { Location: `/${locale}${resolvedPathname}${requestUrl.search}` });
+        res.end();
+
+        return;
+      }
+
       const localeServer = localeServers.get(locale);
 
       if (!localeServer) {
