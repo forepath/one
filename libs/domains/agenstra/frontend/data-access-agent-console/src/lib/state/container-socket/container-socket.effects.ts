@@ -33,6 +33,7 @@ import {
   chatTimelineFilterReceived,
   chatTimelineMessageReceived,
   chatTimelinePlanUpsert,
+  chatTimelineAgentTaskRunUpsert,
   chatTimelineRestoreSuccess,
   chatTimelineTicketBodyResult,
 } from '../chat-timeline/chat-timeline.actions';
@@ -52,6 +53,17 @@ import {
   CLIENT_CHAT_TICKET_UPSERT_SOCKET_EVENT,
 } from './client-chat-automation.constants';
 import { CLIENT_CHAT_PLAN_SOCKET_EVENT } from './client-chat-plan.constants';
+import {
+  CLIENT_AGENT_TASK_REMOVED_SOCKET_EVENT,
+  CLIENT_AGENT_TASK_UPSERT_SOCKET_EVENT,
+  CLIENT_CHAT_AGENT_TASK_SOCKET_EVENT,
+} from './client-chat-agent-task.constants';
+import {
+  agentTaskRemovedReceived,
+  agentTaskRunReceived,
+  agentTaskUpsertReceived,
+} from '../agent-tasks/agent-tasks.actions';
+import type { AgentTaskRemovedEvent, AgentTaskResponseDto } from '../agent-tasks/agent-tasks.types';
 import {
   connectSocket,
   connectSocketFailure,
@@ -91,6 +103,7 @@ import {
   type TerminalCreatedData,
   type TerminalOutputData,
   type TicketAutomationRunChatEventPayload,
+  type AgentTaskRunChatEventPayload,
   type TicketBodyResultPayload,
 } from './container-socket.types';
 
@@ -661,6 +674,24 @@ export const routeForwardedEvents$ = createEffect(
 
         if (event === CLIENT_CHAT_PLAN_SOCKET_EVENT && payload && typeof payload === 'object') {
           routed.push(chatTimelinePlanUpsert({ payload: payload as ChatPlanChatEventPayload }));
+        }
+
+        if (event === CLIENT_CHAT_AGENT_TASK_SOCKET_EVENT && payload && typeof payload === 'object') {
+          const taskRun = payload as AgentTaskRunChatEventPayload;
+
+          routed.push(chatTimelineAgentTaskRunUpsert({ payload: taskRun }));
+
+          if (taskRun.run) {
+            routed.push(agentTaskRunReceived({ run: taskRun.run }));
+          }
+        }
+
+        if (event === CLIENT_AGENT_TASK_UPSERT_SOCKET_EVENT && payload && typeof payload === 'object') {
+          routed.push(agentTaskUpsertReceived({ task: payload as unknown as AgentTaskResponseDto }));
+        }
+
+        if (event === CLIENT_AGENT_TASK_REMOVED_SOCKET_EVENT && payload && typeof payload === 'object') {
+          routed.push(agentTaskRemovedReceived({ event: payload as unknown as AgentTaskRemovedEvent }));
         }
 
         return from(routed);

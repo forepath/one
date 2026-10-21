@@ -7,18 +7,7 @@ import {
   type AgentContextSearchResponse,
 } from '@forepath/agenstra/shared/util-opencode-config';
 import { Public } from '@forepath/identity/backend';
-import {
-  Body,
-  Controller,
-  Get,
-  Headers,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Post,
-  Query,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import { Public as KeycloakPublic } from 'nest-keycloak-connect';
 
 import {
@@ -30,8 +19,7 @@ import { AgentContextApiService } from '../services/agent-context-api.service';
 import { AgentContextMcpService } from '../services/agent-context-mcp.service';
 import { AgentContextTicketsService } from '../services/agent-context-tickets.service';
 import type { AgentContextTicketRecord } from '../types/agent-context.types';
-
-const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+import { authenticateAgentContextCall } from '../utils/agent-context-auth.utils';
 
 /**
  * Agent-facing context API used by the worker `agenstra` MCP server.
@@ -116,15 +104,8 @@ export class AgentsContextController {
     return this.api.accessStatus(await this.resolveTicket(agentId, authorization, ticket), requestId);
   }
 
-  private async authenticate(agentId: string | undefined, authorization: string | undefined): Promise<string> {
-    const id = agentId?.trim() ?? '';
-    const [scheme, token] = (authorization ?? '').trim().split(/\s+/, 2);
-
-    if (!UUID_V4.test(id) || scheme !== 'Bearer' || !token || !(await this.contextMcp.verifyAgentToken(id, token))) {
-      throw new UnauthorizedException('Invalid agent context credentials');
-    }
-
-    return id;
+  private authenticate(agentId: string | undefined, authorization: string | undefined): Promise<string> {
+    return authenticateAgentContextCall(this.contextMcp, agentId, authorization);
   }
 
   private async resolveTicket(

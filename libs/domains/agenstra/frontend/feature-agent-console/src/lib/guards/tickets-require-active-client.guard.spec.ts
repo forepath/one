@@ -86,6 +86,18 @@ describe('ticketsRequireActiveClientGuard', () => {
     });
   });
 
+  it('redirects to the page of the matched route (e.g. /tasks/:id)', async () => {
+    clientsFacadeStub.activeClientId$ = of('550e8400-e29b-41d4-a716-446655440000');
+    mockRouter.createUrlTree.mockReturnValue({} as UrlTree);
+    const route = { paramMap: convertToParamMap({}), routeConfig: { path: 'tasks' } } as ActivatedRouteSnapshot;
+
+    await runGuard(route);
+
+    expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['tasks', '550e8400-e29b-41d4-a716-446655440000'], {
+      relativeTo: mockParentRoute,
+    });
+  });
+
   it('allows activation when no param and no workspace (board opens workspace picker)', async () => {
     const route = { paramMap: convertToParamMap({}) } as ActivatedRouteSnapshot;
     const result = await runGuard(route);

@@ -595,6 +595,53 @@ export interface TicketAutomationRunChatEventPayload {
   contextInjection?: ContextInjectionPayload;
 }
 
+export type AgentTaskRunStatus = 'running' | 'succeeded' | 'failed';
+
+export type AgentTaskRunTrigger = 'schedule' | 'manual';
+
+/** One run of a recurring agent task (REST + `agentTaskRunChatUpsert`). */
+export interface AgentTaskRunResponseDto {
+  id: string;
+  taskId: string;
+  clientId: string;
+  agentId: string;
+  trigger: AgentTaskRunTrigger;
+  status: AgentTaskRunStatus;
+  scheduledFor: string;
+  startedAt: string;
+  finishedAt: string | null;
+  outputExcerpt: string | null;
+  failureMessage: string | null;
+  /** Forwarded `chatEvent` frames of the run's turn (only when requested with `includeTranscript`). */
+  transcript?: Array<{ payload: unknown; timestamp: number }>;
+}
+
+export interface AgentTaskRunChatTaskSummary {
+  id: string;
+  clientId: string;
+  agentId: string;
+  title: string;
+  cronExpression: string;
+  timezone: string;
+  enabled: boolean;
+}
+
+export interface AgentTaskRunChatOpenAction {
+  type: 'openAgentTask';
+  taskId: string;
+  runId: string;
+  label: string;
+}
+
+/** Controller-originated `agentTaskRunChatUpsert` payload (clients namespace): run card in the agent's main chat. */
+export interface AgentTaskRunChatEventPayload {
+  timelineAt: string;
+  hydrate: boolean;
+  task: AgentTaskRunChatTaskSummary;
+  run: AgentTaskRunResponseDto;
+  actions: AgentTaskRunChatOpenAction[];
+}
+
 /**
  * Typed forwarded event payloads based on event name
  */
@@ -616,4 +663,5 @@ export type ForwardedEventPayload =
   | SuccessResponse<AgentEventEnvelope> // chatEvent
   | TicketAutomationRunChatEventPayload // ticketAutomationRunChatUpsert
   | ChatPlanChatEventPayload // chatPlanUpsert
+  | AgentTaskRunChatEventPayload // agentTaskRunChatUpsert
   | ErrorResponse; // error

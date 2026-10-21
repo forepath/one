@@ -355,6 +355,18 @@ Production: keep OpenSearch private; use TLS and secrets for credentials. Provis
 
 Scheduler interval variables (for example `AUTONOMOUS_TICKET_SCHEDULER_INTERVAL_MS`) configure **coordinator** repeat intervals in BullMQ.
 
+## Agent tasks
+
+Used by **agent controller** for [recurring agent tasks](../features/agent-tasks.md).
+
+| Variable                           | Description                                                     | Default   |
+| ---------------------------------- | --------------------------------------------------------------- | --------- |
+| `AGENT_TASK_SCHEDULER_INTERVAL_MS` | Coordinator interval (claims due occurrences, fails stale runs) | `30000`   |
+| `AGENT_TASK_SCHEDULER_BATCH_SIZE`  | Due tasks claimed per coordinator run                           | `25`      |
+| `AGENT_TASK_RUN_TIMEOUT_MS`        | Max wait for the agent's answer per run                         | `1800000` |
+| `AGENT_TASK_MIN_INTERVAL_MINUTES`  | Minimum distance between two occurrences of one task            | `5`       |
+| `AGENT_TASKS_MAX_PER_AGENT`        | Tasks per environment (console and agent-created)               | `25`      |
+
 ## OpenTelemetry
 
 Applies to **Backend Agent Controller** and **Backend Agent Manager**. See [OpenTelemetry](../features/opentelemetry.md).

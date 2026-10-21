@@ -22,6 +22,23 @@ describe('resolveAgentChatToolDisplay', () => {
     expect(resolveAgentChatToolDisplay(' Agenstra-Context_Search ').label).toBe('Search context');
   });
 
+  it('maps the platform task tools to readable labels with and without the server prefix', () => {
+    expect(resolveAgentChatToolDisplay('agenstra_tasks_list')).toEqual({ label: 'List tasks', icon: 'list-task' });
+    expect(resolveAgentChatToolDisplay('agenstra_tasks_get')).toEqual({ label: 'Read task', icon: 'alarm' });
+    expect(resolveAgentChatToolDisplay('agenstra_tasks_create')).toEqual({
+      label: 'Create task',
+      icon: 'calendar-plus',
+    });
+    expect(resolveAgentChatToolDisplay('agenstra_tasks_update')).toEqual({
+      label: 'Update task',
+      icon: 'calendar-check',
+    });
+    expect(resolveAgentChatToolDisplay('agenstra_tasks_delete')).toEqual({ label: 'Delete task', icon: 'calendar-x' });
+    expect(resolveAgentChatToolDisplay('agenstra_tasks_run')).toEqual({ label: 'Run task now', icon: 'play-circle' });
+    expect(resolveAgentChatToolDisplay('tasks_create').label).toBe('Create task');
+    expect(resolveAgentChatToolDisplay(' Agenstra-Tasks_Run ').label).toBe('Run task now');
+  });
+
   it('keeps unknown tools as reported', () => {
     expect(resolveAgentChatToolDisplay('github_create_issue')).toEqual({
       label: 'github_create_issue',

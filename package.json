@@ -171,6 +171,7 @@
     "bullmq": "5.76.10",
     "class-transformer": "0.5.1",
     "cookieconsent": "3.1.1",
+    "cron-parser": "4.9.0",
     "date-fns": "4.3.0",
     "dockerode": "5.0.0",
     "express": "4.21.2",

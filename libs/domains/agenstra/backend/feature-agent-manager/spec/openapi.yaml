@@ -491,6 +491,159 @@ paths:
                 $ref: '#/components/schemas/AgentContextAccessResponse'
         '404':
           description: Unknown or expired request
+  /agent-context/tasks:
+    get:
+      summary: List the calling agent's recurring tasks
+      description: |
+        Agent-facing task API used by the worker `agenstra` MCP server (`agenstra_tasks_*` tools). Requests are bound to
+        the authenticated agent and forwarded to the controller (`agentTaskRequest`); an agent only reaches its own tasks.
+      operationId: listAgentTasks
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+      responses:
+        '200':
+          description: Tasks of the agent
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [tasks]
+                properties:
+                  tasks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AgentTaskSummary'
+        '401':
+          description: Invalid agent context credentials
+        '503':
+          description: No controller connection is available
+    post:
+      summary: Create a recurring task for the calling agent
+      description: "`model` defaults to the model of the agent's most recent visible chat turn."
+      operationId: createAgentTask
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentTaskInput'
+      responses:
+        '201':
+          description: Created task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentTaskSummary'
+        '400':
+          description: Invalid input (schedule, time zone, model, missing fields)
+        '409':
+          description: Task limit per agent reached
+  /agent-context/tasks/{taskId}:
+    parameters:
+      - $ref: '#/components/parameters/agentContextAgentId'
+      - in: path
+        name: taskId
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      summary: Read one of the calling agent's tasks with recent runs
+      operationId: getAgentTask
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      responses:
+        '200':
+          description: Task and recent runs
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [task, runs]
+                properties:
+                  task:
+                    $ref: '#/components/schemas/AgentTaskSummary'
+                  runs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AgentTaskRunSummary'
+        '404':
+          description: Unknown task (or a task of another agent)
+    patch:
+      summary: Change fields of one of the calling agent's tasks
+      operationId: updateAgentTask
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentTaskInput'
+      responses:
+        '200':
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentTaskSummary'
+        '400':
+          description: Invalid input
+        '404':
+          description: Unknown task
+    delete:
+      summary: Delete one of the calling agent's tasks
+      operationId: deleteAgentTask
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          description: Unknown task
+  /agent-context/tasks/{taskId}/runs:
+    post:
+      summary: Queue an immediate run of one of the calling agent's tasks
+      operationId: runAgentTask
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '202':
+          description: '`queued: false` when a run of the task is still in progress'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [taskId, queued]
+                properties:
+                  taskId:
+                    type: string
+                  queued:
+                    type: boolean
+                  message:
+                    type: string
+        '404':
+          description: Unknown task
   /agents/{id}/questions/{questionId}/reply:
     post:
       summary: Reply to an OpenCode question / form request
@@ -2690,6 +2843,122 @@ components:
             type: string
         message:
           type: string
+    AgentTaskInput:
+      type: object
+      description: All fields are required on create except `timezone` (UTC), `model` and `enabled` (true).
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        prompt:
+          type: string
+          maxLength: 20000
+        cronExpression:
+          type: string
+          maxLength: 128
+          description: Five-field cron expression (minute hour day-of-month month day-of-week)
+        timezone:
+          type: string
+          maxLength: 64
+        model:
+          type: string
+          maxLength: 256
+          description: OpenCode provider/model
+        enabled:
+          type: boolean
+    AgentTaskSummary:
+      type: object
+      required:
+        [
+          id,
+          agentId,
+          title,
+          prompt,
+          cronExpression,
+          timezone,
+          model,
+          enabled,
+          createdBy,
+          updatedBy,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        agentId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        prompt:
+          type: string
+        cronExpression:
+          type: string
+        timezone:
+          type: string
+        model:
+          type: string
+        enabled:
+          type: boolean
+        nextRunAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastRunAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastRunStatus:
+          type: string
+          enum: [running, succeeded, failed]
+          nullable: true
+        createdBy:
+          type: string
+          enum: [user, agent]
+        updatedBy:
+          type: string
+          enum: [user, agent]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    AgentTaskRunSummary:
+      type: object
+      required: [id, taskId, agentId, trigger, status, scheduledFor, startedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        taskId:
+          type: string
+          format: uuid
+        agentId:
+          type: string
+          format: uuid
+        trigger:
+          type: string
+          enum: [schedule, manual]
+        status:
+          type: string
+          enum: [running, succeeded, failed]
+        scheduledFor:
+          type: string
+          format: date-time
+        startedAt:
+          type: string
+          format: date-time
+        finishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        outputExcerpt:
+          type: string
+          nullable: true
+        failureMessage:
+          type: string
+          nullable: true
     EnvironmentProgressDto:
       type: object
       required:

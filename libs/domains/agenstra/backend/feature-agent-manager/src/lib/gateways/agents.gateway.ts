@@ -1,3 +1,8 @@
+import {
+  AGENT_TASK_REQUEST_EVENT,
+  type AgentTaskControllerRequest,
+  type AgentTaskControllerResponse,
+} from '@forepath/agenstra/shared/util-opencode-config';
 import { resolveWebsocketCorsOrigin } from '@forepath/shared/shared/util-network-address';
 import { BadRequestException, Logger, NotFoundException, OnModuleInit, Optional } from '@nestjs/common';
 import {
@@ -23,7 +28,7 @@ import {
 import {
   isChatPlanResumeSessionSuffix,
   isReservedChatResumeSessionSuffix,
-  isTicketAutomationResumeSessionSuffix,
+  isUnattendedAutomationResumeSessionSuffix,
 } from '../constants/chat-session.constants';
 import { AgentEventEnvelope, AgentInteractionQueryPayload, AgentResponseMode } from '../providers/agent-events.types';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
@@ -48,6 +53,7 @@ import { OpenCodePtyService } from '../providers/opencode/opencode-pty.service';
 import { AgentContextApiService } from '../services/agent-context-api.service';
 import { AgentContextMcpService } from '../services/agent-context-mcp.service';
 import { AgentContextTicketsService } from '../services/agent-context-tickets.service';
+import { AgentTasksApiService } from '../services/agent-tasks-api.service';
 import { AgentsService } from '../services/agents.service';
 import { DockerService } from '../services/docker.service';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
@@ -372,6 +378,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     @Optional() private readonly contextTickets?: AgentContextTicketsService,
     @Optional() private readonly contextMcp?: AgentContextMcpService,
     @Optional() private readonly contextApi?: AgentContextApiService,
+    @Optional() private readonly agentTasksApi?: AgentTasksApiService,
   ) {}
 
   onModuleInit(): void {
@@ -397,6 +404,9 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
         this.publishContextAccessQuestion(record, requestId, prompt),
       publishInteractionAnswered: (agentId, questionIds, message) =>
         this.publishInteractionAnswered(agentId, questionIds, message),
+    });
+    this.agentTasksApi?.registerBridge({
+      requestControllerTasks: (agentId, request) => this.requestControllerTasks(agentId, request),
     });
   }
 
@@ -604,7 +614,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
   }
 
   /**
-   * Auto-approval sessions (trusted ticket automation, read-only plan sessions) never ask; other hidden
+   * Auto-approval sessions (trusted ticket automation / task runs, read-only plan sessions) never ask; other hidden
    * helper sessions cannot show a prompt and only see pre-granted context; visible chats ask the user.
    */
   private resolveContextAccessMode(
@@ -612,7 +622,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     resumeSessionSuffix: string | undefined,
     data: { unattendedAutomation?: boolean },
   ): AgentContextAccessMode {
-    if (isTicketAutomationResumeSessionSuffix(resumeSessionSuffix) && data.unattendedAutomation === true) {
+    if (isUnattendedAutomationResumeSessionSuffix(resumeSessionSuffix) && data.unattendedAutomation === true) {
       return 'auto';
     }
 
@@ -631,20 +641,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     record: AgentContextTicketRecord,
     request: AgentContextControllerRequest,
   ): Promise<AgentContextControllerResponse> {
-    const candidates: Socket[] = [];
-    const origin = record.socketId ? this.socketById.get(record.socketId) : undefined;
-
-    if (origin?.connected && this.authenticatedClients.get(origin.id) === record.agentId) {
-      candidates.push(origin);
-    }
-
-    for (const [socketId, agentId] of this.authenticatedClients.entries()) {
-      const socket = this.socketById.get(socketId);
-
-      if (agentId === record.agentId && socket?.connected && !candidates.includes(socket)) {
-        candidates.push(socket);
-      }
-    }
+    const candidates = this.controllerSocketsForAgent(record.agentId, record.socketId);
 
     for (const socket of candidates) {
       try {
@@ -663,6 +660,56 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     }
 
     return { ok: false, error: 'No controller connection is available to resolve context' };
+  }
+
+  /**
+   * Read / write the agent's own tasks through a controller connection of this agent (Socket.IO ack). Reads
+   * fall through to the next socket on failure; mutations use one socket only so a slow ack cannot apply twice.
+   */
+  private async requestControllerTasks(
+    agentId: string,
+    request: AgentTaskControllerRequest,
+  ): Promise<AgentTaskControllerResponse> {
+    const candidates = this.controllerSocketsForAgent(agentId);
+    const attempts = request.op === 'list' || request.op === 'get' ? candidates : candidates.slice(0, 1);
+
+    for (const socket of attempts) {
+      try {
+        const response = (await socket
+          .timeout(AGENT_CONTEXT_REQUEST_TIMEOUT_MS)
+          .emitWithAck(AGENT_TASK_REQUEST_EVENT, { ...request, agentId })) as AgentTaskControllerResponse | undefined;
+
+        if (response && typeof response === 'object' && typeof response.ok === 'boolean') {
+          return response;
+        }
+      } catch (error) {
+        const err = error as { message?: string };
+
+        this.logger.debug(`Task request via socket ${socket.id} failed: ${err.message}`);
+      }
+    }
+
+    return { ok: false, error: 'No controller connection is available to manage tasks', status: 503 };
+  }
+
+  /** Connected controller sockets logged into this agent; `preferredSocketId` (when valid) comes first. */
+  private controllerSocketsForAgent(agentId: string, preferredSocketId?: string): Socket[] {
+    const candidates: Socket[] = [];
+    const preferred = preferredSocketId ? this.socketById.get(preferredSocketId) : undefined;
+
+    if (preferred?.connected && this.authenticatedClients.get(preferred.id) === agentId) {
+      candidates.push(preferred);
+    }
+
+    for (const [socketId, authenticatedAgentId] of this.authenticatedClients.entries()) {
+      const socket = this.socketById.get(socketId);
+
+      if (authenticatedAgentId === agentId && socket?.connected && !candidates.includes(socket)) {
+        candidates.push(socket);
+      }
+    }
+
+    return candidates;
   }
 
   /** Permission-style prompt for additional context (answered via the permission reply endpoint). */
@@ -891,10 +938,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     /** Hidden session suffixes must never persist or broadcast into user-visible chats. */
     hidden: boolean;
   }> {
-    if (isTicketAutomationResumeSessionSuffix(data.resumeSessionSuffix)) {
+    if (isUnattendedAutomationResumeSessionSuffix(data.resumeSessionSuffix)) {
       if (data.unattendedAutomation !== true) {
         throw new BadRequestException(
-          'Ticket automation resumeSessionSuffix requires unattendedAutomation trust marker',
+          'Unattended automation resumeSessionSuffix requires unattendedAutomation trust marker',
         );
       }
 
@@ -1895,6 +1942,11 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       socket.emit('error', createErrorResponse(message, code));
 
       return;
+    }
+
+    if (!chatContext.hidden) {
+      // Default model for tasks the agent creates from this chat (agenstra_tasks_create without a model).
+      this.agentTasksApi?.rememberChatModel(agentUuid, data.model);
     }
 
     // Reserved session suffixes must never persist/broadcast into user-visible chat history.

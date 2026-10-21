@@ -1,0 +1,121 @@
+@use '../section.scss';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  width: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.section__content-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.section__row {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+}
+
+.section__column {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.agent-tasks-sidebar {
+  flex: 0 0 340px;
+  max-width: 45%;
+}
+
+.agent-tasks-list {
+  min-height: 0;
+  overflow: auto;
+}
+
+.agent-tasks-detail {
+  min-width: 0;
+}
+
+/* Task facts + instructions; scrolls on its own so the session history keeps most of the column. */
+.agent-tasks-detail__info {
+  flex: 0 1 auto;
+  max-height: 40%;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Scroll root of the session history (infinite scroll sentinel lives inside). */
+.agent-tasks-detail__history {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.agent-tasks-detail__prompt {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+}
+
+/*
+ * Session history rows share one gutter with the "Session history" bar and the info block above (`fpc-page-header` /
+ * `p-3` = 1rem), for the clickable run header as well as the expanded content. All content blocks (event rows, answers,
+ * notices) are separated by the same gap.
+ */
+.agent-tasks-session__runs {
+  --agent-tasks-session-gutter-x: 1rem;
+  --agent-tasks-session-gutter-y: 0.75rem;
+  --agent-tasks-session-gap: 0.5rem;
+
+  // Must out-rank the condensed accordion rules (`.fpc-accordion-item--condensed[_nghost] .x[_ngcontent]`).
+  ::ng-deep .fpc-accordion-item--condensed .accordion-button.fpc-accordion-item__button {
+    padding: var(--agent-tasks-session-gutter-y) var(--agent-tasks-session-gutter-x);
+    gap: var(--agent-tasks-session-gap);
+  }
+
+  ::ng-deep .fpc-accordion-item--condensed .accordion-collapse > .accordion-body {
+    padding: 0 var(--agent-tasks-session-gutter-x) var(--agent-tasks-session-gutter-y);
+  }
+
+  // Chat event rows bring their own bottom margin for the chat thread; spacing here comes from the body gap.
+  ::ng-deep framework-agent-chat-event-row > .mb-2 {
+    margin-bottom: 0 !important;
+  }
+}
+
+.agent-tasks-session__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--agent-tasks-session-gap);
+  min-width: 0;
+}
+
+.agent-tasks-session__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--agent-tasks-session-gap);
+}
+
+.agent-tasks-session__message-body {
+  padding: var(--agent-tasks-session-gap) var(--agent-tasks-session-gutter-x);
+}
+
+.agent-tasks-session__message {
+  max-width: min(46rem, 90%);
+}
+
+.agent-tasks-session__plain {
+  white-space: pre-wrap;
+  word-break: break-word;
+}

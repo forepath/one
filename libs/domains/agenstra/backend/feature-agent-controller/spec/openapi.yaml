@@ -3651,6 +3651,276 @@ paths:
           description: User does not have access to this client
         '404':
           description: Plan not found for this client/agent
+  /clients/{clientId}/agent-tasks:
+    get:
+      summary: List recurring agent tasks of a workspace
+      description: Requires workspace access and the `agents:chats` scope (PAT).
+      operationId: listAgentTasks
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: agentId
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tasks (oldest first)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentTaskResponseDto'
+        '403':
+          description: User does not have access to this client
+  /clients/{clientId}/agents/{agentId}/tasks:
+    post:
+      summary: Create a recurring agent task
+      operationId: createAgentTask
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAgentTaskDto'
+      responses:
+        '201':
+          description: Created task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentTaskResponseDto'
+        '400':
+          description: Invalid schedule, time zone or model
+        '403':
+          description: User does not have access to this client
+        '404':
+          description: Agent not found in this workspace
+        '409':
+          description: Task limit per agent reached
+  /clients/{clientId}/agents/{agentId}/tasks/{taskId}:
+    get:
+      summary: Agent task with recent runs
+      operationId: getAgentTask
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Task and recent runs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentTaskDetailResponseDto'
+        '403':
+          description: User does not have access to this client
+        '404':
+          description: Task not found
+    patch:
+      summary: Update an agent task
+      operationId: updateAgentTask
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAgentTaskDto'
+      responses:
+        '200':
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentTaskResponseDto'
+        '400':
+          description: Invalid schedule, time zone or model
+        '403':
+          description: User does not have access to this client
+        '404':
+          description: Task not found
+    delete:
+      summary: Delete an agent task and its runs
+      operationId: deleteAgentTask
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Deleted
+        '403':
+          description: User does not have access to this client
+        '404':
+          description: Task not found
+  /clients/{clientId}/agents/{agentId}/tasks/{taskId}/runs:
+    get:
+      summary: Run history of an agent task (newest first)
+      operationId: listAgentTaskRuns
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+        - in: query
+          name: offset
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Runs to skip (newest first) — pages the session history.
+        - in: query
+          name: includeTranscript
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: Include each run's chat events (session history of the task).
+      responses:
+        '200':
+          description: Runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentTaskRunResponseDto'
+        '403':
+          description: User does not have access to this client
+        '404':
+          description: Task not found
+    post:
+      summary: Queue an immediate run (also for paused tasks)
+      operationId: runAgentTaskNow
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: agentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: taskId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '202':
+          description: '`queued: false` when a run of the task is still in progress'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [taskId, queued]
+                properties:
+                  taskId:
+                    type: string
+                    format: uuid
+                  queued:
+                    type: boolean
+        '403':
+          description: User does not have access to this client
+        '404':
+          description: Task not found
   /clients/{id}/configuration-overrides:
     get:
       summary: List effective workspace configuration overrides (proxied)
@@ -4959,6 +5229,8 @@ paths:
                 autonomous_ticket_commit_message,
                 chat_plan_turn,
                 chat_plan_execute,
+                agent_task_run,
+                agent_task_run,
               ]
           description: Filter by interaction type (normal chat vs prompt enhancement metrics)
         - in: query
@@ -5299,6 +5571,8 @@ paths:
                 autonomous_ticket_commit_message,
                 chat_plan_turn,
                 chat_plan_execute,
+                agent_task_run,
+                agent_task_run,
               ]
           description: Filter by interaction type (normal chat vs prompt enhancement metrics)
         - in: query
@@ -8184,6 +8458,7 @@ components:
               autonomous_ticket_commit_message,
               chat_plan_turn,
               chat_plan_execute,
+              agent_task_run,
             ]
           description: Normal chat vs prompt enhancement (magic wand) metrics
         wordCount:
@@ -9228,6 +9503,236 @@ components:
         updatedAt:
           type: string
           format: date-time
+    CreateAgentTaskDto:
+      type: object
+      required: [title, prompt, cronExpression, model]
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        prompt:
+          type: string
+          maxLength: 20000
+        cronExpression:
+          type: string
+          maxLength: 128
+          description: Five-field cron expression (minute hour day-of-month month day-of-week); occurrences at least AGENT_TASK_MIN_INTERVAL_MINUTES apart
+        timezone:
+          type: string
+          maxLength: 64
+          description: IANA time zone (default UTC)
+        model:
+          type: string
+          maxLength: 256
+          description: OpenCode provider/model
+        enabled:
+          type: boolean
+    UpdateAgentTaskDto:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        prompt:
+          type: string
+          maxLength: 20000
+        cronExpression:
+          type: string
+          maxLength: 128
+          description: Five-field cron expression (minute hour day-of-month month day-of-week); occurrences at least AGENT_TASK_MIN_INTERVAL_MINUTES apart
+        timezone:
+          type: string
+          maxLength: 64
+          description: IANA time zone (default UTC)
+        model:
+          type: string
+          maxLength: 256
+          description: OpenCode provider/model
+        enabled:
+          type: boolean
+    AgentTaskResponseDto:
+      type: object
+      required:
+        [
+          id,
+          clientId,
+          agentId,
+          title,
+          prompt,
+          cronExpression,
+          timezone,
+          model,
+          enabled,
+          createdBy,
+          updatedBy,
+          createdAt,
+          updatedAt,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        agentId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        prompt:
+          type: string
+        cronExpression:
+          type: string
+        timezone:
+          type: string
+        model:
+          type: string
+        enabled:
+          type: boolean
+        nextRunAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastRunAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastRunStatus:
+          type: string
+          enum: [running, succeeded, failed]
+          nullable: true
+        createdBy:
+          type: string
+          enum: [user, agent]
+        updatedBy:
+          type: string
+          enum: [user, agent]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    AgentTaskRunResponseDto:
+      type: object
+      required:
+        [
+          id,
+          taskId,
+          clientId,
+          agentId,
+          trigger,
+          status,
+          scheduledFor,
+          startedAt,
+        ]
+      properties:
+        id:
+          type: string
+          format: uuid
+        taskId:
+          type: string
+          format: uuid
+        clientId:
+          type: string
+          format: uuid
+        agentId:
+          type: string
+          format: uuid
+        trigger:
+          type: string
+          enum: [schedule, manual]
+        status:
+          type: string
+          enum: [running, succeeded, failed]
+        scheduledFor:
+          type: string
+          format: date-time
+        startedAt:
+          type: string
+          format: date-time
+        finishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        outputExcerpt:
+          type: string
+          nullable: true
+          description: Tail of the agent's final answer (max 4000 characters)
+        failureMessage:
+          type: string
+          nullable: true
+        transcript:
+          type: array
+          description: Forwarded `chatEvent` frames of the run's turn (only with `includeTranscript=true`; deltas omitted, strings capped).
+          items:
+            type: object
+            required: [payload, timestamp]
+            properties:
+              payload:
+                type: object
+              timestamp:
+                type: number
+    AgentTaskDetailResponseDto:
+      type: object
+      required: [task, runs]
+      properties:
+        task:
+          $ref: '#/components/schemas/AgentTaskResponseDto'
+        runs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentTaskRunResponseDto'
+    AgentTaskRunChatEventDto:
+      type: object
+      description: Socket `agentTaskRunChatUpsert` (namespace clients) — run card in the agent's main chat.
+      required: [timelineAt, hydrate, task, run, actions]
+      properties:
+        timelineAt:
+          type: string
+          format: date-time
+        hydrate:
+          type: boolean
+        task:
+          type: object
+          required:
+            [id, clientId, agentId, title, cronExpression, timezone, enabled]
+          properties:
+            id:
+              type: string
+              format: uuid
+            clientId:
+              type: string
+              format: uuid
+            agentId:
+              type: string
+              format: uuid
+            title:
+              type: string
+            cronExpression:
+              type: string
+            timezone:
+              type: string
+            enabled:
+              type: boolean
+        run:
+          $ref: '#/components/schemas/AgentTaskRunResponseDto'
+        actions:
+          type: array
+          items:
+            type: object
+            required: [type, taskId, runId, label]
+            properties:
+              type:
+                type: string
+                enum: [openAgentTask]
+              taskId:
+                type: string
+              runId:
+                type: string
+              label:
+                type: string
     ChatPlanChatEventDto:
       type: object
       description: >

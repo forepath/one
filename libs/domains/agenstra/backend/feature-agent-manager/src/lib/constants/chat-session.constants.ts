@@ -1,3 +1,5 @@
+import { isAgentTaskResumeSessionSuffix } from '@forepath/agenstra/shared/util-opencode-config';
+
 /**
  * User-visible chat session kinds stored in `agent_chat_sessions`.
  * Hidden session suffixes (prompt enhance, ticket body, automation, plan) are not persisted as rows.
@@ -18,7 +20,8 @@ export const CHAT_PLAN_RESUME_SESSION_SUFFIX_PREFIX = '-plan-';
 /**
  * Reserved resumeSessionSuffix values used by background/hidden flows.
  * These must never collide with user-visible chat session suffixes.
- * Dynamic `-plan-{uuid}` suffixes are also reserved via {@link isChatPlanResumeSessionSuffix}.
+ * Dynamic `-plan-{uuid}` and `-task-{uuid}` suffixes are also reserved via {@link isChatPlanResumeSessionSuffix}
+ * and `isAgentTaskResumeSessionSuffix`.
  */
 export const RESERVED_CHAT_RESUME_SESSION_SUFFIXES = [
   '-prompt-enhance',
@@ -55,7 +58,7 @@ export function isReservedChatResumeSessionSuffix(suffix: string | undefined): b
     return false;
   }
 
-  if (isChatPlanResumeSessionSuffix(suffix)) {
+  if (isChatPlanResumeSessionSuffix(suffix) || isAgentTaskResumeSessionSuffix(suffix)) {
     return true;
   }
 
@@ -69,6 +72,14 @@ export function isTicketAutomationResumeSessionSuffix(suffix: string | undefined
   }
 
   return (TICKET_AUTOMATION_RESUME_SESSION_SUFFIXES as readonly string[]).includes(suffix);
+}
+
+/**
+ * Unattended hidden sessions (ticket automation, recurring agent task runs): nobody can answer prompts, so they
+ * run with the platform automation agent, auto-reply permissions and require the controller trust marker.
+ */
+export function isUnattendedAutomationResumeSessionSuffix(suffix: string | undefined): boolean {
+  return isTicketAutomationResumeSessionSuffix(suffix) || isAgentTaskResumeSessionSuffix(suffix);
 }
 
 /** Implementation-loop sessions request structured continue/complete turn status. */

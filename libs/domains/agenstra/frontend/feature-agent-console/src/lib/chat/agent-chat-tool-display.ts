@@ -126,6 +126,43 @@ export function resolveAgentChatToolDisplay(toolNameOrKind: string | undefined):
         label: $localize`:@@featureChat-toolDisplayContextRequestAccess:Request context access`,
         icon: 'key',
       };
+    // Platform task tools (`agenstra_tasks_*`): the agent manages its own recurring tasks.
+    case 'agenstra_tasks_list':
+    case 'tasks_list':
+      return {
+        label: $localize`:@@featureChat-toolDisplayTasksList:List tasks`,
+        icon: 'list-task',
+      };
+    case 'agenstra_tasks_get':
+    case 'tasks_get':
+      return {
+        label: $localize`:@@featureChat-toolDisplayTasksGet:Read task`,
+        icon: 'alarm',
+      };
+    case 'agenstra_tasks_create':
+    case 'tasks_create':
+      return {
+        label: $localize`:@@featureChat-toolDisplayTasksCreate:Create task`,
+        icon: 'calendar-plus',
+      };
+    case 'agenstra_tasks_update':
+    case 'tasks_update':
+      return {
+        label: $localize`:@@featureChat-toolDisplayTasksUpdate:Update task`,
+        icon: 'calendar-check',
+      };
+    case 'agenstra_tasks_delete':
+    case 'tasks_delete':
+      return {
+        label: $localize`:@@featureChat-toolDisplayTasksDelete:Delete task`,
+        icon: 'calendar-x',
+      };
+    case 'agenstra_tasks_run':
+    case 'tasks_run':
+      return {
+        label: $localize`:@@featureChat-toolDisplayTasksRun:Run task now`,
+        icon: 'play-circle',
+      };
     default:
       if (!name) {
         return {

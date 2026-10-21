@@ -1,6 +1,7 @@
 import { ChatActor } from '../container-socket/container-socket.types';
 
 import {
+  chatTimelineAgentTaskRunUpsert,
   chatTimelineAutomationUpsert,
   chatTimelineBatchReceived,
   chatTimelineClear,
@@ -398,5 +399,50 @@ describe('chatTimelineReducer', () => {
     expect(state.plans).toHaveLength(1);
     expect(state.plans[0]?.payload.plan.status).toBe('ready');
     expect(state.plans[0]?.payload.plan.planMarkdown).toBe('# Done');
+  });
+
+  it('upserts agent task run cards by run id', () => {
+    const payload = (status: 'running' | 'succeeded', timelineAt: string) => ({
+      timelineAt,
+      hydrate: false,
+      task: {
+        id: 'task-1',
+        clientId: 'c1',
+        agentId: 'a1',
+        title: 'Daily report',
+        cronExpression: '0 9 * * *',
+        timezone: 'UTC',
+        enabled: true,
+      },
+      run: {
+        id: 'run-1',
+        taskId: 'task-1',
+        clientId: 'c1',
+        agentId: 'a1',
+        trigger: 'schedule' as const,
+        status,
+        scheduledFor: timelineAt,
+        startedAt: timelineAt,
+        finishedAt: null,
+        outputExcerpt: null,
+        failureMessage: null,
+      },
+      actions: [{ type: 'openAgentTask' as const, taskId: 'task-1', runId: 'run-1', label: 'View task' }],
+    });
+    const started = chatTimelineReducer(
+      initialChatTimelineState,
+      chatTimelineAgentTaskRunUpsert({ payload: payload('running', new Date(1000).toISOString()) }),
+    );
+    const finished = chatTimelineReducer(
+      started,
+      chatTimelineAgentTaskRunUpsert({ payload: payload('succeeded', new Date(2000).toISOString()) }),
+    );
+
+    expect(started.agentTaskRuns).toHaveLength(1);
+    expect(finished.agentTaskRuns).toHaveLength(1);
+    expect(finished.agentTaskRuns[0]).toEqual(
+      expect.objectContaining({ event: 'agentTaskRunChatUpsert', timestamp: 2000 }),
+    );
+    expect(finished.agentTaskRuns[0].payload.run.status).toBe('succeeded');
   });
 });

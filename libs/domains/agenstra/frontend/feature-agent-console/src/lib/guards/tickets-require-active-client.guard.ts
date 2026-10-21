@@ -6,10 +6,12 @@ import { ClientsFacade } from '@forepath/agenstra/frontend/data-access-agent-con
 import { map, take } from 'rxjs';
 
 /**
- * Tickets routing:
- * - `/tickets/:clientId` - activates that workspace and shows its board (deep link / bookmark).
- * - `/tickets` - redirects to `/tickets/{activeClientId}` when a workspace is already selected;
- *   otherwise allows activation so the board can open the workspace picker (locale prefix via `relativeTo`).
+ * Workspace-scoped page routing (tickets, knowledge, tasks):
+ * - `/<page>/:clientId` - activates that workspace and shows its page (deep link / bookmark).
+ * - `/<page>` - redirects to `/<page>/{activeClientId}` when a workspace is already selected;
+ *   otherwise allows activation so the page can open the workspace picker (locale prefix via `relativeTo`).
+ *
+ * `<page>` is the first segment of the matched route path (defaults to `tickets`).
  */
 export const ticketsRequireActiveClientGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
   const clientsFacade = inject(ClientsFacade);
@@ -28,7 +30,7 @@ export const ticketsRequireActiveClientGuard: CanActivateFn = (route: ActivatedR
     take(1),
     map((activeId) => {
       if (activeId) {
-        return router.createUrlTree(['tickets', activeId], { relativeTo });
+        return router.createUrlTree([route.routeConfig?.path?.split('/')[0] || 'tickets', activeId], { relativeTo });
       }
 
       return true;

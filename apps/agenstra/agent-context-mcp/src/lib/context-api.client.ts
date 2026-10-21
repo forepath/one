@@ -2,10 +2,17 @@ import {
   AGENSTRA_CONTEXT_API_HEADERS,
   AGENSTRA_CONTEXT_API_ROUTE,
   AGENSTRA_CONTEXT_MCP_ENV,
+  AGENSTRA_TASKS_API_SEGMENT,
   type AgentContextAccessResponse,
   type AgentContextGetResponse,
   type AgentContextListResponse,
   type AgentContextSearchResponse,
+  type AgentTaskCreateInput,
+  type AgentTaskDetailResponse,
+  type AgentTaskListResponse,
+  type AgentTaskRunNowResponse,
+  type AgentTaskSummary,
+  type AgentTaskUpdateInput,
 } from '@forepath/agenstra/shared/util-opencode-config';
 
 export interface ContextApiConfig {
@@ -51,7 +58,7 @@ export function readContextApiConfig(env: NodeJS.ProcessEnv = process.env): Cont
 
 type FetchFn = typeof fetch;
 
-/** HTTP client for the agent-manager context API (`/agent-context`). */
+/** HTTP client for the agent-manager context API (`/agent-context`, incl. the agent's own tasks). */
 export class ContextApiClient {
   constructor(
     private readonly config: ContextApiConfig,
@@ -103,8 +110,32 @@ export class ContextApiClient {
     );
   }
 
+  listTasks(): Promise<AgentTaskListResponse> {
+    return this.request('GET', AGENSTRA_TASKS_API_SEGMENT);
+  }
+
+  getTask(taskId: string): Promise<AgentTaskDetailResponse> {
+    return this.request('GET', `${AGENSTRA_TASKS_API_SEGMENT}/${encodeURIComponent(taskId)}`);
+  }
+
+  createTask(input: AgentTaskCreateInput): Promise<AgentTaskSummary> {
+    return this.request('POST', AGENSTRA_TASKS_API_SEGMENT, input);
+  }
+
+  updateTask(taskId: string, input: AgentTaskUpdateInput): Promise<AgentTaskSummary> {
+    return this.request('PATCH', `${AGENSTRA_TASKS_API_SEGMENT}/${encodeURIComponent(taskId)}`, input);
+  }
+
+  deleteTask(taskId: string): Promise<void> {
+    return this.request('DELETE', `${AGENSTRA_TASKS_API_SEGMENT}/${encodeURIComponent(taskId)}`);
+  }
+
+  runTask(taskId: string): Promise<AgentTaskRunNowResponse> {
+    return this.request('POST', `${AGENSTRA_TASKS_API_SEGMENT}/${encodeURIComponent(taskId)}/runs`, {});
+  }
+
   private async request<T>(
-    method: 'GET' | 'POST',
+    method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
     path: string,
     body?: unknown,
     timeoutMs = DEFAULT_TIMEOUT_MS,

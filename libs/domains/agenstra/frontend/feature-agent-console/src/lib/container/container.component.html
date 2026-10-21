@@ -119,6 +119,17 @@
         <span class="small" i18n="@@featureContainer-pages">Pages</span>
       </a>
       <a
+        [routerLink]="tasksSidebarLink()"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        class="sidebar__item"
+        i18n-title="@@featureContainer-tasksTitle"
+        title="Tasks"
+      >
+        <i class="bi bi-alarm me-1"></i>
+        <span class="small" i18n="@@featureContainer-tasks">Tasks</span>
+      </a>
+      <a
         routerLink="/audit"
         routerLinkActive="active"
         class="sidebar__item"

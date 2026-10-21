@@ -1,6 +1,9 @@
 import {
   AGENSTRA_SEARCH_ENTITY_TYPES,
   AgenstraNotificationPublisher,
+  AgentTaskRunnerService,
+  enqueueAgentTaskOccurrence,
+  type AgentTaskOccurrence,
   AgenstraSearchIndexService,
   AutonomousRunOrchestratorService,
   ClientIsolationService,
@@ -36,6 +39,7 @@ import { Job, Queue } from 'bullmq';
 import {
   CONTROLLER_QUEUE_NAME,
   ControllerJobName,
+  getAgentTaskSchedulerBatchSize,
   getAutonomousTicketBatchSize,
   getContextImportConfigBatch,
   getContextImportItemBudget,
@@ -72,6 +76,7 @@ export class ControllerJobsProcessor extends WorkerHost {
     private readonly opencodeConfigSyncTargets: OpencodeConfigSyncTargetsService,
     private readonly opencodeLayerFiles: OpencodeLayerFilesService,
     private readonly clientIsolation: ClientIsolationService,
+    private readonly agentTaskRunner: AgentTaskRunnerService,
   ) {
     super();
   }
@@ -129,6 +134,12 @@ export class ControllerJobsProcessor extends WorkerHost {
         await this.autonomousOrchestrator.tryStartRunForCandidate(
           job.data as { ticket_id: string; client_id: string; agent_id: string },
         );
+        break;
+      case ControllerJobName.AGENT_TASK_COORDINATOR:
+        await this.runAgentTaskCoordinator();
+        break;
+      case ControllerJobName.AGENT_TASK_UNIT:
+        await this.agentTaskRunner.executeOccurrence(job.data as AgentTaskOccurrence);
         break;
       case ControllerJobName.SEARCH_REINDEX_COORDINATOR:
         await this.runSearchReindexCoordinator();
@@ -380,6 +391,13 @@ export class ControllerJobsProcessor extends WorkerHost {
         jobIdParts: [targetId],
       });
     }
+  }
+
+  private async runAgentTaskCoordinator(): Promise<void> {
+    await this.agentTaskRunner.failStaleRuns();
+    await this.agentTaskRunner.claimDueOccurrences(getAgentTaskSchedulerBatchSize(), (occurrence) =>
+      enqueueAgentTaskOccurrence(this.controllerQueue, occurrence),
+    );
   }
 
   private async runAutonomousTicketCoordinator(): Promise<void> {

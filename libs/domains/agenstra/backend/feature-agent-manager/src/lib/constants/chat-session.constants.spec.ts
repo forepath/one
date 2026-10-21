@@ -8,6 +8,7 @@ import {
   isReservedChatResumeSessionSuffix,
   isTicketAutomationLoopResumeSessionSuffix,
   isTicketAutomationResumeSessionSuffix,
+  isUnattendedAutomationResumeSessionSuffix,
 } from './chat-session.constants';
 
 describe('chat-session.constants', () => {
@@ -26,6 +27,10 @@ describe('chat-session.constants', () => {
 
     it('returns true for dynamic plan suffixes', () => {
       expect(isReservedChatResumeSessionSuffix('-plan-11111111-2222-4333-8444-555555555555')).toBe(true);
+    });
+
+    it('returns true for dynamic agent task suffixes', () => {
+      expect(isReservedChatResumeSessionSuffix('-task-11111111-2222-4333-8444-555555555555')).toBe(true);
     });
 
     it('returns false for primary empty suffix', () => {
@@ -88,6 +93,25 @@ describe('chat-session.constants', () => {
       const planId = '11111111-2222-4333-8444-555555555555';
 
       expect(buildChatPlanResumeSessionSuffix(planId)).toBe(`-plan-${planId}`);
+    });
+  });
+
+  describe('isUnattendedAutomationResumeSessionSuffix', () => {
+    it('covers ticket automation and agent task sessions', () => {
+      for (const suffix of TICKET_AUTOMATION_RESUME_SESSION_SUFFIXES) {
+        expect(isUnattendedAutomationResumeSessionSuffix(suffix)).toBe(true);
+      }
+
+      expect(isUnattendedAutomationResumeSessionSuffix('-task-abc')).toBe(true);
+    });
+
+    it('excludes plan, user chat, helper and primary sessions', () => {
+      expect(isUnattendedAutomationResumeSessionSuffix('-plan-abc')).toBe(false);
+      expect(isUnattendedAutomationResumeSessionSuffix('-chat-abc')).toBe(false);
+      expect(isUnattendedAutomationResumeSessionSuffix('-prompt-enhance')).toBe(false);
+      expect(isUnattendedAutomationResumeSessionSuffix('-task-')).toBe(false);
+      expect(isUnattendedAutomationResumeSessionSuffix(PRIMARY_CHAT_RESUME_SESSION_SUFFIX)).toBe(false);
+      expect(isUnattendedAutomationResumeSessionSuffix(undefined)).toBe(false);
     });
   });
 });

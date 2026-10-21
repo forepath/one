@@ -473,4 +473,45 @@ describe('buildMergedChatDisplayThread', () => {
     expect(thread.map((i) => i.kind)).toEqual(['user', 'chatPlan', 'agentTurn']);
     expect(thread[1]?.kind === 'chatPlan' && thread[1].payload.plan.summary).toBe('Do the thing');
   });
+
+  it('interleaves agent task run cards between user and agent by semantic order', () => {
+    const u = chatMsg('user', 'hi', 1);
+    const a = chatMsg('agent', { type: 'result', result: 'ok' }, 4);
+    const runPayload = {
+      timelineAt: new Date(2).toISOString(),
+      hydrate: false,
+      task: {
+        id: 'task-1',
+        clientId: 'c1',
+        agentId: 'a1',
+        title: 'Daily report',
+        cronExpression: '0 9 * * *',
+        timezone: 'UTC',
+        enabled: true,
+      },
+      run: {
+        id: 'run-1',
+        taskId: 'task-1',
+        clientId: 'c1',
+        agentId: 'a1',
+        trigger: 'schedule' as const,
+        status: 'succeeded' as const,
+        scheduledFor: new Date(2).toISOString(),
+        startedAt: new Date(2).toISOString(),
+        finishedAt: new Date(3).toISOString(),
+        outputExcerpt: 'Report done',
+        failureMessage: null,
+      },
+      actions: [{ type: 'openAgentTask' as const, taskId: 'task-1', runId: 'run-1', label: 'View task' }],
+    };
+    const ordered: ChatTimelineOrderedRowLike[] = [
+      { ...u, semanticTimestamp: 1 },
+      { event: 'agentTaskRunChatUpsert', payload: runPayload, timestamp: 2, semanticTimestamp: 2 },
+      { ...a, semanticTimestamp: 4 },
+    ];
+    const thread = buildMergedChatDisplayThread(ordered, [u, a]);
+
+    expect(thread.map((i) => i.kind)).toEqual(['user', 'agentTaskRun', 'agentTurn']);
+    expect(thread[1]?.kind === 'agentTaskRun' && thread[1].payload.run.outputExcerpt).toBe('Report done');
+  });
 });

@@ -11,7 +11,7 @@ import {
 import {
   isChatPlanResumeSessionSuffix,
   isTicketAutomationLoopResumeSessionSuffix,
-  isTicketAutomationResumeSessionSuffix,
+  isUnattendedAutomationResumeSessionSuffix,
 } from '../../constants/chat-session.constants';
 import type { AgentProviderOptions, AgentResponseObject } from '../agent-provider.interface';
 import { OutboundAgentEventPublisher } from '../outbound-agent-event-publisher';
@@ -345,7 +345,7 @@ export class OpenCodeRuntimeService {
     let turnDone = false;
     let promptError: unknown | null = null;
     let automationTurnStatus: AgenstraAutomationTurnStatus | undefined;
-    const automationSession = isTicketAutomationResumeSessionSuffix(key.resumeSessionSuffix);
+    const automationSession = isUnattendedAutomationResumeSessionSuffix(key.resumeSessionSuffix);
     const automationLoop = isTicketAutomationLoopResumeSessionSuffix(key.resumeSessionSuffix);
     const planSession = isChatPlanResumeSessionSuffix(key.resumeSessionSuffix);
 

@@ -22,6 +22,8 @@ export enum StatisticsInteractionKind {
   CHAT_PLAN_TURN = 'chat_plan_turn',
   /** Visible-chat execute turn that injects an approved plan into the operator thread. */
   CHAT_PLAN_EXECUTE = 'chat_plan_execute',
+  /** Hidden unattended run of a recurring agent task (`-task-{id}` sessions). */
+  AGENT_TASK_RUN = 'agent_task_run',
 }
 
 /**
