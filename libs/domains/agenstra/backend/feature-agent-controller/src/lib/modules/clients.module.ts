@@ -58,6 +58,7 @@ import { GlobalOpencodeConfigEntity } from '../entities/global-opencode-config.e
 import { OpencodeMcpServerEntity } from '../entities/opencode-mcp-server.entity';
 import { AgentTaskRunEntity } from '../entities/agent-task-run.entity';
 import { AgentTaskEntity } from '../entities/agent-task.entity';
+import { AgentHandoffEntity } from '../entities/agent-handoff.entity';
 import { ChatPlanEntity } from '../entities/chat-plan.entity';
 import { AgenstraAttachmentEntity } from '../entities/agenstra-attachment.entity';
 import { OpencodeProviderEntity } from '../entities/opencode-provider.entity';
@@ -140,6 +141,9 @@ import { AgentTaskRealtimeService } from '../services/agent-task-realtime.servic
 import { AgentTaskRequestHandlerService } from '../services/agent-task-request-handler.service';
 import { AgentTaskRunnerService } from '../services/agent-task-runner.service';
 import { AgentTasksService } from '../services/agent-tasks.service';
+import { AgentHandoffRequestHandlerService } from '../services/agent-handoff-request-handler.service';
+import { AgentHandoffRunnerService } from '../services/agent-handoff-runner.service';
+import { AgentHandoffsService } from '../services/agent-handoffs.service';
 import { ChatPlanChatSyncService } from '../services/chat-plan-chat-sync.service';
 import { ChatPlanOrchestratorService } from '../services/chat-plan-orchestrator.service';
 import { ChatPlanRealtimeService } from '../services/chat-plan-realtime.service';
@@ -182,6 +186,7 @@ const authMethod = getAuthenticationMethod();
       ChatPlanEntity,
       AgentTaskEntity,
       AgentTaskRunEntity,
+      AgentHandoffEntity,
       AgenstraAttachmentEntity,
       ClientAgentAutonomyEntity,
       KnowledgeNodeEntity,
@@ -251,6 +256,9 @@ const authMethod = getAuthenticationMethod();
     AgentTaskRequestHandlerService,
     AgentTaskRealtimeService,
     AgentTaskChatSyncService,
+    AgentHandoffsService,
+    AgentHandoffRunnerService,
+    AgentHandoffRequestHandlerService,
     KnowledgeEmbeddingIndexService,
     LocalEmbeddingProvider,
     TicketAutomationService,
@@ -360,6 +368,7 @@ const authMethod = getAuthenticationMethod();
     KnowledgeEmbeddingIndexService,
     AutonomousRunOrchestratorService,
     AgentTaskRunnerService,
+    AgentHandoffRunnerService,
     OpencodeProvidersCatalogService,
     OpencodeMcpServersCatalogService,
     OpencodeConfigSyncTargetsService,

@@ -1,10 +1,12 @@
 import {
+  HANDOFF_PROFILE_RESUME_SESSION_SUFFIX,
   PRIMARY_CHAT_RESUME_SESSION_SUFFIX,
   RESERVED_CHAT_RESUME_SESSION_SUFFIXES,
   TICKET_AUTOMATION_RESUME_SESSION_SUFFIXES,
   buildChatPlanResumeSessionSuffix,
   buildUserChatResumeSessionSuffix,
   isChatPlanResumeSessionSuffix,
+  isReadOnlyExploreResumeSessionSuffix,
   isReservedChatResumeSessionSuffix,
   isTicketAutomationLoopResumeSessionSuffix,
   isTicketAutomationResumeSessionSuffix,
@@ -113,5 +115,14 @@ describe('chat-session.constants', () => {
       expect(isUnattendedAutomationResumeSessionSuffix(PRIMARY_CHAT_RESUME_SESSION_SUFFIX)).toBe(false);
       expect(isUnattendedAutomationResumeSessionSuffix(undefined)).toBe(false);
     });
+  });
+
+  it('treats the handoff profile session as a reserved read-only session', () => {
+    expect(isReservedChatResumeSessionSuffix(HANDOFF_PROFILE_RESUME_SESSION_SUFFIX)).toBe(true);
+    expect(isReadOnlyExploreResumeSessionSuffix(HANDOFF_PROFILE_RESUME_SESSION_SUFFIX)).toBe(true);
+    expect(isReadOnlyExploreResumeSessionSuffix('-plan-x')).toBe(true);
+    expect(isReadOnlyExploreResumeSessionSuffix('-task-x')).toBe(false);
+    expect(isReadOnlyExploreResumeSessionSuffix('')).toBe(false);
+    expect(isUnattendedAutomationResumeSessionSuffix(HANDOFF_PROFILE_RESUME_SESSION_SUFFIX)).toBe(false);
   });
 });

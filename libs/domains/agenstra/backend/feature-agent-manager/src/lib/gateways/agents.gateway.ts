@@ -1,5 +1,8 @@
 import {
+  AGENT_HANDOFF_REQUEST_EVENT,
   AGENT_TASK_REQUEST_EVENT,
+  type AgentHandoffControllerRequest,
+  type AgentHandoffControllerResponse,
   type AgentTaskControllerRequest,
   type AgentTaskControllerResponse,
 } from '@forepath/agenstra/shared/util-opencode-config';
@@ -53,6 +56,7 @@ import { OpenCodePtyService } from '../providers/opencode/opencode-pty.service';
 import { AgentContextApiService } from '../services/agent-context-api.service';
 import { AgentContextMcpService } from '../services/agent-context-mcp.service';
 import { AgentContextTicketsService } from '../services/agent-context-tickets.service';
+import { AgentHandoffsApiService } from '../services/agent-handoffs-api.service';
 import { AgentTasksApiService } from '../services/agent-tasks-api.service';
 import { AgentsService } from '../services/agents.service';
 import { DockerService } from '../services/docker.service';
@@ -379,6 +383,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     @Optional() private readonly contextMcp?: AgentContextMcpService,
     @Optional() private readonly contextApi?: AgentContextApiService,
     @Optional() private readonly agentTasksApi?: AgentTasksApiService,
+    @Optional() private readonly agentHandoffsApi?: AgentHandoffsApiService,
   ) {}
 
   onModuleInit(): void {
@@ -407,6 +412,9 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     });
     this.agentTasksApi?.registerBridge({
       requestControllerTasks: (agentId, request) => this.requestControllerTasks(agentId, request),
+    });
+    this.agentHandoffsApi?.registerBridge({
+      requestControllerHandoffs: (agentId, request) => this.requestControllerHandoffs(agentId, request),
     });
   }
 
@@ -666,18 +674,51 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
    * Read / write the agent's own tasks through a controller connection of this agent (Socket.IO ack). Reads
    * fall through to the next socket on failure; mutations use one socket only so a slow ack cannot apply twice.
    */
-  private async requestControllerTasks(
+  private requestControllerTasks(
     agentId: string,
     request: AgentTaskControllerRequest,
   ): Promise<AgentTaskControllerResponse> {
+    return this.requestControllerForAgent<AgentTaskControllerResponse>(
+      AGENT_TASK_REQUEST_EVENT,
+      agentId,
+      request,
+      request.op === 'list' || request.op === 'get',
+      'No controller connection is available to manage tasks',
+    );
+  }
+
+  /**
+   * Handoff operations of the agent through a controller connection of this agent (Socket.IO ack); the controller
+   * scopes them to the workspace of that connection. Same retry rule as tasks: only reads fall through.
+   */
+  private requestControllerHandoffs(
+    agentId: string,
+    request: AgentHandoffControllerRequest,
+  ): Promise<AgentHandoffControllerResponse> {
+    return this.requestControllerForAgent<AgentHandoffControllerResponse>(
+      AGENT_HANDOFF_REQUEST_EVENT,
+      agentId,
+      request,
+      request.op === 'agents' || request.op === 'get',
+      'No controller connection is available to hand off tasks',
+    );
+  }
+
+  private async requestControllerForAgent<T extends { ok: boolean }>(
+    event: string,
+    agentId: string,
+    request: object,
+    readOnly: boolean,
+    unavailableMessage: string,
+  ): Promise<T | { ok: false; error: string; status: number }> {
     const candidates = this.controllerSocketsForAgent(agentId);
-    const attempts = request.op === 'list' || request.op === 'get' ? candidates : candidates.slice(0, 1);
+    const attempts = readOnly ? candidates : candidates.slice(0, 1);
 
     for (const socket of attempts) {
       try {
         const response = (await socket
           .timeout(AGENT_CONTEXT_REQUEST_TIMEOUT_MS)
-          .emitWithAck(AGENT_TASK_REQUEST_EVENT, { ...request, agentId })) as AgentTaskControllerResponse | undefined;
+          .emitWithAck(event, { ...request, agentId })) as T | undefined;
 
         if (response && typeof response === 'object' && typeof response.ok === 'boolean') {
           return response;
@@ -685,11 +726,11 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       } catch (error) {
         const err = error as { message?: string };
 
-        this.logger.debug(`Task request via socket ${socket.id} failed: ${err.message}`);
+        this.logger.debug(`${event} via socket ${socket.id} failed: ${err.message}`);
       }
     }
 
-    return { ok: false, error: 'No controller connection is available to manage tasks', status: 503 };
+    return { ok: false, error: unavailableMessage, status: 503 };
   }
 
   /** Connected controller sockets logged into this agent; `preferredSocketId` (when valid) comes first. */
@@ -1945,8 +1986,10 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     }
 
     if (!chatContext.hidden) {
-      // Default model for tasks the agent creates from this chat (agenstra_tasks_create without a model).
+      // Default model for tasks the agent creates from this chat (agenstra_tasks_create without a model)
+      // and for handoffs to this agent (agenstra_handoff_create without a model).
       this.agentTasksApi?.rememberChatModel(agentUuid, data.model);
+      this.agentHandoffsApi?.rememberChatModel(agentUuid, data.model, chatContext.chatId);
     }
 
     // Reserved session suffixes must never persist/broadcast into user-visible chat history.

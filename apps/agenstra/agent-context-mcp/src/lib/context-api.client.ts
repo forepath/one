@@ -2,11 +2,19 @@ import {
   AGENSTRA_CONTEXT_API_HEADERS,
   AGENSTRA_CONTEXT_API_ROUTE,
   AGENSTRA_CONTEXT_MCP_ENV,
+  AGENSTRA_HANDOFFS_API_SEGMENT,
   AGENSTRA_TASKS_API_SEGMENT,
   type AgentContextAccessResponse,
   type AgentContextGetResponse,
   type AgentContextListResponse,
   type AgentContextSearchResponse,
+  type AgentHandoffAgentSummary,
+  type AgentHandoffAgentsResponse,
+  type AgentHandoffProfileInput,
+  type AgentHandoffSelfSummary,
+  type AgentHandoffCreateInput,
+  type AgentHandoffRespondInput,
+  type AgentHandoffResponse,
   type AgentTaskCreateInput,
   type AgentTaskDetailResponse,
   type AgentTaskListResponse,
@@ -24,6 +32,8 @@ export interface ContextApiConfig {
 /** Plain requests stay short; access requests long-poll on the manager (user decision). */
 const DEFAULT_TIMEOUT_MS = 30_000;
 const ACCESS_REQUEST_TIMEOUT_MS = 150_000;
+/** Missing peer profiles are generated on request (the manager answers within 150 s). */
+const PROFILE_REQUEST_TIMEOUT_MS = 170_000;
 
 export class ContextApiError extends Error {
   constructor(
@@ -58,7 +68,7 @@ export function readContextApiConfig(env: NodeJS.ProcessEnv = process.env): Cont
 
 type FetchFn = typeof fetch;
 
-/** HTTP client for the agent-manager context API (`/agent-context`, incl. the agent's own tasks). */
+/** HTTP client for the agent-manager context API (`/agent-context`, incl. the agent's own tasks and handoffs). */
 export class ContextApiClient {
   constructor(
     private readonly config: ContextApiConfig,
@@ -134,8 +144,37 @@ export class ContextApiClient {
     return this.request('POST', `${AGENSTRA_TASKS_API_SEGMENT}/${encodeURIComponent(taskId)}/runs`, {});
   }
 
+  listHandoffAgents(): Promise<AgentHandoffAgentsResponse> {
+    return this.request('GET', `${AGENSTRA_HANDOFFS_API_SEGMENT}/agents`);
+  }
+
+  getHandoffProfile(targetAgentId: string): Promise<AgentHandoffAgentSummary> {
+    return this.request(
+      'GET',
+      `${AGENSTRA_HANDOFFS_API_SEGMENT}/agents/${encodeURIComponent(targetAgentId)}/profile`,
+      undefined,
+      PROFILE_REQUEST_TIMEOUT_MS,
+    );
+  }
+
+  updateHandoffProfile(input: AgentHandoffProfileInput): Promise<AgentHandoffSelfSummary> {
+    return this.request('PUT', `${AGENSTRA_HANDOFFS_API_SEGMENT}/profile`, input);
+  }
+
+  createHandoff(input: AgentHandoffCreateInput): Promise<AgentHandoffResponse> {
+    return this.request('POST', AGENSTRA_HANDOFFS_API_SEGMENT, input);
+  }
+
+  getHandoff(handoffId: string): Promise<AgentHandoffResponse> {
+    return this.request('GET', `${AGENSTRA_HANDOFFS_API_SEGMENT}/${encodeURIComponent(handoffId)}`);
+  }
+
+  respondToHandoff(handoffId: string, input: AgentHandoffRespondInput): Promise<AgentHandoffResponse> {
+    return this.request('POST', `${AGENSTRA_HANDOFFS_API_SEGMENT}/${encodeURIComponent(handoffId)}/response`, input);
+  }
+
   private async request<T>(
-    method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     path: string,
     body?: unknown,
     timeoutMs = DEFAULT_TIMEOUT_MS,

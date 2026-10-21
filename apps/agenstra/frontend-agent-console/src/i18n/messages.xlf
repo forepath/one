@@ -5810,6 +5810,72 @@
       <trans-unit id="utilCookieConsent-policy" datatype="html">
         <source>Cookie Policy</source>
         </trans-unit>
+      <trans-unit id="featureChat-toolDisplayHandoffAgents" datatype="html">
+        <source>List agents</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayHandoffCreate" datatype="html">
+        <source>Hand off task</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayHandoffGet" datatype="html">
+        <source>Read handoff</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayHandoffRespond" datatype="html">
+        <source>Answer handoff</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolEmbedHandoff" datatype="html">
+        <source>Handed over to another agent</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolEmbedHandoffPending" datatype="html">
+        <source>The response arrives in this chat once the agent is done.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolEmbedHandoffFailed" datatype="html">
+        <source>The handoff could not be created</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolEmbedOpenHandoffChat" datatype="html">
+        <source>Open handoff chat</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolEmbedHandoffResponse" datatype="html">
+        <source>Response to the handoff</source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffStatusFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffStatusCompleted" datatype="html">
+        <source>Completed</source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffUnknownAgent" datatype="html">
+        <source>another agent</source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffRequestHeading" datatype="html">
+        <source>Task handed over by <x id="agentName" equiv-text="agentName"/></source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffResponseHeading" datatype="html">
+        <source>Response from <x id="agentName" equiv-text="agentName"/></source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffOpenSourceChat" datatype="html">
+        <source>Open requesting chat</source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffOpenHandoffChat" datatype="html">
+        <source>Open handoff chat</source>
+        </trans-unit>
+      <trans-unit id="featureChat-chatSessionHandoffBadgeTitle" datatype="html">
+        <source>Task handed over by another agent</source>
+        </trans-unit>
+      <trans-unit id="featureChat-chatSessionHandoffBadge" datatype="html">
+        <source>(handoff)</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayHandoffProfileGet" datatype="html">
+        <source>Read agent profile</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayHandoffProfileUpdate" datatype="html">
+        <source>Update own profile</source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffProfileLabel" datatype="html">
+        <source>Handoff profile</source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffProfileHelp" datatype="html">
+        <source>What this environment is responsible for and which tasks other agents of the workspace can hand over to it. The agent can also maintain it itself.</source>
+        </trans-unit>
     </body>
   </file>
 </xliff>

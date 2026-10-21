@@ -14,6 +14,8 @@ export interface AgentResponseDto {
   id: string;
   name: string;
   description?: string;
+  /** What the environment is responsible for and can take over from other agents (agent handoffs). */
+  handoffProfile?: string;
   agentType: string;
   containerType: ContainerType;
   capabilities?: AgentTypeCapabilities;
@@ -68,6 +70,8 @@ export interface CreateAgentDto {
 export interface UpdateAgentDto {
   name?: string;
   description?: string;
+  /** Empty string clears the profile. */
+  handoffProfile?: string;
   containerType?: ContainerType;
 }
 

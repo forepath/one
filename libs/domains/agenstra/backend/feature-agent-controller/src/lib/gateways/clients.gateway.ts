@@ -1,4 +1,4 @@
-import { AGENT_TASK_REQUEST_EVENT } from '@forepath/agenstra/shared/util-opencode-config';
+import { AGENT_HANDOFF_REQUEST_EVENT, AGENT_TASK_REQUEST_EVENT } from '@forepath/agenstra/shared/util-opencode-config';
 import { createCorrelationAwareSocketIoClient } from '@forepath/shared/backend/util-http-context';
 import {
   AuthenticationType,
@@ -33,6 +33,7 @@ import { ClientsRepository } from '../repositories/clients.repository';
 import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 import { AgentConsoleStatusService } from '../services/agent-console-status.service';
 import { AgenstraAttachmentsService } from '../services/agenstra-attachments.service';
+import { AgentHandoffRequestHandlerService } from '../services/agent-handoff-request-handler.service';
 import { AgentTaskChatSyncService } from '../services/agent-task-chat-sync.service';
 import { AgentTaskRealtimeService } from '../services/agent-task-realtime.service';
 import { AgentTaskRequestHandlerService } from '../services/agent-task-request-handler.service';
@@ -209,6 +210,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     @Optional() private readonly agentTaskRequests?: AgentTaskRequestHandlerService,
     @Optional() private readonly agentTaskRealtime?: AgentTaskRealtimeService,
     @Optional() private readonly agentTaskChatSync?: AgentTaskChatSyncService,
+    @Optional() private readonly agentHandoffRequests?: AgentHandoffRequestHandlerService,
   ) {}
 
   afterInit(server: Server): void {
@@ -379,6 +381,8 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       this.agentContextRequests?.attach(remote, clientId);
       // The agent's own task management (worker MCP) is answered here too, scoped to this workspace.
       this.agentTaskRequests?.attach(remote, clientId);
+      // Handoffs between agents of this workspace (worker MCP) are answered here too, scoped to this workspace.
+      this.agentHandoffRequests?.attach(remote, clientId);
       // Log when remote socket is created for debugging
       this.logger.debug(`Created remote socket for clientId ${clientId}, socket.id ${socket.id}`);
       // Log socket configuration
@@ -410,6 +414,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         'pong',
         AGENT_CONTEXT_REQUEST_EVENT,
         AGENT_TASK_REQUEST_EVENT,
+        AGENT_HANDOFF_REQUEST_EVENT,
       ]);
 
       // Handle Socket.IO internal error events separately (don't forward to avoid disconnection)

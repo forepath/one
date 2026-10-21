@@ -341,6 +341,74 @@ describe('agent-chat-tool-embed-view', () => {
     ).toEqual(expect.objectContaining({ kind: 'read', filePath: 'libs/a.ts', content: 'body' }));
   });
 
+  it('embeds handoff creations with the target agent and its handoff chat', () => {
+    const call = JSON.stringify({
+      type: 'tool_call',
+      name: 'agenstra_handoff_create',
+      args: { targetAgentId: 'agent-b', title: 'Review', message: 'Check the API' },
+    });
+    const result = JSON.stringify({
+      type: 'tool_result',
+      name: 'agenstra_handoff_create',
+      result: JSON.stringify({
+        handoffId: 'h1',
+        status: 'pending',
+        title: 'Review',
+        targetAgentId: 'agent-b',
+        targetAgentName: 'Reviewer',
+        targetChatId: 'chat-b',
+      }),
+      isError: false,
+    });
+
+    expect(buildToolEmbedView('agenstra_handoff_create', call, result)).toEqual({
+      kind: 'handoff',
+      title: 'Review',
+      message: 'Check the API',
+      truncated: false,
+      handoffId: 'h1',
+      targetAgentId: 'agent-b',
+      targetAgentName: 'Reviewer',
+      targetChatId: 'chat-b',
+      isError: false,
+    });
+  });
+
+  it('embeds failed handoff creations with the error and without a chat link', () => {
+    const result = JSON.stringify({
+      type: 'tool_result',
+      name: 'agenstra_handoff_create',
+      result: 'Target agent not found in this workspace',
+      isError: true,
+      args: { targetAgentId: 'agent-x', title: 'Review', message: 'm' },
+    });
+
+    expect(buildToolEmbedView('agenstra_handoff_create', undefined, result)).toEqual(
+      expect.objectContaining({
+        kind: 'handoff',
+        isError: true,
+        error: 'Target agent not found in this workspace',
+        targetChatId: undefined,
+      }),
+    );
+  });
+
+  it('embeds handoff responses', () => {
+    const call = JSON.stringify({
+      name: 'agenstra_handoff_respond',
+      args: { handoffId: 'h1', status: 'failed', response: 'No access' },
+    });
+
+    expect(buildToolEmbedView('agenstra_handoff_respond', call, undefined)).toEqual({
+      kind: 'handoffResponse',
+      status: 'failed',
+      response: 'No access',
+      truncated: false,
+      isError: false,
+    });
+    expect(buildToolEmbedView('agenstra_handoff_respond', JSON.stringify({ name: 'x', args: {} }))).toBeUndefined();
+  });
+
   it('parseUnifiedDiffLines classifies headers and changes', () => {
     const lines = parseUnifiedDiffLines('diff --git a/x b/x\n+added\n-removed\n context');
 

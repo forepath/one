@@ -14,6 +14,8 @@ export class AgentResponseDto {
   id!: string;
   name!: string;
   description?: string;
+  /** Responsibilities / what the environment can take over (agent handoffs). */
+  handoffProfile?: string;
   agentType!: string;
   containerType!: ContainerType;
   /**

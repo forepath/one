@@ -1,4 +1,5 @@
-import { IsEnum, IsIn, IsOptional, IsString } from 'class-validator';
+import { AGENT_HANDOFF_LIMITS } from '@forepath/agenstra/shared/util-opencode-config';
+import { IsEnum, IsIn, IsOptional, MaxLength, IsString } from 'class-validator';
 
 import { ContainerType } from '../entities/agent.entity';
 
@@ -15,6 +16,14 @@ export class UpdateAgentDto {
   @IsOptional()
   @IsString({ message: 'Description must be a string' })
   description?: string;
+
+  /** Responsibilities and what the environment can take over from other agents of the workspace (handoffs). */
+  @IsOptional()
+  @IsString({ message: 'Handoff profile must be a string' })
+  @MaxLength(AGENT_HANDOFF_LIMITS.profileMaxLength, {
+    message: `Handoff profile must be at most ${AGENT_HANDOFF_LIMITS.profileMaxLength} characters`,
+  })
+  handoffProfile?: string;
 
   @IsOptional()
   @IsString({ message: 'Agent type must be a string' })

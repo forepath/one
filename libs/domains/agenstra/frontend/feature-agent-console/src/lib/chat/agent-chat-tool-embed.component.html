@@ -301,6 +301,56 @@
         </section>
       }
     }
+    @case ('handoff') {
+      @if (asHandoff(); as view) {
+        <section class="agent-chat-tool-embed__section">
+          <div class="agent-chat-tool-embed__label">{{ handoffLabel }}</div>
+          <div class="agent-chat-tool-embed__meta-row">
+            <i class="bi bi-arrow-left-right text-body-secondary" aria-hidden="true"></i>
+            @if (view.targetAgentName) {
+              <fpc-badge color="info" size="sm" [pill]="true">{{ view.targetAgentName }}</fpc-badge>
+            }
+            <span class="fw-semibold">{{ view.title }}</span>
+          </div>
+          @if (view.message) {
+            <div class="agent-chat-tool-embed__label">{{ promptLabel }}</div>
+            <pre class="agent-chat-tool-embed__code">{{ view.message }}</pre>
+          }
+          @if (view.truncated) {
+            <div class="agent-chat-tool-embed__meta">{{ truncatedLabel }}</div>
+          }
+        </section>
+        @if (view.isError) {
+          <fpc-alert variant="warning" [message]="view.error || handoffFailedLabel" [showIcon]="true" />
+        } @else if (view.targetAgentId && view.targetChatId) {
+          <div class="agent-chat-tool-embed__meta">{{ handoffPendingLabel }}</div>
+          <div>
+            <fpc-button variant="primary" size="sm" (clicked)="openHandoffChat(view.targetAgentId, view.targetChatId)">
+              <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i>{{ openHandoffChatLabel }}
+            </fpc-button>
+          </div>
+        }
+      }
+    }
+    @case ('handoffResponse') {
+      @if (asHandoffResponse(); as view) {
+        <section class="agent-chat-tool-embed__section">
+          <div class="agent-chat-tool-embed__meta-row">
+            <div class="agent-chat-tool-embed__label">{{ handoffResponseLabel }}</div>
+            <fpc-badge [color]="view.status === 'failed' ? 'danger' : 'success'" size="sm" [pill]="true">
+              {{ handoffStatusLabel(view.status) }}
+            </fpc-badge>
+          </div>
+          <pre class="agent-chat-tool-embed__code">{{ view.response }}</pre>
+          @if (view.truncated) {
+            <div class="agent-chat-tool-embed__meta">{{ truncatedLabel }}</div>
+          }
+        </section>
+        @if (view.isError) {
+          <fpc-alert variant="warning" [message]="view.error || handoffFailedLabel" [showIcon]="true" />
+        }
+      }
+    }
     @case ('invalid') {
       @if (asInvalid(); as view) {
         <section class="agent-chat-tool-embed__section">

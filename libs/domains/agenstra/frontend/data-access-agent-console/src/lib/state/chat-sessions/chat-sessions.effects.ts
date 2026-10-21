@@ -1,8 +1,11 @@
 import { inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, exhaustMap, map, of, switchMap } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { catchError, EMPTY, exhaustMap, map, mergeMap, of, switchMap, withLatestFrom } from 'rxjs';
 
 import { ChatSessionsService } from '../../services/chat-sessions.service';
+import { forwardedEventReceived } from '../container-socket/container-socket.actions';
+import { selectSelectedAgentId, selectSelectedClientId } from '../container-socket/container-socket.selectors';
 
 import {
   createChatSession,
@@ -18,6 +21,8 @@ import {
   updateChatSessionFailure,
   updateChatSessionSuccess,
 } from './chat-sessions.actions';
+import { getClientAgentKey } from './chat-sessions.reducer';
+import { selectChatSessionsMap } from './chat-sessions.selectors';
 
 function normalizeError(error: unknown): string {
   if (error instanceof Error) {
@@ -98,6 +103,59 @@ export const deleteChatSession$ = createEffect(
           ),
         ),
       ),
+    );
+  },
+  { functional: true },
+);
+
+/** `chatId` of a forwarded `chatMessage` / `chatEvent` (`{ success, data: { chatId } }`). */
+function forwardedChatId(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') {
+    return null;
+  }
+
+  const chatId = (payload as { data?: { chatId?: unknown } }).data?.chatId;
+
+  return typeof chatId === 'string' && chatId ? chatId : null;
+}
+
+/**
+ * Chats can appear without a user action (a handoff opens a chat on the target agent): reload the agent's sessions
+ * once when activity arrives for a chat that is not listed yet, so it shows up in the chat switcher.
+ */
+export const reloadChatSessionsOnUnknownChat$ = createEffect(
+  (actions$ = inject(Actions), store = inject(Store)) => {
+    const requested = new Set<string>();
+
+    return actions$.pipe(
+      ofType(forwardedEventReceived),
+      withLatestFrom(
+        store.select(selectSelectedClientId),
+        store.select(selectSelectedAgentId),
+        store.select(selectChatSessionsMap),
+      ),
+      mergeMap(([action, clientId, agentId, sessionsMap]) => {
+        if (action.event !== 'chatMessage' && action.event !== 'chatEvent') {
+          return EMPTY;
+        }
+
+        const chatId = forwardedChatId(action.payload);
+
+        if (!chatId || !clientId || !agentId) {
+          return EMPTY;
+        }
+
+        const sessions = sessionsMap[getClientAgentKey(clientId, agentId)];
+        const requestKey = `${clientId}:${agentId}:${chatId}`;
+
+        if (!sessions || sessions.some((session) => session.id === chatId) || requested.has(requestKey)) {
+          return EMPTY;
+        }
+
+        requested.add(requestKey);
+
+        return of(loadChatSessions({ clientId, agentId }));
+      }),
     );
   },
   { functional: true },

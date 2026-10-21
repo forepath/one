@@ -51,7 +51,11 @@ export class AgentsChatSessionsController {
     @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
     @Body() createDto: CreateChatSessionDto,
   ): Promise<ChatSessionResponseDto> {
-    const session = await this.agentChatSessionsService.createUserSession(agentId, createDto.title);
+    const session = await this.agentChatSessionsService.createUserSession(
+      agentId,
+      createDto.title,
+      createDto.kind ?? 'user',
+    );
 
     return this.agentChatSessionsService.mapToResponseDto(session);
   }

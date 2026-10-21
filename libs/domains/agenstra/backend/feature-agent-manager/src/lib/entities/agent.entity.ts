@@ -35,6 +35,13 @@ export class AgentEntity {
   @Column({ type: 'text', nullable: true, name: 'description' })
   description?: string;
 
+  /**
+   * What this agent is responsible for and can take over from other agents of the workspace (agent handoffs).
+   * Maintained in the console and by the agent itself (`agenstra_handoff_profile_update`).
+   */
+  @Column({ type: 'text', nullable: true, name: 'handoff_profile' })
+  handoffProfile?: string | null;
+
   @Column({ type: 'varchar', length: 255, name: 'hashed_password' })
   hashedPassword!: string;
 

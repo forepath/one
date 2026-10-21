@@ -292,7 +292,8 @@ export class AgentChatEventRowComponent {
       return override;
     }
 
-    return false;
+    // Handoffs link other agents' chats: show them without an extra click.
+    return embed?.kind === 'handoff';
   });
 
   readonly toolDisplay = computed(() => {

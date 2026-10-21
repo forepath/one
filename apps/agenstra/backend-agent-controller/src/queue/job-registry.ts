@@ -22,6 +22,10 @@ const OPENCODE_MCP_SERVERS_REFRESH_INTERVAL_MS_DEFAULT = 86_400_000;
 const AGENT_TASK_COORDINATOR_JOB_NAME = 'agent-task.coordinator';
 const AGENT_TASK_UNIT_JOB_NAME = 'agent-task.unit';
 
+/** Keep in sync with AGENT_HANDOFF_*_JOB_NAME in feature-agent-controller. */
+const AGENT_HANDOFF_COORDINATOR_JOB_NAME = 'agent-handoff.coordinator';
+const AGENT_HANDOFF_UNIT_JOB_NAME = 'agent-handoff.unit';
+
 export const ControllerJobName = {
   CONTEXT_IMPORT_COORDINATOR: 'context-import.coordinator',
   CONTEXT_IMPORT_UNIT: 'context-import.unit',
@@ -39,6 +43,8 @@ export const ControllerJobName = {
   AUTONOMOUS_TICKET_UNIT: 'autonomous-ticket.unit',
   AGENT_TASK_COORDINATOR: AGENT_TASK_COORDINATOR_JOB_NAME,
   AGENT_TASK_UNIT: AGENT_TASK_UNIT_JOB_NAME,
+  AGENT_HANDOFF_COORDINATOR: AGENT_HANDOFF_COORDINATOR_JOB_NAME,
+  AGENT_HANDOFF_UNIT: AGENT_HANDOFF_UNIT_JOB_NAME,
   SEARCH_REINDEX_COORDINATOR: 'search-reindex.coordinator',
   SEARCH_REINDEX_UNIT: 'search-reindex.unit',
   SEARCH_INDEX_SYNC_UNIT: 'search-index-sync.unit',
@@ -127,6 +133,11 @@ export function getControllerRepeatableJobs(): ControllerRepeatableJobDefinition
       name: ControllerJobName.AGENT_TASK_COORDINATOR,
       coordinatorJobId: buildCoordinatorJobId('agent-task'),
       everyMs: parseIntervalMs('AGENT_TASK_SCHEDULER_INTERVAL_MS', 30_000),
+    },
+    {
+      name: ControllerJobName.AGENT_HANDOFF_COORDINATOR,
+      coordinatorJobId: buildCoordinatorJobId('agent-handoff'),
+      everyMs: parseIntervalMs('AGENT_HANDOFF_SCHEDULER_INTERVAL_MS', 60_000),
     },
     {
       name: ControllerJobName.WEBHOOK_DELIVERY_RETENTION_COORDINATOR,

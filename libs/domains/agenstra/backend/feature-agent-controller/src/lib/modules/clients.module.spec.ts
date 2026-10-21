@@ -55,6 +55,7 @@ import { TicketAutomationRunEntity } from '../entities/ticket-automation-run.ent
 import { TicketAutomationEntity } from '../entities/ticket-automation.entity';
 import { AgentTaskRunEntity } from '../entities/agent-task-run.entity';
 import { AgentTaskEntity } from '../entities/agent-task.entity';
+import { AgentHandoffEntity } from '../entities/agent-handoff.entity';
 import { ChatPlanEntity } from '../entities/chat-plan.entity';
 import { TicketBodyGenerationSessionEntity } from '../entities/ticket-body-generation-session.entity';
 import { TicketCommentEntity } from '../entities/ticket-comment.entity';
@@ -237,6 +238,8 @@ describe('ClientsModule', () => {
       .overrideProvider(getRepositoryToken(AgentTaskEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(AgentTaskRunEntity))
+      .useValue(mockRepository)
+      .overrideProvider(getRepositoryToken(AgentHandoffEntity))
       .useValue(mockRepository)
       .overrideProvider(getRepositoryToken(AgenstraAttachmentEntity))
       .useValue(mockRepository)

@@ -39,6 +39,30 @@ describe('resolveAgentChatToolDisplay', () => {
     expect(resolveAgentChatToolDisplay(' Agenstra-Tasks_Run ').label).toBe('Run task now');
   });
 
+  it('maps the platform handoff tools and their embed kinds to readable labels', () => {
+    expect(resolveAgentChatToolDisplay('agenstra_handoff_agents')).toEqual({ label: 'List agents', icon: 'people' });
+    expect(resolveAgentChatToolDisplay('agenstra_handoff_create')).toEqual({
+      label: 'Hand off task',
+      icon: 'arrow-left-right',
+    });
+    expect(resolveAgentChatToolDisplay('agenstra_handoff_get')).toEqual({
+      label: 'Read handoff',
+      icon: 'arrow-repeat',
+    });
+    expect(resolveAgentChatToolDisplay('agenstra_handoff_respond')).toEqual({ label: 'Answer handoff', icon: 'reply' });
+    expect(resolveAgentChatToolDisplay('agenstra_handoff_profile_get')).toEqual({
+      label: 'Read agent profile',
+      icon: 'person-vcard',
+    });
+    expect(resolveAgentChatToolDisplay('agenstra_handoff_profile_update')).toEqual({
+      label: 'Update own profile',
+      icon: 'person-gear',
+    });
+    expect(resolveAgentChatToolDisplay('handoff').label).toBe('Hand off task');
+    expect(resolveAgentChatToolDisplay('handoffResponse').label).toBe('Answer handoff');
+    expect(resolveAgentChatToolDisplay(' Agenstra-Handoff_Create ').label).toBe('Hand off task');
+  });
+
   it('keeps unknown tools as reported', () => {
     expect(resolveAgentChatToolDisplay('github_create_issue')).toEqual({
       label: 'github_create_issue',

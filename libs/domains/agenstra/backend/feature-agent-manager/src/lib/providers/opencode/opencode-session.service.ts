@@ -8,6 +8,7 @@ import {
 
 import {
   isChatPlanResumeSessionSuffix,
+  isReadOnlyExploreResumeSessionSuffix,
   isUnattendedAutomationResumeSessionSuffix,
 } from '../../constants/chat-session.constants';
 import { AgentsRepository } from '../../repositories/agents.repository';
@@ -74,6 +75,7 @@ export class OpenCodeSessionService {
     const titleSuffix = key.resumeSessionSuffix ? ` (${key.resumeSessionSuffix})` : '';
     const automation = isUnattendedAutomationResumeSessionSuffix(key.resumeSessionSuffix);
     const plan = isChatPlanResumeSessionSuffix(key.resumeSessionSuffix);
+    const readOnly = isReadOnlyExploreResumeSessionSuffix(key.resumeSessionSuffix);
     const result = await client.session.create({
       body: {
         title: `agenstra${titleSuffix}`,
@@ -87,7 +89,9 @@ export class OpenCodeSessionService {
                 agent: AGENSTRA_PLAN_AGENT_NAME,
                 permission: [...AGENSTRA_PLAN_SESSION_PERMISSION_RULESET],
               }
-            : {}),
+            : readOnly
+              ? { permission: [...AGENSTRA_PLAN_SESSION_PERMISSION_RULESET] }
+              : {}),
       },
     });
 

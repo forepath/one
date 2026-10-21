@@ -25,6 +25,7 @@ import { TicketAutomationChatSyncService } from '../services/ticket-automation-c
 import { TicketsService } from '../services/tickets.service';
 import { AgentContextRequestHandlerService } from '../services/agent-context-request-handler.service';
 import { AgentTaskRequestHandlerService } from '../services/agent-task-request-handler.service';
+import { AgentHandoffRequestHandlerService } from '../services/agent-handoff-request-handler.service';
 import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 
 import { ClientsGateway } from './clients.gateway';
@@ -209,6 +210,7 @@ describe('ClientsGateway', () => {
 
   const mockAgentContextRequests = { attach: jest.fn() };
   const mockAgentTaskRequests = { attach: jest.fn() };
+  const mockAgentHandoffRequests = { attach: jest.fn() };
 
   beforeEach(async () => {
     mockClientUsersRepository.findUserClientAccess.mockResolvedValue(null);
@@ -266,6 +268,7 @@ describe('ClientsGateway', () => {
         { provide: AgenstraAttachmentsService, useValue: mockAttachmentsService },
         { provide: AgentContextRequestHandlerService, useValue: mockAgentContextRequests },
         { provide: AgentTaskRequestHandlerService, useValue: mockAgentTaskRequests },
+        { provide: AgentHandoffRequestHandlerService, useValue: mockAgentHandoffRequests },
       ],
     }).compile();
 
@@ -969,6 +972,32 @@ describe('ClientsGateway', () => {
 
     expect(socket.emit).not.toHaveBeenCalledWith('agentTaskRequest', expect.anything(), expect.anything());
     expect(socket.emit).not.toHaveBeenCalledWith('agentTaskRequest', expect.anything());
+  });
+
+  it('answers manager handoff requests on the remote socket and never forwards them to the browser', async () => {
+    const socket = createMockSocket();
+    const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
+    const remote = io() as any;
+
+    mockClientsRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'client-uuid',
+      endpoint: 'http://localhost:3100/api',
+      authenticationType: 'api_key',
+      apiKey: 'x',
+    } as any);
+    await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(mockAgentHandoffRequests.attach).toHaveBeenCalledWith(remote, 'client-uuid');
+
+    (socket.emit as jest.Mock).mockClear();
+    const onAnyHandler = remote.onAny.mock.calls[remote.onAny.mock.calls.length - 1]?.[0];
+
+    onAnyHandler?.('agentHandoffRequest', { op: 'agents' }, jest.fn());
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(socket.emit).not.toHaveBeenCalledWith('agentHandoffRequest', expect.anything(), expect.anything());
+    expect(socket.emit).not.toHaveBeenCalledWith('agentHandoffRequest', expect.anything());
   });
 
   it('maps current and legacy agent error codes to notifications', async () => {

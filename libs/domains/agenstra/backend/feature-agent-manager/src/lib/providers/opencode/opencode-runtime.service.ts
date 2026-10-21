@@ -9,10 +9,11 @@ import {
 } from '@forepath/agenstra/shared/util-opencode-config';
 
 import {
-  isChatPlanResumeSessionSuffix,
+  isReadOnlyExploreResumeSessionSuffix,
   isTicketAutomationLoopResumeSessionSuffix,
   isUnattendedAutomationResumeSessionSuffix,
 } from '../../constants/chat-session.constants';
+import { AgentActiveTurnsService } from '../../services/agent-active-turns.service';
 import type { AgentProviderOptions, AgentResponseObject } from '../agent-provider.interface';
 import { OutboundAgentEventPublisher } from '../outbound-agent-event-publisher';
 
@@ -36,6 +37,8 @@ export class OpenCodeRuntimeService {
     string,
     { agentId: string; sessionId: string; kind: PendingInteractionKind }
   >();
+  /** Tail of the prompt queue per OpenCode session (`agentId:suffix`): prompts of one session run one after another. */
+  private readonly sessionQueues = new Map<string, Promise<void>>();
 
   constructor(
     private readonly clientFactory: OpenCodeClientFactory,
@@ -43,6 +46,7 @@ export class OpenCodeRuntimeService {
     private readonly eventBridge: OpenCodeEventBridge,
     private readonly eventMapper: OpenCodeEventMapper,
     @Optional() private readonly outboundPublisher?: OutboundAgentEventPublisher,
+    @Optional() private readonly activeTurns?: AgentActiveTurnsService,
   ) {}
 
   async sendMessage(key: OpenCodeSessionKey, message: string, options?: AgentProviderOptions): Promise<string> {
@@ -332,7 +336,46 @@ export class OpenCodeRuntimeService {
     void run();
   }
 
+  /**
+   * Prompts of one session are serialized (e.g. a handoff response arriving while the user's turn in that chat still
+   * runs waits for it), and every prompt is registered as a running turn of its session for the whole drain, so
+   * platform MCP calls (which carry no session) can be attributed to the chat they come from.
+   */
   private async *promptAndDrain(
+    key: OpenCodeSessionKey,
+    message: string,
+    options?: AgentProviderOptions,
+  ): AsyncIterable<AgentResponseObject> {
+    const queueKey = `${key.agentId}:${key.resumeSessionSuffix ?? ''}`;
+    const previous = this.sessionQueues.get(queueKey) ?? Promise.resolve();
+    let release: () => void = () => undefined;
+    const current = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const tail = previous.then(() => current);
+
+    this.sessionQueues.set(queueKey, tail);
+
+    try {
+      await previous;
+
+      const endTurn = this.activeTurns?.begin(key.agentId, key.resumeSessionSuffix);
+
+      try {
+        yield* this.drainTurn(key, message, options);
+      } finally {
+        endTurn?.();
+      }
+    } finally {
+      release();
+
+      if (this.sessionQueues.get(queueKey) === tail) {
+        this.sessionQueues.delete(queueKey);
+      }
+    }
+  }
+
+  private async *drainTurn(
     key: OpenCodeSessionKey,
     message: string,
     options?: AgentProviderOptions,
@@ -347,7 +390,7 @@ export class OpenCodeRuntimeService {
     let automationTurnStatus: AgenstraAutomationTurnStatus | undefined;
     const automationSession = isUnattendedAutomationResumeSessionSuffix(key.resumeSessionSuffix);
     const automationLoop = isTicketAutomationLoopResumeSessionSuffix(key.resumeSessionSuffix);
-    const planSession = isChatPlanResumeSessionSuffix(key.resumeSessionSuffix);
+    const readOnlySession = isReadOnlyExploreResumeSessionSuffix(key.resumeSessionSuffix);
 
     const queue: AgentResponseObject[] = [];
     const notify = (() => {
@@ -379,7 +422,7 @@ export class OpenCodeRuntimeService {
 
               if (automationSession) {
                 this.autoReplyAutomationInteraction(key, obj.questionId, kind);
-              } else if (planSession) {
+              } else if (readOnlySession) {
                 this.autoReplyPlanInteraction(key, obj.questionId, kind, this.extractPermissionType(obj));
               }
             }

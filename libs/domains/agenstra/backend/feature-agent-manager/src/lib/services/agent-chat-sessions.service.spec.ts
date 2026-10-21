@@ -153,6 +153,20 @@ describe('AgentChatSessionsService', () => {
         }),
       );
     });
+
+    it('creates handoff chats with the handoff kind and a regular chat suffix', async () => {
+      mockAgentsRepository.findByIdOrThrow.mockResolvedValue({ id: agentId });
+      mockChatSessionsRepository.findPrimaryByAgentId.mockResolvedValue(mockPrimarySession);
+      mockChatSessionsRepository.create.mockImplementation(async (dto: Partial<AgentChatSessionEntity>) => ({
+        ...mockUserSession,
+        ...dto,
+      }));
+
+      const result = await service.createUserSession(agentId, 'Review the API', 'handoff');
+
+      expect(result.kind).toBe('handoff');
+      expect(result.resumeSessionSuffix).toBe(buildUserChatResumeSessionSuffix(result.id));
+    });
   });
 
   describe('updateSessionTitle', () => {

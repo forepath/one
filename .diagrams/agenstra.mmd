@@ -1,4 +1,4 @@
-%% Agenstra - full architecture (controller, managers, workers, agent context MCP)
+%% Agenstra - full architecture (controller, managers, workers, agenstra MCP: context, tasks, handoffs)
 flowchart TB
   Users(["Users<br/>browser, desktop app (Electron), API, PATs"])
   Visitors(["Visitors<br/>marketing site, docs, plans"])
@@ -19,7 +19,7 @@ flowchart TB
   Communication(["Forepath communication API (:3300)<br/>contact form, Turnstile"])
 
   subgraph Frontends["Frontends (Angular SSR, Express)"]
-    Console["Agent console (:4100)<br/>chat, tool + permission embeds, editor (Monaco),<br/>terminal, VNC desktop, Git, tickets board,<br/>knowledge tree, chat plans, statistics, config layers"]
+    Console["Agent console (:4100)<br/>chat, tool + permission embeds, editor (Monaco),<br/>terminal, VNC desktop, Git, tickets board,<br/>knowledge tree, chat plans, agent tasks (/tasks),<br/>handoff cards + chats, statistics, config layers"]
     Native["Native agent console<br/>Electron, bundled SSR server"]
     Landing["Landing page (:4101)"]
     Docs["Docs (:4102)<br/>markdown + OpenAPI / AsyncAPI renderers"]
@@ -44,8 +44,10 @@ flowchart TB
     Tickets["Tickets + ticket automation<br/>autonomous run orchestrator, leases, verifier, commit + push"]
     Knowledge["Knowledge tree + relations<br/>local hash embeddings (pgvector), auto-enrichment"]
     Plans["Chat plan mode<br/>explore / refine / execute orchestrator"]
+    AgentTasks["Agent tasks<br/>cron schedules, coordinator + unit jobs,<br/>hidden -task-{id} runs, main chat run cards"]
+    Handoffs["Agent handoffs<br/>same workspace only, handoff chat on target,<br/>respond repair turns, delivery to requesting chat"]
     Attachments["Attachments<br/>mirrored read-only into workers"]
-    CtxHandler["Agent context request handler<br/>answers manager agentContextRequest (ack):<br/>search metadata, describe, content (workspace-scoped)"]
+    CtxHandler["Agent request handlers (ack, workspace of the connection)<br/>agentContextRequest: search, describe, content<br/>agentTaskRequest: own tasks / agentHandoffRequest"]
     OcConfig["OpenCode config layering<br/>global / workspace / agent overlays, layer files,<br/>MCP + provider catalogs, platform security policy"]
     Provisioning["Server provisioning<br/>manager hosts with Docker + gVisor"]
     Import["Context import<br/>Jira / Confluence to tickets + knowledge"]
@@ -53,7 +55,7 @@ flowchart TB
     Search["Search<br/>entity indexes, workspace full-text index"]
     Queue["BullMQ queue agent-controller<br/>config / layer sync, embeddings, imports, egress ingest,<br/>isolation probes, automation, reindex, catalogs, deliveries"]
     CStatus["Instance scrape + console status<br/>manager /api/instance-status"]
-    CPg[("Postgres + pgvector<br/>clients, tickets, knowledge, embeddings, plans,<br/>automation runs, statistics, config layers")]
+    CPg[("Postgres + pgvector<br/>clients, tickets, knowledge, embeddings, plans,<br/>automation runs, agent tasks + runs, handoffs,<br/>statistics, config layers")]
     Redis[("Redis<br/>BullMQ, VNC tickets, caches, updates")]
     OpenSearch[("OpenSearch<br/>agenstra-* indexes, workspace-files")]
     Files[("File storage<br/>local or S3: attachments")]
@@ -64,16 +66,16 @@ flowchart TB
   CApi --> CAuth
   CGw --> CAuth
   CAuth -.OIDC.-> Keycloak
-  CApi --> Tickets & Knowledge & Plans & Attachments & OcConfig & Provisioning & Import & Search
+  CApi --> Tickets & Knowledge & Plans & AgentTasks & Attachments & OcConfig & Provisioning & Import & Search
   CGw -.enrich prompts: refs, auto-context, granted bodies.-> Knowledge
   CGw -.ticket prototype prompts.-> Tickets
-  CtxHandler --> Tickets & Knowledge
-  Tickets & Knowledge & Plans & OcConfig --> CPg
+  CtxHandler --> Tickets & Knowledge & AgentTasks & Handoffs
+  Tickets & Knowledge & Plans & AgentTasks & Handoffs & OcConfig --> CPg
   Attachments --> Files
   Queue --> Redis
   Notify --> Redis
   Search --> OpenSearch
-  Queue -.jobs.-> OcConfig & Knowledge & Import & Tickets & Search & Notify & CStatus
+  Queue -.jobs.-> OcConfig & Knowledge & Import & Tickets & AgentTasks & Handoffs & Search & Notify & CStatus
   Notify --> Smtp
   Notify -.release feed.-> GitHubReleases
   Import --> Atlassian
@@ -89,7 +91,9 @@ flowchart TB
       Composer["Prompt context composer<br/>MCP mode: hints + context ticket<br/>fallback: inline hidden context"]
       CtxTickets["Context tickets<br/>bound to agent + chat session, 2 h idle TTL,<br/>granted refs, session grants"]
       CtxAccess["Context access requests<br/>ask (chat) / auto (automation, plans) / deny (hidden)"]
-      CtxApi["Agent context API /api/agent-context<br/>list, search, get, access-requests<br/>per-agent HMAC token, no user auth"]
+      CtxApi["Agent context API /api/agent-context<br/>tickets: list, search, get, access-requests<br/>tasks (own), handoffs (agents, create, get, response)<br/>per-agent HMAC token, no user auth"]
+      ActiveTurns["Active turns<br/>running OpenCode turns per agent:<br/>handoffs only from one working visible chat,<br/>prompts of one session serialized"]
+      Profiles["Handoff profiles<br/>own profile updates, peer profiles generated<br/>on request in read-only -handoff-profile sessions"]
       Runtime["OpenCode runtime<br/>sessions per chat / reserved suffix, SSE event bridge,<br/>permission + question tracking, auto-replies"]
       ConfigSync["OpenCode config sync<br/>PATCH /global/config, secrets, platform agents + skills,<br/>platform agenstra MCP server"]
       Egress["Egress service<br/>guard lifecycle, policy render, events collector"]
@@ -97,13 +101,13 @@ flowchart TB
       Filters["Chat filters<br/>incoming / outgoing, plugins"]
       Deploy["Deployments<br/>GitHub / GitLab pipeline providers"]
       WsIndex["Workspace index<br/>inotify supervisor, change notifier"]
-      MPg[("Postgres<br/>agents, messages, events, chat sessions,<br/>deployments, env vars, egress events")]
+      MPg[("Postgres<br/>agents (incl. handoff profile), messages, events, chat sessions<br/>(primary / user / handoff),<br/>deployments, env vars, egress events")]
     end
 
     subgraph Agent["Per agent"]
       subgraph Worker["Worker container (agenstra-manager-worker, io.agenstra.context-mcp=1)"]
         OpenCode["OpenCode serve :4096<br/>agents: build, agenstra-automation, agenstra-plan"]
-        CtxMcp["agenstra MCP server (stdio)<br/>/opt/agenstra/mcp, root-owned<br/>context_list / search / get / request_access"]
+        CtxMcp["agenstra MCP server (stdio)<br/>/opt/agenstra/mcp, root-owned<br/>context_* (list, search, get, request_access),<br/>tasks_* (own recurring tasks),<br/>handoff_* (agents, profile_get, profile_update,<br/>create, get, respond)"]
         Desktop["XFCE + TigerVNC + websockify :6080<br/>Chromium, vnc-auth-proxy"]
         AppVol[("/app workspace volume<br/>+ read-only /opt/workspace, attachments")]
       end
@@ -111,12 +115,12 @@ flowchart TB
     end
   end
 
-  CGw <-->|"Socket.IO socket/agents per console socket<br/>+ short-lived automation / plan sockets"| MGw
+  CGw <-->|"Socket.IO socket/agents per console socket<br/>+ short-lived automation / plan / task / handoff sockets"| MGw
   CApi -->|"REST /api (API key or Keycloak token)"| MApi
   CGw -.WS VNC proxy.-> MGw
   CStatus -.scrape.-> MApi
   Queue -.config + layer file sync, egress events ingest, isolation.-> MApi
-  MGw -.agentContextRequest (ack): metadata + content on demand.-> CtxHandler
+  MGw -.agentContextRequest / agentTaskRequest / agentHandoffRequest (ack).-> CtxHandler
   MApi --> MAuth
   MGw --> MAuth
   MGw --> Filters
@@ -125,6 +129,10 @@ flowchart TB
   MGw -->|"prompts"| Runtime
   MGw -.context_access question events, persisted.-> Console
   CtxApi --> CtxTickets & CtxAccess
+  CtxApi -.handoff create: requesting chat.-> ActiveTurns
+  Runtime -.begin / end every turn.-> ActiveTurns
+  CtxApi -.handoff profiles.-> Profiles
+  Profiles -.read-only self-description turn.-> Runtime
   CtxAccess -.permission reply ctx_*.-> MApi
   MApi --> ConfigSync & Egress & Isolation & Deploy & WsIndex
   Manager --> MPg
