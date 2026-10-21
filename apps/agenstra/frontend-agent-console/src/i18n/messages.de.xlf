@@ -826,6 +826,30 @@
         <source>Request context access</source>
         <target>Kontextzugriff anfordern</target>
       </trans-unit>
+      <trans-unit id="featureChat-toolDisplayTasksList" datatype="html">
+        <source>List tasks</source>
+        <target>Aufgaben auflisten</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayTasksGet" datatype="html">
+        <source>Read task</source>
+        <target>Aufgabe lesen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayTasksCreate" datatype="html">
+        <source>Create task</source>
+        <target>Aufgabe erstellen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayTasksUpdate" datatype="html">
+        <source>Update task</source>
+        <target>Aufgabe ändern</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayTasksDelete" datatype="html">
+        <source>Delete task</source>
+        <target>Aufgabe löschen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-toolDisplayTasksRun" datatype="html">
+        <source>Run task now</source>
+        <target>Aufgabe jetzt ausführen</target>
+      </trans-unit>
       <trans-unit id="featureChat-toolDisplayTool" datatype="html">
         <source>Tool</source>
         <target>Tool</target>
@@ -7445,6 +7469,246 @@
       <trans-unit id="featureTicketsBoard-acceptanceProgressAria" datatype="html">
         <source>Acceptance progress</source>
         <target>Abnahmefortschritt</target>
+      </trans-unit>
+      <trans-unit id="featureAgentConsole-tasksTitle" datatype="html">
+        <source>Tasks :: Agenstra</source>
+        <target>Aufgaben :: Agenstra</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-runStatusRunning" datatype="html">
+        <source>Running</source>
+        <target>Läuft</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-runStatusSucceeded" datatype="html">
+        <source>Succeeded</source>
+        <target>Erfolgreich</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-runStatusFailed" datatype="html">
+        <source>Failed</source>
+        <target>Fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-runStatusNever" datatype="html">
+        <source>Not run yet</source>
+        <target>Noch nicht ausgeführt</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-runTriggerManual" datatype="html">
+        <source>Manual</source>
+        <target>Manuell</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-runTriggerSchedule" datatype="html">
+        <source>Scheduled</source>
+        <target>Geplant</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-presetHourly" datatype="html">
+        <source>Every hour</source>
+        <target>Stündlich</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-presetDaily" datatype="html">
+        <source>Every day at 09:00</source>
+        <target>Täglich um 09:00</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-presetWeekdays" datatype="html">
+        <source>Weekdays at 09:00</source>
+        <target>Werktags um 09:00</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-presetWeekly" datatype="html">
+        <source>Every Monday at 09:00</source>
+        <target>Jeden Montag um 09:00</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-presetMonthly" datatype="html">
+        <source>First day of the month at 09:00</source>
+        <target>Am Ersten des Monats um 09:00</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-scheduleEveryMinutes" datatype="html">
+        <source>Every <x id="minutes" equiv-text="minutes"/> minutes</source>
+        <target>Alle <x id="minutes" equiv-text="minutes"/> Minuten</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-noWorkspaces" datatype="html">
+        <source>No workspaces yet</source>
+        <target>Noch keine Workspaces</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-goToSpaces" datatype="html">
+        <source> Go to Spaces </source>
+        <target>Zu Spaces</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-noWorkspaceSelected" datatype="html">
+        <source>No workspace selected yet</source>
+        <target>Noch kein Workspace ausgewählt</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-chooseWorkspace" datatype="html">
+        <source> Choose workspace... </source>
+        <target>Workspace auswählen...</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-runAlreadyInProgress" datatype="html">
+        <source>A run of this task is already in progress.</source>
+        <target>Diese Aufgabe wird bereits ausgeführt.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-agentFilterLabel" datatype="html">
+        <source>Environment</source>
+        <target>Umgebung</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-allEnvironments" datatype="html">
+        <source>All environments</source>
+        <target>Alle Umgebungen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-noTasks" datatype="html">
+        <source>No tasks yet</source>
+        <target>Noch keine Aufgaben</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-noTasksHint" datatype="html">
+        <source> Create a task here or ask an agent in chat to schedule something for itself. </source>
+        <target>Lege hier eine Aufgabe an oder bitte einen Agenten im Chat, etwas für sich einzuplanen.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-paused" datatype="html">
+        <source>Paused</source>
+        <target>Pausiert</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-createdByAgent" datatype="html">
+        <source>Created by agent</source>
+        <target>Vom Agenten erstellt</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-enabledLabel" datatype="html">
+        <source>Enabled</source>
+        <target>Aktiv</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-environment" datatype="html">
+        <source>Environment</source>
+        <target>Umgebung</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-schedule" datatype="html">
+        <source>Schedule</source>
+        <target>Zeitplan</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-nextRun" datatype="html">
+        <source>Next run</source>
+        <target>Nächste Ausführung</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-model" datatype="html">
+        <source>Model</source>
+        <target>Modell</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-promptHeading" datatype="html">
+        <source>Instructions</source>
+        <target>Anweisungen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-noRuns" datatype="html">
+        <source>This task has not run yet.</source>
+        <target>Diese Aufgabe wurde noch nicht ausgeführt.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-selectTask" datatype="html">
+        <source>Select a task to see its schedule and runs</source>
+        <target>Wähle eine Aufgabe aus, um Zeitplan und Ausführungen zu sehen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-titleLabel" datatype="html">
+        <source>Title</source>
+        <target>Titel</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-promptLabel" datatype="html">
+        <source>Instructions</source>
+        <target>Anweisungen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-promptHint" datatype="html">
+        <source>Runs start without the chat history, so describe the task completely.</source>
+        <target>Ausführungen starten ohne den Chatverlauf, beschreibe die Aufgabe daher vollständig.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-presetLabel" datatype="html">
+        <source>Schedule</source>
+        <target>Zeitplan</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-presetCustom" datatype="html">
+        <source>Custom (cron)</source>
+        <target>Benutzerdefiniert (Cron)</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-cronLabel" datatype="html">
+        <source>Cron expression</source>
+        <target>Cron-Ausdruck</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-cronHint" datatype="html">
+        <source>minute hour day-of-month month day-of-week</source>
+        <target>Minute Stunde Tag-des-Monats Monat Wochentag</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-timezoneLabel" datatype="html">
+        <source>Time zone</source>
+        <target>Zeitzone</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-save" datatype="html">
+        <source> Save </source>
+        <target>Speichern</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-deleteConfirmTitle" datatype="html">
+        <source>Delete task</source>
+        <target>Aufgabe löschen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-delete" datatype="html">
+        <source>Delete</source>
+        <target>Löschen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-deleteConfirmMessage" datatype="html">
+        <source> Delete &quot;<x id="INTERPOLATION" equiv-text="{{ pending.title }}"/>&quot; and its run history? The agent stops running it. </source>
+        <target>&quot;<x id="INTERPOLATION" equiv-text="{{ pending.title }}"/>&quot; und den Ausführungsverlauf löschen? Der Agent führt die Aufgabe dann nicht mehr aus.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-switchWorkspaceModalTitle" datatype="html">
+        <source>Switch workspace</source>
+        <target>Workspace wechseln</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-searchWorkspacesPlaceholder" datatype="html">
+        <source>Search workspaces</source>
+        <target>Workspaces suchen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-noSearchResults" datatype="html">
+        <source>No search results</source>
+        <target>Keine Suchergebnisse</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-currentWorkspace" datatype="html">
+        <source> Current </source>
+        <target>Aktuell</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-title" datatype="html">
+        <source>Tasks</source>
+        <target>Aufgaben</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-switchWorkspaceTitle" datatype="html">
+        <source>Switch workspace</source>
+        <target>Workspace wechseln</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-newTaskTitle" datatype="html">
+        <source>New task</source>
+        <target>Neue Aufgabe</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-runNowTitle" datatype="html">
+        <source>Run now</source>
+        <target>Jetzt ausführen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-editTitle" datatype="html">
+        <source>Edit task</source>
+        <target>Aufgabe bearbeiten</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-deleteTitle" datatype="html">
+        <source>Delete task</source>
+        <target>Aufgabe löschen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-refreshTitle" datatype="html">
+        <source>Refresh</source>
+        <target>Aktualisieren</target>
+      </trans-unit>
+      <trans-unit id="featureChat-openAgentTaskFromRunCard" datatype="html">
+        <source>View task</source>
+        <target>Aufgabe anzeigen</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-tasksTitle" datatype="html">
+        <source>Tasks</source>
+        <target>Aufgaben</target>
+      </trans-unit>
+      <trans-unit id="featureContainer-tasks" datatype="html">
+        <source>Tasks</source>
+        <target>Aufgaben</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-sessionHeading" datatype="html">
+        <source> Session history </source>
+        <target>Sitzungsverlauf</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-runInProgress" datatype="html">
+        <source>The agent is working on this run…</source>
+        <target>Der Agent arbeitet an dieser Ausführung…</target>
       </trans-unit>
     </body>
   </file>

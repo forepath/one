@@ -24,6 +24,7 @@ import { StatisticsService } from '../services/statistics.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
 import { TicketsService } from '../services/tickets.service';
 import { AgentContextRequestHandlerService } from '../services/agent-context-request-handler.service';
+import { AgentTaskRequestHandlerService } from '../services/agent-task-request-handler.service';
 import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 
 import { ClientsGateway } from './clients.gateway';
@@ -207,6 +208,7 @@ describe('ClientsGateway', () => {
   };
 
   const mockAgentContextRequests = { attach: jest.fn() };
+  const mockAgentTaskRequests = { attach: jest.fn() };
 
   beforeEach(async () => {
     mockClientUsersRepository.findUserClientAccess.mockResolvedValue(null);
@@ -263,6 +265,7 @@ describe('ClientsGateway', () => {
         },
         { provide: AgenstraAttachmentsService, useValue: mockAttachmentsService },
         { provide: AgentContextRequestHandlerService, useValue: mockAgentContextRequests },
+        { provide: AgentTaskRequestHandlerService, useValue: mockAgentTaskRequests },
       ],
     }).compile();
 
@@ -940,6 +943,32 @@ describe('ClientsGateway', () => {
 
     expect(socket.emit).not.toHaveBeenCalledWith('agentContextRequest', expect.anything(), expect.anything());
     expect(socket.emit).not.toHaveBeenCalledWith('agentContextRequest', expect.anything());
+  });
+
+  it('answers manager task requests on the remote socket and never forwards them to the browser', async () => {
+    const socket = createMockSocket();
+    const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
+    const remote = io() as any;
+
+    mockClientsRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'client-uuid',
+      endpoint: 'http://localhost:3100/api',
+      authenticationType: 'api_key',
+      apiKey: 'x',
+    } as any);
+    await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(mockAgentTaskRequests.attach).toHaveBeenCalledWith(remote, 'client-uuid');
+
+    (socket.emit as jest.Mock).mockClear();
+    const onAnyHandler = remote.onAny.mock.calls[remote.onAny.mock.calls.length - 1]?.[0];
+
+    onAnyHandler?.('agentTaskRequest', { op: 'list' }, jest.fn());
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(socket.emit).not.toHaveBeenCalledWith('agentTaskRequest', expect.anything(), expect.anything());
+    expect(socket.emit).not.toHaveBeenCalledWith('agentTaskRequest', expect.anything());
   });
 
   it('maps current and legacy agent error codes to notifications', async () => {

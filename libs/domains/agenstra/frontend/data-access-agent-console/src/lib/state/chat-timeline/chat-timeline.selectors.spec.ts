@@ -1,3 +1,4 @@
+import { CLIENT_CHAT_AGENT_TASK_SOCKET_EVENT } from '../container-socket/client-chat-agent-task.constants';
 import { CLIENT_CHAT_AUTOMATION_SOCKET_EVENT } from '../container-socket/client-chat-automation.constants';
 import { CLIENT_CHAT_PLAN_SOCKET_EVENT } from '../container-socket/client-chat-plan.constants';
 import {
@@ -7,7 +8,12 @@ import {
 } from '../container-socket/container-socket.types';
 
 import { selectChatPlanBusyForSelectedChat, selectChatTimelineOrdered } from './chat-timeline.selectors';
-import type { ChatTimelineAutomationRow, ChatTimelineMessageRow, ChatTimelinePlanRow } from './chat-timeline.types';
+import type {
+  ChatTimelineAgentTaskRunRow,
+  ChatTimelineAutomationRow,
+  ChatTimelineMessageRow,
+  ChatTimelinePlanRow,
+} from './chat-timeline.types';
 
 const primarySession = {
   id: 'chat-primary',
@@ -134,7 +140,75 @@ function planRow(
   };
 }
 
+function taskRunRow(
+  agentId: string,
+  timelineAtMs: number,
+  status: 'running' | 'succeeded' = 'running',
+): ChatTimelineAgentTaskRunRow {
+  const iso = new Date(timelineAtMs).toISOString();
+
+  return {
+    event: CLIENT_CHAT_AGENT_TASK_SOCKET_EVENT,
+    timestamp: timelineAtMs,
+    payload: {
+      timelineAt: iso,
+      hydrate: false,
+      task: {
+        id: 'task-1',
+        clientId: 'c1',
+        agentId,
+        title: 'Daily report',
+        cronExpression: '0 9 * * *',
+        timezone: 'UTC',
+        enabled: true,
+      },
+      run: {
+        id: 'task-run-1',
+        taskId: 'task-1',
+        clientId: 'c1',
+        agentId,
+        trigger: 'schedule',
+        status,
+        scheduledFor: iso,
+        startedAt: iso,
+        finishedAt: null,
+        outputExcerpt: null,
+        failureMessage: null,
+      },
+      actions: [{ type: 'openAgentTask', taskId: 'task-1', runId: 'task-run-1', label: 'View task' }],
+    },
+  };
+}
+
 describe('selectChatTimelineOrdered', () => {
+  it('merges agent task run cards on the primary chat, deduped by run id', () => {
+    const runs = [taskRunRow('a1', 500), taskRunRow('a1', 900, 'succeeded'), taskRunRow('other', 700)];
+    const onPrimary = selectChatTimelineOrdered.projector(
+      [chatMessageRow('hi', 800, primarySession.id)],
+      [],
+      [],
+      'a1',
+      'c1',
+      { 'c1:a1': primarySession.id },
+      sessionsMap,
+      runs,
+    );
+    const onUser = selectChatTimelineOrdered.projector(
+      [],
+      [],
+      [],
+      'a1',
+      'c1',
+      { 'c1:a1': userSession.id },
+      sessionsMap,
+      runs,
+    );
+
+    expect(onPrimary.map((r) => r.event)).toEqual(['chatMessage', CLIENT_CHAT_AGENT_TASK_SOCKET_EVENT]);
+    expect((onPrimary[1]?.payload as ChatTimelineAgentTaskRunRow['payload']).run.status).toBe('succeeded');
+    expect(onUser).toHaveLength(0);
+  });
+
   it('orders chat and automation by semantic timestamp and dedupes automation by run id', () => {
     const messages = [chatMessageRow('hi', 1000)];
     const automations = [automationRow('a1', 500, 'running'), automationRow('a1', 800, 'succeeded')];
@@ -146,6 +220,7 @@ describe('selectChatTimelineOrdered', () => {
       'c1',
       { 'c1:a1': null },
       sessionsMap,
+      [],
     );
 
     expect(out.map((r) => r.event)).toEqual([CLIENT_CHAT_AUTOMATION_SOCKET_EVENT, 'chatMessage']);
@@ -153,7 +228,16 @@ describe('selectChatTimelineOrdered', () => {
   });
 
   it('filters automation when selected agent does not match', () => {
-    const out = selectChatTimelineOrdered.projector([], [automationRow('other', 500)], [], 'a1', 'c1', {}, sessionsMap);
+    const out = selectChatTimelineOrdered.projector(
+      [],
+      [automationRow('other', 500)],
+      [],
+      'a1',
+      'c1',
+      {},
+      sessionsMap,
+      [],
+    );
 
     expect(out).toHaveLength(0);
   });
@@ -169,6 +253,7 @@ describe('selectChatTimelineOrdered', () => {
       'c1',
       { 'c1:a1': primarySession.id },
       sessionsMap,
+      [],
     );
     const onUser = selectChatTimelineOrdered.projector(
       [],
@@ -178,6 +263,7 @@ describe('selectChatTimelineOrdered', () => {
       'c1',
       { 'c1:a1': userSession.id },
       sessionsMap,
+      [],
     );
 
     expect(onPrimary).toHaveLength(1);
@@ -196,6 +282,7 @@ describe('selectChatTimelineOrdered', () => {
       'c1',
       { 'c1:a1': userSession.id },
       sessionsMap,
+      [],
     );
     const onPrimary = selectChatTimelineOrdered.projector(
       [],
@@ -205,6 +292,7 @@ describe('selectChatTimelineOrdered', () => {
       'c1',
       { 'c1:a1': primarySession.id },
       sessionsMap,
+      [],
     );
 
     expect(onUser.map((r) => r.event)).toEqual([CLIENT_CHAT_PLAN_SOCKET_EVENT, 'chatMessage']);
@@ -217,7 +305,7 @@ describe('selectChatTimelineOrdered', () => {
       planRow('a1', 'chat-b', 600, 'ready', 'p-b'),
       planRow('other', 'chat-a', 700, 'ready', 'p-other'),
     ];
-    const out = selectChatTimelineOrdered.projector([], [], plans, 'a1', 'c1', { 'c1:a1': 'chat-a' }, sessionsMap);
+    const out = selectChatTimelineOrdered.projector([], [], plans, 'a1', 'c1', { 'c1:a1': 'chat-a' }, sessionsMap, []);
 
     expect(out).toHaveLength(1);
     expect((out[0]?.payload as ChatPlanChatEventPayload).plan.id).toBe('p-a');
@@ -225,7 +313,7 @@ describe('selectChatTimelineOrdered', () => {
 
   it('dedupes plans by plan id keeping latest timelineAt', () => {
     const plans = [planRow('a1', 'chat-a', 500, 'exploring', 'p1'), planRow('a1', 'chat-a', 800, 'ready', 'p1')];
-    const out = selectChatTimelineOrdered.projector([], [], plans, 'a1', 'c1', { 'c1:a1': 'chat-a' }, sessionsMap);
+    const out = selectChatTimelineOrdered.projector([], [], plans, 'a1', 'c1', { 'c1:a1': 'chat-a' }, sessionsMap, []);
 
     expect(out).toHaveLength(1);
     expect((out[0]?.payload as ChatPlanChatEventPayload).plan.status).toBe('ready');
@@ -240,6 +328,7 @@ describe('selectChatTimelineOrdered', () => {
       'c1',
       { 'c1:a1': 'chat-a' },
       sessionsMap,
+      [],
     );
 
     expect(out).toHaveLength(1);
@@ -257,6 +346,7 @@ describe('selectChatTimelineOrdered', () => {
       'c1',
       { 'c1:a1': 'chat-a' },
       sessionsMap,
+      [],
     );
 
     expect(out).toHaveLength(0);

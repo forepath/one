@@ -137,6 +137,11 @@ export class AgentConsoleContainerComponent implements OnInit {
     { initialValue: ['/knowledge'] },
   );
 
+  readonly tasksSidebarLink = toSignal(
+    this.clientsFacade.activeClientId$.pipe(map((id): string[] => (id ? ['/tasks', id] : ['/tasks']))),
+    { initialValue: ['/tasks'] },
+  );
+
   /**
    * True when the user can access the user manager (admin with users/keycloak auth).
    */
@@ -250,6 +255,7 @@ export class AgentConsoleContainerComponent implements OnInit {
       path.includes('/tickets') ||
       path.includes('/imports') ||
       path.includes('/knowledge') ||
+      path.includes('/tasks') ||
       path.includes('/agent-config') ||
       path.includes('/settings/tokens') ||
       path.includes('/settings/security');

@@ -13,6 +13,7 @@ import { extractAutomationTurnStatus } from '../utils/automation-turn-status';
 import { extractPlanTurnStatus, type AgenstraPlanTurnStatusPayload } from '../utils/chat-plan-turn-status';
 
 import { AgentContextRequestHandlerService } from './agent-context-request-handler.service';
+import { AgentTaskRequestHandlerService } from './agent-task-request-handler.service';
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
 
@@ -101,6 +102,7 @@ export class RemoteAgentsSessionService {
     private readonly clientAgentCredentialsRepository: ClientAgentCredentialsRepository,
     private readonly statisticsService: StatisticsService,
     @Optional() private readonly agentContextRequests?: AgentContextRequestHandlerService,
+    @Optional() private readonly agentTaskRequests?: AgentTaskRequestHandlerService,
   ) {}
 
   private buildAgentsWsUrl(endpoint: string): string {
@@ -237,6 +239,7 @@ export class RemoteAgentsSessionService {
     });
 
     this.agentContextRequests?.attach(remote, params.clientId);
+    this.agentTaskRequests?.attach(remote, params.clientId);
     const creds = await this.clientAgentCredentialsRepository.findByClientAndAgent(params.clientId, params.agentId);
 
     if (!creds?.password) {
@@ -461,6 +464,7 @@ export class RemoteAgentsSessionService {
     });
 
     this.agentContextRequests?.attach(remote, params.clientId);
+    this.agentTaskRequests?.attach(remote, params.clientId);
     const creds = await this.clientAgentCredentialsRepository.findByClientAndAgent(params.clientId, params.agentId);
 
     if (!creds?.password) {

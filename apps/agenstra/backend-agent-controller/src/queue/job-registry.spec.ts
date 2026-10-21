@@ -14,6 +14,15 @@ describe('controller job-registry', () => {
     expect(names).toContain(ControllerJobName.WEBHOOK_DELIVERY_RETENTION_COORDINATOR);
   });
 
+  it('schedules the agent task coordinator every 30 seconds by default', () => {
+    const job = getControllerRepeatableJobs().find((entry) => entry.name === ControllerJobName.AGENT_TASK_COORDINATOR);
+
+    // Must match AGENT_TASK_*_JOB_NAME in feature-agent-controller (manual runs are enqueued from the library).
+    expect(ControllerJobName.AGENT_TASK_COORDINATOR).toBe('agent-task.coordinator');
+    expect(ControllerJobName.AGENT_TASK_UNIT).toBe('agent-task.unit');
+    expect(job?.everyMs).toBe(30_000);
+  });
+
   it('getControllerRepeatableJobs includes search reindex coordinator', () => {
     const jobs = getControllerRepeatableJobs();
     const searchJob = jobs.find((job) => job.name === ControllerJobName.SEARCH_REINDEX_COORDINATOR);

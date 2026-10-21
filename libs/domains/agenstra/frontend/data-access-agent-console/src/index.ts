@@ -104,6 +104,7 @@ export {
 } from '@forepath/identity/frontend';
 
 export * from './lib/utils/ticket-automation-chat-run-mapper';
+export * from './lib/services/agent-tasks.service';
 export * from './lib/services/agents.service';
 export * from './lib/services/clients.service';
 export * from './lib/services/deployments.service';
@@ -119,6 +120,12 @@ export * from './lib/services/opencode-layer-files.service';
 export * from './lib/services/tickets.service';
 export * from './lib/services/vcs.service';
 export * from './lib/services/workspace-config.service';
+export * from './lib/state/agent-tasks/agent-tasks.actions';
+export * from './lib/state/agent-tasks/agent-tasks.effects';
+export * from './lib/state/agent-tasks/agent-tasks.facade';
+export * from './lib/state/agent-tasks/agent-tasks.reducer';
+export * from './lib/state/agent-tasks/agent-tasks.selectors';
+export * from './lib/state/agent-tasks/agent-tasks.types';
 export * from './lib/state/agents/agents.actions';
 export * from './lib/state/agents/agents.effects';
 export * from './lib/state/agents/agents.facade';
@@ -193,6 +200,7 @@ export * from './lib/state/knowledge/knowledge.selectors';
 export * from './lib/state/knowledge/knowledge.types';
 export * from './lib/state/container-socket/client-chat-automation.constants';
 export * from './lib/state/container-socket/client-chat-plan.constants';
+export * from './lib/state/container-socket/client-chat-agent-task.constants';
 export * from './lib/state/container-socket/container-socket.actions';
 export * from './lib/state/container-socket/container-socket.effects';
 export * from './lib/state/container-socket/container-socket.facade';

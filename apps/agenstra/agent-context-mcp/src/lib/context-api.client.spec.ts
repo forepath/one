@@ -76,6 +76,33 @@ describe('ContextApiClient', () => {
     );
   });
 
+  it('maps task operations to the tasks routes of the context API', async () => {
+    fetchFn.mockResolvedValue(jsonResponse(200, {}));
+
+    await client.listTasks();
+    await client.getTask('task/1');
+    await client.createTask({ title: 't', prompt: 'p', cronExpression: '0 9 * * *' });
+    await client.updateTask('task-1', { enabled: false });
+    await client.runTask('task-1');
+
+    expect(fetchFn.mock.calls.map(([url, init]) => [init.method, url])).toEqual([
+      ['GET', 'http://manager:3000/api/agent-context/tasks'],
+      ['GET', 'http://manager:3000/api/agent-context/tasks/task%2F1'],
+      ['POST', 'http://manager:3000/api/agent-context/tasks'],
+      ['PATCH', 'http://manager:3000/api/agent-context/tasks/task-1'],
+      ['POST', 'http://manager:3000/api/agent-context/tasks/task-1/runs'],
+    ]);
+    expect(fetchFn.mock.calls[3][1].body).toBe(JSON.stringify({ enabled: false }));
+
+    fetchFn.mockResolvedValue(jsonResponse(204));
+
+    await expect(client.deleteTask('task-1')).resolves.toBeUndefined();
+    expect(fetchFn).toHaveBeenLastCalledWith(
+      'http://manager:3000/api/agent-context/tasks/task-1',
+      expect.objectContaining({ method: 'DELETE' }),
+    );
+  });
+
   it('treats 204 as an empty success', async () => {
     fetchFn.mockResolvedValue(jsonResponse(204));
 

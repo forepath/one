@@ -49,12 +49,15 @@ import { OpencodeProvidersController } from '../controllers/opencode-providers.c
 import { KnowledgeTreeController } from '../controllers/knowledge-tree.controller';
 import { StatisticsController } from '../controllers/statistics.controller';
 import { TicketAutomationController } from '../controllers/ticket-automation.controller';
+import { AgentTasksController } from '../controllers/agent-tasks.controller';
 import { ChatPlanController } from '../controllers/chat-plan.controller';
 import { TicketsController } from '../controllers/tickets.controller';
 import { ClientAgentAutonomyEntity } from '../entities/client-agent-autonomy.entity';
 import { ClientOpencodeConfigEntity } from '../entities/client-opencode-config.entity';
 import { GlobalOpencodeConfigEntity } from '../entities/global-opencode-config.entity';
 import { OpencodeMcpServerEntity } from '../entities/opencode-mcp-server.entity';
+import { AgentTaskRunEntity } from '../entities/agent-task-run.entity';
+import { AgentTaskEntity } from '../entities/agent-task.entity';
 import { ChatPlanEntity } from '../entities/chat-plan.entity';
 import { AgenstraAttachmentEntity } from '../entities/agenstra-attachment.entity';
 import { OpencodeProviderEntity } from '../entities/opencode-provider.entity';
@@ -132,6 +135,11 @@ import { RemoteAgentsSessionService } from '../services/remote-agents-session.se
 import { StatisticsAgentSyncService } from '../services/statistics-agent-sync.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
 import { TicketAutomationService } from '../services/ticket-automation.service';
+import { AgentTaskChatSyncService } from '../services/agent-task-chat-sync.service';
+import { AgentTaskRealtimeService } from '../services/agent-task-realtime.service';
+import { AgentTaskRequestHandlerService } from '../services/agent-task-request-handler.service';
+import { AgentTaskRunnerService } from '../services/agent-task-runner.service';
+import { AgentTasksService } from '../services/agent-tasks.service';
 import { ChatPlanChatSyncService } from '../services/chat-plan-chat-sync.service';
 import { ChatPlanOrchestratorService } from '../services/chat-plan-orchestrator.service';
 import { ChatPlanRealtimeService } from '../services/chat-plan-realtime.service';
@@ -172,6 +180,8 @@ const authMethod = getAuthenticationMethod();
       TicketAutomationLeaseEntity,
       TicketAutomationRunStepEntity,
       ChatPlanEntity,
+      AgentTaskEntity,
+      AgentTaskRunEntity,
       AgenstraAttachmentEntity,
       ClientAgentAutonomyEntity,
       KnowledgeNodeEntity,
@@ -213,6 +223,7 @@ const authMethod = getAuthenticationMethod();
     KnowledgeTreeController,
     TicketAutomationController,
     ChatPlanController,
+    AgentTasksController,
     ClientAgentAutonomyController,
     ClientAgentAutonomyDirectoryController,
     ClientsAgentAutomationProxyController,
@@ -235,6 +246,11 @@ const authMethod = getAuthenticationMethod();
     KnowledgeTreeService,
     AutoContextResolverService,
     AgentContextRequestHandlerService,
+    AgentTasksService,
+    AgentTaskRunnerService,
+    AgentTaskRequestHandlerService,
+    AgentTaskRealtimeService,
+    AgentTaskChatSyncService,
     KnowledgeEmbeddingIndexService,
     LocalEmbeddingProvider,
     TicketAutomationService,
@@ -343,6 +359,7 @@ const authMethod = getAuthenticationMethod();
     KnowledgeTreeService,
     KnowledgeEmbeddingIndexService,
     AutonomousRunOrchestratorService,
+    AgentTaskRunnerService,
     OpencodeProvidersCatalogService,
     OpencodeMcpServersCatalogService,
     OpencodeConfigSyncTargetsService,

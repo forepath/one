@@ -2,6 +2,7 @@ import { createAction, props } from '@ngrx/store';
 
 import type {
   AgentEventEnvelope,
+  AgentTaskRunChatEventPayload,
   ChatPlanChatEventPayload,
   ChatTimelineBatchMessage,
   ChatTimelineCorrelationResult,
@@ -49,6 +50,11 @@ export const chatTimelineFilterReceived = createAction(
 export const chatTimelineAutomationUpsert = createAction(
   '[Chat Timeline] Automation Upsert',
   props<{ payload: TicketAutomationRunChatEventPayload }>(),
+);
+
+export const chatTimelineAgentTaskRunUpsert = createAction(
+  '[Chat Timeline] Agent Task Run Upsert',
+  props<{ payload: AgentTaskRunChatEventPayload }>(),
 );
 
 export const chatTimelinePlanUpsert = createAction(

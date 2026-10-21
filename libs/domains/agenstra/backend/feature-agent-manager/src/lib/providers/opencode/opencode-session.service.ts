@@ -8,7 +8,7 @@ import {
 
 import {
   isChatPlanResumeSessionSuffix,
-  isTicketAutomationResumeSessionSuffix,
+  isUnattendedAutomationResumeSessionSuffix,
 } from '../../constants/chat-session.constants';
 import { AgentsRepository } from '../../repositories/agents.repository';
 import type { AgentProviderOptions } from '../agent-provider.interface';
@@ -72,7 +72,7 @@ export class OpenCodeSessionService {
 
   private async createSession(client: OpencodeClient, key: OpenCodeSessionKey): Promise<Session> {
     const titleSuffix = key.resumeSessionSuffix ? ` (${key.resumeSessionSuffix})` : '';
-    const automation = isTicketAutomationResumeSessionSuffix(key.resumeSessionSuffix);
+    const automation = isUnattendedAutomationResumeSessionSuffix(key.resumeSessionSuffix);
     const plan = isChatPlanResumeSessionSuffix(key.resumeSessionSuffix);
     const result = await client.session.create({
       body: {

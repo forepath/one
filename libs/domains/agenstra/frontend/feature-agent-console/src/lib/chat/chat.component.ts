@@ -71,6 +71,7 @@ import {
   type KnowledgeNodeDto,
   type ProvisionServerDto,
   type TicketAutomationRunChatEventPayload,
+  type AgentTaskRunChatEventPayload,
   type TicketResponseDto,
   type AttachmentResponseDto,
   type UpdateAgentDto,
@@ -161,6 +162,12 @@ import {
   reconcileIsolationSelection,
   resolveIsolationSubmission,
 } from '../isolation/isolation-level.util';
+import {
+  agentTaskRunStatusBadgeColor as agentTaskRunStatusBadgeColorFn,
+  agentTaskRunStatusLabel as agentTaskRunStatusLabelFn,
+  agentTaskRunTriggerLabel as agentTaskRunTriggerLabelFn,
+  describeAgentTaskSchedule as describeAgentTaskScheduleFn,
+} from '../agent-tasks/agent-task-labels';
 import { LayerFileIdeComponent } from '../layer-file-ide/layer-file-ide.component';
 import { readAndClearAgentConsoleChatDraft } from '../tickets/chat-draft-storage';
 import {
@@ -292,6 +299,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly automationRunPhaseLabel = ticketAutomationRunPhaseLabelFn;
   readonly chatPlanStateLabel = chatPlanStateLabelFn;
   readonly chatPlanStateBadgeColor = chatPlanStateBadgeColorFn;
+  readonly agentTaskRunStatusLabel = agentTaskRunStatusLabelFn;
+  readonly agentTaskRunStatusBadgeColor = agentTaskRunStatusBadgeColorFn;
+  readonly agentTaskRunTriggerLabel = agentTaskRunTriggerLabelFn;
+  readonly describeAgentTaskSchedule = describeAgentTaskScheduleFn;
+  readonly openAgentTaskFromChatButtonLabel = $localize`:@@featureChat-openAgentTaskFromRunCard:View task`;
   readonly isolationLevels = ISOLATION_LEVELS_STRONGEST_FIRST;
   readonly isolationLevelLabel = isolationLevelLabel;
   readonly isolationRuntimeStateLabel = isolationRuntimeStateLabel;
@@ -5500,6 +5512,12 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     });
   }
 
+  openAgentTaskFromChat(payload: AgentTaskRunChatEventPayload): void {
+    void this.router.navigate(['/tasks', payload.task.clientId], {
+      queryParams: { agentId: payload.task.agentId, openTaskId: payload.task.id, openRunId: payload.run.id },
+    });
+  }
+
   openTicketDetailFromChat(payload: TicketAutomationRunChatEventPayload): void {
     void this.router.navigate(['/tickets', payload.ticket.clientId], {
       queryParams: { openTicketId: payload.ticket.id },
@@ -5974,6 +5992,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     if (item.kind === 'chatPlan') {
       return `cp-${item.payload.plan.id}-${item.sortTime}`;
+    }
+
+    if (item.kind === 'agentTaskRun') {
+      return `tr-${item.payload.run.id}-${item.sortTime}`;
     }
 
     const firstTs = item.msgs[0]?.timestamp ?? item.view.displayTimestamp;

@@ -2,10 +2,12 @@ import { createFeatureSelector, createSelector } from '@ngrx/store';
 
 import { getClientAgentKey } from '../chat-sessions/chat-sessions.reducer';
 import { selectChatSessionsMap, selectSelectedChatIdsMap } from '../chat-sessions/chat-sessions.selectors';
+import { CLIENT_CHAT_AGENT_TASK_SOCKET_EVENT } from '../container-socket/client-chat-agent-task.constants';
 import { CLIENT_CHAT_AUTOMATION_SOCKET_EVENT } from '../container-socket/client-chat-automation.constants';
 import { CLIENT_CHAT_PLAN_SOCKET_EVENT } from '../container-socket/client-chat-plan.constants';
 import { selectSelectedAgentId, selectSelectedClientId } from '../container-socket/container-socket.selectors';
 import type {
+  AgentTaskRunChatEventPayload,
   ChatMessageData,
   ChatPlanChatEventPayload,
   ChatPlanStatus,
@@ -25,6 +27,8 @@ export const selectMessageFilterResults = createSelector(selectChatTimelineState
 export const selectChatTimelineAutomations = createSelector(selectChatTimelineState, (state) => state.automations);
 
 export const selectChatTimelinePlans = createSelector(selectChatTimelineState, (state) => state.plans);
+
+export const selectChatTimelineAgentTaskRuns = createSelector(selectChatTimelineState, (state) => state.agentTaskRuns);
 
 export const selectHasMoreOlder = createSelector(selectChatTimelineState, (state) => state.hasMoreOlder);
 
@@ -92,6 +96,18 @@ function semanticSortKey(row: { event: string; payload: unknown; timestamp: numb
     }
   }
 
+  if (row.event === CLIENT_CHAT_AGENT_TASK_SOCKET_EVENT) {
+    const p = row.payload as AgentTaskRunChatEventPayload | undefined;
+
+    if (p?.timelineAt) {
+      const t = Date.parse(p.timelineAt);
+
+      if (!Number.isNaN(t)) {
+        return t;
+      }
+    }
+  }
+
   if (row.event === CLIENT_CHAT_PLAN_SOCKET_EVENT) {
     const p = row.payload as ChatPlanChatEventPayload | undefined;
 
@@ -108,9 +124,9 @@ function semanticSortKey(row: { event: string; payload: unknown; timestamp: numb
 }
 
 /**
- * Chat messages merged with ticket automation + chat plan cards, ordered by semantic time.
- * Automation rows are deduped by `run.id` (latest `timelineAt` wins). Filtered to `run.agentId === selectedAgentId`
- * when an agent is selected, and shown only on the primary chat session (main thread).
+ * Chat messages merged with ticket automation, agent task run and chat plan cards, ordered by semantic time.
+ * Automation and task run rows are deduped by `run.id` (latest `timelineAt` wins). Filtered to
+ * `run.agentId === selectedAgentId` when an agent is selected, and shown only on the primary chat session (main thread).
  * Plan rows are deduped by `plan.id`, filtered to matching agent, and shown when `plan.chatId === selectedChatId`.
  * Chat messages are filtered to the selected chat session when a chatId is selected and present on the message.
  */
@@ -122,6 +138,7 @@ export const selectChatTimelineOrdered = createSelector(
   selectSelectedClientId,
   selectSelectedChatIdsMap,
   selectChatSessionsMap,
+  selectChatTimelineAgentTaskRuns,
   (
     messages,
     automations,
@@ -130,6 +147,7 @@ export const selectChatTimelineOrdered = createSelector(
     selectedClientId,
     selectedChatIds,
     sessionsMap,
+    agentTaskRuns,
   ): ChatTimelineOrderedRow[] => {
     const agentKey = selectedClientId && selectedAgentId ? getClientAgentKey(selectedClientId, selectedAgentId) : null;
     const selectedChatId = agentKey ? (selectedChatIds[agentKey] ?? null) : null;
@@ -212,9 +230,26 @@ export const selectChatTimelineOrdered = createSelector(
       }
     }
 
+    const byTaskRun = new Map<string, (typeof agentTaskRuns)[0]>();
+
+    for (const e of showAutomationCards ? agentTaskRuns : []) {
+      const run = e.payload?.run;
+
+      if (!run?.id || !run.agentId || (selectedAgentId && run.agentId !== selectedAgentId)) {
+        continue;
+      }
+
+      const prev = byTaskRun.get(run.id);
+
+      if (!prev || semanticSortKey(e) >= semanticSortKey(prev)) {
+        byTaskRun.set(run.id, e);
+      }
+    }
+
     const automationRows = [...byRun.values()];
     const planRows = [...byPlan.values()];
-    const merged: ChatTimelineOrderedRow[] = [...chatMsgs, ...automationRows, ...planRows].map((e) => ({
+    const taskRunRows = [...byTaskRun.values()];
+    const merged: ChatTimelineOrderedRow[] = [...chatMsgs, ...automationRows, ...taskRunRows, ...planRows].map((e) => ({
       event: e.event,
       payload: e.payload,
       timestamp: e.timestamp,

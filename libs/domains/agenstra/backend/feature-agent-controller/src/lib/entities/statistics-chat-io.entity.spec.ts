@@ -90,5 +90,10 @@ describe('StatisticsChatIoEntity', () => {
 
     planExecute.interactionKind = StatisticsInteractionKind.CHAT_PLAN_EXECUTE;
     expect(planExecute.interactionKind).toBe('chat_plan_execute');
+
+    const taskRun = new StatisticsChatIoEntity();
+
+    taskRun.interactionKind = StatisticsInteractionKind.AGENT_TASK_RUN;
+    expect(taskRun.interactionKind).toBe('agent_task_run');
   });
 });

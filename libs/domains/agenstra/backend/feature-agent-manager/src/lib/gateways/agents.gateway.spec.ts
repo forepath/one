@@ -2341,6 +2341,30 @@ describe('AgentsGateway', () => {
         expect(mockAgentProvider.sendMessage).not.toHaveBeenCalled();
       });
 
+      it('rejects agent task resumeSessionSuffix without unattendedAutomation trust marker', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (gateway as any).authenticatedClients.set(mockSocket.id || 'test-socket-id', mockAgent.id);
+
+        await gateway.handleChat(
+          {
+            message: 'spoof',
+            resumeSessionSuffix: '-task-11111111-2222-4333-8444-555555555555',
+            responseMode: 'sync',
+            correlationId: 'spoof-corr-task',
+          },
+          mockSocket as Socket,
+        );
+
+        expect(mockSocket.emit).toHaveBeenCalledWith(
+          'error',
+          expect.objectContaining({
+            success: false,
+            error: expect.objectContaining({ code: 'AUTOMATION_TRUST_REQUIRED' }),
+          }),
+        );
+        expect(mockAgentProvider.sendMessage).not.toHaveBeenCalled();
+      });
+
       it('rejects invalid chatId UUID before processing', async () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gateway as any).authenticatedClients.set(mockSocket.id || 'test-socket-id', mockAgent.id);

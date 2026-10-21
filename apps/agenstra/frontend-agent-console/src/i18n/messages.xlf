@@ -770,6 +770,9 @@
       <trans-unit id="featureAgentConsole-knowledgeTitle" datatype="html">
         <source>Knowledge :: Agenstra</source>
         </trans-unit>
+      <trans-unit id="featureAgentConsole-tasksTitle" datatype="html">
+        <source>Tasks :: Agenstra</source>
+        </trans-unit>
       <trans-unit id="featureAgentConsole-managerTitle" datatype="html">
         <source>Manager :: Agenstra</source>
         </trans-unit>
@@ -781,6 +784,174 @@
         </trans-unit>
       <trans-unit id="featureAgentSelect-placeholder" datatype="html">
         <source>Search agents by name</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-runStatusRunning" datatype="html">
+        <source>Running</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-runStatusSucceeded" datatype="html">
+        <source>Succeeded</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-runStatusFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-runStatusNever" datatype="html">
+        <source>Not run yet</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-runTriggerManual" datatype="html">
+        <source>Manual</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-runTriggerSchedule" datatype="html">
+        <source>Scheduled</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-presetHourly" datatype="html">
+        <source>Every hour</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-presetDaily" datatype="html">
+        <source>Every day at 09:00</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-presetWeekdays" datatype="html">
+        <source>Weekdays at 09:00</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-presetWeekly" datatype="html">
+        <source>Every Monday at 09:00</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-presetMonthly" datatype="html">
+        <source>First day of the month at 09:00</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-scheduleEveryMinutes" datatype="html">
+        <source>Every <x id="minutes" equiv-text="minutes"/> minutes</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-noWorkspaces" datatype="html">
+        <source>No workspaces yet</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-goToSpaces" datatype="html">
+        <source> Go to Spaces </source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-noWorkspaceSelected" datatype="html">
+        <source>No workspace selected yet</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-chooseWorkspace" datatype="html">
+        <source> Choose workspace... </source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-runAlreadyInProgress" datatype="html">
+        <source>A run of this task is already in progress.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-agentFilterLabel" datatype="html">
+        <source>Environment</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-allEnvironments" datatype="html">
+        <source>All environments</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-noTasks" datatype="html">
+        <source>No tasks yet</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-noTasksHint" datatype="html">
+        <source> Create a task here or ask an agent in chat to schedule something for itself. </source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-paused" datatype="html">
+        <source>Paused</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-createdByAgent" datatype="html">
+        <source>Created by agent</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-enabledLabel" datatype="html">
+        <source>Enabled</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-environment" datatype="html">
+        <source>Environment</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-schedule" datatype="html">
+        <source>Schedule</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-nextRun" datatype="html">
+        <source>Next run</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-model" datatype="html">
+        <source>Model</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-promptHeading" datatype="html">
+        <source>Instructions</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-sessionHeading" datatype="html">
+        <source> Session history </source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-noRuns" datatype="html">
+        <source>This task has not run yet.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-runInProgress" datatype="html">
+        <source>The agent is working on this run…</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-selectTask" datatype="html">
+        <source>Select a task to see its schedule and runs</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-titleLabel" datatype="html">
+        <source>Title</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-promptLabel" datatype="html">
+        <source>Instructions</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-promptHint" datatype="html">
+        <source>Runs start without the chat history, so describe the task completely.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-presetLabel" datatype="html">
+        <source>Schedule</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-presetCustom" datatype="html">
+        <source>Custom (cron)</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-cronLabel" datatype="html">
+        <source>Cron expression</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-cronHint" datatype="html">
+        <source>minute hour day-of-month month day-of-week</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-timezoneLabel" datatype="html">
+        <source>Time zone</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-save" datatype="html">
+        <source> Save </source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-deleteConfirmTitle" datatype="html">
+        <source>Delete task</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-delete" datatype="html">
+        <source>Delete</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-deleteConfirmMessage" datatype="html">
+        <source> Delete &quot;<x id="INTERPOLATION" equiv-text="{{ pending.title }}"/>&quot; and its run history? The agent stops running it. </source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-switchWorkspaceModalTitle" datatype="html">
+        <source>Switch workspace</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-searchWorkspacesPlaceholder" datatype="html">
+        <source>Search workspaces</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-noSearchResults" datatype="html">
+        <source>No search results</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-currentWorkspace" datatype="html">
+        <source> Current </source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-title" datatype="html">
+        <source>Tasks</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-switchWorkspaceTitle" datatype="html">
+        <source>Switch workspace</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-newTaskTitle" datatype="html">
+        <source>New task</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-runNowTitle" datatype="html">
+        <source>Run now</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-editTitle" datatype="html">
+        <source>Edit task</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-deleteTitle" datatype="html">
+        <source>Delete task</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-refreshTitle" datatype="html">
+        <source>Refresh</source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-connectionTestLabel" datatype="html">
         <source>Connection test:</source>
@@ -1486,6 +1657,24 @@
         </trans-unit>
       <trans-unit id="featureChat-toolDisplayContextRequestAccess" datatype="html">
         <source>Request context access</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayTasksList" datatype="html">
+        <source>List tasks</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayTasksGet" datatype="html">
+        <source>Read task</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayTasksCreate" datatype="html">
+        <source>Create task</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayTasksUpdate" datatype="html">
+        <source>Update task</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayTasksDelete" datatype="html">
+        <source>Delete task</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayTasksRun" datatype="html">
+        <source>Run task now</source>
         </trans-unit>
       <trans-unit id="featureChat-toolDisplayTool" datatype="html">
         <source>Tool</source>
@@ -2224,6 +2413,9 @@
       <trans-unit id="featureChat-removeClientUserTitle" datatype="html">
         <source>Remove user</source>
         </trans-unit>
+      <trans-unit id="featureChat-openAgentTaskFromRunCard" datatype="html">
+        <source>View task</source>
+        </trans-unit>
       <trans-unit id="featureChat-openTicketFromAutomationCard" datatype="html">
         <source>Open ticket</source>
         </trans-unit>
@@ -2457,6 +2649,12 @@
         </trans-unit>
       <trans-unit id="featureContainer-pages" datatype="html">
         <source>Pages</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-tasksTitle" datatype="html">
+        <source>Tasks</source>
+        </trans-unit>
+      <trans-unit id="featureContainer-tasks" datatype="html">
+        <source>Tasks</source>
         </trans-unit>
       <trans-unit id="featureContainer-auditTitle" datatype="html">
         <source>Audit</source>
@@ -5133,6 +5331,42 @@
         </trans-unit>
       <trans-unit id="featureDocsSearchPage-metaDescription" datatype="html">
         <source>Search Agenstra docs for setup guides, API references, security hardening, agent configuration, deployment patterns, and troubleshooting.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-role" datatype="html">
+        <source>Founder and CEO</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-photoAlt" datatype="html">
+        <source>Portrait of Marcel Menk</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-linkedInLabel" datatype="html">
+        <source>Marcel Menk on LinkedIn</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageForepath" datatype="html">
+        <source>We work with AI every day, because it makes us faster and our results better.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageAgenstra" datatype="html">
+        <source>We build Agenstra with AI every day, because it makes the product better and lets us ship faster.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-messageDecabill" datatype="html">
+        <source>We build Decabill with AI every day, because it makes the product better and lets us ship faster.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaRole" datatype="html">
+        <source>Virtual Customer Success</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaPhotoAlt" datatype="html">
+        <source>AI-generated portrait of Maya Keller, our virtual team member</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageForepath" datatype="html">
+        <source>I am part of that, but your message still reaches real people on our team, and a person takes responsibility for every answer.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageAgenstra" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Agenstra, and a person takes responsibility for every answer.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-mayaMessageDecabill" datatype="html">
+        <source>I am part of that, but your message still reaches real people who know Decabill, and a person takes responsibility for every answer.</source>
+        </trans-unit>
+      <trans-unit id="sharedFeatureLandingpageContactPerson-aiLabel" datatype="html">
+        <source>AI</source>
         </trans-unit>
       <trans-unit id="sharedFeatureLandingpageContact-heroTitle" datatype="html">
         <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary&quot;&gt;"/>Contact<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> us </source>

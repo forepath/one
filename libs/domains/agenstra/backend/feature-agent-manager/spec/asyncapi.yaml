@@ -274,7 +274,25 @@ channels:
       `content` (full text of granted refs). The controller answers within the workspace bound to the connection
       and never forwards this event to browsers. Access prompts for additional refs arrive as `chatEvent` `question`
       frames with `subtype: context_access` and ids starting with `ctx_` (answered via the permission reply endpoint).
+  agents/agentTaskRequest:
+    address: agents/agentTaskRequest
+    messages:
+      agentTaskRequestEvent:
+        $ref: '#/components/messages/AgentTaskRequest'
+    description: |
+      Server → controller request with Socket.IO acknowledgement, emitted when the worker `agenstra` MCP server manages
+      the agent's own recurring tasks (`/api/agent-context/tasks`). `agentId` is the agent authenticated by its context
+      token. Reads (`list`, `get`) try every socket logged into the agent; mutations (`create`, `update`, `delete`,
+      `run`) use one socket only. The controller answers within the workspace bound to the connection, scoped to that
+      agent, with `{ ok: true, tasks | task | runs | deleted | queued }` or `{ ok: false, error, status }`, and never
+      forwards this event to browsers.
 operations:
+  serverRequestsAgentTasks:
+    action: receive
+    channel:
+      $ref: '#/channels/agents~1agentTaskRequest'
+    messages:
+      - $ref: '#/channels/agents~1agentTaskRequest/messages/agentTaskRequestEvent'
   serverRequestsAgentContext:
     action: receive
     channel:
@@ -580,6 +598,27 @@ components:
           timestamp:
             type: string
             description: ISO timestamp
+    AgentTaskRequest:
+      name: agentTaskRequest
+      title: Agent task request (ack)
+      contentType: application/json
+      payload:
+        type: object
+        required: [op, agentId]
+        properties:
+          op:
+            type: string
+            enum: [list, get, create, update, delete, run]
+          agentId:
+            type: string
+            format: uuid
+          taskId:
+            type: string
+            format: uuid
+            description: all operations except list / create
+          input:
+            type: object
+            description: create / update — title, prompt, cronExpression, timezone, model, enabled
     AgentContextRequest:
       name: agentContextRequest
       title: Agent context request (ack)

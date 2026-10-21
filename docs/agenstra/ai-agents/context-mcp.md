@@ -39,6 +39,9 @@ sequenceDiagram
 
 Metadata is always searchable; content of elements that were not part of the prompt requires an access request.
 
+The same server exposes `agenstra_tasks_*` tools so the agent can manage its own recurring tasks (`/api/agent-context/tasks`,
+same agent token, forwarded to the controller as `agentTaskRequest`). See [Agent tasks](../features/agent-tasks.md).
+
 ## Access decisions
 
 | Session                                             | Additional access                                                    |

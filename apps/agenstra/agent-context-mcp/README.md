@@ -7,6 +7,9 @@ registers it during OpenCode config sync.
 Prompts only carry hints and a context ticket; this server reads tickets / knowledge from the agent-manager context API
 (`/api/agent-context/*`). See [Agent Context MCP](../../../docs/agenstra/ai-agents/context-mcp.md).
 
+It also serves `tasks_*` tools (`agenstra_tasks_*` in OpenCode) for the agent's own recurring tasks
+(`/api/agent-context/tasks`). See [Agent tasks](../../../docs/agenstra/features/agent-tasks.md).
+
 ## Environment (set by the agent-manager)
 
 | Variable                       | Purpose                                           |

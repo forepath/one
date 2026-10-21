@@ -1121,6 +1121,41 @@
                           </div>
                         </div>
                       </div>
+                    } @else if (item.kind === 'agentTaskRun') {
+                      <div class="d-flex justify-content-start">
+                        <div class="card bg-body chat-message-card">
+                          <div class="card-body chat-message-body">
+                            <div class="d-flex align-items-start gap-2 min-width-0">
+                              <i class="bi bi-alarm text-body-secondary" aria-hidden="true"></i>
+                              <div class="fw-semibold text-truncate min-width-0" [attr.title]="item.payload.task.title">
+                                {{ item.payload.task.title }}
+                              </div>
+                            </div>
+                            <div class="small text-body-secondary mt-1 d-flex flex-wrap gap-1">
+                              <fpc-badge [color]="agentTaskRunStatusBadgeColor(item.payload.run.status)">{{
+                                agentTaskRunStatusLabel(item.payload.run.status)
+                              }}</fpc-badge>
+                              <fpc-badge color="light" class="border">{{
+                                agentTaskRunTriggerLabel(item.payload.run.trigger)
+                              }}</fpc-badge>
+                              <fpc-badge color="light" class="border">{{
+                                describeAgentTaskSchedule(item.payload.task.cronExpression, item.payload.task.timezone)
+                              }}</fpc-badge>
+                            </div>
+                            @if (item.payload.run.status === 'failed' && item.payload.run.failureMessage) {
+                              <div class="small text-danger mt-2 text-break">{{ item.payload.run.failureMessage }}</div>
+                            }
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                              <fpc-button variant="primary" size="sm" (clicked)="openAgentTaskFromChat(item.payload)">
+                                {{ openAgentTaskFromChatButtonLabel }}
+                              </fpc-button>
+                            </div>
+                            <small class="chat-message-timestamp text-body-secondary d-block mt-2">{{
+                              formatTimestamp(item.sortTime)
+                            }}</small>
+                          </div>
+                        </div>
+                      </div>
                     } @else if (item.kind === 'chatPlan') {
                       <div class="d-flex justify-content-start">
                         <div class="card bg-body chat-message-card">

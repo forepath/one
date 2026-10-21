@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-21T08:53:53.912Z",
+  "generatedAt": "2026-10-21T12:28:48.149Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -2226,6 +2226,14 @@
       }
     },
     {
+      "id": "package:cron-parser",
+      "type": "package",
+      "attrs": {
+        "name": "cron-parser",
+        "version": "4.9.0"
+      }
+    },
+    {
       "id": "package:dockerode",
       "type": "package",
       "attrs": {
@@ -3891,6 +3899,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agent-tasks.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agent-tasks.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agents.service.ts",
       "type": "service",
       "attrs": {
@@ -4044,6 +4061,24 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/agent-tasks",
+      "type": "state",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/agent-tasks",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-data-access-agent-console",
+        "sliceName": "agent-tasks",
+        "memberFiles": [
+          "agent-tasks.actions.ts",
+          "agent-tasks.effects.ts",
+          "agent-tasks.facade.ts",
+          "agent-tasks.reducer.ts",
+          "agent-tasks.selectors.ts",
+          "agent-tasks.types.ts"
+        ]
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/agents",
       "type": "state",
       "attrs": {
@@ -4142,6 +4177,7 @@
         "projectName": "agenstra-frontend-data-access-agent-console",
         "sliceName": "container-socket",
         "memberFiles": [
+          "client-chat-agent-task.constants.ts",
           "client-chat-automation.constants.ts",
           "client-chat-plan.constants.ts",
           "container-socket.actions.ts",
@@ -4772,6 +4808,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/agent-tasks.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/agent-tasks.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/attachments.controller.ts",
       "type": "controller",
       "attrs": {
@@ -4983,6 +5028,42 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-console-status.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-tasks/agent-task-response.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-tasks/agent-task-response.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-tasks/agent-task-run-chat-event.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-tasks/agent-task-run-chat-event.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-tasks/create-agent-task.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-tasks/create-agent-task.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-tasks/update-agent-task.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-tasks/update-agent-task.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -5433,6 +5514,24 @@
       "type": "entity",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/agenstra-attachment.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/agent-task-run.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/agent-task-run.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/agent-task.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/agent-task.entity.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -6081,6 +6180,51 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-manager-instance-scrape.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-chat-sync.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-chat-sync.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-realtime.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-realtime.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-request-handler.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-request-handler.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-runner.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-runner.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-tasks.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-tasks.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -10798,6 +10942,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-tasks.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-tasks.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-vcs.controller.ts",
       "type": "controller",
       "attrs": {
@@ -10919,6 +11072,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-response.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-task.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-task.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -11657,6 +11819,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-session-hydration.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-tasks-api.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-tasks-api.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -14151,6 +14322,14 @@
       }
     },
     {
+      "id": "file:docs/agenstra/features/agent-tasks.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/agenstra/features/agent-tasks.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
       "id": "file:docs/agenstra/features/application-updates.md",
       "type": "doc",
       "attrs": {
@@ -15204,6 +15383,33 @@
       "attrs": {
         "pathOrChannel": "clients/chatPlanUpsert",
         "summary": "Controller-originated chat plan snapshot for the chat UI. Aligns with OpenAPI `ChatPlanChatEventDto`.\nHydration uses `plan.startedAt`; live updates use `plan.updatedAt`. Cards are chat-session scoped via `plan.chatId`.\n",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:clients/agentTaskRunChatUpsert",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "clients/agentTaskRunChatUpsert",
+        "summary": "Controller-originated agent task run snapshot (OpenAPI `AgentTaskRunChatEventDto`) rendered as a card in the\nagent's primary chat. Hydration (unicast after login) uses `run.startedAt`; live updates use the finish/update time.\n",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:clients/agentTaskUpsert",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "clients/agentTaskUpsert",
+        "summary": "Full `AgentTaskResponseDto` after create / update / schedule advance / run (room `client:{clientId}`).",
+        "specKind": "asyncapi"
+      }
+    },
+    {
+      "id": "api:channel:clients/agentTaskRemoved",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "clients/agentTaskRemoved",
+        "summary": "A task was deleted by a user or by the agent.",
         "specKind": "asyncapi"
       }
     },
@@ -16948,6 +17154,83 @@
         "pathOrChannel": "/clients/{id}/agents/{agentId}/plans/{planId}/cancel",
         "operationId": "cancelChatPlan",
         "summary": "Cancel an active chat plan",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{clientId}/agent-tasks",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{clientId}/agent-tasks",
+        "operationId": "listAgentTasks",
+        "summary": "List recurring agent tasks of a workspace",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{clientId}/agents/{agentId}/tasks",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{clientId}/agents/{agentId}/tasks",
+        "operationId": "createAgentTask",
+        "summary": "Create a recurring agent task",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{clientId}/agents/{agentId}/tasks/{taskId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{clientId}/agents/{agentId}/tasks/{taskId}",
+        "operationId": "getAgentTask",
+        "summary": "Agent task with recent runs",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PATCH:/clients/{clientId}/agents/{agentId}/tasks/{taskId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PATCH",
+        "pathOrChannel": "/clients/{clientId}/agents/{agentId}/tasks/{taskId}",
+        "operationId": "updateAgentTask",
+        "summary": "Update an agent task",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/clients/{clientId}/agents/{agentId}/tasks/{taskId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/clients/{clientId}/agents/{agentId}/tasks/{taskId}",
+        "operationId": "deleteAgentTask",
+        "summary": "Delete an agent task and its runs",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{clientId}/agents/{agentId}/tasks/{taskId}/runs",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{clientId}/agents/{agentId}/tasks/{taskId}/runs",
+        "operationId": "listAgentTaskRuns",
+        "summary": "Run history of an agent task (newest first)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{clientId}/agents/{agentId}/tasks/{taskId}/runs",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{clientId}/agents/{agentId}/tasks/{taskId}/runs",
+        "operationId": "runAgentTaskNow",
+        "summary": "Queue an immediate run (also for paused tasks)",
         "specKind": "openapi"
       }
     },
@@ -22753,6 +23036,15 @@
       }
     },
     {
+      "id": "api:channel:agents/agentTaskRequest",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "agents/agentTaskRequest",
+        "summary": "Server → controller request with Socket.IO acknowledgement, emitted when the worker `agenstra` MCP server manages\nthe agent's own recurring tasks (`/api/agent-context/tasks`). `agentId` is the agent authenticated by its context\ntoken. Reads (`list`, `get`) try every socket logged into the agent; mutations (`create`, `update`, `delete`,\n`run`) use one socket only. The controller answers within the workspace bound to the connection, scoped to that\nagent, with `{ ok: true, tasks | task | runs | deleted | queued }` or `{ ok: false, error, status }`, and never\nforwards this event to browsers.\n",
+        "specKind": "asyncapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/agents",
       "type": "endpoint",
       "attrs": {
@@ -22947,6 +23239,72 @@
         "pathOrChannel": "/agent-context/tickets/{ticket}/access-requests/{requestId}",
         "operationId": "getAgentContextAccessRequest",
         "summary": "Keep waiting on a pending access request",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/tasks",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/tasks",
+        "operationId": "listAgentTasks",
+        "summary": "List the calling agent's recurring tasks",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/agent-context/tasks",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/agent-context/tasks",
+        "operationId": "createAgentTask",
+        "summary": "Create a recurring task for the calling agent",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/tasks/{taskId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/tasks/{taskId}",
+        "operationId": "getAgentTask",
+        "summary": "Read one of the calling agent's tasks with recent runs",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PATCH:/agent-context/tasks/{taskId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PATCH",
+        "pathOrChannel": "/agent-context/tasks/{taskId}",
+        "operationId": "updateAgentTask",
+        "summary": "Change fields of one of the calling agent's tasks",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:DELETE:/agent-context/tasks/{taskId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "DELETE",
+        "pathOrChannel": "/agent-context/tasks/{taskId}",
+        "operationId": "deleteAgentTask",
+        "summary": "Delete one of the calling agent's tasks",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/agent-context/tasks/{taskId}/runs",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/agent-context/tasks/{taskId}/runs",
+        "operationId": "runAgentTask",
+        "summary": "Queue an immediate run of one of the calling agent's tasks",
         "specKind": "openapi"
       }
     },
@@ -25381,6 +25739,16 @@
       }
     },
     {
+      "id": "concept:agenstra-agent-tasks",
+      "type": "concept",
+      "attrs": {
+        "title": "Agent tasks",
+        "docPath": "docs/agenstra/deployment/environment-configuration.md",
+        "sectionAnchor": "agent-tasks",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-opentelemetry",
       "type": "concept",
       "attrs": {
@@ -26147,6 +26515,46 @@
         "title": "Container Interaction",
         "docPath": "docs/agenstra/features/agent-management.md",
         "sectionAnchor": "container-interaction",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-scheduling-and-reliability",
+      "type": "concept",
+      "attrs": {
+        "title": "Scheduling and reliability",
+        "docPath": "docs/agenstra/features/agent-tasks.md",
+        "sectionAnchor": "scheduling-and-reliability",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-runs",
+      "type": "concept",
+      "attrs": {
+        "title": "Runs",
+        "docPath": "docs/agenstra/features/agent-tasks.md",
+        "sectionAnchor": "runs",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-agent-tools",
+      "type": "concept",
+      "attrs": {
+        "title": "Agent tools",
+        "docPath": "docs/agenstra/features/agent-tasks.md",
+        "sectionAnchor": "agent-tools",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-rest-api-controller",
+      "type": "concept",
+      "attrs": {
+        "title": "REST API (controller)",
+        "docPath": "docs/agenstra/features/agent-tasks.md",
+        "sectionAnchor": "rest-api-controller",
         "domain": "agenstra"
       }
     },
@@ -35624,6 +36032,11 @@
     },
     {
       "from": "project:agenstra-backend-agent-controller",
+      "to": "package:cron-parser",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-agent-controller",
       "to": "package:dockerode",
       "type": "depends_on"
     },
@@ -38034,6 +38447,11 @@
     },
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agent-tasks.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agents.service.ts",
       "type": "contains"
     },
@@ -38115,6 +38533,11 @@
     {
       "from": "project:agenstra-frontend-data-access-agent-console",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/workspace-search.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-data-access-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/agent-tasks",
       "type": "contains"
     },
     {
@@ -38404,6 +38827,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/agent-tasks.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/attachments.controller.ts",
       "type": "contains"
     },
@@ -38520,6 +38948,26 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-console-status.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-tasks/agent-task-response.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-tasks/agent-task-run-chat-event.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-tasks/create-agent-task.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-tasks/update-agent-task.dto.ts",
       "type": "contains"
     },
     {
@@ -38770,6 +39218,16 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/agenstra-attachment.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/agent-task-run.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/agent-task.entity.ts",
       "type": "contains"
     },
     {
@@ -39130,6 +39588,31 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-manager-instance-scrape.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-chat-sync.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-realtime.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-request-handler.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-runner.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-tasks.service.ts",
       "type": "contains"
     },
     {
@@ -41734,6 +42217,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-tasks.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-vcs.controller.ts",
       "type": "contains"
     },
@@ -41800,6 +42288,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-response.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-task.dto.ts",
       "type": "contains"
     },
     {
@@ -42210,6 +42703,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-session-hydration.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-tasks-api.service.ts",
       "type": "contains"
     },
     {
@@ -43439,6 +43937,21 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:clients/agentTaskRunChatUpsert",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:clients/agentTaskUpsert",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
+      "to": "api:channel:clients/agentTaskRemoved",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/asyncapi.yaml",
       "to": "api:channel:clients/ticketChatTicketUpsert",
       "type": "contains"
     },
@@ -44255,6 +44768,41 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/plans/{planId}/cancel",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{clientId}/agent-tasks",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{clientId}/agents/{agentId}/tasks",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{clientId}/agents/{agentId}/tasks/{taskId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:PATCH:/clients/{clientId}/agents/{agentId}/tasks/{taskId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/clients/{clientId}/agents/{agentId}/tasks/{taskId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{clientId}/agents/{agentId}/tasks/{taskId}/runs",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{clientId}/agents/{agentId}/tasks/{taskId}/runs",
       "type": "contains"
     },
     {
@@ -47238,6 +47786,11 @@
       "type": "contains"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
+      "to": "api:channel:agents/agentTaskRequest",
+      "type": "contains"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/agents",
       "type": "contains"
@@ -47325,6 +47878,36 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/agent-context/tickets/{ticket}/access-requests/{requestId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/tasks",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/agent-context/tasks",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/tasks/{taskId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:PATCH:/agent-context/tasks/{taskId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:DELETE:/agent-context/tasks/{taskId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/agent-context/tasks/{taskId}/runs",
       "type": "contains"
     },
     {
@@ -48884,6 +49467,11 @@
     },
     {
       "from": "file:docs/agenstra/deployment/environment-configuration.md",
+      "to": "concept:agenstra-agent-tasks",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/deployment/environment-configuration.md",
       "to": "concept:agenstra-opentelemetry",
       "type": "contains"
     },
@@ -49365,6 +49953,51 @@
     {
       "from": "file:docs/agenstra/features/agent-management.md",
       "to": "concept:agenstra-related-documentation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-tasks.md",
+      "to": "concept:agenstra-agent-tasks",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-tasks.md",
+      "to": "concept:agenstra-prerequisites",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-tasks.md",
+      "to": "concept:agenstra-flow",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-tasks.md",
+      "to": "concept:agenstra-scheduling-and-reliability",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-tasks.md",
+      "to": "concept:agenstra-runs",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-tasks.md",
+      "to": "concept:agenstra-agent-tools",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-tasks.md",
+      "to": "concept:agenstra-security",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-tasks.md",
+      "to": "concept:agenstra-rest-api-controller",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-tasks.md",
+      "to": "concept:agenstra-configuration",
       "type": "contains"
     },
     {
@@ -55530,6 +56163,76 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "api:HTTP:POST:/clients/{id}/agents/{agentId}/plans/{planId}/cancel",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{clientId}/agent-tasks",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{clientId}/agent-tasks",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{clientId}/agents/{agentId}/tasks",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{clientId}/agents/{agentId}/tasks",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{clientId}/agents/{agentId}/tasks/{taskId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{clientId}/agents/{agentId}/tasks/{taskId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:PATCH:/clients/{clientId}/agents/{agentId}/tasks/{taskId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:PATCH:/clients/{clientId}/agents/{agentId}/tasks/{taskId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:DELETE:/clients/{clientId}/agents/{agentId}/tasks/{taskId}",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:DELETE:/clients/{clientId}/agents/{agentId}/tasks/{taskId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{clientId}/agents/{agentId}/tasks/{taskId}/runs",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{clientId}/agents/{agentId}/tasks/{taskId}/runs",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{clientId}/agents/{agentId}/tasks/{taskId}/runs",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{clientId}/agents/{agentId}/tasks/{taskId}/runs",
       "type": "implements"
     },
     {
@@ -62578,6 +63281,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/agent-tasks.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-tasks.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/attachments.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agenstra-attachments.service.ts",
       "type": "injects"
@@ -63028,6 +63736,21 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-request-handler.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-realtime.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-chat-sync.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/knowledge-board.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
       "type": "injects"
@@ -63235,6 +63958,51 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-manager-instance-scrape.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-chat-sync.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-realtime.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-chat-sync.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-console-status.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-request-handler.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-tasks.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-runner.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-runner.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-tasks.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-runner.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-chat-sync.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-tasks.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-tasks.service.ts",
+      "to": "file:libs/domains/identity/backend/feature-auth/src/lib/repositories/client-users.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-tasks.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-realtime.service.ts",
       "type": "injects"
     },
     {
@@ -63715,6 +64483,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-request-handler.service.ts",
       "type": "injects"
     },
     {
@@ -67513,6 +68286,16 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-tasks.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-mcp.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-tasks.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-tasks-api.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-vcs.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents-vcs.service.ts",
       "type": "injects"
@@ -67655,6 +68438,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-tasks-api.service.ts",
       "type": "injects"
     },
     {
@@ -68293,6 +69081,11 @@
       "type": "injects"
     },
     {
+      "from": "file:apps/agenstra/backend-agent-controller/src/queue/processors/controller-jobs.processor.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-runner.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:apps/decabill/backend-billing-manager/src/queue/processors/billing-jobs.processor.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-tenant.service.ts",
       "type": "injects"
@@ -68534,6 +69327,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/agent-tasks.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/client-agent-autonomy.controller.ts",
       "type": "provides"
     },
@@ -68630,6 +69428,31 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-tasks.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-runner.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-request-handler.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-realtime.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-chat-sync.service.ts",
       "type": "provides"
     },
     {
@@ -70444,6 +71267,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-tasks.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-egress.controller.ts",
       "type": "provides"
     },
@@ -70530,6 +71358,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-tasks-api.service.ts",
       "type": "provides"
     },
     {
@@ -71828,6 +72661,16 @@
       "type": "calls"
     },
     {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agent-tasks.service.ts",
+      "to": "api:HTTP:GET:/clients/{clientId}/agent-tasks",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agent-tasks.service.ts",
+      "to": "api:HTTP:POST:/clients/{clientId}/agents/{agentId}/tasks",
+      "type": "calls"
+    },
+    {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agents.service.ts",
       "to": "api:HTTP:GET:/clients/{id}/agents",
       "type": "calls"
@@ -72863,6 +73706,11 @@
       "type": "contains"
     },
     {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/agent-tasks",
+      "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agent-tasks.service.ts",
+      "type": "contains"
+    },
+    {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/state/agents",
       "to": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/agents.service.ts",
       "type": "contains"
@@ -73034,12 +73882,42 @@
     },
     {
       "from": "concept:agenstra-flow",
-      "to": "api:HTTP:GET:/tickets",
+      "to": "api:HTTP:GET:/clients",
       "type": "documents"
     },
     {
       "from": "concept:agenstra-flow",
-      "to": "api:HTTP:POST:/tickets",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-flow",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-flow",
+      "to": "api:HTTP:POST:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-flow",
+      "to": "api:HTTP:GET:/agent-context/tasks",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-flow",
+      "to": "api:HTTP:POST:/agent-context/tasks",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-tools",
+      "to": "api:HTTP:GET:/agent-context/tasks",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-tools",
+      "to": "api:HTTP:POST:/agent-context/tasks",
       "type": "documents"
     },
     {
@@ -74230,6 +75108,26 @@
     {
       "from": "concept:agenstra-container-interaction",
       "to": "api:HTTP:POST:/auth/login",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-rest-api-controller",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-rest-api-controller",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-rest-api-controller",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-rest-api-controller",
+      "to": "api:HTTP:POST:/agents",
       "type": "documents"
     },
     {
@@ -81448,6 +82346,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "file:docs/agenstra/features/agent-tasks.md",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "file:docs/agenstra/features/application-updates.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -82788,6 +83691,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:agenstra-agent-tasks",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:agenstra-opentelemetry",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -83169,6 +84077,26 @@
     },
     {
       "from": "concept:agenstra-container-interaction",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-scheduling-and-reliability",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-runs",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-agent-tools",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-rest-api-controller",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

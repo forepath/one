@@ -1,5 +1,6 @@
 import type {
   AgentResponseObject,
+  AgentTaskRunChatEventPayload,
   ChatMessageData,
   ChatPlanChatEventPayload,
   ForwardedEventPayload,
@@ -16,6 +17,7 @@ export interface ChatTimelineOrderedRowLike {
 
 const TICKET_AUTOMATION_RUN_CHAT_UPSERT = 'ticketAutomationRunChatUpsert';
 const CHAT_PLAN_UPSERT = 'chatPlanUpsert';
+const AGENT_TASK_RUN_CHAT_UPSERT = 'agentTaskRunChatUpsert';
 
 import {
   AGENT_CHAT_EVENT_KIND_LABELS,
@@ -61,7 +63,8 @@ export type ChatDisplayThreadItem =
   | { kind: 'user'; msg: ChatMessageWithFilter }
   | { kind: 'agentTurn'; msgs: ChatMessageWithFilter[]; view: AgentTurnView }
   | { kind: 'ticketAutomationRun'; sortTime: number; payload: TicketAutomationRunChatEventPayload }
-  | { kind: 'chatPlan'; sortTime: number; payload: ChatPlanChatEventPayload };
+  | { kind: 'chatPlan'; sortTime: number; payload: ChatPlanChatEventPayload }
+  | { kind: 'agentTaskRun'; sortTime: number; payload: AgentTaskRunChatEventPayload };
 
 /** Ordered slices of an agent turn: structured rows and prose markdown interleaved as produced. */
 export type AgentTurnSegment =
@@ -816,6 +819,14 @@ export function buildMergedChatDisplayThread(
       const payload = row.payload as ChatPlanChatEventPayload;
 
       out.push({ kind: 'chatPlan', sortTime: row.semanticTimestamp, payload });
+      continue;
+    }
+
+    if (row.event === AGENT_TASK_RUN_CHAT_UPSERT) {
+      flushAgent();
+      const payload = row.payload as AgentTaskRunChatEventPayload;
+
+      out.push({ kind: 'agentTaskRun', sortTime: row.semanticTimestamp, payload });
       continue;
     }
 

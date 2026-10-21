@@ -1,5 +1,6 @@
 import type {
   AgentEventEnvelope,
+  AgentTaskRunChatEventPayload,
   ChatMessageData,
   ChatPlanChatEventPayload,
   ForwardedEventPayload,
@@ -10,6 +11,7 @@ import type {
 
 export type {
   AgentEventEnvelope,
+  AgentTaskRunChatEventPayload,
   ChatMessageData,
   ChatPlanChatEventPayload,
   ForwardedEventPayload,
@@ -61,6 +63,12 @@ export interface ChatTimelineFilterResult {
 export interface ChatTimelineAutomationRow {
   event: string;
   payload: TicketAutomationRunChatEventPayload;
+  timestamp: number;
+}
+
+export interface ChatTimelineAgentTaskRunRow {
+  event: string;
+  payload: AgentTaskRunChatEventPayload;
   timestamp: number;
 }
 

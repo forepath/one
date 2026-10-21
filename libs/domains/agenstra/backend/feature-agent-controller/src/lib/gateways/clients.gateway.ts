@@ -1,3 +1,4 @@
+import { AGENT_TASK_REQUEST_EVENT } from '@forepath/agenstra/shared/util-opencode-config';
 import { createCorrelationAwareSocketIoClient } from '@forepath/shared/backend/util-http-context';
 import {
   AuthenticationType,
@@ -32,6 +33,9 @@ import { ClientsRepository } from '../repositories/clients.repository';
 import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 import { AgentConsoleStatusService } from '../services/agent-console-status.service';
 import { AgenstraAttachmentsService } from '../services/agenstra-attachments.service';
+import { AgentTaskChatSyncService } from '../services/agent-task-chat-sync.service';
+import { AgentTaskRealtimeService } from '../services/agent-task-realtime.service';
+import { AgentTaskRequestHandlerService } from '../services/agent-task-request-handler.service';
 import {
   AGENT_CONTEXT_REQUEST_EVENT,
   AgentContextRequestHandlerService,
@@ -202,11 +206,15 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     private readonly workspaceSearchIndex: WorkspaceSearchIndexService,
     private readonly attachmentsService: AgenstraAttachmentsService,
     @Optional() private readonly agentContextRequests?: AgentContextRequestHandlerService,
+    @Optional() private readonly agentTaskRequests?: AgentTaskRequestHandlerService,
+    @Optional() private readonly agentTaskRealtime?: AgentTaskRealtimeService,
+    @Optional() private readonly agentTaskChatSync?: AgentTaskChatSyncService,
   ) {}
 
   afterInit(server: Server): void {
     this.clientAutomationChatRealtime.attachServer(server);
     this.chatPlanRealtime.attachServer(server);
+    this.agentTaskRealtime?.attachServer(server);
     // When using namespace: 'clients', NestJS passes the namespace (not root Server) to afterInit.
     // Namespaces don't have .of(); use server directly for middleware.
     server.use(async (socket, next) => {
@@ -369,6 +377,8 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
       // Manager → controller context lookups (worker MCP) are answered here, never forwarded to the browser.
       this.agentContextRequests?.attach(remote, clientId);
+      // The agent's own task management (worker MCP) is answered here too, scoped to this workspace.
+      this.agentTaskRequests?.attach(remote, clientId);
       // Log when remote socket is created for debugging
       this.logger.debug(`Created remote socket for clientId ${clientId}, socket.id ${socket.id}`);
       // Log socket configuration
@@ -399,6 +409,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         'ping',
         'pong',
         AGENT_CONTEXT_REQUEST_EVENT,
+        AGENT_TASK_REQUEST_EVENT,
       ]);
 
       // Handle Socket.IO internal error events separately (don't forward to avoid disconnection)
@@ -1883,6 +1894,15 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       this.logger.warn(`Ticket automation chat hydrate failed for agent ${agentId}: ${message}`);
     });
     this.scheduleChatPlanHydrate(socket, clientId, agentId);
+    this.scheduleAgentTaskHydrate(socket, clientId, agentId);
+  }
+
+  private scheduleAgentTaskHydrate(socket: Socket, clientId: string, agentId: string): void {
+    void this.agentTaskChatSync?.hydrateForAgentClient(socket, clientId, agentId).catch((err) => {
+      const message = err instanceof Error ? err.message : String(err);
+
+      this.logger.warn(`Agent task chat hydrate failed for agent ${agentId}: ${message}`);
+    });
   }
 
   private scheduleChatPlanHydrate(socket: Socket, clientId: string, agentId: string): void {

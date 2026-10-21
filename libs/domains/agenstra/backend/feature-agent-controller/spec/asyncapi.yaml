@@ -15,6 +15,8 @@ info:
     Chat **plan mode** uses controller-handled events `createChatPlan` / `refineChatPlan` / `executeChatPlan` /
     `cancelChatPlan` (not proxied via `forward`) and emits `chatPlanUpsert` (see OpenAPI `ChatPlanChatEventDto`)
     for chat-scoped timeline cards; after login the controller also hydrates recent plans via unicast `chatPlanUpsert`.
+    Recurring **agent tasks** emit `agentTaskRunChatUpsert` (run cards for the agent's main chat, also hydrated after
+    login), `agentTaskUpsert` and `agentTaskRemoved` (task rows for the `/tasks` page) to the workspace room.
     For **socket/clients**, all connections require authentication via the `Authorization` header in the handshake
     (same as HTTP API: `Bearer <jwt-token>` or `Bearer <api-key>` / `ApiKey <api-key>`).
     Unauthenticated connections are rejected with connect_error "Unauthorized".
@@ -163,6 +165,26 @@ channels:
     description: |
       Controller-originated chat plan snapshot for the chat UI. Aligns with OpenAPI `ChatPlanChatEventDto`.
       Hydration uses `plan.startedAt`; live updates use `plan.updatedAt`. Cards are chat-session scoped via `plan.chatId`.
+  clients/agentTaskRunChatUpsert:
+    address: clients/agentTaskRunChatUpsert
+    messages:
+      agentTaskRunChatUpsertEvent:
+        $ref: '#/components/messages/AgentTaskRunChatEvent'
+    description: |
+      Controller-originated agent task run snapshot (OpenAPI `AgentTaskRunChatEventDto`) rendered as a card in the
+      agent's primary chat. Hydration (unicast after login) uses `run.startedAt`; live updates use the finish/update time.
+  clients/agentTaskUpsert:
+    address: clients/agentTaskUpsert
+    messages:
+      agentTaskUpsertEvent:
+        $ref: '#/components/messages/AgentTaskUpsert'
+    description: Full `AgentTaskResponseDto` after create / update / schedule advance / run (room `client:{clientId}`).
+  clients/agentTaskRemoved:
+    address: clients/agentTaskRemoved
+    messages:
+      agentTaskRemovedEvent:
+        $ref: '#/components/messages/AgentTaskRemoved'
+    description: A task was deleted by a user or by the agent.
   clients/ticketChatTicketUpsert:
     address: clients/ticketChatTicketUpsert
     messages:
@@ -456,6 +478,24 @@ operations:
       $ref: '#/channels/clients~1chatPlanUpsert'
     messages:
       - $ref: '#/channels/clients~1chatPlanUpsert/messages/chatPlanUpsertEvent'
+  serverEmitsAgentTaskRunChatUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/clients~1agentTaskRunChatUpsert'
+    messages:
+      - $ref: '#/channels/clients~1agentTaskRunChatUpsert/messages/agentTaskRunChatUpsertEvent'
+  serverEmitsAgentTaskUpsert:
+    action: receive
+    channel:
+      $ref: '#/channels/clients~1agentTaskUpsert'
+    messages:
+      - $ref: '#/channels/clients~1agentTaskUpsert/messages/agentTaskUpsertEvent'
+  serverEmitsAgentTaskRemoved:
+    action: receive
+    channel:
+      $ref: '#/channels/clients~1agentTaskRemoved'
+    messages:
+      - $ref: '#/channels/clients~1agentTaskRemoved/messages/agentTaskRemovedEvent'
   serverEmitsTicketChatTicketUpsert:
     action: receive
     channel:
@@ -984,6 +1024,39 @@ components:
             type: string
             format: uuid
         additionalProperties: false
+    AgentTaskRunChatEvent:
+      name: AgentTaskRunChatEvent
+      title: Agent task run in chat timeline
+      contentType: application/json
+      description: Same shape as OpenAPI `AgentTaskRunChatEventDto`.
+      payload:
+        type: object
+        required: [timelineAt, hydrate, task, run, actions]
+    AgentTaskUpsert:
+      name: AgentTaskUpsert
+      title: Agent task row
+      contentType: application/json
+      description: Same shape as OpenAPI `AgentTaskResponseDto`.
+      payload:
+        type: object
+        required: [id, clientId, agentId]
+    AgentTaskRemoved:
+      name: AgentTaskRemoved
+      title: Agent task deleted
+      contentType: application/json
+      payload:
+        type: object
+        required: [clientId, agentId, taskId]
+        properties:
+          clientId:
+            type: string
+            format: uuid
+          agentId:
+            type: string
+            format: uuid
+          taskId:
+            type: string
+            format: uuid
     ChatPlanChatEvent:
       name: ChatPlanChatEvent
       title: Chat plan in chat timeline

@@ -1,7 +1,8 @@
 /**
  * Agenstra context MCP server (stdio). Shipped in the worker image and started by OpenCode as the
  * platform-managed `agenstra` MCP server. Prompts only carry hints plus a context ticket; this server
- * reads the referenced tickets / knowledge from the agent-manager on demand.
+ * reads the referenced tickets / knowledge from the agent-manager on demand and lets the agent manage its
+ * own recurring tasks.
  *
  * Stdout is reserved for MCP JSON-RPC — diagnostics go to stderr only.
  */
@@ -12,6 +13,7 @@ import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprot
 import { ContextApiClient, readContextApiConfig } from './lib/context-api.client';
 import { callContextTool, CONTEXT_TOOL_DEFINITIONS } from './lib/context-tools';
 import { waitForContextApi } from './lib/startup';
+import { callTaskTool, isTaskToolName, TASK_TOOL_DEFINITIONS } from './lib/task-tools';
 
 async function main(): Promise<void> {
   const client = new ContextApiClient(readContextApiConfig());
@@ -22,9 +24,13 @@ async function main(): Promise<void> {
 
   const server = new Server({ name: 'agenstra', version: '1.0.0' }, { capabilities: { tools: {} } });
 
-  server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: CONTEXT_TOOL_DEFINITIONS }));
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({
+    tools: [...CONTEXT_TOOL_DEFINITIONS, ...TASK_TOOL_DEFINITIONS],
+  }));
   server.setRequestHandler(CallToolRequestSchema, async (request) =>
-    callContextTool(client, request.params.name, request.params.arguments),
+    isTaskToolName(request.params.name)
+      ? callTaskTool(client, request.params.name, request.params.arguments)
+      : callContextTool(client, request.params.name, request.params.arguments),
   );
 
   await server.connect(new StdioServerTransport());
