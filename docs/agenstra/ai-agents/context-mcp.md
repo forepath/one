@@ -42,6 +42,9 @@ Metadata is always searchable; content of elements that were not part of the pro
 The same server exposes `agenstra_tasks_*` tools so the agent can manage its own recurring tasks (`/api/agent-context/tasks`,
 same agent token, forwarded to the controller as `agentTaskRequest`). See [Agent tasks](../features/agent-tasks.md).
 
+`agenstra_handoff_*` tools hand tasks over to other agents of the same workspace (`/api/agent-context/handoffs`,
+forwarded as `agentHandoffRequest`). See [Agent handoffs](../features/agent-handoffs.md).
+
 ## Access decisions
 
 | Session                                             | Additional access                                                    |

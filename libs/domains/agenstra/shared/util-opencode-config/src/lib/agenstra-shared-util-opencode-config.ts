@@ -15,3 +15,4 @@ export * from './message-filters';
 export * from './platform-security';
 export * from './context-platform';
 export * from './task-platform';
+export * from './handoff-platform';

@@ -5,6 +5,7 @@ import { QueryFailedError } from 'typeorm';
 import {
   PRIMARY_CHAT_RESUME_SESSION_SUFFIX,
   buildUserChatResumeSessionSuffix,
+  type CreatableAgentChatSessionKind,
 } from '../constants/chat-session.constants';
 import { AgentChatSessionSummaryDto, ChatSessionResponseDto } from '../dto/chat-session-response.dto';
 import { AgentChatSessionEntity } from '../entities/agent-chat-session.entity';
@@ -73,7 +74,12 @@ export class AgentChatSessionsService {
     return driverError?.code === '23505';
   }
 
-  async createUserSession(agentId: string, title?: string): Promise<AgentChatSessionEntity> {
+  /** `kind` `handoff` marks a chat opened for a task handed over by another agent (same session layout). */
+  async createUserSession(
+    agentId: string,
+    title?: string,
+    kind: CreatableAgentChatSessionKind = 'user',
+  ): Promise<AgentChatSessionEntity> {
     await this.agentsRepository.findByIdOrThrow(agentId);
     await this.ensurePrimarySession(agentId);
 
@@ -82,11 +88,11 @@ export class AgentChatSessionsService {
       id: chatId,
       agentId,
       title: title?.trim() || 'Chat',
-      kind: 'user',
+      kind,
       resumeSessionSuffix: buildUserChatResumeSessionSuffix(chatId),
     });
 
-    this.logger.log(`Created user chat session ${session.id} for agent ${agentId}`);
+    this.logger.log(`Created ${kind} chat session ${session.id} for agent ${agentId}`);
 
     return session;
   }

@@ -124,6 +124,28 @@ export type AgentChatToolEmbedView =
       kind: 'invalid';
       tool: string;
       error: string;
+    }
+  | {
+      /** `agenstra_handoff_create`: task handed over to another agent (links its handoff chat). */
+      kind: 'handoff';
+      title: string;
+      message?: string;
+      truncated: boolean;
+      handoffId?: string;
+      targetAgentId?: string;
+      targetAgentName?: string;
+      targetChatId?: string;
+      isError: boolean;
+      error?: string;
+    }
+  | {
+      /** `agenstra_handoff_respond`: the answer to a received handoff. */
+      kind: 'handoffResponse';
+      status: 'completed' | 'failed';
+      response: string;
+      truncated: boolean;
+      isError: boolean;
+      error?: string;
     };
 
 function asRecord(value: unknown): Record<string, unknown> | undefined {
@@ -267,6 +289,10 @@ const TOOL_ARG_KEYS = [
   'skill',
   'tool',
   'error',
+  'targetAgentId',
+  'handoffId',
+  'message',
+  'response',
 ] as const;
 
 function coerceArgsRecord(value: unknown): Record<string, unknown> | undefined {
@@ -1062,6 +1088,30 @@ export function buildToolEmbedView(
       };
     }
 
+    case 'agenstra_handoff_create':
+    case 'handoff_create':
+      return buildHandoffCreateEmbed(args, result, isError);
+
+    case 'agenstra_handoff_respond':
+    case 'handoff_respond': {
+      const response = asString(args['response']);
+
+      if (!response) {
+        return undefined;
+      }
+
+      const { text, truncated } = truncateText(response, 4_000);
+
+      return {
+        kind: 'handoffResponse',
+        status: args['status'] === 'failed' ? 'failed' : 'completed',
+        response: text,
+        truncated,
+        isError,
+        ...(isError ? { error: coerceResultText(result) || undefined } : {}),
+      };
+    }
+
     case 'invalid': {
       const tool = asString(args['tool']) ?? 'unknown';
       const error = asString(args['error']) ?? (coerceResultText(result) || 'Invalid tool call');
@@ -1076,4 +1126,47 @@ export function buildToolEmbedView(
     default:
       return undefined;
   }
+}
+
+/** Result JSON of `handoff_create` (see the agenstra MCP server): ids of the target agent and its handoff chat. */
+function buildHandoffCreateEmbed(
+  args: Record<string, unknown>,
+  result: unknown,
+  isError: boolean,
+): AgentChatToolEmbedView | undefined {
+  let parsed: Record<string, unknown> | undefined;
+
+  if (!isError) {
+    parsed =
+      asRecord(result) ??
+      (() => {
+        try {
+          return typeof result === 'string' ? asRecord(JSON.parse(result.trim()) as unknown) : undefined;
+        } catch {
+          return undefined;
+        }
+      })();
+  }
+
+  const title = asString(parsed?.['title']) ?? asString(args['title']) ?? '';
+  const messageRaw = asString(args['message']);
+
+  if (!title && !messageRaw && !parsed) {
+    return undefined;
+  }
+
+  const { text: message, truncated } = truncateText(messageRaw ?? '', 4_000);
+
+  return {
+    kind: 'handoff',
+    title,
+    message: message || undefined,
+    truncated,
+    handoffId: asString(parsed?.['handoffId']),
+    targetAgentId: asString(parsed?.['targetAgentId']) ?? asString(args['targetAgentId']),
+    targetAgentName: asString(parsed?.['targetAgentName']),
+    targetChatId: asString(parsed?.['targetChatId']),
+    isError,
+    ...(isError ? { error: coerceResultText(result) || undefined } : {}),
+  };
 }

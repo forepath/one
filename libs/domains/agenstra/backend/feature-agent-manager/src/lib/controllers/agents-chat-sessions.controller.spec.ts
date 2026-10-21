@@ -130,7 +130,15 @@ describe('AgentsChatSessionsController', () => {
       const result = await controller.createChatSession(mockAgentId, createDto);
 
       expect(result).toEqual(mockChatSessionResponse);
-      expect(service.createUserSession).toHaveBeenCalledWith(mockAgentId, createDto.title);
+      expect(service.createUserSession).toHaveBeenCalledWith(mockAgentId, createDto.title, 'user');
+    });
+
+    it('passes the handoff kind through', async () => {
+      service.createUserSession.mockResolvedValue(mockChatSessionEntity);
+
+      await controller.createChatSession(mockAgentId, { title: 'Review', kind: 'handoff' });
+
+      expect(service.createUserSession).toHaveBeenCalledWith(mockAgentId, 'Review', 'handoff');
     });
   });
 

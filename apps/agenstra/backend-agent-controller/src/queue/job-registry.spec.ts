@@ -23,6 +23,17 @@ describe('controller job-registry', () => {
     expect(job?.everyMs).toBe(30_000);
   });
 
+  it('schedules the agent handoff coordinator every minute by default', () => {
+    const job = getControllerRepeatableJobs().find(
+      (entry) => entry.name === ControllerJobName.AGENT_HANDOFF_COORDINATOR,
+    );
+
+    // Must match AGENT_HANDOFF_*_JOB_NAME in feature-agent-controller (units are enqueued from the library).
+    expect(ControllerJobName.AGENT_HANDOFF_COORDINATOR).toBe('agent-handoff.coordinator');
+    expect(ControllerJobName.AGENT_HANDOFF_UNIT).toBe('agent-handoff.unit');
+    expect(job?.everyMs).toBe(60_000);
+  });
+
   it('getControllerRepeatableJobs includes search reindex coordinator', () => {
     const jobs = getControllerRepeatableJobs();
     const searchJob = jobs.find((job) => job.name === ControllerJobName.SEARCH_REINDEX_COORDINATOR);

@@ -10,6 +10,9 @@ Prompts only carry hints and a context ticket; this server reads tickets / knowl
 It also serves `tasks_*` tools (`agenstra_tasks_*` in OpenCode) for the agent's own recurring tasks
 (`/api/agent-context/tasks`). See [Agent tasks](../../../docs/agenstra/features/agent-tasks.md).
 
+`handoff_*` tools (`agenstra_handoff_*`) hand tasks over to other agents of the same workspace
+(`/api/agent-context/handoffs`). See [Agent handoffs](../../../docs/agenstra/features/agent-handoffs.md).
+
 ## Environment (set by the agent-manager)
 
 | Variable                       | Purpose                                           |

@@ -103,6 +103,27 @@ describe('ContextApiClient', () => {
     );
   });
 
+  it('maps handoff operations to the handoffs routes of the context API', async () => {
+    fetchFn.mockResolvedValue(jsonResponse(200, {}));
+
+    await client.listHandoffAgents();
+    await client.createHandoff({ targetAgentId: 'agent-2', title: 't', message: 'm' });
+    await client.getHandoff('handoff/1');
+    await client.respondToHandoff('handoff-1', { status: 'completed', response: 'done' });
+    await client.getHandoffProfile('agent/2');
+    await client.updateHandoffProfile({ profile: 'Owns the API' });
+
+    expect(fetchFn.mock.calls.map(([url, init]) => [init.method, url])).toEqual([
+      ['GET', 'http://manager:3000/api/agent-context/handoffs/agents'],
+      ['POST', 'http://manager:3000/api/agent-context/handoffs'],
+      ['GET', 'http://manager:3000/api/agent-context/handoffs/handoff%2F1'],
+      ['POST', 'http://manager:3000/api/agent-context/handoffs/handoff-1/response'],
+      ['GET', 'http://manager:3000/api/agent-context/handoffs/agents/agent%2F2/profile'],
+      ['PUT', 'http://manager:3000/api/agent-context/handoffs/profile'],
+    ]);
+    expect(fetchFn.mock.calls[3][1].body).toBe(JSON.stringify({ status: 'completed', response: 'done' }));
+  });
+
   it('treats 204 as an empty success', async () => {
     fetchFn.mockResolvedValue(jsonResponse(204));
 

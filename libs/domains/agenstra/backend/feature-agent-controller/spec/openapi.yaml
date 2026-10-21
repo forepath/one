@@ -5230,7 +5230,7 @@ paths:
                 chat_plan_turn,
                 chat_plan_execute,
                 agent_task_run,
-                agent_task_run,
+                agent_handoff,
               ]
           description: Filter by interaction type (normal chat vs prompt enhancement metrics)
         - in: query
@@ -5572,7 +5572,7 @@ paths:
                 chat_plan_turn,
                 chat_plan_execute,
                 agent_task_run,
-                agent_task_run,
+                agent_handoff,
               ]
           description: Filter by interaction type (normal chat vs prompt enhancement metrics)
         - in: query
@@ -7329,6 +7329,9 @@ components:
           type: string
         description:
           type: string
+        handoffProfile:
+          type: string
+          description: Responsibilities / what other agents of the workspace can hand over (agent handoffs)
         agentType:
           type: string
           description: Agent provider type identifier
@@ -8097,7 +8100,7 @@ components:
         title:
           type: string
           maxLength: 255
-          description: Optional title for the new chat session
+          description: Optional title for the new chat session (handoff chats are opened by the platform only)
     UpdateChatSessionDto:
       type: object
       required: [title]
@@ -8120,7 +8123,7 @@ components:
           type: string
         kind:
           type: string
-          enum: [primary, user]
+          enum: [primary, user, handoff]
         lastMessageAt:
           type: string
           format: date-time
@@ -8141,7 +8144,7 @@ components:
           type: string
         kind:
           type: string
-          enum: [primary, user]
+          enum: [primary, user, handoff]
         lastMessageAt:
           type: string
           format: date-time

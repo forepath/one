@@ -4,6 +4,9 @@ import {
   AgentTaskRunnerService,
   enqueueAgentTaskOccurrence,
   type AgentTaskOccurrence,
+  AgentHandoffRunnerService,
+  enqueueAgentHandoff,
+  type AgentHandoffJob,
   AgenstraSearchIndexService,
   AutonomousRunOrchestratorService,
   ClientIsolationService,
@@ -77,6 +80,7 @@ export class ControllerJobsProcessor extends WorkerHost {
     private readonly opencodeLayerFiles: OpencodeLayerFilesService,
     private readonly clientIsolation: ClientIsolationService,
     private readonly agentTaskRunner: AgentTaskRunnerService,
+    private readonly agentHandoffRunner: AgentHandoffRunnerService,
   ) {
     super();
   }
@@ -140,6 +144,12 @@ export class ControllerJobsProcessor extends WorkerHost {
         break;
       case ControllerJobName.AGENT_TASK_UNIT:
         await this.agentTaskRunner.executeOccurrence(job.data as AgentTaskOccurrence);
+        break;
+      case ControllerJobName.AGENT_HANDOFF_COORDINATOR:
+        await this.agentHandoffRunner.sweep((handoffJob) => enqueueAgentHandoff(this.controllerQueue, handoffJob));
+        break;
+      case ControllerJobName.AGENT_HANDOFF_UNIT:
+        await this.agentHandoffRunner.executeHandoff(job.data as AgentHandoffJob);
         break;
       case ControllerJobName.SEARCH_REINDEX_COORDINATOR:
         await this.runSearchReindexCoordinator();

@@ -13,6 +13,7 @@ import { extractAutomationTurnStatus } from '../utils/automation-turn-status';
 import { extractPlanTurnStatus, type AgenstraPlanTurnStatusPayload } from '../utils/chat-plan-turn-status';
 
 import { AgentContextRequestHandlerService } from './agent-context-request-handler.service';
+import { AgentHandoffRequestHandlerService } from './agent-handoff-request-handler.service';
 import { AgentTaskRequestHandlerService } from './agent-task-request-handler.service';
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
@@ -59,7 +60,10 @@ export interface RemoteChatStreamingParams {
   correlationId: string;
   continue?: boolean;
   resumeSessionSuffix?: string;
-  /** Visible chat session id — when set (execute path), omit resumeSessionSuffix. */
+  /**
+   * Visible chat session id — when set, omit resumeSessionSuffix. The manager broadcasts every chat of the agent to
+   * all of its sockets, so frames of other chats are ignored.
+   */
   chatId?: string;
   /** Defaults to true for hidden plan sessions; false for visible execute. */
   ephemeral?: boolean;
@@ -103,6 +107,7 @@ export class RemoteAgentsSessionService {
     private readonly statisticsService: StatisticsService,
     @Optional() private readonly agentContextRequests?: AgentContextRequestHandlerService,
     @Optional() private readonly agentTaskRequests?: AgentTaskRequestHandlerService,
+    @Optional() private readonly agentHandoffRequests?: AgentHandoffRequestHandlerService,
   ) {}
 
   private buildAgentsWsUrl(endpoint: string): string {
@@ -240,6 +245,7 @@ export class RemoteAgentsSessionService {
 
     this.agentContextRequests?.attach(remote, params.clientId);
     this.agentTaskRequests?.attach(remote, params.clientId);
+    this.agentHandoffRequests?.attach(remote, params.clientId);
     const creds = await this.clientAgentCredentialsRepository.findByClientAndAgent(params.clientId, params.agentId);
 
     if (!creds?.password) {
@@ -444,6 +450,18 @@ export class RemoteAgentsSessionService {
     return typeof text === 'string' ? text : '';
   }
 
+  /** `chatId` of a `chatEvent` / `chatMessage` frame (`{ success, data: { chatId } }`), when present. */
+  private extractFrameChatId(payload: unknown): string | undefined {
+    if (!payload || typeof payload !== 'object') {
+      return undefined;
+    }
+
+    const envelope = payload as { data?: { chatId?: unknown }; chatId?: unknown };
+    const chatId = envelope.data?.chatId ?? envelope.chatId;
+
+    return typeof chatId === 'string' && chatId ? chatId : undefined;
+  }
+
   /**
    * Streaming remote chat turn: listens to `chatEvent` deltas and settles on terminal
    * `assistantMessage` chatEvent (OpenCode stream path) or final `chatMessage` (sync/single path).
@@ -465,6 +483,7 @@ export class RemoteAgentsSessionService {
 
     this.agentContextRequests?.attach(remote, params.clientId);
     this.agentTaskRequests?.attach(remote, params.clientId);
+    this.agentHandoffRequests?.attach(remote, params.clientId);
     const creds = await this.clientAgentCredentialsRepository.findByClientAndAgent(params.clientId, params.agentId);
 
     if (!creds?.password) {
@@ -541,7 +560,20 @@ export class RemoteAgentsSessionService {
           remote.off('chatEvent', onChatEvent);
           resolve({ text, planTurnStatus });
         };
+        const isForeignChatFrame = (msg: unknown): boolean => {
+          if (!useChatId) {
+            return false;
+          }
+
+          const frameChatId = this.extractFrameChatId(msg);
+
+          return frameChatId !== undefined && frameChatId !== params.chatId;
+        };
         const onChatEvent = (msg: unknown) => {
+          if (isForeignChatFrame(msg)) {
+            return;
+          }
+
           void Promise.resolve(params.onEvent?.(msg)).catch(() => undefined);
 
           const delta = this.extractChatEventDelta(msg);
@@ -571,6 +603,10 @@ export class RemoteAgentsSessionService {
           }
         };
         const onChatMessage = (msg: unknown) => {
+          if (isForeignChatFrame(msg)) {
+            return;
+          }
+
           const text = this.extractAgentText(msg);
           const planStatus = extractPlanTurnStatus(msg);
 

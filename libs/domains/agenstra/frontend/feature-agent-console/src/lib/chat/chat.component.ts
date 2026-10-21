@@ -133,6 +133,7 @@ import {
   switchMap,
   take,
   tap,
+  timeout,
   withLatestFrom,
 } from 'rxjs';
 
@@ -168,6 +169,12 @@ import {
   agentTaskRunTriggerLabel as agentTaskRunTriggerLabelFn,
   describeAgentTaskSchedule as describeAgentTaskScheduleFn,
 } from '../agent-tasks/agent-task-labels';
+import { AgentChatHandoffNavigationService } from './agent-chat-handoff-navigation.service';
+import {
+  buildAgentChatHandoffCard,
+  type AgentChatHandoffCardView,
+  type AgentChatHandoffLink,
+} from './agent-chat-handoff-view';
 import { LayerFileIdeComponent } from '../layer-file-ide/layer-file-ide.component';
 import { readAndClearAgentConsoleChatDraft } from '../tickets/chat-draft-storage';
 import {
@@ -304,6 +311,9 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   readonly agentTaskRunTriggerLabel = agentTaskRunTriggerLabelFn;
   readonly describeAgentTaskSchedule = describeAgentTaskScheduleFn;
   readonly openAgentTaskFromChatButtonLabel = $localize`:@@featureChat-openAgentTaskFromRunCard:View task`;
+  private readonly handoffNavigation = inject(AgentChatHandoffNavigationService);
+  /** Parsed handoff cards per message text (the thread re-renders often). */
+  private readonly handoffCardCache = new Map<string, AgentChatHandoffCardView | null>();
   readonly isolationLevels = ISOLATION_LEVELS_STRONGEST_FIRST;
   readonly isolationLevelLabel = isolationLevelLabel;
   readonly isolationRuntimeStateLabel = isolationRuntimeStateLabel;
@@ -1793,6 +1803,11 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   ngOnInit(): void {
     // Leave chat model unset until agent models load (OpenCode has no "auto" model).
     this.socketsFacade.setChatModel(null);
+
+    // Handoff cards / embeds jump between the agents and chats a handoff connects.
+    this.handoffNavigation.requests$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((link) => this.openHandoffLink(link));
 
     // Status frames with questionId mark prompts answered (incl. after reload / restore).
     combineLatest([this.selectedChatEvents$, this.selectedChatMessages$])
@@ -4972,6 +4987,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.editingAgent.set({
       name: agent.name,
       description: agent.description,
+      handoffProfile: agent.handoffProfile ?? '',
       containerType: agent.containerType,
     });
     this.editingAgentIsolation.set(agent.isolation ?? null);
@@ -5069,6 +5085,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     if (agentData.description !== undefined) {
       updateDto.description = agentData.description;
+    }
+
+    if (agentData.handoffProfile !== undefined) {
+      updateDto.handoffProfile = agentData.handoffProfile;
     }
 
     if (agentData.containerType !== undefined) {
@@ -5510,6 +5530,88 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     void this.router.navigate(['/tickets', payload.ticket.clientId], {
       queryParams: { openTicketId: act.ticketId, openAutomationRunId: act.runId },
     });
+  }
+
+  /** Handoff request (target chat) or response (source chat) shown as a card instead of the raw message. */
+  getHandoffCard(messageData: ChatMessageData): AgentChatHandoffCardView | null {
+    const text = 'text' in messageData ? messageData.text : null;
+
+    if (!text) {
+      return null;
+    }
+
+    if (!this.handoffCardCache.has(text)) {
+      this.handoffCardCache.set(text, buildAgentChatHandoffCard(text));
+    }
+
+    return this.handoffCardCache.get(text) ?? null;
+  }
+
+  handoffCardHeading(card: AgentChatHandoffCardView): string {
+    const agentName = card.agentName || $localize`:@@featureChat-handoffUnknownAgent:another agent`;
+
+    return card.kind === 'request'
+      ? $localize`:@@featureChat-handoffRequestHeading:Task handed over by ${agentName}:agentName:`
+      : $localize`:@@featureChat-handoffResponseHeading:Response from ${agentName}:agentName:`;
+  }
+
+  handoffCardLinkLabel(card: AgentChatHandoffCardView): string {
+    return card.kind === 'request'
+      ? $localize`:@@featureChat-handoffOpenSourceChat:Open requesting chat`
+      : $localize`:@@featureChat-handoffOpenHandoffChat:Open handoff chat`;
+  }
+
+  handoffStatusLabel(status: 'completed' | 'failed'): string {
+    return status === 'failed'
+      ? $localize`:@@featureChat-handoffStatusFailed:Failed`
+      : $localize`:@@featureChat-handoffStatusCompleted:Completed`;
+  }
+
+  /**
+   * Jump to an agent / chat of the active workspace. Another agent's chat is selected once its sessions are loaded
+   * and the socket is logged into it (the login itself restores the primary chat).
+   */
+  openHandoffLink(link: AgentChatHandoffLink): void {
+    const clientId = this.activeClientId;
+
+    if (!clientId || !link.agentId) {
+      return;
+    }
+
+    if (this.selectedAgentId() === link.agentId) {
+      if (link.chatId) {
+        this.onSelectChatSession(link.chatId);
+      }
+
+      return;
+    }
+
+    this.onAgentSelect(link.agentId);
+
+    const chatId = link.chatId;
+
+    if (!chatId) {
+      return;
+    }
+
+    combineLatest([
+      this.chatSessionsFacade.getChatSessions$(clientId, link.agentId),
+      this.socketsFacade.selectedAgentId$,
+    ])
+      .pipe(
+        filter(
+          ([sessions, loggedInAgentId]) =>
+            loggedInAgentId === link.agentId && !!sessions?.some((session) => session.id === chatId),
+        ),
+        take(1),
+        timeout({ first: 30_000, with: () => of(null) }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((ready) => {
+        if (ready && this.selectedAgentId() === link.agentId) {
+          this.onSelectChatSession(chatId);
+        }
+      });
   }
 
   openAgentTaskFromChat(payload: AgentTaskRunChatEventPayload): void {

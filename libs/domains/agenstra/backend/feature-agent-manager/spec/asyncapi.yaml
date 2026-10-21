@@ -286,7 +286,26 @@ channels:
       `run`) use one socket only. The controller answers within the workspace bound to the connection, scoped to that
       agent, with `{ ok: true, tasks | task | runs | deleted | queued }` or `{ ok: false, error, status }`, and never
       forwards this event to browsers.
+  agents/agentHandoffRequest:
+    address: agents/agentHandoffRequest
+    messages:
+      agentHandoffRequestEvent:
+        $ref: '#/components/messages/AgentHandoffRequest'
+    description: |
+      Server → controller request with Socket.IO acknowledgement for task handoffs between agents of one workspace
+      (worker `agenstra` MCP server, `/api/agent-context/handoffs`). `agentId` is the agent authenticated by its context
+      token. Reads (`agents`, `get`) try every socket logged into the agent; `create` and `respond` use one socket only.
+      `create` carries `sourceChatId`, the single visible chat the manager attributed the call to (calls from hidden
+      sessions or while several sessions work are refused before this event). The controller answers within the
+      workspace bound to the connection with `{ ok: true, agents | handoff }` or `{ ok: false, error, status }`, and
+      never forwards this event to browsers.
 operations:
+  serverRequestsAgentHandoffs:
+    action: receive
+    channel:
+      $ref: '#/channels/agents~1agentHandoffRequest'
+    messages:
+      - $ref: '#/channels/agents~1agentHandoffRequest/messages/agentHandoffRequestEvent'
   serverRequestsAgentTasks:
     action: receive
     channel:
@@ -598,6 +617,31 @@ components:
           timestamp:
             type: string
             description: ISO timestamp
+    AgentHandoffRequest:
+      name: agentHandoffRequest
+      title: Agent handoff request (ack)
+      contentType: application/json
+      payload:
+        type: object
+        required: [op, agentId]
+        properties:
+          op:
+            type: string
+            enum: [agents, create, get, respond]
+          agentId:
+            type: string
+            format: uuid
+          handoffId:
+            type: string
+            format: uuid
+            description: get / respond
+          sourceChatId:
+            type: string
+            format: uuid
+            description: create — visible chat the handoff is made in (response target)
+          input:
+            type: object
+            description: create — targetAgentId, title, message, model; respond — status, response
     AgentTaskRequest:
       name: agentTaskRequest
       title: Agent task request (ack)

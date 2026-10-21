@@ -1,5 +1,8 @@
-/** User-visible chat session kinds (hidden/background chats are never listed). */
-export type ChatSessionKind = 'primary' | 'user';
+/**
+ * User-visible chat session kinds (hidden/background chats are never listed). `handoff` chats were opened by the
+ * platform for a task another agent of the workspace handed over.
+ */
+export type ChatSessionKind = 'primary' | 'user' | 'handoff';
 
 /** Compact chat summary embedded on AgentResponseDto. */
 export interface AgentChatSessionSummaryDto {

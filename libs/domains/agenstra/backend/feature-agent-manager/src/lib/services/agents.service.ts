@@ -504,6 +504,7 @@ export class AgentsService implements OnApplicationBootstrap {
         id: agentId,
         name: createAgentDto.name,
         description: createAgentDto.description,
+        ...(createAgentDto.handoffProfile?.trim() ? { handoffProfile: createAgentDto.handoffProfile.trim() } : {}),
         hashedPassword,
         containerId: containerId,
         volumePath: agentVolumePath,
@@ -688,6 +689,10 @@ export class AgentsService implements OnApplicationBootstrap {
     const updateData: Partial<AgentEntity> = {
       name: updateAgentDto.name,
       description: updateAgentDto.description,
+      // Empty string clears the profile.
+      ...(updateAgentDto.handoffProfile !== undefined && {
+        handoffProfile: updateAgentDto.handoffProfile.trim() || null,
+      }),
       ...(updateAgentDto.agentType !== undefined && { agentType: updateAgentDto.agentType }),
       ...(updateAgentDto.containerType !== undefined && { containerType: updateAgentDto.containerType }),
     };
@@ -945,6 +950,7 @@ export class AgentsService implements OnApplicationBootstrap {
       id: agent.id,
       name: agent.name,
       description: agent.description,
+      ...(agent.handoffProfile ? { handoffProfile: agent.handoffProfile } : {}),
       agentType: agent.agentType,
       containerType: agent.containerType,
       capabilities,

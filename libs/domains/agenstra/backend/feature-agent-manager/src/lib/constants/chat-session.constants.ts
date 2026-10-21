@@ -1,18 +1,33 @@
-import { isAgentTaskResumeSessionSuffix } from '@forepath/agenstra/shared/util-opencode-config';
+import {
+  AGENT_HANDOFF_CHAT_SESSION_KIND,
+  isAgentTaskResumeSessionSuffix,
+} from '@forepath/agenstra/shared/util-opencode-config';
 
 /**
  * User-visible chat session kinds stored in `agent_chat_sessions`.
  * Hidden session suffixes (prompt enhance, ticket body, automation, plan) are not persisted as rows.
+ * `handoff` chats are regular chats opened by the controller for a task handed over by another agent.
  */
-export const AGENT_CHAT_SESSION_KINDS = ['primary', 'user'] as const;
+export const AGENT_CHAT_SESSION_KINDS = ['primary', 'user', AGENT_HANDOFF_CHAT_SESSION_KIND] as const;
 
 export type AgentChatSessionKind = (typeof AGENT_CHAT_SESSION_KINDS)[number];
+
+/** Kinds that can be created through the chat sessions API (the primary chat is implicit). */
+export const CREATABLE_AGENT_CHAT_SESSION_KINDS = ['user', AGENT_HANDOFF_CHAT_SESSION_KIND] as const;
+
+export type CreatableAgentChatSessionKind = (typeof CREATABLE_AGENT_CHAT_SESSION_KINDS)[number];
 
 /** Empty suffix is the primary OpenCode chat session. */
 export const PRIMARY_CHAT_RESUME_SESSION_SUFFIX = '';
 
 /** Prefix for user-created chat session suffixes (`-chat-{uuid}`). */
 export const USER_CHAT_RESUME_SESSION_SUFFIX_PREFIX = '-chat-';
+
+/**
+ * Hidden read-only session in which an agent describes itself when a peer requests its missing handoff profile
+ * (explore tools only, like plan sessions, but with the default agent and plain answers).
+ */
+export const HANDOFF_PROFILE_RESUME_SESSION_SUFFIX = '-handoff-profile';
 
 /** Prefix for chat plan-mode hidden OpenCode sessions (`-plan-{planId}`). */
 export const CHAT_PLAN_RESUME_SESSION_SUFFIX_PREFIX = '-plan-';
@@ -29,6 +44,7 @@ export const RESERVED_CHAT_RESUME_SESSION_SUFFIXES = [
   '-ticket-auto-pre',
   '-ticket-auto-loop',
   '-ticket-auto-commit-msg',
+  HANDOFF_PROFILE_RESUME_SESSION_SUFFIX,
 ] as const;
 
 /** Reserved suffixes used by autonomous ticket-run OpenCode sessions. */
@@ -80,6 +96,14 @@ export function isTicketAutomationResumeSessionSuffix(suffix: string | undefined
  */
 export function isUnattendedAutomationResumeSessionSuffix(suffix: string | undefined): boolean {
   return isTicketAutomationResumeSessionSuffix(suffix) || isAgentTaskResumeSessionSuffix(suffix);
+}
+
+/**
+ * Read-only hidden sessions (plan explore / refine, handoff profile generation): session ruleset with explore tools
+ * only; residual permission asks are answered automatically (explore allowed, everything else rejected).
+ */
+export function isReadOnlyExploreResumeSessionSuffix(suffix: string | undefined): boolean {
+  return isChatPlanResumeSessionSuffix(suffix) || suffix === HANDOFF_PROFILE_RESUME_SESSION_SUFFIX;
 }
 
 /** Implementation-loop sessions request structured continue/complete turn status. */

@@ -24,6 +24,8 @@ export enum StatisticsInteractionKind {
   CHAT_PLAN_EXECUTE = 'chat_plan_execute',
   /** Hidden unattended run of a recurring agent task (`-task-{id}` sessions). */
   AGENT_TASK_RUN = 'agent_task_run',
+  /** Turns driven by an agent handoff: the target's work in its handoff chat and the response delivery. */
+  AGENT_HANDOFF = 'agent_handoff',
 }
 
 /**

@@ -95,5 +95,10 @@ describe('StatisticsChatIoEntity', () => {
 
     taskRun.interactionKind = StatisticsInteractionKind.AGENT_TASK_RUN;
     expect(taskRun.interactionKind).toBe('agent_task_run');
+
+    const handoff = new StatisticsChatIoEntity();
+
+    handoff.interactionKind = StatisticsInteractionKind.AGENT_HANDOFF;
+    expect(handoff.interactionKind).toBe('agent_handoff');
   });
 });

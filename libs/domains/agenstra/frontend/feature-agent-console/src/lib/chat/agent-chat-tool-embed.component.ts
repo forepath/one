@@ -1,13 +1,15 @@
 import { NgClass } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import {
   FpcAlertComponent,
   FpcBadgeComponent,
+  FpcButtonComponent,
   FpcBadgeColor,
   FpcListComponent,
   FpcListItemComponent,
 } from '@forepath/shared/frontend/ui-components';
 
+import { AgentChatHandoffNavigationService } from './agent-chat-handoff-navigation.service';
 import type { AgentChatDiffLineEmbed, AgentChatTodoStatus, AgentChatToolEmbedView } from './agent-chat-tool-embed-view';
 
 type TodosEmbed = Extract<AgentChatToolEmbedView, { kind: 'todos' }>;
@@ -23,16 +25,20 @@ type WebsearchEmbed = Extract<AgentChatToolEmbedView, { kind: 'websearch' }>;
 type TaskEmbed = Extract<AgentChatToolEmbedView, { kind: 'task' }>;
 type SkillEmbed = Extract<AgentChatToolEmbedView, { kind: 'skill' }>;
 type InvalidEmbed = Extract<AgentChatToolEmbedView, { kind: 'invalid' }>;
+type HandoffEmbed = Extract<AgentChatToolEmbedView, { kind: 'handoff' }>;
+type HandoffResponseEmbed = Extract<AgentChatToolEmbedView, { kind: 'handoffResponse' }>;
 
 @Component({
   selector: 'framework-agent-chat-tool-embed',
   standalone: true,
-  imports: [NgClass, FpcAlertComponent, FpcBadgeComponent, FpcListComponent, FpcListItemComponent],
+  imports: [NgClass, FpcAlertComponent, FpcBadgeComponent, FpcButtonComponent, FpcListComponent, FpcListItemComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './agent-chat-tool-embed.component.scss',
   templateUrl: './agent-chat-tool-embed.component.html',
 })
 export class AgentChatToolEmbedComponent {
+  private readonly handoffNavigation = inject(AgentChatHandoffNavigationService);
+
   readonly embed = input.required<AgentChatToolEmbedView>();
 
   protected readonly todosLabel = $localize`:@@featureChat-toolEmbedTodos:Todos`;
@@ -58,6 +64,11 @@ export class AgentChatToolEmbedComponent {
   protected readonly bashFailedLabel = $localize`:@@featureChat-toolEmbedBashFailed:Command reported an error`;
   protected readonly fetchFailedLabel = $localize`:@@featureChat-toolEmbedFetchFailed:Fetch reported an error`;
   protected readonly searchFailedLabel = $localize`:@@featureChat-toolEmbedSearchFailed:Search reported an error`;
+  protected readonly handoffLabel = $localize`:@@featureChat-toolEmbedHandoff:Handed over to another agent`;
+  protected readonly handoffPendingLabel = $localize`:@@featureChat-toolEmbedHandoffPending:The response arrives in this chat once the agent is done.`;
+  protected readonly handoffFailedLabel = $localize`:@@featureChat-toolEmbedHandoffFailed:The handoff could not be created`;
+  protected readonly openHandoffChatLabel = $localize`:@@featureChat-toolEmbedOpenHandoffChat:Open handoff chat`;
+  protected readonly handoffResponseLabel = $localize`:@@featureChat-toolEmbedHandoffResponse:Response to the handoff`;
 
   readonly embedAriaLabel = computed(() => {
     const kind = this.embed().kind;
@@ -135,6 +146,28 @@ export class AgentChatToolEmbedComponent {
     const e = this.embed();
 
     return e.kind === 'skill' ? e : null;
+  }
+
+  asHandoff(): HandoffEmbed | null {
+    const e = this.embed();
+
+    return e.kind === 'handoff' ? e : null;
+  }
+
+  asHandoffResponse(): HandoffResponseEmbed | null {
+    const e = this.embed();
+
+    return e.kind === 'handoffResponse' ? e : null;
+  }
+
+  handoffStatusLabel(status: 'completed' | 'failed'): string {
+    return status === 'failed'
+      ? $localize`:@@featureChat-handoffStatusFailed:Failed`
+      : $localize`:@@featureChat-handoffStatusCompleted:Completed`;
+  }
+
+  openHandoffChat(agentId: string, chatId: string): void {
+    this.handoffNavigation.open({ agentId, chatId });
   }
 
   asInvalid(): InvalidEmbed | null {

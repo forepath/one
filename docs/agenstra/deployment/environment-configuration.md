@@ -367,6 +367,17 @@ Used by **agent controller** for [recurring agent tasks](../features/agent-tasks
 | `AGENT_TASK_MIN_INTERVAL_MINUTES`  | Minimum distance between two occurrences of one task            | `5`       |
 | `AGENT_TASKS_MAX_PER_AGENT`        | Tasks per environment (console and agent-created)               | `25`      |
 
+## Agent handoffs
+
+Used by **agent controller** for [agent handoffs](../features/agent-handoffs.md).
+
+| Variable                                  | Description                                                         | Default   |
+| ----------------------------------------- | ------------------------------------------------------------------- | --------- |
+| `AGENT_HANDOFF_SCHEDULER_INTERVAL_MS`     | Coordinator interval (fails stalled handoffs, re-queues deliveries) | `60000`   |
+| `AGENT_HANDOFF_TURN_TIMEOUT_MS`           | Max wait for one turn of the target agent                           | `1800000` |
+| `AGENT_HANDOFFS_MAX_ACTIVE_PER_WORKSPACE` | Unanswered handoffs per workspace                                   | `20`      |
+| `AGENT_HANDOFF_MAX_DEPTH`                 | How often a handed-over task may be handed over again               | `3`       |
+
 ## OpenTelemetry
 
 Applies to **Backend Agent Controller** and **Backend Agent Manager**. See [OpenTelemetry](../features/opentelemetry.md).

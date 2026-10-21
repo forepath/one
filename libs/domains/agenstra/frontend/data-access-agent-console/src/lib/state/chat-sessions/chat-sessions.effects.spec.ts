@@ -19,7 +19,17 @@ import {
   updateChatSessionFailure,
   updateChatSessionSuccess,
 } from './chat-sessions.actions';
-import { createChatSession$, deleteChatSession$, loadChatSessions$, updateChatSession$ } from './chat-sessions.effects';
+import { forwardedEventReceived } from '../container-socket/container-socket.actions';
+import { selectSelectedAgentId, selectSelectedClientId } from '../container-socket/container-socket.selectors';
+
+import {
+  createChatSession$,
+  deleteChatSession$,
+  loadChatSessions$,
+  reloadChatSessionsOnUnknownChat$,
+  updateChatSession$,
+} from './chat-sessions.effects';
+import { selectChatSessionsMap } from './chat-sessions.selectors';
 import type { ChatSessionResponseDto, CreateChatSessionDto, UpdateChatSessionDto } from './chat-sessions.types';
 
 describe('ChatSessionsEffects', () => {
@@ -174,6 +184,61 @@ describe('ChatSessionsEffects', () => {
       deleteChatSession$(actions$, chatSessionsService).subscribe((result) => {
         expect(result).toEqual(deleteChatSessionFailure({ clientId, agentId, chatId, error: 'Delete failed' }));
         done();
+      });
+    });
+  });
+
+  describe('reloadChatSessionsOnUnknownChat$', () => {
+    const storeWith = (sessions: Record<string, ChatSessionResponseDto[]>) =>
+      ({
+        select: jest.fn((selector: unknown) => {
+          if (selector === selectSelectedClientId) {
+            return of(clientId);
+          }
+
+          if (selector === selectSelectedAgentId) {
+            return of(agentId);
+          }
+
+          if (selector === selectChatSessionsMap) {
+            return of(sessions);
+          }
+
+          throw new Error('unexpected selector');
+        }),
+      }) as never;
+    const chatMessage = (forChatId: string) =>
+      forwardedEventReceived({
+        event: 'chatMessage',
+        payload: { success: true, data: { chatId: forChatId, from: 'user', text: 'hi', timestamp: '' } } as never,
+      });
+
+    it('reloads the sessions once when a chat that is not listed becomes active', (done) => {
+      const results: unknown[] = [];
+
+      actions$ = of(chatMessage('handoff-chat'), chatMessage('handoff-chat'), chatMessage(chatId));
+      reloadChatSessionsOnUnknownChat$(actions$, storeWith({ [`${clientId}:${agentId}`]: [mockSession] })).subscribe({
+        next: (result) => results.push(result),
+        complete: () => {
+          expect(results).toEqual([loadChatSessions({ clientId, agentId })]);
+          done();
+        },
+      });
+    });
+
+    it('waits for the initial session load and ignores other events', (done) => {
+      const results: unknown[] = [];
+
+      actions$ = of(
+        chatMessage('handoff-chat'),
+        forwardedEventReceived({ event: 'loginSuccess', payload: { success: true, data: { chatId: 'x' } } as never }),
+      );
+      reloadChatSessionsOnUnknownChat$(actions$, storeWith({})).subscribe({
+        next: (result) => results.push(result),
+        complete: () => {
+          expect(results).toEqual([]);
+          done();
+        },
       });
     });
   });

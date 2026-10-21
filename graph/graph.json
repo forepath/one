@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-21T12:28:48.149Z",
+  "generatedAt": "2026-10-21T14:13:36.017Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -5519,6 +5519,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/agent-handoff.entity.ts",
+      "type": "entity",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/agent-handoff.entity.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/agent-task-run.entity.ts",
       "type": "entity",
       "attrs": {
@@ -6171,6 +6180,33 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-request-handler.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-request-handler.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-runner.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-runner.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoffs.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoffs.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -10627,6 +10663,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/frontend/feature-agent-console/src/lib/chat/agent-chat-handoff-navigation.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/frontend/feature-agent-console/src/lib/chat/agent-chat-handoff-navigation.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-frontend-feature-agent-console"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/frontend/feature-agent-console/src/lib/file-editor/file-tree/file-tree-clipboard.service.ts",
       "type": "service",
       "attrs": {
@@ -10897,6 +10942,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-handoffs.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-handoffs.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
       "type": "controller",
       "attrs": {
@@ -11045,6 +11099,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-egress.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-handoff.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-handoff.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -11680,6 +11743,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-active-turns.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-active-turns.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-chat-sessions.service.ts",
       "type": "service",
       "attrs": {
@@ -11774,6 +11846,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-git-state-broadcast.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-handoffs-api.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-handoffs-api.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -14310,6 +14391,14 @@
       "type": "doc",
       "attrs": {
         "path": "docs/agenstra/features/agent-configuration.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
+      "id": "file:docs/agenstra/features/agent-handoffs.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/agenstra/features/agent-handoffs.md",
         "languageOrKind": "md"
       }
     },
@@ -23045,6 +23134,15 @@
       }
     },
     {
+      "id": "api:channel:agents/agentHandoffRequest",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "agents/agentHandoffRequest",
+        "summary": "Server → controller request with Socket.IO acknowledgement for task handoffs between agents of one workspace\n(worker `agenstra` MCP server, `/api/agent-context/handoffs`). `agentId` is the agent authenticated by its context\ntoken. Reads (`agents`, `get`) try every socket logged into the agent; `create` and `respond` use one socket only.\n`create` carries `sourceChatId`, the single visible chat the manager attributed the call to (calls from hidden\nsessions or while several sessions work are refused before this event). The controller answers within the\nworkspace bound to the connection with `{ ok: true, agents | handoff }` or `{ ok: false, error, status }`, and\nnever forwards this event to browsers.\n",
+        "specKind": "asyncapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/agents",
       "type": "endpoint",
       "attrs": {
@@ -23305,6 +23403,72 @@
         "pathOrChannel": "/agent-context/tasks/{taskId}/runs",
         "operationId": "runAgentTask",
         "summary": "Queue an immediate run of one of the calling agent's tasks",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/handoffs/agents",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/handoffs/agents",
+        "operationId": "listAgentHandoffAgents",
+        "summary": "List the other agents of the calling agent's workspace",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/handoffs/agents/{agentId}/profile",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/handoffs/agents/{agentId}/profile",
+        "operationId": "getAgentHandoffPeerProfile",
+        "summary": "Metadata and handoff profile of one peer (generated first when missing)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:PUT:/agent-context/handoffs/profile",
+      "type": "endpoint",
+      "attrs": {
+        "method": "PUT",
+        "pathOrChannel": "/agent-context/handoffs/profile",
+        "operationId": "updateAgentHandoffProfile",
+        "summary": "Set the calling agent's own handoff profile",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/agent-context/handoffs",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/agent-context/handoffs",
+        "operationId": "createAgentHandoff",
+        "summary": "Hand a task over to another agent of the workspace",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/handoffs/{handoffId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/handoffs/{handoffId}",
+        "operationId": "getAgentHandoff",
+        "summary": "Read a handoff the calling agent sent or received",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/agent-context/handoffs/{handoffId}/response",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/agent-context/handoffs/{handoffId}/response",
+        "operationId": "respondToAgentHandoff",
+        "summary": "Answer a handoff the calling agent received",
         "specKind": "openapi"
       }
     },
@@ -25749,6 +25913,16 @@
       }
     },
     {
+      "id": "concept:agenstra-agent-handoffs",
+      "type": "concept",
+      "attrs": {
+        "title": "Agent handoffs",
+        "docPath": "docs/agenstra/deployment/environment-configuration.md",
+        "sectionAnchor": "agent-handoffs",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-opentelemetry",
       "type": "concept",
       "attrs": {
@@ -26459,6 +26633,66 @@
       }
     },
     {
+      "id": "concept:agenstra-knowing-the-peers",
+      "type": "concept",
+      "attrs": {
+        "title": "Knowing the peers",
+        "docPath": "docs/agenstra/features/agent-handoffs.md",
+        "sectionAnchor": "knowing-the-peers",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-where-handoffs-are-possible",
+      "type": "concept",
+      "attrs": {
+        "title": "Where handoffs are possible",
+        "docPath": "docs/agenstra/features/agent-handoffs.md",
+        "sectionAnchor": "where-handoffs-are-possible",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-how-it-looks-in-the-console",
+      "type": "concept",
+      "attrs": {
+        "title": "How it looks in the console",
+        "docPath": "docs/agenstra/features/agent-handoffs.md",
+        "sectionAnchor": "how-it-looks-in-the-console",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-response-guarantee",
+      "type": "concept",
+      "attrs": {
+        "title": "Response guarantee",
+        "docPath": "docs/agenstra/features/agent-handoffs.md",
+        "sectionAnchor": "response-guarantee",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-agent-tools",
+      "type": "concept",
+      "attrs": {
+        "title": "Agent tools",
+        "docPath": "docs/agenstra/features/agent-handoffs.md",
+        "sectionAnchor": "agent-tools",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-security-and-limits",
+      "type": "concept",
+      "attrs": {
+        "title": "Security and limits",
+        "docPath": "docs/agenstra/features/agent-handoffs.md",
+        "sectionAnchor": "security-and-limits",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-agent-management",
       "type": "concept",
       "attrs": {
@@ -26535,16 +26769,6 @@
         "title": "Runs",
         "docPath": "docs/agenstra/features/agent-tasks.md",
         "sectionAnchor": "runs",
-        "domain": "agenstra"
-      }
-    },
-    {
-      "id": "concept:agenstra-agent-tools",
-      "type": "concept",
-      "attrs": {
-        "title": "Agent tools",
-        "docPath": "docs/agenstra/features/agent-tasks.md",
-        "sectionAnchor": "agent-tools",
         "domain": "agenstra"
       }
     },
@@ -35137,6 +35361,11 @@
     },
     {
       "from": "project:agenstra-frontend-feature-agent-console",
+      "to": "project:agenstra-shared-util-opencode-config",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-console",
       "to": "project:agenstra-frontend-feature-agent-config",
       "type": "depends_on"
     },
@@ -39222,6 +39451,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/agent-handoff.entity.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/entities/agent-task-run.entity.ts",
       "type": "contains"
     },
@@ -39583,6 +39817,21 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-request-handler.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-runner.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoffs.service.ts",
       "type": "contains"
     },
     {
@@ -42042,6 +42291,11 @@
     },
     {
       "from": "project:agenstra-frontend-feature-agent-console",
+      "to": "file:libs/domains/agenstra/frontend/feature-agent-console/src/lib/chat/agent-chat-handoff-navigation.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-frontend-feature-agent-console",
       "to": "file:libs/domains/agenstra/frontend/feature-agent-console/src/lib/file-editor/file-tree/file-tree-clipboard.service.ts",
       "type": "contains"
     },
@@ -42192,6 +42446,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-handoffs.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
       "type": "contains"
     },
@@ -42273,6 +42532,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-egress.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-handoff.dto.ts",
       "type": "contains"
     },
     {
@@ -42627,6 +42891,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-active-turns.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-chat-sessions.service.ts",
       "type": "contains"
     },
@@ -42678,6 +42947,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-git-state-broadcast.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-handoffs-api.service.ts",
       "type": "contains"
     },
     {
@@ -47791,6 +48065,11 @@
       "type": "contains"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
+      "to": "api:channel:agents/agentHandoffRequest",
+      "type": "contains"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/agents",
       "type": "contains"
@@ -47908,6 +48187,36 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/agent-context/tasks/{taskId}/runs",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/handoffs/agents",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/handoffs/agents/{agentId}/profile",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:PUT:/agent-context/handoffs/profile",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/agent-context/handoffs",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/handoffs/{handoffId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/agent-context/handoffs/{handoffId}/response",
       "type": "contains"
     },
     {
@@ -49472,6 +49781,11 @@
     },
     {
       "from": "file:docs/agenstra/deployment/environment-configuration.md",
+      "to": "concept:agenstra-agent-handoffs",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/deployment/environment-configuration.md",
       "to": "concept:agenstra-opentelemetry",
       "type": "contains"
     },
@@ -49908,6 +50222,51 @@
     {
       "from": "file:docs/agenstra/features/agent-configuration.md",
       "to": "concept:agenstra-references",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-handoffs.md",
+      "to": "concept:agenstra-agent-handoffs",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-handoffs.md",
+      "to": "concept:agenstra-knowing-the-peers",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-handoffs.md",
+      "to": "concept:agenstra-where-handoffs-are-possible",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-handoffs.md",
+      "to": "concept:agenstra-how-it-looks-in-the-console",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-handoffs.md",
+      "to": "concept:agenstra-flow",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-handoffs.md",
+      "to": "concept:agenstra-response-guarantee",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-handoffs.md",
+      "to": "concept:agenstra-agent-tools",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-handoffs.md",
+      "to": "concept:agenstra-security-and-limits",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-handoffs.md",
+      "to": "concept:agenstra-configuration",
       "type": "contains"
     },
     {
@@ -63751,6 +64110,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-request-handler.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/knowledge-board.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
       "type": "injects"
@@ -63953,6 +64317,31 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/knowledge-tree.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-request-handler.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoffs.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-runner.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-runner.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-chats-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoffs.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-proxy.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoffs.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-chats-proxy.service.ts",
       "type": "injects"
     },
     {
@@ -64488,6 +64877,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-request-handler.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-request-handler.service.ts",
       "type": "injects"
     },
     {
@@ -68246,6 +68640,16 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-handoffs.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-mcp.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-handoffs.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-handoffs-api.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-messages.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-messages.service.ts",
       "type": "injects"
@@ -68446,6 +68850,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-handoffs-api.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/vnc.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
       "type": "injects"
@@ -68503,6 +68912,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-runtime.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-session.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-runtime.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-active-turns.service.ts",
       "type": "injects"
     },
     {
@@ -68643,6 +69057,21 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-file-system.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-directory-index.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-handoffs-api.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-active-turns.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-handoffs-api.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-chat-sessions.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-handoffs-api.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agents.repository.ts",
       "type": "injects"
     },
     {
@@ -69086,6 +69515,11 @@
       "type": "injects"
     },
     {
+      "from": "file:apps/agenstra/backend-agent-controller/src/queue/processors/controller-jobs.processor.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-runner.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:apps/decabill/backend-billing-manager/src/queue/processors/billing-jobs.processor.ts",
       "to": "file:libs/domains/decabill/backend/feature-billing-manager/src/lib/services/billing-tenant.service.ts",
       "type": "injects"
@@ -69453,6 +69887,21 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-chat-sync.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoffs.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-runner.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-request-handler.service.ts",
       "type": "provides"
     },
     {
@@ -71272,6 +71721,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-handoffs.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-egress.controller.ts",
       "type": "provides"
     },
@@ -71363,6 +71817,16 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-tasks-api.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-handoffs-api.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-active-turns.service.ts",
       "type": "provides"
     },
     {
@@ -73918,6 +74382,11 @@
     {
       "from": "concept:agenstra-tools",
       "to": "api:HTTP:POST:/agent-context/tasks",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-tools",
+      "to": "api:HTTP:POST:/agent-context/handoffs",
       "type": "documents"
     },
     {
@@ -82341,6 +82810,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "file:docs/agenstra/features/agent-handoffs.md",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "file:docs/agenstra/features/agent-management.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -83696,6 +84170,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:agenstra-agent-handoffs",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:agenstra-opentelemetry",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -84051,6 +84530,36 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:agenstra-knowing-the-peers",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-where-handoffs-are-possible",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-how-it-looks-in-the-console",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-response-guarantee",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-agent-tools",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-security-and-limits",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:agenstra-agent-management",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -84087,11 +84596,6 @@
     },
     {
       "from": "concept:agenstra-runs",
-      "to": "domain:agenstra",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:agenstra-agent-tools",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

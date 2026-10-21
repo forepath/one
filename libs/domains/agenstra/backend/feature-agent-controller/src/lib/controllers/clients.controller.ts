@@ -1293,7 +1293,8 @@ export class ClientsController {
   ): Promise<ChatSessionResponseDto> {
     await ensureClientAccess(this.clientsRepository, this.clientUsersRepository, id, req);
 
-    return await this.clientAgentChatsProxyService.create(id, agentId, createDto);
+    // Handoff chats are opened by the platform only (AgentHandoffsService); users create regular chats.
+    return await this.clientAgentChatsProxyService.create(id, agentId, { title: createDto?.title });
   }
 
   /**

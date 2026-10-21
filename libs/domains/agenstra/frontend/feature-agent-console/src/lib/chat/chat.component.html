@@ -735,6 +735,16 @@
                           >(primary)</span
                         >
                       }
+                      @if (row.session.kind === 'handoff') {
+                        <span
+                          class="text-body-secondary small d-inline-flex align-items-center gap-1"
+                          i18n-title="@@featureChat-chatSessionHandoffBadgeTitle"
+                          title="Task handed over by another agent"
+                        >
+                          <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
+                          <span i18n="@@featureChat-chatSessionHandoffBadge">(handoff)</span>
+                        </span>
+                      }
                       @if (row.hasUnread) {
                         <fpc-notification-indicator kind="unread" placement="inline" />
                       }
@@ -951,72 +961,113 @@
                   @for (item of view.thread; track trackChatDisplayItem(item)) {
                     @if (item.kind === 'user') {
                       @if (getChatMessageData(item.msg.payload); as messageData) {
-                        <div class="d-flex justify-content-end">
-                          @if (
-                            item.msg.filterResult &&
-                            (item.msg.filterResult.status === 'filtered' || item.msg.filterResult.status === 'dropped')
-                          ) {
-                            <div class="card bg-primary text-white chat-message-card border-warning border-2">
+                        @if (getHandoffCard(messageData); as handoff) {
+                          <div class="d-flex justify-content-end">
+                            <div class="card bg-body chat-message-card chat-handoff-card border-primary">
                               <div class="card-body chat-message-body">
-                                @if (formatMessageWithCommandBadge(getText(messageData)); as formattedText) {
-                                  <p class="card-text chat-message-text" [innerHTML]="formattedText"></p>
-                                }
-                                @if (getMessageAttachments(messageData); as attachments) {
-                                  @if (attachments.length) {
-                                    <div class="d-flex flex-column gap-1 mt-2">
-                                      @for (attachment of attachments; track attachment.id) {
-                                        <a
-                                          class="chat-message-attachment text-start small"
-                                          [href]="attachment.downloadUrl"
-                                          [download]="attachment.fileName"
-                                        >
-                                          <i class="bi bi-paperclip me-1" aria-hidden="true"></i
-                                          >{{ attachment.fileName }}
-                                          <span class="chat-message-attachment__size"
-                                            >{{ attachment.byteSize | number }} B</span
-                                          >
-                                        </a>
-                                      }
-                                    </div>
+                                <div class="d-flex align-items-center gap-2 flex-wrap small text-body-secondary">
+                                  <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
+                                  <span>{{ handoffCardHeading(handoff) }}</span>
+                                  @if (handoff.status) {
+                                    <fpc-badge [color]="handoff.status === 'failed' ? 'danger' : 'success'">{{
+                                      handoffStatusLabel(handoff.status)
+                                    }}</fpc-badge>
                                   }
-                                }
-                                <div class="d-flex align-items-center gap-2 mt-2">
-                                  <i class="bi bi-shield-exclamation text-warning" title="Message was filtered"></i>
-                                  <small class="chat-message-timestamp text-warning mt-0"> Filtered </small>
                                 </div>
-                                <small class="chat-message-timestamp">{{ formatTimestamp(item.msg.timestamp) }}</small>
+                                @if (handoff.title) {
+                                  <div class="fw-semibold mt-1 text-break">{{ handoff.title }}</div>
+                                }
+                                @if (parseMarkdownFromString(handoff.body); as handoffBodyHtml) {
+                                  <div
+                                    class="card-text chat-message-text markdown-content mt-2"
+                                    [innerHTML]="handoffBodyHtml"
+                                  ></div>
+                                }
+                                <div class="d-flex flex-wrap gap-2 mt-2">
+                                  <fpc-button variant="primary" size="sm" (clicked)="openHandoffLink(handoff.link)">
+                                    <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i
+                                    >{{ handoffCardLinkLabel(handoff) }}
+                                  </fpc-button>
+                                </div>
+                                <small class="chat-message-timestamp text-body-secondary d-block mt-2">{{
+                                  formatTimestamp(item.msg.timestamp)
+                                }}</small>
                               </div>
                             </div>
-                          } @else {
-                            <div class="card bg-primary text-white chat-message-card">
-                              <div class="card-body chat-message-body">
-                                @if (formatMessageWithCommandBadge(getText(messageData)); as formattedText) {
-                                  <p class="card-text chat-message-text" [innerHTML]="formattedText"></p>
-                                }
-                                @if (getMessageAttachments(messageData); as attachments) {
-                                  @if (attachments.length) {
-                                    <div class="d-flex flex-column gap-1 mt-2">
-                                      @for (attachment of attachments; track attachment.id) {
-                                        <a
-                                          class="chat-message-attachment text-start small"
-                                          [href]="attachment.downloadUrl"
-                                          [download]="attachment.fileName"
-                                        >
-                                          <i class="bi bi-paperclip me-1" aria-hidden="true"></i
-                                          >{{ attachment.fileName }}
-                                          <span class="chat-message-attachment__size"
-                                            >{{ attachment.byteSize | number }} B</span
-                                          >
-                                        </a>
-                                      }
-                                    </div>
+                          </div>
+                        } @else {
+                          <div class="d-flex justify-content-end">
+                            @if (
+                              item.msg.filterResult &&
+                              (item.msg.filterResult.status === 'filtered' ||
+                                item.msg.filterResult.status === 'dropped')
+                            ) {
+                              <div class="card bg-primary text-white chat-message-card border-warning border-2">
+                                <div class="card-body chat-message-body">
+                                  @if (formatMessageWithCommandBadge(getText(messageData)); as formattedText) {
+                                    <p class="card-text chat-message-text" [innerHTML]="formattedText"></p>
                                   }
-                                }
-                                <small class="chat-message-timestamp">{{ formatTimestamp(item.msg.timestamp) }}</small>
+                                  @if (getMessageAttachments(messageData); as attachments) {
+                                    @if (attachments.length) {
+                                      <div class="d-flex flex-column gap-1 mt-2">
+                                        @for (attachment of attachments; track attachment.id) {
+                                          <a
+                                            class="chat-message-attachment text-start small"
+                                            [href]="attachment.downloadUrl"
+                                            [download]="attachment.fileName"
+                                          >
+                                            <i class="bi bi-paperclip me-1" aria-hidden="true"></i
+                                            >{{ attachment.fileName }}
+                                            <span class="chat-message-attachment__size"
+                                              >{{ attachment.byteSize | number }} B</span
+                                            >
+                                          </a>
+                                        }
+                                      </div>
+                                    }
+                                  }
+                                  <div class="d-flex align-items-center gap-2 mt-2">
+                                    <i class="bi bi-shield-exclamation text-warning" title="Message was filtered"></i>
+                                    <small class="chat-message-timestamp text-warning mt-0"> Filtered </small>
+                                  </div>
+                                  <small class="chat-message-timestamp">{{
+                                    formatTimestamp(item.msg.timestamp)
+                                  }}</small>
+                                </div>
                               </div>
-                            </div>
-                          }
-                        </div>
+                            } @else {
+                              <div class="card bg-primary text-white chat-message-card">
+                                <div class="card-body chat-message-body">
+                                  @if (formatMessageWithCommandBadge(getText(messageData)); as formattedText) {
+                                    <p class="card-text chat-message-text" [innerHTML]="formattedText"></p>
+                                  }
+                                  @if (getMessageAttachments(messageData); as attachments) {
+                                    @if (attachments.length) {
+                                      <div class="d-flex flex-column gap-1 mt-2">
+                                        @for (attachment of attachments; track attachment.id) {
+                                          <a
+                                            class="chat-message-attachment text-start small"
+                                            [href]="attachment.downloadUrl"
+                                            [download]="attachment.fileName"
+                                          >
+                                            <i class="bi bi-paperclip me-1" aria-hidden="true"></i
+                                            >{{ attachment.fileName }}
+                                            <span class="chat-message-attachment__size"
+                                              >{{ attachment.byteSize | number }} B</span
+                                            >
+                                          </a>
+                                        }
+                                      </div>
+                                    }
+                                  }
+                                  <small class="chat-message-timestamp">{{
+                                    formatTimestamp(item.msg.timestamp)
+                                  }}</small>
+                                </div>
+                              </div>
+                            }
+                          </div>
+                        }
                       }
                     } @else if (item.kind === 'agentTurn') {
                       @if (item.view.hasDropped) {
@@ -3016,6 +3067,24 @@
         [rows]="3"
         [ngModel]="editingAgent().description"
         (ngModelChange)="updateEditingAgentField('description', $event)"
+        [disabled]="(agentsUpdating$ | async) === true"
+      />
+    </fpc-form-field>
+    <fpc-form-field
+      forId="updateAgentHandoffProfile"
+      i18n-label="@@featureChat-handoffProfileLabel"
+      label="Handoff profile"
+      i18n-hint="@@featureChat-handoffProfileHelp"
+      hint="What this environment is responsible for and which tasks other agents of the workspace can hand over to it. The agent can also maintain it itself."
+    >
+      <fpc-form-control
+        controlType="textarea"
+        controlId="updateAgentHandoffProfile"
+        name="handoffProfile"
+        [rows]="4"
+        [maxLength]="4000"
+        [ngModel]="editingAgent().handoffProfile"
+        (ngModelChange)="updateEditingAgentField('handoffProfile', $event)"
         [disabled]="(agentsUpdating$ | async) === true"
       />
     </fpc-form-field>

@@ -1583,6 +1583,18 @@ describe('ClientsController', () => {
         expect(result).toEqual(mockChatSession);
         expect(mockChatsProxyService.create).toHaveBeenCalledWith(clientId, agentId, createDto);
       });
+
+      it('never lets users create handoff chats', async () => {
+        const mockReq = { apiKeyAuthenticated: true } as any;
+
+        clientsRepository.findById.mockResolvedValue({ id: clientId, userId: null } as any);
+        clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+        mockChatsProxyService.create.mockResolvedValue(mockChatSession);
+
+        await controller.createClientAgentChatSession(clientId, agentId, { title: 'x', kind: 'handoff' }, mockReq);
+
+        expect(mockChatsProxyService.create).toHaveBeenCalledWith(clientId, agentId, { title: 'x' });
+      });
     });
 
     describe('getClientAgentChatSession', () => {

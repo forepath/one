@@ -163,6 +163,46 @@ export function resolveAgentChatToolDisplay(toolNameOrKind: string | undefined):
         label: $localize`:@@featureChat-toolDisplayTasksRun:Run task now`,
         icon: 'play-circle',
       };
+    // Platform handoff tools (`agenstra_handoff_*`): tasks handed over between agents of the workspace.
+    // `handoff` / `handoffresponse` are the embed kinds of create / respond.
+    case 'agenstra_handoff_agents':
+    case 'handoff_agents':
+      return {
+        label: $localize`:@@featureChat-toolDisplayHandoffAgents:List agents`,
+        icon: 'people',
+      };
+    case 'agenstra_handoff_create':
+    case 'handoff_create':
+    case 'handoff':
+      return {
+        label: $localize`:@@featureChat-toolDisplayHandoffCreate:Hand off task`,
+        icon: 'arrow-left-right',
+      };
+    case 'agenstra_handoff_profile_get':
+    case 'handoff_profile_get':
+      return {
+        label: $localize`:@@featureChat-toolDisplayHandoffProfileGet:Read agent profile`,
+        icon: 'person-vcard',
+      };
+    case 'agenstra_handoff_profile_update':
+    case 'handoff_profile_update':
+      return {
+        label: $localize`:@@featureChat-toolDisplayHandoffProfileUpdate:Update own profile`,
+        icon: 'person-gear',
+      };
+    case 'agenstra_handoff_get':
+    case 'handoff_get':
+      return {
+        label: $localize`:@@featureChat-toolDisplayHandoffGet:Read handoff`,
+        icon: 'arrow-repeat',
+      };
+    case 'agenstra_handoff_respond':
+    case 'handoff_respond':
+    case 'handoffresponse':
+      return {
+        label: $localize`:@@featureChat-toolDisplayHandoffRespond:Answer handoff`,
+        icon: 'reply',
+      };
     default:
       if (!name) {
         return {
