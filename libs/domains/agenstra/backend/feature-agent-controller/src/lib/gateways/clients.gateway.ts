@@ -430,16 +430,18 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
           const code = errorPayload?.code ?? errorPayload?.error?.code ?? null;
           const message = errorPayload?.message ?? errorPayload?.error?.message ?? null;
 
+          // `ACP_*` codes are still emitted by agent-managers released before the ACP removal.
           if (
+            code === 'AGENT_PERMISSION_DENIED' ||
             code === 'ACP_PERMISSION_DENIED' ||
             (typeof message === 'string' && message.includes('permission denied'))
           ) {
-            this.notificationPublisher.publishAgentAcpPermissionDenied(currentClientId, {
+            this.notificationPublisher.publishAgentPermissionDenied(currentClientId, {
               agentId: lastAgentId,
               message,
             });
-          } else if (code === 'ACP_SESSION_FAILED') {
-            this.notificationPublisher.publishAgentAcpSessionFailed(currentClientId, {
+          } else if (code === 'AGENT_SESSION_FAILED' || code === 'ACP_SESSION_FAILED') {
+            this.notificationPublisher.publishAgentSessionFailed(currentClientId, {
               agentId: lastAgentId,
               message,
               code,

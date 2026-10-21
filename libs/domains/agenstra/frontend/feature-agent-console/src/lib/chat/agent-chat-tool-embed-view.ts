@@ -300,7 +300,7 @@ function coerceArgsRecord(value: unknown): Record<string, unknown> | undefined {
       }
     }
 
-    // ACP sometimes sets rawInput to a bare command string.
+    // Some agents send rawInput as a bare command string.
     return { command: trimmed };
   }
 

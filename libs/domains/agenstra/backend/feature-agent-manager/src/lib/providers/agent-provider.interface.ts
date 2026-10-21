@@ -15,7 +15,7 @@ export interface AgentProviderCapabilities {
   /**
    * Wire transport used for agent messaging.
    */
-  transport?: 'acp' | 'opencode-http' | 'http';
+  transport?: 'opencode-http' | 'http';
 
   /**
    * Provider supports the chat flow (`chat` websocket event).
@@ -171,7 +171,7 @@ export interface AgentProvider {
   toUnifiedResponse(response: string): AgentResponseObject | undefined;
 
   /**
-   * Optional structured streaming variant for ACP-native providers.
+   * Optional structured streaming variant for event-native providers (OpenCode SSE).
    */
   streamChatEvents?(
     agentId: string,
@@ -197,7 +197,7 @@ export interface AgentProviderOptions {
   continue?: boolean;
 
   /**
-   * Appended to the ACP resume session id for isolated one-off runs (e.g. prompt enhancement).
+   * Appended to the session key for isolated one-off runs (e.g. prompt enhancement).
    * Ignored by providers that do not use resume-based sessions.
    */
   resumeSessionSuffix?: string;

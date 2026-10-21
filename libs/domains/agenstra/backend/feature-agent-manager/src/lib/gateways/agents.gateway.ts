@@ -93,7 +93,7 @@ interface ChatPayload {
    * Only the agent-controller orchestrator may set this; interactive clients must not.
    */
   unattendedAutomation?: boolean;
-  /** User-visible chat session id; defaults to primary when omitted (ignored for reserved ACP suffixes). */
+  /** User-visible chat session id; defaults to primary when omitted (ignored for reserved session suffixes). */
   chatId?: string;
   contextInjection?: ContextInjectionPayload;
   attachments?: AgentMessageAttachmentJson[];
@@ -888,7 +888,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     resumeSessionSuffix: string | undefined;
     chatSessionId: string | undefined;
     chatId: string | undefined;
-    /** Hidden ACP suffixes must never persist or broadcast into user-visible chats. */
+    /** Hidden session suffixes must never persist or broadcast into user-visible chats. */
     hidden: boolean;
   }> {
     if (isTicketAutomationResumeSessionSuffix(data.resumeSessionSuffix)) {
@@ -907,7 +907,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     }
 
     if (isReservedChatResumeSessionSuffix(data.resumeSessionSuffix)) {
-      // Ignore chatId: reserved suffixes are isolated ACP sessions, not user chat rows.
+      // Ignore chatId: reserved suffixes are isolated OpenCode sessions, not user chat rows.
       return {
         resumeSessionSuffix: data.resumeSessionSuffix,
         chatSessionId: undefined,
@@ -1897,7 +1897,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       return;
     }
 
-    // Reserved ACP suffixes must never persist/broadcast into user-visible chat history.
+    // Reserved session suffixes must never persist/broadcast into user-visible chat history.
     const ephemeral = data.ephemeral === true || chatContext.hidden;
     const suppressUserMessage = data.suppressUserMessage === true;
     const { chatSessionId, chatId } = chatContext;
@@ -2427,11 +2427,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       }
     } catch (error) {
       const err = error as { message?: string; stack?: string };
-      const errorCode = err.message?.includes('permission denied')
-        ? 'ACP_PERMISSION_DENIED'
-        : err.message?.includes('ACP')
-          ? 'ACP_SESSION_FAILED'
-          : 'CHAT_ERROR';
+      const errorCode = err.message?.includes('permission denied') ? 'AGENT_PERMISSION_DENIED' : 'CHAT_ERROR';
 
       socket.emit('error', createErrorResponse('Error processing chat message', errorCode));
 

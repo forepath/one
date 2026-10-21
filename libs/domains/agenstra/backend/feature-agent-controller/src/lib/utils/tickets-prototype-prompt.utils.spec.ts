@@ -1,7 +1,6 @@
 import { TicketPriority, TicketStatus } from '../entities/ticket.enums';
 
 import {
-  appendRelatedContextSections,
   buildAutomationFollowUpMessage,
   buildAutonomousTicketRunPreamble,
   buildPrototypePrompt,
@@ -41,20 +40,6 @@ describe('tickets-prototype-prompt.utils', () => {
     expect(preamble).toContain('complete');
     expect(preamble).toContain('continue');
     expect(preamble).not.toContain('AGENSTRA_AUTOMATION_COMPLETE');
-  });
-
-  it('appendRelatedContextSections adds labeled related blocks', () => {
-    const out = appendRelatedContextSections('Ticket tree', ['Knowledge Page: A\nBody', '  ']);
-
-    expect(out).toContain('Ticket tree');
-    expect(out).toContain('Related context (from knowledge relations)');
-    expect(out).toContain('### Related context 1');
-    expect(out).toContain('Knowledge Page: A');
-    expect(out).not.toContain('### Related context 2');
-  });
-
-  it('appendRelatedContextSections is a no-op for empty sections', () => {
-    expect(appendRelatedContextSections('Ticket tree', [])).toBe('Ticket tree');
   });
 
   it('withRelationContext attaches trimmed relation sections as knowledge context', () => {

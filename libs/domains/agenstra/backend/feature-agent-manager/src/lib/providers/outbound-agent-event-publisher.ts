@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import type { AgentResponseObject } from './agent-provider.interface';
 
 /**
- * Seam for publishing mapped agent events to future ACP-server / bus consumers.
+ * Seam for publishing mapped agent events to future external bus consumers.
  * OpenCode HTTP runtime publishes through this; default implementation is a no-op sink.
  */
 export abstract class OutboundAgentEventPublisher {
@@ -13,6 +13,6 @@ export abstract class OutboundAgentEventPublisher {
 @Injectable()
 export class NoopOutboundAgentEventPublisher extends OutboundAgentEventPublisher {
   publish(_agentId: string, _event: AgentResponseObject): void {
-    // Intentionally empty — ACP server / external bus not wired yet.
+    // Intentionally empty — external bus not wired yet.
   }
 }

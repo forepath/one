@@ -37,7 +37,7 @@ describe('ClientsFacade', () => {
           type: 'opencode',
           displayName: 'Cursor',
           capabilities: {
-            transport: 'acp',
+            transport: 'opencode-http',
             supportsChat: true,
             supportsStreaming: true,
             supportsToolEvents: true,
@@ -63,7 +63,7 @@ describe('ClientsFacade', () => {
           type: 'opencode',
           displayName: 'Cursor',
           capabilities: {
-            transport: 'acp',
+            transport: 'opencode-http',
             supportsChat: true,
             supportsStreaming: true,
             supportsToolEvents: true,

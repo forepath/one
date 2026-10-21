@@ -43,7 +43,7 @@ channels:
       Client sends a chat message (requires prior login). Payload may include `responseMode` "single" | "stream" | "sync",
       `ephemeral` (skip `agent_messages` persistence for the turn), `suppressUserMessage` (send to agent but hide the user
       bubble; used by chat-plan execute), `continue`, `resumeSessionSuffix`, `chatId`, `correlationId`, `model`.
-      When `chatId` is set (and `resumeSessionSuffix` is not a reserved hidden ACP suffix), messages and events persist and
+      When `chatId` is set (and `resumeSessionSuffix` is not a reserved hidden session suffix), messages and events persist and
       emit under that user-visible chat session; otherwise the primary session is used.
       Reserved hidden suffixes include `-prompt-enhance`, `-ticket-body`, `-ticket-auto-*`, and `-plan-{planId}` (explore-only
       permissions; not automation allow-all). Those sessions are ephemeral/hidden and do not persist into `agent_messages`.
@@ -664,7 +664,7 @@ components:
             type: string
             description: >
               Optional user-visible chat session id. When omitted, the primary session is used.
-              Ignored when resumeSessionSuffix is a reserved hidden ACP suffix
+              Ignored when resumeSessionSuffix is a reserved hidden session suffix
               (prompt enhance, ticket body, automation `-ticket-auto-*`, or plan `-plan-{planId}`).
               Plan suffixes use explore-only session permissions (deny writes); automation suffixes use allow-all.
           contextInjection:

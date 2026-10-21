@@ -37,21 +37,6 @@ export function buildPrototypePromptPreamble(): string {
 }
 
 /**
- * Appends related-context sections collected from knowledge relations.
- */
-export function appendRelatedContextSections(body: string, sections: string[]): string {
-  const cleaned = sections.map((section) => section.trim()).filter((section) => section.length > 0);
-
-  if (cleaned.length === 0) {
-    return body;
-  }
-
-  const labeled = cleaned.map((section, index) => `### Related context ${index + 1}\n${section}`);
-
-  return `${body.trimEnd()}\n\nRelated context (from knowledge relations):\n${labeled.join('\n\n')}\n`;
-}
-
-/**
  * Preamble for autonomous ticket runs: implement freely; status is collected after the turn.
  */
 export function buildAutonomousTicketRunPreamble(): string {

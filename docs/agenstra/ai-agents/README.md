@@ -2,7 +2,7 @@
 
 Guides for AI coding assistants working on **Agenstra** in this monorepo. Covers the workspace `.agenstra/` agent context used to configure Cursor, OpenCode, and GitHub Copilot from a single, tool-agnostic source.
 
-For **runtime** chat between Agenstra and coding agents in worker containers, see [Agent Client Protocol (ACP)](./agent-client-protocol.md). For how ticket / knowledge context reaches agents at runtime, see [Agent Context MCP](./context-mcp.md).
+For **runtime** chat between Agenstra and coding agents in worker containers, see [Agent Runtime (OpenCode)](./agent-runtime.md). For how ticket / knowledge context reaches agents at runtime, see [Agent Context MCP](./context-mcp.md).
 
 ## Overview
 

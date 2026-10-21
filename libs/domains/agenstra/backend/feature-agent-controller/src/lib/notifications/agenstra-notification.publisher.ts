@@ -188,14 +188,15 @@ export class AgenstraNotificationPublisher implements IIdentityNotificationPubli
     this.publish('chat_message.created', payload, clientId);
   }
 
-  publishAgentAcpSessionFailed(
+  /** Event type keeps the historic `agent.acp.*` name: it is a public notification / webhook contract. */
+  publishAgentSessionFailed(
     clientId: string,
     payload: { agentId: string; message?: string | null; code?: string | null },
   ): void {
     this.publish('agent.acp.session_failed', payload, clientId);
   }
 
-  publishAgentAcpPermissionDenied(clientId: string, payload: { agentId: string; message?: string | null }): void {
+  publishAgentPermissionDenied(clientId: string, payload: { agentId: string; message?: string | null }): void {
     this.publish('agent.acp.permission_denied', payload, clientId);
   }
 

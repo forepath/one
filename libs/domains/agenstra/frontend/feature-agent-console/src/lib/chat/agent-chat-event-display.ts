@@ -761,7 +761,7 @@ export function consolidateConsecutiveInteractionQueryTimelineRows(
 
 /**
  * Collapses multiple `toolCall` rows that share a concrete `toolCallId` into the earliest row
- * (ACP emits started then in_progress as separate events). Keeps the latest summary/status.
+ * (agents emit started then in_progress as separate events). Keeps the latest summary/status.
  */
 export function coalesceDuplicateToolCallDisplayRows(rows: AgentChatEventDisplayRow[]): AgentChatEventDisplayRow[] {
   if (rows.length === 0) {

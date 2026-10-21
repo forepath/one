@@ -25,7 +25,7 @@ export class AgentResponseDto {
     setupMode: GitRepositorySetupMode;
   };
   /**
-   * User-visible chat sessions for this environment (excludes hidden ACP suffixes).
+   * User-visible chat sessions for this environment (excludes hidden session suffixes).
    */
   chats!: AgentChatSessionSummaryDto[];
   /**

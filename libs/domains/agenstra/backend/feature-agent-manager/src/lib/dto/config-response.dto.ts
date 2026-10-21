@@ -9,7 +9,7 @@ export class AgentTypeCapabilities {
   /**
    * Wire transport used for agent messaging (`opencode-http` = OpenCode serve HTTP API).
    */
-  transport?: 'acp' | 'opencode-http' | 'http';
+  transport?: 'opencode-http' | 'http';
 
   supportsChat!: boolean;
   supportsStreaming!: boolean;
@@ -32,7 +32,7 @@ export class AgentTypeInfo {
   displayName!: string;
 
   /**
-   * Feature flags for the provider (chat, streaming, ACP transport, etc.).
+   * Feature flags for the provider (chat, streaming, transport, etc.).
    */
   capabilities!: AgentTypeCapabilities;
 }

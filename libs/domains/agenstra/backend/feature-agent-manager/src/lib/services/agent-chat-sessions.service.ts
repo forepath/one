@@ -14,7 +14,7 @@ import { AgentMessagesRepository } from '../repositories/agent-messages.reposito
 
 /**
  * Service for user-visible chat sessions nested under an agent (environment).
- * Hidden ACP suffixes are not managed here.
+ * Hidden session suffixes are not managed here.
  */
 @Injectable()
 export class AgentChatSessionsService {
@@ -136,7 +136,7 @@ export class AgentChatSessionsService {
     }
 
     await this.agentChatSessionsRepository.delete(session.id);
-    await this.agentsRepository.clearAcpSession(agentId, session.resumeSessionSuffix);
+    await this.agentsRepository.clearOpencodeSession(agentId, session.resumeSessionSuffix);
 
     this.logger.log(`Deleted chat session ${chatId} for agent ${agentId}`);
   }

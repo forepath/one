@@ -41,7 +41,7 @@ describe('Clients Selectors', () => {
           type: 'opencode',
           displayName: 'Cursor',
           capabilities: {
-            transport: 'acp',
+            transport: 'opencode-http',
             supportsChat: true,
             supportsStreaming: true,
             supportsToolEvents: true,
@@ -67,7 +67,7 @@ describe('Clients Selectors', () => {
           type: 'opencode',
           displayName: 'Cursor',
           capabilities: {
-            transport: 'acp',
+            transport: 'opencode-http',
             supportsChat: true,
             supportsStreaming: true,
             supportsToolEvents: true,

@@ -20,7 +20,7 @@ This application provides:
 - **Auto Migrations** Automatic database schema migrations on startup
 - **Rate Limiting** Configurable rate limiting on all API endpoints
 - **CORS Configuration** Production-safe CORS defaults
-- **Plugin-based Agent Providers** Support for agent implementations (OpenCode via ACP; additional types via plugins)
+- **Plugin-based Agent Providers** Support for agent implementations (OpenCode over its HTTP server API; additional types via plugins)
 
 ## Architecture
 
@@ -100,7 +100,7 @@ Environment variables: `AGENT_SANDBOX_RUNTIME`, `AGENT_ISOLATION_SANDBOX_ENABLED
 
 ### Chat sessions
 
-User-visible chat sessions per agent environment (primary plus operator-created threads). Hidden ACP suffixes are not exposed here. See [Chat Interface](../features/chat-interface.md).
+User-visible chat sessions per agent environment (primary plus operator-created threads). Hidden session suffixes are not exposed here. See [Chat Interface](../features/chat-interface.md).
 
 - `GET /api/agents/:agentId/chats` - List sessions (`limit`, `offset`)
 - `GET /api/agents/:agentId/chats/count` - Count sessions
@@ -122,7 +122,7 @@ Agent profile responses include `chats` and `primaryChatId`.
 
 ### Configuration
 
-- `GET /api/config` - Get configuration parameters including Git repository URL, available agent types (with capabilities / ACP transport) and container `isolation` capabilities
+- `GET /api/config` - Get configuration parameters including Git repository URL, available agent types (with capabilities / transport) and container `isolation` capabilities
 
 ### File Operations
 

@@ -7084,8 +7084,8 @@ components:
       properties:
         transport:
           type: string
-          enum: [acp]
-          description: Wire transport for agent messaging (Agent Client Protocol over stdio)
+          enum: [opencode-http, http]
+          description: Wire transport for agent messaging (OpenCode HTTP server API + SSE events)
         supportsChat:
           type: boolean
         supportsStreaming:

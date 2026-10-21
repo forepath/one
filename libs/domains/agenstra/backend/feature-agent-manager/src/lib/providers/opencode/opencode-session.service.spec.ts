@@ -12,8 +12,8 @@ describe('OpenCodeSessionService', () => {
       }),
     };
     const agentsRepository = {
-      findPersistedAcpSessionId: jest.fn().mockResolvedValue(null),
-      saveAcpSession: jest.fn().mockResolvedValue(undefined),
+      findPersistedOpencodeSessionId: jest.fn().mockResolvedValue(null),
+      saveOpencodeSession: jest.fn().mockResolvedValue(undefined),
     };
     const service = new OpenCodeSessionService(clientFactory as never, agentsRepository as never);
 
@@ -43,8 +43,8 @@ describe('OpenCodeSessionService', () => {
       }),
     };
     const agentsRepository = {
-      findPersistedAcpSessionId: jest.fn().mockResolvedValue(null),
-      saveAcpSession: jest.fn().mockResolvedValue(undefined),
+      findPersistedOpencodeSessionId: jest.fn().mockResolvedValue(null),
+      saveOpencodeSession: jest.fn().mockResolvedValue(undefined),
     };
     const service = new OpenCodeSessionService(clientFactory as never, agentsRepository as never);
 
@@ -72,8 +72,8 @@ describe('OpenCodeSessionService', () => {
       }),
     };
     const agentsRepository = {
-      findPersistedAcpSessionId: jest.fn().mockResolvedValue(null),
-      saveAcpSession: jest.fn().mockResolvedValue(undefined),
+      findPersistedOpencodeSessionId: jest.fn().mockResolvedValue(null),
+      saveOpencodeSession: jest.fn().mockResolvedValue(undefined),
     };
     const service = new OpenCodeSessionService(clientFactory as never, agentsRepository as never);
 

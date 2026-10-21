@@ -298,7 +298,7 @@ describe('agent-chat-tool-embed-view', () => {
     );
   });
 
-  it('parses bash when args is a bare command string (ACP rawInput)', () => {
+  it('parses bash when args is a bare command string (raw input)', () => {
     const call = JSON.stringify({
       type: 'tool_call',
       name: 'bash',

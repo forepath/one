@@ -39,11 +39,6 @@ import { WorkspaceConfigurationOverrideEntity } from '../entities/workspace-conf
 import { AgentsGateway } from '../gateways/agents.gateway';
 import { VncGateway } from '../gateways/vnc.gateway';
 import { AgentProviderFactory } from '../providers/agent-provider.factory';
-import { AcpAgentMessagingService } from '../providers/acp/acp-agent-messaging.service';
-import { AcpClientHostFactory } from '../providers/acp/acp-client-host';
-import { AcpNotificationMapper } from '../providers/acp/acp-notification-mapper';
-import { AcpSessionService } from '../providers/acp/acp-session.service';
-import { DockerAcpTransportFactory } from '../providers/acp/docker-acp-transport';
 import { OpenCodeAgentProvider } from '../providers/agents/opencode-agent.provider';
 import { OpenCodeClientFactory } from '../providers/opencode/opencode-client.factory';
 import { OpenCodeConfigSyncService } from '../providers/opencode/opencode-config-sync.service';
@@ -194,12 +189,6 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     DeploymentConfigurationsRepository,
     DeploymentRunsRepository,
     DockerService,
-    // ACP stack retained temporarily; OpenCode chat uses HTTP runtime below.
-    AcpNotificationMapper,
-    AcpClientHostFactory,
-    DockerAcpTransportFactory,
-    AcpSessionService,
-    AcpAgentMessagingService,
     OpenCodeClientFactory,
     OpenCodeSessionService,
     OpenCodeEventBridge,

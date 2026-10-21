@@ -1,4 +1,4 @@
-/** User-visible chat session kinds (hidden/background ACP chats are never listed). */
+/** User-visible chat session kinds (hidden/background chats are never listed). */
 export type ChatSessionKind = 'primary' | 'user';
 
 /** Compact chat summary embedded on AgentResponseDto. */

@@ -103,13 +103,13 @@ export class AgentEntity {
    * Column name retained as `acp_sessions` for migration continuity.
    */
   @Column({ type: 'jsonb', nullable: true, name: 'acp_sessions' })
-  acpSessions?: Record<string, string> | null;
+  opencodeSessions?: Record<string, string> | null;
 
   /**
-   * Container id that owned {@link acpSessions}. Ignored when the agent container was replaced.
+   * Container id that owned {@link opencodeSessions}. Ignored when the agent container was replaced.
    */
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'acp_session_container_id' })
-  acpSessionContainerId?: string | null;
+  opencodeSessionContainerId?: string | null;
 
   /**
    * Egress guard sidecar owning this agent's network namespace (`NetworkMode: container:<id>`).

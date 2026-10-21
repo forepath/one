@@ -180,6 +180,9 @@ describe('ClientsGateway', () => {
   const mockNotificationPublisher = {
     publishChatMessage: jest.fn(),
     publishFilterRuleTriggered: jest.fn(),
+    publishAgentPermissionDenied: jest.fn(),
+    publishAgentSessionFailed: jest.fn(),
+    publishAgentChatFailed: jest.fn(),
   };
   const mockWorkspaceSearchIndex = {
     applyPathChanges: jest.fn().mockResolvedValue(undefined),
@@ -892,6 +895,38 @@ describe('ClientsGateway', () => {
 
     expect(socket.emit).not.toHaveBeenCalledWith('agentContextRequest', expect.anything(), expect.anything());
     expect(socket.emit).not.toHaveBeenCalledWith('agentContextRequest', expect.anything());
+  });
+
+  it('maps current and legacy agent error codes to notifications', async () => {
+    const socket = createMockSocket();
+    const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
+    const remote = io() as any;
+
+    mockClientsRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'client-uuid',
+      endpoint: 'http://localhost:3100/api',
+      authenticationType: 'api_key',
+      apiKey: 'x',
+    } as any);
+    await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
+    await new Promise((resolve) => setImmediate(resolve));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (gateway as any).lastAgentIdBySocket.set(socket.id, 'agent-uuid');
+    const onAnyHandler = remote.onAny.mock.calls[remote.onAny.mock.calls.length - 1]?.[0];
+
+    onAnyHandler?.('error', { code: 'AGENT_PERMISSION_DENIED', message: 'nope' });
+    onAnyHandler?.('error', { code: 'ACP_PERMISSION_DENIED', message: 'nope' });
+    onAnyHandler?.('error', { code: 'AGENT_SESSION_FAILED', message: 'broken' });
+    onAnyHandler?.('error', { code: 'ACP_SESSION_FAILED', message: 'broken' });
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(mockNotificationPublisher.publishAgentPermissionDenied).toHaveBeenCalledTimes(2);
+    expect(mockNotificationPublisher.publishAgentSessionFailed).toHaveBeenCalledTimes(2);
+    expect(mockNotificationPublisher.publishAgentSessionFailed).toHaveBeenCalledWith('client-uuid', {
+      agentId: 'agent-uuid',
+      message: 'broken',
+      code: 'ACP_SESSION_FAILED',
+    });
   });
 
   it('pushes status patch when remote emits gitStateChanged', async () => {

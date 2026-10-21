@@ -3,7 +3,7 @@ import type { IsolationLevel } from '../clients/clients.types';
 
 // Types based on OpenAPI spec
 export interface AgentTypeCapabilities {
-  transport?: 'acp' | 'opencode-http' | 'http';
+  transport?: 'opencode-http' | 'http';
   supportsChat: boolean;
   supportsStreaming: boolean;
   supportsToolEvents: boolean;

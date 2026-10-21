@@ -224,10 +224,6 @@ See [Egress Filtering](../features/egress-filtering.md).
 
 The gVisor runtime is installed on the Docker host, not in the manager container (cloud-init on provisioned servers, or `apps/agenstra/backend-agent-manager/host/agenstra-gvisor.sh`; the release and checksums are pinned; `GVISOR_RELEASE` / `GVISOR_SHA512` override them for the standalone script only). See [Container Isolation Levels](../features/container-isolation.md).
 
-### Agent Client Protocol (ACP)
-
-- `ACP_AUTO_APPROVE` - When not `false`, auto-select the first option on `session/request_permission` (default: enabled for headless agents). See [Agent Client Protocol](../ai-agents/agent-client-protocol.md).
-
 ### API image build arguments (manager / controller)
 
 When building `Dockerfile.api` images that mount `/var/run/docker.sock`:

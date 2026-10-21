@@ -36,7 +36,7 @@ export class OpenCodeSessionService {
 
   async getOrCreateSessionId(key: OpenCodeSessionKey, options?: AgentProviderOptions): Promise<string> {
     const client = await this.clientFactory.getClient(key.agentId, key.containerId);
-    const knownSessionId = await this.agentsRepository.findPersistedAcpSessionId(
+    const knownSessionId = await this.agentsRepository.findPersistedOpencodeSessionId(
       key.agentId,
       key.containerId,
       key.resumeSessionSuffix ?? options?.resumeSessionSuffix,
@@ -60,7 +60,7 @@ export class OpenCodeSessionService {
 
     const created = await this.createSession(client, key);
 
-    await this.agentsRepository.saveAcpSession(
+    await this.agentsRepository.saveOpencodeSession(
       key.agentId,
       key.containerId,
       created.id,
@@ -104,6 +104,6 @@ export class OpenCodeSessionService {
   }
 
   async clearSession(key: OpenCodeSessionKey): Promise<void> {
-    await this.agentsRepository.clearAcpSession(key.agentId, key.resumeSessionSuffix);
+    await this.agentsRepository.clearOpencodeSession(key.agentId, key.resumeSessionSuffix);
   }
 }

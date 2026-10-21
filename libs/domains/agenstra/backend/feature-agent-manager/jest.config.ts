@@ -5,9 +5,6 @@ export default {
   transform: {
     '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },
-  moduleNameMapper: {
-    '^@agentclientprotocol/sdk$': '<rootDir>/src/test-utils/acp-sdk.mock.ts',
-  },
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../../../../coverage/libs/domains/agenstra/backend/feature-agent-manager',
 };

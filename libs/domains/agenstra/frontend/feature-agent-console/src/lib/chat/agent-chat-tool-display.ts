@@ -11,7 +11,7 @@ function normalizeToolName(name: string): string {
 }
 
 /**
- * Maps an OpenCode / ACP tool id (or embed kind) to a short label + icon for chat chrome.
+ * Maps an OpenCode tool id (or embed kind) to a short label + icon for chat chrome.
  */
 export function resolveAgentChatToolDisplay(toolNameOrKind: string | undefined): AgentChatToolDisplayMeta {
   const name = normalizeToolName(toolNameOrKind ?? '');

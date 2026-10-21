@@ -80,7 +80,7 @@ describe('ClientsController', () => {
           type: 'opencode',
           displayName: 'Cursor',
           capabilities: {
-            transport: 'acp',
+            transport: 'opencode-http',
             supportsChat: true,
             supportsStreaming: true,
             supportsToolEvents: true,
