@@ -120,7 +120,14 @@ describe('AgentsGateway context MCP integration', () => {
 
     it('sends hints plus a context ticket instead of bodies when the worker MCP is available', async () => {
       const s = socket('socket-1');
+      let liveRecord: ReturnType<AgentContextTicketsService['resolve']> | undefined;
 
+      provider.sendMessage.mockImplementationOnce(async (_agentId: string, _containerId: string, text: string) => {
+        // The ticket serves the running turn only.
+        liveRecord = tickets.resolve(agentId, /Context ticket: (ctx-[A-Za-z0-9_-]+)/.exec(text)?.[1] as string);
+
+        return '';
+      });
       login(s);
       await gateway.handleChat({ message: 'Implement it', contextInjection } as any, s);
 
@@ -133,8 +140,10 @@ describe('AgentsGateway context MCP integration', () => {
       expect(sent).not.toContain('KNOWLEDGE BODY');
 
       const ticket = /Context ticket: (ctx-[A-Za-z0-9_-]+)/.exec(sent)?.[1] as string;
-      const record = tickets.resolve(agentId, ticket);
+      const record = liveRecord as NonNullable<typeof liveRecord>;
 
+      // Revoked once the turn ended.
+      expect(() => tickets.resolve(agentId, ticket)).toThrow('Unknown or expired context ticket');
       expect(record).toMatchObject({
         sessionKey: 'chat-1',
         socketId: 'socket-1',

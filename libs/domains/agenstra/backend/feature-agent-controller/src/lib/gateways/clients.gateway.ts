@@ -1,4 +1,8 @@
-import { AGENT_HANDOFF_REQUEST_EVENT, AGENT_TASK_REQUEST_EVENT } from '@forepath/agenstra/shared/util-opencode-config';
+import {
+  AGENT_HANDOFF_REQUEST_EVENT,
+  AGENT_TASK_REQUEST_EVENT,
+  isAgentTaskResumeSessionSuffix,
+} from '@forepath/agenstra/shared/util-opencode-config';
 import { createCorrelationAwareSocketIoClient } from '@forepath/shared/backend/util-http-context';
 import {
   AuthenticationType,
@@ -1400,11 +1404,9 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       }
 
       const agentId = data?.agentId;
-      const payloadWithContext = await this.enrichForwardPayloadWithTicketContext(
-        clientId,
-        agentId,
-        payload,
-        this.requestForSocket(socket),
+      // Browser payloads never carry trust markers or hidden-session suffixes, whatever the event / agentId.
+      const payloadWithContext = this.sanitizeForwardedChatPayload(
+        await this.enrichForwardPayloadWithTicketContext(clientId, agentId, payload, this.requestForSocket(socket)),
       );
       let loggedIn = this.loggedInAgentsBySocket.get(socket.id);
 
@@ -1509,7 +1511,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       }
 
       if (event === 'chat' && agentId) {
-        const sanitizedPayload = this.sanitizeForwardedChatPayload(payloadWithContext);
+        const sanitizedPayload = payloadWithContext;
         const message =
           (sanitizedPayload as { message?: string; contextInjection?: ContextInjectionPayload })?.message ?? '';
         const chatId = (sanitizedPayload as { chatId?: string })?.chatId;
@@ -1585,8 +1587,8 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   }
 
   /**
-   * Interactive console forwards must never carry ticket-automation allow-all suffixes
-   * or the orchestrator trust marker.
+   * Interactive console forwards must never carry the orchestrator trust marker or address platform-owned hidden
+   * sessions (ticket automation, plans, task runs, handoff profiles).
    */
   private sanitizeForwardedChatPayload(payload: unknown): unknown {
     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
@@ -1595,9 +1597,17 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
     const next = { ...(payload as Record<string, unknown>) };
     const suffix = typeof next['resumeSessionSuffix'] === 'string' ? next['resumeSessionSuffix'] : undefined;
-    const ticketAutomationSuffixes = new Set(['-ticket-auto-pre', '-ticket-auto-loop', '-ticket-auto-commit-msg']);
+    const platformSuffixes = new Set([
+      '-ticket-auto-pre',
+      '-ticket-auto-loop',
+      '-ticket-auto-commit-msg',
+      '-handoff-profile',
+    ]);
 
-    if (suffix && (ticketAutomationSuffixes.has(suffix) || suffix.startsWith('-plan-'))) {
+    if (
+      suffix &&
+      (platformSuffixes.has(suffix) || suffix.startsWith('-plan-') || isAgentTaskResumeSessionSuffix(suffix))
+    ) {
       delete next['resumeSessionSuffix'];
     }
 

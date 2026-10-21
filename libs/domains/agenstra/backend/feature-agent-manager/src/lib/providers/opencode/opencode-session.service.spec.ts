@@ -96,4 +96,34 @@ describe('OpenCodeSessionService', () => {
       },
     });
   });
+
+  it('creates handoff profile sessions read-only like plan sessions', async () => {
+    const create = jest.fn().mockResolvedValue({ data: { id: 'ses_profile' } });
+    const clientFactory = {
+      getClient: jest.fn().mockResolvedValue({
+        session: { get: jest.fn().mockRejectedValue(new Error('missing')), create },
+      }),
+    };
+    const agentsRepository = {
+      findPersistedOpencodeSessionId: jest.fn().mockResolvedValue(null),
+      saveOpencodeSession: jest.fn().mockResolvedValue(undefined),
+    };
+    const service = new OpenCodeSessionService(clientFactory as never, agentsRepository as never);
+
+    await service.getOrCreateSessionId({
+      agentId: 'agent-1',
+      containerId: 'ctr-1',
+      resumeSessionSuffix: '-handoff-profile',
+    });
+
+    expect(create).toHaveBeenCalledWith({
+      body: expect.objectContaining({
+        agent: 'agenstra-plan',
+        permission: expect.arrayContaining([
+          { permission: 'bash', pattern: '*', action: 'deny' },
+          { permission: '*', pattern: '*', action: 'deny' },
+        ]),
+      }),
+    });
+  });
 });

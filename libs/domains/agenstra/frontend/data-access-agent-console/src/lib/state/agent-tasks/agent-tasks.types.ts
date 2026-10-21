@@ -6,7 +6,13 @@ import type {
 
 export type { AgentTaskRunResponseDto, AgentTaskRunStatus, AgentTaskRunTrigger };
 
+/** Upper bound of peer agents a task may hand off to (matches the controller). */
+export const AGENT_TASK_ALLOWED_HANDOFF_AGENTS_MAX = 10;
+
 export type AgentTaskActorType = 'user' | 'agent';
+
+/** Tasks created / changed by the agent wait for a workspace user's approval before they run (unattended, allow-all). */
+export type AgentTaskApprovalStatus = 'approved' | 'pending';
 
 /** Recurring agent task (agent-controller `GET /clients/:clientId/agent-tasks`). */
 export interface AgentTaskResponseDto {
@@ -22,9 +28,13 @@ export interface AgentTaskResponseDto {
   /** OpenCode `provider/model` used for runs. */
   model: string;
   enabled: boolean;
+  /** Agents of the workspace the runs may hand off work to (approved content; empty: no handoffs). */
+  allowedHandoffAgentIds: string[];
   nextRunAt: string | null;
   lastRunAt: string | null;
   lastRunStatus: AgentTaskRunStatus | null;
+  approvalStatus: AgentTaskApprovalStatus;
+  approvedAt: string | null;
   createdBy: AgentTaskActorType;
   updatedBy: AgentTaskActorType;
   createdAt: string;
@@ -38,6 +48,11 @@ export interface CreateAgentTaskDto {
   timezone?: string;
   model: string;
   enabled?: boolean;
+  /**
+   * Agents of the same workspace the runs may hand off work to. The edit form always sends it: a full save
+   * (title, prompt, model, schedule, handoff agents) is what approves a task implicitly.
+   */
+  allowedHandoffAgentIds?: string[];
 }
 
 export type UpdateAgentTaskDto = Partial<CreateAgentTaskDto>;

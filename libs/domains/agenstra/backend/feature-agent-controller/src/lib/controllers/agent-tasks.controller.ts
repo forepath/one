@@ -15,7 +15,7 @@ import {
   Req,
 } from '@nestjs/common';
 
-import { CreateAgentTaskDto, UpdateAgentTaskDto } from '../dto/agent-tasks';
+import { ApproveAgentTaskDto, CreateAgentTaskDto, UpdateAgentTaskDto } from '../dto/agent-tasks';
 import { AgentTasksService } from '../services/agent-tasks.service';
 
 /**
@@ -100,6 +100,19 @@ export class AgentTasksController {
       { limit, offset, includeTranscript: includeTranscript === 'true' },
       req,
     );
+  }
+
+  /** Approve a task the agent created or changed (runs are unattended with every permission allowed). */
+  @Post('agents/:agentId/tasks/:taskId/approval')
+  @RequireScopes('agents:chats')
+  async approve(
+    @Param('clientId', new ParseUUIDPipe({ version: '4' })) clientId: string,
+    @Param('agentId', new ParseUUIDPipe({ version: '4' })) agentId: string,
+    @Param('taskId', new ParseUUIDPipe({ version: '4' })) taskId: string,
+    @Body() dto: ApproveAgentTaskDto,
+    @Req() req?: RequestWithUser,
+  ) {
+    return await this.agentTasksService.approve(clientId, agentId, taskId, dto.updatedAt, req);
   }
 
   @Post('agents/:agentId/tasks/:taskId/runs')

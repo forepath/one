@@ -50,6 +50,19 @@ describe('AgentTaskRequestHandlerService', () => {
     });
   });
 
+  it('forwards proposed handoff agents (strings only) to the task service', async () => {
+    await handler.handle(clientId, {
+      op: 'update',
+      agentId,
+      taskId,
+      input: { allowedHandoffAgentIds: ['00000000-0000-4000-8000-0000000000b1', 7] },
+    });
+
+    expect(tasks['updateForAgent']).toHaveBeenCalledWith(clientId, agentId, taskId, {
+      allowedHandoffAgentIds: ['00000000-0000-4000-8000-0000000000b1'],
+    });
+  });
+
   it('shapes results per operation', async () => {
     await expect(handler.handle(clientId, { op: 'list', agentId })).resolves.toEqual({
       ok: true,

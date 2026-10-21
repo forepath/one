@@ -418,6 +418,10 @@ export type OpencodeClient = {
         format?: { type: 'text' } | { type: 'json_schema'; schema: Record<string, unknown>; retryCount?: number };
       };
     }): Promise<RequestResult<{ info: unknown; parts: Part[] }>>;
+    /** Messages of a session (oldest first). */
+    messages?(options: {
+      path: { id: string };
+    }): Promise<RequestResult<Array<{ info: { id: string; sessionID: string; role: string }; parts: Part[] }>>>;
   };
   event: {
     subscribe(options?: { signal?: AbortSignal }): Promise<{

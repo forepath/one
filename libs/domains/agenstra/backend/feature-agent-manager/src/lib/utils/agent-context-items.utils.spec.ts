@@ -25,6 +25,7 @@ function record(overrides: Partial<AgentContextTicketRecord> = {}): AgentContext
     accessMode: 'ask',
     items: [],
     grants: { ticket: [], knowledge: [] },
+    scopeAnchors: [],
     attachments: [],
     environments: [],
     createdAt: 0,

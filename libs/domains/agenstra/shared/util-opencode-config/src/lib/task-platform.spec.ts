@@ -8,6 +8,7 @@ import {
   AGENT_TASK_RESUME_SESSION_SUFFIX_PREFIX,
   buildAgentTaskResumeSessionSuffix,
   isAgentTaskResumeSessionSuffix,
+  parseAgentTaskIdFromResumeSessionSuffix,
 } from './task-platform';
 
 describe('task-platform', () => {
@@ -24,6 +25,19 @@ describe('task-platform', () => {
     expect(isAgentTaskResumeSessionSuffix('-plan-abc')).toBe(false);
     expect(isAgentTaskResumeSessionSuffix('')).toBe(false);
     expect(isAgentTaskResumeSessionSuffix(undefined)).toBe(false);
+  });
+
+  it('reads the task id of a task session suffix only', () => {
+    const taskId = '11111111-1111-4111-8111-111111111111';
+
+    expect(parseAgentTaskIdFromResumeSessionSuffix(buildAgentTaskResumeSessionSuffix(taskId.toUpperCase()))).toBe(
+      taskId,
+    );
+    expect(parseAgentTaskIdFromResumeSessionSuffix(`${AGENT_TASK_RESUME_SESSION_SUFFIX_PREFIX}not-a-uuid`)).toBe(
+      undefined,
+    );
+    expect(parseAgentTaskIdFromResumeSessionSuffix(`-plan-${taskId}`)).toBe(undefined);
+    expect(parseAgentTaskIdFromResumeSessionSuffix(undefined)).toBe(undefined);
   });
 
   it('keeps task tools out of read-only plan sessions', () => {

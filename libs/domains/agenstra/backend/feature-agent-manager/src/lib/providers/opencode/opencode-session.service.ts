@@ -7,7 +7,6 @@ import {
 } from '@forepath/agenstra/shared/util-opencode-config';
 
 import {
-  isChatPlanResumeSessionSuffix,
   isReadOnlyExploreResumeSessionSuffix,
   isUnattendedAutomationResumeSessionSuffix,
 } from '../../constants/chat-session.constants';
@@ -74,7 +73,6 @@ export class OpenCodeSessionService {
   private async createSession(client: OpencodeClient, key: OpenCodeSessionKey): Promise<Session> {
     const titleSuffix = key.resumeSessionSuffix ? ` (${key.resumeSessionSuffix})` : '';
     const automation = isUnattendedAutomationResumeSessionSuffix(key.resumeSessionSuffix);
-    const plan = isChatPlanResumeSessionSuffix(key.resumeSessionSuffix);
     const readOnly = isReadOnlyExploreResumeSessionSuffix(key.resumeSessionSuffix);
     const result = await client.session.create({
       body: {
@@ -84,14 +82,14 @@ export class OpenCodeSessionService {
               agent: AGENSTRA_AUTOMATION_AGENT_NAME,
               permission: [...AGENSTRA_AUTOMATION_SESSION_PERMISSION_RULESET],
             }
-          : plan
+          : readOnly
             ? {
+                // Plan sessions and handoff profile generation: read-only agent (edit / write / bash denied at agent
+                // level) plus the explore-only session ruleset.
                 agent: AGENSTRA_PLAN_AGENT_NAME,
                 permission: [...AGENSTRA_PLAN_SESSION_PERMISSION_RULESET],
               }
-            : readOnly
-              ? { permission: [...AGENSTRA_PLAN_SESSION_PERMISSION_RULESET] }
-              : {}),
+            : {}),
       },
     });
 

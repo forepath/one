@@ -80,6 +80,21 @@ export class AgentTasksService {
     return this.http.get<AgentTaskRunResponseDto[]>(`${this.taskUrl(clientId, agentId, taskId)}/runs`, { params });
   }
 
+  /**
+   * Approve a task the agent created or changed; only approved tasks are scheduled and run. `reviewedUpdatedAt` is the
+   * version the user looked at (a task changed in between is refused).
+   */
+  approve(
+    clientId: string,
+    agentId: string,
+    taskId: string,
+    reviewedUpdatedAt: string,
+  ): Observable<AgentTaskResponseDto> {
+    return this.http.post<AgentTaskResponseDto>(`${this.taskUrl(clientId, agentId, taskId)}/approval`, {
+      updatedAt: reviewedUpdatedAt,
+    });
+  }
+
   runNow(clientId: string, agentId: string, taskId: string): Observable<AgentTaskRunNowResponseDto> {
     return this.http.post<AgentTaskRunNowResponseDto>(`${this.taskUrl(clientId, agentId, taskId)}/runs`, {});
   }

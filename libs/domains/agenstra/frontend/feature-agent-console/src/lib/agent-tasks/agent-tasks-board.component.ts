@@ -9,6 +9,7 @@ import {
   AgentsFacade,
   ClientsFacade,
   ContainerSocketFacade,
+  isAgentTaskRunActive,
   type AgentModelsMap,
   type AgentResponseDto,
   type AgentTaskResponseDto,
@@ -23,6 +24,8 @@ import {
   FpcButtonComponent,
   FpcConfirmDialogComponent,
   FpcEmptyStateComponent,
+  FpcFormCheckComponent,
+  FpcFormCheckGroupComponent,
   FpcFormControlComponent,
   FpcFormFieldComponent,
   FpcFormSwitchComponent,
@@ -51,6 +54,8 @@ import {
 } from 'rxjs';
 
 import { AgentChatEventRowComponent } from '../chat/agent-chat-event-row.component';
+import { AgentChatHandoffNavigationService } from '../chat/agent-chat-handoff-navigation.service';
+import type { AgentChatHandoffCardView, AgentChatHandoffLink } from '../chat/agent-chat-handoff-view';
 import { sanitizeAndTrustMarkdownHtml } from '../chat/chat-markdown-html';
 import { resolveNamedDisplayLabel } from '../display-name.util';
 
@@ -91,6 +96,8 @@ const RUNNING_HISTORY_REFRESH_MS = 10_000;
     FpcButtonComponent,
     FpcConfirmDialogComponent,
     FpcEmptyStateComponent,
+    FpcFormCheckComponent,
+    FpcFormCheckGroupComponent,
     FpcFormControlComponent,
     FpcFormFieldComponent,
     FpcFormSwitchComponent,
@@ -119,6 +126,10 @@ export class AgentTasksBoardComponent implements AfterViewInit {
   readonly runStatusBadgeColor = agentTaskRunStatusBadgeColor;
   readonly runTriggerLabel = agentTaskRunTriggerLabel;
   readonly describeSchedule = describeAgentTaskSchedule;
+  readonly isRunActive = isAgentTaskRunActive;
+  readonly allowedHandoffAgentsLabel = $localize`:@@featureAgentTasks-allowedHandoffAgentsLabel:Allowed handoff agents`;
+  readonly allowedHandoffAgentsHint = $localize`:@@featureAgentTasks-allowedHandoffAgentsHint:Runs may hand off work to these agents of the workspace without asking; their responses are processed by the unattended run with all permissions. Leave empty to keep runs from handing off.`;
+  readonly openHandoffChatLabel = $localize`:@@featureAgentTasks-openHandoffChat:Open handoff chat`;
 
   private readonly clientsFacade = inject(ClientsFacade);
   private readonly agentsFacade = inject(AgentsFacade);
@@ -128,6 +139,7 @@ export class AgentTasksBoardComponent implements AfterViewInit {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly handoffNavigation = inject(AgentChatHandoffNavigationService);
   private readonly markdownParser = signal<MarkdownParser | null>(null);
   private readonly markdownCache = new Map<string, SafeHtml>();
 
@@ -208,6 +220,11 @@ export class AgentTasksBoardComponent implements AfterViewInit {
   readonly editorTimezone = signal(this.browserTimezone());
   readonly editorModel = signal('');
   readonly editorEnabled = signal(true);
+  readonly editorAllowedHandoffAgentIds = signal<string[]>([]);
+  /** Other agents of the workspace the task's runs may hand off to. */
+  readonly editorHandoffAgentOptions = computed(() =>
+    this.agents().filter((agent) => agent.id !== this.editorAgentId()),
+  );
   readonly editorModels = toSignal(
     combineLatest([this.effectiveClientId$, toObservable(this.editorAgentId)]).pipe(
       switchMap(([clientId, agentId]) =>
@@ -291,7 +308,8 @@ export class AgentTasksBoardComponent implements AfterViewInit {
       const clientId = this.effectiveClientId();
       const task = this.selectedTask();
 
-      if (!clientId || !task || task.lastRunStatus !== 'running') {
+      // A run waiting for a handoff response continues on its own (the response arrives in its session).
+      if (!clientId || !task || !isAgentTaskRunActive(task.lastRunStatus)) {
         return;
       }
 
@@ -336,6 +354,11 @@ export class AgentTasksBoardComponent implements AfterViewInit {
     });
 
     // Close the editor / delete confirmation once the mutation finished without an error.
+    // Handoff embeds / cards of the run history: task runs are shown here, chats on the agent's chat page.
+    this.handoffNavigation.requests$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((link) => this.openHandoffLink(link));
+
     this.agentTasksFacade.saving$.pipe(pairwise(), takeUntilDestroyed(this.destroyRef)).subscribe(([was, is]) => {
       if (was && !is && !this.error()) {
         this.editorOpen.set(false);
@@ -361,6 +384,37 @@ export class AgentTasksBoardComponent implements AfterViewInit {
 
   agentName(agentId: string): string {
     return resolveNamedDisplayLabel(this.agents().find((agent) => agent.id === agentId)?.name ?? agentId);
+  }
+
+  /** Names of the agents a task may hand off to (ids of agents no longer in the workspace are shown as is). */
+  handoffAgentNames(task: AgentTaskResponseDto): string[] {
+    return (task.allowedHandoffAgentIds ?? []).map((agentId) => this.agentName(agentId));
+  }
+
+  isEditorHandoffAgentAllowed(agentId: string): boolean {
+    return this.editorAllowedHandoffAgentIds().includes(agentId);
+  }
+
+  onToggleEditorHandoffAgent(agentId: string, allowed: boolean): void {
+    const current = this.editorAllowedHandoffAgentIds().filter((id) => id !== agentId);
+
+    this.editorAllowedHandoffAgentIds.set(allowed ? [...current, agentId] : current);
+  }
+
+  handoffResponseHeading(card: AgentChatHandoffCardView): string {
+    const agentName = card.agentName || $localize`:@@featureAgentTasks-handoffUnknownAgent:another agent`;
+
+    return $localize`:@@featureAgentTasks-handoffResponseHeading:Response from ${agentName}:agentName:`;
+  }
+
+  handoffStatusLabel(status: 'completed' | 'failed' | undefined): string {
+    return status === 'failed'
+      ? $localize`:@@featureAgentTasks-handoffStatusFailed:Failed`
+      : $localize`:@@featureAgentTasks-handoffStatusCompleted:Completed`;
+  }
+
+  onOpenHandoffLink(link: AgentChatHandoffLink): void {
+    this.handoffNavigation.open(link);
   }
 
   isRunRequested(taskId: string): boolean {
@@ -455,6 +509,7 @@ export class AgentTasksBoardComponent implements AfterViewInit {
     this.editorTimezone.set(this.browserTimezone());
     this.editorModel.set('');
     this.editorEnabled.set(true);
+    this.editorAllowedHandoffAgentIds.set([]);
     this.editorOpen.set(true);
   }
 
@@ -468,12 +523,15 @@ export class AgentTasksBoardComponent implements AfterViewInit {
     this.editorTimezone.set(task.timezone);
     this.editorModel.set(task.model);
     this.editorEnabled.set(task.enabled);
+    this.editorAllowedHandoffAgentIds.set([...(task.allowedHandoffAgentIds ?? [])]);
     this.editorOpen.set(true);
   }
 
   onEditorAgentChange(agentId: string): void {
     this.editorAgentId.set(agentId || null);
     this.editorModel.set('');
+    // A task never hands off to its own agent.
+    this.editorAllowedHandoffAgentIds.set(this.editorAllowedHandoffAgentIds().filter((id) => id !== agentId));
   }
 
   onPresetChange(cron: string): void {
@@ -497,6 +555,11 @@ export class AgentTasksBoardComponent implements AfterViewInit {
       timezone: this.editorTimezone().trim() || 'UTC',
       model: this.editorModel().trim(),
       enabled: this.editorEnabled(),
+      // Always sent: a complete save is what approves the task (handoff targets are approved content too). Agents
+      // that left the workspace are dropped.
+      allowedHandoffAgentIds: this.editorAllowedHandoffAgentIds().filter((id) =>
+        this.editorHandoffAgentOptions().some((agent) => agent.id === id),
+      ),
     };
     const task = this.selectedTask();
 
@@ -512,6 +575,15 @@ export class AgentTasksBoardComponent implements AfterViewInit {
 
     if (clientId && enabled !== task.enabled) {
       this.agentTasksFacade.update(clientId, task.agentId, task.id, { enabled });
+    }
+  }
+
+  onApprove(task: AgentTaskResponseDto): void {
+    const clientId = this.effectiveClientId();
+
+    if (clientId) {
+      // Bound to the version on screen: if the agent changed the task meanwhile the approval is refused.
+      this.agentTasksFacade.approve(clientId, task.agentId, task.id, task.updatedAt);
     }
   }
 
@@ -548,6 +620,29 @@ export class AgentTasksBoardComponent implements AfterViewInit {
 
   onDismissError(): void {
     this.agentTasksFacade.clearError();
+  }
+
+  /**
+   * Task runs (handoffs made by a run) are opened on this page; chats on the agent's chat page, which selects the
+   * chat once it is shown.
+   */
+  private openHandoffLink(link: AgentChatHandoffLink): void {
+    const clientId = this.effectiveClientId();
+
+    if (!clientId) {
+      return;
+    }
+
+    if (link.taskRun) {
+      void this.router.navigate(['/tasks', clientId], {
+        queryParams: { agentId: link.agentId, openTaskId: link.taskRun.taskId, openRunId: link.taskRun.runId },
+      });
+
+      return;
+    }
+
+    this.handoffNavigation.defer(link);
+    void this.router.navigate(['/clients', clientId, 'agents', link.agentId]);
   }
 
   /** Live task / run updates arrive on the clients socket of the workspace room (`setClient` dedupes). */

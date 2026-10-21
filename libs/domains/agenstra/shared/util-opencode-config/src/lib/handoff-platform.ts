@@ -99,8 +99,13 @@ export interface AgentHandoffSummary {
   id: string;
   sourceAgentId: string;
   sourceAgentName: string;
-  /** Chat of the source agent the handoff was made in; the response is delivered there only. */
-  sourceChatId: string;
+  /**
+   * Where the handoff was made and the response is delivered (only there): a visible chat of the source agent, or a
+   * run of one of its approved scheduled tasks (`sourceTaskId` / `sourceTaskRunId`; `sourceChatId` is then `null`).
+   */
+  sourceChatId: string | null;
+  sourceTaskId: string | null;
+  sourceTaskRunId: string | null;
   targetAgentId: string;
   targetAgentName: string;
   /** Chat opened on the target agent for this handoff. */
@@ -148,13 +153,15 @@ export interface AgentHandoffResponse {
 export type AgentHandoffControllerRequest =
   | { op: 'agents'; agentId: string }
   /**
-   * `sourceChatId` is resolved by the manager from the calling agent's single working visible chat (the MCP call
-   * itself carries no session).
+   * The source is resolved by the manager from the calling agent's single working context (the MCP call itself
+   * carries no session): `sourceChatId` for a visible chat, `sourceTaskId` for the hidden session of a task run (the
+   * controller resolves the run and checks the task's approved targets). Exactly one of both is set.
    */
   | {
       op: 'create';
       agentId: string;
-      sourceChatId: string;
+      sourceChatId?: string;
+      sourceTaskId?: string;
       /** Model of the requesting chat: used for the turn that delivers the response there. */
       sourceModel?: string;
       input: AgentHandoffCreateInput;
@@ -172,6 +179,7 @@ export type AgentHandoffControllerResponse =
 const REQUEST_TAG = 'agenstra-handoff';
 const RESPONSE_TAG = 'agenstra-handoff-response';
 const INSTRUCTIONS_TAG = 'agenstra-handoff-instructions';
+const DATA_TAG = 'agenstra-handoff-data';
 
 /** Header of the first user message in the target chat (incoming handoff). */
 export interface AgentHandoffRequestMessageMeta {
@@ -179,8 +187,11 @@ export interface AgentHandoffRequestMessageMeta {
   title: string;
   sourceAgentId: string;
   sourceAgentName: string;
-  /** Chat the handoff was made in. */
-  sourceChatId: string;
+  /** Chat the handoff was made in (`null` when it was made by a task run). */
+  sourceChatId: string | null;
+  /** Task run the handoff was made in (jump link to the run on the tasks page). */
+  sourceTaskId?: string;
+  sourceTaskRunId?: string;
 }
 
 /** Header of the user message in the source chat that delivers the answer (outgoing handoff answered). */
@@ -202,11 +213,32 @@ function encodeMeta(meta: object): string {
   return JSON.stringify(meta).replace(/</g, '\\u003c');
 }
 
+/**
+ * Peer-written text must not be able to open / close platform blocks (fake instructions, fake data end): every
+ * `<agenstra-handoff…` / `</agenstra-handoff…` sequence is neutralized.
+ */
+export function neutralizeAgentHandoffText(text: string): string {
+  return text.replace(/<(\/?)(agenstra-handoff)/gi, '&lt;$1$2');
+}
+
+function restoreAgentHandoffText(text: string): string {
+  return text.replace(/&lt;(\/?)(agenstra-handoff)/gi, '<$1$2');
+}
+
+/** A value quoted for platform instruction text (single line, JSON-quoted, neutralized). */
+export function quoteAgentHandoffValue(value: string): string {
+  return neutralizeAgentHandoffText(JSON.stringify(value.replace(/[\r\n]+/g, ' ').trim()));
+}
+
+/**
+ * Layout: header, the fixed platform instructions, then the peer-written text as clearly delimited data. The
+ * instructions come first so nothing a peer writes can follow (and seem to extend) them.
+ */
 function buildMessage(tag: string, meta: object, body: string, instructions: string): string {
   return (
     `<${tag}>${encodeMeta(meta)}</${tag}>\n\n` +
-    `${body.trim()}\n\n` +
-    `<${INSTRUCTIONS_TAG}>\n${instructions.trim()}\n</${INSTRUCTIONS_TAG}>`
+    `<${INSTRUCTIONS_TAG}>\n${instructions.trim()}\n</${INSTRUCTIONS_TAG}>\n\n` +
+    `<${DATA_TAG}>\n${neutralizeAgentHandoffText(body.trim())}\n</${DATA_TAG}>`
   );
 }
 
@@ -236,8 +268,10 @@ function parseRequestMeta(raw: Record<string, unknown>): AgentHandoffRequestMess
   const id = asString(raw['id']);
   const sourceAgentId = asString(raw['sourceAgentId']);
   const sourceChatId = asString(raw['sourceChatId']);
+  const sourceTaskId = asString(raw['sourceTaskId']);
+  const sourceTaskRunId = asString(raw['sourceTaskRunId']);
 
-  if (!id || !sourceAgentId || !sourceChatId) {
+  if (!id || !sourceAgentId || (!sourceChatId && !(sourceTaskId && sourceTaskRunId))) {
     return undefined;
   }
 
@@ -246,7 +280,8 @@ function parseRequestMeta(raw: Record<string, unknown>): AgentHandoffRequestMess
     title: asString(raw['title']) ?? '',
     sourceAgentId,
     sourceAgentName: asString(raw['sourceAgentName']) ?? '',
-    sourceChatId,
+    sourceChatId: sourceChatId ?? null,
+    ...(!sourceChatId && sourceTaskId && sourceTaskRunId ? { sourceTaskId, sourceTaskRunId } : {}),
   };
 }
 
@@ -295,11 +330,18 @@ export function parseAgentHandoffChatMessage(
     return undefined;
   }
 
-  let body = trimmed.slice(header[0].length);
-  const instructionsStart = body.lastIndexOf(`<${INSTRUCTIONS_TAG}>`);
+  const rest = trimmed.slice(header[0].length);
+  const dataStart = rest.indexOf(`<${DATA_TAG}>`);
+  const dataEnd = rest.lastIndexOf(`</${DATA_TAG}>`);
+  let body: string;
 
-  if (instructionsStart >= 0) {
-    body = body.slice(0, instructionsStart);
+  if (dataStart >= 0 && dataEnd > dataStart) {
+    body = restoreAgentHandoffText(rest.slice(dataStart + DATA_TAG.length + 2, dataEnd));
+  } else {
+    // Earlier layout: body first, instructions last.
+    const instructionsStart = rest.lastIndexOf(`<${INSTRUCTIONS_TAG}>`);
+
+    body = instructionsStart >= 0 ? rest.slice(0, instructionsStart) : rest;
   }
 
   body = body.trim();

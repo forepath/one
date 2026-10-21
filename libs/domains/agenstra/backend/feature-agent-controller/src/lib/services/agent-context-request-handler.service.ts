@@ -15,6 +15,10 @@ export const AGENT_CONTEXT_REQUEST_EVENT = 'agentContextRequest';
 
 const MAX_SEARCH_LIMIT = 50;
 const MAX_REFS = 20;
+/** Anchor tickets of a scope check (tickets the platform granted the run). */
+const MAX_SCOPE_ANCHORS = 50;
+/** Ticket trees are shallow; bounded walk to the root. */
+const MAX_TICKET_DEPTH = 50;
 const SHA_PATTERN = /^[0-9a-f]{4,40}$/;
 
 type ContextKind = 'ticket' | 'knowledge';
@@ -103,6 +107,11 @@ export class AgentContextRequestHandlerService {
         return { ok: true, items: await this.describe(clientId, this.parseRefs(request['refs'])) };
       case 'content':
         return { ok: true, contents: await this.content(clientId, this.parseRefs(request['refs'])) };
+      case 'scope':
+        return {
+          ok: true,
+          items: await this.scope(clientId, this.parseRefs(request['refs']), this.parseAnchors(request['anchors'])),
+        };
       default:
         return { ok: false, error: 'Unsupported context request' };
     }
@@ -180,6 +189,67 @@ export class AgentContextRequestHandlerService {
     return [...(await this.mapTickets(clientId, tickets)), ...(await this.mapKnowledge(clientId, nodes))];
   }
 
+  /**
+   * Scope of automatic grants in unattended ticket automation: of the requested refs, only tickets in the same ticket
+   * tree (same root) as one of the anchor tickets — the tickets the platform granted the run. Knowledge refs are
+   * never in scope.
+   */
+  async scope(clientId: string, refs: ContextRef[], anchorShas: string[]): Promise<AgentContextMetadata[]> {
+    const anchorRoots = new Set<string>();
+
+    for (const sha of anchorShas) {
+      const anchor = await this.findTicket(clientId, sha);
+
+      if (anchor) {
+        anchorRoots.add(await this.rootTicketId(clientId, anchor));
+      }
+    }
+
+    if (anchorRoots.size === 0) {
+      return [];
+    }
+
+    const allowed: TicketEntity[] = [];
+
+    for (const ref of refs) {
+      const ticket = ref.kind === 'ticket' ? await this.findTicket(clientId, ref.sha) : null;
+
+      if (ticket && anchorRoots.has(await this.rootTicketId(clientId, ticket))) {
+        allowed.push(ticket);
+      }
+    }
+
+    return this.mapTickets(clientId, allowed);
+  }
+
+  private async rootTicketId(clientId: string, ticket: TicketEntity): Promise<string> {
+    let current = ticket;
+
+    for (let depth = 0; current.parentId && depth < MAX_TICKET_DEPTH; depth++) {
+      const parent = await this.ticketRepo.findOne({ where: { clientId, id: current.parentId } });
+
+      if (!parent) {
+        break;
+      }
+
+      current = parent;
+    }
+
+    return current.id;
+  }
+
+  private parseAnchors(raw: unknown): string[] {
+    if (!Array.isArray(raw)) {
+      return [];
+    }
+
+    return raw
+      .filter((sha): sha is string => typeof sha === 'string')
+      .map((sha) => sha.trim().toLowerCase())
+      .filter((sha) => SHA_PATTERN.test(sha))
+      .slice(0, MAX_SCOPE_ANCHORS);
+  }
+
   /** Full content in the exact format previously inlined into prompts. */
   async content(clientId: string, refs: ContextRef[]): Promise<AgentContextContent[]> {
     const contents: AgentContextContent[] = [];
@@ -218,17 +288,24 @@ export class AgentContextRequestHandlerService {
     return contents;
   }
 
+  /**
+   * A short SHA only resolves when exactly one element has it: grants are bound to the element the user approved,
+   * so an ambiguous prefix must never pick "some" element.
+   */
   private async findTicket(clientId: string, sha: string): Promise<TicketEntity | null> {
     if (sha.length >= 40) {
       return this.ticketRepo.findOne({ where: { clientId, longSha: sha.slice(0, 40) } });
     }
 
-    return this.ticketRepo
+    const matches = await this.ticketRepo
       .createQueryBuilder('t')
       .where('t.client_id = :clientId', { clientId })
       .andWhere('t.long_sha LIKE :prefix', { prefix: `${sha}%` })
       .orderBy('t.created_at', 'DESC')
-      .getOne();
+      .take(2)
+      .getMany();
+
+    return matches.length === 1 ? matches[0] : null;
   }
 
   private async findKnowledgeNode(clientId: string, sha: string): Promise<KnowledgeNodeEntity | null> {
@@ -236,12 +313,15 @@ export class AgentContextRequestHandlerService {
       return this.knowledgeNodeRepo.findOne({ where: { clientId, longSha: sha.slice(0, 40) } });
     }
 
-    return this.knowledgeNodeRepo
+    const matches = await this.knowledgeNodeRepo
       .createQueryBuilder('n')
       .where('n.client_id = :clientId', { clientId })
       .andWhere('n.long_sha LIKE :prefix', { prefix: `${sha}%` })
       .orderBy('n.created_at', 'DESC')
-      .getOne();
+      .take(2)
+      .getMany();
+
+    return matches.length === 1 ? matches[0] : null;
   }
 
   private async mapTickets(clientId: string, rows: TicketEntity[]): Promise<AgentContextMetadata[]> {

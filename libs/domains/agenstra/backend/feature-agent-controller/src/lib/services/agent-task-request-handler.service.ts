@@ -114,6 +114,13 @@ export class AgentTaskRequestHandlerService {
       fields.enabled = input['enabled'];
     }
 
+    // Proposed handoff targets: strings only; the service validates them against the workspace and clears approval.
+    if (Array.isArray(input['allowedHandoffAgentIds'])) {
+      fields.allowedHandoffAgentIds = input['allowedHandoffAgentIds'].filter(
+        (id): id is string => typeof id === 'string',
+      );
+    }
+
     return fields;
   }
 

@@ -44,8 +44,8 @@ flowchart TB
     Tickets["Tickets + ticket automation<br/>autonomous run orchestrator, leases, verifier, commit + push"]
     Knowledge["Knowledge tree + relations<br/>local hash embeddings (pgvector), auto-enrichment"]
     Plans["Chat plan mode<br/>explore / refine / execute orchestrator"]
-    AgentTasks["Agent tasks<br/>cron schedules, coordinator + unit jobs,<br/>hidden -task-{id} runs, main chat run cards"]
-    Handoffs["Agent handoffs<br/>same workspace only, handoff chat on target,<br/>respond repair turns, delivery to requesting chat"]
+    AgentTasks["Agent tasks<br/>cron schedules, coordinator + unit jobs,<br/>hidden -task-{id} runs, main chat run cards,<br/>approved handoff agents, awaiting_handoff runs"]
+    Handoffs["Agent handoffs<br/>same workspace only, handoff chat on target,<br/>respond repair turns, delivery to requesting chat<br/>or into the waiting task run's session"]
     Attachments["Attachments<br/>mirrored read-only into workers"]
     CtxHandler["Agent request handlers (ack, workspace of the connection)<br/>agentContextRequest: search, describe, content<br/>agentTaskRequest: own tasks / agentHandoffRequest"]
     OcConfig["OpenCode config layering<br/>global / workspace / agent overlays, layer files,<br/>MCP + provider catalogs, platform security policy"]
@@ -71,6 +71,7 @@ flowchart TB
   CGw -.ticket prototype prompts.-> Tickets
   CtxHandler --> Tickets & Knowledge & AgentTasks & Handoffs
   Tickets & Knowledge & Plans & AgentTasks & Handoffs & OcConfig --> CPg
+  Handoffs -.task run handoffs: checks approval + targets,<br/>continues the waiting run.-> AgentTasks
   Attachments --> Files
   Queue --> Redis
   Notify --> Redis
@@ -92,7 +93,7 @@ flowchart TB
       CtxTickets["Context tickets<br/>bound to agent + chat session, 2 h idle TTL,<br/>granted refs, session grants"]
       CtxAccess["Context access requests<br/>ask (chat) / auto (automation, plans) / deny (hidden)"]
       CtxApi["Agent context API /api/agent-context<br/>tickets: list, search, get, access-requests<br/>tasks (own), handoffs (agents, create, get, response)<br/>per-agent HMAC token, no user auth"]
-      ActiveTurns["Active turns<br/>running OpenCode turns per agent:<br/>handoffs only from one working visible chat,<br/>prompts of one session serialized"]
+      ActiveTurns["Active turns<br/>running OpenCode turns per agent:<br/>handoffs only from one working visible chat<br/>or one task run (-task-{id}), prompts of one session serialized"]
       Profiles["Handoff profiles<br/>own profile updates, peer profiles generated<br/>on request in read-only -handoff-profile sessions"]
       Runtime["OpenCode runtime<br/>sessions per chat / reserved suffix, SSE event bridge,<br/>permission + question tracking, auto-replies"]
       ConfigSync["OpenCode config sync<br/>PATCH /global/config, secrets, platform agents + skills,<br/>platform agenstra MCP server"]
@@ -129,7 +130,7 @@ flowchart TB
   MGw -->|"prompts"| Runtime
   MGw -.context_access question events, persisted.-> Console
   CtxApi --> CtxTickets & CtxAccess
-  CtxApi -.handoff create: requesting chat.-> ActiveTurns
+  CtxApi -.handoff create: requesting chat / task run.-> ActiveTurns
   Runtime -.begin / end every turn.-> ActiveTurns
   CtxApi -.handoff profiles.-> Profiles
   Profiles -.read-only self-description turn.-> Runtime

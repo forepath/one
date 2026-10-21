@@ -20,6 +20,7 @@ import {
   loadAgentTasks,
   loadAgentTasksFailure,
   loadAgentTasksSuccess,
+  approveAgentTask,
   runAgentTaskNow,
   runAgentTaskNowFailure,
   runAgentTaskNowSuccess,
@@ -130,7 +131,11 @@ export const agentTasksReducer = createReducer(
       : { ...state, loading: false, tasks: [...tasks].sort((a, b) => a.createdAt.localeCompare(b.createdAt)) },
   ),
   on(loadAgentTasksFailure, (state, { error }) => ({ ...state, loading: false, error })),
-  on(createAgentTask, updateAgentTask, deleteAgentTask, (state) => ({ ...state, saving: true, error: null })),
+  on(createAgentTask, updateAgentTask, deleteAgentTask, approveAgentTask, (state) => ({
+    ...state,
+    saving: true,
+    error: null,
+  })),
   on(createAgentTaskSuccess, updateAgentTaskSuccess, (state, { task }) => ({
     ...state,
     saving: false,

@@ -142,6 +142,11 @@
                       @if (!task.enabled) {
                         <fpc-badge variant="info" color="secondary" i18n="@@featureAgentTasks-paused">Paused</fpc-badge>
                       }
+                      @if (task.approvalStatus === 'pending') {
+                        <fpc-badge color="warning" i18n="@@featureAgentTasks-pendingApproval"
+                          >Awaiting approval</fpc-badge
+                        >
+                      }
                       <fpc-badge variant="info" color="secondary" [attr.title]="agentName(task.agentId)">
                         <span class="text-truncate">{{ agentName(task.agentId) }}</span>
                       </fpc-badge>
@@ -170,6 +175,9 @@
               @if (task.createdBy === 'agent') {
                 <fpc-badge color="info" i18n="@@featureAgentTasks-createdByAgent">Created by agent</fpc-badge>
               }
+              @if (task.approvalStatus === 'pending') {
+                <fpc-badge color="warning" i18n="@@featureAgentTasks-pendingApproval">Awaiting approval</fpc-badge>
+              }
             </div>
             <div fpcPageHeaderActions class="d-flex align-items-center gap-2">
               <fpc-form-switch
@@ -187,7 +195,9 @@
                 [ariaLabel]="runNowTitle"
                 [title]="runNowTitle"
                 [loading]="isRunRequested(task.id)"
-                [disabled]="isRunRequested(task.id) || task.lastRunStatus === 'running'"
+                [disabled]="
+                  isRunRequested(task.id) || isRunActive(task.lastRunStatus) || task.approvalStatus === 'pending'
+                "
                 (clicked)="onRunNow(task)"
               >
                 <i class="bi bi-play-fill" aria-hidden="true"></i>
@@ -214,6 +224,29 @@
               </fpc-button>
             </div>
           </fpc-page-header>
+          @if (task.approvalStatus === 'pending') {
+            <div class="alert alert-warning d-flex flex-wrap align-items-center gap-2 m-3 mb-0" role="status">
+              <i class="bi bi-shield-exclamation" aria-hidden="true"></i>
+              <span class="flex-grow-1">
+                <span i18n="@@featureAgentTasks-pendingApprovalHint"
+                  >The agent created or changed this task. Runs are unattended with every permission allowed, so the
+                  task only runs after you reviewed its prompt, model and schedule and approved it.</span
+                >
+                @if (handoffAgentNames(task); as handoffAgents) {
+                  @if (handoffAgents.length > 0) {
+                    <strong class="d-block mt-1" i18n="@@featureAgentTasks-pendingApprovalHandoffHint"
+                      >Once approved, this task can hand off work to these agents without asking:
+                      {{ handoffAgents.join(', ') }}</strong
+                    >
+                  }
+                }
+              </span>
+              <fpc-button variant="warning" size="sm" [disabled]="saving()" (clicked)="onApprove(task)">
+                <i class="bi bi-check2-circle me-1" aria-hidden="true"></i
+                ><span i18n="@@featureAgentTasks-approve">Approve</span>
+              </fpc-button>
+            </div>
+          }
 
           <div class="agent-tasks-detail__info p-3">
             <dl class="row small mb-3">
@@ -228,6 +261,16 @@
               <dd class="col-sm-9">{{ task.enabled ? formatDate(task.nextRunAt) : '—' }}</dd>
               <dt class="col-sm-3" i18n="@@featureAgentTasks-model">Model</dt>
               <dd class="col-sm-9 font-monospace">{{ task.model }}</dd>
+              <dt class="col-sm-3">{{ allowedHandoffAgentsLabel }}</dt>
+              <dd class="col-sm-9">
+                @if (handoffAgentNames(task); as handoffAgents) {
+                  @if (handoffAgents.length > 0) {
+                    {{ handoffAgents.join(', ') }}
+                  } @else {
+                    <span class="text-body-secondary" i18n="@@featureAgentTasks-noHandoffAgents">None</span>
+                  }
+                }
+              </dd>
             </dl>
 
             <h3 class="h6" i18n="@@featureAgentTasks-promptHeading">Instructions</h3>
@@ -279,6 +322,37 @@
                               </div>
                             </div>
                           </div>
+                        } @else if (segment.kind === 'handoffResponse') {
+                          <div class="d-flex justify-content-start">
+                            <div class="card bg-body agent-tasks-session__message">
+                              <div class="card-body agent-tasks-session__message-body">
+                                <div class="d-flex align-items-center gap-2 flex-wrap small text-body-secondary">
+                                  <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
+                                  <span>{{ handoffResponseHeading(segment.card) }}</span>
+                                  <fpc-badge [color]="segment.card.status === 'failed' ? 'danger' : 'success'">{{
+                                    handoffStatusLabel(segment.card.status)
+                                  }}</fpc-badge>
+                                </div>
+                                @if (segment.card.title) {
+                                  <div class="fw-semibold mt-1 text-break">{{ segment.card.title }}</div>
+                                }
+                                @if (segment.card.body) {
+                                  <!-- Plain text: the agent read exactly this, nothing may be hidden. -->
+                                  <div class="agent-tasks-session__plain mt-2" [textContent]="segment.card.body"></div>
+                                }
+                                <div class="d-flex flex-wrap gap-2 mt-2">
+                                  <fpc-button
+                                    variant="primary"
+                                    size="sm"
+                                    (clicked)="onOpenHandoffLink(segment.card.link)"
+                                  >
+                                    <i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i
+                                    >{{ openHandoffChatLabel }}
+                                  </fpc-button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         } @else {
                           @for (row of segment.rows; track row.trackId) {
                             <framework-agent-chat-event-row
@@ -290,6 +364,11 @@
                             />
                           }
                         }
+                      }
+                      @if (entry.run.status === 'awaiting_handoff') {
+                        <small class="text-body-secondary" i18n="@@featureAgentTasks-runAwaitingHandoff"
+                          >The run waits for the response to its handoff and continues when it arrives…</small
+                        >
                       }
                       @if (entry.segments.length === 0 && entry.run.status === 'running') {
                         <small class="text-body-secondary" i18n="@@featureAgentTasks-runInProgress"
@@ -459,6 +538,25 @@
       </fpc-form-field>
     </div>
   </div>
+  <fpc-form-check-group
+    class="d-block mb-3"
+    legendId="agentTaskEditorHandoffAgentsLegend"
+    [label]="allowedHandoffAgentsLabel"
+    [hint]="allowedHandoffAgentsHint"
+  >
+    @for (agent of editorHandoffAgentOptions(); track agent.id) {
+      <fpc-form-check
+        [checkId]="'agentTaskEditorHandoffAgent-' + agent.id"
+        [label]="workspaceDisplayName(agent.name)"
+        [checked]="isEditorHandoffAgentAllowed(agent.id)"
+        (checkedChange)="onToggleEditorHandoffAgent(agent.id, $event)"
+      />
+    } @empty {
+      <p class="small text-body-secondary mb-0" i18n="@@featureAgentTasks-noOtherAgents">
+        This workspace has no other agents.
+      </p>
+    }
+  </fpc-form-check-group>
   <fpc-form-switch
     switchId="agentTaskEditorEnabled"
     i18n-label="@@featureAgentTasks-enabledLabel"

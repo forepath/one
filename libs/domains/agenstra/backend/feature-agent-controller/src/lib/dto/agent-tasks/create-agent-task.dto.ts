@@ -1,5 +1,15 @@
 import { AGENT_TASK_LIMITS } from '@forepath/agenstra/shared/util-opencode-config';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, Matches, MaxLength } from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Matches,
+  MaxLength,
+} from 'class-validator';
 
 import { PREFERRED_MODEL_PATTERN } from '../../utils/preferred-model.utils';
 
@@ -35,4 +45,11 @@ export class CreateAgentTaskDto {
   @IsOptional()
   @IsBoolean()
   enabled?: boolean;
+
+  /** Agents of the same workspace the runs may hand off work to (empty: no handoffs). */
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(AGENT_TASK_LIMITS.allowedHandoffAgentsMax)
+  @IsUUID('all', { each: true })
+  allowedHandoffAgentIds?: string[];
 }

@@ -1,3 +1,5 @@
+import { buildAgentHandoffResponseMessage } from '@forepath/agenstra/shared/util-opencode-config';
+
 import { buildAgentTaskTranscriptSegments } from './agent-task-transcript-view';
 
 const event = (kind: string, payload: Record<string, unknown>, timestamp: number) => ({
@@ -44,5 +46,41 @@ describe('buildAgentTaskTranscriptSegments', () => {
     const segments = buildAgentTaskTranscriptSegments([event('thinking', { phase: 'running' }, 1)]);
 
     expect(segments.every((segment) => segment.kind === 'events')).toBe(true);
+  });
+
+  it('shows handoff responses delivered into the run as cards and keeps the run prompt hidden', () => {
+    const response = buildAgentHandoffResponseMessage(
+      {
+        id: 'h1',
+        title: 'Check logs',
+        status: 'completed',
+        targetAgentId: 'agent-b',
+        targetAgentName: 'Reviewer',
+        targetChatId: 'chat-b',
+      },
+      'No errors found.',
+      'Continue with the work that depended on it.',
+    );
+    const segments = buildAgentTaskTranscriptSegments([
+      event('userMessage', { text: 'Run the report' }, 1),
+      event('assistantMessage', { text: 'Handed off.' }, 2),
+      event('userMessage', { text: response }, 3),
+      event('assistantMessage', { text: 'Report done.' }, 4),
+    ]);
+
+    expect(segments.map((segment) => segment.kind)).toEqual(['assistant', 'handoffResponse', 'assistant']);
+    expect(segments[1]).toEqual(
+      expect.objectContaining({
+        timestamp: 3,
+        card: expect.objectContaining({
+          kind: 'response',
+          agentName: 'Reviewer',
+          status: 'completed',
+          body: 'No errors found.',
+          link: { agentId: 'agent-b', chatId: 'chat-b' },
+        }),
+      }),
+    );
+    expect(JSON.stringify(segments)).not.toContain('Continue with the work');
   });
 });

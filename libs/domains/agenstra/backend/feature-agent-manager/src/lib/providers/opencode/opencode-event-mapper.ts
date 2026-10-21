@@ -31,11 +31,19 @@ export interface OpenCodeUsagePayload {
 export interface OpenCodeToolCallState {
   emittedCalls: Set<string>;
   lastUsage?: OpenCodeUsagePayload;
+  /** Messages of the session by role (from `message.updated`): text of user messages is never agent output. */
+  userMessageIds: Set<string>;
+  assistantMessageIds: Set<string>;
+  /** The prompt of this turn: its echo may arrive before the user message's `message.updated`. */
+  promptText?: string;
 }
 
-export function createOpenCodeToolCallState(): OpenCodeToolCallState {
+export function createOpenCodeToolCallState(promptText?: string): OpenCodeToolCallState {
   return {
     emittedCalls: new Set(),
+    userMessageIds: new Set(),
+    assistantMessageIds: new Set(),
+    ...(promptText ? { promptText } : {}),
   };
 }
 
@@ -369,6 +377,10 @@ export class OpenCodeEventMapper {
     info: { role?: string; sessionID?: string; [key: string]: unknown },
     toolState: OpenCodeToolCallState,
   ): AgentResponseObject[] {
+    if (typeof info.id === 'string') {
+      (info.role === 'assistant' ? toolState.assistantMessageIds : toolState.userMessageIds).add(info.id);
+    }
+
     if (info.role !== 'assistant') {
       return [];
     }
@@ -549,6 +561,25 @@ export class OpenCodeEventMapper {
     );
   }
 
+  /** Text part a delta belongs to (consumers that need the final answer only take the last part). */
+  private partIdOf(part: { id?: unknown }): { part_id?: string } {
+    return typeof part.id === 'string' && part.id ? { part_id: part.id } : {};
+  }
+
+  private isPromptEcho(part: { messageID?: string; text?: string }, toolState: OpenCodeToolCallState): boolean {
+    const messageId = part.messageID;
+
+    if (messageId && toolState.userMessageIds.has(messageId)) {
+      return true;
+    }
+
+    if (messageId && toolState.assistantMessageIds.has(messageId)) {
+      return false;
+    }
+
+    return !!toolState.promptText && part.text === toolState.promptText;
+  }
+
   private mapPartUpdated(
     part: Part,
     delta: string | undefined,
@@ -560,16 +591,21 @@ export class OpenCodeEventMapper {
         return [];
       }
 
+      // The prompt itself (user message parts) is not agent output.
+      if (this.isPromptEcho(part, toolState)) {
+        return [];
+      }
+
       if (typeof delta === 'string' && delta.length > 0) {
         if (this.isInternalPromptText(delta)) {
           return [];
         }
 
-        return [{ type: 'delta', delta }];
+        return [{ type: 'delta', delta, ...this.partIdOf(part) }];
       }
 
       if (part.text) {
-        return [{ type: 'delta', delta: part.text }];
+        return [{ type: 'delta', delta: part.text, ...this.partIdOf(part) }];
       }
 
       return [];

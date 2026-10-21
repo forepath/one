@@ -18,7 +18,8 @@ describe('OpenCodeEventMapper', () => {
       },
     });
 
-    expect(events).toEqual([{ type: 'delta', delta: 'hel' }]);
+    // The part id lets consumers keep only the final text part of a turn.
+    expect(events).toEqual([{ type: 'delta', delta: 'hel', part_id: 'p1' }]);
   });
 
   it('maps tool call and result lifecycle', () => {
@@ -662,5 +663,31 @@ describe('OpenCodeEventMapper', () => {
         },
       }),
     ).toEqual([]);
+  });
+
+  it('never surfaces the prompt (user message parts) as agent output', () => {
+    const textPart = (messageID: string, text: string) =>
+      ({
+        type: 'message.part.updated',
+        properties: { part: { id: `p-${messageID}`, sessionID: 'ses_1', messageID, type: 'text', text } },
+      }) as const;
+    const messageUpdated = (id: string, role: string) =>
+      ({ type: 'message.updated', properties: { info: { id, sessionID: 'ses_1', role } } }) as never;
+    const state = createOpenCodeToolCallState('Do the thing');
+
+    // Echo before its message.updated arrived: recognized by the exact prompt text.
+    expect(mapper.mapEvent(textPart('msg_user', 'Do the thing'), state)).toEqual([]);
+
+    mapper.mapEvent(messageUpdated('msg_user', 'user'), state);
+    expect(mapper.mapEvent(textPart('msg_user', 'Other user text'), state)).toEqual([]);
+
+    // The assistant may quote the prompt verbatim; its parts are always output.
+    mapper.mapEvent(messageUpdated('msg_assistant', 'assistant'), state);
+    expect(mapper.mapEvent(textPart('msg_assistant', 'Do the thing'), state)).toEqual([
+      { type: 'delta', delta: 'Do the thing', part_id: 'p-msg_assistant' },
+    ]);
+    expect(mapper.mapEvent(textPart('msg_other', 'Answer'), state)).toEqual([
+      { type: 'delta', delta: 'Answer', part_id: 'p-msg_other' },
+    ]);
   });
 });

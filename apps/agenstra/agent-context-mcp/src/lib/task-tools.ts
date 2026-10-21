@@ -35,6 +35,14 @@ const TASK_FIELD_PROPERTIES = {
     description: 'OpenCode "provider/model" for runs. Defaults to the model of the current chat.',
   },
   enabled: { type: 'boolean', description: 'Disabled tasks keep their schedule but do not run.' },
+  allowedHandoffAgentIds: {
+    type: 'array',
+    items: { type: 'string' },
+    maxItems: AGENT_TASK_LIMITS.allowedHandoffAgentsMax,
+    description:
+      'Agents of your workspace (ids from handoff_agents) the runs may hand off work to with handoff_create. ' +
+      'Only takes effect after a user approved the task; empty means the runs cannot hand off.',
+  },
 };
 
 export const TASK_TOOL_DEFINITIONS: ContextToolDefinition[] = [
@@ -59,7 +67,8 @@ export const TASK_TOOL_DEFINITIONS: ContextToolDefinition[] = [
     name: AGENSTRA_TASKS_MCP_TOOL_NAMES.create,
     description:
       'Create a recurring task for yourself. Use it when the user asks for something to happen regularly ' +
-      '(reports, checks, maintenance). Confirm the schedule with the user when it is ambiguous.',
+      '(reports, checks, maintenance). Confirm the schedule with the user when it is ambiguous. Tasks you create ' +
+      'only run after a user approved them in the console (Tasks page); tell the user.',
     inputSchema: {
       type: 'object',
       properties: TASK_FIELD_PROPERTIES,
@@ -69,7 +78,9 @@ export const TASK_TOOL_DEFINITIONS: ContextToolDefinition[] = [
   },
   {
     name: AGENSTRA_TASKS_MCP_TOOL_NAMES.update,
-    description: 'Change one of your tasks (only the given fields), e.g. pause it with enabled=false.',
+    description:
+      'Change one of your tasks (only the given fields), e.g. pause it with enabled=false. Changing prompt, model, ' +
+      'schedule or the allowed handoff agents, or enabling it again, needs a new approval by a user before it runs.',
     inputSchema: {
       type: 'object',
       properties: { taskId: TASK_ID_PROPERTY, ...TASK_FIELD_PROPERTIES },
@@ -125,6 +136,10 @@ function taskFields(args: Record<string, unknown>): AgentTaskUpdateInput {
 
   if (typeof args['enabled'] === 'boolean') {
     fields.enabled = args['enabled'];
+  }
+
+  if (Array.isArray(args['allowedHandoffAgentIds'])) {
+    fields.allowedHandoffAgentIds = args['allowedHandoffAgentIds'].filter((id): id is string => typeof id === 'string');
   }
 
   return fields;

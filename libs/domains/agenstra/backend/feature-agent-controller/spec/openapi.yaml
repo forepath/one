@@ -3822,6 +3822,36 @@ paths:
           description: User does not have access to this client
         '404':
           description: Task not found
+  /clients/{clientId}/agents/{agentId}/tasks/{taskId}/approval:
+    post:
+      summary: Approve an agent task
+      description: |
+        Runs are unattended with every permission allowed, so tasks the agent created or whose prompt, model, schedule
+        or allowed handoff agents it changed (or re-enabled) are only scheduled after a workspace user approved them.
+        Approving also approves that the runs may hand off work to the listed agents without asking.
+      operationId: approveAgentTask
+      parameters:
+        - in: path
+          name: clientId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: agentId
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: taskId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '201':
+          description: Approved task
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentTaskResponseDto'
+        '404':
+          description: Unknown task
   /clients/{clientId}/agents/{agentId}/tasks/{taskId}/runs:
     get:
       summary: Run history of an agent task (newest first)
@@ -9530,6 +9560,16 @@ components:
           description: OpenCode provider/model
         enabled:
           type: boolean
+        allowedHandoffAgentIds:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            format: uuid
+          description: >-
+            Other agents of the same workspace the runs may hand off work to (`agenstra_handoff_create`; empty: no
+            handoffs). Approved content like the prompt: a change by the agent clears the approval; the edit form
+            approves only when it sends title, prompt, model, cronExpression and allowedHandoffAgentIds.
     UpdateAgentTaskDto:
       type: object
       properties:
@@ -9553,6 +9593,16 @@ components:
           description: OpenCode provider/model
         enabled:
           type: boolean
+        allowedHandoffAgentIds:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            format: uuid
+          description: >-
+            Other agents of the same workspace the runs may hand off work to (`agenstra_handoff_create`; empty: no
+            handoffs). Approved content like the prompt: a change by the agent clears the approval; the edit form
+            approves only when it sends title, prompt, model, cronExpression and allowedHandoffAgentIds.
     AgentTaskResponseDto:
       type: object
       required:
@@ -9566,6 +9616,9 @@ components:
           timezone,
           model,
           enabled,
+          allowedHandoffAgentIds,
+          approvalStatus,
+          approvedAt,
           createdBy,
           updatedBy,
           createdAt,
@@ -9593,6 +9646,12 @@ components:
           type: string
         enabled:
           type: boolean
+        allowedHandoffAgentIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Approved agents the runs may hand off work to (agents deleted or moved since do not count)
         nextRunAt:
           type: string
           format: date-time
@@ -9603,7 +9662,15 @@ components:
           nullable: true
         lastRunStatus:
           type: string
-          enum: [running, succeeded, failed]
+          enum: [running, awaiting_handoff, succeeded, failed]
+          nullable: true
+        approvalStatus:
+          type: string
+          enum: [approved, pending]
+          description: Tasks created / changed by the agent wait for a user's approval before they run
+        approvedAt:
+          type: string
+          format: date-time
           nullable: true
         createdBy:
           type: string
@@ -9648,7 +9715,10 @@ components:
           enum: [schedule, manual]
         status:
           type: string
-          enum: [running, succeeded, failed]
+          enum: [running, awaiting_handoff, succeeded, failed]
+          description: >-
+            `awaiting_handoff`: the run's turn ended while one of its handoffs is open; the response continues the
+            run in its own session. Counts as the task's active run (no second run, minimum interval).
         scheduledFor:
           type: string
           format: date-time
@@ -9666,6 +9736,11 @@ components:
         failureMessage:
           type: string
           nullable: true
+        awaitingHandoffSince:
+          type: string
+          format: date-time
+          nullable: true
+          description: Set while the run waits for a handoff response (timeout AGENT_TASK_HANDOFF_WAIT_TIMEOUT_MS)
         transcript:
           type: array
           description: Forwarded `chatEvent` frames of the run's turn (only with `includeTranscript=true`; deltas omitted, strings capped).

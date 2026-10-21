@@ -13,9 +13,12 @@ const TASK: AgentTaskSummary = {
   timezone: 'UTC',
   model: 'openai/gpt-5',
   enabled: true,
+  allowedHandoffAgentIds: [],
   nextRunAt: '2026-10-22T09:00:00.000Z',
   lastRunAt: null,
   lastRunStatus: null,
+  approvalStatus: 'approved',
+  approvedAt: '2026-10-21T09:00:00.000Z',
   createdBy: 'agent',
   updatedBy: 'agent',
   createdAt: '2026-10-21T09:00:00.000Z',
@@ -100,6 +103,14 @@ describe('task tools', () => {
       cronExpression: '0 9 * * *',
       timezone: 'Europe/Berlin',
     });
+  });
+
+  it('passes proposed handoff agents (strings only) on to the platform', async () => {
+    client.updateTask.mockResolvedValue(TASK);
+
+    await call('tasks_update', { taskId: 'task-1', allowedHandoffAgentIds: ['agent-b', 42, null] });
+
+    expect(client.updateTask).toHaveBeenCalledWith('task-1', { allowedHandoffAgentIds: ['agent-b'] });
   });
 
   it('rejects creation without the required fields', async () => {

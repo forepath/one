@@ -2,7 +2,6 @@ import {
   AGENSTRA_CONTEXT_MCP_BIN_PATH,
   AGENSTRA_CONTEXT_MCP_ENV,
   AGENSTRA_CONTEXT_MCP_SERVER_KEY,
-  AGENSTRA_CONTEXT_MCP_TOOL_PERMISSION,
   agentContextShaMatches,
   injectPlatformContextMcpWire,
   isAgenstraContextToolPermission,
@@ -79,15 +78,21 @@ describe('context-platform', () => {
     expect(isAgenstraContextToolPermission(undefined)).toBe(false);
   });
 
-  it('allows context tools in plan sessions before the final deny rule', () => {
-    const index = AGENSTRA_PLAN_SESSION_PERMISSION_RULESET.findIndex(
-      (rule) => rule.permission === AGENSTRA_CONTEXT_MCP_TOOL_PERMISSION,
-    );
-    const finalDeny = AGENSTRA_PLAN_SESSION_PERMISSION_RULESET.findIndex((rule) => rule.permission === '*');
+  it('lets plan sessions use explore and context tools under OpenCode rule semantics', () => {
+    // OpenCode evaluates rules last-match-wins (`findLast`) and hides a tool whose last matching rule is a `*` deny.
+    const glob = (pattern: string) =>
+      new RegExp(`^${pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')}$`);
+    const actionFor = (tool: string) =>
+      [...AGENSTRA_PLAN_SESSION_PERMISSION_RULESET].reverse().find((rule) => glob(rule.permission).test(tool))?.action;
 
-    expect(index).toBeGreaterThanOrEqual(0);
-    expect(AGENSTRA_PLAN_SESSION_PERMISSION_RULESET[index].action).toBe('allow');
-    expect(index).toBeLessThan(finalDeny);
+    for (const tool of ['read', 'glob', 'grep', 'list', 'agenstra_context_search', 'agenstra_context_get']) {
+      expect([tool, actionFor(tool)]).toEqual([tool, 'allow']);
+    }
+
+    for (const tool of ['edit', 'write', 'bash', 'task', 'agenstra_tasks_create', 'agenstra_handoff_create', 'other']) {
+      expect([tool, actionFor(tool)]).toEqual([tool, 'deny']);
+    }
+
     expect(isAgenstraPlanExplorePermission('agenstra_context_search')).toBe(true);
     expect(isAgenstraPlanWritePermission('agenstra_context_search')).toBe(false);
   });

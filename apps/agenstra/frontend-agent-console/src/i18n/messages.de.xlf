@@ -7731,8 +7731,8 @@
         <target>An einen anderen Agenten übergeben</target>
       </trans-unit>
       <trans-unit id="featureChat-toolEmbedHandoffPending" datatype="html">
-        <source>The response arrives in this chat once the agent is done.</source>
-        <target>Die Antwort erscheint in diesem Chat, sobald der Agent fertig ist.</target>
+        <source>The response arrives here once the agent is done.</source>
+        <target>Die Antwort erscheint hier, sobald der Agent fertig ist.</target>
       </trans-unit>
       <trans-unit id="featureChat-toolEmbedHandoffFailed" datatype="html">
         <source>The handoff could not be created</source>
@@ -7797,6 +7797,70 @@
       <trans-unit id="featureChat-handoffProfileHelp" datatype="html">
         <source>What this environment is responsible for and which tasks other agents of the workspace can hand over to it. The agent can also maintain it itself.</source>
         <target>Wofür diese Umgebung zuständig ist und welche Aufgaben andere Agenten des Arbeitsbereichs an sie übergeben können. Der Agent kann es auch selbst pflegen.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-pendingApproval" datatype="html">
+        <source>Awaiting approval</source>
+        <target>Freigabe ausstehend</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-pendingApprovalHint" datatype="html">
+        <source>The agent created or changed this task. Runs are unattended with every permission allowed, so the task only runs after you reviewed its prompt, model and schedule and approved it.</source>
+        <target>Der Agent hat diese Aufgabe erstellt oder geändert. Ausführungen laufen unbeaufsichtigt mit allen Berechtigungen, daher läuft die Aufgabe erst, nachdem Sie Prompt, Modell und Zeitplan geprüft und freigegeben haben.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-approve" datatype="html">
+        <source>Approve</source>
+        <target>Freigeben</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-runStatusAwaitingHandoff" datatype="html">
+        <source>Waiting for handoff</source>
+        <target>Wartet auf Übergabe</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-pendingApprovalHandoffHint" datatype="html">
+        <source>Once approved, this task can hand off work to these agents without asking: <x id="INTERPOLATION" equiv-text="{{ handoffAgents.join(&apos;, &apos;) }}"/></source>
+        <target>Nach der Freigabe kann diese Aufgabe ohne Rückfrage Arbeit an diese Agenten übergeben: <x id="INTERPOLATION" equiv-text="{{ handoffAgents.join(&apos;, &apos;) }}"/></target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-noHandoffAgents" datatype="html">
+        <source>None</source>
+        <target>Keine</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-runAwaitingHandoff" datatype="html">
+        <source>The run waits for the response to its handoff and continues when it arrives…</source>
+        <target>Der Lauf wartet auf die Antwort zu seiner Übergabe und setzt fort, sobald sie eintrifft…</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-noOtherAgents" datatype="html">
+        <source> This workspace has no other agents. </source>
+        <target> Dieser Workspace hat keine weiteren Agenten. </target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-allowedHandoffAgentsLabel" datatype="html">
+        <source>Allowed handoff agents</source>
+        <target>Erlaubte Übergabe-Agenten</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-allowedHandoffAgentsHint" datatype="html">
+        <source>Runs may hand off work to these agents of the workspace without asking; their responses are processed by the unattended run with all permissions. Leave empty to keep runs from handing off.</source>
+        <target>Läufe dürfen ohne Rückfrage Arbeit an diese Agenten des Workspaces übergeben; deren Antworten verarbeitet der unbeaufsichtigte Lauf mit allen Berechtigungen. Leer lassen, damit Läufe nichts übergeben.</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-openHandoffChat" datatype="html">
+        <source>Open handoff chat</source>
+        <target>Übergabe-Chat öffnen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-handoffUnknownAgent" datatype="html">
+        <source>another agent</source>
+        <target>einem anderen Agenten</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-handoffResponseHeading" datatype="html">
+        <source>Response from <x id="agentName" equiv-text="agentName"/></source>
+        <target>Antwort von <x id="agentName" equiv-text="agentName"/></target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-handoffStatusFailed" datatype="html">
+        <source>Failed</source>
+        <target>Fehlgeschlagen</target>
+      </trans-unit>
+      <trans-unit id="featureAgentTasks-handoffStatusCompleted" datatype="html">
+        <source>Completed</source>
+        <target>Abgeschlossen</target>
+      </trans-unit>
+      <trans-unit id="featureChat-handoffOpenSourceTaskRun" datatype="html">
+        <source>Open task run</source>
+        <target>Aufgabenlauf öffnen</target>
       </trans-unit>
     </body>
   </file>

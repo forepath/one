@@ -50,13 +50,32 @@ forwarded as `agentHandoffRequest`). See [Agent handoffs](../features/agent-hand
 | Session                                             | Additional access                                                    |
 | --------------------------------------------------- | -------------------------------------------------------------------- |
 | Visible chat                                        | Permission-style prompt: _Allow once_, _Allow for this chat_, _Deny_ |
-| Ticket automation (`-ticket-auto-*`, unattended)    | Granted without asking                                               |
-| Chat plan explore / refine (`-plan-*`, read-only)   | Granted without asking                                               |
+| Ticket automation (`-ticket-auto-*`, unattended)    | Granted without asking within the ticket's tree, otherwise denied    |
+| Chat plan explore / refine (`-plan-*`, read-only)   | Only the pre-granted context (the source chat's refs)                |
+| Recurring task runs (`-task-*`, unattended)         | Only the pre-granted context                                         |
 | Prompt enhancement, ticket body generation (hidden) | Denied (only the items from the prompt are available)                |
 
 Replies use the existing permission reply endpoint (`POST .../permissions/:id/reply`, ids start with `ctx_`).
 
 ## Security
+
+- **Grants name exact elements.** Access requests are resolved to full SHAs before the user is asked (a short SHA must
+  match exactly one element) and only those are granted; content is always fetched by the granted SHA, so a prefix
+  shared with another element never unlocks it.
+- **Tickets live for one turn.** A context ticket is revoked when the turn it was minted for ends.
+- **Auto-approval tickets are bound to the platform's prompt.** Tickets of automation / plan sessions only serve
+  requests that match an `agenstra_context_*` tool call (same ticket and arguments) answering the prompt the platform
+  sent with that ticket — directly, or in a subagent started by a `task` call of that answer. This is derived from
+  the worker's OpenCode event stream (message lineage); prompts or child sessions a background process injects
+  through the OpenCode API, and tickets copied into other processes, are useless.
+- **Automatic grants are scoped.** Nobody can answer in hidden sessions, so additional context is decided by a scope
+  the controller derives from what the platform granted the run (never from agent input): unattended **ticket
+  automation** may read tickets of the same ticket tree as its ticket; **plans** and **task runs** get nothing beyond
+  their pre-granted context. Everything else is denied.
+- **Remaining limitation:** a process with code execution inside the worker (e.g. started through bash in a visible
+  chat) can read the OpenCode server password and drive OpenCode sessions, and so obtain what a hidden session may
+  read automatically — at most the scope above. Restrict code execution in visible chats (OpenCode permissions,
+  sandboxed isolation, egress) where this matters.
 
 - **Context tickets** are random, bound to one agent and chat session, expire after 2 h without use, and are only
   accepted together with the agent's **context token** (`HMAC(AGENT_CONTEXT_TOKEN_SECRET | ENCRYPTION_KEY, agent id +

@@ -5,6 +5,8 @@ export function agentTaskRunStatusLabel(status: string | null | undefined): stri
   switch (status) {
     case 'running':
       return $localize`:@@featureAgentTasks-runStatusRunning:Running`;
+    case 'awaiting_handoff':
+      return $localize`:@@featureAgentTasks-runStatusAwaitingHandoff:Waiting for handoff`;
     case 'succeeded':
       return $localize`:@@featureAgentTasks-runStatusSucceeded:Succeeded`;
     case 'failed':
@@ -18,6 +20,8 @@ export function agentTaskRunStatusBadgeColor(status: string | null | undefined):
   switch (status) {
     case 'running':
       return 'warning';
+    case 'awaiting_handoff':
+      return 'info';
     case 'succeeded':
       return 'success';
     case 'failed':

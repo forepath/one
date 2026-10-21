@@ -18,8 +18,14 @@ interface WorkerSubscription {
 export class OpenCodeEventBridge {
   private readonly logger = new Logger(OpenCodeEventBridge.name);
   private readonly subscriptions = new Map<string, WorkerSubscription>();
+  /** Observers of every event of a worker (all sessions), e.g. tool-call tracking incl. subagent sessions. */
+  private readonly taps = new Set<(agentId: string, event: Event) => void>();
 
   constructor(private readonly clientFactory: OpenCodeClientFactory) {}
+
+  addTap(tap: (agentId: string, event: Event) => void): void {
+    this.taps.add(tap);
+  }
 
   private workerKey(agentId: string, containerId: string): string {
     return `${agentId}:${containerId}`;
@@ -199,6 +205,16 @@ export class OpenCodeEventBridge {
       }
 
       const typedEvent = event as Event;
+
+      for (const tap of this.taps) {
+        try {
+          tap(agentId, typedEvent);
+        } catch (error) {
+          const err = error as { message?: string };
+
+          this.logger.debug(`OpenCode event tap failed for ${workerKey}: ${err.message}`);
+        }
+      }
 
       for (const listener of subscription.listeners) {
         try {

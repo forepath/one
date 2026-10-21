@@ -1,4 +1,5 @@
 import {
+  approveAgentTask,
   agentTaskRemovedReceived,
   agentTaskRunReceived,
   agentTaskUpsertReceived,
@@ -32,6 +33,9 @@ function agentTaskFixture(overrides: Partial<AgentTaskResponseDto> = {}): AgentT
     nextRunAt: '2026-10-22T09:00:00.000Z',
     lastRunAt: null,
     lastRunStatus: null,
+    approvalStatus: 'approved',
+    allowedHandoffAgentIds: [],
+    approvedAt: '2026-10-21T09:00:00.000Z',
     createdBy: 'user',
     updatedBy: 'user',
     createdAt: '2026-10-21T08:00:00.000Z',
@@ -82,6 +86,15 @@ describe('agentTasksReducer', () => {
     expect(agentTasksReducer(switched, loadAgentTasksSuccess({ clientId: 'c1', tasks: loaded.tasks })).tasks).toEqual(
       [],
     );
+  });
+
+  it('marks approvals as saving', () => {
+    expect(
+      agentTasksReducer(
+        initialAgentTasksState,
+        approveAgentTask({ clientId: 'c1', agentId: 'a1', taskId: 't1', reviewedUpdatedAt: 'v1' }),
+      ).saving,
+    ).toBe(true);
   });
 
   it('tracks saving and errors of mutations', () => {

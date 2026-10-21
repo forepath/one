@@ -24,14 +24,3 @@
   font-size: 0.75rem;
   color: var(--bs-white);
 }
-
-.list-group-item.active {
-  .status-badge {
-    background-color: var(--bs-white) !important;
-    color: var(--bs-primary) !important;
-  }
-
-  fpc-badge.fpc-badge--info {
-    background-color: #692eee !important;
-  }
-}

@@ -9,6 +9,7 @@ import {
   loadAgentTaskRuns,
   loadMoreAgentTaskRuns,
   loadAgentTasks,
+  approveAgentTask,
   runAgentTaskNow,
   updateAgentTask,
 } from './agent-tasks.actions';
@@ -65,6 +66,10 @@ export class AgentTasksFacade {
 
   delete(clientId: string, agentId: string, taskId: string): void {
     this.store.dispatch(deleteAgentTask({ clientId, agentId, taskId }));
+  }
+
+  approve(clientId: string, agentId: string, taskId: string, reviewedUpdatedAt: string): void {
+    this.store.dispatch(approveAgentTask({ clientId, agentId, taskId, reviewedUpdatedAt }));
   }
 
   runNow(clientId: string, agentId: string, taskId: string): void {

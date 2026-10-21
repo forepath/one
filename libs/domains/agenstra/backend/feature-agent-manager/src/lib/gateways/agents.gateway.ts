@@ -2527,6 +2527,12 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       socket.emit('error', createErrorResponse('Error processing chat message', errorCode));
 
       this.logger.error(`Chat error for agent ${agentUuid}: ${err.message}`, err.stack);
+    } finally {
+      // A context ticket only serves the turn it was minted for: copies (e.g. from the OpenCode session store)
+      // are useless afterwards. "Allow for this chat" grants stay with the chat session.
+      if (contextTicket) {
+        this.contextTickets?.revoke(contextTicket.ticket);
+      }
     }
   }
 

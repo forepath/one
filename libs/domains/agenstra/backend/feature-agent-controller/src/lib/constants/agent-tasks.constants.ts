@@ -34,6 +34,19 @@ export function getAgentTaskRunTimeoutMs(): number {
 /** Runs still `running` this long after their timeout are marked failed (worker restart, lost job). */
 export const AGENT_TASK_STALE_RUN_GRACE_MS = 10 * 60_000;
 
+/**
+ * How long a run waits for the response to one of its handoffs (`awaiting_handoff`). After that the handoff is
+ * failed, the failure is delivered into the run's session and the run ends once it reacted.
+ */
+export function getAgentTaskHandoffWaitTimeoutMs(): number {
+  return positiveIntFromEnv('AGENT_TASK_HANDOFF_WAIT_TIMEOUT_MS', 3_600_000);
+}
+
+/** Handoffs one run may make in total (one open at a time), so a run cannot fan out. */
+export function getAgentTaskRunMaxHandoffs(): number {
+  return positiveIntFromEnv('AGENT_TASK_RUN_MAX_HANDOFFS', 3);
+}
+
 /** Bounded tail of the agent's answer stored on the run. */
 export const AGENT_TASK_RUN_EXCERPT_MAX_LENGTH = 4_000;
 

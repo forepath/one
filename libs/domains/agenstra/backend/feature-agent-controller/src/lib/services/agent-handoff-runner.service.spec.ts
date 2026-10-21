@@ -7,6 +7,7 @@ import type { AgentHandoffEntity } from '../entities/agent-handoff.entity';
 import { StatisticsInteractionKind } from '../entities/statistics-chat-io.entity';
 
 import { AgentHandoffRunnerService } from './agent-handoff-runner.service';
+import type { AgentTaskRunnerService } from './agent-task-runner.service';
 import type { ClientAgentChatsProxyService } from './client-agent-chats-proxy.service';
 import type { RemoteAgentsSessionService, RemoteChatStreamingParams } from './remote-agents-session.service';
 
@@ -61,6 +62,18 @@ function createRepo(initial: AgentHandoffEntity) {
       (state.row as any)[column] = ((state.row as any)[column] ?? 0) + by;
     }),
     find: jest.fn().mockResolvedValue([]),
+    overdue: [] as AgentHandoffEntity[],
+    createQueryBuilder: jest.fn(() => {
+      const qb: Record<string, jest.Mock> = {};
+
+      for (const method of ['innerJoin', 'where', 'andWhere']) {
+        qb[method] = jest.fn(() => qb);
+      }
+
+      qb['getMany'] = jest.fn(async () => repo.overdue);
+
+      return qb;
+    }),
   };
 
   return repo;
@@ -76,6 +89,7 @@ describe('AgentHandoffRunnerService', () => {
   let repo: ReturnType<typeof createRepo>;
   let remoteChat: { sendChatStreaming: jest.Mock };
   let chatsProxy: { get: jest.Mock };
+  let taskRunner: { continueWithHandoffResponse: jest.Mock; onHandoffUndeliverable: jest.Mock };
   let runner: AgentHandoffRunnerService;
 
   const baseHandoff = (overrides: Partial<AgentHandoffEntity> = {}): AgentHandoffEntity =>
@@ -131,12 +145,17 @@ describe('AgentHandoffRunnerService', () => {
       repo as unknown as Repository<AgentHandoffEntity>,
       remoteChat as unknown as RemoteAgentsSessionService,
       chatsProxy as unknown as ClientAgentChatsProxyService,
+      taskRunner as unknown as AgentTaskRunnerService,
     );
   };
 
   beforeEach(() => {
     remoteChat = { sendChatStreaming: jest.fn() };
     chatsProxy = { get: jest.fn().mockResolvedValue({ id: 'chat' }) };
+    taskRunner = {
+      continueWithHandoffResponse: jest.fn().mockResolvedValue('delivered'),
+      onHandoffUndeliverable: jest.fn().mockResolvedValue(undefined),
+    };
     setup(baseHandoff());
   });
 
@@ -182,6 +201,8 @@ describe('AgentHandoffRunnerService', () => {
       body: 'Looks good.',
     });
     expect(repo.state.row.deliveredAt).toBeInstanceOf(Date);
+    // Later handoffs in the source chat no longer continue this chain.
+    expect(repo.state.row.deliveryTurnEndedAt).toBeInstanceOf(Date);
   });
 
   it('repairs turns that ended without a response (hidden prompt, same chat)', async () => {
@@ -359,6 +380,104 @@ describe('AgentHandoffRunnerService', () => {
 
     await expect(runner.executeHandoff({ handoffId })).rejects.toBeInstanceOf(BadRequestException);
     expect(repo.state.row.deliveredAt).toBeNull();
+  });
+
+  describe('task run sources', () => {
+    const runHandoff = (overrides: Partial<AgentHandoffEntity> = {}) =>
+      baseHandoff({
+        sourceChatId: null,
+        sourceTaskId: '00000000-0000-4000-8000-000000000070',
+        sourceTaskRunId: '00000000-0000-4000-8000-000000000080',
+        status: 'completed',
+        response: 'Reviewed: two issues.',
+        ...overrides,
+      });
+
+    it('continues the source run with the response, never a chat', async () => {
+      setup(runHandoff());
+      taskRunner.continueWithHandoffResponse.mockImplementation(
+        async (_handoff: unknown, message: string, correlationId: string, onAccepted: () => Promise<void>) => {
+          expect(parseAgentHandoffChatMessage(message)).toMatchObject({
+            kind: 'response',
+            body: 'Reviewed: two issues.',
+          });
+          expect(correlationId).toBe(`agent-handoff:${handoffId}:response`);
+          await onAccepted();
+
+          return 'delivered';
+        },
+      );
+
+      await runner.executeHandoff({ handoffId });
+
+      expect(remoteChat.sendChatStreaming).not.toHaveBeenCalled();
+      expect(chatsProxy.get).not.toHaveBeenCalled();
+      expect(repo.state.row.deliveredAt).toBeInstanceOf(Date);
+      expect(repo.state.row.deliveryTurnEndedAt).toBeInstanceOf(Date);
+    });
+
+    it('leaves the response to a run whose own turn is still working', async () => {
+      setup(runHandoff());
+      taskRunner.continueWithHandoffResponse.mockResolvedValue('busy');
+
+      await runner.executeHandoff({ handoffId });
+
+      expect(repo.state.row.deliveredAt).toBeNull();
+      expect(repo.state.row.deliveryFailureMessage).toBeNull();
+      expect(repo.state.row.deliveryAttempts).toBe(0);
+    });
+
+    it('marks responses for ended runs undeliverable (never redirected)', async () => {
+      setup(runHandoff());
+      taskRunner.continueWithHandoffResponse.mockResolvedValue('ended');
+
+      await runner.executeHandoff({ handoffId });
+
+      expect(repo.state.row.deliveryFailureMessage).toBe('The task run that made this handoff has already ended.');
+      expect(remoteChat.sendChatStreaming).not.toHaveBeenCalled();
+    });
+
+    it('gives up (and ends the waiting run) when the task changed what the run may receive', async () => {
+      setup(runHandoff());
+      taskRunner.continueWithHandoffResponse.mockResolvedValue('revoked');
+
+      await runner.executeHandoff({ handoffId });
+
+      expect(repo.state.row.deliveryFailureMessage).toContain('The task was changed while its run waited');
+      expect(taskRunner.onHandoffUndeliverable).toHaveBeenCalledWith(
+        expect.objectContaining({ id: handoffId }),
+        expect.stringContaining('not delivered'),
+      );
+    });
+
+    it('retries failed deliveries and ends the waiting run once it gives up', async () => {
+      setup(runHandoff({ deliveryAttempts: AGENT_HANDOFF_MAX_DELIVERY_ATTEMPTS - 2 }));
+      taskRunner.continueWithHandoffResponse.mockRejectedValue(new Error('agent offline'));
+
+      await expect(runner.executeHandoff({ handoffId })).rejects.toThrow('agent offline');
+      expect(repo.state.row.deliveryAttempts).toBe(AGENT_HANDOFF_MAX_DELIVERY_ATTEMPTS - 1);
+      expect(taskRunner.onHandoffUndeliverable).not.toHaveBeenCalled();
+
+      await expect(runner.executeHandoff({ handoffId })).resolves.toBeUndefined();
+      expect(repo.state.row.deliveryFailureMessage).toContain('could not be delivered');
+      expect(taskRunner.onHandoffUndeliverable).toHaveBeenCalledWith(
+        expect.objectContaining({ id: handoffId }),
+        expect.stringContaining('agent offline'),
+      );
+    });
+
+    it('fails handoffs a run stopped waiting for and delivers through the delivery unit', async () => {
+      setup(runHandoff({ status: 'running', response: null, startedAt: new Date() }));
+      repo.overdue = [{ ...repo.state.row }];
+
+      const enqueue = jest.fn().mockResolvedValue(undefined);
+
+      await expect(runner.sweep(enqueue, new Date())).resolves.toBe(1);
+
+      expect(repo.state.row.status).toBe('failed');
+      expect(repo.state.row.failureMessage).toMatch(/did not answer within \d+ minutes; the task run stopped waiting/);
+      expect(enqueue).toHaveBeenCalledWith({ handoffId }, { delivery: true });
+    });
   });
 
   describe('sweep', () => {

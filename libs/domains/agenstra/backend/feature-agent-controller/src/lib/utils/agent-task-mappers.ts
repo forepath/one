@@ -17,9 +17,12 @@ export function agentTaskEntityToDto(task: AgentTaskEntity): AgentTaskResponseDt
     timezone: task.timezone,
     model: task.model,
     enabled: task.enabled,
+    allowedHandoffAgentIds: [...(task.allowedHandoffAgentIds ?? [])],
     nextRunAt: iso(task.nextRunAt),
     lastRunAt: iso(task.lastRunAt),
     lastRunStatus: task.lastRunStatus ?? null,
+    approvalStatus: task.approvedAt ? 'approved' : 'pending',
+    approvedAt: iso(task.approvedAt),
     createdBy: task.createdByType,
     updatedBy: task.updatedByType,
     createdAt: task.createdAt.toISOString(),
@@ -44,6 +47,7 @@ export function agentTaskRunEntityToDto(
     finishedAt: iso(run.finishedAt),
     outputExcerpt: run.outputExcerpt ?? null,
     failureMessage: run.failureMessage ?? null,
+    awaitingHandoffSince: iso(run.awaitingHandoffSince),
     ...(options.includeTranscript ? { transcript: run.transcript ?? [] } : {}),
   };
 }

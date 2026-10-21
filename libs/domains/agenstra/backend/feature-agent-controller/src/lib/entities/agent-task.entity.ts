@@ -51,6 +51,13 @@ export class AgentTaskEntity {
   @Column({ type: 'boolean', name: 'enabled', default: true })
   enabled!: boolean;
 
+  /**
+   * Agents of the workspace the runs may hand off work to (approved content like the prompt; empty: no handoffs).
+   * Checked again at handoff time: agents deleted or moved since do not count.
+   */
+  @Column({ type: 'jsonb', name: 'allowed_handoff_agent_ids', default: () => "'[]'::jsonb" })
+  allowedHandoffAgentIds!: string[];
+
   /** Next scheduled occurrence; `null` while disabled. */
   @Column({ type: 'timestamptz', name: 'next_run_at', nullable: true })
   nextRunAt?: Date | null;
@@ -60,6 +67,17 @@ export class AgentTaskEntity {
 
   @Column({ type: 'varchar', length: 16, name: 'last_run_status', nullable: true })
   lastRunStatus?: AgentTaskRunStatus | null;
+
+  /**
+   * When a workspace user approved the current prompt / model / schedule / allowed handoff agents (runs are
+   * unattended and allow-all).
+   * `null` while a change by the agent waits for approval; such tasks are never claimed or executed.
+   */
+  @Column({ type: 'timestamptz', name: 'approved_at', nullable: true })
+  approvedAt?: Date | null;
+
+  @Column({ type: 'uuid', name: 'approved_by_user_id', nullable: true })
+  approvedByUserId?: string | null;
 
   @Column({ type: 'varchar', length: 16, name: 'created_by_type' })
   createdByType!: AgentTaskActorType;

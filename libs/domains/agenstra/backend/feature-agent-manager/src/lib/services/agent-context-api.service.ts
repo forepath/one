@@ -1,4 +1,5 @@
 import {
+  agentContextShaMatches,
   parseAgentContextRef,
   type AgentContextAccessResponse,
   type AgentContextGetResponse,
@@ -6,7 +7,14 @@ import {
   type AgentContextListResponse,
   type AgentContextSearchResponse,
 } from '@forepath/agenstra/shared/util-opencode-config';
-import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 
 import {
   AGENT_CONTEXT_ACCESS_WAIT_MS,
@@ -14,6 +22,7 @@ import {
   AGENT_CONTEXT_MAX_SEARCH_RESULTS,
 } from '../constants/agent-context.constants';
 import type {
+  AgentContextControllerContent,
   AgentContextControllerMetadata,
   AgentContextControllerRequest,
   AgentContextControllerResponse,
@@ -21,6 +30,9 @@ import type {
   AgentContextTicketRecord,
 } from '../types/agent-context.types';
 
+import { isTicketAutomationResumeSessionSuffix } from '../constants/chat-session.constants';
+
+import { AgentActiveTurnsService } from './agent-active-turns.service';
 import { AgentContextAccessService, type AgentContextAccessReply } from './agent-context-access.service';
 import { AgentContextTicketsService } from './agent-context-tickets.service';
 
@@ -62,6 +74,9 @@ function summarize(item: AgentContextStoredItem): AgentContextItemSummary {
  * Agent-facing context API (called by the worker MCP server). Every method receives a ticket
  * record that was already resolved for the authenticated agent.
  */
+/** Session key of tickets minted for hidden sessions (see the agents gateway). */
+const AUTO_SESSION_KEY_PREFIX = 'suffix:';
+
 @Injectable()
 export class AgentContextApiService {
   private readonly logger = new Logger(AgentContextApiService.name);
@@ -70,6 +85,7 @@ export class AgentContextApiService {
   constructor(
     private readonly tickets: AgentContextTicketsService,
     private readonly access: AgentContextAccessService,
+    @Optional() private readonly activeTurns?: AgentActiveTurnsService,
   ) {}
 
   registerBridge(bridge: AgentContextGatewayBridge): void {
@@ -136,8 +152,7 @@ export class AgentContextApiService {
       return { ref: `${cached.kind}:${cached.sha}`, kind: cached.kind, title: cached.title, content: cached.content };
     }
 
-    const response = await this.callController(record, { op: 'content', agentId: record.agentId, refs: [ref] });
-    const content = (response.contents ?? []).find((entry) => entry.kind === ref.kind);
+    const content = await this.fetchGrantedContent(record, ref);
 
     if (!content) {
       throw new NotFoundException(`${ref.kind}:${ref.sha} was not found in this workspace`);
@@ -175,24 +190,59 @@ export class AgentContextApiService {
       };
     }
 
-    const request = this.access.create({ agentId: record.agentId, ticket: record.ticket, refs: missing, reason });
+    if (!this.bridge) {
+      return { requestId: '', decision: 'denied', refs: refLabels, message: 'Context access is unavailable.' };
+    }
+
+    if (record.accessMode === 'auto' && !this.isExclusiveAutoSession(record)) {
+      // The MCP call carries no session: while other sessions of the agent work, the call may come from one of them
+      // (e.g. a visible chat that read this ticket from the session store), so nothing is granted automatically.
+      return {
+        requestId: '',
+        decision: 'denied',
+        refs: refLabels,
+        message:
+          'Additional context cannot be granted automatically while other sessions of this agent are working. ' +
+          'Continue with the granted context or try again later.',
+      };
+    }
+
+    // Requests and grants always name the exact elements (full SHAs) the user sees in the prompt: short or
+    // ambiguous prefixes must not grant other elements later.
+    const resolved = await this.resolveRefs(record, missing);
+
+    if (resolved.length === 0) {
+      return {
+        requestId: '',
+        decision: 'denied',
+        refs: refLabels,
+        message: 'None of the refs exists in this workspace (or a short SHA is ambiguous: use the full SHA).',
+      };
+    }
+
+    const resolvedRefs = resolved.map(({ kind, sha }) => ({ kind, sha }));
+    const alreadyGranted = refs.filter((ref) => !missing.includes(ref)).map((ref) => `${ref.kind}:${ref.sha}`);
+    const resolvedLabels = [...alreadyGranted, ...resolvedRefs.map((ref) => `${ref.kind}:${ref.sha}`)];
 
     if (record.accessMode === 'auto') {
-      // Auto-approval sessions (unattended automation, read-only plans) never ask.
-      this.decideAccess(record.agentId, request.id, 'always');
-
-      return { requestId: request.id, decision: 'granted', refs: refLabels };
+      return this.autoGrant(record, resolvedRefs, alreadyGranted, reason);
     }
 
-    if (!this.bridge) {
-      return { requestId: request.id, decision: 'denied', refs: refLabels, message: 'Context access is unavailable.' };
-    }
+    const request = this.access.create({
+      agentId: record.agentId,
+      ticket: record.ticket,
+      refs: resolvedRefs,
+      reason,
+    });
 
-    const described = await this.describeRefs(record, missing);
+    this.bridge.publishContextAccessQuestion(
+      record,
+      request.id,
+      this.buildAccessPrompt(resolved, reason),
+      resolvedRefs,
+    );
 
-    this.bridge.publishContextAccessQuestion(record, request.id, this.buildAccessPrompt(described, reason), missing);
-
-    return this.awaitDecision(record, request.id, refLabels);
+    return this.awaitDecision(record, request.id, resolvedLabels);
   }
 
   /** Re-wait on a pending request (agent polls after a `pending` response). */
@@ -280,21 +330,129 @@ export class AgentContextApiService {
     return [...refs.values()];
   }
 
-  private async describeRefs(
+  /**
+   * Nobody can answer in hidden sessions, so requests are decided by a scope the controller derives from what the
+   * platform granted the run: unattended ticket automation may read tickets of the same ticket tree; plans and task
+   * runs get nothing beyond their pre-granted context. Grants are bound to this ticket (this turn) only.
+   */
+  private async autoGrant(
+    record: AgentContextTicketRecord,
+    refs: ContentRef[],
+    alreadyGranted: string[],
+    reason: string | undefined,
+  ): Promise<AgentContextAccessResponse> {
+    const suffix = record.sessionKey.startsWith(AUTO_SESSION_KEY_PREFIX)
+      ? record.sessionKey.slice(AUTO_SESSION_KEY_PREFIX.length)
+      : undefined;
+    let inScope: ContentRef[] = [];
+
+    if (isTicketAutomationResumeSessionSuffix(suffix) && record.scopeAnchors.length > 0) {
+      const response = await this.callController(record, {
+        op: 'scope',
+        agentId: record.agentId,
+        refs,
+        anchors: record.scopeAnchors,
+      });
+      const allowed = new Set((response.items ?? []).map((item) => `${item.kind}:${item.sha.toLowerCase()}`));
+
+      inScope = refs.filter((ref) => allowed.has(`${ref.kind}:${ref.sha}`));
+    }
+
+    const refused = refs.filter((ref) => !inScope.includes(ref)).map((ref) => `${ref.kind}:${ref.sha}`);
+    const scopeMessage =
+      refused.length > 0
+        ? `Outside the context this run may read on its own (${refused.join(', ')}); continue with the granted context.`
+        : undefined;
+
+    if (inScope.length === 0) {
+      return {
+        requestId: '',
+        decision: 'denied',
+        refs: [...alreadyGranted, ...refused],
+        message: scopeMessage,
+      };
+    }
+
+    const request = this.access.create({ agentId: record.agentId, ticket: record.ticket, refs: inScope, reason });
+
+    this.decideAccess(record.agentId, request.id, 'once');
+
+    return {
+      requestId: request.id,
+      decision: 'granted',
+      refs: [...alreadyGranted, ...inScope.map((ref) => `${ref.kind}:${ref.sha}`)],
+      ...(scopeMessage ? { message: scopeMessage } : {}),
+    };
+  }
+
+  /** Auto-approval tickets belong to one hidden session (`suffix:<resumeSessionSuffix>`), which must be all that runs. */
+  private isExclusiveAutoSession(record: AgentContextTicketRecord): boolean {
+    if (!this.activeTurns) {
+      return true;
+    }
+
+    if (!record.sessionKey.startsWith(AUTO_SESSION_KEY_PREFIX)) {
+      return false;
+    }
+
+    return this.activeTurns.isOnlyRunningHiddenSession(
+      record.agentId,
+      record.sessionKey.slice(AUTO_SESSION_KEY_PREFIX.length),
+    );
+  }
+
+  /**
+   * Resolve refs to the exact elements (full SHA + title) of the workspace. The controller resolves a short SHA only
+   * when it is unique; unknown or ambiguous refs are dropped.
+   */
+  private async resolveRefs(
     record: AgentContextTicketRecord,
     refs: ContentRef[],
   ): Promise<Array<ContentRef & { title?: string }>> {
-    try {
-      const response = await this.callController(record, { op: 'describe', agentId: record.agentId, refs });
-      const items = response.items ?? [];
+    const response = await this.callController(record, { op: 'describe', agentId: record.agentId, refs });
+    const items = response.items ?? [];
+    const resolved = new Map<string, ContentRef & { title?: string }>();
 
-      return refs.map((ref) => ({
-        ...ref,
-        title: items.find((item) => item.kind === ref.kind && item.sha.toLowerCase().startsWith(ref.sha))?.title,
-      }));
-    } catch {
-      return refs;
+    for (const ref of refs) {
+      const item = items.find((entry) => entry.kind === ref.kind && entry.sha.toLowerCase().startsWith(ref.sha));
+
+      if (item) {
+        const sha = item.sha.toLowerCase();
+
+        resolved.set(`${ref.kind}:${sha}`, { kind: ref.kind, sha, title: item.title });
+      }
     }
+
+    return [...resolved.values()];
+  }
+
+  /**
+   * Content of a granted element: fetched by each compatible granted SHA (never by the agent's own ref), and only
+   * returned when it is the element the agent asked for.
+   */
+  private async fetchGrantedContent(
+    record: AgentContextTicketRecord,
+    ref: ContentRef,
+  ): Promise<AgentContextControllerContent | undefined> {
+    for (const granted of this.tickets.matchingGrants(record, ref.kind, ref.sha)) {
+      const response = await this.callController(record, {
+        op: 'content',
+        agentId: record.agentId,
+        refs: [{ kind: ref.kind, sha: granted }],
+      });
+      const content = (response.contents ?? []).find(
+        (entry) =>
+          entry.kind === ref.kind &&
+          entry.sha.toLowerCase().startsWith(granted) &&
+          agentContextShaMatches(entry.sha.toLowerCase(), ref.sha),
+      );
+
+      if (content) {
+        return content;
+      }
+    }
+
+    return undefined;
   }
 
   private buildAccessPrompt(refs: Array<ContentRef & { title?: string }>, reason: string | undefined): string {

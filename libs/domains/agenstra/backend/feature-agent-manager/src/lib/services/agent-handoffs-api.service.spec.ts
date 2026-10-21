@@ -141,15 +141,41 @@ describe('AgentHandoffsApiService', () => {
     expect(requestControllerHandoffs.mock.calls[0][1].sourceChatId).toBe(primaryChatId);
   });
 
+  it('attributes calls of a task run to its task (the controller checks the approval and targets)', async () => {
+    const taskId = '66666666-6666-4666-8666-666666666666';
+
+    endTurn();
+    endTurn = turns.begin(agentId, `-task-${taskId}`);
+    service.rememberChatModel(targetAgentId, 'target/model');
+
+    await service.create(agentId, { targetAgentId, title: 't', message: 'm' });
+
+    expect(requestControllerHandoffs).toHaveBeenCalledWith(agentId, {
+      op: 'create',
+      agentId,
+      sourceTaskId: taskId,
+      input: { targetAgentId, title: 't', message: 'm', model: 'target/model' },
+    });
+    expect(requestControllerHandoffs.mock.calls[0][1]).not.toHaveProperty('sourceChatId');
+  });
+
   it('refuses handoffs when the requesting chat cannot be determined or a response could not arrive', async () => {
     const input = { targetAgentId, title: 't', message: 'm' };
 
     endTurn();
     await expect(service.create(agentId, input)).rejects.toBeInstanceOf(BadRequestException);
 
-    const endTask = turns.begin(agentId, '-task-1');
+    // Plans, ticket automation, profile generation and malformed task suffixes stay refused.
+    for (const suffix of [`-plan-${chatId}`, '-ticket-auto-loop', '-handoff-profile', '-task-not-a-uuid']) {
+      const endHidden = turns.begin(agentId, suffix);
 
-    await expect(service.create(agentId, input)).rejects.toThrow(/only available in visible chats/);
+      await expect(service.create(agentId, input)).rejects.toThrow(
+        /only available in visible chats and in runs of approved scheduled tasks/,
+      );
+      endHidden();
+    }
+
+    const endTask = turns.begin(agentId, '-task-1');
 
     endTurn = turns.begin(agentId, `-chat-${chatId}`);
     await expect(service.create(agentId, input)).rejects.toBeInstanceOf(ConflictException);
@@ -232,6 +258,46 @@ describe('AgentHandoffsApiService', () => {
       expect(agentsRepository.update).toHaveBeenCalledWith(targetAgentId, {
         handoffProfile: 'I own the review pipeline.',
       });
+    });
+
+    it('stores only the final answer, not the narration between explore steps', async () => {
+      const events = [
+        { type: 'delta', delta: 'Inspecting the repository. ' },
+        { type: 'tool_call', name: 'read', args: { path: 'README.md' } },
+        { type: 'tool_result', name: 'read', result: '# Reviewer' },
+        { type: 'delta', delta: 'Checking the config. {"cmd": "ls"}' },
+        { type: 'tool_call', name: 'glob' },
+        { type: 'tool_result', name: 'glob', result: 'a.ts' },
+        // Separate text parts without tool activity in between: only the last one is the answer.
+        { type: 'delta', delta: 'Summarizing now.', part_id: 'part-1' },
+        { type: 'delta', delta: 'I own the review ', part_id: 'part-2' },
+        { type: 'delta', delta: 'pipeline.', part_id: 'part-2' },
+        { type: 'result', result: 'Inspecting the repository. Checking the config. I own the review pipeline.' },
+      ];
+
+      provider.toParseableStrings.mockReturnValueOnce(events.map((event) => JSON.stringify(event)));
+      provider.toUnifiedResponse.mockImplementation((line: string) => JSON.parse(line));
+
+      await expect(service.peerProfile(agentId, targetAgentId)).resolves.toEqual(
+        expect.objectContaining({ handoffProfile: 'I own the review pipeline.' }),
+      );
+    });
+
+    it('never stores the prompt itself as the profile', async () => {
+      provider.toUnifiedResponse.mockReturnValueOnce({
+        type: 'result',
+        result: `${AGENT_HANDOFF_PROFILE_PROMPT}I own the review pipeline.`,
+      });
+
+      await expect(service.peerProfile(agentId, targetAgentId)).resolves.toEqual(
+        expect.objectContaining({ handoffProfile: 'I own the review pipeline.' }),
+      );
+
+      delete agentRows[targetAgentId].handoffProfile;
+      provider.toUnifiedResponse.mockReturnValueOnce({ type: 'result', result: AGENT_HANDOFF_PROFILE_PROMPT });
+
+      await expect(service.peerProfile(agentId, targetAgentId)).rejects.toMatchObject({ status: 502 });
+      expect(agentsRepository.update).toHaveBeenCalledTimes(1);
     });
 
     it('keeps a profile written meanwhile and reports agents that cannot describe themselves', async () => {

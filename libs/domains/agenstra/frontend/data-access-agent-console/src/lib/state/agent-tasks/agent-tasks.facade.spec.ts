@@ -8,6 +8,7 @@ import {
   deleteAgentTask,
   loadAgentTaskRuns,
   loadAgentTasks,
+  approveAgentTask,
   runAgentTaskNow,
   updateAgentTask,
 } from './agent-tasks.actions';
@@ -31,6 +32,7 @@ describe('AgentTasksFacade', () => {
     facade.update('c1', 'a1', 't1', { enabled: false });
     facade.delete('c1', 'a1', 't1');
     facade.runNow('c1', 'a1', 't1');
+    facade.approve('c1', 'a1', 't1', 'v1');
     facade.loadRuns('c1', 'a1', 't1');
     facade.clearError();
 
@@ -40,6 +42,7 @@ describe('AgentTasksFacade', () => {
       updateAgentTask({ clientId: 'c1', agentId: 'a1', taskId: 't1', dto: { enabled: false } }),
       deleteAgentTask({ clientId: 'c1', agentId: 'a1', taskId: 't1' }),
       runAgentTaskNow({ clientId: 'c1', agentId: 'a1', taskId: 't1' }),
+      approveAgentTask({ clientId: 'c1', agentId: 'a1', taskId: 't1', reviewedUpdatedAt: 'v1' }),
       loadAgentTaskRuns({ clientId: 'c1', agentId: 'a1', taskId: 't1' }),
       clearAgentTasksError(),
     ]);
