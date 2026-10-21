@@ -1475,6 +1475,18 @@
       <trans-unit id="featureChat-toolDisplayEnrichment" datatype="html">
         <source>Enrichment</source>
         </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContextList" datatype="html">
+        <source>Context overview</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContextSearch" datatype="html">
+        <source>Search context</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContextGet" datatype="html">
+        <source>Read context</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayContextRequestAccess" datatype="html">
+        <source>Request context access</source>
+        </trans-unit>
       <trans-unit id="featureChat-toolDisplayTool" datatype="html">
         <source>Tool</source>
         </trans-unit>

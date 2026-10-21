@@ -984,6 +984,13 @@ export class KnowledgeTreeService {
 
   async findNodeBySha(clientId: string, sha: string, req?: RequestWithUser): Promise<KnowledgeNodeResponseDto | null> {
     await this.assertClientAccess(clientId, req);
+    const node = await this.findNodeEntityBySha(clientId, sha);
+
+    return node ? await this.mapNode(node) : null;
+  }
+
+  /** Workspace-scoped SHA lookup without a user access check (callers authorize the workspace first). */
+  private async findNodeEntityBySha(clientId: string, sha: string): Promise<KnowledgeNodeEntity | null> {
     const normalized = sha.trim().toLowerCase();
 
     if (!normalized) {
@@ -1005,7 +1012,7 @@ export class KnowledgeTreeService {
         .getOne();
     }
 
-    return node ? await this.mapNode(node) : null;
+    return node;
   }
 
   async createRelation(dto: CreateKnowledgeRelationDto, req?: RequestWithUser): Promise<KnowledgeRelationResponseDto> {
@@ -1359,12 +1366,24 @@ export class KnowledgeTreeService {
     req?: RequestWithUser,
   ): Promise<KnowledgePromptContextResponseDto> {
     await this.assertClientAccess(clientId, req);
+
+    return this.collectPromptContextsByHashesInternal(clientId, hashes);
+  }
+
+  /**
+   * System-only: same as {@link collectPromptContextsByHashes} without a user access check. Only for callers that are
+   * already bound to `clientId` (e.g. the agent-manager connection of that workspace answering agent context reads).
+   */
+  async collectPromptContextsByHashesInternal(
+    clientId: string,
+    hashes: string[],
+  ): Promise<KnowledgePromptContextResponseDto> {
     const uniq = Array.from(new Set(hashes.map((h) => h.trim().toLowerCase()).filter((h) => h.length > 0)));
     const pages: KnowledgeNodeEntity[] = [];
     const seen = new Set<string>();
 
     for (const hash of uniq) {
-      const node = await this.findNodeBySha(clientId, hash, req);
+      const node = await this.findNodeEntityBySha(clientId, hash);
 
       if (!node) {
         continue;

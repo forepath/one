@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import type { RequestWithUser } from '@forepath/identity/backend';
 
 import { KnowledgeNodeEmbeddingEntity } from '../entities/knowledge-node-embedding.entity';
 import { KnowledgeRelationSourceType } from '../entities/knowledge-node.enums';
@@ -42,6 +43,8 @@ interface AutoContextResolveInput {
    * distance; lower is more similar). Only embedding rows with distance <= this value are considered.
    */
   workspaceAutoEnrichVectorMaxCosineDistance?: number;
+  /** Caller identity: knowledge lookups enforce workspace access for this user. */
+  req?: RequestWithUser;
 }
 
 @Injectable()
@@ -90,7 +93,7 @@ export class AutoContextResolverService {
     }
 
     for (const sha of normalizedKnowledgeShas) {
-      const node = await this.knowledgeTreeService.findNodeBySha(input.clientId, sha);
+      const node = await this.knowledgeTreeService.findNodeBySha(input.clientId, sha, input.req);
 
       if (node) {
         manualKnowledgeNodeIds.add(node.id);
@@ -111,6 +114,7 @@ export class AutoContextResolverService {
       manualTicketIds,
       manualKnowledgeNodeIds,
       normalizedKnowledgeShas,
+      input.req,
     );
     const combined = this.applySectionBudget([...relationContexts, ...vectorKnowledgeContexts]);
     const output = {
@@ -231,6 +235,7 @@ export class AutoContextResolverService {
     manualTicketIds: Set<string>,
     manualKnowledgeNodeIds: Set<string>,
     normalizedKnowledgeShas: string[],
+    req?: RequestWithUser,
   ): Promise<string[]> {
     const sections: string[] = [];
 
@@ -239,13 +244,14 @@ export class AutoContextResolverService {
         clientId,
         KnowledgeRelationSourceType.TICKET,
         ticketId,
+        req,
       );
 
       sections.push(...related.promptSections);
     }
 
     for (const sha of normalizedKnowledgeShas) {
-      const node = await this.knowledgeTreeService.findNodeBySha(clientId, sha);
+      const node = await this.knowledgeTreeService.findNodeBySha(clientId, sha, req);
 
       if (!node || node.nodeType !== 'page' || manualKnowledgeNodeIds.has(node.id)) {
         continue;
@@ -255,6 +261,7 @@ export class AutoContextResolverService {
         clientId,
         KnowledgeRelationSourceType.PAGE,
         node.id,
+        req,
       );
 
       sections.push(...related.promptSections);

@@ -3,6 +3,7 @@ import {
   AuthenticationType,
   ClientAgentCredentialsRepository,
   ClientUsersRepository,
+  type RequestWithUser,
   SocketAuthService,
   buildRequestFromSocketUser,
   ensureClientAccess,
@@ -1119,10 +1120,12 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     try {
       const userInfo = (socket as Socket & { data?: { userInfo?: Parameters<typeof buildRequestFromSocketUser>[0] } })
         .data?.userInfo;
-      const enrichedPayload = (await this.enrichForwardPayloadWithTicketContext(clientId, agentId, {
-        message,
-        contextInjection: data.contextInjection,
-      })) as {
+      const enrichedPayload = (await this.enrichForwardPayloadWithTicketContext(
+        clientId,
+        agentId,
+        { message, contextInjection: data.contextInjection },
+        this.requestForSocket(socket),
+      )) as {
         contextInjection?: ChatPlanContextInjectionJson;
       };
       const plan = await this.chatPlanService.create(
@@ -1193,10 +1196,12 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       let contextInjection: ChatPlanContextInjectionJson | undefined;
 
       if (data.contextInjection) {
-        const enrichedPayload = (await this.enrichForwardPayloadWithTicketContext(clientId, plan.agentId, {
-          message,
-          contextInjection: data.contextInjection,
-        })) as {
+        const enrichedPayload = (await this.enrichForwardPayloadWithTicketContext(
+          clientId,
+          plan.agentId,
+          { message, contextInjection: data.contextInjection },
+          this.requestForSocket(socket),
+        )) as {
           contextInjection?: ChatPlanContextInjectionJson;
         };
 
@@ -1379,7 +1384,12 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       }
 
       const agentId = data?.agentId;
-      const payloadWithContext = await this.enrichForwardPayloadWithTicketContext(clientId, agentId, payload);
+      const payloadWithContext = await this.enrichForwardPayloadWithTicketContext(
+        clientId,
+        agentId,
+        payload,
+        this.requestForSocket(socket),
+      );
       let loggedIn = this.loggedInAgentsBySocket.get(socket.id);
 
       if (!loggedIn) {
@@ -1641,10 +1651,23 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     }
   }
 
+  /** Authenticated user of a console socket, for per-request workspace access checks in shared services. */
+  private requestForSocket(socket: Socket): RequestWithUser | undefined {
+    const userInfo = (socket as Socket & { data?: { userInfo?: Parameters<typeof buildRequestFromSocketUser>[0] } })
+      .data?.userInfo;
+
+    return userInfo ? buildRequestFromSocketUser(userInfo) : undefined;
+  }
+
+  /**
+   * @param req Identity of the console user who sent the payload: knowledge / relation lookups enforce that user's
+   * access to the workspace (never resolve context on behalf of nobody).
+   */
   private async enrichForwardPayloadWithTicketContext(
     clientId: string,
     agentId: string | undefined,
     payload: unknown,
+    req: RequestWithUser | undefined,
   ): Promise<unknown> {
     if (!payload || typeof payload !== 'object') {
       return payload;
@@ -1676,6 +1699,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       contextInjection,
       workspaceAutoEnrichEnabledGlobal,
       workspaceAutoEnrichVectorMaxCosineDistance,
+      req,
     })) as ContextInjectionPayload;
     const ticketShas = Array.from(
       new Set((resolvedContextInjection.ticketShas ?? []).map((sha) => sha.trim()).filter((sha) => sha.length > 0)),
@@ -1713,6 +1737,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         const knowledgeContextResponse = await this.knowledgeTreeService.collectPromptContextsByHashes(
           clientId,
           knowledgeShas,
+          req,
         );
 
         knowledgeContexts = knowledgeContextResponse.promptSections;

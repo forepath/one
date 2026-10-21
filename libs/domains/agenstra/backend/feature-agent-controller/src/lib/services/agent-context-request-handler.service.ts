@@ -207,7 +207,8 @@ export class AgentContextRequestHandlerService {
       const sections =
         node.nodeType === KnowledgeNodeType.PAGE
           ? [`Knowledge Page: ${node.title}\n${node.content ?? ''}`.trim()]
-          : (await this.knowledgeTreeService.collectPromptContextsByHashes(clientId, [node.longSha])).promptSections;
+          : (await this.knowledgeTreeService.collectPromptContextsByHashesInternal(clientId, [node.longSha]))
+              .promptSections;
 
       if (sections.length > 0) {
         contents.push({ kind: 'knowledge', sha: node.longSha, title: node.title, content: sections.join('\n\n') });

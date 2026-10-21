@@ -434,6 +434,51 @@ describe('ClientsGateway', () => {
     );
   });
 
+  it('resolves chat context with the socket user identity (no anonymous knowledge lookups)', async () => {
+    const socket = createMockSocket();
+    const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
+    const remote = io() as any;
+
+    socket.data = {
+      userInfo: {
+        isApiKeyAuth: false,
+        userId: 'admin-1',
+        user: { id: 'admin-1', roles: ['admin'], amr: ['pwd'] },
+      },
+    };
+    mockClientsRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'client-uuid',
+      endpoint: 'http://localhost:3100/api',
+      authenticationType: 'api_key',
+      apiKey: 'x',
+    } as any);
+    mockCredentialsRepo.findByClientAndAgent.mockResolvedValue({ password: 'pw' });
+
+    await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
+    const forwardPromise = gateway.handleForward(
+      {
+        event: 'chat',
+        agentId: 'agent-uuid',
+        payload: { message: 'hello', contextInjection: { knowledgeShas: ['abcd1234'] } },
+      },
+      socket,
+    );
+
+    await new Promise((resolve) => setImmediate(resolve));
+    remote.triggerEvent('loginSuccess');
+    await forwardPromise;
+
+    const identity = expect.objectContaining({ user: expect.objectContaining({ id: 'admin-1', roles: ['admin'] }) });
+
+    expect(mockAutoContextResolverService.resolve).toHaveBeenCalledWith(expect.objectContaining({ req: identity }));
+    expect(mockKnowledgeTreeService.collectPromptContextsByHashes).toHaveBeenCalledWith(
+      'client-uuid',
+      ['abcd1234'],
+      identity,
+    );
+    expect(socket.emit).not.toHaveBeenCalledWith('error', expect.anything());
+  });
+
   it('should emit error on setClient when missing clientId', async () => {
     const socket = createMockSocket();
 

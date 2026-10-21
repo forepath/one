@@ -573,4 +573,82 @@ describe('KnowledgeTreeService', () => {
       }
     }
   });
+
+  describe('workspace access for prompt context lookups', () => {
+    const page = { id: 'page-1', clientId: 'c1', nodeType: KnowledgeNodeType.PAGE, title: 'Auth', content: 'Body' };
+    const accessClientsRepository = { findById: jest.fn().mockResolvedValue({ id: 'c1', userId: 'owner' }) };
+    const accessClientUsersRepository = { findUserClientAccess: jest.fn().mockResolvedValue(null) };
+    const scoped = new KnowledgeTreeService(
+      nodeRepo,
+      relationRepo,
+      pageActivityRepo,
+      attachmentRepo,
+      accessClientsRepository as never,
+      accessClientUsersRepository as never,
+      usersRepository,
+      ticketsService,
+      ticketBoardRealtime,
+      knowledgeBoardRealtime,
+      knowledgeEmbeddingIndexService,
+      searchIndex,
+      externalImportSyncMarkerService as ExternalImportSyncMarkerService,
+    );
+    const byPrefix = () => ({
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      getOne: jest.fn().mockResolvedValue(page),
+    });
+
+    beforeEach(() => {
+      nodeRepo.createQueryBuilder.mockImplementation(byPrefix);
+      nodeRepo.findOne.mockResolvedValue(page);
+      accessClientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+    });
+
+    it('denies lookups without a caller identity', async () => {
+      await expect(scoped.collectPromptContextsByHashes('c1', ['abcd1234'])).rejects.toBeInstanceOf(ForbiddenException);
+      await expect(scoped.findNodeBySha('c1', 'abcd1234')).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it('denies users without access to the workspace', async () => {
+      const outsider = { user: { id: 'outsider', roles: ['user'] } } as never;
+
+      await expect(scoped.collectPromptContextsByHashes('c1', ['abcd1234'], outsider)).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+    });
+
+    it('allows global admins and workspace members', async () => {
+      const admin = { user: { id: 'admin-1', roles: ['admin'] } } as never;
+      const member = { user: { id: 'member-1', roles: ['user'] } } as never;
+
+      await expect(scoped.collectPromptContextsByHashes('c1', ['abcd1234'], admin)).resolves.toEqual({
+        promptSections: ['Knowledge Page: Auth\nBody'],
+      });
+
+      accessClientUsersRepository.findUserClientAccess.mockResolvedValue({ role: 'member' });
+      await expect(scoped.findNodeBySha('c1', 'abcd1234', member)).resolves.toMatchObject({ id: 'page-1' });
+    });
+
+    it('does not let PAT tokens inherit global admin access', async () => {
+      const patAdmin = { user: { id: 'admin-1', roles: ['admin'], amr: ['pat'] } } as never;
+
+      await expect(scoped.collectPromptContextsByHashes('c1', ['abcd1234'], patAdmin)).rejects.toBeInstanceOf(
+        ForbiddenException,
+      );
+    });
+
+    it('offers a workspace-scoped internal variant for system callers', async () => {
+      const qb = byPrefix();
+
+      nodeRepo.createQueryBuilder.mockReturnValue(qb);
+
+      await expect(scoped.collectPromptContextsByHashesInternal('c1', ['abcd1234'])).resolves.toEqual({
+        promptSections: ['Knowledge Page: Auth\nBody'],
+      });
+      expect(qb.where).toHaveBeenCalledWith('n.client_id = :clientId', { clientId: 'c1' });
+      expect(accessClientsRepository.findById).not.toHaveBeenCalled();
+    });
+  });
 });

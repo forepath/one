@@ -63,7 +63,7 @@ describe('AgentContextRequestHandlerService', () => {
       getPrototypePromptByClientSha: jest.fn().mockResolvedValue({ prompt: 'TICKET PROMPT' }),
     };
     knowledgeTreeService = {
-      collectPromptContextsByHashes: jest
+      collectPromptContextsByHashesInternal: jest
         .fn()
         .mockResolvedValue({ promptSections: ['Knowledge Page: A\nx', 'Knowledge Page: B\ny'] }),
     };
@@ -160,7 +160,8 @@ describe('AgentContextRequestHandlerService', () => {
       refs: [{ kind: 'knowledge', sha: 'ffff6666' }],
     });
 
-    expect(knowledgeTreeService.collectPromptContextsByHashes).toHaveBeenCalledWith(clientId, ['ffff6666']);
+    // Bound to this workspace's manager connection: system variant (no end-user identity on this path).
+    expect(knowledgeTreeService.collectPromptContextsByHashesInternal).toHaveBeenCalledWith(clientId, ['ffff6666']);
     expect((folderResult as any).contents[0].content).toBe('Knowledge Page: A\nx\n\nKnowledge Page: B\ny');
   });
 
