@@ -11,7 +11,7 @@ function normalizeToolName(name: string): string {
 }
 
 /**
- * Maps an OpenCode / ACP tool id (or embed kind) to a short label + icon for chat chrome.
+ * Maps an OpenCode tool id (or embed kind) to a short label + icon for chat chrome.
  */
 export function resolveAgentChatToolDisplay(toolNameOrKind: string | undefined): AgentChatToolDisplayMeta {
   const name = normalizeToolName(toolNameOrKind ?? '');
@@ -100,6 +100,31 @@ export function resolveAgentChatToolDisplay(toolNameOrKind: string | undefined):
       return {
         label: $localize`:@@featureChat-toolDisplayEnrichment:Enrichment`,
         icon: 'database-add',
+      };
+    // Platform context MCP server (`agenstra_context_*`): ticket / knowledge context read on demand.
+    case 'agenstra_context_list':
+    case 'context_list':
+      return {
+        label: $localize`:@@featureChat-toolDisplayContextList:Context overview`,
+        icon: 'collection',
+      };
+    case 'agenstra_context_search':
+    case 'context_search':
+      return {
+        label: $localize`:@@featureChat-toolDisplayContextSearch:Search context`,
+        icon: 'search',
+      };
+    case 'agenstra_context_get':
+    case 'context_get':
+      return {
+        label: $localize`:@@featureChat-toolDisplayContextGet:Read context`,
+        icon: 'journal-text',
+      };
+    case 'agenstra_context_request_access':
+    case 'context_request_access':
+      return {
+        label: $localize`:@@featureChat-toolDisplayContextRequestAccess:Request context access`,
+        icon: 'key',
       };
     default:
       if (!name) {

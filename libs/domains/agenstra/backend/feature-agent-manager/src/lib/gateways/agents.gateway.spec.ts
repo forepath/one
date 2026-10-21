@@ -2275,13 +2275,13 @@ describe('AgentsGateway', () => {
           type: 'result',
           subtype: 'success',
           is_error: false,
-          result: 'Hidden ACP reply',
+          result: 'Hidden reply',
         });
         const mockParsedResponse = {
           type: 'result',
           subtype: 'success',
           is_error: false,
-          result: 'Hidden ACP reply',
+          result: 'Hidden reply',
         };
 
         mockAgentProvider.sendMessage.mockResolvedValue(mockAgentResponseJson);

@@ -29,6 +29,7 @@ import {
   renderEgressGuardArtifacts,
   type EgressUpstreamProxy,
 } from '../utils/egress-guard-config.utils';
+import { resolveAgentContextEgressAllows } from '../utils/agent-context-egress.utils';
 import { isolationRuntimeOptions } from '../utils/container-isolation.utils';
 
 import { DockerService } from './docker.service';
@@ -255,7 +256,8 @@ export class AgentEgressService {
     upstream: EgressUpstreamProxy | null,
     force = false,
   ): Promise<{ revision: string; applied: boolean }> {
-    const revision = computeEgressPolicyRevision(policy, upstream);
+    const platformAllows = await resolveAgentContextEgressAllows();
+    const revision = computeEgressPolicyRevision(policy, upstream, undefined, platformAllows);
 
     if (!force) {
       const status = await this.getGuardStatus(guardId);
@@ -265,7 +267,7 @@ export class AgentEgressService {
       }
     }
 
-    const artifacts = renderEgressGuardArtifacts(policy, upstream);
+    const artifacts = renderEgressGuardArtifacts(policy, upstream, undefined, platformAllows);
 
     await this.dockerService.sendCommandToContainer(guardId, [EGRESS_GUARD_CLI, 'prepare'], undefined, true, {
       user: '0',

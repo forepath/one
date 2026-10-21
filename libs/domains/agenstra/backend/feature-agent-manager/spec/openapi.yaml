@@ -272,6 +272,10 @@ paths:
   /agents/{id}/permissions/{permissionId}/reply:
     post:
       summary: Reply to an OpenCode permission request
+      description: |
+        Also answers Agenstra context access prompts (`question` events with subtype `context_access`, ids starting
+        with `ctx_`). Those are decided by the agent-manager (`once` = this request, `always` = this chat, `reject`)
+        and work while the worker container is stopped.
       operationId: replyAgentPermission
       parameters:
         - in: path
@@ -303,6 +307,190 @@ paths:
           description: Permission reply accepted
         '404':
           description: Agent not found or not running
+  /agent-context/health:
+    get:
+      summary: Context MCP startup probe
+      description: |
+        Agent-facing context API used by the worker `agenstra` MCP server. Not reachable with user credentials:
+        callers authenticate with the per-agent context token plus `x-agenstra-agent-id`.
+      operationId: agentContextHealth
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+      responses:
+        '204':
+          description: Reachable and authenticated
+        '401':
+          description: Invalid agent context credentials
+  /agent-context/tickets/{ticket}:
+    get:
+      summary: List the context granted for a prompt
+      description: Metadata of granted context items (no content), attachments, workspace and environment mounts.
+      operationId: listAgentContext
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - $ref: '#/components/parameters/agentContextTicket'
+      responses:
+        '200':
+          description: Granted context
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentContextListResponse'
+        '401':
+          description: Invalid agent context credentials
+        '404':
+          description: Unknown, expired or foreign context ticket
+  /agent-context/tickets/{ticket}/search:
+    get:
+      summary: Search workspace tickets and knowledge (metadata only)
+      operationId: searchAgentContext
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - $ref: '#/components/parameters/agentContextTicket'
+        - in: query
+          name: query
+          schema:
+            type: string
+            maxLength: 200
+          description: Title fragment or SHA prefix
+        - in: query
+          name: kinds
+          schema:
+            type: string
+          description: Comma-separated `ticket`, `knowledge`
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+      responses:
+        '200':
+          description: Matching elements (metadata only, `granted` flags whether content is readable)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AgentContextItemSummary'
+        '404':
+          description: Unknown ticket or no controller connection to resolve metadata
+  /agent-context/tickets/{ticket}/items/{ref}:
+    get:
+      summary: Read a granted context element
+      operationId: getAgentContextItem
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - $ref: '#/components/parameters/agentContextTicket'
+        - in: path
+          name: ref
+          required: true
+          schema:
+            type: string
+            pattern: '^(item:\d{1,4}|(ticket|knowledge):[0-9a-fA-F]{4,40})$'
+      responses:
+        '200':
+          description: Full content (same text that used to be inlined into prompts)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ref, kind, title, content]
+                properties:
+                  ref:
+                    type: string
+                  kind:
+                    type: string
+                    enum: [ticket, knowledge, context]
+                  title:
+                    type: string
+                  content:
+                    type: string
+        '400':
+          description: Malformed ref
+        '403':
+          description: Ref not granted (request access first)
+        '404':
+          description: Unknown item or element
+  /agent-context/tickets/{ticket}/access-requests:
+    post:
+      summary: Request access to additional tickets / knowledge
+      description: |
+        Interactive chats show a permission-style prompt (`context_access`) and wait up to 120 s for the decision.
+        Auto-approval sessions (ticket automation, plan mode) are granted without asking; hidden helper sessions
+        (prompt enhancement, ticket body generation) are denied.
+      operationId: requestAgentContextAccess
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - $ref: '#/components/parameters/agentContextTicket'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refs]
+              properties:
+                refs:
+                  type: array
+                  maxItems: 20
+                  items:
+                    type: string
+                reason:
+                  type: string
+                  maxLength: 1000
+      responses:
+        '200':
+          description: Decision (or `pending` when nobody answered in time)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentContextAccessResponse'
+        '400':
+          description: Invalid refs
+  /agent-context/tickets/{ticket}/access-requests/{requestId}:
+    get:
+      summary: Keep waiting on a pending access request
+      operationId: getAgentContextAccessRequest
+      tags: [Agent context]
+      security:
+        - agentContextToken: []
+      parameters:
+        - $ref: '#/components/parameters/agentContextAgentId'
+        - $ref: '#/components/parameters/agentContextTicket'
+        - in: path
+          name: requestId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Decision (or still `pending`)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentContextAccessResponse'
+        '404':
+          description: Unknown or expired request
   /agents/{id}/questions/{questionId}/reply:
     post:
       summary: Reply to an OpenCode question / form request
@@ -2391,7 +2579,25 @@ components:
     basicAuth:
       type: http
       scheme: basic
+    agentContextToken:
+      type: http
+      scheme: bearer
+      description: Per-agent context token (worker MCP server only; derived by the manager, never user-issued)
   parameters:
+    agentContextAgentId:
+      name: x-agenstra-agent-id
+      in: header
+      required: true
+      schema:
+        type: string
+        format: uuid
+    agentContextTicket:
+      name: ticket
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Context ticket from the prompt hint (bound to one agent and chat session)
     fileManagerContext:
       name: context
       in: query
@@ -2402,6 +2608,88 @@ components:
         default: app
       description: Filesystem root for relative paths. `app` (default) uses the provider workspace root (e.g. /app).
   schemas:
+    AgentContextItemSummary:
+      type: object
+      required: [ref, kind, title, granted]
+      properties:
+        ref:
+          type: string
+          description: '`item:<n>`, `ticket:<sha>` or `knowledge:<sha>`'
+        kind:
+          type: string
+          enum: [ticket, knowledge, context]
+        title:
+          type: string
+        sha:
+          type: string
+        status:
+          type: string
+        priority:
+          type: string
+        nodeType:
+          type: string
+        parentSha:
+          type: [string, 'null']
+        size:
+          type: integer
+        granted:
+          type: boolean
+    AgentContextListResponse:
+      type: object
+      required: [ticket, items, attachments, environments, canRequestAccess]
+      properties:
+        ticket:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentContextItemSummary'
+        attachments:
+          type: array
+          items:
+            type: object
+            properties:
+              fileName:
+                type: string
+              contentType:
+                type: string
+              byteSize:
+                type: integer
+              agentPath:
+                type: string
+        workspace:
+          type: object
+          properties:
+            mountPath:
+              type: string
+            containerType:
+              type: string
+        environments:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              containerType:
+                type: string
+        canRequestAccess:
+          type: boolean
+    AgentContextAccessResponse:
+      type: object
+      required: [requestId, decision, refs]
+      properties:
+        requestId:
+          type: string
+        decision:
+          type: string
+          enum: [granted, denied, pending]
+        refs:
+          type: array
+          items:
+            type: string
+        message:
+          type: string
     EnvironmentProgressDto:
       type: object
       required:
@@ -2682,8 +2970,8 @@ components:
       properties:
         transport:
           type: string
-          enum: [acp]
-          description: Wire transport for agent messaging (Agent Client Protocol over stdio)
+          enum: [opencode-http, http]
+          description: Wire transport for agent messaging (OpenCode HTTP server API + SSE events)
         supportsChat:
           type: boolean
         supportsStreaming:

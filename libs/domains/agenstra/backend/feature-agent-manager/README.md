@@ -23,7 +23,7 @@ Agents are entities that can be created, authenticated, and interacted with thro
 - ✅ Chat message broadcasting
 - ✅ Container command forwarding
 - ✅ Support for UUID or name-based agent identification
-- ✅ **Plugin-based agent provider system** - OpenCode via [Agent Client Protocol (ACP)](../../../../docs/agenstra/ai-agents/agent-client-protocol.md) over stdio; additional types through the unified `AgentProvider` interface
+- ✅ **Plugin-based agent provider system** - OpenCode over its HTTP server API ([Agent Runtime](../../../../docs/agenstra/ai-agents/agent-runtime.md)), prompt context via the [Agent Context MCP](../../../../docs/agenstra/ai-agents/context-mcp.md); additional types through the unified `AgentProvider` interface
 - ✅ **Plugin-based chat filter system** - Support for multiple message filtering implementations (profanity, PII, content policy, etc.) through a unified interface
 - ✅ **Egress guard** - Per-agent sidecar (Squid, dnsmasq, iptables) that filters outbound web traffic and reports decision events; see [Egress Filtering](../../../../docs/agenstra/features/egress-filtering.md). Message filters (`message_filters`) arrive with the layered agent configuration; see [Message Filters](../../../../docs/agenstra/features/message-filters.md)
 - ✅ **Extensible architecture** - Easy to add new agent providers and chat filters by implementing the respective interfaces
@@ -47,7 +47,7 @@ The library follows Domain-Driven Design (DDD) principles with clear separation 
   - **Agent Providers**: Plugin-based agent provider system
     - `AgentProvider` - Interface for agent implementations
     - `AgentProviderFactory` - Factory for getting the appropriate provider based on agent type
-    - `OpenCodeAgentProvider` - OpenCode ACP implementation
+    - `OpenCodeAgentProvider` - OpenCode HTTP (`opencode serve`) implementation
   - **Chat Filters**: Plugin-based chat filter system
     - `ChatFilter` - Interface for message filtering implementations
     - `ChatFilterFactory` - Factory for managing and retrieving filters by direction
@@ -448,7 +448,7 @@ The library uses a plugin-based architecture to support multiple agent implement
 
 #### Available Providers
 
-- **opencode** (default) - OpenCode binary running in Docker containers via ACP
+- **opencode** (default) - OpenCode server (`opencode serve`) running in Docker containers
 
 #### Adding New Providers
 

@@ -341,6 +341,28 @@ describe('ProvisioningService', () => {
       expect(decodedUserData).toContain('AUTO_ENRICH_ENABLED_GLOBAL: false');
     });
 
+    it('should attach agent workers to the manager network and enable the agent context MCP', async () => {
+      mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
+      mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);
+      (mockProvider.provisionServer as jest.Mock).mockResolvedValue(mockProvisionedServer);
+      mockClientsService.create.mockResolvedValue(mockClient);
+      mockProvisioningReferencesRepository.create.mockResolvedValue(mockProvisioningReference);
+
+      await service.provisionServer(provisionDto);
+      await service.provisionServer(provisionDto);
+
+      const [first, second] = (mockProvider.provisionServer as jest.Mock).mock.calls.map((call) =>
+        Buffer.from(call[0].userData, 'base64').toString('utf-8'),
+      );
+      const secretOf = (userData: string) => /AGENT_CONTEXT_TOKEN_SECRET: ([A-Za-z0-9_-]{43})\n/.exec(userData)?.[1];
+
+      expect(first).toContain('AGENT_DOCKER_NETWORK: agent-manager-network');
+      expect(first).toContain('AGENT_CONTEXT_MCP_MANAGER_URL: http://agent-manager-api:3000/api');
+      expect(first).toContain('name: agent-manager-network');
+      expect(secretOf(first)).toBeDefined();
+      expect(secretOf(first)).not.toBe(secretOf(second));
+    });
+
     it('should embed AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE in user data when provided', async () => {
       mockProvisioningProviderFactory.hasProvider.mockReturnValue(true);
       mockProvisioningProviderFactory.getProvider.mockReturnValue(mockProvider);

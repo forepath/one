@@ -142,7 +142,7 @@ function toWorkspacePath(
 /**
  * Resolve a user-supplied file path into the agent workspace (lexical containment).
  * Relative paths (incl. `./…`) are joined under the workspace root; absolute paths are accepted only
- * when they already point inside the workspace root (e.g. `/app/src/a.ts`, as sent by ACP agents).
+ * when they already point inside the workspace root (e.g. `/app/src/a.ts`, as sent by agent tools).
  * Symlinks are not resolved here — callers must additionally verify the canonical target in the container.
  * @throws BadRequestException for invalid paths or paths outside the workspace
  */

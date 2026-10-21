@@ -49,7 +49,7 @@ describe('AgentChatSessionsService', () => {
   };
   const mockAgentsRepository = {
     findByIdOrThrow: jest.fn(),
-    clearAcpSession: jest.fn(),
+    clearOpencodeSession: jest.fn(),
   };
   const mockAgentMessagesRepository = {
     findByAgentIdAndChatSessionId: jest.fn(),
@@ -182,18 +182,21 @@ describe('AgentChatSessionsService', () => {
 
       await expect(service.deleteSession(agentId, mockPrimarySession.id)).rejects.toThrow(BadRequestException);
       expect(mockChatSessionsRepository.delete).not.toHaveBeenCalled();
-      expect(mockAgentsRepository.clearAcpSession).not.toHaveBeenCalled();
+      expect(mockAgentsRepository.clearOpencodeSession).not.toHaveBeenCalled();
     });
 
     it('deletes user session and clears ACP session', async () => {
       mockChatSessionsRepository.findByAgentIdAndIdOrThrow.mockResolvedValue(mockUserSession);
       mockChatSessionsRepository.delete.mockResolvedValue(undefined);
-      mockAgentsRepository.clearAcpSession.mockResolvedValue(undefined);
+      mockAgentsRepository.clearOpencodeSession.mockResolvedValue(undefined);
 
       await service.deleteSession(agentId, mockUserSession.id);
 
       expect(mockChatSessionsRepository.delete).toHaveBeenCalledWith(mockUserSession.id);
-      expect(mockAgentsRepository.clearAcpSession).toHaveBeenCalledWith(agentId, mockUserSession.resumeSessionSuffix);
+      expect(mockAgentsRepository.clearOpencodeSession).toHaveBeenCalledWith(
+        agentId,
+        mockUserSession.resumeSessionSuffix,
+      );
     });
   });
 

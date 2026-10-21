@@ -75,6 +75,14 @@ export interface ConfigResponseDto {
   isolation?: HostIsolationCapabilitiesDto;
 }
 
+/** Lightweight reachability check of a workspace's agent-manager (`GET /clients/:id/ping`). */
+export interface ClientPingResponseDto {
+  reachable: boolean;
+  /** Why the workspace cannot be reached (only when `reachable` is false). */
+  error?: string;
+  checkedAt: string;
+}
+
 export interface ClientResponseDto {
   id: string;
   name: string;

@@ -168,16 +168,19 @@ jobs:
         run: |
           set -uo pipefail
           PR_SHA=$(git rev-parse HEAD)
+          # Always restore the PR checkout, otherwise later steps would run against the base branch.
+          trap 'git checkout --force "$PR_SHA"' EXIT
           git fetch origin "${{ github.base_ref }}" --depth=1
           git checkout "${{ github.event.pull_request.base.sha }}"
           rm -rf coverage coverage-base
-          npx nx affected --target=test --parallel=3 --configuration=ci --skip-nx-cache
+          # Base tests run with the PR's node_modules and may fail (e.g. removed dependencies); keep partial coverage.
+          npx nx affected --target=test --parallel=3 --configuration=ci --skip-nx-cache \
+            || echo "::warning::Base-branch tests failed; coverage baseline may be incomplete."
           if [ -d coverage ]; then
             mv coverage coverage-base
           else
             mkdir -p coverage-base
           fi
-          git checkout "$PR_SHA"
 
       - name: Ensure coverage-base exists for diff comment
         if: github.event_name == 'pull_request' && needs.detect-affected.outputs.has_test != 'true'

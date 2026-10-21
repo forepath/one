@@ -64,6 +64,7 @@ describe('ClientsController', () => {
   let opencodeLayerFilesService: { resetFailedAndEmitAllForAgent: jest.Mock };
   let configSyncTargets: {
     markAndProcessAgent: jest.Mock;
+    removeAgentTarget: jest.Mock;
   };
   const mockClientResponse: ClientResponseDto = {
     id: 'test-uuid',
@@ -80,7 +81,7 @@ describe('ClientsController', () => {
           type: 'opencode',
           displayName: 'Cursor',
           capabilities: {
-            transport: 'acp',
+            transport: 'opencode-http',
             supportsChat: true,
             supportsStreaming: true,
             supportsToolEvents: true,
@@ -126,6 +127,7 @@ describe('ClientsController', () => {
     createClientAgent: jest.fn(),
     updateClientAgent: jest.fn(),
     deleteClientAgent: jest.fn(),
+    pingClient: jest.fn(),
     startClientAgent: jest.fn(),
     stopClientAgent: jest.fn(),
     restartClientAgent: jest.fn(),
@@ -256,6 +258,7 @@ describe('ClientsController', () => {
           provide: OpencodeConfigSyncTargetsService,
           useValue: {
             markAndProcessAgent: jest.fn().mockResolvedValue({ syncStatus: 'synced' }),
+            removeAgentTarget: jest.fn().mockResolvedValue(undefined),
           },
         },
       ],
@@ -637,6 +640,30 @@ describe('ClientsController', () => {
     });
   });
 
+  describe('pingClient', () => {
+    it('returns the reachability of an accessible workspace', async () => {
+      const mockReq = { apiKeyAuthenticated: true } as any;
+      const result = { reachable: false, error: 'Failed to connect', checkedAt: '2026-01-01T00:00:00.000Z' };
+
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: null } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+      (proxyService as any).pingClient.mockResolvedValue(result);
+
+      await expect(controller.pingClient('client-uuid', mockReq)).resolves.toEqual(result);
+      expect((proxyService as any).pingClient).toHaveBeenCalledWith('client-uuid');
+    });
+
+    it('rejects workspaces the user cannot access', async () => {
+      const mockReq = { user: { id: 'other-user', roles: ['user'] } } as any;
+
+      clientsRepository.findById.mockResolvedValue({ id: 'client-uuid', userId: 'owner' } as any);
+      clientUsersRepository.findUserClientAccess.mockResolvedValue(null);
+
+      await expect(controller.pingClient('client-uuid', mockReq)).rejects.toThrow('You do not have access');
+      expect((proxyService as any).pingClient).not.toHaveBeenCalled();
+    });
+  });
+
   describe('deleteClientAgent', () => {
     it('should delete agent for a client', async () => {
       const mockReq = { apiKeyAuthenticated: true } as any;
@@ -648,6 +675,7 @@ describe('ClientsController', () => {
       await controller.deleteClientAgent('client-uuid', 'agent-uuid', mockReq);
 
       expect(proxyService.deleteClientAgent).toHaveBeenCalledWith('client-uuid', 'agent-uuid', undefined);
+      expect(configSyncTargets.removeAgentTarget).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
     });
   });
 

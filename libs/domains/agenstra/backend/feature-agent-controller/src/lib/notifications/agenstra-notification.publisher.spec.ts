@@ -171,42 +171,42 @@ describe('AgenstraNotificationPublisher', () => {
     });
   });
 
-  it('publishes ACP session failure events with workspace client id', () => {
+  it('publishes agent session failure events with workspace client id', () => {
     const dispatcher = {
       publishFireAndForget: jest.fn(),
     } as unknown as NotificationDispatcherService;
     const publisher = new AgenstraNotificationPublisher(dispatcher);
 
-    publisher.publishAgentAcpSessionFailed('client-1', {
+    publisher.publishAgentSessionFailed('client-1', {
       agentId: 'agent-1',
-      message: 'ACP session initialize failed',
-      code: 'ACP_SESSION_FAILED',
+      message: 'Session initialize failed',
+      code: 'AGENT_SESSION_FAILED',
     });
 
     expect(dispatcher.publishFireAndForget).toHaveBeenCalledWith({
-      type: 'agent.acp.session_failed',
+      type: 'agent.session_failed',
       scopeKey: INSTANCE_SCOPE_KEY,
       clientId: 'client-1',
       data: expect.objectContaining({
         agentId: 'agent-1',
-        code: 'ACP_SESSION_FAILED',
+        code: 'AGENT_SESSION_FAILED',
       }),
     });
   });
 
-  it('publishes ACP permission denied events with workspace client id', () => {
+  it('publishes agent permission denied events with workspace client id', () => {
     const dispatcher = {
       publishFireAndForget: jest.fn(),
     } as unknown as NotificationDispatcherService;
     const publisher = new AgenstraNotificationPublisher(dispatcher);
 
-    publisher.publishAgentAcpPermissionDenied('client-1', {
+    publisher.publishAgentPermissionDenied('client-1', {
       agentId: 'agent-1',
-      message: 'ACP session permission denied',
+      message: 'Session permission denied',
     });
 
     expect(dispatcher.publishFireAndForget).toHaveBeenCalledWith({
-      type: 'agent.acp.permission_denied',
+      type: 'agent.permission_denied',
       scopeKey: INSTANCE_SCOPE_KEY,
       clientId: 'client-1',
       data: expect.objectContaining({

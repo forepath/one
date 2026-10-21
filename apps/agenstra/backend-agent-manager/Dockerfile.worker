@@ -7,7 +7,8 @@
 # Exposes:    4096 (opencode serve HTTP API), 6080 (websockify → TigerVNC)
 # Build:      npx nx run agenstra-backend-agent-manager:worker-container-image
 # Run:        —
-# Notes:      Includes Node.js, Nx, opencode, Python (pip + uv), XFCE desktop, Chromium, TigerVNC, websockify.
+# Notes:      Includes Node.js, Nx, opencode, Python (pip + uv), XFCE desktop, Chromium, TigerVNC, websockify,
+#             and the Agenstra context MCP server (/opt/agenstra/mcp, label io.agenstra.context-mcp=1).
 #             Entrypoint runs as root to chown bind-mounted /app, then starts desktop + opencode as agenstra.
 #             Set OPENCODE_SERVER_PASSWORD for Basic auth. VNC has no password; access is ticket-proxied.
 #             Label io.agenstra.environment-mount=1: agent env is read from the managed volume at
@@ -113,9 +114,13 @@ COPY worker-desktop/chromium.desktop /usr/share/applications/chromium-agenstra.d
 COPY worker-desktop/terminal.desktop /usr/share/applications/agenstra-terminal.desktop
 COPY worker-desktop/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 COPY worker-desktop/vnc-auth-proxy.js /usr/local/bin/vnc-auth-proxy.js
+# Platform context MCP server (apps/agenstra/agent-context-mcp, bundled into the Nx build context by
+# `copy-context-mcp`). OpenCode starts it as the `agenstra` MCP server; root-owned and read-only for the agent.
+COPY agent-context-mcp/agenstra-context-mcp.cjs /opt/agenstra/mcp/agenstra-context-mcp.cjs
 
 RUN chmod 755 /etc/agenstra/vnc/xstartup /usr/local/bin/chromium-agenstra /usr/local/bin/docker-entrypoint.sh \
       /usr/local/bin/vnc-auth-proxy.js && \
+    chmod 755 /opt/agenstra /opt/agenstra/mcp && chmod 644 /opt/agenstra/mcp/agenstra-context-mcp.cjs && \
     install -d -o "${APP_UID}" -g "${APP_GID}" \
       /home/agenstra/.vnc \
       /home/agenstra/Desktop \
@@ -179,6 +184,9 @@ RUN chmod 755 /etc/agenstra/vnc/xstartup /usr/local/bin/chromium-agenstra /usr/l
 RUN install -d -m 700 -o root -g root /etc/agenstra/environment
 
 LABEL io.agenstra.environment-mount="1"
+# Advertises the bundled context MCP server: agent-manager only registers it (and stops inlining
+# ticket / knowledge context into prompts) for workers carrying this label.
+LABEL io.agenstra.context-mcp="1"
 
 ENV BROWSER=/usr/local/bin/chromium-agenstra
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

@@ -11,6 +11,7 @@ import type {
 import type {
   AddClientUserDto,
   ClientIsolationSummaryDto,
+  ClientPingResponseDto,
   ClientResponseDto,
   ClientUserResponseDto,
   CreateClientDto,
@@ -93,6 +94,13 @@ export class ClientsService {
   /**
    * Get the container isolation levels of a client's workspace host.
    */
+  /**
+   * Lightweight reachability check of a client's agent-manager (health endpoint, short timeout).
+   */
+  pingClient(clientId: string): Observable<ClientPingResponseDto> {
+    return this.http.get<ClientPingResponseDto>(`${this.apiUrl}/clients/${clientId}/ping`);
+  }
+
   getClientIsolation(clientId: string): Observable<ClientIsolationSummaryDto> {
     return this.http.get<ClientIsolationSummaryDto>(`${this.apiUrl}/clients/${clientId}/isolation`);
   }

@@ -43,7 +43,7 @@ channels:
       Client sends a chat message (requires prior login). Payload may include `responseMode` "single" | "stream" | "sync",
       `ephemeral` (skip `agent_messages` persistence for the turn), `suppressUserMessage` (send to agent but hide the user
       bubble; used by chat-plan execute), `continue`, `resumeSessionSuffix`, `chatId`, `correlationId`, `model`.
-      When `chatId` is set (and `resumeSessionSuffix` is not a reserved hidden ACP suffix), messages and events persist and
+      When `chatId` is set (and `resumeSessionSuffix` is not a reserved hidden session suffix), messages and events persist and
       emit under that user-visible chat session; otherwise the primary session is used.
       Reserved hidden suffixes include `-prompt-enhance`, `-ticket-body`, `-ticket-auto-*`, and `-plan-{planId}` (explore-only
       permissions; not automation allow-all). Those sessions are ephemeral/hidden and do not persist into `agent_messages`.
@@ -262,7 +262,25 @@ channels:
     description: |
       Full rebuild signal after initial workspace setup, branch switch / pull / prepare-clean, or manual
       rebuild-signal. Optional path seed list speeds controller crawl; content is never included.
+  agents/agentContextRequest:
+    address: agents/agentContextRequest
+    messages:
+      agentContextRequestEvent:
+        $ref: '#/components/messages/AgentContextRequest'
+    description: |
+      Server → controller request with Socket.IO acknowledgement, emitted while the worker `agenstra` MCP server reads
+      context. Sent to the socket that submitted the prompt first, then to other sockets logged into the agent
+      (15 s ack timeout each). Operations: `search` (ticket / knowledge metadata), `describe` (metadata for refs) and
+      `content` (full text of granted refs). The controller answers within the workspace bound to the connection
+      and never forwards this event to browsers. Access prompts for additional refs arrive as `chatEvent` `question`
+      frames with `subtype: context_access` and ids starting with `ctx_` (answered via the permission reply endpoint).
 operations:
+  serverRequestsAgentContext:
+    action: receive
+    channel:
+      $ref: '#/channels/agents~1agentContextRequest'
+    messages:
+      - $ref: '#/channels/agents~1agentContextRequest/messages/agentContextRequestEvent'
   clientSendsLogin:
     action: send
     channel:
@@ -562,6 +580,46 @@ components:
           timestamp:
             type: string
             description: ISO timestamp
+    AgentContextRequest:
+      name: agentContextRequest
+      title: Agent context request (ack)
+      contentType: application/json
+      payload:
+        type: object
+        required: [op, agentId]
+        properties:
+          op:
+            type: string
+            enum: [search, describe, content]
+          agentId:
+            type: string
+            format: uuid
+          query:
+            type: string
+            description: search only — title fragment or SHA prefix
+          kinds:
+            type: array
+            items:
+              type: string
+              enum: [ticket, knowledge]
+          limit:
+            type: integer
+            maximum: 50
+          refs:
+            type: array
+            maxItems: 20
+            description: describe / content — `{ kind, sha }` pairs
+            items:
+              type: object
+              required: [kind, sha]
+              properties:
+                kind:
+                  type: string
+                  enum: [ticket, knowledge]
+                sha:
+                  type: string
+      x-ack:
+        description: '`{ ok: true, items?: Metadata[], contents?: { kind, sha, title, content }[] }` or `{ ok: false, error }`'
     Chat:
       name: Chat
       title: Chat command
@@ -606,7 +664,7 @@ components:
             type: string
             description: >
               Optional user-visible chat session id. When omitted, the primary session is used.
-              Ignored when resumeSessionSuffix is a reserved hidden ACP suffix
+              Ignored when resumeSessionSuffix is a reserved hidden session suffix
               (prompt enhance, ticket body, automation `-ticket-auto-*`, or plan `-plan-{planId}`).
               Plan suffixes use explore-only session permissions (deny writes); automation suffixes use allow-all.
           contextInjection:
@@ -614,7 +672,9 @@ components:
             description: >
               Optional hidden context references for prompt enrichment. Agent-manager resolves each referenced
               agent's repository/container type server-side when composing the hidden preamble (non-generic types
-              only); clients do not send type fields on the wire.
+              only); clients do not send type fields on the wire. When the worker runs the platform `agenstra` context
+              MCP server, resolved ticket / knowledge bodies are not inlined: the preamble lists titles, sizes and a
+              context ticket, and the agent reads content through the MCP server (see `agentContextRequest`).
             properties:
               includeWorkspace:
                 type: boolean

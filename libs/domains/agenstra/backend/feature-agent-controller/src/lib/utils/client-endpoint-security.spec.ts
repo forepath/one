@@ -3,6 +3,8 @@ import { BadRequestException } from '@nestjs/common';
 import {
   assertClientEndpointHostnameResolvesToPublicIps,
   assertSafeClientEndpointOrThrow,
+  getClientEndpointTlsPolicy,
+  resetClientEndpointTlsWarningForTests,
   validateClientEndpointWithDnsOrThrow,
 } from './client-endpoint-security';
 
@@ -94,6 +96,50 @@ describe('client-endpoint-security', () => {
 
       expect(url.hostname).toBe('api.partner.test');
       expect(dns.promises.lookup).toHaveBeenCalled();
+    });
+  });
+
+  describe('getClientEndpointTlsPolicy', () => {
+    beforeEach(() => {
+      process.env = { ...originalEnv };
+      resetClientEndpointTlsWarningForTests();
+    });
+
+    afterEach(() => {
+      process.env = originalEnv;
+    });
+
+    it('verifies TLS by default without logging', () => {
+      const logger = { warn: jest.fn() };
+
+      delete process.env['CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED'];
+
+      expect(getClientEndpointTlsPolicy(logger as never)).toEqual({ rejectUnauthorized: true });
+      expect(logger.warn).not.toHaveBeenCalled();
+    });
+
+    it('warns only once per process when TLS verification is disabled', () => {
+      const first = { warn: jest.fn() };
+      const second = { warn: jest.fn() };
+
+      process.env['CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED'] = 'false';
+      process.env['NODE_ENV'] = 'development';
+
+      for (let i = 0; i < 5; i++) {
+        expect(getClientEndpointTlsPolicy(first as never)).toEqual({ rejectUnauthorized: false });
+      }
+
+      getClientEndpointTlsPolicy(second as never);
+
+      expect(first.warn).toHaveBeenCalledTimes(1);
+      expect(second.warn).not.toHaveBeenCalled();
+    });
+
+    it('still refuses disabled TLS verification in production', () => {
+      process.env['CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED'] = 'false';
+      process.env['NODE_ENV'] = 'production';
+
+      expect(() => getClientEndpointTlsPolicy()).toThrow('not allowed in production');
     });
   });
 });

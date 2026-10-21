@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { AGENSTRA_OPENCODE_PLATFORM_WIRE_VERSION } from '@forepath/agenstra/shared/util-opencode-config';
 
 import { OpencodeConfigSyncTargetsService } from './opencode-config-sync-targets.service';
@@ -126,5 +127,100 @@ describe('OpencodeConfigSyncTargetsService platform policy', () => {
     Object.assign(target, { syncStatus: 'failed', lastError: error });
     await service.processTargetById('t1');
     expect(publisher.publishEgressPolicy).not.toHaveBeenCalled();
+  });
+});
+
+describe('OpencodeConfigSyncTargetsService stale targets', () => {
+  const agentId = '5bd368c5-164f-48e4-99c7-f7faf8a1b3e2';
+  const target = () => ({
+    id: 't1',
+    clientId: 'c1',
+    agentId,
+    syncStatus: 'synced',
+    desiredRevision: 'old',
+    appliedRevision: 'old',
+    lastError: null,
+  });
+
+  function build(options: { payloadError?: unknown; syncResult?: unknown; syncError?: unknown }) {
+    const targetsRepo = {
+      find: jest.fn().mockResolvedValue([target()]),
+      findOne: jest.fn().mockResolvedValue({ ...target(), syncStatus: 'pending', desiredRevision: 'new' }),
+      save: jest.fn(async (value: unknown) => value),
+      delete: jest.fn().mockResolvedValue({ affected: 1 }),
+    };
+    const effectiveConfigSync = {
+      buildEffectivePayload: options.payloadError
+        ? jest.fn().mockRejectedValue(options.payloadError)
+        : jest.fn().mockResolvedValue({ effective: {}, secrets: {}, platformPolicy: undefined }),
+      syncAgent: options.syncError
+        ? jest.fn().mockRejectedValue(options.syncError)
+        : jest.fn().mockResolvedValue(options.syncResult ?? { ok: true }),
+    };
+    const service = new OpencodeConfigSyncTargetsService(
+      targetsRepo as never,
+      effectiveConfigSync as never,
+      {} as never,
+    );
+
+    return { service, targetsRepo };
+  }
+
+  it('matches only the manager wording for this exact agent', () => {
+    expect(OpencodeConfigSyncTargetsService.isAgentGoneMessage(`Agent with ID '${agentId}' not found`, agentId)).toBe(
+      true,
+    );
+    expect(OpencodeConfigSyncTargetsService.isAgentGoneMessage(`Agent with ID ${agentId} not found`, agentId)).toBe(
+      true,
+    );
+    expect(
+      OpencodeConfigSyncTargetsService.isAgentGoneMessage(
+        "Agent with ID '00000000-0000-4000-8000-000000000000' not found",
+        agentId,
+      ),
+    ).toBe(false);
+    expect(
+      OpencodeConfigSyncTargetsService.isAgentGoneMessage('Cannot GET /api/agents/x/opencode/config', agentId),
+    ).toBe(false);
+    expect(
+      OpencodeConfigSyncTargetsService.isAgentGoneError(new Error(`Agent with ID '${agentId}' not found`), agentId),
+    ).toBe(false);
+  });
+
+  it('prunes a reconciled target whose agent no longer exists on the manager', async () => {
+    const { service, targetsRepo } = build({
+      payloadError: new NotFoundException(`Agent with ID '${agentId}' not found`),
+    });
+
+    await expect(service.reconcileOutdatedSyncedTargets(5)).resolves.toEqual([]);
+    expect(targetsRepo.delete).toHaveBeenCalledWith({ id: 't1' });
+  });
+
+  it('keeps targets on other errors (manager down, older manager without the route)', async () => {
+    for (const payloadError of [new Error('connect ECONNREFUSED'), new NotFoundException('Cannot GET /api/x')]) {
+      const { service, targetsRepo } = build({ payloadError });
+
+      await service.reconcileOutdatedSyncedTargets(5);
+      expect(targetsRepo.delete).not.toHaveBeenCalled();
+    }
+  });
+
+  it('prunes on sync when the manager reports the agent missing (thrown or as a result)', async () => {
+    const thrown = build({ syncError: new NotFoundException(`Agent with ID '${agentId}' not found`) });
+    const returned = build({ syncResult: { ok: false, error: `Agent with ID '${agentId}' not found` } });
+
+    await thrown.service.processTargetById('t1');
+    await returned.service.processTargetById('t1');
+
+    expect(thrown.targetsRepo.delete).toHaveBeenCalledWith({ id: 't1' });
+    expect(returned.targetsRepo.delete).toHaveBeenCalledWith({ id: 't1' });
+    expect(returned.targetsRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('removes the target of a deleted agent', async () => {
+    const { service, targetsRepo } = build({});
+
+    await service.removeAgentTarget('c1', agentId);
+    expect(targetsRepo.delete).toHaveBeenCalledWith({ clientId: 'c1', agentId });
   });
 });

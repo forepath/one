@@ -1,13 +1,22 @@
 import { Injectable } from '@nestjs/common';
 
+import type { AgentContextTicketRecord } from '../types/agent-context.types';
 import { ContextInjectionPayload } from '../types/context-injection.types';
+import { buildAgentContextHintLines } from '../utils/agent-context-items.utils';
 import { buildPromptEnhancementMessage } from '../utils/chat-enhancement-prompt.utils';
 import { formatEnvironmentContextLine, formatWorkspaceContextLine } from '../utils/context-injection-prompt.utils';
 import { buildTicketBodyFromTitleMessage } from '../utils/ticket-body-prompt.utils';
 
 @Injectable()
 export class PromptContextComposerService {
-  private buildContextPreamble(contextInjection?: ContextInjectionPayload): string {
+  /**
+   * @param contextTicket When set, ticket / knowledge bodies are served by the worker `agenstra` MCP
+   * server and only short hints (titles, sizes, refs) are added to the prompt.
+   */
+  private buildContextPreamble(
+    contextInjection?: ContextInjectionPayload,
+    contextTicket?: AgentContextTicketRecord,
+  ): string {
     if (!contextInjection) {
       return '';
     }
@@ -42,7 +51,15 @@ export class PromptContextComposerService {
       lines.push(`- Relevant ticket references for context: ${ticketShas.join(', ')}`);
     }
 
-    if (ticketContexts.length > 0) {
+    if (contextTicket) {
+      if (knowledgeShas.length > 0) {
+        lines.push(`- Relevant knowledge references for context: ${knowledgeShas.join(', ')}`);
+      }
+
+      lines.push(...buildAgentContextHintLines(contextTicket));
+    }
+
+    if (!contextTicket && ticketContexts.length > 0) {
       lines.push('- Detailed ticket hierarchy context is provided below:');
 
       for (const [index, context] of ticketContexts.entries()) {
@@ -51,11 +68,11 @@ export class PromptContextComposerService {
       }
     }
 
-    if (knowledgeShas.length > 0) {
+    if (!contextTicket && knowledgeShas.length > 0) {
       lines.push(`- Relevant knowledge references for context: ${knowledgeShas.join(', ')}`);
     }
 
-    if (knowledgeContexts.length > 0) {
+    if (!contextTicket && knowledgeContexts.length > 0) {
       lines.push('- Detailed knowledge page context is provided below:');
 
       for (const [index, context] of knowledgeContexts.entries()) {
@@ -87,21 +104,33 @@ export class PromptContextComposerService {
     ].join('\n');
   }
 
-  composeChatMessage(message: string, contextInjection?: ContextInjectionPayload): string {
-    const preamble = this.buildContextPreamble(contextInjection);
+  composeChatMessage(
+    message: string,
+    contextInjection?: ContextInjectionPayload,
+    contextTicket?: AgentContextTicketRecord,
+  ): string {
+    const preamble = this.buildContextPreamble(contextInjection, contextTicket);
 
     return preamble ? `${preamble}${message}` : message;
   }
 
-  composeEnhanceMessage(message: string, contextInjection?: ContextInjectionPayload): string {
-    return buildPromptEnhancementMessage(this.composeChatMessage(message, contextInjection));
+  composeEnhanceMessage(
+    message: string,
+    contextInjection?: ContextInjectionPayload,
+    contextTicket?: AgentContextTicketRecord,
+  ): string {
+    return buildPromptEnhancementMessage(this.composeChatMessage(message, contextInjection, contextTicket));
   }
 
   composeTicketBodyMessage(
     title: string,
     hierarchyContext?: string,
     contextInjection?: ContextInjectionPayload,
+    contextTicket?: AgentContextTicketRecord,
   ): string {
-    return buildTicketBodyFromTitleMessage(this.composeChatMessage(title, contextInjection), hierarchyContext);
+    return buildTicketBodyFromTitleMessage(
+      this.composeChatMessage(title, contextInjection, contextTicket),
+      hierarchyContext,
+    );
   }
 }

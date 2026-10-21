@@ -7,6 +7,7 @@ import {
   BadRequestException,
   Param,
   ParseUUIDPipe,
+  Optional,
   Post,
 } from '@nestjs/common';
 
@@ -14,6 +15,8 @@ import { ReplyPermissionDto, ReplyQuestionDto } from '../dto/reply-permission.dt
 import { AgentsGateway } from '../gateways/agents.gateway';
 import { OpenCodeRuntimeService } from '../providers/opencode/opencode-runtime.service';
 import { AgentsRepository } from '../repositories/agents.repository';
+import { AgentContextAccessService } from '../services/agent-context-access.service';
+import { AgentContextApiService } from '../services/agent-context-api.service';
 
 /**
  * HTTP endpoints for OpenCode permission and question replies.
@@ -25,6 +28,7 @@ export class AgentsPermissionsController {
     private readonly agentsRepository: AgentsRepository,
     private readonly openCodeRuntime: OpenCodeRuntimeService,
     private readonly agentsGateway: AgentsGateway,
+    @Optional() private readonly contextApi?: AgentContextApiService,
   ) {}
 
   private async requireRunningAgent(agentId: string): Promise<{ containerId: string }> {
@@ -48,6 +52,33 @@ export class AgentsPermissionsController {
     @Param('permissionId') permissionId: string,
     @Body() dto: ReplyPermissionDto,
   ): Promise<void> {
+    // Context access prompts (agenstra MCP) are decided by the manager, not by OpenCode.
+    if (this.contextApi && AgentContextAccessService.isAccessRequestId(permissionId)) {
+      if (!(await this.agentsRepository.findById(agentId))) {
+        throw new NotFoundException(`Agent '${agentId}' was not found`);
+      }
+
+      if (dto.reply !== 'once' && dto.reply !== 'always' && dto.reply !== 'reject') {
+        throw new BadRequestException('reply must be once, always or reject');
+      }
+
+      try {
+        const answeredIds = this.contextApi.decideAccess(agentId, permissionId, dto.reply);
+
+        this.agentsGateway.publishInteractionAnswered(
+          agentId,
+          answeredIds,
+          `Context access ${permissionId}: ${dto.reply}`,
+        );
+      } catch (error) {
+        const message = (error as { message?: string }).message ?? 'Context access reply failed';
+
+        throw new BadRequestException(message);
+      }
+
+      return;
+    }
+
     const { containerId } = await this.requireRunningAgent(agentId);
 
     try {
@@ -74,6 +105,15 @@ export class AgentsPermissionsController {
     @Param('questionId') questionId: string,
     @Body() dto: ReplyQuestionDto,
   ): Promise<void> {
+    if (this.contextApi && AgentContextAccessService.isAccessRequestId(questionId)) {
+      // Older consoles may answer context prompts as a form question: map the chosen option.
+      const answer = dto.reply === 'reject' ? 'reject' : dto.answers?.[0];
+
+      return this.replyPermission(agentId, questionId, {
+        reply: answer === 'once' || answer === 'always' ? answer : 'reject',
+      });
+    }
+
     const { containerId } = await this.requireRunningAgent(agentId);
 
     try {

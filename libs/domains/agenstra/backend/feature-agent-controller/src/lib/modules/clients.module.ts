@@ -96,6 +96,7 @@ import { AgentConsoleStatusRealtimeService } from '../services/agent-console-sta
 import { AgentConsoleStatusService } from '../services/agent-console-status.service';
 import { AgenstraAttachmentsService } from '../services/agenstra-attachments.service';
 import { AgenstraMetricsCollectorService } from '../services/agenstra-metrics-collector.service';
+import { AgentContextRequestHandlerService } from '../services/agent-context-request-handler.service';
 import { AutoContextResolverService } from '../services/auto-context-resolver.service';
 import { AutonomousRunOrchestratorService } from '../services/autonomous-run-orchestrator.service';
 import { ClientAgentAutonomyService } from '../services/client-agent-autonomy.service';
@@ -233,6 +234,7 @@ const authMethod = getAuthenticationMethod();
     TicketsService,
     KnowledgeTreeService,
     AutoContextResolverService,
+    AgentContextRequestHandlerService,
     KnowledgeEmbeddingIndexService,
     LocalEmbeddingProvider,
     TicketAutomationService,

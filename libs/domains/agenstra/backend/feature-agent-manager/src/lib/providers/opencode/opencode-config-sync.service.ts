@@ -12,6 +12,8 @@ import {
   extractProviderEnvSecrets,
   applyMcpRemovalTombstones,
   injectMcpSecretsIntoWire,
+  injectPlatformContextMcpWire,
+  isPlatformContextMcpServerKey,
   isPemCertificateMaterial,
   migrateConfigV1ToV2,
   prepareConfigForSync,
@@ -43,6 +45,7 @@ import {
   EGRESS_GUARDED_AGENT_CAP_DROP,
   type AgentEgressApplyResult,
 } from '../../services/agent-egress.service';
+import { AgentContextMcpService } from '../../services/agent-context-mcp.service';
 import { AgentMessageFiltersService } from '../../services/agent-message-filters.service';
 import { AgentRuntimeRefreshService } from '../../services/agent-runtime-refresh.service';
 import { DockerService } from '../../services/docker.service';
@@ -269,6 +272,8 @@ export class OpenCodeConfigSyncService {
     private readonly agentEgress?: AgentEgressService,
     @Optional()
     private readonly messageFilters?: AgentMessageFiltersService,
+    @Optional()
+    private readonly contextMcp?: AgentContextMcpService,
   ) {}
 
   registerConfigSyncedBroadcaster(broadcaster: (agentId: string) => void): void {
@@ -505,7 +510,11 @@ export class OpenCodeConfigSyncService {
       // SDK `config.update` targets `/config` (project), which does not persist for workers.
       // Inject MCP secrets after assert so stored overlays never hold credential-like keys.
       // PATCH merges mcp keys and rejects null deletes — tombstone removed servers with { enabled: false }.
-      const wireConfig = injectMcpSecretsIntoWire(structuredClone(prepared) as JsonObject, secrets) as JsonObject;
+      const securedWire = injectMcpSecretsIntoWire(structuredClone(prepared) as JsonObject, secrets) as JsonObject;
+      // Platform context MCP server (worker image ≥ context-mcp label). Injected after allow/deny + secrets so
+      // overlays can neither remove nor spoof it; when unavailable the tombstone pass disables a stale entry.
+      const contextMcpOptions = await this.contextMcp?.buildWireOptions(agentId, containerId).catch(() => null);
+      const wireConfig = contextMcpOptions ? injectPlatformContextMcpWire(securedWire, contextMcpOptions) : securedWire;
       const currentGlobal = await this.fetchOpenCodeJson<Record<string, unknown>>(
         agentId,
         containerId,
@@ -546,6 +555,8 @@ export class OpenCodeConfigSyncService {
 
         return { ok: false, error: message };
       }
+
+      this.contextMcp?.invalidate(agentId);
 
       if (egressPlan && !egressPlan.ok) {
         // Everything else was applied; surface the egress failure so the controller retries / notifies.
@@ -1089,7 +1100,8 @@ mv -fT -- "$tmp" ${JSON.stringify(filePath)}`,
     const servers: OpencodeMcpServerStatusDto[] = [];
 
     for (const [name, raw] of Object.entries(data)) {
-      if (!name.trim()) {
+      // The platform context server is managed by Agenstra, not part of the user's MCP configuration.
+      if (!name.trim() || isPlatformContextMcpServerKey(name)) {
         continue;
       }
 

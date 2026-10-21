@@ -1,22 +1,22 @@
 /**
  * User-visible chat session kinds stored in `agent_chat_sessions`.
- * Hidden ACP suffixes (prompt enhance, ticket body, automation, plan) are not persisted as rows.
+ * Hidden session suffixes (prompt enhance, ticket body, automation, plan) are not persisted as rows.
  */
 export const AGENT_CHAT_SESSION_KINDS = ['primary', 'user'] as const;
 
 export type AgentChatSessionKind = (typeof AGENT_CHAT_SESSION_KINDS)[number];
 
-/** Empty suffix is the primary ACP chat session. */
+/** Empty suffix is the primary OpenCode chat session. */
 export const PRIMARY_CHAT_RESUME_SESSION_SUFFIX = '';
 
-/** Prefix for user-created chat ACP suffixes (`-chat-{uuid}`). */
+/** Prefix for user-created chat session suffixes (`-chat-{uuid}`). */
 export const USER_CHAT_RESUME_SESSION_SUFFIX_PREFIX = '-chat-';
 
 /** Prefix for chat plan-mode hidden OpenCode sessions (`-plan-{planId}`). */
 export const CHAT_PLAN_RESUME_SESSION_SUFFIX_PREFIX = '-plan-';
 
 /**
- * Reserved ACP resumeSessionSuffix values used by background/hidden flows.
+ * Reserved resumeSessionSuffix values used by background/hidden flows.
  * These must never collide with user-visible chat session suffixes.
  * Dynamic `-plan-{uuid}` suffixes are also reserved via {@link isChatPlanResumeSessionSuffix}.
  */

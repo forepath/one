@@ -19,6 +19,8 @@ export interface ContextInjectionPayload {
   }>;
   ticketShas?: string[];
   ticketContexts?: string[];
+  /** Controller-resolved sha/title per `ticketContexts` entry (same order). */
+  ticketContextRefs?: Array<{ sha: string; title?: string }>;
   knowledgeShas?: string[];
   knowledgeContexts?: string[];
   autoEnrichmentEnabled?: boolean;

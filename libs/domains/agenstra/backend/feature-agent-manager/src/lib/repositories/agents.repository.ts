@@ -129,73 +129,74 @@ export class AgentsRepository {
     await this.repository.remove(agent);
   }
 
-  private acpSessionMapKey(resumeSessionSuffix?: string): string {
+  private opencodeSessionMapKey(resumeSessionSuffix?: string): string {
     return resumeSessionSuffix ?? '';
   }
 
   /**
-   * Return a persisted ACP session id for the given suffix when the container still matches.
+   * Return a persisted OpenCode session id for the given suffix when the container still matches.
    * Empty / omitted suffix is the primary chat session.
    */
-  async findPersistedAcpSessionId(
+  async findPersistedOpencodeSessionId(
     agentId: string,
     containerId: string,
     resumeSessionSuffix?: string,
   ): Promise<string | null> {
     const agent = await this.findById(agentId);
 
-    if (!agent?.acpSessionContainerId || agent.acpSessionContainerId !== containerId) {
+    if (!agent?.opencodeSessionContainerId || agent.opencodeSessionContainerId !== containerId) {
       return null;
     }
 
-    const sessionId = agent.acpSessions?.[this.acpSessionMapKey(resumeSessionSuffix)];
+    const sessionId = agent.opencodeSessions?.[this.opencodeSessionMapKey(resumeSessionSuffix)];
 
     return typeof sessionId === 'string' && sessionId.length > 0 ? sessionId : null;
   }
 
   /**
-   * Persist an ACP session id for a suffix (overwrites that key only).
+   * Persist an OpenCode session id for a suffix (overwrites that key only).
    * When the container id changes, previous suffix entries are discarded.
    */
-  async saveAcpSession(
+  async saveOpencodeSession(
     agentId: string,
     containerId: string,
-    acpSessionId: string,
+    opencodeSessionId: string,
     resumeSessionSuffix?: string,
   ): Promise<void> {
     const agent = await this.findById(agentId);
-    const mapKey = this.acpSessionMapKey(resumeSessionSuffix);
-    const sessions = agent?.acpSessionContainerId === containerId && agent.acpSessions ? { ...agent.acpSessions } : {};
+    const mapKey = this.opencodeSessionMapKey(resumeSessionSuffix);
+    const sessions =
+      agent?.opencodeSessionContainerId === containerId && agent.opencodeSessions ? { ...agent.opencodeSessions } : {};
 
-    sessions[mapKey] = acpSessionId;
+    sessions[mapKey] = opencodeSessionId;
 
     await this.repository.update(agentId, {
-      acpSessions: sessions,
-      acpSessionContainerId: containerId,
+      opencodeSessions: sessions,
+      opencodeSessionContainerId: containerId,
     });
   }
 
   /**
-   * Clear a persisted ACP session for one suffix (e.g. after prompt/transport failure).
+   * Clear a persisted OpenCode session for one suffix (e.g. after prompt/transport failure).
    * When the map becomes empty, also clear the container binding.
    */
-  async clearAcpSession(agentId: string, resumeSessionSuffix?: string): Promise<void> {
+  async clearOpencodeSession(agentId: string, resumeSessionSuffix?: string): Promise<void> {
     const agent = await this.findById(agentId);
 
     if (!agent) {
       return;
     }
 
-    const mapKey = this.acpSessionMapKey(resumeSessionSuffix);
-    const sessions = { ...(agent.acpSessions ?? {}) };
+    const mapKey = this.opencodeSessionMapKey(resumeSessionSuffix);
+    const sessions = { ...(agent.opencodeSessions ?? {}) };
 
     delete sessions[mapKey];
 
     const remainingKeys = Object.keys(sessions);
 
     await this.repository.update(agentId, {
-      acpSessions: remainingKeys.length > 0 ? sessions : null,
-      acpSessionContainerId: remainingKeys.length > 0 ? agent.acpSessionContainerId : null,
+      opencodeSessions: remainingKeys.length > 0 ? sessions : null,
+      opencodeSessionContainerId: remainingKeys.length > 0 ? agent.opencodeSessionContainerId : null,
     });
   }
 }

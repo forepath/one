@@ -131,7 +131,7 @@ describe('AgentConsoleStatusService', () => {
     expect(snapshot.spacesHasAttention).toBe(true);
   });
 
-  it('excludes hidden ACP chat sessions from chats[]', async () => {
+  it('excludes hidden session chats from chats[]', async () => {
     agentProxy.getClientAgents.mockResolvedValue([
       {
         ...mockAgent,

@@ -3,12 +3,13 @@ import {
   AuthenticationType,
   ClientAgentCredentialsRepository,
   ClientUsersRepository,
+  type RequestWithUser,
   SocketAuthService,
   buildRequestFromSocketUser,
   ensureClientAccess,
 } from '@forepath/identity/backend';
 import { resolveWebsocketCorsOrigin } from '@forepath/shared/shared/util-network-address';
-import { BadRequestException, Logger } from '@nestjs/common';
+import { BadRequestException, Logger, Optional } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
@@ -31,6 +32,10 @@ import { ClientsRepository } from '../repositories/clients.repository';
 import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 import { AgentConsoleStatusService } from '../services/agent-console-status.service';
 import { AgenstraAttachmentsService } from '../services/agenstra-attachments.service';
+import {
+  AGENT_CONTEXT_REQUEST_EVENT,
+  AgentContextRequestHandlerService,
+} from '../services/agent-context-request-handler.service';
 import { AutoContextResolverService } from '../services/auto-context-resolver.service';
 import { ClientAutomationChatRealtimeService } from '../services/client-automation-chat-realtime.service';
 import { ClientWorkspaceConfigurationOverridesProxyService } from '../services/client-workspace-configuration-overrides-proxy.service';
@@ -120,6 +125,8 @@ interface ContextInjectionPayload {
   }>;
   ticketShas?: string[];
   ticketContexts?: string[];
+  /** sha/title per `ticketContexts` entry (same order) — lets the manager serve them as MCP context items. */
+  ticketContextRefs?: Array<{ sha: string; title?: string }>;
   knowledgeShas?: string[];
   knowledgeContexts?: string[];
   autoEnrichmentEnabled?: boolean;
@@ -194,6 +201,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     private readonly notificationPublisher: AgenstraNotificationPublisher,
     private readonly workspaceSearchIndex: WorkspaceSearchIndexService,
     private readonly attachmentsService: AgenstraAttachmentsService,
+    @Optional() private readonly agentContextRequests?: AgentContextRequestHandlerService,
   ) {}
 
   afterInit(server: Server): void {
@@ -359,6 +367,8 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         randomizationFactor: 0.5,
       });
 
+      // Manager → controller context lookups (worker MCP) are answered here, never forwarded to the browser.
+      this.agentContextRequests?.attach(remote, clientId);
       // Log when remote socket is created for debugging
       this.logger.debug(`Created remote socket for clientId ${clientId}, socket.id ${socket.id}`);
       // Log socket configuration
@@ -388,6 +398,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         'reconnect_failed',
         'ping',
         'pong',
+        AGENT_CONTEXT_REQUEST_EVENT,
       ]);
 
       // Handle Socket.IO internal error events separately (don't forward to avoid disconnection)
@@ -420,16 +431,18 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
           const code = errorPayload?.code ?? errorPayload?.error?.code ?? null;
           const message = errorPayload?.message ?? errorPayload?.error?.message ?? null;
 
+          // `ACP_*` codes are still emitted by agent-managers released before the ACP removal.
           if (
+            code === 'AGENT_PERMISSION_DENIED' ||
             code === 'ACP_PERMISSION_DENIED' ||
             (typeof message === 'string' && message.includes('permission denied'))
           ) {
-            this.notificationPublisher.publishAgentAcpPermissionDenied(currentClientId, {
+            this.notificationPublisher.publishAgentPermissionDenied(currentClientId, {
               agentId: lastAgentId,
               message,
             });
-          } else if (code === 'ACP_SESSION_FAILED') {
-            this.notificationPublisher.publishAgentAcpSessionFailed(currentClientId, {
+          } else if (code === 'AGENT_SESSION_FAILED' || code === 'ACP_SESSION_FAILED') {
+            this.notificationPublisher.publishAgentSessionFailed(currentClientId, {
               agentId: lastAgentId,
               message,
               code,
@@ -1107,10 +1120,12 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     try {
       const userInfo = (socket as Socket & { data?: { userInfo?: Parameters<typeof buildRequestFromSocketUser>[0] } })
         .data?.userInfo;
-      const enrichedPayload = (await this.enrichForwardPayloadWithTicketContext(clientId, agentId, {
-        message,
-        contextInjection: data.contextInjection,
-      })) as {
+      const enrichedPayload = (await this.enrichForwardPayloadWithTicketContext(
+        clientId,
+        agentId,
+        { message, contextInjection: data.contextInjection },
+        this.requestForSocket(socket),
+      )) as {
         contextInjection?: ChatPlanContextInjectionJson;
       };
       const plan = await this.chatPlanService.create(
@@ -1181,10 +1196,12 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       let contextInjection: ChatPlanContextInjectionJson | undefined;
 
       if (data.contextInjection) {
-        const enrichedPayload = (await this.enrichForwardPayloadWithTicketContext(clientId, plan.agentId, {
-          message,
-          contextInjection: data.contextInjection,
-        })) as {
+        const enrichedPayload = (await this.enrichForwardPayloadWithTicketContext(
+          clientId,
+          plan.agentId,
+          { message, contextInjection: data.contextInjection },
+          this.requestForSocket(socket),
+        )) as {
           contextInjection?: ChatPlanContextInjectionJson;
         };
 
@@ -1367,7 +1384,12 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       }
 
       const agentId = data?.agentId;
-      const payloadWithContext = await this.enrichForwardPayloadWithTicketContext(clientId, agentId, payload);
+      const payloadWithContext = await this.enrichForwardPayloadWithTicketContext(
+        clientId,
+        agentId,
+        payload,
+        this.requestForSocket(socket),
+      );
       let loggedIn = this.loggedInAgentsBySocket.get(socket.id);
 
       if (!loggedIn) {
@@ -1629,10 +1651,23 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     }
   }
 
+  /** Authenticated user of a console socket, for per-request workspace access checks in shared services. */
+  private requestForSocket(socket: Socket): RequestWithUser | undefined {
+    const userInfo = (socket as Socket & { data?: { userInfo?: Parameters<typeof buildRequestFromSocketUser>[0] } })
+      .data?.userInfo;
+
+    return userInfo ? buildRequestFromSocketUser(userInfo) : undefined;
+  }
+
+  /**
+   * @param req Identity of the console user who sent the payload: knowledge / relation lookups enforce that user's
+   * access to the workspace (never resolve context on behalf of nobody).
+   */
   private async enrichForwardPayloadWithTicketContext(
     clientId: string,
     agentId: string | undefined,
     payload: unknown,
+    req: RequestWithUser | undefined,
   ): Promise<unknown> {
     if (!payload || typeof payload !== 'object') {
       return payload;
@@ -1664,18 +1699,21 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       contextInjection,
       workspaceAutoEnrichEnabledGlobal,
       workspaceAutoEnrichVectorMaxCosineDistance,
+      req,
     })) as ContextInjectionPayload;
     const ticketShas = Array.from(
       new Set((resolvedContextInjection.ticketShas ?? []).map((sha) => sha.trim()).filter((sha) => sha.length > 0)),
     );
     const ticketContexts: string[] = [];
+    const ticketContextRefs: NonNullable<ContextInjectionPayload['ticketContextRefs']> = [];
 
     for (const sha of ticketShas) {
       try {
-        const prompt = await this.ticketsService.getPrototypePromptByClientSha(clientId, sha);
+        const prompt = await this.ticketsService.getPrototypePromptWithRefByClientSha(clientId, sha);
 
         if (prompt?.prompt) {
           ticketContexts.push(prompt.prompt);
+          ticketContextRefs.push({ sha: prompt.longSha ?? sha, title: prompt.title });
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
@@ -1699,6 +1737,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         const knowledgeContextResponse = await this.knowledgeTreeService.collectPromptContextsByHashes(
           clientId,
           knowledgeShas,
+          req,
         );
 
         knowledgeContexts = knowledgeContextResponse.promptSections;
@@ -1742,6 +1781,7 @@ export class ClientsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
           ).values(),
         ),
         ticketContexts,
+        ticketContextRefs,
         knowledgeShas,
         knowledgeContexts: Array.from(
           new Set(

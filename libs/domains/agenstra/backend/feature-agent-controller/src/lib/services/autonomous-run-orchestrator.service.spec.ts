@@ -585,6 +585,125 @@ describe('AutonomousRunOrchestratorService', () => {
     await module.close();
   });
 
+  it('sends relation context as context items and only references the ticket on follow-up turns', async () => {
+    const ticketRepo = {
+      manager: {
+        query: jest.fn().mockResolvedValue([{ ticket_id: ticketId, client_id: clientId, agent_id: agentId }]),
+      },
+      findOne: jest.fn().mockResolvedValue({
+        id: ticketId,
+        clientId,
+        title: 'Test ticket',
+        longSha: '1234567890abcdef1234567890abcdef12345678',
+        status: TicketStatus.TODO,
+      }),
+      save: jest.fn().mockImplementation((t) => Promise.resolve(t)),
+    };
+    const automationRepo = {
+      findOne: jest.fn().mockResolvedValue({
+        ticketId,
+        allowedAgentIds: [agentId],
+        preferredModel: 'opencode/test-model',
+        verifierProfile: { commands: [{ cmd: 'echo ok' }] },
+        consecutiveFailureCount: 0,
+      }),
+      update: jest.fn().mockResolvedValue({ affected: 1 }),
+    };
+    const autonomyRepo = {
+      findOne: jest.fn().mockResolvedValue({
+        clientId,
+        agentId,
+        maxRuntimeMs: 3_600_000,
+        maxIterations: 2,
+        preImproveTicket: false,
+      }),
+    };
+    const runRepo = {
+      manager: { transaction: makeTransactionMock() },
+      update: jest.fn().mockResolvedValue({ affected: 1 }),
+      findOne: jest.fn().mockResolvedValue({
+        id: runId,
+        ticketId,
+        ticketStatusBefore: TicketStatus.TODO,
+        branchName: 'automation/dddddddd',
+        iterationCount: 2,
+      }),
+    };
+    const stepRepo = {
+      save: jest.fn().mockImplementation((row: unknown) => Promise.resolve(row)),
+      create: (x: unknown) => x,
+      find: jest.fn().mockResolvedValue([{ kind: 'agent_turn', excerpt: 'x' }]),
+    };
+    const activityRepo = {
+      save: jest.fn().mockImplementation((row: unknown) => Promise.resolve(row)),
+      create: (x: unknown) => x,
+    };
+    const leaseRepo = { update: jest.fn().mockResolvedValue({ affected: 1 }) };
+    const remoteChat = {
+      sendChatSync: jest.fn().mockResolvedValue({ text: 'still working', turnStatus: 'continue' }),
+    };
+    const vcsProxy = {
+      getBranches: jest.fn().mockResolvedValue([{ name: 'main', isRemote: false }]),
+      fetch: jest.fn().mockResolvedValue(undefined),
+      prepareCleanWorkspace: jest.fn().mockResolvedValue(undefined),
+      createBranch: jest.fn().mockResolvedValue(undefined),
+      switchBranch: jest.fn().mockResolvedValue(undefined),
+    };
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        AutonomousRunOrchestratorService,
+        ...realtimeSideProviders(ticketId).map((provider) =>
+          provider.provide === KnowledgeTreeService
+            ? {
+                provide: KnowledgeTreeService,
+                useValue: {
+                  collectAutomationRelationPromptSections: jest
+                    .fn()
+                    .mockResolvedValue(['Knowledge Page: Runbook\nRELATION BODY']),
+                },
+              }
+            : provider,
+        ),
+        { provide: getRepositoryToken(TicketEntity), useValue: ticketRepo },
+        { provide: getRepositoryToken(TicketAutomationEntity), useValue: automationRepo },
+        { provide: getRepositoryToken(TicketAutomationRunEntity), useValue: runRepo },
+        { provide: getRepositoryToken(TicketAutomationLeaseEntity), useValue: leaseRepo },
+        { provide: getRepositoryToken(TicketAutomationRunStepEntity), useValue: stepRepo },
+        { provide: getRepositoryToken(TicketActivityEntity), useValue: activityRepo },
+        { provide: getRepositoryToken(ClientAgentAutonomyEntity), useValue: autonomyRepo },
+        { provide: RemoteAgentsSessionService, useValue: remoteChat },
+        { provide: ClientAgentVcsProxyService, useValue: vcsProxy },
+      ],
+    }).compile();
+    const orchestrator = module.get(AutonomousRunOrchestratorService);
+
+    await orchestrator.processBatch(3);
+
+    expect(remoteChat.sendChatSync).toHaveBeenCalledTimes(2);
+    const [first, second] = remoteChat.sendChatSync.mock.calls.map((call) => call[0]);
+
+    // Turn 1: task text in the message, relation sections as context (not appended to the task).
+    expect(first.message).toContain('Implement this ticket');
+    expect(first.message).toContain('Do the work');
+    expect(first.message).not.toContain('RELATION BODY');
+    expect(first.contextInjection).toMatchObject({
+      ticketShas: ['1234567890abcdef1234567890abcdef12345678'],
+      knowledgeContexts: ['Knowledge Page: Runbook\nRELATION BODY'],
+    });
+    expect(first.contextInjection.ticketContexts).toBeUndefined();
+
+    // Turn 2+: only a reference; the full ticket travels as context.
+    expect(second.continue).toBe(true);
+    expect(second.message).toContain('Continue implementing ticket 12345678 "Test ticket"');
+    expect(second.message).not.toContain('Do the work');
+    expect(second.contextInjection).toMatchObject({
+      ticketContexts: ['- [ticket] Test ticket (todo, medium)\n  Content:\n  Do the work\n'],
+      ticketContextRefs: [{ sha: '1234567890abcdef1234567890abcdef12345678', title: 'Test ticket' }],
+      knowledgeContexts: ['Knowledge Page: Runbook\nRELATION BODY'],
+    });
+    await module.close();
+  });
+
   it('processBatch fails run when verifier command exits non-zero', async () => {
     const ticketRepo = {
       manager: {

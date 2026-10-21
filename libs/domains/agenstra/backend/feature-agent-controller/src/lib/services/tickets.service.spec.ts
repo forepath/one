@@ -431,6 +431,14 @@ describe('TicketsService', () => {
 
       expect(result).toBeNull();
     });
+
+    it('returns the same prompt plus ticket identity for agent context refs', async () => {
+      const withRef = await service.getPrototypePromptWithRefByClientSha(clientId, ticketLongSha);
+      const plain = await service.getPrototypePromptByClientSha(clientId, ticketLongSha);
+
+      expect(withRef).toEqual({ prompt: plain?.prompt, longSha: ticketLongSha, title: 'Example' });
+      await expect(service.getPrototypePromptWithRefByClientSha(clientId, '  ')).resolves.toBeNull();
+    });
   });
 
   describe('migrateTicket', () => {

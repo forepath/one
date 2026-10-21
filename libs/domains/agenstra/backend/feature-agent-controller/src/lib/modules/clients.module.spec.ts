@@ -12,6 +12,8 @@ import {
   UserPersonalAccessTokenEntity,
   UsersRepository,
 } from '@forepath/identity/backend';
+import { RedisCacheService } from '@forepath/shared/backend/util-redis-cache';
+import { getQueueToken } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -65,7 +67,7 @@ import { ClientsService } from '../services/clients.service';
 import { ExternalImportSyncMarkerService } from '../services/external-import-sync-marker.service';
 
 import { ClientsModule } from './clients.module';
-import { AgenstraNotificationsModule } from './agenstra-notifications.module';
+import { AgenstraNotificationsModule, AGENSTRA_CONTROLLER_QUEUE_NAME } from './agenstra-notifications.module';
 import { ContextImportModule } from './context-import.module';
 import { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 import { AgenstraSearchIndexService } from '../search/agenstra-search-index.service';
@@ -155,6 +157,15 @@ describe('ClientsModule', () => {
       .useModule(StubContextImportModule)
       .overrideModule(AgenstraNotificationsModule)
       .useModule(StubAgenstraNotificationsModule)
+      // Unit test: never open real Redis connections (BullMQ creates queue clients eagerly on compile).
+      .overrideProvider(getQueueToken(AGENSTRA_CONTROLLER_QUEUE_NAME))
+      .useValue({ add: jest.fn().mockResolvedValue(undefined), close: jest.fn().mockResolvedValue(undefined) })
+      .overrideProvider(RedisCacheService)
+      .useValue({
+        getJson: jest.fn().mockResolvedValue(null),
+        setJson: jest.fn().mockResolvedValue(false),
+        takeJson: jest.fn().mockResolvedValue(null),
+      })
       .overrideProvider(AgenstraSearchIndexService)
       .useValue({
         upsertSafe: jest.fn().mockResolvedValue(undefined),

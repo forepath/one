@@ -39,7 +39,8 @@ import {
 } from '../utils/ticket-board-realtime-mappers';
 import {
   buildAutonomousTicketRunPreamble,
-  appendRelatedContextSections,
+  buildAutomationFollowUpMessage,
+  withRelationContext,
 } from '../utils/tickets-prototype-prompt.utils';
 
 import { ClientAgentVcsProxyService } from './client-agent-vcs-proxy.service';
@@ -89,8 +90,12 @@ export class AutonomousRunOrchestratorService {
 
   /**
    * Ticket tree (parents + nested subtasks) plus relation-linked knowledge/tickets at the same scope depth.
+   * Relation sections travel as context (`knowledgeContexts`): the agent-manager serves them through the
+   * worker MCP server, or inlines them as hidden context when the worker has no context MCP.
    */
-  private async buildAutomationRunPrompt(ticket: TicketEntity): Promise<string> {
+  private async buildAutomationRunPrompt(
+    ticket: TicketEntity,
+  ): Promise<{ ticketPrompt: string; relationSections: string[] }> {
     const ticketPrompt = await this.ticketsService.buildAutomationTicketPromptBody(ticket);
     const ticketIds = await this.ticketsService.listAutomationRelationSourceTicketIds(ticket);
     const excludeShas = await this.ticketsService.listAutomationPromptTicketLongShas(ticket);
@@ -100,7 +105,7 @@ export class AutonomousRunOrchestratorService {
       excludeShas,
     );
 
-    return appendRelatedContextSections(ticketPrompt, relationSections);
+    return { ticketPrompt, relationSections };
   }
 
   async processBatch(batchSize: number): Promise<void> {
@@ -335,7 +340,7 @@ export class AutonomousRunOrchestratorService {
     };
 
     if (autonomy.preImproveTicket) {
-      const ticketPrompt = await this.buildAutomationRunPrompt(ticket);
+      const { ticketPrompt, relationSections } = await this.buildAutomationRunPrompt(ticket);
 
       await this.remoteChat.sendChatSync({
         clientId: ticket.clientId,
@@ -346,13 +351,21 @@ export class AutonomousRunOrchestratorService {
         resumeSessionSuffix: '-ticket-auto-pre',
         model: preferredModel,
         statisticsInteractionKind: StatisticsInteractionKind.AUTONOMOUS_TICKET_RUN_TURN,
-        contextInjection,
+        contextInjection: withRelationContext(contextInjection, relationSections),
       });
     }
 
     let iteration = 0;
     let sawCompletion = false;
-    const ticketPrompt = await this.buildAutomationRunPrompt(ticket);
+    const { ticketPrompt, relationSections } = await this.buildAutomationRunPrompt(ticket);
+    const loopContextInjection = withRelationContext(contextInjection, relationSections);
+    // Turns 2+ continue the same session: the task text is already in the transcript, so only a reference is
+    // sent and the full ticket travels as context (served on demand, or inlined when the worker lacks MCP).
+    const followUpContextInjection = {
+      ...loopContextInjection,
+      ticketContexts: [ticketPrompt],
+      ...(ticket.longSha ? { ticketContextRefs: [{ sha: ticket.longSha, title: ticket.title }] } : {}),
+    };
 
     while (iteration < autonomy.maxIterations) {
       iteration += 1;
@@ -362,13 +375,13 @@ export class AutonomousRunOrchestratorService {
         message:
           iteration === 1
             ? `${buildAutonomousTicketRunPreamble()}${ticketPrompt}\n\nImplement this ticket in the repository. Stay scoped to the ticket content above.`
-            : `${ticketPrompt}\n\nContinue implementing this ticket. Finish the scoped work when possible; the platform will collect turn status after this turn.`,
+            : buildAutomationFollowUpMessage(ticket),
         correlationId: `${run.id}:turn:${iteration}`,
         continue: iteration > 1,
         resumeSessionSuffix: '-ticket-auto-loop',
         model: preferredModel,
         statisticsInteractionKind: StatisticsInteractionKind.AUTONOMOUS_TICKET_RUN_TURN,
-        contextInjection,
+        contextInjection: iteration === 1 ? loopContextInjection : followUpContextInjection,
         expectAutomationTurnStatus: true,
       });
 

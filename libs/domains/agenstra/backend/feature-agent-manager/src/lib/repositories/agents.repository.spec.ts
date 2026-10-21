@@ -189,99 +189,101 @@ describe('AgentsRepository', () => {
   });
 
   describe('ACP session persistence', () => {
-    it('findPersistedAcpSessionId returns primary id when container matches', async () => {
+    it('findPersistedOpencodeSessionId returns primary id when container matches', async () => {
       mockTypeOrmRepository.findOne.mockResolvedValue({
         ...mockAgent,
-        acpSessions: { '': 'sess-abc' },
-        acpSessionContainerId: 'container-id-123',
+        opencodeSessions: { '': 'sess-abc' },
+        opencodeSessionContainerId: 'container-id-123',
       });
 
-      await expect(repository.findPersistedAcpSessionId('test-uuid', 'container-id-123')).resolves.toBe('sess-abc');
+      await expect(repository.findPersistedOpencodeSessionId('test-uuid', 'container-id-123')).resolves.toBe(
+        'sess-abc',
+      );
     });
 
-    it('findPersistedAcpSessionId returns suffix id', async () => {
+    it('findPersistedOpencodeSessionId returns suffix id', async () => {
       mockTypeOrmRepository.findOne.mockResolvedValue({
         ...mockAgent,
-        acpSessions: { '': 'sess-main', '-ticket-auto-loop': 'sess-loop' },
-        acpSessionContainerId: 'container-id-123',
+        opencodeSessions: { '': 'sess-main', '-ticket-auto-loop': 'sess-loop' },
+        opencodeSessionContainerId: 'container-id-123',
       });
 
       await expect(
-        repository.findPersistedAcpSessionId('test-uuid', 'container-id-123', '-ticket-auto-loop'),
+        repository.findPersistedOpencodeSessionId('test-uuid', 'container-id-123', '-ticket-auto-loop'),
       ).resolves.toBe('sess-loop');
     });
 
-    it('findPersistedAcpSessionId returns null when container changed', async () => {
+    it('findPersistedOpencodeSessionId returns null when container changed', async () => {
       mockTypeOrmRepository.findOne.mockResolvedValue({
         ...mockAgent,
-        acpSessions: { '': 'sess-abc' },
-        acpSessionContainerId: 'old-container',
+        opencodeSessions: { '': 'sess-abc' },
+        opencodeSessionContainerId: 'old-container',
       });
 
-      await expect(repository.findPersistedAcpSessionId('test-uuid', 'container-id-123')).resolves.toBeNull();
+      await expect(repository.findPersistedOpencodeSessionId('test-uuid', 'container-id-123')).resolves.toBeNull();
     });
 
-    it('saveAcpSession merges a suffix without dropping others', async () => {
+    it('saveOpencodeSession merges a suffix without dropping others', async () => {
       mockTypeOrmRepository.findOne.mockResolvedValue({
         ...mockAgent,
-        acpSessions: { '': 'sess-main' },
-        acpSessionContainerId: 'container-id-123',
+        opencodeSessions: { '': 'sess-main' },
+        opencodeSessionContainerId: 'container-id-123',
       });
       mockTypeOrmRepository.update.mockResolvedValue({ affected: 1 });
 
-      await repository.saveAcpSession('test-uuid', 'container-id-123', 'sess-loop', '-ticket-auto-loop');
+      await repository.saveOpencodeSession('test-uuid', 'container-id-123', 'sess-loop', '-ticket-auto-loop');
 
       expect(mockTypeOrmRepository.update).toHaveBeenCalledWith('test-uuid', {
-        acpSessions: { '': 'sess-main', '-ticket-auto-loop': 'sess-loop' },
-        acpSessionContainerId: 'container-id-123',
+        opencodeSessions: { '': 'sess-main', '-ticket-auto-loop': 'sess-loop' },
+        opencodeSessionContainerId: 'container-id-123',
       });
     });
 
-    it('saveAcpSession resets map when container changed', async () => {
+    it('saveOpencodeSession resets map when container changed', async () => {
       mockTypeOrmRepository.findOne.mockResolvedValue({
         ...mockAgent,
-        acpSessions: { '': 'sess-old' },
-        acpSessionContainerId: 'old-container',
+        opencodeSessions: { '': 'sess-old' },
+        opencodeSessionContainerId: 'old-container',
       });
       mockTypeOrmRepository.update.mockResolvedValue({ affected: 1 });
 
-      await repository.saveAcpSession('test-uuid', 'container-id-123', 'sess-new', '-ticket-auto-loop');
+      await repository.saveOpencodeSession('test-uuid', 'container-id-123', 'sess-new', '-ticket-auto-loop');
 
       expect(mockTypeOrmRepository.update).toHaveBeenCalledWith('test-uuid', {
-        acpSessions: { '-ticket-auto-loop': 'sess-new' },
-        acpSessionContainerId: 'container-id-123',
+        opencodeSessions: { '-ticket-auto-loop': 'sess-new' },
+        opencodeSessionContainerId: 'container-id-123',
       });
     });
 
-    it('clearAcpSession removes one suffix and keeps others', async () => {
+    it('clearOpencodeSession removes one suffix and keeps others', async () => {
       mockTypeOrmRepository.findOne.mockResolvedValue({
         ...mockAgent,
-        acpSessions: { '': 'sess-main', '-ticket-auto-loop': 'sess-loop' },
-        acpSessionContainerId: 'container-id-123',
+        opencodeSessions: { '': 'sess-main', '-ticket-auto-loop': 'sess-loop' },
+        opencodeSessionContainerId: 'container-id-123',
       });
       mockTypeOrmRepository.update.mockResolvedValue({ affected: 1 });
 
-      await repository.clearAcpSession('test-uuid', '-ticket-auto-loop');
+      await repository.clearOpencodeSession('test-uuid', '-ticket-auto-loop');
 
       expect(mockTypeOrmRepository.update).toHaveBeenCalledWith('test-uuid', {
-        acpSessions: { '': 'sess-main' },
-        acpSessionContainerId: 'container-id-123',
+        opencodeSessions: { '': 'sess-main' },
+        opencodeSessionContainerId: 'container-id-123',
       });
     });
 
-    it('clearAcpSession nulls map and container when last entry removed', async () => {
+    it('clearOpencodeSession nulls map and container when last entry removed', async () => {
       mockTypeOrmRepository.findOne.mockResolvedValue({
         ...mockAgent,
-        acpSessions: { '': 'sess-main' },
-        acpSessionContainerId: 'container-id-123',
+        opencodeSessions: { '': 'sess-main' },
+        opencodeSessionContainerId: 'container-id-123',
       });
       mockTypeOrmRepository.update.mockResolvedValue({ affected: 1 });
 
-      await repository.clearAcpSession('test-uuid');
+      await repository.clearOpencodeSession('test-uuid');
 
       expect(mockTypeOrmRepository.update).toHaveBeenCalledWith('test-uuid', {
-        acpSessions: null,
-        acpSessionContainerId: null,
+        opencodeSessions: null,
+        opencodeSessionContainerId: null,
       });
     });
   });

@@ -39,6 +39,9 @@ import {
   loadClients,
   loadClientsFailure,
   loadClientsSuccess,
+  pingClientFailure,
+  pingClientSuccess,
+  pingClients,
   loadClientSuccess,
   loadMoreClients,
   loadMoreClientsFailure,
@@ -246,6 +249,44 @@ export const setActiveClient$ = createEffect(
         // If it requires an API call in the future, inject the service here
         return of(setActiveClientSuccess({ id }));
       }),
+    );
+  },
+  { functional: true },
+);
+
+/** Concurrent workspace pings (each is a short health check proxied by the controller). */
+const CLIENT_PING_CONCURRENCY = 4;
+
+/**
+ * Ping each listed workspace once per session so unreachable ones are flagged in the list without loading their
+ * environments. Search / pagination reloads do not re-ping workspaces that were already checked.
+ */
+export const pingListedClients$ = createEffect(
+  (actions$ = inject(Actions), store = inject(Store)) => {
+    return actions$.pipe(
+      ofType(loadClientsSuccess, loadMoreClientsSuccess),
+      withLatestFrom(store.select(selectClientsState)),
+      map(([{ clients }, state]) => clients.map((c) => c.id).filter((id) => !(id in state.reachabilityErrors))),
+      filter((clientIds) => clientIds.length > 0),
+      map((clientIds) => pingClients({ clientIds })),
+    );
+  },
+  { functional: true },
+);
+
+export const pingClients$ = createEffect(
+  (actions$ = inject(Actions), clientsService = inject(ClientsService)) => {
+    return actions$.pipe(
+      ofType(pingClients),
+      mergeMap(({ clientIds }) => clientIds),
+      mergeMap(
+        (clientId) =>
+          clientsService.pingClient(clientId).pipe(
+            map((result) => pingClientSuccess({ clientId, result })),
+            catchError(() => of(pingClientFailure({ clientId }))),
+          ),
+        CLIENT_PING_CONCURRENCY,
+      ),
     );
   },
   { functional: true },

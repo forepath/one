@@ -44,6 +44,10 @@ While a guard enforces, the manager injects `HTTP_PROXY`, `HTTPS_PROXY` and `NO_
 | `enforce` | Allow and deny lists apply. **Deny wins** over allow; an **empty allowlist means unrestricted**.              |
 | `offline` | All egress is blocked (`network_allow` exceptions are ignored). Loopback and inbound manager traffic work.    |
 
+Platform exception: when the [agent context MCP](../ai-agents/context-mcp.md) is enabled, the guard always allows TCP to the
+manager's context API (`AGENT_CONTEXT_MCP_MANAGER_URL`, resolved to IP literals) in every mode, including `offline`. The
+exception bypasses the web intercept and is not counted as a policy decision.
+
 ## Policy fields
 
 Stored under the `egress` root of a layer overlay (**Security -> Web traffic** in the editor).

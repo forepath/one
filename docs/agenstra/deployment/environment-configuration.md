@@ -190,6 +190,14 @@ Optional runtime extensions for provisioning and context import. See [Dynamic pr
 
 - `OPENCODE_AGENT_DOCKER_IMAGE` - Primary worker image (default: `ghcr.io/forepath/agenstra-manager-worker:latest`)
 
+### Agent context MCP
+
+- `AGENT_CONTEXT_MCP_MANAGER_URL` - Manager base URL (including `/api`) as reachable **from worker containers**, e.g. `http://agent-manager-api:3000/api` on the `AGENT_DOCKER_NETWORK` bridge (default: empty = context MCP disabled, ticket / knowledge context stays inlined into prompts).
+- `AGENT_CONTEXT_MCP_ENABLED` - `false` forces the inline prompt context even when a URL is set (default: enabled when the URL is set).
+- `AGENT_CONTEXT_TOKEN_SECRET` - HMAC secret for per-agent context tokens (default: falls back to `ENCRYPTION_KEY`; without either the context MCP stays disabled). Rotating it invalidates tokens until the next OpenCode config sync.
+
+See [Agent Context MCP](../ai-agents/context-mcp.md).
+
 ### Egress guard (web traffic filtering)
 
 - `AGENT_EGRESS_GUARD_ENABLED` - Allow per-agent egress guard sidecars on this manager (default: `true`).
@@ -215,10 +223,6 @@ See [Egress Filtering](../features/egress-filtering.md).
 - `AGENT_ISOLATION_FAILURE_THRESHOLD` - Consecutive sandboxed runtime failures that trigger a re-probe (default: `3`).
 
 The gVisor runtime is installed on the Docker host, not in the manager container (cloud-init on provisioned servers, or `apps/agenstra/backend-agent-manager/host/agenstra-gvisor.sh`; the release and checksums are pinned; `GVISOR_RELEASE` / `GVISOR_SHA512` override them for the standalone script only). See [Container Isolation Levels](../features/container-isolation.md).
-
-### Agent Client Protocol (ACP)
-
-- `ACP_AUTO_APPROVE` - When not `false`, auto-select the first option on `session/request_permission` (default: enabled for headless agents). See [Agent Client Protocol](../ai-agents/agent-client-protocol.md).
 
 ### API image build arguments (manager / controller)
 

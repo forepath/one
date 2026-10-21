@@ -1,4 +1,5 @@
 import { ContainerType } from '../entities/agent.entity';
+import type { AgentContextTicketRecord } from '../types/agent-context.types';
 
 import { PromptContextComposerService } from './prompt-context-composer.service';
 
@@ -132,5 +133,78 @@ describe('PromptContextComposerService', () => {
     });
 
     expect(result).toBe('Plain message');
+  });
+
+  describe('with a context ticket (worker context MCP)', () => {
+    const contextTicket: AgentContextTicketRecord = {
+      ticket: 'ctx-test',
+      agentId: 'agent-1',
+      sessionKey: 'chat-1',
+      ephemeral: false,
+      correlationId: 'corr',
+      accessMode: 'ask',
+      items: [
+        { index: 1, kind: 'ticket', title: 'Fix login', sha: '329ec4f443e9', content: 'TICKET BODY' },
+        { index: 2, kind: 'knowledge', title: 'Auth design', content: 'KNOWLEDGE BODY' },
+      ],
+      grants: { ticket: ['329ec4f443e9'], knowledge: [] },
+      attachments: [],
+      environments: [],
+      createdAt: 0,
+      lastUsedAt: 0,
+    };
+    const injection = {
+      includeWorkspace: true,
+      ticketShas: ['329ec4f'],
+      ticketContexts: ['TICKET BODY'],
+      knowledgeShas: ['abcd123'],
+      knowledgeContexts: ['KNOWLEDGE BODY'],
+      attachmentContexts: [
+        {
+          id: 'att-1',
+          fileName: 'spec.pdf',
+          contentType: 'application/pdf',
+          byteSize: 10,
+          agentPath: '/opt/agenstra/attachments/spec.pdf',
+          downloadUrl: '/api/attachments/att-1/download',
+        },
+      ],
+    };
+
+    it('replaces inlined ticket and knowledge bodies with MCP hints', () => {
+      const result = service.composeChatMessage('Implement this', injection, contextTicket);
+
+      expect(result).toContain('<hidden-context>');
+      expect(result).toContain('Context ticket: ctx-test');
+      expect(result).toContain('item:1 [ticket 329ec4f4] "Fix login"');
+      expect(result).toContain('item:2 [knowledge] "Auth design"');
+      expect(result).toContain('Relevant ticket references for context: 329ec4f');
+      expect(result).toContain('Relevant knowledge references for context: abcd123');
+      expect(result).not.toContain('TICKET BODY');
+      expect(result).not.toContain('KNOWLEDGE BODY');
+      expect(result.endsWith('Implement this')).toBe(true);
+    });
+
+    it('keeps workspace and attachment hints unchanged', () => {
+      const result = service.composeChatMessage('Implement this', injection, contextTicket);
+
+      expect(result).toContain('/opt/workspace');
+      expect(result).toContain('/opt/agenstra/attachments/spec.pdf');
+    });
+
+    it('is much shorter than the inline composition', () => {
+      const big = { ...injection, ticketContexts: ['T'.repeat(5000)], knowledgeContexts: ['K'.repeat(5000)] };
+      const inline = service.composeChatMessage('Implement this', big);
+      const hinted = service.composeChatMessage('Implement this', big, contextTicket);
+
+      expect(inline.length).toBeGreaterThan(10_000);
+      expect(hinted.length).toBeLessThan(2_000);
+    });
+
+    it('passes the ticket through enhance and ticket-body composition', () => {
+      expect(service.composeEnhanceMessage('Draft', injection, contextTicket)).toContain('ctx-test');
+      expect(service.composeTicketBodyMessage('Title', undefined, injection, contextTicket)).toContain('ctx-test');
+      expect(service.composeEnhanceMessage('Draft', injection, contextTicket)).not.toContain('TICKET BODY');
+    });
   });
 });

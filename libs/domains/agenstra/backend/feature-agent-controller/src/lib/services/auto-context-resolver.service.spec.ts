@@ -135,9 +135,11 @@ describe('AutoContextResolverService', () => {
       localEmbeddingProvider,
       statisticsService,
     );
+    const req = { user: { id: 'user-1', roles: ['admin'] } } as never;
     const result = await service.resolve({
       clientId: 'c1',
       prompt: 'find docs',
+      req,
       contextInjection: {
         ticketShas: ['tsha'],
         knowledgeContexts: ['existing'],
@@ -156,10 +158,12 @@ describe('AutoContextResolverService', () => {
       expect.any(Number),
       expect.any(Number),
     );
+    // Relation lookups run with the caller's identity (workspace access is enforced, never skipped).
     expect(knowledgeTreeService.collectPromptContextsForSource).toHaveBeenCalledWith(
       'c1',
       KnowledgeRelationSourceType.TICKET,
       'ticket-1',
+      req,
     );
     expect(qb.andWhere).toHaveBeenCalledWith(
       '(embedding.embedding <=> CAST(:vector AS vector)) <= :maxCosineDistance',
