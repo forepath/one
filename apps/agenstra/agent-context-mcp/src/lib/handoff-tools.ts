@@ -55,9 +55,10 @@ export const HANDOFF_TOOL_DEFINITIONS: ContextToolDefinition[] = [
     name: AGENSTRA_HANDOFF_MCP_TOOL_NAMES.create,
     description:
       'Hand a task over to another agent of your workspace. The agent works on it in a new chat and its answer ' +
-      'arrives in this chat as a new message once it is done — do not poll or wait for it, finish your turn. ' +
-      'The message must be self-contained: the other agent does not see this conversation. Only possible from a ' +
-      'visible chat while no other session of yours is working (not from task runs or ticket automation).',
+      'arrives in this chat (or task run) as a new message once it is done — do not poll or wait for it, finish ' +
+      'your turn. The message must be self-contained: the other agent does not see this conversation. Possible ' +
+      'from a visible chat while no other session of yours is working, and from runs of a scheduled task to the ' +
+      'agents a user approved for that task (one open handoff at a time); not from plans or ticket automation.',
     inputSchema: {
       type: 'object',
       properties: {

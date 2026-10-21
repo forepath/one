@@ -561,6 +561,39 @@ describe('ClientsGateway', () => {
     expect(socket.emit).toHaveBeenCalledWith('forwardAck', expect.objectContaining({ received: true, event: 'chat' }));
   });
 
+  it('strips trust markers and platform session suffixes from every forward, with or without agentId', async () => {
+    const socket = createMockSocket();
+
+    mockClientsRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'client-uuid',
+      endpoint: 'http://localhost:3100/api',
+      authenticationType: 'api_key',
+      apiKey: 'x',
+    } as any);
+    await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
+    const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
+    const remote = io();
+
+    for (const resumeSessionSuffix of [
+      '-task-11111111-1111-4111-8111-111111111111',
+      '-ticket-auto-loop',
+      '-plan-x',
+      '-handoff-profile',
+    ]) {
+      await gateway.handleForward(
+        { event: 'chat', payload: { message: 'hi', resumeSessionSuffix, unattendedAutomation: true } },
+        socket,
+      );
+      expect(remote.emit).toHaveBeenLastCalledWith('chat', { message: 'hi' });
+    }
+
+    await gateway.handleForward(
+      { event: 'enhanceChat', payload: { message: 'hi', unattendedAutomation: true, resumeSessionSuffix: '-chat-x' } },
+      socket,
+    );
+    expect(remote.emit).toHaveBeenLastCalledWith('enhanceChat', { message: 'hi', resumeSessionSuffix: '-chat-x' });
+  });
+
   it('should wait for login success before forwarding when agentId provided', async () => {
     const socket = createMockSocket();
     const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };

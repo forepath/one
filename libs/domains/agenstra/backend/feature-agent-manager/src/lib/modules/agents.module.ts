@@ -83,6 +83,7 @@ import { AgentContextTicketsService } from '../services/agent-context-tickets.se
 import { AgentTasksApiService } from '../services/agent-tasks-api.service';
 import { AgentHandoffsApiService } from '../services/agent-handoffs-api.service';
 import { AgentActiveTurnsService } from '../services/agent-active-turns.service';
+import { AgentToolCallsService } from '../services/agent-tool-calls.service';
 import { AgentEnvironmentVariablesService } from '../services/agent-environment-variables.service';
 import { AgentFileSystemService } from '../services/agent-file-system.service';
 import { AgentDirectoryIndexService } from '../services/agent-directory-index.service';
@@ -172,6 +173,7 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     AgentTasksApiService,
     AgentHandoffsApiService,
     AgentActiveTurnsService,
+    AgentToolCallsService,
     AgentMessageEventsService,
     AgentSessionHydrationService,
     AgentChatSessionsService,

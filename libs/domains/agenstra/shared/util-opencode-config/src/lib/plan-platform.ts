@@ -34,19 +34,21 @@ export const AGENSTRA_PLAN_WRITE_PERMISSION_NAMES = ['edit', 'write', 'patch', '
  * Allow read/explore tools; deny write/mutation tools (including bash — cannot safely scope shell).
  */
 export const AGENSTRA_PLAN_SESSION_PERMISSION_RULESET = [
-  ...AGENSTRA_PLAN_EXPLORE_PERMISSION_NAMES.map((permission) => ({
-    permission,
-    pattern: '*',
-    action: 'allow' as const,
-  })),
+  // OpenCode evaluates rules last-match-wins and hides every tool whose last matching rule is a `*` deny, so the
+  // catch-all deny comes first and the explicit rules after it (a trailing catch-all would disable every tool).
+  { permission: '*', pattern: '*', action: 'deny' as const },
   ...AGENSTRA_PLAN_WRITE_PERMISSION_NAMES.map((permission) => ({
     permission,
     pattern: '*',
     action: 'deny' as const,
   })),
+  ...AGENSTRA_PLAN_EXPLORE_PERMISSION_NAMES.map((permission) => ({
+    permission,
+    pattern: '*',
+    action: 'allow' as const,
+  })),
   // Read-only platform context tools (tickets / knowledge served by the agenstra MCP server).
   { permission: AGENSTRA_CONTEXT_MCP_TOOL_PERMISSION, pattern: '*', action: 'allow' as const },
-  { permission: '*', pattern: '*', action: 'deny' as const },
 ];
 
 /** Structured turn-status schema for OpenCode `format: json_schema` on plan prompts. */

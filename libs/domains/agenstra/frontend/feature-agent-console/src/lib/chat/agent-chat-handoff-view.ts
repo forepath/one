@@ -3,15 +3,20 @@ import {
   type AgentHandoffResponseStatus,
 } from '@forepath/agenstra/shared/util-opencode-config';
 
-/** Where a handoff card jumps to: an agent of the active workspace and one of its chats (`null`: primary chat). */
+/**
+ * Where a handoff card jumps to: an agent of the active workspace and one of its chats (`null`: primary chat), or —
+ * for handoffs made by a scheduled task run — that run on the tasks page (`taskRun`).
+ */
 export interface AgentChatHandoffLink {
   agentId: string;
   chatId: string | null;
+  taskRun?: { taskId: string; runId: string };
 }
 
 /**
  * Handoff user messages rendered as cards:
- * - `request`: first message of a handoff chat (task received from another agent) → links the source chat
+ * - `request`: first message of a handoff chat (task received from another agent) → links the source chat, or the
+ *   source task run when a scheduled task run handed it over
  * - `response`: answer delivered into the chat the handoff was made in → links the handoff chat
  */
 export interface AgentChatHandoffCardView {
@@ -40,7 +45,14 @@ export function buildAgentChatHandoffCard(text: string | null | undefined): Agen
       title: parsed.meta.title,
       agentName: parsed.meta.sourceAgentName,
       body: parsed.body,
-      link: { agentId: parsed.meta.sourceAgentId, chatId: parsed.meta.sourceChatId },
+      link:
+        !parsed.meta.sourceChatId && parsed.meta.sourceTaskId && parsed.meta.sourceTaskRunId
+          ? {
+              agentId: parsed.meta.sourceAgentId,
+              chatId: null,
+              taskRun: { taskId: parsed.meta.sourceTaskId, runId: parsed.meta.sourceTaskRunId },
+            }
+          : { agentId: parsed.meta.sourceAgentId, chatId: parsed.meta.sourceChatId },
     };
   }
 

@@ -450,6 +450,18 @@ export class RemoteAgentsSessionService {
     return typeof text === 'string' ? text : '';
   }
 
+  /** `correlationId` of a `chatEvent` frame (`{ success, data: { correlationId } }`), when present. */
+  private extractFrameCorrelationId(payload: unknown): string | undefined {
+    if (!payload || typeof payload !== 'object') {
+      return undefined;
+    }
+
+    const envelope = payload as { data?: { correlationId?: unknown }; correlationId?: unknown };
+    const correlationId = envelope.data?.correlationId ?? envelope.correlationId;
+
+    return typeof correlationId === 'string' && correlationId ? correlationId : undefined;
+  }
+
   /** `chatId` of a `chatEvent` / `chatMessage` frame (`{ success, data: { chatId } }`), when present. */
   private extractFrameChatId(payload: unknown): string | undefined {
     if (!payload || typeof payload !== 'object') {
@@ -561,13 +573,16 @@ export class RemoteAgentsSessionService {
           resolve({ text, planTurnStatus });
         };
         const isForeignChatFrame = (msg: unknown): boolean => {
-          if (!useChatId) {
-            return false;
+          const frameChatId = this.extractFrameChatId(msg);
+          const frameCorrelationId = this.extractFrameCorrelationId(msg);
+
+          if (frameCorrelationId !== undefined && frameCorrelationId !== params.correlationId) {
+            return true;
           }
 
-          const frameChatId = this.extractFrameChatId(msg);
-
-          return frameChatId !== undefined && frameChatId !== params.chatId;
+          // Hidden sessions (plans, task runs) never carry a chat id: frames of the agent's visible chats, which the
+          // manager broadcasts to all of its sockets, must not settle or pollute this turn.
+          return useChatId ? frameChatId !== undefined && frameChatId !== params.chatId : frameChatId !== undefined;
         };
         const onChatEvent = (msg: unknown) => {
           if (isForeignChatFrame(msg)) {

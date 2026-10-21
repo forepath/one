@@ -1,5 +1,6 @@
 import {
   AGENT_HANDOFF_LIMITS,
+  parseAgentTaskIdFromResumeSessionSuffix,
   type AgentHandoffAgentSummary,
   type AgentHandoffAgentsResponse,
   type AgentHandoffControllerRequest,
@@ -193,12 +194,35 @@ export class AgentHandoffsApiService {
         resumeSessionSuffix: HANDOFF_PROFILE_RESUME_SESSION_SUFFIX,
       });
 
-      for (const line of provider.toParseableStrings(raw)) {
-        const result = provider.toUnifiedResponse(line)?.result;
+      // The profile is the agent's final answer: its last text part after its last tool activity. The turn's final
+      // result concatenates every text of the turn (narration between explore steps included), so it is a fallback.
+      let segment = '';
+      let segmentPartId: unknown;
+      let finalResult = '';
 
-        if (typeof result === 'string' && result.trim()) {
-          text = result.trim();
+      for (const line of provider.toParseableStrings(raw)) {
+        const event = provider.toUnifiedResponse(line);
+
+        if (event?.type === 'delta' && typeof event.delta === 'string') {
+          if (event['part_id'] !== undefined && event['part_id'] !== segmentPartId) {
+            segment = '';
+            segmentPartId = event['part_id'];
+          }
+
+          segment += event.delta;
+        } else if (event?.type === 'tool_call' || event?.type === 'tool_result') {
+          segment = '';
+          segmentPartId = undefined;
+        } else if (event?.type === 'result' && typeof event.result === 'string' && event.result.trim()) {
+          finalResult = event.result.trim();
         }
+      }
+
+      text = segment.trim() || finalResult;
+
+      // The prompt itself is never a profile (a worker may echo it into the turn's text).
+      if (text.startsWith(AGENT_HANDOFF_PROFILE_PROMPT.trim())) {
+        text = text.slice(AGENT_HANDOFF_PROFILE_PROMPT.trim().length).trim();
       }
     } catch (error) {
       this.logger.warn(`Handoff profile generation failed for agent ${targetAgentId}: ${(error as Error).message}`);
@@ -225,7 +249,25 @@ export class AgentHandoffsApiService {
   }
 
   async create(agentId: string, input: AgentHandoffCreateInput): Promise<AgentHandoffResponse> {
-    const sourceChatId = await this.resolveSourceChatId(agentId);
+    const source = await this.resolveSource(agentId);
+
+    if ('sourceTaskId' in source) {
+      // The controller checks the task's approval and approved targets; the response continues the run.
+      const model = input.model ?? this.lastChatModelByAgent.get(input.targetAgentId);
+
+      return {
+        handoff: this.requireHandoff(
+          await this.call({
+            op: 'create',
+            agentId,
+            sourceTaskId: source.sourceTaskId,
+            input: { ...input, ...(model ? { model } : {}) },
+          }),
+        ),
+      };
+    }
+
+    const sourceChatId = source.sourceChatId;
     const sourceModel =
       this.lastModelByChat.get(`${agentId}:${sourceChatId}`) ?? this.lastChatModelByAgent.get(agentId);
     const model = input.model ?? this.lastChatModelByAgent.get(input.targetAgentId) ?? sourceModel;
@@ -252,18 +294,28 @@ export class AgentHandoffsApiService {
   }
 
   /**
-   * The chat the call comes from: the response is delivered there, so handoffs are refused whenever that chat cannot
-   * be told reliably or a response could not arrive in time (hidden sessions end with their run).
+   * Where the call comes from: the response is delivered there, so handoffs are refused whenever that context cannot
+   * be told reliably or a response could not arrive in time. Allowed are visible chats and the hidden session of a
+   * scheduled task run (the controller resolves the run and checks what a user approved for the task); plans, ticket
+   * automation and every other hidden session end before a response could arrive.
    */
-  private async resolveSourceChatId(agentId: string): Promise<string> {
+  private async resolveSource(agentId: string): Promise<{ sourceChatId: string } | { sourceTaskId: string }> {
     const calling = this.activeTurns.callingContext(agentId);
 
     switch (calling.kind) {
-      case 'hidden':
+      case 'hidden': {
+        const sourceTaskId = parseAgentTaskIdFromResumeSessionSuffix(calling.suffix);
+
+        if (sourceTaskId) {
+          return { sourceTaskId };
+        }
+
         throw new BadRequestException(
-          'Handoffs are only available in visible chats. Task runs, ticket automation and other background sessions ' +
-            'end before a response could arrive; do the work yourself or ask the user to hand it off from a chat.',
+          'Handoffs are only available in visible chats and in runs of approved scheduled tasks. Plans, ticket ' +
+            'automation and other background sessions end before a response could arrive; do the work yourself or ' +
+            'ask the user to hand it off from a chat.',
         );
+      }
       case 'ambiguous':
         throw new ConflictException(
           'Another session of yours is working at the same time, so the chat that should receive the response is ' +
@@ -274,11 +326,11 @@ export class AgentHandoffsApiService {
     }
 
     if (calling.context.kind === 'primary') {
-      return (await this.chatSessions.ensurePrimarySession(agentId)).id;
+      return { sourceChatId: (await this.chatSessions.ensurePrimarySession(agentId)).id };
     }
 
     try {
-      return (await this.chatSessions.getSession(agentId, calling.context.chatId)).id;
+      return { sourceChatId: (await this.chatSessions.getSession(agentId, calling.context.chatId)).id };
     } catch {
       throw new BadRequestException('The chat this handoff was requested from no longer exists.');
     }

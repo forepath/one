@@ -45,15 +45,6 @@
   border-color: color-mix(in srgb, var(--bs-tertiary-bg) 72%, black);
 }
 
-// Selected list rows use a primary wash with light ink; keep info chips legible there.
-:host-context(.list-group-item.active).fpc-badge--info,
-:host-context(.list-group-item.active).fpc-badge--info.fpc-badge--secondary,
-:host-context(.list-group-item.active).fpc-badge--info.fpc-badge--light {
-  color: var(--bs-list-group-active-color, #fff);
-  background-color: color-mix(in srgb, var(--bs-list-group-active-color, #fff) 18%, transparent);
-  border-color: color-mix(in srgb, var(--bs-list-group-active-color, #fff) 30%, transparent);
-}
-
 :host(.fpc-badge--info.fpc-badge--primary) {
   color: var(--bs-primary-text-emphasis);
   background-color: var(--bs-primary-bg-subtle);

@@ -6,7 +6,7 @@ import {
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import type { Socket as ClientSocket } from 'socket.io-client';
 
-import { AgentHandoffsService } from './agent-handoffs.service';
+import { AgentHandoffsService, type AgentHandoffSource } from './agent-handoffs.service';
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -70,8 +70,16 @@ export class AgentHandoffRequestHandlerService {
           return { ok: true, agents: await this.handoffs.listAgentsForAgent(clientId, agentId) };
         case 'create': {
           const sourceChatId = str(request, 'sourceChatId').toLowerCase();
+          const sourceTaskId = str(request, 'sourceTaskId').toLowerCase();
+          // Exactly one source: the visible chat, or the task whose run is the manager-attributed working context.
+          const source: AgentHandoffSource | undefined =
+            sourceChatId && !sourceTaskId && UUID_V4.test(sourceChatId)
+              ? { kind: 'chat', chatId: sourceChatId }
+              : sourceTaskId && !sourceChatId && UUID_V4.test(sourceTaskId)
+                ? { kind: 'taskRun', taskId: sourceTaskId }
+                : undefined;
 
-          if (!UUID_V4.test(sourceChatId)) {
+          if (!source) {
             return { ok: false, error: 'The requesting chat is unknown', status: 400 };
           }
 
@@ -80,7 +88,7 @@ export class AgentHandoffRequestHandlerService {
             handoff: await this.handoffs.createForAgent(
               clientId,
               agentId,
-              sourceChatId,
+              source,
               {
                 targetAgentId: str(input, 'targetAgentId'),
                 title: str(input, 'title'),

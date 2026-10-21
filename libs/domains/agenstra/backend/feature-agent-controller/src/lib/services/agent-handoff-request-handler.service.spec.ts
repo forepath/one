@@ -63,7 +63,7 @@ describe('AgentHandoffRequestHandlerService', () => {
     expect(handoffs.createForAgent).toHaveBeenCalledWith(
       clientId,
       agentId,
-      chatId,
+      { kind: 'chat', chatId },
       {
         targetAgentId: 'b',
         title: 'T',
@@ -76,6 +76,34 @@ describe('AgentHandoffRequestHandlerService', () => {
       status: 'failed',
       response: 'No access',
     });
+  });
+
+  it('accepts exactly one source: a chat or the task of a task run', async () => {
+    const taskId = '00000000-0000-4000-8000-000000000060';
+    const create = (source: Record<string, unknown>) =>
+      handler.handle(clientId, {
+        op: 'create',
+        agentId,
+        ...source,
+        input: { targetAgentId: 'b', title: 'T', message: 'M' },
+      });
+
+    await create({ sourceTaskId: taskId.toUpperCase() });
+    expect(handoffs.createForAgent).toHaveBeenCalledWith(
+      clientId,
+      agentId,
+      { kind: 'taskRun', taskId },
+      expect.any(Object),
+      undefined,
+    );
+
+    handoffs.createForAgent.mockClear();
+
+    for (const source of [{}, { sourceChatId: chatId, sourceTaskId: taskId }, { sourceTaskId: 'run-1' }]) {
+      await expect(create(source)).resolves.toEqual(expect.objectContaining({ ok: false, status: 400 }));
+    }
+
+    expect(handoffs.createForAgent).not.toHaveBeenCalled();
   });
 
   it('rejects malformed requests', async () => {

@@ -23,6 +23,28 @@ describe('buildAgentChatHandoffCard', () => {
     });
   });
 
+  it('links a handoff made by a scheduled task run to that run', () => {
+    const text = buildAgentHandoffRequestMessage(
+      {
+        id: 'h2',
+        title: 'Nightly check',
+        sourceAgentId: 'agent-a',
+        sourceAgentName: 'Backend',
+        sourceChatId: null,
+        sourceTaskId: 'task-1',
+        sourceTaskRunId: 'run-1',
+      },
+      'Check the logs.',
+      'Respond with agenstra_handoff_respond.',
+    );
+
+    expect(buildAgentChatHandoffCard(text)?.link).toEqual({
+      agentId: 'agent-a',
+      chatId: null,
+      taskRun: { taskId: 'task-1', runId: 'run-1' },
+    });
+  });
+
   it('links a response to the handoff chat of the target agent', () => {
     const text = buildAgentHandoffResponseMessage(
       {

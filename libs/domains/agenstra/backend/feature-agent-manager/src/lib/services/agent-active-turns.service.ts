@@ -8,18 +8,22 @@ import {
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 /** Context a running OpenCode turn belongs to, derived from its resume session suffix. */
-export type AgentTurnContext = { kind: 'primary' } | { kind: 'chat'; chatId: string } | { kind: 'hidden' };
+export type AgentTurnContext =
+  | { kind: 'primary' }
+  | { kind: 'chat'; chatId: string }
+  | { kind: 'hidden'; suffix: string };
 
 /**
  * Where a call of the agent's MCP server (which carries no session) comes from:
  * - `visible`: every running turn of the agent belongs to this one visible chat
- * - `hidden`: the only working contexts are hidden sessions (task runs, ticket automation, plan / helper sessions)
+ * - `hidden`: the only working context is one hidden session (task run, ticket automation, plan / helper session);
+ *   `suffix` is its resume session suffix as registered by the runtime (never model input)
  * - `ambiguous`: several contexts are working at the same time
  * - `idle`: no turn is running (the call cannot come from a chat turn)
  */
 export type AgentCallingContext =
   | { kind: 'visible'; context: Exclude<AgentTurnContext, { kind: 'hidden' }> }
-  | { kind: 'hidden' }
+  | { kind: 'hidden'; suffix: string }
   | { kind: 'ambiguous' }
   | { kind: 'idle' };
 
@@ -38,11 +42,18 @@ export function resolveAgentTurnContext(resumeSessionSuffix: string | undefined)
     }
   }
 
-  return { kind: 'hidden' };
+  return { kind: 'hidden', suffix };
 }
 
 function contextKey(context: AgentTurnContext): string {
-  return context.kind === 'chat' ? `chat:${context.chatId}` : context.kind;
+  switch (context.kind) {
+    case 'chat':
+      return `chat:${context.chatId}`;
+    case 'hidden':
+      return `hidden:${context.suffix}`;
+    default:
+      return context.kind;
+  }
 }
 
 /**
@@ -88,6 +99,15 @@ export class AgentActiveTurnsService {
 
     const [context] = contexts.values();
 
-    return context.kind === 'hidden' ? { kind: 'hidden' } : { kind: 'visible', context };
+    return context.kind === 'hidden' ? { kind: 'hidden', suffix: context.suffix } : { kind: 'visible', context };
+  }
+
+  /** True when every running turn of the agent belongs to this one hidden session (`resumeSessionSuffix`). */
+  isOnlyRunningHiddenSession(agentId: string, resumeSessionSuffix: string): boolean {
+    const turns = [...(this.turnsByAgent.get(agentId)?.values() ?? [])];
+
+    return (
+      turns.length > 0 && turns.every((context) => context.kind === 'hidden' && context.suffix === resumeSessionSuffix)
+    );
   }
 }

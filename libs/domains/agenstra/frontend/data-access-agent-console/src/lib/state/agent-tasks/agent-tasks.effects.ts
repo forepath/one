@@ -22,6 +22,7 @@ import {
   loadAgentTasks,
   loadAgentTasksFailure,
   loadAgentTasksSuccess,
+  approveAgentTask,
   runAgentTaskNow,
   runAgentTaskNowFailure,
   runAgentTaskNowSuccess,
@@ -106,6 +107,20 @@ export const deleteAgentTask$ = createEffect(
         service.deleteTask(clientId, agentId, taskId).pipe(
           map(() => deleteAgentTaskSuccess({ taskId })),
           catchError((error) => of(deleteAgentTaskFailure({ error: normalizeError(error) }))),
+        ),
+      ),
+    ),
+  { functional: true },
+);
+
+export const approveAgentTask$ = createEffect(
+  (actions$ = inject(Actions), service = inject(AgentTasksService)) =>
+    actions$.pipe(
+      ofType(approveAgentTask),
+      exhaustMap(({ clientId, agentId, taskId, reviewedUpdatedAt }) =>
+        service.approve(clientId, agentId, taskId, reviewedUpdatedAt).pipe(
+          map((task) => updateAgentTaskSuccess({ task })),
+          catchError((error) => of(updateAgentTaskFailure({ error: normalizeError(error) }))),
         ),
       ),
     ),

@@ -1,4 +1,5 @@
 import { mapForwardedChatEventsToDisplayRows, type AgentChatEventDisplayRow } from '../chat/agent-chat-event-display';
+import { buildAgentChatHandoffCard, type AgentChatHandoffCardView } from '../chat/agent-chat-handoff-view';
 
 export interface AgentTaskTranscriptEventLike {
   payload: unknown;
@@ -8,10 +9,17 @@ export interface AgentTaskTranscriptEventLike {
 /**
  * Chat-like view of one run: answers as bubbles, tools / thinking as the usual event rows. The run prompt (the
  * platform-generated user message) is not shown; the task instructions are displayed above the history instead.
+ * Responses to the run's handoffs (delivered as messages into the run's session) are shown as cards.
  */
 export type AgentTaskTranscriptSegment =
   | { kind: 'assistant'; trackId: string; text: string; timestamp: number }
-  | { kind: 'events'; trackId: string; rows: AgentChatEventDisplayRow[] };
+  | { kind: 'events'; trackId: string; rows: AgentChatEventDisplayRow[] }
+  | {
+      kind: 'handoffResponse';
+      trackId: string;
+      card: AgentChatHandoffCardView & { kind: 'response' };
+      timestamp: number;
+    };
 
 function envelopeOf(payload: unknown): { eventId?: unknown; kind?: unknown; payload?: unknown } | null {
   if (!payload || typeof payload !== 'object') {
@@ -55,7 +63,19 @@ export function buildAgentTaskTranscriptSegments(events: AgentTaskTranscriptEven
     const envelope = envelopeOf(event.payload);
     const kind = envelope?.kind;
 
-    if (kind === 'userMessage') {
+    if (envelope && kind === 'userMessage') {
+      const card = buildAgentChatHandoffCard(messageText(envelope));
+
+      if (card?.kind === 'response') {
+        flush();
+        segments.push({
+          kind: 'handoffResponse',
+          trackId: `handoff-${card.handoffId}-${event.timestamp}`,
+          card: card as AgentChatHandoffCardView & { kind: 'response' },
+          timestamp: event.timestamp,
+        });
+      }
+
       continue;
     }
 

@@ -43,6 +43,22 @@ describe('agent task dto parsing', () => {
     expect(parseAgentTaskUpdate({ enabled: true })).toEqual({ enabled: true });
   });
 
+  it('accepts proposed handoff agents as a bounded list of agent ids', () => {
+    const peer = '44444444-4444-4444-8444-44444444444A';
+
+    expect(parseAgentTaskUpdate({ allowedHandoffAgentIds: [` ${peer} `] })).toEqual({
+      allowedHandoffAgentIds: [peer.toLowerCase()],
+    });
+    expect(parseAgentTaskUpdate({ allowedHandoffAgentIds: [] })).toEqual({ allowedHandoffAgentIds: [] });
+    expect(() => parseAgentTaskUpdate({ allowedHandoffAgentIds: 'all' })).toThrow(BadRequestException);
+    expect(() => parseAgentTaskUpdate({ allowedHandoffAgentIds: ['agent-b'] })).toThrow(BadRequestException);
+    expect(() =>
+      parseAgentTaskUpdate({
+        allowedHandoffAgentIds: Array.from({ length: AGENT_TASK_LIMITS.allowedHandoffAgentsMax + 1 }, () => peer),
+      }),
+    ).toThrow(BadRequestException);
+  });
+
   it('accepts UUID task ids only', () => {
     expect(parseAgentTaskId(' 33333333-3333-4333-8333-33333333333A ')).toBe('33333333-3333-4333-8333-33333333333a');
     expect(() => parseAgentTaskId('task-1')).toThrow(NotFoundException);

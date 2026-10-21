@@ -295,8 +295,11 @@ channels:
       Server → controller request with Socket.IO acknowledgement for task handoffs between agents of one workspace
       (worker `agenstra` MCP server, `/api/agent-context/handoffs`). `agentId` is the agent authenticated by its context
       token. Reads (`agents`, `get`) try every socket logged into the agent; `create` and `respond` use one socket only.
-      `create` carries `sourceChatId`, the single visible chat the manager attributed the call to (calls from hidden
-      sessions or while several sessions work are refused before this event). The controller answers within the
+      `create` carries exactly one source the manager attributed the call to from the agent's single working context:
+      `sourceChatId` (a visible chat) or `sourceTaskId` (the hidden `-task-{taskId}` session of a task run; the
+      controller resolves the running run and checks the task's approval and approved handoff agents). Calls from
+      plans, ticket automation and other hidden sessions, or while several sessions work, are refused before this
+      event. The controller answers within the
       workspace bound to the connection with `{ ok: true, agents | handoff }` or `{ ok: false, error, status }`, and
       never forwards this event to browsers.
 operations:
@@ -638,7 +641,11 @@ components:
           sourceChatId:
             type: string
             format: uuid
-            description: create — visible chat the handoff is made in (response target)
+            description: create — visible chat the handoff is made in (response target); not with sourceTaskId
+          sourceTaskId:
+            type: string
+            format: uuid
+            description: create — task whose running run made the handoff (response continues the run); not with sourceChatId
           input:
             type: object
             description: create — targetAgentId, title, message, model; respond — status, response
@@ -662,7 +669,7 @@ components:
             description: all operations except list / create
           input:
             type: object
-            description: create / update — title, prompt, cronExpression, timezone, model, enabled
+            description: create / update — title, prompt, cronExpression, timezone, model, enabled, allowedHandoffAgentIds
     AgentContextRequest:
       name: agentContextRequest
       title: Agent context request (ack)

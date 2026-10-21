@@ -41,6 +41,19 @@ export function isAgentTaskResumeSessionSuffix(suffix: string | undefined): bool
   );
 }
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Task id of a task run session suffix (`-task-{uuid}`), `undefined` for every other suffix. */
+export function parseAgentTaskIdFromResumeSessionSuffix(suffix: string | undefined): string | undefined {
+  if (!isAgentTaskResumeSessionSuffix(suffix)) {
+    return undefined;
+  }
+
+  const taskId = (suffix as string).slice(AGENT_TASK_RESUME_SESSION_SUFFIX_PREFIX.length);
+
+  return UUID_PATTERN.test(taskId) ? taskId.toLowerCase() : undefined;
+}
+
 /** Input bounds shared by the console, the manager API and the controller (authoritative validation). */
 export const AGENT_TASK_LIMITS = {
   titleMaxLength: 200,
@@ -48,14 +61,33 @@ export const AGENT_TASK_LIMITS = {
   cronExpressionMaxLength: 128,
   timezoneMaxLength: 64,
   modelMaxLength: 256,
+  /** Peer agents a task may hand off to (`allowedHandoffAgentIds`). */
+  allowedHandoffAgentsMax: 10,
 } as const;
 
-export type AgentTaskRunStatus = 'running' | 'succeeded' | 'failed';
+/**
+ * `awaiting_handoff`: the run's turn ended while a handoff it made is still open; it continues (in its own session)
+ * when the response arrives. Counts as running (one running run per task, minimum interval).
+ */
+export type AgentTaskRunStatus = 'running' | 'awaiting_handoff' | 'succeeded' | 'failed';
+
+/** Run states that block another run of the same task. */
+export const AGENT_TASK_ACTIVE_RUN_STATUSES = [
+  'running',
+  'awaiting_handoff',
+] as const satisfies readonly AgentTaskRunStatus[];
 
 /** Who created / last changed a task: a console user or the agent (MCP tools). */
 export type AgentTaskActorType = 'user' | 'agent';
 
 export type AgentTaskRunTrigger = 'schedule' | 'manual';
+
+/**
+ * Runs are unattended with every permission allowed, so a task only runs once a workspace user approved what it
+ * does: tasks created by users are approved implicitly; tasks the agent creates, or whose prompt, model, schedule or
+ * allowed handoff agents it changes (or re-enables), wait for approval in the console.
+ */
+export type AgentTaskApprovalStatus = 'approved' | 'pending';
 
 export interface AgentTaskSummary {
   id: string;
@@ -69,9 +101,16 @@ export interface AgentTaskSummary {
   /** OpenCode `provider/model` used for runs. */
   model: string;
   enabled: boolean;
+  /**
+   * Agents of the workspace the runs may hand off work to (approved content; empty: no handoffs). Agents deleted or
+   * moved to another workspace since are ignored.
+   */
+  allowedHandoffAgentIds: string[];
   nextRunAt: string | null;
   lastRunAt: string | null;
   lastRunStatus: AgentTaskRunStatus | null;
+  approvalStatus: AgentTaskApprovalStatus;
+  approvedAt: string | null;
   createdBy: AgentTaskActorType;
   updatedBy: AgentTaskActorType;
   createdAt: string;
@@ -90,6 +129,8 @@ export interface AgentTaskRunSummary {
   /** Tail of the agent's final answer (bounded). */
   outputExcerpt: string | null;
   failureMessage: string | null;
+  /** Set while the run waits for the response to one of its handoffs. */
+  awaitingHandoffSince: string | null;
 }
 
 export interface AgentTaskCreateInput {
@@ -102,6 +143,11 @@ export interface AgentTaskCreateInput {
   model?: string;
   /** Defaults to true. */
   enabled?: boolean;
+  /**
+   * Peer agents (ids, same workspace) the runs may hand off work to. Proposed by the agent, it only takes effect once
+   * a workspace user approved the task. Defaults to none.
+   */
+  allowedHandoffAgentIds?: string[];
 }
 
 export type AgentTaskUpdateInput = Partial<AgentTaskCreateInput>;

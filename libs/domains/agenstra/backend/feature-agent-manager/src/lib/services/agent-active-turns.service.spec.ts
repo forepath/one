@@ -13,11 +13,11 @@ describe('AgentActiveTurnsService', () => {
     expect(resolveAgentTurnContext(undefined)).toEqual({ kind: 'primary' });
     expect(resolveAgentTurnContext('')).toEqual({ kind: 'primary' });
     expect(resolveAgentTurnContext(`-chat-${chatId.toUpperCase()}`)).toEqual({ kind: 'chat', chatId });
-    expect(resolveAgentTurnContext('-chat-not-a-uuid')).toEqual({ kind: 'hidden' });
-    expect(resolveAgentTurnContext('-task-x')).toEqual({ kind: 'hidden' });
-    expect(resolveAgentTurnContext('-ticket-auto-loop')).toEqual({ kind: 'hidden' });
-    expect(resolveAgentTurnContext('-plan-x')).toEqual({ kind: 'hidden' });
-    expect(resolveAgentTurnContext('-prompt-enhance')).toEqual({ kind: 'hidden' });
+    expect(resolveAgentTurnContext('-chat-not-a-uuid')).toEqual({ kind: 'hidden', suffix: '-chat-not-a-uuid' });
+    expect(resolveAgentTurnContext('-task-x')).toEqual({ kind: 'hidden', suffix: '-task-x' });
+    expect(resolveAgentTurnContext('-ticket-auto-loop')).toEqual({ kind: 'hidden', suffix: '-ticket-auto-loop' });
+    expect(resolveAgentTurnContext('-plan-x')).toEqual({ kind: 'hidden', suffix: '-plan-x' });
+    expect(resolveAgentTurnContext('-prompt-enhance')).toEqual({ kind: 'hidden', suffix: '-prompt-enhance' });
   });
 
   it('is idle without running turns and resolves a single visible chat', () => {
@@ -39,7 +39,8 @@ describe('AgentActiveTurnsService', () => {
   it('reports hidden-only and parallel contexts', () => {
     const endTask = turns.begin(agentId, '-task-1');
 
-    expect(turns.callingContext(agentId)).toEqual({ kind: 'hidden' });
+    // The suffix comes from the runtime's own session key, never from the model.
+    expect(turns.callingContext(agentId)).toEqual({ kind: 'hidden', suffix: '-task-1' });
 
     const endPrimary = turns.begin(agentId, '');
 
@@ -51,5 +52,21 @@ describe('AgentActiveTurnsService', () => {
     expect(turns.callingContext('other-agent')).toEqual({ kind: 'idle' });
 
     endPrimary();
+  });
+
+  it('tells whether one hidden session is all that runs', () => {
+    const endLoop = turns.begin(agentId, '-ticket-auto-loop');
+
+    expect(turns.isOnlyRunningHiddenSession(agentId, '-ticket-auto-loop')).toBe(true);
+    expect(turns.isOnlyRunningHiddenSession(agentId, '-task-1')).toBe(false);
+
+    const endChat = turns.begin(agentId, '');
+
+    expect(turns.isOnlyRunningHiddenSession(agentId, '-ticket-auto-loop')).toBe(false);
+
+    endChat();
+    endLoop();
+
+    expect(turns.isOnlyRunningHiddenSession(agentId, '-ticket-auto-loop')).toBe(false);
   });
 });

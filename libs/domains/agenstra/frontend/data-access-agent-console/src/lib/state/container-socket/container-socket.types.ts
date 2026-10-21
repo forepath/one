@@ -595,7 +595,15 @@ export interface TicketAutomationRunChatEventPayload {
   contextInjection?: ContextInjectionPayload;
 }
 
-export type AgentTaskRunStatus = 'running' | 'succeeded' | 'failed';
+/** `awaiting_handoff`: the run waits for the response to one of its handoffs (still the task's active run). */
+export type AgentTaskRunStatus = 'running' | 'awaiting_handoff' | 'succeeded' | 'failed';
+
+/** Run states that still occupy the task (no second run, history refresh). */
+export const AGENT_TASK_ACTIVE_RUN_STATUSES: readonly AgentTaskRunStatus[] = ['running', 'awaiting_handoff'];
+
+export function isAgentTaskRunActive(status: string | null | undefined): boolean {
+  return status === 'running' || status === 'awaiting_handoff';
+}
 
 export type AgentTaskRunTrigger = 'schedule' | 'manual';
 
@@ -612,6 +620,8 @@ export interface AgentTaskRunResponseDto {
   finishedAt: string | null;
   outputExcerpt: string | null;
   failureMessage: string | null;
+  /** Set while the run waits for the response to one of its handoffs. */
+  awaitingHandoffSince?: string | null;
   /** Forwarded `chatEvent` frames of the run's turn (only when requested with `includeTranscript`). */
   transcript?: Array<{ payload: unknown; timestamp: number }>;
 }

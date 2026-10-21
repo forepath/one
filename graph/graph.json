@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-21T14:13:36.017Z",
+  "generatedAt": "2026-10-21T17:49:28.727Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -5046,6 +5046,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-tasks/agent-task-run-chat-event.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-tasks/approve-agent-task.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-tasks/approve-agent-task.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -11914,6 +11923,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-tool-calls.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-tool-calls.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents-vcs.service.ts",
       "type": "service",
       "attrs": {
@@ -15480,7 +15498,7 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "clients/agentTaskRunChatUpsert",
-        "summary": "Controller-originated agent task run snapshot (OpenAPI `AgentTaskRunChatEventDto`) rendered as a card in the\nagent's primary chat. Hydration (unicast after login) uses `run.startedAt`; live updates use the finish/update time.\n",
+        "summary": "Controller-originated agent task run snapshot (OpenAPI `AgentTaskRunChatEventDto`) rendered as a card in the\nagent's primary chat. Hydration (unicast after login) uses `run.startedAt`; live updates use the finish/update time.\n`run.status` `awaiting_handoff`: the run waits for the response to one of its handoffs (then `running` again\nwhile it reacts, until it ends).\n",
         "specKind": "asyncapi"
       }
     },
@@ -17298,6 +17316,17 @@
         "pathOrChannel": "/clients/{clientId}/agents/{agentId}/tasks/{taskId}",
         "operationId": "deleteAgentTask",
         "summary": "Delete an agent task and its runs",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/clients/{clientId}/agents/{agentId}/tasks/{taskId}/approval",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/clients/{clientId}/agents/{agentId}/tasks/{taskId}/approval",
+        "operationId": "approveAgentTask",
+        "summary": "Approve an agent task",
         "specKind": "openapi"
       }
     },
@@ -23138,7 +23167,7 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "agents/agentHandoffRequest",
-        "summary": "Server → controller request with Socket.IO acknowledgement for task handoffs between agents of one workspace\n(worker `agenstra` MCP server, `/api/agent-context/handoffs`). `agentId` is the agent authenticated by its context\ntoken. Reads (`agents`, `get`) try every socket logged into the agent; `create` and `respond` use one socket only.\n`create` carries `sourceChatId`, the single visible chat the manager attributed the call to (calls from hidden\nsessions or while several sessions work are refused before this event). The controller answers within the\nworkspace bound to the connection with `{ ok: true, agents | handoff }` or `{ ok: false, error, status }`, and\nnever forwards this event to browsers.\n",
+        "summary": "Server → controller request with Socket.IO acknowledgement for task handoffs between agents of one workspace\n(worker `agenstra` MCP server, `/api/agent-context/handoffs`). `agentId` is the agent authenticated by its context\ntoken. Reads (`agents`, `get`) try every socket logged into the agent; `create` and `respond` use one socket only.\n`create` carries exactly one source the manager attributed the call to from the agent's single working context:\n`sourceChatId` (a visible chat) or `sourceTaskId` (the hidden `-task-{taskId}` session of a task run; the\ncontroller resolves the running run and checks the task's approval and approved handoff agents). Calls from\nplans, ticket automation and other hidden sessions, or while several sessions work, are refused before this\nevent. The controller answers within the\nworkspace bound to the connection with `{ ok: true, agents | handoff }` or `{ ok: false, error, status }`, and\nnever forwards this event to browsers.\n",
         "specKind": "asyncapi"
       }
     },
@@ -26673,6 +26702,16 @@
       }
     },
     {
+      "id": "concept:agenstra-handoffs-from-task-runs",
+      "type": "concept",
+      "attrs": {
+        "title": "Handoffs from task runs",
+        "docPath": "docs/agenstra/features/agent-handoffs.md",
+        "sectionAnchor": "handoffs-from-task-runs",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-agent-tools",
       "type": "concept",
       "attrs": {
@@ -26749,6 +26788,16 @@
         "title": "Container Interaction",
         "docPath": "docs/agenstra/features/agent-management.md",
         "sectionAnchor": "container-interaction",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-approval",
+      "type": "concept",
+      "attrs": {
+        "title": "Approval",
+        "docPath": "docs/agenstra/features/agent-tasks.md",
+        "sectionAnchor": "approval",
         "domain": "agenstra"
       }
     },
@@ -39191,6 +39240,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-tasks/approve-agent-task.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/agent-tasks/create-agent-task.dto.ts",
       "type": "contains"
     },
@@ -42986,6 +43040,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-tool-calls.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agents-vcs.service.ts",
       "type": "contains"
     },
@@ -45067,6 +45126,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:DELETE:/clients/{clientId}/agents/{agentId}/tasks/{taskId}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/clients/{clientId}/agents/{agentId}/tasks/{taskId}/approval",
       "type": "contains"
     },
     {
@@ -50256,6 +50320,11 @@
     },
     {
       "from": "file:docs/agenstra/features/agent-handoffs.md",
+      "to": "concept:agenstra-handoffs-from-task-runs",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-handoffs.md",
       "to": "concept:agenstra-agent-tools",
       "type": "contains"
     },
@@ -50331,12 +50400,22 @@
     },
     {
       "from": "file:docs/agenstra/features/agent-tasks.md",
+      "to": "concept:agenstra-approval",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-tasks.md",
       "to": "concept:agenstra-scheduling-and-reliability",
       "type": "contains"
     },
     {
       "from": "file:docs/agenstra/features/agent-tasks.md",
       "to": "concept:agenstra-runs",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/features/agent-tasks.md",
+      "to": "concept:agenstra-handoffs-from-task-runs",
       "type": "contains"
     },
     {
@@ -56572,6 +56651,16 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "api:HTTP:DELETE:/clients/{clientId}/agents/{agentId}/tasks/{taskId}",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:POST:/clients/{clientId}/agents/{agentId}/tasks/{taskId}/approval",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:POST:/clients/{clientId}/agents/{agentId}/tasks/{taskId}/approval",
       "type": "implements"
     },
     {
@@ -64335,6 +64424,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoff-runner.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-task-runner.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-handoffs.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/client-agent-proxy.service.ts",
       "type": "injects"
@@ -68610,6 +68704,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-tool-calls.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-deployments.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/deployments.service.ts",
       "type": "injects"
@@ -68920,6 +69019,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-runtime.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-tool-calls.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-session.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agents.repository.ts",
       "type": "injects"
@@ -68947,6 +69051,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-access.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-active-turns.service.ts",
       "type": "injects"
     },
     {
@@ -71827,6 +71936,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-active-turns.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-tool-calls.service.ts",
       "type": "provides"
     },
     {
@@ -75577,6 +75691,26 @@
     {
       "from": "concept:agenstra-container-interaction",
       "to": "api:HTTP:POST:/auth/login",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-approval",
+      "to": "api:HTTP:GET:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-approval",
+      "to": "api:HTTP:POST:/clients",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-approval",
+      "to": "api:HTTP:GET:/agents",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-approval",
+      "to": "api:HTTP:POST:/agents",
       "type": "documents"
     },
     {
@@ -84550,6 +84684,11 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:agenstra-handoffs-from-task-runs",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:agenstra-agent-tools",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -84586,6 +84725,11 @@
     },
     {
       "from": "concept:agenstra-container-interaction",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-approval",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

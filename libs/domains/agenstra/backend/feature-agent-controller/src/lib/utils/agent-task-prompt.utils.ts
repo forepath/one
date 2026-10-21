@@ -7,7 +7,7 @@ import type { AgentTaskEntity } from '../entities/agent-task.entity';
  * transcript; the task text is repeated on every run because the user may have changed it in between.
  */
 export function buildAgentTaskRunPrompt(
-  task: Pick<AgentTaskEntity, 'title' | 'prompt' | 'cronExpression' | 'timezone'>,
+  task: Pick<AgentTaskEntity, 'title' | 'prompt' | 'cronExpression' | 'timezone' | 'allowedHandoffAgentIds'>,
   trigger: AgentTaskRunTrigger,
   scheduledFor: Date,
 ): string {
@@ -17,16 +17,30 @@ export function buildAgentTaskRunPrompt(
       : `scheduled for ${scheduledFor.toISOString()} (cron "${task.cronExpression}", ${task.timezone})`;
 
   return [
-    `You are running your recurring task "${task.title}" unattended (${when}).`,
+    `You are running your recurring task ${JSON.stringify(task.title.replace(/\s+/g, ' ').trim())} unattended (${when}).`,
     'Nobody can answer questions or approve actions during this run: proceed with reasonable defaults and do not ask.',
     'Earlier runs of this task are part of this session. End with a concise summary of what you did and the results;',
     'it is posted to the main chat.',
+    ...handoffNotice(task.allowedHandoffAgentIds),
     '',
     '## Task',
     '',
     task.prompt.trim(),
     '',
   ].join('\n');
+}
+
+/** Approved handoff targets: ids only (platform-controlled), names come from `agenstra_handoff_agents`. */
+function handoffNotice(agentIds: string[] | undefined): string[] {
+  if (!agentIds?.length) {
+    return [];
+  }
+
+  return [
+    `A user approved that this task may hand off work (agenstra_handoff_create, one handoff at a time) to these agents ` +
+      `of your workspace: ${agentIds.join(', ')}. Their response arrives in this session; end your turn after ` +
+      'handing off and continue when it arrives.',
+  ];
 }
 
 /** Keep the tail of long answers (summaries come last). */

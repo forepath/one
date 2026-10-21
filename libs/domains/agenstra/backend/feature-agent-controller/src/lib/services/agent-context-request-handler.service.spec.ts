@@ -136,6 +136,50 @@ describe('AgentContextRequestHandlerService', () => {
     });
   });
 
+  it('resolves short SHAs only when exactly one element matches', async () => {
+    const other = { ...ticket, id: 't2', title: 'Secret', longSha: 'aaaa1111ffffffffffffffffffffffffffffffff' };
+
+    ticketRepo.createQueryBuilder.mockImplementation(() => queryBuilder([ticket, other]));
+
+    await expect(
+      service.handle(clientId, { op: 'content', refs: [{ kind: 'ticket', sha: 'aaaa1111' }] }),
+    ).resolves.toEqual({ ok: true, contents: [] });
+    await expect(
+      service.handle(clientId, { op: 'describe', refs: [{ kind: 'ticket', sha: 'aaaa1111' }] }),
+    ).resolves.toEqual({ ok: true, items: [] });
+    expect(ticketsService.getPrototypePromptByClientSha).not.toHaveBeenCalled();
+  });
+
+  it('scopes automatic grants to tickets of the same tree as an anchor ticket', async () => {
+    const root = { ...ticket, id: 'root', parentId: null, longSha: 'aaaa' + '0'.repeat(36) };
+    const anchor = { ...ticket, id: 'anchor', parentId: 'root', longSha: 'bbbb' + '0'.repeat(36) };
+    const sibling = { ...ticket, id: 'sibling', parentId: 'root', title: 'Sibling', longSha: 'cccc' + '0'.repeat(36) };
+    const foreign = { ...ticket, id: 'foreign', parentId: null, title: 'Other tree', longSha: 'dddd' + '0'.repeat(36) };
+    const rows = [root, anchor, sibling, foreign];
+
+    ticketRepo.findOne.mockImplementation(
+      async ({ where }: any) =>
+        rows.find((row) => (where.longSha ? row.longSha === where.longSha : row.id === where.id)) ?? null,
+    );
+    ticketRepo.find.mockResolvedValue([{ id: 'root', longSha: root.longSha }]);
+
+    const result = await service.handle(clientId, {
+      op: 'scope',
+      anchors: [anchor.longSha],
+      refs: [
+        { kind: 'ticket', sha: sibling.longSha },
+        { kind: 'ticket', sha: foreign.longSha },
+        { kind: 'knowledge', sha: page.longSha },
+      ],
+    });
+
+    expect(result).toMatchObject({ ok: true, items: [{ kind: 'ticket', sha: sibling.longSha, title: 'Sibling' }] });
+    expect((result as any).items).toHaveLength(1);
+    await expect(
+      service.handle(clientId, { op: 'scope', anchors: [], refs: [{ kind: 'ticket', sha: sibling.longSha }] }),
+    ).resolves.toEqual({ ok: true, items: [] });
+  });
+
   it('returns knowledge pages directly and expands folders', async () => {
     const pageResult = await service.handle(clientId, {
       op: 'content',

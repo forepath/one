@@ -106,6 +106,32 @@ describe('RemoteAgentsSessionService.sendChatStreaming', () => {
     expect(onEvent).toHaveBeenCalledTimes(1);
   });
 
+  it('ignores visible-chat frames and other turns in hidden sessions', async () => {
+    const onEvent = jest.fn();
+    const result = service.sendChatStreaming({
+      clientId,
+      agentId,
+      resumeSessionSuffix: '-task-x',
+      message: 'run',
+      correlationId: 'agent-task:run-1',
+      onEvent,
+    });
+
+    await waitForChatEmit();
+    fakeSocket.push('chatEvent', assistantMessage('chat-visible', 'user chat answer'));
+    fakeSocket.push('chatEvent', {
+      success: true,
+      data: { kind: 'assistantMessage', correlationId: 'other-turn', payload: { text: 'other' } },
+    });
+    fakeSocket.push('chatEvent', {
+      success: true,
+      data: { kind: 'assistantMessage', correlationId: 'agent-task:run-1', payload: { text: 'task result' } },
+    });
+
+    await expect(result).resolves.toEqual(expect.objectContaining({ text: 'task result' }));
+    expect(onEvent).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps settling on any frame for hidden sessions', async () => {
     const result = service.sendChatStreaming({
       clientId,

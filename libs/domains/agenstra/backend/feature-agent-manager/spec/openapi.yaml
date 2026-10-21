@@ -740,11 +740,13 @@ paths:
       summary: Hand a task over to another agent of the workspace
       description: |
         Opens a new chat (kind `handoff`) on the target agent and queues the handoff. The target works on it in that chat
-        and answers with `handoff_respond`; the controller delivers the response into the chat the handoff was made in,
-        and only there. The manager attributes the call to the caller's running turns: it is only accepted when all of
-        them belong to one visible chat (not from task runs, ticket automation, plan or helper sessions, and not while
-        several sessions of the agent are working). `model` defaults to the model the target (else the caller) was last
-        used with in a visible chat.
+        and answers with `handoff_respond`; the controller delivers the response where the handoff was made, and only
+        there. The manager attributes the call to the caller's running turns: it is only accepted when all of them
+        belong to one visible chat, or to the hidden session of one task run (not from ticket automation, plan or helper
+        sessions, and not while several sessions of the agent are working). From a task run the controller additionally
+        requires an approved task, its running run and a target among the task's approved `allowedHandoffAgentIds`
+        (one open handoff per run, `AGENT_TASK_RUN_MAX_HANDOFFS` in total); the response continues the run in its own
+        session. `model` defaults to the model the target (else the caller) was last used with in a visible chat.
       operationId: createAgentHandoff
       tags: [Agent context]
       security:
@@ -766,12 +768,17 @@ paths:
                 $ref: '#/components/schemas/AgentHandoffResponse'
         '400':
           description: |
-            Invalid input, the caller itself as target, or not called from a visible chat (hidden session, no working
-            chat, requesting chat deleted)
+            Invalid input, the caller itself as target, or not called from a visible chat or task run (other hidden
+            session, no working chat, requesting chat deleted)
+        '403':
+          description: Task run handoff to an agent the user did not approve for the task
         '404':
           description: Target agent not found in this workspace
         '409':
-          description: Several sessions of the caller are working, too many open handoffs, or the chain is too deep
+          description: |
+            Several sessions of the caller are working, too many open handoffs, the chain is too deep, a task-run
+            handoff chat handing on, the task waits for approval, its run is not working, or the run already waits for
+            a handoff / used up its handoffs
   /agent-context/handoffs/{handoffId}:
     get:
       summary: Read a handoff the calling agent sent or received
@@ -3032,7 +3039,9 @@ components:
           type: string
     AgentTaskInput:
       type: object
-      description: All fields are required on create except `timezone` (UTC), `model` and `enabled` (true).
+      description: >-
+        All fields are required on create except `timezone` (UTC), `model`, `enabled` (true) and
+        `allowedHandoffAgentIds` (none).
       properties:
         title:
           type: string
@@ -3053,6 +3062,15 @@ components:
           description: OpenCode provider/model
         enabled:
           type: boolean
+        allowedHandoffAgentIds:
+          type: array
+          maxItems: 10
+          items:
+            type: string
+            format: uuid
+          description: >-
+            Proposed agents of the workspace the runs may hand off work to; take effect only after a user approved the
+            task (any change clears the approval)
     AgentHandoffAgentSummary:
       type: object
       required: [id, name]
@@ -3126,6 +3144,8 @@ components:
           sourceAgentId,
           sourceAgentName,
           sourceChatId,
+          sourceTaskId,
+          sourceTaskRunId,
           targetAgentId,
           targetAgentName,
           targetChatId,
@@ -3151,7 +3171,18 @@ components:
         sourceChatId:
           type: string
           format: uuid
-          description: Chat the handoff was made in; the response is delivered there only
+          nullable: true
+          description: Chat the handoff was made in; the response is delivered there only (null for task runs)
+        sourceTaskId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Approved task whose run made the handoff
+        sourceTaskRunId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Task run that made the handoff; the response continues that run in its own session
         targetAgentId:
           type: string
           format: uuid
@@ -3200,6 +3231,7 @@ components:
           timezone,
           model,
           enabled,
+          allowedHandoffAgentIds,
           createdBy,
           updatedBy,
         ]
@@ -3222,6 +3254,14 @@ components:
           type: string
         enabled:
           type: boolean
+        allowedHandoffAgentIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: >-
+            Agents of the workspace the runs may hand off work to (approved content: proposing a change clears the
+            approval; empty: no handoffs)
         nextRunAt:
           type: string
           format: date-time
@@ -3232,7 +3272,7 @@ components:
           nullable: true
         lastRunStatus:
           type: string
-          enum: [running, succeeded, failed]
+          enum: [running, awaiting_handoff, succeeded, failed]
           nullable: true
         createdBy:
           type: string
@@ -3264,7 +3304,7 @@ components:
           enum: [schedule, manual]
         status:
           type: string
-          enum: [running, succeeded, failed]
+          enum: [running, awaiting_handoff, succeeded, failed]
         scheduledFor:
           type: string
           format: date-time
@@ -3281,6 +3321,11 @@ components:
         failureMessage:
           type: string
           nullable: true
+        awaitingHandoffSince:
+          type: string
+          format: date-time
+          nullable: true
+          description: Set while the run waits for the response to one of its handoffs
     EnvironmentProgressDto:
       type: object
       required:

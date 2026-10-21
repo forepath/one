@@ -50,6 +50,12 @@ export const deleteAgentTaskSuccess = createAction('[Agent Tasks] Delete Success
 
 export const deleteAgentTaskFailure = createAction('[Agent Tasks] Delete Failure', props<{ error: string }>());
 
+/** Success / failure reuse the update actions (the approved task row replaces the stored one). */
+export const approveAgentTask = createAction(
+  '[Agent Tasks] Approve',
+  props<{ clientId: string; agentId: string; taskId: string; reviewedUpdatedAt: string }>(),
+);
+
 export const runAgentTaskNow = createAction(
   '[Agent Tasks] Run Now',
   props<{ clientId: string; agentId: string; taskId: string }>(),

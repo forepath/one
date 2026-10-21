@@ -14,6 +14,7 @@ import {
   isUnattendedAutomationResumeSessionSuffix,
 } from '../../constants/chat-session.constants';
 import { AgentActiveTurnsService } from '../../services/agent-active-turns.service';
+import { AgentToolCallsService } from '../../services/agent-tool-calls.service';
 import type { AgentProviderOptions, AgentResponseObject } from '../agent-provider.interface';
 import { OutboundAgentEventPublisher } from '../outbound-agent-event-publisher';
 
@@ -21,10 +22,14 @@ import { OpenCodeClientFactory } from './opencode-client.factory';
 import { OpenCodeEventBridge } from './opencode-event-bridge';
 import { createOpenCodeToolCallState, OpenCodeEventMapper } from './opencode-event-mapper';
 import { OPENCODE_INITIALIZATION_INSTRUCTIONS } from './opencode-provider.config';
-import type { PermissionReply } from './opencode-sdk.types';
+import type { OpencodeClient, PermissionReply } from './opencode-sdk.types';
 import { OpenCodeSessionKey, OpenCodeSessionService } from './opencode-session.service';
 
 type PendingInteractionKind = 'permission' | 'question';
+
+/** The prompt's user message may be persisted shortly after `prompt_async` returned. */
+const PROMPT_ROOT_LOOKUP_ATTEMPTS = 10;
+const PROMPT_ROOT_LOOKUP_DELAY_MS = 300;
 
 /**
  * OpenCode HTTP chat runtime — replaces AcpAgentMessagingService for OpenCodeAgentProvider.
@@ -47,7 +52,14 @@ export class OpenCodeRuntimeService {
     private readonly eventMapper: OpenCodeEventMapper,
     @Optional() private readonly outboundPublisher?: OutboundAgentEventPublisher,
     @Optional() private readonly activeTurns?: AgentActiveTurnsService,
-  ) {}
+    @Optional() private readonly toolCalls?: AgentToolCallsService,
+  ) {
+    // Running tool calls (also of subagent sessions) authorize privileged platform MCP requests (auto-approval
+    // tickets); the event bridge feeds every event of a worker.
+    if (toolCalls && typeof eventBridge.addTap === 'function') {
+      eventBridge.addTap((agentId, event) => toolCalls.observe(agentId, event));
+    }
+  }
 
   async sendMessage(key: OpenCodeSessionKey, message: string, options?: AgentProviderOptions): Promise<string> {
     const parts: string[] = [];
@@ -305,6 +317,42 @@ export class OpenCodeRuntimeService {
   }
 
   /**
+   * Prompts carrying a context ticket: find the platform's own user message (earliest user message with exactly this
+   * text) so tool calls answering it can be told apart from prompts injected later (see AgentToolCallsService).
+   */
+  private async registerPromptRoot(
+    client: OpencodeClient,
+    agentId: string,
+    sessionId: string,
+    message: string,
+  ): Promise<void> {
+    if (!this.toolCalls || !/ctx-[A-Za-z0-9_-]{16,}/.test(message) || typeof client.session.messages !== 'function') {
+      return;
+    }
+
+    for (let attempt = 0; attempt < PROMPT_ROOT_LOOKUP_ATTEMPTS; attempt++) {
+      try {
+        const result = await client.session.messages({ path: { id: sessionId } });
+        const own = (result.data ?? []).find(
+          (entry) =>
+            entry.info.role === 'user' &&
+            entry.parts.some((part) => part.type === 'text' && (part as { text?: unknown }).text === message),
+        );
+
+        if (own) {
+          this.toolCalls.registerPromptRoot(agentId, sessionId, own.info.id, message);
+
+          return;
+        }
+      } catch (error) {
+        this.logger.debug(`Prompt root lookup failed for agent ${agentId}: ${(error as Error).message}`);
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, PROMPT_ROOT_LOOKUP_DELAY_MS));
+    }
+  }
+
+  /**
    * Plan sessions: auto-allow explore permissions, reject write/mutation (and unknown) asks.
    * Non-permission questions are rejected so the explore turn cannot stall on interactive forms.
    */
@@ -381,9 +429,10 @@ export class OpenCodeRuntimeService {
     options?: AgentProviderOptions,
   ): AsyncIterable<AgentResponseObject> {
     const sessionId = await this.sessionService.getOrCreateSessionId(key, options);
+
     const client = await this.clientFactory.getClient(key.agentId, key.containerId);
     const abort = new AbortController();
-    const toolState = createOpenCodeToolCallState();
+    const toolState = createOpenCodeToolCallState(message);
     let aggregatedText = '';
     let turnDone = false;
     let promptError: unknown | null = null;
@@ -495,6 +544,10 @@ export class OpenCodeRuntimeService {
           ...(automationSession ? { agent: AGENSTRA_AUTOMATION_AGENT_NAME } : {}),
         },
       });
+
+      if (!promptResult.error) {
+        void this.registerPromptRoot(client, key.agentId, sessionId, message);
+      }
 
       if (promptResult.error) {
         const err = promptResult.error as { message?: string };

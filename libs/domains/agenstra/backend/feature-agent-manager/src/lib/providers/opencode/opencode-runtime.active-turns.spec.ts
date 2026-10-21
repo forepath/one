@@ -1,4 +1,5 @@
 import { AgentActiveTurnsService } from '../../services/agent-active-turns.service';
+import { AgentToolCallsService } from '../../services/agent-tool-calls.service';
 
 import type { OpenCodeClientFactory } from './opencode-client.factory';
 import type { OpenCodeEventBridge } from './opencode-event-bridge';
@@ -83,5 +84,60 @@ describe('OpenCodeRuntimeService active turns', () => {
     await Promise.all([first, second]);
 
     expect(order).toEqual(['start:first', 'start:other', 'end:other', 'end:first', 'start:second', 'end:second']);
+  });
+
+  it('feeds every worker event to the tool-call tracking', () => {
+    const toolCalls = new AgentToolCallsService();
+    const addTap = jest.fn();
+    const observe = jest.spyOn(toolCalls, 'observe');
+
+    new OpenCodeRuntimeService(
+      {} as OpenCodeClientFactory,
+      {} as OpenCodeSessionService,
+      { addTap } as unknown as OpenCodeEventBridge,
+      {} as OpenCodeEventMapper,
+      undefined,
+      turns,
+      toolCalls,
+    );
+
+    const event = { type: 'session.idle', properties: { sessionID: 'ses-1' } };
+
+    addTap.mock.calls[0][0]('agent-1', event);
+
+    expect(observe).toHaveBeenCalledWith('agent-1', event);
+  });
+
+  it('registers its own prompt message (earliest exact match) as root for the tickets it carries', async () => {
+    const toolCalls = new AgentToolCallsService();
+    const register = jest.spyOn(toolCalls, 'registerPromptRoot');
+    const withCalls = new OpenCodeRuntimeService(
+      {} as OpenCodeClientFactory,
+      {} as OpenCodeSessionService,
+      { addTap: jest.fn() } as unknown as OpenCodeEventBridge,
+      {} as OpenCodeEventMapper,
+      undefined,
+      turns,
+      toolCalls,
+    );
+    const prompt = 'Context ticket: ctx-AbCdEfGhIjKlMnOpQrStUvWx\nDo it';
+    const client = {
+      session: {
+        messages: jest.fn().mockResolvedValue({
+          data: [
+            { info: { id: 'msg-old', sessionID: 's', role: 'user' }, parts: [{ type: 'text', text: 'earlier' }] },
+            { info: { id: 'msg-own', sessionID: 's', role: 'user' }, parts: [{ type: 'text', text: prompt }] },
+            { info: { id: 'msg-copy', sessionID: 's', role: 'user' }, parts: [{ type: 'text', text: prompt }] },
+          ],
+        }),
+      },
+    };
+
+    await (withCalls as any).registerPromptRoot(client, 'agent-1', 's', prompt);
+
+    expect(register).toHaveBeenCalledWith('agent-1', 's', 'msg-own', prompt);
+
+    await (withCalls as any).registerPromptRoot(client, 'agent-1', 's', 'no ticket here');
+    expect(client.session.messages).toHaveBeenCalledTimes(1);
   });
 });

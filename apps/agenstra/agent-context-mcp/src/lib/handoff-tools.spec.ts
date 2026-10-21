@@ -10,6 +10,8 @@ const HANDOFF: AgentHandoffSummary = {
   sourceAgentId: 'agent-a',
   sourceAgentName: 'Backend',
   sourceChatId: 'chat-a',
+  sourceTaskId: null,
+  sourceTaskRunId: null,
   targetAgentId: 'agent-b',
   targetAgentName: 'Reviewer',
   targetChatId: 'chat-b',

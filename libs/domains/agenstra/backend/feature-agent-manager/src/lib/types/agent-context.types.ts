@@ -52,6 +52,11 @@ export interface AgentContextTicketRecord extends AgentContextTicketBinding {
   ticket: string;
   items: AgentContextStoredItem[];
   grants: AgentContextGrants;
+  /**
+   * Ticket SHAs the platform granted at mint time (never agent input): anchors of the scope automatic grants of
+   * unattended ticket automation may cover (same ticket tree).
+   */
+  scopeAnchors: string[];
   attachments: AgentContextAttachmentRef[];
   workspace?: { mountPath: string; containerType?: string };
   environments: AgentContextEnvironmentRef[];
@@ -77,6 +82,13 @@ export type AgentContextControllerRequest =
       op: 'content';
       agentId: string;
       refs: Array<{ kind: 'ticket' | 'knowledge'; sha: string }>;
+    }
+  /** Of `refs`, the tickets in the same ticket tree as one of the `anchors` (scoped automatic grants). */
+  | {
+      op: 'scope';
+      agentId: string;
+      refs: Array<{ kind: 'ticket' | 'knowledge'; sha: string }>;
+      anchors: string[];
     };
 
 export interface AgentContextControllerMetadata {

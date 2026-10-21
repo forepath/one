@@ -100,6 +100,8 @@
 
 // Message cards - prevent horizontal overflow
 .chat-message-card {
+  // Every chat card (messages, plans, runs, handoffs) has the same width instead of shrinking to its content.
+  width: 75%;
   max-width: 75%;
   word-wrap: break-word;
   word-break: break-word;
@@ -721,4 +723,9 @@ span {
   &:focus-visible {
     opacity: 1;
   }
+}
+
+.chat-handoff-card__body {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }

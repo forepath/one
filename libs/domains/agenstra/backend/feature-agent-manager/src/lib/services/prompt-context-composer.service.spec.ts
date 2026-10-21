@@ -138,6 +138,7 @@ describe('PromptContextComposerService', () => {
   describe('with a context ticket (worker context MCP)', () => {
     const contextTicket: AgentContextTicketRecord = {
       ticket: 'ctx-test',
+      scopeAnchors: [],
       agentId: 'agent-1',
       sessionKey: 'chat-1',
       ephemeral: false,

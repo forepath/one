@@ -146,7 +146,9 @@ export class ControllerJobsProcessor extends WorkerHost {
         await this.agentTaskRunner.executeOccurrence(job.data as AgentTaskOccurrence);
         break;
       case ControllerJobName.AGENT_HANDOFF_COORDINATOR:
-        await this.agentHandoffRunner.sweep((handoffJob) => enqueueAgentHandoff(this.controllerQueue, handoffJob));
+        await this.agentHandoffRunner.sweep((handoffJob, options) =>
+          enqueueAgentHandoff(this.controllerQueue, handoffJob, options),
+        );
         break;
       case ControllerJobName.AGENT_HANDOFF_UNIT:
         await this.agentHandoffRunner.executeHandoff(job.data as AgentHandoffJob);

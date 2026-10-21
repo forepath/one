@@ -49,6 +49,22 @@ function parseTaskFields(raw: unknown): AgentTaskUpdateInput {
     fields.enabled = body['enabled'];
   }
 
+  if (body['allowedHandoffAgentIds'] !== undefined) {
+    const ids = body['allowedHandoffAgentIds'];
+
+    if (!Array.isArray(ids) || ids.some((id) => typeof id !== 'string' || !UUID_V4.test(id.trim()))) {
+      throw new BadRequestException('allowedHandoffAgentIds must be a list of agent ids');
+    }
+
+    if (ids.length > AGENT_TASK_LIMITS.allowedHandoffAgentsMax) {
+      throw new BadRequestException(
+        `allowedHandoffAgentIds may list at most ${AGENT_TASK_LIMITS.allowedHandoffAgentsMax} agents`,
+      );
+    }
+
+    fields.allowedHandoffAgentIds = ids.map((id: string) => id.trim().toLowerCase());
+  }
+
   return fields;
 }
 

@@ -68,12 +68,14 @@ export class AgentContextTicketsService {
         ]),
       },
       attachments: input.attachments ?? [],
+      scopeAnchors: [],
       workspace: input.workspace,
       environments: input.environments ?? [],
       createdAt: now,
       lastUsedAt: now,
     };
 
+    record.scopeAnchors = [...record.grants.ticket];
     this.tickets.set(ticket, record);
     this.evictOverflow(input.agentId);
 
@@ -105,10 +107,15 @@ export class AgentContextTicketsService {
   }
 
   isGranted(record: AgentContextTicketRecord, kind: 'ticket' | 'knowledge', sha: string): boolean {
-    const session = this.sessionGrants.get(this.sessionGrantKey(record.agentId, record.sessionKey));
-    const pool = [...record.grants[kind], ...(session?.[kind] ?? [])];
+    return this.matchingGrants(record, kind, sha).length > 0;
+  }
 
-    return pool.some((granted) => agentContextShaMatches(granted, sha));
+  /** Granted SHAs compatible with `sha` (content is always fetched by the granted SHA, never by the agent's ref). */
+  matchingGrants(record: AgentContextTicketRecord, kind: 'ticket' | 'knowledge', sha: string): string[] {
+    const session = this.sessionGrants.get(this.sessionGrantKey(record.agentId, record.sessionKey));
+    const pool = new Set([...record.grants[kind], ...(session?.[kind] ?? [])]);
+
+    return [...pool].filter((granted) => agentContextShaMatches(granted, sha));
   }
 
   /** Grant refs for this ticket only (`once`) or for the whole chat session (`session`). */
@@ -152,6 +159,11 @@ export class AgentContextTicketsService {
     record.items.push(stored);
 
     return stored;
+  }
+
+  /** Drop one ticket (its turn ended); session grants of the chat stay. */
+  revoke(ticket: string): void {
+    this.tickets.delete(ticket);
   }
 
   /** Drop every ticket and session grant of an agent (agent deleted / container recreated). */

@@ -170,6 +170,7 @@ import {
   describeAgentTaskSchedule as describeAgentTaskScheduleFn,
 } from '../agent-tasks/agent-task-labels';
 import { AgentChatHandoffNavigationService } from './agent-chat-handoff-navigation.service';
+import { formatUserChatMessageHtml } from './chat-message-html';
 import {
   buildAgentChatHandoffCard,
   type AgentChatHandoffCardView,
@@ -1808,6 +1809,13 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.handoffNavigation.requests$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((link) => this.openHandoffLink(link));
+
+    // Jump requested on another page (tasks run history): the route selects the agent, then the chat follows.
+    const deferredHandoffLink = this.handoffNavigation.takeDeferred();
+
+    if (deferredHandoffLink?.chatId) {
+      this.selectChatWhenReady(deferredHandoffLink.agentId, deferredHandoffLink.chatId);
+    }
 
     // Status frames with questionId mark prompts answered (incl. after reload / restore).
     combineLatest([this.selectedChatEvents$, this.selectedChatMessages$])
@@ -5556,6 +5564,10 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   }
 
   handoffCardLinkLabel(card: AgentChatHandoffCardView): string {
+    if (card.link.taskRun) {
+      return $localize`:@@featureChat-handoffOpenSourceTaskRun:Open task run`;
+    }
+
     return card.kind === 'request'
       ? $localize`:@@featureChat-handoffOpenSourceChat:Open requesting chat`
       : $localize`:@@featureChat-handoffOpenHandoffChat:Open handoff chat`;
@@ -5578,6 +5590,15 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       return;
     }
 
+    // Handed over by a scheduled task run: the run lives on the tasks page.
+    if (link.taskRun) {
+      void this.router.navigate(['/tasks', clientId], {
+        queryParams: { agentId: link.agentId, openTaskId: link.taskRun.taskId, openRunId: link.taskRun.runId },
+      });
+
+      return;
+    }
+
     if (this.selectedAgentId() === link.agentId) {
       if (link.chatId) {
         this.onSelectChatSession(link.chatId);
@@ -5588,27 +5609,33 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
 
     this.onAgentSelect(link.agentId);
 
-    const chatId = link.chatId;
-
-    if (!chatId) {
-      return;
+    if (link.chatId) {
+      this.selectChatWhenReady(link.agentId, link.chatId);
     }
+  }
 
-    combineLatest([
-      this.chatSessionsFacade.getChatSessions$(clientId, link.agentId),
-      this.socketsFacade.selectedAgentId$,
-    ])
+  /** Select a chat of an agent once its sessions are loaded and the socket is logged into that agent. */
+  private selectChatWhenReady(agentId: string, chatId: string): void {
+    this.clientsFacade.activeClientId$
       .pipe(
+        filter((clientId): clientId is string => !!clientId),
+        take(1),
+        switchMap((clientId) =>
+          combineLatest([
+            this.chatSessionsFacade.getChatSessions$(clientId, agentId),
+            this.socketsFacade.selectedAgentId$,
+          ]),
+        ),
         filter(
           ([sessions, loggedInAgentId]) =>
-            loggedInAgentId === link.agentId && !!sessions?.some((session) => session.id === chatId),
+            loggedInAgentId === agentId && !!sessions?.some((session) => session.id === chatId),
         ),
         take(1),
         timeout({ first: 30_000, with: () => of(null) }),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((ready) => {
-        if (ready && this.selectedAgentId() === link.agentId) {
+        if (ready && this.selectedAgentId() === agentId) {
           this.onSelectChatSession(chatId);
         }
       });
@@ -6342,39 +6369,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       return cached;
     }
 
-    // Check if message starts with a slash command
-    const commandMatch = text.match(/^(\/[^\s\n]+)(.*)$/s);
-
-    if (commandMatch) {
-      const command = commandMatch[1];
-      const restOfMessage = commandMatch[2];
-      // Escape HTML in the rest of the message
-      const escapedRest = restOfMessage
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;')
-        .replace(/\n/g, '<br>');
-      // Create HTML with badge (white background with primary text for user messages)
-      const html = `<span class="badge bg-white text-primary me-2">${command}</span>${escapedRest}`;
-      const safe = this.sanitizer.bypassSecurityTrustHtml(html);
-
-      this.commandBadgeHtmlCache.set(text, safe);
-      this.trimHtmlCache(this.commandBadgeHtmlCache);
-
-      return safe;
-    }
-
-    // No command, return escaped text
-    const escaped = text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;')
-      .replace(/\n/g, '<br>');
-    const safe = this.sanitizer.bypassSecurityTrustHtml(escaped);
+    // Every part (incl. a leading slash command shown as badge) is escaped before it is trusted.
+    const safe = this.sanitizer.bypassSecurityTrustHtml(formatUserChatMessageHtml(text));
 
     this.commandBadgeHtmlCache.set(text, safe);
     this.trimHtmlCache(this.commandBadgeHtmlCache);

@@ -55,6 +55,23 @@ describe('AgentTasksService', () => {
     httpMock.expectOne((r) => r.url === taskUrl && r.method === 'DELETE').flush(null);
   });
 
+  it('sends the allowed handoff agents with a full edit-form save', () => {
+    const dto = {
+      title: 'T',
+      prompt: 'P',
+      cronExpression: '0 9 * * *',
+      model: 'openai/gpt-5',
+      allowedHandoffAgentIds: ['a2'],
+    };
+
+    service.updateTask('c1', 'a1', 't1', dto).subscribe();
+
+    const update = httpMock.expectOne((r) => r.url === taskUrl && r.method === 'PATCH');
+
+    expect(update.request.body).toEqual(dto);
+    update.flush({});
+  });
+
   it('reads task details and runs', () => {
     service.getTask('c1', 'a1', 't1').subscribe();
     service.listRuns('c1', 'a1', 't1', { limit: 5 }).subscribe();
@@ -77,6 +94,18 @@ describe('AgentTasksService', () => {
     expect(runs.request.params.get('limit')).toBe('10');
     expect(runs.request.params.get('offset')).toBe('20');
     runs.flush([]);
+  });
+
+  it('approves a task', (done) => {
+    service.approve('c1', 'a1', 't1', '2026-10-21T09:00:00.000Z').subscribe((task) => {
+      expect(task).toEqual({ id: 't1', approvalStatus: 'approved' });
+      done();
+    });
+
+    const request = httpMock.expectOne((r) => r.url === `${taskUrl}/approval` && r.method === 'POST');
+
+    expect(request.request.body).toEqual({ updatedAt: '2026-10-21T09:00:00.000Z' });
+    request.flush({ id: 't1', approvalStatus: 'approved' });
   });
 
   it('queues a run', (done) => {

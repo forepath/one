@@ -9,6 +9,7 @@ import {
 describe('agent task labels', () => {
   it('labels run states including tasks that never ran', () => {
     expect(agentTaskRunStatusLabel('running')).toBe('Running');
+    expect(agentTaskRunStatusLabel('awaiting_handoff')).toBe('Waiting for handoff');
     expect(agentTaskRunStatusLabel('succeeded')).toBe('Succeeded');
     expect(agentTaskRunStatusLabel('failed')).toBe('Failed');
     expect(agentTaskRunStatusLabel(null)).toBe('Not run yet');
@@ -18,6 +19,7 @@ describe('agent task labels', () => {
     expect(agentTaskRunStatusBadgeColor('succeeded')).toBe('success');
     expect(agentTaskRunStatusBadgeColor('failed')).toBe('danger');
     expect(agentTaskRunStatusBadgeColor('running')).toBe('warning');
+    expect(agentTaskRunStatusBadgeColor('awaiting_handoff')).toBe('info');
     expect(agentTaskRunStatusBadgeColor(undefined)).toBe('secondary');
   });
 

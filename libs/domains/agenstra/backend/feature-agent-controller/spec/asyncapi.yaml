@@ -173,6 +173,8 @@ channels:
     description: |
       Controller-originated agent task run snapshot (OpenAPI `AgentTaskRunChatEventDto`) rendered as a card in the
       agent's primary chat. Hydration (unicast after login) uses `run.startedAt`; live updates use the finish/update time.
+      `run.status` `awaiting_handoff`: the run waits for the response to one of its handoffs (then `running` again
+      while it reacts, until it ends).
   clients/agentTaskUpsert:
     address: clients/agentTaskUpsert
     messages:

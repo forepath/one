@@ -13,10 +13,12 @@ import {
 
 /**
  * A task one agent handed over to another agent of the same workspace (worker MCP → manager → socket).
- * The target works on it in its own visible `handoff` chat; the response is delivered into the source chat.
+ * The target works on it in its own visible `handoff` chat; the response is delivered where the handoff was made:
+ * the source chat, or the hidden session of the source task run (exactly one of both, DB check constraint).
  */
 @Entity('agent_handoffs')
 @Index('IDX_agent_handoffs_client_status', ['clientId', 'status'])
+@Index('IDX_agent_handoffs_source_task_run', ['sourceTaskRunId'], { where: '"source_task_run_id" IS NOT NULL' })
 @Index('IDX_agent_handoffs_target_chat', ['targetAgentId', 'targetChatId'])
 export class AgentHandoffEntity {
   @PrimaryGeneratedColumn('uuid', { name: 'id' })
@@ -35,9 +37,16 @@ export class AgentHandoffEntity {
   @Column({ type: 'varchar', length: 255, name: 'source_agent_name' })
   sourceAgentName!: string;
 
-  /** Visible chat the handoff was made in: the only place the response is delivered to. */
-  @Column({ type: 'uuid', name: 'source_chat_id' })
-  sourceChatId!: string;
+  /** Visible chat the handoff was made in: the only place the response is delivered to (`null`: task run). */
+  @Column({ type: 'uuid', name: 'source_chat_id', nullable: true })
+  sourceChatId!: string | null;
+
+  /** Approved task whose run made the handoff; the response continues that run in its own session. */
+  @Column({ type: 'uuid', name: 'source_task_id', nullable: true })
+  sourceTaskId?: string | null;
+
+  @Column({ type: 'uuid', name: 'source_task_run_id', nullable: true })
+  sourceTaskRunId?: string | null;
 
   /** Model of the requesting chat: the turn that delivers the response runs with it. */
   @Column({ type: 'varchar', length: 256, name: 'source_model', nullable: true })
@@ -88,6 +97,10 @@ export class AgentHandoffEntity {
   /** When the response message was accepted by the source agent's chat. */
   @Column({ type: 'timestamptz', name: 'delivered_at', nullable: true })
   deliveredAt?: Date | null;
+
+  /** When the turn the delivered response started in the source chat ended (chain depth only spans that turn). */
+  @Column({ type: 'timestamptz', name: 'delivery_turn_ended_at', nullable: true })
+  deliveryTurnEndedAt?: Date | null;
 
   @Column({ type: 'int', name: 'delivery_attempts', default: 0 })
   deliveryAttempts!: number;

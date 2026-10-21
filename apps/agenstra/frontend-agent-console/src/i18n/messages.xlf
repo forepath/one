@@ -5826,7 +5826,7 @@
         <source>Handed over to another agent</source>
         </trans-unit>
       <trans-unit id="featureChat-toolEmbedHandoffPending" datatype="html">
-        <source>The response arrives in this chat once the agent is done.</source>
+        <source>The response arrives here once the agent is done.</source>
         </trans-unit>
       <trans-unit id="featureChat-toolEmbedHandoffFailed" datatype="html">
         <source>The handoff could not be created</source>
@@ -5875,6 +5875,54 @@
         </trans-unit>
       <trans-unit id="featureChat-handoffProfileHelp" datatype="html">
         <source>What this environment is responsible for and which tasks other agents of the workspace can hand over to it. The agent can also maintain it itself.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-pendingApproval" datatype="html">
+        <source>Awaiting approval</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-pendingApprovalHint" datatype="html">
+        <source>The agent created or changed this task. Runs are unattended with every permission allowed, so the task only runs after you reviewed its prompt, model and schedule and approved it.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-approve" datatype="html">
+        <source>Approve</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-runStatusAwaitingHandoff" datatype="html">
+        <source>Waiting for handoff</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-pendingApprovalHandoffHint" datatype="html">
+        <source>Once approved, this task can hand off work to these agents without asking: <x id="INTERPOLATION" equiv-text="{{ handoffAgents.join(&apos;, &apos;) }}"/></source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-noHandoffAgents" datatype="html">
+        <source>None</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-runAwaitingHandoff" datatype="html">
+        <source>The run waits for the response to its handoff and continues when it arrives…</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-noOtherAgents" datatype="html">
+        <source> This workspace has no other agents. </source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-allowedHandoffAgentsLabel" datatype="html">
+        <source>Allowed handoff agents</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-allowedHandoffAgentsHint" datatype="html">
+        <source>Runs may hand off work to these agents of the workspace without asking; their responses are processed by the unattended run with all permissions. Leave empty to keep runs from handing off.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-openHandoffChat" datatype="html">
+        <source>Open handoff chat</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-handoffUnknownAgent" datatype="html">
+        <source>another agent</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-handoffResponseHeading" datatype="html">
+        <source>Response from <x id="agentName" equiv-text="agentName"/></source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-handoffStatusFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-handoffStatusCompleted" datatype="html">
+        <source>Completed</source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffOpenSourceTaskRun" datatype="html">
+        <source>Open task run</source>
         </trans-unit>
     </body>
   </file>

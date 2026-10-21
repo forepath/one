@@ -22,13 +22,16 @@ import {
   loadAgentTasks,
   loadAgentTasksFailure,
   loadAgentTasksSuccess,
+  approveAgentTask,
   runAgentTaskNow,
   runAgentTaskNowFailure,
   runAgentTaskNowSuccess,
   updateAgentTask,
+  updateAgentTaskFailure,
   updateAgentTaskSuccess,
 } from './agent-tasks.actions';
 import {
+  approveAgentTask$,
   createAgentTask$,
   deleteAgentTask$,
   AGENT_TASK_RUNS_PAGE_SIZE,
@@ -55,6 +58,9 @@ function agentTaskFixture(overrides: Partial<AgentTaskResponseDto> = {}): AgentT
     nextRunAt: '2026-10-22T09:00:00.000Z',
     lastRunAt: null,
     lastRunStatus: null,
+    approvalStatus: 'approved',
+    allowedHandoffAgentIds: [],
+    approvedAt: '2026-10-21T09:00:00.000Z',
     createdBy: 'user',
     updatedBy: 'user',
     createdAt: '2026-10-21T08:00:00.000Z',
@@ -83,7 +89,10 @@ function agentTaskRunFixture(overrides: Partial<AgentTaskRunResponseDto> = {}): 
 describe('agent tasks effects', () => {
   let actions$: Observable<Action>;
   let service: jest.Mocked<
-    Pick<AgentTasksService, 'listTasks' | 'createTask' | 'updateTask' | 'deleteTask' | 'runNow' | 'listRuns'>
+    Pick<
+      AgentTasksService,
+      'listTasks' | 'createTask' | 'updateTask' | 'deleteTask' | 'runNow' | 'listRuns' | 'approve'
+    >
   >;
   let store: MockStore;
   const dto = { title: 'T', prompt: 'P', cronExpression: '0 9 * * *', model: 'openai/gpt-5' };
@@ -95,6 +104,7 @@ describe('agent tasks effects', () => {
       updateTask: jest.fn(),
       deleteTask: jest.fn(),
       runNow: jest.fn(),
+      approve: jest.fn(),
       listRuns: jest.fn(),
     };
     TestBed.configureTestingModule({
@@ -155,6 +165,19 @@ describe('agent tasks effects', () => {
     actions$ = of(deleteAgentTask({ clientId: 'c1', agentId: 'a1', taskId: 't1' }));
 
     await expect(first(deleteAgentTask$)).resolves.toEqual(deleteAgentTaskSuccess({ taskId: 't1' }));
+  });
+
+  it('approves tasks through the update result actions', async () => {
+    service.approve.mockReturnValueOnce(of(agentTaskFixture({ approvalStatus: 'approved' })));
+    actions$ = of(approveAgentTask({ clientId: 'c1', agentId: 'a1', taskId: 't1', reviewedUpdatedAt: 'v1' }));
+    await expect(first(approveAgentTask$)).resolves.toEqual(
+      updateAgentTaskSuccess({ task: agentTaskFixture({ approvalStatus: 'approved' }) }),
+    );
+    expect(service.approve).toHaveBeenCalledWith('c1', 'a1', 't1', 'v1');
+
+    service.approve.mockReturnValueOnce(throwError(() => new Error('forbidden')));
+    actions$ = of(approveAgentTask({ clientId: 'c1', agentId: 'a1', taskId: 't1', reviewedUpdatedAt: 'v1' }));
+    await expect(first(approveAgentTask$)).resolves.toEqual(updateAgentTaskFailure({ error: 'forbidden' }));
   });
 
   it('queues runs and reports failures per task', async () => {
