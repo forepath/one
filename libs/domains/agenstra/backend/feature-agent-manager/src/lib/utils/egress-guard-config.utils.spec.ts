@@ -362,6 +362,42 @@ describe('platform allows (agent context MCP → manager)', () => {
     expect(allow).toBeLessThan(reject);
   });
 
+  it('answers the manager host name locally in every guarded mode (allowlist, offline, rebind protection)', () => {
+    const named = [
+      { destination: '172.18.0.5', port: 3000, hostname: 'agent-manager-api' },
+      { destination: 'fd00::5', port: 3000, hostname: 'agent-manager-api' },
+    ];
+
+    for (const egress of [
+      { mode: 'enforce', allow_hosts: ['github.com'] },
+      { mode: 'enforce' },
+      { mode: 'offline' },
+      { mode: 'monitor' },
+    ]) {
+      const dnsmasq = renderEgressGuardArtifacts(policyFor(egress), null, [], named).files['dnsmasq.conf'];
+
+      expect(dnsmasq).toContain('host-record=agent-manager-api,172.18.0.5,fd00::5');
+    }
+
+    expect(renderEgressGuardArtifacts(policyFor({ mode: 'off' }), null, [], named).files['dnsmasq.conf']).not.toContain(
+      'host-record',
+    );
+  });
+
+  it('never renders wildcard or invalid platform host names', () => {
+    expect(
+      normalizeEgressPlatformAllows([
+        { destination: '10.0.0.1', port: 3000, hostname: '*.example.org' },
+        { destination: '10.0.0.2', port: 3000, hostname: 'bad host\nserver=/#/8.8.8.8' },
+        { destination: '10.0.0.3', port: 3000, hostname: 'Agent-Manager-API' },
+      ]),
+    ).toEqual([
+      { destination: '10.0.0.1', port: 3000 },
+      { destination: '10.0.0.2', port: 3000 },
+      { destination: '10.0.0.3', port: 3000, hostname: 'agent-manager-api' },
+    ]);
+  });
+
   it('drops non-IP destinations and invalid ports (never renders unvalidated values)', () => {
     expect(
       normalizeEgressPlatformAllows([

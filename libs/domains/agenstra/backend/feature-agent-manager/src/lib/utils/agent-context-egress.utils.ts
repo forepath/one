@@ -49,7 +49,7 @@ export async function resolveAgentContextEgressAllows(
   try {
     const addresses = await lookup(hostname);
 
-    return addresses.map((entry) => ({ destination: entry.address, port }));
+    return addresses.map((entry) => ({ destination: entry.address, port, hostname }));
   } catch {
     return [];
   }

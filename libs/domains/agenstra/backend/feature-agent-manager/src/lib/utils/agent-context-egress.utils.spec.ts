@@ -37,8 +37,8 @@ describe('resolveAgentContextEgressAllows', () => {
     await expect(
       resolveAgentContextEgressAllows({ AGENT_CONTEXT_MCP_MANAGER_URL: 'http://agent-manager-api/api' }, lookup),
     ).resolves.toEqual([
-      { destination: '172.18.0.5', port: 80 },
-      { destination: 'fd00::5', port: 80 },
+      { destination: '172.18.0.5', port: 80, hostname: 'agent-manager-api' },
+      { destination: 'fd00::5', port: 80, hostname: 'agent-manager-api' },
     ]);
     expect(lookup).toHaveBeenCalledWith('agent-manager-api');
   });
