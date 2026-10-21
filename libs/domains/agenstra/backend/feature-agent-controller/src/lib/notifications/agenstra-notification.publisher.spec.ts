@@ -171,7 +171,7 @@ describe('AgenstraNotificationPublisher', () => {
     });
   });
 
-  it('publishes agent session failure events (legacy agent.acp.* event type) with workspace client id', () => {
+  it('publishes agent session failure events with workspace client id', () => {
     const dispatcher = {
       publishFireAndForget: jest.fn(),
     } as unknown as NotificationDispatcherService;
@@ -184,7 +184,7 @@ describe('AgenstraNotificationPublisher', () => {
     });
 
     expect(dispatcher.publishFireAndForget).toHaveBeenCalledWith({
-      type: 'agent.acp.session_failed',
+      type: 'agent.session_failed',
       scopeKey: INSTANCE_SCOPE_KEY,
       clientId: 'client-1',
       data: expect.objectContaining({
@@ -194,7 +194,7 @@ describe('AgenstraNotificationPublisher', () => {
     });
   });
 
-  it('publishes agent permission denied events (legacy agent.acp.* event type) with workspace client id', () => {
+  it('publishes agent permission denied events with workspace client id', () => {
     const dispatcher = {
       publishFireAndForget: jest.fn(),
     } as unknown as NotificationDispatcherService;
@@ -206,7 +206,7 @@ describe('AgenstraNotificationPublisher', () => {
     });
 
     expect(dispatcher.publishFireAndForget).toHaveBeenCalledWith({
-      type: 'agent.acp.permission_denied',
+      type: 'agent.permission_denied',
       scopeKey: INSTANCE_SCOPE_KEY,
       clientId: 'client-1',
       data: expect.objectContaining({

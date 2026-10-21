@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-21T07:05:41.558Z",
+  "generatedAt": "2026-10-21T07:35:14.222Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -17942,24 +17942,6 @@
       }
     },
     {
-      "id": "webhook-event:agenstra-backend-feature-agent-controller:agent.acp.permission_denied",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "agent.acp.permission_denied",
-        "projectName": "agenstra-backend-feature-agent-controller",
-        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
-      }
-    },
-    {
-      "id": "webhook-event:agenstra-backend-feature-agent-controller:agent.acp.session_failed",
-      "type": "webhook-event",
-      "attrs": {
-        "eventName": "agent.acp.session_failed",
-        "projectName": "agenstra-backend-feature-agent-controller",
-        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
-      }
-    },
-    {
       "id": "webhook-event:agenstra-backend-feature-agent-controller:agent.chat.failed",
       "type": "webhook-event",
       "attrs": {
@@ -17978,10 +17960,28 @@
       }
     },
     {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:agent.permission_denied",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "agent.permission_denied",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
       "id": "webhook-event:agenstra-backend-feature-agent-controller:agent.sandbox_creation_failed",
       "type": "webhook-event",
       "attrs": {
         "eventName": "agent.sandbox_creation_failed",
+        "projectName": "agenstra-backend-feature-agent-controller",
+        "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
+      }
+    },
+    {
+      "id": "webhook-event:agenstra-backend-feature-agent-controller:agent.session_failed",
+      "type": "webhook-event",
+      "attrs": {
+        "eventName": "agent.session_failed",
         "projectName": "agenstra-backend-feature-agent-controller",
         "catalogPath": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/notifications/agenstra-notification.events.ts"
       }
@@ -44694,16 +44694,6 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "webhook-event:agenstra-backend-feature-agent-controller:agent.acp.permission_denied",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
-      "to": "webhook-event:agenstra-backend-feature-agent-controller:agent.acp.session_failed",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "webhook-event:agenstra-backend-feature-agent-controller:agent.chat.failed",
       "type": "contains"
     },
@@ -44714,7 +44704,17 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:agent.permission_denied",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "webhook-event:agenstra-backend-feature-agent-controller:agent.sandbox_creation_failed",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "webhook-event:agenstra-backend-feature-agent-controller:agent.session_failed",
       "type": "contains"
     },
     {

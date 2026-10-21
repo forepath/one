@@ -58,14 +58,15 @@ as hidden context. See [Agent Context MCP](./context-mcp.md).
 
 ## Notifications
 
-Operator-facing notification events (controller notification bus / webhooks). The `agent.acp.*` names are historic and
-kept for compatibility with existing subscribers.
+Operator-facing notification events (controller notification bus / webhooks). Formerly `agent.acp.session_failed` /
+`agent.acp.permission_denied`; existing webhook subscriptions are migrated automatically
+(`1792200000000_RenameAgentAcpNotificationEvents`).
 
-| Event                         | When                                                  |
-| ----------------------------- | ----------------------------------------------------- |
-| `agent.acp.session_failed`    | Agent session failure (`AGENT_SESSION_FAILED`)        |
-| `agent.acp.permission_denied` | Permission request denied (`AGENT_PERMISSION_DENIED`) |
-| `agent.chat.failed`           | Generic chat turn failure (`CHAT_ERROR`)              |
+| Event                     | When                                                  |
+| ------------------------- | ----------------------------------------------------- |
+| `agent.session_failed`    | Agent session failure (`AGENT_SESSION_FAILED`)        |
+| `agent.permission_denied` | Permission request denied (`AGENT_PERMISSION_DENIED`) |
+| `agent.chat.failed`       | Generic chat turn failure (`CHAT_ERROR`)              |
 
 Streaming token deltas are not notified.
 
