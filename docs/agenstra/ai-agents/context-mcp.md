@@ -60,6 +60,26 @@ credential hash)`). Tickets of other agents are indistinguishable from unknown t
   forwards the event to browsers.
 - The MCP server is root-owned and read-only inside the worker (`/opt/agenstra/mcp`).
 
+## Deployment
+
+- **Repository compose** (`apps/agenstra/backend-agent-manager/docker-compose.yaml`) enables it by default
+  (`AGENT_CONTEXT_MCP_MANAGER_URL=http://agent-manager-api:3000/api` on the `agent-manager-network` bridge).
+- **Provisioned managers** (controller server provisioning, Decabill cloud-init) set `AGENT_DOCKER_NETWORK`,
+  `AGENT_CONTEXT_MCP_MANAGER_URL` and a random per-host `AGENT_CONTEXT_TOKEN_SECRET` automatically for **new** hosts.
+- **Existing hosts** keep the inline fallback until those three variables are added to `/opt/agent-manager/docker-compose.yml`
+  (`backend-agent-manager.environment`) and the stack is restarted. Agents pick up the MCP server on their next
+  OpenCode config sync; workers created before the change join the network when they are next recreated.
+
+## Deployment
+
+- **Repository compose** (`apps/agenstra/backend-agent-manager/docker-compose.yaml`) and **provisioned managers**
+  (controller server provisioning on Hetzner / DigitalOcean, Decabill cloud-init) set `AGENT_DOCKER_NETWORK=agent-manager-network`,
+  `AGENT_CONTEXT_MCP_MANAGER_URL=http://agent-manager-api:<port>/api` and a per-host random `AGENT_CONTEXT_TOKEN_SECRET`,
+  so new workers join the manager bridge and pick up the context MCP on their first config sync.
+- **Already provisioned hosts** are not changed (cloud-init runs once). Add the three variables to
+  `/opt/agent-manager/docker-compose.yml` and run `docker compose up -d`; existing workers move to the bridge on their next
+  recreate. Until then the manager keeps inlining context.
+
 ## Fallback (unchanged behaviour)
 
 The manager inlines context exactly as before (`<hidden-context>` block) whenever MCP mode is not fully available:

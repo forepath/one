@@ -12,6 +12,9 @@ import {
   buildPostgresComposeService,
 } from '../../utils/cloud-init/postgres-compose.utils';
 
+/** Docker bridge shared by the manager and its agent workers (compose `name:` keeps it unprefixed). */
+export const AGENT_MANAGER_NETWORK = 'agent-manager-network';
+
 export interface AgentManagerCloudInitConfig {
   ssh: {
     publicKey: string;
@@ -53,6 +56,11 @@ export interface AgentManagerCloudInitConfig {
       encryptionKey: string;
       /** JWT signing secret for local auth features (same generation as agent-controller provisioning). */
       jwtSecret: string;
+      /**
+       * HMAC secret for per-agent context MCP tokens (`AGENT_CONTEXT_TOKEN_SECRET`).
+       * When omitted the manager falls back to `ENCRYPTION_KEY`.
+       */
+      contextTokenSecret?: string;
     };
     smtp: {
       host: string;
@@ -93,6 +101,7 @@ export function buildAgentManagerCloudInitConfigFromRequest(
 ): AgentManagerCloudInitConfig {
   const encryptionKey = randomBytes(32).toString('base64');
   const jwtSecret = randomBytes(32).toString('hex');
+  const contextTokenSecret = randomBytes(32).toString('base64url');
   const fqdn = `${hostname}.${baseDomain}`;
   const smtp = effectiveConfig.smtp as Record<string, unknown> | undefined;
   const keycloak = effectiveConfig.keycloak as Record<string, unknown> | undefined;
@@ -141,7 +150,7 @@ export function buildAgentManagerCloudInitConfigFromRequest(
           },
         }),
       },
-      encryption: { encryptionKey, jwtSecret },
+      encryption: { encryptionKey, jwtSecret, contextTokenSecret },
       smtp: {
         host: (smtp?.host as string) ?? 'mailhog',
         port: (smtp?.port as number) ?? 1025,
@@ -183,6 +192,12 @@ export function buildAgentManagerCloudInitUserData(config: AgentManagerCloudInit
     `KEYCLOAK_CLIENT_SECRET: ${config.backend?.authentication?.keycloak?.clientSecret ?? ''}`,
     `ENCRYPTION_KEY: ${config.backend?.encryption?.encryptionKey ?? ''}`,
     `JWT_SECRET: ${config.backend?.encryption?.jwtSecret ?? ''}`,
+    // Agent workers join the manager bridge so the worker context MCP server can reach the manager API.
+    `AGENT_DOCKER_NETWORK: ${AGENT_MANAGER_NETWORK}`,
+    `AGENT_CONTEXT_MCP_MANAGER_URL: http://agent-manager-api:${config.backend?.port ?? '3000'}/api`,
+    ...(config.backend?.encryption?.contextTokenSecret
+      ? [`AGENT_CONTEXT_TOKEN_SECRET: ${config.backend.encryption.contextTokenSecret}`]
+      : []),
     `SMTP_HOST: ${config.backend?.smtp?.host ?? 'mailhog'}`,
     `SMTP_PORT: ${config.backend?.smtp?.port ?? '1025'}`,
     `SMTP_USER: ${config.backend?.smtp?.user ?? ''}`,
@@ -215,7 +230,7 @@ export function buildAgentManagerCloudInitUserData(config: AgentManagerCloudInit
   const dockerCompose = `services:
 ${buildPostgresComposeService({
   containerName: 'agent-manager-postgres',
-  network: 'agent-manager-network',
+  network: AGENT_MANAGER_NETWORK,
   username: config.backend?.database?.username ?? 'postgres',
   password: config.backend?.database?.password ?? 'postgres',
   database: config.backend?.database?.database ?? 'postgres',
@@ -239,7 +254,7 @@ ${POSTGRES_COMPOSE_DEPENDS_ON}
 
 ${buildNginxComposeService({
   containerName: 'agent-manager-nginx',
-  network: 'agent-manager-network',
+  network: AGENT_MANAGER_NETWORK,
   stackDir: '/opt/agent-manager',
   httpPort: config.proxy?.httpPort ?? 80,
   httpsPort: config.proxy?.httpsPort ?? 443,
@@ -248,7 +263,7 @@ ${buildNginxComposeService({
 
 ${buildComposeNamedVolumes(['postgres_data'])}
 
-${buildComposeBridgeNetwork('agent-manager-network')}
+${buildComposeBridgeNetwork(AGENT_MANAGER_NETWORK)}
 `;
   const nginxBootstrapConfig = `
 server {

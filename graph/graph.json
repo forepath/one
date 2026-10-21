@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-20T08:08:17.916Z",
+  "generatedAt": "2026-10-21T07:05:41.558Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -1509,6 +1509,7 @@
           "serve",
           "test",
           "api-container-image",
+          "copy-context-mcp",
           "worker-container-image",
           "egress-guard-container-image",
           "start-containers",
@@ -1691,6 +1692,28 @@
         ],
         "domain": "forepath",
         "context": "frontend",
+        "featureGroup": "app"
+      }
+    },
+    {
+      "id": "project:agenstra-agent-context-mcp",
+      "type": "app",
+      "attrs": {
+        "name": "agenstra-agent-context-mcp",
+        "root": "apps/agenstra/agent-context-mcp",
+        "tags": [
+          "domain:agenstra",
+          "type:app",
+          "scope:backend"
+        ],
+        "type": "app",
+        "targets": [
+          "lint",
+          "build",
+          "test"
+        ],
+        "domain": "agenstra",
+        "context": "backend",
         "featureGroup": "app"
       }
     },
@@ -1952,14 +1975,6 @@
         ],
         "type": "tool",
         "targets": []
-      }
-    },
-    {
-      "id": "package:@agentclientprotocol/sdk",
-      "type": "package",
-      "attrs": {
-        "name": "@agentclientprotocol/sdk",
-        "version": "0.23.0"
       }
     },
     {
@@ -2699,19 +2714,19 @@
       }
     },
     {
-      "id": "package:mermaid",
-      "type": "package",
-      "attrs": {
-        "name": "mermaid",
-        "version": "11.12.2"
-      }
-    },
-    {
       "id": "package:@modelcontextprotocol/sdk",
       "type": "package",
       "attrs": {
         "name": "@modelcontextprotocol/sdk",
         "version": "1.18.2"
+      }
+    },
+    {
+      "id": "package:mermaid",
+      "type": "package",
+      "attrs": {
+        "name": "mermaid",
+        "version": "11.12.2"
       }
     },
     {
@@ -6039,6 +6054,15 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-console-status.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -10675,6 +10699,15 @@
       }
     },
     {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context.controller.ts",
+      "type": "controller",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-deployments.controller.ts",
       "type": "controller",
       "attrs": {
@@ -10832,6 +10865,15 @@
       "type": "controller",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/workspace-configuration-overrides.controller.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-context.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-context.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -11314,33 +11356,6 @@
       }
     },
     {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/acp/acp-agent-messaging.service.ts",
-      "type": "service",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/acp/acp-agent-messaging.service.ts",
-        "languageOrKind": "ts",
-        "projectName": "agenstra-backend-feature-agent-manager"
-      }
-    },
-    {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/acp/acp-session.service.ts",
-      "type": "service",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/acp/acp-session.service.ts",
-        "languageOrKind": "ts",
-        "projectName": "agenstra-backend-feature-agent-manager"
-      }
-    },
-    {
-      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/acp/fixtures/acp-spike.md",
-      "type": "readme",
-      "attrs": {
-        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/acp/fixtures/acp-spike.md",
-        "languageOrKind": "md",
-        "projectName": "agenstra-backend-feature-agent-manager"
-      }
-    },
-    {
       "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/agents/opencode-agent.provider.ts",
       "type": "provider",
       "attrs": {
@@ -11498,6 +11513,42 @@
       "type": "service",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-chat-sessions.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-access.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-access.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-mcp.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-mcp.service.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-manager"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-tickets.service.ts",
+      "type": "service",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-tickets.service.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-manager"
       }
@@ -11778,15 +11829,6 @@
       "attrs": {
         "path": "libs/domains/agenstra/frontend/feature-landingpage/README.md",
         "languageOrKind": "md",
-        "projectName": "agenstra-frontend-feature-landingpage"
-      }
-    },
-    {
-      "id": "file:libs/domains/agenstra/frontend/feature-landingpage/src/lib/theme.service.ts",
-      "type": "service",
-      "attrs": {
-        "path": "libs/domains/agenstra/frontend/feature-landingpage/src/lib/theme.service.ts",
-        "languageOrKind": "ts",
         "projectName": "agenstra-frontend-feature-landingpage"
       }
     },
@@ -13416,6 +13458,15 @@
       }
     },
     {
+      "id": "file:apps/agenstra/agent-context-mcp/README.md",
+      "type": "readme",
+      "attrs": {
+        "path": "apps/agenstra/agent-context-mcp/README.md",
+        "languageOrKind": "md",
+        "projectName": "agenstra-agent-context-mcp"
+      }
+    },
+    {
       "id": "file:tools/release-integrity/README.md",
       "type": "readme",
       "attrs": {
@@ -13859,10 +13910,10 @@
       }
     },
     {
-      "id": "file:docs/agenstra/ai-agents/agent-client-protocol.md",
+      "id": "file:docs/agenstra/ai-agents/agent-runtime.md",
       "type": "doc",
       "attrs": {
-        "path": "docs/agenstra/ai-agents/agent-client-protocol.md",
+        "path": "docs/agenstra/ai-agents/agent-runtime.md",
         "languageOrKind": "md"
       }
     },
@@ -13887,6 +13938,14 @@
       "type": "doc",
       "attrs": {
         "path": "docs/agenstra/ai-agents/commands.md",
+        "languageOrKind": "md"
+      }
+    },
+    {
+      "id": "file:docs/agenstra/ai-agents/context-mcp.md",
+      "type": "doc",
+      "attrs": {
+        "path": "docs/agenstra/ai-agents/context-mcp.md",
         "languageOrKind": "md"
       }
     },
@@ -22399,7 +22458,7 @@
       "type": "channel",
       "attrs": {
         "pathOrChannel": "agents/chat",
-        "summary": "Client sends a chat message (requires prior login). Payload may include `responseMode` \"single\" | \"stream\" | \"sync\",\n`ephemeral` (skip `agent_messages` persistence for the turn), `suppressUserMessage` (send to agent but hide the user\nbubble; used by chat-plan execute), `continue`, `resumeSessionSuffix`, `chatId`, `correlationId`, `model`.\nWhen `chatId` is set (and `resumeSessionSuffix` is not a reserved hidden ACP suffix), messages and events persist and\nemit under that user-visible chat session; otherwise the primary session is used.\nReserved hidden suffixes include `-prompt-enhance`, `-ticket-body`, `-ticket-auto-*`, and `-plan-{planId}` (explore-only\npermissions; not automation allow-all). Those sessions are ephemeral/hidden and do not persist into `agent_messages`.\nWhen `ephemeral` is true, `chatMessage`, `chatEvent`, and `messageFilterResult` for that turn are emitted only to the\nrequesting socket (not broadcast to other clients on the same agent). Otherwise those events are broadcast to every\nsocket authenticated to the agent. The gateway forwards options to `sendMessage` as implemented in code.\n",
+        "summary": "Client sends a chat message (requires prior login). Payload may include `responseMode` \"single\" | \"stream\" | \"sync\",\n`ephemeral` (skip `agent_messages` persistence for the turn), `suppressUserMessage` (send to agent but hide the user\nbubble; used by chat-plan execute), `continue`, `resumeSessionSuffix`, `chatId`, `correlationId`, `model`.\nWhen `chatId` is set (and `resumeSessionSuffix` is not a reserved hidden session suffix), messages and events persist and\nemit under that user-visible chat session; otherwise the primary session is used.\nReserved hidden suffixes include `-prompt-enhance`, `-ticket-body`, `-ticket-auto-*`, and `-plan-{planId}` (explore-only\npermissions; not automation allow-all). Those sessions are ephemeral/hidden and do not persist into `agent_messages`.\nWhen `ephemeral` is true, `chatMessage`, `chatEvent`, and `messageFilterResult` for that turn are emitted only to the\nrequesting socket (not broadcast to other clients on the same agent). Otherwise those events are broadcast to every\nsocket authenticated to the agent. The gateway forwards options to `sendMessage` as implemented in code.\n",
         "specKind": "asyncapi"
       }
     },
@@ -22665,6 +22724,15 @@
       }
     },
     {
+      "id": "api:channel:agents/agentContextRequest",
+      "type": "channel",
+      "attrs": {
+        "pathOrChannel": "agents/agentContextRequest",
+        "summary": "Server → controller request with Socket.IO acknowledgement, emitted while the worker `agenstra` MCP server reads\ncontext. Sent to the socket that submitted the prompt first, then to other sockets logged into the agent\n(15 s ack timeout each). Operations: `search` (ticket / knowledge metadata), `describe` (metadata for refs) and\n`content` (full text of granted refs). The controller answers within the workspace bound to the connection\nand never forwards this event to browsers. Access prompts for additional refs arrive as `chatEvent` `question`\nframes with `subtype: context_access` and ids starting with `ctx_` (answered via the permission reply endpoint).\n",
+        "specKind": "asyncapi"
+      }
+    },
+    {
       "id": "api:HTTP:GET:/agents",
       "type": "endpoint",
       "attrs": {
@@ -22793,6 +22861,72 @@
         "pathOrChannel": "/agents/{id}/permissions/{permissionId}/reply",
         "operationId": "replyAgentPermission",
         "summary": "Reply to an OpenCode permission request",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/health",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/health",
+        "operationId": "agentContextHealth",
+        "summary": "Context MCP startup probe",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/tickets/{ticket}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/tickets/{ticket}",
+        "operationId": "listAgentContext",
+        "summary": "List the context granted for a prompt",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/tickets/{ticket}/search",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/tickets/{ticket}/search",
+        "operationId": "searchAgentContext",
+        "summary": "Search workspace tickets and knowledge (metadata only)",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/tickets/{ticket}/items/{ref}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/tickets/{ticket}/items/{ref}",
+        "operationId": "getAgentContextItem",
+        "summary": "Read a granted context element",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:POST:/agent-context/tickets/{ticket}/access-requests",
+      "type": "endpoint",
+      "attrs": {
+        "method": "POST",
+        "pathOrChannel": "/agent-context/tickets/{ticket}/access-requests",
+        "operationId": "requestAgentContextAccess",
+        "summary": "Request access to additional tickets / knowledge",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/agent-context/tickets/{ticket}/access-requests/{requestId}",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/agent-context/tickets/{ticket}/access-requests/{requestId}",
+        "operationId": "getAgentContextAccessRequest",
+        "summary": "Keep waiting on a pending access request",
         "specKind": "openapi"
       }
     },
@@ -23757,22 +23891,12 @@
       }
     },
     {
-      "id": "concept:agenstra-agent-client-protocol-acp-in-agenstra",
+      "id": "concept:agenstra-agent-runtime-opencode",
       "type": "concept",
       "attrs": {
-        "title": "Agent Client Protocol (ACP) in Agenstra",
-        "docPath": "docs/agenstra/ai-agents/agent-client-protocol.md",
-        "sectionAnchor": "agent-client-protocol-acp-in-agenstra",
-        "domain": "agenstra"
-      }
-    },
-    {
-      "id": "concept:agenstra-glossary",
-      "type": "concept",
-      "attrs": {
-        "title": "Glossary",
-        "docPath": "docs/agenstra/ai-agents/agent-client-protocol.md",
-        "sectionAnchor": "glossary",
+        "title": "Agent Runtime (OpenCode)",
+        "docPath": "docs/agenstra/ai-agents/agent-runtime.md",
+        "sectionAnchor": "agent-runtime-opencode",
         "domain": "agenstra"
       }
     },
@@ -23781,38 +23905,38 @@
       "type": "concept",
       "attrs": {
         "title": "Architecture",
-        "docPath": "docs/agenstra/ai-agents/agent-client-protocol.md",
+        "docPath": "docs/agenstra/ai-agents/agent-runtime.md",
         "sectionAnchor": "architecture",
         "domain": "agenstra"
       }
     },
     {
-      "id": "concept:agenstra-protocol-details",
+      "id": "concept:agenstra-sessions",
       "type": "concept",
       "attrs": {
-        "title": "Protocol details",
-        "docPath": "docs/agenstra/ai-agents/agent-client-protocol.md",
-        "sectionAnchor": "protocol-details",
+        "title": "Sessions",
+        "docPath": "docs/agenstra/ai-agents/agent-runtime.md",
+        "sectionAnchor": "sessions",
         "domain": "agenstra"
       }
     },
     {
-      "id": "concept:agenstra-configuration",
+      "id": "concept:agenstra-permissions-and-questions",
       "type": "concept",
       "attrs": {
-        "title": "Configuration",
-        "docPath": "docs/agenstra/ai-agents/agent-client-protocol.md",
-        "sectionAnchor": "configuration",
+        "title": "Permissions and questions",
+        "docPath": "docs/agenstra/ai-agents/agent-runtime.md",
+        "sectionAnchor": "permissions-and-questions",
         "domain": "agenstra"
       }
     },
     {
-      "id": "concept:agenstra-profile-config-surface",
+      "id": "concept:agenstra-prompt-context",
       "type": "concept",
       "attrs": {
-        "title": "Profile / config surface",
-        "docPath": "docs/agenstra/ai-agents/agent-client-protocol.md",
-        "sectionAnchor": "profile-config-surface",
+        "title": "Prompt context",
+        "docPath": "docs/agenstra/ai-agents/agent-runtime.md",
+        "sectionAnchor": "prompt-context",
         "domain": "agenstra"
       }
     },
@@ -23821,7 +23945,7 @@
       "type": "concept",
       "attrs": {
         "title": "Notifications",
-        "docPath": "docs/agenstra/ai-agents/agent-client-protocol.md",
+        "docPath": "docs/agenstra/ai-agents/agent-runtime.md",
         "sectionAnchor": "notifications",
         "domain": "agenstra"
       }
@@ -23831,7 +23955,7 @@
       "type": "concept",
       "attrs": {
         "title": "Worker image requirements",
-        "docPath": "docs/agenstra/ai-agents/agent-client-protocol.md",
+        "docPath": "docs/agenstra/ai-agents/agent-runtime.md",
         "sectionAnchor": "worker-image-requirements",
         "domain": "agenstra"
       }
@@ -23841,7 +23965,7 @@
       "type": "concept",
       "attrs": {
         "title": "Troubleshooting",
-        "docPath": "docs/agenstra/ai-agents/agent-client-protocol.md",
+        "docPath": "docs/agenstra/ai-agents/agent-runtime.md",
         "sectionAnchor": "troubleshooting",
         "domain": "agenstra"
       }
@@ -23851,18 +23975,18 @@
       "type": "concept",
       "attrs": {
         "title": "Migration note",
-        "docPath": "docs/agenstra/ai-agents/agent-client-protocol.md",
+        "docPath": "docs/agenstra/ai-agents/agent-runtime.md",
         "sectionAnchor": "migration-note",
         "domain": "agenstra"
       }
     },
     {
-      "id": "concept:agenstra-future-agenstra-as-acp-server",
+      "id": "concept:agenstra-future-external-event-consumers",
       "type": "concept",
       "attrs": {
-        "title": "Future: Agenstra as ACP server",
-        "docPath": "docs/agenstra/ai-agents/agent-client-protocol.md",
-        "sectionAnchor": "future-agenstra-as-acp-server",
+        "title": "Future: external event consumers",
+        "docPath": "docs/agenstra/ai-agents/agent-runtime.md",
+        "sectionAnchor": "future-external-event-consumers",
         "domain": "agenstra"
       }
     },
@@ -23987,6 +24111,76 @@
       }
     },
     {
+      "id": "concept:agenstra-agent-context-mcp",
+      "type": "concept",
+      "attrs": {
+        "title": "Agent Context MCP",
+        "docPath": "docs/agenstra/ai-agents/context-mcp.md",
+        "sectionAnchor": "agent-context-mcp",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-flow",
+      "type": "concept",
+      "attrs": {
+        "title": "Flow",
+        "docPath": "docs/agenstra/ai-agents/context-mcp.md",
+        "sectionAnchor": "flow",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-tools",
+      "type": "concept",
+      "attrs": {
+        "title": "Tools",
+        "docPath": "docs/agenstra/ai-agents/context-mcp.md",
+        "sectionAnchor": "tools",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-access-decisions",
+      "type": "concept",
+      "attrs": {
+        "title": "Access decisions",
+        "docPath": "docs/agenstra/ai-agents/context-mcp.md",
+        "sectionAnchor": "access-decisions",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-security",
+      "type": "concept",
+      "attrs": {
+        "title": "Security",
+        "docPath": "docs/agenstra/ai-agents/context-mcp.md",
+        "sectionAnchor": "security",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-deployment",
+      "type": "concept",
+      "attrs": {
+        "title": "Deployment",
+        "docPath": "docs/agenstra/ai-agents/context-mcp.md",
+        "sectionAnchor": "deployment",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-fallback-unchanged-behaviour",
+      "type": "concept",
+      "attrs": {
+        "title": "Fallback (unchanged behaviour)",
+        "docPath": "docs/agenstra/ai-agents/context-mcp.md",
+        "sectionAnchor": "fallback-unchanged-behaviour",
+        "domain": "agenstra"
+      }
+    },
+    {
       "id": "concept:agenstra-knowledge-graph",
       "type": "concept",
       "attrs": {
@@ -24043,16 +24237,6 @@
         "title": "or: node tools/graph/mcp-run.cjs  # builds dist if missing, then starts MCP",
         "docPath": "docs/agenstra/ai-agents/knowledge-graph.md",
         "sectionAnchor": "or-node-tools-graph-mcp-run-cjs-builds-dist-if-missing-then-starts-mcp",
-        "domain": "agenstra"
-      }
-    },
-    {
-      "id": "concept:agenstra-security",
-      "type": "concept",
-      "attrs": {
-        "title": "Security",
-        "docPath": "docs/agenstra/ai-agents/knowledge-graph.md",
-        "sectionAnchor": "security",
         "domain": "agenstra"
       }
     },
@@ -25213,6 +25397,16 @@
         "title": "Start PostgreSQL",
         "docPath": "docs/agenstra/deployment/local-development.md",
         "sectionAnchor": "start-postgresql",
+        "domain": "agenstra"
+      }
+    },
+    {
+      "id": "concept:agenstra-configuration",
+      "type": "concept",
+      "attrs": {
+        "title": "Configuration",
+        "docPath": "docs/agenstra/deployment/local-development.md",
+        "sectionAnchor": "configuration",
         "domain": "agenstra"
       }
     },
@@ -35090,6 +35284,11 @@
     },
     {
       "from": "project:agenstra-backend-agent-manager",
+      "to": "project:agenstra-agent-context-mcp",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-backend-agent-manager",
       "to": "project:shared-backend-util-http-context",
       "type": "depends_on"
     },
@@ -35204,6 +35403,11 @@
       "type": "depends_on"
     },
     {
+      "from": "project:agenstra-agent-context-mcp",
+      "to": "project:agenstra-shared-util-opencode-config",
+      "type": "depends_on"
+    },
+    {
       "from": "project:agenstra-frontend-docs",
       "to": "project:agenstra-frontend-util-configuration",
       "type": "depends_on"
@@ -35241,11 +35445,6 @@
     {
       "from": "project:shared-mcp-proxy",
       "to": "project:shared-mcp-devkit",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-backend-agent-controller",
-      "to": "package:@agentclientprotocol/sdk",
       "type": "depends_on"
     },
     {
@@ -36345,11 +36544,6 @@
     },
     {
       "from": "project:agenstra-backend-agent-manager",
-      "to": "package:@agentclientprotocol/sdk",
-      "type": "depends_on"
-    },
-    {
-      "from": "project:agenstra-backend-agent-manager",
       "to": "package:@aws-sdk/client-s3",
       "type": "depends_on"
     },
@@ -37066,6 +37260,11 @@
     {
       "from": "project:forepath-frontend-landingpage",
       "to": "package:zone.js",
+      "type": "depends_on"
+    },
+    {
+      "from": "project:agenstra-agent-context-mcp",
+      "to": "package:@modelcontextprotocol/sdk",
       "type": "depends_on"
     },
     {
@@ -38896,6 +39095,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-console-status.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
       "type": "contains"
     },
     {
@@ -41455,6 +41659,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-deployments.controller.ts",
       "type": "contains"
     },
@@ -41541,6 +41750,11 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/workspace-configuration-overrides.controller.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/dto/agent-context.dto.ts",
       "type": "contains"
     },
     {
@@ -41810,21 +42024,6 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/acp/acp-agent-messaging.service.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/acp/acp-session.service.ts",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/acp/fixtures/acp-spike.md",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/agents/opencode-agent.provider.ts",
       "type": "contains"
     },
@@ -41911,6 +42110,26 @@
     {
       "from": "project:agenstra-backend-feature-agent-manager",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-chat-sessions.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-access.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-mcp.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-manager",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-tickets.service.ts",
       "type": "contains"
     },
     {
@@ -42066,11 +42285,6 @@
     {
       "from": "project:agenstra-frontend-feature-landingpage",
       "to": "file:libs/domains/agenstra/frontend/feature-landingpage/README.md",
-      "type": "contains"
-    },
-    {
-      "from": "project:agenstra-frontend-feature-landingpage",
-      "to": "file:libs/domains/agenstra/frontend/feature-landingpage/src/lib/theme.service.ts",
       "type": "contains"
     },
     {
@@ -42951,6 +43165,11 @@
     {
       "from": "project:forepath-frontend-landingpage",
       "to": "file:apps/forepath/frontend-landingpage/src/app/viewport-scroller-offset.service.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-agent-context-mcp",
+      "to": "file:apps/agenstra/agent-context-mcp/README.md",
       "type": "contains"
     },
     {
@@ -46984,6 +47203,11 @@
       "type": "contains"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/asyncapi.yaml",
+      "to": "api:channel:agents/agentContextRequest",
+      "type": "contains"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
       "to": "api:HTTP:GET:/agents",
       "type": "contains"
@@ -47041,6 +47265,36 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
       "to": "api:HTTP:POST:/agents/{id}/permissions/{permissionId}/reply",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/health",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/tickets/{ticket}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/tickets/{ticket}/search",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/tickets/{ticket}/items/{ref}",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:POST:/agent-context/tickets/{ticket}/access-requests",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/agent-context/tickets/{ticket}/access-requests/{requestId}",
       "type": "contains"
     },
     {
@@ -47499,58 +47753,53 @@
       "type": "contains"
     },
     {
-      "from": "file:docs/agenstra/ai-agents/agent-client-protocol.md",
-      "to": "concept:agenstra-agent-client-protocol-acp-in-agenstra",
+      "from": "file:docs/agenstra/ai-agents/agent-runtime.md",
+      "to": "concept:agenstra-agent-runtime-opencode",
       "type": "contains"
     },
     {
-      "from": "file:docs/agenstra/ai-agents/agent-client-protocol.md",
-      "to": "concept:agenstra-glossary",
-      "type": "contains"
-    },
-    {
-      "from": "file:docs/agenstra/ai-agents/agent-client-protocol.md",
+      "from": "file:docs/agenstra/ai-agents/agent-runtime.md",
       "to": "concept:agenstra-architecture",
       "type": "contains"
     },
     {
-      "from": "file:docs/agenstra/ai-agents/agent-client-protocol.md",
-      "to": "concept:agenstra-protocol-details",
+      "from": "file:docs/agenstra/ai-agents/agent-runtime.md",
+      "to": "concept:agenstra-sessions",
       "type": "contains"
     },
     {
-      "from": "file:docs/agenstra/ai-agents/agent-client-protocol.md",
-      "to": "concept:agenstra-configuration",
+      "from": "file:docs/agenstra/ai-agents/agent-runtime.md",
+      "to": "concept:agenstra-permissions-and-questions",
       "type": "contains"
     },
     {
-      "from": "file:docs/agenstra/ai-agents/agent-client-protocol.md",
-      "to": "concept:agenstra-profile-config-surface",
+      "from": "file:docs/agenstra/ai-agents/agent-runtime.md",
+      "to": "concept:agenstra-prompt-context",
       "type": "contains"
     },
     {
-      "from": "file:docs/agenstra/ai-agents/agent-client-protocol.md",
+      "from": "file:docs/agenstra/ai-agents/agent-runtime.md",
       "to": "concept:agenstra-notifications",
       "type": "contains"
     },
     {
-      "from": "file:docs/agenstra/ai-agents/agent-client-protocol.md",
+      "from": "file:docs/agenstra/ai-agents/agent-runtime.md",
       "to": "concept:agenstra-worker-image-requirements",
       "type": "contains"
     },
     {
-      "from": "file:docs/agenstra/ai-agents/agent-client-protocol.md",
+      "from": "file:docs/agenstra/ai-agents/agent-runtime.md",
       "to": "concept:agenstra-troubleshooting",
       "type": "contains"
     },
     {
-      "from": "file:docs/agenstra/ai-agents/agent-client-protocol.md",
+      "from": "file:docs/agenstra/ai-agents/agent-runtime.md",
       "to": "concept:agenstra-migration-note",
       "type": "contains"
     },
     {
-      "from": "file:docs/agenstra/ai-agents/agent-client-protocol.md",
-      "to": "concept:agenstra-future-agenstra-as-acp-server",
+      "from": "file:docs/agenstra/ai-agents/agent-runtime.md",
+      "to": "concept:agenstra-future-external-event-consumers",
       "type": "contains"
     },
     {
@@ -47651,6 +47900,41 @@
     {
       "from": "file:docs/agenstra/ai-agents/commands.md",
       "to": "concept:agenstra-related-documentation",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/ai-agents/context-mcp.md",
+      "to": "concept:agenstra-agent-context-mcp",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/ai-agents/context-mcp.md",
+      "to": "concept:agenstra-flow",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/ai-agents/context-mcp.md",
+      "to": "concept:agenstra-tools",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/ai-agents/context-mcp.md",
+      "to": "concept:agenstra-access-decisions",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/ai-agents/context-mcp.md",
+      "to": "concept:agenstra-security",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/ai-agents/context-mcp.md",
+      "to": "concept:agenstra-deployment",
+      "type": "contains"
+    },
+    {
+      "from": "file:docs/agenstra/ai-agents/context-mcp.md",
+      "to": "concept:agenstra-fallback-unchanged-behaviour",
       "type": "contains"
     },
     {
@@ -62699,6 +62983,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/clients.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/gateways/knowledge-board.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/repositories/clients.repository.ts",
       "type": "injects"
@@ -62891,6 +63180,16 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-console-status.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-console-status-realtime.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/tickets.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/knowledge-tree.service.ts",
       "type": "injects"
     },
     {
@@ -63371,6 +63670,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/statistics.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/remote-agents-session.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
       "type": "injects"
     },
     {
@@ -67084,6 +67388,21 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-mcp.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-tickets.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-deployments.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/deployments.service.ts",
       "type": "injects"
@@ -67141,6 +67460,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-permissions.controller.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
       "type": "injects"
     },
     {
@@ -67279,6 +67603,21 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-tickets.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-mcp.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/vnc.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/agents.gateway.ts",
       "type": "injects"
@@ -67291,16 +67630,6 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/gateways/vnc.gateway.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/vnc-bridge.service.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/acp/acp-agent-messaging.service.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/acp/acp-session.service.ts",
-      "type": "injects"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/acp/acp-session.service.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agents.repository.ts",
       "type": "injects"
     },
     {
@@ -67339,6 +67668,11 @@
       "type": "injects"
     },
     {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-config-sync.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-mcp.service.ts",
+      "type": "injects"
+    },
+    {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-runtime.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/opencode/opencode-session.service.ts",
       "type": "injects"
@@ -67361,6 +67695,26 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-chat-sessions.service.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agent-messages.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-tickets.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-access.service.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-mcp.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/repositories/agents.repository.ts",
+      "type": "injects"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-mcp.service.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/docker.service.ts",
       "type": "injects"
     },
     {
@@ -68231,6 +68585,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/auto-context-resolver.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/modules/clients.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/services/agent-context-request-handler.service.ts",
       "type": "provides"
     },
     {
@@ -70040,6 +70399,11 @@
     },
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-context.controller.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/controllers/agents-egress.controller.ts",
       "type": "provides"
     },
@@ -70106,6 +70470,26 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/prompt-context-composer.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-tickets.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-access.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-mcp.service.ts",
+      "type": "provides"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/agent-context-api.service.ts",
       "type": "provides"
     },
     {
@@ -70236,16 +70620,6 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
       "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/services/docker.service.ts",
-      "type": "provides"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/acp/acp-session.service.ts",
-      "type": "provides"
-    },
-    {
-      "from": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/modules/agents.module.ts",
-      "to": "file:libs/domains/agenstra/backend/feature-agent-manager/src/lib/providers/acp/acp-agent-messaging.service.ts",
       "type": "provides"
     },
     {
@@ -72554,11 +72928,6 @@
       "type": "documents"
     },
     {
-      "from": "concept:agenstra-profile-config-surface",
-      "to": "api:HTTP:GET:/config",
-      "type": "documents"
-    },
-    {
       "from": "concept:agenstra-agents-and-subagents",
       "to": "api:HTTP:GET:/agents",
       "type": "documents"
@@ -72619,6 +72988,16 @@
       "type": "documents"
     },
     {
+      "from": "concept:agenstra-flow",
+      "to": "api:HTTP:GET:/tickets",
+      "type": "documents"
+    },
+    {
+      "from": "concept:agenstra-flow",
+      "to": "api:HTTP:POST:/tickets",
+      "type": "documents"
+    },
+    {
       "from": "concept:agenstra-knowledge-graph",
       "to": "api:HTTP:GET:/knowledge",
       "type": "documents"
@@ -72675,16 +73054,6 @@
     },
     {
       "from": "concept:agenstra-or-node-tools-graph-mcp-run-cjs-builds-dist-if-missing-then-starts-mcp",
-      "to": "api:HTTP:POST:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-security",
-      "to": "api:HTTP:GET:/knowledge",
-      "type": "documents"
-    },
-    {
-      "from": "concept:agenstra-security",
       "to": "api:HTTP:POST:/knowledge",
       "type": "documents"
     },
@@ -80789,6 +81158,21 @@
       "type": "belongs_to"
     },
     {
+      "from": "project:agenstra-agent-context-mcp",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:agenstra-agent-context-mcp",
+      "to": "context:backend",
+      "type": "belongs_to"
+    },
+    {
+      "from": "project:agenstra-agent-context-mcp",
+      "to": "feature-group:app",
+      "type": "belongs_to"
+    },
+    {
       "from": "project:agenstra-frontend-docs",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -80874,7 +81258,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "file:docs/agenstra/ai-agents/agent-client-protocol.md",
+      "from": "file:docs/agenstra/ai-agents/agent-runtime.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -80890,6 +81274,11 @@
     },
     {
       "from": "file:docs/agenstra/ai-agents/commands.md",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "file:docs/agenstra/ai-agents/context-mcp.md",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -81619,12 +82008,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-agent-client-protocol-acp-in-agenstra",
-      "to": "domain:agenstra",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:agenstra-glossary",
+      "from": "concept:agenstra-agent-runtime-opencode",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -81634,17 +82018,17 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-protocol-details",
+      "from": "concept:agenstra-sessions",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-configuration",
+      "from": "concept:agenstra-permissions-and-questions",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-profile-config-surface",
+      "from": "concept:agenstra-prompt-context",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -81669,7 +82053,7 @@
       "type": "belongs_to"
     },
     {
-      "from": "concept:agenstra-future-agenstra-as-acp-server",
+      "from": "concept:agenstra-future-external-event-consumers",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -81734,6 +82118,41 @@
       "type": "belongs_to"
     },
     {
+      "from": "concept:agenstra-agent-context-mcp",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-flow",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-tools",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-access-decisions",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-security",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-deployment",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-fallback-unchanged-behaviour",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
       "from": "concept:agenstra-knowledge-graph",
       "to": "domain:agenstra",
       "type": "belongs_to"
@@ -81760,11 +82179,6 @@
     },
     {
       "from": "concept:agenstra-or-node-tools-graph-mcp-run-cjs-builds-dist-if-missing-then-starts-mcp",
-      "to": "domain:agenstra",
-      "type": "belongs_to"
-    },
-    {
-      "from": "concept:agenstra-security",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },
@@ -82345,6 +82759,11 @@
     },
     {
       "from": "concept:agenstra-start-postgresql",
+      "to": "domain:agenstra",
+      "type": "belongs_to"
+    },
+    {
+      "from": "concept:agenstra-configuration",
       "to": "domain:agenstra",
       "type": "belongs_to"
     },

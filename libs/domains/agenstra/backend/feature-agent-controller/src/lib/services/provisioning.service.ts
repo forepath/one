@@ -13,6 +13,9 @@ import { ProvisioningReferencesRepository } from '../repositories/provisioning-r
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
 
+/** Docker bridge shared by the provisioned manager and its agent workers (compose `name:` keeps it unprefixed). */
+const AGENT_MANAGER_NETWORK = 'agent-manager-network';
+
 /**
  * Service for orchestrating server provisioning through cloud providers.
  * Handles provider selection, server provisioning, client creation, and reference storage.
@@ -144,8 +147,16 @@ export class ProvisioningService {
       agentEnvVars.push(`AUTO_ENRICH_VECTOR_MAX_COSINE_DISTANCE: ${autoEnrichVectorMaxCosineDistance}`);
     }
 
+    // Agent context MCP: workers join the manager bridge so their `agenstra` MCP server can reach the manager API.
+    // A dedicated per-host HMAC secret signs the per-agent context tokens.
+    const contextEnvVars = [
+      `AGENT_DOCKER_NETWORK: ${AGENT_MANAGER_NETWORK}`,
+      `AGENT_CONTEXT_MCP_MANAGER_URL: http://agent-manager-api:3000/api`,
+      `AGENT_CONTEXT_TOKEN_SECRET: ${randomBytes(32).toString('base64url')}`,
+    ];
+
     // Combine all environment variables (dynamic variables take precedence)
-    const allEnvVars = [...authEnvVars, ...gitEnvVars, ...agentEnvVars];
+    const allEnvVars = [...authEnvVars, ...gitEnvVars, ...agentEnvVars, ...contextEnvVars];
 
     return `
 # Configure agent-manager with authentication, GIT, and agent configuration

@@ -73,6 +73,8 @@ describe('agent-manager.utils', () => {
       const config1 = buildAgentManagerCloudInitConfigFromRequest({ authenticationMethod: 'api-key' }, 'host1');
       const config2 = buildAgentManagerCloudInitConfigFromRequest({ authenticationMethod: 'api-key' }, 'host2');
 
+      expect(config1.backend.encryption.contextTokenSecret).toMatch(/^[A-Za-z0-9_-]{43}$/);
+      expect(config1.backend.encryption.contextTokenSecret).not.toBe(config2.backend.encryption.contextTokenSecret);
       expect(config1.backend.encryption.encryptionKey).toBeTruthy();
       expect(config1.backend.encryption.jwtSecret).toBeTruthy();
       expect(config1.backend.encryption.encryptionKey).not.toBe(config2.backend.encryption.encryptionKey);
@@ -340,6 +342,29 @@ describe('agent-manager.utils', () => {
 
       expect(script).not.toContain('GIT_REPOSITORY_URL');
       expect(script).not.toContain('GIT_USERNAME');
+    });
+
+    it('attaches agent workers to the manager network and enables the agent context MCP', () => {
+      const config = buildAgentManagerCloudInitConfigFromRequest({ authenticationMethod: 'api-key' }, 'ctx-host');
+
+      config.backend.port = 3010;
+      const script = Buffer.from(buildAgentManagerCloudInitUserData(config), 'base64').toString('utf-8');
+
+      expect(script).toContain('AGENT_DOCKER_NETWORK: agent-manager-network');
+      expect(script).toMatch(/AGENT_CONTEXT_MCP_MANAGER_URL: '?http:\/\/agent-manager-api:3010\/api'?/);
+      expect(script).toContain(`AGENT_CONTEXT_TOKEN_SECRET: ${config.backend.encryption.contextTokenSecret}`);
+      // The compose network the workers join is the named bridge the manager itself is attached to.
+      expect(script).toContain('name: agent-manager-network');
+    });
+
+    it('omits the dedicated context token secret when not configured (manager falls back to ENCRYPTION_KEY)', () => {
+      const config = buildAgentManagerCloudInitConfigFromRequest({ authenticationMethod: 'api-key' }, 'ctx-host');
+
+      delete config.backend.encryption.contextTokenSecret;
+      const script = Buffer.from(buildAgentManagerCloudInitUserData(config), 'base64').toString('utf-8');
+
+      expect(script).not.toContain('AGENT_CONTEXT_TOKEN_SECRET');
+      expect(script).toContain('AGENT_DOCKER_NETWORK: agent-manager-network');
     });
 
     it('includes ssh.publicKey in authorized_keys in the script when set', () => {
