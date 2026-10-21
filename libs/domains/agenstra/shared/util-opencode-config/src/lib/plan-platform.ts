@@ -1,3 +1,4 @@
+import { AGENSTRA_CONTEXT_MCP_TOOL_PERMISSION, isAgenstraContextToolPermission } from './context-platform';
 import type { JsonObject } from './types';
 
 /** OpenCode primary agent used exclusively for Agenstra chat plan-mode sessions. */
@@ -43,6 +44,8 @@ export const AGENSTRA_PLAN_SESSION_PERMISSION_RULESET = [
     pattern: '*',
     action: 'deny' as const,
   })),
+  // Read-only platform context tools (tickets / knowledge served by the agenstra MCP server).
+  { permission: AGENSTRA_CONTEXT_MCP_TOOL_PERMISSION, pattern: '*', action: 'allow' as const },
   { permission: '*', pattern: '*', action: 'deny' as const },
 ];
 
@@ -126,7 +129,10 @@ export function isAgenstraPlanExplorePermission(permissionType: string | undefin
 
   const normalized = permissionType.trim().toLowerCase();
 
-  return (AGENSTRA_PLAN_EXPLORE_PERMISSION_NAMES as readonly string[]).includes(normalized);
+  return (
+    (AGENSTRA_PLAN_EXPLORE_PERMISSION_NAMES as readonly string[]).includes(normalized) ||
+    isAgenstraContextToolPermission(normalized)
+  );
 }
 
 /** True when a residual permission ask must be rejected on a plan session. */
@@ -137,7 +143,10 @@ export function isAgenstraPlanWritePermission(permissionType: string | undefined
 
   const normalized = permissionType.trim().toLowerCase();
 
-  if ((AGENSTRA_PLAN_EXPLORE_PERMISSION_NAMES as readonly string[]).includes(normalized)) {
+  if (
+    (AGENSTRA_PLAN_EXPLORE_PERMISSION_NAMES as readonly string[]).includes(normalized) ||
+    isAgenstraContextToolPermission(normalized)
+  ) {
     return false;
   }
 

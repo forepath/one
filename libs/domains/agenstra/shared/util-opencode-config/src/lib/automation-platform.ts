@@ -4,7 +4,7 @@ import type { JsonObject } from './types';
  * Bump when {@link injectPlatformAutomationConfig} / prepareConfigForSync platform wire changes.
  * Included in OpenCode sync revision hashes so existing agents re-sync after deploys.
  */
-export const AGENSTRA_OPENCODE_PLATFORM_WIRE_VERSION = 4;
+export const AGENSTRA_OPENCODE_PLATFORM_WIRE_VERSION = 5;
 
 /** OpenCode primary agent used exclusively for Agenstra ticket automation sessions. */
 export const AGENSTRA_AUTOMATION_AGENT_NAME = 'agenstra-automation';

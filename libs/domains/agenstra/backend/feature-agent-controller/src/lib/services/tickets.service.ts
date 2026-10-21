@@ -1106,6 +1106,18 @@ export class TicketsService {
   }
 
   async getPrototypePromptByClientSha(clientId: string, sha: string): Promise<PrototypePromptResponseDto | null> {
+    const resolved = await this.getPrototypePromptWithRefByClientSha(clientId, sha);
+
+    return resolved ? { prompt: resolved.prompt } : null;
+  }
+
+  /**
+   * Same as {@link getPrototypePromptByClientSha} plus the resolved ticket identity (agent context refs).
+   */
+  async getPrototypePromptWithRefByClientSha(
+    clientId: string,
+    sha: string,
+  ): Promise<{ prompt: string; longSha: string | null; title: string } | null> {
     const normalized = sha.trim().toLowerCase();
 
     if (!normalized) {
@@ -1131,7 +1143,11 @@ export class TicketsService {
       return null;
     }
 
-    return { prompt: await this.buildPrototypePromptBody(ticket) };
+    return {
+      prompt: await this.buildPrototypePromptBody(ticket),
+      longSha: ticket.longSha ?? null,
+      title: ticket.title,
+    };
   }
 
   async resolveTicketIdByClientSha(clientId: string, sha: string): Promise<string | null> {

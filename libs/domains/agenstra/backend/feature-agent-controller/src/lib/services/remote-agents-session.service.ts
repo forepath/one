@@ -1,7 +1,7 @@
 import { createCorrelationAwareSocketIoClient } from '@forepath/shared/backend/util-http-context';
 import { AuthenticationType } from '@forepath/identity/backend';
 import { ClientAgentCredentialsRepository } from '@forepath/identity/backend';
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, Optional } from '@nestjs/common';
 import type { Socket as ClientSocket } from 'socket.io-client';
 import type { AgenstraAutomationTurnStatus } from '@forepath/agenstra/shared/util-opencode-config';
 
@@ -12,6 +12,7 @@ import { buildRemoteAgentsSocketUrl } from '../utils/remote-manager-url.utils';
 import { extractAutomationTurnStatus } from '../utils/automation-turn-status';
 import { extractPlanTurnStatus, type AgenstraPlanTurnStatusPayload } from '../utils/chat-plan-turn-status';
 
+import { AgentContextRequestHandlerService } from './agent-context-request-handler.service';
 import { ClientsService } from './clients.service';
 import { StatisticsService } from './statistics.service';
 
@@ -33,6 +34,10 @@ export interface RemoteChatSyncParams {
     environmentIds?: string[];
     autoEnrichmentEnabled?: boolean;
     ticketShas?: string[];
+    /** Pre-resolved context served by the worker MCP server (or inlined when unavailable). */
+    ticketContexts?: string[];
+    ticketContextRefs?: Array<{ sha: string; title?: string }>;
+    knowledgeContexts?: string[];
   };
   /**
    * When true, settle only on final `result` frames (ignore intermediate status/question payloads)
@@ -95,6 +100,7 @@ export class RemoteAgentsSessionService {
     private readonly clientsService: ClientsService,
     private readonly clientAgentCredentialsRepository: ClientAgentCredentialsRepository,
     private readonly statisticsService: StatisticsService,
+    @Optional() private readonly agentContextRequests?: AgentContextRequestHandlerService,
   ) {}
 
   private buildAgentsWsUrl(endpoint: string): string {
@@ -229,6 +235,8 @@ export class RemoteAgentsSessionService {
       rejectUnauthorized: tlsPolicy.rejectUnauthorized,
       reconnection: false,
     });
+
+    this.agentContextRequests?.attach(remote, params.clientId);
     const creds = await this.clientAgentCredentialsRepository.findByClientAndAgent(params.clientId, params.agentId);
 
     if (!creds?.password) {
@@ -451,6 +459,8 @@ export class RemoteAgentsSessionService {
       rejectUnauthorized: tlsPolicy.rejectUnauthorized,
       reconnection: false,
     });
+
+    this.agentContextRequests?.attach(remote, params.clientId);
     const creds = await this.clientAgentCredentialsRepository.findByClientAndAgent(params.clientId, params.agentId);
 
     if (!creds?.password) {

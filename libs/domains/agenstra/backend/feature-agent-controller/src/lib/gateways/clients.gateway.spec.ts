@@ -23,6 +23,7 @@ import { KnowledgeTreeService } from '../services/knowledge-tree.service';
 import { StatisticsService } from '../services/statistics.service';
 import { TicketAutomationChatSyncService } from '../services/ticket-automation-chat-sync.service';
 import { TicketsService } from '../services/tickets.service';
+import { AgentContextRequestHandlerService } from '../services/agent-context-request-handler.service';
 import { WorkspaceSearchIndexService } from '../search/workspace-search-index.service';
 
 import { ClientsGateway } from './clients.gateway';
@@ -158,6 +159,7 @@ describe('ClientsGateway', () => {
   };
   const mockTicketsService = {
     getPrototypePromptByClientSha: jest.fn().mockResolvedValue(null),
+    getPrototypePromptWithRefByClientSha: jest.fn().mockResolvedValue(null),
     resolveTicketIdByClientSha: jest.fn().mockResolvedValue(null),
   };
   const mockKnowledgeTreeService = {
@@ -200,6 +202,8 @@ describe('ClientsGateway', () => {
 
     return socket;
   };
+
+  const mockAgentContextRequests = { attach: jest.fn() };
 
   beforeEach(async () => {
     mockClientUsersRepository.findUserClientAccess.mockResolvedValue(null);
@@ -255,6 +259,7 @@ describe('ClientsGateway', () => {
           useValue: mockWorkspaceSearchIndex,
         },
         { provide: AgenstraAttachmentsService, useValue: mockAttachmentsService },
+        { provide: AgentContextRequestHandlerService, useValue: mockAgentContextRequests },
       ],
     }).compile();
 
@@ -382,8 +387,10 @@ describe('ClientsGateway', () => {
       apiKey: 'x',
     } as any);
     mockCredentialsRepo.findByClientAndAgent.mockResolvedValue({ password: 'pw' });
-    mockTicketsService.getPrototypePromptByClientSha.mockResolvedValue({
+    mockTicketsService.getPrototypePromptWithRefByClientSha.mockResolvedValue({
       prompt: 'Parent tickets...\nThis ticket and its subtasks:\n...',
+      longSha: '329ec4f443e9dd75319f770816c5c1ee337f2134',
+      title: 'Login fix',
     });
 
     await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
@@ -403,7 +410,7 @@ describe('ClientsGateway', () => {
     remote.triggerEvent('loginSuccess');
     await forwardPromise;
 
-    expect(mockTicketsService.getPrototypePromptByClientSha).toHaveBeenCalledWith('client-uuid', '329ec4f');
+    expect(mockTicketsService.getPrototypePromptWithRefByClientSha).toHaveBeenCalledWith('client-uuid', '329ec4f');
     expect(mockWorkspaceConfigurationOverridesProxy.getConfigurationOverrides).toHaveBeenCalledWith('client-uuid');
     expect(mockAutoContextResolverService.resolve).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -418,6 +425,7 @@ describe('ClientsGateway', () => {
         contextInjection: expect.objectContaining({
           ticketShas: ['329ec4f'],
           ticketContexts: ['Parent tickets...\nThis ticket and its subtasks:\n...'],
+          ticketContextRefs: [{ sha: '329ec4f443e9dd75319f770816c5c1ee337f2134', title: 'Login fix' }],
         }),
       }),
     );
@@ -858,6 +866,32 @@ describe('ClientsGateway', () => {
     // Should forward fileUpdateNotification to local socket
     expect(socket.emit).toHaveBeenCalledWith('fileUpdateNotification', fileUpdateNotification);
     expect(mockAgentConsoleStatusService.notifyVcsStateChanged).toHaveBeenCalledWith('client-uuid', 'agent-uuid');
+  });
+
+  it('answers manager context requests on the remote socket and never forwards them to the browser', async () => {
+    const socket = createMockSocket();
+    const { io } = jest.requireMock('socket.io-client') as { io: jest.Mock };
+    const remote = io() as any;
+
+    mockClientsRepository.findByIdOrThrow.mockResolvedValue({
+      id: 'client-uuid',
+      endpoint: 'http://localhost:3100/api',
+      authenticationType: 'api_key',
+      apiKey: 'x',
+    } as any);
+    await gateway.handleSetClient({ clientId: 'client-uuid' }, socket);
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(mockAgentContextRequests.attach).toHaveBeenCalledWith(remote, 'client-uuid');
+
+    (socket.emit as jest.Mock).mockClear();
+    const onAnyHandler = remote.onAny.mock.calls[remote.onAny.mock.calls.length - 1]?.[0];
+
+    onAnyHandler?.('agentContextRequest', { op: 'search' }, jest.fn());
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(socket.emit).not.toHaveBeenCalledWith('agentContextRequest', expect.anything(), expect.anything());
+    expect(socket.emit).not.toHaveBeenCalledWith('agentContextRequest', expect.anything());
   });
 
   it('pushes status patch when remote emits gitStateChanged', async () => {

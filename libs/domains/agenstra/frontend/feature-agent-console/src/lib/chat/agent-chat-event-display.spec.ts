@@ -341,6 +341,40 @@ describe('agent-chat-event-display', () => {
     expect(row?.questionInteraction?.replyKind).toBe('permission');
   });
 
+  it('classifies Agenstra context access prompts as permission replies', () => {
+    const row = mapForwardedChatEventToDisplayRow({
+      payload: successEnvelope({
+        eventId: 'ev-ctx',
+        agentId: 'a1',
+        correlationId: 'c1',
+        sequence: 1,
+        timestamp: '2026-04-08T12:00:00.000Z',
+        kind: 'question',
+        payload: {
+          questionId: 'ctx_0123456789abcdef01234567',
+          prompt: 'The agent requests access to additional context: ticket abcd1234 "Billing".',
+          subtype: 'context_access',
+          options: [
+            { id: 'once', label: 'Allow once' },
+            { id: 'always', label: 'Allow for this chat' },
+            { id: 'reject', label: 'Deny' },
+          ],
+        },
+      }),
+      timestamp: 1000,
+    });
+
+    expect(row?.questionInteraction).toMatchObject({
+      questionId: 'ctx_0123456789abcdef01234567',
+      replyKind: 'permission',
+      options: [
+        { id: 'once', label: 'Allow once' },
+        { id: 'always', label: 'Allow for this chat' },
+        { id: 'reject', label: 'Deny' },
+      ],
+    });
+  });
+
   it('mapForwardedChatEventsToDisplayRows merges consecutive toolCall and toolResult with same id', () => {
     const rows = mapForwardedChatEventsToDisplayRows([
       {

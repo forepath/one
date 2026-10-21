@@ -16,6 +16,12 @@ import { GIT_STATE_CHANGED_EVENT, toolMayMutateGitWorkspace } from '../constants
 import { ENVIRONMENT_PROGRESS_EVENT } from '../constants/environment-progress.constants';
 import type { EnvironmentProgressDto } from '../dto/environment-progress.dto';
 import {
+  AGENT_CONTEXT_ACCESS_QUESTION_SUBTYPE,
+  AGENT_CONTEXT_REQUEST_EVENT,
+  AGENT_CONTEXT_REQUEST_TIMEOUT_MS,
+} from '../constants/agent-context.constants';
+import {
+  isChatPlanResumeSessionSuffix,
   isReservedChatResumeSessionSuffix,
   isTicketAutomationResumeSessionSuffix,
 } from '../constants/chat-session.constants';
@@ -39,12 +45,23 @@ import { AgentMessagesService } from '../services/agent-messages.service';
 import { AgentSessionHydrationService } from '../services/agent-session-hydration.service';
 import { OpenCodeConfigSyncService } from '../providers/opencode/opencode-config-sync.service';
 import { OpenCodePtyService } from '../providers/opencode/opencode-pty.service';
+import { AgentContextApiService } from '../services/agent-context-api.service';
+import { AgentContextMcpService } from '../services/agent-context-mcp.service';
+import { AgentContextTicketsService } from '../services/agent-context-tickets.service';
 import { AgentsService } from '../services/agents.service';
 import { DockerService } from '../services/docker.service';
 import { PromptContextComposerService } from '../services/prompt-context-composer.service';
 import { WorkspaceChangeNotifierService } from '../services/workspace-change-notifier.service';
 import { EnvironmentProgressService } from '../services/environment-progress.service';
+import type {
+  AgentContextAccessMode,
+  AgentContextControllerRequest,
+  AgentContextControllerResponse,
+  AgentContextTicketBinding,
+  AgentContextTicketRecord,
+} from '../types/agent-context.types';
 import { ContextInjectionPayload } from '../types/context-injection.types';
+import { deriveAgentContextItems } from '../utils/agent-context-items.utils';
 import { PROMPT_ENHANCEMENT_RESUME_SESSION_SUFFIX } from '../utils/chat-enhancement-prompt.utils';
 import { isNonGenericContainerType } from '../utils/context-injection-prompt.utils';
 import { finalizeStreamingTranscriptParts } from '../utils/materialize-streaming-deltas-for-transcript';
@@ -352,6 +369,9 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     @Optional() private readonly environmentProgress?: EnvironmentProgressService,
     @Optional() private readonly openCodeConfigSync?: OpenCodeConfigSyncService,
     @Optional() private readonly agentEgress?: AgentEgressService,
+    @Optional() private readonly contextTickets?: AgentContextTicketsService,
+    @Optional() private readonly contextMcp?: AgentContextMcpService,
+    @Optional() private readonly contextApi?: AgentContextApiService,
   ) {}
 
   onModuleInit(): void {
@@ -370,6 +390,13 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     });
     this.environmentProgress?.registerBroadcaster((progress) => {
       this.broadcastToAllSockets(ENVIRONMENT_PROGRESS_EVENT, createSuccessResponse<EnvironmentProgressDto>(progress));
+    });
+    this.contextApi?.registerBridge({
+      requestControllerContext: (record, request) => this.requestControllerContext(record, request),
+      publishContextAccessQuestion: (record, requestId, prompt) =>
+        this.publishContextAccessQuestion(record, requestId, prompt),
+      publishInteractionAnswered: (agentId, questionIds, message) =>
+        this.publishInteractionAnswered(agentId, questionIds, message),
     });
   }
 
@@ -516,6 +543,155 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       this.gitStateBroadcast.notifyGitStateMayHaveChanged(agentUuid);
       this.workspaceChangeNotifier.notifyRebuildRequired(agentUuid, `tool:${event.payload.name}`);
     }
+  }
+
+  /**
+   * Mint a context ticket when the worker serves context through the platform MCP server.
+   * Returns `undefined` (legacy inline composition) whenever MCP mode is not fully available.
+   */
+  private async prepareContextTicket(
+    agentUuid: string,
+    contextInjection: ContextInjectionPayload | undefined,
+    binding: Omit<AgentContextTicketBinding, 'agentId'>,
+  ): Promise<AgentContextTicketRecord | undefined> {
+    if (!contextInjection || !this.contextTickets || !this.contextMcp?.isConfigured()) {
+      return undefined;
+    }
+
+    try {
+      const entity = await this.agentsRepository.findById(agentUuid);
+
+      if (!entity?.containerId || !(await this.contextMcp.isAvailable(agentUuid, entity.containerId))) {
+        return undefined;
+      }
+
+      return this.contextTickets.mint({
+        ...binding,
+        agentId: agentUuid,
+        items: deriveAgentContextItems(contextInjection),
+        grants: { ticket: contextInjection.ticketShas, knowledge: contextInjection.knowledgeShas },
+        attachments: (contextInjection.attachmentContexts ?? [])
+          .filter((attachment) => typeof attachment.agentPath === 'string' && attachment.agentPath.trim())
+          .map((attachment) => ({
+            fileName: attachment.fileName,
+            contentType: attachment.contentType,
+            byteSize: attachment.byteSize,
+            agentPath: attachment.agentPath as string,
+          })),
+        ...(contextInjection.includeWorkspace
+          ? {
+              workspace: {
+                mountPath: '/opt/workspace',
+                ...(contextInjection.workspaceContainerType
+                  ? { containerType: contextInjection.workspaceContainerType }
+                  : {}),
+              },
+            }
+          : {}),
+        environments: (contextInjection.environmentIds ?? []).map((id) => {
+          const typed = contextInjection.environmentContainerTypes?.find((ref) => ref.id === id);
+
+          return { id, ...(typed ? { containerType: typed.containerType } : {}) };
+        }),
+      });
+    } catch (error) {
+      const err = error as { message?: string };
+
+      this.logger.warn(`Context ticket unavailable for agent ${agentUuid}, inlining context: ${err.message}`);
+
+      return undefined;
+    }
+  }
+
+  /**
+   * Auto-approval sessions (trusted ticket automation, read-only plan sessions) never ask; other hidden
+   * helper sessions cannot show a prompt and only see pre-granted context; visible chats ask the user.
+   */
+  private resolveContextAccessMode(
+    hidden: boolean,
+    resumeSessionSuffix: string | undefined,
+    data: { unattendedAutomation?: boolean },
+  ): AgentContextAccessMode {
+    if (isTicketAutomationResumeSessionSuffix(resumeSessionSuffix) && data.unattendedAutomation === true) {
+      return 'auto';
+    }
+
+    if (isChatPlanResumeSessionSuffix(resumeSessionSuffix)) {
+      return 'auto';
+    }
+
+    return hidden ? 'deny' : 'ask';
+  }
+
+  /**
+   * Resolve metadata / content through a controller connection of this agent (Socket.IO ack).
+   * The socket that sent the prompt is tried first, then any other socket logged into the agent.
+   */
+  private async requestControllerContext(
+    record: AgentContextTicketRecord,
+    request: AgentContextControllerRequest,
+  ): Promise<AgentContextControllerResponse> {
+    const candidates: Socket[] = [];
+    const origin = record.socketId ? this.socketById.get(record.socketId) : undefined;
+
+    if (origin?.connected && this.authenticatedClients.get(origin.id) === record.agentId) {
+      candidates.push(origin);
+    }
+
+    for (const [socketId, agentId] of this.authenticatedClients.entries()) {
+      const socket = this.socketById.get(socketId);
+
+      if (agentId === record.agentId && socket?.connected && !candidates.includes(socket)) {
+        candidates.push(socket);
+      }
+    }
+
+    for (const socket of candidates) {
+      try {
+        const response = (await socket
+          .timeout(AGENT_CONTEXT_REQUEST_TIMEOUT_MS)
+          .emitWithAck(AGENT_CONTEXT_REQUEST_EVENT, request)) as AgentContextControllerResponse | undefined;
+
+        if (response && typeof response === 'object' && typeof response.ok === 'boolean') {
+          return response;
+        }
+      } catch (error) {
+        const err = error as { message?: string };
+
+        this.logger.debug(`Context request via socket ${socket.id} failed: ${err.message}`);
+      }
+    }
+
+    return { ok: false, error: 'No controller connection is available to resolve context' };
+  }
+
+  /** Permission-style prompt for additional context (answered via the permission reply endpoint). */
+  private publishContextAccessQuestion(record: AgentContextTicketRecord, requestId: string, prompt: string): void {
+    const event: AgentEventEnvelope = {
+      ...toAgentEventEnvelopeBase(record.agentId, record.correlationId, 0),
+      kind: 'question',
+      payload: {
+        questionId: requestId,
+        prompt,
+        options: [
+          { id: 'once', label: 'Allow once' },
+          { id: 'always', label: 'Allow for this chat' },
+          { id: 'reject', label: 'Deny' },
+        ],
+        subtype: AGENT_CONTEXT_ACCESS_QUESTION_SUBTYPE,
+      },
+      ...(record.chatId ? { chatId: record.chatId } : {}),
+    };
+
+    if (record.ephemeral) {
+      const socket = record.socketId ? this.socketById.get(record.socketId) : undefined;
+
+      socket?.emit('chatEvent', createSuccessResponse<AgentEventEnvelope>(event));
+
+      return;
+    }
+
+    this.broadcastChatEvent(record.agentId, event, record.chatSessionId);
   }
 
   /**
@@ -1064,9 +1240,27 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     const ticketShas = Array.from(
       new Set((contextInjection.ticketShas ?? []).map((sha) => sha.trim()).filter((sha) => sha.length > 0)),
     );
-    const ticketContexts = Array.from(
-      new Set((contextInjection.ticketContexts ?? []).map((ctx) => ctx.trim()).filter((ctx) => ctx.length > 0)),
-    );
+    const ticketContexts: string[] = [];
+    const ticketContextRefs: NonNullable<ContextInjectionPayload['ticketContextRefs']> = [];
+    const rawTicketContextRefs = Array.isArray(contextInjection.ticketContextRefs)
+      ? contextInjection.ticketContextRefs
+      : [];
+
+    (contextInjection.ticketContexts ?? []).forEach((ctx, index) => {
+      const trimmed = typeof ctx === 'string' ? ctx.trim() : '';
+
+      if (!trimmed || ticketContexts.includes(trimmed)) {
+        return;
+      }
+
+      const ref = rawTicketContextRefs[index];
+
+      ticketContexts.push(trimmed);
+      ticketContextRefs.push({
+        sha: typeof ref?.sha === 'string' ? ref.sha.trim() : '',
+        ...(typeof ref?.title === 'string' ? { title: ref.title } : {}),
+      });
+    });
     const knowledgeShas = Array.from(
       new Set((contextInjection.knowledgeShas ?? []).map((sha) => sha.trim()).filter((sha) => sha.length > 0)),
     );
@@ -1135,6 +1329,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
       environmentIds: allowedIds,
       ticketShas,
       ticketContexts,
+      ...(ticketContextRefs.some((ref) => ref.sha.length > 0) ? { ticketContextRefs } : {}),
       knowledgeShas,
       knowledgeContexts,
       ...(attachmentIds.length ? { attachmentIds } : {}),
@@ -1764,7 +1959,22 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
     const messageWithHydration = this.prependHiddenHydrationContext(filteredMessage, pendingHydrationSummary);
     const contextInjection = await this.normalizeContextInjection(agentUuid, data.contextInjection);
     const chatAttachments = this.normalizeChatAttachments(data.attachments ?? contextInjection?.attachmentContexts);
-    const messageToUse = this.promptContextComposer.composeChatMessage(messageWithHydration, contextInjection);
+    const contextTicket = await this.prepareContextTicket(agentUuid, contextInjection, {
+      sessionKey:
+        chatSessionId ??
+        (chatContext.resumeSessionSuffix ? `suffix:${chatContext.resumeSessionSuffix}` : `ephemeral:${correlationId}`),
+      socketId: socket.id,
+      chatSessionId,
+      chatId,
+      ephemeral,
+      correlationId,
+      accessMode: this.resolveContextAccessMode(chatContext.hidden, chatContext.resumeSessionSuffix, data),
+    });
+    const messageToUse = this.promptContextComposer.composeChatMessage(
+      messageWithHydration,
+      contextInjection,
+      contextTicket,
+    );
     const enrichmentTranscriptParts = this.buildEnrichmentTranscriptParts(contextInjection, correlationId);
 
     // Run first-message init before persisting so getChatHistory still sees an empty transcript.
@@ -2281,6 +2491,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
 
     const messageToUse = incomingFilterResult.modifiedMessage ?? message;
     const contextInjection = await this.normalizeContextInjection(agentUuid, data.contextInjection);
+    // One-shot hidden helper: keep context inline (no tool round trips that nobody could approve).
     const composed = this.promptContextComposer.composeEnhanceMessage(messageToUse, contextInjection);
     const timeoutMs = parseInt(process.env.CHAT_ENHANCE_TIMEOUT_MS || '120000', 10);
     const runWithTimeout = <T>(promise: Promise<T>): Promise<T> =>
@@ -2502,6 +2713,7 @@ export class AgentsGateway implements OnGatewayConnection, OnGatewayDisconnect, 
         ? data.hierarchyContext.trim()
         : undefined;
     const contextInjection = await this.normalizeContextInjection(agentUuid, data.contextInjection);
+    // One-shot hidden helper: keep context inline (no tool round trips that nobody could approve).
     const composed = this.promptContextComposer.composeTicketBodyMessage(
       titleToUse,
       hierarchyContext,

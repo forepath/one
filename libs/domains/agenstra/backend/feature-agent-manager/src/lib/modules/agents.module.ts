@@ -7,6 +7,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AgentsChatSessionsController } from '../controllers/agents-chat-sessions.controller';
+import { AgentsContextController } from '../controllers/agents-context.controller';
 import { AgentsDeploymentsController } from '../controllers/agents-deployments.controller';
 import { InstanceStatusController } from '../controllers/instance-status.controller';
 import { AgentsEnvironmentVariablesController } from '../controllers/agents-environment-variables.controller';
@@ -78,6 +79,10 @@ import { DeploymentRunsRepository } from '../repositories/deployment-runs.reposi
 import { AgentEgressEventsRepository } from '../repositories/agent-egress-events.repository';
 import { WorkspaceConfigurationOverridesRepository } from '../repositories/workspace-configuration-overrides.repository';
 import { AgentChatSessionsService } from '../services/agent-chat-sessions.service';
+import { AgentContextAccessService } from '../services/agent-context-access.service';
+import { AgentContextApiService } from '../services/agent-context-api.service';
+import { AgentContextMcpService } from '../services/agent-context-mcp.service';
+import { AgentContextTicketsService } from '../services/agent-context-tickets.service';
 import { AgentEnvironmentVariablesService } from '../services/agent-environment-variables.service';
 import { AgentFileSystemService } from '../services/agent-file-system.service';
 import { AgentDirectoryIndexService } from '../services/agent-directory-index.service';
@@ -141,6 +146,7 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     AgentsVncController,
     AgentsEnvironmentVariablesController,
     AgentsChatSessionsController,
+    AgentsContextController,
     AgentsEgressController,
     ConfigController,
     IsolationController,
@@ -157,6 +163,10 @@ import { WorkspaceInotifySupervisor } from '../services/workspace-inotify-superv
     AgentsService,
     AgentMessagesService,
     PromptContextComposerService,
+    AgentContextTicketsService,
+    AgentContextAccessService,
+    AgentContextMcpService,
+    AgentContextApiService,
     AgentMessageEventsService,
     AgentSessionHydrationService,
     AgentChatSessionsService,

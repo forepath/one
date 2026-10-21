@@ -5,6 +5,7 @@ import {
 
 import {
   computeEgressPolicyRevision,
+  normalizeEgressPlatformAllows,
   parseEgressUpstreamProxy,
   renderEgressGuardArtifacts,
 } from './egress-guard-config.utils';
@@ -330,5 +331,56 @@ describe('parseEgressUpstreamProxy', () => {
       username: 'u',
       bypassHosts: [],
     });
+  });
+});
+
+describe('platform allows (agent context MCP → manager)', () => {
+  const manager = [
+    { destination: '172.18.0.5', port: 3000 },
+    { destination: 'fd00::5', port: 3000 },
+  ];
+
+  it('keeps the manager reachable in enforce and offline mode, bypassing the web intercept', () => {
+    for (const mode of ['enforce', 'offline'] as const) {
+      const { files } = renderEgressGuardArtifacts(policyFor({ mode }), null, [], manager);
+
+      expect(files['rules.v4']).toContain('-A AGENSTRA_EGRESS_OUT -d 172.18.0.5 -p tcp --dport 3000 -j ACCEPT');
+      expect(files['rules.v4']).toContain('-A AGENSTRA_EGRESS_NAT -d 172.18.0.5 -p tcp --dport 3000 -j RETURN');
+      expect(files['rules.v6']).toContain('-A AGENSTRA_EGRESS_OUT -d fd00::5 -p tcp --dport 3000 -j ACCEPT');
+      expect(files['rules.v4']).not.toContain('fd00::5');
+    }
+  });
+
+  it('places the allow before the final reject', () => {
+    const rules = renderEgressGuardArtifacts(policyFor({ mode: 'enforce' }), null, [], manager).files['rules.v4'].split(
+      '\n',
+    );
+    const allow = rules.findIndex((line) => line.includes('-d 172.18.0.5 -p tcp --dport 3000 -j ACCEPT'));
+    const reject = rules.findIndex((line) => line.includes('undeclared_protocol') && line.endsWith('-j REJECT'));
+
+    expect(allow).toBeGreaterThan(-1);
+    expect(allow).toBeLessThan(reject);
+  });
+
+  it('drops non-IP destinations and invalid ports (never renders unvalidated values)', () => {
+    expect(
+      normalizeEgressPlatformAllows([
+        { destination: 'agent-manager-api', port: 3000 },
+        { destination: '10.0.0.1; rm -rf /', port: 3000 },
+        { destination: '10.0.0.1', port: 0 },
+        { destination: '10.0.0.1', port: 70000 },
+        { destination: '10.0.0.1', port: 3000 },
+        { destination: '10.0.0.1', port: 3000 },
+      ]),
+    ).toEqual([{ destination: '10.0.0.1', port: 3000 }]);
+  });
+
+  it('only changes the revision when platform allows are present', () => {
+    const policy = policyFor({ mode: 'enforce' });
+
+    expect(computeEgressPolicyRevision(policy, null, [], [])).toBe(computeEgressPolicyRevision(policy, null, []));
+    expect(computeEgressPolicyRevision(policy, null, [], manager)).not.toBe(
+      computeEgressPolicyRevision(policy, null, []),
+    );
   });
 });

@@ -6,7 +6,8 @@
   "tags": ["domain:agenstra", "type:app", "scope:backend"],
   "implicitDependencies": [
     "shared-platform-authentication",
-    "agenstra-backend-feature-agent-manager"
+    "agenstra-backend-feature-agent-manager",
+    "agenstra-agent-context-mcp"
   ],
   "targets": {
     "build": {
@@ -143,8 +144,28 @@
       },
       "defaultConfiguration": "test"
     },
+    "copy-context-mcp": {
+      "dependsOn": [
+        "build",
+        {
+          "projects": ["agenstra-agent-context-mcp"],
+          "target": "build"
+        }
+      ],
+      "executor": "nx:run-commands",
+      "outputs": [
+        "{workspaceRoot}/dist/apps/agenstra/backend-agent-manager/agent-context-mcp"
+      ],
+      "options": {
+        "commands": [
+          "mkdir -p dist/apps/agenstra/backend-agent-manager/agent-context-mcp",
+          "cp dist/apps/agenstra/agent-context-mcp/agenstra-context-mcp.cjs dist/apps/agenstra/backend-agent-manager/agent-context-mcp/agenstra-context-mcp.cjs"
+        ],
+        "parallel": false
+      }
+    },
     "worker-container-image": {
-      "dependsOn": ["prune"],
+      "dependsOn": ["prune", "copy-context-mcp"],
       "cache": false,
       "executor": "@nx-tools/nx-container:build",
       "options": {

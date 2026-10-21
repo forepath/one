@@ -65,3 +65,40 @@ export function buildAutonomousTicketRunPreamble(): string {
     `Do not ask the user questions.\n\n`
   );
 }
+
+/** Context injection fields automation sends with each turn (subset of the manager payload). */
+export interface AutomationContextInjection {
+  includeWorkspace: boolean;
+  environmentIds: string[];
+  autoEnrichmentEnabled: boolean;
+  ticketShas?: string[];
+  ticketContexts?: string[];
+  ticketContextRefs?: Array<{ sha: string; title?: string }>;
+  knowledgeContexts?: string[];
+}
+
+/**
+ * Attach relation-linked sections as context instead of appending them to the task text.
+ * The agent-manager serves them via the worker MCP server (or inlines them when unavailable).
+ */
+export function withRelationContext(
+  contextInjection: AutomationContextInjection,
+  sections: string[],
+): AutomationContextInjection {
+  const cleaned = sections.map((section) => section.trim()).filter((section) => section.length > 0);
+
+  return cleaned.length > 0 ? { ...contextInjection, knowledgeContexts: cleaned } : contextInjection;
+}
+
+/**
+ * Follow-up automation turn: the session already holds the task text from turn 1, so only a reference
+ * is sent; the full ticket is attached as context for re-reading.
+ */
+export function buildAutomationFollowUpMessage(ticket: { title: string; longSha?: string | null }): string {
+  const ref = ticket.longSha ? ` ${ticket.longSha.slice(0, 8)}` : '';
+
+  return (
+    `Continue implementing ticket${ref} "${ticket.title}" (the full ticket is attached as context). ` +
+    `Finish the scoped work when possible; the platform will collect turn status after this turn.`
+  );
+}

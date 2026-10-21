@@ -2,8 +2,10 @@ import { TicketPriority, TicketStatus } from '../entities/ticket.enums';
 
 import {
   appendRelatedContextSections,
+  buildAutomationFollowUpMessage,
   buildAutonomousTicketRunPreamble,
   buildPrototypePrompt,
+  withRelationContext,
 } from './tickets-prototype-prompt.utils';
 
 describe('tickets-prototype-prompt.utils', () => {
@@ -53,5 +55,25 @@ describe('tickets-prototype-prompt.utils', () => {
 
   it('appendRelatedContextSections is a no-op for empty sections', () => {
     expect(appendRelatedContextSections('Ticket tree', [])).toBe('Ticket tree');
+  });
+
+  it('withRelationContext attaches trimmed relation sections as knowledge context', () => {
+    const base = { includeWorkspace: true, environmentIds: ['a'], autoEnrichmentEnabled: true };
+
+    expect(withRelationContext(base, [' Knowledge Page: A\nBody ', '  '])).toEqual({
+      ...base,
+      knowledgeContexts: ['Knowledge Page: A\nBody'],
+    });
+    expect(withRelationContext(base, [])).toBe(base);
+  });
+
+  it('buildAutomationFollowUpMessage references the ticket without its body', () => {
+    expect(buildAutomationFollowUpMessage({ title: 'Fix login', longSha: 'abcdef1234567890' })).toBe(
+      'Continue implementing ticket abcdef12 "Fix login" (the full ticket is attached as context). ' +
+        'Finish the scoped work when possible; the platform will collect turn status after this turn.',
+    );
+    expect(buildAutomationFollowUpMessage({ title: 'Fix login' })).toContain(
+      'Continue implementing ticket "Fix login"',
+    );
   });
 });

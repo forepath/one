@@ -3124,7 +3124,8 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
         })
         .pipe(finalize(done), takeUntilDestroyed(this.destroyRef))
         .subscribe({
-          next: () => onSuccess(reply === 'always'),
+          // OpenCode clears sibling permissions after "always"; context access prompts (`ctx_`) are independent.
+          next: () => onSuccess(reply === 'always' && !request.questionId.startsWith('ctx_')),
           error: onError,
         });
 

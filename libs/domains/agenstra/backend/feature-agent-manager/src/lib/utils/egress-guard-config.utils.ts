@@ -30,6 +30,53 @@ import {
   resolveEgressGitSshHosts,
 } from '../constants/egress-guard.constants';
 
+/**
+ * Platform-internal TCP destination the worker must always reach, independent of the egress mode
+ * (e.g. the agent-manager context API used by the `agenstra` MCP server). Destinations are IP literals.
+ */
+export interface EgressPlatformAllow {
+  destination: string;
+  port: number;
+}
+
+/** Keep only IP-literal destinations with valid ports (values end up in netfilter rules). */
+export function normalizeEgressPlatformAllows(entries: readonly EgressPlatformAllow[] = []): EgressPlatformAllow[] {
+  const seen = new Set<string>();
+  const result: EgressPlatformAllow[] = [];
+
+  for (const entry of entries) {
+    const host = normalizeEgressHost(entry?.destination);
+    const port = Number(entry?.port);
+
+    if (
+      !host ||
+      (host.kind !== 'ipv4' && host.kind !== 'ipv6') ||
+      !Number.isInteger(port) ||
+      port < 1 ||
+      port > 65535
+    ) {
+      continue;
+    }
+
+    const key = `${host.value}:${port}`;
+
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push({ destination: host.value, port });
+    }
+  }
+
+  return result.sort((a, b) => `${a.destination}:${a.port}`.localeCompare(`${b.destination}:${b.port}`));
+}
+
+function platformAllowsForFamily(entries: readonly EgressPlatformAllow[], family: 4 | 6): EgressPlatformAllow[] {
+  return entries.filter((entry) => {
+    const kind = normalizeEgressHost(entry.destination)?.kind;
+
+    return family === 4 ? kind === 'ipv4' : kind === 'ipv6';
+  });
+}
+
 /** Parent proxy the guard chains to (from the layered `HTTPS_PROXY` / `HTTP_PROXY` network secrets). */
 export interface EgressUpstreamProxy {
   host: string;
@@ -160,8 +207,10 @@ export function computeEgressPolicyRevision(
   input: EffectiveEgressPolicy,
   upstream: EgressUpstreamProxy | null = null,
   gitSshHosts: readonly string[] = resolveEgressGitSshHosts(),
+  platformAllows: readonly EgressPlatformAllow[] = [],
 ): string {
   const policy = normalizeEffectiveEgressPolicy(input);
+  const platformAllow = normalizeEgressPlatformAllows(platformAllows);
 
   return createHash('sha256')
     .update(
@@ -170,6 +219,8 @@ export function computeEgressPolicyRevision(
         policy: { ...policy, scalarSources: undefined },
         upstream,
         gitSshHosts: [...gitSshHosts],
+        // Only part of the hash when present so existing guard revisions stay stable.
+        ...(platformAllow.length > 0 ? { platformAllow } : {}),
       }),
     )
     .digest('hex')
@@ -515,7 +566,12 @@ function networkRuleDestinations(rule: EffectiveEgressNetworkRule, family: 4 | 6
   });
 }
 
-function renderFilterOutChain(policy: EffectiveEgressPolicy, family: 4 | 6, gitSsh = false): string[] {
+function renderFilterOutChain(
+  policy: EffectiveEgressPolicy,
+  family: 4 | 6,
+  gitSsh = false,
+  platformAllows: readonly EgressPlatformAllow[] = [],
+): string[] {
   const chain = 'AGENSTRA_EGRESS_OUT';
   const rules = [`-A ${chain} -o lo -j ACCEPT`, `-A ${chain} -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT`];
 
@@ -534,6 +590,11 @@ function renderFilterOutChain(policy: EffectiveEgressPolicy, family: 4 | 6, gitS
   if (family === 4) {
     // dnsmasq may only reach the resolvers listed by the guard at boot (see `agenstra-egress lockdown`).
     rules.push(`-A ${chain} -m owner --uid-owner ${EGRESS_GUARD_DNS_UID} -j ${EGRESS_GUARD_RESOLVERS_CHAIN}`);
+  }
+
+  // Platform-internal endpoints (manager context API) stay reachable in every mode, including offline.
+  for (const allow of platformAllowsForFamily(platformAllows, family)) {
+    rules.push(`-A ${chain} -d ${allow.destination} -p tcp --dport ${allow.port} -j ACCEPT`);
   }
 
   // Offline means offline: declared network exceptions are ignored.
@@ -590,7 +651,11 @@ function renderFilterOutChain(policy: EffectiveEgressPolicy, family: 4 | 6, gitS
   return rules;
 }
 
-function renderIptablesV4(policy: EffectiveEgressPolicy, gitSsh = false): string {
+function renderIptablesV4(
+  policy: EffectiveEgressPolicy,
+  gitSsh = false,
+  platformAllows: readonly EgressPlatformAllow[] = [],
+): string {
   const nat = ['*nat', ':AGENSTRA_EGRESS_NAT - [0:0]'];
 
   if (policy.mode !== 'off') {
@@ -602,6 +667,11 @@ function renderIptablesV4(policy: EffectiveEgressPolicy, gitSsh = false): string
       `-A AGENSTRA_EGRESS_NAT -p tcp --dport 53 -j REDIRECT --to-ports ${EGRESS_GUARD_DNS_PORT}`,
       '-A AGENSTRA_EGRESS_NAT -d 127.0.0.0/8 -j RETURN',
     );
+
+    // Platform endpoints bypass the web intercept (direct TCP, allowed by the filter chain).
+    for (const allow of platformAllowsForFamily(platformAllows, 4)) {
+      nat.push(`-A AGENSTRA_EGRESS_NAT -d ${allow.destination} -p tcp --dport ${allow.port} -j RETURN`);
+    }
 
     // Declared L3/L4 exceptions bypass the proxy entirely (e.g. TCP/443 to an internal service).
     for (const rule of policy.mode === 'offline' ? [] : policy.networkAllow) {
@@ -632,15 +702,19 @@ function renderIptablesV4(policy: EffectiveEgressPolicy, gitSsh = false): string
     // Guard listeners are loopback-only; never expose them to peers on the Docker network.
     `-A AGENSTRA_EGRESS_IN -p tcp -m multiport --dports ${EGRESS_GUARD_EXPLICIT_PROXY_PORT}:${EGRESS_GUARD_HTTPS_INTERCEPT_PORT},${EGRESS_GUARD_DNS_PORT} -j DROP`,
     `-A AGENSTRA_EGRESS_IN -p udp --dport ${EGRESS_GUARD_DNS_PORT} -j DROP`,
-    ...renderFilterOutChain(policy, 4, gitSsh),
+    ...renderFilterOutChain(policy, 4, gitSsh, platformAllows),
     'COMMIT',
   ];
 
   return `${[...nat, ...filter].join('\n')}\n`;
 }
 
-function renderIptablesV6(policy: EffectiveEgressPolicy, gitSsh = false): string {
-  return `${['*filter', ':AGENSTRA_EGRESS_OUT - [0:0]', ...renderFilterOutChain(policy, 6, gitSsh), 'COMMIT'].join('\n')}\n`;
+function renderIptablesV6(
+  policy: EffectiveEgressPolicy,
+  gitSsh = false,
+  platformAllows: readonly EgressPlatformAllow[] = [],
+): string {
+  return `${['*filter', ':AGENSTRA_EGRESS_OUT - [0:0]', ...renderFilterOutChain(policy, 6, gitSsh, platformAllows), 'COMMIT'].join('\n')}\n`;
 }
 
 /**
@@ -651,10 +725,12 @@ export function renderEgressGuardArtifacts(
   input: EffectiveEgressPolicy,
   upstream: EgressUpstreamProxy | null = null,
   gitSshHostCandidates: readonly string[] = resolveEgressGitSshHosts(),
+  platformAllows: readonly EgressPlatformAllow[] = [],
 ): EgressGuardArtifacts {
   // Never trust the caller: every value ends up in Squid / dnsmasq / netfilter configuration files.
   const policy = normalizeEffectiveEgressPolicy(input);
-  const revision = computeEgressPolicyRevision(policy, upstream, gitSshHostCandidates);
+  const platformAllow = normalizeEgressPlatformAllows(platformAllows);
+  const revision = computeEgressPolicyRevision(policy, upstream, gitSshHostCandidates, platformAllow);
   const allow = splitHosts(policy.allowHosts);
   const deny = splitHosts(policy.denyHosts);
   const hosts = { allow, deny };
@@ -672,8 +748,8 @@ export function renderEgressGuardArtifacts(
       'deny-url-patterns.txt': lines(policy.denyUrlPatterns.map((pattern) => pattern.value)),
       'private-ips.txt': lines([...EGRESS_PRIVATE_NETWORK_CIDRS]),
       'dnsmasq.conf': renderDnsmasqConfig(policy, hosts, gitSshHosts),
-      'rules.v4': renderIptablesV4(policy, gitSsh),
-      'rules.v6': renderIptablesV6(policy, gitSsh),
+      'rules.v4': renderIptablesV4(policy, gitSsh, platformAllow),
+      'rules.v6': renderIptablesV6(policy, gitSsh, platformAllow),
       'policy.json': `${JSON.stringify({ revision, mode: policy.mode, logAllowed: policy.logAllowed })}\n`,
     },
   };

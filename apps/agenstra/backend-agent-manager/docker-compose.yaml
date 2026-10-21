@@ -32,6 +32,9 @@ services:
       AGENT_DEFAULT_IMAGE: ${AGENT_DEFAULT_IMAGE:-ghcr.io/forepath/agenstra-manager-worker:latest}
       AGENT_DOCKER_NETWORK: ${AGENT_DOCKER_NETWORK:-agent-manager-network}
       DOCKER_HOST_GATEWAY: ${DOCKER_HOST_GATEWAY:-host.docker.internal}
+      # Agent context MCP: workers read ticket / knowledge context from this URL (empty = inline prompt context)
+      AGENT_CONTEXT_MCP_MANAGER_URL: ${AGENT_CONTEXT_MCP_MANAGER_URL:-http://agent-manager-api:3000/api}
+      AGENT_CONTEXT_TOKEN_SECRET: ${AGENT_CONTEXT_TOKEN_SECRET:-}
       # Dynamic provider plugins (pipeline / chat filters; OpenCode is the only agent harness)
       DYNAMIC_PIPELINE_PROVIDERS: ${DYNAMIC_PIPELINE_PROVIDERS:-}
       DYNAMIC_CHAT_FILTERS: ${DYNAMIC_CHAT_FILTERS:-}

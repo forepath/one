@@ -1,0 +1,145 @@
+%% Agenstra - full architecture (controller, managers, workers, agent context MCP)
+flowchart TB
+  Users(["Users<br/>browser, desktop app (Electron), API, PATs"])
+  Visitors(["Visitors<br/>marketing site, docs, plans"])
+  Keycloak(["Keycloak / OIDC<br/>or built-in users (JWT) / static API key"])
+  Smtp(["SMTP + webhook receivers"])
+  Otel(["OpenTelemetry collector<br/>OTLP export, /otel/metrics scrape"])
+  CloudProviders(["Server providers<br/>Hetzner, DigitalOcean, provider plugins"])
+  Atlassian(["Atlassian Cloud<br/>Jira (JQL), Confluence (CQL)"])
+  McpRegistry(["MCP Registry<br/>registry.modelcontextprotocol.io"])
+  ModelsDev(["models.dev<br/>provider + model catalog"])
+  GitHubReleases(["GitHub Releases<br/>update checks"])
+  GitHosts(["Git hosts<br/>GitHub, GitLab, self-hosted (HTTPS / SSH)"])
+  Pipelines(["CI pipelines<br/>GitHub Actions, GitLab CI"])
+  Llm(["LLM providers<br/>via OpenCode provider credentials"])
+  Internet(["Internet"])
+  Registry(["ghcr.io/forepath<br/>controller-api, manager-api, manager-worker,<br/>manager-egress-guard, console-server, landingpage-server"])
+  Decabill(["Decabill billing manager (:3200)<br/>plans, orders, cloud-init provisioning of<br/>Agenstra controllers + managers"])
+  Communication(["Forepath communication API (:3300)<br/>contact form, Turnstile"])
+
+  subgraph Frontends["Frontends (Angular SSR, Express)"]
+    Console["Agent console (:4100)<br/>chat, tool + permission embeds, editor (Monaco),<br/>terminal, VNC desktop, Git, tickets board,<br/>knowledge tree, chat plans, statistics, config layers"]
+    Native["Native agent console<br/>Electron, bundled SSR server"]
+    Landing["Landing page (:4101)"]
+    Docs["Docs (:4102)<br/>markdown + OpenAPI / AsyncAPI renderers"]
+    BillingConsole["Billing console (:4103)<br/>Agenstra build of the Decabill console"]
+  end
+
+  Users --> Console
+  Users --> Native
+  Native -.loads local SSR server.-> Console
+  Visitors --> Landing
+  Visitors --> Docs
+  Visitors --> BillingConsole
+  Landing -.plans + portal.-> Decabill
+  Landing -.contact.-> Communication
+  BillingConsole -.REST + socket/billing.-> Decabill
+  Decabill -.cloud-init: install controller / manager stacks.-> CloudProviders
+
+  subgraph Controller["Agent controller (NestJS :3100, one image, QUEUE_ROLE = api | worker | scheduler)"]
+    CAuth["Authentication<br/>api-key, keycloak, users, PAT scopes"]
+    CApi["REST API /api<br/>clients (workspaces), agents proxy, files, VCS,<br/>deployments, env vars, isolation, statistics"]
+    CGw["Socket.IO gateways<br/>socket/clients (forward to managers),<br/>socket/tickets, socket/pages, socket/status, WS /socket/vnc"]
+    Tickets["Tickets + ticket automation<br/>autonomous run orchestrator, leases, verifier, commit + push"]
+    Knowledge["Knowledge tree + relations<br/>local hash embeddings (pgvector), auto-enrichment"]
+    Plans["Chat plan mode<br/>explore / refine / execute orchestrator"]
+    Attachments["Attachments<br/>mirrored read-only into workers"]
+    CtxHandler["Agent context request handler<br/>answers manager agentContextRequest (ack):<br/>search metadata, describe, content (workspace-scoped)"]
+    OcConfig["OpenCode config layering<br/>global / workspace / agent overlays, layer files,<br/>MCP + provider catalogs, platform security policy"]
+    Provisioning["Server provisioning<br/>manager hosts with Docker + gVisor"]
+    Import["Context import<br/>Jira / Confluence to tickets + knowledge"]
+    Notify["Notifications + updates<br/>email, webhooks, release checks"]
+    Search["Search<br/>entity indexes, workspace full-text index"]
+    Queue["BullMQ queue agent-controller<br/>config / layer sync, embeddings, imports, egress ingest,<br/>isolation probes, automation, reindex, catalogs, deliveries"]
+    CStatus["Instance scrape + console status<br/>manager /api/instance-status"]
+    CPg[("Postgres + pgvector<br/>clients, tickets, knowledge, embeddings, plans,<br/>automation runs, statistics, config layers")]
+    Redis[("Redis<br/>BullMQ, VNC tickets, caches, updates")]
+    OpenSearch[("OpenSearch<br/>agenstra-* indexes, workspace-files")]
+    Files[("File storage<br/>local or S3: attachments")]
+  end
+
+  Console -->|"REST /api"| CApi
+  Console <-->|"Socket.IO + WS /socket/vnc"| CGw
+  CApi --> CAuth
+  CGw --> CAuth
+  CAuth -.OIDC.-> Keycloak
+  CApi --> Tickets & Knowledge & Plans & Attachments & OcConfig & Provisioning & Import & Search
+  CGw -.enrich prompts: refs, auto-context, granted bodies.-> Knowledge
+  CGw -.ticket prototype prompts.-> Tickets
+  CtxHandler --> Tickets & Knowledge
+  Tickets & Knowledge & Plans & OcConfig --> CPg
+  Attachments --> Files
+  Queue --> Redis
+  Notify --> Redis
+  Search --> OpenSearch
+  Queue -.jobs.-> OcConfig & Knowledge & Import & Tickets & Search & Notify & CStatus
+  Notify --> Smtp
+  Notify -.release feed.-> GitHubReleases
+  Import --> Atlassian
+  OcConfig -.daily catalogs.-> McpRegistry & ModelsDev
+  Provisioning --> CloudProviders
+  Controller -.metrics.-> Otel
+
+  subgraph ManagerHost["Agent manager host (one per workspace, Docker + optional gVisor runsc-systrap / -hostnet)"]
+    subgraph Manager["Agent manager (NestJS :3000, docker.sock)"]
+      MAuth["Authentication<br/>api-key / keycloak, per-agent socket login"]
+      MApi["REST API /api<br/>agents, files, VCS, deployments, env vars, egress,<br/>isolation, workspace index, OpenCode config + MCP, permissions"]
+      MGw["Socket.IO socket/agents<br/>chat, enhance, ticket body, terminals, events;<br/>WS /socket/vnc bridge"]
+      Composer["Prompt context composer<br/>MCP mode: hints + context ticket<br/>fallback: inline hidden context"]
+      CtxTickets["Context tickets<br/>bound to agent + chat session, 2 h idle TTL,<br/>granted refs, session grants"]
+      CtxAccess["Context access requests<br/>ask (chat) / auto (automation, plans) / deny (hidden)"]
+      CtxApi["Agent context API /api/agent-context<br/>list, search, get, access-requests<br/>per-agent HMAC token, no user auth"]
+      Runtime["OpenCode runtime<br/>sessions per chat / reserved suffix, SSE event bridge,<br/>permission + question tracking, auto-replies"]
+      ConfigSync["OpenCode config sync<br/>PATCH /global/config, secrets, platform agents + skills,<br/>platform agenstra MCP server"]
+      Egress["Egress service<br/>guard lifecycle, policy render, events collector"]
+      Isolation["Isolation probes<br/>standard (runc) / sandboxed (gVisor)"]
+      Filters["Chat filters<br/>incoming / outgoing, plugins"]
+      Deploy["Deployments<br/>GitHub / GitLab pipeline providers"]
+      WsIndex["Workspace index<br/>inotify supervisor, change notifier"]
+      MPg[("Postgres<br/>agents, messages, events, chat sessions,<br/>deployments, env vars, egress events")]
+    end
+
+    subgraph Agent["Per agent"]
+      subgraph Worker["Worker container (agenstra-manager-worker, io.agenstra.context-mcp=1)"]
+        OpenCode["OpenCode serve :4096<br/>agents: build, agenstra-automation, agenstra-plan"]
+        CtxMcp["agenstra MCP server (stdio)<br/>/opt/agenstra/mcp, root-owned<br/>context_list / search / get / request_access"]
+        Desktop["XFCE + TigerVNC + websockify :6080<br/>Chromium, vnc-auth-proxy"]
+        AppVol[("/app workspace volume<br/>+ read-only /opt/workspace, attachments")]
+      end
+      Guard["Egress guard sidecar (optional)<br/>Squid, dnsmasq, iptables: off / monitor / enforce / offline<br/>platform allow: manager context API"]
+    end
+  end
+
+  CGw <-->|"Socket.IO socket/agents per console socket<br/>+ short-lived automation / plan sockets"| MGw
+  CApi -->|"REST /api (API key or Keycloak token)"| MApi
+  CGw -.WS VNC proxy.-> MGw
+  CStatus -.scrape.-> MApi
+  Queue -.config + layer file sync, egress events ingest, isolation.-> MApi
+  MGw -.agentContextRequest (ack): metadata + content on demand.-> CtxHandler
+  MApi --> MAuth
+  MGw --> MAuth
+  MGw --> Filters
+  MGw --> Composer
+  Composer --> CtxTickets
+  MGw -->|"prompts"| Runtime
+  MGw -.context_access question events, persisted.-> Console
+  CtxApi --> CtxTickets & CtxAccess
+  CtxAccess -.permission reply ctx_*.-> MApi
+  MApi --> ConfigSync & Egress & Isolation & Deploy & WsIndex
+  Manager --> MPg
+  Runtime <-->|"HTTP + SSE events (Basic auth)"| OpenCode
+  ConfigSync -->|"config, provider auth, MCP"| OpenCode
+  OpenCode -->|"spawns, stdio JSON-RPC"| CtxMcp
+  CtxMcp -->|"HTTP /api/agent-context (Bearer token, ticket)"| CtxApi
+  OpenCode --> AppVol
+  MGw -.VNC.-> Desktop
+  WsIndex -.inotifywait via docker exec.-> AppVol
+  Egress --> Guard
+  Worker -->|"shared network namespace"| Guard
+  Guard -->|"filtered egress"| Internet
+  Guard -.Git over SSH to curated hosts.-> GitHosts
+  OpenCode -.model calls.-> Llm
+  Deploy --> Pipelines
+  Manager -.metrics.-> Otel
+  Registry -.images.-> Manager & Worker & Guard & Controller
