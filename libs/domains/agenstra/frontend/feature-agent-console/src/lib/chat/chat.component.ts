@@ -815,14 +815,18 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     distinctUntilChanged(),
   );
 
-  /** Connection errors per workspace for the workspace list (list load errors + active remote error). */
+  /**
+   * Connection errors per workspace for the workspace list: one-time reachability ping (so unreachable workspaces
+   * are flagged before they are opened), overridden by environment list load errors and the active remote error.
+   */
   readonly workspaceConnectionErrors$: Observable<Record<string, string>> = combineLatest([
     this.agentsFacade.getListErrorsByClientId$(),
     this.activeClientId$,
     this.workspaceConnectionError$,
+    this.clientsFacade.reachabilityErrors$,
   ]).pipe(
-    map(([listErrors, activeClientId, activeError]) => {
-      const errors: Record<string, string> = {};
+    map(([listErrors, activeClientId, activeError, reachabilityErrors]) => {
+      const errors: Record<string, string> = { ...(reachabilityErrors ?? {}) };
 
       for (const [clientId, error] of Object.entries(listErrors ?? {})) {
         if (error) {

@@ -67,6 +67,7 @@ export {
 
 // Framework-owned exports (files that stay in this library)
 export * from './lib/dto/client-response.dto';
+export * from './lib/dto/client-ping-response.dto';
 export * from './lib/dto/client-isolation.dto';
 export * from './lib/dto/create-client-response.dto';
 export * from './lib/dto/create-client.dto';

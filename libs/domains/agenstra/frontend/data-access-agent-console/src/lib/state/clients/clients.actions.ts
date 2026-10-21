@@ -1,6 +1,7 @@
 import { createAction, props } from '@ngrx/store';
 
 import type {
+  ClientPingResponseDto,
   AddClientUserDto,
   ClientIsolationSummaryDto,
   ClientResponseDto,
@@ -96,6 +97,17 @@ export const refreshClientIsolationFailure = createAction(
   '[Clients] Refresh Client Isolation Failure',
   props<{ clientId: string; error: string }>(),
 );
+
+// Workspace reachability (pinged once per listed workspace)
+export const pingClients = createAction('[Clients] Ping Clients', props<{ clientIds: string[] }>());
+
+export const pingClientSuccess = createAction(
+  '[Clients] Ping Client Success',
+  props<{ clientId: string; result: ClientPingResponseDto }>(),
+);
+
+/** The ping request itself failed (e.g. no access): reachability stays unknown, nothing is flagged. */
+export const pingClientFailure = createAction('[Clients] Ping Client Failure', props<{ clientId: string }>());
 
 // Provisioning Actions
 export const loadProvisioningProviders = createAction('[Clients] Load Provisioning Providers');

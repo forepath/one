@@ -56,6 +56,7 @@ import {
 import type { Response } from 'express';
 
 import { ClientResponseDto } from '../dto/client-response.dto';
+import { ClientPingResponseDto } from '../dto/client-ping-response.dto';
 import { CreateClientResponseDto } from '../dto/create-client-response.dto';
 import { CreateClientDto } from '../dto/create-client.dto';
 import { CreateClientVncSessionResponseDto } from '../dto/create-client-vnc-session-response.dto';
@@ -454,6 +455,7 @@ export class ClientsController {
 
     await this.clientAgentProxyService.deleteClientAgent(id, agentId, userInfo.userId);
     await this.workspaceSearchIndex.purgeAgent(id, agentId);
+    await this.configSyncTargets.removeAgentTarget(id, agentId);
   }
 
   /**
@@ -549,6 +551,37 @@ export class ClientsController {
       isApiKeyAuth: userInfo.isApiKeyAuth,
       userRole: userInfo.userRole,
     });
+  }
+
+  /**
+   * Lightweight reachability check of the workspace's agent-manager (health endpoint, short timeout).
+   * Lets the console flag unreachable workspaces in the list without loading their environments.
+   * @param id - The UUID of the client
+   * @param req - The request object
+   * @returns Whether the workspace is reachable (and why not)
+   */
+  @Get(':id/ping')
+  @RequireScopes('clients:read')
+  async pingClient(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Req() req?: RequestWithUser,
+  ): Promise<ClientPingResponseDto> {
+    const userInfo = getUserFromRequest(req || ({} as RequestWithUser));
+    const access = await checkClientAccess(
+      this.clientsRepository,
+      this.clientUsersRepository,
+      id,
+      userInfo.userId,
+      userInfo.userRole,
+      userInfo.isApiKeyAuth,
+      { amr: userInfo.amr },
+    );
+
+    if (!access.hasAccess) {
+      throw new ForbiddenException('You do not have access to this client');
+    }
+
+    return await this.clientAgentProxyService.pingClient(id);
   }
 
   /**

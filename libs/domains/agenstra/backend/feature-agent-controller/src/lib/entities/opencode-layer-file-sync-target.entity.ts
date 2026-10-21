@@ -1,3 +1,4 @@
+import { ClientEntity } from '@forepath/identity/backend';
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 import { OpencodeLayerFileEntity } from './opencode-layer-file.entity';
@@ -21,6 +22,10 @@ export class OpencodeLayerFileSyncTargetEntity {
 
   @Column({ type: 'uuid', name: 'client_id' })
   clientId!: string;
+
+  @ManyToOne(() => ClientEntity, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'client_id', foreignKeyConstraintName: 'FK_opencode_layer_file_sync_targets_client' })
+  client?: ClientEntity;
 
   @Column({ type: 'uuid', name: 'agent_id' })
   agentId!: string;

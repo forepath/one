@@ -23,6 +23,7 @@ import {
 } from '@nestjs/common';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
+import type { ClientPingResponseDto } from '../dto/client-ping-response.dto';
 import { StatisticsEntityType } from '../entities/statistics-entity-event.entity';
 import { ClientsRepository } from '../repositories/clients.repository';
 import { getClientEndpointTlsPolicy, validateClientEndpointWithDnsOrThrow } from '../utils/client-endpoint-security';
@@ -512,6 +513,49 @@ export class ClientAgentProxyService {
       method: 'POST',
       url: `/${agentId}/restart`,
     });
+  }
+
+  /**
+   * Reachability check of the workspace's agent-manager via its public health endpoint (`GET /api/health`).
+   * Never throws: failures are reported as `{ reachable: false, error }` and logged at debug level only, so
+   * pinging a list of workspaces cannot flood the logs.
+   */
+  async pingClient(clientId: string): Promise<ClientPingResponseDto> {
+    const checkedAt = new Date().toISOString();
+    const timeoutMs = Number.parseInt(process.env.CLIENT_PING_TIMEOUT_MS ?? '', 10) || 5000;
+
+    try {
+      const clientEntity = await this.clientsRepository.findByIdOrThrow(clientId);
+
+      await validateClientEndpointWithDnsOrThrow(clientEntity.endpoint);
+      const url = `${clientEntity.endpoint.replace(/\/$/, '')}/api/health`;
+      const tlsPolicy = getClientEndpointTlsPolicy(this.logger);
+      const response = await axios.request({
+        method: 'GET',
+        url,
+        validateStatus: () => true,
+        timeout: timeoutMs,
+        httpsAgent: url.startsWith('https://')
+          ? new (require('https').Agent)({ rejectUnauthorized: tlsPolicy.rejectUnauthorized })
+          : undefined,
+      });
+
+      if (response.status >= 200 && response.status < 300) {
+        return { reachable: true, checkedAt };
+      }
+
+      return { reachable: false, error: `Workspace health check failed (HTTP ${response.status})`, checkedAt };
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      const message =
+        axiosError.code === 'ECONNABORTED' || axiosError.message?.includes('timeout')
+          ? `Workspace did not respond within ${Math.round(timeoutMs / 1000)}s`
+          : `Failed to connect to client endpoint: ${axiosError.message ?? String(error)}`;
+
+      this.logger.debug(`Ping failed for client ${clientId}: ${message}`);
+
+      return { reachable: false, error: message, checkedAt };
+    }
   }
 
   /**

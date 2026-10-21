@@ -7,6 +7,13 @@ export const selectClientsState = createFeatureSelector<ClientsState>('clients')
 // Entity selectors
 export const selectClients = createSelector(selectClientsState, (state) => state.entities);
 
+/** Workspaces the one-time list ping found unreachable (clientId → reason). */
+export const selectClientReachabilityErrors = createSelector(selectClientsState, (state) =>
+  Object.fromEntries(
+    Object.entries(state.reachabilityErrors ?? {}).filter((entry): entry is [string, string] => !!entry[1]),
+  ),
+);
+
 export const selectSelectedClient = createSelector(selectClientsState, (state) => state.selectedClient);
 
 export const selectActiveClientId = createSelector(selectClientsState, (state) => state.activeClientId);

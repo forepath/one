@@ -1930,6 +1930,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateClientResponseDto'
+  /clients/{id}/ping:
+    get:
+      summary: Check workspace reachability
+      description: |
+        Lightweight reachability check of the workspace's agent-manager (public health endpoint, short timeout,
+        env `CLIENT_PING_TIMEOUT_MS`, default 5000). Used by the console to flag unreachable workspaces in the list
+        without loading their environments. Never fails for an unreachable workspace; `reachable` is false instead.
+      operationId: pingClient
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Reachability result
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [reachable, checkedAt]
+                properties:
+                  reachable:
+                    type: boolean
+                  error:
+                    type: string
+                    description: Why the workspace cannot be reached (only when reachable is false)
+                  checkedAt:
+                    type: string
+                    format: date-time
+        '403':
+          description: User does not have access to this client
   /clients/{id}:
     get:
       summary: Get client by id

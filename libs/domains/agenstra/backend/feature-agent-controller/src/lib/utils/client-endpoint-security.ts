@@ -25,6 +25,14 @@ export interface ClientEndpointTlsPolicy {
   rejectUnauthorized: boolean;
 }
 
+/** The insecure-TLS warning is emitted once per process; the policy is read on every outbound request. */
+let insecureTlsWarningLogged = false;
+
+/** Test hook: allow the one-time insecure-TLS warning to be emitted again. */
+export function resetClientEndpointTlsWarningForTests(): void {
+  insecureTlsWarningLogged = false;
+}
+
 export function getClientEndpointTlsPolicy(logger?: Logger): ClientEndpointTlsPolicy {
   const raw = process.env.CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED;
   const explicitDisable = raw?.trim().toLowerCase() === 'false';
@@ -37,7 +45,10 @@ export function getClientEndpointTlsPolicy(logger?: Logger): ClientEndpointTlsPo
     throw new Error('CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED=false is not allowed in production');
   }
 
-  logger?.warn('CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED=false: TLS verification is disabled (development only).');
+  if (logger && !insecureTlsWarningLogged) {
+    insecureTlsWarningLogged = true;
+    logger.warn('CLIENT_ENDPOINT_TLS_REJECT_UNAUTHORIZED=false: TLS verification is disabled (development only).');
+  }
 
   return { rejectUnauthorized: false };
 }

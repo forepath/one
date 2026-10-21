@@ -34,8 +34,14 @@ import {
   updateClient,
   updateClientFailure,
   updateClientSuccess,
+  pingClientFailure,
+  pingClientSuccess,
+  pingClients,
 } from './clients.actions';
+import { loadClientAgentsSuccess } from '../agents/agents.actions';
+
 import { clientsReducer, initialClientsState, type ClientsState } from './clients.reducer';
+import { selectClientReachabilityErrors } from './clients.selectors';
 import type { ClientIsolationSummaryDto, ClientResponseDto, ServerInfo } from './clients.types';
 
 describe('clientsReducer', () => {
@@ -836,6 +842,58 @@ describe('clientsReducer', () => {
       expect(newState.refreshingIsolation['client-1']).toBe(false);
       expect(newState.isolationErrors['client-1']).toBe('Probe failed');
       expect(newState.error).toBeNull();
+    });
+  });
+
+  describe('workspace reachability', () => {
+    const checkedAt = '2026-01-01T00:00:00.000Z';
+
+    it('marks workspaces as pinged and records unreachable ones', () => {
+      let state = clientsReducer(initialClientsState, pingClients({ clientIds: ['a', 'b'] }));
+
+      expect(state.reachabilityErrors).toEqual({ a: null, b: null });
+
+      state = clientsReducer(state, pingClientSuccess({ clientId: 'a', result: { reachable: true, checkedAt } }));
+      state = clientsReducer(
+        state,
+        pingClientSuccess({ clientId: 'b', result: { reachable: false, error: 'connect ECONNREFUSED', checkedAt } }),
+      );
+
+      expect(state.reachabilityErrors).toEqual({ a: null, b: 'connect ECONNREFUSED' });
+      expect(selectClientReachabilityErrors.projector(state)).toEqual({ b: 'connect ECONNREFUSED' });
+    });
+
+    it('keeps the previous result when a workspace is pinged again', () => {
+      const state = clientsReducer(
+        { ...initialClientsState, reachabilityErrors: { b: 'down' } },
+        pingClients({ clientIds: ['b'] }),
+      );
+
+      expect(state.reachabilityErrors).toEqual({ b: 'down' });
+    });
+
+    it('never flags a workspace when the ping request itself fails', () => {
+      const state = clientsReducer(initialClientsState, pingClientFailure({ clientId: 'a' }));
+
+      expect(selectClientReachabilityErrors.projector(state)).toEqual({});
+    });
+
+    it('clears a stale ping error once the workspace environments load', () => {
+      const state = clientsReducer(
+        { ...initialClientsState, reachabilityErrors: { b: 'down' } },
+        loadClientAgentsSuccess({ clientId: 'b', agents: [], hasMore: false, nextOffset: 0 } as never),
+      );
+
+      expect(state.reachabilityErrors).toEqual({ b: null });
+    });
+
+    it('forgets deleted workspaces', () => {
+      const state = clientsReducer(
+        { ...initialClientsState, reachabilityErrors: { b: 'down', c: null } },
+        deleteClientSuccess({ id: 'b' }),
+      );
+
+      expect(state.reachabilityErrors).toEqual({ c: null });
     });
   });
 });

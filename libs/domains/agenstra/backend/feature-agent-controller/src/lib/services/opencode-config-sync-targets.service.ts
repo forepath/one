@@ -7,7 +7,7 @@ import {
   type EffectivePlatformSecurityPolicy,
   type JsonObject,
 } from '@forepath/agenstra/shared/util-opencode-config';
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 
@@ -209,6 +209,36 @@ export class OpencodeConfigSyncTargetsService {
   }
 
   /** Mark every agent pending, then process a first batch immediately. */
+  /** Drop the sync target of an agent that was deleted (nothing left to sync). */
+  async removeAgentTarget(clientId: string, agentId: string): Promise<void> {
+    await this.targetsRepo.delete({ clientId, agentId });
+  }
+
+  /**
+   * True only when the agent-manager explicitly reports the agent as missing. A bare 404 (e.g. an older manager
+   * without the route) must not delete targets.
+   */
+  static isAgentGoneError(error: unknown, agentId: string): boolean {
+    return (
+      error instanceof NotFoundException && OpencodeConfigSyncTargetsService.isAgentGoneMessage(error.message, agentId)
+    );
+  }
+
+  /** Manager wording for a missing agent (thrown 404 or `{ ok: false, error }` sync result), bound to this agent. */
+  static isAgentGoneMessage(message: string | null | undefined, agentId: string): boolean {
+    const match = /Agent with ID '?([0-9a-f-]{36})'? not found/i.exec(message ?? '');
+
+    return match?.[1]?.toLowerCase() === agentId.toLowerCase();
+  }
+
+  /** Remove a target whose agent no longer exists on the manager (deleted out of band / manager reset). */
+  private async pruneGoneTarget(target: OpencodeConfigSyncTargetEntity): Promise<void> {
+    await this.targetsRepo.delete({ id: target.id });
+    this.logger.log(
+      `Removed OpenCode sync target ${target.id}: agent ${target.agentId} no longer exists on the agent-manager`,
+    );
+  }
+
   async markAndProcessAll(): Promise<void> {
     await this.markAllPending();
     const ids = await this.findPendingTargetIds(50);
@@ -267,6 +297,11 @@ export class OpencodeConfigSyncTargetsService {
         await this.targetsRepo.save(target);
         pendingIds.push(target.id);
       } catch (error: unknown) {
+        if (OpencodeConfigSyncTargetsService.isAgentGoneError(error, target.agentId)) {
+          await this.pruneGoneTarget(target);
+          continue;
+        }
+
         const err = error as { message?: string };
 
         this.logger.warn(`Failed to reconcile OpenCode sync target ${target.id}: ${err.message ?? 'unknown'}`);
@@ -308,6 +343,10 @@ export class OpencodeConfigSyncTargetsService {
         target.lastError = null;
         target.lastSyncedAt = new Date();
         this.notifyEgressApplied(target, result.platformPolicy);
+      } else if (OpencodeConfigSyncTargetsService.isAgentGoneMessage(result.error, target.agentId)) {
+        await this.pruneGoneTarget(target);
+
+        return;
       } else {
         // No container / not healthy → keep pending for retry; hard apply errors → failed.
         const defer = result.defer === true;
@@ -319,6 +358,12 @@ export class OpencodeConfigSyncTargetsService {
 
       await this.targetsRepo.save(target);
     } catch (error: unknown) {
+      if (OpencodeConfigSyncTargetsService.isAgentGoneError(error, target.agentId)) {
+        await this.pruneGoneTarget(target);
+
+        return;
+      }
+
       const msg = error instanceof Error ? error.message : String(error);
 
       this.logger.warn(`OpenCode config sync failed for target ${target.id}: ${msg}`);

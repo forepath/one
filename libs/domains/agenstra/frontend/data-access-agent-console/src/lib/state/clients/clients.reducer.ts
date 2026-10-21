@@ -1,5 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 
+import { loadClientAgentsSuccess } from '../agents/agents.actions';
+
 import {
   addClientUser,
   addClientUserFailure,
@@ -19,6 +21,9 @@ import {
   loadClients,
   loadClientsFailure,
   loadClientsSuccess,
+  pingClientFailure,
+  pingClientSuccess,
+  pingClients,
   loadClientSuccess,
   loadMoreClients,
   loadMoreClientsFailure,
@@ -97,6 +102,11 @@ export interface ClientsState {
   // Container isolation (merged into the client entities on success)
   refreshingIsolation: Record<string, boolean>; // keyed by clientId
   isolationErrors: Record<string, string | null>; // keyed by clientId
+  /**
+   * Workspace reachability from the one-time list ping, keyed by clientId: `null` = pinged (pending, reachable or
+   * unknown), string = why the workspace cannot be reached. Presence of a key means "already pinged".
+   */
+  reachabilityErrors: Record<string, string | null>;
 }
 
 export const initialClientsState: ClientsState = {
@@ -130,6 +140,7 @@ export const initialClientsState: ClientsState = {
   removingClientUser: {},
   refreshingIsolation: {},
   isolationErrors: {},
+  reachabilityErrors: {},
 };
 
 export const clientsReducer = createReducer(
@@ -254,6 +265,7 @@ export const clientsReducer = createReducer(
   })),
   on(deleteClientSuccess, (state, { id }) => ({
     ...state,
+    reachabilityErrors: Object.fromEntries(Object.entries(state.reachabilityErrors).filter(([key]) => key !== id)),
     entities: state.entities.filter((c) => c.id !== id),
     selectedClient: state.selectedClient?.id === id ? null : state.selectedClient,
     activeClientId: state.activeClientId === id ? null : state.activeClientId,
@@ -483,6 +495,31 @@ export const clientsReducer = createReducer(
       error,
     };
   }),
+  // Workspace reachability
+  on(pingClients, (state, { clientIds }) => ({
+    ...state,
+    reachabilityErrors: {
+      ...state.reachabilityErrors,
+      ...Object.fromEntries(clientIds.map((id) => [id, state.reachabilityErrors[id] ?? null])),
+    },
+  })),
+  on(pingClientSuccess, (state, { clientId, result }) => ({
+    ...state,
+    reachabilityErrors: {
+      ...state.reachabilityErrors,
+      [clientId]: result.reachable ? null : (result.error ?? 'Workspace cannot be reached'),
+    },
+  })),
+  on(pingClientFailure, (state, { clientId }) => ({
+    ...state,
+    reachabilityErrors: { ...state.reachabilityErrors, [clientId]: null },
+  })),
+  // A successful environment load proves the workspace is reachable again: drop a stale ping error.
+  on(loadClientAgentsSuccess, (state, { clientId }) =>
+    state.reachabilityErrors[clientId]
+      ? { ...state, reachabilityErrors: { ...state.reachabilityErrors, [clientId]: null } }
+      : state,
+  ),
   // Container Isolation
   on(refreshClientIsolation, (state, { clientId }) => ({
     ...state,

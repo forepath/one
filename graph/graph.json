@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-21T07:35:14.222Z",
+  "generatedAt": "2026-10-21T08:53:53.912Z",
   "nodes": [
     {
       "id": "project:@forepath/test/mounted-plugin-fixture",
@@ -5019,6 +5019,15 @@
       "type": "dto",
       "attrs": {
         "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/client-isolation.dto.ts",
+        "languageOrKind": "ts",
+        "projectName": "agenstra-backend-feature-agent-controller"
+      }
+    },
+    {
+      "id": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/client-ping-response.dto.ts",
+      "type": "dto",
+      "attrs": {
+        "path": "libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/client-ping-response.dto.ts",
         "languageOrKind": "ts",
         "projectName": "agenstra-backend-feature-agent-controller"
       }
@@ -16444,6 +16453,17 @@
         "pathOrChannel": "/clients",
         "operationId": "createClient",
         "summary": "Create client",
+        "specKind": "openapi"
+      }
+    },
+    {
+      "id": "api:HTTP:GET:/clients/{id}/ping",
+      "type": "endpoint",
+      "attrs": {
+        "method": "GET",
+        "pathOrChannel": "/clients/{id}/ping",
+        "operationId": "pingClient",
+        "summary": "Check workspace reachability",
         "specKind": "openapi"
       }
     },
@@ -38524,6 +38544,11 @@
     },
     {
       "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/client-ping-response.dto.ts",
+      "type": "contains"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
       "to": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/dto/client-response.dto.ts",
       "type": "contains"
     },
@@ -44005,6 +44030,11 @@
     {
       "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
       "to": "api:HTTP:POST:/clients",
+      "type": "contains"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/spec/openapi.yaml",
+      "to": "api:HTTP:GET:/clients/{id}/ping",
       "type": "contains"
     },
     {
@@ -55050,6 +55080,16 @@
     {
       "from": "project:agenstra-backend-feature-agent-controller",
       "to": "api:HTTP:POST:/clients",
+      "type": "implements"
+    },
+    {
+      "from": "file:libs/domains/agenstra/backend/feature-agent-controller/src/lib/controllers/clients.controller.ts",
+      "to": "api:HTTP:GET:/clients/{id}/ping",
+      "type": "implements"
+    },
+    {
+      "from": "project:agenstra-backend-feature-agent-controller",
+      "to": "api:HTTP:GET:/clients/{id}/ping",
       "type": "implements"
     },
     {
@@ -71890,6 +71930,11 @@
     {
       "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/clients.service.ts",
       "to": "api:HTTP:DELETE:/clients/{id}",
+      "type": "calls"
+    },
+    {
+      "from": "file:libs/domains/agenstra/frontend/data-access-agent-console/src/lib/services/clients.service.ts",
+      "to": "api:HTTP:GET:/clients/{id}/ping",
       "type": "calls"
     },
     {

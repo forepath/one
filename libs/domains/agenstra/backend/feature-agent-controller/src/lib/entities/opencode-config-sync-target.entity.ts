@@ -1,4 +1,5 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { ClientEntity } from '@forepath/identity/backend';
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 export type OpencodeConfigSyncStatus = 'pending' | 'synced' | 'failed';
 
@@ -14,6 +15,10 @@ export class OpencodeConfigSyncTargetEntity {
 
   @Column({ type: 'uuid', name: 'client_id' })
   clientId!: string;
+
+  @ManyToOne(() => ClientEntity, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'client_id', foreignKeyConstraintName: 'FK_opencode_config_sync_targets_client' })
+  client?: ClientEntity;
 
   @Column({ type: 'uuid', name: 'agent_id' })
   agentId!: string;

@@ -612,4 +612,64 @@ describe('ClientAgentProxyService', () => {
       );
     });
   });
+
+  describe('pingClient', () => {
+    beforeEach(() => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+    });
+
+    it('reports reachable when the manager health endpoint answers 2xx', async () => {
+      mockedAxios.request.mockResolvedValue({
+        data: {},
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {} as any,
+      });
+
+      await expect(service.pingClient('client-uuid')).resolves.toEqual({
+        reachable: true,
+        checkedAt: expect.any(String),
+      });
+      expect(mockedAxios.request).toHaveBeenCalledWith(
+        expect.objectContaining({ method: 'GET', url: 'https://example.com/api/api/health', timeout: 5000 }),
+      );
+      // Public health endpoint: no workspace credentials are sent.
+      expect(mockedAxios.request.mock.calls[0][0]).not.toHaveProperty('headers');
+    });
+
+    it('reports unreachable on HTTP errors without throwing', async () => {
+      mockedAxios.request.mockResolvedValue({ data: '', status: 503, statusText: 'x', headers: {}, config: {} as any });
+
+      await expect(service.pingClient('client-uuid')).resolves.toMatchObject({
+        reachable: false,
+        error: 'Workspace health check failed (HTTP 503)',
+      });
+    });
+
+    it('reports connection failures and timeouts', async () => {
+      mockedAxios.request.mockRejectedValueOnce(
+        Object.assign(new Error('connect ECONNREFUSED 10.0.0.1:3000'), { code: 'ECONNREFUSED' }),
+      );
+      mockedAxios.request.mockRejectedValueOnce(
+        Object.assign(new Error('timeout of 5000ms exceeded'), { code: 'ECONNABORTED' }),
+      );
+
+      await expect(service.pingClient('client-uuid')).resolves.toMatchObject({
+        reachable: false,
+        error: 'Failed to connect to client endpoint: connect ECONNREFUSED 10.0.0.1:3000',
+      });
+      await expect(service.pingClient('client-uuid')).resolves.toMatchObject({
+        reachable: false,
+        error: 'Workspace did not respond within 5s',
+      });
+    });
+
+    it('reports unknown workspaces as unreachable instead of throwing', async () => {
+      clientsRepository.findByIdOrThrow.mockRejectedValue(new Error('Client with ID client-uuid not found'));
+
+      await expect(service.pingClient('client-uuid')).resolves.toMatchObject({ reachable: false });
+      expect(mockedAxios.request).not.toHaveBeenCalled();
+    });
+  });
 });

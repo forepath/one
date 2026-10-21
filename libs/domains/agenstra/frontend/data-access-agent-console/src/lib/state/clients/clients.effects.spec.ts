@@ -35,6 +35,9 @@ import {
   loadLocations,
   loadLocationsFailure,
   loadLocationsSuccess,
+  pingClientFailure,
+  pingClientSuccess,
+  pingClients,
   refreshClientIsolation,
   refreshClientIsolationFailure,
   refreshClientIsolationSuccess,
@@ -57,6 +60,8 @@ import {
   loadMoreClients$,
   loadServerInfo$,
   loadLocations$,
+  pingClients$,
+  pingListedClients$,
   refreshClientIsolation$,
   removeClientUser$,
   setActiveClient$,
@@ -125,6 +130,7 @@ describe('ClientsEffects', () => {
       addClientUser: jest.fn(),
       removeClientUser: jest.fn(),
       getClientIsolation: jest.fn(),
+      pingClient: jest.fn(),
       probeClientIsolation: jest.fn(),
     } as any;
 
@@ -920,6 +926,54 @@ describe('ClientsEffects', () => {
       refreshClientIsolation$(actions$, clientsService).subscribe((result) => results.push(result));
 
       expect(results).toEqual([refreshClientIsolationFailure({ clientId: 'client-1', error: error.message })]);
+    });
+  });
+
+  describe('pingListedClients$', () => {
+    it('pings listed workspaces that were not pinged yet', (done) => {
+      actions$ = of(
+        loadClientsSuccess({
+          clients: [mockClient, { ...mockClient, id: 'client-2' }, { ...mockClient, id: 'client-3' }],
+          hasMore: false,
+          nextOffset: 3,
+        }),
+      );
+      store.select.mockReturnValue(of({ reachabilityErrors: { 'client-2': null, 'client-3': 'down' } }));
+
+      pingListedClients$(actions$, store).subscribe((result) => {
+        expect(result).toEqual(pingClients({ clientIds: ['client-1'] }));
+        done();
+      });
+    });
+
+    it('does not ping again when every listed workspace was already checked', () => {
+      const emitted: unknown[] = [];
+
+      actions$ = of(loadMoreClientsSuccess({ clients: [mockClient], hasMore: false, nextOffset: 1 }));
+      store.select.mockReturnValue(of({ reachabilityErrors: { 'client-1': null } }));
+
+      pingListedClients$(actions$, store).subscribe((result) => emitted.push(result));
+
+      expect(emitted).toEqual([]);
+    });
+  });
+
+  describe('pingClients$', () => {
+    it('pings each workspace and maps results and request failures', () => {
+      const emitted: unknown[] = [];
+      const up = { reachable: true, checkedAt: '2026-01-01T00:00:00.000Z' };
+
+      actions$ = of(pingClients({ clientIds: ['client-1', 'client-2'] }));
+      clientsService.pingClient.mockImplementation((id: string) =>
+        id === 'client-1' ? of(up) : throwError(() => new HttpErrorResponse({ status: 403 })),
+      );
+
+      pingClients$(actions$, clientsService).subscribe((result) => emitted.push(result));
+
+      expect(emitted).toEqual([
+        pingClientSuccess({ clientId: 'client-1', result: up }),
+        pingClientFailure({ clientId: 'client-2' }),
+      ]);
     });
   });
 });

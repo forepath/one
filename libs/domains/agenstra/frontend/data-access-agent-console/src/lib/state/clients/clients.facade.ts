@@ -28,6 +28,7 @@ import {
   selectActiveClientIsolation,
   selectAddingClientUser,
   selectClientById,
+  selectClientReachabilityErrors,
   selectClientCreating,
   selectClientDeleting,
   selectClientIsolationError,
@@ -204,6 +205,9 @@ export class ClientsFacade {
   getClientIsolationError$(clientId: string): Observable<string | null> {
     return this.store.select(selectClientIsolationError(clientId));
   }
+
+  /** Workspaces flagged unreachable by the one-time list ping (clientId → reason). */
+  readonly reachabilityErrors$: Observable<Record<string, string>> = this.store.select(selectClientReachabilityErrors);
 
   // Provisioning state observables
   readonly provisioningProviders$: Observable<Array<{ type: string; displayName: string }>> =
