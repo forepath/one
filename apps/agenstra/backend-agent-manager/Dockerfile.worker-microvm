@@ -90,6 +90,7 @@ ENV AGENSTRA_MICROVM_LOOPBACK_PORTS=3128
 EXPOSE 4096 6080
 
 LABEL io.agenstra.microvm.protocol="1"
+LABEL io.forepath.scan.nested-rootfs="/guest"
 LABEL io.agenstra.environment-mount="1"
 LABEL io.agenstra.context-mcp="1"
 

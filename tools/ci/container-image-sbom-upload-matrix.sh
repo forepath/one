@@ -20,6 +20,9 @@ KNOWN_IMAGE_NAMES=(
   agenstra-billing-console-server
   agenstra-console-server
   agenstra-controller-api
+  agenstra-manager-worker-microvm-guest
+  agenstra-manager-worker-microvm
+  agenstra-manager-egress-guard
   agenstra-manager-worker
   agenstra-manager-api
   agenstra-manager-vnc

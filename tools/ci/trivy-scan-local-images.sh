@@ -29,24 +29,33 @@ if ! command -v trivy >/dev/null 2>&1; then
   exit 1
 fi
 
+# shellcheck source=tools/ci/trivy-nested-rootfs.sh
+. "$REPO_ROOT/tools/ci/trivy-nested-rootfs.sh"
+
 sarif_parts=()
 cleanup_parts=()
+cleanup_roots=()
 
 cleanup() {
   for part in "${cleanup_parts[@]}"; do
     rm -f "$part"
   done
+
+  for root in "${cleanup_roots[@]}"; do
+    remove_nested_rootfs "$root"
+  done
 }
 trap cleanup EXIT
 
-for image in "${images[@]}"; do
-  echo "Scanning image: $image"
+# Scans one target twice: SARIF report (non-blocking exit code so upload can run when findings exist), then the
+# severity gate (CRITICAL per trivy.yaml) as a table.
+scan_target() {
+  local sarif_part
 
   sarif_part="$(mktemp "${TMPDIR:-/tmp}/trivy-image-XXXXXX.sarif")"
   cleanup_parts+=("$sarif_part")
 
-  # SARIF report (non-blocking exit code so upload can run when findings exist)
-  trivy image "$image" \
+  trivy "$@" \
     --config trivy.yaml \
     --quiet \
     --format sarif \
@@ -55,11 +64,29 @@ for image in "${images[@]}"; do
 
   sarif_parts+=("$sarif_part")
 
-  # Severity gate (CRITICAL per trivy.yaml) — one image per invocation
-  trivy image "$image" \
+  trivy "$@" \
     --config trivy.yaml \
     --quiet \
     --format table
+}
+
+for image in "${images[@]}"; do
+  echo "Scanning image: $image"
+
+  nested_rootfs="$(nested_rootfs_of "$image")"
+
+  if [ -z "$nested_rootfs" ]; then
+    scan_target image "$image"
+    continue
+  fi
+
+  scan_target image "$image" --skip-dirs "$nested_rootfs"
+
+  echo "Scanning nested root filesystem /${nested_rootfs} of image: $image"
+  nested_root="$(extract_nested_rootfs "$image" "$nested_rootfs")"
+  cleanup_roots+=("$nested_root")
+  scan_target rootfs "$nested_root"
+  remove_nested_rootfs "$nested_root"
 done
 
 if [ "${#sarif_parts[@]}" -eq 1 ]; then
