@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.0](https://github.com/forepath/one/compare/v3.5.1...v4.0.0) (2026-10-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* **agenstra:** consumers that listen to the old events no longer react properly until modified
+
+* fix(agenstra): internal host resolution in offline mode
+
+allow to resolve internal hosts in offline mode to enable context mcp server communication with
+the agent manager service selectively
+
+* fix(agenstra): log storm and status reporting
+
+avoid container log storms and report the correct container statuses to the frontend
+
+* fix(agenstra): custom mcp tool outputs
+
+tool output mapping for custom mcp servers
+
+* fix(shared): failing ci pipelines
+
+### Features
+
+* **agenstra:** agent context mcp server ([#690](https://github.com/forepath/one/issues/690)) ([09952e4](https://github.com/forepath/one/commit/09952e46ea5bf789bfc78ed156910a6f8ee64f73))
+* **agenstra:** in-workspace agent tasks handover ([#693](https://github.com/forepath/one/issues/693)) ([486a499](https://github.com/forepath/one/commit/486a499bf6cbfc1b789139404740586d3e4c5c0c))
+* **agenstra:** task automation ([#691](https://github.com/forepath/one/issues/691)) ([f1553ff](https://github.com/forepath/one/commit/f1553ff3c6b6cd0bd547c54eb6d60afc75b5fcf0))
+
+
+### Bug Fixes
+
+* **agenstra:** mcp security ([#694](https://github.com/forepath/one/issues/694)) ([3a2ff8c](https://github.com/forepath/one/commit/3a2ff8cba72f72105c52fe76a2427314dbff4d69))
+
 ## [3.5.1](https://github.com/forepath/one/compare/v3.5.0...v3.5.1) (2026-10-20)
 
 
