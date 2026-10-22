@@ -26,6 +26,10 @@ export class ClientIsolationSnapshotEntity {
   @Column({ type: 'varchar', length: 32, nullable: true, name: 'sandboxed_state' })
   sandboxedState?: string | null;
 
+  /** State of the sandboxed-kvm level (`null` for snapshots recorded before the level existed). */
+  @Column({ type: 'varchar', length: 32, nullable: true, name: 'sandboxed_kvm_state' })
+  sandboxedKvmState?: string | null;
+
   @Column({ type: 'varchar', length: 16, nullable: true, name: 'recommended_level' })
   recommendedLevel?: string | null;
 

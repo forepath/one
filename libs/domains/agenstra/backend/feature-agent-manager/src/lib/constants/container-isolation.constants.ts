@@ -1,3 +1,5 @@
+import { GVISOR_RUNTIMES, type GvisorPlatform } from '@forepath/shared/backend/util-container-runtime';
+
 /**
  * Container isolation levels for agent (environment) workers.
  *
@@ -5,16 +7,31 @@
  *   agent manager supported before isolation levels existed and the mandatory floor of every host.
  * - `sandboxed`: gVisor (`runsc`, systrap platform) registered as a dedicated Docker runtime. Workloads
  *   run on gVisor's userspace application kernel; only offered when the runtime passes the probe.
+ * - `sandboxed-kvm`: gVisor on its KVM platform (`runsc --platform=kvm`). The application kernel runs
+ *   in a hardware-virtualized address space and system calls trap into it through KVM instead of
+ *   seccomp; needs `/dev/kvm` on the host and is only offered when its runtime passes the probe.
  *
  * Levels are ranked; a higher rank means stronger isolation.
  */
-export type IsolationLevel = 'standard' | 'sandboxed';
+export type IsolationLevel = 'standard' | 'sandboxed' | 'sandboxed-kvm';
 
-export const ISOLATION_LEVELS: readonly IsolationLevel[] = ['standard', 'sandboxed'] as const;
+export const ISOLATION_LEVELS: readonly IsolationLevel[] = ['standard', 'sandboxed', 'sandboxed-kvm'] as const;
 
 export const ISOLATION_LEVEL_RANK: Readonly<Record<IsolationLevel, number>> = {
   standard: 1,
   sandboxed: 2,
+  'sandboxed-kvm': 3,
+};
+
+/** Isolation levels backed by gVisor (every level above the standard floor). */
+export type GvisorIsolationLevel = Exclude<IsolationLevel, 'standard'>;
+
+export const GVISOR_ISOLATION_LEVELS: readonly GvisorIsolationLevel[] = ['sandboxed', 'sandboxed-kvm'] as const;
+
+/** gVisor platform backing each gVisor isolation level. */
+export const GVISOR_ISOLATION_LEVEL_PLATFORM: Readonly<Record<GvisorIsolationLevel, GvisorPlatform>> = {
+  sandboxed: 'systrap',
+  'sandboxed-kvm': 'kvm',
 };
 
 /** Runtime state of an isolation level on this host (derived from real probes, never from config alone). */
@@ -39,14 +56,30 @@ export type IsolationSelectionSource = 'automatic' | 'user-confirmed' | 'user-ov
 /** Docker runtime of the standard level (Docker's built-in default). */
 export const STANDARD_ISOLATION_RUNTIME = 'runc';
 /** Default Docker runtime name of the sandboxed level (registered by the host preparation). */
-export const SANDBOXED_ISOLATION_RUNTIME_DEFAULT = 'runsc-systrap';
+export const SANDBOXED_ISOLATION_RUNTIME_DEFAULT = GVISOR_RUNTIMES.systrap.runtime;
 /**
  * Default Docker runtime name of the sandboxed level for workers that join their egress guard's
  * network namespace (`runsc --network=host`): gVisor's own network stack (Netstack) would take over
  * the shared namespace's interfaces and bypass the guard's netfilter rules and loopback proxy, so
  * guarded sandboxed workers use the namespace's kernel network stack, which the guard controls.
  */
-export const SANDBOXED_SHARED_NETNS_ISOLATION_RUNTIME_DEFAULT = 'runsc-systrap-hostnet';
+export const SANDBOXED_SHARED_NETNS_ISOLATION_RUNTIME_DEFAULT = GVISOR_RUNTIMES.systrap.sharedNetnsRuntime;
+/** Default Docker runtime name of the sandboxed-kvm level (registered by the host preparation when KVM is available). */
+export const SANDBOXED_KVM_ISOLATION_RUNTIME_DEFAULT = GVISOR_RUNTIMES.kvm.runtime;
+/** Default sandboxed-kvm runtime for workers sharing their egress guard's network namespace (`--network=host`). */
+export const SANDBOXED_KVM_SHARED_NETNS_ISOLATION_RUNTIME_DEFAULT = GVISOR_RUNTIMES.kvm.sharedNetnsRuntime;
+
+/**
+ * Machine-readable `code` of the `400` response when a gVisor environment container could not be
+ * started (the environment was not created and is never retried on a weaker runtime).
+ */
+export const ISOLATION_RUNTIME_FAILURE_CODE = 'E_ISOLATION_RUNTIME_FAILED';
+
+/** Operator-facing description of the runtime of a gVisor level (used in failure messages). */
+export const GVISOR_ISOLATION_LEVEL_DESCRIPTION: Readonly<Record<GvisorIsolationLevel, string>> = {
+  sandboxed: 'sandboxed (gVisor)',
+  'sandboxed-kvm': 'sandboxed-kvm (gVisor on KVM)',
+};
 
 /** Stable reason codes reported alongside non-ready isolation states. */
 export const IsolationReasonCode = {
@@ -65,6 +98,10 @@ export const IsolationReasonCode = {
   SHARED_NETNS_RUNTIME_NOT_REGISTERED: 'E_SHARED_NETNS_RUNTIME_NOT_REGISTERED',
   REPEATED_RUNTIME_FAILURES: 'E_REPEATED_RUNTIME_FAILURES',
   DISABLED_BY_ADMIN: 'E_DISABLED_BY_ADMIN',
+  /** The KVM platform cannot open `/dev/kvm` (no hardware virtualization exposed to the host). */
+  KVM_UNAVAILABLE: 'E_KVM_UNAVAILABLE',
+  /** A runtime is registered under the expected name but with another gVisor platform / network mode. */
+  RUNTIME_MISCONFIGURED: 'E_RUNTIME_MISCONFIGURED',
 } as const;
 
 export type IsolationReasonCode = (typeof IsolationReasonCode)[keyof typeof IsolationReasonCode];
@@ -116,6 +153,70 @@ export function isSandboxedIsolationEnabled(env: NodeJS.ProcessEnv = process.env
   return (readEnv(env, 'AGENT_ISOLATION_SANDBOX_ENABLED') ?? 'true').toLowerCase() !== 'false';
 }
 
+/** Docker runtime name of the sandboxed-kvm level (`AGENT_SANDBOX_KVM_RUNTIME`, default `runsc-kvm`). */
+export function resolveSandboxedKvmIsolationRuntime(env: NodeJS.ProcessEnv = process.env): string {
+  const configured = readEnv(env, 'AGENT_SANDBOX_KVM_RUNTIME');
+
+  return configured && /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$/.test(configured)
+    ? configured
+    : SANDBOXED_KVM_ISOLATION_RUNTIME_DEFAULT;
+}
+
+/**
+ * Docker runtime name of the sandboxed-kvm level for workers sharing their egress guard's network
+ * namespace (`AGENT_SANDBOX_KVM_SHARED_NETNS_RUNTIME`, default `runsc-kvm-hostnet`).
+ */
+export function resolveSandboxedKvmSharedNetnsIsolationRuntime(env: NodeJS.ProcessEnv = process.env): string {
+  const configured = readEnv(env, 'AGENT_SANDBOX_KVM_SHARED_NETNS_RUNTIME');
+
+  return configured && /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$/.test(configured)
+    ? configured
+    : SANDBOXED_KVM_SHARED_NETNS_ISOLATION_RUNTIME_DEFAULT;
+}
+
+/** Administrative switch (`AGENT_ISOLATION_SANDBOX_KVM_ENABLED=false` disables the sandboxed-kvm level). */
+export function isSandboxedKvmIsolationEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+  return (readEnv(env, 'AGENT_ISOLATION_SANDBOX_KVM_ENABLED') ?? 'true').toLowerCase() !== 'false';
+}
+
+/** Docker runtimes backing a gVisor isolation level on this manager (Netstack + kernel network stack variant). */
+export interface GvisorLevelRuntimes {
+  platform: GvisorPlatform;
+  runtime: string;
+  sharedNetnsRuntime: string;
+}
+
+/** Runtimes of a gVisor isolation level, resolved from the environment. */
+export function resolveGvisorLevelRuntimes(
+  level: GvisorIsolationLevel,
+  env: NodeJS.ProcessEnv = process.env,
+): GvisorLevelRuntimes {
+  return level === 'sandboxed-kvm'
+    ? {
+        platform: GVISOR_ISOLATION_LEVEL_PLATFORM[level],
+        runtime: resolveSandboxedKvmIsolationRuntime(env),
+        sharedNetnsRuntime: resolveSandboxedKvmSharedNetnsIsolationRuntime(env),
+      }
+    : {
+        platform: GVISOR_ISOLATION_LEVEL_PLATFORM[level],
+        runtime: resolveSandboxedIsolationRuntime(env),
+        sharedNetnsRuntime: resolveSandboxedSharedNetnsIsolationRuntime(env),
+      };
+}
+
+/** Administrative switch of a gVisor isolation level. */
+export function isGvisorIsolationLevelEnabled(
+  level: GvisorIsolationLevel,
+  env: NodeJS.ProcessEnv = process.env,
+): boolean {
+  return level === 'sandboxed-kvm' ? isSandboxedKvmIsolationEnabled(env) : isSandboxedIsolationEnabled(env);
+}
+
+/** Environment variable of a gVisor level's administrative switch (for operator-facing reasons). */
+export function gvisorIsolationLevelSwitch(level: GvisorIsolationLevel): string {
+  return level === 'sandboxed-kvm' ? 'AGENT_ISOLATION_SANDBOX_KVM_ENABLED' : 'AGENT_ISOLATION_SANDBOX_ENABLED';
+}
+
 /** Background re-probe switch (`AGENT_ISOLATION_PROBE_ENABLED=false` probes only on demand / startup). */
 export function isIsolationProbeSchedulerEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
   return (readEnv(env, 'AGENT_ISOLATION_PROBE_ENABLED') ?? 'true').toLowerCase() !== 'false';
@@ -131,7 +232,7 @@ export function resolveIsolationProbeTimeoutMs(env: NodeJS.ProcessEnv = process.
   return readPositiveInt(env, 'AGENT_ISOLATION_PROBE_TIMEOUT_MS', DEFAULT_PROBE_TIMEOUT_MS, 5_000);
 }
 
-/** Consecutive sandboxed runtime failures that trigger a re-probe (`AGENT_ISOLATION_FAILURE_THRESHOLD`, default 3). */
+/** Consecutive runtime failures of a gVisor level that trigger a re-probe (`AGENT_ISOLATION_FAILURE_THRESHOLD`, default 3). */
 export function resolveIsolationFailureThreshold(env: NodeJS.ProcessEnv = process.env): number {
   return readPositiveInt(env, 'AGENT_ISOLATION_FAILURE_THRESHOLD', DEFAULT_FAILURE_THRESHOLD);
 }

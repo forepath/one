@@ -243,6 +243,69 @@ describe('ClientAgentProxyService', () => {
       await expect(service.getClientAgents('client-uuid', 10, 0)).rejects.toThrow('Invalid request');
     });
 
+    it('should pass gVisor runtime failures through with their machine-readable code', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({
+        data: {
+          statusCode: 400,
+          error: 'Bad Request',
+          message: 'The sandboxed-kvm (gVisor on KVM) container could not be started: boom',
+          code: 'E_ISOLATION_RUNTIME_FAILED',
+          isolationLevel: 'sandboxed-kvm',
+          extra: 'not forwarded',
+        },
+        status: 400,
+        statusText: 'Bad Request',
+        headers: {},
+        config: {} as any,
+      });
+
+      const error = (await service
+        .getClientAgents('client-uuid', 10, 0)
+        .catch((e: unknown) => e)) as BadRequestException;
+
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(error.message).toBe('The sandboxed-kvm (gVisor on KVM) container could not be started: boom');
+      expect(error.getResponse()).toEqual({
+        statusCode: 400,
+        error: 'Bad Request',
+        message: 'The sandboxed-kvm (gVisor on KVM) container could not be started: boom',
+        code: 'E_ISOLATION_RUNTIME_FAILED',
+        isolationLevel: 'sandboxed-kvm',
+      });
+    });
+
+    it('should not forward unknown codes or levels of other 400 errors', async () => {
+      clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
+      mockedAxios.request.mockResolvedValue({
+        data: { message: 'Invalid request', code: 'E_SOMETHING_ELSE' },
+        status: 400,
+        statusText: 'Bad Request',
+        headers: {},
+        config: {} as any,
+      });
+
+      const error = (await service
+        .getClientAgents('client-uuid', 10, 0)
+        .catch((e: unknown) => e)) as BadRequestException;
+
+      expect(error.getResponse()).toEqual(expect.not.objectContaining({ code: expect.anything() }));
+
+      mockedAxios.request.mockResolvedValue({
+        data: { message: 'x', code: 'E_ISOLATION_RUNTIME_FAILED', isolationLevel: '<script>' },
+        status: 400,
+        statusText: 'Bad Request',
+        headers: {},
+        config: {} as any,
+      });
+
+      const unknownLevel = (await service
+        .getClientAgents('client-uuid', 10, 0)
+        .catch((e: unknown) => e)) as BadRequestException;
+
+      expect(unknownLevel.getResponse()).toEqual(expect.not.objectContaining({ isolationLevel: expect.anything() }));
+    });
+
     it('should map 409 conflicts (e.g. stale isolation selections)', async () => {
       clientsRepository.findByIdOrThrow.mockResolvedValue(mockClientEntity);
       mockedAxios.request.mockResolvedValue({

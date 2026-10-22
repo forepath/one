@@ -10,6 +10,7 @@ function capabilities(
   standard = 'ready',
   sandboxed = 'ready',
   revision = 'sha256:current',
+  sandboxedKvm = 'unsupported',
 ): HostIsolationCapabilitiesDto {
   return {
     revision,
@@ -18,6 +19,7 @@ function capabilities(
     levels: {
       standard: { rank: 1, runtime: 'runc', state: standard as 'ready' },
       sandboxed: { rank: 2, runtime: 'runsc-systrap', state: sandboxed as 'ready' },
+      'sandboxed-kvm': { rank: 3, runtime: 'runsc-kvm', state: sandboxedKvm as 'ready' },
     },
     recommendedLevel: null,
     availableLevels: [],
@@ -185,6 +187,93 @@ describe('AgentsService container isolation', () => {
     expect(docker.createContainer).toHaveBeenCalledTimes(1);
     expect(isolation.recordRuntimeFailure).toHaveBeenCalledWith('sandboxed');
     expect(repository.create).not.toHaveBeenCalled();
+  });
+
+  it('reports a failed sandboxed container with a machine-readable code (message unchanged)', async () => {
+    docker.createContainer.mockRejectedValue(new Error('runsc: unsupported syscall'));
+
+    const error = (await service.create(dto()).catch((e: unknown) => e)) as BadRequestException;
+
+    expect(error).toBeInstanceOf(BadRequestException);
+    expect(error.getResponse()).toEqual({
+      statusCode: 400,
+      error: 'Bad Request',
+      code: 'E_ISOLATION_RUNTIME_FAILED',
+      isolationLevel: 'sandboxed',
+      message:
+        'The sandboxed (gVisor) container could not be started: runsc: unsupported syscall. ' +
+        'The environment was not created; retry or explicitly choose the standard isolation level.',
+    });
+  });
+
+  describe('sandboxed-kvm', () => {
+    beforeEach(() => {
+      isolation.getCapabilitiesForCreation.mockResolvedValue(capabilities('ready', 'ready', 'sha256:current', 'ready'));
+    });
+
+    it('defaults to sandboxed-kvm when it is the strongest ready level', async () => {
+      const created = await service.create(dto());
+
+      expect(docker.createContainer).toHaveBeenCalledWith(expect.objectContaining({ runtime: 'runsc-kvm' }));
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isolationLevel: 'sandboxed-kvm',
+          isolationSelection: expect.objectContaining({
+            automaticSelection: 'sandboxed-kvm',
+            effectiveSelection: 'sandboxed-kvm',
+            selectionSource: 'automatic',
+          }),
+        }),
+      );
+      expect(created.isolation).toEqual(
+        expect.objectContaining({
+          level: 'sandboxed-kvm',
+          runtime: process.env.AGENT_DOCKER_NETWORK?.trim() ? 'runsc-kvm-hostnet' : 'runsc-kvm',
+        }),
+      );
+      expect(isolation.recordRuntimeSuccess).toHaveBeenCalledWith('sandboxed-kvm');
+    });
+
+    it('records an explicit sandboxed selection as an override of sandboxed-kvm', async () => {
+      await service.create(dto({ isolationLevel: 'sandboxed' }));
+
+      expect(docker.createContainer).toHaveBeenCalledWith(expect.objectContaining({ runtime: 'runsc-systrap' }));
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isolationLevel: 'sandboxed',
+          isolationSelection: expect.objectContaining({
+            selectionSource: 'user-override',
+            automaticSelection: 'sandboxed-kvm',
+          }),
+        }),
+      );
+    });
+
+    it('rejects sandboxed-kvm when it is not ready instead of downgrading', async () => {
+      isolation.getCapabilitiesForCreation.mockResolvedValue(
+        capabilities('ready', 'ready', 'sha256:current', 'unsupported'),
+      );
+
+      await expect(service.create(dto({ isolationLevel: 'sandboxed-kvm' }))).rejects.toBeInstanceOf(ConflictException);
+      expect(docker.createContainer).not.toHaveBeenCalled();
+    });
+
+    it('never retries a failed sandboxed-kvm container on another runtime', async () => {
+      docker.createContainer.mockRejectedValue(
+        new Error('opening device file for platform "kvm": error opening KVM device file (/dev/kvm)'),
+      );
+
+      const error = (await service.create(dto()).catch((e: unknown) => e)) as BadRequestException;
+
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(error.message).toMatch(/^The sandboxed-kvm \(gVisor on KVM\) container could not be started: /);
+      expect(error.getResponse()).toEqual(
+        expect.objectContaining({ code: 'E_ISOLATION_RUNTIME_FAILED', isolationLevel: 'sandboxed-kvm' }),
+      );
+      expect(docker.createContainer).toHaveBeenCalledTimes(1);
+      expect(isolation.recordRuntimeFailure).toHaveBeenCalledWith('sandboxed-kvm');
+      expect(repository.create).not.toHaveBeenCalled();
+    });
   });
 
   it('names the worker after the pre-assigned agent id', async () => {

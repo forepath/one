@@ -50,7 +50,7 @@ This document provides a detailed breakdown of all system components, their resp
 - `DockerService` - Container management and log streaming
 - `AgentProviderFactory` - Plugin-based agent provider system
 - `AgentEgressService`, `AgentEgressEventsCollectorService` and `AgentsEgressController` for the per-agent egress guard sidecar (`/api/agents/:id/egress`, `/api/egress/events`)
-- `IsolationCapabilitiesService` and `IsolationController` - Container isolation probes (`runc` / gVisor `runsc-systrap`) and capability record (`/api/isolation`, `/api/isolation/probe`)
+- `IsolationCapabilitiesService` and `IsolationController` - Container isolation probes (`runc` / gVisor `runsc-systrap` / gVisor on KVM `runsc-kvm`, each gVisor level probed independently) and capability record (`/api/isolation`, `/api/isolation/probe`)
 
 **Dependencies**:
 
@@ -113,7 +113,7 @@ This document provides a detailed breakdown of all system components, their resp
 - Ticket, comment, activity, automation, and body-generation entities
 - Statistics shadow and event entities (`statistics_*` tables)
 - Egress event entities (`statistics_egress_events`, ingest cursors)
-- `ClientIsolationSnapshotEntity` - Last observed container isolation capabilities per workspace host
+- `ClientIsolationSnapshotEntity` - Last observed container isolation capabilities per workspace host (including `sandboxed_kvm_state`)
 - `ClientsRepository` - Data access layer
 - `ClientUsersRepository` - Client-user relationship data access
 - `ClientsService` - Business logic with permission checks

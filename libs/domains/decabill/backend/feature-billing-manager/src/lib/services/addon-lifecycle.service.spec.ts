@@ -205,6 +205,19 @@ describe('AddonLifecycleService', () => {
     expect(service.appendScriptsToUserData('#!/bin/bash\necho base', [])).toBe('#!/bin/bash\necho base');
   });
 
+  it('appends addon scripts to base64-encoded stack user data without corrupting it', () => {
+    for (const base of ['#!/bin/bash\necho base', '#!/bin/bash\necho base!']) {
+      // Covers padded and unpadded base64.
+      const encoded = Buffer.from(base).toString('base64');
+      const result = service.appendScriptsToUserData(encoded, ['echo addon']);
+      const decoded = Buffer.from(result, 'base64').toString('utf-8');
+
+      expect(decoded.startsWith(base)).toBe(true);
+      expect(decoded).toContain('# --- Decabill addon script 1 ---\necho addon');
+      expect(Buffer.from(decoded).toString('base64')).toBe(result);
+    }
+  });
+
   it('skips activation when addon relation is missing', async () => {
     subscriptionAddonsRepository.findBySubscriptionId.mockResolvedValue([{ id: 'sa-1', status: 'pending' }]);
 

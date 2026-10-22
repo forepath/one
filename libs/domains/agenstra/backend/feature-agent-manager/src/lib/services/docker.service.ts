@@ -31,9 +31,8 @@ import {
   ISOLATION_PROBE_LABEL,
   ISOLATION_PROBE_NAME_PREFIX,
   IsolationReasonCode,
-  resolveSandboxedIsolationRuntime,
-  resolveSandboxedSharedNetnsIsolationRuntime,
 } from '../constants/container-isolation.constants';
+import { mapGvisorRuntimeForNetwork } from '../utils/container-isolation.utils';
 import { DockerPullProgressAggregator, type DockerPullProgressEvent } from '../utils/docker-pull-progress.utils';
 
 const execAsync = promisify(exec);
@@ -47,6 +46,12 @@ export interface DockerHostInfo {
   defaultRuntime: string | null;
   /** Registered runtimes (name -> binary path / runtime type). */
   runtimes: Record<string, string | null>;
+  /**
+   * Arguments of registered runtimes as reported by Docker (name -> `runtimeArgs`, e.g.
+   * `['--platform=kvm', '--network=host']`); `null` when Docker reports none. Runtimes registered as a
+   * containerd shim (`runtimeType`, no `path`) are omitted: their options live in the shim configuration.
+   */
+  runtimeArgs: Record<string, string[] | null>;
 }
 
 export interface IsolationProbeOptions {
@@ -73,6 +78,8 @@ export class DockerService {
   private static readonly WORKSPACE_CONTEXT_BIND_SOURCE = '/opt/agents';
   private static readonly WORKSPACE_CONTEXT_BIND_TARGET = '/opt/workspace';
   private static readonly ENVIRONMENT_OVERLAY_CACHE_TTL_MS = 15_000;
+  /** runsc error when the KVM platform cannot open its device (see {@link probeFailure}). */
+  private static readonly KVM_DEVICE_ERROR_PATTERN = /error opening KVM device file|\/dev\/kvm/i;
   private readonly environmentOverlayCache = new Map<
     string,
     { env: Record<string, string> | null; expiresAt: number }
@@ -587,18 +594,11 @@ export class DockerService {
   }
 
   /**
-   * Map a sandbox runtime to the variant required by the container's network (see
-   * {@link needsKernelNetworkStack}). Other runtimes are returned unchanged.
+   * Map a gVisor runtime (of any gVisor isolation level) to the variant required by the container's
+   * network (see {@link needsKernelNetworkStack}). Other runtimes are returned unchanged.
    */
   private mapSandboxRuntimeForNetwork(runtime: string, sharesNetworkNamespace: boolean): string {
-    const netstack = resolveSandboxedIsolationRuntime();
-    const sharedNetns = resolveSandboxedSharedNetnsIsolationRuntime();
-
-    if (runtime !== netstack && runtime !== sharedNetns) {
-      return runtime;
-    }
-
-    return sharesNetworkNamespace ? sharedNetns : netstack;
+    return mapGvisorRuntimeForNetwork(runtime, sharesNetworkNamespace);
   }
 
   private hasRuntimeMismatch(inspectInfo: Docker.ContainerInspectInfo, expected?: string): boolean {
@@ -2880,12 +2880,21 @@ export class DockerService {
       ServerVersion?: string;
       KernelVersion?: string;
       DefaultRuntime?: string;
-      Runtimes?: Record<string, { path?: string; runtimeType?: string } | null>;
+      Runtimes?: Record<string, { path?: string; runtimeType?: string; runtimeArgs?: unknown } | null>;
     };
     const runtimes: Record<string, string | null> = {};
+    const runtimeArgs: Record<string, string[] | null> = {};
 
     for (const [name, definition] of Object.entries(info.Runtimes ?? {})) {
       runtimes[name] = definition?.path ?? definition?.runtimeType ?? null;
+
+      if (!definition?.path && definition?.runtimeType) {
+        continue;
+      }
+
+      runtimeArgs[name] = Array.isArray(definition?.runtimeArgs)
+        ? definition.runtimeArgs.filter((arg): arg is string => typeof arg === 'string')
+        : null;
     }
 
     return {
@@ -2893,6 +2902,7 @@ export class DockerService {
       kernelVersion: info.KernelVersion ?? null,
       defaultRuntime: info.DefaultRuntime ?? null,
       runtimes,
+      runtimeArgs,
     };
   }
 
@@ -3256,6 +3266,16 @@ export class DockerService {
     const message = (error as { message?: string })?.message;
 
     this.logger.warn(`${reason}: ${message ?? 'unknown error'}`);
+
+    // gVisor's KVM platform fails at sandbox creation when /dev/kvm cannot be opened; report that
+    // distinctly (host without hardware virtualization) instead of a generic start failure.
+    if (message && DockerService.KVM_DEVICE_ERROR_PATTERN.test(message)) {
+      return {
+        ok: false,
+        reasonCode: IsolationReasonCode.KVM_UNAVAILABLE,
+        reason: 'The KVM device (/dev/kvm) is not available on this host',
+      };
+    }
 
     return { ok: false, reasonCode, reason };
   }

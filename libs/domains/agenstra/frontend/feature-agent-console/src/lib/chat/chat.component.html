@@ -465,8 +465,11 @@
                             <span class="me-2">
                               <i
                                 class="bi me-1"
+                                [class.bi-shield-fill-check]="agentIsolationLevel === 'sandboxed-kvm'"
                                 [class.bi-shield-lock]="agentIsolationLevel === 'sandboxed'"
-                                [class.bi-shield]="agentIsolationLevel !== 'sandboxed'"
+                                [class.bi-shield]="
+                                  agentIsolationLevel !== 'sandboxed' && agentIsolationLevel !== 'sandboxed-kvm'
+                                "
                                 aria-hidden="true"
                               ></i
                               >{{ isolationLevelLabel(agentIsolationLevel) }}
@@ -2146,15 +2149,13 @@
     <span i18n="@@featureChat-cannotUndo">This action cannot be undone.</span>
   </p>
 </fpc-confirm-dialog>
-<!-- Standard Docker downgrade confirmation (stacked over the Add Environment modal) -->
+<!-- Isolation downgrade confirmation (weaker level than recommended; stacked over the Add Environment modal) -->
+@let isolationDowngradeTexts = isolationDowngradeDialog();
 <fpc-confirm-dialog
   [(open)]="confirmStandardIsolationOpen"
-  i18n-title="@@featureChat-isolationConfirmStandardTitle"
-  title="Use Standard Docker?"
-  i18n-message="@@featureChat-isolationConfirmStandardMessage"
-  message="Standard Docker has lower isolation than the recommended gVisor sandbox. The container will interact with the workspace host's Linux kernel through Docker's normal namespace, capability and seccomp controls."
-  i18n-confirmLabel="@@featureChat-isolationConfirmStandardConfirm"
-  confirmLabel="Use Standard Docker"
+  [title]="isolationDowngradeTexts.title"
+  [message]="isolationDowngradeTexts.message"
+  [confirmLabel]="isolationDowngradeTexts.confirmLabel"
   [warning]="true"
   (confirmed)="onConfirmStandardIsolation()"
   (cancelled)="onCancelStandardIsolation()"
@@ -2694,48 +2695,34 @@
       i18n-label="@@featureChat-isolationLabel"
       label="Container isolation"
     >
-      <fpc-form-check
-        [type]="'radio'"
-        name="agentIsolationLevel"
-        checkId="agentIsolationSandboxed"
-        value="sandboxed"
-        [checked]="addAgentIsolationLevel() === 'sandboxed'"
-        (valueSelect)="onAddAgentIsolationLevelSelect($event)"
-        [disabled]="(agentsCreating$ | async) === true || !!addAgentSandboxedUnavailableReason()"
-        [label]="isolationLevelLabel('sandboxed')"
-        class="px-3 py-2 border rounded"
-      >
-        @if (addAgentRecommendedIsolationLevel() === 'sandboxed') {
-          <fpc-badge class="ms-2" color="success" [pill]="true" i18n="@@featureChat-isolationRecommended"
-            >Recommended</fpc-badge
-          >
-        }
-        <div class="form-text mt-0" i18n="@@featureChat-isolationSandboxedDescription">
-          Runs through gVisor's userspace application kernel.
-        </div>
-        @if (addAgentSandboxedUnavailableReason(); as sandboxedReason) {
-          <div class="form-text text-warning mt-0">
-            <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i
-            ><span i18n="@@featureChat-isolationSandboxedUnavailable">Not available on this workspace:</span>
-            {{ sandboxedReason }}
-          </div>
-        }
-      </fpc-form-check>
-      <fpc-form-check
-        [type]="'radio'"
-        name="agentIsolationLevel"
-        checkId="agentIsolationStandard"
-        value="standard"
-        [checked]="addAgentIsolationLevel() === 'standard'"
-        (valueSelect)="onAddAgentIsolationLevelSelect($event)"
-        [disabled]="(agentsCreating$ | async) === true"
-        [label]="isolationLevelLabel('standard')"
-        class="px-3 py-2 border rounded"
-      >
-        <div class="form-text mt-0" i18n="@@featureChat-isolationStandardDescription">
-          Maximum compatibility; shares the workspace host's Linux kernel.
-        </div>
-      </fpc-form-check>
+      @for (level of addAgentIsolationLevels(); track level) {
+        @let levelUnavailableReason = level === 'standard' ? null : addAgentIsolationUnavailableReasons()[level];
+        <fpc-form-check
+          [type]="'radio'"
+          name="agentIsolationLevel"
+          [checkId]="isolationLevelCheckId(level)"
+          [value]="level"
+          [checked]="addAgentIsolationLevel() === level"
+          (valueSelect)="onAddAgentIsolationLevelSelect($event)"
+          [disabled]="(agentsCreating$ | async) === true || !!levelUnavailableReason"
+          [label]="isolationLevelLabel(level)"
+          class="px-3 py-2 border rounded"
+        >
+          @if (level !== 'standard' && addAgentRecommendedIsolationLevel() === level) {
+            <fpc-badge class="ms-2" color="success" [pill]="true" i18n="@@featureChat-isolationRecommended"
+              >Recommended</fpc-badge
+            >
+          }
+          <div class="form-text mt-0">{{ isolationLevelDescription(level) }}</div>
+          @if (levelUnavailableReason) {
+            <div class="form-text text-warning mt-0">
+              <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i
+              ><span i18n="@@featureChat-isolationSandboxedUnavailable">Not available on this workspace:</span>
+              {{ levelUnavailableReason }}
+            </div>
+          }
+        </fpc-form-check>
+      }
     </fpc-form-check-group>
     @switch (addAgentIsolationSubmission().blockedReason) {
       @case ('review-required') {
@@ -2996,20 +2983,22 @@
           <ul class="list-unstyled small mb-0">
             @for (level of isolationLevels; track level) {
               @let levelCapability = editingIsolation.levels[level];
-              <li class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                <strong>{{ isolationLevelLabel(level) }}</strong>
-                <fpc-badge [color]="levelCapability.state === 'ready' ? 'success' : 'warning'" [pill]="true">{{
-                  isolationRuntimeStateLabel(levelCapability.state)
-                }}</fpc-badge>
-                @if (editingIsolation.recommendedLevel === level) {
-                  <fpc-badge color="info" [pill]="true" i18n="@@featureChat-isolationRecommended"
-                    >Recommended</fpc-badge
-                  >
-                }
-                @if (levelCapability.state !== 'ready' && levelCapability.reason) {
-                  <span class="text-body-secondary w-100">{{ levelCapability.reason }}</span>
-                }
-              </li>
+              @if (levelCapability) {
+                <li class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                  <strong>{{ isolationLevelLabel(level) }}</strong>
+                  <fpc-badge [color]="levelCapability.state === 'ready' ? 'success' : 'warning'" [pill]="true">{{
+                    isolationRuntimeStateLabel(levelCapability.state)
+                  }}</fpc-badge>
+                  @if (editingIsolation.recommendedLevel === level) {
+                    <fpc-badge color="info" [pill]="true" i18n="@@featureChat-isolationRecommended"
+                      >Recommended</fpc-badge
+                    >
+                  }
+                  @if (levelCapability.state !== 'ready' && levelCapability.reason) {
+                    <span class="text-body-secondary w-100">{{ levelCapability.reason }}</span>
+                  }
+                </li>
+              }
             }
           </ul>
           @if (editingIsolation.probing) {

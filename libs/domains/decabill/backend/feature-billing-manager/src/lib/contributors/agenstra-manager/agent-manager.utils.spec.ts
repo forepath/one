@@ -1,3 +1,9 @@
+import { spawnSync } from 'child_process';
+
+import { buildGvisorHostScript } from '@forepath/shared/backend/util-container-runtime';
+
+import { quoteYamlScalar } from '../../utils/cloud-init/env.utils';
+
 import {
   buildAgentManagerCloudInitConfigFromRequest,
   buildAgentManagerCloudInitUserData,
@@ -352,9 +358,21 @@ describe('agent-manager.utils', () => {
 
       expect(script).toContain('AGENT_DOCKER_NETWORK: agent-manager-network');
       expect(script).toMatch(/AGENT_CONTEXT_MCP_MANAGER_URL: '?http:\/\/agent-manager-api:3010\/api'?/);
-      expect(script).toContain(`AGENT_CONTEXT_TOKEN_SECRET: ${config.backend.encryption.contextTokenSecret}`);
+      // The random secret is quoted when it starts with a YAML-significant character (e.g. `-`, `_`).
+      expect(script).toContain(
+        `AGENT_CONTEXT_TOKEN_SECRET: ${quoteYamlScalar(config.backend.encryption.contextTokenSecret as string)}`,
+      );
       // The compose network the workers join is the named bridge the manager itself is attached to.
       expect(script).toContain('name: agent-manager-network');
+    });
+
+    it('quotes a context token secret that starts with a YAML-significant character', () => {
+      const config = buildAgentManagerCloudInitConfigFromRequest({ authenticationMethod: 'api-key' }, 'ctx-host');
+
+      config.backend.encryption.contextTokenSecret = '-starts_with_dash';
+      const script = Buffer.from(buildAgentManagerCloudInitUserData(config), 'base64').toString('utf-8');
+
+      expect(script).toContain("AGENT_CONTEXT_TOKEN_SECRET: '-starts_with_dash'");
     });
 
     it('omits the dedicated context token secret when not configured (manager falls back to ENCRYPTION_KEY)', () => {
@@ -438,6 +456,43 @@ describe('agent-manager.utils', () => {
       expect(cmd).toContain('cd /opt/agent-manager');
       expect(cmd).toContain('docker compose up -d --pull=always');
       expect(cmd).toContain('ERROR: Update failed');
+    });
+
+    it('refreshes the container isolation runtimes with the current host script before pulling', () => {
+      const cmd = buildAgentManagerUpdateCommand();
+      const encoded = /printf '%s' '([A-Za-z0-9+/=]+)' \| base64 -d/.exec(cmd)?.[1] ?? '';
+
+      expect(Buffer.from(encoded, 'base64').toString('utf-8')).toBe(buildGvisorHostScript());
+      expect(cmd).toContain('/opt/agent-manager/agenstra-gvisor.sh install --json');
+      expect(cmd.indexOf('agenstra-gvisor.sh install')).toBeLessThan(cmd.indexOf('docker compose up -d --pull=always'));
+      // Never fails the update: the previous runtimes stay and the manager probes what it can run.
+      expect(cmd).toContain('WARNING: Container isolation refresh failed; keeping the previous runtimes');
+    });
+
+    it('fails when docker compose fails (the exit status is not masked by tee)', () => {
+      // Stub cd / docker / tee so the command runs in a sandbox: compose fails with exit code 3.
+      const harness = `cd() { command cd /tmp; }; tee() { cat; }; docker() { [ "$1" = compose ] && { echo compose-failed; return 3; }; return 0; }; ${buildAgentManagerUpdateCommand()}`;
+
+      for (const shell of ['bash', 'sh']) {
+        const result = spawnSync(shell, ['-c', harness], { encoding: 'utf-8' });
+
+        expect(result.status).toBe(1);
+        expect(result.stdout).toContain('ERROR: Update failed');
+        expect(result.stdout).not.toContain('Update completed');
+      }
+    });
+
+    it('is valid bash', () => {
+      expect(spawnSync('bash', ['-n'], { input: buildAgentManagerUpdateCommand(), encoding: 'utf-8' }).status).toBe(0);
+    });
+  });
+
+  describe('user data size', () => {
+    it('keeps the agent manager user data within the Hetzner Cloud limit with room to spare (submitted as plain text)', () => {
+      const config = buildAgentManagerCloudInitConfigFromRequest({ authenticationMethod: 'api-key' }, 'size-host');
+      const script = Buffer.from(buildAgentManagerCloudInitUserData(config), 'base64').toString('utf-8');
+
+      expect(Buffer.byteLength(script, 'utf-8')).toBeLessThan(32 * 1024 - 4 * 1024);
     });
   });
 });

@@ -142,7 +142,7 @@ Integrated service ids are `agenstra-controller` and `agenstra-manager` (option 
 
 ### Automated image updates
 
-The **subscription-item-update** background job SSHes to provisioned hosts and runs the stack module’s `buildUpdateCommand` (`docker compose up -d --pull=always` for first-party stacks). **Custom service items are skipped** because their runtime layout is defined per CloudInit template (single compose service, optional user-data-only mode) and is not compatible with the bundled stack update command. Operators must roll out template or image changes to custom instances manually (re-provision, SSH, or a future template-specific update path). Unknown or tab-only integrated modules are skipped.
+The **subscription-item-update** background job SSHes to provisioned hosts and runs the stack module’s `buildUpdateCommand` (`docker compose up -d --pull=always` for first-party stacks; agent manager hosts also refresh their container isolation runtimes first, see [Server Provisioning](./server-provisioning.md#subscription-item-update-scheduler)). **Custom service items are skipped** because their runtime layout is defined per CloudInit template (single compose service, optional user-data-only mode) and is not compatible with the bundled stack update command. Operators must roll out template or image changes to custom instances manually (re-provision, SSH, or a future template-specific update path). Unknown or tab-only integrated modules are skipped.
 
 `workDir` must match `/opt/<segment>` with alphanumeric path segments; values are validated on admin save and quoted in generated bootstrap scripts.
 

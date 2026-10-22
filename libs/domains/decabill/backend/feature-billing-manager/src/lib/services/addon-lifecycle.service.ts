@@ -20,6 +20,7 @@ import { getProvisioningCredentials } from '../utils/provider-env-defaults.utils
 import { AddonModuleRegistryService, type AddonLifecycleContext } from './addon-module-registry.service';
 import { ProvisioningDispatchService } from './provisioning-dispatch.service';
 import { SshExecutorService } from './ssh-executor.service';
+import { resolvePlainTextUserData } from '../utils/cloud-init/user-data.utils';
 
 const SSH_USER = 'root';
 const SSH_PORT = 22;
@@ -133,12 +134,22 @@ export class AddonLifecycleService {
       .map((addon) => addon.scriptTemplate!.trim());
   }
 
+  /**
+   * Appends addon scripts to the user data. Stacks build base64-encoded user data: it is decoded, extended
+   * and re-encoded (appending plain text to base64 would drop or corrupt the addon scripts). Plain user data
+   * is extended as is.
+   */
   appendScriptsToUserData(userData: string, scripts: string[]): string {
     if (scripts.length === 0) {
       return userData;
     }
 
     const blocks = scripts.map((script, index) => `\n\n# --- Decabill addon script ${index + 1} ---\n${script}`);
+    const plain = resolvePlainTextUserData(userData);
+
+    if (plain !== userData) {
+      return Buffer.from(`${plain}${blocks.join('')}`).toString('base64');
+    }
 
     return `${userData}${blocks.join('')}`;
   }

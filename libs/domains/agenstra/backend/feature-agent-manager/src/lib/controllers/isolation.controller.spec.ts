@@ -14,6 +14,7 @@ describe('IsolationController', () => {
     levels: {
       standard: { rank: 1, runtime: 'runc', state: 'ready' },
       sandboxed: { rank: 2, runtime: 'runsc-systrap', state: 'ready' },
+      'sandboxed-kvm': { rank: 3, runtime: 'runsc-kvm', state: 'unsupported', reasonCode: 'E_RUNTIME_NOT_REGISTERED' },
     },
     recommendedLevel: 'sandboxed',
     availableLevels: ['sandboxed', 'standard'],

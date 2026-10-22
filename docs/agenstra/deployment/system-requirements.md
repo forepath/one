@@ -61,19 +61,19 @@ Container images use **Node.js 24.14.1** on **debian:trixie-slim**. API images r
 
 Host path **`/opt/agents`** must exist and be writable by UID **10001** on manager hosts (or rely on entrypoint `chown` after bind mount).
 
-### Optional: gVisor (sandboxed isolation level)
+### Optional: gVisor (sandboxed and sandboxed-kvm isolation levels)
 
-Manager hosts can additionally offer the **sandboxed** [container isolation level](../features/container-isolation.md). It is optional; hosts without it run every environment on `runc` (standard).
+Manager hosts can additionally offer the **sandboxed** and **sandboxed-kvm** [container isolation levels](../features/container-isolation.md). Both are optional; hosts without them run every environment on `runc` (standard).
 
-| Requirement      | Value                                                                                                            |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------- |
-| **Kernel**       | Linux **5.6** or newer                                                                                           |
-| **Architecture** | x86_64 (amd64) or arm64                                                                                          |
-| **cgroups**      | cgroup v2 recommended                                                                                            |
-| **Docker**       | gVisor registered as an additional runtime (`runsc-systrap`, `--platform=systrap`); default runtime stays `runc` |
-| **KVM**          | Not required (`systrap` works on ordinary cloud VMs without nested virtualization)                               |
+| Requirement      | Value                                                                                                                                                                                                                                                              |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Kernel**       | Linux **5.6** or newer                                                                                                                                                                                                                                             |
+| **Architecture** | x86_64 (amd64) or arm64                                                                                                                                                                                                                                            |
+| **cgroups**      | cgroup v2 recommended                                                                                                                                                                                                                                              |
+| **Docker**       | gVisor registered as additional runtimes (`runsc-systrap`, `--platform=systrap`; for sandboxed-kvm also `runsc-kvm`, `--platform=kvm`); default runtime stays `runc`                                                                                               |
+| **KVM**          | Not required for **sandboxed** (`systrap` works on ordinary cloud VMs without nested virtualization). Required for **sandboxed-kvm**: hardware virtualization exposed to the host (`/dev/kvm`; Intel VT-x / AMD-V on bare metal, or nested virtualization in a VM) |
 
-Plan some extra CPU and memory headroom per sandboxed agent: gVisor adds memory for its Sentry and gofer processes and slows filesystem-metadata- and network-heavy work (for example `npm install`, large builds).
+Plan some extra CPU and memory headroom per sandboxed agent: gVisor adds memory for its Sentry and gofer processes and slows filesystem-metadata- and network-heavy work (for example `npm install`, large builds). The KVM platform is fastest on bare metal; under nested virtualization it can be slower than systrap for system-call- and network-heavy work.
 
 ## Controller Stack
 

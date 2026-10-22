@@ -1857,7 +1857,7 @@
         <source> The controller pulls filter hits and traffic decisions into the audit log and can send signed webhooks, so your security tooling sees what the agent did. </source>
         </trans-unit>
       <trans-unit id="featurePortalHowItWorks-isolationTitle" datatype="html">
-        <source> Two isolation levels, never a silent downgrade </source>
+        <source> Three isolation levels, never a silent downgrade </source>
         </trans-unit>
       <trans-unit id="featurePortalHowItWorks-isolationLead" datatype="html">
         <source> A regular container shares the host kernel with everything else on the machine. Agent code is code you have not reviewed yet, so Agenstra can put a second kernel in between: gVisor. </source>
@@ -1878,7 +1878,7 @@
         <source> Runs on ordinary cloud VMs </source>
         </trans-unit>
       <trans-unit id="featurePortalHowItWorks-isolationFact3Desc" datatype="html">
-        <source> gVisor runs on its systrap platform, so no KVM or nested virtualization is needed. Provisioned hosts get it installed and verified automatically. </source>
+        <source> gVisor&apos;s systrap platform needs no KVM or nested virtualization. Hosts with hardware virtualization additionally run gVisor on KVM. Provisioned hosts get both installed and verified automatically. </source>
         </trans-unit>
       <trans-unit id="featurePortalHowItWorks-isolationBadge" datatype="html">
         <source>Where a system call ends up</source>
@@ -1912,6 +1912,15 @@
         </trans-unit>
       <trans-unit id="featurePortalHowItWorks-sandboxedDesc" datatype="html">
         <source> Preselected wherever the host is ready. A kernel exploit has to break the Sentry first before it can reach the host. </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-sandboxedKvmTitle" datatype="html">
+        <source> Sandboxed + KVM </source>
+        </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-layerSentryKvmDesc" datatype="html">
+        <source>in a hardware-virtualized address space</source>
+        </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-sandboxedKvmDesc" datatype="html">
+        <source> Preselected where the host exposes KVM. System calls trap into the Sentry through the CPU&apos;s virtualization extensions instead of seccomp. </source>
         </trans-unit>
       <trans-unit id="featurePortalHowItWorks-egressTitle" datatype="html">
         <source> One guard per environment, and nothing gets around it </source>
@@ -2097,7 +2106,7 @@
         <source> gVisor is not a virtual machine </source>
         </trans-unit>
       <trans-unit id="featurePortalHowItWorks-limit1Desc" datatype="html">
-        <source> It shrinks the host kernel&apos;s attack surface considerably, but it is not a hardware boundary. It works together with unprivileged workloads, the egress guard and a hardened host. </source>
+        <source> It shrinks the host kernel&apos;s attack surface considerably, but it is not a full virtual machine. Where the host supports KVM, the Sentry is additionally isolated by hardware virtualization. It works together with unprivileged workloads, the egress guard and a hardened host. </source>
         </trans-unit>
       <trans-unit id="featurePortalHowItWorks-mitigationLabel" datatype="html">
         <source>Mitigated</source>
@@ -2190,7 +2199,7 @@
         <source>A technical look at Agenstra: control plane, agent managers, gVisor-sandboxed agent containers, per-environment egress guards, layered policy and audit trails.</source>
         </trans-unit>
       <trans-unit id="featurePortalHowItWorks-metaKeywords" datatype="html">
-        <source>Agenstra architecture, AI agent sandbox, gVisor coding agents, agent container isolation, egress filtering for AI agents, agent control plane, self-hosted coding agents</source>
+        <source>Agenstra architecture, AI agent sandbox, gVisor coding agents, gVisor KVM sandbox, agent container isolation, egress filtering for AI agents, agent control plane, self-hosted coding agents</source>
         </trans-unit>
       <trans-unit id="featurePortalDisclosure-title" datatype="html">
         <source>Legal Disclosure</source>

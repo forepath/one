@@ -11,7 +11,7 @@ export class IsolationController {
   constructor(private readonly isolationCapabilities: IsolationCapabilitiesService) {}
 
   /**
-   * Current isolation capability record (states of `standard` / `sandboxed`, revision, recommendation).
+   * Current isolation capability record (states of `standard` / `sandboxed` / `sandboxed-kvm`, revision, recommendation).
    */
   @Get()
   getCapabilities(): HostIsolationCapabilitiesDto {

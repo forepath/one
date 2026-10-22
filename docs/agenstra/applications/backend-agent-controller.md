@@ -59,7 +59,7 @@ See [Container Isolation Levels](../features/container-isolation.md).
 - `GET /api/clients/:id/isolation` - Isolation summary of the workspace host (`clients:read`, workspace access)
 - `POST /api/clients/:id/isolation/probe` - Re-probe the workspace host (`clients:write`, workspace management access)
 
-Capability transitions are stored in `client_isolation_snapshots` and published as `isolation.sandbox_available`, `isolation.sandbox_unavailable` and `isolation.baseline_failed`; environment creation publishes `agent.isolation_override` and `agent.sandbox_creation_failed` (see [Webhooks](../features/webhooks.md)). The `isolation-capabilities` coordinator job refreshes snapshots in the background.
+Capability transitions are stored in `client_isolation_snapshots` and published as `isolation.sandbox_available`, `isolation.sandbox_unavailable`, `isolation.sandbox_kvm_available`, `isolation.sandbox_kvm_unavailable` and `isolation.baseline_failed`; environment creation publishes `agent.isolation_override` and `agent.sandbox_creation_failed` (see [Webhooks](../features/webhooks.md)). The `isolation-capabilities` coordinator job refreshes snapshots in the background. Summaries always list `standard`, `sandboxed` and `sandboxed-kvm`; levels an older manager does not report are filled as `unsupported` (`E_MANAGER_UNSUPPORTED`).
 
 ### Client User Management (keycloak/users authentication only)
 
@@ -74,7 +74,7 @@ In api-key mode, users do not play a role; these endpoints are not applicable.
 - `GET /api/clients/:id/agents` - List all agents for a client
 - `GET /api/clients/:id/agents/progress` - Running environment create / update operations of the workspace (proxied)
 - `GET /api/clients/:id/agents/:agentId` - Get a single agent by UUID
-- `POST /api/clients/:id/agents` - Create a new agent for a client (returns auto-generated password, saves credentials). Optional `isolationLevel` / `capabilityRevision` are validated against the host's current capabilities (`400` invalid, `409` stale or unavailable, `503` host cannot run environments); the selection record is derived server-side
+- `POST /api/clients/:id/agents` - Create a new agent for a client (returns auto-generated password, saves credentials). Optional `isolationLevel` / `capabilityRevision` are validated against the host's current capabilities (`400` invalid, `409` stale or unavailable, `503` host cannot run environments); gVisor start failures are passed through as `400` with `code: E_ISOLATION_RUNTIME_FAILED` and `isolationLevel`; the selection record is derived server-side
 - `POST /api/clients/:id/agents/:agentId` - Update an existing agent
 - `DELETE /api/clients/:id/agents/:agentId` - Delete an agent (also deletes stored credentials)
 - `GET /api/clients/:id/agents/:agentId/models` - List models for an agent (proxied)
@@ -493,7 +493,7 @@ Before deploying to production, ensure:
 - **[Usage Statistics](../features/usage-statistics.md)** Controller usage metrics
 - **[Message Filters](../features/message-filters.md)** Layered chat message filters
 - **[Egress Filtering](../features/egress-filtering.md)** Per-environment web traffic filtering
-- **[Container Isolation Levels](../features/container-isolation.md)** Standard (`runc`) and gVisor-sandboxed environments
+- **[Container Isolation Levels](../features/container-isolation.md)** Standard (`runc`), gVisor-sandboxed and gVisor-on-KVM environments
 - **[Atlassian import](../features/atlassian-import.md)** Atlassian site connections and Jira/Confluence import configurations
 - **[Agent configuration](../features/agent-configuration.md)** Three-layer runtime overlays and worker sync
 - **[Dynamic provider plugins](../features/dynamic-provider-plugins.md)** Runtime provisioning and import provider extensions

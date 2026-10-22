@@ -4,19 +4,23 @@ import { BadRequestException, ConflictException, NotFoundException, ServiceUnava
 import type { ClientIsolationSnapshotEntity } from '../entities/client-isolation-snapshot.entity';
 import type { AgenstraNotificationPublisher } from '../notifications/agenstra-notification.publisher';
 
-import { ClientIsolationService, redactErrorMessage } from './client-isolation.service';
+import { ClientIsolationService, normalizeIsolationCapabilities, redactErrorMessage } from './client-isolation.service';
 
 function capabilities(
   standard = 'ready',
   sandboxed = 'ready',
   revision = 'sha256:current',
   probedAt: string | null = '2026-10-15T20:00:00.000Z',
+  sandboxedKvm = 'unsupported',
 ): HostIsolationCapabilitiesDto {
   const levels = {
     standard: { rank: 1, runtime: 'runc', state: standard as 'ready' },
     sandboxed: { rank: 2, runtime: 'runsc-systrap', state: sandboxed as 'ready' },
+    'sandboxed-kvm': { rank: 3, runtime: 'runsc-kvm', state: sandboxedKvm as 'ready' },
   };
-  const available = (['sandboxed', 'standard'] as const).filter((level) => levels[level].state === 'ready');
+  const available = (['sandboxed-kvm', 'sandboxed', 'standard'] as const).filter(
+    (level) => levels[level].state === 'ready',
+  );
 
   return {
     revision,
@@ -26,6 +30,14 @@ function capabilities(
     recommendedLevel: standard === 'ready' ? (available[0] ?? null) : null,
     availableLevels: standard === 'ready' ? [...available] : [],
   };
+}
+
+/** Capabilities of an agent manager that predates the sandboxed-kvm level (no such key). */
+function preKvmCapabilities(revision = 'sha256:current'): HostIsolationCapabilitiesDto {
+  const current = capabilities('ready', 'ready', revision);
+  const { 'sandboxed-kvm': _omitted, ...levels } = current.levels;
+
+  return { ...current, levels: levels as HostIsolationCapabilitiesDto['levels'] };
 }
 
 describe('ClientIsolationService', () => {
@@ -104,6 +116,52 @@ describe('ClientIsolationService', () => {
       expect(summary.recommendedLevel).toBe('standard');
       expect(summary.availableLevels).toEqual(['standard']);
       expect(summary.levels.sandboxed.state).toBe('unsupported');
+      expect(summary.levels['sandboxed-kvm']).toEqual(
+        expect.objectContaining({
+          rank: 3,
+          runtime: 'runsc-kvm',
+          state: 'unsupported',
+          reasonCode: 'E_MANAGER_UNSUPPORTED',
+        }),
+      );
+    });
+
+    it('fills levels unknown to older agent managers as unsupported', () => {
+      const summary = service.summarize(preKvmCapabilities());
+
+      expect(summary.supported).toBe(true);
+      expect(summary.recommendedLevel).toBe('sandboxed');
+      expect(summary.levels.sandboxed.state).toBe('ready');
+      expect(summary.levels['sandboxed-kvm']).toEqual({
+        rank: 3,
+        runtime: 'runsc-kvm',
+        state: 'unsupported',
+        reasonCode: 'E_MANAGER_UNSUPPORTED',
+        reason: 'The agent manager of this workspace does not support the sandboxed-kvm isolation level yet',
+      });
+    });
+
+    it('leaves complete capability records untouched', () => {
+      const complete = capabilities();
+
+      expect(normalizeIsolationCapabilities(complete)).toBe(complete);
+    });
+
+    it('reports a ready sandboxed-kvm level and recommends it', () => {
+      const summary = service.summarize(
+        capabilities('ready', 'ready', 'sha256:current', '2026-10-15T20:00:00.000Z', 'ready'),
+      );
+
+      expect(summary.recommendedLevel).toBe('sandboxed-kvm');
+      expect(summary.availableLevels).toEqual(['sandboxed-kvm', 'sandboxed', 'standard']);
+    });
+
+    it('normalizes stale snapshots recorded before the level existed', async () => {
+      snapshotRow = { clientId: 'client-1', revision: 'sha256:old', capabilities: preKvmCapabilities('sha256:old') };
+
+      const summary = await service.summaryForClient('client-1', undefined);
+
+      expect(summary?.levels['sandboxed-kvm'].reasonCode).toBe('E_MANAGER_UNSUPPORTED');
     });
 
     it('uses config capabilities for workspace responses and records them', async () => {
@@ -227,6 +285,35 @@ describe('ClientIsolationService', () => {
       await expect(service.planCreation('client-1', { isolationLevel: 'sandboxed' })).rejects.toBeInstanceOf(
         ConflictException,
       );
+      await expect(service.planCreation('client-1', { isolationLevel: 'sandboxed-kvm' })).rejects.toThrow(
+        "Isolation level 'sandboxed-kvm' is not available on this workspace",
+      );
+    });
+
+    it('recommends sandboxed-kvm when ready and records weaker choices as overrides', async () => {
+      const kvm = capabilities('ready', 'ready', 'sha256:current', '2026-10-15T20:00:00.000Z', 'ready');
+
+      proxy.getClientIsolation.mockResolvedValue(kvm);
+
+      expect((await service.planCreation('client-1', {})).resolution).toEqual({
+        level: 'sandboxed-kvm',
+        automaticSelection: 'sandboxed-kvm',
+        selectionSource: 'automatic',
+      });
+      expect(
+        (await service.planCreation('client-1', { isolationLevel: 'sandboxed' })).resolution?.selectionSource,
+      ).toBe('user-override');
+    });
+
+    it('rejects sandboxed-kvm on managers that predate the level', async () => {
+      proxy.getClientIsolation.mockResolvedValue(preKvmCapabilities());
+
+      await expect(service.planCreation('client-1', { isolationLevel: 'sandboxed-kvm' })).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+      await expect(service.planCreation('client-1', {})).resolves.toEqual(
+        expect.objectContaining({ resolution: expect.objectContaining({ level: 'sandboxed' }) }),
+      );
     });
   });
 
@@ -281,6 +368,45 @@ describe('ClientIsolationService', () => {
         expect.objectContaining({ agentName: 'env', isolationLevel: 'sandboxed', runtime: 'runsc-systrap' }),
       );
     });
+
+    it('publishes sandboxed-kvm runtime failures (message and machine-readable code)', async () => {
+      proxy.getClientIsolation.mockResolvedValue(
+        capabilities('ready', 'ready', 'sha256:current', '2026-10-15T20:00:00.000Z', 'ready'),
+      );
+      const plan = await service.planCreation('client-1', {});
+
+      service.notifyCreationFailed(
+        'client-1',
+        plan,
+        'env',
+        new Error('The sandboxed-kvm (gVisor on KVM) container could not be started: no /dev/kvm'),
+      );
+      expect(publisher.publishAgentSandboxCreationFailed).toHaveBeenLastCalledWith(
+        'client-1',
+        expect.objectContaining({ isolationLevel: 'sandboxed-kvm', runtime: 'runsc-kvm' }),
+      );
+
+      publisher.publishAgentSandboxCreationFailed.mockClear();
+      service.notifyCreationFailed(
+        'client-1',
+        plan,
+        'env',
+        new BadRequestException({ statusCode: 400, message: 'reworded failure', code: 'E_ISOLATION_RUNTIME_FAILED' }),
+      );
+      expect(publisher.publishAgentSandboxCreationFailed).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not publish runtime failures of standard environments', async () => {
+      const plan = await service.planCreation('client-1', { isolationLevel: 'standard' });
+
+      service.notifyCreationFailed(
+        'client-1',
+        plan,
+        'env',
+        new BadRequestException({ statusCode: 400, message: 'x', code: 'E_ISOLATION_RUNTIME_FAILED' }),
+      );
+      expect(publisher.publishAgentSandboxCreationFailed).not.toHaveBeenCalled();
+    });
   });
 
   describe('observe (transitions)', () => {
@@ -327,6 +453,62 @@ describe('ClientIsolationService', () => {
         clientId: 'client-1',
         revision: 'sha256:old',
       });
+    });
+
+    it('publishes sandboxed-kvm availability and loss with its own events', async () => {
+      snapshotRow = {
+        clientId: 'client-1',
+        revision: 'sha256:old',
+        standardState: 'ready',
+        sandboxedState: 'ready',
+        sandboxedKvmState: 'unsupported',
+      };
+
+      await service.observe(
+        'client-1',
+        capabilities('ready', 'ready', 'sha256:kvm', '2026-10-15T20:00:00.000Z', 'ready'),
+      );
+
+      expect(publisher.publishIsolationHostTransition).toHaveBeenCalledTimes(1);
+      expect(publisher.publishIsolationHostTransition).toHaveBeenCalledWith(
+        'isolation.sandbox_kvm_available',
+        'client-1',
+        expect.objectContaining({
+          level: 'sandboxed-kvm',
+          runtime: 'runsc-kvm',
+          state: 'ready',
+          previousState: 'unsupported',
+          recommendedLevel: 'sandboxed-kvm',
+        }),
+      );
+      expect(queryBuilder['set']).toHaveBeenCalledWith(expect.objectContaining({ sandboxedKvmState: 'ready' }));
+
+      publisher.publishIsolationHostTransition.mockClear();
+      snapshotRow = {
+        clientId: 'client-1',
+        revision: 'sha256:kvm',
+        standardState: 'ready',
+        sandboxedState: 'ready',
+        sandboxedKvmState: 'ready',
+      };
+
+      await service.observe(
+        'client-1',
+        capabilities('ready', 'ready', 'sha256:nokvm', '2026-10-15T20:00:00.000Z', 'probe-failed'),
+      );
+
+      expect(publisher.publishIsolationHostTransition.mock.calls.map((call) => call[0])).toEqual([
+        'isolation.sandbox_kvm_unavailable',
+      ]);
+    });
+
+    it('does not publish sandboxed-kvm events for snapshots of managers without the level', async () => {
+      snapshotRow = { clientId: 'client-1', revision: 'sha256:old', standardState: 'ready', sandboxedState: 'ready' };
+
+      await service.observe('client-1', preKvmCapabilities('sha256:new'));
+
+      expect(publisher.publishIsolationHostTransition).not.toHaveBeenCalled();
+      expect(queryBuilder['set']).toHaveBeenCalledWith(expect.objectContaining({ sandboxedKvmState: null }));
     });
 
     it('treats check-only placeholder rows as a first observation', async () => {

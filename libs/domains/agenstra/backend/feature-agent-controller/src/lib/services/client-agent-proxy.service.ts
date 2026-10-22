@@ -10,6 +10,8 @@ import {
   EnvironmentProgressDto,
   UpdateAgentDto,
   HostIsolationCapabilitiesDto,
+  ISOLATION_RUNTIME_FAILURE_CODE,
+  isIsolationLevel,
 } from '@forepath/agenstra/backend/feature-agent-manager';
 import { AuthenticationType, ClientAgentCredentialsService } from '@forepath/identity/backend';
 import {
@@ -156,7 +158,7 @@ export class ClientAgentProxyService {
         if (response.status === 404) {
           throw new NotFoundException(errorMessage);
         } else if (response.status === 400) {
-          throw new BadRequestException(errorMessage);
+          throw new BadRequestException(this.isolationRuntimeFailureBody(response.data, errorMessage) ?? errorMessage);
         } else if (response.status === 409) {
           // e.g. stale or unavailable container isolation level (agent manager re-validation)
           throw new ConflictException(errorMessage);
@@ -219,6 +221,29 @@ export class ClientAgentProxyService {
       { method: 'GET', url: '/isolation', timeout: 10_000 },
       'api',
     );
+  }
+
+  /**
+   * Body of a gVisor runtime failure of the agent manager (`code: E_ISOLATION_RUNTIME_FAILED`), passed
+   * through with its machine-readable fields; `null` for every other error (forwarded as message only).
+   */
+  private isolationRuntimeFailureBody(
+    data: unknown,
+    message: string,
+  ): { statusCode: number; error: string; message: string; code: string; isolationLevel?: string } | null {
+    if (!data || typeof data !== 'object' || (data as { code?: unknown }).code !== ISOLATION_RUNTIME_FAILURE_CODE) {
+      return null;
+    }
+
+    const isolationLevel = (data as { isolationLevel?: unknown }).isolationLevel;
+
+    return {
+      statusCode: 400,
+      error: 'Bad Request',
+      message,
+      code: ISOLATION_RUNTIME_FAILURE_CODE,
+      ...(isIsolationLevel(isolationLevel) ? { isolationLevel } : {}),
+    };
   }
 
   /**

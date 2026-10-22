@@ -153,11 +153,14 @@ import {
   getIsolationBadgeColor,
   getIsolationLevelUnavailableReason,
   getRecommendedIsolationLevel,
+  getSelectableIsolationLevels,
   getWorkspaceIsolationIndicatorLabel,
   INITIAL_ISOLATION_SELECTION,
   isIsolationDowngrade,
   ISOLATION_LEVELS_STRONGEST_FIRST,
   type IsolationSelectionState,
+  isolationDowngradeDialogTexts,
+  isolationLevelDescription,
   isolationLevelLabel,
   isolationRuntimeStateLabel,
   reconcileIsolationSelection,
@@ -317,6 +320,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
   private readonly handoffCardCache = new Map<string, AgentChatHandoffCardView | null>();
   readonly isolationLevels = ISOLATION_LEVELS_STRONGEST_FIRST;
   readonly isolationLevelLabel = isolationLevelLabel;
+  readonly isolationLevelDescription = isolationLevelDescription;
   readonly isolationRuntimeStateLabel = isolationRuntimeStateLabel;
   readonly isolationBadgeColor = getIsolationBadgeColor;
   readonly environmentIsolationLevel = getEnvironmentIsolationLevel;
@@ -1035,13 +1039,25 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
       isolation: this.activeClientSignal()?.isolation,
     });
   });
-  readonly addAgentSandboxedUnavailableReason = computed(() =>
-    getIsolationLevelUnavailableReason(this.activeClientSignal(), 'sandboxed'),
+  /** Levels offered in the Add Environment dialog (strongest first). */
+  readonly addAgentIsolationLevels = computed(() => getSelectableIsolationLevels(this.activeClientSignal()));
+  /** Why each level cannot be selected on the workspace host (`null` when it is available). */
+  readonly addAgentIsolationUnavailableReasons = computed(
+    () =>
+      Object.fromEntries(
+        ISOLATION_LEVELS_STRONGEST_FIRST.map((level) => [
+          level,
+          getIsolationLevelUnavailableReason(this.activeClientSignal(), level),
+        ]),
+      ) as Record<IsolationLevel, string | null>,
   );
+  /** Level whose downgrade confirmation is shown (texts depend on the chosen level). */
+  private readonly isolationDowngradeTarget = signal<IsolationLevel>('standard');
+  readonly isolationDowngradeDialog = computed(() => isolationDowngradeDialogTexts(this.isolationDowngradeTarget()));
   readonly activeClientIsolationRefreshing$: Observable<boolean> = this.activeClientId$.pipe(
     switchMap((clientId) => (clientId ? this.clientsFacade.isRefreshingClientIsolation$(clientId) : of(false))),
   );
-  /** Downgrade confirmation (Standard Docker while gVisor is recommended), stacked over the Add Environment modal. */
+  /** Downgrade confirmation (a weaker level than recommended), stacked over the Add Environment modal. */
   readonly confirmStandardIsolationOpen = signal(false);
   private readonly standardIsolationConfirmSwapState: AgentModalSwapState = { suspended: false };
   /** Selection restored when the Standard Docker confirmation is cancelled. */
@@ -4533,6 +4549,18 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     });
   }
 
+  /** Stable radio ids (`agentIsolationSandboxed`, `agentIsolationStandard`, `agentIsolationSandboxedKvm`). */
+  isolationLevelCheckId(level: IsolationLevel): string {
+    switch (level) {
+      case 'sandboxed-kvm':
+        return 'agentIsolationSandboxedKvm';
+      case 'sandboxed':
+        return 'agentIsolationSandboxed';
+      default:
+        return 'agentIsolationStandard';
+    }
+  }
+
   onAddAgentIsolationLevelSelect(value: string): void {
     const level = value as IsolationLevel;
     const previous = this.addAgentIsolationSelection();
@@ -4545,6 +4573,7 @@ export class AgentConsoleChatComponent implements OnInit, AfterViewChecked, OnDe
     this.addAgentIsolationSelection.set({ ...previous, explicitLevel: level, reviewRequired: false });
 
     if (isIsolationDowngrade(level, this.addAgentRecommendedIsolationLevel())) {
+      this.isolationDowngradeTarget.set(level);
       this.standardIsolationRevertSelection = previous;
       swapToOverlayAgentModal({
         underlyingOpen: this.addAgentModalOpen,
