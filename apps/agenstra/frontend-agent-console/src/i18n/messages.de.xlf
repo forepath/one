@@ -1551,16 +1551,40 @@
         <target>Empfohlen</target>
       </trans-unit>
       <trans-unit id="featureChat-isolationSandboxedDescription" datatype="html">
-        <source> Runs through gVisor&apos;s userspace application kernel. </source>
-        <target> Läuft über den Userspace-Anwendungskernel von gVisor. </target>
+        <source>Runs through gVisor&apos;s userspace application kernel.</source>
+        <target>Läuft über den Userspace-Anwendungskernel von gVisor.</target>
+      </trans-unit>
+      <trans-unit id="featureChat-isolationSandboxedKvmDescription" datatype="html">
+        <source>Runs through gVisor&apos;s application kernel, isolated with hardware virtualization (KVM).</source>
+        <target>Läuft über den Anwendungskernel von gVisor, zusätzlich durch Hardwarevirtualisierung (KVM) isoliert.</target>
+      </trans-unit>
+      <trans-unit id="featureChat-isolationLevelSandboxedKvm" datatype="html">
+        <source>Sandboxed (gVisor on KVM)</source>
+        <target>Sandboxed (gVisor auf KVM)</target>
+      </trans-unit>
+      <trans-unit id="featureChat-isolationSandboxKvmAvailable" datatype="html">
+        <source>KVM sandbox available</source>
+        <target>KVM-Sandbox verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureChat-isolationConfirmSandboxedTitle" datatype="html">
+        <source>Use the gVisor sandbox without KVM?</source>
+        <target>gVisor-Sandbox ohne KVM verwenden?</target>
+      </trans-unit>
+      <trans-unit id="featureChat-isolationConfirmSandboxedMessage" datatype="html">
+        <source>Sandboxed (gVisor) runs gVisor&apos;s application kernel without hardware virtualization. The recommended level additionally isolates it with KVM, so a flaw in gVisor is harder to exploit.</source>
+        <target>Sandboxed (gVisor) betreibt den Anwendungskernel von gVisor ohne Hardwarevirtualisierung. Die empfohlene Stufe isoliert ihn zusätzlich mit KVM, sodass eine Schwachstelle in gVisor schwerer auszunutzen ist.</target>
+      </trans-unit>
+      <trans-unit id="featureChat-isolationConfirmSandboxedConfirm" datatype="html">
+        <source>Use Sandboxed (gVisor)</source>
+        <target>Sandboxed (gVisor) verwenden</target>
       </trans-unit>
       <trans-unit id="featureChat-isolationSandboxedUnavailable" datatype="html">
         <source>Not available on this workspace:</source>
         <target>In diesem Arbeitsbereich nicht verfügbar:</target>
       </trans-unit>
       <trans-unit id="featureChat-isolationStandardDescription" datatype="html">
-        <source> Maximum compatibility; shares the workspace host&apos;s Linux kernel. </source>
-        <target> Maximale Kompatibilität; teilt sich den Linux-Kernel des Arbeitsbereich-Hosts. </target>
+        <source>Maximum compatibility; shares the workspace host&apos;s Linux kernel.</source>
+        <target>Maximale Kompatibilität; teilt sich den Linux-Kernel des Arbeitsbereich-Hosts.</target>
       </trans-unit>
       <trans-unit id="featureChat-isolationChecking" datatype="html">
         <source> Checking isolation support… </source>

@@ -24,6 +24,8 @@ export const AGENSTRA_NOTIFICATION_EVENTS = [
   'egress.policy_failed',
   'isolation.sandbox_available',
   'isolation.sandbox_unavailable',
+  'isolation.sandbox_kvm_available',
+  'isolation.sandbox_kvm_unavailable',
   'isolation.baseline_failed',
   'agent.isolation_override',
   'agent.sandbox_creation_failed',

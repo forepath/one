@@ -13,7 +13,7 @@ This application provides:
 - **HTTP REST API** Full CRUD operations for agent management
 - **WebSocket Gateway** Real-time bidirectional communication with agents
 - **Container Integration** Docker container management for agent execution. Containers of an environment are named `agenstra-<role>-<agentId>`: `agenstra-worker-<agentId>` (worker) and `agenstra-egress-<agentId>` (egress guard), both labelled `io.agenstra.agent-id=<agentId>` (workers also `io.agenstra.worker=1`). The agent id is assigned before any container is created, recreated containers keep the name, and containers of existing environments are renamed to the pattern on startup
-- **Container isolation levels** Per-environment Docker runtime (`runc` or gVisor `runsc-systrap`), offered only after runtime probes pass; see [Container Isolation Levels](../features/container-isolation.md)
+- **Container isolation levels** Per-environment Docker runtime (`runc`, gVisor `runsc-systrap` or gVisor on KVM `runsc-kvm`), offered only after runtime probes pass; see [Container Isolation Levels](../features/container-isolation.md)
 - **Egress guard** Per-agent sidecar that filters outbound web traffic (Squid/dnsmasq/iptables) and reports decision events; see [Egress Filtering](../features/egress-filtering.md)
 - **Secure Authentication** Keycloak integration for HTTP endpoints and database-backed authentication for WebSocket
 - **Database Support** PostgreSQL with TypeORM for data persistence
@@ -44,7 +44,7 @@ All HTTP endpoints are prefixed with `/api` and protected by Keycloak authentica
 - `GET /api/agents` - List all agents (supports `limit` and `offset` query parameters)
 - `GET /api/agents/progress` - Running environment create / update operations (step, percentage)
 - `GET /api/agents/:id` - Get a single agent by UUID
-- `POST /api/agents` - Create a new agent (returns auto-generated password; optional `isolationLevel`, `capabilityRevision`, `isolationSelection`; `409` stale or unavailable isolation level, `503` host cannot run environments)
+- `POST /api/agents` - Create a new agent (returns auto-generated password; optional `isolationLevel` (`standard`, `sandboxed`, `sandboxed-kvm`), `capabilityRevision`, `isolationSelection`; `400` with `code: E_ISOLATION_RUNTIME_FAILED` when a gVisor container cannot be started, `409` stale or unavailable isolation level, `503` host cannot run environments)
 - `POST /api/agents/:id` - Update an existing agent
 - `DELETE /api/agents/:id` - Delete an agent
 - `GET /api/agents/:id/models` - List models available for the agent (provider-specific)
@@ -77,12 +77,12 @@ Environment variables: `AGENT_EGRESS_GUARD_ENABLED`, `AGENT_EGRESS_GUARD_IMAGE`,
 
 ### Container isolation
 
-Isolation capabilities are probed on startup, periodically, on demand and after repeated sandboxed runtime failures. Agent responses include `isolation` (`level`, `runtime`, `selection`). See [Container Isolation Levels](../features/container-isolation.md).
+Isolation capabilities are probed on startup, periodically, on demand and after repeated runtime failures of a gVisor level (counted per level). Agent responses include `isolation` (`level`, `runtime`, `selection`). See [Container Isolation Levels](../features/container-isolation.md).
 
-- `GET /api/isolation` - Current capability record (`levels.standard` / `levels.sandboxed` state and reason code, `recommendedLevel`, `availableLevels`, `revision`, `probedAt`, `probing`)
+- `GET /api/isolation` - Current capability record (`levels.standard` / `levels.sandboxed` / `levels.sandboxed-kvm` state and reason code, `recommendedLevel`, `availableLevels`, `revision`, `probedAt`, `probing`)
 - `POST /api/isolation/probe` - Re-probe every level now (joins a running probe; results younger than 30 s are reused)
 
-Environment variables: `AGENT_SANDBOX_RUNTIME`, `AGENT_ISOLATION_SANDBOX_ENABLED`, `AGENT_ISOLATION_PROBE_ENABLED`, `AGENT_ISOLATION_PROBE_INTERVAL_MS`, `AGENT_ISOLATION_PROBE_TIMEOUT_MS`, `AGENT_ISOLATION_PROBE_IMAGE`, `AGENT_ISOLATION_FAILURE_THRESHOLD`. The gVisor runtime itself is prepared on the host (cloud-init or `apps/agenstra/backend-agent-manager/host/agenstra-gvisor.sh`), not by the manager container.
+Environment variables: `AGENT_SANDBOX_RUNTIME`, `AGENT_SANDBOX_SHARED_NETNS_RUNTIME`, `AGENT_ISOLATION_SANDBOX_ENABLED`, `AGENT_SANDBOX_KVM_RUNTIME`, `AGENT_SANDBOX_KVM_SHARED_NETNS_RUNTIME`, `AGENT_ISOLATION_SANDBOX_KVM_ENABLED`, `AGENT_ISOLATION_PROBE_ENABLED`, `AGENT_ISOLATION_PROBE_INTERVAL_MS`, `AGENT_ISOLATION_PROBE_TIMEOUT_MS`, `AGENT_ISOLATION_PROBE_IMAGE`, `AGENT_ISOLATION_FAILURE_THRESHOLD`. The gVisor runtimes (and, with `/dev/kvm`, the KVM runtimes) are prepared on the host (cloud-init or `apps/agenstra/backend-agent-manager/host/agenstra-gvisor.sh`), not by the manager container.
 
 ### Deployments (CI/CD)
 
@@ -271,12 +271,16 @@ See the application docs and environment configuration for complete environment 
 
 **Container isolation:** `AGENT_SANDBOX_RUNTIME` - Docker runtime of the sandboxed level (default: `runsc-systrap`)
 
+- `AGENT_SANDBOX_SHARED_NETNS_RUNTIME` - Sandboxed runtime for workers behind an egress guard or on the agent network (default: `runsc-systrap-hostnet`)
 - `AGENT_ISOLATION_SANDBOX_ENABLED` - `false` disables the sandboxed level (default: `true`)
+- `AGENT_SANDBOX_KVM_RUNTIME` - Docker runtime of the sandboxed-kvm level (default: `runsc-kvm`)
+- `AGENT_SANDBOX_KVM_SHARED_NETNS_RUNTIME` - Sandboxed-kvm runtime for workers behind an egress guard or on the agent network (default: `runsc-kvm-hostnet`)
+- `AGENT_ISOLATION_SANDBOX_KVM_ENABLED` - `false` disables the sandboxed-kvm level (default: `true`)
 - `AGENT_ISOLATION_PROBE_ENABLED` - Periodic re-probe (default: `true`)
 - `AGENT_ISOLATION_PROBE_INTERVAL_MS` - Re-probe interval (default: `21600000`)
 - `AGENT_ISOLATION_PROBE_TIMEOUT_MS` - Timeout per level probe (default: `90000`)
 - `AGENT_ISOLATION_PROBE_IMAGE` - Probe image (default: the worker image)
-- `AGENT_ISOLATION_FAILURE_THRESHOLD` - Consecutive sandboxed failures that trigger a re-probe (default: `3`)
+- `AGENT_ISOLATION_FAILURE_THRESHOLD` - Consecutive runtime failures of a gVisor level that trigger a re-probe (default: `3`)
 
 **Dynamic provider plugins (optional):** `DYNAMIC_AGENT_PROVIDERS` - Extra agent backend packages
 
@@ -358,7 +362,7 @@ Before deploying to production, ensure:
 - **[Deployment Feature](../features/deployment.md)** CI/CD configuration and operations
 - **[Message Filters](../features/message-filters.md)** Layered chat message filters
 - **[Egress Filtering](../features/egress-filtering.md)** Per-environment web traffic filtering
-- **[Container Isolation Levels](../features/container-isolation.md)** Standard (`runc`) and gVisor-sandboxed environments
+- **[Container Isolation Levels](../features/container-isolation.md)** Standard (`runc`), gVisor-sandboxed and gVisor-on-KVM environments
 - **[Dynamic provider plugins](../features/dynamic-provider-plugins.md)** Custom agent, pipeline, and filter providers
 - **[Backend Agent Controller](./backend-agent-controller.md)** Control plane and proxy paths used by the console
 - **[Deployment Guide](../deployment/production-checklist.md)** Production deployment guide

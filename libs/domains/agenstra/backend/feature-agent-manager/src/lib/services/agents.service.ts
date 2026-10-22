@@ -22,8 +22,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { AGENT_ID_LABEL, AGENT_WORKER_LABEL, agentWorkerContainerName } from '../constants/container-naming.constants';
 import { egressGuardContainerName } from '../constants/egress-guard.constants';
 import {
+  type GvisorIsolationLevel,
+  GVISOR_ISOLATION_LEVEL_DESCRIPTION,
+  ISOLATION_RUNTIME_FAILURE_CODE,
   type IsolationLevel,
-  resolveSandboxedSharedNetnsIsolationRuntime,
+  resolveGvisorLevelRuntimes,
 } from '../constants/container-isolation.constants';
 import { GitRepositorySetupMode, resolveGitRepositorySetupMode } from '../constants/git-repository-setup-mode';
 import type { AgentIsolationSelectionDto } from '../dto/container-isolation.dto';
@@ -44,6 +47,7 @@ import {
   buildIsolationSelection,
   containerRuntimeForIsolationLevel,
   effectiveIsolationLevel,
+  isGvisorIsolationLevel,
   IsolationResolutionError,
   resolveIsolationRequest,
   runtimeForIsolationLevel,
@@ -472,13 +476,10 @@ export class AgentsService implements OnApplicationBootstrap {
       // Never retry on a weaker runtime: report the failure and let the user decide.
       this.isolationCapabilities?.recordRuntimeFailure(isolation.level);
 
-      if (isolation.level === 'sandboxed' && !(error instanceof HttpException)) {
+      if (isGvisorIsolationLevel(isolation.level) && !(error instanceof HttpException)) {
         const message = (error as { message?: string })?.message || 'unknown error';
 
-        throw new BadRequestException(
-          `The sandboxed (gVisor) container could not be started: ${message}. The environment was not created; ` +
-            'retry or explicitly choose the standard isolation level.',
-        );
+        throw this.isolationRuntimeFailure(isolation.level, message);
       }
 
       throw error;
@@ -626,14 +627,11 @@ export class AgentsService implements OnApplicationBootstrap {
 
       this.logger.error(`Agent creation failed after container start: ${message}`, err.stack);
 
-      if (isolation.level === 'sandboxed' && workerRuntimeFailed) {
+      if (isGvisorIsolationLevel(isolation.level) && workerRuntimeFailed) {
         // e.g. the worker never became healthy on gVisor: count it as a runtime failure (re-probe after
         // repeated failures) and never retry on a weaker runtime.
         this.isolationCapabilities?.recordRuntimeFailure(isolation.level);
-        throw new BadRequestException(
-          `The sandboxed (gVisor) container could not be started: ${message}. The environment was not created; ` +
-            'retry or explicitly choose the standard isolation level.',
-        );
+        throw this.isolationRuntimeFailure(isolation.level, message);
       }
 
       // Surface the real cause through the controller proxy (avoids opaque Nest 500).
@@ -867,20 +865,44 @@ export class AgentsService implements OnApplicationBootstrap {
   }
 
   /**
+   * `400` for a gVisor environment container that could not be started. The environment was not
+   * created and is never retried on a weaker runtime; `code` lets the controller detect the case.
+   */
+  private isolationRuntimeFailure(level: GvisorIsolationLevel, message: string): BadRequestException {
+    return new BadRequestException({
+      statusCode: 400,
+      error: 'Bad Request',
+      code: ISOLATION_RUNTIME_FAILURE_CODE,
+      isolationLevel: level,
+      message:
+        `The ${GVISOR_ISOLATION_LEVEL_DESCRIPTION[level]} container could not be started: ${message}. ` +
+        'The environment was not created; retry or explicitly choose the standard isolation level.',
+    });
+  }
+
+  /**
    * Map the environment's container isolation for API responses.
    */
   private mapAgentIsolation(agent: AgentEntity): NonNullable<AgentResponseDto['isolation']> {
     const level = effectiveIsolationLevel(agent.isolationLevel);
 
+    if (isGvisorIsolationLevel(level)) {
+      const runtimes = resolveGvisorLevelRuntimes(level);
+
+      return {
+        level,
+        // Behind a guard or on the agent network the kernel network stack variant is used (DockerService).
+        runtime:
+          agent.egressGuardContainerId || process.env.AGENT_DOCKER_NETWORK?.trim()
+            ? runtimes.sharedNetnsRuntime
+            : runtimes.runtime,
+        selection: agent.isolationSelection ?? null,
+      };
+    }
+
     return {
       level,
-      runtime:
-        level === 'sandboxed'
-          ? // Behind a guard or on the agent network the kernel network stack variant is used (DockerService).
-            agent.egressGuardContainerId || process.env.AGENT_DOCKER_NETWORK?.trim()
-            ? resolveSandboxedSharedNetnsIsolationRuntime()
-            : runtimeForIsolationLevel(level)
-          : (this.isolationCapabilities?.getCapabilities().levels.standard.runtime ?? runtimeForIsolationLevel(level)),
+      runtime: this.isolationCapabilities?.getCapabilities().levels.standard.runtime ?? runtimeForIsolationLevel(level),
       selection: agent.isolationSelection ?? null,
     };
   }

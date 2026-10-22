@@ -2,10 +2,13 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
 import { resolveHetznerLocationNameFromMetadata } from '@forepath/shared/backend/util-provisioning-geography';
 
+import { resolvePlainTextUserData } from '../../utils/cloud-init/user-data.utils';
 import { ServerInfo } from '../../utils/provisioning.utils';
 import { waitForTcpPort } from '../../utils/wait-for-tcp-port.util';
 
 const HETZNER_STATUS_POLL_INTERVAL_MS = 3000;
+/** Hetzner Cloud rejects `user_data` longer than 32 KiB ("Length must be between 0 and 32768"). */
+const MAX_USER_DATA_LENGTH = 32 * 1024;
 const HETZNER_POWEROFF_TIMEOUT_MS = 5 * 60 * 1000;
 const HETZNER_RUNNING_TIMEOUT_MS = 5 * 60 * 1000;
 /** Best-effort wait after resize; mid-life addons hard-wait again before SSH. */
@@ -159,6 +162,16 @@ export class HetznerProvisioningService {
       throw new BadRequestException('HETZNER_API_TOKEN environment variable is not set');
     }
 
+    // Submitted as plain text: the limit applies to the submitted string, and base64 would add a third.
+    const userData = resolvePlainTextUserData(config.userData);
+    const userDataLength = Buffer.byteLength(userData, 'utf8');
+
+    if (userDataLength > MAX_USER_DATA_LENGTH) {
+      throw new BadRequestException(
+        `User data size (${userDataLength} bytes) exceeds Hetzner Cloud limit of ${MAX_USER_DATA_LENGTH} bytes`,
+      );
+    }
+
     try {
       const response = await axios.post(
         'https://api.hetzner.cloud/v1/servers',
@@ -167,7 +180,7 @@ export class HetznerProvisioningService {
           server_type: config.serverType,
           image: 'ubuntu-22.04',
           location: config.location,
-          user_data: config.userData,
+          user_data: userData,
         },
         {
           headers: { Authorization: `Bearer ${token}` },

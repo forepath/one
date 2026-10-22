@@ -775,7 +775,7 @@ const AGENT_CONTROLLER_UPDATE_LOG = '/var/log/agent-controller-update.log';
  * Use when executing updates over SSH from the billing scheduler.
  */
 export function buildAgentControllerUpdateCommand(): string {
-  return `log() { echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*" | tee -a ${AGENT_CONTROLLER_UPDATE_LOG}; }; log "Starting update"; cd /opt/agent-controller && docker compose up -d --pull=always 2>&1 | tee -a ${AGENT_CONTROLLER_UPDATE_LOG} || { log "ERROR: Update failed"; exit 1; }; log "Update completed"`;
+  return `log() { echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*" | tee -a ${AGENT_CONTROLLER_UPDATE_LOG}; }; log "Starting update"; cd /opt/agent-controller || { log "ERROR: Update failed"; exit 1; }; rc_file=$(mktemp); { docker compose up -d --pull=always 2>&1; echo $? > "$rc_file"; } | tee -a ${AGENT_CONTROLLER_UPDATE_LOG}; rc=$(cat "$rc_file"); rm -f "$rc_file"; [ "$rc" = 0 ] || { log "ERROR: Update failed"; exit 1; }; log "Update completed"`;
 }
 
 export {

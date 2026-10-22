@@ -91,13 +91,15 @@ export type EgressPolicyNotificationPayload = {
 export type IsolationHostTransitionType =
   | 'isolation.sandbox_available'
   | 'isolation.sandbox_unavailable'
+  | 'isolation.sandbox_kvm_available'
+  | 'isolation.sandbox_kvm_unavailable'
   | 'isolation.baseline_failed';
 
 /** Isolation capability transition of a workspace host (agent manager). */
 export type IsolationHostNotificationPayload = {
   clientId: string;
   clientName?: string | null;
-  level: 'standard' | 'sandboxed';
+  level: 'standard' | 'sandboxed' | 'sandboxed-kvm';
   runtime: string;
   previousState?: string | null;
   state: string;
@@ -117,10 +119,10 @@ export type AgentIsolationOverrideNotificationPayload = {
   capabilityRevision?: string | null;
 };
 
-/** Creating a sandboxed environment failed (never retried on a weaker runtime). */
+/** Creating a gVisor (sandboxed / sandboxed-kvm) environment failed (never retried on a weaker runtime). */
 export type AgentSandboxCreationFailedNotificationPayload = {
   agentName: string;
-  isolationLevel: 'sandboxed';
+  isolationLevel: 'sandboxed' | 'sandboxed-kvm';
   runtime: string;
   error: string;
   occurredAt: string;

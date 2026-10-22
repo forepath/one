@@ -2,9 +2,12 @@
  * gVisor (`runsc`) host preparation for Agenstra workspace hosts.
  *
  * The sandboxed container isolation level runs agent workers on gVisor's systrap platform, registered
- * as a dedicated Docker runtime. Installing it is optional and never fatal: Docker's default runtime
- * stays `runc` (the mandatory standard floor), every step is verified, and a failed installation is
- * rolled back. The agent manager only offers the sandboxed level after its own runtime probe passed.
+ * as a dedicated Docker runtime. The sandboxed-kvm level runs them on gVisor's KVM platform (hardware
+ * virtualization, `/dev/kvm`), registered as a second runtime pair only when the host supports KVM.
+ * Installing either is optional and never fatal: Docker's default runtime stays `runc` (the mandatory
+ * standard floor), every step is verified, and a failed installation is rolled back (a failed KVM step
+ * only rolls back the KVM runtimes). The agent manager only offers a level after its own runtime probe
+ * passed.
  */
 
 /** Pinned gVisor release (release archives: `gvisor.tar.bz2` containing `runsc` and its helpers). */
@@ -28,6 +31,41 @@ export const GVISOR_SANDBOX_RUNTIME_NAME = 'runsc-systrap';
  */
 export const GVISOR_SANDBOX_SHARED_NETNS_RUNTIME_NAME = 'runsc-systrap-hostnet';
 
+/** Docker runtime name of the sandboxed-kvm isolation level (gVisor KVM platform, Netstack networking). */
+export const GVISOR_SANDBOX_KVM_RUNTIME_NAME = 'runsc-kvm';
+
+/**
+ * Docker runtime name of the sandboxed-kvm level for workers joining their egress guard's network
+ * namespace or a user-defined Docker network (`--platform=kvm --network=host`).
+ */
+export const GVISOR_SANDBOX_KVM_SHARED_NETNS_RUNTIME_NAME = 'runsc-kvm-hostnet';
+
+/** gVisor platform a runtime pair is registered with. */
+export type GvisorPlatform = 'systrap' | 'kvm';
+
+/** Runtime pair (Netstack + kernel network stack variant) registered for one gVisor platform. */
+export interface GvisorRuntimePair {
+  platform: GvisorPlatform;
+  /** Runtime with gVisor's own network stack (Netstack), for workers on Docker's default bridge. */
+  runtime: string;
+  /** Runtime with `--network=host` (the namespace's kernel stack), for guarded / agent-network workers. */
+  sharedNetnsRuntime: string;
+}
+
+/** Default gVisor runtime catalog registered by the host preparation (single source of the names). */
+export const GVISOR_RUNTIMES: Readonly<Record<GvisorPlatform, GvisorRuntimePair>> = {
+  systrap: {
+    platform: 'systrap',
+    runtime: GVISOR_SANDBOX_RUNTIME_NAME,
+    sharedNetnsRuntime: GVISOR_SANDBOX_SHARED_NETNS_RUNTIME_NAME,
+  },
+  kvm: {
+    platform: 'kvm',
+    runtime: GVISOR_SANDBOX_KVM_RUNTIME_NAME,
+    sharedNetnsRuntime: GVISOR_SANDBOX_KVM_SHARED_NETNS_RUNTIME_NAME,
+  },
+};
+
 /** Stable exit codes of the standalone host script. */
 export const GVISOR_HOST_SCRIPT_EXIT_CODES = {
   OK: 0,
@@ -50,6 +88,15 @@ export interface GvisorInstallScriptOptions {
   sharedNetnsRuntimeName?: string;
   /** Image used for the post-install smoke test (defaults to `hello-world`). */
   verifyImage?: string;
+  /**
+   * Prepare KVM and register the sandboxed-kvm runtime pair when the host supports hardware
+   * virtualization (default `true`; the KVM step is always optional and never affects systrap).
+   */
+  kvm?: boolean;
+  /** KVM runtime name to register (defaults to {@link GVISOR_SANDBOX_KVM_RUNTIME_NAME}). */
+  kvmRuntimeName?: string;
+  /** KVM runtime name of the egress-guard compatible variant (defaults to {@link GVISOR_SANDBOX_KVM_SHARED_NETNS_RUNTIME_NAME}). */
+  kvmSharedNetnsRuntimeName?: string;
 }
 
 const RELEASE_PATTERN = /^[0-9]{8}(\.[0-9]+)?$/;
@@ -64,6 +111,9 @@ interface ResolvedOptions {
   runtimeName: string;
   sharedNetnsRuntimeName: string;
   verifyImage: string;
+  kvm: boolean;
+  kvmRuntimeName: string;
+  kvmSharedNetnsRuntimeName: string;
 }
 
 function resolveOptions(options: GvisorInstallScriptOptions = {}): ResolvedOptions {
@@ -71,12 +121,18 @@ function resolveOptions(options: GvisorInstallScriptOptions = {}): ResolvedOptio
   const runtimeName = options.runtimeName?.trim() || GVISOR_SANDBOX_RUNTIME_NAME;
   const sharedNetnsRuntimeName = options.sharedNetnsRuntimeName?.trim() || GVISOR_SANDBOX_SHARED_NETNS_RUNTIME_NAME;
   const verifyImage = options.verifyImage?.trim() || 'hello-world';
+  const kvm = options.kvm !== false;
+  const kvmRuntimeName = options.kvmRuntimeName?.trim() || GVISOR_SANDBOX_KVM_RUNTIME_NAME;
+  const kvmSharedNetnsRuntimeName =
+    options.kvmSharedNetnsRuntimeName?.trim() || GVISOR_SANDBOX_KVM_SHARED_NETNS_RUNTIME_NAME;
 
   if (!RELEASE_PATTERN.test(release)) {
     throw new Error(`Invalid gVisor release '${release}' (expected e.g. ${GVISOR_DEFAULT_RELEASE})`);
   }
 
-  for (const name of [runtimeName, sharedNetnsRuntimeName]) {
+  const runtimeNames = [runtimeName, sharedNetnsRuntimeName, kvmRuntimeName, kvmSharedNetnsRuntimeName];
+
+  for (const name of runtimeNames) {
     if (!RUNTIME_PATTERN.test(name)) {
       throw new Error(`Invalid Docker runtime name '${name}'`);
     }
@@ -84,6 +140,10 @@ function resolveOptions(options: GvisorInstallScriptOptions = {}): ResolvedOptio
 
   if (runtimeName === sharedNetnsRuntimeName) {
     throw new Error('The shared network namespace runtime must differ from the sandbox runtime');
+  }
+
+  if (new Set(runtimeNames).size !== runtimeNames.length) {
+    throw new Error('The KVM runtimes must differ from each other and from the systrap runtimes');
   }
 
   if (!IMAGE_PATTERN.test(verifyImage)) {
@@ -100,7 +160,17 @@ function resolveOptions(options: GvisorInstallScriptOptions = {}): ResolvedOptio
     }
   }
 
-  return { release, sha512X86, sha512Arm, runtimeName, sharedNetnsRuntimeName, verifyImage };
+  return {
+    release,
+    sha512X86,
+    sha512Arm,
+    runtimeName,
+    sharedNetnsRuntimeName,
+    verifyImage,
+    kvm,
+    kvmRuntimeName,
+    kvmSharedNetnsRuntimeName,
+  };
 }
 
 /**
@@ -113,6 +183,9 @@ function buildFunctions(o: ResolvedOptions, restartAllowed: boolean): string {
   return `AGENSTRA_GVISOR_RELEASE="$(printf '%s' "\${GVISOR_RELEASE:-${o.release}}")"
 AGENSTRA_GVISOR_RUNTIME="${o.runtimeName}"
 AGENSTRA_GVISOR_HOSTNET_RUNTIME="${o.sharedNetnsRuntimeName}"
+AGENSTRA_GVISOR_KVM_RUNTIME="${o.kvmRuntimeName}"
+AGENSTRA_GVISOR_KVM_HOSTNET_RUNTIME="${o.kvmSharedNetnsRuntimeName}"
+AGENSTRA_GVISOR_KVM_ENABLED="$(printf '%s' "\${GVISOR_KVM:-${o.kvm ? '1' : '0'}}")"
 AGENSTRA_GVISOR_VERIFY_IMAGE="${o.verifyImage}"
 AGENSTRA_GVISOR_PINNED_RELEASE="${o.release}"
 AGENSTRA_GVISOR_SHA512_X86_64="${o.sha512X86}"
@@ -122,6 +195,12 @@ AGENSTRA_GVISOR_PREVIOUS=""
 AGENSTRA_GVISOR_NEW_TARGET=""
 AGENSTRA_DOCKER_DAEMON_JSON="/etc/docker/daemon.json"
 AGENSTRA_DOCKER_DAEMON_BACKUP="/etc/docker/daemon.json.agenstra-gvisor.bak"
+AGENSTRA_DOCKER_DAEMON_KVM_BACKUP="/etc/docker/daemon.json.agenstra-gvisor-kvm.bak"
+AGENSTRA_KVM_DEVICE_PATH="/dev/kvm"
+AGENSTRA_KVM_CPUINFO="/proc/cpuinfo"
+AGENSTRA_KVM_PROC_MODULES="/proc/modules"
+AGENSTRA_KVM_SYSFS_MODULES="/sys/module"
+AGENSTRA_KVM_MODULES_LOAD_DIR="/etc/modules-load.d"
 AGENSTRA_DOCKER_RESTART_ALLOWED="${restartAllowed ? '1' : '0'}"
 
 agenstra_gvisor_log() { echo "[agenstra-gvisor] $*" >&2; }
@@ -134,7 +213,7 @@ agenstra_gvisor_arch() {
   esac
 }
 
-# gVisor requires Linux 5.6+ (systrap platform, no KVM needed).
+# gVisor requires Linux 5.6+ (the systrap platform needs no KVM; the KVM platform is prepared separately).
 agenstra_gvisor_kernel_supported() {
   local major minor
   major="$(uname -r | cut -d. -f1)"
@@ -144,6 +223,17 @@ agenstra_gvisor_kernel_supported() {
 }
 
 agenstra_docker_ready() { docker info >/dev/null 2>&1; }
+
+# Install a package on apt systems; waits for the dpkg lock (first-boot upgrades) and refreshes the
+# package index once when the package is unknown.
+agenstra_apt_install() {
+  local apt_opts="-y -q -o DPkg::Lock::Timeout=180"
+  # shellcheck disable=SC2086
+  DEBIAN_FRONTEND=noninteractive apt-get install $apt_opts "$@" >/dev/null 2>&1 && return 0
+  apt-get update -q -o DPkg::Lock::Timeout=180 >/dev/null 2>&1 || return 1
+  # shellcheck disable=SC2086
+  DEBIAN_FRONTEND=noninteractive apt-get install $apt_opts "$@" >/dev/null 2>&1
+}
 
 agenstra_docker_wait() {
   local i
@@ -166,11 +256,19 @@ agenstra_docker_reload() {
   agenstra_docker_wait
 }
 
-agenstra_gvisor_runtime_registered() {
-  local runtimes
+# agenstra_runtimes_registered all|any NAME...: whether all / any of the Docker runtimes are registered.
+agenstra_runtimes_registered() {
+  local mode="$1" runtimes name found=0
+  shift
   runtimes="$(docker info --format '{{json .Runtimes}}' 2>/dev/null)" || return 1
-  printf '%s' "$runtimes" | grep -q "\\"$AGENSTRA_GVISOR_RUNTIME\\"" &&
-    printf '%s' "$runtimes" | grep -q "\\"$AGENSTRA_GVISOR_HOSTNET_RUNTIME\\""
+  for name in "$@"; do
+    if printf '%s' "$runtimes" | grep -qF "\\"$name\\""; then found=$((found + 1)); fi
+  done
+  if [ "$mode" = "all" ]; then [ "$found" -eq "$#" ]; else [ "$found" -gt 0 ]; fi
+}
+
+agenstra_gvisor_runtime_registered() {
+  agenstra_runtimes_registered all "$AGENSTRA_GVISOR_RUNTIME" "$AGENSTRA_GVISOR_HOSTNET_RUNTIME"
 }
 
 # Smoke test of runc and both gVisor runtimes. The agent manager runs the full probe afterwards; when
@@ -251,6 +349,10 @@ agenstra_gvisor_install() {
     if ! echo "$expected  $workdir/gvisor.tar.bz2" | sha512sum -c - >/dev/null 2>&1; then
       rm -rf "$workdir"; agenstra_gvisor_log "Checksum mismatch; skipping gVisor"; return 1
     fi
+    # The release archive is bzip2 compressed; minimal cloud images ship without bzip2.
+    if ! command -v bzip2 >/dev/null 2>&1 && command -v apt-get >/dev/null 2>&1; then
+      agenstra_apt_install bzip2 || true
+    fi
     # Extract into a staging directory and move it into place only when complete.
     staging="$(mktemp -d "$AGENSTRA_GVISOR_PREFIX/.staging-XXXXXX")"
     if ! tar -xjf "$workdir/gvisor.tar.bz2" -C "$staging" --no-same-owner || [ ! -x "$staging/runsc" ]; then
@@ -287,7 +389,161 @@ agenstra_gvisor_install() {
   rm -f "$AGENSTRA_DOCKER_DAEMON_BACKUP"
   agenstra_gvisor_log "gVisor runtimes '$AGENSTRA_GVISOR_RUNTIME' and '$AGENSTRA_GVISOR_HOSTNET_RUNTIME' are ready"
   return 0
+}
+
+# KVM facts (no changes): cpu=yes|no|unknown (vmx/svm flag; unknown on aarch64), device=present|absent,
+# module=loaded|absent, nested=yes|no|unknown, hypervisor=yes|no (the host itself is a VM).
+agenstra_kvm_facts() {
+  local cpu=unknown device=absent module=absent nested=unknown hypervisor=no param
+  if [ "$(agenstra_gvisor_arch)" = "x86_64" ]; then
+    if grep -Eqw 'vmx|svm' "$AGENSTRA_KVM_CPUINFO" 2>/dev/null; then cpu=yes; else cpu=no; fi
+    grep -qw hypervisor "$AGENSTRA_KVM_CPUINFO" 2>/dev/null && hypervisor=yes
+  fi
+  [ -c "$AGENSTRA_KVM_DEVICE_PATH" ] && device=present
+  grep -Eq '^kvm(_intel|_amd)? ' "$AGENSTRA_KVM_PROC_MODULES" 2>/dev/null && module=loaded
+  for param in "$AGENSTRA_KVM_SYSFS_MODULES/kvm_intel/parameters/nested" "$AGENSTRA_KVM_SYSFS_MODULES/kvm_amd/parameters/nested"; do
+    if [ -r "$param" ]; then
+      case "$(cat "$param" 2>/dev/null)" in Y|y|1) nested=yes ;; *) nested=no ;; esac
+    fi
+  done
+  AGENSTRA_KVM_CPU="$cpu"
+  AGENSTRA_KVM_DEVICE="$device"
+  AGENSTRA_KVM_MODULE="$module"
+  AGENSTRA_KVM_NESTED="$nested"
+  AGENSTRA_KVM_HYPERVISOR="$hypervisor"
+}
+
+agenstra_kvm_wait_device() {
+  local i
+  command -v udevadm >/dev/null 2>&1 && udevadm settle >/dev/null 2>&1
+  for i in 1 2 3 4 5 6 7 8 9 10; do
+    [ -c "$AGENSTRA_KVM_DEVICE_PATH" ] && return 0
+    sleep 1
+  done
+  return 1
+}
+
+# Make /dev/kvm available when the CPU supports hardware virtualization: load (and persist) the KVM
+# modules; install the distribution's extra kernel modules only when the module does not exist. No
+# hypervisor stack (libvirt / QEMU) is installed: gVisor's KVM platform only needs /dev/kvm.
+agenstra_kvm_prepare() {
+  local vendor=""
+  agenstra_kvm_facts
+  [ "$AGENSTRA_KVM_DEVICE" = "present" ] && return 0
+  if [ "$AGENSTRA_KVM_CPU" = "no" ]; then
+    agenstra_gvisor_log "No hardware virtualization (vmx/svm) exposed to this host; skipping the KVM platform"
+    return 1
+  fi
+  if [ "$(agenstra_gvisor_arch)" = "x86_64" ]; then
+    if grep -qw vmx "$AGENSTRA_KVM_CPUINFO" 2>/dev/null; then vendor=kvm_intel; else vendor=kvm_amd; fi
+  fi
+  command -v modprobe >/dev/null 2>&1 || return 1
+  if ! modprobe kvm >/dev/null 2>&1 || { [ -n "$vendor" ] && ! modprobe "$vendor" >/dev/null 2>&1; }; then
+    # Modules that exist but fail to load (e.g. virtualization disabled) are not fixed by a package.
+    if command -v apt-get >/dev/null 2>&1 && ! modinfo "\${vendor:-kvm}" >/dev/null 2>&1; then
+      agenstra_gvisor_log "Installing the KVM kernel modules (linux-modules-extra-$(uname -r))"
+      agenstra_apt_install "linux-modules-extra-$(uname -r)" || true
+    fi
+    modprobe kvm >/dev/null 2>&1 || return 1
+    if [ -n "$vendor" ]; then modprobe "$vendor" >/dev/null 2>&1 || return 1; fi
+  fi
+  if [ -d "$AGENSTRA_KVM_MODULES_LOAD_DIR" ]; then
+    printf 'kvm\\n%s\\n' "$vendor" | sed '/^$/d' >"$AGENSTRA_KVM_MODULES_LOAD_DIR/agenstra-kvm.conf"
+  fi
+  agenstra_kvm_wait_device
+}
+
+# Either KVM runtime registered (partial registrations are cleaned up as well).
+agenstra_kvm_any_runtime_registered() {
+  agenstra_runtimes_registered any "$AGENSTRA_GVISOR_KVM_RUNTIME" "$AGENSTRA_GVISOR_KVM_HOSTNET_RUNTIME"
+}
+
+agenstra_kvm_runtime_registered() {
+  agenstra_runtimes_registered all "$AGENSTRA_GVISOR_KVM_RUNTIME" "$AGENSTRA_GVISOR_KVM_HOSTNET_RUNTIME"
+}
+
+agenstra_kvm_verify() {
+  agenstra_kvm_runtime_registered || return 1
+  if ! docker image inspect "$AGENSTRA_GVISOR_VERIFY_IMAGE" >/dev/null 2>&1; then
+    agenstra_gvisor_log "Smoke test image unavailable; skipping KVM container smoke test"
+    return 0
+  fi
+  docker run --rm --runtime="$AGENSTRA_GVISOR_KVM_RUNTIME" --network=none "$AGENSTRA_GVISOR_VERIFY_IMAGE" >/dev/null 2>&1 || return 1
+  docker run --rm --runtime="$AGENSTRA_GVISOR_KVM_HOSTNET_RUNTIME" --network=none "$AGENSTRA_GVISOR_VERIFY_IMAGE" >/dev/null 2>&1
+}
+
+agenstra_kvm_unregister() {
+  local runsc="$1"
+  [ -x "$runsc" ] || return 0
+  "$runsc" uninstall --runtime="$AGENSTRA_GVISOR_KVM_RUNTIME" >/dev/null 2>&1 || true
+  "$runsc" uninstall --runtime="$AGENSTRA_GVISOR_KVM_HOSTNET_RUNTIME" >/dev/null 2>&1 || true
+}
+
+# Only the KVM runtime entries are rolled back; the systrap runtimes and runc stay untouched.
+agenstra_kvm_rollback() {
+  agenstra_gvisor_log "Rolling back the gVisor KVM runtime registration"
+  if [ -f "$AGENSTRA_DOCKER_DAEMON_KVM_BACKUP" ]; then
+    cp -p "$AGENSTRA_DOCKER_DAEMON_KVM_BACKUP" "$AGENSTRA_DOCKER_DAEMON_JSON"
+    rm -f "$AGENSTRA_DOCKER_DAEMON_KVM_BACKUP"
+  else
+    agenstra_kvm_unregister "$AGENSTRA_GVISOR_PREFIX/current/runsc"
+  fi
+  agenstra_docker_reload || agenstra_gvisor_log "WARNING: Docker reload after KVM rollback failed"
+}
+
+# Register the sandboxed-kvm runtimes (gVisor KVM platform) on top of an installed gVisor release.
+# Returns 0 when they are ready, 1 when KVM is unavailable, disabled or the registration was rolled back.
+agenstra_kvm_install() {
+  local runsc="$AGENSTRA_GVISOR_PREFIX/current/runsc"
+  [ -x "$runsc" ] || { agenstra_gvisor_log "gVisor is not installed; skipping the KVM platform"; return 1; }
+  if [ "$AGENSTRA_GVISOR_KVM_ENABLED" != "1" ]; then
+    agenstra_gvisor_log "KVM platform disabled (GVISOR_KVM=0); skipping"
+    if agenstra_kvm_any_runtime_registered; then
+      agenstra_kvm_unregister "$runsc"
+      agenstra_docker_reload || true
+    fi
+    return 1
+  fi
+  if ! agenstra_kvm_prepare; then
+    agenstra_gvisor_log "KVM is not available on this host; the sandboxed-kvm level stays unavailable"
+    if agenstra_kvm_any_runtime_registered; then
+      agenstra_kvm_unregister "$runsc"
+      agenstra_docker_reload || true
+    fi
+    return 1
+  fi
+  if [ -f "$AGENSTRA_DOCKER_DAEMON_JSON" ]; then
+    cp -p "$AGENSTRA_DOCKER_DAEMON_JSON" "$AGENSTRA_DOCKER_DAEMON_KVM_BACKUP"
+  else
+    rm -f "$AGENSTRA_DOCKER_DAEMON_KVM_BACKUP"
+  fi
+  if ! "$runsc" install --runtime="$AGENSTRA_GVISOR_KVM_RUNTIME" -- --platform=kvm >/dev/null 2>&1 ||
+    ! "$runsc" install --runtime="$AGENSTRA_GVISOR_KVM_HOSTNET_RUNTIME" -- --platform=kvm --network=host >/dev/null 2>&1; then
+    agenstra_gvisor_log "KVM runtime registration failed"
+    agenstra_kvm_rollback
+    return 1
+  fi
+  if ! agenstra_docker_reload || ! agenstra_kvm_verify; then
+    agenstra_gvisor_log "gVisor KVM verification failed"
+    agenstra_kvm_rollback
+    return 1
+  fi
+  rm -f "$AGENSTRA_DOCKER_DAEMON_KVM_BACKUP"
+  agenstra_gvisor_log "gVisor KVM runtimes '$AGENSTRA_GVISOR_KVM_RUNTIME' and '$AGENSTRA_GVISOR_KVM_HOSTNET_RUNTIME' are ready"
+  return 0
 }`;
+}
+
+/**
+ * Drop comment-only lines and indentation (cloud-init user data is size limited, e.g. 32 KiB on
+ * Hetzner Cloud). Only for generated function bodies: they contain no heredocs or multi-line strings.
+ */
+function compactBash(script: string): string {
+  return script
+    .split('\n')
+    .map((line) => line.trimStart())
+    .filter((line) => line.length > 0 && !line.startsWith('#'))
+    .join('\n');
 }
 
 /**
@@ -297,12 +553,19 @@ agenstra_gvisor_install() {
 export function buildGvisorInstallScript(options: GvisorInstallScriptOptions = {}): string {
   const o = resolveOptions(options);
 
-  return `# Container isolation: install gVisor (sandboxed level). Optional and never fatal: on any failure the
-# runtime registration is rolled back and the host keeps running environments with standard Docker (runc).
+  return `# Container isolation: install gVisor (sandboxed level) and, when the host supports KVM, the gVisor KVM
+# runtimes (sandboxed-kvm level). Optional and never fatal: on any failure the runtime registration is
+# rolled back and the host keeps running environments with standard Docker (runc).
 agenstra_prepare_gvisor() {
 set +e
-${buildFunctions(o, true)}
-agenstra_gvisor_install
+${compactBash(buildFunctions(o, true))}
+agenstra_gvisor_install || return 1
+if agenstra_kvm_install; then
+    echo "gVisor KVM runtimes installed"
+else
+    echo "gVisor KVM runtimes not installed; the sandboxed-kvm level stays unavailable"
+fi
+return 0
 }
 if ( agenstra_prepare_gvisor ); then
     echo "gVisor sandbox runtime installed"
@@ -326,7 +589,7 @@ export function buildGvisorHostScript(options: GvisorInstallScriptOptions = {}):
   const codes = GVISOR_HOST_SCRIPT_EXIT_CODES;
 
   return `#!/usr/bin/env bash
-# Agenstra container isolation host preparation (gVisor / runsc, systrap platform).
+# Agenstra container isolation host preparation (gVisor / runsc, systrap and KVM platforms).
 #
 # GENERATED from libs/domains/shared/backend/util-container-runtime (buildGvisorHostScript) - do not edit.
 #
@@ -335,29 +598,43 @@ export function buildGvisorHostScript(options: GvisorInstallScriptOptions = {}):
 #   install    Install the pinned, checksum-verified gVisor release and register the Docker runtimes
 #              '${o.runtimeName}' (--platform=systrap) and '${o.sharedNetnsRuntimeName}' (--platform=systrap
 #              --network=host, for workers behind an egress guard). Docker's default runtime stays runc.
-#              Docker is only reloaded (never restarted). Rolled back on failure.
+#              When the CPU supports hardware virtualization, the KVM modules are loaded (and persisted)
+#              and '${o.kvmRuntimeName}' (--platform=kvm) and '${o.kvmSharedNetnsRuntimeName}' (--platform=kvm
+#              --network=host) are registered as well (sandboxed-kvm level; no libvirt / QEMU needed).
+#              Docker is only reloaded (never restarted). Rolled back on failure (a KVM failure only
+#              rolls back the KVM runtimes).
 #   uninstall  Remove the runtime registrations (installed binaries stay under /usr/local/lib/agenstra-gvisor).
-# Environment: GVISOR_RELEASE (default ${o.release}), GVISOR_SHA512 (required for non-default releases).
+# Environment: GVISOR_RELEASE (default ${o.release}), GVISOR_SHA512 (required for non-default releases),
+#              GVISOR_KVM=0 skips the KVM platform.
 #
 # Exit codes: 0 ok, ${codes.USAGE} usage, ${codes.NOT_ROOT} not root, ${codes.DOCKER_BASELINE_UNAVAILABLE} Docker/runc baseline unavailable (E_DOCKER_BASELINE_UNAVAILABLE),
 #             ${codes.GVISOR_UNSUPPORTED_HOST} unsupported host, ${codes.GVISOR_INSTALL_FAILED} install failed (rolled back), ${codes.GVISOR_VERIFY_FAILED} runtime not ready.
+#             Exit codes only reflect the systrap runtimes; the KVM state is reported in the output.
 # After changes, restart the agent manager or call POST /api/isolation/probe so it re-probes the host.
 set -uo pipefail
 
 ${buildFunctions(o, false)}
 
 agenstra_gvisor_report() {
-  local baseline="$1" sandboxed="$2" json="$3"
+  local baseline="$1" sandboxed="$2" json="$3" sandboxed_kvm="\${4:-unsupported}"
+  agenstra_kvm_facts
   if [ "$json" = "1" ]; then
-    printf '{"runtime":"%s","sharedNetnsRuntime":"%s","release":"%s","standard":"%s","sandboxed":"%s"}\\n' "$AGENSTRA_GVISOR_RUNTIME" "$AGENSTRA_GVISOR_HOSTNET_RUNTIME" "$AGENSTRA_GVISOR_RELEASE" "$baseline" "$sandboxed"
+    printf '{"runtime":"%s","sharedNetnsRuntime":"%s","release":"%s","standard":"%s","sandboxed":"%s","kvmRuntime":"%s","kvmSharedNetnsRuntime":"%s","sandboxedKvm":"%s","kvm":{"cpu":"%s","device":"%s","module":"%s","nested":"%s","hypervisor":"%s"}}\\n' "$AGENSTRA_GVISOR_RUNTIME" "$AGENSTRA_GVISOR_HOSTNET_RUNTIME" "$AGENSTRA_GVISOR_RELEASE" "$baseline" "$sandboxed" "$AGENSTRA_GVISOR_KVM_RUNTIME" "$AGENSTRA_GVISOR_KVM_HOSTNET_RUNTIME" "$sandboxed_kvm" "$AGENSTRA_KVM_CPU" "$AGENSTRA_KVM_DEVICE" "$AGENSTRA_KVM_MODULE" "$AGENSTRA_KVM_NESTED" "$AGENSTRA_KVM_HYPERVISOR"
   else
     echo "Standard (runc): $baseline"
     echo "Sandboxed ($AGENSTRA_GVISOR_RUNTIME, $AGENSTRA_GVISOR_HOSTNET_RUNTIME): $sandboxed"
+    echo "Sandboxed KVM ($AGENSTRA_GVISOR_KVM_RUNTIME, $AGENSTRA_GVISOR_KVM_HOSTNET_RUNTIME): $sandboxed_kvm"
+    echo "KVM: cpu=$AGENSTRA_KVM_CPU device=$AGENSTRA_KVM_DEVICE module=$AGENSTRA_KVM_MODULE nested=$AGENSTRA_KVM_NESTED hypervisor=$AGENSTRA_KVM_HYPERVISOR"
   fi
 }
 
+# sandboxed-kvm state for reports: registered, unsupported (no /dev/kvm) or not-registered.
+agenstra_kvm_state() {
+  if agenstra_kvm_runtime_registered; then echo registered; elif [ -c "$AGENSTRA_KVM_DEVICE_PATH" ]; then echo not-registered; else echo unsupported; fi
+}
+
 main() {
-  local command="\${1:-}" json=0 baseline=unavailable sandboxed=unsupported
+  local command="\${1:-}" json=0 baseline=unavailable sandboxed=unsupported sandboxed_kvm=unsupported
   [ "\${2:-}" = "--json" ] && json=1
   case "$command" in
     check|install|uninstall) ;;
@@ -374,7 +651,7 @@ main() {
   case "$command" in
     check)
       if agenstra_gvisor_runtime_registered; then sandboxed=registered; fi
-      agenstra_gvisor_report "$baseline" "$sandboxed" "$json"
+      agenstra_gvisor_report "$baseline" "$sandboxed" "$json" "$(agenstra_kvm_state)"
       [ "$sandboxed" = "registered" ] && return 0 || return ${codes.GVISOR_VERIFY_FAILED}
       ;;
     install)
@@ -382,7 +659,8 @@ main() {
         agenstra_gvisor_report "$baseline" unsupported "$json"; return ${codes.GVISOR_UNSUPPORTED_HOST}
       fi
       if agenstra_gvisor_install; then
-        agenstra_gvisor_report "$baseline" ready "$json"; return 0
+        if agenstra_kvm_install; then sandboxed_kvm=ready; else sandboxed_kvm="$(agenstra_kvm_state)"; fi
+        agenstra_gvisor_report "$baseline" ready "$json" "$sandboxed_kvm"; return 0
       fi
       agenstra_docker_ready || { agenstra_gvisor_report unavailable install-failed "$json"; return ${codes.DOCKER_BASELINE_UNAVAILABLE}; }
       agenstra_gvisor_report "$baseline" install-failed "$json"; return ${codes.GVISOR_INSTALL_FAILED}
@@ -390,7 +668,9 @@ main() {
     uninstall)
       # Only the runtime entries are removed; other daemon.json changes made since the install are kept.
       agenstra_gvisor_unregister "$AGENSTRA_GVISOR_PREFIX/current/runsc"
+      agenstra_kvm_unregister "$AGENSTRA_GVISOR_PREFIX/current/runsc"
       agenstra_docker_reload || true
+      rm -f "$AGENSTRA_DOCKER_DAEMON_KVM_BACKUP" "$AGENSTRA_KVM_MODULES_LOAD_DIR/agenstra-kvm.conf"
       rm -f "$AGENSTRA_DOCKER_DAEMON_BACKUP"
       agenstra_docker_ready || { agenstra_gvisor_report unavailable unsupported "$json"; return ${codes.DOCKER_BASELINE_UNAVAILABLE}; }
       agenstra_gvisor_report "$baseline" unsupported "$json"; return 0

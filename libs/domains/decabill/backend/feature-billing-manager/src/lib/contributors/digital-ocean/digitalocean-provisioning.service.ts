@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, Logger, Optional } from '@nestjs/common';
 import axios, { AxiosError } from 'axios';
 
+import { resolvePlainTextUserData } from '../../utils/cloud-init/user-data.utils';
 import { ServerInfo } from '../../utils/provisioning.utils';
 import { waitForTcpPort } from '../../utils/wait-for-tcp-port.util';
 import { SshExecutorService } from '../../services/ssh-executor.service';
@@ -342,29 +343,9 @@ export class DigitaloceanProvisioningService {
   }
 
   /**
-   * DigitalOcean's API expects plain-text cloud-init user_data.
-   * Billing passes the same string as Hetzner; cloud-init builders base64-encode the script for Hetzner's API.
+   * Provisions a droplet. DigitalOcean's API expects plain-text cloud-init user_data; stack builders
+   * base64-encode their scripts, so the user data is decoded first (see `resolvePlainTextUserData`).
    */
-  private resolvePlainTextUserData(userData: string): string {
-    const trimmed = userData?.trim() ?? '';
-
-    if (!trimmed) {
-      return userData ?? '';
-    }
-
-    if (trimmed.startsWith('#!/bin/bash') || trimmed.startsWith('#!/bin/sh') || trimmed.startsWith('#cloud-config')) {
-      return userData;
-    }
-
-    const decoded = Buffer.from(trimmed, 'base64').toString('utf8');
-
-    if (decoded.startsWith('#!/bin/bash') || decoded.startsWith('#!/bin/sh') || decoded.startsWith('#cloud-config')) {
-      return decoded;
-    }
-
-    return userData;
-  }
-
   async provisionServer(
     config: { name: string; serverType: string; location: string; userData: string },
     apiToken?: string,
@@ -375,7 +356,7 @@ export class DigitaloceanProvisioningService {
       throw new BadRequestException('DIGITALOCEAN_API_TOKEN environment variable is not set');
     }
 
-    const userDataPlain = this.resolvePlainTextUserData(config.userData);
+    const userDataPlain = resolvePlainTextUserData(config.userData);
     const userDataBytes = Buffer.byteLength(userDataPlain, 'utf8');
 
     if (userDataBytes > MAX_USER_DATA_BYTES) {

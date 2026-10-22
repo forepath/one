@@ -325,7 +325,7 @@ export class HetznerProvider implements ProvisioningProvider {
    *
    * @param additionalUserData - Additional user data to append (base64 encoded or plain text)
    * @returns Base64-encoded user data script (Hetzner Cloud API requirement)
-   * @throws BadRequestException if the total user data exceeds 32KiB limit (Hetzner Cloud requirement)
+   * @throws BadRequestException if the submitted (base64-encoded) user data exceeds the 32KiB Hetzner Cloud limit
    */
   private generateUserDataScript(additionalUserData: string): string {
     // Decode additional user data if it's base64, otherwise use as-is
@@ -478,22 +478,22 @@ fi
 
 log "agent-manager provisioning completed successfully at $(date)"
 `;
-    // Check size limit: Hetzner Cloud user_data is limited to 32KiB (32,768 bytes)
-    // Note: The limit applies to the raw script content, not the base64-encoded version
-    const scriptSize = Buffer.byteLength(script, 'utf8');
+    // Hetzner Cloud API expects base64-encoded user_data
+    const userData = Buffer.from(script).toString('base64');
+    // Check size limit: Hetzner Cloud rejects user_data longer than 32KiB ("Length must be between 0 and
+    // 32768"). The limit applies to the submitted (base64-encoded) string, not to the raw script.
     const MAX_USER_DATA_SIZE = 32 * 1024; // 32KiB
 
-    if (scriptSize > MAX_USER_DATA_SIZE) {
-      const sizeKB = (scriptSize / 1024).toFixed(2);
+    if (userData.length > MAX_USER_DATA_SIZE) {
+      const sizeKB = (userData.length / 1024).toFixed(2);
       const maxKB = (MAX_USER_DATA_SIZE / 1024).toFixed(2);
 
       throw new BadRequestException(
-        `User data script size (${sizeKB}KB) exceeds Hetzner Cloud limit of ${maxKB}KB. Please reduce the configuration size.`,
+        `User data size (${sizeKB}KB encoded) exceeds Hetzner Cloud limit of ${maxKB}KB. Please reduce the configuration size.`,
       );
     }
 
-    // Hetzner Cloud API expects base64-encoded user_data
-    return Buffer.from(script).toString('base64');
+    return userData;
   }
 }
 

@@ -1,11 +1,13 @@
 import { createHash } from 'crypto';
 
 import {
+  GVISOR_ISOLATION_LEVELS,
+  type GvisorIsolationLevel,
   ISOLATION_LEVEL_RANK,
   ISOLATION_LEVELS,
   type IsolationLevel,
   type IsolationSelectionSource,
-  resolveSandboxedIsolationRuntime,
+  resolveGvisorLevelRuntimes,
   STANDARD_ISOLATION_RUNTIME,
 } from '../constants/container-isolation.constants';
 import type {
@@ -18,9 +20,38 @@ export function isIsolationLevel(value: unknown): value is IsolationLevel {
   return typeof value === 'string' && (ISOLATION_LEVELS as readonly string[]).includes(value);
 }
 
-/** Docker runtime name backing an isolation level on this host. */
+/** Whether a level runs on gVisor (every level above the standard floor). */
+export function isGvisorIsolationLevel(level: IsolationLevel): level is GvisorIsolationLevel {
+  return (GVISOR_ISOLATION_LEVELS as readonly string[]).includes(level);
+}
+
+/** Docker runtime name backing an isolation level on this host (the Netstack variant for gVisor levels). */
 export function runtimeForIsolationLevel(level: IsolationLevel, env: NodeJS.ProcessEnv = process.env): string {
-  return level === 'sandboxed' ? resolveSandboxedIsolationRuntime(env) : STANDARD_ISOLATION_RUNTIME;
+  return isGvisorIsolationLevel(level) ? resolveGvisorLevelRuntimes(level, env).runtime : STANDARD_ISOLATION_RUNTIME;
+}
+
+/**
+ * Docker runtime a gVisor container must use on its network: workers sharing their egress guard's
+ * namespace (`container:<id>`) or attached to a user-defined network need the kernel network stack
+ * variant (`--network=host`) of their level, workers on the default bridge the Netstack variant.
+ * Runtimes of no gVisor level (runc, unknown runtimes) are returned unchanged. Security relevant:
+ * Netstack inside a guard namespace would take over its interfaces and bypass the guard's netfilter
+ * rules and loopback proxy.
+ */
+export function mapGvisorRuntimeForNetwork(
+  runtime: string,
+  sharesNetworkNamespace: boolean,
+  env: NodeJS.ProcessEnv = process.env,
+): string {
+  for (const level of GVISOR_ISOLATION_LEVELS) {
+    const runtimes = resolveGvisorLevelRuntimes(level, env);
+
+    if (runtime === runtimes.runtime || runtime === runtimes.sharedNetnsRuntime) {
+      return sharesNetworkNamespace ? runtimes.sharedNetnsRuntime : runtimes.runtime;
+    }
+  }
+
+  return runtime;
 }
 
 /** Isolation level persisted for an environment; rows created before isolation levels are `standard`. */
@@ -29,18 +60,22 @@ export function effectiveIsolationLevel(stored: string | null | undefined): Isol
 }
 
 /**
- * `updateContainer` options pinning the environment's runtime on every recreate path. Sandboxed
- * environments always get the gVisor runtime explicitly (they never silently come back on runc);
- * standard environments keep Docker's default runtime exactly as before isolation levels existed
- * (the current container's runtime is carried over).
+ * `updateContainer` options pinning the environment's runtime on every recreate path. gVisor
+ * environments (sandboxed, sandboxed-kvm) always get their level's runtime explicitly (they never
+ * silently come back on runc or another gVisor platform); standard environments keep Docker's default
+ * runtime exactly as before isolation levels existed (the current container's runtime is carried over).
  */
 export function isolationRuntimeOptions(
   agent: { isolationLevel?: string | null } | null | undefined,
   env: NodeJS.ProcessEnv = process.env,
 ): { runtime?: string } {
-  return agent && effectiveIsolationLevel(agent.isolationLevel) === 'sandboxed'
-    ? { runtime: runtimeForIsolationLevel('sandboxed', env) }
-    : {};
+  if (!agent) {
+    return {};
+  }
+
+  const level = effectiveIsolationLevel(agent.isolationLevel);
+
+  return isGvisorIsolationLevel(level) ? { runtime: runtimeForIsolationLevel(level, env) } : {};
 }
 
 /** Expected-runtime argument list for `getEnvironmentApplyStrategy` (empty for standard environments). */
@@ -54,14 +89,14 @@ export function isolationRuntimeArgs(
 }
 
 /**
- * Docker runtime to request when creating a container of a level: the sandbox runtime for
- * `sandboxed`; nothing (Docker's default runtime, normally runc) for `standard`.
+ * Docker runtime to request when creating a container of a level: the level's gVisor runtime for
+ * `sandboxed` / `sandboxed-kvm`; nothing (Docker's default runtime, normally runc) for `standard`.
  */
 export function containerRuntimeForIsolationLevel(
   level: IsolationLevel,
   env: NodeJS.ProcessEnv = process.env,
 ): string | undefined {
-  return level === 'sandboxed' ? runtimeForIsolationLevel('sandboxed', env) : undefined;
+  return isGvisorIsolationLevel(level) ? runtimeForIsolationLevel(level, env) : undefined;
 }
 
 /** Ready levels, strongest first. */

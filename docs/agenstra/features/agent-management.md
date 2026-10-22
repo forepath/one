@@ -22,7 +22,7 @@ Agents are AI-powered entities that run in Docker containers. Each agent has:
    - **Name**: A descriptive name for the agent
    - **Description**: Optional description
    - **Agent Type**: Choose an agent type (e.g., `opencode`)
-   - **Isolation level**: `Sandboxed (gVisor)` or `Standard Docker`. The strongest level that is ready on the workspace host is preselected; unavailable levels are disabled with the reason. Choosing a weaker level than recommended requires confirmation (see [Container Isolation Levels](./container-isolation.md))
+   - **Isolation level**: `Sandboxed (gVisor on KVM)` (only when the workspace host reports the level), `Sandboxed (gVisor)` or `Standard Docker`. The strongest level that is ready on the workspace host is preselected; unavailable levels are disabled with the reason. Choosing a weaker level than recommended requires confirmation (see [Container Isolation Levels](./container-isolation.md))
 4. Click "Create"
 
 The system will:
@@ -30,7 +30,7 @@ The system will:
 - Create the agent in the remote agent-manager
 - Generate a secure password
 - Validate the isolation level against the host's current capabilities (stale or unavailable selections are rejected with `409`, never downgraded)
-- Create a Docker container for the agent on the runtime of the selected level (`runc` or gVisor `runsc-systrap`)
+- Create a Docker container for the agent on the runtime of the selected level (`runc`, gVisor `runsc-systrap` or gVisor on KVM `runsc-kvm`; behind an egress guard or on the agent network the `-hostnet` variants)
 - Clone the Git repository (if configured) into the container
 - Store credentials in the controller for automatic login
 - Return the agent details including the password
@@ -83,8 +83,9 @@ Each environment runs with an isolation level that is fixed at creation:
 
 - **`standard`** Docker's default `runc` runtime (shares the host kernel). Environments created before isolation levels existed are `standard`.
 - **`sandboxed`** gVisor (`runsc`, `systrap` platform). Offered only when the runtime is registered on the host and passes the manager's probe.
+- **`sandboxed-kvm`** gVisor on its KVM platform (`runsc --platform=kvm`). Offered only when the host exposes `/dev/kvm`, the runtime is registered and passes the probe. Preselected when ready.
 
-The level and how it was selected (automatic, user-confirmed, user override, selecting user, capability revision) are returned as `isolation` on agent responses and shown as a badge in the console. If a sandboxed container cannot be started, creation fails and is **not** retried on `runc`. See [Container Isolation Levels](./container-isolation.md).
+The level and how it was selected (automatic, user-confirmed, user override, selecting user, capability revision) are returned as `isolation` on agent responses and shown as a badge in the console. If a sandboxed or sandboxed-kvm container cannot be started, creation fails (`400`, `code: E_ISOLATION_RUNTIME_FAILED`) and is **not** retried on a weaker level. See [Container Isolation Levels](./container-isolation.md).
 
 ### Authentication
 
@@ -244,7 +245,7 @@ For detailed API documentation, see the application and API reference docs linke
 - **[Usage Statistics](./usage-statistics.md)** Controller-side usage metrics
 - **[Message Filters](./message-filters.md)** Regex filters
 - **[Egress Filtering](./egress-filtering.md)** Web traffic filtering
-- **[Container Isolation Levels](./container-isolation.md)** Standard and gVisor-sandboxed environments
+- **[Container Isolation Levels](./container-isolation.md)** Standard, gVisor-sandboxed and gVisor-on-KVM environments
 - **[Dynamic provider plugins](./dynamic-provider-plugins.md)** Custom agent, pipeline, and filter providers
 - **[Backend Agent Manager Application](../applications/backend-agent-manager.md)** Application details
 

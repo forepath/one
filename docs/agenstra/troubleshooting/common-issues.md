@@ -87,16 +87,20 @@ Common problems and their solutions in the Agenstra system.
 
 ### Sandboxed isolation level unavailable or creation rejected
 
-**Symptoms**: The **Sandboxed (gVisor)** option is disabled in the create environment dialog; creation fails with `409 Conflict`, `503 Service Unavailable`, or "The sandboxed (gVisor) container could not be started"
+**Symptoms**: The **Sandboxed (gVisor)** or **Sandboxed (gVisor on KVM)** option is disabled (or missing) in the create environment dialog; creation fails with `409 Conflict`, `503 Service Unavailable`, or "The sandboxed (gVisor) container could not be started" / "The sandboxed-kvm (gVisor on KVM) container could not be started"
 
 **Solutions**:
 
 - Check the reason code: `GET /api/clients/:id/isolation` (or `GET /api/isolation` on the manager)
 - `E_RUNTIME_NOT_REGISTERED`: prepare the host (`sudo apps/agenstra/backend-agent-manager/host/agenstra-gvisor.sh check` / `install`), verify `docker info --format '{{json .Runtimes}}'` lists `runsc-systrap` (or your `AGENT_SANDBOX_RUNTIME`), then **Re-check isolation**
-- `E_DISABLED_BY_ADMIN`: `AGENT_ISOLATION_SANDBOX_ENABLED=false` on the manager
+- `E_DISABLED_BY_ADMIN`: `AGENT_ISOLATION_SANDBOX_ENABLED=false` (or `AGENT_ISOLATION_SANDBOX_KVM_ENABLED=false`) on the manager
+- Sandboxed-kvm `unsupported`: the host has no `/dev/kvm` (usual on Hetzner Cloud / DigitalOcean VMs) or `runsc-kvm` / `runsc-kvm-hostnet` are not registered; check the `KVM:` line of `agenstra-gvisor.sh check`. KVM needs bare metal or nested virtualization
+- `E_KVM_UNAVAILABLE`: the KVM platform cannot open `/dev/kvm`; load `kvm` / `kvm_intel` / `kvm_amd`, check device permissions, rerun `agenstra-gvisor.sh install`
+- `E_RUNTIME_MISCONFIGURED`: a gVisor runtime is registered with the wrong platform or network mode (e.g. the guard runtime without `--network=host`, or `runsc-kvm` without `--platform=kvm`), or `sandboxed-kvm` reuses another level's runtime name. Re-run `agenstra-gvisor.sh install` or fix `/etc/docker/daemon.json`.
+- `E_MANAGER_UNSUPPORTED` for sandboxed-kvm only: the agent manager predates the level; upgrade it
 - `409` on creation: the host capabilities changed while the dialog was open (stale revision) or the level is no longer ready; reopen the dialog and confirm the level again
 - `503` on creation: the standard `runc` baseline failed (`E_DOCKER_BASELINE_UNAVAILABLE`, `E_RUNC_PROBE_FAILED`); check Docker and the worker image
-- Sandboxed start failures are never retried on `runc`. Retry, or create the environment with the **standard** level if the workload needs features gVisor does not support (`io_uring`, KVM, Docker-in-Docker, in-sandbox `iptables`)
+- gVisor start failures are never retried on a weaker level (sandboxed-kvm not on sandboxed or `runc`, sandboxed not on `runc`). Retry, or create the environment with the **standard** level if the workload needs features gVisor does not support (`io_uring`, KVM, Docker-in-Docker, in-sandbox `iptables`)
 - See **[Container Isolation Levels](../features/container-isolation.md#troubleshooting)**
 
 ### Agent workspace permission errors
@@ -213,7 +217,7 @@ Common problems and their solutions in the Agenstra system.
 ## Related documentation
 
 - **[Debugging Guide](./debugging-guide.md)** Debugging strategies
-- **[Container Isolation Levels](../features/container-isolation.md)** Sandboxed (gVisor) environments
+- **[Container Isolation Levels](../features/container-isolation.md)** Sandboxed (gVisor) and sandboxed-kvm (gVisor on KVM) environments
 - **[Deployment Guide](../deployment/README.md)** Deployment troubleshooting
 
 ---

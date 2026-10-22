@@ -788,6 +788,9 @@
       <trans-unit id="featureAgentTasks-runStatusRunning" datatype="html">
         <source>Running</source>
         </trans-unit>
+      <trans-unit id="featureAgentTasks-runStatusAwaitingHandoff" datatype="html">
+        <source>Waiting for handoff</source>
+        </trans-unit>
       <trans-unit id="featureAgentTasks-runStatusSucceeded" datatype="html">
         <source>Succeeded</source>
         </trans-unit>
@@ -851,11 +854,23 @@
       <trans-unit id="featureAgentTasks-paused" datatype="html">
         <source>Paused</source>
         </trans-unit>
+      <trans-unit id="featureAgentTasks-pendingApproval" datatype="html">
+        <source>Awaiting approval</source>
+        </trans-unit>
       <trans-unit id="featureAgentTasks-createdByAgent" datatype="html">
         <source>Created by agent</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-enabledLabel" datatype="html">
         <source>Enabled</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-pendingApprovalHint" datatype="html">
+        <source>The agent created or changed this task. Runs are unattended with every permission allowed, so the task only runs after you reviewed its prompt, model and schedule and approved it.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-pendingApprovalHandoffHint" datatype="html">
+        <source>Once approved, this task can hand off work to these agents without asking: <x id="INTERPOLATION" equiv-text="{{ handoffAgents.join(&apos;, &apos;) }}"/></source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-approve" datatype="html">
+        <source>Approve</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-environment" datatype="html">
         <source>Environment</source>
@@ -869,6 +884,9 @@
       <trans-unit id="featureAgentTasks-model" datatype="html">
         <source>Model</source>
         </trans-unit>
+      <trans-unit id="featureAgentTasks-noHandoffAgents" datatype="html">
+        <source>None</source>
+        </trans-unit>
       <trans-unit id="featureAgentTasks-promptHeading" datatype="html">
         <source>Instructions</source>
         </trans-unit>
@@ -877,6 +895,9 @@
         </trans-unit>
       <trans-unit id="featureAgentTasks-noRuns" datatype="html">
         <source>This task has not run yet.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-runAwaitingHandoff" datatype="html">
+        <source>The run waits for the response to its handoff and continues when it arrives…</source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-runInProgress" datatype="html">
         <source>The agent is working on this run…</source>
@@ -907,6 +928,9 @@
         </trans-unit>
       <trans-unit id="featureAgentTasks-timezoneLabel" datatype="html">
         <source>Time zone</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-noOtherAgents" datatype="html">
+        <source> This workspace has no other agents. </source>
         </trans-unit>
       <trans-unit id="featureAgentTasks-save" datatype="html">
         <source> Save </source>
@@ -952,6 +976,27 @@
         </trans-unit>
       <trans-unit id="featureAgentTasks-refreshTitle" datatype="html">
         <source>Refresh</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-allowedHandoffAgentsLabel" datatype="html">
+        <source>Allowed handoff agents</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-allowedHandoffAgentsHint" datatype="html">
+        <source>Runs may hand off work to these agents of the workspace without asking; their responses are processed by the unattended run with all permissions. Leave empty to keep runs from handing off.</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-openHandoffChat" datatype="html">
+        <source>Open handoff chat</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-handoffUnknownAgent" datatype="html">
+        <source>another agent</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-handoffResponseHeading" datatype="html">
+        <source>Response from <x id="agentName" equiv-text="agentName"/></source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-handoffStatusFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="featureAgentTasks-handoffStatusCompleted" datatype="html">
+        <source>Completed</source>
         </trans-unit>
       <trans-unit id="featureAtlassianImportAdmin-connectionTestLabel" datatype="html">
         <source>Connection test:</source>
@@ -1676,6 +1721,24 @@
       <trans-unit id="featureChat-toolDisplayTasksRun" datatype="html">
         <source>Run task now</source>
         </trans-unit>
+      <trans-unit id="featureChat-toolDisplayHandoffAgents" datatype="html">
+        <source>List agents</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayHandoffCreate" datatype="html">
+        <source>Hand off task</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayHandoffProfileGet" datatype="html">
+        <source>Read agent profile</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayHandoffProfileUpdate" datatype="html">
+        <source>Update own profile</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayHandoffGet" datatype="html">
+        <source>Read handoff</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolDisplayHandoffRespond" datatype="html">
+        <source>Answer handoff</source>
+        </trans-unit>
       <trans-unit id="featureChat-toolDisplayTool" datatype="html">
         <source>Tool</source>
         </trans-unit>
@@ -1748,8 +1811,29 @@
       <trans-unit id="featureChat-toolEmbedSearchFailed" datatype="html">
         <source>Search reported an error</source>
         </trans-unit>
+      <trans-unit id="featureChat-toolEmbedHandoff" datatype="html">
+        <source>Handed over to another agent</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolEmbedHandoffPending" datatype="html">
+        <source>The response arrives here once the agent is done.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolEmbedHandoffFailed" datatype="html">
+        <source>The handoff could not be created</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolEmbedOpenHandoffChat" datatype="html">
+        <source>Open handoff chat</source>
+        </trans-unit>
+      <trans-unit id="featureChat-toolEmbedHandoffResponse" datatype="html">
+        <source>Response to the handoff</source>
+        </trans-unit>
       <trans-unit id="featureChat-toolEmbedAria" datatype="html">
         <source>Tool result: <x id="toolKind" equiv-text="kind"/></source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffStatusFailed" datatype="html">
+        <source>Failed</source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffStatusCompleted" datatype="html">
+        <source>Completed</source>
         </trans-unit>
       <trans-unit id="featureChat-toolEmbedTodoCompleted" datatype="html">
         <source>Completed</source>
@@ -1873,6 +1957,12 @@
         </trans-unit>
       <trans-unit id="featureChat-chatSessionPrimaryBadge" datatype="html">
         <source>(primary)</source>
+        </trans-unit>
+      <trans-unit id="featureChat-chatSessionHandoffBadgeTitle" datatype="html">
+        <source>Task handed over by another agent</source>
+        </trans-unit>
+      <trans-unit id="featureChat-chatSessionHandoffBadge" datatype="html">
+        <source>(handoff)</source>
         </trans-unit>
       <trans-unit id="featureChat-renameChatSessionTitle" datatype="html">
         <source>Rename</source>
@@ -2047,15 +2137,6 @@
         <source> Are you sure you want to delete the environment <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/><x id="INTERPOLATION" equiv-text="{{ agentToDeleteName() }}"/><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong
     &gt;"/>? </source>
         </trans-unit>
-      <trans-unit id="featureChat-isolationConfirmStandardTitle" datatype="html">
-        <source>Use Standard Docker?</source>
-        </trans-unit>
-      <trans-unit id="featureChat-isolationConfirmStandardMessage" datatype="html">
-        <source>Standard Docker has lower isolation than the recommended gVisor sandbox. The container will interact with the workspace host&apos;s Linux kernel through Docker&apos;s normal namespace, capability and seccomp controls.</source>
-        </trans-unit>
-      <trans-unit id="featureChat-isolationConfirmStandardConfirm" datatype="html">
-        <source>Use Standard Docker</source>
-        </trans-unit>
       <trans-unit id="featureChat-deleteChatSessionModalTitle" datatype="html">
         <source>Delete Chat Session</source>
         </trans-unit>
@@ -2209,14 +2290,8 @@
       <trans-unit id="featureChat-isolationRecommended" datatype="html">
         <source>Recommended</source>
         </trans-unit>
-      <trans-unit id="featureChat-isolationSandboxedDescription" datatype="html">
-        <source> Runs through gVisor&apos;s userspace application kernel. </source>
-        </trans-unit>
       <trans-unit id="featureChat-isolationSandboxedUnavailable" datatype="html">
         <source>Not available on this workspace:</source>
-        </trans-unit>
-      <trans-unit id="featureChat-isolationStandardDescription" datatype="html">
-        <source> Maximum compatibility; shares the workspace host&apos;s Linux kernel. </source>
         </trans-unit>
       <trans-unit id="featureChat-isolationCapabilitiesChanged" datatype="html">
         <source>The isolation capabilities of this workspace changed. Review the isolation level.</source>
@@ -2274,6 +2349,12 @@
         </trans-unit>
       <trans-unit id="featureChat-updateEnvironmentTitle" datatype="html">
         <source>Update Environment</source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffProfileLabel" datatype="html">
+        <source>Handoff profile</source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffProfileHelp" datatype="html">
+        <source>What this environment is responsible for and which tasks other agents of the workspace can hand over to it. The agent can also maintain it itself.</source>
         </trans-unit>
       <trans-unit id="featureChat-containerTypeHintShort" datatype="html">
         <source>The type of content this agent holds.</source>
@@ -2604,6 +2685,24 @@
         </trans-unit>
       <trans-unit id="featureChat-workspaceConfigurationSourceLabelUnset" datatype="html">
         <source>Unset</source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffUnknownAgent" datatype="html">
+        <source>another agent</source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffRequestHeading" datatype="html">
+        <source>Task handed over by <x id="agentName" equiv-text="agentName"/></source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffResponseHeading" datatype="html">
+        <source>Response from <x id="agentName" equiv-text="agentName"/></source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffOpenSourceTaskRun" datatype="html">
+        <source>Open task run</source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffOpenSourceChat" datatype="html">
+        <source>Open requesting chat</source>
+        </trans-unit>
+      <trans-unit id="featureChat-handoffOpenHandoffChat" datatype="html">
+        <source>Open handoff chat</source>
         </trans-unit>
       <trans-unit id="featureClientSelect-clearSelectionAria" datatype="html">
         <source>Clear selected client</source>
@@ -3509,11 +3608,41 @@
       <trans-unit id="featureWorkspaceSearch-queryPlaceholderFiles" datatype="html">
         <source>Search by file path...</source>
         </trans-unit>
+      <trans-unit id="featureChat-isolationLevelSandboxedKvm" datatype="html">
+        <source>Sandboxed (gVisor on KVM)</source>
+        </trans-unit>
       <trans-unit id="featureChat-isolationLevelSandboxed" datatype="html">
         <source>Sandboxed (gVisor)</source>
         </trans-unit>
       <trans-unit id="featureChat-isolationLevelStandard" datatype="html">
         <source>Standard Docker</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationSandboxedKvmDescription" datatype="html">
+        <source>Runs through gVisor&apos;s application kernel, isolated with hardware virtualization (KVM).</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationSandboxedDescription" datatype="html">
+        <source>Runs through gVisor&apos;s userspace application kernel.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationStandardDescription" datatype="html">
+        <source>Maximum compatibility; shares the workspace host&apos;s Linux kernel.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationConfirmSandboxedTitle" datatype="html">
+        <source>Use the gVisor sandbox without KVM?</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationConfirmSandboxedMessage" datatype="html">
+        <source>Sandboxed (gVisor) runs gVisor&apos;s application kernel without hardware virtualization. The recommended level additionally isolates it with KVM, so a flaw in gVisor is harder to exploit.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationConfirmSandboxedConfirm" datatype="html">
+        <source>Use Sandboxed (gVisor)</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationConfirmStandardTitle" datatype="html">
+        <source>Use Standard Docker?</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationConfirmStandardMessage" datatype="html">
+        <source>Standard Docker has lower isolation than the recommended gVisor sandbox. The container will interact with the workspace host&apos;s Linux kernel through Docker&apos;s normal namespace, capability and seccomp controls.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationConfirmStandardConfirm" datatype="html">
+        <source>Use Standard Docker</source>
         </trans-unit>
       <trans-unit id="featureChat-isolationStateReady" datatype="html">
         <source>Ready</source>
@@ -3532,6 +3661,9 @@
         </trans-unit>
       <trans-unit id="featureChat-isolationLegacyManager" datatype="html">
         <source>The workspace&apos;s agent manager does not support isolation levels yet.</source>
+        </trans-unit>
+      <trans-unit id="featureChat-isolationSandboxKvmAvailable" datatype="html">
+        <source>KVM sandbox available</source>
         </trans-unit>
       <trans-unit id="featureChat-isolationSandboxAvailable" datatype="html">
         <source>Sandbox available</source>
@@ -5809,120 +5941,6 @@
         </trans-unit>
       <trans-unit id="utilCookieConsent-policy" datatype="html">
         <source>Cookie Policy</source>
-        </trans-unit>
-      <trans-unit id="featureChat-toolDisplayHandoffAgents" datatype="html">
-        <source>List agents</source>
-        </trans-unit>
-      <trans-unit id="featureChat-toolDisplayHandoffCreate" datatype="html">
-        <source>Hand off task</source>
-        </trans-unit>
-      <trans-unit id="featureChat-toolDisplayHandoffGet" datatype="html">
-        <source>Read handoff</source>
-        </trans-unit>
-      <trans-unit id="featureChat-toolDisplayHandoffRespond" datatype="html">
-        <source>Answer handoff</source>
-        </trans-unit>
-      <trans-unit id="featureChat-toolEmbedHandoff" datatype="html">
-        <source>Handed over to another agent</source>
-        </trans-unit>
-      <trans-unit id="featureChat-toolEmbedHandoffPending" datatype="html">
-        <source>The response arrives here once the agent is done.</source>
-        </trans-unit>
-      <trans-unit id="featureChat-toolEmbedHandoffFailed" datatype="html">
-        <source>The handoff could not be created</source>
-        </trans-unit>
-      <trans-unit id="featureChat-toolEmbedOpenHandoffChat" datatype="html">
-        <source>Open handoff chat</source>
-        </trans-unit>
-      <trans-unit id="featureChat-toolEmbedHandoffResponse" datatype="html">
-        <source>Response to the handoff</source>
-        </trans-unit>
-      <trans-unit id="featureChat-handoffStatusFailed" datatype="html">
-        <source>Failed</source>
-        </trans-unit>
-      <trans-unit id="featureChat-handoffStatusCompleted" datatype="html">
-        <source>Completed</source>
-        </trans-unit>
-      <trans-unit id="featureChat-handoffUnknownAgent" datatype="html">
-        <source>another agent</source>
-        </trans-unit>
-      <trans-unit id="featureChat-handoffRequestHeading" datatype="html">
-        <source>Task handed over by <x id="agentName" equiv-text="agentName"/></source>
-        </trans-unit>
-      <trans-unit id="featureChat-handoffResponseHeading" datatype="html">
-        <source>Response from <x id="agentName" equiv-text="agentName"/></source>
-        </trans-unit>
-      <trans-unit id="featureChat-handoffOpenSourceChat" datatype="html">
-        <source>Open requesting chat</source>
-        </trans-unit>
-      <trans-unit id="featureChat-handoffOpenHandoffChat" datatype="html">
-        <source>Open handoff chat</source>
-        </trans-unit>
-      <trans-unit id="featureChat-chatSessionHandoffBadgeTitle" datatype="html">
-        <source>Task handed over by another agent</source>
-        </trans-unit>
-      <trans-unit id="featureChat-chatSessionHandoffBadge" datatype="html">
-        <source>(handoff)</source>
-        </trans-unit>
-      <trans-unit id="featureChat-toolDisplayHandoffProfileGet" datatype="html">
-        <source>Read agent profile</source>
-        </trans-unit>
-      <trans-unit id="featureChat-toolDisplayHandoffProfileUpdate" datatype="html">
-        <source>Update own profile</source>
-        </trans-unit>
-      <trans-unit id="featureChat-handoffProfileLabel" datatype="html">
-        <source>Handoff profile</source>
-        </trans-unit>
-      <trans-unit id="featureChat-handoffProfileHelp" datatype="html">
-        <source>What this environment is responsible for and which tasks other agents of the workspace can hand over to it. The agent can also maintain it itself.</source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-pendingApproval" datatype="html">
-        <source>Awaiting approval</source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-pendingApprovalHint" datatype="html">
-        <source>The agent created or changed this task. Runs are unattended with every permission allowed, so the task only runs after you reviewed its prompt, model and schedule and approved it.</source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-approve" datatype="html">
-        <source>Approve</source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-runStatusAwaitingHandoff" datatype="html">
-        <source>Waiting for handoff</source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-pendingApprovalHandoffHint" datatype="html">
-        <source>Once approved, this task can hand off work to these agents without asking: <x id="INTERPOLATION" equiv-text="{{ handoffAgents.join(&apos;, &apos;) }}"/></source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-noHandoffAgents" datatype="html">
-        <source>None</source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-runAwaitingHandoff" datatype="html">
-        <source>The run waits for the response to its handoff and continues when it arrives…</source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-noOtherAgents" datatype="html">
-        <source> This workspace has no other agents. </source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-allowedHandoffAgentsLabel" datatype="html">
-        <source>Allowed handoff agents</source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-allowedHandoffAgentsHint" datatype="html">
-        <source>Runs may hand off work to these agents of the workspace without asking; their responses are processed by the unattended run with all permissions. Leave empty to keep runs from handing off.</source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-openHandoffChat" datatype="html">
-        <source>Open handoff chat</source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-handoffUnknownAgent" datatype="html">
-        <source>another agent</source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-handoffResponseHeading" datatype="html">
-        <source>Response from <x id="agentName" equiv-text="agentName"/></source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-handoffStatusFailed" datatype="html">
-        <source>Failed</source>
-        </trans-unit>
-      <trans-unit id="featureAgentTasks-handoffStatusCompleted" datatype="html">
-        <source>Completed</source>
-        </trans-unit>
-      <trans-unit id="featureChat-handoffOpenSourceTaskRun" datatype="html">
-        <source>Open task run</source>
         </trans-unit>
     </body>
   </file>

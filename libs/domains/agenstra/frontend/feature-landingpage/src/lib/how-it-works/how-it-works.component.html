@@ -119,6 +119,7 @@
           <div class="d-flex flex-wrap gap-2 mt-auto">
             <fpc-badge variant="info" size="sm">runc</fpc-badge>
             <fpc-badge variant="info" size="sm">gVisor</fpc-badge>
+            <fpc-badge variant="info" size="sm">gVisor + KVM</fpc-badge>
             <fpc-badge variant="info" size="sm">non-root</fpc-badge>
           </div>
         </article>
@@ -297,7 +298,7 @@
     <div class="row g-5 align-items-stretch">
       <div class="col-lg-5 d-flex flex-column justify-content-center">
         <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featurePortalHowItWorks-isolationTitle">
-          Two isolation levels, never a silent downgrade
+          Three isolation levels, never a silent downgrade
         </h2>
         <p class="lead text-muted mb-5" i18n="@@featurePortalHowItWorks-isolationLead">
           A regular container shares the host kernel with everything else on the machine. Agent code is code you have
@@ -337,8 +338,8 @@
                   Runs on ordinary cloud VMs
                 </p>
                 <p class="small text-muted mb-0" i18n="@@featurePortalHowItWorks-isolationFact3Desc">
-                  gVisor runs on its systrap platform, so no KVM or nested virtualization is needed. Provisioned hosts
-                  get it installed and verified automatically.
+                  gVisor's systrap platform needs no KVM or nested virtualization. Hosts with hardware virtualization
+                  additionally run gVisor on KVM. Provisioned hosts get both installed and verified automatically.
                 </p>
               </div>
             </div>
@@ -355,8 +356,8 @@
               >Where a system call ends up</fpc-badge
             >
             <div class="row g-4 flex-grow-1 hiw-stacks">
-              <div class="col-sm-6 d-flex flex-column">
-                <div class="d-flex align-items-baseline justify-content-between gap-2 mb-3">
+              <div class="col-sm-6 col-xl-4 d-flex flex-column">
+                <div class="hiw-stack-head mb-3">
                   <h3 class="h6 fw-semibold mb-0" i18n="@@featurePortalHowItWorks-standardTitle">Standard</h3>
                   <code class="hiw-meta">runc</code>
                 </div>
@@ -376,8 +377,8 @@
                   io_uring or KVM.
                 </p>
               </div>
-              <div class="col-sm-6 d-flex flex-column">
-                <div class="d-flex align-items-baseline justify-content-between gap-2 mb-3">
+              <div class="col-sm-6 col-xl-4 d-flex flex-column">
+                <div class="hiw-stack-head mb-3">
                   <h3 class="h6 fw-semibold mb-0 text-primary" i18n="@@featurePortalHowItWorks-sandboxedTitle">
                     Sandboxed
                   </h3>
@@ -404,6 +405,38 @@
                 <p class="small text-muted mb-0 mt-auto" i18n="@@featurePortalHowItWorks-sandboxedDesc">
                   Preselected wherever the host is ready. A kernel exploit has to break the Sentry first before it can
                   reach the host.
+                </p>
+              </div>
+              <div class="col-sm-6 col-xl-4 d-flex flex-column">
+                <div class="hiw-stack-head mb-3">
+                  <h3 class="h6 fw-semibold mb-0 text-primary" i18n="@@featurePortalHowItWorks-sandboxedKvmTitle">
+                    Sandboxed + KVM
+                  </h3>
+                  <code class="hiw-meta">runsc-kvm</code>
+                </div>
+                <ol class="list-unstyled hiw-stack mb-4">
+                  <li class="hiw-layer">
+                    <i class="bi bi-robot" aria-hidden="true"></i>
+                    <span i18n="@@featurePortalHowItWorks-layerAgent">Agent and its tools</span>
+                  </li>
+                  <li class="hiw-layer hiw-layer--sandbox">
+                    <i class="bi bi-shield-fill-check" aria-hidden="true"></i>
+                    <span i18n="@@featurePortalHowItWorks-layerSentry">gVisor Sentry</span>
+                    <small i18n="@@featurePortalHowItWorks-layerSentryKvmDesc"
+                      >in a hardware-virtualized address space</small
+                    >
+                  </li>
+                  <li class="hiw-layer hiw-layer--host">
+                    <i class="bi bi-cpu" aria-hidden="true"></i>
+                    <span i18n="@@featurePortalHowItWorks-layerHostKernel">Host kernel</span>
+                    <small i18n="@@featurePortalHowItWorks-layerHostKernelSandboxed"
+                      >small, filtered set of calls</small
+                    >
+                  </li>
+                </ol>
+                <p class="small text-muted mb-0 mt-auto" i18n="@@featurePortalHowItWorks-sandboxedKvmDesc">
+                  Preselected where the host exposes KVM. System calls trap into the Sentry through the CPU's
+                  virtualization extensions instead of seccomp.
                 </p>
               </div>
             </div>
@@ -788,7 +821,8 @@
                   gVisor is not a virtual machine
                 </p>
                 <p class="small text-muted mb-2" i18n="@@featurePortalHowItWorks-limit1Desc">
-                  It shrinks the host kernel's attack surface considerably, but it is not a hardware boundary. It works
+                  It shrinks the host kernel's attack surface considerably, but it is not a full virtual machine. Where
+                  the host supports KVM, the Sentry is additionally isolated by hardware virtualization. It works
                   together with unprivileged workloads, the egress guard and a hardened host.
                 </p>
                 <div class="hiw-mitigation">

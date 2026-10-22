@@ -52,8 +52,8 @@ paths:
 
         The container isolation level is validated against the host's current (probed) isolation
         capabilities before anything is provisioned. When `isolationLevel` is omitted, the strongest
-        ready level is used. An explicit level is never replaced by another one, and a sandboxed
-        container that fails to start is never retried on the standard runtime.
+        ready level is used. An explicit level is never replaced by another one, and a gVisor
+        (`sandboxed` / `sandboxed-kvm`) container that fails to start is never retried on another runtime.
       operationId: createAgent
       requestBody:
         required: true
@@ -71,7 +71,12 @@ paths:
         '400':
           description: |
             Validation error (including an invalid `isolationLevel`), repository preparation failure, or
-            the sandboxed (gVisor) container could not be started (the environment was not created)
+            the gVisor (`sandboxed` / `sandboxed-kvm`) container could not be started (the environment was
+            not created). Runtime failures carry `code: E_ISOLATION_RUNTIME_FAILED` and `isolationLevel`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IsolationRuntimeFailureDto'
         '409':
           description: |
             The requested isolation level is not available on this host, or `capabilityRevision` does not
@@ -1279,7 +1284,8 @@ paths:
       summary: Get container isolation capabilities
       description: |
         Current isolation capability record of this host (from the last completed runtime probe):
-        state of the `standard` (runc) and `sandboxed` (gVisor) levels, recommended level and
+        state of the `standard` (runc), `sandboxed` (gVisor) and `sandboxed-kvm` (gVisor on KVM) levels,
+        recommended level and
         capability revision. `probing` is true while a probe is running.
       operationId: getIsolationCapabilities
       responses:
@@ -3431,8 +3437,8 @@ components:
         isolationLevel:
           $ref: '#/components/schemas/IsolationLevel'
           description: |
-            Container isolation level (`sandboxed` = gVisor, `standard` = runc). When omitted, the strongest
-            level that is ready on this host is used. An explicit level is never replaced by another one:
+            Container isolation level (`sandboxed-kvm` = gVisor on KVM, `sandboxed` = gVisor, `standard` =
+            runc). When omitted, the strongest level that is ready on this host is used. An explicit level is never replaced by another one:
             an unavailable level is rejected with 409.
         capabilityRevision:
           type: string
@@ -3671,10 +3677,12 @@ components:
       description: Container type of the environment
     IsolationLevel:
       type: string
-      enum: [standard, sandboxed]
+      enum: [standard, sandboxed, sandboxed-kvm]
       description: |
         Container isolation level. `standard` runs the worker on Docker's default runtime (runc, shares
-        the host kernel); `sandboxed` runs it on gVisor (`runsc`, systrap platform).
+        the host kernel); `sandboxed` runs it on gVisor (`runsc`, systrap platform); `sandboxed-kvm`
+        runs it on gVisor's KVM platform (`runsc --platform=kvm`, hardware virtualization, needs
+        `/dev/kvm` on the host).
     IsolationRuntimeState:
       type: string
       enum:
@@ -3686,16 +3694,35 @@ components:
           disabled-by-admin,
         ]
       description: Runtime state of an isolation level on a host (derived from real probes, never from configuration alone)
+    IsolationRuntimeFailureDto:
+      type: object
+      required: [statusCode, message]
+      properties:
+        statusCode:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: Bad Request
+        message:
+          type: string
+          description: "Operator-facing failure, e.g. 'The sandboxed-kvm (gVisor on KVM) container could not be started: ...'"
+        code:
+          type: string
+          enum: [E_ISOLATION_RUNTIME_FAILED]
+          description: Present when a gVisor environment container could not be started (never retried on another runtime)
+        isolationLevel:
+          $ref: '#/components/schemas/IsolationLevel'
     IsolationLevelCapabilityDto:
       type: object
       required: [rank, runtime, state]
       properties:
         rank:
           type: integer
-          description: Strength rank (`1` = standard, `2` = sandboxed); higher is stronger
+          description: Strength rank (`1` = standard, `2` = sandboxed, `3` = sandboxed-kvm); higher is stronger
         runtime:
           type: string
-          description: Docker runtime name used for this level (`runc`, `runsc-systrap`)
+          description: Docker runtime name used for this level (`runc`, `runsc-systrap`, `runsc-kvm`)
         state:
           $ref: '#/components/schemas/IsolationRuntimeState'
         reasonCode:
@@ -3705,7 +3732,9 @@ components:
             `E_DOCKER_BASELINE_UNAVAILABLE`, `E_RUNC_PROBE_FAILED`, `E_PROBE_PENDING`, `E_PROBE_IMAGE_UNAVAILABLE`,
             `E_PROBE_START_FAILED`, `E_PROBE_EXEC_FAILED`, `E_PROBE_FILESYSTEM_FAILED`, `E_PROBE_LOGS_FAILED`,
             `E_PROBE_RUNTIME_MISMATCH`, `E_PROBE_TIMEOUT`, `E_SHARED_NETNS_FAILED`, `E_REPEATED_RUNTIME_FAILURES`,
-            `E_DISABLED_BY_ADMIN`
+            `E_DISABLED_BY_ADMIN`, `E_SHARED_NETNS_RUNTIME_NOT_REGISTERED`, `E_KVM_UNAVAILABLE` (the KVM
+            platform cannot open `/dev/kvm`), `E_RUNTIME_MISCONFIGURED` (runtime registered with another gVisor
+            platform / network mode)
         reason:
           type: string
           description: Short operator-facing explanation (never contains secrets or workspace content)
@@ -3726,11 +3755,13 @@ components:
           description: True while a probe is running (states reflect the previous probe)
         levels:
           type: object
-          required: [standard, sandboxed]
+          required: [standard, sandboxed, sandboxed-kvm]
           properties:
             standard:
               $ref: '#/components/schemas/IsolationLevelCapabilityDto'
             sandboxed:
+              $ref: '#/components/schemas/IsolationLevelCapabilityDto'
+            sandboxed-kvm:
               $ref: '#/components/schemas/IsolationLevelCapabilityDto'
         recommendedLevel:
           oneOf:
@@ -3778,7 +3809,7 @@ components:
           $ref: '#/components/schemas/IsolationLevel'
         runtime:
           type: string
-          description: Docker runtime the environment's worker container runs on (`runsc-systrap-hostnet` for sandboxed workers behind an egress guard)
+          description: Docker runtime the environment's worker container runs on (`runsc-systrap-hostnet` / `runsc-kvm-hostnet` for gVisor workers behind an egress guard or on the agent network)
         selection:
           oneOf:
             - $ref: '#/components/schemas/AgentIsolationSelectionDto'

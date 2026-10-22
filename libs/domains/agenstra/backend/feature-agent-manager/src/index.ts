@@ -80,3 +80,4 @@ export * from './lib/constants/workspace-configuration-settings';
 
 // Re-export PasswordService from identity for backward compatibility
 export { PasswordService } from '@forepath/identity/backend';
+export * from './lib/utils/egress-guard-config.utils';

@@ -152,8 +152,8 @@ export class AgentEntity {
   messageFilters?: EffectiveMessageFilterRule[] | null;
 
   /**
-   * Container isolation level of the worker container (`standard` = runc, `sandboxed` = gVisor).
-   * Environments created before isolation levels existed are `standard`.
+   * Container isolation level of the worker container (`standard` = runc, `sandboxed` = gVisor,
+   * `sandboxed-kvm` = gVisor on KVM). Environments created before isolation levels existed are `standard`.
    */
   @Column({ type: 'varchar', length: 16, default: 'standard', name: 'isolation_level' })
   isolationLevel?: IsolationLevel;

@@ -293,6 +293,7 @@ export * from './lib/utils/contributor-nest-registration';
 export * from './lib/contributors/container-manager/container-manager.contributor.module';
 export * from './lib/contributors/agenstra-controller/agenstra-controller.contributor.module';
 export * from './lib/contributors/agenstra-manager/agenstra-manager.contributor.module';
+export { buildAgentManagerUpdateCommand } from './lib/contributors/agenstra-manager/agent-manager.utils';
 export * from './lib/contributors/decabill-billing/decabill-billing.contributor.module';
 export * from './lib/contributors/digital-ocean/digital-ocean.contributor.module';
 export * from './lib/contributors/hetzner/hetzner.contributor.module';

@@ -9,9 +9,9 @@ import type {
  * State of one isolation level on an agent manager host.
  */
 export class IsolationLevelCapabilityDto {
-  /** Strength rank (`1` = standard, `2` = sandboxed). */
+  /** Strength rank (`1` = standard, `2` = sandboxed, `3` = sandboxed-kvm). */
   rank!: number;
-  /** Docker runtime name used for this level (`runc`, `runsc-systrap`). */
+  /** Docker runtime name used for this level (`runc`, `runsc-systrap`, `runsc-kvm`). */
   runtime!: string;
   state!: IsolationRuntimeState;
   /** Stable machine-readable reason when the level is not `ready`. */
@@ -30,10 +30,7 @@ export class HostIsolationCapabilitiesDto {
   probedAt!: string | null;
   /** True while a probe is running (states reflect the previous probe). */
   probing!: boolean;
-  levels!: {
-    standard: IsolationLevelCapabilityDto;
-    sandboxed: IsolationLevelCapabilityDto;
-  };
+  levels!: Record<IsolationLevel, IsolationLevelCapabilityDto>;
   /** Strongest ready level, or `null` when the host cannot run environments at all. */
   recommendedLevel!: IsolationLevel | null;
   /** Ready levels, strongest first. */

@@ -1,3 +1,5 @@
+import { spawnSync } from 'child_process';
+
 import {
   buildAgentControllerUpdateCommand,
   buildBillingCloudInitUserData,
@@ -536,6 +538,33 @@ describe('cloud-init.utils', () => {
       expect(cmd).toContain('cd /opt/agent-controller');
       expect(cmd).toContain('docker compose up -d --pull=always');
       expect(cmd).toContain('ERROR: Update failed');
+    });
+
+    it('never runs compose outside the application directory', () => {
+      const harness = `cd() { return 1; }; tee() { cat; }; docker() { echo compose-ran; return 0; }; ${buildAgentControllerUpdateCommand()}`;
+
+      for (const shell of ['bash', 'sh']) {
+        const result = spawnSync(shell, ['-c', harness], { encoding: 'utf-8' });
+
+        expect(result.status).toBe(1);
+        expect(result.stdout).not.toContain('compose-ran');
+      }
+    });
+
+    it('fails when docker compose fails and completes when it succeeds (exit status not masked by tee)', () => {
+      for (const [composeRc, expectedStatus] of [
+        [3, 1],
+        [0, 0],
+      ] as const) {
+        const harness = `cd() { command cd /tmp; }; tee() { cat; }; docker() { [ "$1" = compose ] && return ${composeRc}; return 0; }; ${buildAgentControllerUpdateCommand()}`;
+
+        for (const shell of ['bash', 'sh']) {
+          const result = spawnSync(shell, ['-c', harness], { encoding: 'utf-8' });
+
+          expect(result.status).toBe(expectedStatus);
+          expect(result.stdout).toContain(expectedStatus === 0 ? 'Update completed' : 'ERROR: Update failed');
+        }
+      }
     });
   });
 });

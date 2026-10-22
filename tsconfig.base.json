@@ -234,6 +234,9 @@
       ],
       "@forepath/forepath/frontend/util-configuration": [
         "libs/domains/forepath/frontend/util-configuration/src/index.ts"
+      ],
+      "@forepath/agenstra/backend/feature-isolation-lab": [
+        "libs/domains/agenstra/backend/feature-isolation-lab/src/index.ts"
       ]
     }
   },

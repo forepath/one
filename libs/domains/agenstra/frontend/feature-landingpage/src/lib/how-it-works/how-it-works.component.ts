@@ -59,7 +59,7 @@ export class PortalHowItWorksComponent implements OnInit {
         this.metaService,
         buildPageMetaTags({
           description: metaDescription,
-          keywords: $localize`:@@featurePortalHowItWorks-metaKeywords:Agenstra architecture, AI agent sandbox, gVisor coding agents, agent container isolation, egress filtering for AI agents, agent control plane, self-hosted coding agents`,
+          keywords: $localize`:@@featurePortalHowItWorks-metaKeywords:Agenstra architecture, AI agent sandbox, gVisor coding agents, gVisor KVM sandbox, agent container isolation, egress filtering for AI agents, agent control plane, self-hosted coding agents`,
           author: 'IPvX UG (haftungsbeschränkt)',
           robots: 'index, follow',
           canonicalUrl: 'https://agenstra.com/how-it-works',

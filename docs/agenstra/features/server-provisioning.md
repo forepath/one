@@ -7,7 +7,7 @@ Automated cloud server provisioning with Docker and agent-manager deployment. Su
 Server provisioning enables you to automatically:
 
 1. Create a cloud server instance
-2. Install Docker CE (and, where supported, the gVisor runtime for [sandboxed environments](./container-isolation.md))
+2. Install Docker CE (and, where supported, the gVisor runtimes for [sandboxed environments](./container-isolation.md), plus the KVM runtimes when the server exposes `/dev/kvm`)
 3. Deploy PostgreSQL and agent-manager containers
 4. Configure authentication, Git repositories, and agent settings
 5. Create a client entity in the controller
@@ -45,7 +45,8 @@ sequenceDiagram
     AC->>P: Create Server
     P->>S: Provision Server
     S->>S: Install Docker (cloud-init)
-    S->>S: Install and verify gVisor runtime (optional, rolls back on failure)
+    S->>S: Install and verify gVisor runtimes (optional, rolls back on failure)
+    S->>S: Prepare KVM and register gVisor KVM runtimes (only with /dev/kvm, rolls back on failure)
     S->>D: Start PostgreSQL Container
     S->>D: Start Agent-Manager Container
     S-->>P: Server Ready
@@ -85,7 +86,7 @@ The provisioning endpoint accepts a `ProvisionServerDto` with the following fiel
 
 1. **Server Creation**: The provider creates a cloud server instance
 2. **Docker Installation**: The server automatically installs Docker CE via cloud-init user data script
-3. **gVisor Runtime (optional)**: The script installs a pinned, checksum-verified gVisor release, registers the Docker runtime `runsc-systrap` (`--platform=systrap`, no KVM required) next to the default `runc` runtime, and verifies it. On any failure the installation is rolled back; provisioning continues and the host offers the standard level only. See [Host preparation](./container-isolation.md#host-preparation)
+3. **gVisor Runtime (optional)**: The script installs a pinned, checksum-verified gVisor release, registers the Docker runtimes `runsc-systrap` / `runsc-systrap-hostnet` (`--platform=systrap`, no KVM required) next to the default `runc` runtime, and verifies them. On any failure the installation is rolled back; provisioning continues and the host offers the standard level only. When the CPU supports hardware virtualization, the script then loads the KVM modules and, only if `/dev/kvm` is usable, registers and verifies `runsc-kvm` / `runsc-kvm-hostnet` (`--platform=kvm`) for the sandboxed-kvm level; a KVM failure only rolls back the KVM runtimes. Hetzner Cloud servers and DigitalOcean droplets normally do not expose `/dev/kvm`, so sandboxed-kvm usually reports `unsupported` there. See [Host preparation](./container-isolation.md#host-preparation)
 4. **Database Setup**: PostgreSQL container is started with health checks
 5. **Agent-Manager Deployment**: Agent-manager container is deployed with:
    - Authentication configuration (API key or Keycloak)
@@ -108,7 +109,7 @@ All configuration values are properly interpolated into the docker-compose.yml f
 - **Authentication**: `STATIC_API_KEY` or Keycloak variables
 - **Git Configuration**: `GIT_REPOSITORY_URL`, `GIT_USERNAME`, `GIT_TOKEN`, `GIT_PASSWORD`
 - **Agent Image**: `AGENT_DEFAULT_IMAGE` (optional override for worker image)
-- **Container isolation**: the manager uses its defaults (`AGENT_SANDBOX_RUNTIME=runsc-systrap`, probes enabled); the gVisor release and its SHA-512 checksums are pinned in the generated cloud-init script (the same step runs for Hetzner, DigitalOcean and Decabill-provisioned agent manager hosts)
+- **Container isolation**: the manager uses its defaults (`AGENT_SANDBOX_RUNTIME=runsc-systrap`, `AGENT_SANDBOX_KVM_RUNTIME=runsc-kvm`, probes enabled); the gVisor release and its SHA-512 checksums are pinned in the generated cloud-init script (the same step runs for Hetzner, DigitalOcean and Decabill-provisioned agent manager hosts)
 
 Values are securely passed from the frontend through the backend to the user data script, which generates the docker-compose.yml with all environment variables properly set.
 

@@ -3563,8 +3563,8 @@
         <target>Der Controller holt Filtertreffer und Verkehrsentscheidungen in das Audit-Log und kann signierte Webhooks senden, damit Ihre Sicherheitswerkzeuge sehen, was der Agent getan hat.</target>
       </trans-unit>
       <trans-unit id="featurePortalHowItWorks-isolationTitle" datatype="html">
-        <source> Two isolation levels, never a silent downgrade </source>
-        <target>Zwei Isolationsstufen, nie eine stille Herabstufung</target>
+        <source> Three isolation levels, never a silent downgrade </source>
+        <target>Drei Isolationsstufen, nie eine stille Herabstufung</target>
       </trans-unit>
       <trans-unit id="featurePortalHowItWorks-isolationLead" datatype="html">
         <source> A regular container shares the host kernel with everything else on the machine. Agent code is code you have not reviewed yet, so Agenstra can put a second kernel in between: gVisor. </source>
@@ -3591,8 +3591,8 @@
         <target>Läuft auf gewöhnlichen Cloud-VMs</target>
       </trans-unit>
       <trans-unit id="featurePortalHowItWorks-isolationFact3Desc" datatype="html">
-        <source> gVisor runs on its systrap platform, so no KVM or nested virtualization is needed. Provisioned hosts get it installed and verified automatically. </source>
-        <target>gVisor läuft auf seiner systrap-Plattform, daher sind weder KVM noch verschachtelte Virtualisierung nötig. Bereitgestellte Hosts bekommen es automatisch installiert und geprüft.</target>
+        <source> gVisor&apos;s systrap platform needs no KVM or nested virtualization. Hosts with hardware virtualization additionally run gVisor on KVM. Provisioned hosts get both installed and verified automatically. </source>
+        <target>Die systrap-Plattform von gVisor braucht weder KVM noch verschachtelte Virtualisierung. Hosts mit Hardwarevirtualisierung betreiben gVisor zusätzlich auf KVM. Bereitgestellte Hosts bekommen beides automatisch installiert und geprüft.</target>
       </trans-unit>
       <trans-unit id="featurePortalHowItWorks-isolationBadge" datatype="html">
         <source>Where a system call ends up</source>
@@ -3637,6 +3637,18 @@
       <trans-unit id="featurePortalHowItWorks-sandboxedDesc" datatype="html">
         <source> Preselected wherever the host is ready. A kernel exploit has to break the Sentry first before it can reach the host. </source>
         <target>Vorausgewählt, wo immer der Host bereit ist. Ein Kernel-Exploit muss erst den Sentry überwinden, bevor er den Host erreicht.</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-sandboxedKvmTitle" datatype="html">
+        <source> Sandboxed + KVM </source>
+        <target>Sandbox + KVM</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-layerSentryKvmDesc" datatype="html">
+        <source>in a hardware-virtualized address space</source>
+        <target>in einem hardwarevirtualisierten Adressraum</target>
+      </trans-unit>
+      <trans-unit id="featurePortalHowItWorks-sandboxedKvmDesc" datatype="html">
+        <source> Preselected where the host exposes KVM. System calls trap into the Sentry through the CPU&apos;s virtualization extensions instead of seccomp. </source>
+        <target>Vorausgewählt, wo der Host KVM bereitstellt. Systemaufrufe landen über die Virtualisierungserweiterungen der CPU statt über seccomp im Sentry.</target>
       </trans-unit>
       <trans-unit id="featurePortalHowItWorks-egressTitle" datatype="html">
         <source> One guard per environment, and nothing gets around it </source>
@@ -3791,8 +3803,8 @@
         <target>gVisor ist keine virtuelle Maschine</target>
       </trans-unit>
       <trans-unit id="featurePortalHowItWorks-limit1Desc" datatype="html">
-        <source> It shrinks the host kernel&apos;s attack surface considerably, but it is not a hardware boundary. It works together with unprivileged workloads, the egress guard and a hardened host. </source>
-        <target>Es verkleinert die Angriffsfläche des Host-Kernels deutlich, ist aber keine Hardware-Grenze. Es wirkt zusammen mit unprivilegierten Arbeitslasten, dem Egress Guard und einem gehärteten Host.</target>
+        <source> It shrinks the host kernel&apos;s attack surface considerably, but it is not a full virtual machine. Where the host supports KVM, the Sentry is additionally isolated by hardware virtualization. It works together with unprivileged workloads, the egress guard and a hardened host. </source>
+        <target>Es verkleinert die Angriffsfläche des Host-Kernels deutlich, ist aber keine vollständige virtuelle Maschine. Wo der Host KVM unterstützt, wird der Sentry zusätzlich durch Hardwarevirtualisierung isoliert. Es wirkt zusammen mit unprivilegierten Arbeitslasten, dem Egress Guard und einem gehärteten Host.</target>
       </trans-unit>
       <trans-unit id="featurePortalHowItWorks-limit2Title" datatype="html">
         <source>The sandbox costs some speed</source>
@@ -3875,8 +3887,8 @@
         <target>Ein technischer Blick auf Agenstra: Steuerungsebene, Agent Manager, Agent-Container in der gVisor-Sandbox, Egress Guards pro Umgebung, mehrstufige Richtlinien und Audit-Trails.</target>
       </trans-unit>
       <trans-unit id="featurePortalHowItWorks-metaKeywords" datatype="html">
-        <source>Agenstra architecture, AI agent sandbox, gVisor coding agents, agent container isolation, egress filtering for AI agents, agent control plane, self-hosted coding agents</source>
-        <target>Agenstra Architektur, KI-Agenten Sandbox, gVisor Coding-Agenten, Container-Isolation für Agenten, Egress-Filterung für KI-Agenten, Agent-Steuerungsebene, selbst gehostete Coding-Agenten</target>
+        <source>Agenstra architecture, AI agent sandbox, gVisor coding agents, gVisor KVM sandbox, agent container isolation, egress filtering for AI agents, agent control plane, self-hosted coding agents</source>
+        <target>Agenstra Architektur, KI-Agenten Sandbox, gVisor Coding-Agenten, gVisor KVM-Sandbox, Container-Isolation für Agenten, Egress-Filterung für KI-Agenten, Agent-Steuerungsebene, selbst gehostete Coding-Agenten</target>
       </trans-unit>
       <trans-unit id="featurePortalHowItWorks-modesScaleOpen" datatype="html">
         <source>Open</source>

@@ -16,6 +16,12 @@ import {
   isIsolationLevelAvailable,
   isolationLevelLabel,
   isolationRuntimeStateLabel,
+  isGvisorIsolationLevel,
+  isKnownIsolationLevel,
+  ISOLATION_LEVELS_STRONGEST_FIRST,
+  getSelectableIsolationLevels,
+  isolationDowngradeDialogTexts,
+  isolationLevelDescription,
 } from './isolation-level.util';
 
 describe('isolation-level.util', () => {
@@ -249,6 +255,122 @@ describe('isolation-level.util', () => {
           }),
         ).toEqual({ blockedReason: 'review-required' });
       });
+    });
+  });
+  describe('sandboxed-kvm', () => {
+    const kvmReady: ClientIsolationSummaryDto = {
+      ...sandboxReady,
+      recommendedLevel: 'sandboxed-kvm',
+      availableLevels: ['sandboxed-kvm', 'sandboxed', 'standard'],
+      levels: {
+        ...sandboxReady.levels,
+        'sandboxed-kvm': { rank: 3, runtime: 'runsc-kvm', state: 'ready' },
+      },
+    };
+    const kvmUnavailable: ClientIsolationSummaryDto = {
+      ...sandboxReady,
+      levels: {
+        ...sandboxReady.levels,
+        'sandboxed-kvm': {
+          rank: 3,
+          runtime: 'runsc-kvm',
+          state: 'probe-failed',
+          reasonCode: 'E_KVM_UNAVAILABLE',
+          reason: 'The KVM device (/dev/kvm) is not available on this host',
+        },
+      },
+    };
+
+    it('orders, labels and colours the level', () => {
+      expect(ISOLATION_LEVELS_STRONGEST_FIRST).toEqual(['sandboxed-kvm', 'sandboxed', 'standard']);
+      expect(isolationLevelLabel('sandboxed-kvm')).toBe('Sandboxed (gVisor on KVM)');
+      expect(getIsolationBadgeColor('sandboxed-kvm')).toBe('primary');
+      expect(isGvisorIsolationLevel('sandboxed-kvm')).toBe(true);
+      expect(isGvisorIsolationLevel('sandboxed')).toBe(true);
+      expect(isGvisorIsolationLevel('standard')).toBe(false);
+      expect(isKnownIsolationLevel('sandboxed-kvm')).toBe(true);
+      expect(isKnownIsolationLevel('kata')).toBe(false);
+    });
+
+    it('recommends sandboxed-kvm and lists it strongest first', () => {
+      expect(getRecommendedIsolationLevel({ isolation: kvmReady })).toBe('sandboxed-kvm');
+      expect(
+        getAvailableIsolationLevels({
+          isolation: { ...kvmReady, availableLevels: ['standard', 'sandboxed-kvm', 'sandboxed'] },
+        }),
+      ).toEqual(['sandboxed-kvm', 'sandboxed', 'standard']);
+    });
+
+    it('ignores levels this console does not know yet', () => {
+      expect(
+        getAvailableIsolationLevels({
+          isolation: { ...kvmReady, availableLevels: ['future-level' as never, 'sandboxed', 'standard'] },
+        }),
+      ).toEqual(['sandboxed', 'standard']);
+    });
+
+    it('treats sandboxed and standard as downgrades of sandboxed-kvm', () => {
+      expect(isIsolationDowngrade('sandboxed', 'sandboxed-kvm')).toBe(true);
+      expect(isIsolationDowngrade('standard', 'sandboxed-kvm')).toBe(true);
+      expect(isIsolationDowngrade('sandboxed-kvm', 'sandboxed-kvm')).toBe(false);
+      expect(isIsolationDowngrade('sandboxed-kvm', 'sandboxed')).toBe(false);
+    });
+
+    it('explains why the level is unavailable', () => {
+      expect(getIsolationLevelUnavailableReason({ isolation: kvmReady }, 'sandboxed-kvm')).toBeNull();
+      expect(getIsolationLevelUnavailableReason({ isolation: kvmUnavailable }, 'sandboxed-kvm')).toBe(
+        'The KVM device (/dev/kvm) is not available on this host',
+      );
+      // Controllers that predate the level do not report it: nothing to explain.
+      expect(getIsolationLevelUnavailableReason({ isolation: sandboxReady }, 'sandboxed-kvm')).toBeNull();
+    });
+
+    it('shows the KVM sandbox in the workspace indicator', () => {
+      expect(getWorkspaceIsolationIndicatorLabel({ isolation: kvmReady })).toBe('KVM sandbox available');
+      expect(getWorkspaceIsolationIndicatorLabel({ isolation: kvmUnavailable })).toBe('Sandbox available');
+    });
+
+    it('offers sandboxed-kvm only when the host reports it', () => {
+      expect(getSelectableIsolationLevels({ isolation: kvmReady })).toEqual(['sandboxed-kvm', 'sandboxed', 'standard']);
+      expect(getSelectableIsolationLevels({ isolation: kvmUnavailable })).toEqual([
+        'sandboxed-kvm',
+        'sandboxed',
+        'standard',
+      ]);
+      expect(getSelectableIsolationLevels({ isolation: sandboxReady })).toEqual(['sandboxed', 'standard']);
+      expect(getSelectableIsolationLevels(undefined)).toEqual(['sandboxed', 'standard']);
+    });
+
+    it('describes every level and the downgrade confirmations', () => {
+      for (const level of ISOLATION_LEVELS_STRONGEST_FIRST) {
+        expect(isolationLevelDescription(level)).not.toBe('');
+      }
+
+      expect(isolationDowngradeDialogTexts('standard').confirmLabel).toBe('Use Standard Docker');
+      expect(isolationDowngradeDialogTexts('sandboxed').confirmLabel).toBe('Use Sandboxed (gVisor)');
+      expect(isolationDowngradeDialogTexts('sandboxed').message).toContain('KVM');
+    });
+
+    it('keeps the environment level', () => {
+      expect(
+        getEnvironmentIsolationLevel({ isolation: { level: 'sandboxed-kvm', runtime: 'runsc-kvm', selection: null } }),
+      ).toBe('sandboxed-kvm');
+    });
+
+    it('submits explicit sandboxed-kvm choices only when available', () => {
+      expect(
+        resolveIsolationSubmission({ explicitLevel: 'sandboxed-kvm', pinnedRevision: 'rev-1', isolation: kvmReady }),
+      ).toEqual({ isolationLevel: 'sandboxed-kvm', capabilityRevision: 'rev-1' });
+      expect(
+        resolveIsolationSubmission({
+          explicitLevel: 'sandboxed-kvm',
+          pinnedRevision: 'rev-1',
+          isolation: kvmUnavailable,
+        }),
+      ).toEqual({ blockedReason: 'level-unavailable' });
+      expect(
+        resolveIsolationSubmission({ explicitLevel: 'sandboxed-kvm', pinnedRevision: null, isolation: legacy }),
+      ).toEqual({ blockedReason: 'level-unavailable' });
     });
   });
 });

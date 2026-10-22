@@ -1,6 +1,6 @@
 import { randomBytes } from 'crypto';
 
-import { buildGvisorInstallScript } from '@forepath/shared/backend/util-container-runtime';
+import { buildGvisorHostScript, buildGvisorInstallScript } from '@forepath/shared/backend/util-container-runtime';
 
 import { buildCertbotBootstrapScript } from '../../utils/cloud-init/certbot-bootstrap.script';
 import { buildComposeBridgeNetwork, buildComposeNamedVolumes } from '../../utils/cloud-init/compose-service.utils';
@@ -538,12 +538,26 @@ log "agent-manager provisioning completed successfully at $(date)"
 }
 
 const AGENT_MANAGER_UPDATE_LOG = '/var/log/agent-manager-update.log';
+/** Host preparation script of container isolation levels, refreshed on every update. */
+const AGENT_MANAGER_ISOLATION_SCRIPT = '/opt/agent-manager/agenstra-gvisor.sh';
 
 /**
- * Builds the shell command to run on a provisioned agent-manager host to pull latest images
- * and recreate containers (docker compose up -d --pull=always). Logs to agent-manager-update.log.
- * Use when executing updates over SSH from the billing scheduler.
+ * Builds the shell command to run on a provisioned agent-manager host over SSH (billing scheduler):
+ * 1. refresh the container isolation runtimes with the current host preparation script (gVisor and,
+ *    when the host exposes KVM, gVisor on KVM). Hosts provisioned earlier get newly supported levels this
+ *    way. Idempotent, only reloads Docker (running environments are not restarted) and never fails the
+ *    update: on failure the host keeps its previous runtimes and the manager probes what it can run;
+ * 2. pull the latest images and recreate the containers (docker compose up -d --pull=always).
+ * Logs to agent-manager-update.log.
  */
 export function buildAgentManagerUpdateCommand(): string {
-  return `log() { echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*" | tee -a ${AGENT_MANAGER_UPDATE_LOG}; }; log "Starting update"; cd /opt/agent-manager && docker compose up -d --pull=always 2>&1 | tee -a ${AGENT_MANAGER_UPDATE_LOG} || { log "ERROR: Update failed"; exit 1; }; log "Update completed"`;
+  const hostScript = Buffer.from(buildGvisorHostScript()).toString('base64');
+
+  return (
+    `log() { echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*" | tee -a ${AGENT_MANAGER_UPDATE_LOG}; }; log "Starting update"; ` +
+    `log "Refreshing container isolation runtimes"; ` +
+    `if printf '%s' '${hostScript}' | base64 -d > ${AGENT_MANAGER_ISOLATION_SCRIPT}.tmp && chmod 0755 ${AGENT_MANAGER_ISOLATION_SCRIPT}.tmp && mv ${AGENT_MANAGER_ISOLATION_SCRIPT}.tmp ${AGENT_MANAGER_ISOLATION_SCRIPT} && ${AGENT_MANAGER_ISOLATION_SCRIPT} install --json >> ${AGENT_MANAGER_UPDATE_LOG} 2>&1; ` +
+    `then log "Container isolation runtimes refreshed"; else log "WARNING: Container isolation refresh failed; keeping the previous runtimes"; fi; ` +
+    `cd /opt/agent-manager || { log "ERROR: Update failed"; exit 1; }; rc_file=$(mktemp); { docker compose up -d --pull=always 2>&1; echo $? > "$rc_file"; } | tee -a ${AGENT_MANAGER_UPDATE_LOG}; rc=$(cat "$rc_file"); rm -f "$rc_file"; [ "$rc" = 0 ] || { log "ERROR: Update failed"; exit 1; }; log "Update completed"`
+  );
 }

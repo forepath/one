@@ -64,7 +64,15 @@ Containers share a defined application directory on the host (typically under `/
 
 OpenSearch on `agenstra-controller` and `decabill-billing` is single-node, bound only to the compose network (no host port), with `vm.max_map_count=262144` set during cloud-init. Existing provisioned hosts do not pick this up from image pull alone; re-provision or replace the host compose file.
 
-On `agenstra-manager` hosts, cloud-init additionally installs a pinned, checksum-verified gVisor release right after Docker and registers the Docker runtimes `runsc-systrap` and `runsc-systrap-hostnet` (Docker's default runtime stays `runc`). This enables the **sandboxed** container isolation level for Agenstra environments; the step is optional and never fails provisioning (on any failure it is rolled back and the host offers standard Docker only). Existing hosts do not pick this up from image updates; re-provision them or run `agenstra-gvisor.sh install` on the host. See [Agenstra Container Isolation Levels](../../agenstra/features/container-isolation.md).
+On `agenstra-manager` hosts, cloud-init installs a pinned, checksum-verified gVisor release right after Docker. It registers the Docker runtimes `runsc-systrap` and `runsc-systrap-hostnet`, which enable the **sandboxed** container isolation level for Agenstra environments. Docker's default runtime stays `runc`.
+
+When the host exposes hardware virtualization (`/dev/kvm`, or a CPU with `vmx` / `svm` whose KVM modules can be loaded), cloud-init also registers `runsc-kvm` and `runsc-kvm-hostnet` for the **sandboxed-kvm** level (gVisor on its KVM platform). No libvirt or QEMU is installed. Hetzner Cloud and DigitalOcean servers normally do not expose KVM, so those hosts offer `sandboxed` only.
+
+Both steps are optional and never fail provisioning. On any failure they are rolled back; a KVM failure only rolls back the KVM runtimes, and the host keeps whatever it could set up (at least standard Docker).
+
+**User data limits:** Decabill submits user data to Hetzner Cloud as plain text, because Hetzner limits the submitted `user_data` string to 32768 characters and base64 would add a third. Hetzner user data above that limit is rejected before the server is created. DigitalOcean user data is limited to 64 KiB.
+
+Hosts provisioned earlier receive new isolation runtimes with the next scheduled update (see [Subscription Item Update Scheduler](#subscription-item-update-scheduler)). See [Agenstra Container Isolation Levels](../../agenstra/features/container-isolation.md).
 
 Operators choose service kind and image tags through service type and plan configuration; the update scheduler pulls latest tagged images on a schedule.
 
@@ -135,6 +143,12 @@ docker compose up -d --pull=always
 ```
 
 in the application directory. This pulls latest container images and recreates services. Failures are logged on the host under `/var/log/agent-controller-update.log`, `/var/log/decabill-billing-update.log`, or equivalent per service kind.
+
+On `agenstra-manager` hosts the update first refreshes the container isolation runtimes. It writes the current host preparation script to `/opt/agent-manager/agenstra-gvisor.sh` and runs `install`. Hosts provisioned before an isolation level existed (e.g. `sandboxed-kvm`) get it this way when the host supports it.
+
+The refresh is idempotent. It only reloads Docker, so running environments are not restarted. It never fails the update: a failure is logged as a warning and the host keeps its previous runtimes, and the agent manager probes what it can actually run. New runtimes show up in the manager's capabilities right away when the update recreated the manager. Otherwise they appear at its next scheduled probe, or on **Re-check isolation** in the console.
+
+The update command fails (non-zero exit, `ERROR: Update failed` in the log) when `docker compose` fails or the application directory is missing.
 
 ## Provisioning outcome notifications
 

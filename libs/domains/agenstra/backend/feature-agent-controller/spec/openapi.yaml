@@ -2142,7 +2142,8 @@ paths:
       summary: Get container isolation summary of a workspace host
       description: |
         Returns the container isolation levels of the workspace's agent manager host: state of the
-        `standard` (runc) and `sandboxed` (gVisor) levels, recommended level and the capability revision to
+        `standard` (runc), `sandboxed` (gVisor) and `sandboxed-kvm` (gVisor on KVM) levels, recommended level
+        and the capability revision to
         submit with environment creation. When the agent manager is unreachable, the last stored snapshot is
         returned with `stale: true`. Agent managers without isolation support are reported as
         `supported: false` (standard only).
@@ -2245,8 +2246,8 @@ paths:
         When omitted, the recommended (strongest ready) level is used. Explicit levels are never replaced by
         another level, stale `capabilityRevision` values are rejected, and the selection record (including
         the selecting user) is derived server-side. Choosing a weaker level than recommended publishes
-        `agent.isolation_override`; a sandboxed container that fails to start publishes
-        `agent.sandbox_creation_failed` and is not retried on the standard runtime.
+        `agent.isolation_override`; a gVisor (`sandboxed` / `sandboxed-kvm`) container that fails to start
+        publishes `agent.sandbox_creation_failed` and is not retried on another runtime.
       operationId: createClientAgent
       parameters:
         - in: path
@@ -2272,7 +2273,12 @@ paths:
         '400':
           description: |
             Validation error (including an invalid `isolationLevel`), or the agent manager rejected the request
-            (e.g. the sandboxed (gVisor) container could not be started; the environment was not created)
+            (e.g. the gVisor container could not be started; the environment was not created). gVisor runtime
+            failures carry `code: E_ISOLATION_RUNTIME_FAILED` and `isolationLevel`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IsolationRuntimeFailureDto'
         '403':
           description: No client access, or workspace management rights required
         '409':
@@ -7327,7 +7333,8 @@ components:
         isolationLevel:
           $ref: '#/components/schemas/IsolationLevel'
           description: |
-            Container isolation level (`sandboxed` = gVisor, `standard` = runc). When omitted, the recommended
+            Container isolation level (`sandboxed-kvm` = gVisor on KVM, `sandboxed` = gVisor, `standard` = runc).
+            When omitted, the recommended
             (strongest ready) level of the workspace host is used. An unavailable level is rejected with 409,
             never replaced by another level.
         capabilityRevision:
@@ -7461,10 +7468,12 @@ components:
       description: Container type of the environment
     IsolationLevel:
       type: string
-      enum: [standard, sandboxed]
+      enum: [standard, sandboxed, sandboxed-kvm]
       description: |
         Container isolation level. `standard` runs the worker on Docker's default runtime (runc, shares
-        the host kernel); `sandboxed` runs it on gVisor (`runsc`, systrap platform).
+        the host kernel); `sandboxed` runs it on gVisor (`runsc`, systrap platform); `sandboxed-kvm`
+        runs it on gVisor's KVM platform (`runsc --platform=kvm`, hardware virtualization, needs
+        `/dev/kvm` on the host).
     IsolationRuntimeState:
       type: string
       enum:
@@ -7476,16 +7485,35 @@ components:
           disabled-by-admin,
         ]
       description: Runtime state of an isolation level on a host (derived from real probes, never from configuration alone)
+    IsolationRuntimeFailureDto:
+      type: object
+      required: [statusCode, message]
+      properties:
+        statusCode:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: Bad Request
+        message:
+          type: string
+          description: "Failure message, e.g. 'The sandboxed-kvm (gVisor on KVM) container could not be started: ...'"
+        code:
+          type: string
+          enum: [E_ISOLATION_RUNTIME_FAILED]
+          description: Present when a gVisor environment container could not be started (never retried on another runtime)
+        isolationLevel:
+          $ref: '#/components/schemas/IsolationLevel'
     IsolationLevelCapabilityDto:
       type: object
       required: [rank, runtime, state]
       properties:
         rank:
           type: integer
-          description: Strength rank (`1` = standard, `2` = sandboxed); higher is stronger
+          description: Strength rank (`1` = standard, `2` = sandboxed, `3` = sandboxed-kvm); higher is stronger
         runtime:
           type: string
-          description: Docker runtime name used for this level (`runc`, `runsc-systrap`)
+          description: Docker runtime name used for this level (`runc`, `runsc-systrap`, `runsc-kvm`)
         state:
           $ref: '#/components/schemas/IsolationRuntimeState'
         reasonCode:
@@ -7495,7 +7523,10 @@ components:
             `E_DOCKER_BASELINE_UNAVAILABLE`, `E_RUNC_PROBE_FAILED`, `E_PROBE_PENDING`, `E_PROBE_IMAGE_UNAVAILABLE`,
             `E_PROBE_START_FAILED`, `E_PROBE_EXEC_FAILED`, `E_PROBE_FILESYSTEM_FAILED`, `E_PROBE_LOGS_FAILED`,
             `E_PROBE_RUNTIME_MISMATCH`, `E_PROBE_TIMEOUT`, `E_SHARED_NETNS_FAILED`, `E_REPEATED_RUNTIME_FAILURES`,
-            `E_DISABLED_BY_ADMIN`; `E_MANAGER_UNSUPPORTED` (controller only) for agent managers without isolation support
+            `E_DISABLED_BY_ADMIN`, `E_SHARED_NETNS_RUNTIME_NOT_REGISTERED`, `E_KVM_UNAVAILABLE` (the KVM platform
+            cannot open `/dev/kvm`), `E_RUNTIME_MISCONFIGURED` (runtime registered with another gVisor platform /
+            network mode); `E_MANAGER_UNSUPPORTED` (controller only) for agent managers without isolation
+            support or without the level (older releases)
         reason:
           type: string
           description: Short operator-facing explanation (never contains secrets or workspace content)
@@ -7517,11 +7548,13 @@ components:
           description: True while a probe is running (states reflect the previous probe)
         levels:
           type: object
-          required: [standard, sandboxed]
+          required: [standard, sandboxed, sandboxed-kvm]
           properties:
             standard:
               $ref: '#/components/schemas/IsolationLevelCapabilityDto'
             sandboxed:
+              $ref: '#/components/schemas/IsolationLevelCapabilityDto'
+            sandboxed-kvm:
               $ref: '#/components/schemas/IsolationLevelCapabilityDto'
         recommendedLevel:
           oneOf:
@@ -7565,11 +7598,13 @@ components:
           description: Ready levels, strongest first
         levels:
           type: object
-          required: [standard, sandboxed]
+          required: [standard, sandboxed, sandboxed-kvm]
           properties:
             standard:
               $ref: '#/components/schemas/IsolationLevelCapabilityDto'
             sandboxed:
+              $ref: '#/components/schemas/IsolationLevelCapabilityDto'
+            sandboxed-kvm:
               $ref: '#/components/schemas/IsolationLevelCapabilityDto'
         revision:
           type: [string, 'null']
@@ -7618,7 +7653,7 @@ components:
           $ref: '#/components/schemas/IsolationLevel'
         runtime:
           type: string
-          description: Docker runtime the environment's worker container runs on (`runsc-systrap-hostnet` for sandboxed workers behind an egress guard)
+          description: Docker runtime the environment's worker container runs on (`runsc-systrap-hostnet` / `runsc-kvm-hostnet` for gVisor workers behind an egress guard or on the agent network)
         selection:
           oneOf:
             - $ref: '#/components/schemas/AgentIsolationSelectionDto'

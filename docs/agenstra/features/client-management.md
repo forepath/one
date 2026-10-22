@@ -51,14 +51,15 @@ Agent managers that support container isolation levels also report **`isolation`
 
 Each client response includes an **`isolation`** summary of the workspace host's [container isolation levels](./container-isolation.md):
 
-- **`recommendedLevel`** Strongest ready level (`sandboxed` or `standard`), preselected for new environments; `null` when the host cannot run environments
+- **`recommendedLevel`** Strongest ready level (`sandboxed-kvm`, `sandboxed` or `standard`), preselected for new environments; `null` when the host cannot run environments
 - **`availableLevels`** Ready levels, strongest first
 - **`levels`** State (`ready`, `unsupported`, `probe-failed`, `disabled-by-admin`, ...), runtime and reason code per level
 - **`revision`** Capability revision submitted with environment creation (stale selections are rejected)
+- **`levels`** Per-level state; always contains `standard`, `sandboxed` and `sandboxed-kvm` (levels an older manager does not report are `unsupported` with `E_MANAGER_UNSUPPORTED`)
 - **`supported`** `false` when the agent manager predates isolation levels (standard-only)
 - **`stale`** `true` when the agent manager was unreachable and the last stored snapshot is shown
 
-The console shows the levels on the workspace and offers a **Re-check isolation** action in the Update Workspace modal (`POST /api/clients/:id/isolation/probe`, workspace management access) after a host has been prepared for gVisor. Capability changes are published as `isolation.*` [webhook](./webhooks.md) events.
+The console shows the levels on the workspace and offers a **Re-check isolation** action in the Update Workspace modal (`POST /api/clients/:id/isolation/probe`, workspace management access) after a host has been prepared for gVisor (or KVM). The workspace list shows **KVM sandbox available** when the sandboxed-kvm level is ready. Capability changes are published as `isolation.*` [webhook](./webhooks.md) events.
 
 ## Managing Clients
 
@@ -157,7 +158,7 @@ For detailed API documentation, see the application and API reference docs linke
 
 - **[Server Provisioning](./server-provisioning.md)** Automated server provisioning
 - **[Agent Management](./agent-management.md)** Managing agents for a client
-- **[Container Isolation Levels](./container-isolation.md)** Standard and gVisor-sandboxed environments
+- **[Container Isolation Levels](./container-isolation.md)** Standard, gVisor-sandboxed and gVisor-on-KVM environments
 - **[WebSocket Communication](./websocket-communication.md)** Real-time communication with clients
 - **[Backend Agent Controller Application](../applications/backend-agent-controller.md)** Application details
 

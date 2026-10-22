@@ -1,14 +1,23 @@
 import {
   CreateAgentDto,
+  GVISOR_ISOLATION_LEVELS,
+  type GvisorIsolationLevel,
   HostIsolationCapabilitiesDto,
+  ISOLATION_LEVEL_RANK,
+  ISOLATION_LEVELS,
+  ISOLATION_RUNTIME_FAILURE_CODE,
   IsolationLevel,
+  type IsolationLevelCapabilityDto,
   IsolationResolution,
   IsolationResolutionError,
+  isGvisorIsolationLevel,
   resolveIsolationRequest,
+  runtimeForIsolationLevel,
 } from '@forepath/agenstra/backend/feature-agent-manager';
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
   Injectable,
   Logger,
   NotFoundException,
@@ -28,8 +37,55 @@ import { ClientsRepository } from '../repositories/clients.repository';
 
 import { ClientAgentProxyService } from './client-agent-proxy.service';
 
-/** Message prefix of the agent manager when a sandboxed (gVisor) worker container fails to start. */
-const SANDBOX_RUNTIME_FAILURE_PATTERN = /sandboxed \(gVisor\) container could not be started/i;
+/**
+ * Message of the agent manager when a gVisor (sandboxed / sandboxed-kvm) worker container fails to start.
+ * Fallback for managers that do not report `code: E_ISOLATION_RUNTIME_FAILED` yet.
+ */
+const SANDBOX_RUNTIME_FAILURE_PATTERN = /sandboxed(?:-kvm)? \(gVisor(?: on KVM)?\) container could not be started/i;
+
+/** Transition events of the gVisor levels (`sandboxed` keeps its original event names). */
+const GVISOR_LEVEL_TRANSITIONS: Readonly<
+  Record<GvisorIsolationLevel, { available: IsolationHostTransitionType; unavailable: IsolationHostTransitionType }>
+> = {
+  sandboxed: { available: 'isolation.sandbox_available', unavailable: 'isolation.sandbox_unavailable' },
+  'sandboxed-kvm': { available: 'isolation.sandbox_kvm_available', unavailable: 'isolation.sandbox_kvm_unavailable' },
+};
+
+/** Level a manager that predates it cannot offer (older agent manager release). */
+function managerUnsupportedLevel(level: IsolationLevel): IsolationLevelCapabilityDto {
+  return {
+    rank: ISOLATION_LEVEL_RANK[level],
+    runtime: runtimeForIsolationLevel(level, {}),
+    state: 'unsupported',
+    reasonCode: 'E_MANAGER_UNSUPPORTED',
+    reason:
+      level === 'standard' || level === 'sandboxed'
+        ? 'The agent manager of this workspace does not support container isolation levels yet'
+        : `The agent manager of this workspace does not support the ${level} isolation level yet`,
+  };
+}
+
+/**
+ * Capabilities with every level present: levels unknown to the reporting agent manager (an older
+ * release, or a snapshot recorded before a level existed) are `unsupported` (`E_MANAGER_UNSUPPORTED`).
+ */
+export function normalizeIsolationCapabilities(
+  capabilities: HostIsolationCapabilitiesDto,
+): HostIsolationCapabilitiesDto {
+  const missing = ISOLATION_LEVELS.filter((level) => !capabilities.levels?.[level]);
+
+  if (missing.length === 0) {
+    return capabilities;
+  }
+
+  return {
+    ...capabilities,
+    levels: {
+      ...capabilities.levels,
+      ...Object.fromEntries(missing.map((level) => [level, managerUnsupportedLevel(level)])),
+    } as HostIsolationCapabilitiesDto['levels'],
+  };
+}
 
 /** Strip credentials embedded in URLs and bound the length of error messages sent to webhooks. */
 export function redactErrorMessage(message: string): string {
@@ -47,13 +103,8 @@ const LEGACY_SUMMARY: ClientIsolationSummaryDto = {
   availableLevels: ['standard'],
   levels: {
     standard: { rank: 1, runtime: 'runc', state: 'ready' },
-    sandboxed: {
-      rank: 2,
-      runtime: 'runsc-systrap',
-      state: 'unsupported',
-      reasonCode: 'E_MANAGER_UNSUPPORTED',
-      reason: 'The agent manager of this workspace does not support container isolation levels yet',
-    },
+    sandboxed: managerUnsupportedLevel('sandboxed'),
+    'sandboxed-kvm': managerUnsupportedLevel('sandboxed-kvm'),
   },
   revision: null,
   probedAt: null,
@@ -99,7 +150,7 @@ export class ClientIsolationService {
       supported: true,
       recommendedLevel: capabilities.recommendedLevel ?? null,
       availableLevels: capabilities.availableLevels ?? [],
-      levels: capabilities.levels,
+      levels: normalizeIsolationCapabilities(capabilities).levels,
       revision: capabilities.revision ?? null,
       probedAt: capabilities.probedAt ?? null,
       probing: capabilities.probing === true,
@@ -156,7 +207,7 @@ export class ClientIsolationService {
     let capabilities: HostIsolationCapabilitiesDto;
 
     try {
-      capabilities = await this.clientAgentProxyService.probeClientIsolation(clientId);
+      capabilities = normalizeIsolationCapabilities(await this.clientAgentProxyService.probeClientIsolation(clientId));
     } catch (error) {
       if (error instanceof NotFoundException) {
         return this.summarize(null);
@@ -227,14 +278,18 @@ export class ClientIsolationService {
     if (capabilities && (!capabilities.probedAt || capabilities.levels.standard.state !== 'ready')) {
       capabilities = await this.clientAgentProxyService
         .probeClientIsolation(clientId)
-        .then((probed) => (probed?.levels ? probed : capabilities))
+        .then((probed) => (probed?.levels ? normalizeIsolationCapabilities(probed) : capabilities))
         .catch(() => capabilities);
     }
 
     if (!capabilities) {
       // Legacy (or unreachable) agent manager: it can only run the standard level.
-      if (request.isolationLevel === 'sandboxed') {
-        throw new ConflictException('Sandboxed isolation is not available on this workspace');
+      if (request.isolationLevel && request.isolationLevel !== 'standard') {
+        throw new ConflictException(
+          request.isolationLevel === 'sandboxed'
+            ? 'Sandboxed isolation is not available on this workspace'
+            : `Isolation level '${request.isolationLevel}' is not available on this workspace`,
+        );
       }
 
       // Forward an explicit choice anyway: should the manager support isolation after all (transient
@@ -308,17 +363,18 @@ export class ClientIsolationService {
 
   notifyCreationFailed(clientId: string, plan: CreationIsolationPlan, agentName: string, error: unknown): void {
     const message = (error as { message?: string })?.message ?? '';
+    const level = plan.resolution?.level;
 
-    // Only runtime failures of the sandboxed container (reported by the agent manager), not e.g.
+    // Only runtime failures of a gVisor container (reported by the agent manager), not e.g.
     // validation errors such as a duplicate environment name.
-    if (plan.resolution?.level !== 'sandboxed' || !SANDBOX_RUNTIME_FAILURE_PATTERN.test(message)) {
+    if (!level || !isGvisorIsolationLevel(level) || !this.isRuntimeFailure(error, message)) {
       return;
     }
 
     this.notificationPublisher?.publishAgentSandboxCreationFailed(clientId, {
       agentName,
-      isolationLevel: 'sandboxed',
-      runtime: plan.capabilities?.levels.sandboxed.runtime ?? 'runsc-systrap',
+      isolationLevel: level,
+      runtime: plan.capabilities?.levels[level]?.runtime ?? runtimeForIsolationLevel(level, {}),
       error: redactErrorMessage(message || 'Unknown error'),
       occurredAt: new Date().toISOString(),
     });
@@ -347,6 +403,7 @@ export class ClientIsolationService {
       revision: capabilities.revision,
       standardState: capabilities.levels.standard.state,
       sandboxedState: capabilities.levels.sandboxed.state,
+      sandboxedKvmState: capabilities.levels['sandboxed-kvm']?.state ?? null,
       recommendedLevel: capabilities.recommendedLevel ?? null,
       capabilities,
       probedAt: new Date(capabilities.probedAt),
@@ -398,20 +455,31 @@ export class ClientIsolationService {
 
     const transitions: Array<{
       type: IsolationHostTransitionType;
-      level: 'standard' | 'sandboxed';
+      level: IsolationLevel;
       previousState: string | null;
     }> = [];
-    const sandboxed = capabilities.levels.sandboxed.state;
     const standard = capabilities.levels.standard.state;
-    const previousSandboxed = previous?.sandboxedState ?? null;
     const previousStandard = previous?.standardState ?? null;
+    const previousStates: Record<GvisorIsolationLevel, string | null> = {
+      sandboxed: previous?.sandboxedState ?? null,
+      'sandboxed-kvm': previous?.sandboxedKvmState ?? null,
+    };
 
-    if (sandboxed === 'ready' && previousSandboxed !== 'ready') {
-      transitions.push({ type: 'isolation.sandbox_available', level: 'sandboxed', previousState: previousSandboxed });
-    }
+    for (const gvisorLevel of GVISOR_ISOLATION_LEVELS) {
+      const state = capabilities.levels[gvisorLevel]?.state;
+      const previousState = previousStates[gvisorLevel];
 
-    if (sandboxed !== 'ready' && previousSandboxed === 'ready') {
-      transitions.push({ type: 'isolation.sandbox_unavailable', level: 'sandboxed', previousState: previousSandboxed });
+      if (state === 'ready' && previousState !== 'ready') {
+        transitions.push({ type: GVISOR_LEVEL_TRANSITIONS[gvisorLevel].available, level: gvisorLevel, previousState });
+      }
+
+      if (state !== 'ready' && previousState === 'ready') {
+        transitions.push({
+          type: GVISOR_LEVEL_TRANSITIONS[gvisorLevel].unavailable,
+          level: gvisorLevel,
+          previousState,
+        });
+      }
     }
 
     if (standard !== 'ready' && previousStandard !== standard) {
@@ -442,12 +510,23 @@ export class ClientIsolationService {
     }
   }
 
+  /**
+   * Runtime failure of a gVisor container: the agent manager's machine-readable `code` (current
+   * releases), otherwise its message (older releases).
+   */
+  private isRuntimeFailure(error: unknown, message: string): boolean {
+    const body = error instanceof HttpException ? error.getResponse() : undefined;
+    const code = body && typeof body === 'object' ? (body as { code?: unknown }).code : undefined;
+
+    return code === ISOLATION_RUNTIME_FAILURE_CODE || SANDBOX_RUNTIME_FAILURE_PATTERN.test(message);
+  }
+
   /** Current capabilities from the agent manager; `null` for legacy or unreachable managers. */
   private async fetchCapabilities(clientId: string): Promise<HostIsolationCapabilitiesDto | null> {
     try {
       const capabilities = await this.clientAgentProxyService.getClientIsolation(clientId);
 
-      return capabilities?.levels ? capabilities : null;
+      return capabilities?.levels ? normalizeIsolationCapabilities(capabilities) : null;
     } catch (error) {
       this.logger.debug(`Isolation capabilities of client ${clientId} unavailable: ${(error as Error).message}`);
 

@@ -49,7 +49,7 @@ flowchart TB
     Attachments["Attachments<br/>mirrored read-only into workers"]
     CtxHandler["Agent request handlers (ack, workspace of the connection)<br/>agentContextRequest: search, describe, content<br/>agentTaskRequest: own tasks / agentHandoffRequest"]
     OcConfig["OpenCode config layering<br/>global / workspace / agent overlays, layer files,<br/>MCP + provider catalogs, platform security policy"]
-    Provisioning["Server provisioning<br/>manager hosts with Docker + gVisor"]
+    Provisioning["Server provisioning<br/>manager hosts with Docker + gVisor<br/>(+ KVM modules / runsc-kvm when /dev/kvm is available)"]
     Import["Context import<br/>Jira / Confluence to tickets + knowledge"]
     Notify["Notifications + updates<br/>email, webhooks, release checks"]
     Search["Search<br/>entity indexes, workspace full-text index"]
@@ -84,7 +84,7 @@ flowchart TB
   Provisioning --> CloudProviders
   Controller -.metrics.-> Otel
 
-  subgraph ManagerHost["Agent manager host (one per workspace, Docker + optional gVisor runsc-systrap / -hostnet)"]
+  subgraph ManagerHost["Agent manager host (one per workspace, Docker + optional gVisor runsc-systrap / -hostnet,<br/>+ gVisor on KVM runsc-kvm / -hostnet when /dev/kvm is available)"]
     subgraph Manager["Agent manager (NestJS :3000, docker.sock)"]
       MAuth["Authentication<br/>api-key / keycloak, per-agent socket login"]
       MApi["REST API /api<br/>agents, files, VCS, deployments, env vars, egress,<br/>isolation, workspace index, OpenCode config + MCP, permissions"]
@@ -98,7 +98,7 @@ flowchart TB
       Runtime["OpenCode runtime<br/>sessions per chat / reserved suffix, SSE event bridge,<br/>permission + question tracking, auto-replies"]
       ConfigSync["OpenCode config sync<br/>PATCH /global/config, secrets, platform agents + skills,<br/>platform agenstra MCP server"]
       Egress["Egress service<br/>guard lifecycle, policy render, events collector"]
-      Isolation["Isolation probes<br/>standard (runc) / sandboxed (gVisor)"]
+      Isolation["Isolation probes<br/>standard (runc) / sandboxed (gVisor) /<br/>sandboxed-kvm (gVisor on KVM)"]
       Filters["Chat filters<br/>incoming / outgoing, plugins"]
       Deploy["Deployments<br/>GitHub / GitLab pipeline providers"]
       WsIndex["Workspace index<br/>inotify supervisor, change notifier"]
@@ -106,7 +106,7 @@ flowchart TB
     end
 
     subgraph Agent["Per agent"]
-      subgraph Worker["Worker container (agenstra-manager-worker, io.agenstra.context-mcp=1)"]
+      subgraph Worker["Worker container (agenstra-manager-worker, io.agenstra.context-mcp=1)<br/>runtime per isolation level: runc / runsc-systrap(-hostnet) / runsc-kvm(-hostnet)"]
         OpenCode["OpenCode serve :4096<br/>agents: build, agenstra-automation, agenstra-plan"]
         CtxMcp["agenstra MCP server (stdio)<br/>/opt/agenstra/mcp, root-owned<br/>context_* (list, search, get, request_access),<br/>tasks_* (own recurring tasks),<br/>handoff_* (agents, profile_get, profile_update,<br/>create, get, respond)"]
         Desktop["XFCE + TigerVNC + websockify :6080<br/>Chromium, vnc-auth-proxy"]
@@ -152,3 +152,5 @@ flowchart TB
   Deploy --> Pipelines
   Manager -.metrics.-> Otel
   Registry -.images.-> Manager & Worker & Guard & Controller
+  IsolationLab(["E2E isolation lab (feature-isolation-lab)<br/>QEMU/KVM VMs in Docker: host scripts, probes,<br/>guard modes, DNS per isolation level"])
+  IsolationLab -.real host preparation + manager services.-> ManagerHost

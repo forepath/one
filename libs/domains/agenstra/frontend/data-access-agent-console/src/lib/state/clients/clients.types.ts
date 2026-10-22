@@ -11,9 +11,10 @@ export interface AgentTypeInfo {
 
 /**
  * Container isolation level of an environment:
+ * `sandboxed-kvm` = gVisor on its KVM platform (`runsc-kvm`, hardware virtualization),
  * `sandboxed` = gVisor (`runsc-systrap`), `standard` = Docker's default runtime (`runc`).
  */
-export type IsolationLevel = 'standard' | 'sandboxed';
+export type IsolationLevel = 'standard' | 'sandboxed' | 'sandboxed-kvm';
 
 /** Runtime state of an isolation level on a workspace host (derived from real runtime probes). */
 export type IsolationRuntimeState =
@@ -24,9 +25,9 @@ export type IsolationRuntimeState =
   | 'disabled-by-admin';
 
 export interface IsolationLevelCapabilityDto {
-  /** Strength rank (`1` = standard, `2` = sandboxed). */
+  /** Strength rank (`1` = standard, `2` = sandboxed, `3` = sandboxed-kvm). */
   rank: number;
-  /** Docker runtime name used for this level (`runc`, `runsc-systrap`). */
+  /** Docker runtime name used for this level (`runc`, `runsc-systrap`, `runsc-kvm`). */
   runtime: string;
   state: IsolationRuntimeState;
   /** Stable machine-readable reason when the level is not `ready`. */
@@ -38,6 +39,8 @@ export interface IsolationLevelCapabilityDto {
 export interface IsolationLevelsDto {
   standard: IsolationLevelCapabilityDto;
   sandboxed: IsolationLevelCapabilityDto;
+  /** Optional: agent controllers that predate the level do not report it. */
+  'sandboxed-kvm'?: IsolationLevelCapabilityDto;
 }
 
 /** Raw isolation capability record reported by the agent manager (`config.isolation`). */

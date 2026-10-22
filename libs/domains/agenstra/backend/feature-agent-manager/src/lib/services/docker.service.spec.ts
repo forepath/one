@@ -3326,14 +3326,91 @@ describe('DockerService', () => {
         ServerVersion: '29.0.0',
         KernelVersion: '6.8.0',
         DefaultRuntime: 'runc',
-        Runtimes: { runc: { path: 'runc' }, 'runsc-systrap': { path: '/usr/local/bin/runsc' } },
+        Runtimes: {
+          runc: { path: 'runc' },
+          'runsc-systrap': { path: '/usr/local/bin/runsc' },
+          'runsc-kvm-hostnet': { path: '/usr/local/bin/runsc', runtimeArgs: ['--platform=kvm', '--network=host', 7] },
+          'runsc-shim': { runtimeType: 'io.containerd.runsc.v1' },
+        },
       });
 
       await expect(service.getDockerHostInfo()).resolves.toEqual({
         serverVersion: '29.0.0',
         kernelVersion: '6.8.0',
         defaultRuntime: 'runc',
-        runtimes: { runc: 'runc', 'runsc-systrap': '/usr/local/bin/runsc' },
+        runtimes: {
+          runc: 'runc',
+          'runsc-systrap': '/usr/local/bin/runsc',
+          'runsc-kvm-hostnet': '/usr/local/bin/runsc',
+          'runsc-shim': 'io.containerd.runsc.v1',
+        },
+        runtimeArgs: { runc: null, 'runsc-systrap': null, 'runsc-kvm-hostnet': ['--platform=kvm', '--network=host'] },
+      });
+    });
+
+    describe('sandboxed-kvm runtimes', () => {
+      it('uses the KVM Netstack runtime only on the default bridge', async () => {
+        await service.createContainer({ image: 'worker:latest', runtime: 'runsc-kvm' });
+
+        expect((mockDocker as any).createContainer.mock.calls[0][0].HostConfig.Runtime).toBe('runsc-kvm');
+      });
+
+      it('uses the KVM kernel network stack variant on the agent network (embedded DNS)', async () => {
+        await service.createContainer({ image: 'worker:latest', runtime: 'runsc-kvm', network: 'agent-net' });
+
+        expect((mockDocker as any).createContainer.mock.calls[0][0].HostConfig.Runtime).toBe('runsc-kvm-hostnet');
+      });
+
+      it('uses the KVM kernel network stack variant inside the egress guard namespace (no guard bypass)', async () => {
+        await service.createContainer({
+          image: 'worker:latest',
+          runtime: 'runsc-kvm',
+          sharedNetworkContainerId: 'guard-1',
+        });
+
+        const args = (mockDocker as any).createContainer.mock.calls[0][0];
+
+        expect(args.HostConfig.Runtime).toBe('runsc-kvm-hostnet');
+        expect(args.HostConfig.NetworkMode).toBe('container:guard-1');
+      });
+
+      it('keeps the KVM level when joining the egress guard namespace on recreate', async () => {
+        mockContainer.inspect.mockResolvedValue(inspectWithRuntime('runsc-kvm-hostnet'));
+
+        await service.updateContainer('agent-id', {
+          sharedNetworkContainerId: 'guard-1',
+          capDrop: ['NET_ADMIN'],
+          runtime: 'runsc-kvm',
+        });
+
+        const args = (mockDocker as any).createContainer.mock.calls[0][0];
+
+        expect(args.HostConfig.Runtime).toBe('runsc-kvm-hostnet');
+        expect(args.HostConfig.NetworkMode).toBe('container:guard-1');
+      });
+
+      it('carries the KVM runtime over when recreating without an expected runtime', async () => {
+        mockContainer.inspect.mockResolvedValue(inspectWithRuntime('runsc-kvm'));
+
+        await service.updateContainer('agent-id', { env: { B: '2' } });
+
+        expect((mockDocker as any).createContainer.mock.calls[0][0].HostConfig.Runtime).toBe('runsc-kvm-hostnet');
+      });
+
+      it('recreates a container that runs on another gVisor platform than its level', async () => {
+        mockContainer.inspect.mockResolvedValue({
+          ...inspectWithRuntime('runsc-systrap'),
+          HostConfig: { NetworkMode: 'bridge', Runtime: 'runsc-systrap' },
+        });
+
+        await expect(service.getEnvironmentApplyStrategy('agent-id', 'runsc-kvm')).resolves.toBe('recreate');
+
+        expect(
+          (service as unknown as { hasRuntimeMismatch: (i: unknown, r: string) => boolean }).hasRuntimeMismatch(
+            { HostConfig: { Runtime: 'runsc-kvm-hostnet' } },
+            'runsc-kvm-hostnet',
+          ),
+        ).toBe(false);
       });
     });
 
@@ -3551,6 +3628,36 @@ describe('DockerService', () => {
         });
 
         expect(result).toEqual(expect.objectContaining({ ok: false, reasonCode: 'E_PROBE_START_FAILED' }));
+        expect(probeContainers[0].remove).toHaveBeenCalled();
+        expect(volume.remove).toHaveBeenCalled();
+      });
+
+      it('reports a host without /dev/kvm distinctly (KVM platform) and still cleans up', async () => {
+        (mockDocker as any).createContainer = jest.fn().mockImplementation(async () => {
+          const container = probeContainer('probe-k', 'runsc-kvm');
+
+          container.start.mockRejectedValue(
+            new Error(
+              'OCI runtime create failed: creating container: cannot create sandbox: cannot create sandbox process: ' +
+                'opening device file for platform "kvm": error opening KVM device file (/dev/kvm): no such file or directory',
+            ),
+          );
+          probeContainers.push(container);
+
+          return container;
+        });
+
+        const result = await service.runIsolationProbe({
+          runtime: 'runsc-kvm',
+          image: 'worker:latest',
+          timeoutMs: 10_000,
+        });
+
+        expect(result).toEqual({
+          ok: false,
+          reasonCode: 'E_KVM_UNAVAILABLE',
+          reason: 'The KVM device (/dev/kvm) is not available on this host',
+        });
         expect(probeContainers[0].remove).toHaveBeenCalled();
         expect(volume.remove).toHaveBeenCalled();
       });

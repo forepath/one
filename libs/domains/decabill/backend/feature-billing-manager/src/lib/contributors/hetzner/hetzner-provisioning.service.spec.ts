@@ -52,6 +52,39 @@ describe('HetznerProvisioningService', () => {
     );
   });
 
+  it('submits base64-encoded user data as plain text (the 32 KiB limit applies to the submitted string)', async () => {
+    mockedAxios.post.mockResolvedValueOnce({ data: { server: { id: 12345 } } });
+
+    const service = new HetznerProvisioningService();
+
+    await service.provisionServer({
+      name: 'test-server',
+      serverType: 'cx11',
+      location: 'fsn1',
+      userData: Buffer.from('#!/bin/bash\necho hello').toString('base64'),
+    });
+
+    expect(mockedAxios.post).toHaveBeenCalledWith(
+      'https://api.hetzner.cloud/v1/servers',
+      expect.objectContaining({ user_data: '#!/bin/bash\necho hello' }),
+      expect.anything(),
+    );
+  });
+
+  it('rejects user data above the Hetzner Cloud limit before calling the API', async () => {
+    const service = new HetznerProvisioningService();
+
+    await expect(
+      service.provisionServer({
+        name: 'test-server',
+        serverType: 'cx11',
+        location: 'fsn1',
+        userData: `#!/bin/bash\n${'x'.repeat(32 * 1024)}`,
+      }),
+    ).rejects.toThrow(/exceeds Hetzner Cloud limit of 32768 bytes/);
+    expect(mockedAxios.post).not.toHaveBeenCalled();
+  });
+
   it('provisions server with firewall', async () => {
     mockedAxios.post.mockResolvedValueOnce({ data: { server: { id: 12345 } } }).mockResolvedValueOnce({});
 

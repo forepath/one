@@ -55,12 +55,12 @@ export class CreateAgentDto {
   egressPolicy?: Record<string, unknown>;
 
   /**
-   * Container isolation level (`sandboxed` = gVisor, `standard` = runc). When omitted, the strongest
-   * level that is ready on the agent manager host is used. An explicit level is never replaced by
+   * Container isolation level (`sandboxed-kvm` = gVisor on KVM, `sandboxed` = gVisor, `standard` = runc).
+   * When omitted, the strongest level that is ready on the agent manager host is used. An explicit level is never replaced by
    * another one: an unavailable level is rejected.
    */
   @IsOptional()
-  @IsIn([...ISOLATION_LEVELS], { message: 'Isolation level must be one of: standard, sandboxed' })
+  @IsIn([...ISOLATION_LEVELS], { message: `Isolation level must be one of: ${ISOLATION_LEVELS.join(', ')}` })
   isolationLevel?: IsolationLevel;
 
   /**

@@ -11,6 +11,17 @@
       "options": {
         "jestConfig": "libs/domains/shared/backend/util-container-runtime/jest.config.ts"
       }
+    },
+    "generate-host-script": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "npx esbuild libs/domains/shared/backend/util-container-runtime/scripts/write-host-script.ts --bundle --platform=node --target=node20 --format=cjs --outfile=dist/tools/util-container-runtime/write-host-script.cjs --log-level=warning",
+          "node dist/tools/util-container-runtime/write-host-script.cjs"
+        ],
+        "parallel": false
+      },
+      "cache": false
     }
   }
 }
