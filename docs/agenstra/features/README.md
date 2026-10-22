@@ -25,7 +25,7 @@ Agenstra provides a complete set of features for managing distributed AI agent i
 - **Usage Statistics** Controller-backed usage and filter metrics (distinct from container stats)
 - **Message Filters** Layered regex policies for chat traffic
 - **Egress Filtering** Per-environment web traffic filtering via an egress guard sidecar
-- **Container Isolation Levels** Per-environment choice between standard Docker (`runc`), a gVisor sandbox and gVisor on KVM, validated by runtime probes
+- **Container Isolation Levels** Per-environment choice between standard Docker (`runc`), a gVisor sandbox, gVisor on KVM and a KVM microVM, validated by runtime probes
 - **Atlassian import** Admin-managed site connections and import configs (Jira and Confluence) into tickets and knowledge
 - **Dynamic provider plugins** Extend provisioning, agents, pipelines, context import, and chat filters via env-configured packages
 - **OpenTelemetry** Optional Prometheus metrics and OTLP export (disabled by default)
@@ -220,7 +220,7 @@ Per-environment web traffic filtering through an egress guard sidecar (Squid, dn
 
 ### [Container Isolation Levels](./container-isolation.md)
 
-Per-environment container isolation: **standard** (Docker `runc`), **sandboxed** (gVisor `runsc`, `systrap` platform) or **sandboxed-kvm** (gVisor `runsc`, `kvm` platform; needs `/dev/kvm`). Levels are offered only after real runtime probes pass on the agent manager host and are never silently downgraded.
+Per-environment container isolation: **standard** (Docker `runc`), **sandboxed** (gVisor `runsc`, `systrap` platform) **sandboxed-kvm** (gVisor `runsc`, `kvm` platform; needs `/dev/kvm`) or **microvm** (KVM microVM with its own guest kernel; needs `/dev/kvm`). Levels are offered only after real runtime probes pass on the agent manager host and are never silently downgraded.
 
 **Key Capabilities**:
 

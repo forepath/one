@@ -282,7 +282,7 @@ describe('isolation-level.util', () => {
     };
 
     it('orders, labels and colours the level', () => {
-      expect(ISOLATION_LEVELS_STRONGEST_FIRST).toEqual(['sandboxed-kvm', 'sandboxed', 'standard']);
+      expect(ISOLATION_LEVELS_STRONGEST_FIRST).toEqual(['microvm', 'sandboxed-kvm', 'sandboxed', 'standard']);
       expect(isolationLevelLabel('sandboxed-kvm')).toBe('Sandboxed (gVisor on KVM)');
       expect(getIsolationBadgeColor('sandboxed-kvm')).toBe('primary');
       expect(isGvisorIsolationLevel('sandboxed-kvm')).toBe(true);
@@ -370,6 +370,101 @@ describe('isolation-level.util', () => {
       ).toEqual({ blockedReason: 'level-unavailable' });
       expect(
         resolveIsolationSubmission({ explicitLevel: 'sandboxed-kvm', pinnedRevision: null, isolation: legacy }),
+      ).toEqual({ blockedReason: 'level-unavailable' });
+    });
+  });
+  describe('microvm', () => {
+    const microvmReady: ClientIsolationSummaryDto = {
+      ...sandboxReady,
+      recommendedLevel: 'microvm',
+      availableLevels: ['microvm', 'sandboxed-kvm', 'sandboxed', 'standard'],
+      levels: {
+        ...sandboxReady.levels,
+        'sandboxed-kvm': { rank: 3, runtime: 'runsc-kvm', state: 'ready' },
+        microvm: { rank: 4, runtime: 'runc', state: 'ready' },
+      },
+    };
+    const microvmUnavailable: ClientIsolationSummaryDto = {
+      ...sandboxReady,
+      levels: {
+        ...sandboxReady.levels,
+        microvm: {
+          rank: 4,
+          runtime: 'runc',
+          state: 'unsupported',
+          reasonCode: 'E_KVM_UNAVAILABLE',
+          reason: 'The KVM device (/dev/kvm) is not available on this host',
+        },
+      },
+    };
+
+    it('orders, labels and colours the level (not a gVisor level)', () => {
+      expect(ISOLATION_LEVELS_STRONGEST_FIRST[0]).toBe('microvm');
+      expect(isolationLevelLabel('microvm')).toBe('MicroVM (KVM)');
+      expect(isolationLevelDescription('microvm')).toContain('virtual machine');
+      expect(getIsolationBadgeColor('microvm')).toBe('dark');
+      expect(isGvisorIsolationLevel('microvm')).toBe(false);
+      expect(isKnownIsolationLevel('microvm')).toBe(true);
+    });
+
+    it('recommends microvm and lists it strongest first', () => {
+      expect(getRecommendedIsolationLevel({ isolation: microvmReady })).toBe('microvm');
+      expect(
+        getAvailableIsolationLevels({
+          isolation: { ...microvmReady, availableLevels: ['standard', 'microvm', 'sandboxed-kvm', 'sandboxed'] },
+        }),
+      ).toEqual(['microvm', 'sandboxed-kvm', 'sandboxed', 'standard']);
+    });
+
+    it('treats every other level as a downgrade of microvm and confirms the gVisor one specifically', () => {
+      expect(isIsolationDowngrade('sandboxed-kvm', 'microvm')).toBe(true);
+      expect(isIsolationDowngrade('standard', 'microvm')).toBe(true);
+      expect(isIsolationDowngrade('microvm', 'microvm')).toBe(false);
+      expect(isolationDowngradeDialogTexts('sandboxed-kvm')).toEqual({
+        title: 'Use the gVisor sandbox instead of a microVM?',
+        message: expect.stringContaining('its own virtual machine'),
+        confirmLabel: 'Use Sandboxed (gVisor on KVM)',
+      });
+      // The Standard confirmation no longer names a specific recommended level.
+      expect(isolationDowngradeDialogTexts('standard').message).toContain('the recommended isolation level');
+    });
+
+    it('offers microvm only when the host reports it and explains why it is unavailable', () => {
+      expect(getSelectableIsolationLevels({ isolation: microvmReady })).toEqual([
+        'microvm',
+        'sandboxed-kvm',
+        'sandboxed',
+        'standard',
+      ]);
+      expect(getSelectableIsolationLevels({ isolation: microvmUnavailable })).toEqual([
+        'microvm',
+        'sandboxed',
+        'standard',
+      ]);
+      expect(getIsolationLevelUnavailableReason({ isolation: microvmUnavailable }, 'microvm')).toBe(
+        'The KVM device (/dev/kvm) is not available on this host',
+      );
+      expect(getIsolationLevelUnavailableReason({ isolation: sandboxReady }, 'microvm')).toBeNull();
+    });
+
+    it('shows the microVM in the workspace indicator and keeps the environment level', () => {
+      expect(getWorkspaceIsolationIndicatorLabel({ isolation: microvmReady })).toBe('MicroVM available');
+      expect(getWorkspaceIsolationIndicatorLabel({ isolation: microvmUnavailable })).toBe('Sandbox available');
+      expect(getEnvironmentIsolationLevel({ isolation: { level: 'microvm', runtime: 'runc', selection: null } })).toBe(
+        'microvm',
+      );
+    });
+
+    it('submits explicit microvm choices only when available', () => {
+      expect(
+        resolveIsolationSubmission({ explicitLevel: 'microvm', pinnedRevision: 'rev-1', isolation: microvmReady }),
+      ).toEqual({ isolationLevel: 'microvm', capabilityRevision: 'rev-1' });
+      expect(
+        resolveIsolationSubmission({
+          explicitLevel: 'microvm',
+          pinnedRevision: 'rev-1',
+          isolation: microvmUnavailable,
+        }),
       ).toEqual({ blockedReason: 'level-unavailable' });
     });
   });

@@ -20,12 +20,28 @@ export function isIsolationLevel(value: unknown): value is IsolationLevel {
   return typeof value === 'string' && (ISOLATION_LEVELS as readonly string[]).includes(value);
 }
 
-/** Whether a level runs on gVisor (every level above the standard floor). */
+/** Whether a level runs on gVisor (`sandboxed`, `sandboxed-kvm`). */
 export function isGvisorIsolationLevel(level: IsolationLevel): level is GvisorIsolationLevel {
   return (GVISOR_ISOLATION_LEVELS as readonly string[]).includes(level);
 }
 
-/** Docker runtime name backing an isolation level on this host (the Netstack variant for gVisor levels). */
+/** Whether a level runs the workload as a KVM microVM (launcher container of the microVM image). */
+export function isMicrovmIsolationLevel(level: IsolationLevel): level is 'microvm' {
+  return level === 'microvm';
+}
+
+/**
+ * Whether a level depends on more than Docker's default runtime (gVisor or a microVM). Such environments get
+ * their runtime pinned explicitly, report runtime failures and are never retried on a weaker level.
+ */
+export function isEnhancedIsolationLevel(level: IsolationLevel): level is GvisorIsolationLevel | 'microvm' {
+  return isGvisorIsolationLevel(level) || isMicrovmIsolationLevel(level);
+}
+
+/**
+ * Docker runtime name backing an isolation level on this host (the Netstack variant for gVisor levels). MicroVM
+ * launchers always run on runc: the VM is the boundary, and QEMU needs the host kernel's KVM (never gVisor).
+ */
 export function runtimeForIsolationLevel(level: IsolationLevel, env: NodeJS.ProcessEnv = process.env): string {
   return isGvisorIsolationLevel(level) ? resolveGvisorLevelRuntimes(level, env).runtime : STANDARD_ISOLATION_RUNTIME;
 }
@@ -62,8 +78,9 @@ export function effectiveIsolationLevel(stored: string | null | undefined): Isol
 /**
  * `updateContainer` options pinning the environment's runtime on every recreate path. gVisor
  * environments (sandboxed, sandboxed-kvm) always get their level's runtime explicitly (they never
- * silently come back on runc or another gVisor platform); standard environments keep Docker's default
- * runtime exactly as before isolation levels existed (the current container's runtime is carried over).
+ * silently come back on runc or another gVisor platform), microVM launchers always get runc (never a gVisor
+ * daemon default); standard environments keep Docker's default runtime exactly as before isolation levels
+ * existed (the current container's runtime is carried over).
  */
 export function isolationRuntimeOptions(
   agent: { isolationLevel?: string | null } | null | undefined,
@@ -75,7 +92,7 @@ export function isolationRuntimeOptions(
 
   const level = effectiveIsolationLevel(agent.isolationLevel);
 
-  return isGvisorIsolationLevel(level) ? { runtime: runtimeForIsolationLevel(level, env) } : {};
+  return isEnhancedIsolationLevel(level) ? { runtime: runtimeForIsolationLevel(level, env) } : {};
 }
 
 /** Expected-runtime argument list for `getEnvironmentApplyStrategy` (empty for standard environments). */
@@ -90,13 +107,14 @@ export function isolationRuntimeArgs(
 
 /**
  * Docker runtime to request when creating a container of a level: the level's gVisor runtime for
- * `sandboxed` / `sandboxed-kvm`; nothing (Docker's default runtime, normally runc) for `standard`.
+ * `sandboxed` / `sandboxed-kvm`, runc for `microvm`; nothing (Docker's default runtime, normally runc) for
+ * `standard`.
  */
 export function containerRuntimeForIsolationLevel(
   level: IsolationLevel,
   env: NodeJS.ProcessEnv = process.env,
 ): string | undefined {
-  return isGvisorIsolationLevel(level) ? runtimeForIsolationLevel(level, env) : undefined;
+  return isEnhancedIsolationLevel(level) ? runtimeForIsolationLevel(level, env) : undefined;
 }
 
 /** Ready levels, strongest first. */
@@ -231,9 +249,11 @@ export function computeIsolationCapabilityRevision(input: {
   kernelVersion?: string | null;
   runtimes: Record<string, string | null | undefined>;
   probeImageId?: string | null;
+  microvmImageId?: string | null;
   levels: Record<IsolationLevel, Pick<IsolationLevelCapabilityDto, 'runtime' | 'state' | 'reasonCode'>>;
 }): string {
   const canonical = JSON.stringify({
+    microvmImageId: input.microvmImageId ?? null,
     dockerVersion: input.dockerVersion ?? null,
     kernelVersion: input.kernelVersion ?? null,
     runtimes: Object.keys(input.runtimes)

@@ -465,11 +465,10 @@
                             <span class="me-2">
                               <i
                                 class="bi me-1"
+                                [class.bi-cpu]="agentIsolationLevel === 'microvm'"
                                 [class.bi-shield-fill-check]="agentIsolationLevel === 'sandboxed-kvm'"
                                 [class.bi-shield-lock]="agentIsolationLevel === 'sandboxed'"
-                                [class.bi-shield]="
-                                  agentIsolationLevel !== 'sandboxed' && agentIsolationLevel !== 'sandboxed-kvm'
-                                "
+                                [class.bi-shield]="agentIsolationLevel === 'standard'"
                                 aria-hidden="true"
                               ></i
                               >{{ isolationLevelLabel(agentIsolationLevel) }}

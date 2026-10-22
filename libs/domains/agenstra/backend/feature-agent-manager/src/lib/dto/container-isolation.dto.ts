@@ -9,7 +9,7 @@ import type {
  * State of one isolation level on an agent manager host.
  */
 export class IsolationLevelCapabilityDto {
-  /** Strength rank (`1` = standard, `2` = sandboxed, `3` = sandboxed-kvm). */
+  /** Strength rank (`1` = standard, `2` = sandboxed, `3` = sandboxed-kvm, `4` = microvm). */
   rank!: number;
   /** Docker runtime name used for this level (`runc`, `runsc-systrap`, `runsc-kvm`). */
   runtime!: string;

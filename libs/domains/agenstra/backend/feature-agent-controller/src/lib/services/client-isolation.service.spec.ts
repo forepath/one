@@ -12,13 +12,15 @@ function capabilities(
   revision = 'sha256:current',
   probedAt: string | null = '2026-10-15T20:00:00.000Z',
   sandboxedKvm = 'unsupported',
+  microvm = 'unsupported',
 ): HostIsolationCapabilitiesDto {
   const levels = {
     standard: { rank: 1, runtime: 'runc', state: standard as 'ready' },
     sandboxed: { rank: 2, runtime: 'runsc-systrap', state: sandboxed as 'ready' },
     'sandboxed-kvm': { rank: 3, runtime: 'runsc-kvm', state: sandboxedKvm as 'ready' },
+    microvm: { rank: 4, runtime: 'runc', state: microvm as 'ready' },
   };
-  const available = (['sandboxed-kvm', 'sandboxed', 'standard'] as const).filter(
+  const available = (['microvm', 'sandboxed-kvm', 'sandboxed', 'standard'] as const).filter(
     (level) => levels[level].state === 'ready',
   );
 
@@ -32,13 +34,24 @@ function capabilities(
   };
 }
 
-/** Capabilities of an agent manager that predates the sandboxed-kvm level (no such key). */
+/** Capabilities of an agent manager that predates the sandboxed-kvm level (and therefore microvm). */
 function preKvmCapabilities(revision = 'sha256:current'): HostIsolationCapabilitiesDto {
   const current = capabilities('ready', 'ready', revision);
-  const { 'sandboxed-kvm': _omitted, ...levels } = current.levels;
+  const { 'sandboxed-kvm': _omitted, microvm: _omittedMicrovm, ...levels } = current.levels;
 
   return { ...current, levels: levels as HostIsolationCapabilitiesDto['levels'] };
 }
+
+/** Capabilities of an agent manager that knows sandboxed-kvm but predates the microvm level. */
+function preMicrovmCapabilities(revision = 'sha256:current', sandboxedKvm = 'ready'): HostIsolationCapabilitiesDto {
+  const current = capabilities('ready', 'ready', revision, '2026-10-15T20:00:00.000Z', sandboxedKvm);
+  const { microvm: _omitted, ...levels } = current.levels;
+
+  return { ...current, levels: levels as HostIsolationCapabilitiesDto['levels'] };
+}
+
+const MICROVM_READY = (revision = 'sha256:current') =>
+  capabilities('ready', 'ready', revision, '2026-10-15T20:00:00.000Z', 'ready', 'ready');
 
 describe('ClientIsolationService', () => {
   let proxy: { getClientIsolation: jest.Mock; probeClientIsolation: jest.Mock };
@@ -205,6 +218,141 @@ describe('ClientIsolationService', () => {
       proxy.probeClientIsolation.mockRejectedValue(new NotFoundException('Cannot POST /api/isolation/probe'));
 
       await expect(service.probe('client-1')).resolves.toEqual(expect.objectContaining({ supported: false }));
+    });
+  });
+
+  describe('microvm level', () => {
+    it('fills microvm as unsupported for managers that predate it and keeps sandboxed-kvm recommended', () => {
+      const summary = service.summarize(preMicrovmCapabilities());
+
+      expect(summary.recommendedLevel).toBe('sandboxed-kvm');
+      expect(summary.levels.microvm).toEqual({
+        rank: 4,
+        runtime: 'runc',
+        state: 'unsupported',
+        reasonCode: 'E_MANAGER_UNSUPPORTED',
+        reason: 'The agent manager of this workspace does not support the microvm isolation level yet',
+      });
+    });
+
+    it('reports legacy managers without microvm', () => {
+      proxy.getClientIsolation.mockResolvedValue(null);
+
+      expect(service.summarize(null).levels.microvm).toEqual(
+        expect.objectContaining({ state: 'unsupported', reasonCode: 'E_MANAGER_UNSUPPORTED' }),
+      );
+    });
+
+    it('recommends a ready microvm level and records weaker choices as overrides', async () => {
+      proxy.getClientIsolation.mockResolvedValue(MICROVM_READY());
+
+      expect(service.summarize(MICROVM_READY()).availableLevels).toEqual([
+        'microvm',
+        'sandboxed-kvm',
+        'sandboxed',
+        'standard',
+      ]);
+      expect((await service.planCreation('client-1', {})).resolution).toEqual({
+        level: 'microvm',
+        automaticSelection: 'microvm',
+        selectionSource: 'automatic',
+      });
+      expect(
+        (await service.planCreation('client-1', { isolationLevel: 'sandboxed-kvm' })).resolution?.selectionSource,
+      ).toBe('user-override');
+    });
+
+    it('rejects microvm on managers that predate the level', async () => {
+      proxy.getClientIsolation.mockResolvedValue(preMicrovmCapabilities());
+
+      await expect(service.planCreation('client-1', { isolationLevel: 'microvm' })).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+    });
+
+    it('publishes microVM runtime failures (message and machine-readable code)', async () => {
+      proxy.getClientIsolation.mockResolvedValue(MICROVM_READY());
+
+      const plan = await service.planCreation('client-1', {});
+
+      service.notifyCreationFailed(
+        'client-1',
+        plan,
+        'env',
+        new Error('The microvm (KVM microVM) container could not be started: no /dev/kvm'),
+      );
+      expect(publisher.publishAgentSandboxCreationFailed).toHaveBeenLastCalledWith(
+        'client-1',
+        expect.objectContaining({ isolationLevel: 'microvm', runtime: 'runc' }),
+      );
+
+      publisher.publishAgentSandboxCreationFailed.mockClear();
+      service.notifyCreationFailed(
+        'client-1',
+        plan,
+        'env',
+        new BadRequestException({ statusCode: 400, message: 'reworded', code: 'E_ISOLATION_RUNTIME_FAILED' }),
+      );
+      expect(publisher.publishAgentSandboxCreationFailed).toHaveBeenCalledTimes(1);
+
+      publisher.publishAgentSandboxCreationFailed.mockClear();
+      service.notifyCreationFailed('client-1', plan, 'env', new ConflictException('An agent named env already exists'));
+      expect(publisher.publishAgentSandboxCreationFailed).not.toHaveBeenCalled();
+    });
+
+    it('publishes microvm availability and loss with its own events and records the state', async () => {
+      snapshotRow = {
+        clientId: 'client-1',
+        revision: 'sha256:old',
+        standardState: 'ready',
+        sandboxedState: 'ready',
+        sandboxedKvmState: 'ready',
+        microvmState: 'unsupported',
+      };
+
+      await service.observe('client-1', MICROVM_READY('sha256:vm'));
+
+      expect(publisher.publishIsolationHostTransition.mock.calls.map((call) => call[0])).toEqual([
+        'isolation.microvm_available',
+      ]);
+      expect(publisher.publishIsolationHostTransition).toHaveBeenCalledWith(
+        'isolation.microvm_available',
+        'client-1',
+        expect.objectContaining({
+          level: 'microvm',
+          runtime: 'runc',
+          previousState: 'unsupported',
+          recommendedLevel: 'microvm',
+        }),
+      );
+      expect(queryBuilder['set']).toHaveBeenCalledWith(expect.objectContaining({ microvmState: 'ready' }));
+
+      publisher.publishIsolationHostTransition.mockClear();
+      snapshotRow = { ...snapshotRow, revision: 'sha256:vm', microvmState: 'ready' };
+
+      await service.observe(
+        'client-1',
+        capabilities('ready', 'ready', 'sha256:novm', '2026-10-15T20:00:00.000Z', 'ready', 'probe-failed'),
+      );
+
+      expect(publisher.publishIsolationHostTransition.mock.calls.map((call) => call[0])).toEqual([
+        'isolation.microvm_unavailable',
+      ]);
+    });
+
+    it('does not publish microvm events for managers without the level', async () => {
+      snapshotRow = {
+        clientId: 'client-1',
+        revision: 'sha256:old',
+        standardState: 'ready',
+        sandboxedState: 'ready',
+        sandboxedKvmState: 'ready',
+      };
+
+      await service.observe('client-1', preMicrovmCapabilities('sha256:new'));
+
+      expect(publisher.publishIsolationHostTransition).not.toHaveBeenCalled();
+      expect(queryBuilder['set']).toHaveBeenCalledWith(expect.objectContaining({ microvmState: null }));
     });
   });
 

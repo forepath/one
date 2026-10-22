@@ -120,6 +120,7 @@
             <fpc-badge variant="info" size="sm">runc</fpc-badge>
             <fpc-badge variant="info" size="sm">gVisor</fpc-badge>
             <fpc-badge variant="info" size="sm">gVisor + KVM</fpc-badge>
+            <fpc-badge variant="info" size="sm">KVM microVM</fpc-badge>
             <fpc-badge variant="info" size="sm">non-root</fpc-badge>
           </div>
         </article>
@@ -295,151 +296,237 @@
 <!-- Isolation -->
 <section id="isolation" class="py-10 bg-body grid-section">
   <div class="container grid-section__container">
-    <div class="row g-5 align-items-stretch">
-      <div class="col-lg-5 d-flex flex-column justify-content-center">
-        <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featurePortalHowItWorks-isolationTitle">
-          Three isolation levels, never a silent downgrade
+    <div class="row g-4 g-lg-5 align-items-end mb-4">
+      <div class="col-lg-5">
+        <h2 class="h2 fw-semibold mb-0 text-body-emphasis" i18n="@@featurePortalHowItWorks-isolationTitle">
+          Four isolation levels, never a silent downgrade
         </h2>
-        <p class="lead text-muted mb-5" i18n="@@featurePortalHowItWorks-isolationLead">
-          A regular container shares the host kernel with everything else on the machine. Agent code is code you have
-          not reviewed yet, so Agenstra can put a second kernel in between: gVisor.
-        </p>
-        <div class="d-flex flex-column gap-3">
-          <article class="card border rounded-3 shadow-sm p-3 bg-body">
-            <div class="d-flex gap-3 align-items-center">
-              <i class="bi bi-clipboard2-pulse text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
-              <div>
-                <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-isolationFact1Title">Probed, not assumed</p>
-                <p class="small text-muted mb-0" i18n="@@featurePortalHowItWorks-isolationFact1Desc">
-                  Each host proves with real test containers what it can run: at startup, every six hours and on demand.
-                </p>
-              </div>
-            </div>
-          </article>
-          <article class="card border rounded-3 shadow-sm p-3 bg-body">
-            <div class="d-flex gap-3 align-items-center">
-              <i class="bi bi-sign-stop text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
-              <div>
-                <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-isolationFact2Title">
-                  Fails closed, overrides are on record
-                </p>
-                <p class="small text-muted mb-0" i18n="@@featurePortalHowItWorks-isolationFact2Desc">
-                  If the sandbox cannot start, the environment is not created. Choosing a weaker level needs a
-                  confirmation and is recorded with the person who chose it.
-                </p>
-              </div>
-            </div>
-          </article>
-          <article class="card border rounded-3 shadow-sm p-3 bg-body">
-            <div class="d-flex gap-3 align-items-center">
-              <i class="bi bi-cloud text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
-              <div>
-                <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-isolationFact3Title">
-                  Runs on ordinary cloud VMs
-                </p>
-                <p class="small text-muted mb-0" i18n="@@featurePortalHowItWorks-isolationFact3Desc">
-                  gVisor's systrap platform needs no KVM or nested virtualization. Hosts with hardware virtualization
-                  additionally run gVisor on KVM. Provisioned hosts get both installed and verified automatically.
-                </p>
-              </div>
-            </div>
-          </article>
-        </div>
       </div>
       <div class="col-lg-7">
-        <div class="card border rounded-3 shadow-sm overflow-hidden h-100 landing-bento-visual">
-          <div class="p-4 p-lg-5 h-100 d-flex flex-column">
-            <fpc-badge
-              color="primary"
-              class="mb-4 bento-badge align-self-start"
-              i18n="@@featurePortalHowItWorks-isolationBadge"
-              >Where a system call ends up</fpc-badge
-            >
-            <div class="row g-4 flex-grow-1 hiw-stacks">
-              <div class="col-sm-6 col-xl-4 d-flex flex-column">
-                <div class="hiw-stack-head mb-3">
-                  <h3 class="h6 fw-semibold mb-0" i18n="@@featurePortalHowItWorks-standardTitle">Standard</h3>
-                  <code class="hiw-meta">runc</code>
-                </div>
-                <ol class="list-unstyled hiw-stack mb-4">
-                  <li class="hiw-layer">
-                    <i class="bi bi-robot" aria-hidden="true"></i>
-                    <span i18n="@@featurePortalHowItWorks-layerAgent">Agent and its tools</span>
-                  </li>
-                  <li class="hiw-layer hiw-layer--host">
-                    <i class="bi bi-cpu" aria-hidden="true"></i>
-                    <span i18n="@@featurePortalHowItWorks-layerHostKernel">Host kernel</span>
-                    <small i18n="@@featurePortalHowItWorks-layerHostKernelStandard">namespaces, cgroups, seccomp</small>
-                  </li>
-                </ol>
-                <p class="small text-muted mb-0 mt-auto" i18n="@@featurePortalHowItWorks-standardDesc">
-                  Docker's default. Available on every host. Choose it for workloads that need Docker-in-Docker, eBPF,
-                  io_uring or KVM.
-                </p>
-              </div>
-              <div class="col-sm-6 col-xl-4 d-flex flex-column">
-                <div class="hiw-stack-head mb-3">
-                  <h3 class="h6 fw-semibold mb-0 text-primary" i18n="@@featurePortalHowItWorks-sandboxedTitle">
-                    Sandboxed
-                  </h3>
-                  <code class="hiw-meta">runsc</code>
-                </div>
-                <ol class="list-unstyled hiw-stack mb-4">
-                  <li class="hiw-layer">
-                    <i class="bi bi-robot" aria-hidden="true"></i>
-                    <span i18n="@@featurePortalHowItWorks-layerAgent">Agent and its tools</span>
-                  </li>
-                  <li class="hiw-layer hiw-layer--sandbox">
-                    <i class="bi bi-shield-fill-check" aria-hidden="true"></i>
-                    <span i18n="@@featurePortalHowItWorks-layerSentry">gVisor Sentry</span>
-                    <small i18n="@@featurePortalHowItWorks-layerSentryDesc">Linux implemented in user space</small>
-                  </li>
-                  <li class="hiw-layer hiw-layer--host">
-                    <i class="bi bi-cpu" aria-hidden="true"></i>
-                    <span i18n="@@featurePortalHowItWorks-layerHostKernel">Host kernel</span>
-                    <small i18n="@@featurePortalHowItWorks-layerHostKernelSandboxed"
-                      >small, filtered set of calls</small
-                    >
-                  </li>
-                </ol>
-                <p class="small text-muted mb-0 mt-auto" i18n="@@featurePortalHowItWorks-sandboxedDesc">
-                  Preselected wherever the host is ready. A kernel exploit has to break the Sentry first before it can
-                  reach the host.
-                </p>
-              </div>
-              <div class="col-sm-6 col-xl-4 d-flex flex-column">
-                <div class="hiw-stack-head mb-3">
-                  <h3 class="h6 fw-semibold mb-0 text-primary" i18n="@@featurePortalHowItWorks-sandboxedKvmTitle">
-                    Sandboxed + KVM
-                  </h3>
-                  <code class="hiw-meta">runsc-kvm</code>
-                </div>
-                <ol class="list-unstyled hiw-stack mb-4">
-                  <li class="hiw-layer">
-                    <i class="bi bi-robot" aria-hidden="true"></i>
-                    <span i18n="@@featurePortalHowItWorks-layerAgent">Agent and its tools</span>
-                  </li>
-                  <li class="hiw-layer hiw-layer--sandbox">
-                    <i class="bi bi-shield-fill-check" aria-hidden="true"></i>
-                    <span i18n="@@featurePortalHowItWorks-layerSentry">gVisor Sentry</span>
-                    <small i18n="@@featurePortalHowItWorks-layerSentryKvmDesc"
-                      >in a hardware-virtualized address space</small
-                    >
-                  </li>
-                  <li class="hiw-layer hiw-layer--host">
-                    <i class="bi bi-cpu" aria-hidden="true"></i>
-                    <span i18n="@@featurePortalHowItWorks-layerHostKernel">Host kernel</span>
-                    <small i18n="@@featurePortalHowItWorks-layerHostKernelSandboxed"
-                      >small, filtered set of calls</small
-                    >
-                  </li>
-                </ol>
-                <p class="small text-muted mb-0 mt-auto" i18n="@@featurePortalHowItWorks-sandboxedKvmDesc">
-                  Preselected where the host exposes KVM. System calls trap into the Sentry through the CPU's
-                  virtualization extensions instead of seccomp.
-                </p>
-              </div>
+        <p class="lead text-muted mb-0" i18n="@@featurePortalHowItWorks-isolationLead">
+          A regular container shares the host kernel with everything else on the machine. Agent code is code you have
+          not reviewed yet, so Agenstra can put a second kernel in between: gVisor, or a whole virtual machine.
+        </p>
+      </div>
+    </div>
+    <div class="row g-3 mb-5">
+      <div class="col-lg-4">
+        <article class="card border rounded-3 shadow-sm p-3 bg-body h-100">
+          <div class="d-flex gap-3 align-items-center">
+            <i class="bi bi-clipboard2-pulse text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+            <div>
+              <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-isolationFact1Title">Probed, not assumed</p>
+              <p class="small text-muted mb-0" i18n="@@featurePortalHowItWorks-isolationFact1Desc">
+                Each host proves with real test containers what it can run: at startup, every six hours and on demand.
+              </p>
             </div>
+          </div>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="card border rounded-3 shadow-sm p-3 bg-body h-100">
+          <div class="d-flex gap-3 align-items-center">
+            <i class="bi bi-sign-stop text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+            <div>
+              <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-isolationFact2Title">
+                Fails closed, overrides are on record
+              </p>
+              <p class="small text-muted mb-0" i18n="@@featurePortalHowItWorks-isolationFact2Desc">
+                If the sandbox cannot start, the environment is not created. Choosing a weaker level needs a
+                confirmation and is recorded with the person who chose it.
+              </p>
+            </div>
+          </div>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="card border rounded-3 shadow-sm p-3 bg-body h-100">
+          <div class="d-flex gap-3 align-items-center">
+            <i class="bi bi-cloud text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+            <div>
+              <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-isolationFact3Title">
+                Runs on ordinary cloud VMs
+              </p>
+              <p class="small text-muted mb-0" i18n="@@featurePortalHowItWorks-isolationFact3Desc">
+                gVisor's systrap platform needs no KVM or nested virtualization. Hosts with hardware virtualization
+                additionally run gVisor on KVM and full microVMs. Provisioned hosts get everything installed and
+                verified automatically.
+              </p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+    <div class="card border rounded-3 shadow-sm overflow-hidden landing-bento-visual">
+      <div class="p-4 p-xl-5 d-flex flex-column">
+        <fpc-badge
+          color="primary"
+          class="mb-4 bento-badge align-self-start"
+          i18n="@@featurePortalHowItWorks-isolationBadge"
+          >Where a system call ends up</fpc-badge
+        >
+        <div class="row g-4 hiw-stacks">
+          <div class="col-sm-6 col-lg-3 d-flex flex-column">
+            <div class="hiw-stack-head mb-3">
+              <h3
+                id="hiw-stack-title-standard"
+                class="h6 fw-semibold mb-0"
+                i18n="@@featurePortalHowItWorks-standardTitle"
+              >
+                Standard
+              </h3>
+              <code class="hiw-meta">runc</code>
+            </div>
+            <ol class="list-unstyled hiw-stack mb-4">
+              <li class="hiw-layer">
+                <i class="bi bi-robot" aria-hidden="true"></i>
+                <span i18n="@@featurePortalHowItWorks-layerAgent">Agent and its tools</span>
+              </li>
+              <li class="hiw-layer hiw-layer--host">
+                <i class="bi bi-cpu" aria-hidden="true"></i>
+                <span i18n="@@featurePortalHowItWorks-layerHostKernel">Host kernel</span>
+                <small i18n="@@featurePortalHowItWorks-layerHostKernelStandard">namespaces, cgroups, seccomp</small>
+              </li>
+            </ol>
+            <p class="small text-muted mb-0 mt-auto" i18n="@@featurePortalHowItWorks-standardDesc">
+              Docker's default. Available on every host. Choose it for workloads that need Docker-in-Docker, eBPF,
+              io_uring or KVM.
+            </p>
+            <a
+              class="small fw-semibold mt-2 hiw-limits-link"
+              href="how-it-works#limits-standard"
+              aria-describedby="hiw-stack-title-standard"
+              (click)="openIsolationLimits($event, 'standard')"
+              ><span i18n="@@featurePortalHowItWorks-limitsLink">Limits and mitigations</span
+              ><i class="bi bi-arrow-down-short" aria-hidden="true"></i
+            ></a>
+          </div>
+          <div class="col-sm-6 col-lg-3 d-flex flex-column">
+            <div class="hiw-stack-head mb-3">
+              <h3
+                id="hiw-stack-title-sandboxed"
+                class="h6 fw-semibold mb-0 text-primary"
+                i18n="@@featurePortalHowItWorks-sandboxedTitle"
+              >
+                Sandboxed
+              </h3>
+              <code class="hiw-meta">runsc</code>
+            </div>
+            <ol class="list-unstyled hiw-stack mb-4">
+              <li class="hiw-layer">
+                <i class="bi bi-robot" aria-hidden="true"></i>
+                <span i18n="@@featurePortalHowItWorks-layerAgent">Agent and its tools</span>
+              </li>
+              <li class="hiw-layer hiw-layer--sandbox">
+                <i class="bi bi-shield-fill-check" aria-hidden="true"></i>
+                <span i18n="@@featurePortalHowItWorks-layerSentry">gVisor Sentry</span>
+                <small i18n="@@featurePortalHowItWorks-layerSentryDesc">Linux implemented in user space</small>
+              </li>
+              <li class="hiw-layer hiw-layer--host">
+                <i class="bi bi-cpu" aria-hidden="true"></i>
+                <span i18n="@@featurePortalHowItWorks-layerHostKernel">Host kernel</span>
+                <small i18n="@@featurePortalHowItWorks-layerHostKernelSandboxed">small, filtered set of calls</small>
+              </li>
+            </ol>
+            <p class="small text-muted mb-0 mt-auto" i18n="@@featurePortalHowItWorks-sandboxedDesc">
+              Preselected wherever the host is ready. A kernel exploit has to break the Sentry first before it can reach
+              the host.
+            </p>
+            <a
+              class="small fw-semibold mt-2 hiw-limits-link"
+              href="how-it-works#limits-sandboxed"
+              aria-describedby="hiw-stack-title-sandboxed"
+              (click)="openIsolationLimits($event, 'sandboxed')"
+              ><span i18n="@@featurePortalHowItWorks-limitsLink">Limits and mitigations</span
+              ><i class="bi bi-arrow-down-short" aria-hidden="true"></i
+            ></a>
+          </div>
+          <div class="col-sm-6 col-lg-3 d-flex flex-column">
+            <div class="hiw-stack-head mb-3">
+              <h3
+                id="hiw-stack-title-sandboxed-kvm"
+                class="h6 fw-semibold mb-0 text-primary"
+                i18n="@@featurePortalHowItWorks-sandboxedKvmTitle"
+              >
+                Sandboxed + KVM
+              </h3>
+              <code class="hiw-meta">runsc-kvm</code>
+            </div>
+            <ol class="list-unstyled hiw-stack mb-4">
+              <li class="hiw-layer">
+                <i class="bi bi-robot" aria-hidden="true"></i>
+                <span i18n="@@featurePortalHowItWorks-layerAgent">Agent and its tools</span>
+              </li>
+              <li class="hiw-layer hiw-layer--sandbox">
+                <i class="bi bi-shield-fill-check" aria-hidden="true"></i>
+                <span i18n="@@featurePortalHowItWorks-layerSentry">gVisor Sentry</span>
+                <small i18n="@@featurePortalHowItWorks-layerSentryKvmDesc"
+                  >in a hardware-virtualized address space</small
+                >
+              </li>
+              <li class="hiw-layer hiw-layer--host">
+                <i class="bi bi-cpu" aria-hidden="true"></i>
+                <span i18n="@@featurePortalHowItWorks-layerHostKernel">Host kernel</span>
+                <small i18n="@@featurePortalHowItWorks-layerHostKernelSandboxed">small, filtered set of calls</small>
+              </li>
+            </ol>
+            <p class="small text-muted mb-0 mt-auto" i18n="@@featurePortalHowItWorks-sandboxedKvmDesc">
+              Available where the host exposes KVM. System calls trap into the Sentry through the CPU's virtualization
+              extensions instead of seccomp.
+            </p>
+            <a
+              class="small fw-semibold mt-2 hiw-limits-link"
+              href="how-it-works#limits-sandboxed-kvm"
+              aria-describedby="hiw-stack-title-sandboxed-kvm"
+              (click)="openIsolationLimits($event, 'sandboxed-kvm')"
+              ><span i18n="@@featurePortalHowItWorks-limitsLink">Limits and mitigations</span
+              ><i class="bi bi-arrow-down-short" aria-hidden="true"></i
+            ></a>
+          </div>
+          <div class="col-sm-6 col-lg-3 d-flex flex-column">
+            <div class="hiw-stack-head mb-3">
+              <h3
+                id="hiw-stack-title-microvm"
+                class="h6 fw-semibold mb-0 text-primary"
+                i18n="@@featurePortalHowItWorks-microvmTitle"
+              >
+                MicroVM
+              </h3>
+              <span class="hiw-chips"><code class="hiw-meta">KVM</code><code class="hiw-meta">QEMU</code></span>
+            </div>
+            <ol class="list-unstyled hiw-stack mb-4">
+              <li class="hiw-layer">
+                <i class="bi bi-robot" aria-hidden="true"></i>
+                <span i18n="@@featurePortalHowItWorks-layerAgent">Agent and its tools</span>
+              </li>
+              <li class="hiw-layer hiw-layer--sandbox">
+                <i class="bi bi-pc-display" aria-hidden="true"></i>
+                <span i18n="@@featurePortalHowItWorks-layerGuestKernel">Guest kernel</span>
+                <small i18n="@@featurePortalHowItWorks-layerGuestKernelDesc">its own Linux, inside the VM</small>
+              </li>
+              <li class="hiw-layer hiw-layer--sandbox">
+                <i class="bi bi-shield-fill-check" aria-hidden="true"></i>
+                <span i18n="@@featurePortalHowItWorks-layerHypervisor">Hypervisor</span>
+                <small i18n="@@featurePortalHowItWorks-layerHypervisorDesc">KVM, in a locked-down container</small>
+              </li>
+              <li class="hiw-layer hiw-layer--host">
+                <i class="bi bi-cpu" aria-hidden="true"></i>
+                <span i18n="@@featurePortalHowItWorks-layerHostKernel">Host kernel</span>
+                <small i18n="@@featurePortalHowItWorks-layerHostKernelMicrovm">only the VM's virtual hardware</small>
+              </li>
+            </ol>
+            <p class="small text-muted mb-0 mt-auto" i18n="@@featurePortalHowItWorks-microvmDesc">
+              Preselected where the host exposes KVM. The agent gets its own kernel in a virtual machine; an exploit has
+              to escape the hypervisor and a locked-down container before it reaches the host.
+            </p>
+            <a
+              class="small fw-semibold mt-2 hiw-limits-link"
+              href="how-it-works#limits-microvm"
+              aria-describedby="hiw-stack-title-microvm"
+              (click)="openIsolationLimits($event, 'microvm')"
+              ><span i18n="@@featurePortalHowItWorks-limitsLink">Limits and mitigations</span
+              ><i class="bi bi-arrow-down-short" aria-hidden="true"></i
+            ></a>
           </div>
         </div>
       </div>
@@ -759,16 +846,181 @@
   <div class="container grid-section__container">
     <div class="text-center pb-10">
       <h2 class="h2 fw-semibold mb-4 text-body-emphasis" i18n="@@featurePortalHowItWorks-limitsTitle">
-        Known limits, stated plainly
+        Each level, its limits stated plainly
       </h2>
       <p class="lead text-muted mb-0 mx-auto section-lead" i18n="@@featurePortalHowItWorks-limitsLead">
-        Good security decisions need to know where a control ends. These are the edges we document for every deployment.
+        Good security decisions need to know where a control ends. Compare what each isolation level costs, where it
+        stops and what covers the gap. You choose per environment, and a weaker choice is on record.
       </p>
     </div>
-    <div class="row g-3 g-lg-4 align-items-stretch">
+    <ul
+      id="limits-levels"
+      class="nav nav-pills nav-fill mb-4 portal-page-tabs hiw-level-tabs"
+      role="tablist"
+      i18n-aria-label="@@featurePortalHowItWorks-limitsTabsLabel"
+      aria-label="Isolation levels"
+    >
+      <li class="nav-item" role="presentation">
+        <button
+          type="button"
+          class="nav-link hiw-level-tab"
+          role="tab"
+          id="limits-tab-standard"
+          aria-controls="limits-standard"
+          [class.active]="activeIsolationLevel() === 'standard'"
+          [attr.aria-selected]="activeIsolationLevel() === 'standard'"
+          [attr.tabindex]="activeIsolationLevel() === 'standard' ? 0 : -1"
+          (click)="selectIsolationLevel('standard')"
+          (keydown)="onIsolationTabKeydown($event)"
+        >
+          <span class="hiw-level-tab__head"
+            ><span i18n="@@featurePortalHowItWorks-standardTitle">Standard</span
+            ><code class="hiw-meta">runc</code></span
+          >
+          <span class="hiw-meter" aria-hidden="true"><i class="hiw-meter__on"></i><i></i><i></i><i></i></span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          type="button"
+          class="nav-link hiw-level-tab"
+          role="tab"
+          id="limits-tab-sandboxed"
+          aria-controls="limits-sandboxed"
+          [class.active]="activeIsolationLevel() === 'sandboxed'"
+          [attr.aria-selected]="activeIsolationLevel() === 'sandboxed'"
+          [attr.tabindex]="activeIsolationLevel() === 'sandboxed' ? 0 : -1"
+          (click)="selectIsolationLevel('sandboxed')"
+          (keydown)="onIsolationTabKeydown($event)"
+        >
+          <span class="hiw-level-tab__head"
+            ><span i18n="@@featurePortalHowItWorks-sandboxedTitle">Sandboxed</span
+            ><code class="hiw-meta">runsc</code></span
+          >
+          <span class="hiw-meter" aria-hidden="true"
+            ><i class="hiw-meter__on"></i><i class="hiw-meter__on"></i><i></i><i></i
+          ></span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          type="button"
+          class="nav-link hiw-level-tab"
+          role="tab"
+          id="limits-tab-sandboxed-kvm"
+          aria-controls="limits-sandboxed-kvm"
+          [class.active]="activeIsolationLevel() === 'sandboxed-kvm'"
+          [attr.aria-selected]="activeIsolationLevel() === 'sandboxed-kvm'"
+          [attr.tabindex]="activeIsolationLevel() === 'sandboxed-kvm' ? 0 : -1"
+          (click)="selectIsolationLevel('sandboxed-kvm')"
+          (keydown)="onIsolationTabKeydown($event)"
+        >
+          <span class="hiw-level-tab__head"
+            ><span i18n="@@featurePortalHowItWorks-sandboxedKvmTitle">Sandboxed + KVM</span
+            ><code class="hiw-meta">runsc-kvm</code></span
+          >
+          <span class="hiw-meter" aria-hidden="true"
+            ><i class="hiw-meter__on"></i><i class="hiw-meter__on"></i><i class="hiw-meter__on"></i><i></i
+          ></span>
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          type="button"
+          class="nav-link hiw-level-tab"
+          role="tab"
+          id="limits-tab-microvm"
+          aria-controls="limits-microvm"
+          [class.active]="activeIsolationLevel() === 'microvm'"
+          [attr.aria-selected]="activeIsolationLevel() === 'microvm'"
+          [attr.tabindex]="activeIsolationLevel() === 'microvm' ? 0 : -1"
+          (click)="selectIsolationLevel('microvm')"
+          (keydown)="onIsolationTabKeydown($event)"
+        >
+          <span class="hiw-level-tab__head"
+            ><span i18n="@@featurePortalHowItWorks-microvmTitle">MicroVM</span
+            ><span class="hiw-chips"><code class="hiw-meta">KVM</code><code class="hiw-meta">QEMU</code></span></span
+          >
+          <span class="hiw-meter" aria-hidden="true"
+            ><i class="hiw-meter__on"></i><i class="hiw-meter__on"></i><i class="hiw-meter__on"></i
+            ><i class="hiw-meter__on"></i
+          ></span>
+        </button>
+      </li>
+    </ul>
+    <div
+      class="row g-3 g-lg-4 align-items-stretch"
+      role="tabpanel"
+      id="limits-standard"
+      aria-labelledby="limits-tab-standard"
+      tabindex="0"
+      [hidden]="activeIsolationLevel() !== 'standard'"
+    >
+      <div class="col-lg-7">
+        <div class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5">
+          <div class="hiw-list">
+            <div class="d-flex gap-3 align-items-start">
+              <i class="bi bi-cpu text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-limitStandard1Title">
+                  The agent shares the host kernel
+                </p>
+                <p class="small text-muted mb-2" i18n="@@featurePortalHowItWorks-limitStandard1Desc">
+                  Every system call goes straight to the host kernel, filtered by namespaces, cgroups and seccomp. A
+                  kernel exploit inside the container reaches the host.
+                </p>
+                <div class="hiw-mitigation">
+                  <fpc-badge variant="info" color="success" size="sm" i18n="@@featurePortalHowItWorks-mitigationLabel"
+                    >Mitigated</fpc-badge
+                  >
+                  <span class="hiw-mitigation__items">
+                    <span class="hiw-mitigation__item"
+                      ><i class="bi bi-check2" aria-hidden="true"></i
+                      ><span i18n="@@featurePortalHowItWorks-mitigationNonRoot">Non-root workloads</span></span
+                    >
+                    <span class="hiw-mitigation__item"
+                      ><i class="bi bi-check2" aria-hidden="true"></i
+                      ><span i18n="@@featurePortalHowItWorks-mitigationGuard">Egress guard</span></span
+                    >
+                    <span class="hiw-mitigation__item"
+                      ><i class="bi bi-check2" aria-hidden="true"></i
+                      ><span i18n="@@featurePortalHowItWorks-mitigationHardenedHost">Hardened host</span></span
+                    >
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex gap-3 align-items-start">
+              <i class="bi bi-tools text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-limitStandard2Title">
+                  Chosen for compatibility, never by accident
+                </p>
+                <p class="small text-muted mb-2" i18n="@@featurePortalHowItWorks-limitStandard2Desc">
+                  Docker-in-Docker, eBPF, io_uring and KVM work as on any Docker host, and the level is available
+                  everywhere. Where a stronger level is ready, choosing it needs a confirmation.
+                </p>
+                <div class="hiw-mitigation">
+                  <fpc-badge variant="info" color="success" size="sm" i18n="@@featurePortalHowItWorks-mitigationLabel"
+                    >Mitigated</fpc-badge
+                  >
+                  <span class="hiw-mitigation__items">
+                    <span class="hiw-mitigation__item"
+                      ><i class="bi bi-check2" aria-hidden="true"></i
+                      ><span i18n="@@featurePortalHowItWorks-mitigationOverrideRecorded"
+                        >Override confirmed and recorded</span
+                      ></span
+                    >
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="col-lg-5">
         <div class="card border rounded-3 shadow-sm overflow-hidden h-100 landing-bento-visual">
-          <div class="p-4 p-lg-5 h-100 d-flex flex-column">
+          <div class="p-4 p-xl-5 h-100 d-flex flex-column">
             <fpc-badge
               color="primary"
               class="mb-4 bento-badge align-self-start"
@@ -788,8 +1040,8 @@
                   >
                   <div class="hiw-ring">
                     <span class="hiw-ring__label"
-                      ><i class="bi bi-shield-fill-check"></i
-                      ><span i18n="@@featurePortalHowItWorks-ringSandbox">gVisor sandbox</span></span
+                      ><i class="bi bi-bounding-box"></i
+                      ><span i18n="@@featurePortalHowItWorks-ringNamespaces">Namespaces, cgroups, seccomp</span></span
                     >
                     <div class="hiw-ring">
                       <span class="hiw-ring__label"
@@ -805,12 +1057,21 @@
                 </div>
               </div>
             </div>
-            <p class="small text-muted mb-0 mt-4" i18n="@@featurePortalHowItWorks-depthCaption">
-              No single layer has to be perfect. Where one control ends, the next one takes over.
+            <p class="small text-muted mb-0 mt-4" i18n="@@featurePortalHowItWorks-depthCaptionStandard">
+              One kernel for host and agent. The boundary is the container and the controls around it.
             </p>
           </div>
         </div>
       </div>
+    </div>
+    <div
+      class="row g-3 g-lg-4 align-items-stretch"
+      role="tabpanel"
+      id="limits-sandboxed"
+      aria-labelledby="limits-tab-sandboxed"
+      tabindex="0"
+      [hidden]="activeIsolationLevel() !== 'sandboxed'"
+    >
       <div class="col-lg-7">
         <div class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5">
           <div class="hiw-list">
@@ -822,8 +1083,9 @@
                 </p>
                 <p class="small text-muted mb-2" i18n="@@featurePortalHowItWorks-limit1Desc">
                   It shrinks the host kernel's attack surface considerably, but it is not a full virtual machine. Where
-                  the host supports KVM, the Sentry is additionally isolated by hardware virtualization. It works
-                  together with unprivileged workloads, the egress guard and a hardened host.
+                  the host supports KVM, the Sentry is additionally isolated by hardware virtualization, or the
+                  environment runs as a full microVM. It works together with unprivileged workloads, the egress guard
+                  and a hardened host.
                 </p>
                 <div class="hiw-mitigation">
                   <fpc-badge variant="info" color="success" size="sm" i18n="@@featurePortalHowItWorks-mitigationLabel"
@@ -868,14 +1130,14 @@
               </div>
             </div>
             <div class="d-flex gap-3 align-items-start">
-              <i class="bi bi-incognito text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <i class="bi bi-puzzle text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
               <div>
-                <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-limit3Title">
-                  HTTPS filtering trusts the name
+                <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-limitSandboxed3Title">
+                  Not every kernel feature is there
                 </p>
-                <p class="small text-muted mb-2" i18n="@@featurePortalHowItWorks-limit3Desc">
-                  Without decryption, domain fronting on shared CDNs and encrypted client hellos cannot be told apart by
-                  name. Narrow allowlists, blocked IP literals or offline mode close that gap.
+                <p class="small text-muted mb-2" i18n="@@featurePortalHowItWorks-limitSandboxed3Desc">
+                  No io_uring, iptables or KVM inside, limited FUSE, and no Docker-in-Docker or other container
+                  runtimes. Tools that need eBPF, kernel modules or perf do not run.
                 </p>
                 <div class="hiw-mitigation">
                   <fpc-badge variant="info" color="success" size="sm" i18n="@@featurePortalHowItWorks-mitigationLabel"
@@ -884,27 +1146,83 @@
                   <span class="hiw-mitigation__items">
                     <span class="hiw-mitigation__item"
                       ><i class="bi bi-check2" aria-hidden="true"></i
-                      ><span i18n="@@featurePortalHowItWorks-mitigationAllowlist">Narrow allowlists</span></span
-                    >
-                    <span class="hiw-mitigation__item"
-                      ><i class="bi bi-check2" aria-hidden="true"></i
-                      ><span i18n="@@featurePortalHowItWorks-mitigationIpLiterals">Blocked IP literals</span></span
-                    >
-                    <span class="hiw-mitigation__item"
-                      ><i class="bi bi-check2" aria-hidden="true"></i
-                      ><span i18n="@@featurePortalHowItWorks-mitigationOffline">Offline mode</span></span
+                      ><span i18n="@@featurePortalHowItWorks-mitigationStandard"
+                        >Standard level per environment, on record</span
+                      ></span
                     >
                   </span>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="card border rounded-3 shadow-sm overflow-hidden h-100 landing-bento-visual">
+          <div class="p-4 p-xl-5 h-100 d-flex flex-column">
+            <fpc-badge
+              color="primary"
+              class="mb-4 bento-badge align-self-start"
+              i18n="@@featurePortalHowItWorks-depthBadge"
+              >Defense in depth</fpc-badge
+            >
+            <div class="hiw-rings flex-grow-1" aria-hidden="true">
+              <div class="hiw-ring">
+                <span class="hiw-ring__label"
+                  ><i class="bi bi-hdd-stack"></i
+                  ><span i18n="@@featurePortalHowItWorks-ringHost">Hardened host</span></span
+                >
+                <div class="hiw-ring">
+                  <span class="hiw-ring__label"
+                    ><i class="bi bi-shield-lock"></i
+                    ><span i18n="@@featurePortalHowItWorks-ringGuard">Egress guard</span></span
+                  >
+                  <div class="hiw-ring">
+                    <span class="hiw-ring__label"
+                      ><i class="bi bi-shield-fill-check"></i
+                      ><span i18n="@@featurePortalHowItWorks-ringSentry">gVisor Sentry</span></span
+                    >
+                    <div class="hiw-ring">
+                      <span class="hiw-ring__label"
+                        ><i class="bi bi-person-lock"></i
+                        ><span i18n="@@featurePortalHowItWorks-ringUser">Unprivileged user</span></span
+                      >
+                      <div class="hiw-ring__core">
+                        <i class="bi bi-robot"></i>
+                        <span i18n="@@featurePortalHowItWorks-ringAgent">Agent</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="small text-muted mb-0 mt-4" i18n="@@featurePortalHowItWorks-depthCaption">
+              No single layer has to be perfect. Where one control ends, the next one takes over.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="row g-3 g-lg-4 align-items-stretch"
+      role="tabpanel"
+      id="limits-sandboxed-kvm"
+      aria-labelledby="limits-tab-sandboxed-kvm"
+      tabindex="0"
+      [hidden]="activeIsolationLevel() !== 'sandboxed-kvm'"
+    >
+      <div class="col-lg-7">
+        <div class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5">
+          <div class="hiw-list">
             <div class="d-flex gap-3 align-items-start">
-              <i class="bi bi-person-lock text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <i class="bi bi-layers text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
               <div>
-                <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-limit4Title">Non-root matters</p>
-                <p class="small text-muted mb-2" i18n="@@featurePortalHowItWorks-limit4Desc">
-                  A process with root rights inside a worker could bypass the DNS policy, though not the web rules. That
-                  is why workers run as an unprivileged user without sudo.
+                <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-limitKvm1Title">
+                  Still no virtual machine boundary
+                </p>
+                <p class="small text-muted mb-2" i18n="@@featurePortalHowItWorks-limitKvm1Desc">
+                  The Sentry runs in a hardware-virtualized address space, but there is no guest kernel. The attack
+                  surface shrinks like on the sandboxed level; it does not become a virtual machine.
                 </p>
                 <div class="hiw-mitigation">
                   <fpc-badge variant="info" color="success" size="sm" i18n="@@featurePortalHowItWorks-mitigationLabel"
@@ -917,9 +1235,351 @@
                     >
                     <span class="hiw-mitigation__item"
                       ><i class="bi bi-check2" aria-hidden="true"></i
-                      ><span i18n="@@featurePortalHowItWorks-mitigationNoSudo">No sudo</span></span
+                      ><span i18n="@@featurePortalHowItWorks-mitigationMicrovm"
+                        >MicroVM where a VM boundary is needed</span
+                      ></span
                     >
                   </span>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex gap-3 align-items-start">
+              <i class="bi bi-speedometer2 text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-limitKvm2Title">Fastest on bare metal</p>
+                <p class="small text-muted mb-2" i18n="@@featurePortalHowItWorks-limitKvm2Desc">
+                  Under nested virtualization every VM exit is expensive, so system-call- and network-heavy work can be
+                  slower than on the sandboxed level. The same kernel feature gaps apply.
+                </p>
+                <div class="hiw-mitigation">
+                  <fpc-badge variant="info" color="success" size="sm" i18n="@@featurePortalHowItWorks-mitigationLabel"
+                    >Mitigated</fpc-badge
+                  >
+                  <span class="hiw-mitigation__items">
+                    <span class="hiw-mitigation__item"
+                      ><i class="bi bi-check2" aria-hidden="true"></i
+                      ><span i18n="@@featurePortalHowItWorks-mitigationWeakerLevel"
+                        >Weaker level per environment, on record</span
+                      ></span
+                    >
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex gap-3 align-items-start">
+              <i class="bi bi-motherboard text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-limitKvm3Title">
+                  It needs hardware virtualization
+                </p>
+                <p class="small text-muted mb-2" i18n="@@featurePortalHowItWorks-limitKvm3Desc">
+                  The host has to expose KVM, which most ordinary cloud VMs do not. Without it the level is not offered.
+                </p>
+                <div class="hiw-mitigation">
+                  <fpc-badge variant="info" color="success" size="sm" i18n="@@featurePortalHowItWorks-mitigationLabel"
+                    >Mitigated</fpc-badge
+                  >
+                  <span class="hiw-mitigation__items">
+                    <span class="hiw-mitigation__item"
+                      ><i class="bi bi-check2" aria-hidden="true"></i
+                      ><span i18n="@@featurePortalHowItWorks-mitigationProbed">Probed per host</span></span
+                    >
+                    <span class="hiw-mitigation__item"
+                      ><i class="bi bi-check2" aria-hidden="true"></i
+                      ><span i18n="@@featurePortalHowItWorks-mitigationFailsClosed">Fails closed</span></span
+                    >
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="card border rounded-3 shadow-sm overflow-hidden h-100 landing-bento-visual">
+          <div class="p-4 p-xl-5 h-100 d-flex flex-column">
+            <fpc-badge
+              color="primary"
+              class="mb-4 bento-badge align-self-start"
+              i18n="@@featurePortalHowItWorks-depthBadge"
+              >Defense in depth</fpc-badge
+            >
+            <div class="hiw-rings flex-grow-1" aria-hidden="true">
+              <div class="hiw-ring">
+                <span class="hiw-ring__label"
+                  ><i class="bi bi-hdd-stack"></i
+                  ><span i18n="@@featurePortalHowItWorks-ringHost">Hardened host</span></span
+                >
+                <div class="hiw-ring">
+                  <span class="hiw-ring__label"
+                    ><i class="bi bi-shield-lock"></i
+                    ><span i18n="@@featurePortalHowItWorks-ringGuard">Egress guard</span></span
+                  >
+                  <div class="hiw-ring">
+                    <span class="hiw-ring__label"
+                      ><i class="bi bi-shield-fill-check"></i
+                      ><span i18n="@@featurePortalHowItWorks-ringSentryKvm">gVisor Sentry on KVM</span></span
+                    >
+                    <div class="hiw-ring">
+                      <span class="hiw-ring__label"
+                        ><i class="bi bi-person-lock"></i
+                        ><span i18n="@@featurePortalHowItWorks-ringUser">Unprivileged user</span></span
+                      >
+                      <div class="hiw-ring__core">
+                        <i class="bi bi-robot"></i>
+                        <span i18n="@@featurePortalHowItWorks-ringAgent">Agent</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="small text-muted mb-0 mt-4" i18n="@@featurePortalHowItWorks-depthCaptionKvm">
+              System calls trap into the Sentry through the CPU's virtualization extensions instead of seccomp.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="row g-3 g-lg-4 align-items-stretch"
+      role="tabpanel"
+      id="limits-microvm"
+      aria-labelledby="limits-tab-microvm"
+      tabindex="0"
+      [hidden]="activeIsolationLevel() !== 'microvm'"
+    >
+      <div class="col-lg-7">
+        <div class="card border rounded-3 shadow-sm h-100 p-4 p-lg-5">
+          <div class="hiw-list">
+            <div class="d-flex gap-3 align-items-start">
+              <i class="bi bi-hourglass-split text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-microvmLimit1Title">
+                  A microVM boots before it works
+                </p>
+                <p class="small text-muted mb-2" i18n="@@featurePortalHowItWorks-microvmLimit1Desc">
+                  Every environment starts its own Linux kernel first: about 2 to 5 seconds on bare metal or one nesting
+                  level, longer under deeper nesting. The launcher takes about 384 MiB on top of the guest memory, and
+                  each command run in the environment pays roughly 0.2 seconds for the bridge.
+                </p>
+                <div class="hiw-mitigation">
+                  <fpc-badge variant="info" color="success" size="sm" i18n="@@featurePortalHowItWorks-mitigationLabel"
+                    >Mitigated</fpc-badge
+                  >
+                  <span class="hiw-mitigation__items">
+                    <span class="hiw-mitigation__item"
+                      ><i class="bi bi-check2" aria-hidden="true"></i
+                      ><span i18n="@@featurePortalHowItWorks-mitigationWeakerLevel"
+                        >Weaker level per environment, on record</span
+                      ></span
+                    >
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex gap-3 align-items-start">
+              <i class="bi bi-motherboard text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-microvmLimit2Title">
+                  It needs hardware virtualization
+                </p>
+                <p class="small text-muted mb-2" i18n="@@featurePortalHowItWorks-microvmLimit2Desc">
+                  The host has to expose KVM. Most Hetzner Cloud and DigitalOcean VMs do not, so microVMs are offered on
+                  dedicated or bare-metal hosts and on VMs with nested virtualization. Nested, I/O-heavy work is
+                  noticeably slower.
+                </p>
+                <div class="hiw-mitigation">
+                  <fpc-badge variant="info" color="success" size="sm" i18n="@@featurePortalHowItWorks-mitigationLabel"
+                    >Mitigated</fpc-badge
+                  >
+                  <span class="hiw-mitigation__items">
+                    <span class="hiw-mitigation__item"
+                      ><i class="bi bi-check2" aria-hidden="true"></i
+                      ><span i18n="@@featurePortalHowItWorks-mitigationProbed">Probed per host</span></span
+                    >
+                    <span class="hiw-mitigation__item"
+                      ><i class="bi bi-check2" aria-hidden="true"></i
+                      ><span i18n="@@featurePortalHowItWorks-mitigationFailsClosed">Fails closed</span></span
+                    >
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex gap-3 align-items-start">
+              <i class="bi bi-box-seam text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-microvmLimit3Title">
+                  The launcher shares the host kernel
+                </p>
+                <p class="small text-muted mb-2" i18n="@@featurePortalHowItWorks-microvmLimit3Desc">
+                  QEMU, libvirt and virtiofsd run in a container on the host kernel. It gets only the KVM device, no
+                  network or system administration rights and no new privileges; the hypervisor runs as an unprivileged
+                  user.
+                </p>
+                <div class="hiw-mitigation">
+                  <fpc-badge variant="info" color="success" size="sm" i18n="@@featurePortalHowItWorks-mitigationLabel"
+                    >Mitigated</fpc-badge
+                  >
+                  <span class="hiw-mitigation__items">
+                    <span class="hiw-mitigation__item"
+                      ><i class="bi bi-check2" aria-hidden="true"></i
+                      ><span i18n="@@featurePortalHowItWorks-mitigationLauncher"
+                        >Hardened launcher container</span
+                      ></span
+                    >
+                    <span class="hiw-mitigation__item"
+                      ><i class="bi bi-check2" aria-hidden="true"></i
+                      ><span i18n="@@featurePortalHowItWorks-mitigationGuard">Egress guard</span></span
+                    >
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex gap-3 align-items-start">
+              <i class="bi bi-puzzle text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+              <div>
+                <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-microvmLimit4Title">
+                  Not every container feature carries over
+                </p>
+                <p class="small text-muted mb-2" i18n="@@featurePortalHowItWorks-microvmLimit4Desc">
+                  There is no KVM inside the guest, ports below 1024 cannot be forwarded and microVM environments cannot
+                  be checkpointed or restored. Volumes and copied files live below /guest.
+                </p>
+                <div class="hiw-mitigation">
+                  <fpc-badge variant="info" color="success" size="sm" i18n="@@featurePortalHowItWorks-mitigationLabel"
+                    >Mitigated</fpc-badge
+                  >
+                  <span class="hiw-mitigation__items">
+                    <span class="hiw-mitigation__item"
+                      ><i class="bi bi-check2" aria-hidden="true"></i
+                      ><span i18n="@@featurePortalHowItWorks-mitigationStandard"
+                        >Standard level per environment, on record</span
+                      ></span
+                    >
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="card border rounded-3 shadow-sm overflow-hidden h-100 landing-bento-visual">
+          <div class="p-4 p-xl-5 h-100 d-flex flex-column">
+            <fpc-badge
+              color="primary"
+              class="mb-4 bento-badge align-self-start"
+              i18n="@@featurePortalHowItWorks-depthBadge"
+              >Defense in depth</fpc-badge
+            >
+            <div class="hiw-rings flex-grow-1" aria-hidden="true">
+              <div class="hiw-ring">
+                <span class="hiw-ring__label"
+                  ><i class="bi bi-hdd-stack"></i
+                  ><span i18n="@@featurePortalHowItWorks-ringHost">Hardened host</span></span
+                >
+                <div class="hiw-ring">
+                  <span class="hiw-ring__label"
+                    ><i class="bi bi-box-seam"></i
+                    ><span i18n="@@featurePortalHowItWorks-ringLauncher">Locked-down launcher container</span></span
+                  >
+                  <div class="hiw-ring">
+                    <span class="hiw-ring__label"
+                      ><i class="bi bi-shield-fill-check"></i
+                      ><span i18n="@@featurePortalHowItWorks-ringHypervisor">KVM hypervisor, unprivileged</span></span
+                    >
+                    <div class="hiw-ring">
+                      <span class="hiw-ring__label"
+                        ><i class="bi bi-pc-display"></i
+                        ><span i18n="@@featurePortalHowItWorks-ringGuestKernel">Own guest kernel</span></span
+                      >
+                      <div class="hiw-ring__core">
+                        <i class="bi bi-robot"></i>
+                        <span i18n="@@featurePortalHowItWorks-ringAgent">Agent</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="small text-muted mb-0 mt-4" i18n="@@featurePortalHowItWorks-microvmDepthCaption">
+              A guest kernel exploit lands in the VM. Reaching the host means breaking QEMU's device model and the
+              locked-down container around it.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card border rounded-3 shadow-sm overflow-hidden mt-3 mt-lg-4">
+      <div class="px-4 py-3 border-bottom">
+        <h3 class="h6 fw-semibold mb-0" i18n="@@featurePortalHowItWorks-limitsGuardHeading">
+          What the guard cannot see
+        </h3>
+      </div>
+      <div class="p-4 p-lg-5">
+        <div class="row g-4 g-lg-5">
+          <div class="col-lg-6">
+            <div class="hiw-list">
+              <div class="d-flex gap-3 align-items-start">
+                <i class="bi bi-incognito text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+                <div>
+                  <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-limit3Title">
+                    HTTPS filtering trusts the name
+                  </p>
+                  <p class="small text-muted mb-2" i18n="@@featurePortalHowItWorks-limit3Desc">
+                    Without decryption, domain fronting on shared CDNs and encrypted client hellos cannot be told apart
+                    by name. Narrow allowlists, blocked IP literals or offline mode close that gap.
+                  </p>
+                  <div class="hiw-mitigation">
+                    <fpc-badge variant="info" color="success" size="sm" i18n="@@featurePortalHowItWorks-mitigationLabel"
+                      >Mitigated</fpc-badge
+                    >
+                    <span class="hiw-mitigation__items">
+                      <span class="hiw-mitigation__item"
+                        ><i class="bi bi-check2" aria-hidden="true"></i
+                        ><span i18n="@@featurePortalHowItWorks-mitigationAllowlist">Narrow allowlists</span></span
+                      >
+                      <span class="hiw-mitigation__item"
+                        ><i class="bi bi-check2" aria-hidden="true"></i
+                        ><span i18n="@@featurePortalHowItWorks-mitigationIpLiterals">Blocked IP literals</span></span
+                      >
+                      <span class="hiw-mitigation__item"
+                        ><i class="bi bi-check2" aria-hidden="true"></i
+                        ><span i18n="@@featurePortalHowItWorks-mitigationOffline">Offline mode</span></span
+                      >
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="hiw-list">
+              <div class="d-flex gap-3 align-items-start">
+                <i class="bi bi-person-lock text-primary flex-shrink-0 icon-md" aria-hidden="true"></i>
+                <div>
+                  <p class="fw-semibold mb-1" i18n="@@featurePortalHowItWorks-limit4Title">Non-root matters</p>
+                  <p class="small text-muted mb-2" i18n="@@featurePortalHowItWorks-limit4Desc">
+                    On the container-based levels, a process with root rights inside a worker could bypass the DNS
+                    policy, though not the web rules. That is why workers run as an unprivileged user without sudo. In a
+                    microVM even root cannot: all guest traffic leaves through the launcher's own sockets.
+                  </p>
+                  <div class="hiw-mitigation">
+                    <fpc-badge variant="info" color="success" size="sm" i18n="@@featurePortalHowItWorks-mitigationLabel"
+                      >Mitigated</fpc-badge
+                    >
+                    <span class="hiw-mitigation__items">
+                      <span class="hiw-mitigation__item"
+                        ><i class="bi bi-check2" aria-hidden="true"></i
+                        ><span i18n="@@featurePortalHowItWorks-mitigationNonRoot">Non-root workloads</span></span
+                      >
+                      <span class="hiw-mitigation__item"
+                        ><i class="bi bi-check2" aria-hidden="true"></i
+                        ><span i18n="@@featurePortalHowItWorks-mitigationNoSudo">No sudo</span></span
+                      >
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -965,18 +1625,19 @@
             <div class="hiw-topology__hosts">
               <div class="hiw-topology__host">
                 <img src="assets/images/logos/hetzner.svg" alt="Hetzner Cloud" class="hiw-topology__logo" />
-                <span i18n="@@featurePortalHowItWorks-topologyProvisioned">Provisioned for you</span>
+                <span i18n="@@featurePortalHowItWorks-topologyHetzner">Cloud VM</span>
                 <small><i class="bi bi-check-circle-fill"></i>gVisor</small>
               </div>
               <div class="hiw-topology__host">
                 <img src="assets/images/logos/digitalocean.svg" alt="DigitalOcean" class="hiw-topology__logo" />
-                <span i18n="@@featurePortalHowItWorks-topologyProvisioned">Provisioned for you</span>
+                <span i18n="@@featurePortalHowItWorks-topologyDigitalOcean">Droplet</span>
                 <small><i class="bi bi-check-circle-fill"></i>gVisor</small>
               </div>
               <div class="hiw-topology__host">
                 <i class="bi bi-hdd-stack hiw-topology__logo-icon"></i>
-                <span i18n="@@featurePortalHowItWorks-topologyOwnHost">Your container host</span>
+                <span i18n="@@featurePortalHowItWorks-topologyOwnHost">Your host</span>
                 <small><i class="bi bi-check-circle-fill"></i>gVisor</small>
+                <small><i class="bi bi-check-circle-fill"></i>KVM microVM</small>
               </div>
             </div>
           </div>

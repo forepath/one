@@ -82,6 +82,24 @@ export function buildIsolationLabScenarios(
   ]);
 }
 
+/** Network topologies (and guard modes) the microvm level is exercised in: the same matrix as the other levels. */
+export interface IsolationLabMicrovmScenario {
+  topology: IsolationLabTopology;
+  mode?: IsolationLabGuardMode;
+}
+
+/**
+ * Every networking scenario of the microvm level. The launcher container always runs on runc in every topology
+ * (the guest's traffic leaves through QEMU's user networking as ordinary sockets of the container's namespace).
+ */
+export function buildIsolationLabMicrovmScenarios(): IsolationLabMicrovmScenario[] {
+  return [
+    { topology: 'bridge' },
+    { topology: 'agent-network' },
+    ...ISOLATION_LAB_GUARD_MODES.map((mode) => ({ topology: 'guard' as const, mode })),
+  ];
+}
+
 export interface IsolationLabVmOptions {
   /** Guest memory (default 3072 MiB). */
   memoryMb?: number;

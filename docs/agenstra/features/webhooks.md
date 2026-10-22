@@ -56,9 +56,11 @@ Events are published from the **agent-controller** service after proxied operati
 - `isolation.sandbox_unavailable`, the sandboxed level of a workspace host was ready and is not anymore (probe failed, runtime removed or disabled)
 - `isolation.sandbox_kvm_available`, the sandboxed-kvm (gVisor on KVM) isolation level of a workspace host became ready
 - `isolation.sandbox_kvm_unavailable`, the sandboxed-kvm level of a workspace host was ready and is not anymore (probe failed, KVM or runtime removed, or disabled)
+- `isolation.microvm_available`, the microvm (KVM microVM) isolation level of a workspace host became ready
+- `isolation.microvm_unavailable`, the microvm level of a workspace host was ready and is not anymore (probe failed, KVM or microVM image unavailable, or disabled)
 - `isolation.baseline_failed`, the standard (`runc`) baseline of a workspace host failed; the host cannot run environments
 - `agent.isolation_override`, an environment was created with a weaker isolation level than recommended (confirmed user choice)
-- `agent.sandbox_creation_failed`, a sandboxed or sandboxed-kvm environment could not be started (never retried on a weaker runtime)
+- `agent.sandbox_creation_failed`, a sandboxed, sandboxed-kvm or microvm environment could not be started (never retried on a weaker runtime)
 
 Host transitions are detected against the controller's last stored capability snapshot and published once per transition. See [Container Isolation Levels](./container-isolation.md).
 
@@ -196,7 +198,7 @@ Values are never included, only the changed root keys. Global-layer saves carry 
 
 `egress.guard_failed` uses the payload above. `egress.policy_applied` and `egress.policy_failed` carry `{ "agentId", "mode", "revision", "error" }`.
 
-### `isolation.sandbox_available` / `isolation.sandbox_unavailable` / `isolation.sandbox_kvm_available` / `isolation.sandbox_kvm_unavailable` / `isolation.baseline_failed`
+### `isolation.sandbox_available` / `isolation.sandbox_unavailable` / `isolation.sandbox_kvm_available` / `isolation.sandbox_kvm_unavailable` / `isolation.microvm_available` / `isolation.microvm_unavailable` / `isolation.baseline_failed`
 
 ```json
 {
@@ -213,7 +215,7 @@ Values are never included, only the changed root keys. Global-layer saves carry 
 }
 ```
 
-`level` is `sandboxed` (`runtime` `runsc-systrap`) for `isolation.sandbox_available` / `_unavailable`, `sandboxed-kvm` (`runtime` `runsc-kvm`) for `isolation.sandbox_kvm_available` / `_unavailable` and `standard` for `isolation.baseline_failed` (then `recommendedLevel` is `null`). `previousState` is `null` for the first observation of a workspace host. `reasonCode` is `null` when the level is `ready`.
+`level` is `sandboxed` (`runtime` `runsc-systrap`) for `isolation.sandbox_available` / `_unavailable`, `sandboxed-kvm` (`runtime` `runsc-kvm`) for `isolation.sandbox_kvm_available` / `_unavailable`, `microvm` (`runtime` `runc`, the launcher container) for `isolation.microvm_available` / `_unavailable` and `standard` for `isolation.baseline_failed` (then `recommendedLevel` is `null`). `previousState` is `null` for the first observation of a workspace host. `reasonCode` is `null` when the level is `ready`.
 
 ### `agent.isolation_override`
 
@@ -240,7 +242,7 @@ Values are never included, only the changed root keys. Global-layer saves carry 
 }
 ```
 
-For a sandboxed-kvm environment `isolationLevel` is `sandboxed-kvm`, `runtime` is `runsc-kvm` and `error` starts with `The sandboxed-kvm (gVisor on KVM) container could not be started: ...`. No `agentId` is included because the environment was not created. `error` is truncated to 500 characters.
+For a sandboxed-kvm environment `isolationLevel` is `sandboxed-kvm`, `runtime` is `runsc-kvm` and `error` starts with `The sandboxed-kvm (gVisor on KVM) container could not be started: ...`. For a microvm environment `isolationLevel` is `microvm`, `runtime` is `runc` and `error` starts with `The microvm (KVM microVM) container could not be started: ...`. No `agentId` is included because the environment was not created. `error` is truncated to 500 characters.
 
 ### `environment.created` / `environment.updated` / `environment.deleted`
 

@@ -237,6 +237,9 @@
       ],
       "@forepath/agenstra/backend/feature-isolation-lab": [
         "libs/domains/agenstra/backend/feature-isolation-lab/src/index.ts"
+      ],
+      "@forepath/agenstra/backend/util-microvm-bridge": [
+        "libs/domains/agenstra/backend/util-microvm-bridge/src/index.ts"
       ]
     }
   },

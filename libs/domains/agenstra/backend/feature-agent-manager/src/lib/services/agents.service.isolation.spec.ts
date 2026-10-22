@@ -11,6 +11,7 @@ function capabilities(
   sandboxed = 'ready',
   revision = 'sha256:current',
   sandboxedKvm = 'unsupported',
+  microvm = 'unsupported',
 ): HostIsolationCapabilitiesDto {
   return {
     revision,
@@ -20,6 +21,7 @@ function capabilities(
       standard: { rank: 1, runtime: 'runc', state: standard as 'ready' },
       sandboxed: { rank: 2, runtime: 'runsc-systrap', state: sandboxed as 'ready' },
       'sandboxed-kvm': { rank: 3, runtime: 'runsc-kvm', state: sandboxedKvm as 'ready' },
+      microvm: { rank: 4, runtime: 'runc', state: microvm as 'ready' },
     },
     recommendedLevel: null,
     availableLevels: [],
@@ -272,6 +274,83 @@ describe('AgentsService container isolation', () => {
       );
       expect(docker.createContainer).toHaveBeenCalledTimes(1);
       expect(isolation.recordRuntimeFailure).toHaveBeenCalledWith('sandboxed-kvm');
+      expect(repository.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('microvm', () => {
+    const originalImage = process.env.AGENT_MICROVM_IMAGE;
+
+    beforeEach(() => {
+      process.env.AGENT_MICROVM_IMAGE = 'registry.example/worker-microvm:test';
+      isolation.getCapabilitiesForCreation.mockResolvedValue(
+        capabilities('ready', 'ready', 'sha256:current', 'ready', 'ready'),
+      );
+    });
+
+    afterEach(() => {
+      process.env.AGENT_MICROVM_IMAGE = originalImage;
+    });
+
+    it('defaults to microvm when it is the strongest ready level and runs the microVM image on runc', async () => {
+      const created = await service.create(dto());
+      const options = docker.createContainer.mock.calls[0][0];
+
+      expect(docker.ensureImageExists).toHaveBeenCalledWith(
+        'registry.example/worker-microvm:test',
+        expect.any(Function),
+      );
+      expect(options).toEqual(
+        expect.objectContaining({ image: 'registry.example/worker-microvm:test', runtime: 'runc', microvm: true }),
+      );
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isolationLevel: 'microvm',
+          isolationSelection: expect.objectContaining({ automaticSelection: 'microvm', selectionSource: 'automatic' }),
+        }),
+      );
+      expect(created.isolation).toEqual(expect.objectContaining({ level: 'microvm', runtime: 'runc' }));
+      expect(isolation.recordRuntimeSuccess).toHaveBeenCalledWith('microvm');
+    });
+
+    it('records sandboxed-kvm as an override of microvm and keeps the provider image', async () => {
+      await service.create(dto({ isolationLevel: 'sandboxed-kvm' }));
+
+      const options = docker.createContainer.mock.calls[0][0];
+
+      expect(options).toEqual(expect.objectContaining({ image: 'worker:latest', runtime: 'runsc-kvm' }));
+      expect(options.microvm).toBeUndefined();
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isolationSelection: expect.objectContaining({
+            selectionSource: 'user-override',
+            automaticSelection: 'microvm',
+          }),
+        }),
+      );
+    });
+
+    it('rejects microvm when it is not ready instead of downgrading', async () => {
+      isolation.getCapabilitiesForCreation.mockResolvedValue(capabilities('ready', 'ready', 'sha256:current', 'ready'));
+
+      await expect(service.create(dto({ isolationLevel: 'microvm' }))).rejects.toBeInstanceOf(ConflictException);
+      expect(docker.createContainer).not.toHaveBeenCalled();
+    });
+
+    it('never retries a failed microVM on another level and reports a machine-readable code', async () => {
+      docker.createContainer.mockRejectedValue(new Error('error gathering device information: /dev/kvm'));
+
+      const error = (await service.create(dto()).catch((e: unknown) => e)) as BadRequestException;
+
+      expect(error.getResponse()).toEqual(
+        expect.objectContaining({
+          code: 'E_ISOLATION_RUNTIME_FAILED',
+          isolationLevel: 'microvm',
+          message: expect.stringMatching(/^The microvm \(KVM microVM\) container could not be started: /),
+        }),
+      );
+      expect(docker.createContainer).toHaveBeenCalledTimes(1);
+      expect(isolation.recordRuntimeFailure).toHaveBeenCalledWith('microvm');
       expect(repository.create).not.toHaveBeenCalled();
     });
   });

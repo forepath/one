@@ -11,10 +11,11 @@ export interface AgentTypeInfo {
 
 /**
  * Container isolation level of an environment:
+ * `microvm` = KVM microVM with its own guest kernel (launcher container on `runc`),
  * `sandboxed-kvm` = gVisor on its KVM platform (`runsc-kvm`, hardware virtualization),
  * `sandboxed` = gVisor (`runsc-systrap`), `standard` = Docker's default runtime (`runc`).
  */
-export type IsolationLevel = 'standard' | 'sandboxed' | 'sandboxed-kvm';
+export type IsolationLevel = 'standard' | 'sandboxed' | 'sandboxed-kvm' | 'microvm';
 
 /** Runtime state of an isolation level on a workspace host (derived from real runtime probes). */
 export type IsolationRuntimeState =
@@ -25,7 +26,7 @@ export type IsolationRuntimeState =
   | 'disabled-by-admin';
 
 export interface IsolationLevelCapabilityDto {
-  /** Strength rank (`1` = standard, `2` = sandboxed, `3` = sandboxed-kvm). */
+  /** Strength rank (`1` = standard, `2` = sandboxed, `3` = sandboxed-kvm, `4` = microvm). */
   rank: number;
   /** Docker runtime name used for this level (`runc`, `runsc-systrap`, `runsc-kvm`). */
   runtime: string;
@@ -41,6 +42,8 @@ export interface IsolationLevelsDto {
   sandboxed: IsolationLevelCapabilityDto;
   /** Optional: agent controllers that predate the level do not report it. */
   'sandboxed-kvm'?: IsolationLevelCapabilityDto;
+  /** Optional: agent controllers that predate the level do not report it. */
+  microvm?: IsolationLevelCapabilityDto;
 }
 
 /** Raw isolation capability record reported by the agent manager (`config.isolation`). */

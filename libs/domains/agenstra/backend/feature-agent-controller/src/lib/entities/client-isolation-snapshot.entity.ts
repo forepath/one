@@ -30,6 +30,10 @@ export class ClientIsolationSnapshotEntity {
   @Column({ type: 'varchar', length: 32, nullable: true, name: 'sandboxed_kvm_state' })
   sandboxedKvmState?: string | null;
 
+  /** State of the microvm level (`null` for snapshots recorded before the level existed). */
+  @Column({ type: 'varchar', length: 32, nullable: true, name: 'microvm_state' })
+  microvmState?: string | null;
+
   @Column({ type: 'varchar', length: 16, nullable: true, name: 'recommended_level' })
   recommendedLevel?: string | null;
 

@@ -1,6 +1,6 @@
 # Container Isolation Levels
 
-Agenstra can run agent environments with **stronger container isolation** than Docker's default. Every agent manager host offers the **standard** level (Docker's `runc`) and, when the host has been prepared for it, the **sandboxed** level, which runs the environment's worker container on **gVisor** (`runsc`) instead of directly on the host kernel. Hosts that expose hardware virtualization (`/dev/kvm`) can additionally offer **sandboxed-kvm**, which runs gVisor on its KVM platform. The level is chosen per environment at creation time, is validated against what the host can **actually** run (real runtime probes, never configuration alone), and is never silently downgraded.
+Agenstra can run agent environments with **stronger container isolation** than Docker's default. Every agent manager host offers the **standard** level (Docker's `runc`) and, when the host has been prepared for it, the **sandboxed** level, which runs the environment's worker container on **gVisor** (`runsc`) instead of directly on the host kernel. Hosts that expose hardware virtualization (`/dev/kvm`) can additionally offer **sandboxed-kvm**, which runs gVisor on its KVM platform, and **microvm**, which runs the environment as a real KVM virtual machine with its own guest kernel. The level is chosen per environment at creation time, is validated against what the host can **actually** run (real runtime probes, never configuration alone), and is never silently downgraded.
 
 ## Levels
 
@@ -9,12 +9,14 @@ Agenstra can run agent environments with **stronger container isolation** than D
 | `standard`      | 1    | `runc` (Docker default)             | Shares the host kernel (namespaces, cgroups, seccomp, capabilities)                                 | Mandatory floor of every host; the setup every manager supported before                                   |
 | `sandboxed`     | 2    | `runsc-systrap` (gVisor, `systrap`) | gVisor **Sentry** application kernel in userspace between app and host                              | Only when the gVisor runtime is registered with Docker **and** passes the probe                           |
 | `sandboxed-kvm` | 3    | `runsc-kvm` (gVisor, `kvm`)         | gVisor Sentry in a hardware-virtualized address space; system calls trap into it via VM exits (KVM) | Only when the host exposes `/dev/kvm`, the KVM runtime is registered with Docker **and** passes the probe |
+| `microvm`       | 4    | `runc` (launcher container)         | Own guest kernel in a KVM virtual machine (libvirt / QEMU); the VMM runs in a hardened container    | Only when the host exposes `/dev/kvm` **and** a probe microVM of the microVM image boots and passes       |
 
 - **Higher rank means stronger isolation.** The recommended (preselected) level of a host is its strongest **ready** level.
 - **gVisor is not a VM.** The Sentry implements the Linux system call interface in userspace and only uses a small, filtered set of host system calls itself. Networking is handled by gVisor's own user-space network stack (**Netstack**), file access goes through gVisor's file proxy. A kernel exploit inside the workload therefore has to break the Sentry first instead of hitting the host kernel directly.
 - **`systrap` platform** The sandboxed runtime is registered with `--platform=systrap`, which intercepts system calls with seccomp and needs **no KVM / nested virtualization**. It works on ordinary cloud VMs.
 - **`kvm` platform** The sandboxed-kvm runtime is registered with `--platform=kvm`. The Sentry runs in a hardware-virtualized address space and application system calls trap into it through the CPU's virtualization extensions (VM exits) instead of seccomp. It needs `/dev/kvm` on the host (bare metal, or a VM with nested virtualization). It is still gVisor, **not a full VM** (there is no hypervisor guest kernel).
-- **Levels are probed independently.** `sandboxed-kvm` can be ready while `sandboxed` is not, and vice versa.
+- **`microvm`** The worker runs as a virtual machine with its **own Linux kernel**. The container of the environment becomes a hardened **launcher**: it runs libvirt (session mode), QEMU/KVM and virtiofsd and boots the worker filesystem as the VM. A guest kernel exploit lands in the VM, and escaping it means breaking QEMU's device model, which runs unprivileged inside a container without network or system administration capabilities. See [MicroVM level](#microvm-level).
+- **Levels are probed independently.** `sandboxed-kvm` can be ready while `sandboxed` is not, and vice versa; `microvm` does not depend on gVisor at all.
 - **Standard is the floor.** If the standard probe fails, the host cannot run environments at all: no level is recommended and creation fails with `503`, even if gVisor itself would work.
 - Environments created before isolation levels existed are `standard` and keep running exactly as before.
 
@@ -22,14 +24,14 @@ Agenstra can run agent environments with **stronger container isolation** than D
 
 ### Automatic selection
 
-When an environment is created without an explicit level, the strongest ready level of the host is used (`selectionSource: automatic`). On a prepared host with KVM this is `sandboxed-kvm`, on a prepared host without KVM `sandboxed`; on any other host it is `standard`.
+When an environment is created without an explicit level, the strongest ready level of the host is used (`selectionSource: automatic`). On a host with KVM where the microVM probe passed this is `microvm`, on a prepared host with KVM otherwise `sandboxed-kvm`, on a prepared host without KVM `sandboxed`; on any other host it is `standard`.
 
 ### Explicit choice and override
 
-The **Create environment** dialog shows the levels as a radio group (**Sandboxed (gVisor on KVM)**, **Sandboxed (gVisor)**, **Standard Docker**) with the recommendation preselected. The KVM option is only shown when the workspace host reports the level. Unavailable levels are disabled and show the reason reported by the host.
+The **Create environment** dialog shows the levels as a radio group (**MicroVM (KVM)**, **Sandboxed (gVisor on KVM)**, **Sandboxed (gVisor)**, **Standard Docker**) with the recommendation preselected. The KVM and microVM options are only shown when the workspace host reports the level. Unavailable levels are disabled and show the reason reported by the host.
 
 - Choosing the recommended level (or a stronger one) is recorded as `user-confirmed`.
-- Choosing a **weaker** level than the recommendation (for example `standard` on a host where `sandboxed` is ready, or `sandboxed` / `standard` on a host where `sandboxed-kvm` is ready) is an **override**. The console asks for confirmation before submitting, the selection is recorded as `user-override` together with the selecting user, and the controller publishes an `agent.isolation_override` notification.
+- Choosing a **weaker** level than the recommendation (for example `standard` on a host where `sandboxed` is ready, `sandboxed` / `standard` on a host where `sandboxed-kvm` is ready, or any other level on a host where `microvm` is ready) is an **override**. The console asks for confirmation before submitting, the selection is recorded as `user-override` together with the selecting user, and the controller publishes an `agent.isolation_override` notification.
 - An explicit level is **never replaced** by another one. If it is not ready (anymore), creation is rejected with `409 Conflict`.
 
 ### Capability revision (stale forms)
@@ -40,7 +42,7 @@ Every capability record carries a **revision** (`sha256:` content hash over Dock
 
 1. The **controller** validates the request against the host's current capabilities (`invalid-level` -> `400`, `host-not-runnable` -> `503`, `level-unavailable` / `stale-revision` -> `409`) and forwards only `isolationLevel`, the current `capabilityRevision` and the selecting user id. Client-supplied `isolationSelection` is ignored.
 2. The **agent manager** re-validates with the same rules immediately before provisioning (before the egress guard or any container is created) and derives the persisted selection record itself; only `selectedBy` is taken from the controller.
-3. The level is persisted on the environment (`isolation_level`, `isolation_selection`). Every later recreate (environment variable migration, configuration sync, restart paths) pins the same level, so a sandboxed or sandboxed-kvm environment never comes back on a weaker runtime.
+3. The level is persisted on the environment (`isolation_level`, `isolation_selection`). Every later recreate (environment variable migration, configuration sync, restart paths) pins the same level, so a sandboxed, sandboxed-kvm or microvm environment never comes back on a weaker runtime (microVM launchers are always recreated from the microVM image, on `runc`, with `/dev/kvm` and the launcher capability set).
 
 ### Selection record
 
@@ -63,7 +65,7 @@ Returned as `isolation` on agent responses. `selection` is `null` for environmen
 
 ## Failure behavior
 
-- **No silent downgrade.** If a gVisor worker container (`sandboxed` or `sandboxed-kvm`) cannot be created or started, or never becomes healthy, the environment is **not created** and the request fails with `400`. A failed sandboxed-kvm start is not retried on `sandboxed` or `runc`, and a failed sandboxed start is not retried on `runc`; the user decides.
+- **No silent downgrade.** If a gVisor worker container (`sandboxed` or `sandboxed-kvm`) or a microVM (`microvm`) cannot be created or started, or never becomes healthy, the environment is **not created** and the request fails with `400`. A failed start is never retried on a weaker level; the user decides.
 - The `400` body carries a machine-readable code and the level (the controller passes both through):
 
   ```json
@@ -76,10 +78,10 @@ Returned as `isolation` on agent responses. `selection` is `null` for environmen
   }
   ```
 
-  For the sandboxed level the message reads `The sandboxed (gVisor) container could not be started: ...`.
+  For the sandboxed level the message reads `The sandboxed (gVisor) container could not be started: ...`, for the microvm level `The microvm (KVM microVM) container could not be started: ...`.
 
 - The controller publishes `agent.sandbox_creation_failed` for such runtime failures (not for validation errors such as a duplicate name) and refreshes the workspace's capability snapshot.
-- **Re-probe after repeated failures.** The manager counts consecutive runtime failures **per gVisor level**. After `AGENT_ISOLATION_FAILURE_THRESHOLD` (default `3`) failures of a level it re-probes; a broken runtime then turns `probe-failed` and stops being offered. A successful start on that level resets its counter.
+- **Re-probe after repeated failures.** The manager counts consecutive runtime failures **per gVisor or microVM level**. After `AGENT_ISOLATION_FAILURE_THRESHOLD` (default `3`) failures of a level it re-probes; a broken runtime then turns `probe-failed` and stops being offered. A successful start on that level resets its counter.
 - An unreachable registry or other transient failure of the **standard** probe does not keep a host unusable until the next scheduled probe: creation re-probes when the floor is not ready.
 
 ## Capability probing
@@ -89,7 +91,7 @@ The agent manager probes which levels it can run:
 - on **startup** (stale probe containers and volumes of an interrupted process are removed first; environment creation waits for the first probe),
 - **periodically** every `AGENT_ISOLATION_PROBE_INTERVAL_MS` (default 6 h, ±10 % jitter, minimum 1 min; disable with `AGENT_ISOLATION_PROBE_ENABLED=false`),
 - **on demand** (`POST /api/isolation/probe`; joins a running probe and reuses results younger than 30 s),
-- after **repeated gVisor runtime failures** of a level (see above).
+- after **repeated runtime failures** of a gVisor or microVM level (see above).
 
 Concurrent requests share one in-flight probe. The current record is served from memory; `probing: true` indicates that a probe is running and the states still reflect the previous one.
 
@@ -117,15 +119,29 @@ Each gVisor level is checked in this order; the first failing step determines it
 
 gVisor levels are only probed on top of a healthy standard floor. Presence of the `runsc` binary or a `daemon.json` entry alone never makes a level ready.
 
+The **microvm** level is checked in this order:
+
+1. Disabled by configuration (`AGENT_ISOLATION_MICROVM_ENABLED=false`, `disabled-by-admin`)
+2. Standard floor ready (`probe-failed`, `E_RUNC_PROBE_FAILED`)
+3. MicroVM image available (`AGENT_MICROVM_IMAGE`, pulled outside of the timeout; `probe-failed` with `E_PROBE_IMAGE_UNAVAILABLE`) and carrying the bridge protocol label `io.agenstra.microvm.protocol` of this manager (`unsupported` with `E_MICROVM_IMAGE_UNSUPPORTED`)
+4. A probe microVM boots (`unsupported` with `E_KVM_UNAVAILABLE` when Docker cannot pass `/dev/kvm` or the launcher cannot open it, otherwise `probe-failed` with `E_MICROVM_BOOT_FAILED`)
+5. The worker contract **inside the guest**: volume file operations, guest writes visible through Docker's archive API, exec exit codes, non-root exec and stdout/stderr logs
+6. The guard topology: the launcher joins a `runc` owner's network namespace; the guest reaches the owner's `127.0.0.1` service through the loopback relay, resolves the owner's name through Docker's embedded DNS (agent network) and the owner keeps its interface
+7. Everything finishes within `AGENT_ISOLATION_MICROVM_PROBE_TIMEOUT_MS` (default 4 min; a VM boot takes longer than a container start, especially nested)
+
+One probe microVM covers all checks (512 MiB guest, 1 vCPU), so the probe boots a single VM. Microvm launchers run without Docker's init (`Init: false`; tini is the entrypoint). Before the microVM image is pulled, a tiny container from the probe image checks that Docker can hand `/dev/kvm` to containers, so hosts without KVM never pull the microVM image.
+
+The microvm probe runs **after** the other levels were committed, in the background: environment creation and the API never wait for an image pull or a VM boot. Until it completes the level keeps its last known state (`E_PROBE_PENDING` right after a manager start, so `sandboxed-kvm` or `sandboxed` is recommended during the first minutes); its result is committed as a new capability revision. `probing` is `true` while it runs.
+
 ### States
 
-| State                 | Meaning                                                                                |
-| --------------------- | -------------------------------------------------------------------------------------- |
-| `ready`               | The probe passed; the level can be selected                                            |
-| `unsupported`         | The runtime is not registered with Docker on this host (host not prepared or no KVM)   |
-| `installation-failed` | Reserved for host preparation that failed to install the runtime                       |
-| `probe-failed`        | The runtime is registered but a probe step failed (or the probe has not completed yet) |
-| `disabled-by-admin`   | `AGENT_ISOLATION_SANDBOX_ENABLED=false` / `AGENT_ISOLATION_SANDBOX_KVM_ENABLED=false`  |
+| State                 | Meaning                                                                                                                         |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `ready`               | The probe passed; the level can be selected                                                                                     |
+| `unsupported`         | The runtime is not registered with Docker on this host (host not prepared or no KVM)                                            |
+| `installation-failed` | Reserved for host preparation that failed to install the runtime                                                                |
+| `probe-failed`        | The runtime is registered but a probe step failed (or the probe has not completed yet)                                          |
+| `disabled-by-admin`   | `AGENT_ISOLATION_SANDBOX_ENABLED=false` / `AGENT_ISOLATION_SANDBOX_KVM_ENABLED=false` / `AGENT_ISOLATION_MICROVM_ENABLED=false` |
 
 ### Reason codes
 
@@ -133,7 +149,9 @@ gVisor levels are only probed on top of a healthy standard floor. Presence of th
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `E_RUNTIME_NOT_REGISTERED`              | `AGENT_SANDBOX_RUNTIME` / `AGENT_SANDBOX_KVM_RUNTIME` is not a registered Docker runtime                                                                                                                                                                                                                                                                                                           |
 | `E_RUNTIME_MISCONFIGURED`               | A runtime is registered under the expected name but contradicts the level, according to Docker's reported `runtimeArgs`. On every gVisor level the guard runtime lacks `--network=host`. For `sandboxed-kvm`, the platform is not `kvm` or a runtime name is reused by another level. Docker versions without `runtimeArgs` and runtimes registered as a containerd shim are checked by name only. |
-| `E_KVM_UNAVAILABLE`                     | The KVM platform cannot open `/dev/kvm` (probe start error `opening device file for platform "kvm"...`)                                                                                                                                                                                                                                                                                            |
+| `E_KVM_UNAVAILABLE`                     | The KVM platform cannot open `/dev/kvm` (probe start error `opening device file for platform "kvm"...`), or Docker cannot pass `/dev/kvm` to the microVM launcher. For `microvm` the state is `unsupported`                                                                                                                                                                                        |
+| `E_MICROVM_IMAGE_UNSUPPORTED`           | The configured microVM image (`AGENT_MICROVM_IMAGE`) does not carry `io.agenstra.microvm.protocol` with the bridge protocol version of this manager (state `unsupported`)                                                                                                                                                                                                                          |
+| `E_MICROVM_BOOT_FAILED`                 | The probe microVM did not boot or failed the worker contract; the reason contains the last launcher log lines                                                                                                                                                                                                                                                                                      |
 | `E_DOCKER_BASELINE_UNAVAILABLE`         | Docker daemon not reachable                                                                                                                                                                                                                                                                                                                                                                        |
 | `E_RUNC_PROBE_FAILED`                   | Standard probe failed (also reported for gVisor levels skipped for that reason)                                                                                                                                                                                                                                                                                                                    |
 | `E_PROBE_PENDING`                       | No probe has completed since the manager started                                                                                                                                                                                                                                                                                                                                                   |
@@ -148,9 +166,42 @@ gVisor levels are only probed on top of a healthy standard floor. Presence of th
 | `E_SHARED_NETNS_RUNTIME_NOT_REGISTERED` | `AGENT_SANDBOX_SHARED_NETNS_RUNTIME` / `AGENT_SANDBOX_KVM_SHARED_NETNS_RUNTIME` is not registered (egress guard enabled)                                                                                                                                                                                                                                                                           |
 | `E_REPEATED_RUNTIME_FAILURES`           | Reserved for runtime failures that exceeded the failure threshold                                                                                                                                                                                                                                                                                                                                  |
 | `E_DISABLED_BY_ADMIN`                   | gVisor level disabled by configuration                                                                                                                                                                                                                                                                                                                                                             |
-| `E_MANAGER_UNSUPPORTED`                 | Controller only: the workspace's agent manager predates isolation levels, or does not report this level (an older manager without `sandboxed-kvm`; missing levels are filled as `unsupported`)                                                                                                                                                                                                     |
+| `E_MANAGER_UNSUPPORTED`                 | Controller only: the workspace's agent manager predates isolation levels, or does not report this level (an older manager without `sandboxed-kvm` or `microvm`; missing levels are filled as `unsupported`)                                                                                                                                                                                        |
 
 Reasons are short operator-facing texts and never contain secrets or workspace content.
+
+## MicroVM level
+
+The microvm level runs the environment's workload as a KVM virtual machine **without leaving Docker**: the environment is still one container, created, recreated, stopped and removed through the Docker API like every other worker. Only what runs inside it differs.
+
+### Image layout
+
+The microVM worker image (`agenstra-manager-worker-microvm`, Nx target `worker-microvm-container-image`, built from `Dockerfile.worker-microvm`) is a two-part image built from the regular worker image:
+
+- **Container root = the launcher**: a clean Debian tree with libvirt (session mode), QEMU, virtiofsd, Node.js, a pinned Debian cloud kernel, an initramfs and the bridge daemon. The guest never sees this tree.
+- **`/guest` = the worker**: the unchanged `agenstra-manager-worker` filesystem (`COPY --from=<worker image> / /guest/`) plus a root-owned Node.js runtime for the guest agent. It is the root filesystem of the VM.
+
+Keeping the two apart is a security requirement: the guest's file sharing only reaches `/guest`, so nothing a compromised guest writes (even as guest root) can replace the launcher's programs, libraries or configuration. The launcher additionally refuses to start when a volume or bind ends up outside `/guest` (for example after the guest replaced a directory of `/guest` with a symlink). Archive operations of the manager (the environment file) follow paths below `/guest` that the guest can rearrange while it runs; they never target an existing launcher directory, but they are not a security boundary of their own. As a consequence, **volumes, the managed environment file and archive paths of microVM workers live below `/guest`** (the manager remaps them automatically; use `/guest/...` for manual `docker cp`). The image is about the size of the worker image plus the launcher (no layers are shared with the worker image). It is pulled lazily like the worker image: by the capability probe and on environment creation, never by cloud-init.
+
+Custom worker images get the level by building `Dockerfile.worker-microvm` with `--build-arg WORKER_IMAGE=<custom image>`; the guest needs a Debian-compatible package manager (the build installs `nodejs`, `tini`, `python3` and `util-linux` into it) and the workload entrypoint at `/usr/local/bin/docker-entrypoint.sh` (or `AGENSTRA_MICROVM_ENTRYPOINT`). Images without the bridge label are rejected (`E_MICROVM_IMAGE_UNSUPPORTED`).
+
+### Launcher
+
+- **Container:** `runc` (QEMU needs the host kernel's KVM, never gVisor), `--device /dev/kvm` only, `CapDrop: ALL` plus `CHOWN`, `DAC_OVERRIDE`, `FOWNER`, `FSETID`, `SETUID`, `SETGID`, `MKNOD`, `KILL`, `SETPCAP`, `SYS_CHROOT` (a strict subset of Docker's defaults; never `NET_ADMIN`, `NET_RAW` or `SYS_ADMIN`), `no-new-privileges`, Docker's default seccomp and AppArmor profiles.
+- **Processes:** the launcher script and virtiofsd run as container root with the reduced set (virtiofsd keeps only what file ownership of the guest root needs, drops `SETFCAP` and confines itself to `/guest` with its chroot sandbox). libvirtd, QEMU and the bridge daemon run as the unprivileged user `agenstra-vmm` (uid `10930`, never the egress guard's exempt uid) with the kvm group and no capabilities.
+- **VM:** q35 (virt on arm64), host CPU passthrough, direct kernel boot with an initramfs, a single virtio-fs device for `/guest`, a virtio network device (QEMU user networking), a virtio-serial channel for the bridge, a virtio RNG; no USB, no display, no balloon. Memory follows the container memory limit minus 384 MiB launcher overhead (2 GiB without a limit; `AGENSTRA_MICROVM_MEMORY_MB`), vCPUs follow the container CPU quota (else all host CPUs; `AGENSTRA_MICROVM_VCPUS`).
+- **Lifecycle:** `docker stop` asks the guest to stop the workload (SIGTERM, SIGKILL after 8 s), the VM powers off and the container exits with the workload's exit status. `docker logs` shows the workload's stdout/stderr; guest console messages appear on stderr, prefixed `agenstra-microvm console:` (streamed, never buffered on disk).
+- **Guest root filesystem:** before boot the launcher refuses kernel filesystems (proc, sysfs, ...) mounted below `/guest`, so the guest can never reach the container's own `/proc` through virtio-fs, and any volume or bind mounted outside `/guest` (Docker resolves mount targets inside the container, so a guest that replaced a directory of `/guest` with a symlink could otherwise redirect a mount into the launcher tree on the next start).
+
+### Exec, ports and files
+
+- **Exec bridge.** `docker exec` would land in the launcher, so the manager rewrites every exec of a microVM worker to `/usr/lib/agenstra-microvm/vm-exec` (run as `agenstra-vmm`). The client forwards argv, user, working directory, exec-specific environment (values stay in the exec `Env`, never in argv), TTY and resize over a multiplexed, flow-controlled protocol on the virtio-serial channel to the guest agent, which runs the command with Docker's exec semantics (user / group resolution, `HOME`, exit status `128 + signal`, `127` for missing commands). `vm-exec` waits for the launcher's exec socket after a container start (up to 3 min), and control messages larger than one frame (big managed environments) are split into continuation frames (up to 8 MiB); a peer that ignores flow control is disconnected. TTY sessions run on a real pseudo terminal in the guest.
+- **Ports.** The workload's ports (`AGENSTRA_MICROVM_FORWARD_PORTS`, default `4096,6080`) are served by the bridge daemon in the container's network namespace and tunnelled into the guest, so published ports, the agent network and the guard topology work unchanged.
+- **Files.** The guest root is the container's `/guest` tree over virtio-fs: `docker cp`, the archive API and volumes see the guest's files and vice versa, with the guest's file ownership.
+
+### Network
+
+QEMU user networking (libslirp) turns every guest connection into an ordinary socket of the **launcher's network namespace**, owned by `agenstra-vmm`. The guest gets `10.0.2.15/24` with gateway `10.0.2.2`; DNS `10.0.2.3` is forwarded to the container's resolver (Docker's embedded `127.0.0.11` on the agent network). The guest's hostname, `/etc/hosts` and resolver search / options follow the container's. The launcher never creates network interfaces (no tap, no bridge), so it needs no network capability. (passt was evaluated and rejected: it always sandboxes itself in a user namespace, which Docker's default seccomp profile and Ubuntu 24.04's AppArmor userns restriction block.)
 
 ## Egress guard interaction
 
@@ -162,15 +213,24 @@ The **sandboxed-kvm** level follows exactly the same rules with its own runtime 
 
 On hosts with the guard enabled, a gVisor level is only `ready` when both of its runtimes are registered and the probe verified the guard topology with the hostnet runtime: a default-runtime container serves on `127.0.0.1` in its namespace, the gVisor member must reach it there, the owner must keep its interfaces, and Docker's embedded DNS must resolve on the agent network.
 
+**MicroVM workers** behind a guard join the guard's namespace like every other worker (the launcher is a `runc` container). Because the guest's traffic leaves as the launcher's own sockets in that namespace, the guard's NAT redirects to Squid / dnsmasq, its rejects and its uid / mark exemptions apply exactly as for `runc` workers; a guest cannot set the guard's exemption mark on the launcher's sockets. Guarded workers reach the guard's explicit proxy as `127.0.0.1:3128`: the guest agent relays the guest's `127.0.0.1:3128` (`AGENSTRA_MICROVM_LOOPBACK_PORTS`) to the namespace's loopback. The launcher never takes the guard's interfaces over (no Netstack, no taps).
+
 ## Legacy agent managers
 
-Agent managers that predate isolation levels have no `/api/isolation` endpoint and run every environment on `runc`. The controller treats them as **standard-only**: the workspace summary reports `supported: false`, `sandboxed` and `sandboxed-kvm` as `unsupported` (`E_MANAGER_UNSUPPORTED`), an explicit gVisor level request is rejected with `409`, and environments are created on `runc` as before. Managers that support isolation levels but predate `sandboxed-kvm` report only `standard` and `sandboxed`; the controller fills the missing level as `unsupported` (`E_MANAGER_UNSUPPORTED`). Upgrade the manager (and prepare the host) to offer the gVisor levels.
+Agent managers that predate isolation levels have no `/api/isolation` endpoint and run every environment on `runc`. The controller treats them as **standard-only**: the workspace summary reports `supported: false`, `sandboxed`, `sandboxed-kvm` and `microvm` as `unsupported` (`E_MANAGER_UNSUPPORTED`), an explicit level request other than `standard` is rejected with `409`, and environments are created on `runc` as before. Managers that support isolation levels but predate `sandboxed-kvm` or `microvm` do not report those levels; the controller fills them as `unsupported` (`E_MANAGER_UNSUPPORTED`). Upgrade the manager (and prepare the host) to offer the stronger levels.
 
 ### Upgrading to the sandboxed-kvm level
 
 - **Rollout order:** update the agent console and the agent controller together, and update the agent managers afterwards. An older console does not know `sandboxed-kvm`. If it shows the capabilities of a manager that recommends `sandboxed-kvm`, it preselects no level and does not ask for confirmation before a weaker level is chosen. The server still records such a choice as `user-override` and publishes `agent.isolation_override`.
 - **Open forms:** the capability revision of every upgraded manager changes once, because the record now contains the `sandboxed-kvm` level. Create Environment dialogs that were already open are rejected once with `409` (stale revision) and have to be reviewed again.
 - **Host preparation:** re-running `agenstra-gvisor.sh install` on an existing host adds the KVM runtimes when the host exposes hardware virtualization. The systrap runtimes and running environments are not affected.
+
+### Upgrading to the microvm level
+
+- **Rollout order:** as for `sandboxed-kvm`: console and controller first, then the agent managers. Consoles without the level do not preselect `microvm` and do not confirm a weaker choice; the server still records it as `user-override`.
+- **Open forms:** the capability revision of every upgraded manager changes once (new level and the microVM image id are part of it).
+- **Hosts:** no new host packages. Hosts that already offer `sandboxed-kvm` have `/dev/kvm`; the manager pulls the microVM image (`AGENT_MICROVM_IMAGE`) on its first probe. Release builds publish `ghcr.io/forepath/agenstra-manager-worker-microvm` next to the worker image.
+- **Database:** the controller migration `1793100000000_AddClientIsolationSnapshotMicrovmState` adds the nullable snapshot column `microvm_state`.
 
 ## API
 
@@ -179,10 +239,10 @@ Agent managers that predate isolation levels have no `/api/isolation` endpoint a
 - `GET /api/isolation` - Current capability record (`HostIsolationCapabilitiesDto`)
 - `POST /api/isolation/probe` - Re-probe now (joins a running probe; results younger than 30 s are reused)
 - `GET /api/config` - Includes `isolation` (same record)
-- `POST /api/agents` - Accepts `isolationLevel`, `capabilityRevision`, `isolationSelection` (only `selectedBy` is used); `400` invalid level or gVisor start failure (`code: E_ISOLATION_RUNTIME_FAILED`), `409` unavailable level or stale revision, `503` host cannot run environments
-- `GET /api/agents`, `GET /api/agents/:id` - Include `isolation` (`level`, `runtime`, `selection`); `level` can be `sandboxed-kvm` with `runtime` `runsc-kvm` or `runsc-kvm-hostnet`
+- `POST /api/agents` - Accepts `isolationLevel`, `capabilityRevision`, `isolationSelection` (only `selectedBy` is used); `400` invalid level or gVisor / microVM start failure (`code: E_ISOLATION_RUNTIME_FAILED`), `409` unavailable level or stale revision, `503` host cannot run environments
+- `GET /api/agents`, `GET /api/agents/:id` - Include `isolation` (`level`, `runtime`, `selection`); `level` can be `sandboxed-kvm` with `runtime` `runsc-kvm` or `runsc-kvm-hostnet`, or `microvm` with `runtime` `runc` (the launcher container)
 
-`HostIsolationCapabilitiesDto` (`levels` always contains `standard`, `sandboxed` and `sandboxed-kvm`):
+`HostIsolationCapabilitiesDto` (`levels` always contains `standard`, `sandboxed`, `sandboxed-kvm` and `microvm`):
 
 ```json
 {
@@ -192,10 +252,11 @@ Agent managers that predate isolation levels have no `/api/isolation` endpoint a
   "levels": {
     "standard": { "rank": 1, "runtime": "runc", "state": "ready" },
     "sandboxed": { "rank": 2, "runtime": "runsc-systrap", "state": "ready" },
-    "sandboxed-kvm": { "rank": 3, "runtime": "runsc-kvm", "state": "ready" }
+    "sandboxed-kvm": { "rank": 3, "runtime": "runsc-kvm", "state": "ready" },
+    "microvm": { "rank": 4, "runtime": "runc", "state": "ready" }
   },
-  "recommendedLevel": "sandboxed-kvm",
-  "availableLevels": ["sandboxed-kvm", "sandboxed", "standard"]
+  "recommendedLevel": "microvm",
+  "availableLevels": ["microvm", "sandboxed-kvm", "sandboxed", "standard"]
 }
 ```
 
@@ -210,17 +271,19 @@ Agent managers that predate isolation levels have no `/api/isolation` endpoint a
 
 ## Notifications
 
-The controller keeps the last observed capability record per workspace (`client_isolation_snapshots`) and publishes **transitions** as [webhook](./webhooks.md) events. Snapshots are updated whenever capabilities are fetched (workspace responses, `GET`/`POST` isolation endpoints, failed gVisor creations) and by the background job **`isolation-capabilities`** (coordinator + per-workspace unit job, oldest snapshots first). Only completed probes are recorded; a conditional update ensures each transition is published once even with several controller instances. The sandboxed-kvm state is stored in its own column (`sandboxed_kvm_state`, nullable for snapshots taken before the level existed).
+The controller keeps the last observed capability record per workspace (`client_isolation_snapshots`) and publishes **transitions** as [webhook](./webhooks.md) events. Snapshots are updated whenever capabilities are fetched (workspace responses, `GET`/`POST` isolation endpoints, failed gVisor creations) and by the background job **`isolation-capabilities`** (coordinator + per-workspace unit job, oldest snapshots first). Only completed probes are recorded; a conditional update ensures each transition is published once even with several controller instances. The sandboxed-kvm and microvm states are stored in their own columns (`sandboxed_kvm_state`, `microvm_state`, nullable for snapshots taken before a level existed).
 
-| Event                               | When                                                                                          |
-| ----------------------------------- | --------------------------------------------------------------------------------------------- |
-| `isolation.sandbox_available`       | The sandboxed level of a workspace host became `ready`                                        |
-| `isolation.sandbox_unavailable`     | The sandboxed level was `ready` and is not anymore                                            |
-| `isolation.sandbox_kvm_available`   | The sandboxed-kvm level of a workspace host became `ready`                                    |
-| `isolation.sandbox_kvm_unavailable` | The sandboxed-kvm level was `ready` and is not anymore                                        |
-| `isolation.baseline_failed`         | The standard floor is not `ready` (host cannot run environments); once per new state          |
-| `agent.isolation_override`          | An environment was created with a weaker level than recommended                               |
-| `agent.sandbox_creation_failed`     | A sandboxed or sandboxed-kvm environment could not be started (not retried on a weaker level) |
+| Event                               | When                                                                                                   |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `isolation.sandbox_available`       | The sandboxed level of a workspace host became `ready`                                                 |
+| `isolation.sandbox_unavailable`     | The sandboxed level was `ready` and is not anymore                                                     |
+| `isolation.sandbox_kvm_available`   | The sandboxed-kvm level of a workspace host became `ready`                                             |
+| `isolation.sandbox_kvm_unavailable` | The sandboxed-kvm level was `ready` and is not anymore                                                 |
+| `isolation.microvm_available`       | The microvm level of a workspace host became `ready`                                                   |
+| `isolation.microvm_unavailable`     | The microvm level was `ready` and is not anymore                                                       |
+| `isolation.baseline_failed`         | The standard floor is not `ready` (host cannot run environments); once per new state                   |
+| `agent.isolation_override`          | An environment was created with a weaker level than recommended                                        |
+| `agent.sandbox_creation_failed`     | A sandboxed, sandboxed-kvm or microvm environment could not be started (not retried on a weaker level) |
 
 ## Host preparation
 
@@ -250,9 +313,11 @@ After the systrap runtimes are installed, the preparation detects hardware virtu
 2. Only when `/dev/kvm` is usable, register `runsc-kvm` (`--platform=kvm`) and `runsc-kvm-hostnet` (`--platform=kvm --network=host`) and smoke-test both (`hello-world`, `--network=none`).
 3. On failure, roll back **only** the KVM runtimes (own backup `/etc/docker/daemon.json.agenstra-gvisor-kvm.bak`); the systrap runtimes and `runc` stay untouched. Stale KVM runtimes are unregistered when KVM is no longer available.
 
-The KVM step is never fatal. `GVISOR_KVM=0` skips it (generator option `kvm: false`). No libvirt, QEMU or other hypervisor stack is installed: gVisor's KVM platform only needs `/dev/kvm`. libvirt was rejected because it adds a privileged daemon, its own bridge / NAT rules next to Docker's and the egress guard's, attack surface and patch burden, and provides nothing this level uses.
+The KVM step is never fatal. `GVISOR_KVM=0` skips it (generator option `kvm: false`). No libvirt, QEMU or other hypervisor stack is installed **on the host**: gVisor's KVM platform only needs `/dev/kvm`, and the microvm level ships libvirt / QEMU inside its container image. A host-level libvirt daemon was rejected because it adds a privileged daemon, its own bridge / NAT rules next to Docker's and the egress guard's, attack surface and patch burden, and its VMs would bypass the egress guard topology.
 
-Hetzner Cloud servers and DigitalOcean droplets normally do **not** expose `/dev/kvm`, so `sandboxed-kvm` usually reports `unsupported` there. Dedicated / bare-metal hosts or VMs with nested virtualization can offer it.
+**MicroVM level:** needs nothing beyond `/dev/kvm` from the KVM step. The launcher container gets `/dev/kvm` from Docker; the microVM image is pulled by the manager.
+
+Hetzner Cloud servers and DigitalOcean droplets normally do **not** expose `/dev/kvm`, so `sandboxed-kvm` and `microvm` usually report `unsupported` there. Dedicated / bare-metal hosts or VMs with nested virtualization can offer them.
 
 ### Existing hosts
 
@@ -270,27 +335,32 @@ For the standalone script, `GVISOR_RELEASE` overrides the pinned release and the
 
 `check` and `install` print `Sandboxed KVM (runsc-kvm, runsc-kvm-hostnet): <state>` and `KVM: cpu=.. device=.. module=.. nested=.. hypervisor=..`. With `--json` the output adds `kvmRuntime`, `kvmSharedNetnsRuntime`, `sandboxedKvm` (`registered`, `ready`, `not-registered` when `/dev/kvm` is present but the runtimes are missing, `unsupported` without `/dev/kvm`) and `kvm` (`cpu`: `yes` / `no` / `unknown`, `device`: `present` / `absent`, `module`: `loaded` / `absent`, `nested`: `yes` / `no` / `unknown`, `hypervisor`: `yes` / `no`). Exit codes are unchanged and only reflect the systrap runtimes.
 
-Host requirements for the sandboxed level: Linux kernel **5.6 or newer**, **x86_64** or **arm64**, cgroup v2 recommended. The sandboxed-kvm level additionally needs hardware virtualization exposed to the host (`/dev/kvm`; Intel VT-x / AMD-V, or nested virtualization in a VM). See [System Requirements](../deployment/system-requirements.md).
+Host requirements for the sandboxed level: Linux kernel **5.6 or newer**, **x86_64** or **arm64**, cgroup v2 recommended. The sandboxed-kvm and microvm levels additionally need hardware virtualization exposed to the host (`/dev/kvm`; Intel VT-x / AMD-V, or nested virtualization in a VM). See [System Requirements](../deployment/system-requirements.md).
 
 ## Configuration
 
 ### Agent manager
 
-| Variable                                 | Default                 | Description                                                                                                             |
-| ---------------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `AGENT_SANDBOX_RUNTIME`                  | `runsc-systrap`         | Docker runtime name of the sandboxed level (`[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}`; invalid values fall back to the default) |
-| `AGENT_SANDBOX_SHARED_NETNS_RUNTIME`     | `runsc-systrap-hostnet` | gVisor runtime (`--network=host`) for sandboxed workers sharing their egress guard's network namespace                  |
-| `AGENT_ISOLATION_SANDBOX_ENABLED`        | `true`                  | `false` disables the sandboxed level (`disabled-by-admin`)                                                              |
-| `AGENT_SANDBOX_KVM_RUNTIME`              | `runsc-kvm`             | Docker runtime name of the sandboxed-kvm level (same charset validation as `AGENT_SANDBOX_RUNTIME`)                     |
-| `AGENT_SANDBOX_KVM_SHARED_NETNS_RUNTIME` | `runsc-kvm-hostnet`     | gVisor KVM runtime (`--network=host`) for sandboxed-kvm workers behind an egress guard or on the agent network          |
-| `AGENT_ISOLATION_SANDBOX_KVM_ENABLED`    | `true`                  | `false` disables the sandboxed-kvm level (`disabled-by-admin`)                                                          |
-| `AGENT_ISOLATION_PROBE_ENABLED`          | `true`                  | `false` disables the periodic re-probe (startup, on-demand and failure-triggered probes still run)                      |
-| `AGENT_ISOLATION_PROBE_INTERVAL_MS`      | `21600000` (6 h)        | Periodic re-probe interval (minimum `60000`)                                                                            |
-| `AGENT_ISOLATION_PROBE_TIMEOUT_MS`       | `90000`                 | Upper bound of a single level probe (minimum `5000`)                                                                    |
-| `AGENT_ISOLATION_PROBE_IMAGE`            | worker image            | Probe image; empty uses `OPENCODE_AGENT_DOCKER_IMAGE` / `AGENT_DEFAULT_IMAGE`                                           |
-| `AGENT_ISOLATION_FAILURE_THRESHOLD`      | `3`                     | Consecutive runtime failures of a gVisor level that trigger a re-probe (counted per level)                              |
+| Variable                                   | Default                                                   | Description                                                                                                             |
+| ------------------------------------------ | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `AGENT_SANDBOX_RUNTIME`                    | `runsc-systrap`                                           | Docker runtime name of the sandboxed level (`[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}`; invalid values fall back to the default) |
+| `AGENT_SANDBOX_SHARED_NETNS_RUNTIME`       | `runsc-systrap-hostnet`                                   | gVisor runtime (`--network=host`) for sandboxed workers sharing their egress guard's network namespace                  |
+| `AGENT_ISOLATION_SANDBOX_ENABLED`          | `true`                                                    | `false` disables the sandboxed level (`disabled-by-admin`)                                                              |
+| `AGENT_SANDBOX_KVM_RUNTIME`                | `runsc-kvm`                                               | Docker runtime name of the sandboxed-kvm level (same charset validation as `AGENT_SANDBOX_RUNTIME`)                     |
+| `AGENT_SANDBOX_KVM_SHARED_NETNS_RUNTIME`   | `runsc-kvm-hostnet`                                       | gVisor KVM runtime (`--network=host`) for sandboxed-kvm workers behind an egress guard or on the agent network          |
+| `AGENT_ISOLATION_SANDBOX_KVM_ENABLED`      | `true`                                                    | `false` disables the sandboxed-kvm level (`disabled-by-admin`)                                                          |
+| `AGENT_ISOLATION_MICROVM_ENABLED`          | `true`                                                    | `false` disables the microvm level (`disabled-by-admin`)                                                                |
+| `AGENT_MICROVM_IMAGE`                      | `ghcr.io/forepath/agenstra-manager-worker-microvm:latest` | Image of microVM workers (used instead of the agent provider's worker image) and of the microvm probe                   |
+| `AGENT_ISOLATION_MICROVM_PROBE_TIMEOUT_MS` | `240000`                                                  | Upper bound of the microvm probe, including the VM boot (minimum `30000`)                                               |
+| `AGENT_ISOLATION_PROBE_ENABLED`            | `true`                                                    | `false` disables the periodic re-probe (startup, on-demand and failure-triggered probes still run)                      |
+| `AGENT_ISOLATION_PROBE_INTERVAL_MS`        | `21600000` (6 h)                                          | Periodic re-probe interval (minimum `60000`)                                                                            |
+| `AGENT_ISOLATION_PROBE_TIMEOUT_MS`         | `90000`                                                   | Upper bound of a single level probe (minimum `5000`)                                                                    |
+| `AGENT_ISOLATION_PROBE_IMAGE`              | worker image                                              | Probe image; empty uses `OPENCODE_AGENT_DOCKER_IMAGE` / `AGENT_DEFAULT_IMAGE`                                           |
+| `AGENT_ISOLATION_FAILURE_THRESHOLD`        | `3`                                                       | Consecutive runtime failures of a gVisor or microVM level that trigger a re-probe (counted per level)                   |
 
-The manager needs the Docker socket (as for agent containers). It does not need access to `daemon.json` or the `runsc` binary; host preparation is done outside the manager container.
+The manager needs the Docker socket (as for agent containers). It does not need access to `daemon.json`, the `runsc` binary or `/dev/kvm`; host preparation is done outside the manager container.
+
+The microVM image reads these launcher settings from its environment (image defaults; they are not handed to the guest): `AGENSTRA_MICROVM_ENTRYPOINT` (`/usr/local/bin/docker-entrypoint.sh`), `AGENSTRA_MICROVM_USER` (workload user, default root), `AGENSTRA_MICROVM_FORWARD_PORTS` (`4096,6080`), `AGENSTRA_MICROVM_LOOPBACK_PORTS` (`3128`), `AGENSTRA_MICROVM_MEMORY_MB`, `AGENSTRA_MICROVM_VCPUS` and `AGENSTRA_MICROVM_STOP_GRACE` (`8`).
 
 ### Agent controller
 
@@ -307,7 +377,9 @@ See [Background Jobs](../deployment/background-jobs.md).
 - **Performance** CPU-bound work runs at near-native speed. System-call-heavy work is slower: filesystem **metadata** operations (`npm install`, `git status` on large trees, builds touching many small files) and **network** throughput through Netstack show noticeable overhead. Expect slower dependency installs and builds than on `runc`.
 - **KVM platform performance** `sandboxed-kvm` is fastest on bare metal. Under nested virtualization every VM exit is expensive, so it can be slower than systrap for system-call- and network-heavy work (with the hostnet runtimes every socket system call is a host system call from the Sentry). It is still recommended automatically when ready; users who prefer systrap choose `sandboxed` (recorded as an override).
 - **Memory** The Sentry and gofer processes add some memory overhead per environment.
-- **Not a VM boundary** gVisor substantially reduces the host kernel attack surface but is not a full VM, also on the KVM platform (no hypervisor guest kernel); it complements, and does not replace, non-root workloads, the egress guard and host hardening.
+- **Not a VM boundary** gVisor substantially reduces the host kernel attack surface but is not a full VM, also on the KVM platform (no hypervisor guest kernel); it complements, and does not replace, non-root workloads, the egress guard and host hardening. Use `microvm` where a VM boundary is required.
+- **MicroVM boot and overhead** A microVM environment boots a kernel before the workload starts (about 2 to 5 s on bare metal or one nesting level, longer under deeper nesting). The launcher takes about 384 MiB on top of the guest memory, and every `docker exec` pays roughly 0.2 s for the bridge client. Environment updates that restart a worker in place (for example the configuration sync right after creation) reboot the guest: for about 10 s file operations, exec and terminals of that environment are unavailable and commands running at that moment are ended, where a `runc` restart takes about a second. Under nested virtualization (a cloud VM exposing `/dev/kvm`) VM exits are expensive and I/O-heavy work is noticeably slower.
+- **MicroVM compatibility** The guest runs a full Linux kernel, so `io_uring`, eBPF, FUSE and `iptables` inside the guest work; there is no nested KVM inside the guest. Paths of volumes and archives are below `/guest` (see above). Ports below 1024 cannot be forwarded (the bridge daemon is unprivileged). Checkpoint / restore of microVM environments is not supported.
 - The egress guard sidecar always runs on `runc`; only the agent worker container is sandboxed. Guarded gVisor workers use the namespace's kernel network stack (`runsc-systrap-hostnet` / `runsc-kvm-hostnet`) instead of Netstack, so the network part of the sandbox is weaker than for unguarded workers (the guard's namespace, not the host network, is exposed).
 - The level is fixed at creation. To change it, create a new environment with the desired level.
 - `installation-failed` and `E_REPEATED_RUNTIME_FAILURES` are reserved values; the current manager reports host preparation problems as `unsupported` / `probe-failed`.
@@ -327,6 +399,10 @@ See [Background Jobs](../deployment/background-jobs.md).
 | Creation fails with `503`                                      | Standard (`runc`) baseline failed: check Docker on the host (`E_DOCKER_BASELINE_UNAVAILABLE`, `E_RUNC_PROBE_FAILED`)                                                                                                                                                       |
 | "sandboxed (gVisor) container could not be started"            | Workload incompatible with gVisor or runtime broken; check `docker logs` of the manager, retry, or create the environment as `standard`                                                                                                                                    |
 | "sandboxed-kvm (gVisor on KVM) container could not be started" | Same as above, or KVM became unavailable; retry, or explicitly choose `sandboxed` or `standard`                                                                                                                                                                            |
+| MicroVM level shows `unsupported` (`E_KVM_UNAVAILABLE`)        | No `/dev/kvm` on the host (see the KVM platform checks above); `docker run --rm --device /dev/kvm debian:trixie-slim ls -l /dev/kvm` must work on the host                                                                                                                 |
+| MicroVM level shows `E_MICROVM_IMAGE_UNSUPPORTED`              | `AGENT_MICROVM_IMAGE` points at an image without the microVM bridge (for example the regular worker image) or one built for another manager release; use the matching `agenstra-manager-worker-microvm` tag                                                                |
+| `probe-failed` with `E_MICROVM_BOOT_FAILED`                    | The reason shows the last launcher lines. Check `docker logs` of a microVM worker (`agenstra-microvm:` lines and the guest console); under deep nesting raise `AGENT_ISOLATION_MICROVM_PROBE_TIMEOUT_MS`                                                                   |
+| "microvm (KVM microVM) container could not be started"         | The VM did not boot or the workload never became healthy; check `docker logs` of the worker, retry, or explicitly choose a weaker level                                                                                                                                    |
 | Summary shows `stale: true`                                    | The agent manager is unreachable; the last stored snapshot is shown                                                                                                                                                                                                        |
 | Leftover `agenstra-isolation-probe-*` containers               | Removed automatically on the next manager start                                                                                                                                                                                                                            |
 
@@ -334,7 +410,8 @@ See [Background Jobs](../deployment/background-jobs.md).
 
 - The KVM platform was validated with gVisor `20261005.0` on WSL2 / Docker Desktop with `/dev/kvm` (2026-10-22): both runtimes start, HTTP and DNS work, a hostnet member reaches a `runc` owner's `127.0.0.1` while the owner keeps `eth0`, and Docker's embedded DNS works with the hostnet runtime. Netstack in the owner's namespace removes the owner's interfaces, which is why the hostnet mapping is mandatory.
 - The registered runtime arguments are part of the probe when Docker reports them. A `sandboxed-kvm` runtime must use `--platform=kvm`. The runtime used behind an egress guard must use `--network=host`, on every gVisor level. A `sandboxed-kvm` runtime name must not reuse another level's runtime. Otherwise the level reports `E_RUNTIME_MISCONFIGURED`. Configure distinct runtime names: the runtime variables are trusted on environment recreation, which is not gated by a probe.
-- An end-to-end **isolation lab** (QEMU/KVM VMs inside Docker containers) is run explicitly with `nx run agenstra-backend-feature-isolation-lab:isolation-lab`; see the [isolation lab README](../../../libs/domains/agenstra/backend/feature-isolation-lab/README.md).
+- The microvm level was validated on WSL2 / Docker Desktop 29.8 with `/dev/kvm` (2026-10-22, Debian trixie: libvirt 11.3, QEMU 10.0, virtiofsd 1.13, kernel 6.12 cloud) under the hardened launcher profile: guest root semantics (`useradd`, `chown`, `runuser`, `mknod`), its own `/proc`, no `/dev/kvm` in the guest, guest HTTP caught by a `runc` owner's NAT redirect and HTTPS by its reject, the owner's loopback reachable while it keeps its interface, container names resolved through `127.0.0.11`, and `docker cp` coherence in both directions within about one second. The guest kernel was up in about 2.4 s.
+- An end-to-end **isolation lab** (QEMU/KVM VMs inside Docker containers) is run explicitly with `nx run agenstra-backend-feature-isolation-lab:isolation-lab`; see the [isolation lab README](../../../libs/domains/agenstra/backend/feature-isolation-lab/README.md). Its microvm spec runs microVMs nested inside a lab VM.
 
 ## Related documentation
 

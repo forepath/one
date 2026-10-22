@@ -53,7 +53,8 @@ paths:
         The container isolation level is validated against the host's current (probed) isolation
         capabilities before anything is provisioned. When `isolationLevel` is omitted, the strongest
         ready level is used. An explicit level is never replaced by another one, and a gVisor
-        (`sandboxed` / `sandboxed-kvm`) container that fails to start is never retried on another runtime.
+        (`sandboxed` / `sandboxed-kvm`) or microVM (`microvm`) container that fails to start is never retried
+        on another runtime.
       operationId: createAgent
       requestBody:
         required: true
@@ -71,8 +72,9 @@ paths:
         '400':
           description: |
             Validation error (including an invalid `isolationLevel`), repository preparation failure, or
-            the gVisor (`sandboxed` / `sandboxed-kvm`) container could not be started (the environment was
-            not created). Runtime failures carry `code: E_ISOLATION_RUNTIME_FAILED` and `isolationLevel`.
+            the gVisor (`sandboxed` / `sandboxed-kvm`) or microVM (`microvm`) container could not be started
+            (the environment was not created). Runtime failures carry `code: E_ISOLATION_RUNTIME_FAILED` and
+            `isolationLevel`.
           content:
             application/json:
               schema:
@@ -1284,7 +1286,8 @@ paths:
       summary: Get container isolation capabilities
       description: |
         Current isolation capability record of this host (from the last completed runtime probe):
-        state of the `standard` (runc), `sandboxed` (gVisor) and `sandboxed-kvm` (gVisor on KVM) levels,
+        state of the `standard` (runc), `sandboxed` (gVisor), `sandboxed-kvm` (gVisor on KVM) and `microvm`
+        (KVM microVM) levels,
         recommended level and
         capability revision. `probing` is true while a probe is running.
       operationId: getIsolationCapabilities
@@ -3437,8 +3440,8 @@ components:
         isolationLevel:
           $ref: '#/components/schemas/IsolationLevel'
           description: |
-            Container isolation level (`sandboxed-kvm` = gVisor on KVM, `sandboxed` = gVisor, `standard` =
-            runc). When omitted, the strongest level that is ready on this host is used. An explicit level is never replaced by another one:
+            Container isolation level (`microvm` = KVM microVM, `sandboxed-kvm` = gVisor on KVM,
+            `sandboxed` = gVisor, `standard` = runc). When omitted, the strongest level that is ready on this host is used. An explicit level is never replaced by another one:
             an unavailable level is rejected with 409.
         capabilityRevision:
           type: string
@@ -3677,12 +3680,13 @@ components:
       description: Container type of the environment
     IsolationLevel:
       type: string
-      enum: [standard, sandboxed, sandboxed-kvm]
+      enum: [standard, sandboxed, sandboxed-kvm, microvm]
       description: |
         Container isolation level. `standard` runs the worker on Docker's default runtime (runc, shares
         the host kernel); `sandboxed` runs it on gVisor (`runsc`, systrap platform); `sandboxed-kvm`
         runs it on gVisor's KVM platform (`runsc --platform=kvm`, hardware virtualization, needs
-        `/dev/kvm` on the host).
+        `/dev/kvm` on the host); `microvm` runs it as a KVM microVM with its own guest kernel (libvirt/QEMU
+        inside a hardened runc launcher container of the microVM worker image, needs `/dev/kvm`).
     IsolationRuntimeState:
       type: string
       enum:
@@ -3706,11 +3710,11 @@ components:
           example: Bad Request
         message:
           type: string
-          description: "Operator-facing failure, e.g. 'The sandboxed-kvm (gVisor on KVM) container could not be started: ...'"
+          description: "Operator-facing failure, e.g. 'The microvm (KVM microVM) container could not be started: ...'"
         code:
           type: string
           enum: [E_ISOLATION_RUNTIME_FAILED]
-          description: Present when a gVisor environment container could not be started (never retried on another runtime)
+          description: Present when a gVisor or microVM environment container could not be started (never retried on another runtime)
         isolationLevel:
           $ref: '#/components/schemas/IsolationLevel'
     IsolationLevelCapabilityDto:
@@ -3719,10 +3723,10 @@ components:
       properties:
         rank:
           type: integer
-          description: Strength rank (`1` = standard, `2` = sandboxed, `3` = sandboxed-kvm); higher is stronger
+          description: Strength rank (`1` = standard, `2` = sandboxed, `3` = sandboxed-kvm, `4` = microvm); higher is stronger
         runtime:
           type: string
-          description: Docker runtime name used for this level (`runc`, `runsc-systrap`, `runsc-kvm`)
+          description: Docker runtime name used for this level (`runc`, `runsc-systrap`, `runsc-kvm`; `runc` for the microVM launcher)
         state:
           $ref: '#/components/schemas/IsolationRuntimeState'
         reasonCode:
@@ -3733,8 +3737,10 @@ components:
             `E_PROBE_START_FAILED`, `E_PROBE_EXEC_FAILED`, `E_PROBE_FILESYSTEM_FAILED`, `E_PROBE_LOGS_FAILED`,
             `E_PROBE_RUNTIME_MISMATCH`, `E_PROBE_TIMEOUT`, `E_SHARED_NETNS_FAILED`, `E_REPEATED_RUNTIME_FAILURES`,
             `E_DISABLED_BY_ADMIN`, `E_SHARED_NETNS_RUNTIME_NOT_REGISTERED`, `E_KVM_UNAVAILABLE` (the KVM
-            platform cannot open `/dev/kvm`), `E_RUNTIME_MISCONFIGURED` (runtime registered with another gVisor
-            platform / network mode)
+            platform or the microVM launcher cannot open `/dev/kvm`), `E_RUNTIME_MISCONFIGURED` (runtime registered
+            with another gVisor platform / network mode), `E_MICROVM_IMAGE_UNSUPPORTED` (the configured microVM
+            image does not implement this manager's bridge protocol), `E_MICROVM_BOOT_FAILED` (the probe microVM
+            did not boot or failed the worker contract)
         reason:
           type: string
           description: Short operator-facing explanation (never contains secrets or workspace content)
@@ -3755,13 +3761,15 @@ components:
           description: True while a probe is running (states reflect the previous probe)
         levels:
           type: object
-          required: [standard, sandboxed, sandboxed-kvm]
+          required: [standard, sandboxed, sandboxed-kvm, microvm]
           properties:
             standard:
               $ref: '#/components/schemas/IsolationLevelCapabilityDto'
             sandboxed:
               $ref: '#/components/schemas/IsolationLevelCapabilityDto'
             sandboxed-kvm:
+              $ref: '#/components/schemas/IsolationLevelCapabilityDto'
+            microvm:
               $ref: '#/components/schemas/IsolationLevelCapabilityDto'
         recommendedLevel:
           oneOf:

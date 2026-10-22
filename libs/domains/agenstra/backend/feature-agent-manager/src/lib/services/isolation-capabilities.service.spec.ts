@@ -11,10 +11,19 @@ class TestIsolationCapabilitiesService extends IsolationCapabilitiesService {
 
 describe('IsolationCapabilitiesService', () => {
   let docker: jest.Mocked<
-    Pick<DockerService, 'getDockerHostInfo' | 'runIsolationProbe' | 'getImageId' | 'removeStaleIsolationProbes'>
+    Pick<
+      DockerService,
+      'getDockerHostInfo' | 'runIsolationProbe' | 'runMicrovmProbe' | 'getImageId' | 'removeStaleIsolationProbes'
+    >
   >;
   let service: TestIsolationCapabilitiesService;
   const ok: IsolationProbeResult = { ok: true };
+  /** What most cloud VMs report: no hardware virtualization exposed to the host. */
+  const noKvm: IsolationProbeResult = {
+    ok: false,
+    reasonCode: 'E_KVM_UNAVAILABLE',
+    reason: 'The KVM device (/dev/kvm) is not available on this host',
+  };
 
   function hostInfo(
     runtimes: Record<string, string | null> = {
@@ -52,15 +61,24 @@ describe('IsolationCapabilitiesService', () => {
     docker = {
       getDockerHostInfo: jest.fn().mockResolvedValue(hostInfo()),
       runIsolationProbe: jest.fn().mockResolvedValue(ok),
+      runMicrovmProbe: jest.fn().mockResolvedValue(noKvm),
       getImageId: jest.fn().mockResolvedValue('sha256:image'),
       removeStaleIsolationProbes: jest.fn().mockResolvedValue(0),
     };
     service = new TestIsolationCapabilitiesService(docker as unknown as DockerService);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await service.whenMicrovmProbed();
     service.onModuleDestroy();
   });
+
+  /** Full probe including the background microvm probe. */
+  async function probeAll() {
+    await service.probe();
+
+    return service.whenMicrovmProbed();
+  }
 
   it('starts with no recommendation until the first probe completed', () => {
     const initial = service.getCapabilities();
@@ -522,6 +540,151 @@ describe('IsolationCapabilitiesService', () => {
     it('starts with the level pending', () => {
       expect(service.getCapabilities().levels['sandboxed-kvm']).toEqual(
         expect.objectContaining({ rank: 3, runtime: 'runsc-kvm', reasonCode: 'E_PROBE_PENDING' }),
+      );
+    });
+  });
+
+  describe('microvm level', () => {
+    it('is unsupported on hosts without /dev/kvm and leaves the other levels untouched', async () => {
+      const result = await probeAll();
+
+      expect(result.levels.microvm).toEqual({
+        rank: 4,
+        runtime: 'runc',
+        state: 'unsupported',
+        reasonCode: 'E_KVM_UNAVAILABLE',
+        reason: 'The KVM device (/dev/kvm) is not available on this host',
+      });
+      expect(result.recommendedLevel).toBe('sandboxed');
+    });
+
+    it('is recommended as the strongest level once its probe microVM passes', async () => {
+      docker.getDockerHostInfo.mockResolvedValue(kvmHostInfo());
+      docker.runMicrovmProbe.mockResolvedValue(ok);
+
+      const first = await service.probe();
+
+      // The microvm probe never delays the other levels: they are committed first.
+      expect(first.levels.microvm.reasonCode).toBe('E_PROBE_PENDING');
+      expect(first.recommendedLevel).toBe('sandboxed-kvm');
+
+      const result = await service.whenMicrovmProbed();
+
+      expect(result.levels.microvm.state).toBe('ready');
+      expect(result.recommendedLevel).toBe('microvm');
+      expect(result.availableLevels).toEqual(['microvm', 'sandboxed-kvm', 'sandboxed', 'standard']);
+      expect(result.revision).not.toBe(first.revision);
+      expect(docker.runMicrovmProbe).toHaveBeenCalledWith({
+        image: 'ghcr.io/forepath/agenstra-manager-worker-microvm:latest',
+        ownerImage: 'ghcr.io/forepath/agenstra-manager-worker:latest',
+        timeoutMs: 240000,
+      });
+    });
+
+    it('is independent of gVisor (runc-only host with KVM)', async () => {
+      docker.runMicrovmProbe.mockResolvedValue(ok);
+      service.testEnv = { AGENT_ISOLATION_SANDBOX_ENABLED: 'false', AGENT_MICROVM_IMAGE: 'registry.example/vm:1' };
+
+      const result = await probeAll();
+
+      expect(result.levels.sandboxed.state).toBe('disabled-by-admin');
+      expect(result.levels.microvm.state).toBe('ready');
+      expect(result.recommendedLevel).toBe('microvm');
+      expect(docker.runMicrovmProbe).toHaveBeenCalledWith(expect.objectContaining({ image: 'registry.example/vm:1' }));
+    });
+
+    it('reports images without the microVM bridge as unsupported and boot failures as probe-failed', async () => {
+      docker.runMicrovmProbe.mockResolvedValueOnce({
+        ok: false,
+        reasonCode: 'E_MICROVM_IMAGE_UNSUPPORTED',
+        reason: 'no bridge',
+      });
+
+      expect((await probeAll()).levels.microvm).toEqual(
+        expect.objectContaining({ state: 'unsupported', reasonCode: 'E_MICROVM_IMAGE_UNSUPPORTED' }),
+      );
+
+      docker.runMicrovmProbe.mockResolvedValueOnce({ ok: false, reasonCode: 'E_MICROVM_BOOT_FAILED', reason: 'boot' });
+
+      expect((await probeAll()).levels.microvm).toEqual(
+        expect.objectContaining({ state: 'probe-failed', reasonCode: 'E_MICROVM_BOOT_FAILED' }),
+      );
+    });
+
+    it('honours its administrative switch and is withheld when the standard floor fails', async () => {
+      service.testEnv = { AGENT_ISOLATION_MICROVM_ENABLED: 'false' };
+
+      const disabled = await probeAll();
+
+      expect(disabled.levels.microvm).toEqual(expect.objectContaining({ state: 'disabled-by-admin' }));
+      expect(disabled.levels.microvm.reason).toContain('AGENT_ISOLATION_MICROVM_ENABLED=false');
+      expect(docker.runMicrovmProbe).not.toHaveBeenCalled();
+
+      service.testEnv = {};
+      docker.runIsolationProbe.mockResolvedValue({ ok: false, reasonCode: 'E_PROBE_START_FAILED', reason: 'x' });
+
+      const floorFailed = await probeAll();
+
+      expect(floorFailed.levels.microvm.reasonCode).toBe('E_RUNC_PROBE_FAILED');
+      expect(docker.runMicrovmProbe).not.toHaveBeenCalled();
+    });
+
+    it('changes the capability revision when the microVM image changes', async () => {
+      docker.runMicrovmProbe.mockResolvedValue(ok);
+
+      const first = await probeAll();
+
+      docker.getImageId.mockImplementation(async (image: string) =>
+        image.includes('microvm') ? 'sha256:new-microvm' : 'sha256:image',
+      );
+
+      const second = await probeAll();
+
+      expect(second.revision).not.toBe(first.revision);
+    });
+
+    it('re-probes after repeated microVM runtime failures and reports Docker being unreachable', async () => {
+      await probeAll();
+      docker.getDockerHostInfo.mockClear();
+
+      service.recordRuntimeFailure('microvm');
+      service.recordRuntimeFailure('microvm');
+      expect(docker.getDockerHostInfo).not.toHaveBeenCalled();
+      service.recordRuntimeFailure('microvm');
+      await probeAll();
+      expect(docker.getDockerHostInfo).toHaveBeenCalled();
+
+      docker.getDockerHostInfo.mockRejectedValue(new Error('connect ENOENT'));
+      expect((await probeAll()).levels.microvm.reasonCode).toBe('E_DOCKER_BASELINE_UNAVAILABLE');
+    });
+
+    it('keeps the last known microvm state while a re-probe runs', async () => {
+      docker.runMicrovmProbe.mockResolvedValue(ok);
+      await probeAll();
+
+      let release: (result: IsolationProbeResult) => void = () => undefined;
+
+      docker.runMicrovmProbe.mockImplementation(() => new Promise((resolve) => (release = resolve)));
+
+      const during = await service.probe();
+
+      expect(during.levels.microvm.state).toBe('ready');
+      expect(service.getCapabilities().probing).toBe(true);
+      release(noKvm);
+      expect((await service.whenMicrovmProbed()).levels.microvm.reasonCode).toBe('E_KVM_UNAVAILABLE');
+    });
+
+    it('reports a crashing microvm probe as a boot failure', async () => {
+      docker.runMicrovmProbe.mockRejectedValue(new Error('docker went away'));
+
+      expect((await probeAll()).levels.microvm).toEqual(
+        expect.objectContaining({ state: 'probe-failed', reasonCode: 'E_MICROVM_BOOT_FAILED' }),
+      );
+    });
+
+    it('starts with the level pending on runc', () => {
+      expect(service.getCapabilities().levels.microvm).toEqual(
+        expect.objectContaining({ rank: 4, runtime: 'runc', reasonCode: 'E_PROBE_PENDING' }),
       );
     });
   });

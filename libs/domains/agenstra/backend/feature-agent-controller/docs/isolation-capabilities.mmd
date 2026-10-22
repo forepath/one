@@ -5,11 +5,11 @@ sequenceDiagram
     participant Proxy as ClientAgentProxyService
     participant Sched as BullMQ repeatable job
     participant Mgr as Agent Manager<br/>(IsolationCapabilitiesService, AgentsService)
-    participant Docker as Docker daemon<br/>(runc, runsc-systrap, runsc-kvm<br/>and their -hostnet variants)
+    participant Docker as Docker daemon<br/>(runc, runsc-systrap, runsc-kvm<br/>and their -hostnet variants,<br/>microVM launchers on runc + /dev/kvm)
     participant DB as Database<br/>(client_isolation_snapshots)
     participant Pub as AgenstraNotificationPublisher
 
-    Note over Mgr,Docker: Probe on the agent manager: startup, every AGENT_ISOLATION_PROBE_INTERVAL_MS (default 6h, jitter),<br/>POST /api/isolation/probe, and after AGENT_ISOLATION_FAILURE_THRESHOLD runtime failures of a gVisor level (counted per level)
+    Note over Mgr,Docker: Probe on the agent manager: startup, every AGENT_ISOLATION_PROBE_INTERVAL_MS (default 6h, jitter),<br/>POST /api/isolation/probe, and after AGENT_ISOLATION_FAILURE_THRESHOLD runtime failures of a gVisor or microVM level (counted per level)
 
     Mgr->>Docker: docker info (version, kernel, registered runtimes and runtimeArgs)
     Mgr->>Docker: standard probe on runc (worker image: start, runtime check, volume I/O, exec, non-root exec, logs)
@@ -31,7 +31,18 @@ sequenceDiagram
             Mgr->>Docker: shared netns: runc owner + member on the hostnet runtime (NetworkMode container:owner)
         end
     end
-    Mgr->>Mgr: revision = sha256(facts + states), recommendedLevel = strongest ready level
+    alt microvm disabled (AGENT_ISOLATION_MICROVM_ENABLED=false)
+        Mgr->>Mgr: microvm = disabled-by-admin
+    else Standard floor not ready
+        Mgr->>Mgr: microvm = probe-failed (E_RUNC_PROBE_FAILED)
+    else microVM image without the bridge protocol label
+        Mgr->>Mgr: microvm = unsupported (E_MICROVM_IMAGE_UNSUPPORTED)
+    else Probe microVM
+        Mgr->>Docker: runc owner + microVM launcher in its netns (/dev/kvm, reduced caps), boot the guest
+        Mgr->>Docker: worker contract inside the guest via vm-exec, archive coherence, loopback relay, embedded DNS
+        Note over Mgr,Docker: no /dev/kvm: unsupported (E_KVM_UNAVAILABLE), no boot: probe-failed (E_MICROVM_BOOT_FAILED)
+    end
+    Mgr->>Mgr: revision = sha256(facts + microVM image id + states), recommendedLevel = strongest ready level
 
     Note over Ctl,Pub: Controller fetch, snapshot and transitions
 
@@ -58,6 +69,7 @@ sequenceDiagram
         Iso->>DB: conditional UPDATE / INSERT snapshot (winner publishes)
         Iso->>Pub: isolation.sandbox_available / _unavailable (sandboxed)
         Iso->>Pub: isolation.sandbox_kvm_available / _unavailable (sandboxed-kvm)
+        Iso->>Pub: isolation.microvm_available / _unavailable (microvm)
         Iso->>Pub: isolation.baseline_failed (standard)
         Iso-->>Ctl: ClientIsolationSummaryDto (supported, stale=false)
     else Manager unreachable
@@ -65,8 +77,8 @@ sequenceDiagram
         Iso-->>Ctl: ClientIsolationSummaryDto (stale=true)
     else Legacy manager (no isolation endpoint)
         Iso-->>Ctl: supported=false, standard only (E_MANAGER_UNSUPPORTED)
-    else Manager without sandboxed-kvm
-        Iso-->>Ctl: sandboxed-kvm filled as unsupported (E_MANAGER_UNSUPPORTED)
+    else Manager without sandboxed-kvm / microvm
+        Iso-->>Ctl: missing levels filled as unsupported (E_MANAGER_UNSUPPORTED)
     end
 
     Note over UI,Pub: Environment creation
@@ -85,7 +97,7 @@ sequenceDiagram
         Ctl->>Proxy: createClientAgent(isolationLevel, current revision, selectedBy)
         Proxy->>Mgr: POST /api/agents
         Mgr->>Mgr: re-validate against current capabilities (400 / 409 / 503)
-        Mgr->>Docker: create egress guard (runc) and worker on runtime of the level (hostnet variant when guarded or on the agent network)
+        Mgr->>Docker: create egress guard (runc) and worker on runtime of the level (hostnet variant when guarded or on the agent network; microvm: microVM image on runc + /dev/kvm, mounts below /guest)
         alt Worker started
             Mgr->>Mgr: persist isolation_level + isolation_selection, recordRuntimeSuccess
             Mgr-->>Ctl: 201 AgentResponseDto (isolation)
@@ -93,7 +105,7 @@ sequenceDiagram
                 Ctl->>Pub: agent.isolation_override
             end
             Ctl-->>UI: 201
-        else gVisor worker failed (sandboxed or sandboxed-kvm)
+        else gVisor worker or microVM failed (sandboxed, sandboxed-kvm or microvm)
             Mgr->>Mgr: recordRuntimeFailure per level (re-probe after threshold), no retry on a weaker level
             Mgr-->>Ctl: 400 E_ISOLATION_RUNTIME_FAILED (isolationLevel)
             Ctl->>Pub: agent.sandbox_creation_failed

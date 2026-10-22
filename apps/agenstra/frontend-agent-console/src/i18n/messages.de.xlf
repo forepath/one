@@ -1419,8 +1419,8 @@
         <target>Standard-Docker verwenden?</target>
       </trans-unit>
       <trans-unit id="featureChat-isolationConfirmStandardMessage" datatype="html">
-        <source>Standard Docker has lower isolation than the recommended gVisor sandbox. The container will interact with the workspace host&apos;s Linux kernel through Docker&apos;s normal namespace, capability and seccomp controls.</source>
-        <target>Standard-Docker bietet eine geringere Isolation als die empfohlene gVisor-Sandbox. Der Container interagiert über die üblichen Namespace-, Capability- und Seccomp-Kontrollen von Docker mit dem Linux-Kernel des Arbeitsbereich-Hosts.</target>
+        <source>Standard Docker has lower isolation than the recommended isolation level. The container will interact with the workspace host&apos;s Linux kernel through Docker&apos;s normal namespace, capability and seccomp controls.</source>
+        <target>Standard-Docker bietet eine geringere Isolation als die empfohlene Isolationsstufe. Der Container interagiert über die üblichen Namespace-, Capability- und Seccomp-Kontrollen von Docker mit dem Linux-Kernel des Arbeitsbereich-Hosts.</target>
       </trans-unit>
       <trans-unit id="featureChat-isolationConfirmStandardConfirm" datatype="html">
         <source>Use Standard Docker</source>
@@ -1565,6 +1565,30 @@
       <trans-unit id="featureChat-isolationSandboxKvmAvailable" datatype="html">
         <source>KVM sandbox available</source>
         <target>KVM-Sandbox verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureChat-isolationLevelMicrovm" datatype="html">
+        <source>MicroVM (KVM)</source>
+        <target>MicroVM (KVM)</target>
+      </trans-unit>
+      <trans-unit id="featureChat-isolationMicrovmDescription" datatype="html">
+        <source>Runs in its own virtual machine with a separate Linux kernel (KVM).</source>
+        <target>Läuft in einer eigenen virtuellen Maschine mit separatem Linux-Kernel (KVM).</target>
+      </trans-unit>
+      <trans-unit id="featureChat-isolationMicrovmAvailable" datatype="html">
+        <source>MicroVM available</source>
+        <target>MicroVM verfügbar</target>
+      </trans-unit>
+      <trans-unit id="featureChat-isolationConfirmSandboxedKvmTitle" datatype="html">
+        <source>Use the gVisor sandbox instead of a microVM?</source>
+        <target>gVisor-Sandbox statt einer MicroVM verwenden?</target>
+      </trans-unit>
+      <trans-unit id="featureChat-isolationConfirmSandboxedKvmMessage" datatype="html">
+        <source>Sandboxed (gVisor on KVM) runs gVisor&apos;s application kernel on the workspace host. The recommended level runs the environment in its own virtual machine with a separate Linux kernel, so a kernel-level flaw stays inside the VM.</source>
+        <target>Sandboxed (gVisor auf KVM) führt den Anwendungskernel von gVisor auf dem Arbeitsbereich-Host aus. Die empfohlene Stufe betreibt die Umgebung in einer eigenen virtuellen Maschine mit separatem Linux-Kernel, sodass eine Schwachstelle auf Kernel-Ebene innerhalb der VM bleibt.</target>
+      </trans-unit>
+      <trans-unit id="featureChat-isolationConfirmSandboxedKvmConfirm" datatype="html">
+        <source>Use Sandboxed (gVisor on KVM)</source>
+        <target>Sandboxed (gVisor auf KVM) verwenden</target>
       </trans-unit>
       <trans-unit id="featureChat-isolationConfirmSandboxedTitle" datatype="html">
         <source>Use the gVisor sandbox without KVM?</source>

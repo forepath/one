@@ -153,7 +153,8 @@ export class AgentEntity {
 
   /**
    * Container isolation level of the worker container (`standard` = runc, `sandboxed` = gVisor,
-   * `sandboxed-kvm` = gVisor on KVM). Environments created before isolation levels existed are `standard`.
+   * `sandboxed-kvm` = gVisor on KVM, `microvm` = KVM microVM). Environments created before isolation levels existed
+   * are `standard`.
    */
   @Column({ type: 'varchar', length: 16, default: 'standard', name: 'isolation_level' })
   isolationLevel?: IsolationLevel;

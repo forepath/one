@@ -93,13 +93,15 @@ export type IsolationHostTransitionType =
   | 'isolation.sandbox_unavailable'
   | 'isolation.sandbox_kvm_available'
   | 'isolation.sandbox_kvm_unavailable'
+  | 'isolation.microvm_available'
+  | 'isolation.microvm_unavailable'
   | 'isolation.baseline_failed';
 
 /** Isolation capability transition of a workspace host (agent manager). */
 export type IsolationHostNotificationPayload = {
   clientId: string;
   clientName?: string | null;
-  level: 'standard' | 'sandboxed' | 'sandboxed-kvm';
+  level: 'standard' | 'sandboxed' | 'sandboxed-kvm' | 'microvm';
   runtime: string;
   previousState?: string | null;
   state: string;
@@ -119,10 +121,10 @@ export type AgentIsolationOverrideNotificationPayload = {
   capabilityRevision?: string | null;
 };
 
-/** Creating a gVisor (sandboxed / sandboxed-kvm) environment failed (never retried on a weaker runtime). */
+/** Creating a gVisor (sandboxed / sandboxed-kvm) or microVM environment failed (never retried on a weaker runtime). */
 export type AgentSandboxCreationFailedNotificationPayload = {
   agentName: string;
-  isolationLevel: 'sandboxed' | 'sandboxed-kvm';
+  isolationLevel: 'sandboxed' | 'sandboxed-kvm' | 'microvm';
   runtime: string;
   error: string;
   occurredAt: string;
