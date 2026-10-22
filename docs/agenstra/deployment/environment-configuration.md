@@ -228,7 +228,7 @@ See [Egress Filtering](../features/egress-filtering.md).
 - `AGENT_ISOLATION_PROBE_IMAGE` - Probe image (default: empty, uses `OPENCODE_AGENT_DOCKER_IMAGE` / `AGENT_DEFAULT_IMAGE`).
 - `AGENT_ISOLATION_FAILURE_THRESHOLD` - Consecutive runtime failures of a gVisor level that trigger a re-probe, counted per level (default: `3`).
 
-The gVisor runtimes are installed on the Docker host, not in the manager container (cloud-init on provisioned servers, or `apps/agenstra/backend-agent-manager/host/agenstra-gvisor.sh`; the release and checksums are pinned; `GVISOR_RELEASE` / `GVISOR_SHA512` override them for the standalone script only). The KVM runtimes are only registered when `/dev/kvm` is usable; `GVISOR_KVM=0` skips them. The microvm level needs `/dev/kvm` only: libvirt and QEMU run inside the microVM worker image. See [Container Isolation Levels](../features/container-isolation.md).
+The gVisor runtimes are installed on the Docker host, not in the manager container (cloud-init on provisioned servers, or `apps/agenstra/backend-agent-manager/host/agenstra-gvisor.sh`; the release and checksums are pinned; `GVISOR_RELEASE` / `GVISOR_SHA512` override them for the standalone script only). The host preparation makes `/dev/kvm` usable first and independently of gVisor (the microvm level needs `/dev/kvm` only: libvirt and QEMU run inside the microVM worker image); `AGENSTRA_KVM=0` skips that. The gVisor KVM runtimes are only registered when `/dev/kvm` is usable; `GVISOR_KVM=0` skips them. See [Container Isolation Levels](../features/container-isolation.md).
 
 ### API image build arguments (manager / controller)
 

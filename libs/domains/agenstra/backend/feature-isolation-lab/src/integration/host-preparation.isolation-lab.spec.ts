@@ -139,13 +139,15 @@ test ! -c /dev/kvm`,
       expect(await vm.execOrThrow('cat /etc/modules-load.d/agenstra-kvm.conf')).toMatch(/^kvm\nkvm_(intel|amd)\n$/);
     });
 
-    it('uninstall removes every gVisor runtime and leaves runc working', async () => {
+    it('uninstall removes every gVisor runtime, keeps the KVM modules and leaves runc working', async () => {
       const { code } = await runHostScript(vm, 'uninstall');
       const runtimes = await labDockerRuntimes(vm);
 
       expect(code).toBe(0);
       expect(Object.keys(runtimes).filter((name) => name.startsWith('runsc'))).toEqual([]);
       expect(await vm.execOrThrow('docker run --rm --network=none hello-world')).toContain('Hello from Docker');
+      // The persisted KVM modules stay: the microvm level needs /dev/kvm without gVisor.
+      expect(await vm.execOrThrow('cat /etc/modules-load.d/agenstra-kvm.conf')).toMatch(/^kvm\nkvm_(intel|amd)\n$/);
     });
   });
 

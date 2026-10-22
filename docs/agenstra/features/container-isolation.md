@@ -291,13 +291,14 @@ The sandboxed level needs the gVisor runtimes registered with Docker on the agen
 
 ### Provisioned servers
 
-Servers provisioned by Agenstra (Hetzner Cloud, DigitalOcean) and Decabill-provisioned hosts prepare gVisor in their cloud-init script after Docker is installed:
+Servers provisioned by Agenstra (Hetzner Cloud, DigitalOcean) and Decabill-provisioned hosts prepare container isolation in their cloud-init script after Docker is installed:
 
-1. Download a **pinned** gVisor release (`GVISOR_RELEASE`) and verify its **checksums**
-2. Register the runtimes `runsc-systrap` (`--platform=systrap`) and `runsc-systrap-hostnet` (`--platform=systrap --network=host`) with `runsc install` (merges into `/etc/docker/daemon.json`; the default runtime is not changed) and reload Docker
-3. Verify the runtimes with a test container
-4. On any failure, **roll back** the gVisor installation and runtime registration
-5. Only when the systrap runtimes succeeded: prepare **KVM** (see below)
+1. Prepare **KVM** (`/dev/kvm`, see below) first and independently of gVisor: the microvm level needs only `/dev/kvm`, so neither a failed gVisor installation nor `GVISOR_KVM=0` withholds it
+2. Download a **pinned** gVisor release (`GVISOR_RELEASE`) and verify its **checksums**
+3. Register the runtimes `runsc-systrap` (`--platform=systrap`) and `runsc-systrap-hostnet` (`--platform=systrap --network=host`) with `runsc install` (merges into `/etc/docker/daemon.json`; the default runtime is not changed) and reload Docker
+4. Verify the runtimes with a test container
+5. On any failure, **roll back** the gVisor installation and runtime registration
+6. Only when the systrap runtimes succeeded: register the **gVisor KVM runtimes** (see below)
 
 Host preparation never fails provisioning: the `runc` floor is always preserved, and the manager simply reports the gVisor levels as `unsupported` or `probe-failed`.
 
@@ -307,15 +308,15 @@ Host preparation never fails provisioning: the `runc` floor is always preserved,
 
 ### KVM platform
 
-After the systrap runtimes are installed, the preparation detects hardware virtualization: the `vmx` / `svm` CPU flag (x86_64; on aarch64 the presence of `/dev/kvm` is the signal), `/dev/kvm`, loaded modules, the nested virtualization state and the `hypervisor` CPU flag (the host itself is a VM).
+Before anything else, the preparation detects hardware virtualization: the `vmx` / `svm` CPU flag (x86_64; on aarch64 the presence of `/dev/kvm` is the signal), `/dev/kvm`, loaded modules, the nested virtualization state and the `hypervisor` CPU flag (the host itself is a VM).
 
 1. If `/dev/kvm` is missing but the CPU supports virtualization, load `kvm` and `kvm_intel` / `kvm_amd` with `modprobe`; only if that fails on apt-based systems, install `linux-modules-extra-$(uname -r)` and retry. The modules are persisted in `/etc/modules-load.d/agenstra-kvm.conf`.
-2. Only when `/dev/kvm` is usable, register `runsc-kvm` (`--platform=kvm`) and `runsc-kvm-hostnet` (`--platform=kvm --network=host`) and smoke-test both (`hello-world`, `--network=none`).
+2. After the systrap runtimes are installed and only when `/dev/kvm` is usable, register `runsc-kvm` (`--platform=kvm`) and `runsc-kvm-hostnet` (`--platform=kvm --network=host`) and smoke-test both (`hello-world`, `--network=none`).
 3. On failure, roll back **only** the KVM runtimes (own backup `/etc/docker/daemon.json.agenstra-gvisor-kvm.bak`); the systrap runtimes and `runc` stay untouched. Stale KVM runtimes are unregistered when KVM is no longer available.
 
-The KVM step is never fatal. `GVISOR_KVM=0` skips it (generator option `kvm: false`). No libvirt, QEMU or other hypervisor stack is installed **on the host**: gVisor's KVM platform only needs `/dev/kvm`, and the microvm level ships libvirt / QEMU inside its container image. A host-level libvirt daemon was rejected because it adds a privileged daemon, its own bridge / NAT rules next to Docker's and the egress guard's, attack surface and patch burden, and its VMs would bypass the egress guard topology.
+The KVM steps are never fatal. `GVISOR_KVM=0` skips only the gVisor KVM runtimes (generator option `kvm: false`); `AGENSTRA_KVM=0` skips the host KVM preparation as well. `uninstall` removes the runtime registrations but keeps the persisted KVM modules, which the microvm level needs without gVisor. No libvirt, QEMU or other hypervisor stack is installed **on the host**: gVisor's KVM platform only needs `/dev/kvm`, and the microvm level ships libvirt / QEMU inside its container image. A host-level libvirt daemon was rejected because it adds a privileged daemon, its own bridge / NAT rules next to Docker's and the egress guard's, attack surface and patch burden, and its VMs would bypass the egress guard topology.
 
-**MicroVM level:** needs nothing beyond `/dev/kvm` from the KVM step. The launcher container gets `/dev/kvm` from Docker; the microVM image is pulled by the manager.
+**MicroVM level:** needs nothing beyond `/dev/kvm` from the KVM step, also on hosts where gVisor cannot be installed (unsupported kernel or architecture, failed download): `install` and cloud-init prepare KVM first. The launcher container gets `/dev/kvm` from Docker; the microVM image is pulled by the manager.
 
 Hetzner Cloud servers and DigitalOcean droplets normally do **not** expose `/dev/kvm`, so `sandboxed-kvm` and `microvm` usually report `unsupported` there. Dedicated / bare-metal hosts or VMs with nested virtualization can offer them.
 
@@ -328,7 +329,8 @@ sudo ./agenstra-gvisor.sh check            # report Docker baseline, runtime reg
 sudo ./agenstra-gvisor.sh install          # install pinned gVisor, register the systrap (and, with KVM, the KVM) runtimes; rolls back on failure
 sudo ./agenstra-gvisor.sh uninstall        # remove the runtime registrations (binaries stay under /usr/local/lib/agenstra-gvisor)
 sudo ./agenstra-gvisor.sh check --json     # machine-readable output
-sudo GVISOR_KVM=0 ./agenstra-gvisor.sh install   # skip the KVM platform
+sudo GVISOR_KVM=0 ./agenstra-gvisor.sh install   # skip the gVisor KVM runtimes (/dev/kvm is still prepared)
+sudo AGENSTRA_KVM=0 GVISOR_KVM=0 ./agenstra-gvisor.sh install   # skip every KVM step
 ```
 
 For the standalone script, `GVISOR_RELEASE` overrides the pinned release and then requires `GVISOR_SHA512` (the archive checksum for the host architecture); cloud-init always installs the pinned release. After installing, trigger **Re-check isolation** (Update Workspace modal) (or `POST /api/isolation/probe`) instead of waiting for the next scheduled probe. The script registers both systrap runtimes (`runsc-systrap` and `runsc-systrap-hostnet`) and, when KVM is usable, both KVM runtimes (`runsc-kvm` and `runsc-kvm-hostnet`); if you register them under other names, set `AGENT_SANDBOX_RUNTIME` / `AGENT_SANDBOX_SHARED_NETNS_RUNTIME` / `AGENT_SANDBOX_KVM_RUNTIME` / `AGENT_SANDBOX_KVM_SHARED_NETNS_RUNTIME` accordingly. The standalone script only reloads Docker (runtimes are reloadable); it never restarts a running host.

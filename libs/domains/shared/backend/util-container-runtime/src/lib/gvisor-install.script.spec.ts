@@ -6,6 +6,7 @@ import * as path from 'path';
 import {
   GVISOR_DEFAULT_RELEASE,
   GVISOR_DEFAULT_RELEASE_SHA512,
+  GVISOR_HOST_SCRIPT_EXIT_CODES,
   GVISOR_RUNTIMES,
   buildGvisorHostScript,
   buildGvisorInstallScript,
@@ -263,10 +264,20 @@ describe('gVisor install scripts', () => {
   it('keeps the cloud-init block compact (user data is size limited, 32 KiB on Hetzner Cloud)', () => {
     const script = buildGvisorInstallScript();
 
-    expect(Buffer.byteLength(script, 'utf-8')).toBeLessThan(14 * 1024);
+    // Margin for the provider user data (Hetzner rejects more than 32768 characters after base64); the provider
+    // specs check the complete user data against the real limits.
+    expect(Buffer.byteLength(script, 'utf-8')).toBeLessThan(15 * 1024);
     // Comment-only lines and indentation are dropped from the embedded functions.
     expect(script).not.toMatch(/^\s*# gVisor requires/m);
     expect(bashSyntaxOk(`#!/bin/bash\nset -euo pipefail\n${script}`)).toBe(true);
+  });
+
+  it('prepares KVM in the cloud-init block before (and independently of) the gVisor installation', () => {
+    const script = buildGvisorInstallScript();
+    const prepare = script.indexOf('agenstra_kvm_prepare_host || true');
+
+    expect(prepare).toBeGreaterThan(-1);
+    expect(prepare).toBeLessThan(script.indexOf('agenstra_gvisor_install || return 1'));
   });
 
   it('can opt out of the KVM platform', () => {
@@ -458,16 +469,64 @@ describe('gVisor install scripts', () => {
       expect(kvmOnly.stdout).toContain('Sandboxed KVM (runsc-kvm, runsc-kvm-hostnet): registered');
     });
 
-    it('uninstall removes the KVM runtimes too', () => {
+    it('uninstall removes the KVM runtimes too but keeps the persisted KVM modules (microvm level)', () => {
       const result = runKvmScenario({
         cpuinfo: INTEL_CPU,
         devicePresent: true,
         registered: [...SYSTRAP_RUNTIMES, ...KVM_RUNTIMES],
-        command: `id() { echo 0; }; echo kvm > "$AGENSTRA_KVM_MODULES_LOAD_DIR/agenstra-kvm.conf"; main uninstall; test ! -e "$AGENSTRA_KVM_MODULES_LOAD_DIR/agenstra-kvm.conf"`,
+        command: `id() { echo 0; }; echo kvm > "$AGENSTRA_KVM_MODULES_LOAD_DIR/agenstra-kvm.conf"; main uninstall; test -e "$AGENSTRA_KVM_MODULES_LOAD_DIR/agenstra-kvm.conf"`,
       });
 
       expect(result.status).toBe(0);
       expect(result.registered).toEqual([]);
+    });
+
+    it('prepares /dev/kvm independently of the gVisor KVM runtimes (GVISOR_KVM=0)', () => {
+      const result = runKvmScenario({
+        cpuinfo: INTEL_CPU,
+        modprobeOk: true,
+        registered: SYSTRAP_RUNTIMES,
+        env: { GVISOR_KVM: '0' },
+        command: 'agenstra_kvm_prepare_host',
+      });
+
+      expect(result.status).toBe(0);
+      expect(result.calls).toEqual(expect.arrayContaining(['modprobe kvm', 'modprobe kvm_intel']));
+      expect(result.modulesLoad).toBe('kvm\nkvm_intel\n');
+      expect(result.registered).toEqual(SYSTRAP_RUNTIMES);
+    });
+
+    it('skips the host KVM preparation entirely with AGENSTRA_KVM=0', () => {
+      const prepare = runKvmScenario({
+        cpuinfo: INTEL_CPU,
+        modprobeOk: true,
+        env: { AGENSTRA_KVM: '0' },
+        command: 'agenstra_kvm_prepare_host',
+      });
+      const install = runKvmScenario({
+        cpuinfo: INTEL_CPU,
+        modprobeOk: true,
+        registered: SYSTRAP_RUNTIMES,
+        env: { AGENSTRA_KVM: '0' },
+      });
+
+      expect(prepare.status).toBe(1);
+      expect(prepare.stderr).toContain('AGENSTRA_KVM=0');
+      expect(install.status).toBe(1);
+      expect([...prepare.calls, ...install.calls].some((call) => call.startsWith('modprobe'))).toBe(false);
+      expect(install.registered).toEqual(SYSTRAP_RUNTIMES);
+    });
+
+    it('install prepares /dev/kvm even where gVisor cannot be installed', () => {
+      const result = runKvmScenario({
+        cpuinfo: INTEL_CPU,
+        modprobeOk: true,
+        command: 'id() { echo 0; }; agenstra_gvisor_kernel_supported() { return 1; }; main install',
+      });
+
+      expect(result.status).toBe(GVISOR_HOST_SCRIPT_EXIT_CODES.GVISOR_UNSUPPORTED_HOST);
+      expect(result.calls).toEqual(expect.arrayContaining(['modprobe kvm', 'modprobe kvm_intel']));
+      expect(result.modulesLoad).toBe('kvm\nkvm_intel\n');
     });
   });
 
